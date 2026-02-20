@@ -13,6 +13,7 @@ import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { RadioButtonGroup } from "../radio-button-group";
+import { RegenerateButton } from "../regenerate-button";
 import { StateInstruction } from "../states-instruction";
 import { TagSelector } from "../tag-selector";
 import { TimeInput } from "../time-input";
@@ -31,7 +32,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     isMandatory,
     defaultValue,
     note,
-    regenerateData,
+    regenerateType,
   } = config;
   const {
     formState: { errors },
@@ -40,6 +41,10 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   const updateTriggerWarnings = triggerWarning => {
     formMethods.setValue("triggerWarningIds", triggerWarning);
   };
+
+  const regenerateButton = regenerateType ? (
+    <RegenerateButton regenerateType={regenerateType} label={label} formMethods={formMethods} />
+  ) : null;
 
   const getFieldElement = () => {
     switch (type) {
@@ -74,7 +79,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             multiline={multiline}
             isMandatory={isMandatory}
             defaultValue={defaultValue}
-            regenerateData={regenerateData}
+            regenerateButton={regenerateButton}
           />
         );
       case FORM_FIELD_TYPES.NUMBER:
@@ -87,7 +92,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             maxLength={maxLength}
             placeholder={placeholder}
             isMandatory={isMandatory}
-            regenerateData={regenerateData}
           />
         );
       case FORM_FIELD_TYPES.IMAGE_UPLOAD:
@@ -201,7 +205,14 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           <BehavioursInstruction formMethods={formMethods} id={id} isMandatory={isMandatory} />
         );
       case FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION:
-        return <StateInstruction formMethods={formMethods} id={id} isMandatory={isMandatory} />;
+        return (
+          <StateInstruction
+            formMethods={formMethods}
+            id={id}
+            isMandatory={isMandatory}
+            regenerateButton={regenerateButton}
+          />
+        );
       case FORM_FIELD_TYPES.COMPETENCY:
         return (
           <Competency formMethods={formMethods} id={id} isMandatory={isMandatory} label={label} />

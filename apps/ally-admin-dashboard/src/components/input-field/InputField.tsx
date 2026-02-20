@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { InfoIcon, WandStars } from "@assets";
+import { InfoIcon } from "@assets";
 import { InputFieldProps } from "@components/types";
 import { FORM_FIELD_TYPES } from "@constants";
 import { isNonEmptyString } from "@utils";
@@ -19,7 +18,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   maxLength,
   defaultValue = "",
   disabled = false,
-  regenerateData,
+  regenerateButton,
 }) => {
   const isAgeField = id === "age";
   const MAX_AGE = 150;
@@ -79,10 +78,6 @@ export const InputField: React.FC<InputFieldProps> = ({
     }
   }, [formMethods, id, defaultValue]);
 
-  const handleRegenerateClick = () => {
-    regenerateData?.();
-  };
-
   const inputTrack = formMethods.watch(id, "") || "";
   const {
     formState: { errors },
@@ -101,14 +96,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           {isMandatory && <span className="text-destructive-500">*</span>}
           {infoIconContent && <InfoIcon />}
         </label>
-        {FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG && regenerateData && (
-          <div
-            onClick={handleRegenerateClick}
-            className="flex items-center gap-1 text-primary-500 text-sm border border-primary-500 rounded-2xl px-2 py-1"
-          >
-            <WandStars /> Regenerate
-          </div>
-        )}
+        {regenerateButton}
       </div>
       <div className="relative mb-[15px]">
         {multiline ? (
