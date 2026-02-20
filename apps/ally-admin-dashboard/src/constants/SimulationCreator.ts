@@ -455,7 +455,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Pick Competency",
         type: FORM_FIELD_TYPES.COMPETENCY,
         options: [],
-        isMandatory: false,
+        isMandatory: true,
       },
       {
         id: "difficultyLevel",
