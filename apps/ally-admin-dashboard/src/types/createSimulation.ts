@@ -1,12 +1,13 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { EventDetectionConfig } from "@src/types/detectionConfig";
+import { EventDetectionConfig } from "@types";
 
 import {
   SessionEventDetectionData,
   triggerWarning,
   stateInstruction,
   behaviourInstruction,
+  Competency,
 } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
@@ -53,7 +54,7 @@ export type FormData = {
   maxTimeValue?: string;
   characterProfileText: string;
   showScoreMeter?: boolean;
-  competencyId?: string;
+  competency?: Competency;
   stateInstructions?: stateInstruction[];
   characterProfileSelector?: string;
   behaviorsInstructions?: behaviourInstruction[];

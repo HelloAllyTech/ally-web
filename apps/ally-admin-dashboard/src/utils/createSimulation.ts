@@ -67,6 +67,6 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     behaviorInstructions: data?.behaviorInstructions ?? [],
     showScoreMeter: data?.metadata?.showScoreMeter,
     characterProfileText: data?.metadata?.characterProfileText,
-    competencyId: data?.competencyId,
+    competency: data?.competency,
   };
 };

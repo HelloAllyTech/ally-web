@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetSimulationChecklistQuery } from "@api";
 import { CrossRedBackground, TickGreenBackground } from "@assets";
 import { ChecklistItem } from "@types";
@@ -8,30 +9,6 @@ interface ChecklistProps {
   sessionId?: string;
   className?: string;
 }
-
-// Dummy data for fallback when API is not working
-const DUMMY_DATA = {
-  scorePercentage: 80,
-  eventChecklist: [
-    { id: "1", name: "Socialising the Client to Counselling", hasOccurred: true },
-    { id: "2", name: "Explanation and Promotion of Ethics", hasOccurred: true },
-    { id: "3", name: "Exploration & Normalisation of Feelings", hasOccurred: true },
-    {
-      id: "4",
-      name: "Demonstration of Empathy, Warmth, Paraphrasing & Genuineness",
-      hasOccurred: true,
-    },
-    { id: "5", name: "Exploration of Problem, Coping and Social Support", hasOccurred: true },
-    {
-      id: "6",
-      name: "Collaborative Goal Setting & Addressing Client's Expectations",
-      hasOccurred: false,
-    },
-    { id: "7", name: "Promotion of Realistic Hope for Change", hasOccurred: true },
-    { id: "8", name: "Strengthening Coping Mechanisms & Prior Solutions", hasOccurred: true },
-    { id: "9", name: "Psychoeducation & Use of Local Terminology", hasOccurred: true },
-  ],
-};
 
 const ChecklistSkeleton: FC = () => {
   return (
@@ -65,11 +42,11 @@ export const Checklist: FC<ChecklistProps> = ({
 }) => {
   const { data, isLoading, isError } = useGetSimulationChecklistQuery(
     { sessionId: sessionId || "" },
-    { skip: !sessionId },
+    { skip: !sessionId || FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG },
   );
 
   // Use dummy data if API fails or returns no data
-  const checklistData = isError || !data ? DUMMY_DATA : data;
+  const checklistData = isError || !data ? { scorePercentage: 0, eventChecklist: [] } : data;
   const items = checklistData?.eventChecklist ?? [];
 
   if (isLoading) {
@@ -102,8 +79,10 @@ export const Checklist: FC<ChecklistProps> = ({
     );
   };
 
+  if (items.length === 0) return null;
+
   return (
-    <div className="flex flex-col gap-3 w-full h-full bg-white">
+    <div className="flex flex-col gap-3 w-full bg-white">
       <div className="text-md text-typography-800">Evaluation Checklist</div>
       {renderChecklistItems()}
     </div>
