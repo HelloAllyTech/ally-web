@@ -12,3 +12,4 @@ export * from "./analytics";
 export * from "./api";
 export * from "./user.ts";
 export * from "./review";
+export * from "./aiChat";

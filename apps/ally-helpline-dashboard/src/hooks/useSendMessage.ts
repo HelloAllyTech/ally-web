@@ -3,9 +3,18 @@ import { useCallback } from "react";
 import { useSelector } from "react-redux";
 
 import { ApiEndpoints, LOCAL_STORAGE_KEYS } from "@constants";
-import { addMessage, appendToLastMessage, clearError, setError, setStreaming } from "@reducer";
-import { ChatMessage } from "@reducer/chatReducer";
+import {
+  addMessage,
+  appendStreamingChunk,
+  clearError,
+  commitStreamingMessage,
+  finishStreaming,
+  clearStreamSession,
+  setError,
+  startStreaming,
+} from "@reducer";
 import { RootState, store } from "@store";
+import { ChatMessagePayload } from "@types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -61,7 +70,7 @@ const fetchWithAuth = async (url: string, body: string): Promise<Response> => {
  * updating its session even after the originating component unmounts.
  */
 const processStream = async (sessionId: string, message: string, isRetry: boolean) => {
-  const { dispatch } = store;
+  const { dispatch, getState } = store;
 
   if (!isRetry) {
     dispatch(addMessage({ sessionId, message: { role: "user", content: message } }));
@@ -69,14 +78,14 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
     dispatch(clearError({ sessionId }));
   }
 
-  dispatch(addMessage({ sessionId, message: { role: "assistant", content: "" } }));
-  dispatch(setStreaming({ sessionId, isStreaming: true }));
+  dispatch(startStreaming({ sessionId }));
 
   try {
     const url = `${API_BASE}/api${ApiEndpoints.LEARN.CHAT_STREAM(sessionId)}`;
     const result = await fetchWithAuth(url, JSON.stringify({ message }));
 
     if (!result.ok || !result.body) {
+      dispatch(finishStreaming({ sessionId }));
       dispatch(setError({ sessionId, message }));
       return;
     }
@@ -98,9 +107,12 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
         for (const line of event.split("\n")) {
           if (line.startsWith("data: ")) {
             const raw = line.slice(6);
-            if (raw === "[done]") return;
+            if (raw === "[done]") {
+              commitAndFinish(sessionId, getState);
+              return;
+            }
             const text = extractTextFromSSEData(raw);
-            if (text) dispatch(appendToLastMessage({ sessionId, text }));
+            if (text) dispatch(appendStreamingChunk({ sessionId, text }));
           }
         }
       }
@@ -112,23 +124,38 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
           const raw = line.slice(6);
           if (raw !== "[DONE]") {
             const text = extractTextFromSSEData(raw);
-            if (text) dispatch(appendToLastMessage({ sessionId, text }));
+            if (text) dispatch(appendStreamingChunk({ sessionId, text }));
           }
         }
       }
     }
+
+    commitAndFinish(sessionId, getState);
   } catch {
+    dispatch(finishStreaming({ sessionId }));
     dispatch(setError({ sessionId, message }));
-  } finally {
-    dispatch(setStreaming({ sessionId, isStreaming: false }));
   }
 };
 
+/** Move the completed streaming message into the history slice and clear the stream. */
+const commitAndFinish = (sessionId: string, getState: () => RootState) => {
+  const { dispatch } = store;
+  const streamSession = getState().chatStream.sessions[sessionId];
+  if (streamSession?.streamingMessage) {
+    dispatch(commitStreamingMessage({ sessionId, message: streamSession.streamingMessage }));
+  }
+  dispatch(finishStreaming({ sessionId }));
+  dispatch(clearStreamSession(sessionId));
+};
+
 export const useSendMessage = (sessionId: string) => {
-  const session = useSelector((state: RootState) => state.chat.sessions[sessionId]);
-  const messages: ChatMessage[] = session?.messages ?? [];
-  const isStreaming = session?.isStreaming ?? false;
-  const error = session?.error ?? false;
+  const historySession = useSelector((state: RootState) => state.chatHistory.sessions[sessionId]);
+  const streamSession = useSelector((state: RootState) => state.chatStream.sessions[sessionId]);
+
+  const messages: ChatMessagePayload[] = historySession?.messages ?? [];
+  const streamingMessage: ChatMessagePayload | null = streamSession?.streamingMessage ?? null;
+  const isStreaming = streamSession?.isStreaming ?? false;
+  const error = historySession?.error ?? false;
 
   const sendMessage = useCallback(
     (message: string) => {
@@ -138,10 +165,10 @@ export const useSendMessage = (sessionId: string) => {
   );
 
   const retryLastMessage = useCallback(() => {
-    const lastFailed = session?.lastFailedMessage;
+    const lastFailed = historySession?.lastFailedMessage;
     if (!lastFailed) return;
     processStream(sessionId, lastFailed, true);
-  }, [sessionId, session?.lastFailedMessage]);
+  }, [sessionId, historySession?.lastFailedMessage]);
 
-  return { messages, isStreaming, error, sendMessage, retryLastMessage };
+  return { messages, streamingMessage, isStreaming, error, sendMessage, retryLastMessage };
 };
