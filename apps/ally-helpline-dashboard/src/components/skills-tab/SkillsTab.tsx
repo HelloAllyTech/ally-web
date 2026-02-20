@@ -125,7 +125,7 @@ const ErrorState: FC = () => (
 );
 
 const EmptyState: FC = () => (
-  <div className="w-full flex items-center justify-center p-12 text-gray-500">
+  <div className="w-full flex items-center justify-center p-12 text-typography-700 font-primary text-lg">
     No skills data available for this session
   </div>
 );
@@ -338,8 +338,10 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const hasNoData = !hasSkillData && !hasEmotionalData;
 
   return (
-    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto">
-      <h2 className="text-lg font-medium font-primary text-typography-900">Skills Demonstrated</h2>
+    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto min-h-[70vh]">
+      <h2 className="text-base font-medium font-primary text-typography-900">
+        Skills Demonstrated
+      </h2>
       <hr className="mb-5 mt-2 border-gray-200" />
 
       {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}

@@ -297,7 +297,6 @@ export const FileUpload = ({
           {en.simulation.dragDrop}{" "}
           <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
           {en.simulation.pngUploadGuidelines}
-          <br />
           {en.simulation.resolution}
           <div
             role="button"

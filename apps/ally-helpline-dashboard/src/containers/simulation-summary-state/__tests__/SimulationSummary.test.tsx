@@ -71,6 +71,11 @@ vi.mock("@components", () => ({
     SECONDARY: "secondary",
   },
   PermissionGuard: ({ children }: any) => <div>{children}</div>,
+  Checklist: ({ sessionId, className }: any) => (
+    <div data-testid="checklist" className={className}>
+      Checklist for {sessionId}
+    </div>
+  ),
 }));
 
 // Mock constants

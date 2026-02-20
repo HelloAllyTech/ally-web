@@ -168,6 +168,11 @@ describe("IconUploader", () => {
       expect(toastError).toHaveBeenCalledWith("Please upload an icon with 1:1 aspect ratio");
     });
     expect(defaultProps.onUpload).not.toHaveBeenCalled();
+
+    // Wait for any pending state updates to complete
+    await waitFor(() => {
+      expect(screen.queryByText("Uploading...")).not.toBeInTheDocument();
+    });
   });
 
   it("uploads valid image and calls onImageChange", async () => {
@@ -267,6 +272,11 @@ describe("IconUploader", () => {
       expect(toastError).toHaveBeenCalledWith("Failed to upload icon");
     });
     expect(onImageChange).not.toHaveBeenCalled();
+
+    // Wait for upload state to be reset
+    await waitFor(() => {
+      expect(screen.queryByText("Uploading...")).not.toBeInTheDocument();
+    });
   });
 
   it("opens file picker when edit button is clicked on existing image", () => {

@@ -79,7 +79,7 @@ export interface FormFieldConfig {
   component?: React.ReactNode;
   dependsOn?: keyof FormData;
   note?: string;
-  regenerate?: boolean;
+  regenerateData?: () => void;
   visibleWhen?: (formValues: Partial<FormData>) => boolean;
 }
 

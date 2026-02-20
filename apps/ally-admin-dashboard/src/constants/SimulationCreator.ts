@@ -463,6 +463,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM.CHARACTER_PROFILE_SELECTOR,
         isMandatory: false,
         fullWidth: true,
+        isDashedLineAbove: true,
       },
       {
         id: "characterProfileText",
@@ -556,6 +557,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Custom Fields",
         type: FORM_FIELD_TYPES.CUSTOM_FIELDS,
         fullWidth: true,
+        isDashedLineAbove: true,
       },
       {
         id: "openingStatements",
