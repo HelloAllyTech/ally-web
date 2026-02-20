@@ -41,7 +41,7 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
       currentLocation: formValues.currentLocation,
       competency: formValues.competency?.name,
       characterProfileText: formValues.characterProfileText,
-      challengeDescription: formValues.context,
+      challengeDescription: formValues.description,
     };
   };
 
@@ -104,6 +104,43 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
     }
   };
 
+  const getFieldValue = () => {
+    if (!formMethods || !regenerateType) return null;
+
+    const formValues = formMethods.getValues();
+
+    switch (regenerateType) {
+      case REGENERATE_TYPE.OPENING_STATEMENTS:
+        return formValues[FORM_FIELD_IDS.OPENING_STATEMENTS];
+      case REGENERATE_TYPE.CHARACTER_PROFILE_TEXT:
+        return formValues[FORM_FIELD_IDS.CHARACTER_PROFILE_TEXT];
+      case REGENERATE_TYPE.DESCRIPTION:
+        return formValues[FORM_FIELD_IDS.DESCRIPTION];
+      case REGENERATE_TYPE.STATE_INSTRUCTIONS:
+        return formValues[FORM_FIELD_IDS.STATE_INSTRUCTIONS];
+      default:
+        return null;
+    }
+  };
+
+  const isFieldEmpty = () => {
+    const fieldValue = getFieldValue();
+    if (fieldValue === null || fieldValue === undefined) return true;
+    if (Array.isArray(fieldValue)) return fieldValue.length === 0;
+    if (typeof fieldValue === "string") return fieldValue.trim() === "";
+    return false;
+  };
+
+  const getButtonText = () => {
+    if (isRegenerating) {
+      return en.simulation.generating;
+    } else if (isFieldEmpty()) {
+      return en.simulation.generate;
+    } else {
+      return en.simulation.regenerate;
+    }
+  };
+
   const handleRegenerate = async () => {
     if (!regenerateType || isRegenerating || !formMethods) return;
 
@@ -128,6 +165,8 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
     return null;
   }
 
+  const buttonText = getButtonText();
+
   return (
     <button
       type="button"
@@ -139,7 +178,12 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
           : "text-primary-500 border-primary-500 hover:bg-primary-50"
       } ${isRegenerating ? "animate-fadeInOut" : ""}`}
     >
-      <WandStars /> {isRegenerating ? "Regenerating..." : "Regenerate"}
+      {isRegenerating ? (
+        <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <WandStars />
+      )}{" "}
+      {buttonText}
     </button>
   );
 };

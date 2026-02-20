@@ -389,6 +389,9 @@ export const en = {
     uploadCancelConfirmation: "Your upload is not complete. Would you like to cancel the upload?",
     continueUpload: "Continue Upload",
     cancelUpload: "Cancel Upload",
+    regenerate: "Regenerate",
+    generate: "Generate",
+    generating: "Generating...",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",
