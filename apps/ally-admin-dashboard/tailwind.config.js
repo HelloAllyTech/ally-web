@@ -160,6 +160,7 @@ module.exports = {
       animation: {
         fadeIn: "fadeIn 0.2s ease-in-out",
         slideInFromRight: "slideInFromRight 0.2s ease-out",
+        fadeInOut: "fadeInOut 1.5s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -169,6 +170,10 @@ module.exports = {
         slideInFromRight: {
           "0%": { opacity: "0", transform: "translateX(10px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        fadeInOut: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.1" },
         },
       },
     },

@@ -104,6 +104,15 @@ const AskAiInput = ({
   disabled?: boolean;
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const wasDisabledRef = useRef(disabled);
+
+  useEffect(() => {
+    if (wasDisabledRef.current && !disabled && inputRef.current) {
+      inputRef.current.focus();
+    }
+    wasDisabledRef.current = disabled;
+  }, [disabled]);
+
   const handleSend = () => {
     if (disabled) return;
     const text = inputRef.current?.value?.trim() ?? "";

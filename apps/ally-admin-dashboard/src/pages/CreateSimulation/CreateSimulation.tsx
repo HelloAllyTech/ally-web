@@ -126,7 +126,12 @@ export const CreateSimulation: FC = () => {
       }
       if (fieldId === FORM_FIELD_IDS.STATE_INSTRUCTIONS) {
         const stateInstructions = value as stateInstruction[];
-        if (stateInstructions.some(instruction => instruction.instruction.trim() === ""))
+        if (
+          stateInstructions.some(
+            instruction =>
+              instruction.instruction.trim() === "" || instruction.dialogues?.length === 0,
+          )
+        )
           return false;
       }
       if (fieldId === FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) {

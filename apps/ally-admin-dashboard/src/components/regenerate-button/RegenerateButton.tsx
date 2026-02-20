@@ -7,6 +7,7 @@ import { useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
 import { FORM_FIELD_IDS, REGENERATE_TYPE, en } from "@constants";
 import { RegenerateFieldResponse } from "@types";
+import { isNonEmptyArray, isNonEmptyObject, isNonEmptyString } from "@utils";
 
 interface RegenerateButtonProps {
   regenerateType?: string;
@@ -44,25 +45,62 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
     };
   };
 
+  const transformStateInstructionsFromObject = (content: any): any[] => {
+    return Object.values(content).map((item: any, index: number) => ({
+      stateId: (index + 1).toString(),
+      instruction: item.instruction,
+      dialogues: item.dialogues,
+    }));
+  };
+
   const processRegenerateResponse = (response: RegenerateFieldResponse) => {
     if (!formMethods) return;
 
-    switch (response.fieldName) {
-      case REGENERATE_TYPE.OPENING_STATEMENTS:
-        formMethods.setValue(
-          FORM_FIELD_IDS.OPENING_STATEMENTS,
-          response?.content?.join("\n") ?? "",
-        );
-        break;
-      case REGENERATE_TYPE.CHARACTER_PROFILE_TEXT:
-        formMethods.setValue(FORM_FIELD_IDS.CHARACTER_PROFILE_TEXT, response?.content ?? "");
-        break;
-      case REGENERATE_TYPE.DESCRIPTION:
-        formMethods.setValue(FORM_FIELD_IDS.CONTEXT, response?.content ?? "");
-        break;
-      case REGENERATE_TYPE.STATE_INSTRUCTIONS:
-        formMethods.setValue(FORM_FIELD_IDS.STATE_INSTRUCTIONS, response?.content || []);
-        break;
+    const { fieldName, content } = response;
+    const showError = () => toast.error(`${en.errors.failedToRegenerate} ${label || "field"}`);
+
+    // Configuration map for field processing
+    const fieldProcessors: Record<
+      string,
+      {
+        validate: (content: any) => boolean;
+        transform?: (content: any) => any;
+        fieldId: string;
+      }
+    > = {
+      [REGENERATE_TYPE.OPENING_STATEMENTS]: {
+        validate: isNonEmptyString,
+        transform: content => content?.join("\n") ?? "",
+        fieldId: FORM_FIELD_IDS.OPENING_STATEMENTS,
+      },
+      [REGENERATE_TYPE.CHARACTER_PROFILE_TEXT]: {
+        validate: isNonEmptyString,
+        fieldId: FORM_FIELD_IDS.CHARACTER_PROFILE_TEXT,
+      },
+      [REGENERATE_TYPE.DESCRIPTION]: {
+        validate: isNonEmptyString,
+        fieldId: FORM_FIELD_IDS.DESCRIPTION,
+      },
+      [REGENERATE_TYPE.STATE_INSTRUCTIONS]: {
+        validate: content => isNonEmptyArray(content) || isNonEmptyObject(content),
+        transform: content =>
+          isNonEmptyArray(content) ? content : transformStateInstructionsFromObject(content),
+        fieldId: FORM_FIELD_IDS.STATE_INSTRUCTIONS,
+      },
+    };
+
+    const processor = fieldProcessors[fieldName];
+
+    if (!processor) {
+      toast.error(`${en.errors.failedToRegenerate} ${label || "field"}`);
+      return;
+    }
+
+    if (processor.validate(content)) {
+      const value = processor.transform ? processor.transform(content) : (content ?? "");
+      formMethods.setValue(processor.fieldId, value);
+    } else {
+      showError();
     }
   };
 
@@ -97,9 +135,9 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
       disabled={isRegenerating || disabled}
       className={`flex items-center gap-1 text-sm border rounded-2xl px-2 py-1 cursor-pointer transition-opacity ${
         isRegenerating || disabled
-          ? "text-primary-300 border-primary-300 opacity-50 cursor-not-allowed"
+          ? "text-primary-300 border-primary-300 cursor-not-allowed"
           : "text-primary-500 border-primary-500 hover:bg-primary-50"
-      }`}
+      } ${isRegenerating ? "animate-fadeInOut" : ""}`}
     >
       <WandStars /> {isRegenerating ? "Regenerating..." : "Regenerate"}
     </button>
