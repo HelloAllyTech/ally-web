@@ -47,6 +47,7 @@ vi.mock("@hooks", () => ({
   useUser: () => ({
     user: { role: UserRole.COUNSELLOR },
   }),
+  useDebounce: (callback: any) => callback,
   useSendMessage: () => ({
     messages: [],
     isStreaming: false,

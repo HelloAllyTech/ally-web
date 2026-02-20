@@ -2,12 +2,7 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import {
-  CustomImage,
-  FEATURE_FLAGS_MAP,
-  GenericTable,
-  SimulationDetailsModal,
-} from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import { InfoIcon } from "@assets";
 import { Checklist } from "@components";
 import { FeedbackSectionType } from "@types";
@@ -21,7 +16,6 @@ const getFeedbackSectionByType = ({
   data,
   label,
   type,
-  columns,
 }: {
   data: any;
   label: string;
@@ -29,15 +23,15 @@ const getFeedbackSectionByType = ({
   columns: any[];
 }) => {
   switch (type) {
-    //TODO: Remove events table
-    case FeedbackSectionType.TABLE:
-      return (
-        <GenericTable
-          columns={columns}
-          data={data}
-          className="min-w-full text-sm font-primary overflow-y-scroll mb-4"
-        />
-      );
+    // TODO: Use events table when you need this feature
+    // case FeedbackSectionType.TABLE:
+    //   return (
+    //     <GenericTable
+    //       columns={columns}
+    //       data={data}
+    //       className="min-w-full text-sm font-primary overflow-y-scroll mb-4"
+    //     />
+    //   );
     case FeedbackSectionType.BULLET_TEXT:
       return (
         <div className="flex flex-col border-[0.5px] border-[#C8C5D0] rounded-sm">
@@ -116,29 +110,28 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
           </div>
         </div>
         <motion.div className="overflow-y-auto font-primary space-y-4">
-          {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG ? (
+          {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && (
             <Checklist className="max-h-[calc(100vh-200px)]" sessionId={props.id} />
-          ) : (
-            feedbackSections.map(({ key, label, type, columns }, index) => {
-              return (
-                <motion.div
-                  key={key}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.4,
-                    delay: index * 0.1,
-                    ease: "easeOut",
-                  }}
-                  className="bg-white"
-                >
-                  <div>
-                    {getFeedbackSectionByType({ data: formattedData[key], label, type, columns })}
-                  </div>
-                </motion.div>
-              );
-            })
           )}
+          {feedbackSections.map(({ key, label, type, columns }, index) => {
+            return (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  delay: index * 0.1,
+                  ease: "easeOut",
+                }}
+                className="bg-white"
+              >
+                <div>
+                  {getFeedbackSectionByType({ data: formattedData[key], label, type, columns })}
+                </div>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
       <SimulationDetailsModal

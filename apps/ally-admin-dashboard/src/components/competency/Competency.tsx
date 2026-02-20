@@ -7,6 +7,7 @@ import { useCreateCompetencyMutation, useGetCompetenciesQuery } from "@api";
 import { ArrowSolid } from "@assets";
 import { en } from "@constants";
 import { useClickOutside } from "@hooks";
+import { Competency as CompetencyType } from "@types";
 
 interface CompetencyProps {
   id: string;
@@ -43,8 +44,9 @@ export const Competency: React.FC<CompetencyProps> = ({
     }
   }, [isOpen]);
 
-  const handleSelect = (field: any, value: string) => {
-    field.onChange(value);
+  const handleSelect = (field: any, competency: CompetencyType) => {
+    field.onChange(competency?.id);
+    formMethods.setValue("competency", competency);
     setIsOpen(false);
     setSearchTerm("");
   };
@@ -59,7 +61,7 @@ export const Competency: React.FC<CompetencyProps> = ({
 
     try {
       const result = await createCompetency({ name: searchTerm.trim() }).unwrap();
-      handleSelect(field, result.id);
+      handleSelect(field, result);
     } catch {
       toast.error(en.errors.failedCompetencyCreation);
     }
@@ -102,7 +104,7 @@ export const Competency: React.FC<CompetencyProps> = ({
                   ? "bg-primary-50 text-primary font-medium"
                   : "text-typography-900 hover:bg-background-secondary"
               }`}
-              onClick={() => handleSelect(field, competency.id)}
+              onClick={() => handleSelect(field, competency)}
             >
               <div className="flex items-center justify-between text-base">
                 <span>{competency.name}</span>
@@ -129,7 +131,7 @@ export const Competency: React.FC<CompetencyProps> = ({
             defaultValue={getValues?.(id) ?? ""}
             rules={{ required: isMandatory ? `${label} is required` : false }}
             render={({ field }) => {
-              const selected = competencies.find(competency => competency.id === field.value);
+              const selected = formMethods.getValues("competency");
               return (
                 <>
                   <div
