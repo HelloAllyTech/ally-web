@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 
 import { useGetUserQuery, useGetPermissionsQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
+import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
 import { LOCAL_STORAGE_KEYS, ROUTES, Permissions } from "@constants";
 import { setUser, setPermissions } from "@reducer";
 import { hasPermissions } from "@utils";
@@ -54,6 +55,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
           {hasPermission ? children : <AccessDenied />}
         </div>
       </main>
+      <ReportUploadProgressDialog />
     </div>
   );
 };

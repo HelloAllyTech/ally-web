@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { REPORT_GENERATION_MESSAGES } from "@constants";
 
+import TranscriptSection from "./TranscriptSection";
 import ReportContentProps from "./types";
 import TabButton from "../tab-button/TabButton";
 
@@ -34,7 +35,9 @@ const ReportContent: FC<ReportContentProps> = ({
             <span className="text-base font-medium text-typography-900">
               {REPORT_GENERATION_MESSAGES.SIMULATION_SCORE}
             </span>
-            <span className="text-5xl font-semibold text-typography-900">{reportData.score}</span>
+            <span className="text-5xl font-semibold text-typography-900">
+              {reportData.score ?? 0}
+            </span>
           </div>
         </div>
 
@@ -43,30 +46,32 @@ const ReportContent: FC<ReportContentProps> = ({
             {REPORT_GENERATION_MESSAGES.METRICS}
           </h3>
           <div className="space-y-6">
-            {Object.entries(reportData.metrics).map(([metric, percentage], index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-700">{metric}</span>
-                  <span className="text-sm font-medium text-gray-900">{percentage}%</span>
+            {reportData.metrics && Object.keys(reportData.metrics).length > 0 ? (
+              Object.entries(reportData.metrics).map(([metric, percentage], index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700">{metric}</span>
+                    <span className="text-sm font-medium text-gray-900">{percentage}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${percentage}%`,
+                        backgroundColor: "#FF5454",
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${percentage}%`,
-                      backgroundColor: "#FF5454",
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm">No metrics available yet</p>
+            )}
           </div>
         </div>
       </div>
     ) : (
-      <div className="border border-gray-200 rounded-lg p-6 min-h-[300px] flex items-center justify-center">
-        <p className="text-gray-500">{REPORT_GENERATION_MESSAGES.TRANSCRIPTION_PLACEHOLDER}</p>
-      </div>
+      <TranscriptSection transcripts={reportData.transcripts} isLoading={false} />
     )}
   </>
 );

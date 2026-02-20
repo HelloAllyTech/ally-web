@@ -1,20 +1,22 @@
-import { AudioUpload, UploadStatus } from "./types";
+import { ReportGenerationStatus } from "@constants/reportGeneration";
+import { en } from "@src/constants";
 
-export const getUploadHeader = (uploads: AudioUpload[]) => {
+import { ReportUpload } from "./types";
+
+export const getUploadHeader = (uploads: ReportUpload[]) => {
   const uploadsInProgress = uploads.filter(
-    upload => upload.status === UploadStatus.IN_PROGRESS,
+    upload =>
+      upload.status === ReportGenerationStatus.IN_PROGRESS ||
+      upload.status === ReportGenerationStatus.STARTED,
   )?.length;
-  if (uploadsInProgress)
-    return `${uploadsInProgress} upload${uploadsInProgress > 1 ? "s" : ""} in progress`;
+  if (uploadsInProgress) return `${uploadsInProgress} ${en.simulation.reportGenerationInProgress}`;
   const uploadsCancelled = uploads.filter(
-    upload => upload.status === UploadStatus.CANCELLED,
+    upload => upload.status === ReportGenerationStatus.CANCELLED,
   )?.length;
-  if (uploadsCancelled)
-    return `${uploadsCancelled} upload${uploadsCancelled > 1 ? "s" : ""} cancelled`;
+  if (uploadsCancelled) return `${uploadsCancelled} ${en.simulation.reportGenerationCancelled}`;
   const uploadsCompleted = uploads.filter(
-    upload => upload.status === UploadStatus.COMPLETED,
+    upload => upload.status === ReportGenerationStatus.COMPLETED,
   )?.length;
-  if (uploadsCompleted)
-    return `${uploadsCompleted} upload${uploadsCompleted > 1 ? "s" : ""} completed`;
-  return "No uploads";
+  if (uploadsCompleted) return `${uploadsCompleted} ${en.simulation.reportGenerationComplete}`;
+  return en.simulation.noReportGeneration;
 };

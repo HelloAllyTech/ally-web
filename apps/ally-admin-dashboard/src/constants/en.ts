@@ -381,6 +381,13 @@ export const en = {
     selectImage: "Select image",
     noImagesAvailable: "No images available",
     imageLibraryEmpty: "The image library is currently empty",
+    reportGenerationInProgress: "report generation is in progress",
+    reportGenerationCancelled: "report generation is cancelled",
+    reportGenerationComplete: "report generation complete",
+    noReportGeneration: "No report generation",
+    uploadCancelConfirmation: "Your upload is not complete. Would you like to cancel the upload?",
+    continueUpload: "Continue Upload",
+    cancelUpload: "Cancel Upload",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",
