@@ -88,6 +88,7 @@ export interface NotionTableProps {
   autoHeight?: boolean;
   editIndex?: number;
   hasResizer?: boolean;
+  hideSelectionColumn?: boolean;
 }
 export enum Status {
   DRAFT = "DRAFT",

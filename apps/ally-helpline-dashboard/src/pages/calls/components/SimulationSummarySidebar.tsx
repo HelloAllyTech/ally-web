@@ -110,7 +110,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         />
       ),
     },
-    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
+    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && summary?.counselorId === user?.id
       ? [
           {
             id: 2,

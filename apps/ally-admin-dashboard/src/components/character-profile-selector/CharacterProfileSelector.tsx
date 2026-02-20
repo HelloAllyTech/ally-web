@@ -125,7 +125,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
             </label>
             <div className="relative" ref={characterDropdownRef}>
               <div
-                className="w-full rounded border border-border-light px-3 py-2 bg-white text-base cursor-pointer flex items-center justify-between hover:border-border-dark transition-colors"
+                className="w-full rounded border border-border-light px-3 py-1 bg-white text-base cursor-pointer flex items-center justify-between hover:border-border-dark transition-colors"
                 onClick={() => setIsCharacterDropdownOpen(prev => !prev)}
               >
                 <span className={selectedCharacter ? "text-typography-900" : "text-typography-500"}>
@@ -228,7 +228,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     onBlur={field.onBlur}
                     name={field.name}
                     ref={field.ref}
-                    className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 )}
               />
@@ -254,7 +254,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     options={GENDER_OPTIONS}
                     placeholder="Select gender"
                     customStyle={{
-                      height: "40px",
+                      height: "34px",
                     }}
                     defaultOption={
                       field.value
@@ -283,7 +283,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     onBlur={field.onBlur}
                     name={field.name}
                     ref={field.ref}
-                    className="w-full rounded border border-border-light px-3 py-2 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
+                    className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
                   />
                 )}
               />
@@ -313,7 +313,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     options={GENDER_IDENTITY_OPTIONS}
                     placeholder="Select gender identity"
                     customStyle={{
-                      height: "40px",
+                      height: "34px",
                     }}
                     defaultOption={
                       field.value
@@ -341,7 +341,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     options={SEXUAL_ORIENTATION_OPTIONS}
                     placeholder="Select sexual orientation"
                     customStyle={{
-                      height: "40px",
+                      height: "34px",
                     }}
                     defaultOption={
                       field.value

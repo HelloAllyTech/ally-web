@@ -3,21 +3,92 @@ import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useGetChatHistoryQuery } from "@api";
-import { AskAiIcon, Refresh, UpArrow } from "@assets";
+import { AskAiIcon, Refresh, SendArrow, UpArrow } from "@assets";
 import { Button } from "@components";
+import { chatCards } from "@constants";
 import { useSendMessage } from "@hooks";
-import { initSession, ChatMessage } from "@reducer";
+import { initSession } from "@reducer";
 import { RootState } from "@store";
+import { ChatMessagePayload } from "@types";
 
 type Message = { role: string; content: string };
 
+const MAX_MESSAGE_LENGTH = 2000;
+
+const ChatHistorySkeleton = () => (
+  <div className="flex flex-col gap-3 w-full">
+    {/* AI message skeleton */}
+    <div className="flex w-full justify-start">
+      <div className="max-w-[80%] flex items-start gap-3">
+        <div className="w-5 h-5 shrink-0 rounded-full bg-gray-200 animate-pulse" />
+        <div className="flex flex-col gap-1.5 py-2">
+          <div className="h-3 w-48 bg-gray-200 rounded animate-pulse" />
+          <div className="h-3 w-36 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+    </div>
+    {/* User message skeleton */}
+    <div className="flex w-full justify-end">
+      <div className="max-w-[80%] px-4 py-2.5 rounded-full bg-gray-100">
+        <div className="h-3 w-40 bg-gray-200 rounded animate-pulse" />
+      </div>
+    </div>
+    {/* AI message skeleton */}
+    <div className="flex w-full justify-start">
+      <div className="max-w-[80%] flex items-start gap-3">
+        <div className="w-5 h-5 shrink-0 rounded-full bg-gray-200 animate-pulse" />
+        <div className="flex flex-col gap-1.5 py-2">
+          <div className="h-3 w-56 bg-gray-200 rounded animate-pulse" />
+          <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const initialScreen = ({
+  handleSend,
+  disabled,
+}: {
+  handleSend: (card: string) => void;
+  disabled: boolean;
+}) => {
+  return (
+    <div className="flex flex-col justify-center h-full gap-5 px-10">
+      <div className="font-base font-secondary text-4xl">
+        <span className="text-typography-600">What would you like</span>
+        <span className="text-typography-800"> feedback on?</span>
+      </div>
+      <div className="text-sm font-primary text-typography-700">
+        Select a prompt or ask your own.
+      </div>
+      <div className="flex gap-5">
+        {chatCards.map(card => (
+          <div
+            key={card}
+            className="text-sm font-primary mb-2 border rounded-md p-5 shadow-sm w-40 h-40 items-center justify-center relative hover:scale-105 hover:shadow-lg transition-all duration-300"
+          >
+            {card}
+            <button
+              className="!rounded-full !p-2 !h-10 !w-10 flex items-center justify-center disabled:opacity-60 disabled:bg-typography-500"
+              onClick={() => handleSend(card)}
+              disabled={disabled}
+            >
+              <SendArrow className="w-8 h-8 shrink-0 absolute bottom-3 right-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 const ChatBubble = ({ message }: { message: Message }) => {
   const isUser = message.role === "user";
   return (
     <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
       <div className={`max-w-[80%] px-4 py-2.5 rounded-full ${isUser ? "bg-primary-50" : ""}`}>
-        <div className="flex items-center gap-2">
-          {!isUser && <AskAiIcon className="w-10 h-10" />}
+        <div className="flex items-start gap-3">
+          {!isUser && <AskAiIcon className="w-8 h-8 shrink-0 mt-0.5" />}
           <p className="text-sm font-primary break-words">{message.content}</p>
         </div>
       </div>
@@ -47,7 +118,7 @@ const AskAiInput = ({
         type="text"
         className="w-full p-2 px-3 outline-none rounded-full disabled:opacity-60 font-primary text-sm"
         onKeyDown={e => e.key === "Enter" && handleSend()}
-        placeholder="Ask AI"
+        placeholder={`Ask a question about the session.... (0/${MAX_MESSAGE_LENGTH})`}
         disabled={disabled}
       />
       <Button
@@ -66,14 +137,15 @@ const AskAiInput = ({
 export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
   const dispatch = useDispatch();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const sessionExists = useSelector((state: RootState) => !!state.chat.sessions[sessionId]);
-  const { messages, isStreaming, error, sendMessage, retryLastMessage } = useSendMessage(sessionId);
-  const { data: history } = useGetChatHistoryQuery({ sessionId });
+  const sessionExists = useSelector((state: RootState) => state.chatHistory.sessions[sessionId]);
+  const { messages, streamingMessage, isStreaming, error, sendMessage, retryLastMessage } =
+    useSendMessage(sessionId);
+  const { data: history, isLoading: isHistoryLoading } = useGetChatHistoryQuery({ sessionId });
 
   useEffect(() => {
     if (sessionExists) return;
     if (history?.length) {
-      const initial: ChatMessage[] = history.map(msg => ({
+      const initial: ChatMessagePayload[] = history.map(msg => ({
         role: msg.role,
         content: msg.content,
       }));
@@ -83,16 +155,21 @@ export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, streamingMessage]);
 
   return (
-    <div className="p-1 rounded-lg w-full max-h-[calc(100vh-300px)] bg-gradient-to-br from-primary-500 to-primary-100">
+    <div className="p-1 rounded-lg w-full h-[calc(100vh-250px)] bg-gradient-to-br from-primary-500 to-primary-100">
       <div className="flex flex-col w-full h-full rounded-lg relative">
         <div className="p-4 w-full text-white font-semibold text-lg font-primary">Ask AI</div>
         <div className="flex-1 bg-white rounded-t-lg rounded-b-md custom-scrollbar overflow-y-auto p-3 pb-20 flex flex-col gap-3">
-          {messages.map((msg, index) => (
-            <ChatBubble key={`${msg.role}-${index}`} message={msg} />
-          ))}
+          {isHistoryLoading ? (
+            <ChatHistorySkeleton />
+          ) : messages.length === 0 ? (
+            initialScreen({ handleSend: sendMessage, disabled: isStreaming })
+          ) : (
+            messages.map((msg, index) => <ChatBubble key={`${msg.role}-${index}`} message={msg} />)
+          )}
+          {streamingMessage && <ChatBubble message={streamingMessage} />}
           {error && (
             <div className="flex w-full justify-start">
               <button
