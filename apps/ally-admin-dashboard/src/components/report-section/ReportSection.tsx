@@ -1,12 +1,14 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useRef, useMemo, useCallback } from "react";
 
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
   useGetReportsQuery,
-  useLazyGetReportByIdQuery,
+  useGetReportByIdQuery,
   useGenerateReportMutation,
   useCancelReportGenerationMutation,
+  useGetReportTranscriptQuery,
 } from "@api";
 import { ArrowDown } from "@assets";
 import { Button, PromptConfiguration, ReportContent, TabButton } from "@components";
@@ -16,231 +18,246 @@ import {
   DEFAULT_LANGUAGE,
   DEFAULT_TURNS,
   DETAILS_STYLES,
-  MAX_PROGRESS_BEFORE_COMPLETE,
-  PROGRESS_INCREMENT_MAX,
-  PROGRESS_UPDATE_INTERVAL_MS,
   REPORT_GENERATION_MESSAGES,
   ReportGenerationStatus,
 } from "@constants";
-import { useScenarioReportsSocket } from "@hooks";
-import { ReportData, ReportConfig, ReportsUpdatedPayload } from "@types";
+import {
+  addUpload,
+  selectUploads,
+  clearAllUploads,
+  setAllUploads,
+  setCurrentScenarioId,
+} from "@reducer/reportUploadReducer";
+import { ReportData, ReportConfig, TranscriptMessage } from "@types";
 
 export interface ReportSectionProps {
   scenarioId?: string;
 }
 
-const primaryActiveTabs = {
-  report: "report",
-  history: "history",
+const TABS = {
+  primary: { report: "report", history: "history" },
+  secondary: { report: "report", transcription: "transcription" },
 };
 
-const secondaryActiveTabs = {
-  report: "report",
-  transcription: "transcription",
+const getFinalStatuses = (): ReportGenerationStatus[] => [
+  ReportGenerationStatus.COMPLETED,
+  ReportGenerationStatus.FAILED,
+  ReportGenerationStatus.CANCELLED,
+];
+
+// Helper functions
+const normalizeStatus = (status: string): ReportGenerationStatus => {
+  if (status === ReportGenerationStatus.COMPLETED) return ReportGenerationStatus.COMPLETED;
+  if (status === ReportGenerationStatus.FAILED) return ReportGenerationStatus.FAILED;
+  if (status === ReportGenerationStatus.CANCELLED) return ReportGenerationStatus.CANCELLED;
+  return ReportGenerationStatus.IN_PROGRESS;
 };
+
+const calculateProgress = (status: ReportGenerationStatus): number => {
+  return status === ReportGenerationStatus.COMPLETED ? 100 : 0;
+};
+
+const createUploadFromReport = (report: any) => ({
+  fileName: `Report ${report.id}`,
+  status: normalizeStatus(report.status),
+  progress: calculateProgress(normalizeStatus(report.status)),
+  reportId: report.id,
+  scenarioId: report.scenarioId,
+});
 export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
+  const dispatch = useDispatch();
   const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
   const [selectedLanguage, setSelectedLanguage] = useState(DEFAULT_LANGUAGE);
   const [selectedTurns, setSelectedTurns] = useState(DEFAULT_TURNS);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [activeTab, setActiveTab] = useState(secondaryActiveTabs.report);
-  const [primaryActiveTab, setPrimaryActiveTab] = useState(primaryActiveTabs.report);
+  const [activeTab, setActiveTab] = useState(TABS.secondary.report);
+  const [primaryActiveTab, setPrimaryActiveTab] = useState(TABS.primary.report);
   const [reportId, setReportId] = useState<string | null>(null);
-  const [inProgressReportIds, setInProgressReportIds] = useState<Set<string>>(new Set());
+  const [historyItemActiveTabs, setHistoryItemActiveTabs] = useState<Record<string, string>>({});
+  const [transcriptsCache, setTranscriptsCache] = useState<Record<string, TranscriptMessage[]>>({});
+  const previousScenarioIdRef = useRef<string | undefined>(scenarioId);
 
   const [generateReportMutation] = useGenerateReportMutation();
-  const [getReportById, { data: fetchedReportData }] = useLazyGetReportByIdQuery();
-  const { data: reportsHistory } = useGetReportsQuery(
+  const { data: fetchedReportData } = useGetReportByIdQuery({ id: reportId! }, { skip: !reportId });
+  const { data: reportsHistory, refetch: refetchReportsHistory } = useGetReportsQuery(
     { input: { scenarioId: scenarioId! } },
     { skip: !scenarioId },
   );
   const [cancelReportGenerationMutation] = useCancelReportGenerationMutation();
+  const { data: transcriptData } = useGetReportTranscriptQuery(
+    { reportId: reportId! },
+    { skip: !reportId },
+  );
 
-  // Fetch report data when reportId changes
+  // Update scenarioId in Redux when it changes
   useEffect(() => {
-    if (reportId) {
-      getReportById({ id: reportId });
+    if (scenarioId && scenarioId !== previousScenarioIdRef.current) {
+      previousScenarioIdRef.current = scenarioId;
+      dispatch(setCurrentScenarioId(scenarioId));
     }
-  }, [reportId, getReportById]);
+  }, [scenarioId, dispatch]);
 
-  // Update reportData when fetched data is available
+  // Set most recent reportId from history
+  const mostRecentReportId = reportsHistory?.data?.[0]?.id;
+  useEffect(() => {
+    if (mostRecentReportId && mostRecentReportId !== reportId && !isGenerating) {
+      setReportId(mostRecentReportId);
+    }
+  }, [mostRecentReportId, reportId, isGenerating]);
+
+  // Refetch and set reportId when switching to report tab
+  useEffect(() => {
+    if (primaryActiveTab === TABS.primary.report) {
+      refetchReportsHistory();
+      if (!reportId && mostRecentReportId) {
+        setReportId(mostRecentReportId);
+      }
+    }
+  }, [primaryActiveTab, reportId, mostRecentReportId, refetchReportsHistory]);
+
   useEffect(() => {
     if (fetchedReportData) {
-      setReportData(fetchedReportData);
-    }
-  }, [fetchedReportData]);
-
-  // Step 1: Identify reports in progress from the fetched reports
-  useEffect(() => {
-    if (reportsHistory?.data) {
-      const inProgress = reportsHistory.data.filter(
-        report =>
-          report.status === ReportGenerationStatus.STARTED ||
-          report.status === ReportGenerationStatus.IN_PROGRESS,
-      );
-      const inProgressIds = new Set(inProgress.map(r => r.id));
-      setInProgressReportIds(inProgressIds);
-    }
-  }, [reportsHistory]);
-
-  // Step 2: Set up WebSocket hook
-  const { connect, disconnect, joinScenarioReportRoom, isConnected } = useScenarioReportsSocket({
-    onReportsUpdated: (payload: ReportsUpdatedPayload) => {
-      // Update reports when we receive WebSocket updates
-      payload.data.forEach(updatedReport => {
-        // If this is the currently viewed report, update it
-        if (updatedReport.id === reportId) {
-          setReportData(updatedReport);
-          // If report is completed, stop generating
-          if (
-            updatedReport.status === ReportGenerationStatus.COMPLETED ||
-            updatedReport.status === ReportGenerationStatus.FAILED ||
-            updatedReport.status === ReportGenerationStatus.CANCELLED
-          ) {
-            setIsGenerating(false);
-            setProgress(100);
-          }
-        }
-
-        // Update in-progress tracking
-        setInProgressReportIds(prev => {
-          const next = new Set(prev);
-          if (
-            updatedReport.status === ReportGenerationStatus.COMPLETED ||
-            updatedReport.status === ReportGenerationStatus.FAILED ||
-            updatedReport.status === ReportGenerationStatus.CANCELLED
-          ) {
-            next.delete(updatedReport.id);
-          } else if (
-            updatedReport.status === ReportGenerationStatus.IN_PROGRESS ||
-            updatedReport.status === ReportGenerationStatus.STARTED
-          ) {
-            next.add(updatedReport.id);
-          }
-          return next;
-        });
+      const cachedTranscripts = transcriptsCache[fetchedReportData.id];
+      setReportData({
+        ...fetchedReportData,
+        transcripts: transcriptData || cachedTranscripts || fetchedReportData.transcripts,
       });
-    },
-    onConnected: () => {
-      // After connecting, join rooms for all in-progress reports
-      inProgressReportIds.forEach(reportId => {
-        joinScenarioReportRoom(reportId);
-      });
-    },
-    onError: (error: Error) => {
-      toast.error(`WebSocket error: ${error.message}`);
-    },
-  });
+      // Cache the transcript if we have it
+      if (transcriptData && !cachedTranscripts) {
+        setTranscriptsCache(prev => ({ ...prev, [fetchedReportData.id]: transcriptData }));
+      }
+    }
+  }, [fetchedReportData, transcriptData, transcriptsCache]);
 
-  // Step 3: Connect to WebSocket only if there are in-progress reports
   useEffect(() => {
-    if (inProgressReportIds.size > 0) {
-      connect();
-      return () => {
-        disconnect();
-      };
+    if (!reportsHistory?.data || !scenarioId) {
+      if (scenarioId && scenarioId !== previousScenarioIdRef.current && !reportsHistory?.data) {
+        dispatch(clearAllUploads());
+      }
+      return;
     }
-    return undefined;
-  }, [inProgressReportIds.size, connect, disconnect]);
 
-  // Step 4: When a new report is generated, join its room
+    const uploads = reportsHistory.data
+      .filter(report => String(report.scenarioId) === String(scenarioId))
+      .map(createUploadFromReport);
+
+    if (uploads.length > 0) {
+      dispatch(setAllUploads(uploads));
+    }
+  }, [reportsHistory?.data, scenarioId, dispatch]);
+
+  const uploads = useSelector(selectUploads);
+  const currentUpload = useMemo(
+    () => (reportId ? uploads.find(u => u.reportId === reportId) : null),
+    [reportId, uploads],
+  );
+  const progress = currentUpload?.progress ?? 0;
+
   useEffect(() => {
-    if (reportId && isConnected()) {
-      joinScenarioReportRoom(reportId);
-      setInProgressReportIds(prev => new Set([...prev, reportId]));
-    }
-  }, [reportId, isConnected, joinScenarioReportRoom]);
+    if (!currentUpload) return;
 
-  // Simulate progress during generation
+    const isFinalStatus = getFinalStatuses().includes(currentUpload.status);
+    if (isFinalStatus) {
+      setIsGenerating(false);
+      if (
+        reportId &&
+        [ReportGenerationStatus.COMPLETED, ReportGenerationStatus.FAILED].includes(
+          currentUpload.status,
+        )
+      ) {
+        refetchReportsHistory();
+      }
+    }
+  }, [currentUpload, reportId, refetchReportsHistory]);
+
+  // Initialize upload when generation starts (progress simulation is handled globally by ScenarioReportsSocketProvider)
   useEffect(() => {
-    if (!isGenerating) {
-      setProgress(0);
-      return undefined;
-    }
+    if (!isGenerating || !reportId || !scenarioId) return;
 
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= MAX_PROGRESS_BEFORE_COMPLETE) return prev;
-        return prev + Math.random() * PROGRESS_INCREMENT_MAX;
-      });
-    }, PROGRESS_UPDATE_INTERVAL_MS);
-
-    return () => clearInterval(interval);
-  }, [isGenerating]);
-
-  const generateReport = async (config: ReportConfig) => {
-    if (!scenarioId) return null;
-    try {
-      const response = await generateReportMutation({
-        input: { scenarioId: scenarioId, config: config },
-      });
-      return response.data;
-    } catch {
-      toast.error("Failed to generate report");
-      return null;
-    }
-  };
+    dispatch(
+      addUpload({
+        fileName: `Report ${reportId}`,
+        status: ReportGenerationStatus.IN_PROGRESS,
+        progress: 0,
+        reportId,
+        scenarioId,
+      }),
+    );
+  }, [isGenerating, reportId, scenarioId, dispatch]);
 
   const handleGenerate = async () => {
+    if (!scenarioId) return;
+
     setIsGenerating(true);
-    setReportData(null);
     try {
       const config: ReportConfig = {
         languageId: Number(selectedLanguage.value) || 1,
         turns: Number(selectedTurns.value),
-        helperAgentPrompt: helperAgentPrompt,
+        helperAgentPrompt,
       };
-      const response = await generateReport(config);
-      if (response?.reportId) {
-        setReportId(response.reportId);
 
-        // Connect to WebSocket if not connected
-        if (!isConnected()) {
-          connect();
-        }
+      const response = await generateReportMutation({
+        input: { scenarioId, config },
+      }).unwrap();
 
-        // Join room for this new report (will happen in useEffect above)
-        setInProgressReportIds(prev => new Set([...prev, response.reportId]));
+      if (response?.id) {
+        setReportId(response.id);
+        dispatch(
+          addUpload({
+            fileName: `Report ${response.id}`,
+            status: ReportGenerationStatus.IN_PROGRESS,
+            progress: 0,
+            reportId: response.id,
+            scenarioId,
+          }),
+        );
+      } else {
+        setIsGenerating(false);
+        toast.error("Failed to generate report");
       }
-    } finally {
+    } catch (error: any) {
       setIsGenerating(false);
+      const errorMessage = error?.data?.message || error?.message || "Failed to generate report";
+      const statusCode = error?.status || error?.originalStatus || error?.data?.status;
+      toast.error(statusCode ? `${errorMessage} (Status: ${statusCode})` : errorMessage);
     }
   };
 
-  const handleCancel = async () => {
-    if (!reportId) return;
+  const handleCancel = useCallback(async () => {
+    if (!reportId || !scenarioId) return;
+
     try {
-      await cancelReportGenerationMutation({ reportId: reportId });
+      await cancelReportGenerationMutation({ reportId }).unwrap();
+      dispatch(
+        addUpload({
+          fileName: `Report ${reportId}`,
+          status: ReportGenerationStatus.CANCELLED,
+          progress: 0,
+          reportId,
+          scenarioId,
+        }),
+      );
       setReportId(null);
-      setProgress(0);
       setIsGenerating(false);
-    } catch {
-      toast.error("Failed to cancel report generation");
+    } catch (error: any) {
+      toast.error(error?.data?.message || error?.message || "Failed to cancel report generation");
     }
-  };
+  }, [reportId, scenarioId, cancelReportGenerationMutation, dispatch]);
 
   const handleLanguageChange = (language: string) => {
     setReportData(prev =>
-      prev
-        ? {
-            ...prev,
-            config: { ...prev.config, languageId: parseInt(language) },
-          }
-        : null,
+      prev ? { ...prev, config: { ...prev.config, languageId: parseInt(language) } } : null,
     );
   };
 
   const handleTurnsChange = (turns: number) => {
+    setReportData(prev => (prev ? { ...prev, config: { ...prev.config, turns } } : null));
+  };
+
+  const handlePromptChange = (prompt: string) => {
     setReportData(prev =>
-      prev
-        ? {
-            ...prev,
-            config: { ...prev.config, turns },
-          }
-        : null,
+      prev ? { ...prev, config: { ...prev.config, helperAgentPrompt: prompt } } : null,
     );
   };
 
@@ -277,7 +294,6 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
         <div className="flex flex-col gap-6 w-full max-w-[800px]">
           <style>{DETAILS_STYLES}</style>
 
-          {/* Test Configuration Accordion */}
           <details className="border border-gray-200 rounded-lg" open>
             <summary className="px-4 py-3 cursor-pointer font-medium text-base text-typography-900 hover:bg-gray-50 flex items-center justify-between list-none">
               <span>{REPORT_GENERATION_MESSAGES.TEST_CONFIGURATION}</span>
@@ -288,6 +304,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
                 prompt={reportData.config.helperAgentPrompt}
                 language={reportData.config.languageId.toString()}
                 turns={reportData.config.turns}
+                onPromptChange={handlePromptChange}
                 onLanguageChange={handleLanguageChange}
                 onTurnsChange={handleTurnsChange}
                 onButtonClick={handleGenerate}
@@ -320,50 +337,74 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     );
   };
 
-  const renderHistoryList = () => (
-    <div className="flex flex-col gap-2 w-full max-w-[800px]">
-      {reportsHistory?.data.map((item, index) => (
-        <details
-          key={item.id}
-          className="border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors"
-          open={index === 0}
-        >
-          <summary className="px-4 py-3 cursor-pointer flex items-center gap-4 list-none">
-            <span className="text-gray-500 font-medium">{index + 1}</span>
-            <div className="flex-1">
-              <div className="text-sm font-medium text-typography-900">{item.createdAt}</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {item.config.languageId.toString()} (Global) • {item.config.turns} turns
-              </div>
-            </div>
-            <ArrowDown />
-          </summary>
-          <div className="px-6 py-4 border-t border-gray-200 bg-white">
-            <ReportContent reportData={item} activeTab={activeTab} onTabChange={setActiveTab} />
-          </div>
-        </details>
-      ))}
-    </div>
-  );
+  const renderHistoryList = () => {
+    // Filter to only show completed reports
+    const completedReports =
+      reportsHistory?.data.filter(item => item.status === ReportGenerationStatus.COMPLETED) || [];
 
-  const renderMainContent = () => {
-    if (primaryActiveTab === primaryActiveTabs.history) {
-      return renderHistoryList();
+    if (completedReports.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center w-full h-[400px]">
+          <p className="text-gray-500">No reports found</p>
+        </div>
+      );
     }
-    return renderContent();
+
+    return (
+      <div className="flex flex-col gap-2 w-full max-w-[800px]">
+        {completedReports.map((item, index) => {
+          const itemActiveTab = historyItemActiveTabs[item.id] || TABS.secondary.report;
+          const handleItemTabChange = (tab: string) => {
+            setHistoryItemActiveTabs(prev => ({ ...prev, [item.id]: tab }));
+          };
+
+          return (
+            <details
+              key={item.id}
+              className="border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+              open={index === 0}
+            >
+              <summary className="px-4 py-3 cursor-pointer flex items-center gap-4 list-none">
+                <span className="text-gray-500 font-medium">{index + 1}</span>
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-typography-900">{item.createdAt}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {item.config.languageId.toString()} (Global) • {item.config.turns} turns
+                  </div>
+                </div>
+                <ArrowDown />
+              </summary>
+              <div className="px-6 py-4 border-t border-gray-200 bg-white">
+                <ReportContent
+                  reportData={{
+                    ...item,
+                    transcripts: transcriptsCache[item.id] || item.transcripts,
+                  }}
+                  activeTab={itemActiveTab}
+                  onTabChange={handleItemTabChange}
+                />
+              </div>
+            </details>
+          );
+        })}
+      </div>
+    );
   };
+
+  const renderMainContent = () =>
+    primaryActiveTab === TABS.primary.history ? renderHistoryList() : renderContent();
 
   const headerContent = reportData ? (
     <div className="sticky flex gap-8 flex-row top-0 z-10 pt-3 mx-6 border-b border-border-light">
       <TabButton
         label={REPORT_GENERATION_MESSAGES.REPORT}
-        isActive={primaryActiveTab === primaryActiveTabs.report}
-        onClick={() => setPrimaryActiveTab(primaryActiveTabs.report)}
+        isActive={primaryActiveTab === TABS.primary.report}
+        onClick={() => setPrimaryActiveTab(TABS.primary.report)}
       />
       <TabButton
         label={REPORT_GENERATION_MESSAGES.HISTORY}
-        isActive={primaryActiveTab === primaryActiveTabs.history}
-        onClick={() => setPrimaryActiveTab(primaryActiveTabs.history)}
+        isActive={primaryActiveTab === TABS.primary.history}
+        onClick={() => setPrimaryActiveTab(TABS.primary.history)}
       />
     </div>
   ) : (
