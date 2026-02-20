@@ -1,22 +1,18 @@
-export enum UploadStatus {
-  IN_PROGRESS = "IN_PROGRESS",
-  FAILED = "FAILED",
-  COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
-}
+import { ReportGenerationStatus } from "@constants/reportGeneration";
 
-export interface AudioUpload {
-  chatId: number;
+export interface ReportUpload {
   fileName: string;
-  status: UploadStatus;
+  status: ReportGenerationStatus;
   progress: number;
+  reportId: string;
+  scenarioId?: string;
 }
 
 export interface UploadProgressHeaderProps {
   expanded: boolean;
   onClose: () => void;
   onToggle: () => void;
-  uploads: AudioUpload[];
+  uploads: ReportUpload[];
 }
 
 export interface ProgressCircleProps {

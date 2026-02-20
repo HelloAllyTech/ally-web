@@ -9,6 +9,7 @@ export type ReportData = {
   createdAt: string;
   updatedAt: string;
   status: string;
+  transcripts?: TranscriptMessage[];
 };
 
 export type HistoryItem = {
@@ -40,6 +41,15 @@ export type GenerateReportInput = {
 };
 
 export type GenerateReportResponse = {
-  reportId: string;
+  id: string;
   status: ReportGenerationStatus;
+};
+
+export type TranscriptMessage = {
+  id: number;
+  content: string;
+  role: string;
+  startSeconds: number;
+  createdAt: string;
+  updatedAt: string;
 };
