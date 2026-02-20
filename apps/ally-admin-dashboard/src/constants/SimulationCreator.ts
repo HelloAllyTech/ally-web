@@ -175,6 +175,13 @@ export const FORM_FIELD_IDS = {
   BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
 };
 
+export const REGENERATE_TYPE = {
+  OPENING_STATEMENTS: "openingStatements",
+  CHARACTER_PROFILE_TEXT: "characterProfileText",
+  DESCRIPTION: "description",
+  STATE_INSTRUCTIONS: "stateInstructions",
+};
+
 const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
 
 export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
@@ -473,7 +480,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 2500,
         isMandatory: false,
-        regenerate: false, // TODO: Remove this once the character profile text is regenerated
+        regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
         isDashedLineAbove: true,
       },
       {
@@ -523,6 +530,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
+        regenerateType: REGENERATE_TYPE.DESCRIPTION,
       },
       {
         id: "prompt",
@@ -549,6 +557,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
               type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
               fullWidth: true,
               isMandatory: true,
+              regenerateType: REGENERATE_TYPE.STATE_INSTRUCTIONS,
             },
           ]
         : []),
@@ -566,7 +575,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
-        regenerate: false, // TODO: Remove this once the opening statements are regenerated
+        regenerateType: REGENERATE_TYPE.OPENING_STATEMENTS,
         isMandatory: true,
       },
       {

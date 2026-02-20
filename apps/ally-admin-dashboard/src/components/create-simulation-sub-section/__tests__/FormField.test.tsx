@@ -6,6 +6,34 @@ import { FormFieldConfig } from "@types";
 
 import { FormField } from "../FormField";
 
+// Hoist mock functions
+const { regenerateFieldMock } = vi.hoisted(() => ({
+  regenerateFieldMock: vi.fn(),
+}));
+
+// Mock baseAPI first
+vi.mock("@api/baseApi", () => ({
+  baseAPI: {
+    injectEndpoints: vi.fn(() => ({})),
+    reducerPath: "baseAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+  },
+}));
+
+// Mock the API hooks
+vi.mock("@api", async importOriginal => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    useRegenerateFieldMutation: () => [
+      () => ({
+        unwrap: () => regenerateFieldMock(),
+      }),
+    ],
+  };
+});
+
 // Mock child components
 vi.mock("../../dropdown-field", () => ({
   DropdownField: ({ id, label, placeholder }: any) => (
