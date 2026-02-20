@@ -14,6 +14,7 @@ export const ApiEndpoints = {
     GET_USER: "/v1/users/me",
     GENERATE_OTP: "/v2/auth/generate-otp",
     VERIFY_OTP: "/v2/auth/verify-otp",
+    MAGIC_LINK_VERIFY: "/v1/auth/magic/verify",
     REFRESH: "/v1/auth/refresh",
     PROFILE_IMAGE_URL: "/v1/users/profile-image-url",
     PROFILE_IMAGE: "/v1/users/profile-image",
@@ -121,6 +122,7 @@ export const ApiEndpoints = {
 
 export const ROUTES = {
   LOGIN: "/login",
+  MAGIC_VERIFY: "/verify",
   SIMULATION_STUDIO: "/simulation-studio",
   USER_MANAGEMENT: "/user-management",
   MANAGE_EVENTS: "/manage-events",
