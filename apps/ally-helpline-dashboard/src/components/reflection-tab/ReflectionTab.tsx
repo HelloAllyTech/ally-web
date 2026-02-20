@@ -149,7 +149,12 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
       </div>
 
       <div className={`flex gap-4 flex-1 min-h-0 overflow-auto custom-scrollbar ${className}`}>
-        {prompts.map((text, index) => renderJournalCard(index, text))}
+        {prompts?.map((text, index) => renderJournalCard(index, text))}
+        {prompts?.length === 0 && (
+          <div className="flex flex-col gap-4 h-full w-full min-w-[300px] p-10 items-center">
+            <span className="text-typography-700 font-primary text-lg">No prompts available</span>
+          </div>
+        )}
       </div>
     </div>
   );
