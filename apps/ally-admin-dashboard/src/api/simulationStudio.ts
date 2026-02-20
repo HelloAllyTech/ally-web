@@ -40,6 +40,7 @@ import {
   CompetenciesResponse,
   Competency,
   CreateCompetencyRequest,
+  TranscriptMessage,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -631,7 +632,19 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     cancelReportGeneration: builder.mutation<{ success: boolean }, { reportId: string }>({
       query: ({ reportId }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.CANCEL_REPORT_GENERATION(reportId),
-        method: HttpMethod.POST,
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
+     * Get transcript for a specific report.
+     * @param {string} reportId - Report identifier
+     * @returns {Promise<TranscriptMessage[]>} List of transcript messages
+     */
+    getReportTranscript: builder.query<TranscriptMessage[], { reportId: string }>({
+      query: ({ reportId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORT_TRANSCRIPT(reportId),
+        method: HttpMethod.GET,
       }),
     }),
 
@@ -714,4 +727,5 @@ export const {
   useCancelReportGenerationMutation,
   useGetCompetenciesQuery,
   useCreateCompetencyMutation,
+  useGetReportTranscriptQuery,
 } = simulationStudioAPI;
