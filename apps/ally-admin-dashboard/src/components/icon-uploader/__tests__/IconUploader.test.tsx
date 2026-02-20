@@ -72,9 +72,10 @@ class MockImage {
 
   set src(val: string) {
     this._src = val;
-    setTimeout(() => {
+    // Use queueMicrotask instead of setTimeout to ensure it runs before test cleanup
+    queueMicrotask(() => {
       if (this.onload) this.onload();
-    }, 0);
+    });
   }
 
   get src() {
@@ -206,6 +207,11 @@ describe("IconUploader", () => {
     await waitFor(() => {
       expect(onImageChange).toHaveBeenCalledWith("https://cdn/badge-icon.png");
     });
+
+    // Wait for upload to complete
+    await waitFor(() => {
+      expect(screen.queryByText("Uploading...")).not.toBeInTheDocument();
+    });
   });
 
   it("accepts JPEG files", async () => {
@@ -227,6 +233,11 @@ describe("IconUploader", () => {
         fileSize: 1000,
         contentType: "image/jpeg",
       });
+    });
+
+    // Wait for upload to complete
+    await waitFor(() => {
+      expect(screen.queryByText("Uploading...")).not.toBeInTheDocument();
     });
   });
 
@@ -254,6 +265,11 @@ describe("IconUploader", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Uploading...")).toBeInTheDocument();
+    });
+
+    // Wait for upload to complete
+    await waitFor(() => {
+      expect(screen.queryByText("Uploading...")).not.toBeInTheDocument();
     });
   });
 
@@ -327,6 +343,11 @@ describe("IconUploader", () => {
     await waitFor(() => {
       expect(onUpload).toHaveBeenCalled();
     });
+
+    // Wait for upload to complete
+    await waitFor(() => {
+      expect(screen.queryByText("Uploading...")).not.toBeInTheDocument();
+    });
   });
 
   it("handles drag leave event", () => {
@@ -366,6 +387,11 @@ describe("IconUploader", () => {
     await waitFor(() => {
       const uploadButton = screen.getByText("Uploading...");
       expect(uploadButton).toBeDisabled();
+    });
+
+    // Wait for upload to complete
+    await waitFor(() => {
+      expect(screen.queryByText("Uploading...")).not.toBeInTheDocument();
     });
   });
 });
