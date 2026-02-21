@@ -61,6 +61,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     description: "",
     promptCode: "",
     prompt: "",
+    useCase: "",
   });
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -81,6 +82,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         description: "",
         promptCode: "",
         prompt: "",
+        useCase: "",
       });
     }
   }, [selectedPrompt]);
@@ -96,6 +98,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       description: formData.description || "",
       promptCode: formData.promptCode || "",
       prompt: formData.prompt || "",
+      useCase: formData.useCase || "",
       ...(selectedPrompt?.id && {
         id: selectedPrompt.id,
         createdAt: selectedPrompt.createdAt || new Date().toISOString(),
@@ -191,6 +194,21 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                   placeholder={en.simulation.enterPrompt}
                   className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
                 />
+              </div>
+            </Field>
+
+            <Field label={en.simulation.promptUseCase || "Use Case"} multiline={true}>
+              <div className="flex flex-col w-full gap-1">
+                <input
+                  type="text"
+                  value={formData.useCase || ""}
+                  onChange={event => handleFieldChange("useCase", event.target.value)}
+                  placeholder={en.simulation.enterPromptUseCase || "N/A"}
+                  className="border-none focus:outline-none text-base w-full px-0"
+                />
+                <span className="text-sm text-typography-500 italic">
+                  {en.simulation.useCaseEditWarning}
+                </span>
               </div>
             </Field>
           </div>

@@ -886,7 +886,7 @@ export const PROMPT_COLUMNS = [
     label: "Prompt Code",
     accessor: "promptCode",
     dataType: cellTypes.normalText,
-    minWidth: 150,
+    minWidth: 200,
     editable: false,
   },
   {
@@ -911,6 +911,14 @@ export const PROMPT_COLUMNS = [
     accessor: "prompt",
     dataType: cellTypes.normalText,
     minWidth: 350,
+    editable: false,
+  },
+  {
+    id: "useCase",
+    label: "Use Case",
+    accessor: "useCase",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
     editable: false,
   },
   {

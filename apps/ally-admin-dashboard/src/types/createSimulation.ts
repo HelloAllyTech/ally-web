@@ -255,6 +255,7 @@ export interface Prompt {
   description: string;
   promptCode: string;
   prompt: string;
+  useCase?: string;
   currentVersion?: number;
   createdAt?: string;
   updatedAt?: string;

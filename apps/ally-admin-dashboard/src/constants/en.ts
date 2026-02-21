@@ -242,6 +242,10 @@ export const en = {
     enterPromptName: "Enter prompt name",
     promptCode: "Prompt Code",
     enterPromptCode: "Enter prompt code",
+    promptUseCase: "Use Case",
+    enterPromptUseCase: "Enter use case",
+    useCaseEditWarning:
+      "Note: Please be careful when editing the use case as this will affect how the prompt is utilized.",
     promptDescription: "Description",
     enterPromptDescription: "Enter description",
     promptText: "Prompt",
