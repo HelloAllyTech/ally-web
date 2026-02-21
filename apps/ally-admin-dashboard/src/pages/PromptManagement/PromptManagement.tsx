@@ -86,6 +86,7 @@ export const PromptManagement: React.FC = () => {
       description: "",
       promptCode: "",
       prompt: "",
+      useCase: "",
     };
     setSelectedPrompt(newPromptData);
     setIsSidePanelOpen(true);
@@ -114,6 +115,7 @@ export const PromptManagement: React.FC = () => {
             description: promptData.description,
             promptCode: promptData.promptCode,
             prompt: promptData.prompt,
+            useCase: promptData.useCase,
           },
         });
         if (response.error) {
