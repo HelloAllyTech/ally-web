@@ -15,6 +15,18 @@ export interface UserBadge {
   };
 }
 
+export interface BadgeForTenant {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  visibilityType: "PUBLIC" | "PRIVATE";
+  achievementParams: {
+    count: number;
+  };
+}
+
 export interface UserBadgeFilters {
   category: string[];
   status: ("ACTIVE" | "DRAFT")[];
@@ -93,3 +105,9 @@ export interface DeleteBadgeRequest {
 export interface DeleteBadgeResponse {
   success: boolean;
 }
+
+export interface GetBadgesTenantVisibilityRequest {
+  tenantId: string;
+}
+
+export type GetBadgesTenantVisibilityResponse = BadgeForTenant[];
