@@ -69,7 +69,7 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
       }
     > = {
       [REGENERATE_TYPE.OPENING_STATEMENTS]: {
-        validate: isNonEmptyString,
+        validate: content => isNonEmptyArray(content),
         transform: content => content?.join("\n") ?? "",
         fieldId: FORM_FIELD_IDS.OPENING_STATEMENTS,
       },
