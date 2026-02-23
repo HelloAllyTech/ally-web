@@ -180,6 +180,7 @@ export const REGENERATE_TYPE = {
   CHARACTER_PROFILE_TEXT: "characterProfileText",
   DESCRIPTION: "description",
   STATE_INSTRUCTIONS: "stateInstructions",
+  CHALLENGE_DESCRIPTION: "challengeDescription",
 };
 
 const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
@@ -233,6 +234,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
+        regenerateType: REGENERATE_TYPE.CHALLENGE_DESCRIPTION,
       },
       {
         id: "difficultyLevel",
@@ -884,7 +886,7 @@ export const PROMPT_COLUMNS = [
     label: "Prompt Code",
     accessor: "promptCode",
     dataType: cellTypes.normalText,
-    minWidth: 150,
+    minWidth: 200,
     editable: false,
   },
   {
@@ -909,6 +911,14 @@ export const PROMPT_COLUMNS = [
     accessor: "prompt",
     dataType: cellTypes.normalText,
     minWidth: 350,
+    editable: false,
+  },
+  {
+    id: "useCase",
+    label: "Use Case",
+    accessor: "useCase",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
     editable: false,
   },
   {
