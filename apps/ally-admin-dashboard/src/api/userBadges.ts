@@ -7,6 +7,8 @@ import {
   DeleteBadgeIconResponse,
   DeleteBadgeRequest,
   DeleteBadgeResponse,
+  GetBadgesTenantVisibilityRequest,
+  GetBadgesTenantVisibilityResponse,
   GetUserBadgesRequest,
   GetUserBadgesResponse,
   UpdateBadgeRequest,
@@ -65,6 +67,14 @@ const userBadgesAPI = baseAPI.injectEndpoints({
         body: { badgeIds },
       }),
     }),
+    getBadgesTenantVisibility: builder.query<
+      GetBadgesTenantVisibilityResponse,
+      GetBadgesTenantVisibilityRequest
+    >({
+      query: params => ({
+        url: ApiEndpoints.USER_BADGES.BADGES_TENANT_VISIBILITY(params.tenantId),
+      }),
+    }),
   }),
 });
 
@@ -76,4 +86,5 @@ export const {
   useUpdateBadgeMutation,
   useDeleteBadgeMutation,
   useBatchDeleteBadgesMutation,
+  useGetBadgesTenantVisibilityQuery,
 } = userBadgesAPI;

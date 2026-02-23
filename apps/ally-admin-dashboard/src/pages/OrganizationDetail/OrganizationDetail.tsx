@@ -21,6 +21,7 @@ import {
   PathTab,
   ScribeSettings,
   CasesTab,
+  BadgesTab,
 } from "@components";
 import { en, ROUTES } from "@constants";
 import { Tenant } from "@types";
@@ -29,6 +30,7 @@ enum TAB_IDS {
   SIMULATIONS = "simulations",
   PATH = "path",
   CASES = "cases",
+  BADGES = "badges",
   SCRIBE_SETTINGS = "scribeSettings",
 }
 
@@ -37,6 +39,9 @@ const tabs = [
   { id: TAB_IDS.PATH, label: en.userManagement.path },
   ...(FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG
     ? [{ id: TAB_IDS.CASES, label: en.userManagement.cases }]
+    : []),
+  ...(FEATURE_FLAGS_MAP.ORGANISATION_BADGES_FLAG
+    ? [{ id: TAB_IDS.BADGES, label: en.userManagement.badges }]
     : []),
   ...(FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG
     ? [{ id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings }]
@@ -180,6 +185,15 @@ export const OrganizationDetail: FC = () => {
         );
       case TAB_IDS.SCRIBE_SETTINGS:
         return <ScribeSettings tenantId={id} />;
+      case TAB_IDS.BADGES:
+        return (
+          <BadgesTab
+            organizationId={id}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onToggleAccess={handleToggleAccess}
+          />
+        );
       default:
         return null;
     }
@@ -237,19 +251,28 @@ export const OrganizationDetail: FC = () => {
       {/* Tab Content */}
       {!FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG ? (
         <div className="flex-1 overflow-hidden min-h-0 mt-4">
-          {activeTab === TAB_IDS.SIMULATIONS ? (
+          {activeTab === TAB_IDS.SIMULATIONS && (
             <SimulationsTab
               organizationId={id}
               searchValue={searchValue}
               onSearchChange={setSearchValue}
               onToggleAccess={handleToggleAccess}
             />
-          ) : (
+          )}
+          {activeTab === TAB_IDS.PATH && (
             <PathTab
               organizationId={id}
               searchValue={searchValue}
               onSearchChange={setSearchValue}
               onToggleAccess={handleTogglePathAccess}
+            />
+          )}
+          {activeTab === TAB_IDS.BADGES && FEATURE_FLAGS_MAP.ORGANISATION_BADGES_FLAG && (
+            <BadgesTab
+              organizationId={id}
+              searchValue={searchValue}
+              onSearchChange={setSearchValue}
+              onToggleAccess={handleToggleAccess}
             />
           )}
         </div>
