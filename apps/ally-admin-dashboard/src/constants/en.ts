@@ -475,6 +475,7 @@ export const en = {
     simulations: "Simulations",
     path: "Tracks",
     cases: "Cases",
+    badges: "Badges",
     access: "Access",
     enabled: "Enabled",
     disabled: "Disabled",
