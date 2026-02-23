@@ -453,7 +453,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 100,
       },
       {
-        id: "competencyId",
+        id: "competency",
         label: "Pick Competency",
         type: FORM_FIELD_TYPES.COMPETENCY,
         options: [],
