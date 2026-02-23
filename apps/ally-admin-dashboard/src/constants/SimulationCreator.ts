@@ -479,7 +479,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 2500,
-        isMandatory: false,
+        isMandatory: true,
         regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
         isDashedLineAbove: true,
       },
