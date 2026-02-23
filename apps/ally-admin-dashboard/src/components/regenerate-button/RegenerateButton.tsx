@@ -91,7 +91,12 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
 
     const processor = fieldProcessors[fieldName];
 
-    if (processor?.validate(content)) {
+    if (!processor) {
+      toast.error(`${en.errors.failedToRegenerate} ${label || "field"}`);
+      return;
+    }
+
+    if (processor.validate(content)) {
       const value = processor.transform ? processor.transform(content) : (content ?? "");
       formMethods.setValue(processor.fieldId, value);
     } else {
