@@ -251,19 +251,29 @@ export const CreateSimulation: FC = () => {
       name: field.name,
       value: field.value,
     }));
+
+    const normalizeInstructions = (value: unknown): string[] =>
+      Array.isArray(value)
+        ? value
+        : String(value ?? "")
+            .split("\n")
+            .map(text => text.trim())
+            .filter(Boolean);
+
     const behaviourInstructionsArray = isNonEmptyArray(behaviorInstructions)
-      ? (behaviorInstructions as behaviourInstruction[]).map(instruction => ({
-          ...(instruction.id &&
-            !String(instruction.id).startsWith("temp-") && { id: instruction.id }),
-          category: instruction.category,
-          behaviors: instruction.behaviors.map((b: any) => b?.id ?? b),
-          instructions: Array.isArray(instruction.instructions)
-            ? instruction.instructions
-            : (typeof instruction.instructions === "string" ? instruction.instructions : "")
-                .split("\n")
-                .map(s => s.trim())
-                .filter(Boolean),
-        }))
+      ? (behaviorInstructions as behaviourInstruction[])
+          .filter(
+            instruction =>
+              isNonEmptyString(instruction.category) ||
+              isNonEmptyArray(instruction.behaviors) ||
+              normalizeInstructions(instruction.instructions).length > 0,
+          )
+          .map(instruction => ({
+            ...(instruction.id && { id: instruction.id }),
+            category: instruction.category,
+            behaviors: instruction.behaviors.map((behavior: any) => behavior?.id ?? behavior),
+            instructions: normalizeInstructions(instruction.instructions),
+          }))
       : [];
 
     const simulationData = {
