@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
@@ -23,6 +23,12 @@ export const RadioButtonGroup: FC<RadioButtonGroupProps> = ({
   const handleChange = (value: string) => {
     setValue(id, value);
   };
+
+  useEffect(() => {
+    if (options.length > 0 && (selectedValue === undefined || selectedValue === "")) {
+      setValue(id, options[0].value);
+    }
+  }, [id, options, selectedValue, setValue]);
 
   return (
     <div className="flex flex-col gap-3 w-full">
