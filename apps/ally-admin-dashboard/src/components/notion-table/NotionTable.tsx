@@ -168,7 +168,7 @@ export const NotionTable = ({
       defaultColumn,
       dataDispatch: onRowChange,
       sortTypes,
-      autoResetSelectedRows: false,
+      autoResetSelectedRows: true,
     },
     useBlockLayout,
     useResizeColumns,
