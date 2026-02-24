@@ -207,7 +207,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             formMethods={formMethods}
             id={id}
             isMandatory={isMandatory}
-            // regenerateButton={regenerateButton}
+            regenerateButton={regenerateButton}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION:
