@@ -38,22 +38,22 @@ const getFeedbackSectionByType = ({
             {label}
           </span>
           <ul className="p-4 space-y-2 text-base">
-            {data.length === 0 && (
+            {(!data || (Array.isArray(data) && data?.length === 0)) && (
               <div className="text-typography-700 font-primary text-center mb-2">No data found</div>
             )}
-            {Array.isArray(data) ? (
-              data.map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <span className="text-typography-900 mr-2">•</span>
-                  <span className="text-typography-900">{item}</span>
-                </li>
-              ))
-            ) : (
-              <li className="flex items-start">
-                <span className="text-typography-900 mr-2">•</span>
-                <span className="text-typography-900">{data}</span>
-              </li>
-            )}
+            {Array.isArray(data)
+              ? data.map((item, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-typography-900 mr-2">•</span>
+                    <span className="text-typography-900">{item}</span>
+                  </li>
+                ))
+              : data && (
+                  <li className="flex items-start">
+                    <span className="text-typography-900 mr-2">•</span>
+                    <span className="text-typography-900">{data}</span>
+                  </li>
+                )}
           </ul>
         </div>
       );

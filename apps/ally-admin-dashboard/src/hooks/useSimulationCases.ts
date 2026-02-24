@@ -116,9 +116,9 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
       await deleteCaseById(currentCase.id).unwrap();
       setIsDeleteCasePopupOpen(false);
       setCurrentCase(null);
-      toast.success(en.simulation.pathwayDeletedSuccessfully);
+      toast.success(en.simulation.caseDeletedSuccessfully);
     } catch (error: any) {
-      toast.error(error?.data?.message || en.simulation.failedDeletePathway);
+      toast.error(error?.data?.message || en.simulation.failedDeleteCase);
     }
   };
 
@@ -141,9 +141,9 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
       }).unwrap();
       setIsUnpublishCasePopupOpen(false);
       setCurrentCase(null);
-      toast.success(en.simulation.pathwayStatusUpdatedSuccessfully + status);
+      toast.success(en.simulation.caseStatusUpdatedSuccessfully + status);
     } catch (error: any) {
-      toast.error(error?.data?.message || en.simulation.failedChangePathwayStatus);
+      toast.error(error?.data?.message || en.simulation.failedChangeCaseStatus);
     }
   };
 
@@ -153,9 +153,9 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
       setIsDuplicateCasePopupOpen(false);
       setCurrentCase(null);
       reLoadCurrentCases();
-      toast.success(en.simulation.pathwayDuplicatedSuccessfully);
+      toast.success(en.simulation.caseDuplicatedSuccessfully);
     } catch (error: any) {
-      toast.error(error?.data?.message || en.simulation.failedDuplicatePathway);
+      toast.error(error?.data?.message || en.simulation.failedDuplicateCase);
     }
   };
 
