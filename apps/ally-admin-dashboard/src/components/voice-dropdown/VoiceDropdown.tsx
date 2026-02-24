@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { useGetScenarioVoicesQuery } from "@api/simulationStudio";
 import { en } from "@constants";
 import { getSimulationVoiceOptions } from "@utils";
@@ -21,7 +23,21 @@ export const VoiceDropdown: React.FC<VoiceDropdownProps> = ({
 
   const {
     formState: { errors },
+    setValue,
+    getValues,
   } = formMethods;
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      const currentValue = getValues(id);
+      if (!currentValue) {
+        const voiceOptions = getSimulationVoiceOptions(data);
+        if (voiceOptions.length > 0) {
+          setValue(id, voiceOptions[0].value);
+        }
+      }
+    }
+  }, [data, id, setValue, getValues]);
 
   return (
     <div className="flex flex-col gap-2">

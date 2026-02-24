@@ -2,6 +2,7 @@ export const en = {
   common: {
     apply: "Apply",
     search: "Search",
+    searchOrCreate: "Search or create",
     loading: "Loading...",
     loadMore: "Load more",
     noMoreData: "No more data",
@@ -28,6 +29,9 @@ export const en = {
     areYouSureYouWantToDelete: "Are you sure you want to delete",
   },
   errors: {
+    maxRowsBehavioursInstruction: "You can only add up to 15 rows of behaviours instruction.",
+    overviewMandatoryFieldsNotFilled:
+      "Please fill all mandatory fields in the Overview step to proceed.",
     failedCompetencyCreation: "Failed to create competency",
     failedToDeleteBadges: "Failed to delete badges",
     failedToDeleteCharacter: "Failed to delete character(s)",
