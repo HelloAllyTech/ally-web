@@ -154,12 +154,16 @@ describe("RadioButtonGroup", () => {
       );
 
       const feedbackInput = screen.getByRole("radio", { name: "Feedback" }) as HTMLInputElement;
+      const checklistInput = screen.getByRole("radio", { name: "Checklist" }) as HTMLInputElement;
+
+      // First option is auto-selected when value is empty
+      expect(feedbackInput.checked).toBe(true);
+      expect(checklistInput.checked).toBe(false);
+
+      fireEvent.click(checklistInput);
 
       expect(feedbackInput.checked).toBe(false);
-
-      fireEvent.click(feedbackInput);
-
-      expect(feedbackInput.checked).toBe(true);
+      expect(checklistInput.checked).toBe(true);
     });
 
     it("initializes with default value from form", () => {
@@ -356,10 +360,12 @@ describe("RadioButtonGroup", () => {
         </TestWrapper>,
       );
 
-      const radioButtons = screen.queryAllByRole("radio") as HTMLInputElement[];
-      radioButtons.forEach(button => {
-        expect(button.checked).toBe(false);
-      });
+      const feedbackInput = screen.getByRole("radio", { name: "Feedback" }) as HTMLInputElement;
+      const checklistInput = screen.getByRole("radio", { name: "Checklist" }) as HTMLInputElement;
+
+      // First option is auto-selected when value is empty
+      expect(feedbackInput.checked).toBe(true);
+      expect(checklistInput.checked).toBe(false);
     });
 
     it("handles options with duplicate values", () => {
