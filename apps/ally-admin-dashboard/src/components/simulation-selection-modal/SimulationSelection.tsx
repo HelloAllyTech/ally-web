@@ -202,19 +202,16 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
 
   const renderMessage = (messageTitle: string, messageContent: string, index: number) => (
     <div className="rounded-md flex flex-col justify-center border mx-auto my-3 w-[800px] group">
-      <div className="w-full bg-secondary-50 px-2 py-2 rounded-t-md flex justify-between items-center">
+      <div
+        ref={element => (messageRefs.current[index] = element)}
+        className="w-full bg-secondary-50 px-2 py-2 rounded-t-md flex justify-between items-center"
+      >
         <p className="text-base text-typography-900 font-medium">{en.simulation.message}</p>
-
         {!isDisabled && (
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex cursor-pointer gap-2">
-            <div ref={element => (messageRefs.current[index] = element)}>
-              <button
-                className="text-xs text-primary-500"
-                onClick={() => handleMessageClick(index)}
-              >
-                {en.common.edit}
-              </button>
-            </div>
+            <button className="text-xs text-primary-500" onClick={() => handleMessageClick(index)}>
+              {en.common.edit}
+            </button>
 
             <button className="text-xs" onClick={() => handleDeleteMessage(index)}>
               {en.common.delete}
