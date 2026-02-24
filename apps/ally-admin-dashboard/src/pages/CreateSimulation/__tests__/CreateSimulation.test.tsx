@@ -659,7 +659,7 @@ describe("CreateSimulation", () => {
         title: "Test Title",
         description: "Test Description",
         timerMode: true,
-        maxTimeValue: "01:31:00", // Exceeds 01:30:00
+        maxTimeValue: "02:00:00", // Exceeds 02:00:00
         triggerWarningIds: [],
       });
 

@@ -47,7 +47,7 @@ import {
   extractValidData,
   isEmpty,
   isNonEmptyArray,
-  validateMaxTimeValue,
+  validateTimeRange,
 } from "@utils";
 
 const stepIds: any = SIMULATION_CREATOR_STEP_IDS;
@@ -188,7 +188,13 @@ export const CreateSimulation: FC = () => {
     }
 
     if (formData.timerMode && formData.maxTimeValue) {
-      if (!validateMaxTimeValue(formData.maxTimeValue, SESSION_TIMER_CONFIG.MAX_TIME)) {
+      if (
+        !validateTimeRange(
+          formData.maxTimeValue,
+          SESSION_TIMER_CONFIG.MIN_TIME,
+          SESSION_TIMER_CONFIG.MAX_TIME,
+        )?.isValid
+      ) {
         toast.error(
           en.simulation.maxTimeError(SESSION_TIMER_CONFIG.MIN_TIME, SESSION_TIMER_CONFIG.MAX_TIME),
         );
