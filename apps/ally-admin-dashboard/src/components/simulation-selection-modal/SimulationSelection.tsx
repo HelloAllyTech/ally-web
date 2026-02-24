@@ -43,7 +43,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const [allSimulations, setAllSimulations] = useState<Simulation[]>([]);
   const [hasMore, setHasMore] = useState(true);
 
-  const messageButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const messageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -207,13 +207,14 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
 
         {!isDisabled && (
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex cursor-pointer gap-2">
-            <button
-              className="text-xs text-primary-500"
-              onClick={() => handleMessageClick(index)}
-              ref={element => (messageButtonRefs.current[index] = element)}
-            >
-              {en.common.edit}
-            </button>
+            <div ref={element => (messageRefs.current[index] = element)}>
+              <button
+                className="text-xs text-primary-500"
+                onClick={() => handleMessageClick(index)}
+              >
+                {en.common.edit}
+              </button>
+            </div>
 
             <button className="text-xs" onClick={() => handleDeleteMessage(index)}>
               {en.common.delete}
@@ -261,7 +262,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             setOpenMessageIndex={setOpenMessageIndex}
             handleMessageClick={handleMessageClick}
             renderMessage={renderMessage}
-            addButtonRef={messageButtonRefs}
+            addMessageRef={messageRefs}
             isDisabled={isDisabled}
           />
         ))}
