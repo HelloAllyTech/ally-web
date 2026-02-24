@@ -46,6 +46,12 @@ describe("RouteLayout", () => {
     expect(screen.getByText("LoginPage")).toBeInTheDocument();
   });
 
+  it("renders MagicLinkVerify route", () => {
+    window.history.pushState({}, "", ROUTES.MAGIC_VERIFY);
+    render(<RouteLayout />);
+    expect(screen.getByText("MagicLinkVerifyPage")).toBeInTheDocument();
+  });
+
   it("renders Simulation Studio route", () => {
     window.history.pushState({}, "", ROUTES.SIMULATION_STUDIO);
     render(<RouteLayout />);

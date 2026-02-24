@@ -122,7 +122,7 @@ export const ApiEndpoints = {
 
 export const ROUTES = {
   LOGIN: "/login",
-  MAGIC_VERIFY: "/verify",
+  MAGIC_VERIFY: "/auth/verify",
   SIMULATION_STUDIO: "/simulation-studio",
   USER_MANAGEMENT: "/user-management",
   MANAGE_EVENTS: "/manage-events",
