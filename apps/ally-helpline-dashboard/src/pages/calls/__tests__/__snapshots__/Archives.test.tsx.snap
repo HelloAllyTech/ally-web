@@ -1,0 +1,199 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Archives Component > Snapshot Testing > should match snapshot with MY_LOGS sessionUserGroup 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="px-6 pb-6 h-full flex flex-col"
+      data-testid="archives-page"
+    >
+      <div
+        animate="[object Object]"
+        class="relative mt-[10px] font-secondary"
+        data-testid="archives-header"
+        initial="[object Object]"
+        layout="position"
+        transition="[object Object]"
+      >
+        <div
+          class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+          data-testid="archives-header-content"
+        >
+          <div
+            class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
+            data-testid="archives-title"
+          >
+            <button
+              aria-label="Go back to calls"
+              class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
+              data-testid="archives-back-button"
+              type="button"
+            >
+              <div
+                class="w-5 h-5"
+                data-testid="left-arrow-icon"
+              >
+                LeftArrow
+              </div>
+            </button>
+            Archives
+            <div
+              class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+              data-testid="archives-refresh-button"
+            >
+              Refresh
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="archives-content"
+      >
+        <div
+          data-class-name="max-h-[calc(100vh-140px)]"
+          data-refresh-key="0"
+          data-session-type="call"
+          data-session-user-group="my-logs"
+          data-testid="archives-logs-table"
+        >
+          Archives Logs Table
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Archives Component > Snapshot Testing > should match snapshot with ORG_LOGS sessionUserGroup 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="px-6 pb-6 h-full flex flex-col"
+      data-testid="archives-page"
+    >
+      <div
+        animate="[object Object]"
+        class="relative mt-[10px] font-secondary"
+        data-testid="archives-header"
+        initial="[object Object]"
+        layout="position"
+        transition="[object Object]"
+      >
+        <div
+          class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+          data-testid="archives-header-content"
+        >
+          <div
+            class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
+            data-testid="archives-title"
+          >
+            <button
+              aria-label="Go back to calls"
+              class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
+              data-testid="archives-back-button"
+              type="button"
+            >
+              <div
+                class="w-5 h-5"
+                data-testid="left-arrow-icon"
+              >
+                LeftArrow
+              </div>
+            </button>
+            Archives
+            <div
+              class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+              data-testid="archives-refresh-button"
+            >
+              Refresh
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="archives-content"
+      >
+        <div
+          data-class-name="max-h-[calc(100vh-140px)]"
+          data-refresh-key="0"
+          data-session-type="call"
+          data-session-user-group="org-logs"
+          data-testid="archives-logs-table"
+        >
+          Archives Logs Table
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Archives Component > Snapshot Testing > should match snapshot with default props 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="px-6 pb-6 h-full flex flex-col"
+      data-testid="archives-page"
+    >
+      <div
+        animate="[object Object]"
+        class="relative mt-[10px] font-secondary"
+        data-testid="archives-header"
+        initial="[object Object]"
+        layout="position"
+        transition="[object Object]"
+      >
+        <div
+          class="sm:p-4 p-0 rounded-lg flex gap-4 sm:justify-between justify-start bg-transparent items-center"
+          data-testid="archives-header-content"
+        >
+          <div
+            class="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
+            data-testid="archives-title"
+          >
+            <button
+              aria-label="Go back to calls"
+              class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
+              data-testid="archives-back-button"
+              type="button"
+            >
+              <div
+                class="w-5 h-5"
+                data-testid="left-arrow-icon"
+              >
+                LeftArrow
+              </div>
+            </button>
+            Archives
+            <div
+              class="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
+              data-testid="archives-refresh-button"
+            >
+              Refresh
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        data-testid="archives-content"
+      >
+        <div
+          data-class-name="max-h-[calc(100vh-140px)]"
+          data-refresh-key="0"
+          data-session-type="call"
+          data-session-user-group="my-logs"
+          data-testid="archives-logs-table"
+        >
+          Archives Logs Table
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
