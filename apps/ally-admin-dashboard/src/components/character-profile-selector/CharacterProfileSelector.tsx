@@ -219,7 +219,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 render={({ field }) => (
                   <input
                     type="number"
-                    placeholder="27"
+                    placeholder="--"
                     value={field.value === null || field.value === undefined ? "" : field.value}
                     onChange={e => {
                       const val = e.target.value;
@@ -277,7 +277,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 render={({ field }) => (
                   <input
                     type="text"
-                    placeholder="e.g. Software Engineer"
+                    placeholder="Enter profession"
                     value={field.value === null || field.value === undefined ? "" : field.value}
                     onChange={field.onChange}
                     onBlur={field.onBlur}

@@ -288,7 +288,9 @@ export const Login: FunctionComponent = () => {
                 <span className="mx-3 text-xs text-gray-500">OR</span>
                 <div className="flex-grow border-t border-gray-300" />
               </div>
-              <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+              {import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID ? (
+                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+              ) : null}
             </div>
             By proceeding, i agree to Ally's{" "}
             <span

@@ -6,10 +6,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
+  useCreateSimulationPathMutation,
   useDeleteCoverImageMutation,
-  useLazyGetScenarioCaseByIdQuery,
-  useCreateSimulationCaseMutation,
-  useUpdateSimulationCaseByIdMutation,
+  useLazyGetScenarioPathByIdQuery,
+  useUpdateSimulationPathByIdMutation,
 } from "@api";
 import { Plus, Eye } from "@assets";
 import {
@@ -56,10 +56,10 @@ const getMandatoryFieldIds = () => {
 
 const DEBOUNCE_TIME = 1000;
 
-export const CreateCase: FC = () => {
+export const CreatePath: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [caseId, setCaseId] = useState<string | null>(id);
+  const [pathId, setPathId] = useState<string | null>(id);
   const [currentStep, setCurrentStep] = useState(PATH_CREATOR_STEP_IDS.basicInfo);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showSimulationModal, setShowSimulationModal] = useState(false);
@@ -67,11 +67,11 @@ export const CreateCase: FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const title = id ? "Edit Case" : "Create Case";
+  const title = id ? en.simulation.editPath : en.simulation.createPath;
 
-  const [getScenarioCaseByIdQuery, { data: individualCase }] = useLazyGetScenarioCaseByIdQuery();
-  const [createSimulationCaseMutation] = useCreateSimulationCaseMutation();
-  const [updateSimulationCaseByIdQuery] = useUpdateSimulationCaseByIdMutation();
+  const [getScenarioPathByIdQuery, { data: individualPath }] = useLazyGetScenarioPathByIdQuery();
+  const [createSimulationPathMutation] = useCreateSimulationPathMutation();
+  const [updateSimulationPathByIdQuery] = useUpdateSimulationPathByIdMutation();
   const [deleteCoverImage] = useDeleteCoverImageMutation();
 
   const formatScenarios = (scenarios?: GetScenarioType[]) => {
@@ -97,14 +97,14 @@ export const CreateCase: FC = () => {
   } = formMethods;
 
   useEffect(() => {
-    if (caseId) getScenarioCaseByIdQuery(caseId);
-  }, [caseId, getScenarioCaseByIdQuery]);
+    if (pathId) getScenarioPathByIdQuery(pathId);
+  }, [pathId, getScenarioPathByIdQuery]);
 
   useEffect(() => {
-    if (individualCase) formMethods.reset(individualCase);
-    if (individualCase?.scenarios)
-      setSelectedSimulations(formatScenarios(individualCase.scenarios));
-  }, [individualCase, formMethods]);
+    if (individualPath) formMethods.reset(individualPath);
+    if (individualPath?.scenarios)
+      setSelectedSimulations(formatScenarios(individualPath.scenarios));
+  }, [individualPath, formMethods]);
   // Watch all form values to check mandatory fields
   const formValues = watch();
 
@@ -134,8 +134,8 @@ export const CreateCase: FC = () => {
     else navigate(-1);
   };
 
-  // Core function to save case changes
-  const saveCaseChangesCore = async (status: SimulationStatus) => {
+  // Core function to save simulation changes
+  const saveSimulationChangesCore = async (status: SimulationStatus) => {
     const formData = formMethods.getValues();
     if (!formData.title) {
       toast.error(en.errors.titleIsRequired);
@@ -144,42 +144,42 @@ export const CreateCase: FC = () => {
 
     // Delete cover image from s3 if it is changed
     if (
-      isNonEmptyString(individualCase?.coverImageUrl) &&
-      individualCase?.coverImageUrl !== formData.coverImageUrl
+      isNonEmptyString(individualPath?.coverImageUrl) &&
+      individualPath?.coverImageUrl !== formData.coverImageUrl
     ) {
       try {
-        await deleteCoverImage({ coverImageUrl: individualCase.coverImageUrl }).unwrap();
+        await deleteCoverImage({ coverImageUrl: individualPath.coverImageUrl }).unwrap();
       } catch {
         toast.error(en.errors.fileUploadFailed);
       }
     }
 
-    const simulationCase: any = {
+    const simulationPath: any = {
       ...extractValidData(PATH_CREATOR_FIELD_GROUPS, formData),
       status,
     };
     let response;
 
-    if (caseId) {
-      response = await updateSimulationCaseByIdQuery({
-        id: caseId,
-        data: simulationCase,
+    if (pathId) {
+      response = await updateSimulationPathByIdQuery({
+        id: pathId,
+        data: simulationPath,
       });
     } else {
-      response = await createSimulationCaseMutation(simulationCase);
+      response = await createSimulationPathMutation(simulationPath);
     }
     return response;
   };
 
-  // Debounced version to prevent duplicate case creation with a delay
-  const saveCaseChanges = useDebounce(saveCaseChangesCore, DEBOUNCE_TIME);
+  // Debounced version to prevent duplicate simulation creation with a delay
+  const saveSimulationChanges = useDebounce(saveSimulationChangesCore, DEBOUNCE_TIME);
 
   const handleSaveDraft = async () => {
     try {
-      const response = await saveCaseChanges(SimulationStatus.DRAFT);
+      const response = await saveSimulationChanges(SimulationStatus.DRAFT);
       const responseData = response?.data;
       if (!response?.error) {
-        if (responseData?.id && !caseId) setCaseId(responseData?.id);
+        if (responseData?.id && !pathId) setPathId(responseData?.id);
         const currentFormValues = formMethods.getValues();
         formMethods.reset(currentFormValues);
         return response?.data;
@@ -196,7 +196,7 @@ export const CreateCase: FC = () => {
 
   const handlePublish = async () => {
     try {
-      const response = await saveCaseChanges(SimulationStatus.ACTIVE);
+      const response = await saveSimulationChanges(SimulationStatus.ACTIVE);
 
       if (response) navigate(-1);
     } catch (error: any) {
@@ -210,7 +210,7 @@ export const CreateCase: FC = () => {
   };
 
   const handleSaveAndExit = async () => {
-    const response = await saveCaseChanges(SimulationStatus.DRAFT);
+    const response = await saveSimulationChanges(SimulationStatus.DRAFT);
     if (response) {
       setShowDiscardPopup(false);
       navigate(-1);
@@ -243,14 +243,14 @@ export const CreateCase: FC = () => {
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg text-typography-900 font-semibold">{title}</h2>
           {addButton &&
-            (!(individualCase?.status === SimulationStatus.ACTIVE) ? (
+            (!(individualPath?.status === SimulationStatus.ACTIVE) ? (
               <Button variant={ButtonVariant.SECONDARY} onClick={toggleSimulationModal}>
                 <Plus />
                 {en.simulation.addSimulation}
               </Button>
             ) : (
               <Tooltip
-                title={en.simulation.viewOnlyTooltipCase}
+                title={en.simulation.viewOnlyTooltip}
                 placement="left"
                 arrow
                 slotProps={viewOnlyToolTipStyles}
@@ -289,8 +289,7 @@ export const CreateCase: FC = () => {
             formMethods={formMethods}
             selectedSimulations={selectedSimulations}
             setSelectedSimulations={setSelectedSimulations}
-            isDisabled={individualCase?.status === SimulationStatus.ACTIVE}
-            isCase={true}
+            isDisabled={individualPath?.status === SimulationStatus.ACTIVE}
           />,
           isNonEmptyArray(formValues.scenarios),
         );
@@ -319,7 +318,7 @@ export const CreateCase: FC = () => {
         onSaveDraft={handleSaveDraft}
         title={title}
         showPreview={false}
-        type="Case"
+        type="Track"
       />
 
       <div className="flex h-[calc(100vh-100px)]">
