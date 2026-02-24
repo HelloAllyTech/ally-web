@@ -87,6 +87,15 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
           isNonEmptyArray(content) ? content : transformStateInstructionsFromObject(content),
         fieldId: FORM_FIELD_IDS.STATE_INSTRUCTIONS,
       },
+      [REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS]: {
+        validate: content => isNonEmptyArray(content),
+        transform: content =>
+          content?.map((item: any, index: number) => ({
+            id: `temp-${index}`,
+            ...item,
+          })),
+        fieldId: FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS,
+      },
     };
 
     const processor = fieldProcessors[fieldName];
@@ -118,6 +127,8 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
         return formValues[FORM_FIELD_IDS.DESCRIPTION];
       case REGENERATE_TYPE.STATE_INSTRUCTIONS:
         return formValues[FORM_FIELD_IDS.STATE_INSTRUCTIONS];
+      case REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS:
+        return formValues[FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS];
       default:
         return null;
     }
