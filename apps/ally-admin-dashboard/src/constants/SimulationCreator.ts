@@ -1002,7 +1002,7 @@ export const USER_BADGES_TABLE_COLUMNS = [
     label: en.simulation.name,
     accessor: "name",
     dataType: cellTypes.normalText,
-    minWidth: 160,
+    minWidth: 200,
   },
   {
     id: "description",

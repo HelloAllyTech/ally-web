@@ -424,6 +424,9 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
     return !canSave || isLoading || formData.status === "ACTIVE";
   }, [canSave, isLoading, formData.status]);
 
+  const publishDisabled = useMemo(() => {
+    return !canPublish || isLoading || (!hasUnsavedChanges && formData.status === "ACTIVE");
+  }, [canPublish, isLoading, hasUnsavedChanges, formData.status]);
   if (!isOpen) return null;
 
   return (
@@ -576,7 +579,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
             </Button>
             <Button
               variant={ButtonVariant.PRIMARY}
-              disabled={!canPublish || isLoading || !hasUnsavedChanges}
+              disabled={publishDisabled}
               onClick={() => setShowPublishConfirmation(true)}
             >
               {en.badge.publish}
