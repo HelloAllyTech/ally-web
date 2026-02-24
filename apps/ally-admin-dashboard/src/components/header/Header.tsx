@@ -17,6 +17,7 @@ interface HeaderProps {
   isPublishing?: boolean;
   title: string;
   showPreview?: boolean;
+  type?: "Simulation" | "Track" | "Case";
 }
 
 export const Header: FC<HeaderProps> = ({
@@ -28,11 +29,12 @@ export const Header: FC<HeaderProps> = ({
   isPublishing = false,
   title,
   showPreview = true,
+  type,
 }) => {
   const handleSaveDraft = async () => {
     const response = await onSaveDraft();
     if (response) {
-      toast.success("Simulation changes saved successfully!");
+      toast.success(`${type} changes saved successfully!`);
     }
   };
 

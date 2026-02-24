@@ -319,6 +319,7 @@ export const CreateCase: FC = () => {
         onSaveDraft={handleSaveDraft}
         title={title}
         showPreview={false}
+        type="Case"
       />
 
       <div className="flex h-[calc(100vh-100px)]">

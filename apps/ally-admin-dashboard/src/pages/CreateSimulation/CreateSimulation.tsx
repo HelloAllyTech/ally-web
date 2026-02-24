@@ -443,6 +443,7 @@ export const CreateSimulation: FC = () => {
         onPreview={handlePreview}
         isPublishing={isCreatingSimulation}
         title={simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation}
+        type="Simulation"
       />
 
       <div className="flex h-[calc(100vh-100px)]">

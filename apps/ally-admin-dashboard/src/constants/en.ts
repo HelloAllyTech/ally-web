@@ -133,8 +133,10 @@ export const en = {
     duplicateSimulationDescription:
       "Are you sure you want to duplicate this simulation? This will create a new simulation with the same configurations",
     pathwayDuplicatedSuccessfully: "Tracks duplicated successfully",
+    caseDuplicatedSuccessfully: "Case duplicated successfully",
     simulationDuplicatedSuccessfully: "Simulation duplicated successfully",
     failedDuplicatePathway: "Failed to duplicate Tracks",
+    failedDuplicateCase: "Failed to duplicate case",
     failedDuplicateSimulation: "Failed to duplicate simulation",
     simulationDeletedSuccessfully: "Simulation deleted successfully",
     failedDeleteSimulation: "Failed to delete simulation",
@@ -142,8 +144,12 @@ export const en = {
     simulationStatusUpdatedSuccessfully: "Simulation status updated to ",
     failedChangePathwayStatus: "Failed to change Tracks status",
     pathwayStatusUpdatedSuccessfully: "Tracks status updated to ",
+    failedChangeCaseStatus: "Failed to change case status",
+    caseStatusUpdatedSuccessfully: "Case status updated to ",
     pathwayDeletedSuccessfully: "Tracks deleted successfully",
+    caseDeletedSuccessfully: "Case deleted successfully",
     failedDeletePathway: "Failed to delete Tracks",
+    failedDeleteCase: "Failed to delete case",
     deletePathway: "Delete Tracks",
     deletePathwayDescription:
       "I understand that deleting this simulation Tracks is permanent and that I will lose all access to users and simulation Tracks analytics.",
