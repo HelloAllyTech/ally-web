@@ -130,8 +130,7 @@ export const UserBadges = () => {
       setShowDeleteBadgesConfirmation(false);
       setSelectedBadges([]);
       toast.success(en.badge.badgesDeletedSuccessfully);
-      setOffset(0);
-      setAllBadges(allBadges.filter(badge => !badgeIds.includes(badge.id)));
+      setAllBadges(prev => prev.filter(badge => !badgeIds.includes(badge.id)));
     } catch {
       toast.error(en.errors.failedToDeleteBadges);
     }
@@ -279,6 +278,14 @@ export const UserBadges = () => {
     setAllBadges(prev => prev.filter(b => b.id !== badgeId));
   }, []);
 
+  const tableData = useMemo(
+    () => ({
+      data: allBadges.map(createUserBadgeObject),
+      columns: USER_BADGES_TABLE_COLUMNS,
+    }),
+    [allBadges, createUserBadgeObject],
+  );
+
   return (
     <div className="p-6">
       <h1 className="text-2xl h-14 text-typography-900 font-secondary">
@@ -342,10 +349,7 @@ export const UserBadges = () => {
         ) : (
           <NotionTable
             hasResizer={false}
-            tableData={{
-              data: allBadges.map(createUserBadgeObject),
-              columns: USER_BADGES_TABLE_COLUMNS,
-            }}
+            tableData={tableData}
             tableStyle={{
               height: "100%",
             }}
