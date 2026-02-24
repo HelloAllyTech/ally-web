@@ -260,21 +260,23 @@ export const CreateSimulation: FC = () => {
             .map(text => text.trim())
             .filter(Boolean);
 
-    const behaviourInstructionsArray = isNonEmptyArray(behaviorInstructions)
-      ? (behaviorInstructions as behaviourInstruction[])
-          .filter(
-            instruction =>
-              isNonEmptyString(instruction.category) ||
-              isNonEmptyArray(instruction.behaviors) ||
-              normalizeInstructions(instruction.instructions).length > 0,
-          )
-          .map(instruction => ({
-            ...(instruction.id && { id: instruction.id }),
+    const behaviourInstructionsArray = [];
+
+    if (isNonEmptyArray(behaviorInstructions)) {
+      behaviorInstructions?.forEach((instruction: any) => {
+        if (
+          isNonEmptyString(instruction?.category) ||
+          isNonEmptyArray(instruction?.behaviors) ||
+          normalizeInstructions(instruction?.instructions).length > 0
+        ) {
+          behaviourInstructionsArray.push({
             category: instruction.category,
-            behaviors: instruction.behaviors.map((behavior: any) => behavior?.id ?? behavior),
+            behaviors: instruction.behaviors?.map((behavior: any) => behavior?.id ?? behavior),
             instructions: normalizeInstructions(instruction.instructions),
-          }))
-      : [];
+          });
+        }
+      });
+    }
 
     const simulationData = {
       ...(FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
