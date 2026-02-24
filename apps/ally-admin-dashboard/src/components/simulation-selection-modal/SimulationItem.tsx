@@ -23,7 +23,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
   setOpenMessageIndex,
   handleMessageClick,
   renderMessage,
-  addButtonRef,
+  addMessageRef,
   isDisabled = false,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -176,16 +176,17 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
       <>
         {!simulation.messageTitle ? (
           <div className="relative flex justify-center my-4">
-            <button
-              className="border border-dashed rounded-md hover:bg-secondary-50 flex gap-2 text-typography-500 p-3"
-              ref={element => (addButtonRef.current[index] = element)}
-              onClick={() => handleMessageClick(index)}
-              type="button"
-              disabled={isDisabled}
-            >
-              <Plus className="mt-1" />
-              {en.simulation.addMessage}
-            </button>
+            <div ref={element => (addMessageRef.current[index] = element)}>
+              <button
+                className="border border-dashed rounded-md hover:bg-secondary-50 flex gap-2 text-typography-500 p-3"
+                onClick={() => handleMessageClick(index)}
+                type="button"
+                disabled={isDisabled}
+              >
+                <Plus className="mt-1" />
+                {en.simulation.addMessage}
+              </button>
+            </div>
           </div>
         ) : (
           <AnimatePresence>
@@ -224,7 +225,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
                     }}
                     handlePrimaryAction={handleAddMessage}
                     isOpen
-                    anchorElement={addButtonRef.current[index]}
+                    anchorElement={addMessageRef?.current?.[index]}
                   />
                 </motion.div>
               </AnimatePresence>

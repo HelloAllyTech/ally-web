@@ -1,5 +1,7 @@
 import { FC, useCallback, useMemo } from "react";
 
+import { toast } from "sonner";
+
 import { Plus } from "@assets";
 import { NotionTable } from "@components";
 import { BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS, en } from "@constants";
@@ -55,6 +57,11 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
   );
 
   const handleAddRow = useCallback(() => {
+    //TODO: max 15 behaviours instruction rows
+    if (formData.length >= 15) {
+      toast.error(en.errors.maxRowsBehavioursInstruction);
+      return;
+    }
     const formValue = createEmptyFormValue();
     formMethods.setValue(id, [...formData, formValue], { shouldDirty: true });
   }, [formMethods, id, formData]);

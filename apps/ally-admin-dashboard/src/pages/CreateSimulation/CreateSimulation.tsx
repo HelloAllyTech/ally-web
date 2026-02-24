@@ -68,6 +68,16 @@ const getMandatoryFieldIds = () => {
   return mandatoryFields;
 };
 
+const getMandatoryFieldIdsInOverview = () => {
+  const mandatoryFields: string[] = [];
+  SIMULATION_CREATOR_FIELD_GROUPS?.[0]?.fields?.forEach(field => {
+    if (field?.isMandatory) {
+      mandatoryFields.push(field?.id);
+    }
+  });
+  return mandatoryFields ?? [];
+};
+
 export const CreateSimulation: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -146,6 +156,17 @@ export const CreateSimulation: FC = () => {
         )
           return false;
       }
+      return true;
+    });
+  }, [formValues]);
+
+  const areAllMandatoryFieldsFilledInOverview = useMemo(() => {
+    const mandatoryFieldIds = getMandatoryFieldIdsInOverview();
+    return mandatoryFieldIds.every(fieldId => {
+      const value = formValues[fieldId];
+      if (isEmpty(value)) return false;
+      if (Array.isArray(value) && value.length === 0) return false;
+      if (value instanceof FileList && value.length === 0) return false;
       return true;
     });
   }, [formValues]);
@@ -337,6 +358,12 @@ export const CreateSimulation: FC = () => {
   };
 
   const handleStepClick = async (stepId: string) => {
+    if (currentStep === stepIds.overview) {
+      if (!areAllMandatoryFieldsFilledInOverview) {
+        toast.error(en.errors.overviewMandatoryFieldsNotFilled);
+        return;
+      }
+    }
     //TODO: add report step to the requiresSave condition
     const requiresSave =
       stepId === stepIds.advancedSettings ||
@@ -404,6 +431,12 @@ export const CreateSimulation: FC = () => {
     : currentStep === stepIds.advancedSettings;
 
   const handleNext = async () => {
+    if (currentStep === stepIds.overview) {
+      if (!areAllMandatoryFieldsFilledInOverview) {
+        toast.error(en.errors.overviewMandatoryFieldsNotFilled);
+        return;
+      }
+    }
     if (isLastStep) {
       handleSubmit(handlePublish)();
     } else {

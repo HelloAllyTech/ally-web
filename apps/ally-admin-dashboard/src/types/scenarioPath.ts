@@ -89,6 +89,6 @@ export interface SimulationCardItemProps {
   setOpenMessageIndex: (index: number | null) => void;
   handleMessageClick: (index: number) => void;
   renderMessage: (messageTitle: string, messageContent: string, index: number) => JSX.Element;
-  addButtonRef?: React.RefObject<(HTMLButtonElement | null)[]>;
+  addMessageRef?: React.RefObject<(HTMLDivElement | null)[]>;
   isDisabled?: boolean;
 }
