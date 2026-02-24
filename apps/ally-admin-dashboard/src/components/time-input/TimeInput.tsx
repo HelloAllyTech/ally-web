@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
-import { validateTime } from "@utils";
+import { SESSION_TIMER_CONFIG } from "@constants";
+import { validateTime, validateTimeRange } from "@utils";
 
 export interface TimeInputProps {
   value?: string | number;
@@ -9,6 +10,10 @@ export interface TimeInputProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  minTime?: string;
+  maxTime?: string;
+  error?: string;
+  showError?: boolean;
 }
 
 export const TimeInput: React.FC<TimeInputProps> = ({
@@ -18,6 +23,10 @@ export const TimeInput: React.FC<TimeInputProps> = ({
   placeholder = "hh:mm:ss",
   className = "",
   disabled = false,
+  minTime = SESSION_TIMER_CONFIG.MIN_TIME,
+  maxTime = SESSION_TIMER_CONFIG.MAX_TIME,
+  error,
+  showError = true,
 }) => {
   const normalizeValue = (val: string | number): string => {
     if (val === 0 || val === "0") return "00:00:00";
@@ -25,11 +34,16 @@ export const TimeInput: React.FC<TimeInputProps> = ({
   };
 
   const [displayValue, setDisplayValue] = useState(normalizeValue(value));
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(error);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setDisplayValue(normalizeValue(value));
   }, [value]);
+
+  useEffect(() => {
+    setErrorMessage(error);
+  }, [error]);
 
   const formatTime = (input: string): string => {
     const digits = input.replace(/\D/g, "");
@@ -93,12 +107,22 @@ export const TimeInput: React.FC<TimeInputProps> = ({
     // Validate and format on blur
     if (displayValue) {
       const validated = validateTime(displayValue);
-      onBlur?.(validated);
       setDisplayValue(validated);
+
+      // Validate time range if min/max are provided
+      const rangeValidation = validateTimeRange(validated, minTime, maxTime);
+      if (!rangeValidation.isValid) {
+        setErrorMessage(rangeValidation.error);
+      } else {
+        setErrorMessage(undefined);
+      }
+
+      onBlur?.(validated);
       if (onChange && validated !== displayValue) {
         onChange(validated);
       }
     } else {
+      setErrorMessage(undefined);
       onBlur?.(displayValue || null);
     }
   };
@@ -121,19 +145,28 @@ export const TimeInput: React.FC<TimeInputProps> = ({
     }, 0);
   };
 
+  const hasError = showError && errorMessage;
+
   return (
-    <input
-      ref={inputRef}
-      type="text"
-      value={displayValue}
-      onChange={handleChange}
-      onPaste={handlePaste}
-      onBlur={handleBlur}
-      placeholder={placeholder}
-      disabled={disabled}
-      maxLength={8}
-      pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
-      className={`w-full bg-transparent rounded-sm text-sm placeholder:text-typography-600 focus:outline-none px-2 py-1 h-6 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-    />
+    <div className="relative">
+      <input
+        ref={inputRef}
+        type="text"
+        value={displayValue}
+        onChange={handleChange}
+        onPaste={handlePaste}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        disabled={disabled}
+        maxLength={8}
+        pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
+        className={`w-full bg-transparent rounded-sm text-sm placeholder:text-typography-600 focus:outline-none px-2 py-1 h-6 disabled:cursor-not-allowed disabled:opacity-50 ${
+          hasError ? "border border-destructive-500" : ""
+        } ${className}`}
+      />
+      {hasError && (
+        <p className="absolute bottom-[-25px] text-destructive-500 text-sm">{errorMessage}</p>
+      )}
+    </div>
   );
 };

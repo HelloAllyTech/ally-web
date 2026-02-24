@@ -9,8 +9,8 @@ export const minInputHeight = {
 
 export const SESSION_TIMER_CONFIG = {
   DEFAULT_MAX_TIME: "00:10:00",
-  MAX_TIME: "01:30:00", // 90 minutes (5400 seconds)
-  MIN_TIME: "00:00:01", // 1 second
+  MAX_TIME: "02:00:00", // 120 minutes (7200 seconds)
+  MIN_TIME: "00:05:00", // 5 minutes (300 seconds)
 };
 
 export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
@@ -418,13 +418,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
       {
         id: "maxTimeValue",
         label: "Maximum time",
-        placeholder: "00:00:01 - 01:30:00",
+        placeholder: "00:05:00 - 02:00:00",
         type: FORM_FIELD_TYPES.TIME_INPUT,
         fullWidth: true,
         dependsOn: "timerMode",
         visibleWhen: (formValues: any) => formValues.timerMode === true,
         defaultValue: "00:10:00",
-        note: "Range 00:00:01 - 01:30:00",
+        note: "Range 00:05:00 - 02:00:00",
       },
       {
         id: "optGuardrails",
@@ -636,13 +636,15 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       {
         id: "maxTimeValue",
         label: "Maximum time",
-        placeholder: "00:00:01 - 01:30:00",
+        placeholder: "00:05:00 - 02:00:00",
         type: FORM_FIELD_TYPES.TIME_INPUT,
         fullWidth: true,
         dependsOn: "timerMode",
         visibleWhen: (formValues: any) => formValues.timerMode === true,
         defaultValue: "00:10:00",
-        note: "Range 00:00:01 - 01:30:00",
+        note: "Range 00:05:00 - 02:00:00",
+        minTime: "00:05:00",
+        maxTime: "02:00:00",
       },
       {
         id: "showScoreMeter",
