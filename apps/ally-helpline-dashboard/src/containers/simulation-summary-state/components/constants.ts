@@ -3,12 +3,12 @@ import { FeedbackSectionType } from "@types";
 export const feedbackSections = [
   {
     key: "positives",
-    label: "What went well",
+    label: "Strength & skills demonstrated",
     type: FeedbackSectionType.BULLET_TEXT,
   },
   {
     key: "improvements",
-    label: "Improvement tips",
+    label: "Areas for growth",
     type: FeedbackSectionType.BULLET_TEXT,
   },
   {

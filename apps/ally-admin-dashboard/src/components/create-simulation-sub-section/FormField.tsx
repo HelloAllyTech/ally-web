@@ -43,6 +43,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   };
 
   const regenerateButton = regenerateType ? (
+    // console.log(regenerateType,"regenerateType"),
     <RegenerateButton regenerateType={regenerateType} label={label} formMethods={formMethods} />
   ) : null;
 
@@ -202,7 +203,12 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION:
         return (
-          <BehavioursInstruction formMethods={formMethods} id={id} isMandatory={isMandatory} />
+          <BehavioursInstruction
+            formMethods={formMethods}
+            id={id}
+            isMandatory={isMandatory}
+            regenerateButton={regenerateButton}
+          />
         );
       case FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION:
         return (
