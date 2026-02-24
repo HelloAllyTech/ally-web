@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -19,6 +19,7 @@ interface BehavioursInstructionProps {
   formMethods: any;
   id: string;
   isMandatory: boolean;
+  regenerateButton?: ReactNode;
 }
 
 const createEmptyFormValue = () => ({
@@ -32,9 +33,9 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
   formMethods,
   id,
   isMandatory,
+  regenerateButton,
 }) => {
   const formData: BehaviourRow[] = formMethods.watch(id) ?? [];
-
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   useEffect(() => {
@@ -66,8 +67,8 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
   );
 
   const handleAddRow = useCallback(() => {
-    //TODO: max 15 behaviours instruction rows
-    if (formData.length >= 15) {
+    //TODO: max 10 behaviours instruction rows
+    if (formData.length >= 10) {
       toast.error(en.errors.maxRowsBehavioursInstruction);
       return;
     }
@@ -120,12 +121,15 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
           {en.simulation.behavioursInstruction}
           {isMandatory && <span className="text-destructive-500">*</span>}
         </div>
-        {selectedRows.length > 0 && (
-          <Button variant={ButtonVariant.SECONDARY} onClick={handleDeleteSelectedRows}>
-            <Trash />
-            {en.common.delete}
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {selectedRows.length > 0 && (
+            <Button variant={ButtonVariant.SECONDARY} onClick={handleDeleteSelectedRows}>
+              <Trash />
+              {en.common.delete}
+            </Button>
+          )}
+          {regenerateButton}
+        </div>
       </div>
       <NotionTable
         tableData={tableData}
