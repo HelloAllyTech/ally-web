@@ -2,6 +2,7 @@ import { useCallback } from "react";
 
 import { useSelector } from "react-redux";
 
+import { logger } from "@ally-ui-mono/ui-shared";
 import { ApiEndpoints, LOCAL_STORAGE_KEYS } from "@constants";
 import {
   addMessage,
@@ -18,67 +19,149 @@ import { ChatMessagePayload } from "@types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-const extractTextFromSSEData = (raw: string): string => {
+/* ── Cross-tab streaming mirror via BroadcastChannel ── */
+type StreamBroadcast =
+  | { type: "add_message"; sessionId: string; message: ChatMessagePayload }
+  | { type: "clear_error"; sessionId: string }
+  | { type: "start_streaming"; sessionId: string }
+  | { type: "chunk"; sessionId: string; text: string }
+  | { type: "commit"; sessionId: string; message: ChatMessagePayload }
+  | { type: "finish"; sessionId: string }
+  | { type: "error"; sessionId: string; failedMessage: string };
+
+const streamChannel = new BroadcastChannel("chat_stream_sync");
+
+const broadcast = (msg: StreamBroadcast) => {
   try {
-    const parsed = JSON.parse(raw);
-    return parsed.content ?? "";
+    streamChannel.postMessage(msg);
   } catch {
-    return raw;
+    /* channel closed */
+    logger.info("Broadcast channel closed");
   }
 };
 
-const getAccessToken = () => localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+streamChannel.addEventListener("message", (e: MessageEvent<StreamBroadcast>) => {
+  const { dispatch } = store;
+  const msg = e.data;
+  switch (msg.type) {
+    case "add_message":
+      dispatch(addMessage({ sessionId: msg.sessionId, message: msg.message }));
+      break;
+    case "clear_error":
+      dispatch(clearError({ sessionId: msg.sessionId }));
+      break;
+    case "start_streaming":
+      dispatch(startStreaming({ sessionId: msg.sessionId }));
+      break;
+    case "chunk":
+      dispatch(appendStreamingChunk({ sessionId: msg.sessionId, text: msg.text }));
+      break;
+    case "commit":
+      dispatch(commitStreamingMessage({ sessionId: msg.sessionId, message: msg.message }));
+      break;
+    case "finish":
+      dispatch(finishStreaming({ sessionId: msg.sessionId }));
+      dispatch(clearStreamSession(msg.sessionId));
+      break;
+    case "error":
+      dispatch(finishStreaming({ sessionId: msg.sessionId }));
+      dispatch(setError({ sessionId: msg.sessionId, message: msg.failedMessage }));
+      break;
+  }
+});
 
-const refreshTokens = async (): Promise<string | null> => {
-  const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
-  if (!refreshToken) return null;
-  const res = await fetch(`${API_BASE}/api${ApiEndpoints.AUTH.REFRESH}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
-  localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
-  return data.accessToken;
+type ParsedSSE = { done: true } | { done: false; text: string };
+
+const parseSSEData = (raw: string): ParsedSSE => {
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed.type === "done") return { done: true };
+    if (parsed.type === "token" && parsed.content != null)
+      return { done: false, text: String(parsed.content) };
+    return { done: false, text: parsed.content != null ? String(parsed.content) : "" };
+  } catch {
+    return { done: false, text: raw };
+  }
 };
 
-const streamFetch = (url: string, body: string, token: string | null) =>
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "text/event-stream",
-      Authorization: `Bearer ${token}`,
-    },
-    body,
-  });
+const refreshAccessToken = async (): Promise<string | null> => {
+  const refreshToken = localStorage.getItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+  if (!refreshToken) return null;
+
+  try {
+    const response = await fetch(`${API_BASE}/api${ApiEndpoints.AUTH.REFRESH}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
+    return data.accessToken;
+  } catch {
+    return null;
+  }
+};
 
 const fetchWithAuth = async (url: string, body: string): Promise<Response> => {
-  const result = await streamFetch(url, body, getAccessToken());
-  if (result.status !== 401) return result;
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    Accept: "text/event-stream",
+  };
 
-  const newToken = await refreshTokens();
-  if (!newToken) return result;
-  return streamFetch(url, body, newToken);
+  const makeRequest = (token: string | null) =>
+    fetch(url, {
+      method: "POST",
+      headers: { ...headers, Authorization: `Bearer ${token}` },
+      body,
+    });
+
+  const accessToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+  const result = await makeRequest(accessToken);
+
+  if (result.status === 401) {
+    const newToken = await refreshAccessToken();
+    if (!newToken) {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN);
+      window.location.href = "/login";
+      throw new Error("Session expired");
+    }
+    return makeRequest(newToken);
+  }
+
+  return result;
 };
 
 /**
  * Module-level streaming function — runs independently of React lifecycle.
  * Dispatches directly to the Redux store so an in-flight stream keeps
  * updating its session even after the originating component unmounts.
+ *
+ * Every dispatch is also broadcast to other tabs via BroadcastChannel so
+ * they mirror the streaming message in real-time. The broadcast also keeps
+ * isStreaming in sync across tabs, preventing duplicate streams.
  */
 const processStream = async (sessionId: string, message: string, isRetry: boolean) => {
   const { dispatch, getState } = store;
 
+  const streamSession = getState().chatStream.sessions[sessionId];
+  if (streamSession?.isStreaming) return;
+
   if (!isRetry) {
-    dispatch(addMessage({ sessionId, message: { role: "user", content: message } }));
+    const userMsg: ChatMessagePayload = { role: "user", content: message };
+    dispatch(addMessage({ sessionId, message: userMsg }));
+    broadcast({ type: "add_message", sessionId, message: userMsg });
   } else {
     dispatch(clearError({ sessionId }));
+    broadcast({ type: "clear_error", sessionId });
   }
 
   dispatch(startStreaming({ sessionId }));
+  broadcast({ type: "start_streaming", sessionId });
 
   try {
     const url = `${API_BASE}/api${ApiEndpoints.LEARN.CHAT_STREAM(sessionId)}`;
@@ -87,6 +170,7 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
     if (!result.ok || !result.body) {
       dispatch(finishStreaming({ sessionId }));
       dispatch(setError({ sessionId, message }));
+      broadcast({ type: "error", sessionId, failedMessage: message });
       return;
     }
 
@@ -107,12 +191,15 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
         for (const line of event.split("\n")) {
           if (line.startsWith("data: ")) {
             const raw = line.slice(6);
-            if (raw === "[done]") {
-              commitAndFinish(sessionId, getState);
+            const parsed = parseSSEData(raw);
+            if (parsed.done) {
+              commitAndFinish(sessionId);
               return;
             }
-            const text = extractTextFromSSEData(raw);
-            if (text) dispatch(appendStreamingChunk({ sessionId, text }));
+            if (parsed.done === false && parsed.text) {
+              dispatch(appendStreamingChunk({ sessionId, text: parsed.text }));
+              broadcast({ type: "chunk", sessionId, text: parsed.text });
+            }
           }
         }
       }
@@ -122,30 +209,33 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
       for (const line of buffer.split("\n")) {
         if (line.startsWith("data: ")) {
           const raw = line.slice(6);
-          if (raw !== "[DONE]") {
-            const text = extractTextFromSSEData(raw);
-            if (text) dispatch(appendStreamingChunk({ sessionId, text }));
+          const parsed = parseSSEData(raw);
+          if (parsed.done === false && parsed.text) {
+            dispatch(appendStreamingChunk({ sessionId, text: parsed.text }));
+            broadcast({ type: "chunk", sessionId, text: parsed.text });
           }
         }
       }
     }
 
-    commitAndFinish(sessionId, getState);
+    commitAndFinish(sessionId);
   } catch {
     dispatch(finishStreaming({ sessionId }));
     dispatch(setError({ sessionId, message }));
+    broadcast({ type: "error", sessionId, failedMessage: message });
   }
 };
 
-/** Move the completed streaming message into the history slice and clear the stream. */
-const commitAndFinish = (sessionId: string, getState: () => RootState) => {
-  const { dispatch } = store;
-  const streamSession = getState().chatStream.sessions[sessionId];
-  if (streamSession?.streamingMessage) {
-    dispatch(commitStreamingMessage({ sessionId, message: streamSession.streamingMessage }));
+const commitAndFinish = (sessionId: string) => {
+  const { dispatch, getState } = store;
+  const session = getState().chatStream.sessions[sessionId];
+  if (session?.streamingMessage) {
+    dispatch(commitStreamingMessage({ sessionId, message: session.streamingMessage }));
+    broadcast({ type: "commit", sessionId, message: session.streamingMessage });
   }
   dispatch(finishStreaming({ sessionId }));
   dispatch(clearStreamSession(sessionId));
+  broadcast({ type: "finish", sessionId });
 };
 
 export const useSendMessage = (sessionId: string) => {
