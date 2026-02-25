@@ -37,7 +37,7 @@ export interface Tenant {
   enabledDashboardIds: string[];
   enableMicrophoneMode: boolean;
   enableAudioUpload: boolean;
-  hideRankInLeaderboard: boolean;
+  hideRankInCommunity: boolean;
 }
 
 export interface GetTenantResponse {
