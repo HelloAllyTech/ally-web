@@ -303,4 +303,71 @@ describe("SimulationEventMapTable", () => {
       expect(deleteMock).toHaveBeenCalled();
     });
   });
+
+  it("only sends updated events to the API when a row is changed", async () => {
+    const mapMock = vi.fn().mockResolvedValueOnce({});
+    vi.mocked(api.useGetSessionEventsQuery).mockReturnValue({
+      data: {
+        data: [
+          { id: "e1", name: "Event 1", detectionType: "SCORE" },
+          { id: "e2", name: "Event 2", detectionType: "SCORE" },
+        ],
+      },
+      isLoading: false,
+    } as any);
+    vi.mocked(api.useGetMappedScenarioEventsQuery).mockReturnValue({
+      data: {
+        data: [
+          {
+            eventId: "e1",
+            name: "Event 1",
+            score: 0,
+            emoji: "🫥",
+            message: "",
+            feedbackStatus: false,
+            branchingStatus: false,
+            branchInstruction: "",
+            checklistVisibilityStatus: false,
+          },
+          {
+            eventId: "e2",
+            name: "Event 2",
+            score: 0,
+            emoji: "🫥",
+            message: "",
+            feedbackStatus: false,
+            branchingStatus: false,
+            branchInstruction: "",
+            checklistVisibilityStatus: false,
+          },
+        ],
+      },
+      isLoading: false,
+    } as any);
+    vi.mocked(api.useMapScenarioEventsMutation).mockReturnValue([mapMock] as any);
+
+    render(<SimulationEventMapTable simulationId={"123"} />);
+
+    await waitFor(() => {
+      const addBtn = screen.getByText("Add Event").closest("button") as HTMLButtonElement;
+      expect(addBtn).not.toBeDisabled();
+    });
+
+    // Simulate changing a row value (specifically 'name' column triggers immediate event swap)
+    fireEvent.click(screen.getByTestId("row-change"));
+
+    // Wait until our debounce or saveEventsToApi finishes
+    await waitFor(() => {
+      expect(mapMock).toHaveBeenCalled();
+    });
+
+    // Validate payload only sent the updated row (length 1) instead of all rows
+    const payload = mapMock.mock.calls[0][0];
+    expect(payload).toEqual({
+      scenarioId: 123,
+      events: expect.any(Array),
+    });
+    expect(payload.events.length).toBe(1);
+    expect(payload.events[0].id).toBe("e1");
+  });
 });
