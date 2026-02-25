@@ -4,20 +4,10 @@ import { FC, useEffect, useState } from "react";
 
 import { SessionGoalTimerProps } from "./types";
 
-export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({ startTime, maxTimeValue }) => {
+export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({ startTime, maxTimeSeconds }) => {
   const [remainingTime, setRemainingTime] = useState<number>(0);
 
   // Convert maxTimeValue (HH:MM:SS) to seconds
-  const parseTimeValue = (timeStr: string): number => {
-    if (!timeStr) return 0;
-    const parts = timeStr.split(":").map(Number);
-    const hours = parts[0] || 0;
-    const minutes = parts[1] || 0;
-    const seconds = parts[2] || 0;
-    return hours * 3600 + minutes * 60 + seconds;
-  };
-
-  const maxTimeSeconds = parseTimeValue(maxTimeValue);
 
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);

@@ -75,9 +75,11 @@ const userBadgesAPI = baseAPI.injectEndpoints({
       GetBadgesTenantVisibilityResponse,
       GetBadgesTenantVisibilityRequest
     >({
-      query: params => ({
-        url: ApiEndpoints.USER_BADGES.BADGES_TENANT_VISIBILITY(params.tenantId),
+      query: ({ tenantId, ...params }) => ({
+        url: ApiEndpoints.USER_BADGES.BADGES_TENANT_VISIBILITY(tenantId),
+        params,
       }),
+      providesTags: [TAG_TYPES.USER_BADGES],
     }),
     addBadgesToTenant: builder.mutation<AddBadgesToTenantResponse, AddBadgesToTenantRequest>({
       query: body => ({
@@ -85,6 +87,7 @@ const userBadgesAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
+      invalidatesTags: [TAG_TYPES.USER_BADGES],
     }),
     removeBadgesFromTenant: builder.mutation<
       RemoveBadgesFromTenantResponse,
@@ -95,6 +98,7 @@ const userBadgesAPI = baseAPI.injectEndpoints({
         method: HttpMethod.DELETE,
         body,
       }),
+      invalidatesTags: [TAG_TYPES.USER_BADGES],
     }),
   }),
 });
