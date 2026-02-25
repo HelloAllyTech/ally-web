@@ -111,3 +111,21 @@ export interface GetBadgesTenantVisibilityRequest {
 }
 
 export type GetBadgesTenantVisibilityResponse = BadgeForTenant[];
+
+export interface AddBadgesToTenantRequest {
+  badgeId: string;
+  tenantIds: string[];
+}
+
+export interface AddBadgesToTenantResponse {
+  message: string;
+}
+
+export interface RemoveBadgesFromTenantRequest {
+  badgeId: string;
+  tenantIds: string[];
+}
+
+export interface RemoveBadgesFromTenantResponse {
+  message: string;
+}

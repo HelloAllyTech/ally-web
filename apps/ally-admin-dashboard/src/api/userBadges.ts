@@ -1,6 +1,8 @@
 import { baseAPI } from "@api";
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  AddBadgesToTenantRequest,
+  AddBadgesToTenantResponse,
   CreateBadgeRequest,
   CreateBadgeResponse,
   DeleteBadgeIconRequest,
@@ -11,6 +13,8 @@ import {
   GetBadgesTenantVisibilityResponse,
   GetUserBadgesRequest,
   GetUserBadgesResponse,
+  RemoveBadgesFromTenantRequest,
+  RemoveBadgesFromTenantResponse,
   UpdateBadgeRequest,
   UpdateBadgeResponse,
   UploadBadgeIconRequest,
@@ -75,6 +79,23 @@ const userBadgesAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.USER_BADGES.BADGES_TENANT_VISIBILITY(params.tenantId),
       }),
     }),
+    addBadgesToTenant: builder.mutation<AddBadgesToTenantResponse, AddBadgesToTenantRequest>({
+      query: body => ({
+        url: ApiEndpoints.USER_BADGES.ADD_BADGES_TO_TENANT,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+    removeBadgesFromTenant: builder.mutation<
+      RemoveBadgesFromTenantResponse,
+      RemoveBadgesFromTenantRequest
+    >({
+      query: body => ({
+        url: ApiEndpoints.USER_BADGES.REMOVE_BADGES_FROM_TENANT,
+        method: HttpMethod.DELETE,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -87,4 +108,6 @@ export const {
   useDeleteBadgeMutation,
   useBatchDeleteBadgesMutation,
   useGetBadgesTenantVisibilityQuery,
+  useAddBadgesToTenantMutation,
+  useRemoveBadgesFromTenantMutation,
 } = userBadgesAPI;
