@@ -214,6 +214,7 @@ export interface ScenarioVoice {
   provider: string;
   languageId?: number;
   config: ScenarioVoiceConfig;
+  active?: boolean;
 }
 
 export interface ScenarioLanguageConfig {
