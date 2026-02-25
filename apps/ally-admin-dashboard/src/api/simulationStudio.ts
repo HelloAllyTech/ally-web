@@ -634,7 +634,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     cancelReportGeneration: builder.mutation<{ success: boolean }, { reportId: string }>({
       query: ({ reportId }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.CANCEL_REPORT_GENERATION(reportId),
-        method: HttpMethod.GET,
+        method: HttpMethod.POST,
       }),
     }),
 
