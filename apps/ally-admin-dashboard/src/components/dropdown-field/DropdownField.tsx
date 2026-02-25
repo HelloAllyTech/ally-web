@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Controller } from "react-hook-form";
 
-import { ArrowSolid } from "@assets";
+import { ArrowSolid, Close } from "@assets";
 import { DropdownFieldProps } from "@components/types";
 import { en } from "@constants";
 import { useClickOutside, useDebounce } from "@hooks";
@@ -21,6 +21,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   defaultOption,
   optionsRenderer,
   onClose,
+  allowDeselect = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -36,7 +37,11 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   }, [isOpen]);
 
   const handleSelect = (field: any, value: string) => {
-    field.onChange(value);
+    if (allowDeselect && field.value === value) {
+      field.onChange("");
+    } else {
+      field.onChange(value);
+    }
     setIsOpen(false);
   };
 
@@ -115,11 +120,24 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                   >
                     {selected ? selected.label : defaultOption || placeholder}
                   </span>
-                  <span
-                    className={`text-typography-600 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                  >
-                    <ArrowSolid />
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {allowDeselect && selected && (
+                      <span
+                        className="text-typography-600 hover:text-typography-900 transition-colors p-1 rounded-full cursor-pointer flex items-center justify-center"
+                        onClick={e => {
+                          e.stopPropagation();
+                          field.onChange("");
+                        }}
+                      >
+                        <Close className="w-4 h-4" />
+                      </span>
+                    )}
+                    <span
+                      className={`text-typography-600 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    >
+                      <ArrowSolid />
+                    </span>
+                  </div>
                 </div>
 
                 {isOpen && renderDropdown(field)}

@@ -53,7 +53,7 @@ export const Competency: React.FC<CompetencyProps> = ({
 
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setSearchTerm(value.trim());
+    setSearchTerm(value);
   };
 
   const handleCreateCompetency = async (field: any) => {

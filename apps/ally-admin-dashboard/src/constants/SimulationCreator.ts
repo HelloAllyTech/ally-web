@@ -9,8 +9,8 @@ export const minInputHeight = {
 
 export const SESSION_TIMER_CONFIG = {
   DEFAULT_MAX_TIME: "00:10:00",
-  MAX_TIME: "01:30:00", // 90 minutes (5400 seconds)
-  MIN_TIME: "00:00:01", // 1 second
+  MAX_TIME: "02:00:00", // 120 minutes (7200 seconds)
+  MIN_TIME: "00:05:00", // 5 minutes (300 seconds)
 };
 
 export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
@@ -181,6 +181,7 @@ export const REGENERATE_TYPE = {
   DESCRIPTION: "description",
   STATE_INSTRUCTIONS: "stateInstructions",
   CHALLENGE_DESCRIPTION: "challengeDescription",
+  BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
 };
 
 const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
@@ -417,13 +418,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
       {
         id: "maxTimeValue",
         label: "Maximum time",
-        placeholder: "00:00:01 - 01:30:00",
+        placeholder: "00:05:00 - 02:00:00",
         type: FORM_FIELD_TYPES.TIME_INPUT,
         fullWidth: true,
         dependsOn: "timerMode",
         visibleWhen: (formValues: any) => formValues.timerMode === true,
         defaultValue: "00:10:00",
-        note: "Range 00:00:01 - 01:30:00",
+        note: "Range 00:05:00 - 02:00:00",
       },
       {
         id: "optGuardrails",
@@ -552,6 +553,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
               type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
               fullWidth: true,
               isMandatory: true,
+              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
             },
             {
               id: "stateInstructions",
@@ -634,13 +636,15 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       {
         id: "maxTimeValue",
         label: "Maximum time",
-        placeholder: "00:00:01 - 01:30:00",
+        placeholder: "00:05:00 - 02:00:00",
         type: FORM_FIELD_TYPES.TIME_INPUT,
         fullWidth: true,
         dependsOn: "timerMode",
         visibleWhen: (formValues: any) => formValues.timerMode === true,
         defaultValue: "00:10:00",
-        note: "Range 00:00:01 - 01:30:00",
+        note: "Range 00:05:00 - 02:00:00",
+        minTime: "00:05:00",
+        maxTime: "02:00:00",
       },
       {
         id: "showScoreMeter",
