@@ -287,7 +287,7 @@ export const UserBadges = () => {
   );
 
   return (
-    <div className="p-6">
+    <div className="py-[2px] font-primary">
       <h1 className="text-2xl h-14 text-typography-900 font-secondary">
         {en.userManagement.userBadges}
       </h1>

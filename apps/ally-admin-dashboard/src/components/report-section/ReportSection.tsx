@@ -87,7 +87,9 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   const [cancelReportGenerationMutation] = useCancelReportGenerationMutation();
   const { data: transcriptData } = useGetReportTranscriptQuery(
     { reportId: reportId! },
-    { skip: !reportId },
+    {
+      skip: !reportId || fetchedReportData?.status !== ReportGenerationStatus.COMPLETED,
+    },
   );
 
   // Update scenarioId in Redux when it changes
@@ -240,8 +242,8 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
       );
       setReportId(null);
       setIsGenerating(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message || error?.message || "Failed to cancel report generation");
+    } catch {
+      toast.error("Failed to cancel report generation");
     }
   }, [reportId, scenarioId, cancelReportGenerationMutation, dispatch]);
 
