@@ -133,7 +133,7 @@ const BadgesTab = ({ organizationId, searchValue, onSearchChange }: BadgesTabPro
                   name: badge.name,
                   description: badge.description,
                 }}
-                hasAccess={badge.visibilityType === "PUBLIC"}
+                hasAccess={badge?.enabled}
                 onToggleAccess={enabled => onToggleAccess(badge.id, enabled)}
               />
             ))}
