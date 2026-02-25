@@ -138,6 +138,17 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     await onEndSimulation?.();
   };
 
+  const parseTimeValue = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(":").map(Number);
+    const hours = parts[0] || 0;
+    const minutes = parts[1] || 0;
+    const seconds = parts[2] || 0;
+    return hours * 3600 + minutes * 60 + seconds;
+  };
+
+  const maxTimeSeconds = parseTimeValue(roomData?.maxTimeValue);
+
   const content = (
     <div
       data-testid="simulation-page"
@@ -184,7 +195,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       </div>
 
       {roomData?.timerMode && startTime && (
-        <SessionGoalTimer startTime={startTime} maxTimeValue={roomData?.maxTimeValue} />
+        <SessionGoalTimer startTime={startTime} maxTimeSeconds={maxTimeSeconds} />
       )}
 
       <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
@@ -201,19 +212,18 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       </motion.div>
       {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}
 
-      {startTime && (
-        <BottomSection
-          isWarning={isWarning}
-          onTimeLimitWarning={onTimeLimitWarning}
-          onEndSimulation={handleEndSimulation}
-          onMuteSimulation={onMuteSimulation}
-          isMuted={isMuted}
-          isEndingSession={isEndingSession}
-          startTime={startTime}
-          isFocusMode={isFocusMode}
-          onFocusButtonClick={onFocusButtonClick}
-        />
-      )}
+      <BottomSection
+        isWarning={isWarning}
+        onTimeLimitWarning={onTimeLimitWarning}
+        onEndSimulation={handleEndSimulation}
+        onMuteSimulation={onMuteSimulation}
+        isMuted={isMuted}
+        isEndingSession={isEndingSession}
+        startTime={startTime}
+        timeLimit={maxTimeSeconds}
+        isFocusMode={isFocusMode}
+        onFocusButtonClick={onFocusButtonClick}
+      />
 
       {renderFooter?.()}
 

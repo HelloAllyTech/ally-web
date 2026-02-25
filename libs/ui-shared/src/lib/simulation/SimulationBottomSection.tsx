@@ -18,6 +18,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
   isEndingSession,
   startTime,
   onFocusButtonClick,
+  timeLimit,
 }) => {
   return (
     <div
@@ -29,6 +30,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
         onWarning={onTimeLimitWarning}
         onTimeLimit={onEndSimulation}
         startTime={startTime?.toString()}
+        timeLimit={timeLimit}
       />
       <SimulationControls
         isMuted={isMuted}
