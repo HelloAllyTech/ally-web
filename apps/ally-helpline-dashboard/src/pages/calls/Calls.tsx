@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { Archive, MoreVertIcon, Refresh, StartSession, UploadIcon } from "@assets";
 import { Button, ButtonVariant, CustomMenu, PermissionGuard, ToggleButtonGroup } from "@components";
-import { Permissions, ROUTES } from "@constants";
+import { CallType, Permissions, ROUTES } from "@constants";
 import { useUser } from "@hooks";
 import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
@@ -29,7 +29,7 @@ export const Calls: FC = () => {
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
-  const { permissions } = useUser();
+  const { permissions, availableChatTypes } = useUser();
   const supportedLogList = useMemo(() => getPermittedSessionLogList(permissions), [permissions]);
 
   useEffect(() => {
@@ -111,33 +111,39 @@ export const Calls: FC = () => {
               onClick={handleRefresh}
             />
           </div>
-          <div className="flex gap-2 items-center" data-testid="calls-action-buttons">
+          <div className="flex gap-2 items-center font-tertiary" data-testid="calls-action-buttons">
             <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
-              <Button
-                data-testid="calls-upload-audio-button"
-                variant={
-                  hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT)
-                    ? ButtonVariant.SECONDARY
-                    : ButtonVariant.PRIMARY
-                }
-                onClick={() => setIsAudioUploadDialogOpen(true)}
-              >
-                <UploadIcon
-                  data-testid="calls-upload-icon"
-                  className={
-                    hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT)
-                      ? "text-neutral-500 path-fill-current"
-                      : "text-white path-fill-current"
+              {availableChatTypes?.includes(CallType.AUDIO_UPLOAD) && (
+                <Button
+                  data-testid="calls-upload-audio-button"
+                  variant={
+                    hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
+                    availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
+                      ? ButtonVariant.SECONDARY
+                      : ButtonVariant.PRIMARY
                   }
-                />
-                Upload audio
-              </Button>
+                  onClick={() => setIsAudioUploadDialogOpen(true)}
+                >
+                  <UploadIcon
+                    data-testid="calls-upload-icon"
+                    className={
+                      hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
+                      availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
+                        ? "text-neutral-500 path-fill-current"
+                        : "text-white path-fill-current"
+                    }
+                  />
+                  Upload audio
+                </Button>
+              )}
             </PermissionGuard>
             <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
-              <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
-                <StartSession data-testid="calls-start-session-icon" />
-                Start Session
-              </Button>
+              {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
+                <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
+                  <StartSession data-testid="calls-start-session-icon" />
+                  Start Session
+                </Button>
+              )}
             </PermissionGuard>
           </div>
         </div>
