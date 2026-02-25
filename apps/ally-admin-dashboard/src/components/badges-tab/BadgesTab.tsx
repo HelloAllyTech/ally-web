@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 
-import { useGetBadgesTenantVisibilityQuery } from "@src/api";
+import { toast } from "sonner";
+
+import {
+  useGetBadgesTenantVisibilityQuery,
+  useAddBadgesToTenantMutation,
+  useRemoveBadgesFromTenantMutation,
+} from "@src/api";
 import { EmptyState, ListToolbar, EntityToggleCard } from "@src/components";
 import { en } from "@src/constants";
 import { BadgeForTenant } from "@src/types";
@@ -10,20 +16,16 @@ interface BadgesTabProps {
   organizationId: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
-  onToggleAccess: (badgeId: number, enabled: boolean) => Promise<void>;
 }
 
-const BadgesTab = ({
-  organizationId,
-  searchValue,
-  onSearchChange,
-  onToggleAccess,
-}: BadgesTabProps) => {
+const BadgesTab = ({ organizationId, searchValue, onSearchChange }: BadgesTabProps) => {
   const {
     data: badgesForTenant,
     isLoading: isBadgesForTenantLoading,
     isSuccess: isBadgesForTenantSuccess,
   } = useGetBadgesTenantVisibilityQuery({ tenantId: organizationId });
+  const [addBadgesToTenant] = useAddBadgesToTenantMutation();
+  const [removeBadgesFromTenant] = useRemoveBadgesFromTenantMutation();
   const [badges, setBadges] = useState<BadgeForTenant[]>([]);
 
   useEffect(() => {
@@ -31,6 +33,30 @@ const BadgesTab = ({
       setBadges(badgesForTenant);
     }
   }, [isBadgesForTenantSuccess, badgesForTenant]);
+
+  const onToggleAccess = async (badgeId: string, enabled: boolean) => {
+    try {
+      if (enabled) {
+        await addBadgesToTenant({ badgeId, tenantIds: [organizationId] });
+        toast.success(en.badge.badgeAddedToTenant);
+        setBadges(
+          badges.map(badge =>
+            badge.id === badgeId ? { ...badge, visibilityType: "PUBLIC" } : badge,
+          ),
+        );
+      } else {
+        await removeBadgesFromTenant({ badgeId, tenantIds: [organizationId] });
+        toast.success(en.badge.badgeRemovedFromTenant);
+        setBadges(
+          badges.map(badge =>
+            badge.id === badgeId ? { ...badge, visibilityType: "PRIVATE" } : badge,
+          ),
+        );
+      }
+    } catch {
+      toast.error(en.errors.failedUpdateBadgeAccess);
+    }
+  };
   return (
     <div className="flex flex-col h-full">
       <div className="sticky top-0 z-10 bg-white pb-2">
@@ -66,7 +92,7 @@ const BadgesTab = ({
                   description: badge.description,
                 }}
                 hasAccess={badge.visibilityType === "PUBLIC"}
-                onToggleAccess={enabled => onToggleAccess(Number(badge.id), enabled)}
+                onToggleAccess={enabled => onToggleAccess(badge.id, enabled)}
               />
             ))}
             {/* {hasMore && (
