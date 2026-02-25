@@ -3,35 +3,49 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import { CustomDropdown } from "../CustomDropdown";
 
-// Mock ArrowSolid asset
-vi.mock("@assets", () => ({
-  ArrowSolid: () => <svg data-testid="arrow-icon">▼</svg>,
-}));
+// Mock ArrowSolid asset - use importOriginal so other modules get Chat etc.; only override ArrowSolid
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    ArrowSolid: () => <svg data-testid="arrow-icon">▼</svg>,
+  };
+});
 
-// Mock constants
-vi.mock("@constants", () => ({
-  en: {
-    userManagement: {
-      selectOrg: "Select Organization",
+// Mock constants - use importOriginal so baseApi and other modules get TAG_TYPES etc.; only override en
+vi.mock("@constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("@constants")>();
+  return {
+    ...actual,
+    en: {
+      userManagement: {
+        selectOrg: "Select Organization",
+      },
+      common: {
+        noOptionsAvailable: "No options available",
+      },
     },
-    common: {
-      noOptionsAvailable: "No options available",
-    },
-  },
-}));
+  };
+});
 
-// Mock hooks
-vi.mock("@hooks", () => ({
-  useClickOutside: vi.fn((ref, callback) => {
-    // Mock implementation - in real tests, this would be tested separately
-  }),
-}));
+// Mock hooks - keep useCreatePortal from actual so portal content renders; mock useClickOutside
+vi.mock("@hooks", async importOriginal => {
+  const actual = await importOriginal<typeof import("@hooks")>();
+  return {
+    ...actual,
+    useClickOutside: vi.fn(),
+  };
+});
 
-// Mock utils
-vi.mock("@utils", () => ({
-  formatCapitalizedEnum: (value: string) =>
-    value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : "",
-}));
+// Mock utils - use importOriginal so other modules get MAPPED_EVENT_FIELDS etc.; only override formatCapitalizedEnum
+vi.mock("@utils", async importOriginal => {
+  const actual = await importOriginal<typeof import("@utils")>();
+  return {
+    ...actual,
+    formatCapitalizedEnum: (value: string) =>
+      value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : "",
+  };
+});
 
 describe("CustomDropdown", () => {
   const mockOnChange = vi.fn();
@@ -283,7 +297,7 @@ describe("CustomDropdown", () => {
     });
 
     it("renders all options with correct styling classes", () => {
-      const { container } = render(
+      render(
         <CustomDropdown
           label="Test Label"
           options={optionsWithValue}
@@ -295,8 +309,8 @@ describe("CustomDropdown", () => {
       const trigger = screen.getByText("Option 2");
       fireEvent.click(trigger);
 
-      // Check that dropdown options have cursor-pointer class
-      const dropdownOptions = container.querySelectorAll(".cursor-pointer");
+      // Dropdown is portaled to document.body; options have cursor-pointer
+      const dropdownOptions = document.body.querySelectorAll(".cursor-pointer");
       expect(dropdownOptions.length).toBeGreaterThan(0);
     });
   });
@@ -356,7 +370,7 @@ describe("CustomDropdown", () => {
     });
 
     it("applies correct dropdown menu styling", () => {
-      const { container } = render(
+      render(
         <CustomDropdown
           label="Test Label"
           options={optionsWithValue}
@@ -368,8 +382,10 @@ describe("CustomDropdown", () => {
       const trigger = screen.getByText("Select Organization");
       fireEvent.click(trigger);
 
-      const dropdown = container.querySelector(".absolute");
-      expect(dropdown).toHaveClass("shadow-lg");
+      const dropdown =
+        document.body.querySelector(".fixed.overflow-auto") ??
+        document.body.querySelector("[class*='shadow-lg']");
+      expect(dropdown).toBeInTheDocument();
       expect(dropdown).toHaveClass("max-h-[240px]");
       expect(dropdown).toHaveClass("overflow-auto");
     });
@@ -551,7 +567,7 @@ describe("CustomDropdown", () => {
     });
 
     it("options have cursor-pointer class", () => {
-      const { container } = render(
+      render(
         <CustomDropdown
           label="Test Label"
           options={optionsWithValue}
@@ -563,14 +579,14 @@ describe("CustomDropdown", () => {
       const trigger = screen.getByText("Select Organization");
       fireEvent.click(trigger);
 
-      const cursorPointerElements = container.querySelectorAll(".cursor-pointer");
+      const cursorPointerElements = document.body.querySelectorAll(".cursor-pointer");
       expect(cursorPointerElements.length).toBeGreaterThan(0);
     });
   });
 
   describe("Animation", () => {
     it("dropdown has fade-in animation", () => {
-      const { container } = render(
+      render(
         <CustomDropdown
           label="Test Label"
           options={optionsWithValue}
@@ -582,7 +598,7 @@ describe("CustomDropdown", () => {
       const trigger = screen.getByText("Select Organization");
       fireEvent.click(trigger);
 
-      const dropdown = container.querySelector(".animate-fadeIn");
+      const dropdown = document.body.querySelector(".animate-fadeIn");
       expect(dropdown).toBeInTheDocument();
     });
 
