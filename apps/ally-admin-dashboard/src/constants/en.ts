@@ -52,6 +52,7 @@ export const en = {
     pathUpdateFailed: "Failed to update track access.",
     caseUpdateFailed: "Failed to update case access.",
     failedUpdateAccess: "Failed to update access.",
+    failedUpdateBadgeAccess: "Failed to update badge access.",
     OrganizationNotFound: "Organization not found",
     minimumScoreError: "Minimum score must be a positive integer",
     failedToCreateEvent: "Failed to create event",
@@ -517,6 +518,8 @@ export const en = {
     addBase: "Add Branch",
   },
   badge: {
+    badgeAddedToTenant: "Badge added to tenant successfully",
+    badgeRemovedFromTenant: "Badge removed from tenant successfully",
     deleteBadgesConfirmation: "Delete these",
     deleteBadgesConfirmationDescription:
       "This will permanently delete the badges and remove them from all organizations and users who have already earned them. This action cannot be undone.",
