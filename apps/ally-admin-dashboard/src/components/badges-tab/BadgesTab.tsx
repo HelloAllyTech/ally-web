@@ -77,25 +77,30 @@ const BadgesTab = ({ organizationId, searchValue, onSearchChange }: BadgesTabPro
   };
 
   const onToggleAccess = async (badgeId: string, enabled: boolean) => {
+    setBadges(prev =>
+      prev.map(badge =>
+        badge.id === badgeId
+          ? { ...badge, enabled, visibilityType: enabled ? "PUBLIC" : "PRIVATE" }
+          : badge,
+      ),
+    );
     try {
       if (enabled) {
         await addBadgesToTenant({ badgeId, tenantIds: [organizationId] });
         toast.success(en.badge.badgeAddedToTenant);
-        setBadges(
-          badges.map(badge =>
-            badge.id === badgeId ? { ...badge, visibilityType: "PUBLIC" } : badge,
-          ),
-        );
       } else {
         await removeBadgesFromTenant({ badgeId, tenantIds: [organizationId] });
         toast.success(en.badge.badgeRemovedFromTenant);
-        setBadges(
-          badges.map(badge =>
-            badge.id === badgeId ? { ...badge, visibilityType: "PRIVATE" } : badge,
-          ),
-        );
       }
     } catch {
+      // Revert on error
+      setBadges(prev =>
+        prev.map(badge =>
+          badge.id === badgeId
+            ? { ...badge, enabled: !enabled, visibilityType: enabled ? "PRIVATE" : "PUBLIC" }
+            : badge,
+        ),
+      );
       toast.error(en.errors.failedUpdateBadgeAccess);
     }
   };
