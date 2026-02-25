@@ -6,11 +6,11 @@ import {
   useGetBadgesTenantVisibilityQuery,
   useAddBadgesToTenantMutation,
   useRemoveBadgesFromTenantMutation,
-} from "@src/api";
-import { EmptyState, ListToolbar, EntityToggleCard } from "@src/components";
-import { en } from "@src/constants";
-import { BadgeForTenant } from "@src/types";
-import { isNonEmptyArray } from "@src/utils";
+} from "@api";
+import { EmptyState, ListToolbar, EntityToggleCard } from "@components";
+import { en } from "@constants";
+import { BadgeForTenant } from "@types";
+import { isNonEmptyArray } from "@utils";
 
 interface BadgesTabProps {
   organizationId: string;
@@ -18,21 +18,63 @@ interface BadgesTabProps {
   onSearchChange: (value: string) => void;
 }
 
+const LIMIT = 20;
+
 const BadgesTab = ({ organizationId, searchValue, onSearchChange }: BadgesTabProps) => {
+  const [offset, setOffset] = useState(0);
+  const [badges, setBadges] = useState<BadgeForTenant[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+
   const {
     data: badgesForTenant,
     isLoading: isBadgesForTenantLoading,
     isSuccess: isBadgesForTenantSuccess,
-  } = useGetBadgesTenantVisibilityQuery({ tenantId: organizationId });
+    isFetching: isBadgesForTenantFetching,
+  } = useGetBadgesTenantVisibilityQuery({
+    tenantId: organizationId,
+    limit: LIMIT,
+    offset,
+    search: searchValue || undefined,
+    sortBy: "name",
+    order: "ASC",
+  });
+
   const [addBadgesToTenant] = useAddBadgesToTenantMutation();
   const [removeBadgesFromTenant] = useRemoveBadgesFromTenantMutation();
-  const [badges, setBadges] = useState<BadgeForTenant[]>([]);
 
+  // Reset offset when search changes
+  useEffect(() => {
+    setOffset(0);
+    setBadges([]);
+  }, [searchValue]);
+
+  // Handle data loading
   useEffect(() => {
     if (isBadgesForTenantSuccess && badgesForTenant) {
-      setBadges(badgesForTenant);
+      const newBadges = badgesForTenant.data || [];
+
+      if (offset === 0) {
+        // Initial load or search - replace badges
+        setBadges(newBadges);
+      } else {
+        // Load more - append badges, avoiding duplicates
+        setBadges(prev => {
+          const existingIds = new Set(prev.map(b => b.id));
+          const uniqueNewBadges = newBadges.filter(b => !existingIds.has(b.id));
+          return [...prev, ...uniqueNewBadges];
+        });
+      }
+
+      // Check if there are more items to load
+      setHasMore(newBadges.length === LIMIT);
     }
-  }, [isBadgesForTenantSuccess, badgesForTenant]);
+  }, [isBadgesForTenantSuccess, badgesForTenant, offset]);
+
+  const loadMore = () => {
+    if (!isBadgesForTenantFetching && hasMore) {
+      setOffset(prev => prev + LIMIT);
+    }
+  };
 
   const onToggleAccess = async (badgeId: string, enabled: boolean) => {
     try {
@@ -95,17 +137,17 @@ const BadgesTab = ({ organizationId, searchValue, onSearchChange }: BadgesTabPro
                 onToggleAccess={enabled => onToggleAccess(badge.id, enabled)}
               />
             ))}
-            {/* {hasMore && (
+            {hasMore && (
               <div className="flex justify-start mt-2 pb-4 mb-4">
                 <button
                   onClick={loadMore}
-                  disabled={isSimulationsFetching}
+                  disabled={isBadgesForTenantFetching}
                   className="inline-flex font-primary items-center disabled:opacity-50 text-sm text-typography-700 font-medium py-1 px-1 hover:text-typography-900"
                 >
-                  + {isSimulationsFetching ? en.common.loading : en.common.loadMore}
+                  + {isBadgesForTenantFetching ? en.common.loading : en.common.loadMore}
                 </button>
               </div>
-            )} */}
+            )}
           </div>
         </div>
       )}
