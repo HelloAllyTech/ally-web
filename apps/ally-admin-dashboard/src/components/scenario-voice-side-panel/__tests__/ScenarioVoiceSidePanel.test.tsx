@@ -106,6 +106,7 @@ describe("ScenarioVoiceSidePanel", () => {
     config: { model: "neural", age: "adult", gender: "female" },
     createdAt: "2024-01-15T10:00:00Z",
     updatedAt: "2024-01-15T10:00:00Z",
+    active: true,
   };
 
   const defaultProps = {

@@ -40,7 +40,7 @@ const tabs = [
   ...(FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG
     ? [{ id: TAB_IDS.CASES, label: en.userManagement.cases }]
     : []),
-  ...(FEATURE_FLAGS_MAP.ORGANISATION_BADGES_FLAG
+  ...(FEATURE_FLAGS_MAP.USER_BADGES_FLAG
     ? [{ id: TAB_IDS.BADGES, label: en.userManagement.badges }]
     : []),
   ...(FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG
@@ -191,7 +191,6 @@ export const OrganizationDetail: FC = () => {
             organizationId={id}
             searchValue={searchValue}
             onSearchChange={setSearchValue}
-            onToggleAccess={handleToggleAccess}
           />
         );
       default:
@@ -267,12 +266,11 @@ export const OrganizationDetail: FC = () => {
               onToggleAccess={handleTogglePathAccess}
             />
           )}
-          {activeTab === TAB_IDS.BADGES && FEATURE_FLAGS_MAP.ORGANISATION_BADGES_FLAG && (
+          {activeTab === TAB_IDS.BADGES && (
             <BadgesTab
               organizationId={id}
               searchValue={searchValue}
               onSearchChange={setSearchValue}
-              onToggleAccess={handleToggleAccess}
             />
           )}
         </div>

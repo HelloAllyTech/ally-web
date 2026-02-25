@@ -27,7 +27,7 @@ export interface SimulationTimerProps {
 
 export interface SessionGoalTimerProps {
   startTime: string;
-  maxTimeValue: string;
+  maxTimeSeconds: number;
 }
 
 export interface RenderControlsParams {
@@ -88,6 +88,7 @@ export interface BottomSectionProps {
   isMuted: boolean;
   isEndingSession: boolean;
   startTime: string;
+  timeLimit?: number;
   isFocusMode: boolean;
   onFocusButtonClick: () => void;
 }
