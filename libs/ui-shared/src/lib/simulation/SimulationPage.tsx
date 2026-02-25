@@ -212,20 +212,18 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       </motion.div>
       {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}
 
-      {startTime && (
-        <BottomSection
-          isWarning={isWarning}
-          onTimeLimitWarning={onTimeLimitWarning}
-          onEndSimulation={handleEndSimulation}
-          onMuteSimulation={onMuteSimulation}
-          isMuted={isMuted}
-          isEndingSession={isEndingSession}
-          startTime={startTime}
-          timeLimit={maxTimeSeconds}
-          isFocusMode={isFocusMode}
-          onFocusButtonClick={onFocusButtonClick}
-        />
-      )}
+      <BottomSection
+        isWarning={isWarning}
+        onTimeLimitWarning={onTimeLimitWarning}
+        onEndSimulation={handleEndSimulation}
+        onMuteSimulation={onMuteSimulation}
+        isMuted={isMuted}
+        isEndingSession={isEndingSession}
+        startTime={startTime}
+        timeLimit={maxTimeSeconds}
+        isFocusMode={isFocusMode}
+        onFocusButtonClick={onFocusButtonClick}
+      />
 
       {renderFooter?.()}
 
