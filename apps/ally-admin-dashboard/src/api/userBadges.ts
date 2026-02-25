@@ -75,8 +75,9 @@ const userBadgesAPI = baseAPI.injectEndpoints({
       GetBadgesTenantVisibilityResponse,
       GetBadgesTenantVisibilityRequest
     >({
-      query: params => ({
-        url: ApiEndpoints.USER_BADGES.BADGES_TENANT_VISIBILITY(params.tenantId),
+      query: ({ tenantId, ...params }) => ({
+        url: ApiEndpoints.USER_BADGES.BADGES_TENANT_VISIBILITY(tenantId),
+        params,
       }),
     }),
     addBadgesToTenant: builder.mutation<AddBadgesToTenantResponse, AddBadgesToTenantRequest>({

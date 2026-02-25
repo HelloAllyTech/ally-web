@@ -108,9 +108,16 @@ export interface DeleteBadgeResponse {
 
 export interface GetBadgesTenantVisibilityRequest {
   tenantId: string;
+  limit?: number;
+  offset?: number;
+  search?: string;
+  sortBy?: "createdAt" | "updatedAt" | "name";
+  order?: "ASC" | "DESC";
 }
 
-export type GetBadgesTenantVisibilityResponse = BadgeForTenant[];
+export interface GetBadgesTenantVisibilityResponse {
+  data: BadgeForTenant[];
+}
 
 export interface AddBadgesToTenantRequest {
   badgeId: string;
