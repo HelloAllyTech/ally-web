@@ -1117,7 +1117,7 @@ describe("UserModal", () => {
         onClick: vi.fn(),
       },
       {
-        id: "hideRankInLeaderboard",
+        id: "hideRankInCommunity",
         value: false,
         label: "Hide Rank in Leaderboard",
         onClick: vi.fn(),
@@ -1209,7 +1209,7 @@ describe("UserModal", () => {
         expect(toggleSwitches[0]).toHaveAttribute("data-enabled", "true"); // dashboard-1: true
         expect(toggleSwitches[1]).toHaveAttribute("data-enabled", "false"); // enableMicrophoneMode: false
         expect(toggleSwitches[2]).toHaveAttribute("data-enabled", "true"); // enableAudioUpload: true
-        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "false"); // hideRankInLeaderboard: false
+        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "false"); // hideRankInCommunity: false
       });
     });
 
@@ -1292,7 +1292,7 @@ describe("UserModal", () => {
       fireEvent.click(screen.getByTestId("tab-settings"));
 
       await waitFor(() => {
-        // Two options are disabled (enableMicrophoneMode and hideRankInLeaderboard)
+        // Two options are disabled (enableMicrophoneMode and hideRankInCommunity)
         const disabledTexts = screen.getAllByText("Disabled");
         expect(disabledTexts).toHaveLength(2);
       });
@@ -1306,7 +1306,7 @@ describe("UserModal", () => {
             orgcode: "TEST",
             enableMicrophoneMode: false,
             enableAudioUpload: false,
-            hideRankInLeaderboard: false,
+            hideRankInCommunity: false,
             enabledDashboardIds: [],
           },
           mode: "onChange",
@@ -1374,7 +1374,7 @@ describe("UserModal", () => {
         id: "tenant-123",
         enableMicrophoneMode: true,
         enableAudioUpload: false,
-        hideRankInLeaderboard: true,
+        hideRankInCommunity: true,
         enabledDashboardIds: ["dashboard-1", "dashboard-2"],
       };
 
@@ -1398,8 +1398,8 @@ describe("UserModal", () => {
           onClick: vi.fn(),
         },
         {
-          id: "hideRankInLeaderboard",
-          value: apiTenantData.hideRankInLeaderboard,
+          id: "hideRankInCommunity",
+          value: apiTenantData.hideRankInCommunity,
           label: "Hide Rank in Leaderboard",
           onClick: vi.fn(),
         },
@@ -1410,7 +1410,7 @@ describe("UserModal", () => {
           defaultValues={{
             enableMicrophoneMode: apiTenantData.enableMicrophoneMode,
             enableAudioUpload: apiTenantData.enableAudioUpload,
-            hideRankInLeaderboard: apiTenantData.hideRankInLeaderboard,
+            hideRankInCommunity: apiTenantData.hideRankInCommunity,
             enabledDashboardIds: apiTenantData.enabledDashboardIds,
           }}
         >
@@ -1439,7 +1439,7 @@ describe("UserModal", () => {
         expect(toggleSwitches[0]).toHaveAttribute("data-enabled", "true"); // dashboard-1 in enabledDashboardIds
         expect(toggleSwitches[1]).toHaveAttribute("data-enabled", "true"); // enableMicrophoneMode: true
         expect(toggleSwitches[2]).toHaveAttribute("data-enabled", "false"); // enableAudioUpload: false
-        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "true"); // hideRankInLeaderboard: true
+        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "true"); // hideRankInCommunity: true
       });
     });
   });
