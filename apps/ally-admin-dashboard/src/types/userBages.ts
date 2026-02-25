@@ -21,7 +21,8 @@ export interface BadgeForTenant {
   description: string;
   imageUrl: string;
   category: string;
-  visibilityType: "PUBLIC" | "PRIVATE";
+  enabled?: boolean;
+  visibilityType?: "PUBLIC" | "PRIVATE";
   achievementParams: {
     count: number;
   };
