@@ -822,7 +822,13 @@ export const SCENARIO_VOICE_COLUMNS = [
     minWidth: 200,
     options: [], // Will be populated dynamically from API
   },
-
+  {
+    id: "active",
+    label: "Status",
+    accessor: "active",
+    dataType: cellTypes.switch,
+    minWidth: 150,
+  },
   {
     id: "createdAt",
     label: "Created Date",
