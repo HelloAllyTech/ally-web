@@ -86,6 +86,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     provider: "",
     languageId: undefined,
     config: emptyVoiceConfig,
+    active: true,
   });
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -110,6 +111,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
         provider: "",
         languageId: undefined,
         config: emptyVoiceConfig,
+        active: true,
       });
       setConfigText(JSON.stringify(emptyVoiceConfig, null, 2));
       setConfigError(null);
@@ -182,6 +184,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       provider: formData.provider || "",
       languageId: formData.languageId,
       config: finalConfig,
+      active: formData.active,
       ...(selectedVoice?.id && {
         id: selectedVoice?.id,
         createdAt: selectedVoice.createdAt || new Date().toISOString(),
