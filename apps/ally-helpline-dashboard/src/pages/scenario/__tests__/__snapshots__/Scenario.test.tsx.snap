@@ -18,7 +18,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
           data-exit="exit"
           data-initial="hidden"
           data-testid="scenario-content"
-          data-variants="{\\"hidden\\":{\\"opacity\\":0,\\"scale\\":0.95},\\"visible\\":{\\"opacity\\":1,\\"scale\\":1,\\"transition\\":{\\"duration\\":0.4,\\"ease\\":[0.4,0,0.2,1]}},\\"exit\\":{\\"opacity\\":0,\\"scale\\":0.95,\\"transition\\":{\\"duration\\":0.3}}}"
+          variants="[object Object]"
         >
           <div
             class="flex justify-between w-full max-w-[600px]"

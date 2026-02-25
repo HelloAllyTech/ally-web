@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from "react";
 
 import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
@@ -13,6 +14,7 @@ import { useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
 import { ButtonVariant } from "../button";
+import LanguageSelector from "../language-selector/LanguageSelector";
 
 const EXPANDED_WIDTH = 1200;
 
@@ -22,35 +24,39 @@ const defaultProfileUploadValues: {
   profileImageUrl: "",
 };
 
-const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) => (
-  <div
-    data-testid={`nav-tab-${id}`}
-    className={`
+const Tab: FC<TabProps> = ({ id, Icon, title, tKey, activeTab, isExpanded, onClick }) => {
+  const { t } = useTranslation();
+  return (
+    <div
+      data-testid={`nav-tab-${id}`}
+      className={`
           w-full h-12 rounded-md p-4 flex items-center gap-3 my-1 cursor-pointer
           ${activeTab === id ? "bg-[#F3F3F3] rounded-[2px]" : "hover:bg-[#F5F5F5]"}
           transition-all duration-300 group
         `}
-    onClick={onClick}
-  >
-    <Icon
-      className={`flex-shrink-0 ${activeTab === id ? "" : "opacity-60"} `}
-      data-testid={`nav-tab-icon-${id}`}
-    />
+      onClick={onClick}
+    >
+      <Icon
+        className={`flex-shrink-0 ${activeTab === id ? "" : "opacity-60"} `}
+        data-testid={`nav-tab-icon-${id}`}
+      />
 
-    {isExpanded && (
-      <div
-        data-testid={`nav-tab-title-${id}`}
-        className={`${
-          activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
-        } font-primary text-lg`}
-      >
-        {title}
-      </div>
-    )}
-  </div>
-);
+      {isExpanded && (
+        <div
+          data-testid={`nav-tab-title-${id}`}
+          className={`${
+            activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
+          } font-primary text-lg`}
+        >
+          {tKey ? t(tKey) : title}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
     useUser();
 
@@ -132,12 +138,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         className="flex-1 flex-col gap-1 m-2 border-t border-t-[#E5E7EB] pt-3"
         data-testid="nav-sidebar-tabs"
       >
-        {permittedTabs?.map(({ id, Icon, title, path }) => (
+        {permittedTabs?.map(({ id, Icon, title, path, key: translationKey }: any) => (
           <Tab
             key={id}
             id={id}
             Icon={Icon}
             title={title}
+            tKey={translationKey}
             activeTab={activeTab}
             isExpanded={isExpanded}
             onClick={() => onTabClick(path)}
@@ -200,7 +207,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
                 data-testid="nav-sidebar-toggle"
                 onClick={handleToggleSidebar}
                 className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
-                title="Expand sidebar"
+                title={t("nav.sidebar.expand")}
               >
                 <DockToRight />
               </button>
@@ -212,7 +219,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
               data-testid="nav-sidebar-toggle"
               onClick={handleToggleSidebar}
               className="p-3 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
-              title="Collapse sidebar"
+              title={t("nav.sidebar.collapse")}
             >
               <DockToRight />
             </button>
@@ -222,6 +229,12 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
         <div className="flex flex-col items-start gap-3 mx-4 my-3" data-testid="nav-sidebar-footer">
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
+
+          {isExpanded && (
+            <div className="w-full" data-testid="nav-sidebar-language-selector">
+              <LanguageSelector label={t("nav.language.label")} />
+            </div>
+          )}
 
           <UserInfo
             user={user}
@@ -234,13 +247,16 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         </div>
       </div>
       <ConfirmationDialog
-        title={{ normal: "Safeguard your ", italic: "account" }}
+        title={{
+          normal: t("nav.logout.title.normal"),
+          italic: t("nav.logout.title.italic"),
+        }}
         isOpen={isLogoutDialogOpen}
         onClose={closeLogoutDialog}
-        content="Are you sure you want to log out? You will need to enter secure OTP to login again."
+        content={t("nav.logout.content")}
         buttonVariant={ButtonVariant.DESTRUCTIVE}
         onButtonClick={handleConfirmLogout}
-        buttonText="Logout & lock my Ally account"
+        buttonText={t("nav.logout.button")}
         icon={LogoutIllustration}
       />
       {isOpen && (
