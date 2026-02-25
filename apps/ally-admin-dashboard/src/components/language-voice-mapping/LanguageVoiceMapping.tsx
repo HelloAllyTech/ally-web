@@ -245,6 +245,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
               }
               optionsRenderer={FEATURE_FLAGS_MAP.SIMULATION_VOICE_FLAG ? renderOption : undefined}
               onClose={() => handlePause()}
+              allowDeselect={true}
             />
           </div>
         </div>
