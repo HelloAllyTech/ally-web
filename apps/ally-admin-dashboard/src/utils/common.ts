@@ -8,49 +8,6 @@ export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
 };
 
-/**
- * Validates if a time string is in the format HH:MM:SS and within the specified range
- * @param timeStr - Time string in HH:MM:SS format
- * @param maxTimeStr - Maximum allowed time in HH:MM:SS format
- * @returns true if valid, false otherwise
- */
-export const validateMaxTimeValue = (timeStr: string, maxTimeStr: string): boolean => {
-  if (!timeStr) return false;
-
-  // Check format HH:MM:SS
-  const timeRegex = /^(\d{2}):(\d{2}):(\d{2})$/;
-  const match = timeStr.match(timeRegex);
-
-  if (!match) return false;
-
-  const hours = parseInt(match[1], 10);
-  const minutes = parseInt(match[2], 10);
-  const seconds = parseInt(match[3], 10);
-
-  // Validate ranges for individual components
-  if (hours < 0 || hours > 23) return false;
-  if (minutes < 0 || minutes > 59) return false;
-  if (seconds < 0 || seconds > 59) return false;
-
-  // Convert to total seconds
-  const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-
-  // Parse max time string
-  const maxMatch = maxTimeStr.match(timeRegex);
-  if (!maxMatch) return false;
-
-  const maxHours = parseInt(maxMatch[1], 10);
-  const maxMinutes = parseInt(maxMatch[2], 10);
-  const maxSeconds = parseInt(maxMatch[3], 10);
-
-  const maxTotalSeconds = maxHours * 3600 + maxMinutes * 60 + maxSeconds;
-
-  // Check range: must be at least 1 second and not exceed maxTotalSeconds
-  if (totalSeconds < 1 || totalSeconds > maxTotalSeconds) return false;
-
-  return true;
-};
-
 export const getKeyFromIndex = (index: number, prefix: string = "key") => `${prefix}-${index}`;
 
 export const updateQueryParamListWithoutReload = (
@@ -337,6 +294,39 @@ export const validateTime = (timeString: string): string => {
   }
 
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+};
+
+/**
+ * Validates if a time string is within the specified min/max range
+ * @param timeStr - Time string in HH:MM:SS format
+ * @param minTime - Optional minimum allowed time in HH:MM:SS format
+ * @param maxTime - Optional maximum allowed time in HH:MM:SS format
+ * @returns Object with isValid boolean and optional error message
+ */
+export const validateTimeRange = (
+  timeStr: string,
+  minTime?: string,
+  maxTime?: string,
+): { isValid: boolean; error?: string } => {
+  if (!timeStr) return { isValid: true };
+
+  // Convert HH:MM:SS to seconds for comparison
+  const timeToSeconds = (time: string): number => {
+    const [h, m, s] = time.split(":").map(Number);
+    return h * 3600 + m * 60 + s;
+  };
+
+  const seconds = timeToSeconds(timeStr);
+
+  if (minTime && seconds < timeToSeconds(minTime)) {
+    return { isValid: false, error: `Minimum time is ${minTime}` };
+  }
+
+  if (maxTime && seconds > timeToSeconds(maxTime)) {
+    return { isValid: false, error: `Maximum time is ${maxTime}` };
+  }
+
+  return { isValid: true };
 };
 
 /**

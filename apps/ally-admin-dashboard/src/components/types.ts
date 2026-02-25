@@ -90,6 +90,7 @@ export interface DropdownFieldProps {
     onSelect: (value: string) => void,
   ) => ReactNode;
   onClose?: () => void;
+  allowDeselect?: boolean;
 }
 
 // NarrativeContext

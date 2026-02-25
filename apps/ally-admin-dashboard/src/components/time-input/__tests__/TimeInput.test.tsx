@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
 
 vi.mock("@components/mapped-event-side-panel", () => ({
   MappedEventSidePanel: () => null,
@@ -171,5 +171,249 @@ describe("TimeInput", () => {
 
     fireEvent.change(input, { target: { value: "123" } });
     expect(input.value).toBe("12:3");
+  });
+
+  describe("Range Validation", () => {
+    afterEach(() => {
+      cleanup();
+    });
+
+    it("should not show error for valid time within range", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="00:10:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.queryByText(/Minimum time is/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Maximum time is/)).not.toBeInTheDocument();
+    });
+
+    it("should show error when time is below minimum", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="00:03:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.getByText("Minimum time is 00:05:00")).toBeInTheDocument();
+    });
+
+    it("should show error when time exceeds maximum", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="02:00:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.getByText("Maximum time is 01:30:00")).toBeInTheDocument();
+    });
+
+    it("should accept minimum boundary value", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="00:05:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.queryByText(/Minimum time is/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Maximum time is/)).not.toBeInTheDocument();
+    });
+
+    it("should accept maximum boundary value", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="01:30:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.queryByText(/Minimum time is/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Maximum time is/)).not.toBeInTheDocument();
+    });
+
+    it("should clear error when valid value is entered after invalid", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      const { rerender } = render(
+        <TimeInput
+          value="00:03:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.getByText("Minimum time is 00:05:00")).toBeInTheDocument();
+
+      rerender(
+        <TimeInput
+          value="00:10:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      fireEvent.blur(input);
+      expect(screen.queryByText(/Minimum time is/)).not.toBeInTheDocument();
+    });
+
+    it("should work without minTime and maxTime", () => {
+      cleanup();
+
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      const { container, unmount } = render(
+        <TimeInput value="00:10:00" onChange={mockOnChange} onBlur={mockOnBlur} />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      const errorElements = container.querySelectorAll(".text-destructive-500");
+      expect(errorElements.length).toBe(0);
+
+      unmount();
+    });
+
+    it("should apply error border styling when error exists", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="00:03:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(input.className).toContain("border-destructive-500");
+    });
+
+    it("should not show error when showError is false", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="00:03:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+          maxTime="01:30:00"
+          showError={false}
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.queryByText(/Minimum time is/)).not.toBeInTheDocument();
+    });
+
+    it("should display external error prop", () => {
+      const mockOnChange = vi.fn();
+      render(
+        <TimeInput
+          value="00:10:00"
+          onChange={mockOnChange}
+          error="Custom error message"
+          minTime="00:05:00"
+          maxTime="01:30:00"
+        />,
+      );
+
+      expect(screen.getByText("Custom error message")).toBeInTheDocument();
+    });
+
+    it("should handle only minTime constraint", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="00:03:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          minTime="00:05:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.getByText("Minimum time is 00:05:00")).toBeInTheDocument();
+    });
+
+    it("should handle only maxTime constraint", () => {
+      const mockOnChange = vi.fn();
+      const mockOnBlur = vi.fn();
+      render(
+        <TimeInput
+          value="02:00:00"
+          onChange={mockOnChange}
+          onBlur={mockOnBlur}
+          maxTime="01:30:00"
+        />,
+      );
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      fireEvent.blur(input);
+
+      expect(screen.getByText("Maximum time is 01:30:00")).toBeInTheDocument();
+    });
   });
 });
