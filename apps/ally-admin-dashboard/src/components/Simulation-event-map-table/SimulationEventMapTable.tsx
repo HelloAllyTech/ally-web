@@ -288,15 +288,26 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     [simulationId, mapScenarioEvents],
   );
 
+  // Changed events accumulator for debounce
+  const changedEventsRef = useRef<Map<string, UpdateScenarioEventDataParam>>(new Map());
+
   // Debounced save for cell updates (to prevent multiple saves when typing quickly in number input)
   const debouncedSaveTimeoutRef = useRef<NodeJS.Timeout>();
   const debouncedSaveEventsToApi = useCallback(
-    (events: UpdateScenarioEventDataParam[]) => {
+    (event: UpdateScenarioEventDataParam) => {
+      if (event.id?.value) {
+        changedEventsRef.current.set(event.id.value as string, event);
+      }
+
       if (debouncedSaveTimeoutRef.current) {
         clearTimeout(debouncedSaveTimeoutRef.current);
       }
       debouncedSaveTimeoutRef.current = setTimeout(() => {
-        saveEventsToApi(events);
+        const eventsToSave = Array.from(changedEventsRef.current.values());
+        if (eventsToSave.length > 0) {
+          saveEventsToApi(eventsToSave);
+          changedEventsRef.current.clear();
+        }
       }, DEBOUNCE_DELAY);
     },
     [saveEventsToApi],
@@ -308,11 +319,18 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       eventId: string,
       updater: (event: UpdateScenarioEventDataParam) => UpdateScenarioEventDataParam,
     ) => {
-      const updatedEvents = mappedEvents.map(event =>
-        event.id?.value === eventId ? updater(event) : event,
-      );
+      let updatedEvent: UpdateScenarioEventDataParam | null = null;
+      const updatedEvents = mappedEvents.map(event => {
+        if (event.id?.value === eventId) {
+          updatedEvent = updater(event);
+          return updatedEvent;
+        }
+        return event;
+      });
       setMappedEvents(updatedEvents);
-      debouncedSaveEventsToApi(updatedEvents);
+      if (updatedEvent) {
+        debouncedSaveEventsToApi(updatedEvent);
+      }
     },
     [mappedEvents, debouncedSaveEventsToApi],
   );
@@ -374,7 +392,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
             mappedEvent?.id?.value === rowId ? formattedEvent : mappedEvent,
           );
           setMappedEvents(updatedEvents);
-          saveEventsToApi(updatedEvents);
+          saveEventsToApi([formattedEvent]);
         }
       } else {
         // For other columns, just update that specific field using rowId
@@ -410,7 +428,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       event.id?.value === updatedEvent.id?.value ? updatedEvent : event,
     );
     setMappedEvents(updatedEvents);
-    saveEventsToApi(updatedEvents);
+    saveEventsToApi([updatedEvent]);
   };
 
   // Delete mapped event from side panel
@@ -444,7 +462,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
           event.id?.value === "" ? formattedEvent : event,
         );
         setMappedEvents(updatedEvents);
-        saveEventsToApi(updatedEvents);
+        saveEventsToApi([formattedEvent]);
       }
     },
     [sessionEventsMap, mappedEvents, saveEventsToApi],
@@ -463,7 +481,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       setMappedEvents(updatedEvents);
 
       // Save to API
-      await saveEventsToApi(updatedEvents);
+      await saveEventsToApi(events);
 
       // Close panel
       setIsBulkAddPanelOpen(false);
