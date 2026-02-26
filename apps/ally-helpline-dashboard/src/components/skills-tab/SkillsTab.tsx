@@ -115,7 +115,7 @@ const LoadingState: FC = () => (
 
 const ErrorState: FC = () => (
   <div className="w-full flex items-center justify-center p-12">
-    <div className="text-red-500">Failed to load skills data</div>
+    <div className="text-typography-700 font-primary text-lg">Failed to load skills data</div>
   </div>
 );
 
