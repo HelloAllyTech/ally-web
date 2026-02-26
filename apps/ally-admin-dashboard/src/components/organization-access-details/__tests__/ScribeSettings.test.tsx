@@ -10,6 +10,13 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Mock feature flags
+vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
+  FEATURE_FLAGS_MAP: {
+    SIMULATION_SETTINGS_FLAG: false,
+  },
+}));
+
 // Mock the components
 vi.mock("@components", () => ({
   ToggleSwitch: ({ enabled, onChange, label }: any) => (
@@ -70,6 +77,8 @@ vi.mock("@constants", async importOriginal => {
       common: {
         cancel: "Cancel",
         save: "Save",
+        enabled: "Enabled",
+        disabled: "Disabled",
       },
       userManagement: {
         enabled: "Enabled",
@@ -81,6 +90,7 @@ vi.mock("@constants", async importOriginal => {
         saving: "Saving...",
         scribeSettingsNotEnabled: "Scribe settings is not enabled",
         failedToUpdateScribeSettings: "Failed to update scribe settings",
+        configureSimulationSettings: "Configure Simulation Settings",
       },
     },
   };
@@ -140,6 +150,10 @@ vi.mock("@api", () => ({
   }),
   useUpdateSummarySectionsMutation: () => [mockUpdateSummarySections, { isLoading: false }],
   useUpdateSummaryFieldsMutation: () => [mockUpdateSummaryFields, { isLoading: false }],
+  useGetDashboardSettingsAllQuery: () => ({
+    data: [],
+    isLoading: false,
+  }),
 }));
 
 describe("ScribeSettings", () => {
@@ -151,7 +165,7 @@ describe("ScribeSettings", () => {
 
   it("renders the component with title", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    expect(screen.getByText("Additional Fields")).toBeInTheDocument();
+    expect(screen.getByText("Configure Simulation Settings")).toBeInTheDocument();
   });
 
   it("renders all parent accordions", () => {

@@ -6,6 +6,12 @@ export const HttpMethod = {
   PATCH: "PATCH",
 };
 
+export const DASHBOARD_TABS = {
+  ORG_ANALYTICS: "ORG_ANALYTICS",
+  CALL_LOG_ANALYTICS: "CALL_LOG_ANALYTICS",
+  SIMULATION_ANALYTICS: "SIMULATION_ANALYTICS",
+};
+
 export const ApiEndpoints = {
   AUTH: {
     SIGNUP: "/v1/auth/signup",

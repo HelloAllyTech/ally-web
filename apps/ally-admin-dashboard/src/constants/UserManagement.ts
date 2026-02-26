@@ -1,13 +1,9 @@
+import { DASHBOARD_TABS } from "@src/constants/common";
+
 export const USER_MANAGEMENT_TABS = [
   { id: "basic_information", label: "Basic Information" },
   { id: "settings", label: "Settings" },
 ];
-
-export const DASHBOARD_TABS = {
-  ORG_ANALYTICS: "ORG_ANALYTICS",
-  CALL_LOG_ANALYTICS: "CALL_LOG_ANALYTICS",
-  SIMULATION_ANALYTICS: "SIMULATION_ANALYTICS",
-};
 
 export const USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_1 = [
   {

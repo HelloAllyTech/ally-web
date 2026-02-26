@@ -3,6 +3,7 @@ import { useState, useEffect, FC } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import {
   useDisablePathMutation,
   useDisableSimulationMutation,
@@ -19,6 +20,7 @@ import {
   SimulationsTab,
   PathTab,
   ScribeSettings,
+  SimulationsSettings,
   CasesTab,
   BadgesTab,
 } from "@components";
@@ -31,6 +33,7 @@ enum TAB_IDS {
   CASES = "cases",
   BADGES = "badges",
   SCRIBE_SETTINGS = "scribeSettings",
+  SIMULATION_SETTINGS = "simulationSettings",
 }
 
 const tabs = [
@@ -39,6 +42,9 @@ const tabs = [
   { id: TAB_IDS.CASES, label: en.userManagement.cases },
   { id: TAB_IDS.BADGES, label: en.userManagement.badges },
   { id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings },
+  ...(FEATURE_FLAGS_MAP.SIMULATION_SETTINGS_FLAG
+    ? [{ id: TAB_IDS.SIMULATION_SETTINGS, label: en.userManagement.simulationSettings }]
+    : []),
 ];
 
 export const OrganizationDetail: FC = () => {
@@ -186,6 +192,8 @@ export const OrganizationDetail: FC = () => {
             onSearchChange={setSearchValue}
           />
         );
+      case TAB_IDS.SIMULATION_SETTINGS:
+        return <SimulationsSettings />;
       default:
         return null;
     }
