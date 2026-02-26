@@ -96,7 +96,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="w-full normal-case border-b border-[#DBDBDB] mb-4"
+          class="w-full normal-case border-b border-[#DBDBDB]"
           data-testid="mui-tabs"
           data-value="1"
           role="tablist"
@@ -259,7 +259,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="w-full normal-case border-b border-[#DBDBDB] mb-4"
+          class="w-full normal-case border-b border-[#DBDBDB]"
           data-testid="mui-tabs"
           data-value="1"
           role="tablist"

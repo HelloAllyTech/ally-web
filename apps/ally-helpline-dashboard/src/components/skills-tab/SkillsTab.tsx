@@ -130,7 +130,7 @@ const getSkillOverallPercentage = (skills: SkillCoverage[]): number => {
 };
 
 const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
-  <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
+  <div className="bg-white border border-[#B39DDB] rounded-sm mb-5">
     <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
       <h3 className="text-base font-medium text-typography-900">Skill Coverage</h3>
     </div>
@@ -312,14 +312,14 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
     <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">
-          Biggest Strengths & skills demonstrated
+          Strengths & skills demonstrated
         </h3>
       </div>
       <div className="px-6 py-6">
         {strengths?.map((strength, index) => (
           <li key={index} className="flex items-start">
             <span className="text-typography-900 mr-2">•</span>
-            <span className="text-typography-900">{strength}</span>
+            <span className="text-typography-900 font-primary text-base">{strength}</span>
           </li>
         ))}
       </div>
@@ -339,7 +339,7 @@ const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
         {areasForGrowth?.map((area, index) => (
           <li key={index} className="flex items-start">
             <span className="text-typography-900 mr-2">•</span>
-            <span className="text-typography-900">{area}</span>
+            <span className="text-typography-900 font-primary text-base">{area}</span>
           </li>
         ))}
       </div>

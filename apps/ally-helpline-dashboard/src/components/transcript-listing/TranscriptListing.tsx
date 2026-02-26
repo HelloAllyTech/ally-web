@@ -55,7 +55,7 @@ const TranscriptItem = ({
   return (
     <div
       key={`${transcript.id}-${transcript.startSeconds}-${index}`}
-      className={`flex gap-4 p-4 border ${isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"} rounded-lg`}
+      className={`flex gap-4 p-4 border ${isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"} rounded-md`}
     >
       <div className="text-neutral-600 text-sm font-medium shrink-0 min-w-[36px] pt-[2px]">
         {convertSecondsToTime(transcript.startSeconds ?? 0)}
