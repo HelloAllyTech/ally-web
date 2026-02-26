@@ -29,6 +29,7 @@ export interface Scenario {
   status?: ScenarioStatus;
   metadata?: {
     name?: string;
+    experienceMode?: string;
   };
   triggerWarnings?: TriggerChipItemWarning[];
   checklistEvents?: any[];
@@ -191,7 +192,7 @@ export interface SimulationSummary {
         positives: string[];
       };
       errorMessage?: string;
-    };
+    } | null;
   };
   events: KeyEvent[];
   hasFeedback: boolean;
