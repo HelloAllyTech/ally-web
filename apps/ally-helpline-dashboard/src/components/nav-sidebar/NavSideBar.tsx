@@ -230,7 +230,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         <div className="flex flex-col items-start gap-3 mx-4 my-3" data-testid="nav-sidebar-footer">
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
 
-          {isExpanded && (
+          {isExpanded && import.meta.env.VITE_LANGUAGE_SELECTOR_FLAG === "true" && (
             <div className="w-full" data-testid="nav-sidebar-language-selector">
               <LanguageSelector label={t("nav.language.label")} />
             </div>
