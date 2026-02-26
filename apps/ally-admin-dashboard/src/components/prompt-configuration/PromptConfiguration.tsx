@@ -2,15 +2,16 @@ import { FC } from "react";
 
 import { Divider } from "@mui/material";
 
+import { useGetScenarioLanguagesQuery } from "@api";
 import { CustomDropdownField, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { LANGUAGE_OPTIONS, REPORT_GENERATION_MESSAGES, TURNS_OPTIONS } from "@constants";
+import { REPORT_GENERATION_MESSAGES, TURNS_OPTIONS } from "@constants";
+import { ScenarioLanguage } from "@types";
 
 import { PromptConfigurationProps } from "./types";
 
 const PromptConfiguration: FC<PromptConfigurationProps> = ({
   prompt,
-  language,
   turns,
   onPromptChange,
   onLanguageChange,
@@ -19,8 +20,19 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
   buttonText,
   buttonDisabled = false,
 }) => {
-  const selectedLanguageOption = LANGUAGE_OPTIONS.find(option => option.value === language);
-  const languageLabel = selectedLanguageOption?.label || language;
+  const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
+    active: true,
+    hasVoices: true,
+  }) as {
+    data: ScenarioLanguage[];
+  };
+
+  const scenarioLanguage = languageOptions?.map(language => ({
+    value: String(language.language_id),
+    label: language.label,
+  }));
+
+  const defaultLanguage = scenarioLanguage?.[0] || { value: "1", label: "English (India)" }; // assume english should be default language(with id=1)
 
   return (
     <div className="space-y-4">
@@ -40,14 +52,11 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
         <div className="flex gap-4 items-end px-4 py-3 bg-neutral-50 rounded-bl-lg rounded-br-lg">
           <div className="flex-1">
             <CustomDropdownField
-              options={LANGUAGE_OPTIONS}
+              options={scenarioLanguage}
               placeholder="Select language"
               customStyle={{ minWidth: "100px" }}
-              defaultOption={{
-                value: language,
-                label: languageLabel,
-              }}
-              onHandleSelect={option => onLanguageChange(option.value)}
+              defaultOption={defaultLanguage}
+              onHandleSelect={option => onLanguageChange(option)}
             />
           </div>
 

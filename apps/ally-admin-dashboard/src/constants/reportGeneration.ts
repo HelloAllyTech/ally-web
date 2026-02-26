@@ -17,14 +17,6 @@ export const REPORT_GENERATION_MESSAGES = {
   PROMPT_PLACEHOLDER: "Enter helper agent prompt...",
 };
 
-export const LANGUAGE_OPTIONS = [
-  { value: "1", label: "English" },
-  { value: "2", label: "Spanish" },
-  { value: "3", label: "French" },
-  { value: "4", label: "German" },
-  { value: "5", label: "Chinese" },
-];
-
 export const TURNS_OPTIONS = [
   { value: "10", label: "10 turns" },
   { value: "20", label: "20 turns" },

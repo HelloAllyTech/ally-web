@@ -22,7 +22,7 @@ import {
   REPORT_ACCORDION_SX,
   REPORT_GENERATION_MESSAGES,
 } from "@constants";
-import { LANGUAGE_OPTIONS, ReportGenerationStatus } from "@constants/reportGeneration";
+import { ReportGenerationStatus } from "@constants/reportGeneration";
 import {
   addUpload,
   selectUploads,
@@ -97,7 +97,9 @@ const createUploadFromReport = (report: any) => {
 export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   const dispatch = useDispatch();
   const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
-  const [selectedLanguage, setSelectedLanguage] = useState(DEFAULT_LANGUAGE);
+  const [selectedLanguage, setSelectedLanguage] = useState<{ value: string; label: string }>(
+    DEFAULT_LANGUAGE,
+  );
   const [selectedTurns, setSelectedTurns] = useState(DEFAULT_TURNS);
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -303,11 +305,11 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     }
   }, [reportId, scenarioId, cancelReportGenerationMutation, dispatch]);
 
-  const handleLanguageChange = (language: string) => {
+  const handleLanguageChange = (language: { value: string; label: string }) => {
     setReportData(prev =>
-      prev ? { ...prev, config: { ...prev.config, languageId: parseInt(language) } } : null,
+      prev ? { ...prev, config: { ...prev.config, languageId: parseInt(language.value) } } : null,
     );
-    setSelectedLanguage({ value: language, label: language });
+    setSelectedLanguage(language);
   };
 
   const handleTurnsChange = (turns: number) => {
@@ -365,7 +367,6 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
             <div className="px-6 py-4 border-t border-gray-200">
               <PromptConfiguration
                 prompt={helperAgentPrompt}
-                language={selectedLanguage.value}
                 turns={Number(selectedTurns.value)}
                 onPromptChange={handlePromptChange}
                 onLanguageChange={handleLanguageChange}
@@ -396,10 +397,9 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
       <div className="flex flex-col gap-6 w-full max-w-[800px]">
         <PromptConfiguration
           prompt={helperAgentPrompt}
-          language={selectedLanguage.value}
           turns={Number(selectedTurns.value)}
           onPromptChange={setHelperAgentPrompt}
-          onLanguageChange={language => setSelectedLanguage({ value: language, label: language })}
+          onLanguageChange={language => setSelectedLanguage(language)}
           onTurnsChange={turns =>
             setSelectedTurns({ value: String(turns), label: `${turns} turns` })
           }
@@ -433,10 +433,6 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
             setExpandedHistoryReportId(expanded ? item.id : null);
           };
 
-          const languageLabel =
-            LANGUAGE_OPTIONS.find(opt => opt.value === item.config.languageId.toString())?.label ??
-            item.config.languageId;
-
           const historyItemHeader = (
             <div className="text-base font-normal text-[#1A1A1A] flex flex-row gap-6 items-center">
               <div className="text-center">{index + 1}</div>
@@ -444,7 +440,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
                 <span className="text-xs font-normal text-[#1A1A1A]">
                   {formatReportCreatedAt(item.createdAt)}
                 </span>
-                <span className="text-xs font-normal text-typography-600">{`${languageLabel} (Global) · ${item.config.turns} turns`}</span>
+                <span className="text-xs font-normal text-typography-600">{`${item.config.languageName || item.config.languageId} (Global)· ${item.config.turns} turns`}</span>
               </div>
             </div>
           );
