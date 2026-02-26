@@ -23,6 +23,7 @@ export type HistoryItem = {
 export type ReportConfig = {
   helperAgentPrompt: string;
   languageId: number;
+  languageName: string;
   turns: number;
 };
 
