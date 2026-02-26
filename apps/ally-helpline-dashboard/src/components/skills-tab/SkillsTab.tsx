@@ -2,12 +2,14 @@ import { FC, useMemo } from "react";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
-import { useGetSimulationSkillsQuery } from "@api";
+import { useGetSimulationSkillsQuery, useGetSimulationSummaryQuery } from "@api";
 import { OverallScoreMeter } from "@src/components";
-import { SKILLS_MAP } from "@src/components/skills-tab/constants";
+import { SKILL_COLORS } from "@src/components/skills-tab/constants";
+import { SimulationSummary } from "@src/types";
 
 interface SkillCoverage {
   label: string;
+  icon: string;
   percentage: number;
   color: string;
 }
@@ -27,13 +29,6 @@ interface CustomDotProps {
   cy?: number;
   payload?: EmotionalDataPoint;
 }
-
-// Constants
-const SKILL_COLORS: Record<string, string> = {
-  Learning: "#5B8DEF",
-  Support: "#7FBA7A",
-  Standards: "#F5A962",
-};
 
 const CHART_HEIGHT = 350;
 const CHART_MARGIN = { top: 20, right: 20, left: 0, bottom: 20 };
@@ -130,6 +125,10 @@ const EmptyState: FC = () => (
   </div>
 );
 
+const getSkillOverallPercentage = (skills: SkillCoverage[]): number => {
+  return skills.reduce((acc, skill) => acc + skill.percentage, 0) / skills.length;
+};
+
 const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
   <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
     <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
@@ -137,16 +136,18 @@ const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
     </div>
     <div className="flex p-6 gap-6">
       <div className="w-1/3 flex items-center justify-center">
-        <OverallScoreMeter percentage={60} />
+        <OverallScoreMeter percentage={getSkillOverallPercentage(skills)} />
       </div>
       <div className="flex flex-col gap-3 w-2/3">
         {skills.map(skill => (
           <div key={skill.label} className="px-6 border rounded-sm py-5 flex w-full gap-2.5">
-            <div className="w-10 h-10 rounded-sm border" />
+            <div className="min-w-10 w-10 h-10 rounded-sm border flex items-center justify-center">
+              <img src={skill.icon} alt={skill.label} className="w-1/2 h-1/2 object-contain" />
+            </div>
             <div className="flex flex-col gap-3 w-full">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-normal font-primary text-typography-700">
-                  {SKILLS_MAP[skill.label.toLowerCase() as keyof typeof SKILLS_MAP]}
+                  {skill.label}
                 </span>
                 <span className="text-sm font-semibold font-primary text-typography-900">
                   {skill.percentage}%
@@ -246,7 +247,7 @@ const EmotionalMovementChart: FC<{
   }, [data, timeTicks]);
 
   return (
-    <div className="bg-white border border-[#B39DDB] rounded-md">
+    <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">
           Client Distress Alleviation
@@ -304,6 +305,46 @@ const EmotionalMovementChart: FC<{
   );
 };
 
+const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
+  const strengths = summary.details.summary.feedback.positives;
+  return (
+    <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <h3 className="text-base font-medium font-primary text-typography-900">
+          Biggest Strengths & skills demonstrated
+        </h3>
+      </div>
+      <div className="px-6 py-6">
+        {strengths.map((strength, index) => (
+          <li key={index} className="flex items-start">
+            <span className="text-typography-900 mr-2">•</span>
+            <span className="text-typography-900">{strength}</span>
+          </li>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
+  const areasForGrowth = summary.details.summary.feedback.improvements;
+  return (
+    <div className="bg-white border border-[#B39DDB] rounded-md">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <h3 className="text-base font-medium font-primary text-typography-900">Areas for growth</h3>
+      </div>
+      <div className="px-6 py-6">
+        {areasForGrowth.map((area, index) => (
+          <li key={index} className="flex items-start">
+            <span className="text-typography-900 mr-2">•</span>
+            <span className="text-typography-900">{area}</span>
+          </li>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Main Component
 export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const { data, isLoading, isError } = useGetSimulationSkillsQuery(
@@ -311,12 +352,15 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
     { skip: !sessionId },
   );
 
+  const { data: summary } = useGetSimulationSummaryQuery(sessionId);
+
   const skillCoverages = useMemo<SkillCoverage[]>(() => {
     if (!data?.skillCoverage) return [];
-    return data.skillCoverage.map(skill => ({
+    return data.skillCoverage.map((skill, index) => ({
       label: skill.category,
       percentage: Math.round(skill.percentage),
-      color: SKILL_COLORS[skill.category] || "#6B7280",
+      icon: skill.iconUrl,
+      color: SKILL_COLORS[index] || "#6B7280",
     }));
   }, [data?.skillCoverage]);
 
@@ -346,6 +390,8 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
 
       {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}
       {hasEmotionalData && <EmotionalMovementChart data={emotionalData} timeTicks={timeTicks} />}
+      {summary && <StrengthAndSkills summary={summary} />}
+      {summary && <AreasForGrowth summary={summary} />}
       {hasNoData && <EmptyState />}
     </div>
   );

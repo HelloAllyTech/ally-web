@@ -2,8 +2,9 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import { InfoIcon } from "@assets";
+import { Checklist } from "@src/components";
 import { FeedbackSectionType } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
@@ -108,6 +109,9 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
             </div>
           </div>
         </div>
+        {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && (
+          <Checklist className="max-h-[calc(100vh-200px)]" sessionId={props.sessionId} />
+        )}
         <motion.div className="overflow-y-auto font-primary space-y-4">
           {feedbackSections.map(({ key, label, type, columns }, index) => {
             return (

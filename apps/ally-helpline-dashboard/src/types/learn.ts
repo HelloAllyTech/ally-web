@@ -156,6 +156,7 @@ export type GetAdminSimulationLogsResponse = {
   data: AdminSimulationLog[];
 };
 export interface SimulationSummary {
+  sessionId: string;
   id: string;
   reviewId: string;
   reviewStatus: string;

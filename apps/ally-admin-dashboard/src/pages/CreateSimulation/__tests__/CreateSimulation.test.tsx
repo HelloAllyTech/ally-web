@@ -1,11 +1,14 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useForm } from "react-hook-form";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
+import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { toast } from "sonner";
 
 import { CreateSimulation } from "../CreateSimulation";
 import { ChecklistType, ExperienceMode } from "@constants";
+import reportUploadReducer from "@reducer/reportUploadReducer";
 
 // Hoist constants mock
 const mockEn = vi.hoisted(() => ({
@@ -250,11 +253,22 @@ describe("CreateSimulation", () => {
     Element.prototype.scrollTo = vi.fn();
   });
 
+  const createTestStore = () =>
+    configureStore({
+      reducer: { reportUpload: reportUploadReducer.reducer },
+      preloadedState: {
+        reportUpload: { uploads: [], currentScenarioId: undefined },
+      },
+    });
+
   const renderCreateSimulation = () => {
+    const store = createTestStore();
     return render(
-      <BrowserRouter>
-        <CreateSimulation />
-      </BrowserRouter>,
+      <Provider store={store}>
+        <BrowserRouter>
+          <CreateSimulation />
+        </BrowserRouter>
+      </Provider>,
     );
   };
 

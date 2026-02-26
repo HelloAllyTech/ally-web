@@ -1,9 +1,8 @@
-import { ReportGenerationStatus } from "@constants";
+import { ReportGenerationStatus } from "@constants/reportGeneration";
 
 export type ReportData = {
   id: string;
   scenarioId: string;
-  score: number;
   config: ReportConfig;
   metrics: ReportMetric;
   createdAt: string;
@@ -52,4 +51,9 @@ export type TranscriptMessage = {
   startSeconds: number;
   createdAt: string;
   updatedAt: string;
+  scenarioReportId: string;
+};
+
+export type GetReportTranscriptResponse = {
+  messages: TranscriptMessage[];
 };
