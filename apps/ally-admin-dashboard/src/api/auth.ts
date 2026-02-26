@@ -5,7 +5,7 @@
  * - User profile and permissions retrieval
  */
 
-import { baseAPI } from "@api";
+import { baseAPI, baseQuery } from "@api";
 import { ApiEndpoints, HttpMethod, Permissions, TAG_TYPES, UserRole } from "@constants";
 import {
   VerifyOTPRequest,
@@ -135,10 +135,21 @@ const authAPI = baseAPI.injectEndpoints({
      * @returns {Promise<VerifyOTPResponse>} Authentication response with tokens
      */
     verifyMagicLink: builder.mutation<VerifyOTPResponse, { token: string }>({
-      query: ({ token }) => ({
-        url: `${ApiEndpoints.AUTH.MAGIC_LINK_VERIFY}?token=${token}`,
-        method: HttpMethod.GET,
-      }),
+      queryFn: async ({ token }, api, extraOptions) => {
+        const result = await baseQuery(
+          {
+            url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
+            method: HttpMethod.POST,
+            body: { token },
+          },
+          api,
+          extraOptions,
+        );
+        if (result.error) {
+          return { error: result.error };
+        }
+        return { data: result.data as VerifyOTPResponse };
+      },
     }),
   }),
 });
