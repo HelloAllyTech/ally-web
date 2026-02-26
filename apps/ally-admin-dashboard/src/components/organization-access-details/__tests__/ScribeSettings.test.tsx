@@ -14,7 +14,6 @@ vi.mock("sonner", () => ({
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
   FEATURE_FLAGS_MAP: {
     SCRIBE_SETTINGS_FLAG: true,
-    SIMULATION_SETTINGS_FLAG: false,
   },
 }));
 
@@ -67,11 +66,6 @@ vi.mock("@components", () => ({
 // Mock assets
 vi.mock("@assets", () => ({
   ArrowSolid: () => <svg data-testid="arrow-solid" />,
-}));
-
-// Mock SCRIBE_SETTINGS_ITEMS (not used when SIMULATION_SETTINGS_FLAG is false)
-vi.mock("@src/components/organization-access-details/constants", () => ({
-  SCRIBE_SETTINGS_ITEMS: [],
 }));
 
 // Mock constants
@@ -328,11 +322,13 @@ describe("ScribeSettings", () => {
 
   it("displays correct enabled/disabled text for parent items", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    // Only parent sections show Enabled/Disabled text (not child checkboxes)
-    // Intake parent (enabled) = 1
+    // Enabled/Disabled text appears for:
+    // 1. Summary sections (Intake = Enabled, Ongoing Risks = Disabled)
+    // 2. SCRIBE_SETTINGS_ITEMS (4 items: Microphone Mode, Upload Call Recording,
+    //    Scribe Analytics, Org.Section Analytics - all Disabled by default in mock)
+    // Total: 1 Enabled (Intake), 5 Disabled (Ongoing Risks + 4 settings items)
     expect(screen.getAllByText("Enabled")).toHaveLength(1);
-    // Ongoing Risks parent (disabled) = 1
-    expect(screen.getAllByText("Disabled")).toHaveLength(1);
+    expect(screen.getAllByText("Disabled")).toHaveLength(5);
   });
 
   it("renders Clear all and Select all buttons", () => {

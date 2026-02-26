@@ -9,6 +9,7 @@ import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
+import { CharacterCount } from "./character-count";
 import Checklist from "./checklist";
 import Chip, { ChipConfig } from "./chip";
 import { CircularProgress } from "./circular-progress";
@@ -78,6 +79,7 @@ export {
   BoxBreathing,
   Button,
   ButtonGroup,
+  CharacterCount,
   Chip,
   CircularProgress,
   ConfirmationDialog,
