@@ -9,6 +9,7 @@ export type ReportData = {
   updatedAt: string;
   status: string;
   transcripts?: TranscriptMessage[];
+  name?: string;
 };
 
 export type HistoryItem = {
