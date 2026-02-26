@@ -26,8 +26,7 @@ import { LANGUAGE_OPTIONS, ReportGenerationStatus } from "@constants/reportGener
 import {
   addUpload,
   selectUploads,
-  clearAllUploads,
-  setAllUploads,
+  setUploadsForScenario,
   setCurrentScenarioId,
 } from "@reducer/reportUploadReducer";
 import { ReportData, ReportConfig } from "@types";
@@ -75,8 +74,9 @@ const createUploadPayload = (
   scenarioId: string,
   status: ReportGenerationStatus,
   progress = 0,
+  reportName?: string,
 ) => ({
-  fileName: `Report ${reportId}`,
+  fileName: reportName ?? `Report ${reportId}`,
   status,
   progress,
   reportId,
@@ -85,7 +85,13 @@ const createUploadPayload = (
 
 const createUploadFromReport = (report: any) => {
   const status = normalizeStatus(report.status);
-  return createUploadPayload(report.id, report.scenarioId, status, calculateProgress(status));
+  return createUploadPayload(
+    report.id,
+    report.scenarioId,
+    status,
+    calculateProgress(status),
+    report.name,
+  );
 };
 
 export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
@@ -154,20 +160,13 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   }, [fetchedReportData, transcriptData]);
 
   useEffect(() => {
-    if (!reportsHistory?.data || !scenarioId) {
-      if (scenarioId && scenarioId !== previousScenarioIdRef.current && !reportsHistory?.data) {
-        dispatch(clearAllUploads());
-      }
-      return;
-    }
+    if (!reportsHistory?.data || !scenarioId) return;
 
     const uploads = reportsHistory.data
       .filter(report => String(report.scenarioId) === String(scenarioId))
       .map(createUploadFromReport);
 
-    if (uploads.length > 0) {
-      dispatch(setAllUploads(uploads));
-    }
+    dispatch(setUploadsForScenario({ scenarioId, uploads }));
   }, [reportsHistory?.data, scenarioId, dispatch]);
 
   const completedReportsFromHistory = useMemo(
@@ -235,9 +234,17 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   useEffect(() => {
     if (!isGenerating || !reportId || !scenarioId) return;
     dispatch(
-      addUpload(createUploadPayload(reportId, scenarioId, ReportGenerationStatus.IN_PROGRESS, 0)),
+      addUpload(
+        createUploadPayload(
+          reportId,
+          scenarioId,
+          ReportGenerationStatus.IN_PROGRESS,
+          0,
+          currentUpload?.fileName,
+        ),
+      ),
     );
-  }, [isGenerating, reportId, scenarioId, dispatch]);
+  }, [isGenerating, reportId, scenarioId, dispatch, currentUpload?.fileName]);
 
   const handleGenerate = async () => {
     if (!scenarioId) return;
@@ -279,7 +286,15 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     try {
       await cancelReportGenerationMutation({ reportId }).unwrap();
       dispatch(
-        addUpload(createUploadPayload(reportId, scenarioId, ReportGenerationStatus.CANCELLED, 0)),
+        addUpload(
+          createUploadPayload(
+            reportId,
+            scenarioId,
+            ReportGenerationStatus.CANCELLED,
+            0,
+            currentUpload?.fileName,
+          ),
+        ),
       );
       setReportId(null);
       setIsGenerating(false);

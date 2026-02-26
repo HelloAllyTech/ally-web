@@ -86,13 +86,48 @@ const reportUploadSlice = createSlice({
         state.currentScenarioId = newScenarioId;
       }
     },
+    /** Set uploads for one scenario only; keeps uploads for all other scenarios (e.g. in-progress). */
+    setUploadsForScenario(
+      state,
+      action: PayloadAction<{ scenarioId: string; uploads: ReportUpload[] }>,
+    ) {
+      const { scenarioId, uploads } = action.payload;
+      const existingMap = new Map(state.uploads.map(u => [u.reportId, u]));
+      const finalStatuses = getFinalStatuses();
+
+      const otherScenarioUploads = state.uploads.filter(
+        u => !u.scenarioId || String(u.scenarioId) !== String(scenarioId),
+      );
+      const inProgressForThisScenario = state.uploads.filter(
+        u =>
+          u.scenarioId != null &&
+          String(u.scenarioId) === String(scenarioId) &&
+          (u.status === ReportGenerationStatus.IN_PROGRESS ||
+            u.status === ReportGenerationStatus.STARTED),
+      );
+      const newUploadsForScenario = uploads.map(newUpload => {
+        const existing = existingMap.get(newUpload.reportId);
+        if (
+          existing &&
+          finalStatuses.includes(existing.status) &&
+          !finalStatuses.includes(newUpload.status)
+        ) {
+          return { ...newUpload, status: existing.status, progress: existing.progress };
+        }
+        return newUpload;
+      });
+      const reportIdsFromApi = new Set(newUploadsForScenario.map(u => u.reportId));
+      const inProgressNotInApi = inProgressForThisScenario.filter(
+        u => !reportIdsFromApi.has(u.reportId),
+      );
+      state.uploads = [...otherScenarioUploads, ...newUploadsForScenario, ...inProgressNotInApi];
+    },
     setCurrentScenarioId(state, action: PayloadAction<string | undefined>) {
       if (action.payload === state.currentScenarioId) return;
 
       state.currentScenarioId = action.payload;
-      state.uploads = action.payload
-        ? state.uploads.filter(u => !u.scenarioId || u.scenarioId === action.payload)
-        : [];
+      // Keep all uploads in state so SimulationList can disable edit for every
+      // simulation with report in progress. Filtering for display is done in selectUploads.
     },
   },
 });
@@ -105,6 +140,7 @@ export const {
   cancelUpload,
   cancelAllInProgressUploads,
   setAllUploads,
+  setUploadsForScenario,
   setCurrentScenarioId,
 } = reportUploadSlice.actions;
 
@@ -118,13 +154,19 @@ const selectCurrentScenarioId = createSelector(
 
 export const selectUploads = createSelector(
   [selectAllUploads, selectCurrentScenarioId],
-  (uploads, currentScenarioId) =>
-    !currentScenarioId
-      ? uploads
-      : uploads.filter(u => !u.scenarioId || String(u.scenarioId) === String(currentScenarioId)),
+  uploads => uploads,
 );
 
 export const selectUploadsInProgress = createSelector([selectUploads], uploads =>
+  uploads.filter(
+    u =>
+      u.status === ReportGenerationStatus.IN_PROGRESS ||
+      u.status === ReportGenerationStatus.STARTED,
+  ),
+);
+
+/** All in-progress uploads across all scenarios (for simulation list disable-edit logic) */
+export const selectAllUploadsInProgress = createSelector([selectAllUploads], uploads =>
   uploads.filter(
     u =>
       u.status === ReportGenerationStatus.IN_PROGRESS ||

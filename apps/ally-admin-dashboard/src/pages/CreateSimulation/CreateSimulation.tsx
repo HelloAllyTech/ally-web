@@ -102,7 +102,9 @@ export const CreateSimulation: FC = () => {
   });
 
   const uploadsInProgress = useSelector(selectUploadsInProgress);
-  const isReportGenerationInProgress = uploadsInProgress.length > 0;
+  const isReportGenerationInProgress = uploadsInProgress.some(
+    upload => simulationId != null && String(upload.scenarioId) === String(simulationId),
+  );
 
   useEffect(() => {
     if (simulationId) getAdminSimulationByIdQuery(simulationId);
