@@ -163,7 +163,7 @@ const AskAiInput = ({
         type="button"
         className="!rounded-full !p-2 !h-10 !w-10 flex items-center justify-center disabled:opacity-60 shrink-0"
         onClick={handleSend}
-        disabled={disabled}
+        disabled={disabled || messageLength === 0}
       >
         <UpArrow />
       </Button>
