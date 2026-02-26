@@ -1,6 +1,7 @@
 import { FC, useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
@@ -11,11 +12,11 @@ import FeedCard, { Comment } from "@components/feed-card";
 import { ROUTES } from "@constants";
 import { ReviewItem } from "@types";
 
-const FILTER_OPTIONS = [
-  { value: "ALL", label: "All" },
-  { value: "LATEST", label: "Latest" },
-  { value: "MOST_REVIEWED", label: "Most reviewed" },
-  { value: "UNDISCOVERED", label: "Undiscovered" },
+const FILTER_OPTIONS = (t: any) => [
+  { value: "ALL", label: t("review.filter.all") },
+  { value: "LATEST", label: t("review.filter.latest") },
+  { value: "MOST_REVIEWED", label: t("review.filter.mostReviewed") },
+  { value: "UNDISCOVERED", label: t("review.filter.undiscovered") },
 ];
 
 const PAGE_SIZE = 10;
@@ -86,32 +87,38 @@ interface EmptyStateProps {
   onRefresh: () => void;
 }
 
-const EmptyState: FC<EmptyStateProps> = ({ onRefresh }) => (
-  <div className="flex flex-col flex-1 items-center justify-center w-full min-h-[40vh] sm:min-h-[50vh] gap-3 sm:gap-[14px] px-4">
-    <ReviewsEmptyState className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[240px] md:h-[240px]" />
-    <div className="flex flex-col items-center gap-3 sm:gap-4">
-      <h2 className="font-secondary font-[350] text-xl sm:text-2xl text-[#47464F] text-center">
-        No shared sessions yet
-      </h2>
-      <p className="font-primary text-xs sm:text-sm text-black/60 text-center max-w-[300px] sm:max-w-[414px] leading-[1.3]">
-        Shared user transcripts will be available here for review.
-      </p>
-      <button
-        onClick={onRefresh}
-        className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-      >
-        Refresh Page
-      </button>
+const EmptyState: FC<EmptyStateProps> = ({ onRefresh }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col flex-1 items-center justify-center w-full min-h-[40vh] sm:min-h-[50vh] gap-3 sm:gap-[14px] px-4">
+      <ReviewsEmptyState className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[240px] md:h-[240px]" />
+      <div className="flex flex-col items-center gap-3 sm:gap-4">
+        <h2 className="font-secondary font-[350] text-xl sm:text-2xl text-[#47464F] text-center">
+          {t("review.empty.title")}
+        </h2>
+        <p className="font-primary text-xs sm:text-sm text-black/60 text-center max-w-[300px] sm:max-w-[414px] leading-[1.3]">
+          {t("review.empty.description")}
+        </p>
+        <button
+          onClick={onRefresh}
+          className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+        >
+          {t("review.empty.refresh")}
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const Review: FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation();
+
+  const filterOptions = FILTER_OPTIONS(t);
 
   const filterFromUrl = searchParams.get("filter");
-  const isValidFilter = FILTER_OPTIONS.some(option => option.value === filterFromUrl);
+  const isValidFilter = filterOptions.some(option => option.value === filterFromUrl);
   const initialFilter = isValidFilter ? filterFromUrl : "ALL";
 
   const [activeFilter, setActiveFilter] = useState(initialFilter);
@@ -244,10 +251,10 @@ export const Review: FC = () => {
       <div className="flex h-[80vh] sm:h-[90vh] items-center justify-center px-4 sm:px-6">
         <FallbackUI
           icon={<NoResults />}
-          mainMessage="Unable to Load Reviews"
-          description="Something went wrong while loading reviews. Please try again."
+          mainMessage={t("review.error.title")}
+          description={t("review.error.description")}
           button={{
-            text: "Retry",
+            text: t("review.error.retry"),
             onClick: refetchReviews,
           }}
         />
@@ -265,7 +272,7 @@ export const Review: FC = () => {
           className="flex items-center self-stretch gap-4 sm:gap-8 px-4 sm:px-6 lg:px-8 py-3 sm:py-5 bg-white"
         >
           <h1 className="font-secondary text-xl sm:text-2xl text-[#0D0D0D] cursor-default">
-            Review
+            {t("review.title")}
           </h1>
         </motion.div>
         <motion.div
@@ -279,7 +286,7 @@ export const Review: FC = () => {
               className="w-full font-primary text-[10px] sm:text-xs md:text-sm leading-[1.5]"
               value={activeFilter}
               onValueChange={handleFilterChange}
-              items={FILTER_OPTIONS}
+              items={filterOptions}
               equalWidth
               inheritFontSize={true}
             />

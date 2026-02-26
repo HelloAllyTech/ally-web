@@ -39,7 +39,8 @@
     "test:docker:ui-shared": "./test-docker.sh ui-shared",
     "test:docker:coverage": "./test-docker.sh coverage",
     "test:docker:watch": "./test-docker.sh watch",
-    "test:docker:clean": "./test-docker.sh clean"
+    "test:docker:clean": "./test-docker.sh clean",
+    "i18n:sync": "node scripts/i18n-sync.mjs"
   },
   "private": true,
   "dependencies": {

@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState, useCallback, RefObject } from "react";
 
+import { useTranslation } from "react-i18next";
 import "./styles.css";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
@@ -59,6 +60,7 @@ const Transcription: FC<TranscriptionProps> = ({
   onCommentChange = () => {},
   onDeleteComment = () => {},
 }) => {
+  const { t } = useTranslation();
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const selectedCommentRef = useRef<HTMLSpanElement | null>(null);
   const [transcriptions, setTranscriptions] = useState<SimulationTranscriptMessage[]>([]);
@@ -236,7 +238,7 @@ const Transcription: FC<TranscriptionProps> = ({
   if (transcriptions.length === 0) {
     return (
       <div className={`flex flex-col justify-center items-center h-full w-full`}>
-        <div className="text-xxl font-primary text-typography-700">No transcript available</div>
+        <div className="text-xxl font-primary text-typography-700">{t("transcription.empty")}</div>
       </div>
     );
   }
@@ -264,11 +266,13 @@ const Transcription: FC<TranscriptionProps> = ({
               <span className="font-medium pr-1">
                 {transcript.senderId === -1 ? (
                   <span className="text-typography-900">
-                    {agentName ? `${agentName} (AI client) :` : "AI Agent:"}
+                    {agentName
+                      ? `${agentName} (${t("transcription.aiClientSuffix")}) :`
+                      : t("transcription.agentLabel")}
                   </span>
                 ) : (
                   <span className="text-primary-700">
-                    {councellorName ? councellorName : "You"}:
+                    {councellorName ? councellorName : t("transcription.youLabel")}:
                   </span>
                 )}
               </span>

@@ -10,13 +10,14 @@ export const getUploadHeader = (uploads: ReportUpload[]) => {
       upload.status === ReportGenerationStatus.STARTED,
   )?.length;
   if (uploadsInProgress) return `${uploadsInProgress} ${en.simulation.reportGenerationInProgress}`;
-  const uploadsCancelled = uploads.filter(
-    upload => upload.status === ReportGenerationStatus.CANCELLED,
-  )?.length;
-  if (uploadsCancelled) return `${uploadsCancelled} ${en.simulation.reportGenerationCancelled}`;
   const uploadsCompleted = uploads.filter(
     upload => upload.status === ReportGenerationStatus.COMPLETED,
   )?.length;
   if (uploadsCompleted) return `${uploadsCompleted} ${en.simulation.reportGenerationComplete}`;
+  const uploadsCancelled = uploads.filter(
+    upload => upload.status === ReportGenerationStatus.CANCELLED,
+  )?.length;
+  if (uploadsCancelled) return `${uploadsCancelled} ${en.simulation.reportGenerationCancelled}`;
+
   return en.simulation.noReportGeneration;
 };

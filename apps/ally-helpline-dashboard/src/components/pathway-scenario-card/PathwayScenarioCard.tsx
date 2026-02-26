@@ -1,6 +1,7 @@
 import { FC } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Lock, TickGreenBackground } from "@assets";
@@ -8,7 +9,7 @@ import { PathwayScenarioStatus } from "@types";
 
 import { PathwayScenarioCardProps } from "./types";
 
-const getStatusBadge = (status: PathwayScenarioStatus, index: number) => {
+const getStatusBadge = (status: PathwayScenarioStatus, index: number, t: any) => {
   switch (status) {
     case PathwayScenarioStatus.COMPLETED:
       return (
@@ -20,7 +21,7 @@ const getStatusBadge = (status: PathwayScenarioStatus, index: number) => {
       if (index === 0) return null;
       return (
         <span className="ml-2 px-[8px] py-[2px] text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
-          Next
+          {t("common.next")}
         </span>
       );
     default:
@@ -34,6 +35,7 @@ export const PathwayScenarioCard: FC<PathwayScenarioCardProps> = ({
   onScenarioClick,
   onViewSummary,
 }) => {
+  const { t } = useTranslation();
   const isLocked = scenario.status === PathwayScenarioStatus.LOCKED;
   const isCompleted = scenario.status === PathwayScenarioStatus.COMPLETED;
 
@@ -75,8 +77,10 @@ export const PathwayScenarioCard: FC<PathwayScenarioCardProps> = ({
         {/* Scenario Content */}
         <div className="flex-1 flex flex-col justify-center">
           <div className="flex items-center mb-2">
-            <p className="text-sm text-typography-700 font-tertiary">Simulation {index + 1}</p>
-            {getStatusBadge(scenario.status, index)}
+            <p className="text-sm text-typography-700 font-tertiary">
+              {t("common.simulationIndex", { index: index + 1 })}
+            </p>
+            {getStatusBadge(scenario.status, index, t)}
           </div>
           <h3 className="text-lg text-typography-900 leading-tight">{scenario.title}</h3>
         </div>
@@ -87,7 +91,7 @@ export const PathwayScenarioCard: FC<PathwayScenarioCardProps> = ({
             onClick={handleViewSummary}
             className="text-primary-500 font-medium text-sm hover:underline whitespace-nowrap"
           >
-            View summary
+            {t("common.viewSummary")}
           </button>
         )}
       </div>
