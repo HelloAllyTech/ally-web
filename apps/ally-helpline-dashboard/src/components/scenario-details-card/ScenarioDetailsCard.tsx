@@ -99,7 +99,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
     <>
       <motion.div
         layout
-        className="flex flex-col w-full max-w-[600px] bg-white overflow-hidden transition-all duration-300 rounded-lg origin-top border border-[#E5E7EB] p-3"
+        className="flex flex-col w-full max-w-[600px] max-h-[700px] bg-white overflow-hidden transition-all duration-300 rounded-lg origin-top border border-[#E5E7EB] p-3"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -109,7 +109,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
       >
         {renderMedia()}
 
-        <div className="flex flex-col gap-1 mt-3 font-primary">
+        <div className="flex flex-col gap-1 mt-3 font-primary ">
           <div className="flex items-start justify-between">
             <div id="scenario-title" className="text-typography-900 text-2xl">
               {title}
@@ -126,7 +126,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
           </div>
 
           {longDescription && (
-            <div className="flex flex-col">
+            <div className="flex flex-col overflow-y-auto custom-scrollbar max-h-[200px]">
               <div className="text-base font-semibold text-typography-900">
                 {t("learn.scenario.scenarioLabel")}
               </div>
@@ -143,7 +143,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
             </div>
           )}
 
-          <div className="flex justify-center mt-2 mb-2">
+          <div className="flex justify-center my-2">
             <Button
               onClick={handleStartSimulation}
               variant="primary"

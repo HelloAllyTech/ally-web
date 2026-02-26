@@ -2,7 +2,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
 
 import { CreateSimulation } from "../CreateSimulation";
@@ -72,8 +71,6 @@ vi.mock("@hooks", () => ({
 
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
   FEATURE_FLAGS_MAP: {
-    SIMULATION_CREATOR_FLAG: true,
-    ADDITIONAL_CONFIG_FLAG: false,
     SIMULATION_REPORT_FLAG: false,
   },
 }));
@@ -199,16 +196,6 @@ vi.mock("@constants", () => ({
         // Include language-voice mapping as mandatory to match app behavior
         { id: "languageVoices", isMandatory: true },
         { id: "age", isMandatory: false },
-      ],
-    },
-  ],
-  SIMULATION_CREATOR_FIELD_GROUPS_OLD: [
-    {
-      id: "basic-info",
-      label: "Basic Information",
-      fields: [
-        { id: "title", isMandatory: true },
-        { id: "description", isMandatory: true },
       ],
     },
   ],

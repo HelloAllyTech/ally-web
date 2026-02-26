@@ -249,13 +249,13 @@ export interface DeleteLogoRequest {
 }
 
 export interface ScribeSettingsItem {
-  id: number;
+  id: string;
   label: string;
   visible: boolean;
 }
 
 export interface ScribeSettingsList {
-  id: number;
+  id: string;
   fields: ScribeSettingsItem[];
   label: string;
   enabled: boolean;

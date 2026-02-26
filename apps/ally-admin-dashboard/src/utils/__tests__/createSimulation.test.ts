@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-import { SIMULATION_CREATOR_FIELD_GROUPS, SIMULATION_CREATOR_FIELD_GROUPS_OLD } from "@constants";
+import { SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 import { extractValidData } from "../common";
@@ -268,38 +268,20 @@ describe("createSimulation utils", () => {
 
     it("should convert empty select field to null", () => {
       const formData = {
-        gender: "",
+        difficultyLevel: "",
       };
 
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
-      expect(result.gender).toBeNull();
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.difficultyLevel).toBeNull();
     });
 
     it("should keep non-empty select field as is", () => {
       const formData = {
-        gender: "female",
+        difficultyLevel: "MEDIUM",
       };
 
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
-      expect(result.gender).toBe("female");
-    });
-
-    it("should parse number fields correctly", () => {
-      const formData = {
-        age: "25",
-      };
-
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
-      expect(result.age).toBe(25);
-    });
-
-    it("should convert empty number fields to null", () => {
-      const formData = {
-        age: "",
-      };
-
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
-      expect(result.age).toBeNull();
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.difficultyLevel).toBe("MEDIUM");
     });
 
     it("should handle image upload field with valid URL", () => {
@@ -340,18 +322,16 @@ describe("createSimulation utils", () => {
 
     it("should handle multiple field types together", () => {
       const formData = {
-        name: " John ",
-        age: "30",
-        gender: "",
+        title: "  Test Title  ",
+        difficultyLevel: "",
         coverImageUrl: "",
       };
 
-      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, formData);
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
 
       expect(result).toEqual({
-        name: "John", // trimmed
-        age: 30, // parsed
-        gender: null, // empty select
+        title: "Test Title", // trimmed
+        difficultyLevel: null, // empty select
         coverImageUrl: null, // empty string returns null
       });
     });

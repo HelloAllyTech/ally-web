@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import {
   useLazyExportCallSummaryQuery,
   useArchiveCallLogMutation,
@@ -187,19 +187,15 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
       text: "Export summary",
     },
-    ...(FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG
-      ? [
-          {
-            alt: "Archive",
-            icon: isArchived ? <Unarchive /> : <Archive />,
-            onClick: () => {
-              setIsArchiveDialogOpen(true);
-            },
-            show: hasAdequatePermission(Permissions.ARCHIVE_CALL_LOG) && showArchiveButton,
-            text: isArchived ? "Unarchive session" : "Archive session",
-          },
-        ]
-      : []),
+    {
+      alt: "Archive",
+      icon: isArchived ? <Unarchive /> : <Archive />,
+      onClick: () => {
+        setIsArchiveDialogOpen(true);
+      },
+      show: hasAdequatePermission(Permissions.ARCHIVE_CALL_LOG) && showArchiveButton,
+      text: isArchived ? "Unarchive session" : "Archive session",
+    },
   ];
 
   const tabList = [

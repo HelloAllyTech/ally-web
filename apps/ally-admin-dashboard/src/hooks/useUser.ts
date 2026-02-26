@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { useSelector } from "react-redux";
 
-import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import {
   useLazyGetUserQuery,
   useLazyGetPermissionsQuery,
@@ -55,15 +55,13 @@ export const useUser = () => {
       label: en.simulation.eventManagement,
       path: ROUTES.MANAGE_EVENTS,
     },
-    ...(FEATURE_FLAGS_MAP.CHARACTER_LIBRARY_FLAG
-      ? [
-          {
-            id: SIDEBAR_ITEMS.CHARACTER_LIBRARY,
-            label: "Character Library",
-            path: ROUTES.CHARACTER_LIBRARY,
-          },
-        ]
-      : []),
+
+    {
+      id: SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+      label: "Character Library",
+      path: ROUTES.CHARACTER_LIBRARY,
+    },
+
     {
       id: SIDEBAR_ITEMS.SCENARIO_VOICES,
       label: en.simulation.voicesManagement,
@@ -89,15 +87,11 @@ export const useUser = () => {
       label: en.userManagement.userManagement,
       path: ROUTES.USER_MANAGEMENT,
     },
-    ...(FEATURE_FLAGS_MAP.USER_BADGES_FLAG
-      ? [
-          {
-            id: SIDEBAR_ITEMS.USER_BADGES,
-            label: en.userManagement.userBadges,
-            path: ROUTES.USER_BADGES,
-          },
-        ]
-      : []),
+    {
+      id: SIDEBAR_ITEMS.USER_BADGES,
+      label: en.userManagement.userBadges,
+      path: ROUTES.USER_BADGES,
+    },
   ];
 
   /**

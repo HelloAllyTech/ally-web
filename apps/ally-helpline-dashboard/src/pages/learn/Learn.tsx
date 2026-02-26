@@ -27,7 +27,7 @@ enum TabId {
 const LEARN_TABS = (t: any) => [
   { id: TabId.SIMULATIONS, label: t("learn.tabs.simulations") },
   { id: TabId.TRACKS, label: t("learn.tabs.tracks") },
-  FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG && { id: TabId.CASES, label: t("learn.tabs.cases") }, // TODO: remove this when the feature flag is enabled
+  { id: TabId.CASES, label: t("learn.tabs.cases") },
 ];
 
 type LearnTabId = TabId;
@@ -71,10 +71,7 @@ export const Learn: FC = () => {
     data: casesData,
     isLoading: isCasesLoading,
     refetch: refetchCases,
-  } = useGetScenarioCasesQuery(
-    {},
-    { skip: !hasCasePermissions || !FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG },
-  ); // TODO: remove this skip when the feature flag is enabled
+  } = useGetScenarioCasesQuery({}, { skip: !hasCasePermissions });
 
   const handleTabChange = (newValue: LearnTabId) => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
