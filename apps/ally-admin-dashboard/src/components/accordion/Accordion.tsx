@@ -1,6 +1,12 @@
 import { FC, ReactNode, useState } from "react";
 
-import { Accordion as MuiAccordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import {
+  Accordion as MuiAccordion,
+  AccordionDetails,
+  AccordionSummary,
+  SxProps,
+  Theme,
+} from "@mui/material";
 
 import { ArrowSolid } from "@assets";
 
@@ -9,10 +15,14 @@ import { accordionSx, accordionSummarySx, accordionDetailsSx } from "./accordian
 export interface AccordionProps {
   children?: ReactNode;
   defaultExpanded?: boolean;
-  title: string;
+  title?: string;
   headerActions?: ReactNode;
   onChange?: (expanded: boolean) => void;
   expandIcon?: ReactNode;
+  headerTitle?: ReactNode;
+  customAccordionSx?: SxProps<Theme>;
+  customAccordionSummarySx?: SxProps<Theme>;
+  customAccordionDetailsSx?: SxProps<Theme>;
 }
 
 export const Accordion: FC<AccordionProps> = ({
@@ -22,6 +32,10 @@ export const Accordion: FC<AccordionProps> = ({
   headerActions,
   onChange,
   expandIcon,
+  customAccordionSx,
+  customAccordionSummarySx,
+  customAccordionDetailsSx,
+  headerTitle,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
@@ -35,7 +49,7 @@ export const Accordion: FC<AccordionProps> = ({
       defaultExpanded={defaultExpanded}
       expanded={expanded}
       onChange={handleChange}
-      sx={accordionSx}
+      sx={customAccordionSx ?? accordionSx}
     >
       <AccordionSummary
         expandIcon={
@@ -57,11 +71,13 @@ export const Accordion: FC<AccordionProps> = ({
             </span>
           )
         }
-        sx={accordionSummarySx}
+        sx={customAccordionSummarySx ?? accordionSummarySx}
       >
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-row gap-[18px] items-center">
-            <div className="text-base font-medium text-typography-900">{title}</div>
+            {headerTitle ?? (
+              <div className="text-base font-medium text-typography-900">{title}</div>
+            )}
           </div>
           {headerActions && (
             <div
@@ -73,7 +89,9 @@ export const Accordion: FC<AccordionProps> = ({
           )}
         </div>
       </AccordionSummary>
-      <AccordionDetails sx={accordionDetailsSx}>{children}</AccordionDetails>
+      <AccordionDetails sx={customAccordionDetailsSx ?? accordionDetailsSx}>
+        {children}
+      </AccordionDetails>
     </MuiAccordion>
   );
 };

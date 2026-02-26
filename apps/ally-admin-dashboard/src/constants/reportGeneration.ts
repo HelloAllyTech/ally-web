@@ -1,3 +1,5 @@
+import { SxProps, Theme } from "@mui/material";
+
 export const REPORT_GENERATION_MESSAGES = {
   GENERATING: "Report generating...",
   GENERATING_REPORT: "Generating Report...",
@@ -6,7 +8,7 @@ export const REPORT_GENERATION_MESSAGES = {
   REGENERATE_REPORT: "Regenerate Report",
   REPORT: "Report",
   HISTORY: "History",
-  TRANSCRIPTION: "Transcription",
+  TRANSCRIPTION: "Transcript",
   TEST_CONFIGURATION: "Test configuration",
   HELPER_AGENT_PROMPT: "Helper Agent prompt",
   SIMULATION_SCORE: "Simulation Score",
@@ -68,3 +70,36 @@ export enum ReportGenerationStatus {
   CANCELLED = "CANCELLED",
   FAILED = "FAILED",
 }
+
+export const REPORT_ACCORDION_SX: SxProps<Theme> = {
+  boxShadow: "none",
+  borderBottom: "0.5px solid #dbdbdb",
+  "&::before": {
+    opacity: 0,
+    content: "none",
+  },
+  "&.Mui-expanded": {
+    margin: 0,
+  },
+  "&.Mui-expanded .MuiAccordionSummary-root": {
+    backgroundColor: "rgba(0, 0, 0, 0.04)",
+  },
+};
+
+export enum ReportGenerationMetrics {
+  COLLOQUIALISM = "colloquialism",
+  CONSISTENCY = "consistency",
+  CONTEXT_APPROPRIATENESS = "context_appropriateness",
+  DIFFICULTY_LEVEL = "difficulty_level",
+  GRADUAL_DISCLOSURE = "gradual_disclosure",
+  RESISTANCE = "resistance",
+}
+
+export const REPORT_METRIC_CONFIG: Record<ReportGenerationMetrics, string> = {
+  [ReportGenerationMetrics.COLLOQUIALISM]: "Colloquialism",
+  [ReportGenerationMetrics.CONSISTENCY]: "Consistency",
+  [ReportGenerationMetrics.CONTEXT_APPROPRIATENESS]: "Context Appropriateness",
+  [ReportGenerationMetrics.DIFFICULTY_LEVEL]: "Difficulty Level",
+  [ReportGenerationMetrics.GRADUAL_DISCLOSURE]: "Gradual Disclosure",
+  [ReportGenerationMetrics.RESISTANCE]: "Resistance",
+};
