@@ -3,7 +3,6 @@ import { useState, useEffect, FC } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import {
   useDisablePathMutation,
   useDisableSimulationMutation,
@@ -37,15 +36,9 @@ enum TAB_IDS {
 const tabs = [
   { id: TAB_IDS.SIMULATIONS, label: en.userManagement.simulations },
   { id: TAB_IDS.PATH, label: en.userManagement.path },
-  ...(FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG
-    ? [{ id: TAB_IDS.CASES, label: en.userManagement.cases }]
-    : []),
-  ...(FEATURE_FLAGS_MAP.USER_BADGES_FLAG
-    ? [{ id: TAB_IDS.BADGES, label: en.userManagement.badges }]
-    : []),
-  ...(FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG
-    ? [{ id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings }]
-    : []),
+  { id: TAB_IDS.CASES, label: en.userManagement.cases },
+  { id: TAB_IDS.BADGES, label: en.userManagement.badges },
+  { id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings },
 ];
 
 export const OrganizationDetail: FC = () => {
@@ -247,36 +240,7 @@ export const OrganizationDetail: FC = () => {
         />
       </div>
 
-      {/* Tab Content */}
-      {!FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG ? (
-        <div className="flex-1 overflow-hidden min-h-0 mt-4">
-          {activeTab === TAB_IDS.SIMULATIONS && (
-            <SimulationsTab
-              organizationId={id}
-              searchValue={searchValue}
-              onSearchChange={setSearchValue}
-              onToggleAccess={handleToggleAccess}
-            />
-          )}
-          {activeTab === TAB_IDS.PATH && (
-            <PathTab
-              organizationId={id}
-              searchValue={searchValue}
-              onSearchChange={setSearchValue}
-              onToggleAccess={handleTogglePathAccess}
-            />
-          )}
-          {activeTab === TAB_IDS.BADGES && (
-            <BadgesTab
-              organizationId={id}
-              searchValue={searchValue}
-              onSearchChange={setSearchValue}
-            />
-          )}
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto mt-4">{getTabContent(activeTab)}</div>
-      )}
+      <div className="flex-1 overflow-y-auto mt-4">{getTabContent(activeTab)}</div>
     </div>
   );
 };

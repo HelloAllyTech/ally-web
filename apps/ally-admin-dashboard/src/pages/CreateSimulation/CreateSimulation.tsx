@@ -27,7 +27,6 @@ import {
   ROUTES,
   StepperList,
   SIMULATION_CREATOR_FIELD_GROUPS,
-  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
   SIMULATION_CREATOR_STEP_IDS,
   SESSION_TIMER_CONFIG,
   FORM_FIELD_IDS,
@@ -55,9 +54,7 @@ const stepIds: any = SIMULATION_CREATOR_STEP_IDS;
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
   const mandatoryFields: string[] = [];
-  const fieldGroups = FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
-    ? SIMULATION_CREATOR_FIELD_GROUPS
-    : SIMULATION_CREATOR_FIELD_GROUPS_OLD;
+  const fieldGroups = SIMULATION_CREATOR_FIELD_GROUPS;
   fieldGroups.forEach(group => {
     group.fields.forEach(field => {
       if (field.isMandatory) {
@@ -285,19 +282,15 @@ export const CreateSimulation: FC = () => {
     }
 
     const simulationData = {
-      ...(FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
-        ? extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm)
-        : extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, restForm)),
+      ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
       agentDialogues: agentDialoguesArray,
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
       status,
-      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && { stateInstructions }),
-      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && {
-        behaviorInstructions: behaviourInstructionsArray,
-      }),
-      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && { competencyId: restForm.competency?.id }),
+      stateInstructions,
+      behaviorInstructions: behaviourInstructionsArray,
+      competencyId: restForm.competency?.id,
     };
 
     let response;

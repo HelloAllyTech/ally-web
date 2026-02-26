@@ -4,7 +4,6 @@ import { Tabs, Tab } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { Archive, MoreVertIcon, Refresh, StartSession, UploadIcon } from "@assets";
 import { Button, ButtonVariant, CustomMenu, PermissionGuard, ToggleButtonGroup } from "@components";
 import { CallType, Permissions, ROUTES } from "@constants";
@@ -179,7 +178,7 @@ export const Calls: FC = () => {
               items={sessionTypeList}
             />
           )}
-          {FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG && sessionType === SessionType.CALL && (
+          {sessionType === SessionType.CALL && (
             <div
               className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#EEEEEE] active:bg-[#EEEEEE] ml-auto"
               onClick={e => setMenuAnchor(e.currentTarget)}
@@ -202,22 +201,21 @@ export const Calls: FC = () => {
           onClose={() => setIsAudioUploadDialogOpen(false)}
         />
       </PermissionGuard>
-      {FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG && (
-        <CustomMenu
-          anchorElement={menuAnchor}
-          items={[
-            {
-              label: "Archives",
-              icon: <Archive />,
-              onClick: () => {
-                navigate(ROUTES.ARCHIVES, { state: { sessionUserGroup } });
-                setMenuAnchor(null);
-              },
+
+      <CustomMenu
+        anchorElement={menuAnchor}
+        items={[
+          {
+            label: "Archives",
+            icon: <Archive />,
+            onClick: () => {
+              navigate(ROUTES.ARCHIVES, { state: { sessionUserGroup } });
+              setMenuAnchor(null);
             },
-          ]}
-          onClose={() => setMenuAnchor(null)}
-        />
-      )}
+          },
+        ]}
+        onClose={() => setMenuAnchor(null)}
+      />
     </div>
   );
 };

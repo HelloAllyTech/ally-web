@@ -20,7 +20,6 @@ vi.mock("@ally-ui-mono/ui-shared", async importOriginal => {
     ),
     FEATURE_FLAGS_MAP: {
       ...actual.FEATURE_FLAGS_MAP,
-      ORGANISATION_SETTINGS_FLAG: true,
     },
   };
 });

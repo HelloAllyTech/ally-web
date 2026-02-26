@@ -22,13 +22,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   FEATURE_FLAGS_MAP: {
     LANGUAGE_CAPABILITY_FLAG: false,
     SIMULATION_VOICE_FLAG: false,
-    ORGANISATION_SETTINGS_FLAG: false,
-    SIMULATION_CREATOR_FLAG: false,
-    SCRIBE_SETTINGS_FLAG: true,
-    SIMULATION_CASES_FLAG: false,
     MAX_ACTIVE_USERS_POPUP_FLAG: false,
-    CHARACTER_LIBRARY_FLAG: false,
-    ADDITIONAL_CONFIG_FLAG: false,
   },
 }));
 
