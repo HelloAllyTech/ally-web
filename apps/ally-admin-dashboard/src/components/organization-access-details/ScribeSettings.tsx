@@ -2,14 +2,17 @@ import { FC, useState, useEffect, useMemo, useCallback } from "react";
 
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import {
   useGetSummarySectionsQuery,
   useUpdateSummarySectionsMutation,
   useUpdateSummaryFieldsMutation,
+  useGetDashboardSettingsAllQuery,
 } from "@api";
 import { ArrowSolid } from "@assets";
 import { ToggleSwitch, Accordion, Button } from "@components";
 import { en } from "@constants";
+import { SCRIBE_SETTINGS_ITEMS } from "@src/components/organization-access-details/constants";
 import { ScribeSettingsItem, ScribeSettingsList } from "@types";
 
 interface ScribeSettingsProps {
@@ -59,6 +62,15 @@ const ScribeSettingsSkeleton = () => {
 };
 
 export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
+  const [enabledItems, setEnabledItems] = useState<string[]>([]);
+
+  const handleToggle = (item: { id: string; type: string }) => {
+    setEnabledItems(prev =>
+      prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id],
+    );
+  };
+
+  const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery();
   const { data: summarySectionsData, isLoading: isSummarySectionsLoading } =
     useGetSummarySectionsQuery(tenantId);
   const [updateSummarySections, { isLoading: isUpdatingSections }] =
@@ -70,6 +82,24 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
   const [data, setData] = useState<ScribeSettingsList[]>([]);
   const [initialData, setInitialData] = useState<ScribeSettingsList[]>([]);
 
+  const optionValues = useMemo(() => {
+    return SCRIBE_SETTINGS_ITEMS.map(item => {
+      let id = "";
+      if (item.id !== "") {
+        id = item.id;
+      } else {
+        const dashboardId =
+          dashboardSettingsAll?.find(setting => setting.analyticsType === item.type)?.id ?? "";
+        id = dashboardId;
+      }
+      return {
+        id,
+        value: enabledItems.includes(id),
+        label: item.label,
+        type: item.type,
+      };
+    });
+  }, [dashboardSettingsAll, enabledItems]);
   const mergeSectionData = (
     newSections: ScribeSettingsList[],
     existingSections: ScribeSettingsList[],
@@ -432,8 +462,26 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
   return (
     <div className="overflow-y-auto w-full mb-4">
       <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-[60%] mb-4 pb-2">
+        {FEATURE_FLAGS_MAP.SIMULATION_SETTINGS_FLAG && (
+          <div className="flex flex-col gap-2 font-primary">
+            {optionValues.map(item => (
+              <div key={item.id} className="flex h-9 flex-row justify-between items-center">
+                <div className="text-sm text-typography-700 font-normal">{item.label}</div>
+                <div className="flex flex-row items-center gap-3">
+                  <ToggleSwitch
+                    enabled={enabledItems.includes(item.id)}
+                    onChange={() => handleToggle(item)}
+                  />
+                  <span className="text-sm text-typography-900 font-normal">
+                    {enabledItems.includes(item.id) ? en.common.enabled : en.common.disabled}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="text-base font-medium text-typography-900">
-          {en.userManagement.additionalFields}
+          {en.userManagement.configureSimulationSettings}
         </div>
         {data.map(item => renderScribeSettingsListItem(item))}
       </div>
