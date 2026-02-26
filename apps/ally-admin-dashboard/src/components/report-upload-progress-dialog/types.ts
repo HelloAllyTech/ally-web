@@ -1,7 +1,7 @@
 import { ReportGenerationStatus } from "@constants/reportGeneration";
 
 export interface ReportUpload {
-  fileName: string;
+  fileName?: string;
   status: ReportGenerationStatus;
   progress: number;
   reportId: string;

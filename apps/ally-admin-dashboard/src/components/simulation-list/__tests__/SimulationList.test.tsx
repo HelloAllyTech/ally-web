@@ -1,9 +1,25 @@
 import { render, screen, fireEvent } from "@testing-library/react";
+import { configureStore } from "@reduxjs/toolkit";
+import { Provider } from "react-redux";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { Simulation, SimulationStatus } from "@types";
+import reportUploadReducer from "@reducer/reportUploadReducer";
 
 import { SimulationList } from "../SimulationList";
+
+const createTestStore = () =>
+  configureStore({
+    reducer: { reportUpload: reportUploadReducer.reducer },
+    preloadedState: {
+      reportUpload: { uploads: [], currentScenarioId: undefined },
+    },
+  });
+
+const renderWithStore = (ui: React.ReactElement, store = createTestStore()) =>
+  render(ui, {
+    wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+  });
 
 // Mock the assets
 vi.mock("@assets", () => ({
@@ -189,7 +205,7 @@ describe("SimulationList", () => {
 
   describe("Rendering", () => {
     it("renders table header correctly", () => {
-      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
 
       expect(screen.getByText("Simulation")).toBeInTheDocument();
       expect(screen.getByText("Created By")).toBeInTheDocument();
@@ -199,7 +215,7 @@ describe("SimulationList", () => {
     });
 
     it("renders all simulations", () => {
-      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
 
       expect(screen.getByText("Test Simulation 1")).toBeInTheDocument();
       expect(screen.getByText("Test Simulation 2")).toBeInTheDocument();
@@ -207,7 +223,7 @@ describe("SimulationList", () => {
     });
 
     it("renders simulation images", () => {
-      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
 
       const images = screen.getAllByTestId("custom-image");
       expect(images).toHaveLength(3);
@@ -216,7 +232,7 @@ describe("SimulationList", () => {
     });
 
     it("renders simulation descriptions", () => {
-      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
 
       expect(screen.getByText("Description for simulation 1")).toBeInTheDocument();
       expect(screen.getByText("Description for simulation 2")).toBeInTheDocument();
@@ -225,7 +241,9 @@ describe("SimulationList", () => {
 
     it("renders footer when provided", () => {
       const footer = <div data-testid="custom-footer">Custom Footer</div>;
-      render(<SimulationList simulations={mockSimulations} footer={footer} {...mockCallbacks} />);
+      renderWithStore(
+        <SimulationList simulations={mockSimulations} footer={footer} {...mockCallbacks} />,
+      );
 
       expect(screen.getByTestId("custom-footer")).toBeInTheDocument();
       expect(screen.getByText("Custom Footer")).toBeInTheDocument();
@@ -233,7 +251,7 @@ describe("SimulationList", () => {
 
     it("renders empty list when no simulations", () => {
       const onCreateSimulation = vi.fn();
-      render(
+      renderWithStore(
         <SimulationList
           simulations={[]}
           onCreateSimulation={onCreateSimulation}
@@ -249,19 +267,19 @@ describe("SimulationList", () => {
 
   describe("Status Display", () => {
     it("displays correct status for ACTIVE simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       expect(screen.getByText("Published")).toBeInTheDocument();
     });
 
     it("displays correct status for DRAFT simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
 
       expect(screen.getByText("Draft")).toBeInTheDocument();
     });
 
     it("displays correct status for ARCHIVED simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
 
       expect(screen.getByText("Archived")).toBeInTheDocument();
     });
@@ -269,14 +287,14 @@ describe("SimulationList", () => {
 
   describe("Action Buttons", () => {
     it("renders edit button for all simulations", () => {
-      render(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={mockSimulations} {...mockCallbacks} />);
 
       const editButtons = screen.getAllByTestId("edit-icon");
       expect(editButtons).toHaveLength(3);
     });
 
     it("calls onEdit when edit button is clicked", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       const editButton = screen.getByTestId("edit-icon");
       fireEvent.click(editButton);
@@ -286,7 +304,7 @@ describe("SimulationList", () => {
     });
 
     it("calls onDelete when delete button is clicked", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       const deleteButton = screen.getByTestId("delete-icon");
       fireEvent.click(deleteButton);
@@ -296,19 +314,19 @@ describe("SimulationList", () => {
     });
 
     it("renders unpublish button for ACTIVE simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       expect(screen.getByTestId("unpublish-icon")).toBeInTheDocument();
     });
 
     it("does not render unpublish button for DRAFT simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
 
       expect(screen.queryByTestId("unpublish-icon")).not.toBeInTheDocument();
     });
 
     it("calls onUnpublish when unpublish button is clicked", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       const unpublishButton = screen.getByTestId("unpublish-icon");
       fireEvent.click(unpublishButton);
@@ -318,19 +336,19 @@ describe("SimulationList", () => {
     });
 
     it("renders archive button for ACTIVE simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       expect(screen.getByTestId("archive-icon")).toBeInTheDocument();
     });
 
     it("renders unarchive button for ARCHIVED simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
 
       expect(screen.getByTestId("unarchive-icon")).toBeInTheDocument();
     });
 
     it("calls onArchive when archive button is clicked for ACTIVE simulation", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       const archiveButton = screen.getByTestId("archive-icon");
       fireEvent.click(archiveButton);
@@ -340,7 +358,7 @@ describe("SimulationList", () => {
     });
 
     it("calls onUnarchive when unarchive button is clicked for ARCHIVED simulation", () => {
-      render(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
 
       const unarchiveButton = screen.getByTestId("unarchive-icon");
       fireEvent.click(unarchiveButton);
@@ -350,7 +368,7 @@ describe("SimulationList", () => {
     });
 
     it("does not render archive/unarchive buttons for DRAFT simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
 
       expect(screen.queryByTestId("archive-icon")).not.toBeInTheDocument();
       expect(screen.queryByTestId("unarchive-icon")).not.toBeInTheDocument();
@@ -359,21 +377,21 @@ describe("SimulationList", () => {
 
   describe("Preview Functionality", () => {
     it("renders preview button for ACTIVE simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       expect(screen.getByText("Preview")).toBeInTheDocument();
       expect(screen.getByTestId("play-icon")).toBeInTheDocument();
     });
 
     it("does not render preview button for DRAFT simulations", () => {
-      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
 
       expect(screen.queryByText("Preview")).not.toBeInTheDocument();
       expect(screen.getByText("-")).toBeInTheDocument();
     });
 
     it("calls onPreview when preview button is clicked", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       const previewButton = screen.getByText("Preview");
       fireEvent.click(previewButton);
@@ -383,7 +401,7 @@ describe("SimulationList", () => {
     });
 
     it("calls onPreview when clicking on simulation image for ACTIVE simulation", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       const images = screen.getAllByTestId("custom-image");
       fireEvent.click(images[0].parentElement!);
@@ -393,7 +411,7 @@ describe("SimulationList", () => {
     });
 
     it("does not call onPreview when clicking on DRAFT simulation image", () => {
-      render(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
 
       const images = screen.getAllByTestId("custom-image");
       fireEvent.click(images[0].parentElement!);
@@ -404,20 +422,20 @@ describe("SimulationList", () => {
 
   describe("Data Formatting", () => {
     it("formats dates correctly", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       const formattedDate = new Date("2024-01-15T10:00:00Z").toLocaleDateString();
       expect(screen.getByText(formattedDate)).toBeInTheDocument();
     });
 
     it("formats usage correctly", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       expect(screen.getByText("10 times")).toBeInTheDocument();
     });
 
     it("displays created by information", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
@@ -427,7 +445,9 @@ describe("SimulationList", () => {
         ...mockSimulations[0],
         createdBy: "",
       };
-      render(<SimulationList simulations={[simulationWithoutCreator]} {...mockCallbacks} />);
+      renderWithStore(
+        <SimulationList simulations={[simulationWithoutCreator]} {...mockCallbacks} />,
+      );
 
       expect(screen.getByText("--")).toBeInTheDocument();
     });
@@ -435,7 +455,7 @@ describe("SimulationList", () => {
 
   describe("Styling and Layout", () => {
     it("applies hover styles to simulation rows", () => {
-      const { container } = render(
+      const { container } = renderWithStore(
         <SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />,
       );
 
@@ -444,7 +464,7 @@ describe("SimulationList", () => {
     });
 
     it("applies correct styling to simulation cards", () => {
-      const { container } = render(
+      const { container } = renderWithStore(
         <SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />,
       );
 
@@ -454,7 +474,7 @@ describe("SimulationList", () => {
     });
 
     it("applies correct overflow styles", () => {
-      const { container } = render(
+      const { container } = renderWithStore(
         <SimulationList simulations={mockSimulations} {...mockCallbacks} />,
       );
 
@@ -479,21 +499,23 @@ describe("SimulationList", () => {
         isAssignedToTenant: false,
       };
 
-      render(<SimulationList simulations={[simulationWithMissingData]} {...mockCallbacks} />);
+      renderWithStore(
+        <SimulationList simulations={[simulationWithMissingData]} {...mockCallbacks} />,
+      );
 
       expect(screen.getByText("Minimal Simulation")).toBeInTheDocument();
       expect(screen.getByText("--")).toBeInTheDocument();
     });
 
     it("handles callbacks being undefined", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} />);
 
       const editButton = screen.getByTestId("edit-icon");
       expect(() => fireEvent.click(editButton)).not.toThrow();
     });
 
     it("renders correctly with single simulation", () => {
-      render(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
       expect(screen.getByText("Test Simulation 1")).toBeInTheDocument();
       expect(screen.queryByText("Test Simulation 2")).not.toBeInTheDocument();
@@ -506,7 +528,7 @@ describe("SimulationList", () => {
         title: `Simulation ${i}`,
       }));
 
-      render(<SimulationList simulations={manySimulations} {...mockCallbacks} />);
+      renderWithStore(<SimulationList simulations={manySimulations} {...mockCallbacks} />);
 
       expect(screen.getByText("Simulation 0")).toBeInTheDocument();
       expect(screen.getByText("Simulation 19")).toBeInTheDocument();
