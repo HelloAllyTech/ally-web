@@ -1,6 +1,7 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -33,6 +34,7 @@ import {
   FORM_FIELD_IDS,
 } from "@constants";
 import { useDebounce } from "@hooks";
+import { selectUploadsInProgress } from "@reducer/reportUploadReducer";
 import {
   SimulationStatus,
   SimulationPreviewType,
@@ -101,6 +103,9 @@ export const CreateSimulation: FC = () => {
     mode: "onChange",
     reValidateMode: "onChange",
   });
+
+  const uploadsInProgress = useSelector(selectUploadsInProgress);
+  const isReportGenerationInProgress = uploadsInProgress.length > 0;
 
   useEffect(() => {
     if (simulationId) getAdminSimulationByIdQuery(simulationId);
@@ -376,6 +381,9 @@ export const CreateSimulation: FC = () => {
   };
 
   const handleStepClick = async (stepId: string) => {
+    if (isReportGenerationInProgress) {
+      return;
+    }
     if (currentStep === stepIds.overview) {
       if (!areAllMandatoryFieldsFilledInOverview) {
         toast.error(en.errors.overviewMandatoryFieldsNotFilled);
@@ -408,7 +416,7 @@ export const CreateSimulation: FC = () => {
 
   const renderStep = (title: string, component: React.ReactNode) => {
     return (
-      <div className="flex flex-col h-full w-100%">
+      <div className={`flex flex-col h-full w-100%`}>
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-medium text-typography-900">{title}</h2>
         </div>
@@ -502,6 +510,7 @@ export const CreateSimulation: FC = () => {
           steps={StepperList}
           currentStep={currentStep}
           onStepClick={handleStepClick}
+          disabled={isReportGenerationInProgress}
         />
 
         <div className="flex-1 flex flex-col h-[calc(100vh-160px)]">
