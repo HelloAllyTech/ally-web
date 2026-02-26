@@ -26,7 +26,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with MY_L
             data-testid="archives-title"
           >
             <button
-              aria-label="Go back to calls"
+              aria-label="Go back"
               class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
               data-testid="archives-back-button"
               type="button"
@@ -92,7 +92,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with ORG_
             data-testid="archives-title"
           >
             <button
-              aria-label="Go back to calls"
+              aria-label="Go back"
               class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
               data-testid="archives-back-button"
               type="button"
@@ -158,7 +158,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with defa
             data-testid="archives-title"
           >
             <button
-              aria-label="Go back to calls"
+              aria-label="Go back"
               class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
               data-testid="archives-back-button"
               type="button"

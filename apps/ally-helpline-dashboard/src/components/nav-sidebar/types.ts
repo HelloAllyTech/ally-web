@@ -13,6 +13,7 @@ export interface TabProps {
   id: TabId;
   Icon: FC<SVGProps<SVGSVGElement>>;
   title: string;
+  tKey?: string;
   activeTab: TabId;
   onClick: () => void;
   isExpanded: boolean;

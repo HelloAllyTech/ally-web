@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -26,6 +27,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   canShowFeedback = true,
   councellorName,
 }) => {
+  const { t } = useTranslation();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
 
   const hasFeedback = useRef<boolean>(false);
@@ -65,7 +67,9 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const SidebarTitle = (
     <div className="text-base flex items-center justify-between w-full gap-2">
-      <span className="font-semibold font-tertiary text-typography-800">Summary</span>
+      <span className="font-semibold font-tertiary text-typography-800">
+        {t("common.summary", "Summary")}
+      </span>
 
       {summary?.counselorId === user?.id && (
         <div
@@ -75,7 +79,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           }}
         >
           <Toggle
-            items={REVIEW_PRIVACY_OPTIONS}
+            items={REVIEW_PRIVACY_OPTIONS(t)}
             initialValue={summary?.reviewStatus}
             onChange={handleCreateReview}
           />
@@ -101,7 +105,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const tabList = [
     {
       id: 1,
-      label: "Session Review",
+      label: t("postSim.tabs.sessionReview", "Session Review"),
       content: (
         <SimulationSummary
           summaryId={summaryId}
@@ -114,26 +118,26 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       ? [
           {
             id: 2,
-            label: "Ask AI",
+            label: t("postSim.tabs.askAi", "Ask AI"),
             content: <AskAiTab sessionId={summaryId} />,
           },
         ]
       : []),
     {
       id: 3,
-      label: "Annotated Transcript",
+      label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
       content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
     },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
           {
             id: 5,
-            label: "Skills  Demonstrated",
+            label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
             content: <SkillsTab sessionId={summaryId} />,
           },
           {
             id: 4,
-            label: "Deeper Reflection",
+            label: t("postSim.tabs.deeperReflection", "Deeper Reflection"),
             content: <ReflectionTab sessionId={summaryId} className="flex-col" />,
           },
         ]

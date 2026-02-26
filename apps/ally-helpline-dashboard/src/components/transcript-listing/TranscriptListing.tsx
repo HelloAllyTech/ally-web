@@ -1,5 +1,7 @@
 import { FC, RefObject } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { SimulationTranscriptMessage } from "@types";
 
@@ -31,18 +33,24 @@ const TranscriptItem = ({
   index,
   agentName,
   counsellorName,
+  aiClientSuffix,
+  aiAgentName,
+  youLabel,
 }: {
   agentName: string;
   counsellorName: string;
+  aiClientSuffix: string;
+  aiAgentName: string;
+  youLabel: string;
   transcript: SimulationTranscriptMessage;
   index: number;
 }) => {
   const isAIClient = transcript.senderId === -1;
   const speakerName = isAIClient
     ? agentName
-      ? `${agentName} (AI client)`
-      : "AI Agent"
-    : counsellorName || "You";
+      ? `${agentName} (${aiClientSuffix})`
+      : aiAgentName
+    : counsellorName || youLabel;
 
   return (
     <div
@@ -64,7 +72,7 @@ const TranscriptItem = ({
             {transcript?.tags?.map(tag => (
               <div
                 key={tag.tagId}
-                className={`text-typography-900 px-1 text-xs rounded-[2px] text-base leading-relaxed ${categoryColoeMap[tag.category]}`}
+                className={`text-typography-900 px-1 text-xs rounded-[2px] leading-relaxed ${categoryColoeMap[tag.category]}`}
               >
                 {tag.label}
               </div>
@@ -87,6 +95,10 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   agentName,
   className = "",
 }) => {
+  const { t } = useTranslation();
+  const aiClientSuffix = t("transcription.aiClientSuffix");
+  const aiAgentName = t("transcription.aiAgentName");
+  const youLabel = t("transcription.youLabel");
   const TranscriptSkeleton = () => (
     <div className="flex flex-col gap-6 w-full">
       {[...Array(8)].map((_, index) => (
@@ -115,7 +127,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   if (transcriptList.length === 0) {
     return (
       <div className="flex flex-col justify-center items-center h-full w-full">
-        <div className="text-xxl font-primary text-typography-700">No transcript available</div>
+        <div className="text-xxl font-primary text-typography-700">{t("transcription.empty")}</div>
       </div>
     );
   }
@@ -137,6 +149,9 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
             transcript={transcript}
             agentName={agentName}
             counsellorName={counsellorName}
+            aiClientSuffix={aiClientSuffix}
+            aiAgentName={aiAgentName}
+            youLabel={youLabel}
             index={index}
           />
         ))}

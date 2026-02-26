@@ -55,6 +55,7 @@ export const navBarOptions = [
   {
     id: TabId.LEARN,
     title: "Learn",
+    key: "nav.tabs.learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
     activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY, ROUTES.CASE],
@@ -63,6 +64,7 @@ export const navBarOptions = [
   {
     id: TabId.REVIEW,
     title: "Review",
+    key: "nav.tabs.review",
     Icon: ReviewNavIcon,
     path: ROUTES.REVIEW,
     activePages: [ROUTES.REVIEW_DETAILS],
@@ -71,6 +73,7 @@ export const navBarOptions = [
   {
     id: TabId.BADGES,
     title: "Badges",
+    key: "nav.tabs.badges",
     Icon: Badge,
     path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
     activePages: [],
@@ -79,6 +82,7 @@ export const navBarOptions = [
   {
     id: TabId.LEADERBOARD,
     title: "Community",
+    key: "nav.tabs.community",
     Icon: Leaderboard,
     path: ROUTES.COMMUNITY_LEADERBOARD,
     activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
@@ -87,6 +91,7 @@ export const navBarOptions = [
   {
     id: TabId.CALLS,
     title: "Sessions",
+    key: "nav.tabs.sessions",
     Icon: ScribeIcon,
     path: ROUTES.CALLS,
     activePages: [],
@@ -100,6 +105,7 @@ export const navBarOptions = [
   {
     id: TabId.ANALYTICS,
     title: "Statistics",
+    key: "nav.tabs.statistics",
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
     activePages: [],
@@ -108,6 +114,7 @@ export const navBarOptions = [
   {
     id: TabId.SEARCH,
     title: "Search",
+    key: "nav.tabs.search",
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
     activePages: [],

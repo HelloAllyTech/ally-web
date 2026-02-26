@@ -9,18 +9,20 @@ import {
   useGenerateReportMutation,
   useCancelReportGenerationMutation,
   useGetReportTranscriptQuery,
+  useLazyGetReportTranscriptQuery,
 } from "@api";
 import { ArrowDown } from "@assets";
-import { Button, PromptConfiguration, ReportContent, TabButton } from "@components";
+import { Button, PromptConfiguration, ReportContent, TabButton, Accordion } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   DEFAULT_HELPER_PROMPT,
   DEFAULT_LANGUAGE,
   DEFAULT_TURNS,
   DETAILS_STYLES,
+  REPORT_ACCORDION_SX,
   REPORT_GENERATION_MESSAGES,
-  ReportGenerationStatus,
 } from "@constants";
+import { LANGUAGE_OPTIONS, ReportGenerationStatus } from "@constants/reportGeneration";
 import {
   addUpload,
   selectUploads,
@@ -28,7 +30,7 @@ import {
   setAllUploads,
   setCurrentScenarioId,
 } from "@reducer/reportUploadReducer";
-import { ReportData, ReportConfig, TranscriptMessage } from "@types";
+import { ReportData, ReportConfig } from "@types";
 
 export interface ReportSectionProps {
   scenarioId?: string;
@@ -39,31 +41,53 @@ const TABS = {
   secondary: { report: "report", transcription: "transcription" },
 };
 
-const getFinalStatuses = (): ReportGenerationStatus[] => [
+const FINAL_STATUSES: ReportGenerationStatus[] = [
   ReportGenerationStatus.COMPLETED,
   ReportGenerationStatus.FAILED,
   ReportGenerationStatus.CANCELLED,
 ];
 
-// Helper functions
-const normalizeStatus = (status: string): ReportGenerationStatus => {
-  if (status === ReportGenerationStatus.COMPLETED) return ReportGenerationStatus.COMPLETED;
-  if (status === ReportGenerationStatus.FAILED) return ReportGenerationStatus.FAILED;
-  if (status === ReportGenerationStatus.CANCELLED) return ReportGenerationStatus.CANCELLED;
-  return ReportGenerationStatus.IN_PROGRESS;
+const STATUS_MAP: Partial<Record<string, ReportGenerationStatus>> = {
+  [ReportGenerationStatus.COMPLETED]: ReportGenerationStatus.COMPLETED,
+  [ReportGenerationStatus.FAILED]: ReportGenerationStatus.FAILED,
+  [ReportGenerationStatus.CANCELLED]: ReportGenerationStatus.CANCELLED,
 };
 
-const calculateProgress = (status: ReportGenerationStatus): number => {
-  return status === ReportGenerationStatus.COMPLETED ? 100 : 0;
-};
+const normalizeStatus = (status: string): ReportGenerationStatus =>
+  STATUS_MAP[status] ?? ReportGenerationStatus.IN_PROGRESS;
 
-const createUploadFromReport = (report: any) => ({
-  fileName: `Report ${report.id}`,
-  status: normalizeStatus(report.status),
-  progress: calculateProgress(normalizeStatus(report.status)),
-  reportId: report.id,
-  scenarioId: report.scenarioId,
+const formatReportCreatedAt = (dateString: string): string =>
+  new Date(dateString).toLocaleString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+const calculateProgress = (status: ReportGenerationStatus): number =>
+  status === ReportGenerationStatus.COMPLETED ? 100 : 0;
+
+const createUploadPayload = (
+  reportId: string,
+  scenarioId: string,
+  status: ReportGenerationStatus,
+  progress = 0,
+) => ({
+  fileName: `Report ${reportId}`,
+  status,
+  progress,
+  reportId,
+  scenarioId,
 });
+
+const createUploadFromReport = (report: any) => {
+  const status = normalizeStatus(report.status);
+  return createUploadPayload(report.id, report.scenarioId, status, calculateProgress(status));
+};
+
 export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   const dispatch = useDispatch();
   const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
@@ -75,7 +99,8 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   const [primaryActiveTab, setPrimaryActiveTab] = useState(TABS.primary.report);
   const [reportId, setReportId] = useState<string | null>(null);
   const [historyItemActiveTabs, setHistoryItemActiveTabs] = useState<Record<string, string>>({});
-  const [transcriptsCache, setTranscriptsCache] = useState<Record<string, TranscriptMessage[]>>({});
+  const [expandedHistoryReportId, setExpandedHistoryReportId] = useState<string | null>(null);
+
   const previousScenarioIdRef = useRef<string | undefined>(scenarioId);
 
   const [generateReportMutation] = useGenerateReportMutation();
@@ -85,22 +110,24 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     { skip: !scenarioId },
   );
   const [cancelReportGenerationMutation] = useCancelReportGenerationMutation();
-  const { data: transcriptData } = useGetReportTranscriptQuery(
-    { reportId: reportId! },
-    {
-      skip: !reportId || fetchedReportData?.status !== ReportGenerationStatus.COMPLETED,
-    },
-  );
+  const [getReportTranscriptQuery, { data: transcriptData, isLoading: isTranscriptLoading }] =
+    useLazyGetReportTranscriptQuery();
+  const { data: historyTranscriptData, isLoading: isHistoryTranscriptLoading } =
+    useGetReportTranscriptQuery(
+      { reportId: expandedHistoryReportId! },
+      {
+        skip: !expandedHistoryReportId || primaryActiveTab !== TABS.primary.history,
+      },
+    );
 
-  // Update scenarioId in Redux when it changes
   useEffect(() => {
     if (scenarioId && scenarioId !== previousScenarioIdRef.current) {
       previousScenarioIdRef.current = scenarioId;
       dispatch(setCurrentScenarioId(scenarioId));
+      setExpandedHistoryReportId(null);
     }
   }, [scenarioId, dispatch]);
 
-  // Set most recent reportId from history
   const mostRecentReportId = reportsHistory?.data?.[0]?.id;
   useEffect(() => {
     if (mostRecentReportId && mostRecentReportId !== reportId && !isGenerating) {
@@ -108,7 +135,6 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     }
   }, [mostRecentReportId, reportId, isGenerating]);
 
-  // Refetch and set reportId when switching to report tab
   useEffect(() => {
     if (primaryActiveTab === TABS.primary.report) {
       refetchReportsHistory();
@@ -120,17 +146,12 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
 
   useEffect(() => {
     if (fetchedReportData) {
-      const cachedTranscripts = transcriptsCache[fetchedReportData.id];
       setReportData({
         ...fetchedReportData,
-        transcripts: transcriptData || cachedTranscripts || fetchedReportData.transcripts,
+        transcripts: transcriptData?.messages ?? fetchedReportData.transcripts,
       });
-      // Cache the transcript if we have it
-      if (transcriptData && !cachedTranscripts) {
-        setTranscriptsCache(prev => ({ ...prev, [fetchedReportData.id]: transcriptData }));
-      }
     }
-  }, [fetchedReportData, transcriptData, transcriptsCache]);
+  }, [fetchedReportData, transcriptData]);
 
   useEffect(() => {
     if (!reportsHistory?.data || !scenarioId) {
@@ -149,6 +170,37 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     }
   }, [reportsHistory?.data, scenarioId, dispatch]);
 
+  const completedReportsFromHistory = useMemo(
+    () =>
+      reportsHistory?.data
+        ?.filter(item => item.status === ReportGenerationStatus.COMPLETED)
+        .reverse() ?? [],
+    [reportsHistory?.data],
+  );
+
+  const displayedReportConfig =
+    primaryActiveTab === TABS.primary.report && completedReportsFromHistory.length > 0
+      ? completedReportsFromHistory[0].config
+      : fetchedReportData?.config;
+  useEffect(() => {
+    const config = displayedReportConfig;
+    if (config?.helperAgentPrompt != null && config?.languageId != null && config?.turns != null) {
+      setHelperAgentPrompt(config.helperAgentPrompt);
+      setSelectedLanguage({
+        value: config.languageId.toString(),
+        label: config.languageId.toString(),
+      });
+      setSelectedTurns({
+        value: config.turns.toString(),
+        label: config.turns.toString(),
+      });
+    }
+  }, [
+    displayedReportConfig?.helperAgentPrompt,
+    displayedReportConfig?.languageId,
+    displayedReportConfig?.turns,
+  ]);
+
   const uploads = useSelector(selectUploads);
   const currentUpload = useMemo(
     () => (reportId ? uploads.find(u => u.reportId === reportId) : null),
@@ -157,9 +209,16 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   const progress = currentUpload?.progress ?? 0;
 
   useEffect(() => {
+    if (primaryActiveTab !== TABS.primary.history || expandedHistoryReportId) return;
+    if (completedReportsFromHistory.length > 0) {
+      setExpandedHistoryReportId(completedReportsFromHistory[0].id);
+    }
+  }, [primaryActiveTab, expandedHistoryReportId, completedReportsFromHistory]);
+
+  useEffect(() => {
     if (!currentUpload) return;
 
-    const isFinalStatus = getFinalStatuses().includes(currentUpload.status);
+    const isFinalStatus = FINAL_STATUSES.includes(currentUpload.status);
     if (isFinalStatus) {
       setIsGenerating(false);
       if (
@@ -173,18 +232,10 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     }
   }, [currentUpload, reportId, refetchReportsHistory]);
 
-  // Initialize upload when generation starts (progress simulation is handled globally by ScenarioReportsSocketProvider)
   useEffect(() => {
     if (!isGenerating || !reportId || !scenarioId) return;
-
     dispatch(
-      addUpload({
-        fileName: `Report ${reportId}`,
-        status: ReportGenerationStatus.IN_PROGRESS,
-        progress: 0,
-        reportId,
-        scenarioId,
-      }),
+      addUpload(createUploadPayload(reportId, scenarioId, ReportGenerationStatus.IN_PROGRESS, 0)),
     );
   }, [isGenerating, reportId, scenarioId, dispatch]);
 
@@ -206,13 +257,9 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
       if (response?.id) {
         setReportId(response.id);
         dispatch(
-          addUpload({
-            fileName: `Report ${response.id}`,
-            status: ReportGenerationStatus.IN_PROGRESS,
-            progress: 0,
-            reportId: response.id,
-            scenarioId,
-          }),
+          addUpload(
+            createUploadPayload(response.id, scenarioId, ReportGenerationStatus.IN_PROGRESS, 0),
+          ),
         );
       } else {
         setIsGenerating(false);
@@ -232,13 +279,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     try {
       await cancelReportGenerationMutation({ reportId }).unwrap();
       dispatch(
-        addUpload({
-          fileName: `Report ${reportId}`,
-          status: ReportGenerationStatus.CANCELLED,
-          progress: 0,
-          reportId,
-          scenarioId,
-        }),
+        addUpload(createUploadPayload(reportId, scenarioId, ReportGenerationStatus.CANCELLED, 0)),
       );
       setReportId(null);
       setIsGenerating(false);
@@ -251,16 +292,19 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
     setReportData(prev =>
       prev ? { ...prev, config: { ...prev.config, languageId: parseInt(language) } } : null,
     );
+    setSelectedLanguage({ value: language, label: language });
   };
 
   const handleTurnsChange = (turns: number) => {
     setReportData(prev => (prev ? { ...prev, config: { ...prev.config, turns } } : null));
+    setSelectedTurns({ value: String(turns), label: `${turns} turns` });
   };
 
   const handlePromptChange = (prompt: string) => {
     setReportData(prev =>
       prev ? { ...prev, config: { ...prev.config, helperAgentPrompt: prompt } } : null,
     );
+    setHelperAgentPrompt(prompt);
   };
 
   const renderLoadingState = () => (
@@ -291,7 +335,9 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
       return renderLoadingState();
     }
 
-    if (reportData) {
+    if (completedReportsFromHistory.length > 0) {
+      const latestReport = completedReportsFromHistory[0];
+      if (!latestReport) return null;
       return (
         <div className="flex flex-col gap-6 w-full max-w-[800px]">
           <style>{DETAILS_STYLES}</style>
@@ -303,9 +349,9 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
             </summary>
             <div className="px-6 py-4 border-t border-gray-200">
               <PromptConfiguration
-                prompt={reportData.config.helperAgentPrompt}
-                language={reportData.config.languageId.toString()}
-                turns={reportData.config.turns}
+                prompt={helperAgentPrompt}
+                language={selectedLanguage.value}
+                turns={Number(selectedTurns.value)}
                 onPromptChange={handlePromptChange}
                 onLanguageChange={handleLanguageChange}
                 onTurnsChange={handleTurnsChange}
@@ -315,7 +361,18 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
             </div>
           </details>
 
-          <ReportContent reportData={reportData} activeTab={activeTab} onTabChange={setActiveTab} />
+          <ReportContent
+            reportData={latestReport}
+            transcriptData={transcriptData?.messages}
+            activeTab={activeTab}
+            isTranscriptLoading={isTranscriptLoading}
+            onTabChange={(tab: string) => {
+              setActiveTab(tab);
+              if (tab === "transcription") {
+                getReportTranscriptQuery({ reportId: latestReport.id });
+              }
+            }}
+          />
         </div>
       );
     }
@@ -340,11 +397,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   };
 
   const renderHistoryList = () => {
-    // Filter to only show completed reports
-    const completedReports =
-      reportsHistory?.data.filter(item => item.status === ReportGenerationStatus.COMPLETED) || [];
-
-    if (completedReports.length === 0) {
+    if (completedReportsFromHistory.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center w-full h-[400px]">
           <p className="text-gray-500">No reports found</p>
@@ -354,39 +407,48 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
 
     return (
       <div className="flex flex-col gap-2 w-full max-w-[800px]">
-        {completedReports.map((item, index) => {
-          const itemActiveTab = historyItemActiveTabs[item.id] || TABS.secondary.report;
+        {completedReportsFromHistory.map((item, index) => {
+          const itemActiveTab = historyItemActiveTabs[item.id] ?? TABS.secondary.report;
           const handleItemTabChange = (tab: string) => {
             setHistoryItemActiveTabs(prev => ({ ...prev, [item.id]: tab }));
           };
+          const isItemTranscriptLoading =
+            expandedHistoryReportId === item.id && isHistoryTranscriptLoading;
+          const handleAccordionChange = (expanded: boolean) => {
+            setExpandedHistoryReportId(expanded ? item.id : null);
+          };
+
+          const languageLabel =
+            LANGUAGE_OPTIONS.find(opt => opt.value === item.config.languageId.toString())?.label ??
+            item.config.languageId;
+
+          const historyItemHeader = (
+            <div className="text-base font-normal text-[#1A1A1A] flex flex-row gap-6 items-center">
+              <div className="text-center">{index + 1}</div>
+              <div className="flex flex-col justify-between gap-2">
+                <span className="text-xs font-normal text-[#1A1A1A]">
+                  {formatReportCreatedAt(item.createdAt)}
+                </span>
+                <span className="text-xs font-normal text-typography-600">{`${languageLabel} (Global) · ${item.config.turns} turns`}</span>
+              </div>
+            </div>
+          );
 
           return (
-            <details
+            <Accordion
               key={item.id}
-              className="border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors"
-              open={index === 0}
+              onChange={handleAccordionChange}
+              customAccordionSx={REPORT_ACCORDION_SX}
+              headerTitle={historyItemHeader}
             >
-              <summary className="px-4 py-3 cursor-pointer flex items-center gap-4 list-none">
-                <span className="text-gray-500 font-medium">{index + 1}</span>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-typography-900">{item.createdAt}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {item.config.languageId.toString()} (Global) • {item.config.turns} turns
-                  </div>
-                </div>
-                <ArrowDown />
-              </summary>
-              <div className="px-6 py-4 border-t border-gray-200 bg-white">
-                <ReportContent
-                  reportData={{
-                    ...item,
-                    transcripts: transcriptsCache[item.id] || item.transcripts,
-                  }}
-                  activeTab={itemActiveTab}
-                  onTabChange={handleItemTabChange}
-                />
-              </div>
-            </details>
+              <ReportContent
+                reportData={item}
+                transcriptData={historyTranscriptData?.messages}
+                activeTab={itemActiveTab}
+                onTabChange={handleItemTabChange}
+                isTranscriptLoading={isItemTranscriptLoading}
+              />
+            </Accordion>
           );
         })}
       </div>
@@ -420,7 +482,6 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   return (
     <div className="flex flex-col h-full w-100%">
       {headerContent}
-
       <div className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">{renderMainContent()}</div>
     </div>
   );

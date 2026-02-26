@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom";
-import { expect, vi } from "vitest";
+import { beforeAll, expect, vi } from "vitest";
 import path from "path";
+import i18n from "./i18n";
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
@@ -120,6 +121,15 @@ expect.addSnapshotSerializer({
     });
     return normalizedStr;
   },
+});
+
+beforeAll(async () => {
+  if (!i18n.isInitialized) {
+    await new Promise<void>(resolve => {
+      i18n.on("initialized", () => resolve());
+    });
+  }
+  await i18n.changeLanguage("en");
 });
 
 // Mock scrollIntoView for DOM elements

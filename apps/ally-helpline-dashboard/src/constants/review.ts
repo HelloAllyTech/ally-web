@@ -1,6 +1,6 @@
-const REVIEW_PRIVACY_OPTIONS = [
-  { label: "Keep it private", value: "HIDDEN" },
-  { label: "Share for review", value: "IN_REVIEW" },
+const REVIEW_PRIVACY_OPTIONS = (t?: (key: string) => string) => [
+  { label: t ? t("review.privacy.private") : "Keep it private", value: "HIDDEN" },
+  { label: t ? t("review.privacy.share") : "Share for review", value: "IN_REVIEW" },
 ];
 
 export { REVIEW_PRIVACY_OPTIONS };

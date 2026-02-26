@@ -2,6 +2,7 @@ import { FC, useState, type MouseEvent } from "react";
 
 import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ChipGroup, CustomVideo } from "@ally-ui-mono/ui-shared";
@@ -20,6 +21,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   noCredits = false,
   triggerWarnings,
 }) => {
+  const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const isDisabled = isStarting || noCredits;
@@ -50,7 +52,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
       document.execCommand("copy");
       document.body.removeChild(textArea);
     }
-    toast.success("Scenario link copied to clipboard!");
+    toast.success(t("learn.scenario.shareCopied"));
   };
 
   const handleStartSimulation = (event: MouseEvent<HTMLButtonElement>) => {
@@ -87,7 +89,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
         )
       ) : (
         <div className="w-full h-64 flex items-center justify-center text-typography-600 bg-gray-100 rounded-md">
-          <span className="text-sm">Media not available</span>
+          <span className="text-sm">{t("learn.scenario.mediaUnavailable")}</span>
         </div>
       )}
     </div>
@@ -115,17 +117,19 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
             <button
               className="flex items-center gap-2 px-4 py-2 text-typography-700 hover:bg-gray-50 rounded-md transition-colors"
               onClick={handleShareScenario}
-              aria-label="Share scenario"
-              title="Share this scenario"
+              aria-label={t("learn.scenario.shareAria")}
+              title={t("learn.scenario.shareTitle")}
             >
               <ShareIcon />
-              <span className="text-base">Share</span>
+              <span className="text-base">{t("learn.scenario.share")}</span>
             </button>
           </div>
 
           {longDescription && (
             <div className="flex flex-col">
-              <div className="text-base font-semibold text-typography-900">Scenario:</div>
+              <div className="text-base font-semibold text-typography-900">
+                {t("learn.scenario.scenarioLabel")}
+              </div>
               <p className="text-base text-typography-800">{longDescription}</p>
             </div>
           )}
@@ -133,7 +137,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
           {triggerWarnings?.length > 0 && (
             <div className="flex flex-col">
               <div className="text-base font-semibold text-typography-900 mb-[4px]">
-                Trigger warnings:
+                {t("common.triggerWarnings")}
               </div>
               <ChipGroup items={triggerWarnings} chipClassName="text-sm" maxVisible={20} />
             </div>
@@ -145,10 +149,10 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
               variant="primary"
               className={`!font-tertiary !text-base  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
               disabled={isDisabled}
-              aria-label="Start simulation"
+              aria-label={t("learn.scenario.startAria")}
             >
               {isStarting && <CircularProgress size={16} className="mr-2" />}
-              Start Simulation
+              {t("common.startSimulation")}
             </Button>
           </div>
         </div>
@@ -156,13 +160,16 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
 
       <ConfirmationDialog
         data-testid="simulation-notification-dialog"
-        title={{ normal: "Before you get started", italic: "" }}
+        title={{
+          normal: t("learn.scenario.preStart.titleNormal"),
+          italic: t("learn.scenario.preStart.titleItalic"),
+        }}
         isOpen={showNotification}
         onClose={handleNotificationClose}
         buttonVariant={ButtonVariant.PRIMARY}
         onButtonClick={handleNotificationConfirm}
-        buttonText="Start Session"
-        content="At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
+        buttonText={t("learn.scenario.preStart.button")}
+        content={t("learn.scenario.preStart.content")}
       />
     </>
   );
