@@ -119,6 +119,10 @@ export interface CreateTenantBody {
   code: string;
   description?: string;
   logoUrl?: string;
+  enabledDashboardIds?: string[];
+  enableMicrophoneMode?: boolean;
+  enableAudioUpload?: boolean;
+  hideRankInCommunity?: boolean;
 }
 
 export interface GetUsersResponse {
