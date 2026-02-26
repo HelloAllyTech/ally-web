@@ -112,7 +112,6 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
         {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && (
           <Checklist className="max-h-[calc(100vh-200px)]" sessionId={props.sessionId} />
         )}
-
         <motion.div className="overflow-y-auto font-primary space-y-4">
           {feedbackSections.map(({ key, label, type, columns }, index) => {
             return (
