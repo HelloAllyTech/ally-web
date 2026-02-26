@@ -133,7 +133,7 @@ export const PostSimulationSummary: FC = () => {
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}
-          className="w-full normal-case border-b border-[#DBDBDB] mb-4"
+          className="w-full normal-case border-b border-[#DBDBDB]"
           sx={{
             "& .MuiButtonBase-root": {
               fontFamily: "IBM_Plex_Serif",
