@@ -140,6 +140,7 @@ export interface VerticalStepperProps {
   steps: Step[];
   currentStep: string;
   onStepClick?: (stepId: string) => void;
+  disabled?: boolean;
 }
 
 // Sidebar
