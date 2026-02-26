@@ -306,7 +306,8 @@ const EmotionalMovementChart: FC<{
 };
 
 const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
-  const strengths = summary.details.summary.feedback.positives;
+  const strengths = summary.details.summary?.feedback?.positives || [];
+
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
@@ -315,7 +316,7 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
         </h3>
       </div>
       <div className="px-6 py-6">
-        {strengths.map((strength, index) => (
+        {strengths?.map((strength, index) => (
           <li key={index} className="flex items-start">
             <span className="text-typography-900 mr-2">•</span>
             <span className="text-typography-900">{strength}</span>
@@ -327,14 +328,15 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
 };
 
 const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
-  const areasForGrowth = summary.details.summary.feedback.improvements;
+  const areasForGrowth = summary.details.summary?.feedback?.improvements || [];
+
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">Areas for growth</h3>
       </div>
       <div className="px-6 py-6">
-        {areasForGrowth.map((area, index) => (
+        {areasForGrowth?.map((area, index) => (
           <li key={index} className="flex items-start">
             <span className="text-typography-900 mr-2">•</span>
             <span className="text-typography-900">{area}</span>
@@ -380,6 +382,8 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const hasSkillData = skillCoverages.length > 0;
   const hasEmotionalData = emotionalData.length > 0;
   const hasNoData = !hasSkillData && !hasEmotionalData;
+  const simulationMode = summary?.scenario?.metadata?.experienceMode;
+  const isChecklistMode = simulationMode === "CHECKLIST";
 
   return (
     <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto min-h-[70vh]">
@@ -390,8 +394,12 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
 
       {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}
       {hasEmotionalData && <EmotionalMovementChart data={emotionalData} timeTicks={timeTicks} />}
-      {summary && <StrengthAndSkills summary={summary} />}
-      {summary && <AreasForGrowth summary={summary} />}
+      {summary && isChecklistMode && (
+        <>
+          <StrengthAndSkills summary={summary} />
+          <AreasForGrowth summary={summary} />
+        </>
+      )}
       {hasNoData && <EmptyState />}
     </div>
   );

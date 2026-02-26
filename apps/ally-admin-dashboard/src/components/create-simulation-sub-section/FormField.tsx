@@ -43,7 +43,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   };
 
   const regenerateButton = regenerateType ? (
-    // console.log(regenerateType,"regenerateType"),
     <RegenerateButton regenerateType={regenerateType} label={label} formMethods={formMethods} />
   ) : null;
 
