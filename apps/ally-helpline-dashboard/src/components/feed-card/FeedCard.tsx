@@ -1,5 +1,7 @@
 import { FC, useMemo, useState } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ReviewTranscript } from "@assets";
 import { ReactionsModal } from "@components";
@@ -26,11 +28,12 @@ const FeedCard: FC<FeedCardProps> = ({
   dateTime,
 }) => {
   const { user: currentDetails } = useUser();
+  const { t } = useTranslation();
 
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
 
   const formattedDateTime = formatDateTime(dateTime);
-  const relativeTime = formatRelativeTime(createdAt);
+  const relativeTime = formatRelativeTime(createdAt, t);
 
   const entries = Object.entries(reactions);
   const unicodeCodes = entries.map(([code]) => code);
@@ -109,18 +112,18 @@ const FeedCard: FC<FeedCardProps> = ({
     return (
       <div className="flex flex-col gap-2 cursor-default">
         <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">
-          Shared simulation for review
+          {t("review.feedCard.sharedSimulation")}
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
           <span className="font-primary text-xs sm:text-[13px] leading-[1.38] text-black/60">
-            Date &amp; time: {formattedDateTime}
+            {t("review.feedCard.dateTime")}: {formattedDateTime}
           </span>
           <span className="font-tertiary text-lg text-border-medium hidden sm:block">•</span>
           <span className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
             {duration < 60
-              ? `Duration: ${getFormattedTimeFromDuration(duration, "ss")} sec`
-              : `${getFormattedTimeFromDuration(duration, "mm:ss")} min`}
+              ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(duration, "ss")} ${t("review.feedCard.sec")}`
+              : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(duration, "mm:ss")} ${t("review.feedCard.min")}`}
           </span>
         </div>
 
@@ -156,7 +159,7 @@ const FeedCard: FC<FeedCardProps> = ({
       >
         <ReviewTranscript className="w-5 h-5 sm:w-6 sm:h-6" />
         <span className="font-tertiary font-medium text-sm sm:text-base leading-[1.3] text-primary-500">
-          Review transcript
+          {t("review.feedCard.reviewTranscript")}
         </span>
       </button>
     );
@@ -172,7 +175,10 @@ const FeedCard: FC<FeedCardProps> = ({
           >
             <EmojiStack unicodeCodes={unicodeCodes} />
             <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
-              {totalReactionCount} reaction{totalReactionCount !== 1 ? "s" : ""}
+              {totalReactionCount}{" "}
+              {totalReactionCount !== 1
+                ? t("review.feedCard.reactions_plural")
+                : t("review.feedCard.reactions")}
             </span>
           </button>
         )}
@@ -181,7 +187,10 @@ const FeedCard: FC<FeedCardProps> = ({
             onClick={handleCommentsClick}
             className="ml-auto font-primary font-medium text-xs sm:text-sm leading-[1.5] text-typography-800 hover:underline flex-shrink-0"
           >
-            {commentsCount} comment{commentsCount !== 1 ? "s" : ""}
+            {commentsCount}{" "}
+            {commentsCount !== 1
+              ? t("review.feedCard.comments_plural")
+              : t("review.feedCard.comments")}
           </button>
         )}
       </div>

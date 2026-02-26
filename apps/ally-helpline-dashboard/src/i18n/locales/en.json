@@ -375,9 +375,71 @@
     }
   },
   "review": {
+    "title": "Review",
+    "filter": {
+      "all": "All",
+      "latest": "Latest",
+      "mostReviewed": "Most reviewed",
+      "undiscovered": "Undiscovered"
+    },
+    "empty": {
+      "title": "No shared sessions yet",
+      "description": "Shared user transcripts will be available here for review.",
+      "refresh": "Refresh Page"
+    },
+    "error": {
+      "title": "Unable to Load Reviews",
+      "description": "Something went wrong while loading reviews. Please try again.",
+      "retry": "Retry"
+    },
     "privacy": {
       "private": "Keep it private",
       "share": "Share for review"
+    },
+    "details": {
+      "comments": "Comments",
+      "comment_one": "{{count}} Comment",
+      "comment_other": "{{count}} Comments",
+      "noCommentsYet": "No comments yet",
+      "you": "You",
+      "by": "By {{name}}",
+      "dateAndTime": "Date & time"
+    },
+    "reactionsModal": {
+      "title": "Reactions",
+      "all": "All {{count}}",
+      "more": "More",
+      "noReactionsYet": "No reactions yet"
+    },
+    "feedCard": {
+      "sharedSimulation": "Shared simulation for review",
+      "dateTime": "Date & time",
+      "duration": "Duration",
+      "sec": "sec",
+      "min": "min",
+      "reviewTranscript": "Review transcript",
+      "reactions": "reaction",
+      "reactions_plural": "reactions",
+      "comments": "comment",
+      "comments_plural": "comments",
+      "relativeTime": {
+        "justNow": "Just now",
+        "year_one": "1 year",
+        "year_other": "{{count}} years",
+        "yearMonth": "1 year {{months}}",
+        "month_one": "{{count}} month",
+        "month_other": "{{count}} months",
+        "week_one": "{{count}} week",
+        "week_other": "{{count}} weeks",
+        "day_one": "{{count}} Day",
+        "day_other": "{{count}} Days",
+        "hour_one": "{{count}} hour",
+        "hour_other": "{{count}} hours",
+        "minute_one": "{{count}} minute",
+        "minute_other": "{{count}} minutes",
+        "second_one": "{{count}} second",
+        "second_other": "{{count}} seconds"
+      }
     }
   },
   "search": {
