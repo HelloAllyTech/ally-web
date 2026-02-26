@@ -8,12 +8,14 @@ import {
   useUpdateSummarySectionsMutation,
   useUpdateSummaryFieldsMutation,
   useGetDashboardSettingsAllQuery,
+  useGetTenantByIdQuery,
+  useUpdateTenantMutation,
 } from "@api";
 import { ArrowSolid } from "@assets";
 import { ToggleSwitch, Accordion, Button } from "@components";
 import { en } from "@constants";
 import { SCRIBE_SETTINGS_ITEMS } from "@src/components/organization-access-details/constants";
-import { ScribeSettingsItem, ScribeSettingsList } from "@types";
+import { CreateTenantBody, ScribeSettingsItem, ScribeSettingsList } from "@types";
 
 interface ScribeSettingsProps {
   tenantId: string;
@@ -63,14 +65,39 @@ const ScribeSettingsSkeleton = () => {
 
 export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
   const [enabledItems, setEnabledItems] = useState<string[]>([]);
+  const [enabledDashboardIds, setEnabledDashboardIds] = useState<string[]>([]);
+  const [updateTenant] = useUpdateTenantMutation();
 
-  const handleToggle = (item: { id: string; type: string }) => {
-    setEnabledItems(prev =>
-      prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id],
-    );
+  const handleToggle = async (item: { id: string; type: string }) => {
+    try {
+      const dataVal: Partial<CreateTenantBody> = {};
+      if (item.type) {
+        if (enabledDashboardIds.includes(item.id)) {
+          dataVal.enabledDashboardIds = enabledDashboardIds.filter(id => id !== item.id);
+        } else {
+          dataVal.enabledDashboardIds = [...enabledDashboardIds, item.id];
+        }
+        setEnabledDashboardIds(dataVal.enabledDashboardIds);
+      } else {
+        dataVal[item.id] = !enabledItems.includes(item.id);
+        if (item.id === "enableMicrophoneMode") {
+          dataVal.enableAudioUpload = enabledItems.includes("enableAudioUpload");
+        } else if (item.id === "enableAudioUpload") {
+          dataVal.enableMicrophoneMode = enabledItems.includes("enableMicrophoneMode");
+        }
+      }
+      await updateTenant({ id: tenantId, data: dataVal });
+      setEnabledItems(prev =>
+        prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id],
+      );
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+      throw error;
+    }
   };
 
   const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery();
+  const { data: tenant } = useGetTenantByIdQuery(tenantId);
   const { data: summarySectionsData, isLoading: isSummarySectionsLoading } =
     useGetSummarySectionsQuery(tenantId);
   const [updateSummarySections, { isLoading: isUpdatingSections }] =
@@ -81,6 +108,27 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
 
   const [data, setData] = useState<ScribeSettingsList[]>([]);
   const [initialData, setInitialData] = useState<ScribeSettingsList[]>([]);
+
+  useEffect(() => {
+    if (tenant && dashboardSettingsAll) {
+      setEnabledDashboardIds(tenant.enabledDashboardIds ?? []);
+      const newEnabledItems = [];
+      if (tenant.enableMicrophoneMode) {
+        newEnabledItems.push("enableMicrophoneMode");
+      }
+      if (tenant.enableAudioUpload) {
+        newEnabledItems.push("enableAudioUpload");
+      }
+      setEnabledItems(newEnabledItems);
+      for (const dashboardId of tenant.enabledDashboardIds) {
+        const dashboard = dashboardSettingsAll?.find(setting => setting.id === dashboardId);
+        if (dashboard) {
+          newEnabledItems.push(dashboard.id);
+        }
+      }
+      setEnabledItems(newEnabledItems);
+    }
+  }, [tenant, dashboardSettingsAll]);
 
   const optionValues = useMemo(() => {
     return SCRIBE_SETTINGS_ITEMS.map(item => {
