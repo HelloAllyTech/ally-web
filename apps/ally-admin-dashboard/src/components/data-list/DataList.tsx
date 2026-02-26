@@ -24,6 +24,7 @@ export interface ActionButton<T> {
   tooltip: string | ((item: T) => string);
   onClick: (item: T) => void;
   show?: (item: T) => boolean;
+  disabled?: (item: T) => boolean;
 }
 
 export interface DataListProps<T extends DataListItem> {
@@ -76,6 +77,7 @@ export function DataList<T extends DataListItem>({
           const shouldShow = action.show ? action.show(item) : true;
           if (!shouldShow) return null;
 
+          const isDisabled = action.disabled ? action.disabled(item) : false;
           const tooltipText =
             typeof action.tooltip === "function" ? action.tooltip(item) : action.tooltip;
 
@@ -87,7 +89,10 @@ export function DataList<T extends DataListItem>({
               arrow
               slotProps={toolTipStyles}
             >
-              <div onClick={() => action.onClick(item)} className="cursor-pointer">
+              <div
+                onClick={() => !isDisabled && action.onClick(item)}
+                className={isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              >
                 {action.icon}
               </div>
             </Tooltip>

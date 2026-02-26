@@ -468,7 +468,7 @@ describe("ReportSection", () => {
       });
     });
 
-    it("clears uploads when scenarioId changes and no reportsHistory", () => {
+    it("keeps uploads when scenarioId changes and no reportsHistory (preserve other scenarios in progress)", () => {
       const store = createTestStore({
         uploads: [
           {
@@ -497,7 +497,8 @@ describe("ReportSection", () => {
       );
 
       const state = store.getState();
-      expect(state.reportUpload.uploads).toEqual([]);
+      expect(state.reportUpload.uploads).toHaveLength(1);
+      expect(state.reportUpload.uploads[0].scenarioId).toBe("123");
     });
   });
 

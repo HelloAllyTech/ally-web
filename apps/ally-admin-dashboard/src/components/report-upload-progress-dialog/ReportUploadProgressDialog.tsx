@@ -8,6 +8,7 @@ import { ArrowDown, Cancel, Close, TickGreenBackground, Document, FailIcon } fro
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ReportGenerationStatus } from "@constants/reportGeneration";
+import { MAX_RECENT_UPLOADS_DISPLAY } from "@constants/socket";
 import { cancelUpload, selectUploads, addUpload } from "@reducer/reportUploadReducer";
 
 import { ProgressCircleProps, UploadProgressHeaderProps } from "./types";
@@ -84,6 +85,8 @@ const UploadProgressDialog: FC = () => {
     return [...uploads].reverse();
   }, [uploads]);
 
+  const displayedUploads = useMemo(() => sorted.slice(0, MAX_RECENT_UPLOADS_DISPLAY), [sorted]);
+
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
@@ -112,7 +115,7 @@ const UploadProgressDialog: FC = () => {
     }
   }, [uploads.length]);
 
-  const shouldScroll = uploads.length > 2;
+  const shouldScroll = displayedUploads.length > 2;
 
   const onUploadCancel = useCallback(
     async (reportId: string) => {
@@ -180,7 +183,7 @@ const UploadProgressDialog: FC = () => {
     <div className="fixed bottom-4 right-6 z-40 font-primary">
       <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
         <UploadProgressDialogHeader
-          uploads={uploads}
+          uploads={displayedUploads}
           expanded={expanded}
           onClose={onClose}
           onToggle={() => setExpanded(p => !p)}
@@ -188,7 +191,7 @@ const UploadProgressDialog: FC = () => {
 
         {expanded ? (
           <div className={`px-4 py-2 ${shouldScroll ? "max-h-[140px] overflow-y-auto" : ""}`}>
-            {sorted.map(({ reportId, fileName, status, progress }) => (
+            {displayedUploads.map(({ reportId, fileName, status, progress }) => (
               <div key={reportId} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2 text-sm text-typography-900">
                   <Document className="w-4 h-4" />
