@@ -1,15 +1,41 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { useGetDashboardSettingsAllQuery } from "@src/api";
+import { toast } from "sonner";
+
+import {
+  useGetDashboardSettingsAllQuery,
+  useGetTenantByIdQuery,
+  useUpdateTenantMutation,
+} from "@src/api";
 import { ToggleSwitch } from "@src/components/toggle-switch";
 import { en } from "@src/constants";
+import { CreateTenantBody } from "@src/types";
 
 import { SIMULATION_SETTINGS_ITEMS } from "./constants";
 
-const SimulationsSettings = () => {
+const SimulationsSettings = ({ organizationId }: { organizationId: string }) => {
   const [enabledItems, setEnabledItems] = useState<string[]>([]);
   const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery();
+  const { data: tenant } = useGetTenantByIdQuery(organizationId);
+  const [enabledDashboardIds, setEnabledDashboardIds] = useState<string[]>([]);
+  const [updateTenant] = useUpdateTenantMutation();
 
+  useEffect(() => {
+    if (tenant && dashboardSettingsAll) {
+      setEnabledDashboardIds(tenant.enabledDashboardIds ?? []);
+      const newEnabledItems = [];
+      if (tenant.hideRankInCommunity) {
+        newEnabledItems.push("hideRankInCommunity");
+      }
+      setEnabledItems(newEnabledItems);
+      for (const dashboardId of tenant.enabledDashboardIds) {
+        const dashboard = dashboardSettingsAll?.find(setting => setting.id === dashboardId);
+        if (dashboard) {
+          newEnabledItems.push(dashboard.id);
+        }
+      }
+    }
+  }, [tenant, dashboardSettingsAll]);
   const optionValues = useMemo(() => {
     return SIMULATION_SETTINGS_ITEMS.map(item => {
       let id = "";
@@ -27,7 +53,24 @@ const SimulationsSettings = () => {
       };
     });
   }, [dashboardSettingsAll]);
-  const handleToggle = (item: { id: string; type: string }) => {
+  const handleToggle = async (item: { id: string; type: string }) => {
+    try {
+      const data: Partial<CreateTenantBody> = {};
+      if (item.type) {
+        if (enabledDashboardIds.includes(item.id)) {
+          data.enabledDashboardIds = enabledDashboardIds.filter(id => id !== item.id);
+        } else {
+          data.enabledDashboardIds = [...enabledDashboardIds, item.id];
+        }
+        setEnabledDashboardIds(data.enabledDashboardIds);
+      } else {
+        data.hideRankInCommunity = !enabledItems.includes(item.id);
+      }
+      await updateTenant({ id: organizationId, data });
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+      throw error;
+    }
     setEnabledItems(prev =>
       prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id],
     );

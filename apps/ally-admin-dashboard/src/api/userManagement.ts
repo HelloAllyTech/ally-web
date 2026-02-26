@@ -259,6 +259,7 @@ const userManagementAPI = baseAPI.injectEndpoints({
 
 export const {
   useGetUsersQuery,
+  useGetTenantByIdQuery,
   useLazyGetTenantByIdQuery,
   useGetTenantsQuery,
   useLazyGetUsersQuery,

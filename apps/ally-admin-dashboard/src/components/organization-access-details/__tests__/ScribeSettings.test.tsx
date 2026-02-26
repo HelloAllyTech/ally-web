@@ -13,6 +13,7 @@ vi.mock("sonner", () => ({
 // Mock feature flags
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
   FEATURE_FLAGS_MAP: {
+    SCRIBE_SETTINGS_FLAG: true,
     SIMULATION_SETTINGS_FLAG: false,
   },
 }));
@@ -68,6 +69,11 @@ vi.mock("@assets", () => ({
   ArrowSolid: () => <svg data-testid="arrow-solid" />,
 }));
 
+// Mock SCRIBE_SETTINGS_ITEMS (not used when SIMULATION_SETTINGS_FLAG is false)
+vi.mock("@src/components/organization-access-details/constants", () => ({
+  SCRIBE_SETTINGS_ITEMS: [],
+}));
+
 // Mock constants
 vi.mock("@constants", async importOriginal => {
   const actual = await importOriginal<typeof import("@constants")>();
@@ -92,69 +98,77 @@ vi.mock("@constants", async importOriginal => {
         failedToUpdateScribeSettings: "Failed to update scribe settings",
         configureSimulationSettings: "Configure Simulation Settings",
       },
+      errors: {
+        failedUpdateAccess: "Failed to update access",
+      },
     },
   };
 });
 
-// Mock API
-const mockSummarySectionsData = {
-  sections: [
-    {
-      id: "1",
-      label: "Intake",
-      enabled: true,
-      fields: [
+// Mock API - use vi.hoisted to make mocks available before vi.mock hoisting
+const { mockUpdateSummarySections, mockUpdateSummaryFields, mockSummarySectionsData, mockTenant } =
+  vi.hoisted(() => ({
+    mockUpdateSummarySections: vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({ data: {} }),
+    }),
+    mockUpdateSummaryFields: vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({ data: {} }),
+    }),
+    mockSummarySectionsData: {
+      sections: [
         {
           id: "1",
-          label: "Intake Notes",
-          visible: true,
+          label: "Intake",
+          enabled: true,
+          fields: [
+            { id: "1", label: "Intake Notes", visible: true },
+            { id: "2", label: "Risk, Self Harm", visible: false },
+            { id: "3", label: "Risk, Self Harm Notes", visible: false },
+          ],
         },
         {
           id: "2",
-          label: "Risk, Self Harm",
-          visible: false,
-        },
-        {
-          id: "3",
-          label: "Risk, Self Harm Notes",
-          visible: false,
+          label: "Ongoing Risks",
+          enabled: false,
+          fields: [{ id: "4", label: "Risk, Self Harm Notes", visible: false }],
         },
       ],
     },
-    {
-      id: "2",
-      label: "Ongoing Risks",
-      enabled: false,
-      fields: [
-        {
-          id: "4",
-          label: "Risk, Self Harm Notes",
-          visible: false,
-        },
-      ],
+    mockTenant: {
+      id: "test-tenant-id",
+      enabledDashboardIds: [],
+      enableMicrophoneMode: false,
+      enableAudioUpload: false,
     },
-  ],
-};
+  }));
 
-const mockUpdateSummarySections = vi.fn().mockReturnValue({
-  unwrap: vi.fn().mockResolvedValue({ data: {} }),
-});
-const mockUpdateSummaryFields = vi.fn().mockReturnValue({
-  unwrap: vi.fn().mockResolvedValue({ data: {} }),
-});
+vi.mock("@api", () => {
+  const mockMutation = vi.fn().mockReturnValue({
+    unwrap: vi.fn().mockResolvedValue({ data: {} }),
+  });
 
-vi.mock("@api", () => ({
-  useGetSummarySectionsQuery: () => ({
-    data: mockSummarySectionsData,
-    isLoading: false,
-  }),
-  useUpdateSummarySectionsMutation: () => [mockUpdateSummarySections, { isLoading: false }],
-  useUpdateSummaryFieldsMutation: () => [mockUpdateSummaryFields, { isLoading: false }],
-  useGetDashboardSettingsAllQuery: () => ({
-    data: [],
-    isLoading: false,
-  }),
-}));
+  const mockDashboardSettingsAll = [
+    { id: "callLogAnalytics", label: "Call Log Analytics", type: "CALL_LOG_ANALYTICS" },
+    { id: "orgSectionAnalytics", label: "Org. Section Analytics", type: "ORG_ANALYTICS" },
+  ];
+  return {
+    useGetSummarySectionsQuery: () => ({
+      data: mockSummarySectionsData,
+      isLoading: false,
+    }),
+    useUpdateSummarySectionsMutation: () => [mockUpdateSummarySections, { isLoading: false }],
+    useUpdateSummaryFieldsMutation: () => [mockUpdateSummaryFields, { isLoading: false }],
+    useGetDashboardSettingsAllQuery: () => ({
+      data: mockDashboardSettingsAll,
+      isLoading: false,
+    }),
+    useGetTenantByIdQuery: () => ({
+      data: mockTenant,
+      isLoading: false,
+    }),
+    useUpdateTenantMutation: () => [mockMutation, { isLoading: false }],
+  };
+});
 
 describe("ScribeSettings", () => {
   const mockTenantId = "test-tenant-id";

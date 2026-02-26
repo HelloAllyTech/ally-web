@@ -193,7 +193,7 @@ export const OrganizationDetail: FC = () => {
           />
         );
       case TAB_IDS.SIMULATION_SETTINGS:
-        return <SimulationsSettings />;
+        return <SimulationsSettings organizationId={id} />;
       default:
         return null;
     }
