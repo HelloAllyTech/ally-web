@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -27,6 +28,7 @@ export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { permissions } = useSelector((state: RootState) => state.user);
+  const { t } = useTranslation();
 
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
   const [createReview] = useCreateReviewMutation();
@@ -121,7 +123,7 @@ export const PostSimulationSummary: FC = () => {
 
           <div className="flex justify-center gap-2">
             <Toggle
-              items={REVIEW_PRIVACY_OPTIONS}
+              items={REVIEW_PRIVACY_OPTIONS(t)}
               initialValue={summary?.reviewStatus}
               onChange={handleCreateReview}
             />

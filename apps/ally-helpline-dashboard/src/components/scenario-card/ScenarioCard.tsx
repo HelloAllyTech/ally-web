@@ -1,0 +1,127 @@
+import { FC, useState } from "react";
+
+import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+
+import { ChipGroup } from "@ally-ui-mono/ui-shared";
+import { CircularProgress } from "@components";
+
+import { scenarioDescriptionStyle } from "./constants";
+import { ScenarioCardProps } from "./types";
+
+const ScenarioCard: FC<ScenarioCardProps> = ({
+  coverImage,
+  description,
+  isComingSoon,
+  onClick,
+  title,
+  totalScenarios,
+  completedScenarios = 0,
+  triggerWarnings,
+}) => {
+  const { t } = useTranslation();
+  const [imageError, setImageError] = useState(false);
+  const isPathway = totalScenarios !== undefined;
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      onClick();
+    }
+  };
+
+  const renderImage = () => (
+    <div className="w-full relative h-[100px] sm:h-[120px]">
+      {!imageError ? (
+        <img
+          src={coverImage}
+          alt={t("learn.card.imageAlt", {
+            title,
+            type: isPathway ? t("learn.card.type.pathway") : t("learn.card.type.scenario"),
+          })}
+          className={`w-full h-full object-cover rounded-[12px] ${isComingSoon ? "blur-[2px] grayscale opacity-50" : ""}`}
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-typography-800 bg-gray-100">
+          <span className="text-sm">{t("learn.card.imageUnavailable")}</span>
+        </div>
+      )}
+      {isComingSoon && (
+        <span className="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-xs font-primary text-typography-800 bg-white border-[0.5px] border-secondary-700">
+          {t("learn.card.comingSoon")}
+        </span>
+      )}
+    </div>
+  );
+
+  return (
+    <motion.div
+      layout
+      onClick={onClick}
+      className={`bg-white font-primary overflow-hidden transition-all duration-300 h-full rounded-[20px] border-[1px] pb-[8px] border-border-light shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] ${isComingSoon ? "pointer-events-none" : "cursor-pointer"}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      whileHover={{ y: -2 }}
+      role="button"
+      aria-label={t("learn.card.ariaLabel", { title })}
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+    >
+      <div className="flex flex-col h-full gap-1 p-[8px] pb-[5px]">
+        {renderImage()}
+        <div className="flex flex-row gap-1 px-[6px] justify-between">
+          <div className="flex flex-col w-full min-w-0 mr-2">
+            <div
+              id="scenario-title"
+              className="font-[500] leading-tight text-typography-900 text-base line-clamp-2 pt-[6px]"
+            >
+              {title}
+            </div>
+
+            {triggerWarnings?.length > 0 ? (
+              <div className="flex flex-col w-full">
+                <div className="flex w-full h-[1px] my-[8px] bg-gray-200" />
+                <div className="flex flex-col justify-start items-start]">
+                  <div className="text-xs text-typography-900 font-medium mb-[8px]">
+                    {t("common.triggerWarnings")}
+                  </div>
+                  <ChipGroup items={triggerWarnings} chipClassName="max-w-[40%]" maxVisible={2} />
+                </div>
+              </div>
+            ) : (
+              description?.length > 0 && (
+                <div className="text-sm text-typography-800  leading-tight pt-[6px]">
+                  <p style={scenarioDescriptionStyle}>{description}</p>
+                </div>
+              )
+            )}
+
+            {isPathway && (
+              <div className="text-sm text-typography-700">
+                {t("learn.card.simulationsCount", { count: totalScenarios })}
+              </div>
+            )}
+          </div>
+
+          {isPathway && totalScenarios > 0 && completedScenarios > 0 && (
+            <div className="flex-shrink-0 flex items-center pt-[6px]">
+              <CircularProgress
+                current={completedScenarios}
+                total={totalScenarios}
+                size={40}
+                strokeWidth={2}
+                progressColor={completedScenarios === totalScenarios ? "#81C784" : "#6366F1"}
+                textColor="text-typography-800"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default ScenarioCard;

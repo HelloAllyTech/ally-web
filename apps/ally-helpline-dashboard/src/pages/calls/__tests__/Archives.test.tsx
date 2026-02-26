@@ -427,7 +427,7 @@ describe("Archives Component", () => {
       );
 
       const backButton = screen.getByTestId("archives-back-button");
-      expect(backButton).toHaveAttribute("aria-label", "Go back to calls");
+      expect(backButton).toHaveAttribute("aria-label", "Go back");
     });
   });
 
@@ -623,7 +623,7 @@ describe("Archives Component", () => {
       );
 
       const backButton = screen.getByTestId("archives-back-button");
-      expect(backButton).toHaveAttribute("aria-label", "Go back to calls");
+      expect(backButton).toHaveAttribute("aria-label", "Go back");
     });
 
     it("should have proper data-testid attributes", () => {

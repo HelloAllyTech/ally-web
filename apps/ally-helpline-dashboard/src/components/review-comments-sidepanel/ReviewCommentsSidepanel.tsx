@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Skeleton } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { ThreadCard } from "@components";
 import { Thread } from "@types";
@@ -27,6 +28,7 @@ const ReviewCommentsSidepanel = ({
   onCommentClick = () => {},
 }: ReviewCommentsSidepanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
   useEffect(() => {
     if (threads !== null) {
       setIsLoading(false);
@@ -39,7 +41,7 @@ const ReviewCommentsSidepanel = ({
     >
       <div className="w-full font-primary py-4 px-4 flex items-center justify-between border-b-[0.5px]">
         <div className="text-typography-900 font-medium text-lg">
-          {totalComments || 0} {"Comment" + (totalComments !== 1 ? "s" : "")}
+          {t("review.details.comment", { count: totalComments || 0 })}
         </div>
       </div>
       <div className="w-full h-full px-4">
@@ -73,7 +75,9 @@ const ReviewCommentsSidepanel = ({
             )}
             {threads?.length === 0 && (
               <div className="w-full h-full flex pt-4 justify-center">
-                <div className="text-typography-800 text-center">No comments yet</div>
+                <div className="text-typography-800 text-center">
+                  {t("review.details.noCommentsYet")}
+                </div>
               </div>
             )}
           </div>

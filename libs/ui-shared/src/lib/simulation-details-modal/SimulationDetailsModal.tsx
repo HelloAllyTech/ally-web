@@ -28,6 +28,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
   contentClassName = "",
   imageContainerClassName = "",
   triggerWarnings = [],
+  triggerWarningsLabel = "Trigger warnings:",
   showActionButtons = true,
   renderCustomImage,
   renderAdditionalContent,
@@ -104,7 +105,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
                 {triggerWarnings?.length > 0 && (
                   <div className="flex flex-col pt-2">
                     <div className="text-base font-semibold text-typography-800 mb-1">
-                      Trigger warnings:
+                      {triggerWarningsLabel}
                     </div>
                     <ChipGroup items={triggerWarnings} chipClassName="text-sm" maxVisible={20} />
                   </div>

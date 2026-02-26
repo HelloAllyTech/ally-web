@@ -553,7 +553,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
               type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
               fullWidth: true,
               isMandatory: true,
-              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+              // regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS, // TODO: uncomment this once the API is updated
             },
             {
               id: "stateInstructions",

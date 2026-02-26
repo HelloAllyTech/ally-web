@@ -59,7 +59,7 @@ import Search from "./search.svg?react";
 import SemanticSimilarity from "./semanticSimilarity.svg?react";
 import Simulation from "./simulation.svg?react";
 import ThreeDot from "./threeDot.svg?react";
-import TickGreenBackground from "./tick-green-background.svg";
+import TickGreenBackground from "./tick-green-background.svg?react";
 import Tick from "./tick.svg?react";
 import Timer from "./timer.svg?react";
 import Trash from "./trash.svg?react";

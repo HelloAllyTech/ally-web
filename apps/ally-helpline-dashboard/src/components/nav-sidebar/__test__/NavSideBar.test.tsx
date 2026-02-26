@@ -149,6 +149,7 @@ vi.mock("@constants", async importOriginal => {
     {
       id: TabId.CALLS,
       title: "Sessions",
+      key: "nav.tabs.sessions",
       Icon: ({ className, ...props }: any) => (
         <svg className={className} {...props} data-testid="calls-icon" />
       ),
@@ -159,6 +160,7 @@ vi.mock("@constants", async importOriginal => {
     {
       id: TabId.ANALYTICS,
       title: "Statistics",
+      key: "nav.tabs.statistics",
       Icon: ({ className, ...props }: any) => (
         <svg className={className} {...props} data-testid="analytics-icon" />
       ),

@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -14,6 +15,7 @@ import { ArchivesLogsTable } from "./components";
 import { SessionUserGroup } from "./constants";
 
 export const Archives: FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -57,11 +59,11 @@ export const Archives: FC = () => {
               className="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-neutral-100 rounded-full mr-2"
               onClick={handleGoBack}
               data-testid="archives-back-button"
-              aria-label="Go back to calls"
+              aria-label={t("calls.archives.backAria")}
             >
               <LeftArrow className="w-5 h-5" />
             </button>
-            Archives
+            {t("calls.archives.title")}
             <Refresh
               data-testid="archives-refresh-button"
               className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"

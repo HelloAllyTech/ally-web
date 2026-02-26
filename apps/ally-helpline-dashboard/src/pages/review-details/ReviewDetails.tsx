@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -33,6 +34,7 @@ export const ReviewDetails = () => {
   const { user } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -281,14 +283,14 @@ export const ReviewDetails = () => {
   const renderBottomSection = () => {
     return (
       <div className="absolute z-10 flex justify-center bottom-9 left-0 right-0 w-full">
-        <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
+        <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl max-w-[95vw] overflow-x-auto">
           {isFeedOwner && (
             <div
               className="flex items-center gap-2 min-w-fit"
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
               <Toggle
-                items={REVIEW_PRIVACY_OPTIONS}
+                items={REVIEW_PRIVACY_OPTIONS(t)}
                 initialValue={reviewDetails?.reviewStatus || "IN_REVIEW"}
                 onChange={handleCreateReview}
               />
@@ -296,11 +298,11 @@ export const ReviewDetails = () => {
           )}
           <div
             onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
-            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
+            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3 shrink-0"
           >
-            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#0957D0]" />
-            <div className="text-typography-900 font-primary group-hover:text-[#0957D0] text-sm">
-              Comments
+            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#0957D0] shrink-0" />
+            <div className="text-typography-900 font-primary group-hover:text-[#0957D0] text-sm whitespace-nowrap">
+              {t("review.details.comments")}
             </div>
           </div>
           <div className="relative w-fit">
@@ -333,7 +335,10 @@ export const ReviewDetails = () => {
               >
                 <EmojiStack unicodeCodes={reviewReactions} />
                 <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
-                  {displayTotalReactionCount} reaction{reviewReactions?.length !== 1 ? "s" : ""}
+                  {displayTotalReactionCount}{" "}
+                  {reviewReactions?.length !== 1
+                    ? t("review.feedCard.reactions_plural")
+                    : t("review.feedCard.reactions")}
                 </span>
               </button>
             </div>
@@ -385,10 +390,14 @@ export const ReviewDetails = () => {
                   fallbackText={reviewDetails?.createdBy?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
                 />
               </div>
-              {isFeedOwner ? <div>You</div> : <div>By {reviewDetails?.createdBy?.name}</div>}
+              {isFeedOwner ? (
+                <div>{t("review.details.you")}</div>
+              ) : (
+                <div>{t("review.details.by", { name: reviewDetails?.createdBy?.name })}</div>
+              )}
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
-                Date & time:{" "}
+                {t("review.details.dateAndTime")}:{" "}
                 {getFormattedDateTime(
                   reviewDetails?.scenarioSession?.createdAt,
                   "MMM dd, yyyy hh:mm a",
@@ -397,8 +406,8 @@ export const ReviewDetails = () => {
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
                 {reviewDetails?.scenarioSession?.duration < 60
-                  ? `Duration: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "ss")} sec`
-                  : `Duration: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} min`}
+                  ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "ss")} ${t("review.feedCard.sec")}`
+                  : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} ${t("review.feedCard.min")}`}
               </div>
             </div>
           </div>
@@ -410,7 +419,7 @@ export const ReviewDetails = () => {
           className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
         >
           <Transcription
-            councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
+            councellorName={isFeedOwner ? t("review.details.you") : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}
             commentsList={
               threads.find(

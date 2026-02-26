@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { Dialog } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { MaxActiveUsers } from "@assets";
 import { Button } from "@components";
@@ -8,6 +9,7 @@ import { Button } from "@components";
 import { MaxActiveUsersDialogProps } from "./types";
 
 const MaxActiveUsersDialog = ({ open, onClose, onRetry }: MaxActiveUsersDialogProps) => {
+  const { t } = useTranslation();
   const [manualRetryRemainingTime, setManualRetryRemainingTime] = useState<number>(30);
   const [autoRetryRemainingTime, setAutoRetryRemainingTime] = useState<number>(30);
   const [isRetryButtonClicked, setIsRetryButtonClicked] = useState<boolean>(false);
@@ -81,11 +83,10 @@ const MaxActiveUsersDialog = ({ open, onClose, onRetry }: MaxActiveUsersDialogPr
       <div className="flex flex-col gap-[14px] p-8 items-center justify-center w-[400px]">
         <MaxActiveUsers />
         <div className="font-medium text-typography-900 font-primary text-2xl text-center">
-          We're at capacity right now
+          {t("common.maxActiveUsers.title")}
         </div>
         <div className="font-primary text-typography-800 text-base font-normal text-center">
-          We're currently handling the maximum number of active users. Please wait a moment and try
-          again access usually frees up shortly.
+          {t("common.maxActiveUsers.description")}
         </div>
         <Button
           variant="primary"
@@ -93,13 +94,13 @@ const MaxActiveUsersDialog = ({ open, onClose, onRetry }: MaxActiveUsersDialogPr
           onClick={handleRetryButtonClick}
           disabled={isRetryButtonClicked}
         >
-          Retry
+          {t("common.maxActiveUsers.retry")}
         </Button>
 
         <div className="font-primary text-typography-600 text-sm font-normal text-center">
           {isRetryButtonClicked
-            ? `You can retry in ${manualRetryRemainingTime}s`
-            : `We'll automatically retry in ${autoRetryRemainingTime}s`}
+            ? t("common.maxActiveUsers.manualRetry", { seconds: manualRetryRemainingTime })
+            : t("common.maxActiveUsers.autoRetry", { seconds: autoRetryRemainingTime })}
         </div>
       </div>
     </Dialog>
