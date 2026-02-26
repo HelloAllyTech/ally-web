@@ -193,6 +193,19 @@ const reviewsAPI = baseAPI.injectEndpoints({
       forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
+    getUnreadReviewCount: builder.query<{ count: number }, void>({
+      query: () => ({
+        url: ApiEndpoints.REVIEWS.GET_UNREAD_COUNT,
+      }),
+      providesTags: [TAG_TYPES.UNREAD_REVIEW_COUNT],
+    }),
+    markReviewAsRead: builder.mutation<void, { id: string }>({
+      query: ({ id }) => ({
+        url: ApiEndpoints.REVIEWS.MARK_READ(id),
+        method: HttpMethod.PATCH,
+      }),
+      invalidatesTags: [TAG_TYPES.UNREAD_REVIEW_COUNT],
+    }),
   }),
 });
 
@@ -214,4 +227,6 @@ export const {
   useDeleteCommentMutation,
   useLazyGetCommentRepliesQuery,
   useGetReviewThreadCommentsQuery,
+  useGetUnreadReviewCountQuery,
+  useMarkReviewAsReadMutation,
 } = reviewsAPI;

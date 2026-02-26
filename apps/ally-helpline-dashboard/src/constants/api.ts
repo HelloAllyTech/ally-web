@@ -130,6 +130,8 @@ export const ApiEndpoints = {
     DELETE_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
     GET_COMMENT_REPLIES: (commentId: string) => `/v1/reviews/comments/${commentId}/replies`,
     GET_REVIEW_THREAD_COMMENTS: (threadId: string) => `/v1/reviews/threads/${threadId}/comments`,
+    GET_UNREAD_COUNT: "/v1/reviews/unread-count",
+    MARK_READ: (reviewId: string) => `/v1/reviews/${reviewId}/mark-read`,
   },
   BADGES: {
     GET_AVAILABLE_BADGES: "/v1/badges/me/available",

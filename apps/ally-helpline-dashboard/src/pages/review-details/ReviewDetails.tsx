@@ -11,6 +11,7 @@ import {
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
   useUpdateReviewMutation,
+  useMarkReviewAsReadMutation,
 } from "@api";
 import { ChatBubble, LeftArrow, Smiley, InfoIcon } from "@assets";
 import {
@@ -65,12 +66,19 @@ export const ReviewDetails = () => {
     });
   const [addReactions] = useAddReactionMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
+  const [markReviewAsRead] = useMarkReviewAsReadMutation();
 
   useEffect(() => {
     return () => {
       dispatch(baseAPI.util.invalidateTags([TAG_TYPES.REVIEW]));
     };
   }, []);
+
+  useEffect(() => {
+    if (reviewId) {
+      markReviewAsRead({ id: reviewId });
+    }
+  }, [reviewId, markReviewAsRead]);
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);

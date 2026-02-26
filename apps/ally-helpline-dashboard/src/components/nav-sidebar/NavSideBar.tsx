@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useGetLogoUrlQuery } from "@api";
+import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
 import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
 import { navBarOptions, TOOLTIP_LIGHT_PROPS, TabId } from "@constants";
@@ -15,6 +15,7 @@ import { useUser } from "@hooks";
 import { NavSideBarProps, TabProps } from "./types";
 import { ButtonVariant } from "../button";
 import LanguageSelector from "../language-selector/LanguageSelector";
+import NotificationBadge from "../notification-badge/NotificationBadge";
 
 const EXPANDED_WIDTH = 1200;
 
@@ -24,7 +25,16 @@ const defaultProfileUploadValues: {
   profileImageUrl: "",
 };
 
-const Tab: FC<TabProps> = ({ id, Icon, title, tKey, activeTab, isExpanded, onClick }) => {
+const Tab: FC<TabProps> = ({
+  id,
+  Icon,
+  title,
+  tKey,
+  activeTab,
+  isExpanded,
+  onClick,
+  badgeCount,
+}) => {
   const { t } = useTranslation();
   return (
     <div
@@ -36,19 +46,29 @@ const Tab: FC<TabProps> = ({ id, Icon, title, tKey, activeTab, isExpanded, onCli
         `}
       onClick={onClick}
     >
-      <Icon
-        className={`flex-shrink-0 ${activeTab === id ? "" : "opacity-60"} `}
-        data-testid={`nav-tab-icon-${id}`}
-      />
+      <div className="relative flex-shrink-0">
+        <Icon
+          className={`${activeTab === id ? "" : "opacity-60"} `}
+          data-testid={`nav-tab-icon-${id}`}
+        />
+        {!isExpanded && badgeCount !== undefined && badgeCount > 0 && (
+          <NotificationBadge count={badgeCount} />
+        )}
+      </div>
 
       {isExpanded && (
-        <div
-          data-testid={`nav-tab-title-${id}`}
-          className={`${
-            activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
-          } font-primary text-lg`}
-        >
-          {tKey ? t(tKey) : title}
+        <div className="flex items-center gap-2">
+          <div
+            data-testid={`nav-tab-title-${id}`}
+            className={`${
+              activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
+            } font-primary text-lg`}
+          >
+            {tKey ? t(tKey) : title}
+          </div>
+          {badgeCount !== undefined && badgeCount > 0 && (
+            <NotificationBadge count={badgeCount} isExpanded />
+          )}
         </div>
       )}
     </div>
@@ -59,6 +79,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const { t } = useTranslation();
   const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
     useUser();
+
+  const { data: unreadData } = useGetUnreadReviewCountQuery();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(tab => {
@@ -148,6 +170,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             activeTab={activeTab}
             isExpanded={isExpanded}
             onClick={() => onTabClick(path)}
+            badgeCount={id === TabId.REVIEW ? unreadData?.count : undefined}
           />
         ))}
       </div>
