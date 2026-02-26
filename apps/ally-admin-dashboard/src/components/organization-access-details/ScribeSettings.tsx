@@ -2,7 +2,6 @@ import { FC, useState, useEffect, useMemo, useCallback } from "react";
 
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import {
   useGetSummarySectionsQuery,
   useUpdateSummarySectionsMutation,
@@ -425,14 +424,6 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
       renderScribeSettingsListData,
     ],
   );
-
-  if (!FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG) {
-    return (
-      <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-full mt-4 pb-6">
-        {en.userManagement.scribeSettingsNotEnabled}
-      </div>
-    );
-  }
 
   if (isSummarySectionsLoading) {
     return <ScribeSettingsSkeleton />;

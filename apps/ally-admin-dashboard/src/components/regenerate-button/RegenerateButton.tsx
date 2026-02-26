@@ -2,7 +2,6 @@ import { FC, useState } from "react";
 
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
 import { FORM_FIELD_IDS, REGENERATE_TYPE, en } from "@constants";
@@ -172,7 +171,7 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
     }
   };
 
-  if (!FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG || !regenerateType) {
+  if (!regenerateType) {
     return null;
   }
 

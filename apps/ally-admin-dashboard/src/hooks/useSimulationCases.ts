@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenarioCasesQuery,
   useDeleteScenarioCaseByIdMutation,
@@ -40,20 +39,13 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
     data: casesResponse,
     isFetching: isCasesFetching,
     isLoading: isCasesLoading,
-  } = useGetScenarioCasesQuery(
-    {
-      status:
-        selectedFilters.length > 0
-          ? selectedFilters?.map(filter => filter.id)?.join(",")
-          : undefined,
-      offset: casesOffset,
-      limit: casesLimit,
-      search: "",
-    },
-    {
-      skip: !FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG, // TODO: remove this skip when the feature flag is enabled
-    },
-  );
+  } = useGetScenarioCasesQuery({
+    status:
+      selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
+    offset: casesOffset,
+    limit: casesLimit,
+    search: "",
+  });
 
   const [deleteCaseById] = useDeleteScenarioCaseByIdMutation();
   const [duplicateScenarioCase] = useDuplicateScenarioCaseMutation();
