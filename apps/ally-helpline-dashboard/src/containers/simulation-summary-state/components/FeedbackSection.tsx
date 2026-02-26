@@ -73,6 +73,8 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
       ? `${callDurationInSeconds} sec`
       : `${getFormattedTimeFromDuration(callDurationInSeconds, "mm:ss")} min`;
 
+  const simulationMode = props?.scenario?.metadata?.experienceMode;
+  const isChecklistMode = simulationMode === "CHECKLIST";
   return (
     <motion.div className="flex flex-col gap-6 w-full">
       <div className="border p-4 shadow-lg rounded-lg flex flex-col gap-4">
@@ -112,27 +114,29 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
         {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && (
           <Checklist className="max-h-[calc(100vh-200px)]" sessionId={props.sessionId} />
         )}
-        <motion.div className="overflow-y-auto font-primary space-y-4">
-          {feedbackSections.map(({ key, label, type, columns }, index) => {
-            return (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.4,
-                  delay: index * 0.1,
-                  ease: "easeOut",
-                }}
-                className="bg-white"
-              >
-                <div>
-                  {getFeedbackSectionByType({ data: formattedData[key], label, type, columns })}
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+        {!isChecklistMode && (
+          <motion.div className="overflow-y-auto font-primary space-y-4">
+            {feedbackSections.map(({ key, label, type, columns }, index) => {
+              return (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.4,
+                    delay: index * 0.1,
+                    ease: "easeOut",
+                  }}
+                  className="bg-white"
+                >
+                  <div>
+                    {getFeedbackSectionByType({ data: formattedData[key], label, type, columns })}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
       </div>
       <SimulationDetailsModal
         isOpen={showSimulationDetailsModal}
