@@ -40,9 +40,9 @@ import {
   CompetenciesResponse,
   Competency,
   CreateCompetencyRequest,
-  TranscriptMessage,
   RegenerateFieldRequest,
   RegenerateFieldResponse,
+  GetReportTranscriptResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -643,7 +643,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      * @param {string} reportId - Report identifier
      * @returns {Promise<TranscriptMessage[]>} List of transcript messages
      */
-    getReportTranscript: builder.query<TranscriptMessage[], { reportId: string }>({
+    getReportTranscript: builder.query<GetReportTranscriptResponse, { reportId: string }>({
       query: ({ reportId }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORT_TRANSCRIPT(reportId),
         method: HttpMethod.GET,
@@ -741,5 +741,6 @@ export const {
   useGetCompetenciesQuery,
   useCreateCompetencyMutation,
   useGetReportTranscriptQuery,
+  useLazyGetReportTranscriptQuery,
   useRegenerateFieldMutation,
 } = simulationStudioAPI;

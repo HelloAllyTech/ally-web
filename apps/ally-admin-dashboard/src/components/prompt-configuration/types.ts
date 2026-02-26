@@ -8,4 +8,5 @@ export interface PromptConfigurationProps {
   onButtonClick: () => void;
   buttonText: string;
   buttonDisabled?: boolean;
+  disabled?: boolean;
 }

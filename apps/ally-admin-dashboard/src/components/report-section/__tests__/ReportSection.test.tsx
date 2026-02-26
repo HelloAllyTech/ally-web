@@ -50,8 +50,9 @@ vi.mock("@components", () => {
         {children}
       </button>
     ),
-    PromptConfiguration: ({ onButtonClick, buttonText, buttonDisabled, ...props }: any) => (
+    PromptConfiguration: ({ prompt, onButtonClick, buttonText, buttonDisabled, ...props }: any) => (
       <div data-testid="prompt-configuration">
+        <span data-testid="prompt-display">{prompt}</span>
         <button onClick={onButtonClick} disabled={buttonDisabled} data-testid="generate-button">
           {buttonText}
         </button>
@@ -79,6 +80,12 @@ vi.mock("@components", () => {
       <button onClick={onClick} data-active={isActive} data-testid={`tab-${label.toLowerCase()}`}>
         {label}
       </button>
+    ),
+    Accordion: ({ headerTitle, children, onChange }: any) => (
+      <div data-testid="accordion">
+        <div data-testid="accordion-header">{headerTitle}</div>
+        <div>{children}</div>
+      </div>
     ),
   };
 });
@@ -118,6 +125,10 @@ vi.mock("@api", () => ({
   useGetReportTranscriptQuery: () => ({
     data: mockGetReportTranscriptQuery(),
   }),
+  useLazyGetReportTranscriptQuery: () => [
+    vi.fn(),
+    { data: mockGetReportTranscriptQuery(), isLoading: false },
+  ],
 }));
 
 // Create test store
@@ -562,24 +573,58 @@ describe("ReportSection", () => {
   });
 
   describe("Report Data Display", () => {
-    it("displays report data when available", async () => {
+    it("displays helper prompt from the displayed report in PromptConfiguration", async () => {
       const store = createTestStore();
-      const reportData = {
-        id: "report-1",
-        score: 85,
-        config: { languageId: 1, turns: 50, helperAgentPrompt: "Test prompt" },
-        metrics: { empathy: 90, clarity: 80 },
-      };
-
-      mockGetReportByIdQuery.mockReturnValue(reportData);
+      const reportHelperPrompt = "Custom helper prompt from report response";
       mockGetReportsQuery.mockReturnValue({
         data: [
           {
             id: "report-1",
             scenarioId: "123",
             status: ReportGenerationStatus.COMPLETED,
-            createdAt: "2024-01-01",
-            config: { languageId: 1, turns: 50 },
+            createdAt: "2024-01-01T12:00:00Z",
+            config: {
+              helperAgentPrompt: reportHelperPrompt,
+              languageId: 1,
+              turns: 50,
+            },
+            metrics: {},
+          },
+        ],
+      });
+
+      render(
+        <Provider store={store}>
+          <ReportSection scenarioId="123" />
+        </Provider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("report-content")).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId("prompt-display")).toHaveTextContent(reportHelperPrompt);
+      expect(screen.getByTestId("generate-button")).toHaveTextContent("Regenerate Report");
+    });
+
+    it("displays report data when available", async () => {
+      const store = createTestStore();
+      const reportData = {
+        id: "report-1",
+        scenarioId: "123",
+        config: { languageId: 1, turns: 50, helperAgentPrompt: "Test prompt" },
+        metrics: { empathy: 90, clarity: 80 },
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+        status: ReportGenerationStatus.COMPLETED,
+      };
+
+      mockGetReportByIdQuery.mockReturnValue(reportData);
+      mockGetReportsQuery.mockReturnValue({
+        data: [
+          {
+            ...reportData,
+            score: 85,
           },
         ],
       });
@@ -600,20 +645,20 @@ describe("ReportSection", () => {
       const store = createTestStore();
       const reportData = {
         id: "report-1",
-        score: 85,
+        scenarioId: "123",
         config: { languageId: 1, turns: 50, helperAgentPrompt: "Test prompt" },
         metrics: { empathy: 90, clarity: 80 },
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+        status: ReportGenerationStatus.COMPLETED,
       };
 
       mockGetReportByIdQuery.mockReturnValue(reportData);
       mockGetReportsQuery.mockReturnValue({
         data: [
           {
-            id: "report-1",
-            scenarioId: "123",
-            status: ReportGenerationStatus.COMPLETED,
-            createdAt: "2024-01-01",
-            config: { languageId: 1, turns: 50 },
+            ...reportData,
+            score: 85,
           },
         ],
       });
