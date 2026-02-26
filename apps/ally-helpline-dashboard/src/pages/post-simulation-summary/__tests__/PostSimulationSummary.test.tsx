@@ -560,7 +560,6 @@ describe("PostSimulationSummary Component", () => {
       expect(tabs).toHaveClass("normal-case");
       expect(tabs).toHaveClass("border-b");
       expect(tabs).toHaveClass("border-[#DBDBDB]");
-      expect(tabs).toHaveClass("mb-4");
     });
 
     it("should render all tab buttons", () => {

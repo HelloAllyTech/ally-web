@@ -96,12 +96,12 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
 
   return (
     <div
-      className={`relative h-[calc(100vh-140px)] custom-scrollbar p-4 border border-gray-200 rounded-lg overflow-y-auto ${className}`}
+      className={`relative h-[calc(100vh-140px)] custom-scrollbar p-4 border border-gray-200 rounded-md overflow-y-auto ${className}`}
     >
-      <span className="text-typography-900 font-primary text-base font-semibold pb-2">
+      <span className="text-typography-900 font-primary text-base font-medium">
         Annotated Transcript
       </span>
-      <hr className="mb-5 mt-2" />
+      <hr className="mb-5 mt-3" />
       <TranscriptListing
         transcriptList={transcriptList}
         handleLoadMore={handleLoadMore}

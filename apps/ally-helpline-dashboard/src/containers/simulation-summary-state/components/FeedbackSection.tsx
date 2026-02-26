@@ -77,8 +77,8 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
   const isChecklistMode = simulationMode === "CHECKLIST";
   return (
     <motion.div className="flex flex-col gap-6 w-full">
-      <div className="border p-4 shadow-lg rounded-lg flex flex-col gap-4">
-        <span className="text-typography-900 font-primary text-base font-semibold border-b pb-2">
+      <div className="border p-4 shadow-lg rounded-md flex flex-col gap-4">
+        <span className="text-typography-900 font-primary text-base font-medium border-b pb-3">
           Session Feedback
         </span>
         <div>
