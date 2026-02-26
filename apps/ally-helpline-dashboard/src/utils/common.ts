@@ -127,25 +127,40 @@ export const formatDateTime = (dateString: string): string => {
     .replace(" at ", " ");
 };
 
-export const formatRelativeTime = (dateString: string): string => {
+export const formatRelativeTime = (
+  dateString: string,
+  t?: (key: string, opts?: Record<string, unknown>) => string,
+): string => {
   const diffSeconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
 
-  if (diffSeconds < 1) return "Just now";
+  const tr = (key: string, opts?: Record<string, unknown>) =>
+    t ? t(`review.feedCard.relativeTime.${key}`, opts) : undefined;
+
+  if (diffSeconds < 1) return tr("justNow") ?? "Just now";
 
   const years = Math.floor(diffSeconds / SECONDS_IN.year);
 
-  if (years >= 2) return pluralize(years, "year");
+  if (years >= 2) return tr("year_other", { count: years }) ?? `${years} years`;
 
   if (years === 1) {
     const months = Math.floor((diffSeconds % SECONDS_IN.year) / SECONDS_IN.month);
-    return months === 0 ? "1 year" : `1 year ${pluralize(months, "month")}`;
+    if (months === 0) return tr("year_one") ?? "1 year";
+    const monthStr =
+      tr(months === 1 ? "month_one" : "month_other", { count: months }) ??
+      pluralize(months, "month");
+    return tr("yearMonth", { months: monthStr }) ?? `1 year ${monthStr}`;
   }
 
   for (const [unit, seconds] of TIME_THRESHOLDS) {
     const value = Math.floor(diffSeconds / seconds);
-    if (value >= 1 && unit !== "day") return pluralize(value, unit);
-    if (value >= 1 && unit === "day") return `${value} Day${value === 1 ? "" : "s"}`;
+    if (value >= 1) {
+      const key = value === 1 ? `${unit}_one` : `${unit}_other`;
+      return (
+        tr(key, { count: value }) ??
+        (unit === "day" ? `${value} Day${value === 1 ? "" : "s"}` : pluralize(value, unit))
+      );
+    }
   }
 
-  return "Just now";
+  return tr("justNow") ?? "Just now";
 };

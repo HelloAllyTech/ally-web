@@ -373,9 +373,71 @@
     }
   },
   "review": {
+    "title": "समीक्षा",
+    "filter": {
+      "all": "सभी",
+      "latest": "नवीनतम",
+      "mostReviewed": "सबसे अधिक समीक्षित",
+      "undiscovered": "अन्वेषित"
+    },
+    "empty": {
+      "title": "अभी तक कोई साझा सत्र नहीं",
+      "description": "समीक्षा के लिए साझा उपयोगकर्ता ट्रांसक्रिप्ट्स यहाँ उपलब्ध होंगे।",
+      "refresh": "पेज रीफ़्रेश करें"
+    },
+    "error": {
+      "title": "समीक्षाएँ लोड करने में असमर्थ",
+      "description": "समीक्षाएँ लोड करते समय कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+      "retry": "पुनः प्रयास करें"
+    },
     "privacy": {
-      "private": "इसे निजी रखें",
-      "share": "समीक्षा के लिए साझा करें"
+      "private": "निजी रखें",
+      "share": "साझा करें"
+    },
+    "details": {
+      "comments": "टिप्पणी",
+      "comment_one": "{{count}} टिप्पणी",
+      "comment_other": "{{count}} टिप्पणियाँ",
+      "noCommentsYet": "अभी तक कोई टिप्पणी नहीं",
+      "you": "आप",
+      "by": "द्वारा {{name}}",
+      "dateAndTime": "तिथि और समय"
+    },
+    "reactionsModal": {
+      "title": "प्रतिक्रियाएं",
+      "all": "सभी {{count}}",
+      "more": "और",
+      "noReactionsYet": "अभी तक कोई प्रतिक्रिया नहीं"
+    },
+    "feedCard": {
+      "sharedSimulation": "समीक्षा के लिए साझा सिमुलेशन",
+      "dateTime": "तिथि और समय",
+      "duration": "अवधि",
+      "sec": "सेकंड",
+      "min": "मिनट",
+      "reviewTranscript": "ट्रांसक्रिप्ट की समीक्षा करें",
+      "reactions": "प्रतिक्रिया",
+      "reactions_plural": "प्रतिक्रियाएं",
+      "comments": "टिप्पणी",
+      "comments_plural": "टिप्पणियाँ",
+      "relativeTime": {
+        "justNow": "अभी",
+        "year_one": "1 वर्ष",
+        "year_other": "{{count}} वर्ष",
+        "yearMonth": "1 वर्ष {{months}}",
+        "month_one": "{{count}} महीना",
+        "month_other": "{{count}} महीने",
+        "week_one": "{{count}} सप्ताह",
+        "week_other": "{{count}} सप्ताह",
+        "day_one": "{{count}} दिन",
+        "day_other": "{{count}} दिन",
+        "hour_one": "{{count}} घंटा",
+        "hour_other": "{{count}} घंटे",
+        "minute_one": "{{count}} मिनट",
+        "minute_other": "{{count}} मिनट",
+        "second_one": "{{count}} सेकंड",
+        "second_other": "{{count}} सेकंड"
+      }
     }
   },
   "search": {

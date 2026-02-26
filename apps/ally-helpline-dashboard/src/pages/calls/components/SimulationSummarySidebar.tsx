@@ -79,7 +79,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           }}
         >
           <Toggle
-            items={REVIEW_PRIVACY_OPTIONS}
+            items={REVIEW_PRIVACY_OPTIONS(t)}
             initialValue={summary?.reviewStatus}
             onChange={handleCreateReview}
           />

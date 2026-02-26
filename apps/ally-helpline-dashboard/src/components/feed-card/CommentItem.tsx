@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { formatRelativeTime } from "@utils";
 
@@ -12,13 +14,14 @@ interface CommentItemProps {
 
 const CommentItem: FC<CommentItemProps> = ({ comment }) => {
   const { createdBy, createdAt, content, replyCount } = comment;
+  const { t } = useTranslation();
 
   const entries = comment.reactions ? Object.entries(comment.reactions) : [];
   const unicodeCodes = entries?.map(([code]) => code) ?? [];
   const displayUnicodeCodes = unicodeCodes.length > 3 ? unicodeCodes.slice(0, 3) : unicodeCodes;
   const totalReactionCount = entries?.reduce((sum, [, count]) => sum + count, 0) ?? 0;
 
-  const relativeTime = formatRelativeTime(createdAt);
+  const relativeTime = formatRelativeTime(createdAt, t);
 
   const fallbackText = () => {
     if (createdBy?.name?.length > 1) {
