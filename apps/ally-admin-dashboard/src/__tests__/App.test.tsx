@@ -19,33 +19,11 @@ vi.mock("@api/baseApi", () => ({
   },
 }));
 
-// Mock aiAPI
-vi.mock("@api/aiAPI", () => ({
-  aiAPI: {
-    injectEndpoints: vi.fn(() => ({})),
-    reducerPath: "aiAPI",
-    reducer: (state = {}) => state,
-    middleware: () => (next: any) => (action: any) => next(action),
-    util: {
-      resetApiState: vi.fn(),
-    },
-  },
-}));
-
 // Mock all API modules
 vi.mock("@api", () => ({
   baseAPI: {
     injectEndpoints: vi.fn(() => ({})),
     reducerPath: "baseAPI",
-    reducer: (state = {}) => state,
-    middleware: () => (next: any) => (action: any) => next(action),
-    util: {
-      resetApiState: vi.fn(),
-    },
-  },
-  aiAPI: {
-    injectEndpoints: vi.fn(() => ({})),
-    reducerPath: "aiAPI",
     reducer: (state = {}) => state,
     middleware: () => (next: any) => (action: any) => next(action),
     util: {
