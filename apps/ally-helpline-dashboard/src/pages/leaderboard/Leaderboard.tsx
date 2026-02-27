@@ -49,8 +49,8 @@ export const Leaderboard = () => {
   const { data: currentUser } = useGetCurrentUserQuery({ window: window.toUpperCase() });
 
   useEffect(() => {
-    if (!leaderBoardList?.data?.length) return;
     setHasMore(leaderBoardList?.data?.length === PATHS_PAGE_SIZE);
+    if (!leaderBoardList?.data?.length) return;
     setLeaderboardData(prevData => {
       if (pathsOffset === 0) {
         return leaderBoardList.data;
