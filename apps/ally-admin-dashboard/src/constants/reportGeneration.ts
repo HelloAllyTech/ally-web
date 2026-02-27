@@ -6,7 +6,7 @@ export const REPORT_GENERATION_MESSAGES = {
   CANCEL: "Cancel",
   GENERATE_REPORT: "Generate Report",
   REGENERATE_REPORT: "Regenerate Report",
-  REPORT: "Report",
+  REPORT: "Generate Report",
   HISTORY: "History",
   TRANSCRIPTION: "Transcript",
   TEST_CONFIGURATION: "Test configuration",

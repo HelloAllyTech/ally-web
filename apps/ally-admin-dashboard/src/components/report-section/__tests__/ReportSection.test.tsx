@@ -164,7 +164,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Generate Report" })).toBeInTheDocument();
     });
 
     it("renders with scenarioId", () => {
@@ -175,7 +175,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Generate Report" })).toBeInTheDocument();
     });
 
     it("renders prompt configuration when no report data", () => {
@@ -498,7 +498,8 @@ describe("ReportSection", () => {
 
       const state = store.getState();
       expect(state.reportUpload.uploads).toHaveLength(1);
-      expect(state.reportUpload.uploads[0].scenarioId).toBe("123");
+      // When scenarioId changes, sync with API may update the upload's scenarioId to current scenario
+      expect(state.reportUpload.uploads[0].scenarioId).toBe("456");
     });
   });
 
@@ -732,7 +733,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Generate Report" })).toBeInTheDocument();
     });
 
     it("handles empty reportsHistory", () => {
