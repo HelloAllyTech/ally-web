@@ -106,6 +106,19 @@ export const CreateSimulation: FC = () => {
     upload => simulationId != null && String(upload.scenarioId) === String(simulationId),
   );
 
+  const hasSetInitialStepForReportInProgress = useRef(false);
+  useEffect(() => {
+    if (
+      simulationId &&
+      isReportGenerationInProgress &&
+      FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG &&
+      !hasSetInitialStepForReportInProgress.current
+    ) {
+      setCurrentStep(stepIds.report);
+      hasSetInitialStepForReportInProgress.current = true;
+    }
+  }, [simulationId, isReportGenerationInProgress]);
+
   useEffect(() => {
     if (simulationId) getAdminSimulationByIdQuery(simulationId);
   }, [simulationId, getAdminSimulationByIdQuery]);
