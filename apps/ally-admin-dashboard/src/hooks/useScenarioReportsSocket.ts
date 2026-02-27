@@ -110,7 +110,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
     }
   }, []);
 
-  const joinUserReportsRoom = useCallback((lookBackMinutes?: number) => {
+  const joinUserReportsRoom = useCallback((lookbackMinutes?: number) => {
     if (!socketRef.current || !socketRef.current.connected) {
       logger.info(logMeessages.socketNotConnected);
       return;
@@ -118,8 +118,8 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
 
     const payload: JoinUserReportsRoomPayload = {};
 
-    if (lookBackMinutes !== undefined) {
-      payload.lookBackMinutes = lookBackMinutes;
+    if (lookbackMinutes !== undefined) {
+      payload.lookbackMinutes = lookbackMinutes;
     }
 
     socketRef.current.emit(SocketEvent.JOIN_USER_REPORTS_ROOM, payload);

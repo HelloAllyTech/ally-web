@@ -257,6 +257,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
         languageId: Number(selectedLanguage.value) || 1,
         turns: Number(selectedTurns.value),
         helperAgentPrompt,
+        languageName: selectedLanguage.label,
       };
 
       const response = await generateReportMutation({

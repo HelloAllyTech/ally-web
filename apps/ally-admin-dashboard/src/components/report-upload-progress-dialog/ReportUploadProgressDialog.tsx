@@ -1,15 +1,16 @@
 import { FC, useEffect, useMemo, useState, useCallback } from "react";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 import { useCancelReportGenerationMutation } from "@api";
 import { ArrowDown, Cancel, Close, TickGreenBackground, Document, FailIcon } from "@assets";
 import { Button } from "@components";
+import { useScenarioReportsSocketUploads } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
 import { ButtonVariant } from "@components/types";
 import { ReportGenerationStatus } from "@constants/reportGeneration";
 import { MAX_RECENT_UPLOADS_DISPLAY } from "@constants/socket";
-import { cancelUpload, selectUploads, addUpload } from "@reducer/reportUploadReducer";
+import { addUpload } from "@reducer/reportUploadReducer";
 
 import { ProgressCircleProps, UploadProgressHeaderProps } from "./types";
 import { getUploadHeader } from "./utils";
@@ -76,14 +77,14 @@ const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
 
 const UploadProgressDialog: FC = () => {
   const dispatch = useDispatch();
-  const uploads = useSelector(selectUploads);
+  const { socketUploads, markUploadCancelled } = useScenarioReportsSocketUploads();
   const [expanded, setExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [cancelReportGenerationMutation] = useCancelReportGenerationMutation();
 
   const sorted = useMemo(() => {
-    return [...uploads].reverse();
-  }, [uploads]);
+    return [...socketUploads].reverse();
+  }, [socketUploads]);
 
   const displayedUploads = useMemo(() => sorted.slice(0, MAX_RECENT_UPLOADS_DISPLAY), [sorted]);
 
@@ -94,7 +95,7 @@ const UploadProgressDialog: FC = () => {
     };
 
     if (
-      uploads.some(
+      socketUploads.some(
         u =>
           u.status === ReportGenerationStatus.IN_PROGRESS ||
           u.status === ReportGenerationStatus.STARTED,
@@ -106,25 +107,26 @@ const UploadProgressDialog: FC = () => {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [uploads]);
+  }, [socketUploads]);
 
   useEffect(() => {
-    // Show dialog when new uploads are added
-    if (uploads.length > 0) {
+    // Show dialog when new uploads are added from socket
+    if (socketUploads.length > 0) {
       setIsVisible(true);
     }
-  }, [uploads.length]);
+  }, [socketUploads.length]);
 
   const shouldScroll = displayedUploads.length > 2;
 
   const onUploadCancel = useCallback(
     async (reportId: string) => {
-      const upload = uploads.find(u => u.reportId === reportId);
+      const upload = socketUploads.find(u => u.reportId === reportId);
       if (!upload) return;
 
       if (reportId) {
         try {
           await cancelReportGenerationMutation({ reportId }).unwrap();
+          markUploadCancelled(reportId);
           dispatch(
             addUpload({
               fileName: upload.fileName,
@@ -138,13 +140,10 @@ const UploadProgressDialog: FC = () => {
           const errorMessage =
             error?.data?.message || error?.message || "Failed to cancel report generation";
           toast.error(errorMessage);
-          dispatch(cancelUpload(reportId));
         }
-      } else {
-        dispatch(cancelUpload(reportId));
       }
     },
-    [uploads, cancelReportGenerationMutation, dispatch],
+    [socketUploads, cancelReportGenerationMutation, dispatch, markUploadCancelled],
   );
 
   const onClose = () => {
@@ -177,7 +176,7 @@ const UploadProgressDialog: FC = () => {
     );
   };
 
-  if (uploads.length === 0 || !isVisible) return null;
+  if (socketUploads.length === 0 || !isVisible) return null;
 
   return (
     <div className="fixed bottom-4 right-6 z-40 font-primary">
