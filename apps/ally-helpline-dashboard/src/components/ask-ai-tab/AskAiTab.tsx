@@ -46,13 +46,15 @@ const ChatHistorySkeleton = () => (
   </div>
 );
 
-const initialScreen = ({
+const InitialScreen = ({
   handleSend,
   disabled,
 }: {
   handleSend: (card: string) => void;
   disabled: boolean;
 }) => {
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
   return (
     <div className="flex flex-col justify-center h-full gap-5 px-10">
       <div className="font-base font-secondary text-4xl">
@@ -66,15 +68,17 @@ const initialScreen = ({
         {chatCards.map(card => (
           <div
             key={card}
-            className="text-sm font-primary mb-2 border rounded-md p-5 shadow-sm w-40 h-40 items-center justify-center relative hover:scale-105 hover:shadow-lg transition-all duration-300"
+            className="text-sm font-primary mb-2 border rounded-md p-5 shadow-sm w-40 h-40 flex flex-col relative hover:scale-105 hover:shadow-lg transition-all duration-300"
+            onMouseEnter={() => setHoveredCard(card)}
+            onMouseLeave={() => setHoveredCard(null)}
           >
-            {card}
+            <span className="flex-1">{card}</span>
             <button
-              className="!rounded-full !p-2 !h-10 !w-10 flex items-center justify-center disabled:opacity-60 disabled:bg-typography-500"
+              className={`absolute bottom-3 right-3 !rounded-full !p-1 !h-8 !w-8 flex items-center justify-center disabled:opacity-60 disabled:bg-typography-500 ${hoveredCard === card ? "bg-primary-500" : "bg-typography-500"}`}
               onClick={() => handleSend(card)}
               disabled={disabled}
             >
-              <SendArrow className="w-8 h-8 shrink-0 absolute bottom-3 right-3" />
+              <SendArrow className="w-5 h-5 shrink-0" />
             </button>
           </div>
         ))}
@@ -202,7 +206,7 @@ export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
           {isHistoryLoading ? (
             <ChatHistorySkeleton />
           ) : messages.length === 0 ? (
-            initialScreen({ handleSend: sendMessage, disabled: isStreaming })
+            <InitialScreen handleSend={sendMessage} disabled={isStreaming} />
           ) : (
             messages.map((msg, index) => <ChatBubble key={`${msg.role}-${index}`} message={msg} />)
           )}
