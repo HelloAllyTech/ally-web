@@ -1,6 +1,4 @@
-import React, { useMemo } from "react";
-
-import { useSelector } from "react-redux";
+import React from "react";
 
 import { Add, Edit, Unpublish, Archive, Delete, Play, Unarchive, Copy } from "@assets";
 import {
@@ -11,7 +9,6 @@ import {
   EmptyState,
 } from "@components";
 import { en } from "@constants";
-import { selectAllUploadsInProgress } from "@reducer/reportUploadReducer";
 import { Simulation, SimulationStatus } from "@types";
 import {
   formatDate,
@@ -50,13 +47,6 @@ export const SimulationList: React.FC<SimulationListProps> = ({
   onCreateSimulation,
   onDuplicate,
 }) => {
-  const uploadsInProgress = useSelector(selectAllUploadsInProgress);
-  const simulationIdsWithReportInProgress = useMemo(
-    () =>
-      new Set(uploadsInProgress.filter(u => u.scenarioId != null).map(u => String(u.scenarioId))),
-    [uploadsInProgress],
-  );
-
   // Handle loading state
   if (isLoading && !isNonEmptyArray(simulations)) {
     return <SimulationListSkeleton />;
@@ -94,9 +84,6 @@ export const SimulationList: React.FC<SimulationListProps> = ({
   const showPreview = (simulation: Simulation) => {
     return simulation.isPreviewEnabled;
   };
-
-  const isEditDisabled = (simulation: Simulation) =>
-    simulationIdsWithReportInProgress.has(String(simulation.id));
 
   const handleArchive = (simulation: Simulation) =>
     simulation.status !== SimulationStatus.ARCHIVED
@@ -177,10 +164,8 @@ export const SimulationList: React.FC<SimulationListProps> = ({
   const actions: ActionButton<Simulation>[] = [
     {
       icon: <Edit />,
-      tooltip: simulation =>
-        isEditDisabled(simulation) ? en.simulation.reportGenerationInProgress : en.simulation.edit,
+      tooltip: en.simulation.edit,
       onClick: simulation => onEdit?.(simulation),
-      disabled: isEditDisabled,
     },
     {
       icon: <Unpublish />,

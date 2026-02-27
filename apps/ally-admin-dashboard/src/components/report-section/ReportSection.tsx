@@ -209,6 +209,26 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
   );
   const progress = currentUpload?.progress ?? 0;
 
+  // When navigating to report step with generation already in progress, show generating UI
+  const inProgressUploadForScenario = useMemo(
+    () =>
+      scenarioId
+        ? uploads.find(
+            u =>
+              String(u.scenarioId) === String(scenarioId) &&
+              (u.status === ReportGenerationStatus.IN_PROGRESS ||
+                u.status === ReportGenerationStatus.STARTED),
+          )
+        : null,
+    [scenarioId, uploads],
+  );
+  useEffect(() => {
+    if (inProgressUploadForScenario && inProgressUploadForScenario.reportId !== reportId) {
+      setReportId(inProgressUploadForScenario.reportId);
+      setIsGenerating(true);
+    }
+  }, [inProgressUploadForScenario, reportId]);
+
   useEffect(() => {
     if (primaryActiveTab !== TABS.primary.history || expandedHistoryReportId) return;
     if (completedReportsFromHistory.length > 0) {
@@ -423,7 +443,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
 
     return (
       <div className="flex flex-col gap-2 w-full max-w-[800px]">
-        {completedReportsFromHistory.map((item, index) => {
+        {completedReportsFromHistory.map(item => {
           const itemActiveTab = historyItemActiveTabs[item.id] ?? TABS.secondary.report;
           const handleItemTabChange = (tab: string) => {
             setHistoryItemActiveTabs(prev => ({ ...prev, [item.id]: tab }));
@@ -436,7 +456,6 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
 
           const historyItemHeader = (
             <div className="text-base font-normal text-[#1A1A1A] flex flex-row gap-6 items-center">
-              <div className="text-center">{index + 1}</div>
               <div className="flex flex-col justify-between gap-2">
                 <span className="text-xs font-normal text-[#1A1A1A]">
                   {formatReportCreatedAt(item.createdAt)}
@@ -478,7 +497,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
         onClick={() => setPrimaryActiveTab(TABS.primary.report)}
       />
       <TabButton
-        label={REPORT_GENERATION_MESSAGES.HISTORY}
+        label={`${REPORT_GENERATION_MESSAGES.HISTORY} ${completedReportsFromHistory.length}`}
         isActive={primaryActiveTab === TABS.primary.history}
         onClick={() => setPrimaryActiveTab(TABS.primary.history)}
       />
