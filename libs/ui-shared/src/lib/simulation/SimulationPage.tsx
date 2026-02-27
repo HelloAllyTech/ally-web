@@ -139,7 +139,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   };
 
   const parseTimeValue = (timeStr: string): number => {
-    if (!timeStr) return 0;
+    if (!timeStr) return 600000; // default 10 minutes
     const parts = timeStr.split(":").map(Number);
     const hours = parts[0] || 0;
     const minutes = parts[1] || 0;
