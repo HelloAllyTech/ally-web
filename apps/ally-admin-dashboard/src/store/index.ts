@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { baseAPI, aiAPI } from "@api";
+import { baseAPI } from "@api";
 import eventsSlice from "@reducer/eventsReducer";
 import reportUploadSlice from "@reducer/reportUploadReducer";
 import userSlice from "@reducer/userReducer";
@@ -8,7 +8,6 @@ import userSlice from "@reducer/userReducer";
 export const store = configureStore({
   reducer: {
     [baseAPI.reducerPath]: baseAPI.reducer,
-    [aiAPI.reducerPath]: aiAPI.reducer,
     user: userSlice.reducer,
     events: eventsSlice.reducer,
     reportUpload: reportUploadSlice.reducer,
@@ -22,7 +21,7 @@ export const store = configureStore({
           "persist/REHYDRATE",
         ],
       },
-    }).concat(baseAPI.middleware, aiAPI.middleware),
+    }).concat(baseAPI.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
