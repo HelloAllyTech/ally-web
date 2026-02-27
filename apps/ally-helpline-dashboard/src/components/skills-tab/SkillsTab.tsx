@@ -32,7 +32,7 @@ interface CustomDotProps {
 
 const CHART_HEIGHT = 350;
 const CHART_MARGIN = { top: 20, right: 20, left: 0, bottom: 20 };
-const Y_AXIS_TICKS = [0, 3, 6, 10];
+const Y_AXIS_TICKS = [-5, -3, 0, 3, 5];
 
 // Utility Functions
 const formatTime = (seconds: number): string => {
@@ -278,7 +278,7 @@ const EmotionalMovementChart: FC<{
               }}
             />
             <YAxis
-              domain={[0, 10]}
+              domain={[-5, 5]}
               ticks={Y_AXIS_TICKS}
               axisLine={{ stroke: "#000000", strokeWidth: 1 }}
               tickLine={false}
