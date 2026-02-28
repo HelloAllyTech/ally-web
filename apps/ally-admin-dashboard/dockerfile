@@ -9,21 +9,22 @@ COPY nx.json ./
 COPY tsconfig.base.json ./
 
 # Copy ALL project package.json files to ensure proper workspace setup
-COPY apps/ally-web/package*.json ./apps/ally-web/
+COPY apps/ally-admin-dashboard/package*.json ./apps/ally-admin-dashboard/
 COPY libs/ui-shared/package*.json ./libs/ui-shared/
 
 # Install ALL dependencies from workspace root (this handles both root and workspace dependencies)
 RUN npm ci --legacy-peer-deps
 
 # Copy source files
-COPY apps/ally-web ./apps/ally-web
+COPY apps/ally-admin-dashboard ./apps/ally-admin-dashboard
 COPY libs ./libs
 
 # Build the application using Nx with skip-nx-cache to avoid building dependencies
-RUN ./node_modules/.bin/nx build ally-web --skip-nx-cache
+RUN ./node_modules/.bin/nx build ally-admin-dashboard --skip-nx-cache
+
 
 # Debug: List the build output
-RUN ls -la /app/apps/ally-web/.next/standalone
+RUN ls -la /app/apps/ally-admin-dashboard/.next/standalone
 
 # Stage 2: Serve
 FROM node:20-alpine AS runner
@@ -35,15 +36,15 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy the public folder
-COPY --from=builder /app/apps/ally-web/public ./public
+COPY --from=builder /app/apps/ally-admin-dashboard/public ./public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
 # Copy the built application
-COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-web/.next/standalone/apps/ally-web ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-web/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-admin-dashboard/.next/standalone/apps/ally-admin-dashboard ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/ally-admin-dashboard/.next/static ./.next/static
 
 USER nextjs
 
