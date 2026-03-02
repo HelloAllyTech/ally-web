@@ -53,6 +53,13 @@ vi.mock("@hooks", () => ({
 }));
 
 vi.mock("@constants", () => ({
+  ReportGenerationStatus: {
+    STARTED: "STARTED",
+    IN_PROGRESS: "IN_PROGRESS",
+    COMPLETED: "COMPLETED",
+    CANCELLED: "CANCELLED",
+    FAILED: "FAILED",
+  },
   SIDEBAR_ITEMS: {
     SIMULATION_STUDIO: "SIMULATION_STUDIO",
     USER_MANAGEMENT: "USER_MANAGEMENT",
