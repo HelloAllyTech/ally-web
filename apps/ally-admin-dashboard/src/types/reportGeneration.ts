@@ -13,7 +13,7 @@ export type ReportData = {
   updatedAt: string;
   status: string;
   transcripts?: TranscriptMessage[];
-  name?: string;
+  scenarioTitle?: string;
 };
 
 export type HistoryItem = {
