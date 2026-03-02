@@ -20,6 +20,7 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
   buttonText,
   buttonDisabled = false,
   buttonTooltip,
+  selectedLanguage,
 }) => {
   const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
     active: true,
@@ -33,7 +34,8 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
     label: language.label,
   }));
 
-  const defaultLanguage = scenarioLanguage?.[0] || { value: "1", label: "English (India)" }; // assume english should be default language(with id=1)
+  const defaultLanguage = selectedLanguage ||
+    scenarioLanguage?.[0] || { value: "1", label: "English (India)" }; // assume english should be default language(with id=1)
 
   return (
     <div className="space-y-4">

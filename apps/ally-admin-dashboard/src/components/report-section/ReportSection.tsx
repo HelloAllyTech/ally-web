@@ -223,8 +223,15 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       primaryActiveTab === TABS.primary.report && completedReportsFromHistory.length > 0
         ? completedReportsFromHistory[0].config
         : fetchedReportData?.config;
+
+    const displayedLanguage =
+      primaryActiveTab === TABS.primary.report && completedReportsFromHistory.length > 0
+        ? completedReportsFromHistory[0].language
+        : fetchedReportData?.language;
+
     useEffect(() => {
       const config = displayedReportConfig;
+      const language = displayedLanguage;
       if (
         config?.helperAgentPrompt != null &&
         config?.languageId != null &&
@@ -232,8 +239,8 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       ) {
         setHelperAgentPrompt(config.helperAgentPrompt);
         setSelectedLanguage({
-          value: config.languageId.toString(),
-          label: config.languageId.toString(),
+          value: language?.id?.toString() || "",
+          label: language?.label || "",
         });
         setSelectedTurns({
           value: config.turns.toString(),
@@ -455,6 +462,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
               </summary>
               <div className="px-6 py-4 border-t border-gray-200">
                 <PromptConfiguration
+                  selectedLanguage={selectedLanguage}
                   prompt={helperAgentPrompt}
                   turns={Number(selectedTurns.value)}
                   onPromptChange={handlePromptChange}
