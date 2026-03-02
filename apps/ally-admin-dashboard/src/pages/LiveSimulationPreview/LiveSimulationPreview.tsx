@@ -28,6 +28,7 @@ export const LiveSimulationPreview: React.FC = () => {
     startTime,
     detectedEventIds,
     handleEndSession,
+    handleStartSession,
   } = useLiveKitRoom(handleRoomDisconnected, endSessionButtonRef);
 
   const renderWarningDialog = ({ isOpen, onClose, onContinue, onEnd }) => (
@@ -53,8 +54,11 @@ export const LiveSimulationPreview: React.FC = () => {
       roomStatus={roomStatus}
       sessionId={id}
       isEndingSession={
-        roomStatus !== RoomStatus.CONNECTED && roomStatus !== RoomStatus.AGENT_JOINED
+        roomStatus !== RoomStatus.CONNECTED &&
+        roomStatus !== RoomStatus.AGENT_JOINED &&
+        roomStatus !== RoomStatus.PENDING_START
       }
+      onStartClick={handleStartSession}
       startTime={startTime?.toISOString()}
       events={getSimulationEvents(events)}
       detectedEventIds={detectedEventIds}

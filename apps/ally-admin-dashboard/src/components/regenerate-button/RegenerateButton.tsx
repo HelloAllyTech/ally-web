@@ -4,7 +4,8 @@ import { toast } from "sonner";
 
 import { useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
-import { FORM_FIELD_IDS, REGENERATE_TYPE, en } from "@constants";
+import { AutofillModelSelect } from "@components/autofill-model-select";
+import { DEFAULT_AUTOFILL_MODEL, FORM_FIELD_IDS, REGENERATE_TYPE, en } from "@constants";
 import { RegenerateFieldResponse } from "@types";
 import { isNonEmptyArray, isNonEmptyObject, isNonEmptyString } from "@utils";
 
@@ -23,6 +24,7 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
 
   const buildScenarioContext = () => {
     if (!formMethods) return {};
@@ -161,6 +163,7 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
       const response = await regenerateField({
         fieldName: regenerateType,
         scenarioContext,
+        model: selectedModel,
       }).unwrap();
 
       processRegenerateResponse(response);
@@ -178,22 +181,29 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
   const buttonText = getButtonText();
 
   return (
-    <button
-      type="button"
-      onClick={handleRegenerate}
-      disabled={isRegenerating || disabled}
-      className={`flex items-center gap-1 text-sm border rounded-2xl px-2 py-1 cursor-pointer transition-opacity ${
-        isRegenerating || disabled
-          ? "text-primary-300 border-primary-300 cursor-not-allowed"
-          : "text-primary-500 border-primary-500 hover:bg-primary-50"
-      } ${isRegenerating ? "animate-fadeInOut" : ""}`}
-    >
-      {isRegenerating ? (
-        <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-      ) : (
-        <WandStars />
-      )}{" "}
-      {buttonText}
-    </button>
+    <div className="flex items-center gap-2">
+      <AutofillModelSelect
+        value={selectedModel}
+        onChange={setSelectedModel}
+        disabled={isRegenerating || disabled}
+      />
+      <button
+        type="button"
+        onClick={handleRegenerate}
+        disabled={isRegenerating || disabled}
+        className={`flex items-center gap-1 text-sm border rounded-2xl px-2 py-1 cursor-pointer transition-opacity ${
+          isRegenerating || disabled
+            ? "text-primary-300 border-primary-300 cursor-not-allowed"
+            : "text-primary-500 border-primary-500 hover:bg-primary-50"
+        } ${isRegenerating ? "animate-fadeInOut" : ""}`}
+      >
+        {isRegenerating ? (
+          <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <WandStars />
+        )}{" "}
+        {buttonText}
+      </button>
+    </div>
   );
 };

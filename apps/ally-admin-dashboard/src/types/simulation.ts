@@ -3,6 +3,7 @@ import { EventDetectionConfig } from "@types";
 import { SimulationStatus, ScenarioVoice } from "./createSimulation";
 
 export enum RoomStatus {
+  PENDING_START = "pending_start",
   CONNECTED = "connected",
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
@@ -25,6 +26,7 @@ export interface UseLiveKitRoomReturn {
   events: LiveKitEvent[];
   handleEndSession: () => void;
   handleRetryConnection: () => void;
+  handleStartSession: () => void;
   room: any; // avoid hard dependency in admin app
   roomStatus: RoomStatus;
   score: number;
@@ -83,6 +85,7 @@ export interface SimulationInput {
   isPublic?: boolean;
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
@@ -460,11 +463,15 @@ export interface ScenarioContext {
   competency?: string;
   characterProfileText?: string;
   challengeDescription?: string;
+  languageId?: string;
+  languageCode?: string;
+  languageName?: string;
 }
 
 export interface RegenerateFieldRequest {
   fieldName: string;
   scenarioContext: ScenarioContext;
+  model?: string;
 }
 
 export interface RegenerateFieldResponse {

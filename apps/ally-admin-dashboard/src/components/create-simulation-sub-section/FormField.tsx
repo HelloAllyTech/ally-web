@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
+import { FILE_TYPE, FORM_FIELD_IDS, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
@@ -12,6 +12,7 @@ import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
+import { LinguisticStyleSamples } from "../linguistic-style-samples";
 import { RadioButtonGroup } from "../radio-button-group";
 import { RegenerateButton } from "../regenerate-button";
 import { StateInstruction } from "../states-instruction";
@@ -156,6 +157,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             label={label}
             formMethods={formMethods}
             isMandatory={isMandatory}
+          />
+        );
+      case FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES:
+        return (
+          <LinguisticStyleSamples
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            languageVoicesId={FORM_FIELD_IDS.LANGUAGES_VOICES}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:

@@ -15,6 +15,7 @@ import { SimulationEventType, ChecklistItem, ChecklistMode } from "./types";
 import { UserCallCard } from "./UserCallCard";
 
 export enum RoomStatus {
+  PENDING_START = "pending_start",
   CONNECTED = "connected",
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
@@ -31,6 +32,7 @@ export interface SimulationInterfaceProps {
   isMuted: boolean;
   checklistMode?: ChecklistMode;
   checklistItems?: ChecklistItem[];
+  onStartClick?: () => void;
 }
 
 export const SimulationInterface: FC<SimulationInterfaceProps> = ({
@@ -42,6 +44,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   isMuted,
   checklistMode = ChecklistMode.OFF,
   checklistItems = [],
+  onStartClick,
 }) => {
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
@@ -83,8 +86,33 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const connectingText = useMemo(() => {
     if (roomStatus === RoomStatus.CONNECTED || roomStatus === RoomStatus.CONNECTING)
       return "Waiting for agent to join...";
+    if (roomStatus === RoomStatus.PENDING_START)
+      return "Click to allow microphone and join the session.";
     return "Connecting to session...";
   }, [roomStatus]);
+
+  const renderPendingStartContent = () => (
+    <div
+      data-testid="simulation-interface-pending-start"
+      className="flex flex-col items-center text-center font-['IBM_Plex_Serif'] gap-4"
+    >
+      <p className="text-[20px] text-white">
+        <span className="font-medium italic">{connectingText}</span>
+      </p>
+      <p className="text-[12px] text-[#B6B5B9]">
+        To start the simulation, please allow us to use your microphone.
+      </p>
+      {onStartClick && (
+        <button
+          type="button"
+          onClick={onStartClick}
+          className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+        >
+          Allow Microphone & Join
+        </button>
+      )}
+    </div>
+  );
 
   const renderLoadingContent = () => (
     <div
@@ -104,6 +132,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     switch (roomStatus) {
       case RoomStatus.AGENT_JOINED:
         return renderConnectedContent();
+      case RoomStatus.PENDING_START:
+        return renderPendingStartContent();
       case RoomStatus.CONNECTED:
       case RoomStatus.CONNECTING:
       case RoomStatus.DISCONNECTING:

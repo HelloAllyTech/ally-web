@@ -5,6 +5,7 @@ export * from "./uiStyles";
 export * from "./reportGeneration";
 export * from "./SimulationCreator";
 export * from "./simulation";
+export * from "./models";
 export * from "./permissions";
 export * from "./file";
 export * from "./CreatePath";
