@@ -80,11 +80,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   useWakeLock(sessionId);
 
   const handleStartClick = useCallback(() => {
-    startAudio.current?.play();
     onStartClick?.();
   }, [onStartClick]);
 
   useEffect(() => {
+    startAudio.current?.play();
     return () => {
       endAudio.current?.pause();
     };
