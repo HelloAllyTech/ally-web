@@ -194,7 +194,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       const { rerender } = render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -215,7 +215,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -242,7 +242,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -263,7 +263,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -282,7 +282,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -753,7 +753,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 

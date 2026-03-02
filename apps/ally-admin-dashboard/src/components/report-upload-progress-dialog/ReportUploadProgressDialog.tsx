@@ -29,7 +29,7 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
         variant={ButtonVariant.ICON}
         aria-label={expanded ? "Collapse" : "Expand"}
       >
-        <ArrowDown className={expanded ? "rotate-180" : ""} />
+        <ArrowDown className={expanded ? "" : "rotate-180"} />
       </Button>
       <Button onClick={onClose} variant={ButtonVariant.ICON} aria-label="Clear all">
         <Close />
@@ -179,7 +179,7 @@ const UploadProgressDialog: FC = () => {
   if (socketUploads.length === 0 || !isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 right-6 z-40 font-primary">
+    <div className="fixed bottom-0 right-6 z-40 font-primary">
       <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
         <UploadProgressDialogHeader
           uploads={displayedUploads}

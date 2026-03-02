@@ -1,11 +1,11 @@
 import { FC } from "react";
 
-import { Divider } from "@mui/material";
+import { Divider, Tooltip } from "@mui/material";
 
 import { useGetScenarioLanguagesQuery } from "@api";
 import { CustomDropdownField, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { REPORT_GENERATION_MESSAGES, TURNS_OPTIONS } from "@constants";
+import { REPORT_GENERATION_MESSAGES, TURNS_OPTIONS, toolTipStyles } from "@constants";
 import { ScenarioLanguage } from "@types";
 
 import { PromptConfigurationProps } from "./types";
@@ -19,6 +19,7 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
   onButtonClick,
   buttonText,
   buttonDisabled = false,
+  buttonTooltip,
 }) => {
   const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
     active: true,
@@ -74,14 +75,29 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
           </div>
 
           <div className="flex-shrink-0">
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              onClick={onButtonClick}
-              disabled={buttonDisabled}
-              className="px-6 py-2.5 h-[36px]"
-            >
-              {buttonText}
-            </Button>
+            {buttonDisabled && buttonTooltip ? (
+              <Tooltip title={buttonTooltip} placement="top" arrow slotProps={toolTipStyles}>
+                <span>
+                  <Button
+                    variant={ButtonVariant.PRIMARY}
+                    onClick={onButtonClick}
+                    disabled={buttonDisabled}
+                    className="px-6 py-2.5 h-[36px]"
+                  >
+                    {buttonText}
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                variant={ButtonVariant.PRIMARY}
+                onClick={onButtonClick}
+                disabled={buttonDisabled}
+                className="px-6 py-2.5 h-[36px]"
+              >
+                {buttonText}
+              </Button>
+            )}
           </div>
         </div>
       </div>
