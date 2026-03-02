@@ -112,7 +112,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
           </div>
         </div>
         {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && (
-          <Checklist className="max-h-[calc(100vh-200px)]" sessionId={props.sessionId} />
+          <Checklist className="h-full" sessionId={props.sessionId} />
         )}
         {!isChecklistMode && (
           <motion.div className="overflow-y-auto font-primary space-y-4">
