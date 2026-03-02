@@ -16,6 +16,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   HEALTH: "/health",
+  MAGIC_VERIFY: "/auth/verify",
   SUSPENDED_USER: "/suspended-user",
 
   // Private Routes
