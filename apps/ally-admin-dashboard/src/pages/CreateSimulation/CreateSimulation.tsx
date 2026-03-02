@@ -99,6 +99,9 @@ export const CreateSimulation: FC = () => {
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
+    defaultValues: {
+      useLinguisticStyleSamples: true,
+    },
   });
 
   const uploadsInProgress = useSelector(selectUploadsInProgress);
