@@ -54,6 +54,7 @@ export interface FooterProps {
   showPrevious?: boolean;
   showNext?: boolean;
   isNextDisabled?: boolean;
+  isPreviousDisabled?: boolean;
   isLastStep?: boolean;
 }
 
