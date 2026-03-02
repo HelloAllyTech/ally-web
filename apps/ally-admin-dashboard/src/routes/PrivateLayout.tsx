@@ -6,6 +6,7 @@ import { Navigate } from "react-router-dom";
 import { useGetUserQuery, useGetPermissionsQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
 import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
+import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
 import { LOCAL_STORAGE_KEYS, ROUTES, Permissions } from "@constants";
 import { setUser, setPermissions } from "@reducer";
 import { hasPermissions } from "@utils";
@@ -48,14 +49,16 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   if (hasPermission && isPreview) return children;
 
   return (
-    <div className="flex h-screen bg-white">
-      <Sidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="p-4 lg:p-6 h-[100vh] overflow-y-hidden">
-          {hasPermission ? children : <AccessDenied />}
-        </div>
-      </main>
-      <ReportUploadProgressDialog />
-    </div>
+    <ScenarioReportsSocketProvider>
+      <div className="flex h-screen bg-white">
+        <Sidebar />
+        <main className="flex-1 overflow-auto">
+          <div className="p-4 lg:p-6 h-[100vh] overflow-y-hidden">
+            {hasPermission ? children : <AccessDenied />}
+          </div>
+        </main>
+        <ReportUploadProgressDialog />
+      </div>
+    </ScenarioReportsSocketProvider>
   );
 };
