@@ -233,11 +233,13 @@ export const extractValidData = (
         default:
           return [
             key,
-            isNumber(value) || isNonEmptyArray(value) || isNonEmptyObject(value)
+            typeof value === "boolean"
               ? value
-              : isNonEmptyString(value)
-                ? value.trim()
-                : null,
+              : isNumber(value) || isNonEmptyArray(value) || isNonEmptyObject(value)
+                ? value
+                : isNonEmptyString(value)
+                  ? value.trim()
+                  : null,
           ];
       }
     }),

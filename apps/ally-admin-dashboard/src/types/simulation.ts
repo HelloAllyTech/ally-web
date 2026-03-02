@@ -86,6 +86,7 @@ export interface SimulationInput {
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
+  useLinguisticStyleSamples?: boolean;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
