@@ -61,6 +61,7 @@ export interface SimulationPageProps {
   roomStatus: RoomStatus;
   isPreview?: boolean;
   onEndSimulation: () => Promise<void> | void;
+  onStartClick?: () => void;
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;
   endSessionButtonRef: MutableRefObject<boolean>;

@@ -115,6 +115,7 @@ export const FORM_FIELD_TYPES = {
     VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
+    LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
     BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
@@ -146,6 +147,7 @@ export const FORM_FIELD_IDS = {
   OPENING_STATEMENTS: "openingStatements",
   VOICE_ID: "voiceId",
   LANGUAGES_VOICES: "languageVoices",
+  LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   TONE: "tone",
   AUTO_TERMINATION_STATUS: "autoTerminationStatus",
   EXPERIENCE_MODE: "experienceMode",
@@ -320,6 +322,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Language-Voice",
         type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
         isMandatory: true,
+        fullWidth: true,
+      },
+      {
+        id: "linguisticStyleSamples",
+        label: "Linguistic Style Samples",
+        type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
         fullWidth: true,
       },
       {

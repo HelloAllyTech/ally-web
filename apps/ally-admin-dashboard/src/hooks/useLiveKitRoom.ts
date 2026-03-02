@@ -10,8 +10,6 @@ import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
-const RINGING_BELL_DELAY = 5000; // 5 seconds for ringing the bell
-
 export const useLiveKitRoom = (
   handleDisconnect: () => void,
   endSessionButtonRef: any,
@@ -20,8 +18,13 @@ export const useLiveKitRoom = (
   const { id } = useParams();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
 
+  const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
+  const roomData = roomDataString ? JSON.parse(roomDataString) : null;
+
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
-  const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
+  const [roomStatus, setRoomStatus] = useState<RoomStatus>(
+    roomData ? RoomStatus.PENDING_START : RoomStatus.DISCONNECTED,
+  );
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
   const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
@@ -31,8 +34,6 @@ export const useLiveKitRoom = (
   const lastEventTimestampRef = useRef<number | null>(null);
   const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
 
-  const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
-  const roomData = roomDataString ? JSON.parse(roomDataString) : null;
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
@@ -137,6 +138,11 @@ export const useLiveKitRoom = (
     connectToRoom();
   };
 
+  const handleStartSession = () => {
+    setError(null);
+    connectToRoom();
+  };
+
   const handleEndSession = async () => {
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
@@ -145,19 +151,6 @@ export const useLiveKitRoom = (
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
   };
-
-  useEffect(() => {
-    // Add a small delay before connecting to avoid race conditions in StrictMode
-    const connectionTimeout = setTimeout(() => {
-      connectToRoom();
-    }, RINGING_BELL_DELAY); // 10 seconds for ringing the bell
-
-    return () => {
-      clearTimeout(connectionTimeout);
-      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
-      cleanupRoom();
-    };
-  }, [id, cleanupRoom]);
 
   useEffect(() => {
     return () => {
@@ -170,6 +163,7 @@ export const useLiveKitRoom = (
     events,
     handleEndSession,
     handleRetryConnection,
+    handleStartSession,
     room: room as unknown as any,
     roomStatus,
     score,

@@ -22,6 +22,8 @@ export type FormData = {
   coverVideoUrl?: string;
   isGlobal: boolean;
   isPublic: boolean;
+  languageVoices?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;
@@ -30,7 +32,6 @@ export type FormData = {
   customFields?: CustomFieldType[];
   openingStatements: string;
   voiceId: string;
-  languageVoices?: Record<string, string>;
   tone: string;
   autoTerminationStatus?: boolean;
   experienceMode?: string;

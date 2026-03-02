@@ -30,6 +30,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     tone: data?.metadata?.tone,
     voiceId: data?.metadata?.voiceId,
     languageVoices: (data?.metadata as any)?.languageVoices,
+    linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
     difficultyLevel: data?.difficultyLevel,
