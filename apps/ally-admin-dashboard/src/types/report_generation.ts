@@ -4,6 +4,10 @@ export type ReportData = {
   id: string;
   scenarioId: string;
   config: ReportConfig;
+  language?: {
+    id?: number;
+    label?: string;
+  };
   metrics: ReportMetric;
   createdAt: string;
   updatedAt: string;
