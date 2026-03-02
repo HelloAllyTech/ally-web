@@ -140,6 +140,8 @@ const BadgesTab = ({ organizationId, searchValue, onSearchChange }: BadgesTabPro
                 }}
                 hasAccess={badge?.enabled}
                 onToggleAccess={enabled => onToggleAccess(badge.id, enabled)}
+                imageFit="contain"
+                imageContainerClassName="!w-20"
               />
             ))}
             {hasMore && (
