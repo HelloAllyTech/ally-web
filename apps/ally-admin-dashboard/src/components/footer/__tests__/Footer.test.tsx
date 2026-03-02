@@ -3,6 +3,13 @@ import { describe, it, expect, vi } from "vitest";
 
 // Mock constants early to avoid importing real module that pulls in SimulationCreator
 vi.mock("@constants", () => ({
+  ReportGenerationStatus: {
+    STARTED: "STARTED",
+    IN_PROGRESS: "IN_PROGRESS",
+    COMPLETED: "COMPLETED",
+    CANCELLED: "CANCELLED",
+    FAILED: "FAILED",
+  },
   en: {
     simulation: {
       back: "Back",
