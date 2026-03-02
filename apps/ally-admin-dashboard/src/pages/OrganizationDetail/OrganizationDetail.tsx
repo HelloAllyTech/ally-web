@@ -75,6 +75,10 @@ export const OrganizationDetail: FC = () => {
     setOrganization(tenantsResponse);
   }, [tenantsResponse]);
 
+  const refetchTenant = () => {
+    getTenantById(id);
+  };
+
   const handleToggleAccess = async (simulationId: number, enabled: boolean) => {
     try {
       if (enabled) {
@@ -180,7 +184,7 @@ export const OrganizationDetail: FC = () => {
           />
         );
       case TAB_IDS.SCRIBE_SETTINGS:
-        return <ScribeSettings tenantId={id} />;
+        return <ScribeSettings tenantId={id} onUpdateTenant={refetchTenant} />;
       case TAB_IDS.BADGES:
         return (
           <BadgesTab
@@ -190,7 +194,7 @@ export const OrganizationDetail: FC = () => {
           />
         );
       case TAB_IDS.SIMULATION_SETTINGS:
-        return <SimulationsSettings organizationId={id} />;
+        return <SimulationsSettings organizationId={id} onUpdateTenant={refetchTenant} />;
       default:
         return null;
     }
