@@ -498,8 +498,8 @@ describe("ReportSection", () => {
 
       const state = store.getState();
       expect(state.reportUpload.uploads).toHaveLength(1);
-      // When scenarioId changes, sync with API may update the upload's scenarioId to current scenario
-      expect(state.reportUpload.uploads[0].scenarioId).toBe("456");
+      // Upload keeps its original scenarioId when scenarioId prop changes (preserve in-progress per scenario)
+      expect(state.reportUpload.uploads[0].scenarioId).toBe("123");
     });
   });
 
