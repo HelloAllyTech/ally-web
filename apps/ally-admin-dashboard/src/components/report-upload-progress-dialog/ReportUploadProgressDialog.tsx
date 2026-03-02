@@ -39,7 +39,7 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
 );
 
 const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
-  const size = 20;
+  const size = 16;
   const strokeWidth = 2;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -192,12 +192,17 @@ const UploadProgressDialog: FC = () => {
         />
 
         {expanded ? (
-          <div className={`px-4 py-2 ${shouldScroll ? "max-h-[140px] overflow-y-auto" : ""}`}>
+          <div
+            className={`px-4 py-2 ${shouldScroll ? "max-h-[140px] overflow-y-auto custom-scrollbar" : ""}`}
+          >
             {displayedUploads.map(({ reportId, fileName, status, progress }) => (
               <div key={reportId} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2 text-sm text-typography-900">
                   <Document className="w-4 h-4" />
-                  <span>{fileName}</span>
+                  <span>
+                    {fileName?.slice(0, 36)}
+                    {fileName?.length > 36 ? "..." : ""}
+                  </span>
                 </div>
                 <div className="group flex items-center gap-2 w-5 h-5 justify-end">
                   {getActionIcon(status, progress, reportId)}
