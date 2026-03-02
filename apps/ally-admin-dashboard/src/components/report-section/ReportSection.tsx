@@ -19,6 +19,7 @@ import {
   DEFAULT_LANGUAGE,
   DEFAULT_TURNS,
   DETAILS_STYLES,
+  en,
   REPORT_ACCORDION_SX,
   REPORT_GENERATION_MESSAGES,
 } from "@constants";
@@ -33,6 +34,7 @@ import { ReportData, ReportConfig } from "@types";
 
 export interface ReportSectionProps {
   scenarioId?: string;
+  areAllMandatoryFieldsFilled?: boolean;
 }
 
 const TABS = {
@@ -94,7 +96,10 @@ const createUploadFromReport = (report: any) => {
   );
 };
 
-export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
+export const ReportSection: FC<ReportSectionProps> = ({
+  scenarioId,
+  areAllMandatoryFieldsFilled = false,
+}) => {
   const dispatch = useDispatch();
   const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
   const [selectedLanguage, setSelectedLanguage] = useState<{ value: string; label: string }>(
@@ -394,6 +399,12 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
                 onTurnsChange={handleTurnsChange}
                 onButtonClick={handleGenerate}
                 buttonText={REPORT_GENERATION_MESSAGES.REGENERATE_REPORT}
+                buttonDisabled={isGenerating || !areAllMandatoryFieldsFilled}
+                buttonTooltip={
+                  !areAllMandatoryFieldsFilled
+                    ? en.simulation.generateReportTooltipMessage
+                    : undefined
+                }
               />
             </div>
           </details>
@@ -426,7 +437,10 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
           }
           onButtonClick={handleGenerate}
           buttonText={REPORT_GENERATION_MESSAGES.GENERATE_REPORT}
-          buttonDisabled={isGenerating || !helperAgentPrompt.trim()}
+          buttonDisabled={isGenerating || !helperAgentPrompt.trim() || !areAllMandatoryFieldsFilled}
+          buttonTooltip={
+            !areAllMandatoryFieldsFilled ? en.simulation.generateReportTooltipMessage : undefined
+          }
         />
       </div>
     );

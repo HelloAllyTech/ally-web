@@ -456,7 +456,12 @@ export const CreateSimulation: FC = () => {
         return <SimulationEventMapTable simulationId={simulationId} />;
       case stepIds.report:
         if (FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG) {
-          return <ReportSection scenarioId={simulationId} />;
+          return (
+            <ReportSection
+              scenarioId={simulationId}
+              areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
+            />
+          );
         }
         return null;
       default:
