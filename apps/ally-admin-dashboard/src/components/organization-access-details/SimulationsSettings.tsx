@@ -13,7 +13,13 @@ import { CreateTenantBody } from "@src/types";
 
 import { SIMULATION_SETTINGS_ITEMS } from "./constants";
 
-const SimulationsSettings = ({ organizationId }: { organizationId: string }) => {
+const SimulationsSettings = ({
+  organizationId,
+  onUpdateTenant,
+}: {
+  organizationId: string;
+  onUpdateTenant: () => void;
+}) => {
   const [enabledItems, setEnabledItems] = useState<string[]>([]);
   const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery();
   const { data: tenant } = useGetTenantByIdQuery(organizationId);
@@ -67,6 +73,7 @@ const SimulationsSettings = ({ organizationId }: { organizationId: string }) => 
         data.hideRankInCommunity = !enabledItems.includes(item.id);
       }
       await updateTenant({ id: organizationId, data });
+      onUpdateTenant?.();
     } catch (error: any) {
       toast.error(error?.data?.message || en.errors.failedUpdateAccess);
       throw error;

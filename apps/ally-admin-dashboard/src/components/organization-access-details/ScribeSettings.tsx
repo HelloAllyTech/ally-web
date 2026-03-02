@@ -18,6 +18,7 @@ import { CreateTenantBody, ScribeSettingsItem, ScribeSettingsList } from "@types
 
 interface ScribeSettingsProps {
   tenantId: string;
+  onUpdateTenant: () => void;
 }
 
 const cloneFields = (fields: ScribeSettingsItem[]): ScribeSettingsItem[] =>
@@ -62,7 +63,7 @@ const ScribeSettingsSkeleton = () => {
   );
 };
 
-export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
+export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTenant }) => {
   const [enabledItems, setEnabledItems] = useState<string[]>([]);
   const [enabledDashboardIds, setEnabledDashboardIds] = useState<string[]>([]);
   const [updateTenant] = useUpdateTenantMutation();
@@ -86,6 +87,7 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
         }
       }
       await updateTenant({ id: tenantId, data: dataVal });
+      onUpdateTenant?.();
       setEnabledItems(prev =>
         prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id],
       );
