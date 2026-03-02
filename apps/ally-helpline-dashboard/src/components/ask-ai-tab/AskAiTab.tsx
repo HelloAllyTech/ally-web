@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-import ReactMarkdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useGetChatHistoryQuery } from "@api";
@@ -94,8 +93,12 @@ const ChatBubble = ({ message }: { message: Message }) => {
       <div className={`max-w-[80%] px-4 py-2.5 rounded-[20px] ${isUser ? "bg-primary-50" : ""}`}>
         <div className="flex items-start gap-3">
           {!isUser && <AskAiIcon className="w-8 h-8 shrink-0 mt-0.5" />}
-          <div className="prose prose-sm max-w-none text-sm font-primary break-words prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
-            <ReactMarkdown>{message.content}</ReactMarkdown>
+          <div className="flex flex-col gap-1">
+            {message.content.split("\n").map((item, index) => (
+              <span key={index} className="text-sm font-primary break-words">
+                {item}
+              </span>
+            ))}
           </div>
         </div>
       </div>
