@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { FC, useState, useEffect, useRef, useMemo } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
@@ -23,7 +23,8 @@ import {
   REPORT_ACCORDION_SX,
   REPORT_GENERATION_MESSAGES,
 } from "@constants";
-import { ReportGenerationStatus } from "@constants/reportGeneration";
+import { ReportGenerationStatus } from "@constants";
+import { useDebounce } from "@hooks";
 import {
   addUpload,
   cancelInProgressUploadsForScenario,
@@ -305,7 +306,7 @@ export const ReportSection: FC<ReportSectionProps> = ({
     }
   };
 
-  const handleCancel = useCallback(async () => {
+  const handleCancel = async () => {
     if (!reportId || !scenarioId) return;
 
     try {
@@ -328,14 +329,9 @@ export const ReportSection: FC<ReportSectionProps> = ({
     } catch {
       toast.error("Failed to cancel report generation");
     }
-  }, [
-    reportId,
-    scenarioId,
-    currentUpload?.fileName,
-    cancelReportGenerationMutation,
-    dispatch,
-    refetchReportsHistory,
-  ]);
+  };
+
+  const handleCancelReportGeneration = useDebounce(handleCancel, 500);
 
   const handleLanguageChange = (language: { value: string; label: string }) => {
     setReportData(prev =>
@@ -371,7 +367,7 @@ export const ReportSection: FC<ReportSectionProps> = ({
       </div>
       <Button
         variant={ButtonVariant.SECONDARY}
-        onClick={handleCancel}
+        onClick={handleCancelReportGeneration}
         className="px-8 py-2.5 min-w-[120px]"
       >
         {REPORT_GENERATION_MESSAGES.CANCEL}
