@@ -148,6 +148,7 @@ export const FORM_FIELD_IDS = {
   VOICE_ID: "voiceId",
   LANGUAGES_VOICES: "languageVoices",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
+  USE_LINGUISTIC_STYLE_SAMPLES: "useLinguisticStyleSamples",
   TONE: "tone",
   AUTO_TERMINATION_STATUS: "autoTerminationStatus",
   EXPERIENCE_MODE: "experienceMode",

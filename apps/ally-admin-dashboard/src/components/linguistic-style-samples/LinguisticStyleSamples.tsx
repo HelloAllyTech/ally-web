@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useGetAvailableLanguageVoicesQuery, useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
+import { ToggleSwitch } from "@components/toggle-switch";
 import { DEFAULT_AUTOFILL_MODEL, en } from "@constants";
 import { isNonEmptyArray } from "@utils";
 
@@ -19,6 +20,7 @@ interface LinguisticStyleSamplesProps {
   label?: string;
   formMethods: any;
   languageVoicesId?: string;
+  useLinguisticStyleSamplesId?: string;
 }
 
 const SAMPLE_COUNT = 10;
@@ -28,19 +30,29 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   label = "Linguistic Style Samples",
   formMethods,
   languageVoicesId = "languageVoices",
+  useLinguisticStyleSamplesId = "useLinguisticStyleSamples",
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
   const [regeneratingLanguageId, setRegeneratingLanguageId] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
+
+  const { watch, setValue } = formMethods;
+  const useLinguisticStyleSamples = watch(useLinguisticStyleSamplesId) ?? true;
 
   const { data: availableLanguages = [], isLoading } = useGetAvailableLanguageVoicesQuery({
     active: true,
     voicesNeeded: true,
   }) as { data: LanguageOption[]; isLoading: boolean };
 
-  const { watch, setValue } = formMethods;
   const languageVoices = watch(languageVoicesId) ?? {};
   const linguisticStyleSamples = watch(id) ?? {};
+
+  const handleToggleChange = useCallback(
+    (enabled: boolean) => {
+      setValue(useLinguisticStyleSamplesId, enabled);
+    },
+    [setValue, useLinguisticStyleSamplesId],
+  );
 
   const languagesWithVoices = useMemo(() => {
     const languages = (availableLanguages ?? []) as LanguageOption[];
@@ -126,65 +138,78 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
 
   return (
     <div className="w-full flex flex-col gap-4" data-testid="linguistic-style-samples">
-      <label className="text-typography-900 cursor-pointer text-base font-medium">{label}</label>
-      <p className="text-typography-600 text-sm">
-        Sample utterances showing how the agent would talk in each language. 10 samples per
-        language.
-      </p>
-      {languagesWithVoices.map(lang => {
-        const languageId = String(lang.language_id);
-        const samples: string[] =
-          linguisticStyleSamples[languageId] ?? Array(SAMPLE_COUNT).fill("");
+      <div className="flex justify-between items-center py-2 w-full">
+        <span className="font-regular text-base text-typography-900">{label}</span>
+        <span className="flex gap-3 text-base items-center">
+          <ToggleSwitch
+            enabled={!!useLinguisticStyleSamples}
+            onChange={handleToggleChange}
+            label="Use linguistic style samples"
+          />
+          {useLinguisticStyleSamples ? en.common.enabled : en.common.disabled}
+        </span>
+      </div>
+      {useLinguisticStyleSamples && (
+        <p className="text-typography-600 text-sm">
+          Sample utterances showing how the agent would talk in each language. 10 samples per
+          language.
+        </p>
+      )}
+      {useLinguisticStyleSamples &&
+        languagesWithVoices.map(lang => {
+          const languageId = String(lang.language_id);
+          const samples: string[] =
+            linguisticStyleSamples[languageId] ?? Array(SAMPLE_COUNT).fill("");
 
-        return (
-          <div
-            key={languageId}
-            className="border border-border-light rounded-md p-4 bg-white flex flex-col gap-3"
-          >
-            <div className="flex justify-between items-center">
-              <span className="text-typography-800 font-medium">{lang.label}</span>
-              <div className="flex items-center gap-2">
-                <AutofillModelSelect
-                  value={selectedModel}
-                  onChange={setSelectedModel}
-                  disabled={regeneratingLanguageId === languageId}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRegenerate(languageId, lang.value ?? "", lang.label ?? "")}
-                  disabled={regeneratingLanguageId === languageId}
-                  className={`inline-flex items-center gap-1 text-sm border rounded-2xl px-2 py-1 cursor-pointer transition-opacity ${
-                    regeneratingLanguageId === languageId
-                      ? "text-primary-300 border-primary-300 cursor-not-allowed"
-                      : "text-primary-500 border-primary-500 hover:bg-primary-50"
-                  }`}
-                >
-                  {regeneratingLanguageId === languageId ? (
-                    <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <WandStars />
-                  )}{" "}
-                  {regeneratingLanguageId === languageId
-                    ? en.simulation.generating
-                    : en.simulation.regenerate}
-                </button>
+          return (
+            <div
+              key={languageId}
+              className="border border-border-light rounded-md p-4 bg-white flex flex-col gap-3"
+            >
+              <div className="flex justify-between items-center">
+                <span className="text-typography-800 font-medium">{lang.label}</span>
+                <div className="flex items-center gap-2">
+                  <AutofillModelSelect
+                    value={selectedModel}
+                    onChange={setSelectedModel}
+                    disabled={regeneratingLanguageId === languageId}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRegenerate(languageId, lang.value ?? "", lang.label ?? "")}
+                    disabled={regeneratingLanguageId === languageId}
+                    className={`inline-flex items-center gap-1 text-sm border rounded-2xl px-2 py-1 cursor-pointer transition-opacity ${
+                      regeneratingLanguageId === languageId
+                        ? "text-primary-300 border-primary-300 cursor-not-allowed"
+                        : "text-primary-500 border-primary-500 hover:bg-primary-50"
+                    }`}
+                  >
+                    {regeneratingLanguageId === languageId ? (
+                      <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <WandStars />
+                    )}{" "}
+                    {regeneratingLanguageId === languageId
+                      ? en.simulation.generating
+                      : en.simulation.regenerate}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: SAMPLE_COUNT }, (_, i) => (
+                  <input
+                    key={i}
+                    type="text"
+                    value={samples[i] ?? ""}
+                    onChange={e => handleSampleChange(languageId, i, e.target.value)}
+                    placeholder={`Sample ${i + 1}`}
+                    className="w-full px-3 py-2 border border-border-light rounded text-sm text-typography-800"
+                  />
+                ))}
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              {Array.from({ length: SAMPLE_COUNT }, (_, i) => (
-                <input
-                  key={i}
-                  type="text"
-                  value={samples[i] ?? ""}
-                  onChange={e => handleSampleChange(languageId, i, e.target.value)}
-                  placeholder={`Sample ${i + 1}`}
-                  className="w-full px-3 py-2 border border-border-light rounded text-sm text-typography-800"
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
     </div>
   );
 };
