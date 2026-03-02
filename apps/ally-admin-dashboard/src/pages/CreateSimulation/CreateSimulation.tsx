@@ -238,6 +238,8 @@ export const CreateSimulation: FC = () => {
       agentDialogues,
       stateInstructions,
       behaviorInstructions,
+      maxTimeValue,
+      timerMode,
       ...restForm
     } = formData;
 
@@ -311,6 +313,8 @@ export const CreateSimulation: FC = () => {
       stateInstructions,
       behaviorInstructions: behaviourInstructionsArray,
       competencyId: restForm.competency?.id,
+      maxTimeValue: timerMode ? maxTimeValue : null,
+      timerMode: timerMode,
     };
 
     let response;
