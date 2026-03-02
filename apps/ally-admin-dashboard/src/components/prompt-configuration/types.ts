@@ -9,4 +9,5 @@ export interface PromptConfigurationProps {
   buttonDisabled?: boolean;
   buttonTooltip?: string;
   disabled?: boolean;
+  selectedLanguage?: { value: string; label: string };
 }
