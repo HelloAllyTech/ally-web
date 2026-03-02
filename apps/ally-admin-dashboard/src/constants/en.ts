@@ -324,12 +324,11 @@ export const en = {
     upload: "Upload",
     uploadFromImageLibrary: "browse image library.",
     pngUploadGuidelinesOld: "a JPEG or PNG file with a",
-    pngUploadGuidelines: "a JPEG or PNG file with a 16:9 aspect ratio under",
+    pngUploadGuidelines: "a JPEG or PNG file with a 16:9 aspect ratio under 2MB, or ",
     mp4UploadGuidelines: "a MP4 or MOV file with a",
     videoUploadGuidelines:
       "resolution of 16:9 aspect ratio,under 15MB, and a duration of up to 15 seconds.",
     resolutionOld: "resolution of 1920x1080 and under 2MB.",
-    resolution: "2MB, or ",
     description: "Description",
     descriptionPlaceholder: "Enter description",
     tags: "Tags",

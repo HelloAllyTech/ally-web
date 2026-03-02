@@ -8,9 +8,8 @@ import { ArrowDown, Cancel, Close, TickGreenBackground, Document, FailIcon } fro
 import { Button } from "@components";
 import { useScenarioReportsSocketUploads } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
 import { ButtonVariant } from "@components/types";
-import { ReportGenerationStatus } from "@constants/reportGeneration";
-import { MAX_RECENT_UPLOADS_DISPLAY } from "@constants/socket";
-import { addUpload, cancelInProgressUploadsForScenario } from "@reducer/reportUploadReducer";
+import { ReportGenerationStatus, MAX_RECENT_UPLOADS_DISPLAY } from "@constants";
+import { addUpload, cancelInProgressUploadsForScenario } from "@reducer";
 
 import { ProgressCircleProps, UploadProgressHeaderProps } from "./types";
 import { getUploadHeader } from "./utils";
@@ -39,7 +38,7 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
 );
 
 const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
-  const size = 16;
+  const size = 20;
   const strokeWidth = 2;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -169,13 +168,13 @@ const UploadProgressDialog: FC = () => {
         </div>
       );
     return (
-      <>
+      <div className="flex items-center justify-center mr-[-4px]">
         <ProgressCircle progress={progress} />
         <Cancel
           className="hidden group-hover:block cursor-pointer w-4 h-4"
           onClick={() => onUploadCancel(reportId)}
         />
-      </>
+      </div>
     );
   };
 
@@ -200,8 +199,8 @@ const UploadProgressDialog: FC = () => {
                 <div className="flex items-center gap-2 text-sm text-typography-900">
                   <Document className="w-4 h-4" />
                   <span>
-                    {fileName?.slice(0, 36)}
-                    {fileName?.length > 36 ? "..." : ""}
+                    {fileName?.slice(0, 32)}
+                    {fileName?.length > 32 ? "..." : ""}
                   </span>
                 </div>
                 <div className="group flex items-center gap-2 w-5 h-5 justify-end">
