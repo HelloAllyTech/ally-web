@@ -18,6 +18,8 @@ import {
   Footer,
   Header,
   ReportSection,
+  ReportSectionHandle,
+  ReportPrimaryTab,
   SimulationEventMapTable,
   SimulationPreview,
   VerticalStepper,
@@ -87,6 +89,8 @@ export const CreateSimulation: FC = () => {
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const reportStepRef = useRef<ReportSectionHandle>(null);
+  const [reportPrimaryTab, setReportPrimaryTab] = useState<ReportPrimaryTab>("report");
 
   // API mutation for creating simulation
   const [createSimulationQuery, { isLoading: isCreatingSimulation }] =
@@ -422,6 +426,10 @@ export const CreateSimulation: FC = () => {
   };
 
   const handlePrevious = () => {
+    if (currentStep === stepIds.report && reportStepRef.current?.isOnHistoryTab()) {
+      reportStepRef.current.switchToReportTab();
+      return;
+    }
     const currentIndex = StepperList.findIndex(step => step.id === currentStep);
     if (currentIndex > 0) {
       const previousStep = StepperList[currentIndex - 1];
@@ -461,8 +469,10 @@ export const CreateSimulation: FC = () => {
         if (FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG) {
           return (
             <ReportSection
+              ref={reportStepRef}
               scenarioId={simulationId}
               areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
+              onPrimaryTabChange={setReportPrimaryTab}
             />
           );
         }
@@ -541,6 +551,10 @@ export const CreateSimulation: FC = () => {
             showPrevious={currentStep !== stepIds.overview}
             showNext={true}
             isNextDisabled={false}
+            isPreviousDisabled={
+              isReportGenerationInProgress &&
+              (currentStep !== stepIds.report || reportPrimaryTab !== "history")
+            }
             isLastStep={isLastStep}
           />
         </div>
