@@ -545,7 +545,7 @@ export const ReportSection: FC<ReportSectionProps> = ({
   const headerContent = reportData ? (
     <div className="sticky flex gap-8 flex-row top-0 z-10 pt-3 mx-6 border-b border-border-light">
       <TabButton
-        label={REPORT_GENERATION_MESSAGES.REPORT}
+        label={REPORT_GENERATION_MESSAGES.GENERATE_REPORT}
         isActive={primaryActiveTab === TABS.primary.report}
         onClick={() => setPrimaryActiveTab(TABS.primary.report)}
       />
