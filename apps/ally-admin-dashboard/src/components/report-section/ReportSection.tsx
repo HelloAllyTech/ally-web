@@ -50,6 +50,14 @@ const FINAL_STATUSES: ReportGenerationStatus[] = [
   ReportGenerationStatus.CANCELLED,
 ];
 
+const IN_PROGRESS_STATUSES: ReportGenerationStatus[] = [
+  ReportGenerationStatus.IN_PROGRESS,
+  ReportGenerationStatus.STARTED,
+];
+
+const isUploadInProgress = (status: ReportGenerationStatus): boolean =>
+  IN_PROGRESS_STATUSES.includes(status);
+
 const STATUS_MAP: Partial<Record<string, ReportGenerationStatus>> = {
   [ReportGenerationStatus.COMPLETED]: ReportGenerationStatus.COMPLETED,
   [ReportGenerationStatus.FAILED]: ReportGenerationStatus.FAILED,
@@ -145,11 +153,6 @@ export const ReportSection: FC<ReportSectionProps> = ({
   }, [scenarioId, dispatch]);
 
   const mostRecentReportId = reportsHistory?.data?.[0]?.id;
-  useEffect(() => {
-    if (mostRecentReportId && mostRecentReportId !== reportId && !isGenerating) {
-      setReportId(mostRecentReportId);
-    }
-  }, [mostRecentReportId, reportId, isGenerating]);
 
   useEffect(() => {
     const switchedToReportTab =
@@ -223,6 +226,38 @@ export const ReportSection: FC<ReportSectionProps> = ({
     [reportId, uploads],
   );
   const progress = currentUpload?.progress ?? 0;
+
+  // When socket restores in-progress reports on refresh, focus on the in-progress report for this scenario
+  const inProgressUploadForScenario = useMemo(
+    () =>
+      scenarioId
+        ? uploads.find(
+            u =>
+              u.scenarioId != null &&
+              String(u.scenarioId) === String(scenarioId) &&
+              isUploadInProgress(u.status),
+          )
+        : null,
+    [scenarioId, uploads],
+  );
+
+  useEffect(() => {
+    if (!inProgressUploadForScenario) return;
+    const currentIsInProgress = currentUpload != null && isUploadInProgress(currentUpload.status);
+    if (currentIsInProgress) return;
+    if (reportId !== inProgressUploadForScenario.reportId) {
+      setReportId(inProgressUploadForScenario.reportId);
+    }
+  }, [inProgressUploadForScenario, currentUpload?.status, reportId]);
+
+  const showReportGenerationLoader =
+    isGenerating || (currentUpload != null && isUploadInProgress(currentUpload.status));
+
+  useEffect(() => {
+    if (mostRecentReportId && mostRecentReportId !== reportId && !showReportGenerationLoader) {
+      setReportId(mostRecentReportId);
+    }
+  }, [mostRecentReportId, reportId, showReportGenerationLoader]);
 
   useEffect(() => {
     if (primaryActiveTab !== TABS.primary.history || expandedHistoryReportId) return;
@@ -376,7 +411,7 @@ export const ReportSection: FC<ReportSectionProps> = ({
   );
 
   const renderContent = () => {
-    if (isGenerating) {
+    if (showReportGenerationLoader) {
       return renderLoadingState();
     }
 
@@ -401,7 +436,7 @@ export const ReportSection: FC<ReportSectionProps> = ({
                 onTurnsChange={handleTurnsChange}
                 onButtonClick={handleGenerate}
                 buttonText={REPORT_GENERATION_MESSAGES.REGENERATE_REPORT}
-                buttonDisabled={isGenerating || !areAllMandatoryFieldsFilled}
+                buttonDisabled={showReportGenerationLoader || !areAllMandatoryFieldsFilled}
                 buttonTooltip={
                   !areAllMandatoryFieldsFilled
                     ? en.simulation.generateReportTooltipMessage
@@ -439,7 +474,9 @@ export const ReportSection: FC<ReportSectionProps> = ({
           }
           onButtonClick={handleGenerate}
           buttonText={REPORT_GENERATION_MESSAGES.GENERATE_REPORT}
-          buttonDisabled={isGenerating || !helperAgentPrompt.trim() || !areAllMandatoryFieldsFilled}
+          buttonDisabled={
+            showReportGenerationLoader || !helperAgentPrompt.trim() || !areAllMandatoryFieldsFilled
+          }
           buttonTooltip={
             !areAllMandatoryFieldsFilled ? en.simulation.generateReportTooltipMessage : undefined
           }
