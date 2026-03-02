@@ -26,6 +26,7 @@ import {
 import { ReportGenerationStatus } from "@constants/reportGeneration";
 import {
   addUpload,
+  cancelInProgressUploadsForScenario,
   selectUploads,
   setUploadsForScenario,
   setCurrentScenarioId,
@@ -115,6 +116,7 @@ export const ReportSection: FC<ReportSectionProps> = ({
   const [expandedHistoryReportId, setExpandedHistoryReportId] = useState<string | null>(null);
 
   const previousScenarioIdRef = useRef<string | undefined>(scenarioId);
+  const previousPrimaryActiveTabRef = useRef<string>(primaryActiveTab);
 
   const [generateReportMutation] = useGenerateReportMutation();
   const { data: fetchedReportData } = useGetReportByIdQuery({ id: reportId! }, { skip: !reportId });
@@ -149,8 +151,15 @@ export const ReportSection: FC<ReportSectionProps> = ({
   }, [mostRecentReportId, reportId, isGenerating]);
 
   useEffect(() => {
+    const switchedToReportTab =
+      primaryActiveTab === TABS.primary.report &&
+      previousPrimaryActiveTabRef.current !== TABS.primary.report;
+    previousPrimaryActiveTabRef.current = primaryActiveTab;
+
     if (primaryActiveTab === TABS.primary.report) {
-      refetchReportsHistory();
+      if (switchedToReportTab) {
+        refetchReportsHistory();
+      }
       if (!reportId && mostRecentReportId) {
         setReportId(mostRecentReportId);
       }
@@ -214,26 +223,6 @@ export const ReportSection: FC<ReportSectionProps> = ({
   );
   const progress = currentUpload?.progress ?? 0;
 
-  // When navigating to report step with generation already in progress, show generating UI
-  const inProgressUploadForScenario = useMemo(
-    () =>
-      scenarioId
-        ? uploads.find(
-            u =>
-              String(u.scenarioId) === String(scenarioId) &&
-              (u.status === ReportGenerationStatus.IN_PROGRESS ||
-                u.status === ReportGenerationStatus.STARTED),
-          )
-        : null,
-    [scenarioId, uploads],
-  );
-  useEffect(() => {
-    if (inProgressUploadForScenario && inProgressUploadForScenario.reportId !== reportId) {
-      setReportId(inProgressUploadForScenario.reportId);
-      setIsGenerating(true);
-    }
-  }, [inProgressUploadForScenario, reportId]);
-
   useEffect(() => {
     if (primaryActiveTab !== TABS.primary.history || expandedHistoryReportId) return;
     if (completedReportsFromHistory.length > 0) {
@@ -293,15 +282,23 @@ export const ReportSection: FC<ReportSectionProps> = ({
         setReportId(response.id);
         dispatch(
           addUpload(
-            createUploadPayload(response.id, scenarioId, ReportGenerationStatus.IN_PROGRESS, 0),
+            createUploadPayload(
+              response.id,
+              scenarioId,
+              ReportGenerationStatus.IN_PROGRESS,
+              0,
+              fetchedReportData?.scenarioTitle,
+            ),
           ),
         );
       } else {
         setIsGenerating(false);
+        dispatch(cancelInProgressUploadsForScenario({ scenarioId }));
         toast.error("Failed to generate report");
       }
     } catch (error: any) {
       setIsGenerating(false);
+      dispatch(cancelInProgressUploadsForScenario({ scenarioId }));
       const errorMessage = error?.data?.message || error?.message || "Failed to generate report";
       const statusCode = error?.status || error?.originalStatus || error?.data?.status;
       toast.error(statusCode ? `${errorMessage} (Status: ${statusCode})` : errorMessage);
@@ -324,12 +321,21 @@ export const ReportSection: FC<ReportSectionProps> = ({
           ),
         ),
       );
+      dispatch(cancelInProgressUploadsForScenario({ scenarioId }));
       setReportId(null);
       setIsGenerating(false);
+      refetchReportsHistory();
     } catch {
       toast.error("Failed to cancel report generation");
     }
-  }, [reportId, scenarioId, cancelReportGenerationMutation, dispatch]);
+  }, [
+    reportId,
+    scenarioId,
+    currentUpload?.fileName,
+    cancelReportGenerationMutation,
+    dispatch,
+    refetchReportsHistory,
+  ]);
 
   const handleLanguageChange = (language: { value: string; label: string }) => {
     setReportData(prev =>

@@ -104,7 +104,7 @@ const mapPayloadToUploads = (payload: ReportsUpdatedPayload): ReportUpload[] => 
     const progress = calculateProgress(status, existingUpload?.progress ?? 0, isRegenerating);
 
     return {
-      fileName: existingUpload?.fileName ?? report.name ?? `Report ${report.id}`,
+      fileName: existingUpload?.fileName ?? report.scenarioTitle ?? `Report ${report.id}`,
       status: preserveFinal ? existingUpload.status : status,
       progress: preserveFinal ? existingUpload.progress : progress,
       reportId: report.id,
@@ -142,7 +142,16 @@ export const ScenarioReportsSocketProvider: FC<ScenarioReportsSocketProviderProp
       const inProgressNotInPayload = existingUploads.filter(
         u => isInProgress(u.status) && !payloadReportIds.has(u.reportId),
       );
-      dispatch(setAllUploads([...inProgressNotInPayload, ...mappedFromPayload]));
+      const finalStatusNotInPayload = existingUploads.filter(
+        u => isFinalStatus(u.status) && !payloadReportIds.has(u.reportId),
+      );
+      dispatch(
+        setAllUploads([
+          ...inProgressNotInPayload,
+          ...mappedFromPayload,
+          ...finalStatusNotInPayload,
+        ]),
+      );
     },
     [dispatch],
   );

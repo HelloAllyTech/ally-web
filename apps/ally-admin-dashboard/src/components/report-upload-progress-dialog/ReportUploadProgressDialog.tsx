@@ -10,7 +10,7 @@ import { useScenarioReportsSocketUploads } from "@components/scenario-reports-so
 import { ButtonVariant } from "@components/types";
 import { ReportGenerationStatus } from "@constants/reportGeneration";
 import { MAX_RECENT_UPLOADS_DISPLAY } from "@constants/socket";
-import { addUpload } from "@reducer/reportUploadReducer";
+import { addUpload, cancelInProgressUploadsForScenario } from "@reducer/reportUploadReducer";
 
 import { ProgressCircleProps, UploadProgressHeaderProps } from "./types";
 import { getUploadHeader } from "./utils";
@@ -136,6 +136,9 @@ const UploadProgressDialog: FC = () => {
               scenarioId: upload.scenarioId,
             }),
           );
+          if (upload.scenarioId != null) {
+            dispatch(cancelInProgressUploadsForScenario({ scenarioId: String(upload.scenarioId) }));
+          }
         } catch (error: any) {
           const errorMessage =
             error?.data?.message || error?.message || "Failed to cancel report generation";
