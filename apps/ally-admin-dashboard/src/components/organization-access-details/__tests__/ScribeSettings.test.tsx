@@ -90,7 +90,7 @@ vi.mock("@constants", async importOriginal => {
         saving: "Saving...",
         scribeSettingsNotEnabled: "Scribe settings is not enabled",
         failedToUpdateScribeSettings: "Failed to update scribe settings",
-        configureSimulationSettings: "Configure Simulation Settings",
+        configureSimulationSettings: "Configure scribe fields",
       },
       errors: {
         failedUpdateAccess: "Failed to update access",
@@ -173,7 +173,7 @@ describe("ScribeSettings", () => {
 
   it("renders the component with title", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    expect(screen.getByText("Configure Simulation Settings")).toBeInTheDocument();
+    expect(screen.getByText("Configure scribe fields")).toBeInTheDocument();
   });
 
   it("renders all parent accordions", () => {
@@ -325,7 +325,7 @@ describe("ScribeSettings", () => {
     // Enabled/Disabled text appears for:
     // 1. Summary sections (Intake = Enabled, Ongoing Risks = Disabled)
     // 2. SCRIBE_SETTINGS_ITEMS (4 items: Microphone Mode, Upload Call Recording,
-    //    Scribe Analytics, Org.Section Analytics - all Disabled by default in mock)
+    //    Scribe Analytics, Org Session Analytics - all Disabled by default in mock)
     // Total: 1 Enabled (Intake), 5 Disabled (Ongoing Risks + 4 settings items)
     expect(screen.getAllByText("Enabled")).toHaveLength(1);
     expect(screen.getAllByText("Disabled")).toHaveLength(5);

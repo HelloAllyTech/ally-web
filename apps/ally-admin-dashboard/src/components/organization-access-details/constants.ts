@@ -22,7 +22,7 @@ const SCRIBE_SETTINGS_ITEMS = [
   },
   {
     id: "",
-    label: "Org.Section Analytics",
+    label: "Org Session Analytics",
     type: DASHBOARD_TABS.ORG_ANALYTICS,
   },
 ];

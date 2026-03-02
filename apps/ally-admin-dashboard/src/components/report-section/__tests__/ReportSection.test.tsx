@@ -179,7 +179,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByRole("heading", { name: "Generate Report" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("renders with scenarioId", () => {
@@ -190,7 +190,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByRole("heading", { name: "Generate Report" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("renders prompt configuration when no report data", () => {
@@ -748,7 +748,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByRole("heading", { name: "Generate Report" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("handles empty reportsHistory", () => {
