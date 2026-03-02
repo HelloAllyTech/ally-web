@@ -10,6 +10,8 @@ import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
+const RINGING_BELL_DELAY = 5000; // 5 seconds for ringing the bell
+
 export const useLiveKitRoom = (
   handleDisconnect: () => void,
   endSessionButtonRef: any,
@@ -96,6 +98,19 @@ export const useLiveKitRoom = (
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
   }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected]);
+
+  useEffect(() => {
+    // Add a small delay before connecting to avoid race conditions in StrictMode
+    const connectionTimeout = setTimeout(() => {
+      connectToRoom();
+    }, RINGING_BELL_DELAY); // 10 seconds for ringing the bell
+
+    return () => {
+      clearTimeout(connectionTimeout);
+      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
+      cleanupRoom();
+    };
+  }, [id, cleanupRoom]);
 
   const connectToRoom = async () => {
     try {
