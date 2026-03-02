@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect, useRef, useState, useMemo } from "react";
+import { FC, useCallback, useEffect, useRef, useState, useMemo } from "react";
 
 import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
@@ -65,6 +65,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   score,
   isPreview = false,
   onEndSimulation,
+  onStartClick,
   renderWarningDialog,
   renderFooter,
   endSessionButtonRef,
@@ -78,9 +79,12 @@ export const SimulationPage: FC<SimulationPageProps> = ({
 
   useWakeLock(sessionId);
 
-  useEffect(() => {
+  const handleStartClick = useCallback(() => {
     startAudio.current?.play();
+    onStartClick?.();
+  }, [onStartClick]);
 
+  useEffect(() => {
     return () => {
       endAudio.current?.pause();
     };
@@ -208,6 +212,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           isFocusMode={isFocusMode}
           checklistMode={checklistMode}
           checklistItems={checklistItems}
+          onStartClick={onStartClick ? handleStartClick : undefined}
         />
       </motion.div>
       {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}

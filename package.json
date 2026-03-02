@@ -149,6 +149,10 @@
       "prettier --write"
     ]
   },
+  "overrides": {
+    "assertion-error": "1.1.0",
+    "string-width": "4.2.3"
+  },
   "workspaces": [
     "apps/*",
     "libs/*"
