@@ -460,7 +460,7 @@ export const ReportSection: FC<ReportSectionProps> = ({ scenarioId }) => {
                 <span className="text-xs font-normal text-[#1A1A1A]">
                   {formatReportCreatedAt(item.createdAt)}
                 </span>
-                <span className="text-xs font-normal text-typography-600">{`${item.config.languageName || item.config.languageId} (Global)· ${item.config.turns} turns`}</span>
+                <span className="text-xs font-normal text-typography-600">{`${item.language.label || item.language.id}· ${item.config.turns} turns`}</span>
               </div>
             </div>
           );
