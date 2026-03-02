@@ -1,6 +1,5 @@
 import { Toaster } from "sonner";
 
-import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
 import { RouteLayout } from "@routes/RouteLayout";
 
 export function App() {
@@ -11,7 +10,7 @@ export function App() {
     },
   };
   return (
-    <ScenarioReportsSocketProvider>
+    <>
       <RouteLayout />
       <Toaster
         position="bottom-right"
@@ -19,7 +18,7 @@ export function App() {
         toastOptions={toastOptions}
         style={toastOptions.style}
       />
-    </ScenarioReportsSocketProvider>
+    </>
   );
 }
 
