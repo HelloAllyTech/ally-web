@@ -808,7 +808,7 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
     accessor: "behaviors",
     placeholder: "Add Instruction",
     dataType: cellTypes.dropdownTags,
-    minWidth: 300,
+    minWidth: 260,
   },
   {
     id: "instructions",
@@ -816,7 +816,7 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
     accessor: "instructions",
     placeholder: "Add Response",
     dataType: cellTypes.editableText,
-    minWidth: 350,
+    minWidth: 280,
   },
 ];
 

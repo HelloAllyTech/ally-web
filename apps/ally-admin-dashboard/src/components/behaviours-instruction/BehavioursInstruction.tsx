@@ -121,9 +121,13 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
           {en.simulation.behavioursInstruction}
           {isMandatory && <span className="text-destructive-500">*</span>}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-cente">
           {selectedRows.length > 0 && (
-            <Button variant={ButtonVariant.SECONDARY} onClick={handleDeleteSelectedRows}>
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={handleDeleteSelectedRows}
+              className="!h-[30px]"
+            >
               <Trash />
               {en.common.delete}
             </Button>
