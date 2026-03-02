@@ -104,7 +104,7 @@ const mapPayloadToUploads = (payload: ReportsUpdatedPayload): ReportUpload[] => 
     const progress = calculateProgress(status, existingUpload?.progress ?? 0, isRegenerating);
 
     return {
-      fileName: existingUpload?.fileName ?? report.scenarioTitle ?? `Report ${report.id}`,
+      fileName: report.scenarioTitle ?? `Report ${report.id}`,
       status: preserveFinal ? existingUpload.status : status,
       progress: preserveFinal ? existingUpload.progress : progress,
       reportId: report.id,
