@@ -1,5 +1,6 @@
 import { FC, useEffect, useState, useRef } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
   showHeader = true,
   fullWidth = false,
 }) => {
+  const { t } = useTranslation();
   const [, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,7 +71,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
           setCategoryCountList(response.data.categories);
         }
       } else {
-        toast.error("Error fetching search results");
+        toast.error(t("search.error"));
       }
     }
   };
