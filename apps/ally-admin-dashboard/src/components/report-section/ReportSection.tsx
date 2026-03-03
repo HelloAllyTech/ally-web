@@ -312,6 +312,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
           )
         ) {
           refetchReportsHistory();
+          if (activeTab === TABS.secondary.transcription) setActiveTab(TABS.secondary.report);
         }
       }
     }, [currentUpload, reportId, refetchReportsHistory]);
@@ -487,7 +488,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
               isTranscriptLoading={isTranscriptLoading}
               onTabChange={(tab: string) => {
                 setActiveTab(tab);
-                if (tab === "transcription") {
+                if (tab === TABS.secondary.transcription) {
                   getReportTranscriptQuery({ reportId: latestReport.id });
                 }
               }}
