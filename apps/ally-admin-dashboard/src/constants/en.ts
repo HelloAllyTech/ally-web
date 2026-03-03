@@ -347,7 +347,9 @@ export const en = {
     editSimulation: "Edit Simulation",
     publishTooltipMessage: "Publish becomes available after required details are filled and saved.",
     previewTooltipMessage: "Preview becomes available after required details are filled and saved.",
-    generateReportTooltipMessage: "Complete all required fields to generate a report.",
+    generateReportTooltipMessage:
+      "Complete all required fields and save your changes to generate a report.",
+    generateReportTooltipMessageUnsavedChanges: "Save your changes to generate a report.",
     simulationPreview: "Simulation Preview",
     eventManagement: "Event Management",
     apply: "Apply",
