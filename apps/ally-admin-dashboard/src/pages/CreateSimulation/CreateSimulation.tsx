@@ -9,6 +9,7 @@ import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
+  useGetAvailableLanguageVoicesQuery,
   useLazyGetAdminSimulationByIdQuery,
   useUpdateSimulationByIdMutation,
 } from "@api";
@@ -99,13 +100,15 @@ export const CreateSimulation: FC = () => {
   const [getAdminSimulationByIdQuery, { data: adminSimulationByIdData }] =
     useLazyGetAdminSimulationByIdQuery();
   const [deleteCoverImage] = useDeleteCoverImageMutation();
+  const { data: availableLanguages = [] } = useGetAvailableLanguageVoicesQuery({
+    active: true,
+    voicesNeeded: true,
+  }) as { data: Array<{ language_id: number; value: string; label: string }> };
 
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: {
-      useLinguisticStyleSamples: true,
-    },
+    defaultValues: {},
   });
 
   const uploadsInProgress = useSelector(selectUploadsInProgress);
@@ -222,6 +225,33 @@ export const CreateSimulation: FC = () => {
         toast.error(
           en.simulation.maxTimeError(SESSION_TIMER_CONFIG.MIN_TIME, SESSION_TIMER_CONFIG.MAX_TIME),
         );
+        return null;
+      }
+    }
+
+    if (status === SimulationStatus.ACTIVE) {
+      const languageVoices = (formData.languageVoices ?? {}) as Record<string, string>;
+      const linguisticStyleSamples = (formData.linguisticStyleSamples ?? {}) as Record<
+        string,
+        string[]
+      >;
+      const langIds = Object.keys(languageVoices).filter(k => languageVoices[k]);
+      const missing: string[] = [];
+      for (const langId of langIds) {
+        const lang = availableLanguages.find(l => String(l.language_id) === langId);
+        const code = (lang?.value ?? "").toLowerCase();
+        if (code && !code.startsWith("en")) {
+          const samples = linguisticStyleSamples[langId];
+          const hasContent =
+            Array.isArray(samples) &&
+            samples.some(s => typeof s === "string" && s.trim().length > 0);
+          if (!hasContent) {
+            missing.push(lang?.label ?? langId);
+          }
+        }
+      }
+      if (missing.length > 0) {
+        toast.error(en.errors.linguisticStyleSamplesRequired);
         return null;
       }
     }
@@ -473,6 +503,7 @@ export const CreateSimulation: FC = () => {
               scenarioId={simulationId}
               areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
               onPrimaryTabChange={setReportPrimaryTab}
+              hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
             />
           );
         }

@@ -182,7 +182,6 @@ describe("createSimulation utils", () => {
         experienceMode: "CHECKLIST",
         maxTimeValue: "00:10:00",
         timerMode: true,
-        useLinguisticStyleSamples: true,
         stateInstructions: [
           {
             stateId: 1,
