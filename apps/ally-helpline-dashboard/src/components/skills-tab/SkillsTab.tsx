@@ -235,7 +235,7 @@ const EmotionalMovementChart: FC<{
                 value: "Session Timeline",
                 position: "bottom",
                 offset: 10,
-                style: { fill: "#6B7280", fontSize: 12 },
+                style: { fill: "#6B7280", fontSize: 12, fontFamily: "IBM_Plex_Serif" },
               }}
             />
             <YAxis
@@ -248,7 +248,12 @@ const EmotionalMovementChart: FC<{
                 value: "Level (-5 to 5)",
                 angle: -90,
                 position: "insideLeft",
-                style: { fill: "#6B7280", fontSize: 12, textAnchor: "middle" },
+                style: {
+                  fill: "#6B7280",
+                  fontSize: 12,
+                  textAnchor: "middle",
+                  fontFamily: "IBM_Plex_Serif",
+                },
               }}
             />
             <Line
