@@ -179,6 +179,7 @@ export interface UpdateScenarioEventDataParam {
   endTime?: { value: string | null; disabled: boolean; rowId?: string };
   minScore?: { value: number | null; disabled: boolean; rowId?: string };
   maxScore?: { value: number | null; disabled: boolean; rowId?: string };
+  minTriggerCount?: { value: number | null; disabled: boolean; rowId?: string };
   // Checklist visibility field
   checklistVisibilityStatus?: { value: boolean; disabled: boolean; rowId?: string };
   // Tags field

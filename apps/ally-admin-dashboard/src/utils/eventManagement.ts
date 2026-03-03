@@ -257,7 +257,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     }
   }
 
-  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore } =
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore, minTriggerCount } =
     event?.detectionConfig || {};
 
   const updatedDetectionConfig = {
@@ -267,6 +267,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     endTime: endTime && convertTimeToSeconds(String(endTime)),
     minScore,
     maxScore,
+    minTriggerCount,
   };
 
   const payload: SessionEvent = {
@@ -398,7 +399,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     }
   }
 
-  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore } =
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore, minTriggerCount } =
     apiEvent?.detectionConfig || {};
   const updatedDetectionConfig = {
     maxOccurrences,
@@ -407,6 +408,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     endTime: endTime && convertSecondsToTimeString(Number(endTime)),
     minScore,
     maxScore,
+    minTriggerCount,
   };
 
   return {

@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetSessionEventsQuery,
   useUpdateSessionEventMutation,
@@ -16,7 +17,6 @@ import {
   ListToolbar,
   ActionConfirmationPopup,
   EventTypeSelectionDialog,
-  EventType,
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
@@ -94,7 +94,7 @@ export const EventManagement: React.FC = () => {
     setShowEventTypeDialog(true);
   };
 
-  const handleEventTypeSelect = async (eventType: EventType) => {
+  const handleEventTypeSelect = async (eventType: string) => {
     const newEvent: UpdateEventDataParam = {
       name: "New Event",
       description: "",
@@ -178,6 +178,15 @@ export const EventManagement: React.FC = () => {
         disabled: isDisabled,
         rowId: event.id,
       },
+      ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
+        ? {
+            minTriggerCount: {
+              value: event.detectionConfig?.minTriggerCount,
+              disabled: isDisabled,
+              rowId: event.id,
+            },
+          }
+        : {}),
       startTime: {
         value: event.detectionConfig?.startTime,
         disabled: isDisabled || isTimeBased,
