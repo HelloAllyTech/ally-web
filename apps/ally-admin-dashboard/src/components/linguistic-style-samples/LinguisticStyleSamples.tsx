@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { useGetAvailableLanguageVoicesQuery, useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
-import { ToggleSwitch } from "@components/toggle-switch";
 import { DEFAULT_AUTOFILL_MODEL, en } from "@constants";
 import { isNonEmptyArray } from "@utils";
 
@@ -20,7 +19,6 @@ interface LinguisticStyleSamplesProps {
   label?: string;
   formMethods: any;
   languageVoicesId?: string;
-  useLinguisticStyleSamplesId?: string;
 }
 
 const SAMPLE_COUNT = 10;
@@ -30,14 +28,13 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   label = "Linguistic Style Samples",
   formMethods,
   languageVoicesId = "languageVoices",
-  useLinguisticStyleSamplesId = "useLinguisticStyleSamples",
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
-  const [regeneratingLanguageId, setRegeneratingLanguageId] = useState<string | null>(null);
+  const [regeneratingAll, setRegeneratingAll] = useState(false);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
+  const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
 
   const { watch, setValue } = formMethods;
-  const useLinguisticStyleSamples = watch(useLinguisticStyleSamplesId) ?? true;
 
   const { data: availableLanguages = [], isLoading } = useGetAvailableLanguageVoicesQuery({
     active: true,
@@ -47,17 +44,31 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   const languageVoices = watch(languageVoicesId) ?? {};
   const linguisticStyleSamples = watch(id) ?? {};
 
-  const handleToggleChange = useCallback(
-    (enabled: boolean) => {
-      setValue(useLinguisticStyleSamplesId, enabled);
-    },
-    [setValue, useLinguisticStyleSamplesId],
-  );
-
   const languagesWithVoices = useMemo(() => {
     const languages = (availableLanguages ?? []) as LanguageOption[];
     return languages.filter(lang => languageVoices[String(lang.language_id)]);
   }, [availableLanguages, languageVoices]);
+
+  const hasNonEnglishLanguages = useMemo(() => {
+    return (languagesWithVoices as LanguageOption[]).some(
+      lang =>
+        (lang.value ?? "").toLowerCase() && !(lang.value ?? "").toLowerCase().startsWith("en"),
+    );
+  }, [languagesWithVoices]);
+
+  const activeLanguageId = useMemo(() => {
+    if (
+      selectedLanguageId &&
+      (languagesWithVoices as LanguageOption[]).some(
+        l => String(l.language_id) === selectedLanguageId,
+      )
+    ) {
+      return selectedLanguageId;
+    }
+    return languagesWithVoices.length > 0
+      ? String((languagesWithVoices[0] as LanguageOption).language_id)
+      : null;
+  }, [languagesWithVoices, selectedLanguageId]);
 
   const buildScenarioContext = useCallback(
     (languageId: string, languageCode: string, languageName: string) => {
@@ -82,42 +93,47 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
     [formMethods],
   );
 
-  const handleRegenerate = useCallback(
-    async (languageId: string, languageCode: string, languageName: string) => {
-      setRegeneratingLanguageId(languageId);
+  const handleRegenerateAll = useCallback(async () => {
+    if (languagesWithVoices.length === 0) return;
+    setRegeneratingAll(true);
+    let updated = { ...linguisticStyleSamples };
+    let successCount = 0;
+    for (const lang of languagesWithVoices as LanguageOption[]) {
+      const languageId = String(lang.language_id);
       try {
-        const scenarioContext = buildScenarioContext(languageId, languageCode, languageName);
+        const scenarioContext = buildScenarioContext(
+          languageId,
+          lang.value ?? "",
+          lang.label ?? "",
+        );
         const response = await regenerateField({
           fieldName: "linguisticStyleSamples",
           scenarioContext,
           model: selectedModel,
         }).unwrap();
-
         const content = response?.content;
         if (isNonEmptyArray(content)) {
-          setValue(id, {
-            ...linguisticStyleSamples,
-            [languageId]: content,
-          });
-        } else {
-          toast.error(`${en.errors.failedToRegenerate} ${label}`);
+          updated = { ...updated, [languageId]: content };
+          successCount++;
         }
       } catch {
-        toast.error(`${en.errors.failedToRegenerate} ${label}`);
-      } finally {
-        setRegeneratingLanguageId(null);
+        toast.error(`${en.errors.failedToRegenerate} ${lang.label ?? languageId}`);
       }
-    },
-    [
-      buildScenarioContext,
-      id,
-      label,
-      linguisticStyleSamples,
-      regenerateField,
-      selectedModel,
-      setValue,
-    ],
-  );
+    }
+    if (successCount > 0) {
+      setValue(id, updated);
+      toast.success(`Generated samples for ${successCount} language(s)`);
+    }
+    setRegeneratingAll(false);
+  }, [
+    buildScenarioContext,
+    id,
+    linguisticStyleSamples,
+    languagesWithVoices,
+    regenerateField,
+    selectedModel,
+    setValue,
+  ]);
 
   const handleSampleChange = useCallback(
     (languageId: string, index: number, value: string) => {
@@ -138,78 +154,81 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
 
   return (
     <div className="w-full flex flex-col gap-4" data-testid="linguistic-style-samples">
-      <div className="flex justify-between items-center py-2 w-full">
-        <span className="font-regular text-base text-typography-900">{label}</span>
-        <span className="flex gap-3 text-base items-center">
-          <ToggleSwitch
-            enabled={!!useLinguisticStyleSamples}
-            onChange={handleToggleChange}
-            label="Use linguistic style samples"
-          />
-          {useLinguisticStyleSamples ? en.common.enabled : en.common.disabled}
+      <div className="flex justify-between items-center py-2 w-full gap-4 flex-wrap">
+        <span className="font-regular text-base text-typography-900">
+          {label}
+          {hasNonEnglishLanguages && <span className="text-destructive-500"> *</span>}
         </span>
+        <div className="flex items-center gap-2">
+          <AutofillModelSelect
+            value={selectedModel}
+            onChange={setSelectedModel}
+            disabled={regeneratingAll}
+          />
+          <button
+            type="button"
+            onClick={handleRegenerateAll}
+            disabled={regeneratingAll}
+            className="inline-flex items-center gap-1 text-sm border rounded-2xl px-3 py-1.5 cursor-pointer transition-opacity border-primary-500 text-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {regeneratingAll ? (
+              <>
+                <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
+                {en.simulation.generating} all...
+              </>
+            ) : (
+              <>
+                <WandStars />
+                Generate all
+              </>
+            )}
+          </button>
+        </div>
       </div>
-      {useLinguisticStyleSamples && (
-        <p className="text-typography-600 text-sm">
-          Sample utterances showing how the agent would talk in each language. 10 samples per
-          language.
-        </p>
-      )}
-      {useLinguisticStyleSamples &&
-        languagesWithVoices.map(lang => {
-          const languageId = String(lang.language_id);
-          const samples: string[] =
-            linguisticStyleSamples[languageId] ?? Array(SAMPLE_COUNT).fill("");
-
-          return (
-            <div
-              key={languageId}
-              className="border border-border-light rounded-md p-4 bg-white flex flex-col gap-3"
-            >
-              <div className="flex justify-between items-center">
-                <span className="text-typography-800 font-medium">{lang.label}</span>
-                <div className="flex items-center gap-2">
-                  <AutofillModelSelect
-                    value={selectedModel}
-                    onChange={setSelectedModel}
-                    disabled={regeneratingLanguageId === languageId}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRegenerate(languageId, lang.value ?? "", lang.label ?? "")}
-                    disabled={regeneratingLanguageId === languageId}
-                    className={`inline-flex items-center gap-1 text-sm border rounded-2xl px-2 py-1 cursor-pointer transition-opacity ${
-                      regeneratingLanguageId === languageId
-                        ? "text-primary-300 border-primary-300 cursor-not-allowed"
-                        : "text-primary-500 border-primary-500 hover:bg-primary-50"
-                    }`}
-                  >
-                    {regeneratingLanguageId === languageId ? (
-                      <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <WandStars />
-                    )}{" "}
-                    {regeneratingLanguageId === languageId
-                      ? en.simulation.generating
-                      : en.simulation.regenerate}
-                  </button>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                {Array.from({ length: SAMPLE_COUNT }, (_, i) => (
-                  <input
-                    key={i}
-                    type="text"
-                    value={samples[i] ?? ""}
-                    onChange={e => handleSampleChange(languageId, i, e.target.value)}
-                    placeholder={`Sample ${i + 1}`}
-                    className="w-full px-3 py-2 border border-border-light rounded text-sm text-typography-800"
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
+      <p className="text-typography-600 text-sm">
+        Example phrases in each language that guide the AI to respond naturally—matching tone,
+        vocabulary, and cultural expression. Provide 10 samples per non-English language.
+      </p>
+      <div className="border border-border-light rounded-md overflow-hidden bg-white">
+        <div className="flex border-b border-border-light overflow-x-auto">
+          {(languagesWithVoices as LanguageOption[]).map(lang => {
+            const languageId = String(lang.language_id);
+            const isActive = activeLanguageId === languageId;
+            return (
+              <button
+                key={languageId}
+                type="button"
+                onClick={() => setSelectedLanguageId(languageId)}
+                className={`shrink-0 px-4 py-3 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-primary-500 border-b-2 border-primary-500 bg-primary-50/30"
+                    : "text-typography-600 hover:text-typography-800 hover:bg-gray-50"
+                }`}
+              >
+                {lang.label}
+              </button>
+            );
+          })}
+        </div>
+        {activeLanguageId && (
+          <div className="p-4 flex flex-col gap-2">
+            {Array.from({ length: SAMPLE_COUNT }, (_, i) => {
+              const samples: string[] =
+                linguisticStyleSamples[activeLanguageId] ?? Array(SAMPLE_COUNT).fill("");
+              return (
+                <input
+                  key={i}
+                  type="text"
+                  value={samples[i] ?? ""}
+                  onChange={e => handleSampleChange(activeLanguageId, i, e.target.value)}
+                  placeholder={`Sample ${i + 1}`}
+                  className="w-full px-3 py-2 border border-border-light rounded text-sm text-typography-800"
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -69,6 +69,8 @@ export const en = {
     failedToSaveVoice: "Failed to save voice",
     failedToCancelReportGeneration: "Failed to cancel report generation",
     failedToRegenerate: "Failed to regenerate",
+    linguisticStyleSamplesRequired:
+      "Linguistic style samples are required for non-English languages. Please provide at least one sample for each configured non-English language.",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -345,7 +347,9 @@ export const en = {
     editSimulation: "Edit Simulation",
     publishTooltipMessage: "Publish becomes available after required details are filled and saved.",
     previewTooltipMessage: "Preview becomes available after required details are filled and saved.",
-    generateReportTooltipMessage: "Complete all required fields to generate a report.",
+    generateReportTooltipMessage:
+      "Complete all required fields and save your changes to generate a report.",
+    generateReportTooltipMessageUnsavedChanges: "Save your changes to generate a report.",
     simulationPreview: "Simulation Preview",
     eventManagement: "Event Management",
     apply: "Apply",
