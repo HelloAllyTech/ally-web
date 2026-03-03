@@ -1,4 +1,3 @@
-import { logger as baseLogger } from "@ally-ui-mono/ui-shared";
 import { addLog } from "@reducer";
 import { store } from "@store";
 
@@ -12,24 +11,17 @@ enum LogLevel {
 export const logger = {
   log: (level: LogLevel, message: string) => {
     // Call the base logger
-    baseLogger.log(level, message);
 
-    // Also dispatch to Redux for UI display
-    const isVite = typeof import.meta !== "undefined" && import.meta.env;
-    const logger_enabled = isVite ? import.meta.env.MODE === "development" : false;
+    const timestamp = new Date().toISOString();
+    const levelString = level.toUpperCase();
 
-    if (logger_enabled) {
-      const timestamp = new Date().toISOString();
-      const levelString = level.toUpperCase();
-
-      store.dispatch(
-        addLog({
-          timestamp,
-          level: levelString,
-          message,
-        }),
-      );
-    }
+    store.dispatch(
+      addLog({
+        timestamp,
+        level: levelString,
+        message,
+      }),
+    );
   },
 
   error(error: string) {
