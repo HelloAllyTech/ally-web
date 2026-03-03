@@ -233,7 +233,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         return (
           <Competency formMethods={formMethods} id={id} isMandatory={isMandatory} label={label} />
         );
-
       case FORM_FIELD_TYPES.KNOWLEDGE_SOURCE:
         return (
           <KnowledgeSource
