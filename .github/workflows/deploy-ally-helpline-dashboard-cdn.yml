@@ -152,7 +152,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add apps/ally-helpline-dashboard/src/i18n/locales/*.json apps/ally-helpline-dashboard/src/i18n/versions/*.json
-            git commit -m "chore(i18n): auto-translate missing keys"
+            git commit --no-verify -m "chore(i18n): auto-translate missing keys"
             git push
           else
             echo "No translation updates to commit."
