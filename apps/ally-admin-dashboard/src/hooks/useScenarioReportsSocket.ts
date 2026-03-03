@@ -43,7 +43,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
     return delay;
   }, []);
 
-  const connect = useCallback(() => {
+  const connect = () => {
     // Prevent multiple simultaneous connection attempts
     if (isConnectingRef.current || socketRef.current?.connected) {
       return;
@@ -97,7 +97,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
       );
       scheduleReconnect();
     }
-  }, [socketUrl]);
+  };
 
   const scheduleReconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -171,6 +171,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
         }),
       );
       onError?.(error);
+      scheduleReconnect();
     });
 
     //Disconnection event
