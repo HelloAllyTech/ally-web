@@ -65,6 +65,7 @@ vi.mock("@api", () => ({
   useUpdateSimulationByIdMutation: () => [mockUpdateSimulation],
   useLazyGetAdminSimulationByIdQuery: () => [mockGetSimulationById, { data: null }],
   useDeleteCoverImageMutation: () => [mockDeleteCoverImage],
+  useGetAvailableLanguageVoicesQuery: () => ({ data: [] }),
 }));
 
 // Mock hooks

@@ -24,7 +24,6 @@ export type FormData = {
   isPublic: boolean;
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
-  useLinguisticStyleSamples?: boolean;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;
