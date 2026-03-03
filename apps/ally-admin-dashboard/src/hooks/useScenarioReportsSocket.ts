@@ -21,6 +21,7 @@ const logMeessages = {
   maxConnectionAttemptsReached: "Max connection attempts reached",
   socketConnectionError: "Socket connection error",
   socketNotConnected: "Socket not connected",
+  tryingToReconnect: "Trying to reconnect to scenario reports socket",
 };
 
 export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdated }) => {
@@ -71,10 +72,26 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
     // If already connected, don't reconnect
     if (socketRef.current?.connected) return;
 
-    if (connectionAttemptsRef.current >= MAX_ATTEMPTS) {
-      logger.info(logMeessages.maxConnectionAttemptsReached);
-      return;
-    }
+    const tryReconnect = () => {
+      logger.info(`${logMeessages.tryingToReconnect}`);
+      if (!socketRef.current) return;
+      if (connectionAttemptsRef.current >= MAX_ATTEMPTS) {
+        logger.info(logMeessages.maxConnectionAttemptsReached);
+        return;
+      }
+      connectionAttemptsRef.current++;
+      setTimeout(() => {
+        if (!socketRef.current) return;
+        socketRef.current.auth = {
+          token: localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN),
+        };
+        socketRef.current.io.open((err: Error | null) => {
+          if (err) {
+            tryReconnect();
+          }
+        });
+      }, 2000);
+    };
 
     try {
       socketRef.current = io(socketUrl, {
@@ -83,19 +100,15 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
         auth: {
           token: localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN),
         },
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
+        reconnection: false,
         timeout: 10000,
         forceNew: true,
         autoConnect: false,
       });
 
       socketRef.current.connect();
-
       setUpListeners();
-      connectionAttemptsRef.current++;
+      socketRef.current.io.on("close", tryReconnect);
     } catch (error) {
       logger.info(`${logMeessages.socketConnectionError}: ${error}`);
       connectionAttemptsRef.current++;
@@ -104,6 +117,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
   }, [socketUrl, setUpListeners]);
 
   const disconnect = useCallback(() => {
+    logger.info(`${logMeessages.disconnected}`);
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
