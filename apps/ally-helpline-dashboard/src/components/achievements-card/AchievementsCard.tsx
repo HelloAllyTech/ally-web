@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { Badge, NoBadges } from "@assets";
 import { AchievementItem } from "@components";
 import { AchievementItemData } from "@types";
@@ -39,11 +41,13 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
   achievements = [],
   viewedBadgesCount,
   isLoading = false,
-  emptyMessage = "You don't have any badges yet",
+  emptyMessage,
   onViewAll,
   className,
 }) => {
+  const { t } = useTranslation();
   const isEmpty = !isLoading && achievements.length === 0;
+  const displayEmptyMessage = emptyMessage || t("achievements.emptyHome");
   const showBadgeCount =
     !isLoading && !isEmpty && viewedBadgesCount !== undefined && viewedBadgesCount > 0;
 
@@ -51,11 +55,11 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
     <div className="flex items-center justify-between p-4 border-b border-border-light">
       <div className="flex items-center gap-2">
         <Badge className="w-5 h-5" />
-        <h3 className="text-typography-900 text-lg font-semibold">Achievements</h3>
+        <h3 className="text-typography-900 text-lg font-semibold">{t("achievements.title")}</h3>
       </div>
       {showBadgeCount && (
         <span className="px-3 py-1 bg-primary-50 text-primary-600 text-sm font-medium rounded-lg">
-          {viewedBadgesCount} Badges
+          {t("achievements.badgesCount", { count: viewedBadgesCount })}
         </span>
       )}
     </div>
@@ -66,7 +70,7 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
       {isLoading ? (
         Array.from({ length: 3 }).map((_, index) => <SkeletonCard key={index} />)
       ) : isEmpty ? (
-        <EmptyState message={emptyMessage} />
+        <EmptyState message={displayEmptyMessage} />
       ) : (
         achievements.map(achievement => (
           <AchievementItem key={achievement.id} achievement={achievement} />
@@ -81,7 +85,7 @@ export const AchievementsCard: FC<AchievementsCardProps> = ({
         onClick={onViewAll}
         className="text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors"
       >
-        {isEmpty ? "View all badges" : "View all"}
+        {isEmpty ? t("achievements.viewAllBadges") : t("achievements.viewAll")}
       </button>
     </div>
   );
