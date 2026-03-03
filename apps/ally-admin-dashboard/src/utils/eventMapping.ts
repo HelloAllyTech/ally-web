@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { SessionEvent, SessionEventDetectionType, UpdateScenarioEventDataParam } from "@types";
 
 import { isNonEmptyString } from "./common";
@@ -15,6 +16,7 @@ export const MAPPED_EVENT_FIELDS = {
   // Detection config fields
   MAX_OCCURRENCES: "maxOccurrences",
   MIN_GAP_TIME: "minGapTime",
+  MIN_TRIGGER_COUNT: "minTriggerCount",
   START_TIME: "startTime",
   END_TIME: "endTime",
   MIN_SCORE: "minScore",
@@ -40,6 +42,7 @@ export const DEFAULT_EVENT_VALUES = {
   END_TIME: null,
   MIN_SCORE: null,
   MAX_SCORE: null,
+  MIN_TRIGGER_COUNT: null,
   // Checklist visibility default
   CHECKLIST_VISIBILITY_STATUS: false,
 } as const;
@@ -66,6 +69,9 @@ export const createNewEvent = (): UpdateScenarioEventDataParam => {
     // Detection config fields
     maxOccurrences: createCell(DEFAULT_EVENT_VALUES.MAX_OCCURRENCES, true, eventId),
     minGapTime: createCell(DEFAULT_EVENT_VALUES.MIN_GAP_TIME, true, eventId),
+    ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG && {
+      minTriggerCount: createCell(DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT, true, eventId),
+    }),
     startTime: createCell(DEFAULT_EVENT_VALUES.START_TIME, true, eventId),
     endTime: createCell(DEFAULT_EVENT_VALUES.END_TIME, true, eventId),
     minScore: createCell(DEFAULT_EVENT_VALUES.MIN_SCORE, true, eventId),
@@ -180,6 +186,13 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
       false,
       event.id,
     ),
+    ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG && {
+      minTriggerCount: createCell(
+        event.detectionConfig?.minTriggerCount ?? DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT,
+        false,
+        event.id,
+      ),
+    }),
     startTime: createCell(
       secondsToTimeString(event.detectionConfig?.startTime) ?? DEFAULT_EVENT_VALUES.START_TIME,
       timeBased,
@@ -225,6 +238,9 @@ export const convertToApiFormat = (events: UpdateScenarioEventDataParam[]) => {
       detectionConfig: {
         maxOccurrences: event.maxOccurrences?.value,
         minGapTime: timeStringToSeconds(event.minGapTime?.value),
+        ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
+          ? { minTriggerCount: event.minTriggerCount?.value }
+          : {}),
         startTime: timeStringToSeconds(event.startTime?.value),
         endTime: timeStringToSeconds(event.endTime?.value),
         minScore: event.minScore?.value,
@@ -250,6 +266,7 @@ export const formatApiResponseToMappedEvent = (
     tags?: string[];
     detectionConfig?: {
       maxOccurrences?: number;
+      minTriggerCount?: number;
       minGapTime?: string | number;
       startTime?: string | number;
       endTime?: string | number;
@@ -296,6 +313,11 @@ export const formatApiResponseToMappedEvent = (
     ),
     minGapTime: createCell(
       secondsToTimeString(event.detectionConfig?.minGapTime) ?? DEFAULT_EVENT_VALUES.MIN_GAP_TIME,
+      false,
+      eventId,
+    ),
+    minTriggerCount: createCell(
+      event.detectionConfig?.minTriggerCount ?? DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT,
       false,
       eventId,
     ),

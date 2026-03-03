@@ -4,6 +4,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetSessionEventsQuery,
   useMapScenarioEventsMutation,
@@ -182,6 +183,19 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         options: [],
         minWidth: 120,
       },
+      ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
+        ? [
+            {
+              id: MAPPED_EVENT_FIELDS.MIN_TRIGGER_COUNT,
+              label: "Min trigger count",
+              accessor: MAPPED_EVENT_FIELDS.MIN_TRIGGER_COUNT,
+              dataType: cellTypes.number,
+              options: [],
+              minWidth: 120,
+            },
+          ]
+        : []),
+
       {
         id: MAPPED_EVENT_FIELDS.MIN_SCORE,
         label: "Min score",

@@ -20,6 +20,7 @@ export interface EventDetectionConfig {
   [DETECTION_CONFIG_FIELDS.MIN_GAP_TIME]?: string | number | null;
   [DETECTION_CONFIG_FIELDS.MIN_SCORE]?: number | null;
   [DETECTION_CONFIG_FIELDS.MAX_SCORE]?: number | null;
+  [DETECTION_CONFIG_FIELDS.MIN_TRIGGER_COUNT]?: number;
 }
 
 /**
