@@ -1,5 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { useGetTranscriptQuery } from "@api";
 
 import { TranscriptTab } from ".";
@@ -7,6 +9,7 @@ import { TRANSCRIPT_PAGE_SIZE } from "./constants";
 import { CallTranscriptTabProps, Transcript } from "./types";
 
 const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
+  const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<Transcript[]>([]);
 
@@ -21,7 +24,10 @@ const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
 
   const transcript = useMemo(() => {
     return transcriptData?.data?.map(item => ({
-      speaker: item.senderId === callSummary.clientId ? "Client" : "Counsellor",
+      speaker:
+        item.senderId === callSummary.clientId
+          ? t("transcription.clientLabel")
+          : t("transcription.counsellorLabel"),
       content: item.content,
     }));
   }, [transcriptData, callSummary]);

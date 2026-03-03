@@ -2,6 +2,7 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import { Tabs, Tab } from "@mui/material";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { Archive, MoreVertIcon, Refresh, StartSession, UploadIcon } from "@assets";
@@ -20,6 +21,7 @@ import {
 } from "./utils";
 
 export const Calls: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
@@ -48,11 +50,18 @@ export const Calls: FC = () => {
   };
 
   const permittedSessionLogViewList = getPermittedSessionLogList(permissions);
-  const userGroupList = getFormattedSupportedSessionUserGroups(permittedSessionLogViewList ?? []);
+  const userGroupList = getFormattedSupportedSessionUserGroups(
+    permittedSessionLogViewList ?? [],
+    t,
+  );
   const sessionTypeList = useMemo(
     () =>
-      getSupportedSessionTypeListByUserGroup(permittedSessionLogViewList ?? [], sessionUserGroup),
-    [sessionUserGroup, permittedSessionLogViewList],
+      getSupportedSessionTypeListByUserGroup(
+        permittedSessionLogViewList ?? [],
+        sessionUserGroup,
+        t,
+      ),
+    [sessionUserGroup, permittedSessionLogViewList, t],
   );
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: SessionUserGroup) => {
@@ -103,7 +112,7 @@ export const Calls: FC = () => {
             className="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
             data-testid="calls-title"
           >
-            Session Logs
+            {t("calls.title")}
             <Refresh
               data-testid="calls-refresh-button"
               className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
@@ -132,7 +141,7 @@ export const Calls: FC = () => {
                         : "text-white path-fill-current"
                     }
                   />
-                  Upload audio
+                  {t("calls.actions.uploadAudio")}
                 </Button>
               )}
             </PermissionGuard>
@@ -140,7 +149,7 @@ export const Calls: FC = () => {
               {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
                 <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
                   <StartSession data-testid="calls-start-session-icon" />
-                  Start Session
+                  {t("calls.actions.startSession")}
                 </Button>
               )}
             </PermissionGuard>
@@ -206,7 +215,7 @@ export const Calls: FC = () => {
         anchorElement={menuAnchor}
         items={[
           {
-            label: "Archives",
+            label: t("calls.menu.archives"),
             icon: <Archive />,
             onClick: () => {
               navigate(ROUTES.ARCHIVES, { state: { sessionUserGroup } });

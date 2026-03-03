@@ -1,5 +1,7 @@
 import { FC, useState, useRef, useEffect, useCallback } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ToggleButtonGroup } from "@src/components";
 import { cn } from "@utils";
@@ -29,6 +31,16 @@ export interface LeaderboardListProps {
   hideRank?: boolean;
 }
 
+export const getTimeFilterOptions = (
+  t: (key: string) => string,
+): { label: string; value: LeaderboardTimeFilter }[] => [
+  { label: t("community.filters.last7days"), value: "LAST_WEEK" },
+  { label: t("community.filters.last28days"), value: "LAST_MONTH" },
+  { label: t("community.filters.last364days"), value: "LAST_YEAR" },
+  { label: t("community.filters.allTime"), value: "ALL_TIME" },
+];
+
+// Keep for backwards compat (static fallback)
 export const TIME_FILTER_OPTIONS: { label: string; value: LeaderboardTimeFilter }[] = [
   { label: "Last 7 days", value: "LAST_WEEK" },
   { label: "Last 28 days", value: "LAST_MONTH" },
@@ -106,6 +118,7 @@ interface LeaderboardRowProps {
   rowRef?: React.RefObject<HTMLDivElement>;
   isCurrentUser?: boolean;
   hideRank?: boolean;
+  youLabel?: string;
 }
 
 const LeaderboardRow: FC<LeaderboardRowProps> = ({
@@ -114,6 +127,7 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({
   rowRef,
   isCurrentUser,
   hideRank,
+  youLabel = "You",
 }) => {
   const isTopThree = user.rank <= 3;
 
@@ -151,7 +165,7 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({
           <span className="text-typography-900 text-base font-medium">{user.name}</span>
           {isCurrentUser && (
             <span className="px-2 py-0.5 bg-primary-500 text-white text-xs font-medium rounded-full">
-              You
+              {youLabel}
             </span>
           )}
         </div>
@@ -220,11 +234,13 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   currentUser,
   onTimeFilterChange,
   isLoading = false,
-  emptyMessage = "No leaderboard data available",
+  emptyMessage,
   onLoadMore,
   hideRank,
   hasMore,
 }) => {
+  const { t } = useTranslation();
+  const resolvedEmptyMessage = emptyMessage ?? t("community.emptyLeaderboard");
   const [internalFilter, setInternalFilter] = useState<LeaderboardTimeFilter>("LAST_WEEK");
   const [isCurrentUserVisible, setIsCurrentUserVisible] = useState<boolean | null>(null);
   const [hasCheckedVisibility, setHasCheckedVisibility] = useState(false);
@@ -234,6 +250,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
 
   const activeFilter = externalFilter ?? internalFilter;
   const isEmpty = !isLoading && (!data || data.length === 0);
+  const timeFilterOptions = getTimeFilterOptions(t);
 
   // Check if current user row is visible in viewport
   useEffect(() => {
@@ -304,7 +321,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
           data-testid="leaderboard-time-filter-toggle"
           value={activeFilter}
           onValueChange={handleFilterChange}
-          items={TIME_FILTER_OPTIONS}
+          items={timeFilterOptions}
           equalWidth
           className="w-full font-primary text-xs leading-[1.5] text-typography-900"
         />
@@ -315,10 +332,10 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   const renderTableHeader = () => {
     return (
       <div className="flex items-center py-3 px-4 text-typography-600 text-sm font-medium border-b border-border-light">
-        {!hideRank && <div className="w-16 text-center">Rank</div>}
-        <div className="flex-1">User</div>
-        <div className="w-40 text-right">Total duration</div>
-        <div className="w-24 text-center">Badges</div>
+        {!hideRank && <div className="w-16 text-center">{t("community.table.rank")}</div>}
+        <div className="flex-1">{t("community.table.user")}</div>
+        <div className="w-40 text-right">{t("community.table.totalDuration")}</div>
+        <div className="w-24 text-center">{t("community.table.badges")}</div>
       </div>
     );
   };
@@ -335,7 +352,7 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
     }
 
     if (isEmpty) {
-      return <EmptyState message={emptyMessage} />;
+      return <EmptyState message={resolvedEmptyMessage} />;
     }
 
     return (
@@ -350,13 +367,16 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
               isLast={index === data.length - 1}
               isCurrentUser={isCurrentUser}
               hideRank={hideRank}
+              youLabel={t("community.you")}
               rowRef={isCurrentUser ? currentUserRowRef : undefined}
             />
           );
         })}
         {hasMore && (
           <div ref={loadingRef} className="text-center py-2">
-            {isLoading && <span className="text-sm text-typography-600">Loading more...</span>}
+            {isLoading && (
+              <span className="text-sm text-typography-600">{t("community.loadingMore")}</span>
+            )}
           </div>
         )}
       </>
@@ -385,7 +405,12 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
         {/* Sticky current user row - hidden when visible in the list */}
         {showStickyRow && (
           <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border-light shadow-lg z-10">
-            <LeaderboardRow user={currentUser} isLast isCurrentUser={true} />
+            <LeaderboardRow
+              user={currentUser}
+              isLast
+              isCurrentUser={true}
+              youLabel={t("community.you")}
+            />
           </div>
         )}
       </div>
