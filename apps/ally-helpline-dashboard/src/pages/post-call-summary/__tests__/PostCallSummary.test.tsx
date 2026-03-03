@@ -120,7 +120,7 @@ vi.mock("../components", () => ({
 // Mock constants
 vi.mock("../constants", () => ({
   SectionQueryKey: "section",
-  summaryTabs: [
+  getSummaryTabs: vi.fn(() => [
     {
       label: "Return to Self",
       value: "Box breathing",
@@ -129,7 +129,7 @@ vi.mock("../constants", () => ({
       label: "Session summary",
       value: "Session summary",
     },
-  ],
+  ]),
 }));
 
 // Mock utils

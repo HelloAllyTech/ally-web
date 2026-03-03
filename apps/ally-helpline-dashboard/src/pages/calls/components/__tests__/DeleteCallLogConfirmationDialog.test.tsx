@@ -46,7 +46,10 @@ describe("DeleteCallLogConfirmationDialog", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useDeleteCallLogMutation).mockReturnValue([mockDeleteCallLog, { isLoading: false }]);
+    vi.mocked(useDeleteCallLogMutation).mockReturnValue([
+      mockDeleteCallLog,
+      { isLoading: false },
+    ] as any);
   });
 
   // --- Snapshot Tests ---
@@ -78,14 +81,12 @@ describe("DeleteCallLogConfirmationDialog", () => {
   it("should render correct title", () => {
     render(<DeleteCallLogConfirmationDialog chatId={1} closeDialog={mockCloseDialog} />);
     expect(screen.getByTestId("dialog-title-normal")).toHaveTextContent("Delete");
-    expect(screen.getByTestId("dialog-title-italic")).toHaveTextContent("Session log?");
+    expect(screen.getByTestId("dialog-title-italic")).toHaveTextContent("session log?");
   });
 
   it("should render correct content", () => {
     render(<DeleteCallLogConfirmationDialog chatId={1} closeDialog={mockCloseDialog} />);
-    expect(screen.getByTestId("dialog-content")).toHaveTextContent(
-      "Do you really want to delete this record? This process cannot be undone.",
-    );
+    expect(screen.getByTestId("dialog-content")).toHaveTextContent("This action cannot be undone.");
   });
 
   it("should render delete button with correct text and variant", () => {

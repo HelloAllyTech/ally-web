@@ -147,7 +147,7 @@ describe("CallFeedback", () => {
 
     await user.click(screen.getByTestId("star-5"));
     await user.type(
-      screen.getByPlaceholderText("Anything else that you’d like to share about the summary?"),
+      screen.getByPlaceholderText("Anything else that you'd like to share about the summary?"),
       "Great!",
     );
 
