@@ -40,6 +40,7 @@ export interface ReportSectionProps {
   scenarioId?: string;
   areAllMandatoryFieldsFilled?: boolean;
   onPrimaryTabChange?: (tab: ReportPrimaryTab) => void;
+  hasUnsavedChanges?: boolean;
 }
 
 export interface ReportSectionHandle {
@@ -115,7 +116,15 @@ const createUploadFromReport = (report: any) => {
 };
 
 export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>(
-  ({ scenarioId, areAllMandatoryFieldsFilled = false, onPrimaryTabChange }, ref) => {
+  (
+    {
+      scenarioId,
+      areAllMandatoryFieldsFilled = false,
+      hasUnsavedChanges = false,
+      onPrimaryTabChange,
+    },
+    ref,
+  ) => {
     const dispatch = useDispatch();
     const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
     const [selectedLanguage, setSelectedLanguage] = useState<{ value: string; label: string }>(
@@ -421,6 +430,16 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       setHelperAgentPrompt(prompt);
     };
 
+    const getButtonTooltipText = () => {
+      if (!areAllMandatoryFieldsFilled) {
+        return en.simulation.generateReportTooltipMessage;
+      }
+      if (hasUnsavedChanges) {
+        return en.simulation.generateReportTooltipMessageUnsavedChanges;
+      }
+      return undefined;
+    };
+
     const renderLoadingState = () => (
       <div className="flex flex-col items-center justify-center w-full h-[400px] gap-8">
         <div className="text-xl font-normal text-typography-900 font-primary">
@@ -471,12 +490,10 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                   onTurnsChange={handleTurnsChange}
                   onButtonClick={handleGenerate}
                   buttonText={REPORT_GENERATION_MESSAGES.REGENERATE_REPORT}
-                  buttonDisabled={showReportGenerationLoader || !areAllMandatoryFieldsFilled}
-                  buttonTooltip={
-                    !areAllMandatoryFieldsFilled
-                      ? en.simulation.generateReportTooltipMessage
-                      : undefined
+                  buttonDisabled={
+                    showReportGenerationLoader || !areAllMandatoryFieldsFilled || hasUnsavedChanges
                   }
+                  buttonTooltip={getButtonTooltipText()}
                 />
               </div>
             </details>
@@ -512,11 +529,10 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
             buttonDisabled={
               showReportGenerationLoader ||
               !helperAgentPrompt.trim() ||
-              !areAllMandatoryFieldsFilled
+              !areAllMandatoryFieldsFilled ||
+              hasUnsavedChanges
             }
-            buttonTooltip={
-              !areAllMandatoryFieldsFilled ? en.simulation.generateReportTooltipMessage : undefined
-            }
+            buttonTooltip={getButtonTooltipText()}
           />
         </div>
       );
