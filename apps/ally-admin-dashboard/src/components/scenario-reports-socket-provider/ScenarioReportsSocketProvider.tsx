@@ -117,7 +117,6 @@ export const ScenarioReportsSocketProvider: FC<ScenarioReportsSocketProviderProp
   children,
 }) => {
   const dispatch = useDispatch();
-  const isConnectedRef = useRef(false);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [socketUploads, setSocketUploads] = useState<ReportUpload[]>([]);
 
@@ -229,14 +228,9 @@ export const ScenarioReportsSocketProvider: FC<ScenarioReportsSocketProviderProp
   }, []);
 
   useEffect(() => {
-    if (!isConnectedRef.current) {
-      connect();
-      isConnectedRef.current = true;
-    }
-    return () => {
-      disconnect();
-      isConnectedRef.current = false;
-    };
+    connect();
+
+    return () => disconnect();
   }, [connect, disconnect]);
 
   const contextValue: ScenarioReportsSocketContextValue = {
