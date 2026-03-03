@@ -507,7 +507,21 @@
     "noResults": "\"{{query}}\" के लिए कोई परिणाम नहीं मिला",
     "allLabel": "सभी",
     "error": "खोज परिणाम प्राप्त करने में त्रुटि हुई",
-    "logoAlt": "Ally लोगो"
+    "logoAlt": "Ally लोगो",
+    "viewMore": "और देखें",
+    "viewLess": "कम देखें",
+    "categories": {
+      "Techniques": "तकनीकें",
+      "Assessment": "मूल्यांकन",
+      "Intervention": "हस्तक्षेप",
+      "Resources": "संसाधन",
+      "Guidelines": "दिशानिर्देश",
+      "Support": "सहायता",
+      "Crisis": "संकट",
+      "Training": "प्रशिक्षण",
+      "Research": "शोध",
+      "Policy": "नीति"
+    }
   },
   "transcription": {
     "title": "ट्रांसक्रिप्ट",

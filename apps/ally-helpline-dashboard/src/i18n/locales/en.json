@@ -509,7 +509,21 @@
     "noResults": "No results found for \"{{query}}\"",
     "allLabel": "All",
     "error": "Error fetching search results",
-    "logoAlt": "Ally Logo"
+    "logoAlt": "Ally Logo",
+    "viewMore": "View more",
+    "viewLess": "View less",
+    "categories": {
+      "Techniques": "Techniques",
+      "Assessment": "Assessment",
+      "Intervention": "Intervention",
+      "Resources": "Resources",
+      "Guidelines": "Guidelines",
+      "Support": "Support",
+      "Crisis": "Crisis",
+      "Training": "Training",
+      "Research": "Research",
+      "Policy": "Policy"
+    }
   },
   "transcription": {
     "title": "Transcript",
