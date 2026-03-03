@@ -53,9 +53,7 @@ export const LiveSimulationPreview: React.FC = () => {
       roomStatus={roomStatus}
       sessionId={id}
       isEndingSession={
-        roomStatus !== RoomStatus.CONNECTED &&
-        roomStatus !== RoomStatus.AGENT_JOINED &&
-        roomStatus !== RoomStatus.PENDING_START
+        roomStatus !== RoomStatus.CONNECTED && roomStatus !== RoomStatus.AGENT_JOINED
       }
       startTime={startTime?.toISOString()}
       events={getSimulationEvents(events)}

@@ -3,7 +3,6 @@ import { EventDetectionConfig } from "@types";
 import { SimulationStatus, ScenarioVoice } from "./createSimulation";
 
 export enum RoomStatus {
-  PENDING_START = "pending_start",
   CONNECTED = "connected",
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
@@ -26,7 +25,6 @@ export interface UseLiveKitRoomReturn {
   events: LiveKitEvent[];
   handleEndSession: () => void;
   handleRetryConnection: () => void;
-  handleStartSession: () => void;
   room: any; // avoid hard dependency in admin app
   roomStatus: RoomStatus;
   score: number;
