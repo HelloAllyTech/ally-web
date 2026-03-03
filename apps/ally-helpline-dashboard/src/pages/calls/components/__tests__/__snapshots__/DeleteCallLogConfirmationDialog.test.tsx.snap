@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DeleteCallLogConfirmationDialog > should match snapshot when chatId is provided 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="confirmation-dialog"
+  >
+    <div
+      data-testid="dialog-title-normal"
+    >
+      Delete
+    </div>
+    <div
+      data-testid="dialog-title-italic"
+    >
+      session log?
+    </div>
+    <div
+      data-testid="dialog-content"
+    >
+      This action cannot be undone.
+    </div>
+    <button
+      data-testid="delete-button"
+      data-variant="destructive"
+    >
+      Delete
+    </button>
+    <button
+      data-testid="cancel-button"
+    >
+      Cancel
+    </button>
+  </div>
+</DocumentFragment>
+`;
