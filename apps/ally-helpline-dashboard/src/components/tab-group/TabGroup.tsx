@@ -25,7 +25,7 @@ const TabGroup: FC<TabGroupProps> = ({ value, onChange, tabs, className, childre
         variant="fullWidth"
         sx={{
           "& .MuiButtonBase-root": {
-            fontFamily: "IBM_Plex_Serif",
+            fontFamily: "IBM_Plex_Serif, serif",
           },
         }}
       >

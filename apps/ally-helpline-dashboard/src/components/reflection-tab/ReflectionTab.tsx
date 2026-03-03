@@ -145,7 +145,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
   return (
     <div className="flex flex-col gap-4 w-full h-[90%] font-primary rounded-lg border border-gray-200 bg-white p-4 pb-10">
       <div className="flex flex-row gap-4 justify-between border-b border-gray-200 pb-2">
-        <span className="text-typography-900 font-primary text-base font-semibold">
+        <span className="text-typography-900 font-primary text-base font-medium">
           Deeper Reflection
         </span>
         {renderAutosave()}

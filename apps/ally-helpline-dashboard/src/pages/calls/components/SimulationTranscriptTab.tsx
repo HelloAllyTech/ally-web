@@ -113,7 +113,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
       <span className="text-typography-900 font-primary text-base font-medium">
         {t("postSim.tabs.annotatedTranscript")}
       </span>
-      <hr className="mb-5 mt-3" />
+      <hr className="mb-5 mt-2 border-border-light" />
       <TranscriptListing
         transcriptList={transcriptList}
         handleLoadMore={handleLoadMore}
