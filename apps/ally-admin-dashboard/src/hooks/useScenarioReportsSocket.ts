@@ -43,6 +43,62 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
     return delay;
   }, []);
 
+  const connect = useCallback(() => {
+    // Prevent multiple simultaneous connection attempts
+    if (isConnectingRef.current || socketRef.current?.connected) {
+      return;
+    }
+
+    isConnectingRef.current = true;
+
+    try {
+      // Clean up existing socket if any
+      if (socketRef.current) {
+        socketRef.current.removeAllListeners();
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+
+      const status =
+        connectionAttemptsRef.current === 0
+          ? SocketConnectionStatus.CONNECTING
+          : SocketConnectionStatus.RECONNECTING;
+
+      store.dispatch(
+        setScenarioReportsSocketStatus({
+          status,
+          connectionAttempts: connectionAttemptsRef.current,
+        }),
+      );
+
+      socketRef.current = io(socketUrl, {
+        path: "",
+        transports: ["websocket", "polling"],
+        auth: {
+          token: localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN),
+        },
+        reconnection: false,
+        timeout: 10000,
+        forceNew: true,
+        autoConnect: false,
+      });
+
+      setUpListeners();
+      socketRef.current.connect();
+    } catch (error) {
+      logger.error(`[Scenario Reports Socket] ${logMeessages.socketConnectionError}: ${error}`);
+      isConnectingRef.current = false;
+      store.dispatch(
+        setScenarioReportsSocketStatus({
+          status: SocketConnectionStatus.ERROR,
+          connectionAttempts: connectionAttemptsRef.current,
+          lastError: "Socket connection error",
+        }),
+      );
+      scheduleReconnect();
+    }
+  }, [socketUrl]);
+
   const scheduleReconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
@@ -134,63 +190,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
       logger.info(`[Scenario Reports Socket] ${logMeessages.reportsUpdated}`);
       onReportsUpdated?.(data);
     });
-  }, [onReportsUpdated, onError, onConnected, scheduleReconnect]);
-
-  const connect = useCallback(() => {
-    // Prevent multiple simultaneous connection attempts
-    if (isConnectingRef.current || socketRef.current?.connected) {
-      return;
-    }
-
-    isConnectingRef.current = true;
-
-    try {
-      // Clean up existing socket if any
-      if (socketRef.current) {
-        socketRef.current.removeAllListeners();
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-
-      const status =
-        connectionAttemptsRef.current === 0
-          ? SocketConnectionStatus.CONNECTING
-          : SocketConnectionStatus.RECONNECTING;
-
-      store.dispatch(
-        setScenarioReportsSocketStatus({
-          status,
-          connectionAttempts: connectionAttemptsRef.current,
-        }),
-      );
-
-      socketRef.current = io(socketUrl, {
-        path: "",
-        transports: ["websocket", "polling"],
-        auth: {
-          token: localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN),
-        },
-        reconnection: false,
-        timeout: 10000,
-        forceNew: true,
-        autoConnect: false,
-      });
-
-      setUpListeners();
-      socketRef.current.connect();
-    } catch (error) {
-      logger.error(`[Scenario Reports Socket] ${logMeessages.socketConnectionError}: ${error}`);
-      isConnectingRef.current = false;
-      store.dispatch(
-        setScenarioReportsSocketStatus({
-          status: SocketConnectionStatus.ERROR,
-          connectionAttempts: connectionAttemptsRef.current,
-          lastError: "Socket connection error",
-        }),
-      );
-      scheduleReconnect();
-    }
-  }, [socketUrl, setUpListeners, scheduleReconnect]);
+  }, [onReportsUpdated, onError, onConnected]);
 
   const disconnect = useCallback(() => {
     logger.info(`[Scenario Reports Socket] ${logMeessages.disconnected}`);
@@ -250,6 +250,8 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
   }, []);
 
   useEffect(() => {
+    // Initial connection attempt on mount
+    connect();
     return () => {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
