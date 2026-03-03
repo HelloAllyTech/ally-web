@@ -31,7 +31,6 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     voiceId: data?.metadata?.voiceId,
     languageVoices: (data?.metadata as any)?.languageVoices,
     linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
-    useLinguisticStyleSamples: (data?.metadata as any)?.useLinguisticStyleSamples ?? true,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
     difficultyLevel: data?.difficultyLevel,
