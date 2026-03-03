@@ -11,7 +11,7 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
       Annotated Transcript
     </span>
     <hr
-      class="mb-5 mt-3"
+      class="mb-5 mt-2 border-border-light"
     />
     <div
       data-testid="transcript-tab"
