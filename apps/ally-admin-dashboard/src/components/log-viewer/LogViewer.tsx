@@ -139,7 +139,7 @@ export const LogViewer = () => {
         };
       case SocketConnectionStatus.RECONNECTING:
         return {
-          text: `Reconnecting (${socketStatus.connectionAttempts}/5)`,
+          text: `Reconnecting (attempt ${socketStatus.connectionAttempts})`,
           color: "text-yellow-500",
           bgColor: "bg-yellow-500/10",
           dotColor: "bg-yellow-500 animate-pulse",
