@@ -13,6 +13,28 @@ vi.mock("@constants", () => ({
     INACTIVE: "INACTIVE",
     BLOCKED: "BLOCKED",
   },
+  TAG_TYPES: {
+    USERS: "users",
+    TENANTS: "tenants",
+    SESSION_EVENTS: "sessionEvents",
+    SESSION_EVENT_TAGS: "sessionEventTags",
+    SIMULATION: "simulation",
+    SIMULATION_EVENTS: "simulationEvents",
+    SIMULATION_PATHS: "simulationPaths",
+    SCENARIO_PATHS: "scenarioPaths",
+    EACH_SESSION: "eachSession",
+    SIMULATION_CASES: "simulationCases",
+    TRIGGER_WARNINGS: "triggerWarnings",
+    SCENARIO_VOICES: "scenarioVoices",
+    SCENARIO_LANGUAGES: "scenarioLanguages",
+    SUMMARY_SECTIONS: "summarySections",
+    UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
+    CHARACTERS: "characters",
+    PROMPTS: "prompts",
+    CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
+    USER_BADGES: "userBadges",
+    HELPER_TAGS: "helperTags",
+  },
 }));
 
 describe("StatusBadge", () => {

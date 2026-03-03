@@ -1,5 +1,6 @@
 import { Toaster } from "sonner";
 
+import { LogViewer } from "@components/log-viewer";
 import { RouteLayout } from "@routes/RouteLayout";
 
 export function App() {
@@ -12,6 +13,7 @@ export function App() {
   return (
     <>
       <RouteLayout />
+      {import.meta.env.VITE_SHOW_LOG_TERMINAL === "true" && <LogViewer />}
       <Toaster
         position="bottom-right"
         richColors
