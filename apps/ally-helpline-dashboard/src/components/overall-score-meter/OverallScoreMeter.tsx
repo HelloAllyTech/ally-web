@@ -62,8 +62,10 @@ export const OverallScoreMeter: FC<OverallScoreMeterProps> = ({ percentage }) =>
       </svg>
       {/* Center text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-semibold text-typography-800">{animatedPercentage}%</span>
-        <span className="text-sm text-typography-500 mt-1">Overall Score</span>
+        <span className="text-4xl font-semibold text-typography-800 font-primary">
+          {animatedPercentage}%
+        </span>
+        <span className="text-sm text-typography-500 mt-1 font-primary">Overall Score</span>
       </div>
     </div>
   );
