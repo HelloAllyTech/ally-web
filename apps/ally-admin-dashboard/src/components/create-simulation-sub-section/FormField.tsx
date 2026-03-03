@@ -11,6 +11,7 @@ import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
+import { KnowledgeSource } from "../knowledge-source";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { LinguisticStyleSamples } from "../linguistic-style-samples";
 import { RadioButtonGroup } from "../radio-button-group";
@@ -231,6 +232,16 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.COMPETENCY:
         return (
           <Competency formMethods={formMethods} id={id} isMandatory={isMandatory} label={label} />
+        );
+
+      case FORM_FIELD_TYPES.KNOWLEDGE_SOURCE:
+        return (
+          <KnowledgeSource
+            formMethods={formMethods}
+            id={id}
+            isMandatory={isMandatory}
+            label={label}
+          />
         );
       default:
         return null;
