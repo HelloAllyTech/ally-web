@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { FC, useEffect, useRef, useState, useMemo } from "react";
 
 import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
@@ -12,6 +12,12 @@ import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
 import { SimulationPageProps, TriggerWarning, ChecklistMode } from "./types";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
+
+const MICROPHONE_STATE = {
+  GRANTED: "granted",
+  DENIED: "denied",
+  PROMPTED: "prompted",
+};
 
 const useWakeLock = (sessionId: string | undefined) => {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -65,7 +71,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   score,
   isPreview = false,
   onEndSimulation,
-  onStartClick,
   renderWarningDialog,
   renderFooter,
   endSessionButtonRef,
@@ -73,18 +78,35 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [microphonePermission, setMicrophonePermission] = useState(MICROPHONE_STATE.GRANTED);
 
   const endAudio = useRef<HTMLAudioElement | null>(new Audio(EndSimulation));
   const startAudio = useRef<HTMLAudioElement | null>(new Audio(StartSimulation));
 
   useWakeLock(sessionId);
 
-  const handleStartClick = useCallback(() => {
-    onStartClick?.();
-  }, [onStartClick]);
-
   useEffect(() => {
     startAudio.current?.play();
+
+    const checkMicrophonePermission = async () => {
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          const permissionStatus = await navigator.permissions.query({
+            name: "microphone" as PermissionName,
+          });
+          setMicrophonePermission(permissionStatus.state);
+
+          permissionStatus.onchange = () => {
+            setMicrophonePermission(permissionStatus.state);
+          };
+        }
+      } catch {
+        toast.error("Failed to check microphone permission");
+      }
+    };
+
+    checkMicrophonePermission();
+
     return () => {
       endAudio.current?.pause();
     };
@@ -93,6 +115,18 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   useEffect(() => {
     if (roomStatus === RoomStatus.AGENT_JOINED) startAudio.current?.pause();
   }, [roomStatus]);
+
+  const onEnableMicrophone = async () => {
+    try {
+      // Request microphone access - this triggers the browser's native permission popup
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+
+      setMicrophonePermission(MICROPHONE_STATE.GRANTED);
+    } catch {
+      setMicrophonePermission(MICROPHONE_STATE.DENIED);
+    }
+  };
 
   if (!roomData) return null;
 
@@ -212,7 +246,8 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           isFocusMode={isFocusMode}
           checklistMode={checklistMode}
           checklistItems={checklistItems}
-          onStartClick={onStartClick ? handleStartClick : undefined}
+          isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
+          onEnableMicrophone={onEnableMicrophone}
         />
       </motion.div>
       {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}

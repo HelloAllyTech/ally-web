@@ -24,9 +24,7 @@ export const useLiveKitRoom = (
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
 
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
-  const [roomStatus, setRoomStatus] = useState<RoomStatus>(
-    roomData ? RoomStatus.PENDING_START : RoomStatus.DISCONNECTED,
-  );
+  const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
   const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
@@ -153,11 +151,6 @@ export const useLiveKitRoom = (
     connectToRoom();
   };
 
-  const handleStartSession = () => {
-    setError(null);
-    connectToRoom();
-  };
-
   const handleEndSession = async () => {
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
@@ -178,7 +171,6 @@ export const useLiveKitRoom = (
     events,
     handleEndSession,
     handleRetryConnection,
-    handleStartSession,
     room: room as unknown as any,
     roomStatus,
     score,
