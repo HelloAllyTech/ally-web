@@ -146,6 +146,18 @@ const SearchResources: FC<SearchResourcesProps> = ({
       isSuggestionsRow={!isInSidebar}
       mode={isInSidebar ? SearchVariant.DARK : SearchVariant.LIGHT}
       categoryCountList={categoryCountList}
+      searchPlaceholder={t("search.placeholder", "Need guidance? Search here..")}
+      headerDescription={t(
+        "search.headerDescription",
+        "Guidance, safety, and support — whenever you need it.",
+      )}
+      suggestionsTitle={t("search.suggestionsTitle", "Try:")}
+      noResultsLabel={t("search.noResults", 'No results found for "{{query}}"')}
+      allLabel={t("search.allLabel", "All")}
+      logoAlt={t("search.logoAlt", "Ally Logo")}
+      translateCategory={category => t(`search.categories.${category}`, category as any) as string}
+      viewMoreLabel={t("search.viewMore", "View more")}
+      viewLessLabel={t("search.viewLess", "View less")}
     />
   );
 };

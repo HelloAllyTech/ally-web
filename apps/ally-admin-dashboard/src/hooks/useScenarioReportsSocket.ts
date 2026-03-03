@@ -38,7 +38,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
 
     //Connected event
     socketRef.current.on(SocketEvent.CONNECTED, (data: ConnectedEventPayload) => {
-      logger.info(`${logMeessages.connected}: ${data}`);
+      logger.info(`[Scenario Reports Socket] ${logMeessages.connected}: ${JSON.stringify(data)}`);
       // Reset connection attempts on successful connection
       connectionAttemptsRef.current = 0;
       onConnected?.(data);
@@ -58,12 +58,14 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
 
     //Disconnection event
     socketRef.current.on(SocketEvent.DISCONNECT, (reason: string) => {
-      logger.info(`${logMeessages.disconnected}: ${reason}`);
+      logger.info(`[Scenario Reports Socket] ${logMeessages.disconnected}: ${reason}`);
     });
 
     //Reports updated event
     socketRef.current.on(SocketEvent.REPORTS_UPDATED, (data: ReportsUpdatedPayload) => {
-      logger.info(`${logMeessages.reportsUpdated}: ${data}`);
+      logger.info(
+        `[Scenario Reports Socket] ${logMeessages.reportsUpdated}: ${JSON.stringify(data)}`,
+      );
       onReportsUpdated?.(data);
     });
   }, [onReportsUpdated, onError, onConnected]);
@@ -73,30 +75,34 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
     if (socketRef.current?.connected) return;
 
     const tryReconnect = () => {
-      logger.info(`${logMeessages.tryingToReconnect}`);
-      if (!socketRef.current) return;
+      logger.info(`[Scenario Reports Socket] ${logMeessages.tryingToReconnect}`);
       if (connectionAttemptsRef.current >= MAX_ATTEMPTS) {
-        logger.info(logMeessages.maxConnectionAttemptsReached);
+        logger.info(`[Scenario Reports Socket] ${logMeessages.maxConnectionAttemptsReached}`);
         return;
       }
       connectionAttemptsRef.current++;
-      setTimeout(() => {
-        if (!socketRef.current) return;
-        socketRef.current.auth = {
-          token: localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN),
-        };
-        socketRef.current.io.open((err: Error | null) => {
-          if (err) {
-            tryReconnect();
-          }
-        });
-      }, 2000);
+      try {
+        setTimeout(() => {
+          socketRef.current.auth = {
+            token: localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN),
+          };
+          socketRef.current.io.open((err: Error | null) => {
+            if (err) {
+              tryReconnect();
+            }
+          });
+        }, 2000);
+      } catch {
+        logger.info(`[Scenario Reports Socket] ${logMeessages.socketConnectionError}`);
+        connectionAttemptsRef.current++;
+        setTimeout(() => connect(), 2000);
+      }
     };
 
     try {
       socketRef.current = io(socketUrl, {
         path: "",
-        transports: ["websocket", "polling"] as const,
+        transports: ["websocket", "polling"],
         auth: {
           token: localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN),
         },
@@ -109,15 +115,15 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
       socketRef.current.connect();
       setUpListeners();
       socketRef.current.io.on("close", tryReconnect);
-    } catch (error) {
-      logger.info(`${logMeessages.socketConnectionError}: ${error}`);
+    } catch {
+      logger.info(`[Scenario Reports Socket] ${logMeessages.socketConnectionError}`);
       connectionAttemptsRef.current++;
       setTimeout(() => connect(), 2000);
     }
   }, [socketUrl, setUpListeners]);
 
   const disconnect = useCallback(() => {
-    logger.info(`${logMeessages.disconnected}`);
+    logger.info(`[Scenario Reports Socket] ${logMeessages.disconnected}`);
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
@@ -126,7 +132,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
 
   const joinUserReportsRoom = useCallback((lookbackMinutes?: number) => {
     if (!socketRef.current || !socketRef.current.connected) {
-      logger.info(logMeessages.socketNotConnected);
+      logger.info(`[Scenario Reports Socket] ${logMeessages.socketNotConnected}`);
       return;
     }
 
@@ -141,7 +147,7 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
 
   const joinScenarioReportRoom = useCallback((reportId: string) => {
     if (!socketRef.current || !socketRef.current.connected) {
-      logger.info(logMeessages.socketNotConnected);
+      logger.info(`[Scenario Reports Socket] ${logMeessages.socketNotConnected}`);
       return;
     }
 
