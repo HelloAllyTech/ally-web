@@ -4,7 +4,9 @@ import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import App from "../App";
+import logsReducer from "@reducer/logsReducer";
 import reportUploadReducer from "@reducer/reportUploadReducer";
+import socketStatusReducer, { SocketConnectionStatus } from "@reducer/socketStatusReducer";
 
 // Mock the API first to prevent baseAPI.injectEndpoints errors
 vi.mock("@api/baseApi", () => ({
@@ -35,6 +37,11 @@ vi.mock("@api", () => ({
 // Mock RouteLayout component
 vi.mock("@routes/RouteLayout", () => ({
   RouteLayout: () => <div data-testid="route-layout">RouteLayout</div>,
+}));
+
+// Mock LogViewer component
+vi.mock("@components/log-viewer", () => ({
+  LogViewer: () => <div data-testid="log-viewer">LogViewer</div>,
 }));
 
 // Mock useScenarioReportsSocket hook to prevent socket connection attempts
@@ -82,11 +89,23 @@ const createTestStore = () => {
   return configureStore({
     reducer: {
       reportUpload: reportUploadReducer.reducer,
+      logs: logsReducer.reducer,
+      socketStatus: socketStatusReducer.reducer,
     },
     preloadedState: {
       reportUpload: {
         uploads: [],
         currentScenarioId: undefined,
+      },
+      logs: {
+        logs: [],
+        isVisible: false,
+      },
+      socketStatus: {
+        scenarioReportsSocket: {
+          status: SocketConnectionStatus.DISCONNECTED,
+          connectionAttempts: 0,
+        },
       },
     },
   });

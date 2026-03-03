@@ -2,7 +2,9 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import { baseAPI } from "@api";
 import eventsSlice from "@reducer/eventsReducer";
+import logsSlice from "@reducer/logsReducer";
 import reportUploadSlice from "@reducer/reportUploadReducer";
+import socketStatusSlice from "@reducer/socketStatusReducer";
 import userSlice from "@reducer/userReducer";
 
 export const store = configureStore({
@@ -11,6 +13,8 @@ export const store = configureStore({
     user: userSlice.reducer,
     events: eventsSlice.reducer,
     reportUpload: reportUploadSlice.reducer,
+    logs: logsSlice.reducer,
+    socketStatus: socketStatusSlice.reducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

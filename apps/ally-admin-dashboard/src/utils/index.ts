@@ -7,3 +7,4 @@ export * from "./eventMapping";
 export * from "./expressionTreeHelpers";
 export * from "./tagUtils";
 export * from "./reportUtils";
+export * from "./loggerWithRedux";
