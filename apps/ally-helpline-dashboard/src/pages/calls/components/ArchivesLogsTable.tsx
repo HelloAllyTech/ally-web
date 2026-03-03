@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, FC } from "react";
 
 import { CircularProgress } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
@@ -34,6 +35,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   sessionUserGroup,
 }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const { filters } = useSelector((state: RootState) => state.calls);
   const { user: currentUser } = useSelector((state: RootState) => state.user);
@@ -151,10 +153,10 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
       <div className="flex justify-center items-center h-[calc(100vh-200px)]">
         <FallbackUI
           icon={<NoResults />}
-          mainMessage="Failed to load archived calls"
-          description="Something went wrong while loading archived calls. Please try again."
+          mainMessage={t("calls.archives.errorTitle")}
+          description={t("calls.archives.errorDesc")}
           button={{
-            text: "Try Again",
+            text: t("common.retry"),
             onClick: () => refetchFn?.(),
           }}
         />
@@ -202,7 +204,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   const callColumns: Column<any>[] = [
     {
       key: "callName",
-      header: "Session ID",
+      header: t("summary.fields.callId"),
       style: { width: isOrgLogs ? "14%" : "17%" },
       icon: <CallIdIcon />,
     },
@@ -210,7 +212,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
       ? [
           {
             key: "counsellorName",
-            header: "Counsellor Name",
+            header: t("calls.table.counsellorName"),
             style: { width: "14%" },
             icon: <UserIcon />,
           },
@@ -218,40 +220,40 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
       : []),
     {
       key: "dateAndTime",
-      header: "Date & Time",
+      header: t("calls.table.dateTime"),
       style: { width: isOrgLogs ? "16%" : "20%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
-      header: "Duration",
+      header: t("common.duration"),
       style: { width: isOrgLogs ? "10%" : "12%" },
       icon: <TimerIcon />,
     },
     {
       key: "tags",
-      header: "Tags",
+      header: t("common.tags"),
       style: { width: isOrgLogs ? "16%" : "20%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
     },
     {
       key: "summaryStatus",
-      header: "Summary Status",
+      header: t("calls.table.summaryStatus"),
       style: { width: isOrgLogs ? "8%" : "10%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
-      header: "Source",
+      header: t("calls.table.source"),
       style: { width: isOrgLogs ? "8%" : "10%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
       icon: <SourceIcon />,
     },
     {
       key: "summary",
-      header: "Summary",
+      header: t("common.summary"),
       style: { width: isOrgLogs ? "5%" : "6%" },
       render: (_value, row) => (
         <Button
@@ -274,8 +276,8 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
       return (
         <FallbackUI
           icon={<NoResults />}
-          mainMessage="No archived call records found"
-          description="Your archived calls will be listed here."
+          mainMessage={t("calls.archives.emptyTitle")}
+          description={t("calls.archives.emptyDesc")}
           className="py-[100px]"
         />
       );

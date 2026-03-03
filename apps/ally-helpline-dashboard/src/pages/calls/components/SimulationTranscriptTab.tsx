@@ -1,5 +1,6 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { useGetSimulationTranscriptQuery } from "@api";
@@ -16,6 +17,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   councellorName,
   summary,
 }) => {
+  const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
@@ -33,7 +35,8 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
 
   const transcript = useMemo(() => {
     return transcriptData?.messages?.map(item => ({
-      speaker: item.senderId === -1 ? "Client" : "Counsellor",
+      speaker:
+        item.senderId === -1 ? t("transcription.clientLabel") : t("transcription.counsellorLabel"),
       content: item.content,
       startSeconds: item.startSeconds,
       id: item.id || null,
@@ -53,10 +56,19 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   useEffect(() => {
     if (transcript?.length > 0) {
       const mappedTranscript = transcript.map(item => ({
-        id: item?.id !== null ? item?.id : item.speaker === "Client" ? user?.id : -1,
+        id:
+          item?.id !== null
+            ? item?.id
+            : item.speaker === t("transcription.clientLabel")
+              ? user?.id
+              : -1,
         content: item.content,
         senderId:
-          item?.senderId !== null ? item?.senderId : item.speaker === "Client" ? user?.id : -1,
+          item?.senderId !== null
+            ? item?.senderId
+            : item.speaker === t("transcription.clientLabel")
+              ? user?.id
+              : -1,
         startSeconds: item.startSeconds,
         tags: item.tags,
       }));
@@ -99,7 +111,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
       className={`relative h-[calc(100vh-140px)] custom-scrollbar p-4 border border-gray-200 rounded-md overflow-y-auto ${className}`}
     >
       <span className="text-typography-900 font-primary text-base font-medium">
-        Annotated Transcript
+        {t("postSim.tabs.annotatedTranscript")}
       </span>
       <hr className="mb-5 mt-3" />
       <TranscriptListing

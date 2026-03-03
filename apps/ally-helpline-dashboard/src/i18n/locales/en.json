@@ -100,6 +100,8 @@
     "badges": "Badges",
     "viewAll": "View all",
     "viewAllBadges": "View all badges",
+    "emptyHome": "You don't have any badges yet",
+    "badgesCount": "{{count}} Badges",
     "locked": "Locked",
     "earned": "Earned",
     "badgesTooltip": "Badges are earned based on your activity across simulations and community participation. Some badges may be removed if qualifying actions are undone.",
@@ -442,6 +444,64 @@
       }
     }
   },
+  "callFeedback": {
+    "rateTitle": "Rate the AI-generated summary?",
+    "rateSubtitle": "Please rate the quality, let us know what worked well, and share areas for improvement.",
+    "moreSuggestions": "Any more suggestions?",
+    "suggestionPlaceholder": "Anything else that you'd like to share about the summary?",
+    "selectIssues": "Please select one or more issues",
+    "concernPlaceholder": "Describe your concern here.",
+    "submitting": "Submitting...",
+    "submit": "Submit",
+    "submitted": "Feedback submitted successfully",
+    "ratings": {
+      "1": "Poor quality - Needs significant improvement",
+      "2": "Below expectations - Could be much better",
+      "3": "Average quality - Meets basic expectations",
+      "4": "Good quality - Above expectations",
+      "5": "Excellent quality - Highly recommended"
+    },
+    "issues": {
+      "missingKeyInfo": "Missing key information",
+      "inaccurate": "Inaccurate",
+      "tooVague": "Too vague",
+      "difficultToUnderstand": "Difficult to understand",
+      "tooShort": "Too short",
+      "other": "Other"
+    }
+  },
+  "summaryLoading": {
+    "generated": "Summary is generated",
+    "generatedDesc": "You can review the session now.",
+    "failedTitle": "Failed to generate session summary",
+    "noAudioDetected": "No audio detected",
+    "transcriptionDeleted": "Transcription generated & audio deleted",
+    "processingDescSidebar": "An AI-generated summary will be available shortly on this screen. In the meantime, you can add notes below.",
+    "processingDescMain": "An AI-generated summary will be available shortly on this screen and in the session logs. In the meantime, you can add notes below.",
+    "estimatedTime": "Estimated time: ~ {{time}} min",
+    "settingUp": "Setting up your summary screen",
+    "checkLater": "I'll check later",
+    "seeIfReady": "See if its ready",
+    "backToSessionLogs": "Back to session logs",
+    "addNotes": "Add Notes(Optional)",
+    "autosaving": "Autosaving",
+    "saved": "Saved",
+    "notesTooltip": "Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated",
+    "notesPlaceholder": "Jot down your thoughts",
+    "processing": {
+      "generatingTranscription": "Generating transcription",
+      "deletingAudio": "Deleting audio",
+      "segregatingUtterances": "Segregating utterances",
+      "understandingConversation": "Understanding conversation",
+      "chartingFlow": "Charting flow",
+      "extractingKeyPoints": "Extracting key points",
+      "identifyingThemes": "Identifying themes",
+      "analysing": "Analysing",
+      "generatingSummary": "Generating summary",
+      "enrichingSummary": "Enriching summary",
+      "validatingSummary": "Validating summary"
+    }
+  },
   "search": {
     "placeholder": "Need guidance? Search here..",
     "headerDescription": "Guidance, safety, and support — whenever you need it.",
@@ -471,6 +531,7 @@
     "notesAlt": "Notes",
     "save": "Save",
     "saving": "Saving...",
+    "enhance": "Enhance",
     "tabs": {
       "returnToSelf": "Return to Self",
       "sessionSummary": "Session summary"
@@ -490,7 +551,9 @@
       "homeworkRecommended": "Homework Recommended",
       "plansForNextCall": "Plans for Next Call",
       "tags": "Tags",
-      "metrics": "Metrics"
+      "metrics": "Metrics",
+      "intake": "Intake",
+      "ongoingRisks": "Ongoing Risks"
     },
     "feedback": {
       "title": "Session Feedback",
@@ -556,7 +619,37 @@
       "listeningRatio": "Listening Ratio",
       "reflectiveQuestions": "No of Reflective Questions asked",
       "emotionsLift": "Emotions Lift",
-      "openEndedQuestions": "No of Open Ended Questions asked"
+      "openEndedQuestions": "No of Open Ended Questions asked",
+      "intakeNotes": "Intake Notes",
+      "riskSelfHarm": "Risk, Self Harm",
+      "riskSelfHarmNotes": "Risk, Self Harm Notes",
+      "riskSuicidalThoughts": "Risk, Suicidal Thoughts",
+      "riskSuicidalThoughtsNotes": "Risk, Suicidal Thoughts Notes",
+      "riskSuicidalPlan": "Risk, Suicidal Plan",
+      "riskSuicidalAction": "Risk, Suicidal Action",
+      "riskRunningAway": "Risk, Running Away",
+      "riskRunningAwayNotes": "Risk, Running Away Notes",
+      "traumaPhysicalAbuse": "Trauma, Physical Abuse",
+      "traumaSexualAbuse": "Trauma, Sexual Abuse",
+      "traumaVerbalAbuse": "Trauma, Verbal Abuse",
+      "traumaNeglect": "Trauma, Neglect",
+      "traumaSeparation": "Trauma, Separation from Caregiver/Parent",
+      "traumaDomesticViolence": "Trauma, Witnessed Domestic Violence",
+      "traumaNotes": "Trauma Notes",
+      "assessmentPsychDiagnosis": "Assessment, Psychological Diagnosis",
+      "assessmentPsychDiagnosisNotes": "Assessment, Psychological Diagnosis Notes",
+      "assessmentPsychotropicMeds": "Assessment, Use of Psychotropic Medications",
+      "assessmentPsychotropicMedsNotes": "Assessment, Use of Psychotropic Medications Notes",
+      "assessmentHallucinations": "Assessment, Hallucinations",
+      "assessmentHallucinationsNotes": "Assessment, Hallucinations Notes",
+      "assessmentAffect": "Assessment, Affect",
+      "assessmentSpeech": "Assessment, Speech",
+      "ongoingRiskSelfHarm": "Ongoing Risk, Self Harm",
+      "ongoingRiskSelfHarmNotes": "Ongoing Risk, Self Harm Notes",
+      "ongoingRiskSuicidalThoughts": "Ongoing Risk, Suicidal Thoughts",
+      "ongoingRiskSuicidalPlan": "Ongoing Risk, Suicidal Plan",
+      "ongoingRiskSuicidalAction": "Ongoing Risk, Suicidal Action",
+      "ongoingRiskSuicidalThoughtsNotes": "Ongoing Risk, Suicidal Thoughts Notes"
     }
   },
   "profile": {
