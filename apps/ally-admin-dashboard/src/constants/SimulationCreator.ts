@@ -126,6 +126,7 @@ export const FORM_FIELD_TYPES = {
   CUSTOM_FIELDS: "custom_fields",
   TIME_INPUT: "time_input",
   COMPETENCY: "competency",
+  KNOWLEDGE_SOURCE: "knowledge_source",
 };
 
 export const FORM_FIELD_IDS = {
