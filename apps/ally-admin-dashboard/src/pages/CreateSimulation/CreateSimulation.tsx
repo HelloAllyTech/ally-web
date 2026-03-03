@@ -502,6 +502,7 @@ export const CreateSimulation: FC = () => {
               scenarioId={simulationId}
               areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
               onPrimaryTabChange={setReportPrimaryTab}
+              hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
             />
           );
         }
