@@ -160,7 +160,7 @@ export const ScenarioReportsSocketProvider: FC<ScenarioReportsSocketProviderProp
     joinUserReportsRoomRef.current(REPORTS_LOOKBACK_MINUTES);
   }, []);
 
-  const { connect, disconnect, joinUserReportsRoom } = useScenarioReportsSocket({
+  const { joinUserReportsRoom } = useScenarioReportsSocket({
     onConnected,
     onError: useCallback(() => {}, []),
     onReportsUpdated,
@@ -226,12 +226,6 @@ export const ScenarioReportsSocketProvider: FC<ScenarioReportsSocketProviderProp
     const id = setInterval(updateSocketProgress, PROGRESS_UPDATE_INTERVAL_MS);
     return () => clearInterval(id);
   }, []);
-
-  useEffect(() => {
-    connect();
-
-    return () => disconnect();
-  }, [connect, disconnect]);
 
   const contextValue: ScenarioReportsSocketContextValue = {
     socketUploads,

@@ -14,7 +14,7 @@ import {
 } from "@types";
 import { logger } from "@utils";
 
-const logMeessages = {
+const logMessages = {
   connected: "Connected to scenario reports socket",
   connectionError: "Connection error to scenario reports socket",
   error: "Error in scenario reports socket",
@@ -25,11 +25,21 @@ const logMeessages = {
   tryingToReconnect: "Trying to reconnect to scenario reports socket",
 };
 
-export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdated }) => {
+interface UseScenarioReportsSocketProps {
+  onConnected?: (data: ConnectedEventPayload) => void;
+  onError?: (error: Error) => void;
+  onReportsUpdated?: (data: ReportsUpdatedPayload) => void;
+}
+
+export const useScenarioReportsSocket = ({
+  onConnected,
+  onError,
+  onReportsUpdated,
+}: UseScenarioReportsSocketProps) => {
   const socketRef = useRef<Socket | null>(null);
   const connectionAttemptsRef = useRef(0);
-  const isConnectingRef = useRef(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isUnmountedRef = useRef(false);
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const nameSpace = SocketConnectionPaths.SCENARIO_REPORTS;
@@ -43,72 +53,19 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
     return delay;
   }, []);
 
-  const connect = () => {
-    // Prevent multiple simultaneous connection attempts
-    if (isConnectingRef.current || socketRef.current?.connected) {
-      return;
-    }
-
-    isConnectingRef.current = true;
-
-    try {
-      // Clean up existing socket if any
-      if (socketRef.current) {
-        socketRef.current.removeAllListeners();
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-
-      const status =
-        connectionAttemptsRef.current === 0
-          ? SocketConnectionStatus.CONNECTING
-          : SocketConnectionStatus.RECONNECTING;
-
-      store.dispatch(
-        setScenarioReportsSocketStatus({
-          status,
-          connectionAttempts: connectionAttemptsRef.current,
-        }),
-      );
-
-      socketRef.current = io(socketUrl, {
-        path: "",
-        transports: ["websocket", "polling"],
-        auth: {
-          token: localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN),
-        },
-        reconnection: false,
-        timeout: 10000,
-        forceNew: true,
-        autoConnect: false,
-      });
-
-      setUpListeners();
-      socketRef.current.connect();
-    } catch (error) {
-      logger.error(`[Scenario Reports Socket] ${logMeessages.socketConnectionError}: ${error}`);
-      isConnectingRef.current = false;
-      store.dispatch(
-        setScenarioReportsSocketStatus({
-          status: SocketConnectionStatus.ERROR,
-          connectionAttempts: connectionAttemptsRef.current,
-          lastError: "Socket connection error",
-        }),
-      );
-      scheduleReconnect();
-    }
-  };
-
   const scheduleReconnect = useCallback(() => {
+    if (isUnmountedRef.current) return;
+
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
     }
 
     connectionAttemptsRef.current++;
     const delay = getReconnectDelay();
 
     logger.info(
-      `[Scenario Reports Socket] ${logMeessages.tryingToReconnect} (attempt ${connectionAttemptsRef.current}, retry in ${Math.round(delay / 1000)}s)`,
+      `[Scenario Reports Socket] ${logMessages.tryingToReconnect} (attempt ${connectionAttemptsRef.current}, retry in ${Math.round(delay / 1000)}s)`,
     );
 
     store.dispatch(
@@ -119,109 +76,148 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
     );
 
     reconnectTimeoutRef.current = setTimeout(() => {
-      isConnectingRef.current = false;
-      connect();
+      if (isUnmountedRef.current) return;
+      connectSocket();
     }, delay);
-  }, [getReconnectDelay]);
+  }, [getReconnectDelay, socketUrl]);
 
-  const setUpListeners = useCallback(() => {
-    if (!socketRef.current) return;
+  const connectSocket = useCallback(() => {
+    if (isUnmountedRef.current) return;
 
-    //Connected event
-    socketRef.current.on(SocketEvent.CONNECTED, (data: ConnectedEventPayload) => {
-      logger.info(`[Scenario Reports Socket] ${logMeessages.connected}: ${JSON.stringify(data)}`);
-      // Reset connection attempts on successful connection
-      connectionAttemptsRef.current = 0;
-      isConnectingRef.current = false;
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-      store.dispatch(
-        setScenarioReportsSocketStatus({
-          status: SocketConnectionStatus.CONNECTED,
-          connectionAttempts: 0,
-        }),
-      );
-      onConnected?.(data);
-    });
-
-    //Connection Errors
-    socketRef.current.on("connect_error", (error: Error) => {
-      logger.error(`[Scenario Reports Socket] ${logMeessages.connectionError}: ${error}`);
-      store.dispatch(
-        setScenarioReportsSocketStatus({
-          status: SocketConnectionStatus.ERROR,
-          connectionAttempts: connectionAttemptsRef.current,
-          lastError: error.message,
-        }),
-      );
-      onError?.(error);
-      scheduleReconnect();
-    });
-
-    //General Errors
-    socketRef.current.on("error", (error: Error) => {
-      logger.error(`${logMeessages.error}: ${error}`);
-      store.dispatch(
-        setScenarioReportsSocketStatus({
-          status: SocketConnectionStatus.ERROR,
-          connectionAttempts: connectionAttemptsRef.current,
-          lastError: error.message,
-        }),
-      );
-      onError?.(error);
-      scheduleReconnect();
-    });
-
-    //Disconnection event
-    socketRef.current.on(SocketEvent.DISCONNECT, (reason: string) => {
-      logger.info(`[Scenario Reports Socket] ${logMeessages.disconnected}: ${reason}`);
-      store.dispatch(
-        setScenarioReportsSocketStatus({
-          status: SocketConnectionStatus.DISCONNECTED,
-          connectionAttempts: connectionAttemptsRef.current,
-        }),
-      );
-      scheduleReconnect();
-    });
-
-    //Reports updated event
-    socketRef.current.on(SocketEvent.REPORTS_UPDATED, (data: ReportsUpdatedPayload) => {
-      logger.info(`[Scenario Reports Socket] ${logMeessages.reportsUpdated}`);
-      onReportsUpdated?.(data);
-    });
-  }, [onReportsUpdated, onError, onConnected]);
-
-  const disconnect = useCallback(() => {
-    logger.info(`[Scenario Reports Socket] ${logMeessages.disconnected}`);
-
-    // Clear any pending reconnection
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
+    // If already connected, don't create a new connection
+    if (socketRef.current?.connected) {
+      logger.info(`[Scenario Reports Socket] Already connected`);
+      return;
     }
 
-    isConnectingRef.current = false;
-    connectionAttemptsRef.current = 0;
-
+    // Clean up existing socket if any
     if (socketRef.current) {
       socketRef.current.removeAllListeners();
       socketRef.current.disconnect();
       socketRef.current = null;
     }
 
+    const status =
+      connectionAttemptsRef.current === 0
+        ? SocketConnectionStatus.CONNECTING
+        : SocketConnectionStatus.RECONNECTING;
+
     store.dispatch(
       setScenarioReportsSocketStatus({
-        status: SocketConnectionStatus.DISCONNECTED,
-        connectionAttempts: 0,
+        status,
+        connectionAttempts: connectionAttemptsRef.current,
       }),
     );
-  }, []);
+
+    logger.info(`[Scenario Reports Socket] Creating new socket connection`);
+
+    try {
+      // Get fresh token from localStorage (handles token refresh)
+      const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN);
+
+      socketRef.current = io(socketUrl, {
+        transports: ["websocket", "polling"],
+        auth: {
+          token,
+        },
+        reconnection: false, // We handle reconnection manually
+        timeout: 10000,
+        forceNew: true,
+      });
+
+      // Connected event
+      socketRef.current.on(SocketEvent.CONNECTED, (data: ConnectedEventPayload) => {
+        logger.info(`[Scenario Reports Socket] ${logMessages.connected}: ${JSON.stringify(data)}`);
+
+        // Reset connection attempts on successful connection
+        connectionAttemptsRef.current = 0;
+
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
+        }
+
+        store.dispatch(
+          setScenarioReportsSocketStatus({
+            status: SocketConnectionStatus.CONNECTED,
+            connectionAttempts: 0,
+          }),
+        );
+
+        onConnected?.(data);
+      });
+
+      // Connection error event
+      socketRef.current.on("connect_error", (error: Error) => {
+        logger.error(`[Scenario Reports Socket] ${logMessages.connectionError}: ${error.message}`);
+
+        store.dispatch(
+          setScenarioReportsSocketStatus({
+            status: SocketConnectionStatus.ERROR,
+            connectionAttempts: connectionAttemptsRef.current,
+            lastError: error.message,
+          }),
+        );
+
+        onError?.(error);
+        scheduleReconnect();
+      });
+
+      // General error event
+      socketRef.current.on("error", (error: Error) => {
+        logger.error(`[Scenario Reports Socket] ${logMessages.error}: ${error.message}`);
+
+        store.dispatch(
+          setScenarioReportsSocketStatus({
+            status: SocketConnectionStatus.ERROR,
+            connectionAttempts: connectionAttemptsRef.current,
+            lastError: error.message,
+          }),
+        );
+
+        onError?.(error);
+      });
+
+      // Disconnection event
+      socketRef.current.on(SocketEvent.DISCONNECT, (reason: string) => {
+        logger.info(`[Scenario Reports Socket] ${logMessages.disconnected}: ${reason}`);
+
+        store.dispatch(
+          setScenarioReportsSocketStatus({
+            status: SocketConnectionStatus.DISCONNECTED,
+            connectionAttempts: connectionAttemptsRef.current,
+          }),
+        );
+
+        // Auto-reconnect on disconnect (will fetch fresh token)
+        if (!isUnmountedRef.current) {
+          scheduleReconnect();
+        }
+      });
+
+      // Reports updated event
+      socketRef.current.on(SocketEvent.REPORTS_UPDATED, (data: ReportsUpdatedPayload) => {
+        logger.info(`[Scenario Reports Socket] ${logMessages.reportsUpdated}`);
+        onReportsUpdated?.(data);
+      });
+    } catch (error) {
+      logger.error(`[Scenario Reports Socket] ${logMessages.socketConnectionError}: ${error}`);
+
+      store.dispatch(
+        setScenarioReportsSocketStatus({
+          status: SocketConnectionStatus.ERROR,
+          connectionAttempts: connectionAttemptsRef.current,
+          lastError: "Socket connection error",
+        }),
+      );
+
+      scheduleReconnect();
+    }
+  }, [socketUrl, onConnected, onError, onReportsUpdated, scheduleReconnect]);
 
   const joinUserReportsRoom = useCallback((lookbackMinutes?: number) => {
-    if (!socketRef.current || !socketRef.current.connected) {
-      logger.info(`[Scenario Reports Socket] ${logMeessages.socketNotConnected}`);
+    if (!socketRef.current?.connected) {
+      logger.warn(`[Scenario Reports Socket] ${logMessages.socketNotConnected}`);
       return;
     }
 
@@ -231,14 +227,19 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
       payload.lookbackMinutes = lookbackMinutes;
     }
 
+    logger.info(
+      `[Scenario Reports Socket] Joining user reports room with lookback: ${lookbackMinutes}`,
+    );
     socketRef.current.emit(SocketEvent.JOIN_USER_REPORTS_ROOM, payload);
   }, []);
 
   const joinScenarioReportRoom = useCallback((reportId: string) => {
-    if (!socketRef.current || !socketRef.current.connected) {
-      logger.info(`[Scenario Reports Socket] ${logMeessages.socketNotConnected}`);
+    if (!socketRef.current?.connected) {
+      logger.warn(`[Scenario Reports Socket] ${logMessages.socketNotConnected}`);
       return;
     }
+
+    logger.info(`[Scenario Reports Socket] Joining scenario report room: ${reportId}`);
 
     const payload: JoinScenarioReportsRoomPayload = {
       reportId,
@@ -250,23 +251,38 @@ export const useScenarioReportsSocket = ({ onConnected, onError, onReportsUpdate
     return socketRef.current?.connected || false;
   }, []);
 
+  // Connect on mount and cleanup on unmount
   useEffect(() => {
-    // Initial connection attempt on mount
-    connect();
+    isUnmountedRef.current = false;
+
+    logger.info(`[Scenario Reports Socket] Initializing connection on mount`);
+    connectSocket();
+
     return () => {
+      logger.info(`[Scenario Reports Socket] Cleaning up on unmount`);
+      isUnmountedRef.current = true;
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
+
       if (socketRef.current) {
         socketRef.current.removeAllListeners();
         socketRef.current.disconnect();
+        socketRef.current = null;
       }
+
+      store.dispatch(
+        setScenarioReportsSocketStatus({
+          status: SocketConnectionStatus.DISCONNECTED,
+          connectionAttempts: 0,
+        }),
+      );
     };
-  }, []);
+  }, [connectSocket]);
 
   return {
-    connect,
-    disconnect,
     joinUserReportsRoom,
     joinScenarioReportRoom,
     isConnected,
