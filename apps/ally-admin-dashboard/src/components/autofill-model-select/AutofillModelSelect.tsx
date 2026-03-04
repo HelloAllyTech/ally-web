@@ -1,6 +1,7 @@
 import { FC } from "react";
 
-import { AUTOFILL_MODEL_OPTIONS } from "@constants";
+import { useGetAutofillModelsQuery } from "@api";
+import { DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS } from "@constants";
 
 interface AutofillModelSelectProps {
   value: string;
@@ -12,17 +13,24 @@ export const AutofillModelSelect: FC<AutofillModelSelectProps> = ({
   value,
   onChange,
   disabled = false,
-}) => (
-  <select
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    disabled={disabled}
-    className="text-sm border rounded-md px-2 py-1 text-typography-800 bg-white border-border-light cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-  >
-    {AUTOFILL_MODEL_OPTIONS.map(opt => (
-      <option key={opt.value} value={opt.value}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
-);
+}) => {
+  const { data: models, isLoading } = useGetAutofillModelsQuery();
+  const options = models?.length > 0 ? models : [...FALLBACK_AUTOFILL_MODEL_OPTIONS];
+  const effectiveValue = options.some(opt => opt.value === value) ? value : DEFAULT_AUTOFILL_MODEL;
+
+  return (
+    <select
+      value={effectiveValue}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled || isLoading}
+      className="text-sm border rounded-md px-2 py-1 text-typography-800 bg-white border-border-light cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      title={isLoading ? "Loading models..." : undefined}
+    >
+      {options.map(opt => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  );
+};

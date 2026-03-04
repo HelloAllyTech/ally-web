@@ -40,6 +40,7 @@ import {
   CompetenciesResponse,
   Competency,
   CreateCompetencyRequest,
+  AutofillModelOption,
   RegenerateFieldRequest,
   RegenerateFieldResponse,
   GetReportTranscriptResponse,
@@ -675,6 +676,16 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Get available OpenAI models for autofill/regenerate
+     */
+    getAutofillModels: builder.query<AutofillModelOption[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_AUTOFILL_MODELS,
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
      * Regenerate a field using AI
      */
     regenerateField: builder.mutation<RegenerateFieldResponse, RegenerateFieldRequest>({
@@ -742,5 +753,6 @@ export const {
   useCreateCompetencyMutation,
   useGetReportTranscriptQuery,
   useLazyGetReportTranscriptQuery,
+  useGetAutofillModelsQuery,
   useRegenerateFieldMutation,
 } = simulationStudioAPI;

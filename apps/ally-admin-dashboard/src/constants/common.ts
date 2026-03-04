@@ -88,6 +88,7 @@ export const ApiEndpoints = {
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
     CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
     HELPER_TAGS: "/v1/learn/scenario-behaviors",
+    GET_AUTOFILL_MODELS: "/v1/learn/models",
     GENERATE_FIELD: "/v1/learn/scenarios/generate-field",
     COMPETENCIES: "/v1/learn/competencies",
   },

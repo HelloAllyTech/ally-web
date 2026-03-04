@@ -466,6 +466,11 @@ export interface ScenarioContext {
   languageName?: string;
 }
 
+export interface AutofillModelOption {
+  value: string;
+  label: string;
+}
+
 export interface RegenerateFieldRequest {
   fieldName: string;
   scenarioContext: ScenarioContext;
