@@ -23,7 +23,10 @@ const logMessages = {
   socketConnectionError: "Socket connection error",
   socketNotConnected: "Socket not connected",
   tryingToReconnect: "Trying to reconnect to scenario reports socket",
+  maxAttemptsReached: "Max reconnection attempts reached, stopping reconnection",
 };
+
+const MAX_RECONNECTION_ATTEMPTS = 10;
 
 interface UseScenarioReportsSocketProps {
   onConnected?: (data: ConnectedEventPayload) => void;
@@ -56,6 +59,19 @@ export const useScenarioReportsSocket = ({
   const scheduleReconnect = useCallback(() => {
     if (isUnmountedRef.current) return;
 
+    // Check if max attempts reached
+    if (connectionAttemptsRef.current >= MAX_RECONNECTION_ATTEMPTS) {
+      logger.error(`[Scenario Reports Socket] ${logMessages.maxAttemptsReached}`);
+      store.dispatch(
+        setScenarioReportsSocketStatus({
+          status: SocketConnectionStatus.ERROR,
+          connectionAttempts: connectionAttemptsRef.current,
+          lastError: `Failed to connect after ${MAX_RECONNECTION_ATTEMPTS} attempts`,
+        }),
+      );
+      return;
+    }
+
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
@@ -65,7 +81,7 @@ export const useScenarioReportsSocket = ({
     const delay = getReconnectDelay();
 
     logger.info(
-      `[Scenario Reports Socket] ${logMessages.tryingToReconnect} (attempt ${connectionAttemptsRef.current}, retry in ${Math.round(delay / 1000)}s)`,
+      `[Scenario Reports Socket] ${logMessages.tryingToReconnect} (attempt ${connectionAttemptsRef.current}/${MAX_RECONNECTION_ATTEMPTS}, retry in ${Math.round(delay / 1000)}s)`,
     );
 
     store.dispatch(
