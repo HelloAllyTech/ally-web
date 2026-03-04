@@ -79,7 +79,10 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   const isPlaceholder = !displayText;
 
   return (
-    <div className={`${className} h-full`} style={{ width, minWidth }}>
+    <div
+      className={`${className} h-full max-h-[360px] overflow-y-auto custom-scrollbar`}
+      style={{ width, minWidth }}
+    >
       <div
         onClick={handleTextClick}
         className={`
