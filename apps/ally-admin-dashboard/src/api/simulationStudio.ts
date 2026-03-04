@@ -43,6 +43,7 @@ import {
   AutofillModelOption,
   RegenerateFieldRequest,
   RegenerateFieldResponse,
+  GetReportTranscriptInput,
   GetReportTranscriptResponse,
 } from "@types";
 
@@ -593,7 +594,13 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       query: ({ input }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORTS(input.scenarioId),
         method: HttpMethod.GET,
-        params: input?.status ? { status: input.status } : undefined,
+        params: {
+          ...(input?.statuses && { statuses: input.statuses }),
+          ...(input?.limit != null && { limit: input.limit }),
+          ...(input?.offset != null && { offset: input.offset }),
+          ...(input?.sortBy && { sortBy: input.sortBy }),
+          ...(input?.order && { order: input.order }),
+        },
       }),
     }),
 
@@ -640,14 +647,20 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Get transcript for a specific report.
+     * Get transcript for a specific report (paginated).
      * @param {string} reportId - Report identifier
-     * @returns {Promise<TranscriptMessage[]>} List of transcript messages
+     * @param {number} limit - Page size
+     * @param {number} offset - Offset for pagination
+     * @returns {Promise<GetReportTranscriptResponse>} Paginated transcript messages
      */
-    getReportTranscript: builder.query<GetReportTranscriptResponse, { reportId: string }>({
-      query: ({ reportId }) => ({
+    getReportTranscript: builder.query<GetReportTranscriptResponse, GetReportTranscriptInput>({
+      query: ({ reportId, limit, offset }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORT_TRANSCRIPT(reportId),
         method: HttpMethod.GET,
+        params:
+          limit != null || offset != null
+            ? { ...(limit != null && { limit }), ...(offset != null && { offset }) }
+            : undefined,
       }),
     }),
 
@@ -745,6 +758,7 @@ export const {
   useCreateHelperTagMutation,
   useGetImageLibraryQuery,
   useGetReportsQuery,
+  useLazyGetReportsQuery,
   useGetReportByIdQuery,
   useLazyGetReportByIdQuery,
   useGenerateReportMutation,

@@ -37,7 +37,11 @@ export type ReportMetric = {
 
 export type GetReportsInput = {
   scenarioId: string;
-  status?: ReportGenerationStatus;
+  statuses?: ReportGenerationStatus;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
 };
 
 export type GenerateReportInput = {
@@ -60,6 +64,13 @@ export type TranscriptMessage = {
   scenarioReportId: string;
 };
 
+export type GetReportTranscriptInput = {
+  reportId: string;
+  limit?: number;
+  offset?: number;
+};
+
 export type GetReportTranscriptResponse = {
   messages: TranscriptMessage[];
+  total?: number;
 };

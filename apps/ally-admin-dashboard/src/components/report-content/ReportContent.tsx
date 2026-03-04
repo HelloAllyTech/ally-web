@@ -18,6 +18,9 @@ const ReportContent: FC<ReportContentProps> = ({
   onTabChange,
   showTabs = true,
   isTranscriptLoading = false,
+  hasMoreTranscript = false,
+  isTranscriptLoadingMore = false,
+  onLoadMoreTranscript,
 }) => {
   const items: TabItem[] = [
     {
@@ -107,7 +110,13 @@ const ReportContent: FC<ReportContentProps> = ({
           </div>
         </div>
       ) : (
-        <TranscriptSection transcripts={transcriptData} isLoading={isTranscriptLoading} />
+        <TranscriptSection
+          transcripts={transcriptData}
+          isLoading={isTranscriptLoading}
+          hasMore={hasMoreTranscript}
+          isLoadingMore={isTranscriptLoadingMore}
+          onLoadMore={onLoadMoreTranscript}
+        />
       )}
     </>
   );
