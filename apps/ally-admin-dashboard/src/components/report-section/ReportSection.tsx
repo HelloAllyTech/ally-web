@@ -23,8 +23,8 @@ import {
   en,
   REPORT_ACCORDION_SX,
   REPORT_GENERATION_MESSAGES,
+  ReportGenerationStatus,
 } from "@constants";
-import { ReportGenerationStatus } from "@constants";
 import { useDebounce } from "@hooks";
 import {
   addUpload,
@@ -91,6 +91,28 @@ const formatReportCreatedAt = (dateString: string): string =>
     hour12: true,
   });
 
+const getReportsQueryInput = (scenarioId: string, offset: number) =>
+  ({
+    scenarioId,
+    statuses: ReportGenerationStatus.COMPLETED,
+    limit: REPORT_HISTORY_PAGE_SIZE,
+    offset,
+    sortBy: "createdAt",
+    order: "DESC",
+  }) as const;
+
+const getTranscriptTotalFromResponse = (
+  data: { messages: TranscriptMessage[]; total?: number },
+  pageSize: number,
+): number | null => data.total ?? (data.messages.length < pageSize ? data.messages.length : null);
+
+const hasMoreTranscript = (
+  messagesLength: number,
+  total: number | null,
+  pageSize: number,
+): boolean =>
+  (total != null && messagesLength < total) || (total == null && messagesLength === pageSize);
+
 const calculateProgress = (status: ReportGenerationStatus): number =>
   status === ReportGenerationStatus.COMPLETED ? 100 : 0;
 
@@ -108,14 +130,14 @@ const createUploadPayload = (
   scenarioId,
 });
 
-const createUploadFromReport = (report: any) => {
+const createUploadFromReport = (report: ReportData) => {
   const status = normalizeStatus(report.status);
   return createUploadPayload(
     report.id,
     report.scenarioId,
     status,
     calculateProgress(status),
-    report.name,
+    report.scenarioTitle,
   );
 };
 
@@ -179,16 +201,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       { skip: !reportId },
     );
     const { data: reportsHistory, refetch: refetchReportsHistory } = useGetReportsQuery(
-      {
-        input: {
-          scenarioId: scenarioId!,
-          statuses: ReportGenerationStatus.COMPLETED,
-          limit: REPORT_HISTORY_PAGE_SIZE,
-          offset: 0,
-          sortBy: "createdAt",
-          order: "DESC",
-        },
-      },
+      { input: getReportsQueryInput(scenarioId!, 0) },
       {
         skip: !scenarioId,
         refetchOnMountOrArgChange: false,
@@ -303,15 +316,12 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       dispatch(setUploadsForScenario({ scenarioId, uploads }));
     }, [displayHistoryData, scenarioId, dispatch]);
 
-    const displayedReportConfig =
-      primaryActiveTab === TABS.primary.report && reportsHistory?.data?.length > 0
-        ? reportsHistory?.data[0].config
-        : fetchedReportData?.config;
-
-    const displayedLanguage =
-      primaryActiveTab === TABS.primary.report && reportsHistory?.data?.length > 0
-        ? reportsHistory?.data[0].language
-        : fetchedReportData?.language;
+    const displayedReport =
+      primaryActiveTab === TABS.primary.report && (reportsHistory?.data?.length ?? 0) > 0
+        ? reportsHistory!.data![0]
+        : (fetchedReportData ?? null);
+    const displayedReportConfig = displayedReport?.config;
+    const displayedLanguage = displayedReport?.language;
 
     useEffect(() => {
       const config = displayedReportConfig;
@@ -492,14 +502,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       try {
         const offset = (reportsHistory?.data?.length ?? 0) + historyExtraPages.length;
         const result = await fetchMoreReports({
-          input: {
-            scenarioId,
-            statuses: ReportGenerationStatus.COMPLETED,
-            limit: REPORT_HISTORY_PAGE_SIZE,
-            offset,
-            sortBy: "createdAt",
-            order: "DESC",
-          },
+          input: getReportsQueryInput(scenarioId, offset),
         }).unwrap();
         if (result?.data?.length) {
           setHistoryExtraPages(prev => [...prev, ...result.data]);
@@ -602,10 +605,11 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
               transcriptData={transcriptMessages}
               activeTab={activeTab}
               isTranscriptLoading={isTranscriptLoading}
-              hasMoreTranscript={
-                (transcriptTotal != null && transcriptMessages.length < transcriptTotal) ||
-                (transcriptTotal == null && transcriptMessages.length === TRANSCRIPT_PAGE_SIZE)
-              }
+              hasMoreTranscript={hasMoreTranscript(
+                transcriptMessages.length,
+                transcriptTotal,
+                TRANSCRIPT_PAGE_SIZE,
+              )}
               isTranscriptLoadingMore={isTranscriptLoadingMore}
               onLoadMoreTranscript={() => {
                 setIsTranscriptLoadingMore(true);
@@ -638,10 +642,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                     .then(data => {
                       setTranscriptMessages(data.messages);
                       setTranscriptTotal(
-                        data.total ??
-                          (data.messages.length < TRANSCRIPT_PAGE_SIZE
-                            ? data.messages.length
-                            : null),
+                        getTranscriptTotalFromResponse(data, TRANSCRIPT_PAGE_SIZE),
                       );
                     });
                 }
@@ -729,10 +730,11 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                   hasMoreTranscript={
                     expandedHistoryReportId === item.id &&
                     cachedTranscript != null &&
-                    ((cachedTranscript.total != null &&
-                      cachedTranscript.messages.length < cachedTranscript.total) ||
-                      (cachedTranscript.total == null &&
-                        cachedTranscript.messages.length === TRANSCRIPT_PAGE_SIZE))
+                    hasMoreTranscript(
+                      cachedTranscript.messages.length,
+                      cachedTranscript.total,
+                      TRANSCRIPT_PAGE_SIZE,
+                    )
                   }
                   isTranscriptLoadingMore={isHistoryTranscriptLoadingMore}
                   onLoadMoreTranscript={() => {
@@ -787,9 +789,6 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       );
     };
 
-    const renderMainContent = () =>
-      primaryActiveTab === TABS.primary.history ? renderHistoryList() : renderContent();
-
     const headerContent = reportData ? (
       <div className="sticky flex gap-8 flex-row top-0 z-10 pt-3 mx-6 border-b border-border-light">
         <TabButton
@@ -815,7 +814,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       <div className="flex flex-col h-full w-100%">
         {headerContent}
         <div className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
-          {renderMainContent()}
+          {primaryActiveTab === TABS.primary.history ? renderHistoryList() : renderContent()}
         </div>
       </div>
     );
