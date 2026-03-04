@@ -1,7 +1,20 @@
 import React from "react";
 
-import { TabsProps } from "@components/types";
+import { CSSProperties } from "@mui/material";
 
+export interface TabItem {
+  id: string;
+  label: string;
+  count?: number;
+}
+export interface TabsProps {
+  items: TabItem[];
+  activeId: string;
+  onChange: (id: string) => void;
+  className?: string;
+  showCount?: boolean;
+  tabStyles?: CSSProperties;
+}
 export const Tabs: React.FC<TabsProps> = ({
   items,
   activeId,
@@ -24,7 +37,7 @@ export const Tabs: React.FC<TabsProps> = ({
               }`}
               style={tabStyles}
             >
-              {item.label} {showCount ? `(${item.count || "0"})` : ""}
+              {item.label} {showCount ? item.count || "0" : ""}
               {isActive && (
                 <span
                   aria-hidden

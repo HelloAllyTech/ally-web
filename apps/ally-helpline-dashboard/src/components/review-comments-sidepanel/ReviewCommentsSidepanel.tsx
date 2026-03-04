@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Skeleton } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-import { ThreadCard } from "@components";
+import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared/index";
+import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
+import ThreadsToShow from "@src/components/review-comments-sidepanel/components/ThreadsToShow";
 import { Thread } from "@types";
 
 interface ReviewCommentsSidepanelProps {
   threads: Thread[] | null;
   isFeedOwner?: boolean;
-  totalComments: number;
   className?: string;
   isOpen?: boolean;
   onCommentClick?: (props: {
@@ -19,15 +20,17 @@ interface ReviewCommentsSidepanelProps {
     threadId: string;
   }) => void;
 }
+
+type TabType = "inline" | "general";
 const ReviewCommentsSidepanel = ({
   threads,
-  totalComments,
   isFeedOwner,
   className,
   isOpen = true,
   onCommentClick = () => {},
 }: ReviewCommentsSidepanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>("inline");
   const { t } = useTranslation();
   useEffect(() => {
     if (threads !== null) {
@@ -35,52 +38,57 @@ const ReviewCommentsSidepanel = ({
     }
   }, [threads]);
 
+  const threadsToShow = useMemo(() => {
+    if (activeTab === "inline") {
+      return threads;
+    }
+    return [];
+  }, [threads, activeTab]);
+
   return (
     <div
       className={`h-full z-20 bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 ${className}`}
     >
-      <div className="w-full font-primary py-4 px-4 flex items-center justify-between border-b-[0.5px]">
+      <div
+        className="w-full font-primary pt-4 px-4 flex items-center justify-between"
+        style={{
+          borderBottom: FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG ? "none" : "0.5px solid #E5E7EB",
+        }}
+      >
         <div className="text-typography-900 font-medium text-lg">
-          {t("review.details.comment", { count: totalComments || 0 })}
+          {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG
+            ? t("review.details.comments")
+            : t("review.details.comment", { count: threads?.length })}
         </div>
       </div>
+      {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
+        <div className="w-full px-4">
+          <Tabs
+            items={[
+              { id: "inline", label: "Inline" },
+              { id: "general", label: "General" },
+            ]}
+            activeId={activeTab}
+            showCount={false}
+            onChange={id => setActiveTab(id as TabType)}
+          />
+        </div>
+      )}
       <div className="w-full h-full px-4">
         {!isLoading && (
-          <div className="flex flex-col gap-4 overflow-auto h-[calc(100%-40px)] pb-8 -mr-4 pr-4 py-4 custom-scrollbar">
-            {threads?.map(
-              (thread, index) =>
-                thread?.comments[0] && (
-                  <div
-                    key={thread.id}
-                    className="transition-all cursor-pointer duration-300 ease-out"
-                    onClick={() =>
-                      onCommentClick({
-                        threadId: thread.id,
-                        messageId: thread.selection.messageId.toString(),
-                        startIndex: thread.selection.startIndex,
-                        endIndex: thread.selection.endIndex,
-                      })
-                    }
-                    style={{
-                      transform: isOpen ? "translateY(0)" : "translateY(-100%)",
-                      opacity: isOpen ? 1 : 0,
-                      transitionDelay: isOpen
-                        ? `${index * 50}ms`
-                        : `${(threads.length - index) * 30}ms`,
-                    }}
-                  >
-                    <ThreadCard thread={thread} isFeedOwner={isFeedOwner} />
-                  </div>
-                ),
+          <>
+            {activeTab === "inline" && (
+              <ThreadsToShow
+                threads={threadsToShow}
+                isOpen={isOpen}
+                isFeedOwner={isFeedOwner}
+                onCommentClick={onCommentClick}
+              />
             )}
-            {threads?.length === 0 && (
-              <div className="w-full h-full flex pt-4 justify-center">
-                <div className="text-typography-800 text-center">
-                  {t("review.details.noCommentsYet")}
-                </div>
-              </div>
+            {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
+              <GeneralCommentsToShow show={activeTab === "general"} />
             )}
-          </div>
+          </>
         )}
         {isLoading && (
           <div className="w-full h-full overflow-hidden flex flex-col gap-4 items-center">

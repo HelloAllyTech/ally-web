@@ -225,9 +225,14 @@ const CommentCard = ({
         reactions[emoji] = (reactions[emoji] || 0) + 1;
         nextEmoji = emoji;
       }
-
+      const finalReactions = {};
+      Object.keys(reactions).forEach(reaction => {
+        if (reactions[reaction] > 0) {
+          finalReactions[reaction] = reactions[reaction];
+        }
+      });
       await sendReaction(emoji, action);
-      onCommentChange?.({ ...comment, myReaction: nextEmoji, reactions });
+      onCommentChange?.({ ...comment, myReaction: nextEmoji, reactions: finalReactions });
       setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
