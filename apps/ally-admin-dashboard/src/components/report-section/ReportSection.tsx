@@ -1,17 +1,18 @@
 import { forwardRef, useImperativeHandle, useState, useEffect, useRef, useMemo } from "react";
 
+import { CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
   useGetReportsQuery,
+  useLazyGetReportsQuery,
   useGetReportByIdQuery,
   useGenerateReportMutation,
   useCancelReportGenerationMutation,
-  useGetReportTranscriptQuery,
   useLazyGetReportTranscriptQuery,
 } from "@api";
-import { ArrowDown } from "@assets";
+import { ArrowDown, Plus } from "@assets";
 import { Button, PromptConfiguration, ReportContent, TabButton, Accordion } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
@@ -32,7 +33,7 @@ import {
   setUploadsForScenario,
   setCurrentScenarioId,
 } from "@reducer/reportUploadReducer";
-import { ReportData, ReportConfig } from "@types";
+import { ReportData, ReportConfig, TranscriptMessage } from "@types";
 
 export type ReportPrimaryTab = "report" | "history";
 
@@ -52,6 +53,9 @@ const TABS = {
   primary: { report: "report", history: "history" },
   secondary: { report: "report", transcription: "transcription" },
 };
+
+const REPORT_HISTORY_PAGE_SIZE = 30;
+const TRANSCRIPT_PAGE_SIZE = 50;
 
 const FINAL_STATUSES: ReportGenerationStatus[] = [
   ReportGenerationStatus.COMPLETED,
@@ -138,9 +142,23 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
     const [reportId, setReportId] = useState<string | null>(null);
     const [historyItemActiveTabs, setHistoryItemActiveTabs] = useState<Record<string, string>>({});
     const [expandedHistoryReportId, setExpandedHistoryReportId] = useState<string | null>(null);
+    const [historyExtraPages, setHistoryExtraPages] = useState<ReportData[]>([]);
+    const [hasMoreHistory, setHasMoreHistory] = useState(true);
+    const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
+    const [transcriptMessages, setTranscriptMessages] = useState<TranscriptMessage[]>([]);
+    const [transcriptTotal, setTranscriptTotal] = useState<number | null>(null);
+    const [isTranscriptLoadingMore, setIsTranscriptLoadingMore] = useState(false);
+    const [historyTranscriptsByReportId, setHistoryTranscriptsByReportId] = useState<
+      Record<string, { messages: TranscriptMessage[]; total: number | null }>
+    >({});
+    const [historyTranscriptLoadingReportId, setHistoryTranscriptLoadingReportId] = useState<
+      string | null
+    >(null);
+    const [isHistoryTranscriptLoadingMore, setIsHistoryTranscriptLoadingMore] = useState(false);
 
     const previousScenarioIdRef = useRef<string | undefined>(scenarioId);
     const previousPrimaryActiveTabRef = useRef<string>(primaryActiveTab);
+    const lastRefetchedForReportIdRef = useRef<string | null>(null);
 
     useImperativeHandle(
       ref,
@@ -161,27 +179,92 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       { skip: !reportId },
     );
     const { data: reportsHistory, refetch: refetchReportsHistory } = useGetReportsQuery(
-      { input: { scenarioId: scenarioId! } },
-      { skip: !scenarioId },
+      {
+        input: {
+          scenarioId: scenarioId!,
+          statuses: ReportGenerationStatus.COMPLETED,
+          limit: REPORT_HISTORY_PAGE_SIZE,
+          offset: 0,
+          sortBy: "createdAt",
+          order: "DESC",
+        },
+      },
+      {
+        skip: !scenarioId,
+        refetchOnMountOrArgChange: false,
+        refetchOnFocus: false,
+      },
     );
+    const refetchReportsHistoryRef = useRef(refetchReportsHistory);
+    refetchReportsHistoryRef.current = refetchReportsHistory;
+    const refetchReportsHistoryAndResetPagination = () => {
+      setHistoryExtraPages([]);
+      setHasMoreHistory(true);
+      refetchReportsHistoryRef.current();
+    };
+    const [fetchMoreReports] = useLazyGetReportsQuery();
     const [cancelReportGenerationMutation] = useCancelReportGenerationMutation();
     const [getReportTranscriptQuery, { data: transcriptData, isLoading: isTranscriptLoading }] =
       useLazyGetReportTranscriptQuery();
-    const { data: historyTranscriptData, isLoading: isHistoryTranscriptLoading } =
-      useGetReportTranscriptQuery(
-        { reportId: expandedHistoryReportId! },
-        {
-          skip: !expandedHistoryReportId || primaryActiveTab !== TABS.primary.history,
-        },
-      );
+    const [getHistoryTranscriptQuery] = useLazyGetReportTranscriptQuery();
 
     useEffect(() => {
       if (scenarioId && scenarioId !== previousScenarioIdRef.current) {
         previousScenarioIdRef.current = scenarioId;
+        lastRefetchedForReportIdRef.current = null;
         dispatch(setCurrentScenarioId(scenarioId));
         setExpandedHistoryReportId(null);
+        setHistoryExtraPages([]);
+        setHasMoreHistory(true);
+        setHistoryTranscriptsByReportId({});
       }
     }, [scenarioId, dispatch]);
+
+    const expandedHistoryReportIdRef = useRef(expandedHistoryReportId);
+    expandedHistoryReportIdRef.current = expandedHistoryReportId;
+
+    useEffect(() => {
+      if (!expandedHistoryReportId || primaryActiveTab !== TABS.primary.history) {
+        setHistoryTranscriptLoadingReportId(null);
+        return;
+      }
+      const reportIdForFetch = expandedHistoryReportId;
+      const cached = historyTranscriptsByReportId[reportIdForFetch];
+      if (cached != null) {
+        setHistoryTranscriptLoadingReportId(null);
+        return;
+      }
+      setHistoryTranscriptLoadingReportId(reportIdForFetch);
+      getHistoryTranscriptQuery({
+        reportId: reportIdForFetch,
+        limit: TRANSCRIPT_PAGE_SIZE,
+        offset: 0,
+      })
+        .unwrap()
+        .then(data => {
+          if (expandedHistoryReportIdRef.current !== reportIdForFetch) return;
+          const total =
+            data.total ??
+            (data.messages.length < TRANSCRIPT_PAGE_SIZE ? data.messages.length : null);
+          setHistoryTranscriptsByReportId(prev => ({
+            ...prev,
+            [reportIdForFetch]: { messages: data.messages, total },
+          }));
+        })
+        .finally(() => {
+          setHistoryTranscriptLoadingReportId(prev => (prev === reportIdForFetch ? null : prev));
+        });
+    }, [expandedHistoryReportId, primaryActiveTab, getHistoryTranscriptQuery]);
+
+    const displayHistoryData = useMemo(
+      () => (reportsHistory?.data ?? []).concat(historyExtraPages),
+      [reportsHistory?.data, historyExtraPages],
+    );
+
+    const showLoadMoreHistory =
+      historyExtraPages.length === 0
+        ? (reportsHistory?.data?.length ?? 0) === REPORT_HISTORY_PAGE_SIZE
+        : hasMoreHistory;
 
     const mostRecentReportId = reportsHistory?.data?.[0]?.id;
 
@@ -193,13 +276,13 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
 
       if (primaryActiveTab === TABS.primary.report) {
         if (switchedToReportTab) {
-          refetchReportsHistory();
+          refetchReportsHistoryAndResetPagination();
         }
         if (!reportId && mostRecentReportId) {
           setReportId(mostRecentReportId);
         }
       }
-    }, [primaryActiveTab, reportId, mostRecentReportId, refetchReportsHistory]);
+    }, [primaryActiveTab, reportId, mostRecentReportId]);
 
     useEffect(() => {
       if (fetchedReportData) {
@@ -211,31 +294,23 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
     }, [fetchedReportData, transcriptData]);
 
     useEffect(() => {
-      if (!reportsHistory?.data || !scenarioId) return;
+      if (!displayHistoryData.length || !scenarioId) return;
 
-      const uploads = reportsHistory.data
+      const uploads = displayHistoryData
         .filter(report => String(report.scenarioId) === String(scenarioId))
         .map(createUploadFromReport);
 
       dispatch(setUploadsForScenario({ scenarioId, uploads }));
-    }, [reportsHistory?.data, scenarioId, dispatch]);
-
-    const completedReportsFromHistory = useMemo(
-      () =>
-        reportsHistory?.data
-          ?.filter(item => item.status === ReportGenerationStatus.COMPLETED)
-          .reverse() ?? [],
-      [reportsHistory?.data],
-    );
+    }, [displayHistoryData, scenarioId, dispatch]);
 
     const displayedReportConfig =
-      primaryActiveTab === TABS.primary.report && completedReportsFromHistory.length > 0
-        ? completedReportsFromHistory[0].config
+      primaryActiveTab === TABS.primary.report && reportsHistory?.data?.length > 0
+        ? reportsHistory?.data[0].config
         : fetchedReportData?.config;
 
     const displayedLanguage =
-      primaryActiveTab === TABS.primary.report && completedReportsFromHistory.length > 0
-        ? completedReportsFromHistory[0].language
+      primaryActiveTab === TABS.primary.report && reportsHistory?.data?.length > 0
+        ? reportsHistory?.data[0].language
         : fetchedReportData?.language;
 
     useEffect(() => {
@@ -303,28 +378,28 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
 
     useEffect(() => {
       if (primaryActiveTab !== TABS.primary.history || expandedHistoryReportId) return;
-      if (completedReportsFromHistory.length > 0) {
-        setExpandedHistoryReportId(completedReportsFromHistory[0].id);
+      if (reportsHistory?.data?.length > 0) {
+        setExpandedHistoryReportId(reportsHistory?.data[0].id);
       }
-    }, [primaryActiveTab, expandedHistoryReportId, completedReportsFromHistory]);
+    }, [primaryActiveTab, expandedHistoryReportId, reportsHistory?.data]);
 
     useEffect(() => {
-      if (!currentUpload) return;
+      if (!currentUpload || !reportId) return;
 
       const isFinalStatus = FINAL_STATUSES.includes(currentUpload.status);
       if (isFinalStatus) {
         setIsGenerating(false);
-        if (
-          reportId &&
-          [ReportGenerationStatus.COMPLETED, ReportGenerationStatus.FAILED].includes(
-            currentUpload.status,
-          )
-        ) {
-          refetchReportsHistory();
+        const shouldRefetch = [
+          ReportGenerationStatus.COMPLETED,
+          ReportGenerationStatus.FAILED,
+        ].includes(currentUpload.status);
+        if (shouldRefetch && lastRefetchedForReportIdRef.current !== reportId) {
+          lastRefetchedForReportIdRef.current = reportId;
+          refetchReportsHistoryAndResetPagination();
           if (activeTab === TABS.secondary.transcription) setActiveTab(TABS.secondary.report);
         }
       }
-    }, [currentUpload, reportId, refetchReportsHistory]);
+    }, [currentUpload, reportId, activeTab]);
 
     useEffect(() => {
       if (!isGenerating || !reportId || !scenarioId) return;
@@ -403,13 +478,37 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
         dispatch(cancelInProgressUploadsForScenario({ scenarioId }));
         setReportId(null);
         setIsGenerating(false);
-        refetchReportsHistory();
+        refetchReportsHistoryAndResetPagination();
       } catch {
         toast.error("Failed to cancel report generation");
       }
     };
 
     const handleCancelReportGeneration = useDebounce(handleCancel, 500);
+
+    const handleLoadMoreHistory = async () => {
+      if (!scenarioId || isHistoryLoadingMore || !showLoadMoreHistory) return;
+      setIsHistoryLoadingMore(true);
+      try {
+        const offset = (reportsHistory?.data?.length ?? 0) + historyExtraPages.length;
+        const result = await fetchMoreReports({
+          input: {
+            scenarioId,
+            statuses: ReportGenerationStatus.COMPLETED,
+            limit: REPORT_HISTORY_PAGE_SIZE,
+            offset,
+            sortBy: "createdAt",
+            order: "DESC",
+          },
+        }).unwrap();
+        if (result?.data?.length) {
+          setHistoryExtraPages(prev => [...prev, ...result.data]);
+        }
+        setHasMoreHistory((result?.data?.length ?? 0) === REPORT_HISTORY_PAGE_SIZE);
+      } finally {
+        setIsHistoryLoadingMore(false);
+      }
+    };
 
     const handleLanguageChange = (language: { value: string; label: string }) => {
       setReportData(prev =>
@@ -468,8 +567,8 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
         return renderLoadingState();
       }
 
-      if (completedReportsFromHistory.length > 0) {
-        const latestReport = completedReportsFromHistory[0];
+      if (reportsHistory?.data?.length > 0) {
+        const latestReport = reportsHistory?.data[0];
         if (!latestReport) return null;
         return (
           <div className="flex flex-col gap-6 w-full max-w-[800px]">
@@ -500,13 +599,51 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
 
             <ReportContent
               reportData={latestReport}
-              transcriptData={transcriptData?.messages}
+              transcriptData={transcriptMessages}
               activeTab={activeTab}
               isTranscriptLoading={isTranscriptLoading}
+              hasMoreTranscript={
+                (transcriptTotal != null && transcriptMessages.length < transcriptTotal) ||
+                (transcriptTotal == null && transcriptMessages.length === TRANSCRIPT_PAGE_SIZE)
+              }
+              isTranscriptLoadingMore={isTranscriptLoadingMore}
+              onLoadMoreTranscript={() => {
+                setIsTranscriptLoadingMore(true);
+                getReportTranscriptQuery({
+                  reportId: latestReport.id,
+                  limit: TRANSCRIPT_PAGE_SIZE,
+                  offset: transcriptMessages.length,
+                })
+                  .unwrap()
+                  .then(data => {
+                    setTranscriptMessages(prev => {
+                      const next = [...prev, ...data.messages];
+                      setTranscriptTotal(data.total ?? next.length);
+                      return next;
+                    });
+                  })
+                  .finally(() => setIsTranscriptLoadingMore(false));
+              }}
               onTabChange={(tab: string) => {
                 setActiveTab(tab);
                 if (tab === TABS.secondary.transcription) {
-                  getReportTranscriptQuery({ reportId: latestReport.id });
+                  setTranscriptMessages([]);
+                  setTranscriptTotal(null);
+                  getReportTranscriptQuery({
+                    reportId: latestReport.id,
+                    limit: TRANSCRIPT_PAGE_SIZE,
+                    offset: 0,
+                  })
+                    .unwrap()
+                    .then(data => {
+                      setTranscriptMessages(data.messages);
+                      setTranscriptTotal(
+                        data.total ??
+                          (data.messages.length < TRANSCRIPT_PAGE_SIZE
+                            ? data.messages.length
+                            : null),
+                      );
+                    });
                 }
               }}
             />
@@ -539,7 +676,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
     };
 
     const renderHistoryList = () => {
-      if (completedReportsFromHistory.length === 0) {
+      if (displayHistoryData.length === 0) {
         return (
           <div className="flex flex-col items-center justify-center w-full h-[400px]">
             <p className="text-gray-500">No reports found</p>
@@ -549,15 +686,20 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
 
       return (
         <div className="flex flex-col gap-2 w-full max-w-[800px]">
-          {completedReportsFromHistory.map(item => {
+          {displayHistoryData.map(item => {
             const itemActiveTab = historyItemActiveTabs[item.id] ?? TABS.secondary.report;
             const handleItemTabChange = (tab: string) => {
               setHistoryItemActiveTabs(prev => ({ ...prev, [item.id]: tab }));
             };
+            const cachedTranscript = historyTranscriptsByReportId[item.id];
             const isItemTranscriptLoading =
-              expandedHistoryReportId === item.id && isHistoryTranscriptLoading;
+              expandedHistoryReportId === item.id && historyTranscriptLoadingReportId === item.id;
             const handleAccordionChange = (expanded: boolean) => {
-              setExpandedHistoryReportId(expanded ? item.id : null);
+              if (expanded) {
+                setExpandedHistoryReportId(item.id);
+              } else {
+                setExpandedHistoryReportId(null);
+              }
             };
 
             const historyItemHeader = (
@@ -580,14 +722,67 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
               >
                 <ReportContent
                   reportData={item}
-                  transcriptData={historyTranscriptData?.messages}
+                  transcriptData={cachedTranscript?.messages}
                   activeTab={itemActiveTab}
                   onTabChange={handleItemTabChange}
                   isTranscriptLoading={isItemTranscriptLoading}
+                  hasMoreTranscript={
+                    expandedHistoryReportId === item.id &&
+                    cachedTranscript != null &&
+                    ((cachedTranscript.total != null &&
+                      cachedTranscript.messages.length < cachedTranscript.total) ||
+                      (cachedTranscript.total == null &&
+                        cachedTranscript.messages.length === TRANSCRIPT_PAGE_SIZE))
+                  }
+                  isTranscriptLoadingMore={isHistoryTranscriptLoadingMore}
+                  onLoadMoreTranscript={() => {
+                    if (!expandedHistoryReportId || expandedHistoryReportId !== item.id) return;
+                    const cached = historyTranscriptsByReportId[expandedHistoryReportId];
+                    if (
+                      isHistoryTranscriptLoadingMore ||
+                      !cached ||
+                      (cached.total != null && cached.messages.length >= cached.total)
+                    )
+                      return;
+                    const reportId = expandedHistoryReportId;
+                    const offset = cached.messages.length;
+                    setIsHistoryTranscriptLoadingMore(true);
+                    getHistoryTranscriptQuery({
+                      reportId,
+                      limit: TRANSCRIPT_PAGE_SIZE,
+                      offset,
+                    })
+                      .unwrap()
+                      .then(data => {
+                        if (expandedHistoryReportIdRef.current !== reportId) return;
+                        setHistoryTranscriptsByReportId(prev => {
+                          const existing = prev[reportId];
+                          const nextMessages = [...(existing?.messages ?? []), ...data.messages];
+                          const total = data.total ?? existing?.total ?? nextMessages.length;
+                          return {
+                            ...prev,
+                            [reportId]: { messages: nextMessages, total },
+                          };
+                        });
+                      })
+                      .finally(() => setIsHistoryTranscriptLoadingMore(false));
+                  }}
                 />
               </Accordion>
             );
           })}
+          {showLoadMoreHistory && (
+            <div
+              onClick={handleLoadMoreHistory}
+              className="flex cursor-pointer mt-4 text-center items-center pb-[20px]"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="font-primary text-base ml-[5px]">Load More</span>
+              {isHistoryLoadingMore && (
+                <CircularProgress color="primary" size={20} className="mx-2" />
+              )}
+            </div>
+          )}
         </div>
       );
     };
@@ -603,7 +798,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
           onClick={() => setPrimaryActiveTab(TABS.primary.report)}
         />
         <TabButton
-          label={`${REPORT_GENERATION_MESSAGES.HISTORY} (${completedReportsFromHistory.length})`}
+          label={`${REPORT_GENERATION_MESSAGES.HISTORY} (${displayHistoryData.length})`}
           isActive={primaryActiveTab === TABS.primary.history}
           onClick={() => setPrimaryActiveTab(TABS.primary.history)}
         />

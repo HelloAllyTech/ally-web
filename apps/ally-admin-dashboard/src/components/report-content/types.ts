@@ -7,6 +7,9 @@ interface ReportContentProps {
   showTabs?: boolean;
   isTranscriptLoading?: boolean;
   transcriptData?: TranscriptMessage[];
+  hasMoreTranscript?: boolean;
+  isTranscriptLoadingMore?: boolean;
+  onLoadMoreTranscript?: () => void;
 }
 
 export default ReportContentProps;
