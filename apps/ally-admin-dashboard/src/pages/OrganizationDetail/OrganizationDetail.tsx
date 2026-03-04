@@ -3,6 +3,8 @@ import { useState, useEffect, FC } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
+
 import {
   useDisablePathMutation,
   useDisableSimulationMutation,
@@ -14,7 +16,6 @@ import {
 } from "@api";
 import { ArrowDown, Dot } from "@assets";
 import {
-  Tabs,
   OrganizationDetailLoader,
   SimulationsTab,
   PathTab,
