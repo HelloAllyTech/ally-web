@@ -331,12 +331,16 @@ const CommentCard = ({
       content: replyComment,
       selection,
     };
-    await createComment({
-      reviewId: reviewId,
-      body: body,
-    });
-    toast.success(`Reply created successfully`);
-    onAddComment?.();
+    try {
+      await createComment({
+        reviewId: reviewId,
+        body: body,
+      });
+      toast.success(`Reply created successfully`);
+      onAddComment?.();
+    } catch (error) {
+      toast.error(error?.data?.message || `Failed to create reply`);
+    }
   };
   const handleToggleHide = (hidden: boolean, id: string) => {
     const reply = replies.find(reply => reply.id === id);
