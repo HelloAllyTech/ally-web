@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { Divider, Tooltip } from "@mui/material";
 
@@ -37,19 +37,29 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
   const defaultLanguage = selectedLanguage ||
     scenarioLanguage?.[0] || { value: "1", label: "English (India)" }; // assume english should be default language(with id=1)
 
+  const [touched, setTouched] = useState(false);
+  const isEmpty = !prompt || prompt.trim().length === 0;
+  const showError = touched && isEmpty;
+
   return (
     <div className="space-y-4">
       {/* Helper Agent Prompt */}
       <div className="flex flex-col border border-gray-200 rounded-lg pt-4">
         <label className="text-sm font-medium text-typography-900 mb-2 block px-4">
           {REPORT_GENERATION_MESSAGES.HELPER_AGENT_PROMPT}
+          <span className="text-red-500 ml-1">*</span>
         </label>
         <textarea
           value={prompt}
           onChange={e => onPromptChange?.(e.target.value)}
+          onBlur={() => setTouched(true)}
           className="px-4 w-full min-h-[320px] bg-white p-4 font-primary text-base resize-none focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
           placeholder={REPORT_GENERATION_MESSAGES.PROMPT_PLACEHOLDER}
+          required
         />
+        {showError && (
+          <p className="text-red-500 text-sm px-4 pb-2">Helper Agent prompt is required</p>
+        )}
         <Divider className="py-0 my-0" />
         {/* Language, Turns, and Button */}
         <div className="flex gap-4 items-end px-4 py-3 bg-neutral-50 rounded-bl-lg rounded-br-lg">

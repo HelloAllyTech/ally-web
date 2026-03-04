@@ -342,7 +342,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
     }, [isGenerating, reportId, scenarioId, dispatch, currentUpload?.fileName]);
 
     const handleGenerate = async () => {
-      if (!scenarioId) return;
+      if (!scenarioId || !helperAgentPrompt.trim()) return;
 
       setIsGenerating(true);
       try {
