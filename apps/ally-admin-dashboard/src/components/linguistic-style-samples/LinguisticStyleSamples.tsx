@@ -195,10 +195,6 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
           </button>
         </div>
       </div>
-      <p className="text-typography-600 text-sm">
-        Example phrases in each language that guide the AI to respond naturally—matching tone,
-        vocabulary, and cultural expression. Provide 10 samples per non-English language.
-      </p>
       <div className="border border-border-light rounded-md overflow-hidden bg-white">
         <div className="flex border-b border-border-light overflow-x-auto">
           {(languagesWithVoices as LanguageOption[]).map(lang => {
