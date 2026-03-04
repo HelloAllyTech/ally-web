@@ -23,15 +23,15 @@ describe("Tabs", () => {
     const onChange = vi.fn();
     render(<Tabs items={mockItems} activeId="tab1" onChange={onChange} />);
 
-    expect(screen.getByText(/Tab 1\s*\(5\)/)).toBeInTheDocument();
-    expect(screen.getByText(/Tab 2\s*\(10\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Tab 1 5/)).toBeInTheDocument();
+    expect(screen.getByText(/Tab 2 10/)).toBeInTheDocument();
   });
 
   it("displays 0 when count is 0", () => {
     const onChange = vi.fn();
     render(<Tabs items={mockItems} activeId="tab1" onChange={onChange} />);
 
-    expect(screen.getByText(/Tab 3\s*\(0\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Tab 3 0/)).toBeInTheDocument();
   });
 
   it("calls onChange when tab is clicked", () => {
@@ -155,8 +155,8 @@ describe("Tabs", () => {
 
     // When count is undefined, it defaults to "0"
     expect(screen.getByText(/Tab 1/)).toBeInTheDocument();
-    // Verify that count defaults to "0" when undefined (displayed in parentheses)
+    // Verify that count defaults to "0" when undefined
     const tabButton = screen.getByText(/Tab 1/);
-    expect(tabButton.textContent?.trim()).toBe("Tab 1 (0)");
+    expect(tabButton.textContent?.trim()).toBe("Tab 1 0");
   });
 });

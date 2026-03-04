@@ -193,6 +193,17 @@ const reviewsAPI = baseAPI.injectEndpoints({
       forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
+
+    getGeneralComments: builder.query<
+      { data: CommentItem[]; count: number },
+      { reviewId: string; limit: number; offset: number }
+    >({
+      query: ({ reviewId, limit, offset }) => ({
+        url: ApiEndpoints.REVIEWS.GET_GENERAL_COMMENTS(reviewId),
+        method: HttpMethod.GET,
+        params: { limit, offset },
+      }),
+    }),
   }),
 });
 
@@ -214,4 +225,5 @@ export const {
   useDeleteCommentMutation,
   useLazyGetCommentRepliesQuery,
   useGetReviewThreadCommentsQuery,
+  useGetGeneralCommentsQuery,
 } = reviewsAPI;

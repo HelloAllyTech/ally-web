@@ -1,11 +1,11 @@
 import { FC, useMemo } from "react";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   REPORT_GENERATION_MESSAGES,
   REPORT_METRIC_CONFIG,
   ReportGenerationMetrics,
 } from "@constants";
-import { Tabs } from "@src/components/tabs";
 import { TabItem } from "@src/components/types";
 
 import TranscriptSection from "./TranscriptSection";
