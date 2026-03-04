@@ -590,7 +590,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      * @param {string} scenarioId - Scenario identifier
      * @returns {Promise<ReportData[]>} List of reports
      */
-    getReports: builder.query<{ data: ReportData[] }, { input: GetReportsInput }>({
+    getReports: builder.query<{ data: ReportData[]; count?: number }, { input: GetReportsInput }>({
       query: ({ input }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORTS(input.scenarioId),
         method: HttpMethod.GET,
