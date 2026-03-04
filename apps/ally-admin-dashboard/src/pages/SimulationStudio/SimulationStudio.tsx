@@ -2,6 +2,8 @@ import React, { useRef, useState } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
+
 import { Add, Close, Filter, Simulation as SimulationIcon, Pathway, Case } from "@assets";
 import {
   ActionConfirmationPopup,
@@ -11,7 +13,6 @@ import {
   SimulationPreview,
   FilterList,
   Button,
-  Tabs,
   OptionsPopup,
 } from "@components";
 import { ButtonVariant } from "@components/types";
