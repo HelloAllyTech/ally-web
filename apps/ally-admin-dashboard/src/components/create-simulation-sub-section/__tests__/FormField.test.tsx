@@ -84,6 +84,13 @@ vi.mock("../../time-input", () => ({
 
 // Mock constants
 vi.mock("@constants", () => ({
+  ReportGenerationStatus: {
+    STARTED: "STARTED",
+    IN_PROGRESS: "IN_PROGRESS",
+    COMPLETED: "COMPLETED",
+    CANCELLED: "CANCELLED",
+    FAILED: "FAILED",
+  },
   FORM_FIELD_TYPES: {
     SELECT: "select",
     TEXT: "text",

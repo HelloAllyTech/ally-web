@@ -7,5 +7,7 @@ export interface PromptConfigurationProps {
   onButtonClick: () => void;
   buttonText: string;
   buttonDisabled?: boolean;
+  buttonTooltip?: string;
   disabled?: boolean;
+  selectedLanguage?: { value: string; label: string };
 }

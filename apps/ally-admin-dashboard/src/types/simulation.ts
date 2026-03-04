@@ -83,6 +83,7 @@ export interface SimulationInput {
   isPublic?: boolean;
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
@@ -460,11 +461,15 @@ export interface ScenarioContext {
   competency?: string;
   characterProfileText?: string;
   challengeDescription?: string;
+  languageId?: string;
+  languageCode?: string;
+  languageName?: string;
 }
 
 export interface RegenerateFieldRequest {
   fieldName: string;
   scenarioContext: ScenarioContext;
+  model?: string;
 }
 
 export interface RegenerateFieldResponse {

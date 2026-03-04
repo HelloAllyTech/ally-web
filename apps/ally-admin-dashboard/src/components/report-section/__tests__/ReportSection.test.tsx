@@ -94,6 +94,17 @@ vi.mock("@assets", () => ({
   ArrowDown: () => <div data-testid="arrow-down">▼</div>,
 }));
 
+// Mock baseAPI so store and useUser can load (they import baseAPI from @api)
+vi.mock("@api/baseApi", () => ({
+  baseAPI: {
+    reducerPath: "baseAPI",
+    reducer: (state: unknown = {}) => state,
+    middleware: () => (next: (a: unknown) => unknown) => (action: unknown) => next(action),
+    util: { resetApiState: vi.fn() },
+    injectEndpoints: vi.fn(() => ({})),
+  },
+}));
+
 // Mock API hooks
 const mockGenerateReportMutation = vi.fn();
 const mockCancelReportGenerationMutation = vi.fn();
@@ -102,34 +113,38 @@ const mockGetReportByIdQuery = vi.fn();
 const mockGetReportTranscriptQuery = vi.fn();
 const mockRefetchReportsHistory = vi.fn();
 
-vi.mock("@api", () => ({
-  useGenerateReportMutation: () => [
-    (params: any) => ({
-      unwrap: async () => mockGenerateReportMutation(params),
+vi.mock("@api", async importOriginal => {
+  const actual = await importOriginal<typeof import("@api")>();
+  return {
+    ...actual,
+    useGenerateReportMutation: () => [
+      (params: any) => ({
+        unwrap: async () => mockGenerateReportMutation(params),
+      }),
+      { isLoading: false },
+    ],
+    useCancelReportGenerationMutation: () => [
+      (params: any) => ({
+        unwrap: async () => mockCancelReportGenerationMutation(params),
+      }),
+      { isLoading: false },
+    ],
+    useGetReportsQuery: () => ({
+      data: mockGetReportsQuery(),
+      refetch: mockRefetchReportsHistory,
     }),
-    { isLoading: false },
-  ],
-  useCancelReportGenerationMutation: () => [
-    (params: any) => ({
-      unwrap: async () => mockCancelReportGenerationMutation(params),
+    useGetReportByIdQuery: () => ({
+      data: mockGetReportByIdQuery(),
     }),
-    { isLoading: false },
-  ],
-  useGetReportsQuery: () => ({
-    data: mockGetReportsQuery(),
-    refetch: mockRefetchReportsHistory,
-  }),
-  useGetReportByIdQuery: () => ({
-    data: mockGetReportByIdQuery(),
-  }),
-  useGetReportTranscriptQuery: () => ({
-    data: mockGetReportTranscriptQuery(),
-  }),
-  useLazyGetReportTranscriptQuery: () => [
-    vi.fn(),
-    { data: mockGetReportTranscriptQuery(), isLoading: false },
-  ],
-}));
+    useGetReportTranscriptQuery: () => ({
+      data: mockGetReportTranscriptQuery(),
+    }),
+    useLazyGetReportTranscriptQuery: () => [
+      vi.fn(),
+      { data: mockGetReportTranscriptQuery(), isLoading: false },
+    ],
+  };
+});
 
 // Create test store
 const createTestStore = (initialState = {}) => {
@@ -164,7 +179,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("renders with scenarioId", () => {
@@ -175,7 +190,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("renders prompt configuration when no report data", () => {
@@ -194,7 +209,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       const { rerender } = render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -215,7 +230,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -242,7 +257,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -263,7 +278,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -282,7 +297,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -498,6 +513,7 @@ describe("ReportSection", () => {
 
       const state = store.getState();
       expect(state.reportUpload.uploads).toHaveLength(1);
+      // Upload keeps its original scenarioId when scenarioId prop changes (preserve in-progress per scenario)
       expect(state.reportUpload.uploads[0].scenarioId).toBe("123");
     });
   });
@@ -732,7 +748,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("handles empty reportsHistory", () => {
@@ -752,7 +768,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 

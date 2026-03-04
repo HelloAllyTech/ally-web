@@ -4,12 +4,16 @@ export type ReportData = {
   id: string;
   scenarioId: string;
   config: ReportConfig;
+  language?: {
+    id?: number;
+    label?: string;
+  };
   metrics: ReportMetric;
   createdAt: string;
   updatedAt: string;
   status: string;
   transcripts?: TranscriptMessage[];
-  name?: string;
+  scenarioTitle?: string;
 };
 
 export type HistoryItem = {

@@ -91,9 +91,10 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
                   navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
                 }
                 variant="secondary"
-                className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg"
+                className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg relative"
               >
                 <Comment className="w-5 h-5 shrink-0" />
+                {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
               </Button>
             </>
           )}

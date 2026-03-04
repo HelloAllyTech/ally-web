@@ -8,56 +8,38 @@ import {
   stateInstruction,
   behaviourInstruction,
   Competency,
+  CustomFieldType,
 } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
+  title: string;
+  competency?: Competency;
+  difficultyLevel: string;
+  characterProfileSelector?: string;
+  characterProfileText: string;
   coverImageUrl: string;
   coverVideoUrl?: string;
-  title: string;
-  description: string;
-  name: string;
-  age: number;
-  gender: string;
-  genderIdentity: string;
-  sexualOrientation: string;
-  currentLocation: string;
-  profession: string;
-  context: string;
-  sessionBehaviorGuidelines: string;
-  roleInstruction: string;
-  responseLength: string;
-  openingDialogues: string;
-  lifeHistory: string;
-  coreMemories: string;
-  personality: string;
-  startingState: string;
-  emotionalNeeds: string;
-  tone: string;
-  openingStatements: string;
-  voiceId: string;
-  agentGoal: string;
-  autoTerminationStatus: boolean;
-  terminationEventId: string;
-  terminationName: string;
-  terminationMessage: string;
   isGlobal: boolean;
   isPublic: boolean;
   languageVoices?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
   triggerWarningIds: triggerWarning[];
+  description: string;
   prompt: string;
-  difficultyLevel: string;
-  agentDialogues: string;
+  behaviorInstructions?: behaviourInstruction[];
+  stateInstructions?: stateInstruction[];
+  customFields?: CustomFieldType[];
+  openingStatements: string;
+  voiceId: string;
+  tone: string;
+  autoTerminationStatus?: boolean;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
   maxTimeValue?: string;
-  characterProfileText: string;
   showScoreMeter?: boolean;
-  competency?: Competency;
-  stateInstructions?: stateInstruction[];
-  characterProfileSelector?: string;
-  behaviorsInstructions?: behaviourInstruction[];
+  optGuardrails?: boolean;
 };
 
 export interface DemographicsSectionProps {
@@ -196,6 +178,7 @@ export interface UpdateScenarioEventDataParam {
   endTime?: { value: string | null; disabled: boolean; rowId?: string };
   minScore?: { value: number | null; disabled: boolean; rowId?: string };
   maxScore?: { value: number | null; disabled: boolean; rowId?: string };
+  minTriggerCount?: { value: number | null; disabled: boolean; rowId?: string };
   // Checklist visibility field
   checklistVisibilityStatus?: { value: boolean; disabled: boolean; rowId?: string };
   // Tags field

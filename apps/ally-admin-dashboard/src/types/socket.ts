@@ -14,7 +14,7 @@ export type ConnectedEventPayload = {
 };
 
 export type JoinUserReportsRoomPayload = {
-  lookBackMinutes?: number;
+  lookbackMinutes?: number;
 };
 
 export type JoinScenarioReportsRoomPayload = {

@@ -5,7 +5,7 @@ import { TabButtonProps } from "./types";
 const TabButton: FC<TabButtonProps> = ({ label, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`pb-3 px-1 text-base font-medium transition-colors relative ${
+    className={`pb-3 px-1 text-base font-regular transition-colors relative ${
       isActive ? "text-primary-500" : "text-gray-500 hover:text-gray-700"
     }`}
   >

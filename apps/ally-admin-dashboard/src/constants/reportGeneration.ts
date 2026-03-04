@@ -12,7 +12,7 @@ export const REPORT_GENERATION_MESSAGES = {
   TEST_CONFIGURATION: "Test configuration",
   HELPER_AGENT_PROMPT: "Helper Agent prompt",
   SIMULATION_SCORE: "Simulation Score",
-  METRICS: "Metrics",
+  METRICS: "Performance Metrics",
   TRANSCRIPTION_PLACEHOLDER: "Transcription content will be displayed here",
   PROMPT_PLACEHOLDER: "Enter helper agent prompt...",
 };

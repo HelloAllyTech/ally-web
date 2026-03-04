@@ -25,6 +25,11 @@ vi.mock("@components/report-upload-progress-dialog/ReportUploadProgressDialog", 
   default: () => null,
 }));
 
+// Mock ScenarioReportsSocketProvider so it doesn't use the real store (getState().reportUpload)
+vi.mock("@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider", () => ({
+  ScenarioReportsSocketProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock("@store", () => ({
   store: {
     dispatch: vi.fn(),

@@ -100,6 +100,10 @@
     "badges": "बैज",
     "viewAll": "सभी देखें",
     "viewAllBadges": "सभी बैज देखें",
+    "emptyHome": "आपके पास अभी तक कोई बैज नहीं है",
+    "badgesCount": "{{count}} बैज",
+    "locked": "लॉक किया गया",
+    "earned": "कमाया",
     "badgesTooltip": "बैज आपकी सिमुलेशन गतिविधि और समुदाय में भागीदारी के आधार पर दिए जाते हैं। यदि योग्य क्रियाएँ वापस ली जाती हैं, तो कुछ बैज हटाए जा सकते हैं।",
     "filters": {
       "all": "सभी",
@@ -440,6 +444,64 @@
       }
     }
   },
+  "callFeedback": {
+    "rateTitle": "AI-जनित सारांश को रेट करें?",
+    "rateSubtitle": "कृपया गुणवत्ता को रेट करें, बताएं क्या अच्छा रहा, और सुधार के सुझाव दें।",
+    "moreSuggestions": "कोई और सुझाव?",
+    "suggestionPlaceholder": "सारांश के बारे में कुछ और साझा करना चाहते हैं?",
+    "selectIssues": "कृपया एक या अधिक समस्याएँ चुनें",
+    "concernPlaceholder": "यहाँ अपनी समस्या बताएं।",
+    "submitting": "सबमिट हो रहा है...",
+    "submit": "सबमिट करें",
+    "submitted": "फ़ीडबैक सफलतापूर्वक सबमिट हुआ",
+    "ratings": {
+      "1": "खराब गुणवत्ता - महत्वपूर्ण सुधार की आवश्यकता है",
+      "2": "अपेक्षाओं से कम - बेहतर हो सकता था",
+      "3": "औसत गुणवत्ता - बुनियादी अपेक्षाओं को पूरा करता है",
+      "4": "अच्छी गुणवत्ता - अपेक्षाओं से बेहतर",
+      "5": "उत्कृष्ट गुणवत्ता - अत्यधिक अनुशंसित"
+    },
+    "issues": {
+      "missingKeyInfo": "मुख्य जानकारी गायब है",
+      "inaccurate": "गलत",
+      "tooVague": "बहुत अस्पष्ट",
+      "difficultToUnderstand": "समझने में कठिन",
+      "tooShort": "बहुत छोटा",
+      "other": "अन्य"
+    }
+  },
+  "summaryLoading": {
+    "generated": "सारांश तैयार हो गया",
+    "generatedDesc": "आप अभी सत्र की समीक्षा कर सकते हैं।",
+    "failedTitle": "सत्र सारांश बनाने में विफल",
+    "noAudioDetected": "कोई ऑडियो नहीं मिला",
+    "transcriptionDeleted": "ट्रांसक्रिप्शन बना और ऑडियो हटाया गया",
+    "processingDescSidebar": "AI-जनित सारांश जल्द ही इस स्क्रीन पर उपलब्ध होगा। तब तक, नीचे नोट्स जोड़ सकते हैं।",
+    "processingDescMain": "AI-जनित सारांश जल्द ही इस स्क्रीन और सत्र लॉग्स में उपलब्ध होगा। तब तक, नीचे नोट्स जोड़ सकते हैं।",
+    "estimatedTime": "अनुमानित समय: ~ {{time}} मिनट",
+    "settingUp": "आपकी सारांश स्क्रीन तैयार हो रही है",
+    "checkLater": "मैं बाद में देखूँगा/देखूँगी",
+    "seeIfReady": "देखें कि तैयार है या नहीं",
+    "backToSessionLogs": "सत्र लॉग्स पर वापस जाएँ",
+    "addNotes": "नोट्स जोड़ें (वैकल्पिक)",
+    "autosaving": "स्वचालित सहेजा जा रहा है",
+    "saved": "सहेजा गया",
+    "notesTooltip": "आपके नोट्स स्वचालित रूप से सहेजे जाते हैं और सारांश व हाइलाइट्स तैयार होने के बाद 'अतिरिक्त नोट्स' में दिखाई देंगे",
+    "notesPlaceholder": "अपने विचार यहाँ लिखें",
+    "processing": {
+      "generatingTranscription": "ट्रांसक्रिप्शन बना रहे हैं",
+      "deletingAudio": "ऑडियो हटा रहे हैं",
+      "segregatingUtterances": "वाक्यांशों को अलग कर रहे हैं",
+      "understandingConversation": "बातचीत समझ रहे हैं",
+      "chartingFlow": "प्रवाह चार्ट कर रहे हैं",
+      "extractingKeyPoints": "मुख्य बिंदु निकाल रहे हैं",
+      "identifyingThemes": "विषयों की पहचान कर रहे हैं",
+      "analysing": "विश्लेषण कर रहे हैं",
+      "generatingSummary": "सारांश तैयार कर रहे हैं",
+      "enrichingSummary": "सारांश समृद्ध कर रहे हैं",
+      "validatingSummary": "सारांश सत्यापित कर रहे हैं"
+    }
+  },
   "search": {
     "placeholder": "मार्गदर्शन चाहिए? यहाँ खोजें..",
     "headerDescription": "मार्गदर्शन, सुरक्षा और समर्थन — जब भी ज़रूरत हो।",
@@ -447,7 +509,21 @@
     "noResults": "\"{{query}}\" के लिए कोई परिणाम नहीं मिला",
     "allLabel": "सभी",
     "error": "खोज परिणाम प्राप्त करने में त्रुटि हुई",
-    "logoAlt": "Ally लोगो"
+    "logoAlt": "Ally लोगो",
+    "viewMore": "और देखें",
+    "viewLess": "कम देखें",
+    "categories": {
+      "Techniques": "तकनीकें",
+      "Assessment": "मूल्यांकन",
+      "Intervention": "हस्तक्षेप",
+      "Resources": "संसाधन",
+      "Guidelines": "दिशानिर्देश",
+      "Support": "सहायता",
+      "Crisis": "संकट",
+      "Training": "प्रशिक्षण",
+      "Research": "शोध",
+      "Policy": "नीति"
+    }
   },
   "transcription": {
     "title": "ट्रांसक्रिप्ट",
@@ -469,6 +545,7 @@
     "notesAlt": "नोट्स",
     "save": "सहेजें",
     "saving": "सहेजा जा रहा है...",
+    "enhance": "बेहतर बनाएँ",
     "tabs": {
       "returnToSelf": "खुद की ओर लौटें",
       "sessionSummary": "सत्र सारांश"
@@ -488,7 +565,9 @@
       "homeworkRecommended": "अनुशंसित होमवर्क",
       "plansForNextCall": "अगली कॉल की योजना",
       "tags": "टैग्स",
-      "metrics": "मेट्रिक्स"
+      "metrics": "मेट्रिक्स",
+      "intake": "सेवन",
+      "ongoingRisks": "चल रहे जोखिम"
     },
     "feedback": {
       "title": "सत्र प्रतिक्रिया",
@@ -554,7 +633,37 @@
       "listeningRatio": "सुनने का अनुपात",
       "reflectiveQuestions": "पूछे गए चिंतनशील प्रश्नों की संख्या",
       "emotionsLift": "भावनात्मक उत्थान",
-      "openEndedQuestions": "पूछे गए खुले प्रश्नों की संख्या"
+      "openEndedQuestions": "पूछे गए खुले प्रश्नों की संख्या",
+      "intakeNotes": "सेवन नोट्स",
+      "riskSelfHarm": "जोखिम, स्व-नुकसान",
+      "riskSelfHarmNotes": "जोखिम, स्व-नुकसान नोट्स",
+      "riskSuicidalThoughts": "जोखिम, आत्मघाती विचार",
+      "riskSuicidalThoughtsNotes": "जोखिम, आत्मघाती विचार नोट्स",
+      "riskSuicidalPlan": "जोखिम, आत्मघाती योजना",
+      "riskSuicidalAction": "जोखिम, आत्मघाती कार्य",
+      "riskRunningAway": "जोखिम, भागना",
+      "riskRunningAwayNotes": "जोखिम, भागना नोट्स",
+      "traumaPhysicalAbuse": "ट्रॉमा, शारीरिक दुर्व्यवहार",
+      "traumaSexualAbuse": "ट्रॉमा, यौन दुर्व्यवहार",
+      "traumaVerbalAbuse": "ट्रॉमा, मौखिक दुर्व्यवहार",
+      "traumaNeglect": "ट्रॉमा, उपेक्षा",
+      "traumaSeparation": "ट्रॉमा, देखभालकर्ता/माता-पिता से अलगाव",
+      "traumaDomesticViolence": "ट्रॉमा, घरेलू हिंसा का साक्षी",
+      "traumaNotes": "ट्रॉमा नोट्स",
+      "assessmentPsychDiagnosis": "मूल्यांकन, मनोवैज्ञानिक निदान",
+      "assessmentPsychDiagnosisNotes": "मूल्यांकन, मनोवैज्ञानिक निदान नोट्स",
+      "assessmentPsychotropicMeds": "मूल्यांकन, मनोविकार-रोधी दवाओं का उपयोग",
+      "assessmentPsychotropicMedsNotes": "मूल्यांकन, मनोविकार-रोधी दवाओं के नोट्स",
+      "assessmentHallucinations": "मूल्यांकन, मतिभ्रम",
+      "assessmentHallucinationsNotes": "मूल्यांकन, मतिभ्रम नोट्स",
+      "assessmentAffect": "मूल्यांकन, भावप्रदर्शन",
+      "assessmentSpeech": "मूल्यांकन, वाणी",
+      "ongoingRiskSelfHarm": "चल रहा जोखिम, स्व-नुकसान",
+      "ongoingRiskSelfHarmNotes": "चल रहा जोखिम, स्व-नुकसान नोट्स",
+      "ongoingRiskSuicidalThoughts": "चल रहा जोखिम, आत्मघाती विचार",
+      "ongoingRiskSuicidalPlan": "चल रहा जोखिम, आत्मघाती योजना",
+      "ongoingRiskSuicidalAction": "चल रहा जोखिम, आत्मघाती कार्य",
+      "ongoingRiskSuicidalThoughtsNotes": "चल रहा जोखिम, आत्मघाती विचार नोट्स"
     }
   },
   "profile": {

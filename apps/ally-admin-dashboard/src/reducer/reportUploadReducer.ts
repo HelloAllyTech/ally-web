@@ -63,6 +63,20 @@ const reportUploadSlice = createSlice({
         }
       });
     },
+    /** Cancel in-progress uploads for a single scenario (e.g. when generation API fails). */
+    cancelInProgressUploadsForScenario(state, action: PayloadAction<{ scenarioId: string }>) {
+      const { scenarioId } = action.payload;
+      state.uploads.forEach(upload => {
+        if (
+          upload.scenarioId != null &&
+          String(upload.scenarioId) === String(scenarioId) &&
+          (upload.status === ReportGenerationStatus.IN_PROGRESS ||
+            upload.status === ReportGenerationStatus.STARTED)
+        ) {
+          upload.status = ReportGenerationStatus.CANCELLED;
+        }
+      });
+    },
     setAllUploads(state, action: PayloadAction<ReportUpload[]>) {
       const existingMap = new Map(state.uploads.map(u => [u.reportId, u]));
       const finalStatuses = getFinalStatuses();
@@ -139,6 +153,7 @@ export const {
   clearAllUploads,
   cancelUpload,
   cancelAllInProgressUploads,
+  cancelInProgressUploadsForScenario,
   setAllUploads,
   setUploadsForScenario,
   setCurrentScenarioId,

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useSearchParams, useParams } from "react-router-dom";
 
 import { TabGroup } from "@components";
 import { updateQueryParamListWithoutReload } from "@utils";
 
 import { CallSummary, StressBusterStep } from "./components";
-import { SectionQueryKey, summaryTabs } from "./constants";
+import { SectionQueryKey, getSummaryTabs } from "./constants";
 import { SectionType } from "./types";
 import {
   getNumberForSectionKey,
@@ -18,6 +19,8 @@ import {
 
 export const PostCallSummary = () => {
   const { chatId } = useParams();
+  const { t } = useTranslation();
+  const summaryTabs = getSummaryTabs(t);
   const [searchParams] = useSearchParams();
 
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.SessionSummary);

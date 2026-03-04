@@ -20,6 +20,9 @@ export const useLiveKitRoom = (
   const { id } = useParams();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
 
+  const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
+  const roomData = roomDataString ? JSON.parse(roomDataString) : null;
+
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +34,6 @@ export const useLiveKitRoom = (
   const lastEventTimestampRef = useRef<number | null>(null);
   const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
 
-  const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
-  const roomData = roomDataString ? JSON.parse(roomDataString) : null;
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
@@ -96,6 +97,19 @@ export const useLiveKitRoom = (
     lastEventTimestampRef.current = null;
   }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected]);
 
+  useEffect(() => {
+    // Add a small delay before connecting to avoid race conditions in StrictMode
+    const connectionTimeout = setTimeout(() => {
+      connectToRoom();
+    }, RINGING_BELL_DELAY); // 10 seconds for ringing the bell
+
+    return () => {
+      clearTimeout(connectionTimeout);
+      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
+      cleanupRoom();
+    };
+  }, [id, cleanupRoom]);
+
   const connectToRoom = async () => {
     try {
       if (!id || !roomData) {
@@ -145,19 +159,6 @@ export const useLiveKitRoom = (
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
   };
-
-  useEffect(() => {
-    // Add a small delay before connecting to avoid race conditions in StrictMode
-    const connectionTimeout = setTimeout(() => {
-      connectToRoom();
-    }, RINGING_BELL_DELAY); // 10 seconds for ringing the bell
-
-    return () => {
-      clearTimeout(connectionTimeout);
-      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
-      cleanupRoom();
-    };
-  }, [id, cleanupRoom]);
 
   useEffect(() => {
     return () => {

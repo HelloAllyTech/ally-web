@@ -9,6 +9,7 @@ import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
+  useGetAvailableLanguageVoicesQuery,
   useLazyGetAdminSimulationByIdQuery,
   useUpdateSimulationByIdMutation,
 } from "@api";
@@ -18,6 +19,8 @@ import {
   Footer,
   Header,
   ReportSection,
+  ReportSectionHandle,
+  ReportPrimaryTab,
   SimulationEventMapTable,
   SimulationPreview,
   VerticalStepper,
@@ -87,6 +90,8 @@ export const CreateSimulation: FC = () => {
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const reportStepRef = useRef<ReportSectionHandle>(null);
+  const [reportPrimaryTab, setReportPrimaryTab] = useState<ReportPrimaryTab>("report");
 
   // API mutation for creating simulation
   const [createSimulationQuery, { isLoading: isCreatingSimulation }] =
@@ -95,6 +100,10 @@ export const CreateSimulation: FC = () => {
   const [getAdminSimulationByIdQuery, { data: adminSimulationByIdData }] =
     useLazyGetAdminSimulationByIdQuery();
   const [deleteCoverImage] = useDeleteCoverImageMutation();
+  const { data: availableLanguages = [] } = useGetAvailableLanguageVoicesQuery({
+    active: true,
+    voicesNeeded: true,
+  }) as { data: Array<{ language_id: number; value: string; label: string }> };
 
   const formMethods = useForm({
     mode: "onChange",
@@ -105,6 +114,19 @@ export const CreateSimulation: FC = () => {
   const isReportGenerationInProgress = uploadsInProgress.some(
     upload => simulationId != null && String(upload.scenarioId) === String(simulationId),
   );
+
+  const hasSetInitialStepForReportInProgress = useRef(false);
+  useEffect(() => {
+    if (
+      simulationId &&
+      isReportGenerationInProgress &&
+      FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG &&
+      !hasSetInitialStepForReportInProgress.current
+    ) {
+      setCurrentStep(stepIds.report);
+      hasSetInitialStepForReportInProgress.current = true;
+    }
+  }, [simulationId, isReportGenerationInProgress]);
 
   useEffect(() => {
     if (simulationId) getAdminSimulationByIdQuery(simulationId);
@@ -206,6 +228,33 @@ export const CreateSimulation: FC = () => {
       }
     }
 
+    if (status === SimulationStatus.ACTIVE) {
+      const languageVoices = (formData.languageVoices ?? {}) as Record<string, string>;
+      const linguisticStyleSamples = (formData.linguisticStyleSamples ?? {}) as Record<
+        string,
+        string[]
+      >;
+      const langIds = Object.keys(languageVoices).filter(k => languageVoices[k]);
+      const missing: string[] = [];
+      for (const langId of langIds) {
+        const lang = availableLanguages.find(l => String(l.language_id) === langId);
+        const code = (lang?.value ?? "").toLowerCase();
+        if (code && !code.startsWith("en")) {
+          const samples = linguisticStyleSamples[langId];
+          const hasContent =
+            Array.isArray(samples) &&
+            samples.some(s => typeof s === "string" && s.trim().length > 0);
+          if (!hasContent) {
+            missing.push(lang?.label ?? langId);
+          }
+        }
+      }
+      if (missing.length > 0) {
+        toast.error(en.errors.linguisticStyleSamplesRequired);
+        return null;
+      }
+    }
+
     // Delete cover image from s3 if it is changed
     if (
       isNonEmptyString(adminSimulationByIdData?.coverImageUrl) &&
@@ -225,6 +274,8 @@ export const CreateSimulation: FC = () => {
       agentDialogues,
       stateInstructions,
       behaviorInstructions,
+      maxTimeValue,
+      timerMode,
       ...restForm
     } = formData;
 
@@ -298,6 +349,8 @@ export const CreateSimulation: FC = () => {
       stateInstructions,
       behaviorInstructions: behaviourInstructionsArray,
       competencyId: restForm.competency?.id,
+      maxTimeValue: timerMode ? maxTimeValue : null,
+      timerMode: timerMode,
     };
 
     let response;
@@ -402,6 +455,10 @@ export const CreateSimulation: FC = () => {
   };
 
   const handlePrevious = () => {
+    if (currentStep === stepIds.report && reportStepRef.current?.isOnHistoryTab()) {
+      reportStepRef.current.switchToReportTab();
+      return;
+    }
     const currentIndex = StepperList.findIndex(step => step.id === currentStep);
     if (currentIndex > 0) {
       const previousStep = StepperList[currentIndex - 1];
@@ -439,7 +496,15 @@ export const CreateSimulation: FC = () => {
         return <SimulationEventMapTable simulationId={simulationId} />;
       case stepIds.report:
         if (FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG) {
-          return <ReportSection scenarioId={simulationId} />;
+          return (
+            <ReportSection
+              ref={reportStepRef}
+              scenarioId={simulationId}
+              areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
+              onPrimaryTabChange={setReportPrimaryTab}
+              hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
+            />
+          );
         }
         return null;
       default:
@@ -516,6 +581,10 @@ export const CreateSimulation: FC = () => {
             showPrevious={currentStep !== stepIds.overview}
             showNext={true}
             isNextDisabled={false}
+            isPreviousDisabled={
+              isReportGenerationInProgress &&
+              (currentStep !== stepIds.report || reportPrimaryTab !== "history")
+            }
             isLastStep={isLastStep}
           />
         </div>

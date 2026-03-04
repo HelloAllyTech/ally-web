@@ -12,21 +12,27 @@ interface EntityToggleCardProps {
   };
   hasAccess: boolean;
   onToggleAccess: (enabled: boolean) => void;
+  imageFit?: "cover" | "contain";
+  imageContainerClassName?: string;
 }
 
 export const EntityToggleCard: React.FC<EntityToggleCardProps> = ({
   entity,
   hasAccess,
   onToggleAccess,
+  imageFit = "cover",
+  imageContainerClassName = "bg-neutral-100",
 }) => {
   return (
     <div className="flex items-center gap-4 py-4 pr-4 border-b border-border-light hover:bg-background-secondary transition-colors h-[80px]">
       {/* Image */}
-      <div className="w-[18%] md:w-[10%] lg:w-[7%] h-[56px] rounded-lg overflow-hidden flex-shrink-0 bg-neutral-100">
+      <div
+        className={`w-[18%] md:w-[10%] lg:w-[7%] h-[56px] rounded-lg overflow-hidden flex-shrink-0 ${imageContainerClassName}`}
+      >
         <CustomImage
           src={entity.imageUrl}
           alt={entity.name}
-          className="w-full h-full object-cover"
+          className={`w-full h-full ${imageFit === "contain" ? "object-contain" : "object-cover"}`}
         />
       </div>
 

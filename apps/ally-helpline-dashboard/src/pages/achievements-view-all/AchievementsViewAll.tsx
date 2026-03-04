@@ -1,6 +1,8 @@
 import { FC, useState } from "react";
 
 import { Tooltip } from "@mui/material";
+import { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { useGetAvailableBadgesQuery } from "@api";
@@ -10,28 +12,24 @@ import { toolTipStyles } from "@constants";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
-const BADGE_TYPE_LABELS: Record<BadgeCategory, string> = {
-  [BadgeCategory.SIMULATION_MINUTES]: "Journey",
-  [BadgeCategory.ACTIVE_DAY_STREAK]: "Momentum",
-  [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: "Contribution",
-  [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: "Resonance",
-};
+const getBadgeTypeLabels = (t: TFunction): Record<BadgeCategory, string> => ({
+  [BadgeCategory.SIMULATION_MINUTES]: t("achievements.badgeTypes.journey"),
+  [BadgeCategory.ACTIVE_DAY_STREAK]: t("achievements.badgeTypes.momentum"),
+  [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: t("achievements.badgeTypes.contribution"),
+  [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: t("achievements.badgeTypes.resonance"),
+});
 
-const FILTER_OPTIONS = [
-  { value: "ALL", label: "All" },
-  { value: "UNLOCKED", label: "Unlocked" },
+const getFilterOptions = (t: TFunction) => [
+  { value: "ALL", label: t("achievements.filters.all") },
+  { value: "UNLOCKED", label: t("achievements.filters.unlocked") },
 ];
 
-const BADGE_TYPE_TOOLTIP_LABELS: Record<BadgeCategory, string> = {
-  [BadgeCategory.SIMULATION_MINUTES]:
-    "Earned by completing simulation minutes. Only completed simulation time is counted.",
-  [BadgeCategory.ACTIVE_DAY_STREAK]:
-    "Complete at least one simulation per day to build a streak. Missing a day resets your streak.",
-  [BadgeCategory.COMMENTS_REACTIONS_GIVEN]:
-    "Count comments and reactions you give on sessions owned by other users. Interactions on your own sessions are not counted.",
-  [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]:
-    "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded.",
-};
+const getBadgeTypeTooltipLabels = (t: TFunction): Record<BadgeCategory, string> => ({
+  [BadgeCategory.SIMULATION_MINUTES]: t("achievements.badgeTypes.tooltip.journey"),
+  [BadgeCategory.ACTIVE_DAY_STREAK]: t("achievements.badgeTypes.tooltip.momentum"),
+  [BadgeCategory.COMMENTS_REACTIONS_GIVEN]: t("achievements.badgeTypes.tooltip.contribution"),
+  [BadgeCategory.COMMENTS_REACTIONS_RECEIVED]: t("achievements.badgeTypes.tooltip.resonance"),
+});
 
 const BadgeCardSkeleton: FC = () => {
   return (
@@ -46,6 +44,7 @@ const BadgeCardSkeleton: FC = () => {
 };
 
 export const AchievementsViewAll: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -94,8 +93,8 @@ export const AchievementsViewAll: FC = () => {
       <div className="flex h-[90vh] items-center justify-center">
         <FallbackUI
           icon={<NoResults />}
-          mainMessage="Unable to Load Achievements"
-          description="Something went wrong while loading achievements. Please try again."
+          mainMessage={t("achievements.errors.title")}
+          description={t("achievements.errors.description")}
           button={{
             text: "Retry",
             onClick: () => refetchBadges(),
@@ -126,12 +125,14 @@ export const AchievementsViewAll: FC = () => {
             className="text-[#0D0D0D] font-secondary text-xl sm:text-2xl font-[350] leading-[0.83]"
             data-testid="achievements-view-all-title"
           >
-            Achievements
+            {t("achievements.title")}
           </h1>
         </div>
         <div className="flex flex-row justify-between gap-3 sm:gap-[18px] w-full">
           <div className="flex flex-row items-center gap-1 mt-2">
-            <div className="text-typography-900 text-lg font-medium font-primary">Badges</div>
+            <div className="text-typography-900 text-lg font-medium font-primary">
+              {t("achievements.badges")}
+            </div>
             <Tooltip
               title={
                 <div
@@ -141,8 +142,7 @@ export const AchievementsViewAll: FC = () => {
                     color: "#F5EFF7",
                   }}
                 >
-                  Badges are earned based on your activity across simulations and community
-                  participation. Some badges may be removed if qualifying actions are undone.
+                  {t("achievements.badgesTooltip")}
                 </div>
               }
               slotProps={toolTipStyles}
@@ -158,7 +158,7 @@ export const AchievementsViewAll: FC = () => {
             className="font-primary text-xs sm:text-sm leading-[1.5]"
             value={activeFilter}
             onValueChange={handleFilterChange}
-            items={FILTER_OPTIONS}
+            items={getFilterOptions(t)}
             equalWidth
             disabled={!hasUnlockedBadges}
           />
@@ -177,7 +177,7 @@ export const AchievementsViewAll: FC = () => {
             color: "#F5EFF7",
           }}
         >
-          {`${BADGE_TYPE_LABELS[category]} Badges`}
+          {`${getBadgeTypeLabels(t)[category]} ${t("achievements.badgeTypes.suffix")}`}
         </div>
         <div
           style={{
@@ -187,7 +187,7 @@ export const AchievementsViewAll: FC = () => {
             lineHeight: "1.4",
           }}
         >
-          {BADGE_TYPE_TOOLTIP_LABELS[category]}
+          {getBadgeTypeTooltipLabels(t)[category]}
         </div>
       </div>
     );
@@ -195,7 +195,7 @@ export const AchievementsViewAll: FC = () => {
     return (
       <div className="flex items-center gap-1">
         <div className="font-primary text-xs leading-5 font-normal text-typography-600">
-          {BADGE_TYPE_LABELS[category]}
+          {getBadgeTypeLabels(t)[category]}
         </div>
         <Tooltip title={tooltipContent} arrow placement="top" slotProps={toolTipStyles}>
           <span className="cursor-pointer">
@@ -234,7 +234,9 @@ export const AchievementsViewAll: FC = () => {
       <div className="flex-1 overflow-auto px-4 sm:px-6 pb-4 sm:pb-6 flex flex-col gap-4 sm:gap-6">
         {groupedBadges.length === 0 && !isBadgesLoading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-typography-600 text-base text-center">No badges found</div>
+            <div className="text-typography-600 text-base text-center">
+              {t("achievements.empty")}
+            </div>
           </div>
         ) : (
           groupedBadges.map(({ category, badges }) => (

@@ -1,17 +1,20 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { baseAPI, aiAPI } from "@api";
+import { baseAPI } from "@api";
 import eventsSlice from "@reducer/eventsReducer";
+import logsSlice from "@reducer/logsReducer";
 import reportUploadSlice from "@reducer/reportUploadReducer";
+import socketStatusSlice from "@reducer/socketStatusReducer";
 import userSlice from "@reducer/userReducer";
 
 export const store = configureStore({
   reducer: {
     [baseAPI.reducerPath]: baseAPI.reducer,
-    [aiAPI.reducerPath]: aiAPI.reducer,
     user: userSlice.reducer,
     events: eventsSlice.reducer,
     reportUpload: reportUploadSlice.reducer,
+    logs: logsSlice.reducer,
+    socketStatus: socketStatusSlice.reducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
@@ -22,7 +25,7 @@ export const store = configureStore({
           "persist/REHYDRATE",
         ],
       },
-    }).concat(baseAPI.middleware, aiAPI.middleware),
+    }).concat(baseAPI.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

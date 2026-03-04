@@ -17,6 +17,7 @@ interface SkillCoverage {
 interface EmotionalDataPoint {
   time: string;
   level: number;
+  seconds?: number;
   isOriginal?: boolean;
 }
 
@@ -32,7 +33,7 @@ interface CustomDotProps {
 
 const CHART_HEIGHT = 350;
 const CHART_MARGIN = { top: 20, right: 20, left: 0, bottom: 20 };
-const Y_AXIS_TICKS = [0, 3, 6, 10];
+const Y_AXIS_TICKS = [-5, -3, -1, 1, 3, 5];
 
 // Utility Functions
 const formatTime = (seconds: number): string => {
@@ -132,7 +133,7 @@ const getSkillOverallPercentage = (skills: SkillCoverage[]): number => {
 const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
   <div className="bg-white border border-[#B39DDB] rounded-sm mb-5">
     <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
-      <h3 className="text-base font-medium text-typography-900">Skill Coverage</h3>
+      <h3 className="text-base font-primary font-medium text-typography-900">Skill Coverage</h3>
     </div>
     <div className="flex p-6 gap-6">
       <div className="w-1/3 flex items-center justify-center">
@@ -176,75 +177,29 @@ const parseTimeToSeconds = (time: string): number => {
   return minutes * 60 + seconds;
 };
 
-// Interpolate level value between two data points
-const interpolateLevel = (
-  targetSeconds: number,
-  beforePoint: { seconds: number; level: number },
-  afterPoint: { seconds: number; level: number },
-): number => {
-  const ratio = (targetSeconds - beforePoint.seconds) / (afterPoint.seconds - beforePoint.seconds);
-  return beforePoint.level + ratio * (afterPoint.level - beforePoint.level);
-};
-
 const EmotionalMovementChart: FC<{
   data: EmotionalDataPoint[];
   timeTicks: string[] | undefined;
 }> = ({ data, timeTicks }) => {
-  // Create chart data with interpolated values for each timeTick
+  // Create chart data with numeric time values for equal spacing
   const chartData = useMemo(() => {
-    if (!timeTicks || timeTicks.length === 0 || data.length === 0) {
-      return data.map(point => ({ ...point, isOriginal: true }));
+    if (data.length === 0) {
+      return [];
     }
 
-    const dataWithSeconds = data.map(point => ({
+    // Convert all data points to include numeric seconds value
+    return data.map(point => ({
       ...point,
       seconds: parseTimeToSeconds(point.time),
+      isOriginal: true,
     }));
+  }, [data]);
 
-    const dataMap = new Map(data.map(point => [point.time, point.level]));
-
-    const result: EmotionalDataPoint[] = [];
-
-    for (const tick of timeTicks) {
-      if (dataMap.has(tick)) {
-        result.push({ time: tick, level: dataMap.get(tick)!, isOriginal: true });
-        continue;
-      }
-      const tickSeconds = parseTimeToSeconds(tick);
-
-      let beforePoint: { seconds: number; level: number } | null = null;
-      let afterPoint: { seconds: number; level: number } | null = null;
-
-      for (const point of dataWithSeconds) {
-        if (point.seconds <= tickSeconds) {
-          if (!beforePoint || point.seconds > beforePoint.seconds) {
-            beforePoint = { seconds: point.seconds, level: point.level };
-          }
-        }
-        if (point.seconds >= tickSeconds) {
-          if (!afterPoint || point.seconds < afterPoint.seconds) {
-            afterPoint = { seconds: point.seconds, level: point.level };
-          }
-        }
-      }
-
-      // Calculate interpolated level
-      let level: number;
-      if (beforePoint && afterPoint && beforePoint.seconds !== afterPoint.seconds) {
-        level = interpolateLevel(tickSeconds, beforePoint, afterPoint);
-      } else if (beforePoint) {
-        level = beforePoint.level;
-      } else if (afterPoint) {
-        level = afterPoint.level;
-      } else {
-        continue;
-      }
-
-      result.push({ time: tick, level: Math.round(level * 10) / 10, isOriginal: false });
-    }
-
-    return result;
-  }, [data, timeTicks]);
+  // Convert timeTicks to numeric seconds for X-axis
+  const numericTimeTicks = useMemo(() => {
+    if (!timeTicks || timeTicks.length === 0) return undefined;
+    return timeTicks.map(parseTimeToSeconds);
+  }, [timeTicks]);
 
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
@@ -261,24 +216,30 @@ const EmotionalMovementChart: FC<{
               stroke="#E5E5E5"
               vertical={true}
               horizontal={true}
+              syncWithTicks={true}
             />
             <XAxis
-              dataKey="time"
+              dataKey="seconds"
+              type="number"
               axisLine={{ stroke: "#666666", strokeWidth: 1 }}
-              tickLine={false}
+              tickLine={{ stroke: "#666666", strokeWidth: 1 }}
+              ticks={numericTimeTicks}
               tick={{ fill: "#6B7280", fontSize: 12 }}
-              {...(timeTicks && timeTicks.length > 0
-                ? { ticks: timeTicks }
-                : { interval: "preserveStartEnd" })}
+              tickFormatter={(seconds: number) => formatTime(seconds)}
+              domain={
+                numericTimeTicks && numericTimeTicks.length > 0
+                  ? [numericTimeTicks[0], numericTimeTicks[numericTimeTicks.length - 1]]
+                  : ["dataMin", "dataMax"]
+              }
               label={{
                 value: "Session Timeline",
                 position: "bottom",
                 offset: 10,
-                style: { fill: "#6B7280", fontSize: 12 },
+                style: { fill: "#6B7280", fontSize: 12, fontFamily: "IBM_Plex_Serif" },
               }}
             />
             <YAxis
-              domain={[0, 10]}
+              domain={[-5, 5]}
               ticks={Y_AXIS_TICKS}
               axisLine={{ stroke: "#000000", strokeWidth: 1 }}
               tickLine={false}
@@ -287,7 +248,12 @@ const EmotionalMovementChart: FC<{
                 value: "Level (-5 to 5)",
                 angle: -90,
                 position: "insideLeft",
-                style: { fill: "#6B7280", fontSize: 12, textAnchor: "middle" },
+                style: {
+                  fill: "#6B7280",
+                  fontSize: 12,
+                  textAnchor: "middle",
+                  fontFamily: "IBM_Plex_Serif",
+                },
               }}
             />
             <Line
