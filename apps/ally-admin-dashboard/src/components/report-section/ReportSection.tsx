@@ -797,7 +797,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
           onClick={() => setPrimaryActiveTab(TABS.primary.report)}
         />
         <TabButton
-          label={`${REPORT_GENERATION_MESSAGES.HISTORY} (${displayHistoryData.length})`}
+          label={`${REPORT_GENERATION_MESSAGES.HISTORY} (${reportsHistory?.count ?? displayHistoryData.length})`}
           isActive={primaryActiveTab === TABS.primary.history}
           onClick={() => setPrimaryActiveTab(TABS.primary.history)}
         />
