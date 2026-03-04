@@ -18,7 +18,6 @@ interface LinguisticStyleSamplesProps {
   id?: string;
   label?: string;
   formMethods: any;
-  languageVoicesId?: string;
 }
 
 const SAMPLE_COUNT = 10;
@@ -27,7 +26,6 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   id = "linguisticStyleSamples",
   label = "Linguistic Style Samples",
   formMethods,
-  languageVoicesId = "languageVoices",
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
   const [regeneratingAll, setRegeneratingAll] = useState(false);
@@ -41,34 +39,30 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
     voicesNeeded: true,
   }) as { data: LanguageOption[]; isLoading: boolean };
 
-  const languageVoices = watch(languageVoicesId) ?? {};
   const linguisticStyleSamples = watch(id) ?? {};
 
-  const languagesWithVoices = useMemo(() => {
-    const languages = (availableLanguages ?? []) as LanguageOption[];
-    return languages.filter(lang => languageVoices[String(lang.language_id)]);
-  }, [availableLanguages, languageVoices]);
+  const languagesToShow = useMemo(() => {
+    return (availableLanguages ?? []) as LanguageOption[];
+  }, [availableLanguages]);
 
   const hasNonEnglishLanguages = useMemo(() => {
-    return (languagesWithVoices as LanguageOption[]).some(
+    return (languagesToShow as LanguageOption[]).some(
       lang =>
         (lang.value ?? "").toLowerCase() && !(lang.value ?? "").toLowerCase().startsWith("en"),
     );
-  }, [languagesWithVoices]);
+  }, [languagesToShow]);
 
   const activeLanguageId = useMemo(() => {
     if (
       selectedLanguageId &&
-      (languagesWithVoices as LanguageOption[]).some(
-        l => String(l.language_id) === selectedLanguageId,
-      )
+      (languagesToShow as LanguageOption[]).some(l => String(l.language_id) === selectedLanguageId)
     ) {
       return selectedLanguageId;
     }
-    return languagesWithVoices.length > 0
-      ? String((languagesWithVoices[0] as LanguageOption).language_id)
+    return languagesToShow.length > 0
+      ? String((languagesToShow[0] as LanguageOption).language_id)
       : null;
-  }, [languagesWithVoices, selectedLanguageId]);
+  }, [languagesToShow, selectedLanguageId]);
 
   const buildScenarioContext = useCallback(
     (languageId: string, languageCode: string, languageName: string) => {
@@ -94,9 +88,9 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   );
 
   const handleRegenerateAll = useCallback(async () => {
-    if (languagesWithVoices.length === 0) return;
+    if (languagesToShow.length === 0) return;
     setRegeneratingAll(true);
-    const languages = languagesWithVoices as LanguageOption[];
+    const languages = languagesToShow as LanguageOption[];
     const results = await Promise.allSettled(
       languages.map(lang => {
         const languageId = String(lang.language_id);
@@ -139,7 +133,7 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
     buildScenarioContext,
     id,
     linguisticStyleSamples,
-    languagesWithVoices,
+    languagesToShow,
     regenerateField,
     selectedModel,
     setValue,
@@ -158,7 +152,7 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
     [id, linguisticStyleSamples, setValue],
   );
 
-  if (isLoading || languagesWithVoices.length === 0) {
+  if (isLoading || languagesToShow.length === 0) {
     return null;
   }
 
@@ -197,7 +191,7 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
       </div>
       <div className="border border-border-light rounded-md overflow-hidden bg-white">
         <div className="flex border-b border-border-light overflow-x-auto">
-          {(languagesWithVoices as LanguageOption[]).map(lang => {
+          {(languagesToShow as LanguageOption[]).map(lang => {
             const languageId = String(lang.language_id);
             const isActive = activeLanguageId === languageId;
             return (
