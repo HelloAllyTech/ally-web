@@ -25,6 +25,7 @@ import {
 import { SimulationDetailsModal } from "./lib/simulation-details-modal";
 import SkeletonLoader from "./lib/skeleton-loader";
 import SuggestionsContainer from "./lib/suggestions-container";
+import { Tabs } from "./lib/tabs";
 import Toggle from "./lib/toggle";
 import { logger } from "./logger";
 
@@ -61,4 +62,5 @@ export {
   ImageUpload,
   Toggle,
   AutoExpandableTextarea,
+  Tabs,
 };

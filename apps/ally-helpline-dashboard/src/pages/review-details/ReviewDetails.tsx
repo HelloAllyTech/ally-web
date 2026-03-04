@@ -36,7 +36,6 @@ export const ReviewDetails = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
-  const [commentsCount, setCommentsCount] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState<string>("");
   const [showCommentsSidepanel, setShowCommentsSidepanel] = useState(false);
@@ -81,12 +80,6 @@ export const ReviewDetails = () => {
       setSelectedEmoji(reviewDetails?.myReaction);
     }
   }, [reviewDetails]);
-
-  useEffect(() => {
-    if (reviewDetails?.commentsCount) {
-      setCommentsCount(reviewDetails?.commentsCount);
-    }
-  }, [reviewDetails?.commentsCount]);
 
   const isFeedOwner = useMemo(() => {
     return user?.id === reviewDetails?.createdBy?.id;
@@ -428,8 +421,6 @@ export const ReviewDetails = () => {
                   thread.id === selectedThreadId,
               )?.comments
             }
-            onDeleteComment={(val: number = 1) => setCommentsCount(prev => prev - val)}
-            onAddComment={() => setCommentsCount(prev => prev + 1)}
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
             selectedThreadId={selectedThreadId}
@@ -448,7 +439,6 @@ export const ReviewDetails = () => {
         <ReviewCommentsSidepanel
           isFeedOwner={isFeedOwner}
           threads={threads as Thread[]}
-          totalComments={commentsCount}
           isOpen={showCommentsSidepanel}
           onCommentClick={handleCommentClick}
           className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
