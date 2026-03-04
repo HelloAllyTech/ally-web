@@ -57,7 +57,7 @@ const Tab: FC<TabProps> = ({
       </div>
 
       {isExpanded && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between flex-1">
           <div
             data-testid={`nav-tab-title-${id}`}
             className={`${
