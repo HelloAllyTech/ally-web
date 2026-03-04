@@ -96,30 +96,40 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   const handleRegenerateAll = useCallback(async () => {
     if (languagesWithVoices.length === 0) return;
     setRegeneratingAll(true);
-    let updated = { ...linguisticStyleSamples };
-    let successCount = 0;
-    for (const lang of languagesWithVoices as LanguageOption[]) {
-      const languageId = String(lang.language_id);
-      try {
+    const languages = languagesWithVoices as LanguageOption[];
+    const results = await Promise.allSettled(
+      languages.map(lang => {
+        const languageId = String(lang.language_id);
         const scenarioContext = buildScenarioContext(
           languageId,
           lang.value ?? "",
           lang.label ?? "",
         );
-        const response = await regenerateField({
+        return regenerateField({
           fieldName: "linguisticStyleSamples",
           scenarioContext,
           model: selectedModel,
-        }).unwrap();
-        const content = response?.content;
-        if (isNonEmptyArray(content)) {
-          updated = { ...updated, [languageId]: content };
-          successCount++;
-        }
-      } catch {
+        })
+          .unwrap()
+          .then(response => ({
+            languageId,
+            label: lang.label ?? languageId,
+            content: response?.content,
+          }));
+      }),
+    );
+    let updated = { ...linguisticStyleSamples };
+    let successCount = 0;
+    results.forEach((result, index) => {
+      const lang = languages[index];
+      const languageId = String(lang.language_id);
+      if (result.status === "fulfilled" && isNonEmptyArray(result.value.content)) {
+        updated = { ...updated, [languageId]: result.value.content };
+        successCount++;
+      } else if (result.status === "rejected") {
         toast.error(`${en.errors.failedToRegenerate} ${lang.label ?? languageId}`);
       }
-    }
+    });
     if (successCount > 0) {
       setValue(id, updated);
       toast.success(`Generated samples for ${successCount} language(s)`);
