@@ -40,7 +40,7 @@ export const en = {
     fileMustBeJPEGOrPNG: "File must be JPEG or PNG.",
     fileMustBeVideo: "File must be a video.",
     fileUploadFailed: "Failed to upload file. Please try again.",
-    videoUploadFailed: "Failed to get video duration. Please try again.",
+    videoUploadFailed: "Failed to upload video. Please try again.",
     fileMetadataLoadFailed: "Failed to load video metadata",
     imageMustHave169AspectRatio: "Image must have a 16:9 aspect ratio.",
     imageMustHave1AspectRatio: "Please upload an image with the correct aspect ratio",
