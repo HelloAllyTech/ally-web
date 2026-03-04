@@ -34,6 +34,12 @@ const TranscriptSection: FC<TranscriptSectionProps> = ({
     }
   };
 
+  const formatTimeToMinutesAndSeconds = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes?.toString()?.padStart(2, "0")}:${seconds?.toFixed(0)?.padStart(2, "0")}`;
+  };
+
   if (isLoading) {
     return (
       <div className="p-6 min-h-[200px] flex items-center justify-center">
@@ -56,7 +62,7 @@ const TranscriptSection: FC<TranscriptSectionProps> = ({
         return (
           <div key={message.id ?? `msg-${index}`} className="flex gap-3 flex-row">
             <span className="text-base text-typography-800">
-              {(message.startSeconds ?? 0).toFixed(2)}
+              {formatTimeToMinutesAndSeconds(message.startSeconds ?? 0)}
             </span>
             <div className="flex flex-col gap-0">
               <span
