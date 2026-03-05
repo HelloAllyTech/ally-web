@@ -152,6 +152,6 @@ export interface ShareForReviewsInput {
 }
 
 export interface UpdateReviewInput {
-  note: string;
+  note?: string;
   status: string;
 }

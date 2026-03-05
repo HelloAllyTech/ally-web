@@ -49,6 +49,8 @@ interface CommentCardProps {
   onCommentChange?: (comment: CommentItem) => void;
   onAddComment?: () => void;
   onDeleteReply?: () => void;
+  deletedReplyId?: string;
+  setDeletedReplyId?: (id: string) => void;
 }
 const CommentCard = ({
   comment,
@@ -68,12 +70,14 @@ const CommentCard = ({
   onCommentChange,
   onAddComment,
   onDeleteReply,
+  deletedReplyId,
+  setDeletedReplyId,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
   const { reviewId } = useParams<{ reviewId: string }>();
   const isMyComment =
-    user?.id != null && comment?.createdBy?.id != null && user.id === comment.createdBy.id;
+    user?.id != null && comment?.createdBy?.id != null && String(user.id) === comment.createdBy.id;
 
   const [repliesOffset, setRepliesOffset] = useState(0);
   const [hasMoreReplies, setHasMoreReplies] = useState(true);
@@ -109,6 +113,12 @@ const CommentCard = ({
   }, [comment?.replyCount, comment?.id]);
 
   useEffect(() => {
+    if (deletedReplyId) {
+      setReplies(prev => prev.filter(reply => reply.id !== deletedReplyId));
+    }
+  }, [deletedReplyId]);
+
+  useEffect(() => {
     if (commentThreadScrollRef?.current) {
       if (menuAnchorEl) commentThreadScrollRef.current.style.overflowY = "hidden";
       else commentThreadScrollRef.current.style.overflowY = "auto";
@@ -118,13 +128,13 @@ const CommentCard = ({
   useEffect(() => {
     if (createCommentData) {
       if (replies.length > 0) {
-        const newReply = {
+        const newReply: CommentItem = {
           id: createCommentData.reply.id,
           content: replyText,
           createdBy: {
-            id: user?.id,
-            name: user?.name,
-            profileImage: user?.profileImageUrl,
+            id: String(user?.id),
+            name: user?.name ?? "",
+            profileImage: user?.profileImageUrl ?? null,
           },
           createdAt: new Date().toISOString(),
           reactions: {},
@@ -393,6 +403,7 @@ const CommentCard = ({
 
   const handleDeleteReply = (id: string) => {
     setReplies(prev => prev.filter(reply => reply.id !== id));
+    setDeletedReplyId?.(id);
     if (replyCount === 1) {
       setReplies([]);
       setShowReplies(false);
@@ -613,38 +624,43 @@ const CommentCard = ({
           {(showReplies || showReplyInput) && (
             <div>
               {renderReplyBox()}
-              <div className="flex flex-col gap-4 mt-4">
-                {showReplies && (
-                  <InfiniteScroll onInfiniteScroll={loadMoreReplies} isLoading={areRepliesLoading}>
-                    {replies.map(reply => (
-                      <CommentCard
-                        key={reply.id}
-                        comment={reply}
-                        isFeedOwner={isFeedOwner}
-                        showLike
-                        enableLikeUpdate={enableLikeUpdate}
-                        showReply={false}
-                        onDelete={handleDeleteReply}
-                        onUpdateComment={handleUpdateReply}
-                        onToggleHide={handleToggleHide}
-                        isReply
-                        onCommentChange={onEachReplyChange}
-                        onAddComment={onAddComment}
-                        onDeleteReply={onDeleteReply}
-                      />
-                    ))}
-                  </InfiniteScroll>
-                )}
-                {showReplies && (
-                  <div
-                    className="text-xs font-primary flex items-center gap-2 text-primary-600"
-                    onClick={hideReplies}
-                  >
-                    Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
-                    <ArrowUp />
-                  </div>
-                )}
-              </div>
+              {replies.length > 0 && (
+                <div className="flex flex-col gap-4 mt-4">
+                  {showReplies && (
+                    <InfiniteScroll
+                      onInfiniteScroll={loadMoreReplies}
+                      isLoading={areRepliesLoading}
+                    >
+                      {replies.map(reply => (
+                        <CommentCard
+                          key={reply.id}
+                          comment={reply}
+                          isFeedOwner={isFeedOwner}
+                          showLike
+                          enableLikeUpdate={enableLikeUpdate}
+                          showReply={false}
+                          onDelete={handleDeleteReply}
+                          onUpdateComment={handleUpdateReply}
+                          onToggleHide={handleToggleHide}
+                          isReply
+                          onCommentChange={onEachReplyChange}
+                          onAddComment={onAddComment}
+                          onDeleteReply={onDeleteReply}
+                        />
+                      ))}
+                    </InfiniteScroll>
+                  )}
+                  {showReplies && (
+                    <div
+                      className="text-xs font-primary flex items-center gap-2 text-primary-600"
+                      onClick={hideReplies}
+                    >
+                      Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
+                      <ArrowUp />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
