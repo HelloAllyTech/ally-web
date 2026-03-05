@@ -182,7 +182,8 @@ export const EventManagement: React.FC = () => {
         ? {
             minTriggerCount: {
               value: event.detectionConfig?.minTriggerCount,
-              disabled: isDisabled,
+              disabled:
+                isDisabled || event.detectionType !== EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION,
               rowId: event.id,
             },
           }

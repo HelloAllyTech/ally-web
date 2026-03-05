@@ -28,5 +28,3 @@ const NotificationBadge: FC<NotificationBadgeProps> = ({ count, isExpanded }) =>
 };
 
 export default NotificationBadge;
-
-
