@@ -204,7 +204,7 @@ describe("CommentCard Component", () => {
   const mockComment = {
     id: "1",
     createdBy: {
-      id: 1,
+      id: "1",
       name: "John Doe",
       profileImage: "https://example.com/profile.jpg",
     },
@@ -685,7 +685,7 @@ describe("CommentCard Component", () => {
     it("should open confirmation popover when delete is clicked for own comment", async () => {
       const myComment = {
         ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 }, // current user id from mockStore
+        createdBy: { ...mockComment.createdBy, id: "999" }, // current user id from mockStore
         createdAt: new Date().toISOString(), // not expired
       };
       renderWithProvider(<CommentCard comment={myComment} />);
@@ -705,7 +705,7 @@ describe("CommentCard Component", () => {
     it("should call deleteComment only after confirming in the popover", async () => {
       const myComment = {
         ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 }, // current user id from mockStore
+        createdBy: { ...mockComment.createdBy, id: "999" }, // current user id from mockStore
         createdAt: new Date().toISOString(), // not expired
       };
       renderWithProvider(<CommentCard comment={myComment} />);
@@ -729,7 +729,7 @@ describe("CommentCard Component", () => {
     it("should close confirmation popover when cancel is clicked", async () => {
       const myComment = {
         ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdBy: { ...mockComment.createdBy, id: "999" },
         createdAt: new Date().toISOString(),
       };
       renderWithProvider(<CommentCard comment={myComment} />);
@@ -756,7 +756,7 @@ describe("CommentCard Component", () => {
     it("should display correct title for comment delete confirmation", async () => {
       const myComment = {
         ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdBy: { ...mockComment.createdBy, id: "999" },
         createdAt: new Date().toISOString(),
       };
       renderWithProvider(<CommentCard comment={myComment} />);
@@ -774,7 +774,7 @@ describe("CommentCard Component", () => {
     it("should display correct title for reply delete confirmation when onDelete is provided", async () => {
       const myComment = {
         ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdBy: { ...mockComment.createdBy, id: "999" },
         createdAt: new Date().toISOString(),
       };
       const onDeleteMock = vi.fn();
@@ -793,7 +793,7 @@ describe("CommentCard Component", () => {
     it("should call onDelete callback after successful deletion", async () => {
       const myComment = {
         ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdBy: { ...mockComment.createdBy, id: "999" },
         createdAt: new Date().toISOString(),
       };
       const onDeleteMock = vi.fn();
@@ -886,7 +886,7 @@ describe("CommentCard Component", () => {
     it("should show Edit option for own comments within 10 minutes", async () => {
       const myComment = {
         ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdBy: { ...mockComment.createdBy, id: "999" },
         createdAt: new Date().toISOString(),
       };
       renderWithProvider(<CommentCard comment={myComment} />);
@@ -899,11 +899,13 @@ describe("CommentCard Component", () => {
     it("should call onUpdateComment after successful edit", async () => {
       const myComment = {
         ...mockComment,
-        createdBy: { ...mockComment.createdBy, id: 999 },
+        createdBy: { ...mockComment.createdBy, id: "999" },
         createdAt: new Date().toISOString(),
       };
       const onUpdateCommentMock = vi.fn();
-      renderWithProvider(<CommentCard comment={myComment} onUpdateComment={onUpdateCommentMock} />);
+      renderWithProvider(
+        <CommentCard comment={myComment} enableLikeUpdate onUpdateComment={onUpdateCommentMock} />,
+      );
 
       const menuButton = screen.getByLabelText("Comment options");
       fireEvent.click(menuButton);

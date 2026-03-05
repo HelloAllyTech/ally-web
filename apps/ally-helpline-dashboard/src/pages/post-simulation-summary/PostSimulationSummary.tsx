@@ -97,9 +97,9 @@ export const PostSimulationSummary: FC = () => {
 
   const handleCreateReview = async (status: string) => {
     if (summary?.reviewId) {
-      await updateReview({ id: summary.reviewId, status });
+      await updateReview({ id: summary.reviewId, updateReviewInput: { status } });
     } else {
-      await createReview({ scenarioSessionId: sessionId });
+      await createReview({ scenarioSessionId: sessionId, status, note: "" });
     }
   };
 
