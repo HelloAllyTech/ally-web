@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,9 +28,11 @@ import {
   ReviewCommentsSidepanel,
   Transcription,
   NativeEmoji,
+  ShareForReview,
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS, TAG_TYPES } from "@constants";
 import { baseAPI } from "@src/api/baseAPI";
+import AddReviewNote from "@src/components/add-review-note/AddReviewNote";
 import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { RootState } from "@store";
 import {
@@ -65,6 +68,7 @@ export const ReviewDetails = () => {
   const [hasMoreGeneralComments, setHasMoreGeneralComments] = useState(true);
   const [generalComments, setGeneralComments] = useState<CommentItem[]>([]);
   const [generalCommentsOffset, setGeneralCommentsOffset] = useState(0);
+  const [showShareForReviewModal, setShowShareForReviewModal] = useState<boolean>(false);
 
   const selectEmojiRef = useRef<HTMLDivElement>(null);
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
@@ -116,6 +120,10 @@ export const ReviewDetails = () => {
   const isFeedOwner = useMemo(() => {
     return user?.id === reviewDetails?.createdBy?.id;
   }, [user?.id, reviewDetails?.createdBy?.id]);
+
+  const timeDiff = useMemo(() => {
+    return differenceInMinutes(new Date(), new Date(reviewDetails?.createdAt));
+  }, [reviewDetails?.createdAt]);
 
   useEffect(() => {
     if (simulationTranscript) {
@@ -325,9 +333,28 @@ export const ReviewDetails = () => {
     setShowReactionsModal(true);
   };
 
-  const handleCreateReview = async (status: string) => {
-    await updateReview({ id: reviewDetails.id, updateReviewInput: { status } });
+  const handleCreateReview = async (status?: string, note?: string) => {
+    if (!reviewDetails?.id) return;
+    await updateReview({
+      id: reviewDetails.id,
+      updateReviewInput: {
+        status: status || reviewDetails.reviewStatus,
+        note: note,
+      },
+    });
   };
+
+  const isNoteEditable = () => {
+    return timeDiff < 10 && (reviewDetails?.note?.length ?? 0) > 0;
+  };
+
+  const onTapAddNote = () => {
+    setShowShareForReviewModal(true);
+  };
+  const showAddReviewNotesSection = useMemo(() => {
+    if (!isFeedOwner) return false;
+    return timeDiff < 10 || (reviewDetails?.note?.length ?? 0) > 0;
+  }, [timeDiff, isFeedOwner, reviewDetails?.note]);
 
   const renderBottomSection = () => {
     return (
@@ -341,7 +368,7 @@ export const ReviewDetails = () => {
               <Toggle
                 items={REVIEW_PRIVACY_OPTIONS(t)}
                 initialValue={reviewDetails?.reviewStatus || "IN_REVIEW"}
-                onChange={handleCreateReview}
+                onChange={(status: string) => handleCreateReview(status)}
               />
             </div>
           )}
@@ -462,11 +489,23 @@ export const ReviewDetails = () => {
           </div>
         )}
       </div>
+
       <div className="flex w-full h-[calc(100%-103px)]">
         <div
           ref={transcriptScrollRef}
           className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
         >
+          {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showAddReviewNotesSection && (
+            <div className="pb-6">
+              <AddReviewNote
+                isEditable={isNoteEditable()}
+                note={reviewDetails?.note}
+                isEdited={reviewDetails?.noteEditedAt !== null}
+                onAddNote={onTapAddNote}
+                onEditNote={onTapAddNote}
+              />
+            </div>
+          )}
           <Transcription
             councellorName={isFeedOwner ? t("review.details.you") : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}
@@ -493,7 +532,7 @@ export const ReviewDetails = () => {
           />
 
           {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
-            <div className="w-full border-t-[0.5px] border-border-light">
+            <div className="w-full border-t-[0.5px] border-border-light font-primary">
               <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4 px-4">
                 <div className="text-typography-900 font-medium text-lg">
                   {t("review.details.comments")}
@@ -546,6 +585,16 @@ export const ReviewDetails = () => {
         scenarioLabel="Scenario:"
         showActionButtons={false}
         onClickOutside={() => setShowSimulationDetailsModal(false)}
+      />
+      <ShareForReview
+        isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showShareForReviewModal}
+        onClose={() => setShowShareForReviewModal(false)}
+        summaryDetails={reviewDetails}
+        onNoteChange={(note: string) => handleCreateReview(reviewDetails?.reviewStatus, note)}
+        shareLabel={reviewDetails?.note?.length > 0 ? "Save" : "Add"}
+        modalHeader={reviewDetails?.note?.length > 0 ? "Edit note" : "Add note"}
+        sessionCreatedAt={reviewDetails?.scenarioSession?.createdAt}
+        sessionCallDuration={reviewDetails?.scenarioSession?.duration}
       />
     </div>
   );

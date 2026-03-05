@@ -56,4 +56,10 @@ export interface FeedCardProps {
   onReviewTranscript?: () => void;
   duration?: number;
   dateTime?: string;
+  badgeBgColor?: string;
+  badgeTextColor?: string;
+  badgeText?: string;
+  isEdited?: boolean;
+  isViewMoreExpanded?: boolean;
+  onTapViewMore?: () => void;
 }

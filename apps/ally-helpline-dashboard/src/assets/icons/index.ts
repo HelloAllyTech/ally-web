@@ -14,6 +14,7 @@
 import AccountCircle from "./account-circle.svg?react";
 import AchievementLocked from "./achievement-locked.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
+import AddIcon from "./add.svg?react";
 import Alarm from "./alarm.svg?react";
 import Ally from "./ally.svg?react";
 import Archive from "./archive.svg?react";
@@ -99,6 +100,7 @@ import ObjectiveObservations from "./objective-observations.svg?react";
 import OngoingRisks from "./ongoing-risks.svg?react";
 import PageNotFoundIllustration from "./page-not-found-illustration.svg?react";
 import PauseIcon from "./pause-icon.svg?react";
+import PencilIcon from "./pencil.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
 import PlayIcon from "./play-icon.svg?react";
 import RedirectIcon from "./redirect-icon.svg?react";
@@ -306,4 +308,6 @@ export {
   AskAiIcon,
   SendArrow,
   ArrowDownBlue,
+  PencilIcon,
+  AddIcon,
 };
