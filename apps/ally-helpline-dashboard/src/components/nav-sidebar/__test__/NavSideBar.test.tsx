@@ -52,6 +52,7 @@ vi.mock("react-router-dom", async importOriginal => {
 vi.mock("@api", () => ({
   useGetLogoUrlQuery: vi.fn(() => ({ data: null })),
   useUploadProfileImageMutation: vi.fn(() => [vi.fn()]),
+  useGetUnreadReviewCountQuery: vi.fn(() => ({ data: { count: 0 } })),
 }));
 
 // Mock @assets
