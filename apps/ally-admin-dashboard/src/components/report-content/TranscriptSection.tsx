@@ -1,14 +1,26 @@
 import { FC } from "react";
 
+import { CircularProgress } from "@mui/material";
+
+import { Plus } from "@assets";
 import { UserRole } from "@src/constants";
 import { TranscriptMessage } from "@types";
 
 interface TranscriptSectionProps {
   transcripts?: TranscriptMessage[];
   isLoading?: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
-const TranscriptSection: FC<TranscriptSectionProps> = ({ transcripts, isLoading = false }) => {
+const TranscriptSection: FC<TranscriptSectionProps> = ({
+  transcripts,
+  isLoading = false,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore,
+}) => {
   const list = Array.isArray(transcripts) ? transcripts : [];
 
   const userRoleLabel = (role: string) => {
@@ -20,6 +32,12 @@ const TranscriptSection: FC<TranscriptSectionProps> = ({ transcripts, isLoading 
       default:
         return role;
     }
+  };
+
+  const formatTimeToMinutesAndSeconds = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes?.toString()?.padStart(2, "0")}:${seconds?.toFixed(0)?.padStart(2, "0")}`;
   };
 
   if (isLoading) {
@@ -44,7 +62,7 @@ const TranscriptSection: FC<TranscriptSectionProps> = ({ transcripts, isLoading 
         return (
           <div key={message.id ?? `msg-${index}`} className="flex gap-3 flex-row">
             <span className="text-base text-typography-800">
-              {(message.startSeconds ?? 0).toFixed(2)}
+              {formatTimeToMinutesAndSeconds(message.startSeconds ?? 0)}
             </span>
             <div className="flex flex-col gap-0">
               <span
@@ -57,6 +75,22 @@ const TranscriptSection: FC<TranscriptSectionProps> = ({ transcripts, isLoading 
           </div>
         );
       })}
+      {hasMore && typeof onLoadMore === "function" && (
+        <div className="flex justify-center mt-4 pb-[20px]">
+          <button
+            type="button"
+            onClick={() => {
+              if (!isLoadingMore) onLoadMore();
+            }}
+            disabled={isLoadingMore}
+            className="flex cursor-pointer text-center items-center hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed border-0 bg-transparent p-0 font-inherit text-inherit"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-primary text-base ml-[5px]">Load More</span>
+            {isLoadingMore && <CircularProgress color="primary" size={20} className="mx-2" />}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

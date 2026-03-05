@@ -395,12 +395,16 @@ describe("EditableTextPopup", () => {
     });
   });
 
-  describe("Max Height", () => {
-    it("applies max height to display text", () => {
-      const { container } = render(<EditableTextPopup {...defaultProps} />);
+  describe("Text Display", () => {
+    it("displays text with proper container styling", () => {
+      const { getByText } = render(<EditableTextPopup {...defaultProps} value="Test content" />);
 
-      const displayContainer = container.querySelector(".max-h-\\[36px\\]");
-      expect(displayContainer).toBeInTheDocument();
+      const displayText = getByText("Test content");
+      expect(displayText).toBeInTheDocument();
+
+      // Verify container has h-full class for proper height
+      const outerContainer = displayText.closest(".h-full");
+      expect(outerContainer).toBeInTheDocument();
     });
   });
 });

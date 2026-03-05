@@ -79,11 +79,14 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   const isPlaceholder = !displayText;
 
   return (
-    <div className={`${className}`} style={{ width, minWidth }}>
+    <div
+      className={`${className} h-full max-h-[360px] overflow-y-auto custom-scrollbar`}
+      style={{ width, minWidth }}
+    >
       <div
         onClick={handleTextClick}
         className={`
-          max-h-[36px] overflow-hidden max-w-[calc(100%-20px)]
+          h-full overflow-hidden max-w-[calc(100%-20px)]
           ${disabled ? "cursor-not-allowed" : "cursor-pointer hover:bg-background-secondary"}
           ${isPlaceholder ? "text-typography-600" : ""}
         `}
@@ -91,7 +94,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
         {String(textToShow)
           .split("\n")
           .map((line, index) => (
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap" key={index}>
+            <span className="overflow-hidden text-wrap whitespace-nowrap" key={index}>
               {line}
               <br />
             </span>

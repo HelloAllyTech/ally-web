@@ -133,6 +133,10 @@ vi.mock("@api", async importOriginal => {
       data: mockGetReportsQuery(),
       refetch: mockRefetchReportsHistory,
     }),
+    useLazyGetReportsQuery: () => [
+      vi.fn(() => ({ unwrap: async () => ({ data: [] }) })),
+      { data: undefined, isLoading: false },
+    ],
     useGetReportByIdQuery: () => ({
       data: mockGetReportByIdQuery(),
     }),

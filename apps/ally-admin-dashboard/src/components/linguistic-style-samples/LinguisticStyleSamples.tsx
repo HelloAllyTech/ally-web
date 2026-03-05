@@ -18,7 +18,6 @@ interface LinguisticStyleSamplesProps {
   id?: string;
   label?: string;
   formMethods: any;
-  languageVoicesId?: string;
 }
 
 const SAMPLE_COUNT = 10;
@@ -27,7 +26,6 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   id = "linguisticStyleSamples",
   label = "Linguistic Style Samples",
   formMethods,
-  languageVoicesId = "languageVoices",
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
   const [regeneratingAll, setRegeneratingAll] = useState(false);
@@ -41,34 +39,30 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
     voicesNeeded: true,
   }) as { data: LanguageOption[]; isLoading: boolean };
 
-  const languageVoices = watch(languageVoicesId) ?? {};
   const linguisticStyleSamples = watch(id) ?? {};
 
-  const languagesWithVoices = useMemo(() => {
-    const languages = (availableLanguages ?? []) as LanguageOption[];
-    return languages.filter(lang => languageVoices[String(lang.language_id)]);
-  }, [availableLanguages, languageVoices]);
+  const languagesToShow = useMemo(() => {
+    return (availableLanguages ?? []) as LanguageOption[];
+  }, [availableLanguages]);
 
   const hasNonEnglishLanguages = useMemo(() => {
-    return (languagesWithVoices as LanguageOption[]).some(
+    return (languagesToShow as LanguageOption[]).some(
       lang =>
         (lang.value ?? "").toLowerCase() && !(lang.value ?? "").toLowerCase().startsWith("en"),
     );
-  }, [languagesWithVoices]);
+  }, [languagesToShow]);
 
   const activeLanguageId = useMemo(() => {
     if (
       selectedLanguageId &&
-      (languagesWithVoices as LanguageOption[]).some(
-        l => String(l.language_id) === selectedLanguageId,
-      )
+      (languagesToShow as LanguageOption[]).some(l => String(l.language_id) === selectedLanguageId)
     ) {
       return selectedLanguageId;
     }
-    return languagesWithVoices.length > 0
-      ? String((languagesWithVoices[0] as LanguageOption).language_id)
+    return languagesToShow.length > 0
+      ? String((languagesToShow[0] as LanguageOption).language_id)
       : null;
-  }, [languagesWithVoices, selectedLanguageId]);
+  }, [languagesToShow, selectedLanguageId]);
 
   const buildScenarioContext = useCallback(
     (languageId: string, languageCode: string, languageName: string) => {
@@ -94,32 +88,42 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   );
 
   const handleRegenerateAll = useCallback(async () => {
-    if (languagesWithVoices.length === 0) return;
+    if (languagesToShow.length === 0) return;
     setRegeneratingAll(true);
-    let updated = { ...linguisticStyleSamples };
-    let successCount = 0;
-    for (const lang of languagesWithVoices as LanguageOption[]) {
-      const languageId = String(lang.language_id);
-      try {
+    const languages = languagesToShow as LanguageOption[];
+    const results = await Promise.allSettled(
+      languages.map(lang => {
+        const languageId = String(lang.language_id);
         const scenarioContext = buildScenarioContext(
           languageId,
           lang.value ?? "",
           lang.label ?? "",
         );
-        const response = await regenerateField({
+        return regenerateField({
           fieldName: "linguisticStyleSamples",
           scenarioContext,
           model: selectedModel,
-        }).unwrap();
-        const content = response?.content;
-        if (isNonEmptyArray(content)) {
-          updated = { ...updated, [languageId]: content };
-          successCount++;
-        }
-      } catch {
+        })
+          .unwrap()
+          .then(response => ({
+            languageId,
+            label: lang.label ?? languageId,
+            content: response?.content,
+          }));
+      }),
+    );
+    let updated = { ...linguisticStyleSamples };
+    let successCount = 0;
+    results.forEach((result, index) => {
+      const lang = languages[index];
+      const languageId = String(lang.language_id);
+      if (result.status === "fulfilled" && isNonEmptyArray(result.value.content)) {
+        updated = { ...updated, [languageId]: result.value.content };
+        successCount++;
+      } else if (result.status === "rejected") {
         toast.error(`${en.errors.failedToRegenerate} ${lang.label ?? languageId}`);
       }
-    }
+    });
     if (successCount > 0) {
       setValue(id, updated);
       toast.success(`Generated samples for ${successCount} language(s)`);
@@ -129,7 +133,7 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
     buildScenarioContext,
     id,
     linguisticStyleSamples,
-    languagesWithVoices,
+    languagesToShow,
     regenerateField,
     selectedModel,
     setValue,
@@ -148,7 +152,7 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
     [id, linguisticStyleSamples, setValue],
   );
 
-  if (isLoading || languagesWithVoices.length === 0) {
+  if (isLoading || languagesToShow.length === 0) {
     return null;
   }
 
@@ -185,13 +189,9 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
           </button>
         </div>
       </div>
-      <p className="text-typography-600 text-sm">
-        Example phrases in each language that guide the AI to respond naturally—matching tone,
-        vocabulary, and cultural expression. Provide 10 samples per non-English language.
-      </p>
       <div className="border border-border-light rounded-md overflow-hidden bg-white">
         <div className="flex border-b border-border-light overflow-x-auto">
-          {(languagesWithVoices as LanguageOption[]).map(lang => {
+          {(languagesToShow as LanguageOption[]).map(lang => {
             const languageId = String(lang.language_id);
             const isActive = activeLanguageId === languageId;
             return (

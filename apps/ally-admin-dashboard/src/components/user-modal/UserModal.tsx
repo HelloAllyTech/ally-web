@@ -2,14 +2,13 @@ import { useEffect, useRef, useState } from "react";
 
 import { Controller } from "react-hook-form";
 
-import { ImageUpload } from "@ally-ui-mono/ui-shared";
+import { ImageUpload, Tabs } from "@ally-ui-mono/ui-shared";
 import {
   Button,
   DropdownwithTag,
   CustomDropdown,
   CreditField,
   ProfileCard,
-  Tabs,
   ToggleSwitch,
 } from "@components";
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";

@@ -5,10 +5,9 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
-import { useGetReviewsQuery, useGetReviewThreadsQuery } from "@api";
+import { useGetReviewsQuery } from "@api";
 import { NoResults, ReviewsEmptyState } from "@assets";
-import { FallbackUI, ToggleButtonGroup } from "@components";
-import FeedCard, { Comment } from "@components/feed-card";
+import { FallbackUI, ToggleButtonGroup, FeedCard } from "@components";
 import { ROUTES } from "@constants";
 import { ReviewItem } from "@types";
 
@@ -124,7 +123,6 @@ export const Review: FC = () => {
   const [activeFilter, setActiveFilter] = useState(initialFilter);
   const [offset, setOffset] = useState(0);
   const [feedData, setFeedData] = useState<ReviewItem[]>([]);
-  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!filterFromUrl) {
@@ -160,11 +158,6 @@ export const Review: FC = () => {
     sortBy: activeFilter,
   });
 
-  const { data: reviewThreadsData, isLoading: isReviewThreadsLoading } = useGetReviewThreadsQuery(
-    { id: selectedReviewId! },
-    { skip: !selectedReviewId },
-  );
-
   // Append new data when API responds
   useEffect(() => {
     if (!reviewsData?.data) return;
@@ -185,20 +178,6 @@ export const Review: FC = () => {
   const handleLoadMore = () => {
     if (!hasMore || isReviewsFetching || feedData.length === 0) return;
     setOffset(prev => prev + PAGE_SIZE);
-  };
-
-  const getCommentsList = (): Comment[] => {
-    let comments: Comment[] = [];
-    if (reviewThreadsData?.data?.length === 0) {
-      return [];
-    }
-    comments = reviewThreadsData?.data?.flatMap(thread => thread.comments) ?? [];
-
-    if (comments.length < 2) {
-      return comments;
-    } else {
-      return comments.slice(0, 2);
-    }
   };
 
   const isInitialLoading = isReviewsFetching && feedData.length === 0;
@@ -227,14 +206,8 @@ export const Review: FC = () => {
               scenario={item.scenario}
               reactions={item.reactions}
               commentsCount={item.commentsCount}
-              comments={selectedReviewId === item.id ? getCommentsList() : []}
-              isCommentsLoading={selectedReviewId === item.id && isReviewThreadsLoading}
-              isCommentsExpanded={selectedReviewId === item.id}
               onReviewTranscript={() => {
                 navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", item.id));
-              }}
-              onCommentsClick={() => {
-                setSelectedReviewId(prev => (prev === item.id ? null : item.id));
               }}
               duration={item.scenarioSession?.duration}
               dateTime={item.scenarioSession?.createdAt}

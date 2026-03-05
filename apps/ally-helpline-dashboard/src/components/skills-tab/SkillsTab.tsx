@@ -272,7 +272,7 @@ const EmotionalMovementChart: FC<{
 };
 
 const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
-  const strengths = summary.details.summary?.feedback?.positives || [];
+  const strengths = summary?.details?.summary?.feedback?.positives || [];
 
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
@@ -294,7 +294,7 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
 };
 
 const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
-  const areasForGrowth = summary.details.summary?.feedback?.improvements || [];
+  const areasForGrowth = summary?.details?.summary?.feedback?.improvements || [];
 
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md">

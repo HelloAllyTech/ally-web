@@ -236,8 +236,8 @@ describe("UserManagement", () => {
     it("should render tabs with counts", () => {
       renderUserManagement();
 
-      expect(screen.getByText(/Users \(2\)/)).toBeInTheDocument();
-      expect(screen.getByText(/Organizations \(2\)/)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Users\s+2/ })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Organizations\s+2/ })).toBeInTheDocument();
     });
 
     it("should render users tab by default", () => {
@@ -399,7 +399,7 @@ describe("UserManagement", () => {
     it("should switch to organizations tab", () => {
       renderUserManagement();
 
-      const orgTab = screen.getByText(/Organizations \(2\)/);
+      const orgTab = screen.getByRole("button", { name: /Organizations\s+2/ });
       fireEvent.click(orgTab);
 
       // The component now uses setSearchParams instead of handleTabChange

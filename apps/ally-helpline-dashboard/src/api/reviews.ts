@@ -7,6 +7,8 @@ import {
   GetReviewReactionsResponse,
   GetReviewsReactionsInput,
   CommentItem,
+  ShareForReviewsInput,
+  UpdateReviewInput,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -61,11 +63,11 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @param {string} scenarioSessionId - The ID of the scenario session
      * @returns {Promise<Review>} Review data
      */
-    createReview: builder.mutation({
-      query: ({ scenarioSessionId }) => ({
+    createReview: builder.mutation<void, ShareForReviewsInput>({
+      query: body => ({
         url: ApiEndpoints.REVIEWS.CREATE_REVIEW,
         method: HttpMethod.POST,
-        body: { scenarioSessionId },
+        body,
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
@@ -75,11 +77,11 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @param {string} status - The status of the review
      * @returns {Promise<Review>} Review data
      */
-    updateReview: builder.mutation({
-      query: ({ id, status }) => ({
+    updateReview: builder.mutation<void, { id: string; updateReviewInput: UpdateReviewInput }>({
+      query: ({ id, updateReviewInput: body }) => ({
         url: ApiEndpoints.REVIEWS.UPDATE_REVIEW(id),
         method: HttpMethod.PATCH,
-        body: { status },
+        body,
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
@@ -96,10 +98,14 @@ const reviewsAPI = baseAPI.injectEndpoints({
         body,
       }),
     }),
-    getReviewThreads: builder.query<GetReviewThreadsResponse, { id: string }>({
-      query: ({ id }) => ({
+    getReviewThreads: builder.query<
+      GetReviewThreadsResponse,
+      { id: string; limit?: number; offset?: number }
+    >({
+      query: ({ id, limit, offset }) => ({
         url: ApiEndpoints.REVIEWS.GET_REVIEW_THREADS(id),
         method: HttpMethod.GET,
+        params: { limit, offset },
       }),
       providesTags: [TAG_TYPES.REVIEW],
     }),
@@ -206,6 +212,16 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.UNREAD_REVIEW_COUNT],
     }),
+    getGeneralComments: builder.query<
+      { data: CommentItem[]; count: number },
+      { reviewId: string; limit: number; offset: number }
+    >({
+      query: ({ reviewId, limit, offset }) => ({
+        url: ApiEndpoints.REVIEWS.GET_GENERAL_COMMENTS(reviewId),
+        method: HttpMethod.GET,
+        params: { limit, offset },
+      }),
+    }),
   }),
 });
 
@@ -217,6 +233,7 @@ export const {
   useUpdateReviewMutation,
   useCreateCommentMutation,
   useGetReviewThreadsQuery,
+  useLazyGetReviewThreadsQuery,
   useAddReactionMutation,
   useGetReviewReactionsQuery,
   useLazyGetReviewReactionsQuery,
@@ -229,4 +246,6 @@ export const {
   useGetReviewThreadCommentsQuery,
   useGetUnreadReviewCountQuery,
   useMarkReviewAsReadMutation,
+  useGetGeneralCommentsQuery,
+  useLazyGetGeneralCommentsQuery,
 } = reviewsAPI;

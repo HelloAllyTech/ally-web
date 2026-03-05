@@ -21,7 +21,6 @@ export * from "./tag-list";
 export * from "./file-upload";
 export * from "./narrative-context";
 export * from "./filter-list";
-export * from "./tabs";
 export * from "./toolbar";
 export * from "./filters";
 export * from "./user-modal";

@@ -86,6 +86,7 @@ const SelectableText = ({
     {
       isSuccess: isCreateCommentSuccess,
       isLoading: isCreateCommentLoading,
+      isError: isCreateCommentError,
       data: createCommentData,
     },
   ] = useCreateCommentMutation();
@@ -108,6 +109,13 @@ const SelectableText = ({
   useEffect(() => {
     setComments(commentsList ?? []);
   }, [commentsList]);
+
+  useEffect(() => {
+    if (isCreateCommentError) {
+      toast.error("Failed to create comment");
+      setAddCommentDialogOpen(null);
+    }
+  }, [isCreateCommentError]);
 
   useEffect(() => {
     if (isCreateCommentSuccess && createCommentData?.comment) {

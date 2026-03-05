@@ -5,9 +5,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage, SimulationDetailsModal, Toggle } from "@ally-ui-mono/ui-shared";
+import {
+  CustomImage,
+  FEATURE_FLAGS_MAP,
+  SimulationDetailsModal,
+  Toggle,
+} from "@ally-ui-mono/ui-shared";
 import {
   useAddReactionMutation,
+  useGetGeneralCommentsQuery,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
   useUpdateReviewMutation,
@@ -24,11 +30,18 @@ import {
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS, TAG_TYPES } from "@constants";
 import { baseAPI } from "@src/api/baseAPI";
+import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { RootState } from "@store";
-import { CommentChangeParams, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
+import {
+  CommentChangeParams,
+  CommentItem,
+  ReactionsType,
+  SimulationTranscriptMessage,
+  Thread,
+} from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
-import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
+import { GENERAL_COMMENTS_PAGE_SIZE, TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
   const { reviewId } = useParams<{ reviewId: string }>();
@@ -37,8 +50,8 @@ export const ReviewDetails = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
-  const [commentsCount, setCommentsCount] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [deletedReplyId, setDeletedReplyId] = useState<string | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>("");
   const [showCommentsSidepanel, setShowCommentsSidepanel] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState<string>("");
@@ -49,6 +62,9 @@ export const ReviewDetails = () => {
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
+  const [hasMoreGeneralComments, setHasMoreGeneralComments] = useState(true);
+  const [generalComments, setGeneralComments] = useState<CommentItem[]>([]);
+  const [generalCommentsOffset, setGeneralCommentsOffset] = useState(0);
 
   const selectEmojiRef = useRef<HTMLDivElement>(null);
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
@@ -63,6 +79,13 @@ export const ReviewDetails = () => {
       offset: transcriptOffset,
       limit: TRANSCRIPT_PAGE_SIZE,
       sortBy: "startSeconds",
+    });
+
+  const { data: generalCommentsList, isLoading: isGetGeneralCommentsLoading } =
+    useGetGeneralCommentsQuery({
+      reviewId: reviewId || "",
+      limit: GENERAL_COMMENTS_PAGE_SIZE,
+      offset: generalCommentsOffset,
     });
   const [addReactions] = useAddReactionMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
@@ -90,12 +113,6 @@ export const ReviewDetails = () => {
     }
   }, [reviewDetails]);
 
-  useEffect(() => {
-    if (reviewDetails?.commentsCount) {
-      setCommentsCount(reviewDetails?.commentsCount);
-    }
-  }, [reviewDetails?.commentsCount]);
-
   const isFeedOwner = useMemo(() => {
     return user?.id === reviewDetails?.createdBy?.id;
   }, [user?.id, reviewDetails?.createdBy?.id]);
@@ -120,6 +137,25 @@ export const ReviewDetails = () => {
       }
     }
   }, [simulationTranscript]);
+
+  useEffect(() => {
+    if (generalCommentsList?.data) {
+      if (generalCommentsList.data.length > 0) {
+        setGeneralComments(prev => {
+          if (generalCommentsOffset > 0) {
+            const existingIds = new Set((prev || []).map(item => item.id));
+            const newItems = generalCommentsList.data.filter(item => !existingIds.has(item.id));
+            return [...(prev || []), ...newItems];
+          } else {
+            return [...generalCommentsList.data];
+          }
+        });
+        setHasMoreGeneralComments(true);
+      } else {
+        setHasMoreGeneralComments(false);
+      }
+    }
+  }, [generalCommentsList]);
 
   const handleCloseSelectedComment = () => {
     setSelectedThreadId(null);
@@ -280,12 +316,17 @@ export const ReviewDetails = () => {
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
 
+  const handleGeneralCommentsLoadMore = () => {
+    if (!hasMoreGeneralComments || isGetGeneralCommentsLoading) return;
+    setGeneralCommentsOffset(prev => prev + GENERAL_COMMENTS_PAGE_SIZE);
+  };
+
   const handleReactionsClick = () => {
     setShowReactionsModal(true);
   };
 
   const handleCreateReview = async (status: string) => {
-    await updateReview({ id: reviewDetails.id, status });
+    await updateReview({ id: reviewDetails.id, updateReviewInput: { status } });
   };
 
   const renderBottomSection = () => {
@@ -436,8 +477,6 @@ export const ReviewDetails = () => {
                   thread.id === selectedThreadId,
               )?.comments
             }
-            onDeleteComment={(val: number = 1) => setCommentsCount(prev => prev - val)}
-            onAddComment={() => setCommentsCount(prev => prev + 1)}
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
             selectedThreadId={selectedThreadId}
@@ -452,14 +491,40 @@ export const ReviewDetails = () => {
             onCloseSelectedComment={handleCloseSelectedComment}
             onCommentChange={handleCommentChange}
           />
+
+          {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
+            <div className="w-full border-t-[0.5px] border-border-light">
+              <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4 px-4">
+                <div className="text-typography-900 font-medium text-lg">
+                  {t("review.details.comments")}
+                </div>
+              </div>
+              <GeneralCommentsToShow
+                generalComments={generalComments}
+                handleLoadMore={handleGeneralCommentsLoadMore}
+                hasMoreComments={hasMoreGeneralComments}
+                isLoading={isGetGeneralCommentsLoading}
+                setComments={setGeneralComments}
+                deletedReplyId={deletedReplyId}
+                setDeletedReplyId={setDeletedReplyId}
+                show
+              />
+            </div>
+          )}
         </div>
         <ReviewCommentsSidepanel
           isFeedOwner={isFeedOwner}
           threads={threads as Thread[]}
-          totalComments={commentsCount}
           isOpen={showCommentsSidepanel}
           onCommentClick={handleCommentClick}
+          generalComments={generalComments}
+          isGeneralCommentsLoading={isGetGeneralCommentsLoading}
+          handleGeneralCommentsLoadMore={handleGeneralCommentsLoadMore}
+          hasMoreGeneralComments={hasMoreGeneralComments}
+          setComments={setGeneralComments}
           className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
+          deletedReplyId={deletedReplyId}
+          setDeletedReplyId={setDeletedReplyId}
         />
       </div>
       {transcriptList.length > 0 && renderBottomSection()}

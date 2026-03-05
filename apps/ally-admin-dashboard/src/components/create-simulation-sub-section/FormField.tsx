@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { FILE_TYPE, FORM_FIELD_IDS, FORM_FIELD_TYPES, en } from "@constants";
+import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
@@ -161,14 +161,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES:
-        return (
-          <LinguisticStyleSamples
-            id={id}
-            label={label}
-            formMethods={formMethods}
-            languageVoicesId={FORM_FIELD_IDS.LANGUAGES_VOICES}
-          />
-        );
+        return <LinguisticStyleSamples id={id} label={label} formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:

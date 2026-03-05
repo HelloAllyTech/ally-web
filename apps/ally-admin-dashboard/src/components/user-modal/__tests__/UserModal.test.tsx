@@ -34,8 +34,8 @@ vi.mock("@api", async importOriginal => {
   };
 });
 
-// Mock specific component files to avoid circular dependencies
-vi.mock("@components/button", () => ({
+// Mock @components barrel import
+vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled, className, variant }: any) => (
     <button
       onClick={onClick}
@@ -51,9 +51,6 @@ vi.mock("@components/button", () => ({
       {children}
     </button>
   ),
-}));
-
-vi.mock("@components/dropdownwithtag", () => ({
   DropdownwithTag: ({ label, onChange, initialValue, options, placeholder, required }: any) => (
     <div data-testid="dropdown-with-tag">
       <label>
@@ -62,7 +59,7 @@ vi.mock("@components/dropdownwithtag", () => ({
       </label>
       <select
         data-testid="dropdown-with-tag-select"
-        onChange={event => {
+        onChange={(event: any) => {
           const selectedOptions = Array.from(
             event.target.selectedOptions,
             (option: any) => option.value,
@@ -80,9 +77,6 @@ vi.mock("@components/dropdownwithtag", () => ({
       </select>
     </div>
   ),
-}));
-
-vi.mock("@components/custom-dropdown", () => ({
   CustomDropdown: ({ label, onChange, value, options, placeholder, required }: any) => (
     <div data-testid="custom-dropdown">
       <label>
@@ -92,7 +86,7 @@ vi.mock("@components/custom-dropdown", () => ({
       <select
         data-testid="custom-dropdown-select"
         value={value}
-        onChange={event => onChange(event.target.value)}
+        onChange={(event: any) => onChange(event.target.value)}
       >
         <option value="">{placeholder}</option>
         {options.map((option: any) => (
@@ -103,30 +97,21 @@ vi.mock("@components/custom-dropdown", () => ({
       </select>
     </div>
   ),
-}));
-
-vi.mock("@components/credit-field", () => ({
   CreditField: ({ onChange, userData, value }: any) => (
     <div data-testid="credit-field">
       <input
         type="number"
         data-testid="credit-input"
         value={value}
-        onChange={event => onChange(parseInt(event.target.value) || 0)}
+        onChange={(event: any) => onChange(parseInt(event.target.value) || 0)}
       />
     </div>
   ),
-}));
-
-vi.mock("@components/profile-card", () => ({
   ProfileCard: ({ user }: any) => (
     <div data-testid="profile-card">
       {user.name} - {user.email}
     </div>
   ),
-}));
-
-vi.mock("@components/tabs", () => ({
   Tabs: ({ items, activeId, onChange }: any) => (
     <div data-testid="tabs">
       {items.map((item: any) => (
@@ -141,9 +126,6 @@ vi.mock("@components/tabs", () => ({
       ))}
     </div>
   ),
-}));
-
-vi.mock("@components/toggle-switch", () => ({
   ToggleSwitch: ({ enabled, onChange }: any) => (
     <button
       data-testid="toggle-switch"
@@ -466,6 +448,7 @@ describe("UserModal", () => {
         id: 1,
         name: "Test User",
         email: "test@example.com",
+        profileImageUrl: "https://example.com/profile.jpg",
         username: "testuser",
         externalId: "EXT001",
         status: "ACTIVE",
@@ -547,6 +530,7 @@ describe("UserModal", () => {
         id: 1,
         name: "Test User",
         email: "test@example.com",
+        profileImageUrl: "https://example.com/profile.jpg",
         username: "testuser",
         externalId: "EXT001",
         status: "ACTIVE",
@@ -768,6 +752,7 @@ describe("UserModal", () => {
         id: 1,
         name: "Test User",
         email: "test@example.com",
+        profileImageUrl: "https://example.com/profile.jpg",
         username: "testuser",
         externalId: "EXT001",
         status: "ACTIVE",
@@ -830,6 +815,7 @@ describe("UserModal", () => {
         id: 1,
         name: "Test User",
         email: "test@example.com",
+        profileImageUrl: "https://example.com/profile.jpg",
         username: "testuser",
         externalId: "EXT001",
         status: "ACTIVE",
