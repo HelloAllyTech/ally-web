@@ -7,6 +7,8 @@ import {
   GetReviewReactionsResponse,
   GetReviewsReactionsInput,
   CommentItem,
+  ShareForReviewsInput,
+  UpdateReviewInput,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -61,11 +63,11 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @param {string} scenarioSessionId - The ID of the scenario session
      * @returns {Promise<Review>} Review data
      */
-    createReview: builder.mutation({
-      query: ({ scenarioSessionId }) => ({
+    createReview: builder.mutation<void, ShareForReviewsInput>({
+      query: body => ({
         url: ApiEndpoints.REVIEWS.CREATE_REVIEW,
         method: HttpMethod.POST,
-        body: { scenarioSessionId },
+        body,
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
@@ -75,11 +77,11 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @param {string} status - The status of the review
      * @returns {Promise<Review>} Review data
      */
-    updateReview: builder.mutation({
-      query: ({ id, status }) => ({
+    updateReview: builder.mutation<void, { id: string; updateReviewInput: UpdateReviewInput }>({
+      query: ({ id, updateReviewInput: body }) => ({
         url: ApiEndpoints.REVIEWS.UPDATE_REVIEW(id),
         method: HttpMethod.PATCH,
-        body: { status },
+        body,
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),

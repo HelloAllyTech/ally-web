@@ -485,7 +485,7 @@ describe("SimulationStudio", () => {
     it("Simulations tab is active by default", () => {
       renderComponent();
       const simulationsTab = screen.getByTestId("tab-simulations");
-      expect(simulationsTab).toHaveClass("active");
+      expect(simulationsTab).toHaveClass("text-primary-500");
     });
   });
 
@@ -582,7 +582,7 @@ describe("SimulationStudio", () => {
       fireEvent.click(screen.getByTestId("tab-tracks"));
 
       const pathwaysTab = screen.getByTestId("tab-tracks");
-      expect(pathwaysTab).toHaveClass("active");
+      expect(pathwaysTab).toHaveClass("text-primary-500");
     });
 
     it("clears filters when switching tabs", () => {
