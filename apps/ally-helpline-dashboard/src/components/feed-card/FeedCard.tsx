@@ -1,5 +1,6 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useMemo, useState, useRef, useEffect } from "react";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
@@ -23,12 +24,47 @@ const FeedCard: FC<FeedCardProps> = ({
   onReviewTranscript,
   duration,
   dateTime,
+  badgeBgColor,
+  badgeTextColor,
+  badgeText,
+  isEdited = false,
+  isViewMoreExpanded = false,
+  onTapViewMore,
 }) => {
   const { user: currentDetails } = useUser();
   const { t } = useTranslation();
 
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
+  const titleMeasureRef = useRef<HTMLDivElement>(null);
+  const descriptionMeasureRef = useRef<HTMLDivElement>(null);
+  const [isTitleTwoLines, setIsTitleTwoLines] = useState(false);
+  const [shouldShowViewMoreButton, setShouldShowViewMoreButton] = useState(false);
+
+  const descriptionMaxLines = isTitleTwoLines ? 1 : 2;
+  const descriptionLineClampClass = isViewMoreExpanded
+    ? ""
+    : isTitleTwoLines
+      ? "line-clamp-1"
+      : "line-clamp-2";
+
+  useEffect(() => {
+    const el = titleMeasureRef.current;
+    if (!el || scenario?.title == null) {
+      setIsTitleTwoLines(false);
+      return;
+    }
+    setIsTitleTwoLines(el.scrollHeight > el.clientHeight);
+  }, [scenario?.title]);
+
+  useEffect(() => {
+    const el = descriptionMeasureRef.current;
+    if (!el || scenario?.description == null) {
+      setShouldShowViewMoreButton(false);
+      return;
+    }
+    setShouldShowViewMoreButton(el.scrollHeight > el.clientHeight);
+  }, [scenario?.description, descriptionMaxLines]);
 
   const formattedDateTime = formatDateTime(dateTime);
   const relativeTime = formatRelativeTime(createdAt, t);
@@ -98,7 +134,42 @@ const FeedCard: FC<FeedCardProps> = ({
   }, [user, currentDetails]);
 
   const headerSection = () => {
-    return (
+    return FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG ? (
+      <div className="flex items-center justify-between cursor-default">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div
+            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden ${!user?.profileImage ? "border border-border-light" : ""} flex items-center justify-center flex-shrink-0`}
+          >
+            <CustomImage
+              src={userImage}
+              alt={user?.name ?? ""}
+              fallbackText={fallbackText()}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-primary font-medium text-sm sm:text-base leading-[1.4] text-[#1A1A1A]">
+              {user?.name ?? ""}
+            </span>
+            <div className="flex items-center gap-1">
+              <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-gray-500">
+                {relativeTime}
+              </span>
+              {isEdited && (
+                <>
+                  <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-[#D1D5DB]">
+                    •
+                  </span>
+                  <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-gray-500">
+                    Edited
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : (
       <div className="flex items-center justify-between cursor-default">
         <div className="flex items-center gap-2 sm:gap-3">
           <div
@@ -124,8 +195,82 @@ const FeedCard: FC<FeedCardProps> = ({
     );
   };
 
-  const scenarioSection = () => {
+  const badgeSection = () => {
     return (
+      <div
+        className="h-4 w-fit flex flex-col rounded-[2px] items-center justify-center px-1 py-[1.5px] text-[10px]"
+        style={{
+          backgroundColor: badgeBgColor ?? "#EDE7F6",
+          color: badgeTextColor ?? "#7E57C2",
+        }}
+      >
+        {badgeText}
+      </div>
+    );
+  };
+
+  const scenarioSection = () => {
+    return FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG ? (
+      <div className="flex flex-col gap-2 cursor-default">
+        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">
+          {t("review.feedCard.sharedSimulation")}
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+          <span className="font-primary text-xs sm:text-[13px] leading-[1.38] text-black/60">
+            {t("review.feedCard.dateTime")}: {formattedDateTime}
+          </span>
+          <span className="font-tertiary text-lg text-border-medium hidden sm:block">•</span>
+          <span className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
+            {duration < 60
+              ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(duration, "ss")} ${t("review.feedCard.sec")}`
+              : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(duration, "mm:ss")} ${t("review.feedCard.min")}`}
+          </span>
+        </div>
+
+        <div className="border-[0.5px] rounded-[12px] overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 p-3 sm:p-4">
+            <div className="flex-shrink-0 w-full sm:w-[200px] h-[120px] sm:h-[110px] rounded-[4px] overflow-hidden">
+              <CustomImage
+                src={scenario?.coverImageUrl}
+                alt={scenario?.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex flex-col justify-center flex-1 min-w-0 relative overflow-hidden sm:min-h-[110px]">
+              {badgeText && badgeText.length > 0 && badgeSection()}
+              {/* Hidden: measure if title wraps to 2 lines (overflow 1 line) */}
+              <div
+                ref={titleMeasureRef}
+                aria-hidden
+                className="font-primary text-sm sm:text-lg sm:leading-[1.3] text-[#1A1A1A] line-clamp-1 absolute left-0 right-0 top-0 opacity-0 pointer-events-none select-none"
+              >
+                {scenario?.title}
+              </div>
+              <div className="overflow-hidden font-primary text-sm sm:text-lg sm:leading-[1.3] text-[#1A1A1A] py-1 sm:py-2 line-clamp-2">
+                {scenario?.title}
+              </div>
+              {/* Hidden: measure if description overflows 1 or 2 lines */}
+              <div
+                ref={descriptionMeasureRef}
+                aria-hidden
+                className={`font-primary text-xs sm:text-sm text-black/60 sm:leading-[1.3] absolute left-0 right-0 top-0 opacity-0 pointer-events-none select-none ${descriptionMaxLines === 1 ? "line-clamp-1" : "line-clamp-2"}`}
+              >
+                {scenario?.description}
+              </div>
+              <div
+                className={`font-primary text-xs sm:text-sm text-black/60 sm:leading-[1.3] ${descriptionLineClampClass}`}
+              >
+                {scenario?.description}
+              </div>
+
+              {shouldShowViewMoreButton && renderShowMoreLess()}
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : (
       <div className="flex flex-col gap-2 cursor-default">
         <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">
           {t("review.feedCard.sharedSimulation")}
@@ -164,6 +309,39 @@ const FeedCard: FC<FeedCardProps> = ({
           </div>
         </div>
       </div>
+    );
+  };
+
+  const renderShowMoreLess = () => {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="font-primary text-xs sm:text-sm sm:leading-[1.3] mt-1 font-medium text-primary-500"
+        >
+          <button
+            data-testid="resource-card-toggle-button"
+            className={`text-sm transition-colors`}
+            onClick={e => {
+              e.stopPropagation();
+              onTapViewMore();
+            }}
+          >
+            {isViewMoreExpanded ? (
+              <div className="flex items-center" data-testid="resource-card-view-less">
+                {"View less"}
+              </div>
+            ) : (
+              <div className="flex items-center" data-testid="resource-card-view-more">
+                {"View more"}
+              </div>
+            )}
+          </button>
+        </motion.div>
+      </AnimatePresence>
     );
   };
 
