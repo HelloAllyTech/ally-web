@@ -140,7 +140,7 @@ const authAPI = baseAPI.injectEndpoints({
           {
             url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
             method: HttpMethod.POST,
-            body: { token },
+            body: { token, allowedRoles: [UserRole.SUPER_ADMIN] },
           },
           api,
           extraOptions,
