@@ -259,6 +259,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
             />
 
             <OccurrenceControlSection
+              eventType={formData.detectionType}
               maxOccurrences={formData?.detectionConfig?.maxOccurrences}
               minGapTime={formData?.detectionConfig?.minGapTime as string}
               minTriggerCount={formData?.detectionConfig?.minTriggerCount}

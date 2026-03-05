@@ -4,7 +4,6 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-
 import {
   useDisablePathMutation,
   useDisableSimulationMutation,
