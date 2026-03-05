@@ -124,6 +124,7 @@ export const TAG_TYPES = {
   SIMULATION_CREDITS: "SimulationCredits",
   USER: "User",
   REVIEW: "Review",
+  UNREAD_REVIEW_COUNT: "UnreadReviewCount",
   BADGES: "Badges",
   REFLECTION_PROMPTS: "ReflectionPrompts",
 };

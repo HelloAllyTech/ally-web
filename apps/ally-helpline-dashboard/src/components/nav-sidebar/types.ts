@@ -17,4 +17,5 @@ export interface TabProps {
   activeTab: TabId;
   onClick: () => void;
   isExpanded: boolean;
+  badgeCount?: number;
 }
