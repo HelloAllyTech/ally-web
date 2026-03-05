@@ -105,6 +105,28 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
+  FeedCard: ({
+    id,
+    user,
+    scenario,
+    commentsCount,
+    isCommentsLoading,
+    onReviewTranscript,
+    onCommentsClick,
+  }: any) => (
+    <div data-testid={`feed-card-${id}`}>
+      <span data-testid="feed-card-user">{user?.name}</span>
+      <span data-testid="feed-card-scenario">{scenario?.title}</span>
+      <span data-testid="feed-card-comments-count">{commentsCount}</span>
+      {isCommentsLoading && <span data-testid="comments-loading">Loading comments...</span>}
+      <button data-testid={`review-transcript-${id}`} onClick={onReviewTranscript}>
+        Review Transcript
+      </button>
+      <button data-testid={`comments-click-${id}`} onClick={onCommentsClick}>
+        View Comments
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock("@components/feed-card", () => ({
