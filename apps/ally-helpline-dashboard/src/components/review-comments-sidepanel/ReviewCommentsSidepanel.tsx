@@ -47,10 +47,10 @@ const ReviewCommentsSidepanel = ({
 
   return (
     <div
-      className={`h-full z-20 bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 ${className}`}
+      className={`h-full font-primary z-20 bg-white border-l-[0.5px] overflow-hidden transition-all duration-300 ${className}`}
     >
       <div
-        className="w-full font-primary pt-4 px-4 flex items-center justify-between"
+        className="w-full pt-4 px-4 flex items-center justify-between"
         style={{
           borderBottom: FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG ? "none" : "0.5px solid #E5E7EB",
         }}

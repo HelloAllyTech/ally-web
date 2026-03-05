@@ -2,7 +2,8 @@ import { FC, useMemo, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { useLazyGetGeneralCommentsQuery, useLazyGetReviewThreadsQuery } from "@api";
 import { ReviewTranscript } from "@assets";
 import { ReactionsModal } from "@components";
 import { useUser } from "@hooks";
@@ -19,11 +20,7 @@ const FeedCard: FC<FeedCardProps> = ({
   scenario,
   reactions,
   commentsCount,
-  comments = [],
-  isCommentsLoading = false,
-  isCommentsExpanded = false,
   onReviewTranscript,
-  onCommentsClick,
   duration,
   dateTime,
 }) => {
@@ -31,6 +28,7 @@ const FeedCard: FC<FeedCardProps> = ({
   const { t } = useTranslation();
 
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
+  const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
 
   const formattedDateTime = formatDateTime(dateTime);
   const relativeTime = formatRelativeTime(createdAt, t);
@@ -39,9 +37,30 @@ const FeedCard: FC<FeedCardProps> = ({
   const unicodeCodes = entries.map(([code]) => code);
   const totalReactionCount = entries.reduce((sum, [, count]) => sum + count, 0);
 
+  const [fetchReviewThreads, { data: reviewThreadsData, isLoading: isReviewThreadsLoading }] =
+    useLazyGetReviewThreadsQuery();
+
+  const [fetchGeneralComments, { data: generalCommentsData, isLoading: isGeneralCommentsLoading }] =
+    useLazyGetGeneralCommentsQuery();
+
+  const comments = useMemo(() => {
+    if (FEATURE_FLAGS_MAP?.GENERAL_COMMENTS_FLAG) {
+      return generalCommentsData?.data ?? [];
+    }
+    return reviewThreadsData?.data?.flatMap(thread => thread.comments) ?? [];
+  }, [reviewThreadsData, generalCommentsData]);
+
   const handleCommentsClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    onCommentsClick?.();
+    const willExpand = !isCommentsExpanded;
+    if (willExpand && id) {
+      if (FEATURE_FLAGS_MAP?.GENERAL_COMMENTS_FLAG) {
+        fetchGeneralComments({ reviewId: id, limit: 2, offset: 0 });
+      } else {
+        fetchReviewThreads({ id, limit: 2, offset: 0 });
+      }
+    }
+    setIsCommentsExpanded(willExpand);
   };
 
   const handleReactionsClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -54,10 +73,7 @@ const FeedCard: FC<FeedCardProps> = ({
   };
 
   const collapseComments = () => {
-    // Since this is a controlled component, notify parent to collapse
-    if (isCommentsExpanded) {
-      onCommentsClick?.();
-    }
+    setIsCommentsExpanded(false);
   };
 
   const fallbackText = () => {
@@ -197,6 +213,24 @@ const FeedCard: FC<FeedCardProps> = ({
     );
   };
 
+  const renderCommentsSection = () => {
+    if (isReviewThreadsLoading || isGeneralCommentsLoading)
+      return (
+        <div className="flex items-center justify-center py-4">
+          <div className="w-5 h-5 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin" />
+        </div>
+      );
+    if (comments.length > 0)
+      return <CommentsSection comments={comments} collapseComments={collapseComments} />;
+    return (
+      <div className="flex items-center justify-center py-4">
+        <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800">
+          No comments yet
+        </span>
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="w-full bg-white font-primary rounded-[16px] border-[0.5px] border-border flex flex-col gap-3 sm:gap-4 p-4 sm:p-6 shadow-[2.13px_2.84px_7.81px_0px_rgba(160,158,158,0.1),8.52px_11.36px_14.2px_0px_rgba(160,158,158,0.09)]">
@@ -216,15 +250,7 @@ const FeedCard: FC<FeedCardProps> = ({
             </>
           )}
 
-          {isCommentsExpanded &&
-            commentsCount > 0 &&
-            (isCommentsLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin" />
-              </div>
-            ) : (
-              <CommentsSection comments={comments} collapseComments={collapseComments} />
-            ))}
+          {isCommentsExpanded && renderCommentsSection()}
         </div>
       </div>
 

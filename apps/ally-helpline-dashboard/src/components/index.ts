@@ -27,6 +27,7 @@ import Drawer from "./drawer";
 import Dropdown from "./dropdown";
 import FallbackUI from "./fallback-ui";
 import EmojiStack from "./feed-card/EmojiStack";
+import FeedCard from "./feed-card/FeedCard";
 import InfoBanner from "./info-banner";
 import Input from "./input";
 import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
@@ -74,6 +75,7 @@ export {
 };
 
 export {
+  FeedCard,
   Accordion,
   AchievementBadgeModal,
   AchievementsCard,

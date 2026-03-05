@@ -98,10 +98,14 @@ const reviewsAPI = baseAPI.injectEndpoints({
         body,
       }),
     }),
-    getReviewThreads: builder.query<GetReviewThreadsResponse, { id: string }>({
-      query: ({ id }) => ({
+    getReviewThreads: builder.query<
+      GetReviewThreadsResponse,
+      { id: string; limit?: number; offset?: number }
+    >({
+      query: ({ id, limit, offset }) => ({
         url: ApiEndpoints.REVIEWS.GET_REVIEW_THREADS(id),
         method: HttpMethod.GET,
+        params: { limit, offset },
       }),
       providesTags: [TAG_TYPES.REVIEW],
     }),
@@ -217,6 +221,7 @@ export const {
   useUpdateReviewMutation,
   useCreateCommentMutation,
   useGetReviewThreadsQuery,
+  useLazyGetReviewThreadsQuery,
   useAddReactionMutation,
   useGetReviewReactionsQuery,
   useLazyGetReviewReactionsQuery,
@@ -228,4 +233,5 @@ export const {
   useLazyGetCommentRepliesQuery,
   useGetReviewThreadCommentsQuery,
   useGetGeneralCommentsQuery,
+  useLazyGetGeneralCommentsQuery,
 } = reviewsAPI;

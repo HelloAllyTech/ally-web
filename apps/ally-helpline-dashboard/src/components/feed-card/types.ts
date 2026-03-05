@@ -53,12 +53,7 @@ export interface FeedCardProps {
   scenario: FeedScenario;
   reactions: Reactions;
   commentsCount: number;
-  comments?: Comment[];
-  isCommentsLoading?: boolean;
-  isCommentsExpanded?: boolean;
   onReviewTranscript?: () => void;
-  onCardClick?: () => void;
-  onCommentsClick?: () => void;
   duration?: number;
   dateTime?: string;
 }
