@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import { Add, Close, Filter, Simulation as SimulationIcon, Pathway, Case } from "@assets";
 import {
   ActionConfirmationPopup,
@@ -12,7 +12,6 @@ import {
   SimulationPreview,
   FilterList,
   Button,
-  Tabs,
   OptionsPopup,
 } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -33,7 +32,7 @@ const TAB_KEYS = {
 const TABS = [
   { id: "simulations", label: "Simulations" },
   { id: "tracks", label: "Tracks" },
-  FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG && { id: "cases", label: "Cases" }, // TODO: remove this when the feature flag is enabled
+  { id: "cases", label: "Cases" },
 ].filter(Boolean) as Array<{ id: string; label: string }>;
 
 export const SimulationStudio: React.FC = () => {
@@ -177,17 +176,13 @@ export const SimulationStudio: React.FC = () => {
       icon: <Pathway className="w-5 h-5" />,
       onClick: handleNewPathway,
     },
-    // TODO: remove this when the feature flag is enabled
-    ...(FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG
-      ? [
-          {
-            id: "New Case",
-            label: "New Case",
-            icon: <Case className="w-5 h-5" />,
-            onClick: handleNewCase,
-          },
-        ]
-      : []),
+
+    {
+      id: "New Case",
+      label: "New Case",
+      icon: <Case className="w-5 h-5" />,
+      onClick: handleNewCase,
+    },
   ];
 
   const renderFooter = () => {

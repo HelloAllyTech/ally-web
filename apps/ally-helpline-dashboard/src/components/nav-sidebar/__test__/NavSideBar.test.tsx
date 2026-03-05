@@ -52,6 +52,7 @@ vi.mock("react-router-dom", async importOriginal => {
 vi.mock("@api", () => ({
   useGetLogoUrlQuery: vi.fn(() => ({ data: null })),
   useUploadProfileImageMutation: vi.fn(() => [vi.fn()]),
+  useGetUnreadReviewCountQuery: vi.fn(() => ({ data: { count: 0 } })),
 }));
 
 // Mock @assets
@@ -149,6 +150,7 @@ vi.mock("@constants", async importOriginal => {
     {
       id: TabId.CALLS,
       title: "Sessions",
+      key: "nav.tabs.sessions",
       Icon: ({ className, ...props }: any) => (
         <svg className={className} {...props} data-testid="calls-icon" />
       ),
@@ -159,6 +161,7 @@ vi.mock("@constants", async importOriginal => {
     {
       id: TabId.ANALYTICS,
       title: "Statistics",
+      key: "nav.tabs.statistics",
       Icon: ({ className, ...props }: any) => (
         <svg className={className} {...props} data-testid="analytics-icon" />
       ),

@@ -1,7 +1,3 @@
-const SKILLS_MAP = {
-  learning: "Listening Engagement",
-  support: "Emotional Attunement",
-  standards: "Supportive engagement",
-};
+const SKILL_COLORS = ["#9575CD", "#81C784", "#FFB74D"];
 
-export { SKILLS_MAP };
+export { SKILL_COLORS };

@@ -6,6 +6,12 @@ export const HttpMethod = {
   PATCH: "PATCH",
 };
 
+export const DASHBOARD_TABS = {
+  ORG_ANALYTICS: "ORG_ANALYTICS",
+  CALL_LOG_ANALYTICS: "CALL_LOG_ANALYTICS",
+  SIMULATION_ANALYTICS: "SIMULATION_ANALYTICS",
+};
+
 export const ApiEndpoints = {
   AUTH: {
     SIGNUP: "/v1/auth/signup",
@@ -20,7 +26,7 @@ export const ApiEndpoints = {
     PROFILE_IMAGE: "/v1/users/profile-image",
   },
   AI: {
-    GET_PREVIEW_VOICE: "/v1/voice-preview/generate",
+    GET_PREVIEW_VOICE: (voiceId: string) => `/v1/voice-preview/generate/${voiceId}`,
   },
   SIMULATION_STUDIO: {
     GET_SIMULATIONS: "/v1/learn/admin-scenarios",
@@ -83,6 +89,9 @@ export const ApiEndpoints = {
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
     CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
     HELPER_TAGS: "/v1/learn/scenario-behaviors",
+    GET_AUTOFILL_MODELS: "/v1/learn/models",
+    GENERATE_FIELD: "/v1/learn/scenarios/generate-field",
+    COMPETENCIES: "/v1/learn/competencies",
   },
 
   CHARACTERS: {
@@ -112,6 +121,9 @@ export const ApiEndpoints = {
     UPDATE_BADGE: (id: string) => `/v1/badges/${id}`,
     DELETE_BADGE: (id: string) => `/v1/badges/${id}`,
     BATCH_DELETE_BADGES: "/v1/badges/batch",
+    BADGES_TENANT_VISIBILITY: (tenantId: string) => `/v1/badges/tenants/${tenantId}`,
+    ADD_BADGES_TO_TENANT: "/v1/badges/tenants",
+    REMOVE_BADGES_FROM_TENANT: "/v1/badges/tenants",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",

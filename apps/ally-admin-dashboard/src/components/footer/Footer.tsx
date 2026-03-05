@@ -10,6 +10,7 @@ export const Footer: FC<FooterProps> = ({
   showPrevious = false,
   showNext = true,
   isNextDisabled = false,
+  isPreviousDisabled = false,
   isLastStep = false,
 }) => {
   return (
@@ -19,6 +20,7 @@ export const Footer: FC<FooterProps> = ({
           <Button
             variant={ButtonVariant.SECONDARY}
             onClick={onPrevious}
+            disabled={isPreviousDisabled}
             className="font-tertiary font-[500] px-6 py-2"
           >
             {en.simulation.back}

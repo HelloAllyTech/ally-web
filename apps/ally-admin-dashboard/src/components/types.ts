@@ -54,6 +54,7 @@ export interface FooterProps {
   showPrevious?: boolean;
   showNext?: boolean;
   isNextDisabled?: boolean;
+  isPreviousDisabled?: boolean;
   isLastStep?: boolean;
 }
 
@@ -90,6 +91,7 @@ export interface DropdownFieldProps {
     onSelect: (value: string) => void,
   ) => ReactNode;
   onClose?: () => void;
+  allowDeselect?: boolean;
 }
 
 // NarrativeContext
@@ -139,6 +141,7 @@ export interface VerticalStepperProps {
   steps: Step[];
   currentStep: string;
   onStepClick?: (stepId: string) => void;
+  disabled?: boolean;
 }
 
 // Sidebar
@@ -200,15 +203,6 @@ export interface TabItem {
   id: string;
   label: string;
   count?: number;
-}
-
-export interface TabsProps {
-  items: TabItem[];
-  activeId: string;
-  onChange: (id: string) => void;
-  className?: string;
-  showCount?: boolean;
-  tabStyles?: CSSProperties;
 }
 
 export interface FilterChipProps {

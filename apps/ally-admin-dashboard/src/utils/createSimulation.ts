@@ -1,15 +1,8 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
-import {
-  FORM_FIELD_IDS,
-  SIMULATION_CREATOR_FIELD_GROUPS,
-  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
-} from "@constants";
+import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
 import { GetSimulationByIdResponse } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
-  return FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
-    ? SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id)
-    : SIMULATION_CREATOR_FIELD_GROUPS_OLD.find(section => section.id === id);
+  return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
 };
 
 export const formatSimulationResponseData = (data: GetSimulationByIdResponse) => {
@@ -37,6 +30,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     tone: data?.metadata?.tone,
     voiceId: data?.metadata?.voiceId,
     languageVoices: (data?.metadata as any)?.languageVoices,
+    linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
     difficultyLevel: data?.difficultyLevel,

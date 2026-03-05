@@ -142,7 +142,6 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
             className="w-full !outline-none border rounded-md py-1 px-5 text-base"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            maxLength={50}
           />
         </div>
 
@@ -185,10 +184,14 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
       {tags?.map(tag => (
         <div
           key={tag?.id}
-          className="flex items-center px-2 bg-white text-sm border border-border-light rounded-full text-typography-900"
+          className="group/tag flex items-center px-2 py-1 bg-white text-sm border border-border-light rounded-md text-typography-900"
         >
           <span>{tag?.name}</span>
-          <button type="button" className="cursor-pointer ml-2" onClick={() => removeTag(tag)}>
+          <button
+            type="button"
+            className="cursor-pointer ml-2 opacity-0 group-hover/tag:opacity-100"
+            onClick={() => removeTag(tag)}
+          >
             <Close />
           </button>
         </div>

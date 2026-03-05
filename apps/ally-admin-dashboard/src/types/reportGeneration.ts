@@ -1,15 +1,19 @@
-import { ReportGenerationStatus } from "@constants";
+import { ReportGenerationStatus } from "@constants/reportGeneration";
 
 export type ReportData = {
   id: string;
   scenarioId: string;
-  score: number;
   config: ReportConfig;
+  language?: {
+    id?: number;
+    label?: string;
+  };
   metrics: ReportMetric;
   createdAt: string;
   updatedAt: string;
   status: string;
   transcripts?: TranscriptMessage[];
+  scenarioTitle?: string;
 };
 
 export type HistoryItem = {
@@ -23,6 +27,7 @@ export type HistoryItem = {
 export type ReportConfig = {
   helperAgentPrompt: string;
   languageId: number;
+  languageName: string;
   turns: number;
 };
 
@@ -32,7 +37,11 @@ export type ReportMetric = {
 
 export type GetReportsInput = {
   scenarioId: string;
-  status?: ReportGenerationStatus;
+  statuses?: ReportGenerationStatus;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
 };
 
 export type GenerateReportInput = {
@@ -52,4 +61,16 @@ export type TranscriptMessage = {
   startSeconds: number;
   createdAt: string;
   updatedAt: string;
+  scenarioReportId: string;
+};
+
+export type GetReportTranscriptInput = {
+  reportId: string;
+  limit?: number;
+  offset?: number;
+};
+
+export type GetReportTranscriptResponse = {
+  messages: TranscriptMessage[];
+  total?: number;
 };

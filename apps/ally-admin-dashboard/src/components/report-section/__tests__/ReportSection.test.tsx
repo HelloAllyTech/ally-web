@@ -50,8 +50,9 @@ vi.mock("@components", () => {
         {children}
       </button>
     ),
-    PromptConfiguration: ({ onButtonClick, buttonText, buttonDisabled, ...props }: any) => (
+    PromptConfiguration: ({ prompt, onButtonClick, buttonText, buttonDisabled, ...props }: any) => (
       <div data-testid="prompt-configuration">
+        <span data-testid="prompt-display">{prompt}</span>
         <button onClick={onButtonClick} disabled={buttonDisabled} data-testid="generate-button">
           {buttonText}
         </button>
@@ -80,11 +81,28 @@ vi.mock("@components", () => {
         {label}
       </button>
     ),
+    Accordion: ({ headerTitle, children, onChange }: any) => (
+      <div data-testid="accordion">
+        <div data-testid="accordion-header">{headerTitle}</div>
+        <div>{children}</div>
+      </div>
+    ),
   };
 });
 
 vi.mock("@assets", () => ({
   ArrowDown: () => <div data-testid="arrow-down">▼</div>,
+}));
+
+// Mock baseAPI so store and useUser can load (they import baseAPI from @api)
+vi.mock("@api/baseApi", () => ({
+  baseAPI: {
+    reducerPath: "baseAPI",
+    reducer: (state: unknown = {}) => state,
+    middleware: () => (next: (a: unknown) => unknown) => (action: unknown) => next(action),
+    util: { resetApiState: vi.fn() },
+    injectEndpoints: vi.fn(() => ({})),
+  },
 }));
 
 // Mock API hooks
@@ -95,30 +113,42 @@ const mockGetReportByIdQuery = vi.fn();
 const mockGetReportTranscriptQuery = vi.fn();
 const mockRefetchReportsHistory = vi.fn();
 
-vi.mock("@api", () => ({
-  useGenerateReportMutation: () => [
-    (params: any) => ({
-      unwrap: async () => mockGenerateReportMutation(params),
+vi.mock("@api", async importOriginal => {
+  const actual = await importOriginal<typeof import("@api")>();
+  return {
+    ...actual,
+    useGenerateReportMutation: () => [
+      (params: any) => ({
+        unwrap: async () => mockGenerateReportMutation(params),
+      }),
+      { isLoading: false },
+    ],
+    useCancelReportGenerationMutation: () => [
+      (params: any) => ({
+        unwrap: async () => mockCancelReportGenerationMutation(params),
+      }),
+      { isLoading: false },
+    ],
+    useGetReportsQuery: () => ({
+      data: mockGetReportsQuery(),
+      refetch: mockRefetchReportsHistory,
     }),
-    { isLoading: false },
-  ],
-  useCancelReportGenerationMutation: () => [
-    (params: any) => ({
-      unwrap: async () => mockCancelReportGenerationMutation(params),
+    useLazyGetReportsQuery: () => [
+      vi.fn(() => ({ unwrap: async () => ({ data: [] }) })),
+      { data: undefined, isLoading: false },
+    ],
+    useGetReportByIdQuery: () => ({
+      data: mockGetReportByIdQuery(),
     }),
-    { isLoading: false },
-  ],
-  useGetReportsQuery: () => ({
-    data: mockGetReportsQuery(),
-    refetch: mockRefetchReportsHistory,
-  }),
-  useGetReportByIdQuery: () => ({
-    data: mockGetReportByIdQuery(),
-  }),
-  useGetReportTranscriptQuery: () => ({
-    data: mockGetReportTranscriptQuery(),
-  }),
-}));
+    useGetReportTranscriptQuery: () => ({
+      data: mockGetReportTranscriptQuery(),
+    }),
+    useLazyGetReportTranscriptQuery: () => [
+      vi.fn(),
+      { data: mockGetReportTranscriptQuery(), isLoading: false },
+    ],
+  };
+});
 
 // Create test store
 const createTestStore = (initialState = {}) => {
@@ -153,7 +183,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("renders with scenarioId", () => {
@@ -164,7 +194,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("renders prompt configuration when no report data", () => {
@@ -183,7 +213,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       const { rerender } = render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -204,7 +234,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -231,7 +261,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -252,7 +282,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -271,7 +301,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 
@@ -457,7 +487,7 @@ describe("ReportSection", () => {
       });
     });
 
-    it("clears uploads when scenarioId changes and no reportsHistory", () => {
+    it("keeps uploads when scenarioId changes and no reportsHistory (preserve other scenarios in progress)", () => {
       const store = createTestStore({
         uploads: [
           {
@@ -486,7 +516,9 @@ describe("ReportSection", () => {
       );
 
       const state = store.getState();
-      expect(state.reportUpload.uploads).toEqual([]);
+      expect(state.reportUpload.uploads).toHaveLength(1);
+      // Upload keeps its original scenarioId when scenarioId prop changes (preserve in-progress per scenario)
+      expect(state.reportUpload.uploads[0].scenarioId).toBe("123");
     });
   });
 
@@ -562,24 +594,58 @@ describe("ReportSection", () => {
   });
 
   describe("Report Data Display", () => {
-    it("displays report data when available", async () => {
+    it("displays helper prompt from the displayed report in PromptConfiguration", async () => {
       const store = createTestStore();
-      const reportData = {
-        id: "report-1",
-        score: 85,
-        config: { languageId: 1, turns: 50, helperAgentPrompt: "Test prompt" },
-        metrics: { empathy: 90, clarity: 80 },
-      };
-
-      mockGetReportByIdQuery.mockReturnValue(reportData);
+      const reportHelperPrompt = "Custom helper prompt from report response";
       mockGetReportsQuery.mockReturnValue({
         data: [
           {
             id: "report-1",
             scenarioId: "123",
             status: ReportGenerationStatus.COMPLETED,
-            createdAt: "2024-01-01",
-            config: { languageId: 1, turns: 50 },
+            createdAt: "2024-01-01T12:00:00Z",
+            config: {
+              helperAgentPrompt: reportHelperPrompt,
+              languageId: 1,
+              turns: 50,
+            },
+            metrics: {},
+          },
+        ],
+      });
+
+      render(
+        <Provider store={store}>
+          <ReportSection scenarioId="123" />
+        </Provider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("report-content")).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId("prompt-display")).toHaveTextContent(reportHelperPrompt);
+      expect(screen.getByTestId("generate-button")).toHaveTextContent("Regenerate Report");
+    });
+
+    it("displays report data when available", async () => {
+      const store = createTestStore();
+      const reportData = {
+        id: "report-1",
+        scenarioId: "123",
+        config: { languageId: 1, turns: 50, helperAgentPrompt: "Test prompt" },
+        metrics: { empathy: 90, clarity: 80 },
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+        status: ReportGenerationStatus.COMPLETED,
+      };
+
+      mockGetReportByIdQuery.mockReturnValue(reportData);
+      mockGetReportsQuery.mockReturnValue({
+        data: [
+          {
+            ...reportData,
+            score: 85,
           },
         ],
       });
@@ -600,20 +666,20 @@ describe("ReportSection", () => {
       const store = createTestStore();
       const reportData = {
         id: "report-1",
-        score: 85,
+        scenarioId: "123",
         config: { languageId: 1, turns: 50, helperAgentPrompt: "Test prompt" },
         metrics: { empathy: 90, clarity: 80 },
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+        status: ReportGenerationStatus.COMPLETED,
       };
 
       mockGetReportByIdQuery.mockReturnValue(reportData);
       mockGetReportsQuery.mockReturnValue({
         data: [
           {
-            id: "report-1",
-            scenarioId: "123",
-            status: ReportGenerationStatus.COMPLETED,
-            createdAt: "2024-01-01",
-            config: { languageId: 1, turns: 50 },
+            ...reportData,
+            score: 85,
           },
         ],
       });
@@ -686,7 +752,7 @@ describe("ReportSection", () => {
         </Provider>,
       );
 
-      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Report" })).toBeInTheDocument();
     });
 
     it("handles empty reportsHistory", () => {
@@ -706,7 +772,7 @@ describe("ReportSection", () => {
       const store = createTestStore();
       render(
         <Provider store={store}>
-          <ReportSection scenarioId="123" />
+          <ReportSection scenarioId="123" areAllMandatoryFieldsFilled />
         </Provider>,
       );
 

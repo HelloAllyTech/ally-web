@@ -6,7 +6,7 @@ export * from "./user";
 export * from "./scenarioPath";
 export * from "./triggerConditions";
 export * from "./previewVoice";
-export * from "./report_generation";
+export * from "./reportGeneration";
 export * from "./socket";
 export * from "./userBages";
 export * from "./guardrails";

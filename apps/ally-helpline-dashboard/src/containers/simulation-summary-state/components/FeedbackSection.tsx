@@ -2,8 +2,9 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import { InfoIcon } from "@assets";
+import { Checklist } from "@src/components";
 import { FeedbackSectionType } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
@@ -38,22 +39,22 @@ const getFeedbackSectionByType = ({
             {label}
           </span>
           <ul className="p-4 space-y-2 text-base">
-            {data.length === 0 && (
+            {(!data || (Array.isArray(data) && data?.length === 0)) && (
               <div className="text-typography-700 font-primary text-center mb-2">No data found</div>
             )}
-            {Array.isArray(data) ? (
-              data.map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <span className="text-typography-900 mr-2">•</span>
-                  <span className="text-typography-900">{item}</span>
-                </li>
-              ))
-            ) : (
-              <li className="flex items-start">
-                <span className="text-typography-900 mr-2">•</span>
-                <span className="text-typography-900">{data}</span>
-              </li>
-            )}
+            {Array.isArray(data)
+              ? data.map((item, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-typography-900 mr-2">•</span>
+                    <span className="text-typography-900">{item}</span>
+                  </li>
+                ))
+              : data && (
+                  <li className="flex items-start">
+                    <span className="text-typography-900 mr-2">•</span>
+                    <span className="text-typography-900">{data}</span>
+                  </li>
+                )}
           </ul>
         </div>
       );
@@ -72,10 +73,12 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
       ? `${callDurationInSeconds} sec`
       : `${getFormattedTimeFromDuration(callDurationInSeconds, "mm:ss")} min`;
 
+  const simulationMode = props?.scenario?.metadata?.experienceMode;
+  const isChecklistMode = simulationMode === "CHECKLIST";
   return (
     <motion.div className="flex flex-col gap-6 w-full">
-      <div className="border p-4 shadow-lg rounded-lg flex flex-col gap-4">
-        <span className="text-typography-900 font-primary text-base font-semibold border-b pb-2">
+      <div className="border p-4 rounded-md flex flex-col gap-4">
+        <span className="text-typography-900 font-primary text-base font-medium border-b pb-3">
           Session Feedback
         </span>
         <div>
@@ -108,27 +111,32 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
             </div>
           </div>
         </div>
-        <motion.div className="overflow-y-auto font-primary space-y-4">
-          {feedbackSections.map(({ key, label, type, columns }, index) => {
-            return (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.4,
-                  delay: index * 0.1,
-                  ease: "easeOut",
-                }}
-                className="bg-white"
-              >
-                <div>
-                  {getFeedbackSectionByType({ data: formattedData[key], label, type, columns })}
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+        {FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && (
+          <Checklist className="h-full" sessionId={props.sessionId} />
+        )}
+        {!isChecklistMode && (
+          <motion.div className="overflow-y-auto font-primary space-y-4">
+            {feedbackSections.map(({ key, label, type, columns }, index) => {
+              return (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.4,
+                    delay: index * 0.1,
+                    ease: "easeOut",
+                  }}
+                  className="bg-white"
+                >
+                  <div>
+                    {getFeedbackSectionByType({ data: formattedData[key], label, type, columns })}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
       </div>
       <SimulationDetailsModal
         isOpen={showSimulationDetailsModal}

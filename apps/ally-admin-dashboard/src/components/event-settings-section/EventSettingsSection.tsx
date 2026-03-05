@@ -1,7 +1,11 @@
 import React, { useCallback } from "react";
 
+import { Tooltip } from "@mui/material";
+
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { InfoIcon } from "@assets";
 import { NumberInput, TimeInput } from "@components";
-import { DETECTION_CONFIG_FIELDS } from "@constants";
+import { DETECTION_CONFIG_FIELDS, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
 import { isInfinityValue, toggleInfinityValue, getInfinityDisplay } from "@utils";
 
 interface TimeWindowValues {
@@ -10,8 +14,10 @@ interface TimeWindowValues {
 }
 
 interface OccurrenceControlValues {
+  eventType?: string;
   maxOccurrences?: number;
   minGapTime?: string | null | undefined;
+  minTriggerCount?: number;
 }
 
 interface ScoreWindowValues {
@@ -27,6 +33,7 @@ interface TimeWindowCallbacks {
 interface OccurrenceControlCallbacks {
   onMaxOccurrencesChange?: (value: number) => void;
   onMinGapTimeChange?: (value: string) => void;
+  onMinTriggerCountChange?: (value: number) => void;
 }
 
 interface ScoreWindowCallbacks {
@@ -37,6 +44,8 @@ interface ScoreWindowCallbacks {
 interface FieldRowProps {
   label: string;
   children: React.ReactNode;
+  tooltip?: boolean;
+  tooltipTitle?: string;
 }
 
 const InfinityButton: React.FC<{ onClick: () => void; displayText: string }> = ({
@@ -48,10 +57,17 @@ const InfinityButton: React.FC<{ onClick: () => void; displayText: string }> = (
   </span>
 );
 
-const FieldRow: React.FC<FieldRowProps> = ({ label, children }) => (
+const FieldRow: React.FC<FieldRowProps> = ({ label, children, tooltip, tooltipTitle }) => (
   <div className="flex flex-row min-h-[40px] items-center text-base justify-between">
-    <div className="w-[40%]">
+    <div className="w-[40%] flex items-center gap-2">
       <span className="text-base font-regular text-typography-800">{label}</span>
+      {tooltip && (
+        <Tooltip title={tooltipTitle || label} placement="top" arrow slotProps={toolTipStyles}>
+          <span className="cursor-pointer items-center ">
+            <InfoIcon />
+          </span>
+        </Tooltip>
+      )}
     </div>
     <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
@@ -124,10 +140,13 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
 export const OccurrenceControlSection: React.FC<
   OccurrenceControlValues & OccurrenceControlCallbacks
 > = ({
+  eventType,
   maxOccurrences = "∞",
   minGapTime = "00:00:00",
+  minTriggerCount = 0,
   onMaxOccurrencesChange,
   onMinGapTimeChange,
+  onMinTriggerCountChange,
 }) => {
   const handleMaxOccurrencesChange = (value: number) => {
     onMaxOccurrencesChange?.(value);
@@ -135,6 +154,10 @@ export const OccurrenceControlSection: React.FC<
 
   const handleMinGapTimeChange = (value: string) => {
     onMinGapTimeChange?.(value);
+  };
+
+  const handleMinTriggerCountChange = (value: number) => {
+    onMinTriggerCountChange?.(value);
   };
 
   return (
@@ -160,6 +183,23 @@ export const OccurrenceControlSection: React.FC<
           className="ml-[-10px]"
         />
       </FieldRow>
+      {FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG &&
+        eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION && (
+          <FieldRow
+            label="Minimum trigger count"
+            tooltip
+            tooltipTitle="Triggers when this event occurs {N} times. Then triggers again at {2N}, {3N}, …"
+          >
+            <NumberInput
+              value={minTriggerCount}
+              onChange={handleMinTriggerCountChange}
+              placeholder="0"
+              min={1}
+              className="w-[80px]"
+              inputClassName="!py-0 text-base"
+            />
+          </FieldRow>
+        )}
     </>
   );
 };

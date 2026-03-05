@@ -2,12 +2,14 @@ import { FC, useMemo } from "react";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
-import { useGetSimulationSkillsQuery } from "@api";
+import { useGetSimulationSkillsQuery, useGetSimulationSummaryQuery } from "@api";
 import { OverallScoreMeter } from "@src/components";
-import { SKILLS_MAP } from "@src/components/skills-tab/constants";
+import { SKILL_COLORS } from "@src/components/skills-tab/constants";
+import { SimulationSummary } from "@src/types";
 
 interface SkillCoverage {
   label: string;
+  icon: string;
   percentage: number;
   color: string;
 }
@@ -15,6 +17,7 @@ interface SkillCoverage {
 interface EmotionalDataPoint {
   time: string;
   level: number;
+  seconds?: number;
   isOriginal?: boolean;
 }
 
@@ -28,16 +31,9 @@ interface CustomDotProps {
   payload?: EmotionalDataPoint;
 }
 
-// Constants
-const SKILL_COLORS: Record<string, string> = {
-  Learning: "#5B8DEF",
-  Support: "#7FBA7A",
-  Standards: "#F5A962",
-};
-
 const CHART_HEIGHT = 350;
 const CHART_MARGIN = { top: 20, right: 20, left: 0, bottom: 20 };
-const Y_AXIS_TICKS = [0, 3, 6, 10];
+const Y_AXIS_TICKS = [-5, -3, -1, 1, 3, 5];
 
 // Utility Functions
 const formatTime = (seconds: number): string => {
@@ -120,7 +116,7 @@ const LoadingState: FC = () => (
 
 const ErrorState: FC = () => (
   <div className="w-full flex items-center justify-center p-12">
-    <div className="text-red-500">Failed to load skills data</div>
+    <div className="text-typography-700 font-primary text-lg">Failed to load skills data</div>
   </div>
 );
 
@@ -130,23 +126,29 @@ const EmptyState: FC = () => (
   </div>
 );
 
+const getSkillOverallPercentage = (skills: SkillCoverage[]): number => {
+  return skills.reduce((acc, skill) => acc + skill.percentage, 0) / skills.length;
+};
+
 const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
-  <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
+  <div className="bg-white border border-[#B39DDB] rounded-sm mb-5">
     <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
-      <h3 className="text-base font-medium text-typography-900">Skill Coverage</h3>
+      <h3 className="text-base font-primary font-medium text-typography-900">Skill Coverage</h3>
     </div>
     <div className="flex p-6 gap-6">
       <div className="w-1/3 flex items-center justify-center">
-        <OverallScoreMeter percentage={60} />
+        <OverallScoreMeter percentage={getSkillOverallPercentage(skills)} />
       </div>
       <div className="flex flex-col gap-3 w-2/3">
         {skills.map(skill => (
           <div key={skill.label} className="px-6 border rounded-sm py-5 flex w-full gap-2.5">
-            <div className="w-10 h-10 rounded-sm border" />
+            <div className="min-w-10 w-10 h-10 rounded-sm border flex items-center justify-center">
+              <img src={skill.icon} alt={skill.label} className="w-1/2 h-1/2 object-contain" />
+            </div>
             <div className="flex flex-col gap-3 w-full">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-normal font-primary text-typography-700">
-                  {SKILLS_MAP[skill.label.toLowerCase() as keyof typeof SKILLS_MAP]}
+                  {skill.label}
                 </span>
                 <span className="text-sm font-semibold font-primary text-typography-900">
                   {skill.percentage}%
@@ -175,78 +177,32 @@ const parseTimeToSeconds = (time: string): number => {
   return minutes * 60 + seconds;
 };
 
-// Interpolate level value between two data points
-const interpolateLevel = (
-  targetSeconds: number,
-  beforePoint: { seconds: number; level: number },
-  afterPoint: { seconds: number; level: number },
-): number => {
-  const ratio = (targetSeconds - beforePoint.seconds) / (afterPoint.seconds - beforePoint.seconds);
-  return beforePoint.level + ratio * (afterPoint.level - beforePoint.level);
-};
-
 const EmotionalMovementChart: FC<{
   data: EmotionalDataPoint[];
   timeTicks: string[] | undefined;
 }> = ({ data, timeTicks }) => {
-  // Create chart data with interpolated values for each timeTick
+  // Create chart data with numeric time values for equal spacing
   const chartData = useMemo(() => {
-    if (!timeTicks || timeTicks.length === 0 || data.length === 0) {
-      return data.map(point => ({ ...point, isOriginal: true }));
+    if (data.length === 0) {
+      return [];
     }
 
-    const dataWithSeconds = data.map(point => ({
+    // Convert all data points to include numeric seconds value
+    return data.map(point => ({
       ...point,
       seconds: parseTimeToSeconds(point.time),
+      isOriginal: true,
     }));
+  }, [data]);
 
-    const dataMap = new Map(data.map(point => [point.time, point.level]));
-
-    const result: EmotionalDataPoint[] = [];
-
-    for (const tick of timeTicks) {
-      if (dataMap.has(tick)) {
-        result.push({ time: tick, level: dataMap.get(tick)!, isOriginal: true });
-        continue;
-      }
-      const tickSeconds = parseTimeToSeconds(tick);
-
-      let beforePoint: { seconds: number; level: number } | null = null;
-      let afterPoint: { seconds: number; level: number } | null = null;
-
-      for (const point of dataWithSeconds) {
-        if (point.seconds <= tickSeconds) {
-          if (!beforePoint || point.seconds > beforePoint.seconds) {
-            beforePoint = { seconds: point.seconds, level: point.level };
-          }
-        }
-        if (point.seconds >= tickSeconds) {
-          if (!afterPoint || point.seconds < afterPoint.seconds) {
-            afterPoint = { seconds: point.seconds, level: point.level };
-          }
-        }
-      }
-
-      // Calculate interpolated level
-      let level: number;
-      if (beforePoint && afterPoint && beforePoint.seconds !== afterPoint.seconds) {
-        level = interpolateLevel(tickSeconds, beforePoint, afterPoint);
-      } else if (beforePoint) {
-        level = beforePoint.level;
-      } else if (afterPoint) {
-        level = afterPoint.level;
-      } else {
-        continue;
-      }
-
-      result.push({ time: tick, level: Math.round(level * 10) / 10, isOriginal: false });
-    }
-
-    return result;
-  }, [data, timeTicks]);
+  // Convert timeTicks to numeric seconds for X-axis
+  const numericTimeTicks = useMemo(() => {
+    if (!timeTicks || timeTicks.length === 0) return undefined;
+    return timeTicks.map(parseTimeToSeconds);
+  }, [timeTicks]);
 
   return (
-    <div className="bg-white border border-[#B39DDB] rounded-md">
+    <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">
           Client Distress Alleviation
@@ -260,24 +216,30 @@ const EmotionalMovementChart: FC<{
               stroke="#E5E5E5"
               vertical={true}
               horizontal={true}
+              syncWithTicks={true}
             />
             <XAxis
-              dataKey="time"
+              dataKey="seconds"
+              type="number"
               axisLine={{ stroke: "#666666", strokeWidth: 1 }}
-              tickLine={false}
+              tickLine={{ stroke: "#666666", strokeWidth: 1 }}
+              ticks={numericTimeTicks}
               tick={{ fill: "#6B7280", fontSize: 12 }}
-              {...(timeTicks && timeTicks.length > 0
-                ? { ticks: timeTicks }
-                : { interval: "preserveStartEnd" })}
+              tickFormatter={(seconds: number) => formatTime(seconds)}
+              domain={
+                numericTimeTicks && numericTimeTicks.length > 0
+                  ? [numericTimeTicks[0], numericTimeTicks[numericTimeTicks.length - 1]]
+                  : ["dataMin", "dataMax"]
+              }
               label={{
                 value: "Session Timeline",
                 position: "bottom",
                 offset: 10,
-                style: { fill: "#6B7280", fontSize: 12 },
+                style: { fill: "#6B7280", fontSize: 12, fontFamily: "IBM_Plex_Serif" },
               }}
             />
             <YAxis
-              domain={[0, 10]}
+              domain={[-5, 5]}
               ticks={Y_AXIS_TICKS}
               axisLine={{ stroke: "#000000", strokeWidth: 1 }}
               tickLine={false}
@@ -286,7 +248,12 @@ const EmotionalMovementChart: FC<{
                 value: "Level (-5 to 5)",
                 angle: -90,
                 position: "insideLeft",
-                style: { fill: "#6B7280", fontSize: 12, textAnchor: "middle" },
+                style: {
+                  fill: "#6B7280",
+                  fontSize: 12,
+                  textAnchor: "middle",
+                  fontFamily: "IBM_Plex_Serif",
+                },
               }}
             />
             <Line
@@ -304,6 +271,48 @@ const EmotionalMovementChart: FC<{
   );
 };
 
+const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
+  const strengths = summary?.details?.summary?.feedback?.positives || [];
+
+  return (
+    <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <h3 className="text-base font-medium font-primary text-typography-900">
+          Strengths & skills demonstrated
+        </h3>
+      </div>
+      <div className="px-6 py-6">
+        {strengths?.map((strength, index) => (
+          <li key={index} className="flex items-start">
+            <span className="text-typography-900 mr-2">•</span>
+            <span className="text-typography-900 font-primary text-base">{strength}</span>
+          </li>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
+  const areasForGrowth = summary?.details?.summary?.feedback?.improvements || [];
+
+  return (
+    <div className="bg-white border border-[#B39DDB] rounded-md">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <h3 className="text-base font-medium font-primary text-typography-900">Areas for growth</h3>
+      </div>
+      <div className="px-6 py-6">
+        {areasForGrowth?.map((area, index) => (
+          <li key={index} className="flex items-start">
+            <span className="text-typography-900 mr-2">•</span>
+            <span className="text-typography-900 font-primary text-base">{area}</span>
+          </li>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Main Component
 export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const { data, isLoading, isError } = useGetSimulationSkillsQuery(
@@ -311,12 +320,15 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
     { skip: !sessionId },
   );
 
+  const { data: summary } = useGetSimulationSummaryQuery(sessionId);
+
   const skillCoverages = useMemo<SkillCoverage[]>(() => {
     if (!data?.skillCoverage) return [];
-    return data.skillCoverage.map(skill => ({
+    return data.skillCoverage.map((skill, index) => ({
       label: skill.category,
       percentage: Math.round(skill.percentage),
-      color: SKILL_COLORS[skill.category] || "#6B7280",
+      icon: skill.iconUrl,
+      color: SKILL_COLORS[index] || "#6B7280",
     }));
   }, [data?.skillCoverage]);
 
@@ -336,6 +348,8 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const hasSkillData = skillCoverages.length > 0;
   const hasEmotionalData = emotionalData.length > 0;
   const hasNoData = !hasSkillData && !hasEmotionalData;
+  const simulationMode = summary?.scenario?.metadata?.experienceMode;
+  const isChecklistMode = simulationMode === "CHECKLIST";
 
   return (
     <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto min-h-[70vh]">
@@ -346,6 +360,12 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
 
       {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}
       {hasEmotionalData && <EmotionalMovementChart data={emotionalData} timeTicks={timeTicks} />}
+      {summary && isChecklistMode && (
+        <>
+          <StrengthAndSkills summary={summary} />
+          <AreasForGrowth summary={summary} />
+        </>
+      )}
       {hasNoData && <EmptyState />}
     </div>
   );

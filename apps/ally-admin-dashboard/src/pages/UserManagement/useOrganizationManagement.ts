@@ -35,7 +35,7 @@ export function useOrganizationManagement() {
     enabledDashboardIds: string[];
     enableMicrophoneMode: boolean;
     enableAudioUpload: boolean;
-    hideRankInLeaderboard: boolean;
+    hideRankInCommunity: boolean;
   } = {
     logoUrl: "",
     orgname: "",
@@ -44,7 +44,7 @@ export function useOrganizationManagement() {
     enabledDashboardIds: [],
     enableMicrophoneMode: false,
     enableAudioUpload: false,
-    hideRankInLeaderboard: false,
+    hideRankInCommunity: false,
   };
 
   // Form methods
@@ -108,7 +108,7 @@ export function useOrganizationManagement() {
     enabledDashboardIds: string[];
     enableMicrophoneMode: boolean;
     enableAudioUpload: boolean;
-    hideRankInLeaderboard: boolean;
+    hideRankInCommunity: boolean;
   }) => {
     try {
       const payload: {
@@ -119,7 +119,7 @@ export function useOrganizationManagement() {
         enabledDashboardIds: string[];
         enableMicrophoneMode: boolean;
         enableAudioUpload: boolean;
-        hideRankInLeaderboard: boolean;
+        hideRankInCommunity: boolean;
       } = {
         name: data.orgname,
         code: data.orgcode,
@@ -127,7 +127,7 @@ export function useOrganizationManagement() {
         enabledDashboardIds: data.enabledDashboardIds ?? [],
         enableMicrophoneMode: data.enableMicrophoneMode ?? false,
         enableAudioUpload: data.enableAudioUpload ?? false,
-        hideRankInLeaderboard: data.hideRankInLeaderboard ?? false,
+        hideRankInCommunity: data.hideRankInCommunity ?? false,
       };
       // T
       payload.logoUrl = data.logoUrl;
@@ -150,7 +150,7 @@ export function useOrganizationManagement() {
       enabledDashboardIds: tenant.enabledDashboardIds ?? [],
       enableMicrophoneMode: tenant.enableMicrophoneMode ?? false,
       enableAudioUpload: tenant.enableAudioUpload ?? false,
-      hideRankInLeaderboard: tenant.hideRankInLeaderboard ?? false,
+      hideRankInCommunity: tenant.hideRankInCommunity ?? false,
     });
     setAddOrganizationModalOpen(true);
   };
@@ -163,7 +163,7 @@ export function useOrganizationManagement() {
     enabledDashboardIds: string[];
     enableMicrophoneMode: boolean;
     enableAudioUpload: boolean;
-    hideRankInLeaderboard: boolean;
+    hideRankInCommunity: boolean;
   }) => {
     if (!selectedTenant) return;
     try {
@@ -175,7 +175,7 @@ export function useOrganizationManagement() {
         enabledDashboardIds: string[];
         enableMicrophoneMode: boolean;
         enableAudioUpload: boolean;
-        hideRankInLeaderboard: boolean;
+        hideRankInCommunity: boolean;
       } = {
         name: data.orgname,
         code: data.orgcode,
@@ -183,7 +183,7 @@ export function useOrganizationManagement() {
         enabledDashboardIds: data.enabledDashboardIds ?? [],
         enableMicrophoneMode: data.enableMicrophoneMode ?? false,
         enableAudioUpload: data.enableAudioUpload ?? false,
-        hideRankInLeaderboard: data.hideRankInLeaderboard ?? false,
+        hideRankInCommunity: data.hideRankInCommunity ?? false,
       };
 
       payload.logoUrl = data.logoUrl;
@@ -205,7 +205,7 @@ export function useOrganizationManagement() {
     enabledDashboardIds: string[];
     enableMicrophoneMode: boolean;
     enableAudioUpload: boolean;
-    hideRankInLeaderboard: boolean;
+    hideRankInCommunity: boolean;
   }) => {
     const payload = {
       orgname: data.orgname,
@@ -215,7 +215,7 @@ export function useOrganizationManagement() {
       enabledDashboardIds: data.enabledDashboardIds ?? [],
       enableMicrophoneMode: data.enableMicrophoneMode ?? false,
       enableAudioUpload: data.enableAudioUpload ?? false,
-      hideRankInLeaderboard: data.hideRankInLeaderboard ?? false,
+      hideRankInCommunity: data.hideRankInCommunity ?? false,
     };
 
     if (selectedTenant && selectedTenant.logoUrl) deleteLogo({ logoUrl: selectedTenant.logoUrl });

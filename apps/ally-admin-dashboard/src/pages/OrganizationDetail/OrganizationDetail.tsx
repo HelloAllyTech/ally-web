@@ -3,7 +3,7 @@ import { useState, useEffect, FC } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useDisablePathMutation,
   useDisableSimulationMutation,
@@ -15,12 +15,13 @@ import {
 } from "@api";
 import { ArrowDown, Dot } from "@assets";
 import {
-  Tabs,
   OrganizationDetailLoader,
   SimulationsTab,
   PathTab,
   ScribeSettings,
+  SimulationsSettings,
   CasesTab,
+  BadgesTab,
 } from "@components";
 import { en, ROUTES } from "@constants";
 import { Tenant } from "@types";
@@ -29,18 +30,18 @@ enum TAB_IDS {
   SIMULATIONS = "simulations",
   PATH = "path",
   CASES = "cases",
+  BADGES = "badges",
   SCRIBE_SETTINGS = "scribeSettings",
+  SIMULATION_SETTINGS = "simulationSettings",
 }
 
 const tabs = [
   { id: TAB_IDS.SIMULATIONS, label: en.userManagement.simulations },
   { id: TAB_IDS.PATH, label: en.userManagement.path },
-  ...(FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG
-    ? [{ id: TAB_IDS.CASES, label: en.userManagement.cases }]
-    : []),
-  ...(FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG
-    ? [{ id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings }]
-    : []),
+  { id: TAB_IDS.CASES, label: en.userManagement.cases },
+  { id: TAB_IDS.BADGES, label: en.userManagement.badges },
+  { id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings },
+  { id: TAB_IDS.SIMULATION_SETTINGS, label: en.userManagement.simulationSettings },
 ];
 
 export const OrganizationDetail: FC = () => {
@@ -73,6 +74,10 @@ export const OrganizationDetail: FC = () => {
   useEffect(() => {
     setOrganization(tenantsResponse);
   }, [tenantsResponse]);
+
+  const refetchTenant = () => {
+    getTenantById(id);
+  };
 
   const handleToggleAccess = async (simulationId: number, enabled: boolean) => {
     try {
@@ -179,7 +184,17 @@ export const OrganizationDetail: FC = () => {
           />
         );
       case TAB_IDS.SCRIBE_SETTINGS:
-        return <ScribeSettings tenantId={id} />;
+        return <ScribeSettings tenantId={id} onUpdateTenant={refetchTenant} />;
+      case TAB_IDS.BADGES:
+        return (
+          <BadgesTab
+            organizationId={id}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+          />
+        );
+      case TAB_IDS.SIMULATION_SETTINGS:
+        return <SimulationsSettings organizationId={id} onUpdateTenant={refetchTenant} />;
       default:
         return null;
     }
@@ -234,28 +249,7 @@ export const OrganizationDetail: FC = () => {
         />
       </div>
 
-      {/* Tab Content */}
-      {!FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG ? (
-        <div className="flex-1 overflow-hidden min-h-0 mt-4">
-          {activeTab === TAB_IDS.SIMULATIONS ? (
-            <SimulationsTab
-              organizationId={id}
-              searchValue={searchValue}
-              onSearchChange={setSearchValue}
-              onToggleAccess={handleToggleAccess}
-            />
-          ) : (
-            <PathTab
-              organizationId={id}
-              searchValue={searchValue}
-              onSearchChange={setSearchValue}
-              onToggleAccess={handleTogglePathAccess}
-            />
-          )}
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto mt-4">{getTabContent(activeTab)}</div>
-      )}
+      <div className="flex-1 overflow-y-auto mt-4">{getTabContent(activeTab)}</div>
     </div>
   );
 };

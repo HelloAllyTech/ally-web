@@ -472,10 +472,8 @@ describe("CallLogsTable Component", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
-        expect(screen.getByText("No call records found")).toBeInTheDocument();
-        expect(
-          screen.getByText("Your recent calls and insights will be listed here."),
-        ).toBeInTheDocument();
+        expect(screen.getByText("No call logs found")).toBeInTheDocument();
+        expect(screen.getByText("Try adjusting filters or refresh the page.")).toBeInTheDocument();
       });
     });
 
@@ -490,10 +488,8 @@ describe("CallLogsTable Component", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
-        expect(screen.getByText("No simulation records found")).toBeInTheDocument();
-        expect(
-          screen.getByText("Your recent simulations will be listed here."),
-        ).toBeInTheDocument();
+        expect(screen.getByText("No simulation logs found")).toBeInTheDocument();
+        expect(screen.getByText("Try adjusting filters or refresh the page.")).toBeInTheDocument();
       });
     });
   });

@@ -14,9 +14,11 @@
 import AccountCircle from "./account-circle.svg?react";
 import AchievementLocked from "./achievement-locked.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
+import AddIcon from "./add.svg?react";
 import Alarm from "./alarm.svg?react";
 import Ally from "./ally.svg?react";
 import Archive from "./archive.svg?react";
+import ArrowDownBlue from "./arrow-down-blue.svg?react";
 import ArrowDownFilled from "./arrow-down-filled.svg?react";
 import ArrowLeft from "./arrow-left.svg?react";
 import ArrowRight from "./arrow-right.svg?react";
@@ -56,6 +58,7 @@ import DockToRight from "./dockToRight.svg?react";
 import DominantFeelings from "./dominant-feelings.svg?react";
 import Download from "./download.svg?react";
 import Edit from "./edit.svg?react";
+import Emoji from "./emoji.svg?react";
 import EndSessionIllustration from "./end-session-illustration.svg?react";
 import Enhance from "./enhance.svg?react";
 import ErrorIcon from "./error-icon.svg?react";
@@ -98,6 +101,7 @@ import ObjectiveObservations from "./objective-observations.svg?react";
 import OngoingRisks from "./ongoing-risks.svg?react";
 import PageNotFoundIllustration from "./page-not-found-illustration.svg?react";
 import PauseIcon from "./pause-icon.svg?react";
+import PencilIcon from "./pencil.svg?react";
 import PlansForNextCall from "./plans-for-next-call.svg?react";
 import PlayIcon from "./play-icon.svg?react";
 import RedirectIcon from "./redirect-icon.svg?react";
@@ -304,4 +308,8 @@ export {
   UpArrow,
   AskAiIcon,
   SendArrow,
+  ArrowDownBlue,
+  PencilIcon,
+  AddIcon,
+  Emoji,
 };

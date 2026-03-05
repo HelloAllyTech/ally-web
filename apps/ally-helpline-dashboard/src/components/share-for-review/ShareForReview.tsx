@@ -1,0 +1,328 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { differenceInMinutes } from "date-fns";
+import { useTranslation } from "react-i18next";
+
+import { CustomImage, CustomVideo } from "@ally-ui-mono/ui-shared/index";
+import { ArrowDownBlue, CloseIcon } from "@assets";
+import { Button, EmojiPickerTrigger } from "@components";
+import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
+
+export interface ShareForReviewProps {
+  isOpen: boolean;
+  onClose: () => void;
+  summaryDetails: any;
+  onNoteChange: (note: string) => void;
+  shareLabel?: string;
+  modalHeader?: string;
+  sessionCreatedAt?: string;
+  sessionCallDuration?: number;
+}
+
+interface ScenarioDetailsScenario {
+  title?: string;
+  description?: string;
+  coverVideoUrl?: string | null;
+  coverImageUrl?: string;
+}
+
+const formatCallDuration = (callDurationMs: number | undefined): string => {
+  const ms = callDurationMs ?? 0;
+  const seconds = Math.floor(ms / 1000);
+  return seconds < 60 ? `${seconds} sec` : `${getFormattedTimeFromDuration(seconds, "mm:ss")} min`;
+};
+
+const ModalHeader = ({ title, onClose }: { title: string; onClose: () => void }) => (
+  <div className="flex items-center justify-between border-b border-border pb-3 text-lg">
+    {title}
+    <button type="button" onClick={onClose} aria-label="Close">
+      <CloseIcon />
+    </button>
+  </div>
+);
+
+const NOTE_MAX_LENGTH = 250;
+
+const NoteTextarea = ({
+  note,
+  onNoteChange,
+  isExpired,
+  textareaRef,
+}: {
+  note?: string;
+  onNoteChange: (note: string) => void;
+  isExpired: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+}) => {
+  const handleInput = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value;
+      onNoteChange(value.length > NOTE_MAX_LENGTH ? value.slice(0, NOTE_MAX_LENGTH) : value);
+    },
+    [onNoteChange],
+  );
+
+  const currentLength = (note ?? "").length;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <textarea
+        ref={textareaRef}
+        placeholder="Add a note..."
+        rows={3}
+        maxLength={NOTE_MAX_LENGTH}
+        onChange={handleInput}
+        disabled={isExpired}
+        className={`flex-1 min-h-[4.5rem] max-h-40 outline-none border-none placeholder:text-typography-400 placeholder:text-md font-primary text-md font-normal overflow-y-auto resize-none custom-scrollbar ${isExpired ? "opacity-50 cursor-not-allowed" : ""}`}
+        value={note ?? ""}
+      />
+      <span className="text-typography-500 text-sm font-primary text-right">
+        {currentLength}/{NOTE_MAX_LENGTH}
+      </span>
+    </div>
+  );
+};
+
+const SubSection = ({
+  createdAt,
+  callDurationMs,
+}: {
+  createdAt: string | undefined;
+  callDurationMs: number | undefined;
+}) => {
+  const { t } = useTranslation();
+  const formattedDate = getFormattedDateTime(createdAt, "MMM dd, yyyy hh:mm a");
+  const formattedDuration = formatCallDuration(callDurationMs);
+
+  return (
+    <div className="flex items-center gap-1 text-typography-600 font-primary text-sm">
+      {t("review.details.dateAndTime")}: {formattedDate}
+      <span className="w-1 h-1 bg-neutral-500 rounded-full mx-1" aria-hidden />
+      <span className="font-primary leading-4">{formattedDuration}</span>
+    </div>
+  );
+};
+
+const ScenarioMedia = ({ scenario }: { scenario: ScenarioDetailsScenario }) => {
+  if (!scenario) return null;
+  if (scenario.coverVideoUrl != null) {
+    return (
+      <CustomVideo
+        src={scenario.coverVideoUrl}
+        alt="Scenario Cover Video"
+        className="w-full h-1/2 object-cover"
+      />
+    );
+  }
+  return (
+    <CustomImage
+      src={scenario.coverImageUrl}
+      alt="Scenario Cover Image"
+      className="w-full h-1/2 object-cover"
+    />
+  );
+};
+
+const DescriptionToggle = ({
+  description,
+  isExpanded,
+  onToggle,
+}: {
+  description: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) => {
+  if (!description) return null;
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="text-md font-medium text-primary-600 hover:text-primary-700 text-left"
+    >
+      {isExpanded ? (
+        <span className="flex">
+          View less <ArrowDownBlue className="rotate-180 w-8 h-8" />
+        </span>
+      ) : (
+        <span className="flex items-center">
+          View more
+          <ArrowDownBlue className="w-8 h-8" />
+        </span>
+      )}
+    </button>
+  );
+};
+
+const ScenarioDetails = ({ scenario }: { scenario: ScenarioDetailsScenario | null }) => {
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isClamped, setIsClamped] = useState(false);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+
+  const toggleDescription = useCallback(() => {
+    setIsDescriptionExpanded(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    const el = descriptionRef.current;
+    if (el) {
+      setIsClamped(el.scrollHeight > el.clientHeight);
+    }
+  }, [scenario?.description]);
+
+  if (!scenario)
+    return (
+      <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start animate-pulse">
+        <div className="w-1/3 aspect-video bg-neutral-200 rounded" />
+        <div className="flex flex-col gap-2 w-2/3">
+          <div className="h-5 w-3/4 bg-neutral-200 rounded" />
+          <div className="flex flex-col gap-1.5">
+            <div className="h-3 w-full bg-neutral-200 rounded" />
+            <div className="h-3 w-full bg-neutral-200 rounded" />
+            <div className="h-3 w-2/3 bg-neutral-200 rounded" />
+          </div>
+        </div>
+      </div>
+    );
+
+  return (
+    <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start">
+      <div className="w-1/3">
+        <ScenarioMedia scenario={scenario} />
+      </div>
+      <div className="flex flex-col gap-2 w-2/3">
+        <h3 className="text-lg text-typography-900">{scenario.title}</h3>
+        <div className="flex flex-col gap-1">
+          <p
+            ref={descriptionRef}
+            className={`text-base text-typography-800 leading-relaxed ${
+              isDescriptionExpanded ? "" : "line-clamp-3"
+            }`}
+          >
+            {scenario.description}
+          </p>
+          {isClamped && (
+            <DescriptionToggle
+              description={scenario.description}
+              isExpanded={isDescriptionExpanded}
+              onToggle={toggleDescription}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ModalActions = ({
+  onCancel,
+  onShare,
+  cancelLabel = "Cancel",
+  shareLabel = "Share",
+}: {
+  onCancel: () => void;
+  onShare: () => void;
+  cancelLabel?: string;
+  shareLabel?: string;
+}) => (
+  <div className="flex gap-2 justify-end border-t border-border-light pt-4">
+    <Button variant="secondary" onClick={onCancel} className="font-tertiary">
+      {cancelLabel}
+    </Button>
+    <Button variant="primary" onClick={onShare} className="font-tertiary">
+      {shareLabel}
+    </Button>
+  </div>
+);
+
+export const ShareForReview = ({
+  isOpen,
+  onClose,
+  summaryDetails,
+  onNoteChange,
+  shareLabel = "Share",
+  modalHeader = "Share this for review",
+  sessionCreatedAt,
+  sessionCallDuration,
+}: ShareForReviewProps) => {
+  const shareForReviewRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [note, setNote] = useState("");
+
+  const timeDiff = useMemo(() => {
+    return differenceInMinutes(
+      new Date(),
+      new Date(sessionCreatedAt || summaryDetails?.reviewCreatedAt),
+    );
+  }, [sessionCreatedAt, summaryDetails?.reviewCreatedAt]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setNote(summaryDetails?.note ?? summaryDetails?.reviewNote ?? "");
+    }
+  }, [isOpen, summaryDetails?.note, summaryDetails?.reviewNote]);
+
+  const handleNoteChange = useCallback((newNote: string) => {
+    setNote(newNote.length > NOTE_MAX_LENGTH ? newNote.slice(0, NOTE_MAX_LENGTH) : newNote);
+  }, []);
+
+  const insertEmoji = useCallback(
+    (emoji: string) => {
+      const el = textareaRef.current;
+      const currentNote = el?.value ?? note ?? "";
+      const start = el?.selectionStart ?? currentNote.length;
+      const end = el?.selectionEnd ?? currentNote.length;
+      let newNote = currentNote.slice(0, start) + emoji + currentNote.slice(end);
+      if (newNote.length > NOTE_MAX_LENGTH) newNote = newNote.slice(0, NOTE_MAX_LENGTH);
+      setNote(newNote);
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const input = textareaRef.current;
+          input.focus();
+          const newPos = Math.min(start + emoji.length, newNote.length);
+          input.setSelectionRange(newPos, newPos);
+        }
+      }, 0);
+    },
+    [note],
+  );
+
+  const handleShare = useCallback(() => {
+    onNoteChange(note);
+    onClose();
+  }, [note, onNoteChange, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        ref={shareForReviewRef}
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] font-primary overflow-y-auto custom-scrollbar"
+      >
+        <div className="p-6 pb-4">
+          <div className="flex flex-col gap-4 font-primary font-medium text-typography-900">
+            <ModalHeader title={modalHeader} onClose={onClose} />
+
+            <NoteTextarea
+              note={note}
+              onNoteChange={handleNoteChange}
+              isExpired={timeDiff >= 10}
+              textareaRef={textareaRef}
+            />
+
+            <SubSection
+              createdAt={sessionCreatedAt || summaryDetails?.details?.createdAt}
+              callDurationMs={sessionCallDuration || summaryDetails?.details?.callDuration}
+            />
+
+            <ScenarioDetails scenario={summaryDetails?.scenario} />
+
+            <EmojiPickerTrigger onEmojiClick={insertEmoji} isExpired={timeDiff >= 10} />
+
+            <ModalActions onCancel={onClose} onShare={handleShare} shareLabel={shareLabel} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

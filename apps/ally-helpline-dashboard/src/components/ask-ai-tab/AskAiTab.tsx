@@ -1,10 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 
 import { useGetChatHistoryQuery } from "@api";
 import { AskAiIcon, Refresh, SendArrow, UpArrow } from "@assets";
-import { Button } from "@components";
+import { Button, CharacterCount } from "@components";
 import { chatCards } from "@constants";
 import { useSendMessage } from "@hooks";
 import { initSession } from "@reducer";
@@ -46,13 +46,15 @@ const ChatHistorySkeleton = () => (
   </div>
 );
 
-const initialScreen = ({
+const InitialScreen = ({
   handleSend,
   disabled,
 }: {
   handleSend: (card: string) => void;
   disabled: boolean;
 }) => {
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
   return (
     <div className="flex flex-col justify-center h-full gap-5 px-10">
       <div className="font-base font-secondary text-4xl">
@@ -66,15 +68,17 @@ const initialScreen = ({
         {chatCards.map(card => (
           <div
             key={card}
-            className="text-sm font-primary mb-2 border rounded-md p-5 shadow-sm w-40 h-40 items-center justify-center relative hover:scale-105 hover:shadow-lg transition-all duration-300"
+            className="text-sm font-primary mb-2 border rounded-md p-5 shadow-sm w-40 h-40 flex flex-col relative hover:scale-105 hover:shadow-lg transition-all duration-300"
+            onMouseEnter={() => setHoveredCard(card)}
+            onMouseLeave={() => setHoveredCard(null)}
           >
-            {card}
+            <span className="flex-1">{card}</span>
             <button
-              className="!rounded-full !p-2 !h-10 !w-10 flex items-center justify-center disabled:opacity-60 disabled:bg-typography-500"
+              className={`absolute bottom-3 right-3 !rounded-full !p-1 !h-8 !w-8 flex items-center justify-center disabled:opacity-60 disabled:bg-typography-500 ${hoveredCard === card ? "bg-primary-500" : "bg-typography-500"}`}
               onClick={() => handleSend(card)}
               disabled={disabled}
             >
-              <SendArrow className="w-8 h-8 shrink-0 absolute bottom-3 right-3" />
+              <SendArrow className="w-5 h-5 shrink-0" />
             </button>
           </div>
         ))}
@@ -86,10 +90,16 @@ const ChatBubble = ({ message }: { message: Message }) => {
   const isUser = message.role === "user";
   return (
     <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[80%] px-4 py-2.5 rounded-full ${isUser ? "bg-primary-50" : ""}`}>
+      <div className={`max-w-[80%] px-4 py-2.5 rounded-[20px] ${isUser ? "bg-primary-50" : ""}`}>
         <div className="flex items-start gap-3">
           {!isUser && <AskAiIcon className="w-8 h-8 shrink-0 mt-0.5" />}
-          <p className="text-sm font-primary break-words">{message.content}</p>
+          <div className="flex flex-col gap-1">
+            {message.content.split("\n").map((item, index) => (
+              <span key={index} className="text-sm font-primary break-words">
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -103,30 +113,61 @@ const AskAiInput = ({
   onSend: (text: string) => void;
   disabled?: boolean;
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const wasDisabledRef = useRef(disabled);
+  const [messageLength, setMessageLength] = useState(0);
+
+  useEffect(() => {
+    if (wasDisabledRef.current && !disabled && inputRef.current) {
+      inputRef.current.focus();
+    }
+    wasDisabledRef.current = disabled;
+  }, [disabled]);
+
   const handleSend = () => {
     if (disabled) return;
     const text = inputRef.current?.value?.trim() ?? "";
     if (!text) return;
     onSend(text);
-    if (inputRef.current) inputRef.current.value = "";
+    if (inputRef.current) {
+      inputRef.current.value = "";
+      setMessageLength(0);
+      inputRef.current.style.height = "auto";
+    }
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessageLength(e.target.value.length);
+    e.target.style.height = "auto";
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+  };
+
   return (
-    <div className="absolute bottom-[16px] right-[16px] left-[16px] p-1 flex border border-gray-300 rounded-full shadow-lg bg-white">
-      <input
+    <div className="absolute bottom-[16px] right-[16px] left-[16px] p-[6px] flex items-end gap-2 border border-gray-300 rounded-[32px] shadow-lg bg-white">
+      <CharacterCount value={messageLength} maxLength={MAX_MESSAGE_LENGTH} />
+      <textarea
         ref={inputRef}
-        type="text"
-        className="w-full p-2 px-3 outline-none rounded-full disabled:opacity-60 font-primary text-sm"
-        onKeyDown={e => e.key === "Enter" && handleSend()}
-        placeholder={`Ask a question about the session.... (0/${MAX_MESSAGE_LENGTH})`}
+        onChange={handleChange}
+        className="flex-1 w-full p-2 px-3 outline-none resize-none disabled:opacity-60 font-primary text-sm custom-scrollbar max-h-[120px] overflow-y-auto"
+        onKeyDown={handleKeyDown}
+        placeholder="Ask a question about the session.... (0/2000)"
         disabled={disabled}
+        maxLength={MAX_MESSAGE_LENGTH}
+        rows={1}
       />
       <Button
         variant="primary"
         type="button"
-        className="!rounded-full !p-2 !h-10 !w-10 flex items-center justify-center disabled:opacity-60"
+        className="!rounded-full !p-2 !h-10 !w-10 flex items-center justify-center disabled:opacity-60 shrink-0"
         onClick={handleSend}
-        disabled={disabled}
+        disabled={disabled || messageLength === 0}
       >
         <UpArrow />
       </Button>
@@ -165,7 +206,7 @@ export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
           {isHistoryLoading ? (
             <ChatHistorySkeleton />
           ) : messages.length === 0 ? (
-            initialScreen({ handleSend: sendMessage, disabled: isStreaming })
+            <InitialScreen handleSend={sendMessage} disabled={isStreaming} />
           ) : (
             messages.map((msg, index) => <ChatBubble key={`${msg.role}-${index}`} message={msg} />)
           )}

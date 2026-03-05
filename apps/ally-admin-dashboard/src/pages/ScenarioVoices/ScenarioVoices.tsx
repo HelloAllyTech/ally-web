@@ -161,6 +161,7 @@ export const ScenarioVoices: React.FC = () => {
       provider: "",
       languageId: undefined,
       config: { age: "", gender: "", name: "", model: "", voiceId: "" },
+      active: true,
     };
     setSelectedVoice(newVoiceData);
     setIsSidePanelOpen(true);
@@ -189,6 +190,7 @@ export const ScenarioVoices: React.FC = () => {
             provider: voiceData.provider,
             languageId: voiceData.languageId,
             config: voiceData.config,
+            active: voiceData.active,
           },
         });
         if (response.error) {
@@ -279,6 +281,7 @@ export const ScenarioVoices: React.FC = () => {
           provider: columnId === "provider" ? parsedValue : originalVoice.provider,
           languageId: columnId === "language" ? parsedValue : originalVoice.languageId,
           config: columnId === "config" ? configValue : originalVoice.config,
+          active: columnId === "active" ? parsedValue : originalVoice.active,
         },
       });
 

@@ -28,6 +28,7 @@ const { mockUseGetReviewsQuery, mockUseGetReviewThreadsQuery, mockNavigate, mock
     mockUseGetReviewsQuery: vi.fn(),
     mockUseGetReviewThreadsQuery: vi.fn(),
     mockNavigate: vi.fn(),
+    mockFeatureFlags: { SCRIBE_REVIEW_FLAG: true },
   }));
 
 // --------------------- Mock hooks and modules --------------------- //
@@ -48,6 +49,17 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
     <div data-testid="infinite-scroll" data-is-loading={isLoading}>
       {children}
       <button data-testid="load-more-trigger" onClick={onInfiniteScroll}>
+        Load More
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("@ally-ui-mono/ui-shared/lib/infinite-scroll", () => ({
+  default: ({ children, onInfiniteScroll, isLoading }: any) => (
+    <div data-testid="infinite-scroll" data-is-loading={String(isLoading)}>
+      {children}
+      <button data-testid="load-more-trigger" onClick={onInfiniteScroll} type="button">
         Load More
       </button>
     </div>
@@ -91,6 +103,20 @@ vi.mock("@components", () => ({
       )}
     </div>
   ),
+  TabGroup: ({ tabs, value, onChange }: any) => (
+    <div data-testid="tab-group">
+      {tabs?.map((tab: any) => (
+        <button
+          key={tab.value}
+          data-testid={`tab-${tab.value}`}
+          onClick={() => onChange?.(null, tab.value)}
+          className={value === tab.value ? "active" : ""}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  ),
   ToggleButtonGroup: ({ value, onValueChange, items }: any) => (
     <div data-testid="toggle-button-group">
       {items.map((item: any) => (
@@ -103,6 +129,28 @@ vi.mock("@components", () => ({
           {item.label}
         </button>
       ))}
+    </div>
+  ),
+  FeedCard: ({
+    id,
+    user,
+    scenario,
+    commentsCount,
+    isCommentsLoading,
+    onReviewTranscript,
+    onCommentsClick,
+  }: any) => (
+    <div data-testid={`feed-card-${id}`}>
+      <span data-testid="feed-card-user">{user?.name}</span>
+      <span data-testid="feed-card-scenario">{scenario?.title}</span>
+      <span data-testid="feed-card-comments-count">{commentsCount}</span>
+      {isCommentsLoading && <span data-testid="comments-loading">Loading comments...</span>}
+      <button data-testid={`review-transcript-${id}`} onClick={onReviewTranscript}>
+        Review Transcript
+      </button>
+      <button data-testid={`comments-click-${id}`} onClick={onCommentsClick}>
+        View Comments
+      </button>
     </div>
   ),
 }));

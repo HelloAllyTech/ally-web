@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenarioCasesQuery,
   useDeleteScenarioCaseByIdMutation,
@@ -40,20 +39,13 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
     data: casesResponse,
     isFetching: isCasesFetching,
     isLoading: isCasesLoading,
-  } = useGetScenarioCasesQuery(
-    {
-      status:
-        selectedFilters.length > 0
-          ? selectedFilters?.map(filter => filter.id)?.join(",")
-          : undefined,
-      offset: casesOffset,
-      limit: casesLimit,
-      search: "",
-    },
-    {
-      skip: !FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG, // TODO: remove this skip when the feature flag is enabled
-    },
-  );
+  } = useGetScenarioCasesQuery({
+    status:
+      selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
+    offset: casesOffset,
+    limit: casesLimit,
+    search: "",
+  });
 
   const [deleteCaseById] = useDeleteScenarioCaseByIdMutation();
   const [duplicateScenarioCase] = useDuplicateScenarioCaseMutation();
@@ -116,9 +108,9 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
       await deleteCaseById(currentCase.id).unwrap();
       setIsDeleteCasePopupOpen(false);
       setCurrentCase(null);
-      toast.success(en.simulation.pathwayDeletedSuccessfully);
+      toast.success(en.simulation.caseDeletedSuccessfully);
     } catch (error: any) {
-      toast.error(error?.data?.message || en.simulation.failedDeletePathway);
+      toast.error(error?.data?.message || en.simulation.failedDeleteCase);
     }
   };
 
@@ -141,9 +133,9 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
       }).unwrap();
       setIsUnpublishCasePopupOpen(false);
       setCurrentCase(null);
-      toast.success(en.simulation.pathwayStatusUpdatedSuccessfully + status);
+      toast.success(en.simulation.caseStatusUpdatedSuccessfully + status);
     } catch (error: any) {
-      toast.error(error?.data?.message || en.simulation.failedChangePathwayStatus);
+      toast.error(error?.data?.message || en.simulation.failedChangeCaseStatus);
     }
   };
 
@@ -153,9 +145,9 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
       setIsDuplicateCasePopupOpen(false);
       setCurrentCase(null);
       reLoadCurrentCases();
-      toast.success(en.simulation.pathwayDuplicatedSuccessfully);
+      toast.success(en.simulation.caseDuplicatedSuccessfully);
     } catch (error: any) {
-      toast.error(error?.data?.message || en.simulation.failedDuplicatePathway);
+      toast.error(error?.data?.message || en.simulation.failedDuplicateCase);
     }
   };
 

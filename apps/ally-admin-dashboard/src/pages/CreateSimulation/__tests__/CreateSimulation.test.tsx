@@ -1,12 +1,14 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useForm } from "react-hook-form";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
+import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
 
 import { CreateSimulation } from "../CreateSimulation";
 import { ChecklistType, ExperienceMode } from "@constants";
+import reportUploadReducer from "@reducer/reportUploadReducer";
 
 // Hoist constants mock
 const mockEn = vi.hoisted(() => ({
@@ -63,6 +65,7 @@ vi.mock("@api", () => ({
   useUpdateSimulationByIdMutation: () => [mockUpdateSimulation],
   useLazyGetAdminSimulationByIdQuery: () => [mockGetSimulationById, { data: null }],
   useDeleteCoverImageMutation: () => [mockDeleteCoverImage],
+  useGetAvailableLanguageVoicesQuery: () => ({ data: [] }),
 }));
 
 // Mock hooks
@@ -72,8 +75,6 @@ vi.mock("@hooks", () => ({
 
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
   FEATURE_FLAGS_MAP: {
-    SIMULATION_CREATOR_FLAG: true,
-    ADDITIONAL_CONFIG_FLAG: false,
     SIMULATION_REPORT_FLAG: false,
   },
 }));
@@ -202,16 +203,6 @@ vi.mock("@constants", () => ({
       ],
     },
   ],
-  SIMULATION_CREATOR_FIELD_GROUPS_OLD: [
-    {
-      id: "basic-info",
-      label: "Basic Information",
-      fields: [
-        { id: "title", isMandatory: true },
-        { id: "description", isMandatory: true },
-      ],
-    },
-  ],
 }));
 
 // Mock utils
@@ -263,11 +254,22 @@ describe("CreateSimulation", () => {
     Element.prototype.scrollTo = vi.fn();
   });
 
+  const createTestStore = () =>
+    configureStore({
+      reducer: { reportUpload: reportUploadReducer.reducer },
+      preloadedState: {
+        reportUpload: { uploads: [], currentScenarioId: undefined },
+      },
+    });
+
   const renderCreateSimulation = () => {
+    const store = createTestStore();
     return render(
-      <BrowserRouter>
-        <CreateSimulation />
-      </BrowserRouter>,
+      <Provider store={store}>
+        <BrowserRouter>
+          <CreateSimulation />
+        </BrowserRouter>
+      </Provider>,
     );
   };
 
@@ -659,7 +661,7 @@ describe("CreateSimulation", () => {
         title: "Test Title",
         description: "Test Description",
         timerMode: true,
-        maxTimeValue: "01:31:00", // Exceeds 01:30:00
+        maxTimeValue: "02:00:00", // Exceeds 02:00:00
         triggerWarningIds: [],
       });
 

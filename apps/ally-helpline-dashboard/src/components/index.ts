@@ -9,6 +9,7 @@ import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
 import { Carousel, CarouselSize, CarouselVariant, CarouselSlideType } from "./carousel";
+import { CharacterCount } from "./character-count";
 import Checklist from "./checklist";
 import Chip, { ChipConfig } from "./chip";
 import { CircularProgress } from "./circular-progress";
@@ -24,8 +25,10 @@ import { DatePicker, TimePicker } from "./date-time-pickers";
 import DraggableArea from "./draggable-area";
 import Drawer from "./drawer";
 import Dropdown from "./dropdown";
+import { EmojiPickerTrigger } from "./emoji-picker";
 import FallbackUI from "./fallback-ui";
 import EmojiStack from "./feed-card/EmojiStack";
+import FeedCard from "./feed-card/FeedCard";
 import InfoBanner from "./info-banner";
 import Input from "./input";
 import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
@@ -45,6 +48,7 @@ import ReviewCommentsSidepanel from "./review-comments-sidepanel/ReviewCommentsS
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
+import { ShareForReview } from "./share-for-review";
 import ShinyText from "./shiny-text";
 import SkillsTab from "./skills-tab";
 import { StarRating } from "./star-rating";
@@ -54,6 +58,7 @@ import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
 import ThreadCard from "./thread-card/ThreadCard";
 import ToggleButtonGroup from "./toggle-button-group";
+import { ToggleSwitch } from "./toggle-switch";
 import TranscriptListing from "./transcript-listing";
 import Transcription from "./transcription";
 import { UpNextSimulationCard } from "./up-next-simulation-card";
@@ -71,6 +76,7 @@ export {
 };
 
 export {
+  FeedCard,
   Accordion,
   AchievementBadgeModal,
   AchievementsCard,
@@ -78,6 +84,7 @@ export {
   BoxBreathing,
   Button,
   ButtonGroup,
+  CharacterCount,
   Chip,
   CircularProgress,
   ConfirmationDialog,
@@ -133,4 +140,7 @@ export {
   ReflectionTab,
   Checklist,
   SkillsTab,
+  ShareForReview,
+  ToggleSwitch,
+  EmojiPickerTrigger,
 };

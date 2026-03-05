@@ -1,6 +1,7 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -8,6 +9,7 @@ import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
+  useGetAvailableLanguageVoicesQuery,
   useLazyGetAdminSimulationByIdQuery,
   useUpdateSimulationByIdMutation,
 } from "@api";
@@ -17,6 +19,8 @@ import {
   Footer,
   Header,
   ReportSection,
+  ReportSectionHandle,
+  ReportPrimaryTab,
   SimulationEventMapTable,
   SimulationPreview,
   VerticalStepper,
@@ -27,12 +31,12 @@ import {
   ROUTES,
   StepperList,
   SIMULATION_CREATOR_FIELD_GROUPS,
-  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
   SIMULATION_CREATOR_STEP_IDS,
   SESSION_TIMER_CONFIG,
   FORM_FIELD_IDS,
 } from "@constants";
 import { useDebounce } from "@hooks";
+import { selectUploadsInProgress } from "@reducer/reportUploadReducer";
 import {
   SimulationStatus,
   SimulationPreviewType,
@@ -47,7 +51,7 @@ import {
   extractValidData,
   isEmpty,
   isNonEmptyArray,
-  validateMaxTimeValue,
+  validateTimeRange,
 } from "@utils";
 
 const stepIds: any = SIMULATION_CREATOR_STEP_IDS;
@@ -55,9 +59,7 @@ const stepIds: any = SIMULATION_CREATOR_STEP_IDS;
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
   const mandatoryFields: string[] = [];
-  const fieldGroups = FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
-    ? SIMULATION_CREATOR_FIELD_GROUPS
-    : SIMULATION_CREATOR_FIELD_GROUPS_OLD;
+  const fieldGroups = SIMULATION_CREATOR_FIELD_GROUPS;
   fieldGroups.forEach(group => {
     group.fields.forEach(field => {
       if (field.isMandatory) {
@@ -66,6 +68,16 @@ const getMandatoryFieldIds = () => {
     });
   });
   return mandatoryFields;
+};
+
+const getMandatoryFieldIdsInOverview = () => {
+  const mandatoryFields: string[] = [];
+  SIMULATION_CREATOR_FIELD_GROUPS?.[0]?.fields?.forEach(field => {
+    if (field?.isMandatory) {
+      mandatoryFields.push(field?.id);
+    }
+  });
+  return mandatoryFields ?? [];
 };
 
 export const CreateSimulation: FC = () => {
@@ -78,6 +90,8 @@ export const CreateSimulation: FC = () => {
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const reportStepRef = useRef<ReportSectionHandle>(null);
+  const [reportPrimaryTab, setReportPrimaryTab] = useState<ReportPrimaryTab>("report");
 
   // API mutation for creating simulation
   const [createSimulationQuery, { isLoading: isCreatingSimulation }] =
@@ -86,11 +100,33 @@ export const CreateSimulation: FC = () => {
   const [getAdminSimulationByIdQuery, { data: adminSimulationByIdData }] =
     useLazyGetAdminSimulationByIdQuery();
   const [deleteCoverImage] = useDeleteCoverImageMutation();
+  const { data: availableLanguages = [] } = useGetAvailableLanguageVoicesQuery({
+    active: true,
+    voicesNeeded: true,
+  }) as { data: Array<{ language_id: number; value: string; label: string }> };
 
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
   });
+
+  const uploadsInProgress = useSelector(selectUploadsInProgress);
+  const isReportGenerationInProgress = uploadsInProgress.some(
+    upload => simulationId != null && String(upload.scenarioId) === String(simulationId),
+  );
+
+  const hasSetInitialStepForReportInProgress = useRef(false);
+  useEffect(() => {
+    if (
+      simulationId &&
+      isReportGenerationInProgress &&
+      FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG &&
+      !hasSetInitialStepForReportInProgress.current
+    ) {
+      setCurrentStep(stepIds.report);
+      hasSetInitialStepForReportInProgress.current = true;
+    }
+  }, [simulationId, isReportGenerationInProgress]);
 
   useEffect(() => {
     if (simulationId) getAdminSimulationByIdQuery(simulationId);
@@ -126,7 +162,12 @@ export const CreateSimulation: FC = () => {
       }
       if (fieldId === FORM_FIELD_IDS.STATE_INSTRUCTIONS) {
         const stateInstructions = value as stateInstruction[];
-        if (stateInstructions.some(instruction => instruction.instruction.trim() === ""))
+        if (
+          stateInstructions.some(
+            instruction =>
+              instruction.instruction.trim() === "" || instruction.dialogues?.length === 0,
+          )
+        )
           return false;
       }
       if (fieldId === FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) {
@@ -141,6 +182,17 @@ export const CreateSimulation: FC = () => {
         )
           return false;
       }
+      return true;
+    });
+  }, [formValues]);
+
+  const areAllMandatoryFieldsFilledInOverview = useMemo(() => {
+    const mandatoryFieldIds = getMandatoryFieldIdsInOverview();
+    return mandatoryFieldIds.every(fieldId => {
+      const value = formValues[fieldId];
+      if (isEmpty(value)) return false;
+      if (Array.isArray(value) && value.length === 0) return false;
+      if (value instanceof FileList && value.length === 0) return false;
       return true;
     });
   }, [formValues]);
@@ -162,10 +214,43 @@ export const CreateSimulation: FC = () => {
     }
 
     if (formData.timerMode && formData.maxTimeValue) {
-      if (!validateMaxTimeValue(formData.maxTimeValue, SESSION_TIMER_CONFIG.MAX_TIME)) {
+      if (
+        !validateTimeRange(
+          formData.maxTimeValue,
+          SESSION_TIMER_CONFIG.MIN_TIME,
+          SESSION_TIMER_CONFIG.MAX_TIME,
+        )?.isValid
+      ) {
         toast.error(
           en.simulation.maxTimeError(SESSION_TIMER_CONFIG.MIN_TIME, SESSION_TIMER_CONFIG.MAX_TIME),
         );
+        return null;
+      }
+    }
+
+    if (status === SimulationStatus.ACTIVE) {
+      const languageVoices = (formData.languageVoices ?? {}) as Record<string, string>;
+      const linguisticStyleSamples = (formData.linguisticStyleSamples ?? {}) as Record<
+        string,
+        string[]
+      >;
+      const langIds = Object.keys(languageVoices).filter(k => languageVoices[k]);
+      const missing: string[] = [];
+      for (const langId of langIds) {
+        const lang = availableLanguages.find(l => String(l.language_id) === langId);
+        const code = (lang?.value ?? "").toLowerCase();
+        if (code && !code.startsWith("en")) {
+          const samples = linguisticStyleSamples[langId];
+          const hasContent =
+            Array.isArray(samples) &&
+            samples.some(s => typeof s === "string" && s.trim().length > 0);
+          if (!hasContent) {
+            missing.push(lang?.label ?? langId);
+          }
+        }
+      }
+      if (missing.length > 0) {
+        toast.error(en.errors.linguisticStyleSamplesRequired);
         return null;
       }
     }
@@ -189,6 +274,8 @@ export const CreateSimulation: FC = () => {
       agentDialogues,
       stateInstructions,
       behaviorInstructions,
+      maxTimeValue,
+      timerMode,
       ...restForm
     } = formData;
 
@@ -225,35 +312,45 @@ export const CreateSimulation: FC = () => {
       name: field.name,
       value: field.value,
     }));
-    const behaviourInstructionsArray = isNonEmptyArray(behaviorInstructions)
-      ? (behaviorInstructions as behaviourInstruction[]).map(instruction => ({
-          ...(instruction.id &&
-            !String(instruction.id).startsWith("temp-") && { id: instruction.id }),
-          category: instruction.category,
-          behaviors: instruction.behaviors.map((b: any) => b?.id ?? b),
-          instructions: Array.isArray(instruction.instructions)
-            ? instruction.instructions
-            : (typeof instruction.instructions === "string" ? instruction.instructions : "")
-                .split("\n")
-                .map(s => s.trim())
-                .filter(Boolean),
-        }))
-      : [];
+
+    const normalizeInstructions = (value: unknown): string[] =>
+      Array.isArray(value)
+        ? value
+        : String(value ?? "")
+            .split("\n")
+            .map(text => text.trim())
+            .filter(Boolean);
+
+    const behaviourInstructionsArray = [];
+
+    if (isNonEmptyArray(behaviorInstructions)) {
+      behaviorInstructions?.forEach((instruction: any) => {
+        if (
+          isNonEmptyString(instruction?.category) ||
+          isNonEmptyArray(instruction?.behaviors) ||
+          normalizeInstructions(instruction?.instructions).length > 0
+        ) {
+          behaviourInstructionsArray.push({
+            category: instruction.category,
+            behaviors: instruction.behaviors?.map((behavior: any) => behavior?.id ?? behavior),
+            instructions: normalizeInstructions(instruction.instructions),
+          });
+        }
+      });
+    }
 
     const simulationData = {
-      ...(FEATURE_FLAGS_MAP.SIMULATION_CREATOR_FLAG
-        ? extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm)
-        : extractValidData(SIMULATION_CREATOR_FIELD_GROUPS_OLD, restForm)),
+      ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
       agentDialogues: agentDialoguesArray,
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
       status,
-      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && { stateInstructions }),
-      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && {
-        behaviorInstructions: behaviourInstructionsArray,
-      }),
-      ...(FEATURE_FLAGS_MAP.ADDITIONAL_CONFIG_FLAG && { competencyId: restForm.competency?.id }),
+      stateInstructions,
+      behaviorInstructions: behaviourInstructionsArray,
+      competencyId: restForm.competency?.id,
+      maxTimeValue: timerMode ? maxTimeValue : null,
+      timerMode: timerMode,
     };
 
     let response;
@@ -332,6 +429,15 @@ export const CreateSimulation: FC = () => {
   };
 
   const handleStepClick = async (stepId: string) => {
+    if (isReportGenerationInProgress) {
+      return;
+    }
+    if (currentStep === stepIds.overview) {
+      if (!areAllMandatoryFieldsFilledInOverview) {
+        toast.error(en.errors.overviewMandatoryFieldsNotFilled);
+        return;
+      }
+    }
     //TODO: add report step to the requiresSave condition
     const requiresSave =
       stepId === stepIds.advancedSettings ||
@@ -349,6 +455,10 @@ export const CreateSimulation: FC = () => {
   };
 
   const handlePrevious = () => {
+    if (currentStep === stepIds.report && reportStepRef.current?.isOnHistoryTab()) {
+      reportStepRef.current.switchToReportTab();
+      return;
+    }
     const currentIndex = StepperList.findIndex(step => step.id === currentStep);
     if (currentIndex > 0) {
       const previousStep = StepperList[currentIndex - 1];
@@ -358,7 +468,7 @@ export const CreateSimulation: FC = () => {
 
   const renderStep = (title: string, component: React.ReactNode) => {
     return (
-      <div className="flex flex-col h-full w-100%">
+      <div className={`flex flex-col h-full w-100%`}>
         <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
           <h2 className="text-lg font-medium text-typography-900">{title}</h2>
         </div>
@@ -386,7 +496,15 @@ export const CreateSimulation: FC = () => {
         return <SimulationEventMapTable simulationId={simulationId} />;
       case stepIds.report:
         if (FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG) {
-          return <ReportSection scenarioId={simulationId} />;
+          return (
+            <ReportSection
+              ref={reportStepRef}
+              scenarioId={simulationId}
+              areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
+              onPrimaryTabChange={setReportPrimaryTab}
+              hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
+            />
+          );
         }
         return null;
       default:
@@ -399,6 +517,12 @@ export const CreateSimulation: FC = () => {
     : currentStep === stepIds.advancedSettings;
 
   const handleNext = async () => {
+    if (currentStep === stepIds.overview) {
+      if (!areAllMandatoryFieldsFilledInOverview) {
+        toast.error(en.errors.overviewMandatoryFieldsNotFilled);
+        return;
+      }
+    }
     if (isLastStep) {
       handleSubmit(handlePublish)();
     } else {
@@ -438,6 +562,7 @@ export const CreateSimulation: FC = () => {
         onPreview={handlePreview}
         isPublishing={isCreatingSimulation}
         title={simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation}
+        type="Simulation"
       />
 
       <div className="flex h-[calc(100vh-100px)]">
@@ -445,6 +570,7 @@ export const CreateSimulation: FC = () => {
           steps={StepperList}
           currentStep={currentStep}
           onStepClick={handleStepClick}
+          disabled={isReportGenerationInProgress}
         />
 
         <div className="flex-1 flex flex-col h-[calc(100vh-160px)]">
@@ -455,6 +581,10 @@ export const CreateSimulation: FC = () => {
             showPrevious={currentStep !== stepIds.overview}
             showNext={true}
             isNextDisabled={false}
+            isPreviousDisabled={
+              isReportGenerationInProgress &&
+              (currentStep !== stepIds.report || reportPrimaryTab !== "history")
+            }
             isLastStep={isLastStep}
           />
         </div>

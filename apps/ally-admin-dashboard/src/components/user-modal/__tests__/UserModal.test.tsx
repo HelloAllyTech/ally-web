@@ -20,7 +20,6 @@ vi.mock("@ally-ui-mono/ui-shared", async importOriginal => {
     ),
     FEATURE_FLAGS_MAP: {
       ...actual.FEATURE_FLAGS_MAP,
-      ORGANISATION_SETTINGS_FLAG: true,
     },
   };
 });
@@ -35,8 +34,8 @@ vi.mock("@api", async importOriginal => {
   };
 });
 
-// Mock specific component files to avoid circular dependencies
-vi.mock("@components/button", () => ({
+// Mock @components barrel import
+vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled, className, variant }: any) => (
     <button
       onClick={onClick}
@@ -52,9 +51,6 @@ vi.mock("@components/button", () => ({
       {children}
     </button>
   ),
-}));
-
-vi.mock("@components/dropdownwithtag", () => ({
   DropdownwithTag: ({ label, onChange, initialValue, options, placeholder, required }: any) => (
     <div data-testid="dropdown-with-tag">
       <label>
@@ -63,7 +59,7 @@ vi.mock("@components/dropdownwithtag", () => ({
       </label>
       <select
         data-testid="dropdown-with-tag-select"
-        onChange={event => {
+        onChange={(event: any) => {
           const selectedOptions = Array.from(
             event.target.selectedOptions,
             (option: any) => option.value,
@@ -81,9 +77,6 @@ vi.mock("@components/dropdownwithtag", () => ({
       </select>
     </div>
   ),
-}));
-
-vi.mock("@components/custom-dropdown", () => ({
   CustomDropdown: ({ label, onChange, value, options, placeholder, required }: any) => (
     <div data-testid="custom-dropdown">
       <label>
@@ -93,7 +86,7 @@ vi.mock("@components/custom-dropdown", () => ({
       <select
         data-testid="custom-dropdown-select"
         value={value}
-        onChange={event => onChange(event.target.value)}
+        onChange={(event: any) => onChange(event.target.value)}
       >
         <option value="">{placeholder}</option>
         {options.map((option: any) => (
@@ -104,30 +97,21 @@ vi.mock("@components/custom-dropdown", () => ({
       </select>
     </div>
   ),
-}));
-
-vi.mock("@components/credit-field", () => ({
   CreditField: ({ onChange, userData, value }: any) => (
     <div data-testid="credit-field">
       <input
         type="number"
         data-testid="credit-input"
         value={value}
-        onChange={event => onChange(parseInt(event.target.value) || 0)}
+        onChange={(event: any) => onChange(parseInt(event.target.value) || 0)}
       />
     </div>
   ),
-}));
-
-vi.mock("@components/profile-card", () => ({
   ProfileCard: ({ user }: any) => (
     <div data-testid="profile-card">
       {user.name} - {user.email}
     </div>
   ),
-}));
-
-vi.mock("@components/tabs", () => ({
   Tabs: ({ items, activeId, onChange }: any) => (
     <div data-testid="tabs">
       {items.map((item: any) => (
@@ -142,9 +126,6 @@ vi.mock("@components/tabs", () => ({
       ))}
     </div>
   ),
-}));
-
-vi.mock("@components/toggle-switch", () => ({
   ToggleSwitch: ({ enabled, onChange }: any) => (
     <button
       data-testid="toggle-switch"
@@ -467,6 +448,7 @@ describe("UserModal", () => {
         id: 1,
         name: "Test User",
         email: "test@example.com",
+        profileImageUrl: "https://example.com/profile.jpg",
         username: "testuser",
         externalId: "EXT001",
         status: "ACTIVE",
@@ -548,6 +530,7 @@ describe("UserModal", () => {
         id: 1,
         name: "Test User",
         email: "test@example.com",
+        profileImageUrl: "https://example.com/profile.jpg",
         username: "testuser",
         externalId: "EXT001",
         status: "ACTIVE",
@@ -769,6 +752,7 @@ describe("UserModal", () => {
         id: 1,
         name: "Test User",
         email: "test@example.com",
+        profileImageUrl: "https://example.com/profile.jpg",
         username: "testuser",
         externalId: "EXT001",
         status: "ACTIVE",
@@ -831,6 +815,7 @@ describe("UserModal", () => {
         id: 1,
         name: "Test User",
         email: "test@example.com",
+        profileImageUrl: "https://example.com/profile.jpg",
         username: "testuser",
         externalId: "EXT001",
         status: "ACTIVE",
@@ -1117,7 +1102,7 @@ describe("UserModal", () => {
         onClick: vi.fn(),
       },
       {
-        id: "hideRankInLeaderboard",
+        id: "hideRankInCommunity",
         value: false,
         label: "Hide Rank in Leaderboard",
         onClick: vi.fn(),
@@ -1209,7 +1194,7 @@ describe("UserModal", () => {
         expect(toggleSwitches[0]).toHaveAttribute("data-enabled", "true"); // dashboard-1: true
         expect(toggleSwitches[1]).toHaveAttribute("data-enabled", "false"); // enableMicrophoneMode: false
         expect(toggleSwitches[2]).toHaveAttribute("data-enabled", "true"); // enableAudioUpload: true
-        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "false"); // hideRankInLeaderboard: false
+        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "false"); // hideRankInCommunity: false
       });
     });
 
@@ -1292,7 +1277,7 @@ describe("UserModal", () => {
       fireEvent.click(screen.getByTestId("tab-settings"));
 
       await waitFor(() => {
-        // Two options are disabled (enableMicrophoneMode and hideRankInLeaderboard)
+        // Two options are disabled (enableMicrophoneMode and hideRankInCommunity)
         const disabledTexts = screen.getAllByText("Disabled");
         expect(disabledTexts).toHaveLength(2);
       });
@@ -1306,7 +1291,7 @@ describe("UserModal", () => {
             orgcode: "TEST",
             enableMicrophoneMode: false,
             enableAudioUpload: false,
-            hideRankInLeaderboard: false,
+            hideRankInCommunity: false,
             enabledDashboardIds: [],
           },
           mode: "onChange",
@@ -1374,7 +1359,7 @@ describe("UserModal", () => {
         id: "tenant-123",
         enableMicrophoneMode: true,
         enableAudioUpload: false,
-        hideRankInLeaderboard: true,
+        hideRankInCommunity: true,
         enabledDashboardIds: ["dashboard-1", "dashboard-2"],
       };
 
@@ -1398,8 +1383,8 @@ describe("UserModal", () => {
           onClick: vi.fn(),
         },
         {
-          id: "hideRankInLeaderboard",
-          value: apiTenantData.hideRankInLeaderboard,
+          id: "hideRankInCommunity",
+          value: apiTenantData.hideRankInCommunity,
           label: "Hide Rank in Leaderboard",
           onClick: vi.fn(),
         },
@@ -1410,7 +1395,7 @@ describe("UserModal", () => {
           defaultValues={{
             enableMicrophoneMode: apiTenantData.enableMicrophoneMode,
             enableAudioUpload: apiTenantData.enableAudioUpload,
-            hideRankInLeaderboard: apiTenantData.hideRankInLeaderboard,
+            hideRankInCommunity: apiTenantData.hideRankInCommunity,
             enabledDashboardIds: apiTenantData.enabledDashboardIds,
           }}
         >
@@ -1439,7 +1424,7 @@ describe("UserModal", () => {
         expect(toggleSwitches[0]).toHaveAttribute("data-enabled", "true"); // dashboard-1 in enabledDashboardIds
         expect(toggleSwitches[1]).toHaveAttribute("data-enabled", "true"); // enableMicrophoneMode: true
         expect(toggleSwitches[2]).toHaveAttribute("data-enabled", "false"); // enableAudioUpload: false
-        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "true"); // hideRankInLeaderboard: true
+        expect(toggleSwitches[3]).toHaveAttribute("data-enabled", "true"); // hideRankInCommunity: true
       });
     });
   });

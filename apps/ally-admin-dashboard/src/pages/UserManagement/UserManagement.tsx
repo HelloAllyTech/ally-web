@@ -2,8 +2,8 @@ import { FC, useCallback, useMemo } from "react";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
-  Tabs,
   ListToolbar,
   FilterDropdown,
   UserList,
@@ -112,7 +112,7 @@ export const UserManagement: FC = () => {
   const enabledDashboardIds = tenantMethods.watch("enabledDashboardIds") ?? [];
   const enableMicrophoneMode = tenantMethods.watch("enableMicrophoneMode");
   const enableAudioUpload = tenantMethods.watch("enableAudioUpload");
-  const hideRankInLeaderboard = tenantMethods.watch("hideRankInLeaderboard");
+  const hideRankInCommunity = tenantMethods.watch("hideRankInCommunity");
 
   const getSettingValue = useCallback(
     (optionId: string): boolean => {
@@ -121,13 +121,13 @@ export const UserManagement: FC = () => {
           return enableMicrophoneMode;
         case "enableAudioUpload":
           return enableAudioUpload;
-        case "hideRankInLeaderboard":
-          return hideRankInLeaderboard;
+        case "hideRankInCommunity":
+          return hideRankInCommunity;
         default:
           return false;
       }
     },
-    [enableMicrophoneMode, enableAudioUpload, hideRankInLeaderboard],
+    [enableMicrophoneMode, enableAudioUpload, hideRankInCommunity],
   );
 
   const optionValues = useMemo(
@@ -167,7 +167,7 @@ export const UserManagement: FC = () => {
         label: option.label,
         onClick: (enabled: boolean) => {
           tenantMethods.setValue(
-            option.id as "enableMicrophoneMode" | "enableAudioUpload" | "hideRankInLeaderboard",
+            option.id as "enableMicrophoneMode" | "enableAudioUpload" | "hideRankInCommunity",
             enabled,
             { shouldDirty: true },
           );

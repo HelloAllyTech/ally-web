@@ -15,6 +15,19 @@ export interface UserBadge {
   };
 }
 
+export interface BadgeForTenant {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  enabled?: boolean;
+  visibilityType?: "PUBLIC" | "PRIVATE";
+  achievementParams: {
+    count: number;
+  };
+}
+
 export interface UserBadgeFilters {
   category: string[];
   status: ("ACTIVE" | "DRAFT")[];
@@ -92,4 +105,35 @@ export interface DeleteBadgeRequest {
 
 export interface DeleteBadgeResponse {
   success: boolean;
+}
+
+export interface GetBadgesTenantVisibilityRequest {
+  tenantId: string;
+  limit?: number;
+  offset?: number;
+  search?: string;
+  sortBy?: "createdAt" | "updatedAt" | "name";
+  order?: "ASC" | "DESC";
+}
+
+export interface GetBadgesTenantVisibilityResponse {
+  data: BadgeForTenant[];
+}
+
+export interface AddBadgesToTenantRequest {
+  badgeId: string;
+  tenantIds: string[];
+}
+
+export interface AddBadgesToTenantResponse {
+  message: string;
+}
+
+export interface RemoveBadgesFromTenantRequest {
+  badgeId: string;
+  tenantIds: string[];
+}
+
+export interface RemoveBadgesFromTenantResponse {
+  message: string;
 }

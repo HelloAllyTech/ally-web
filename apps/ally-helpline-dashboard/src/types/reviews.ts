@@ -34,6 +34,9 @@ export interface ReviewItem {
     duration: number;
     createdAt: string;
   };
+  note: string;
+  noteEditedAt: string;
+  isEdited: boolean;
 }
 
 export interface GetReviewsInput {
@@ -141,4 +144,10 @@ export interface TextSegment {
   };
   comments?: CommentItem[];
   overlappingThreads?: Thread[];
+}
+
+export interface ShareForReviewsInput {
+  scenarioSessionId: string;
+  note?: string;
+  status: string;
 }

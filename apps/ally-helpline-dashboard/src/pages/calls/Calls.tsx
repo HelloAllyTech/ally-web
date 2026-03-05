@@ -2,12 +2,12 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import { Tabs, Tab } from "@mui/material";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { Archive, MoreVertIcon, Refresh, StartSession, UploadIcon } from "@assets";
 import { Button, ButtonVariant, CustomMenu, PermissionGuard, ToggleButtonGroup } from "@components";
-import { Permissions, ROUTES } from "@constants";
+import { CallType, Permissions, ROUTES } from "@constants";
 import { useUser } from "@hooks";
 import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
@@ -21,6 +21,7 @@ import {
 } from "./utils";
 
 export const Calls: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
@@ -29,7 +30,7 @@ export const Calls: FC = () => {
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
-  const { permissions } = useUser();
+  const { permissions, availableChatTypes } = useUser();
   const supportedLogList = useMemo(() => getPermittedSessionLogList(permissions), [permissions]);
 
   useEffect(() => {
@@ -49,11 +50,18 @@ export const Calls: FC = () => {
   };
 
   const permittedSessionLogViewList = getPermittedSessionLogList(permissions);
-  const userGroupList = getFormattedSupportedSessionUserGroups(permittedSessionLogViewList ?? []);
+  const userGroupList = getFormattedSupportedSessionUserGroups(
+    permittedSessionLogViewList ?? [],
+    t,
+  );
   const sessionTypeList = useMemo(
     () =>
-      getSupportedSessionTypeListByUserGroup(permittedSessionLogViewList ?? [], sessionUserGroup),
-    [sessionUserGroup, permittedSessionLogViewList],
+      getSupportedSessionTypeListByUserGroup(
+        permittedSessionLogViewList ?? [],
+        sessionUserGroup,
+        t,
+      ),
+    [sessionUserGroup, permittedSessionLogViewList, t],
   );
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: SessionUserGroup) => {
@@ -104,40 +112,46 @@ export const Calls: FC = () => {
             className="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
             data-testid="calls-title"
           >
-            Session Logs
+            {t("calls.title")}
             <Refresh
               data-testid="calls-refresh-button"
               className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
               onClick={handleRefresh}
             />
           </div>
-          <div className="flex gap-2 items-center" data-testid="calls-action-buttons">
+          <div className="flex gap-2 items-center font-tertiary" data-testid="calls-action-buttons">
             <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
-              <Button
-                data-testid="calls-upload-audio-button"
-                variant={
-                  hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT)
-                    ? ButtonVariant.SECONDARY
-                    : ButtonVariant.PRIMARY
-                }
-                onClick={() => setIsAudioUploadDialogOpen(true)}
-              >
-                <UploadIcon
-                  data-testid="calls-upload-icon"
-                  className={
-                    hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT)
-                      ? "text-neutral-500 path-fill-current"
-                      : "text-white path-fill-current"
+              {availableChatTypes?.includes(CallType.AUDIO_UPLOAD) && (
+                <Button
+                  data-testid="calls-upload-audio-button"
+                  variant={
+                    hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
+                    availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
+                      ? ButtonVariant.SECONDARY
+                      : ButtonVariant.PRIMARY
                   }
-                />
-                Upload audio
-              </Button>
+                  onClick={() => setIsAudioUploadDialogOpen(true)}
+                >
+                  <UploadIcon
+                    data-testid="calls-upload-icon"
+                    className={
+                      hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
+                      availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
+                        ? "text-neutral-500 path-fill-current"
+                        : "text-white path-fill-current"
+                    }
+                  />
+                  {t("calls.actions.uploadAudio")}
+                </Button>
+              )}
             </PermissionGuard>
             <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
-              <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
-                <StartSession data-testid="calls-start-session-icon" />
-                Start Session
-              </Button>
+              {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
+                <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
+                  <StartSession data-testid="calls-start-session-icon" />
+                  {t("calls.actions.startSession")}
+                </Button>
+              )}
             </PermissionGuard>
           </div>
         </div>
@@ -173,7 +187,7 @@ export const Calls: FC = () => {
               items={sessionTypeList}
             />
           )}
-          {FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG && sessionType === SessionType.CALL && (
+          {sessionType === SessionType.CALL && (
             <div
               className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#EEEEEE] active:bg-[#EEEEEE] ml-auto"
               onClick={e => setMenuAnchor(e.currentTarget)}
@@ -196,22 +210,21 @@ export const Calls: FC = () => {
           onClose={() => setIsAudioUploadDialogOpen(false)}
         />
       </PermissionGuard>
-      {FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG && (
-        <CustomMenu
-          anchorElement={menuAnchor}
-          items={[
-            {
-              label: "Archives",
-              icon: <Archive />,
-              onClick: () => {
-                navigate(ROUTES.ARCHIVES, { state: { sessionUserGroup } });
-                setMenuAnchor(null);
-              },
+
+      <CustomMenu
+        anchorElement={menuAnchor}
+        items={[
+          {
+            label: t("calls.menu.archives"),
+            icon: <Archive />,
+            onClick: () => {
+              navigate(ROUTES.ARCHIVES, { state: { sessionUserGroup } });
+              setMenuAnchor(null);
             },
-          ]}
-          onClose={() => setMenuAnchor(null)}
-        />
-      )}
+          },
+        ]}
+        onClose={() => setMenuAnchor(null)}
+      />
     </div>
   );
 };

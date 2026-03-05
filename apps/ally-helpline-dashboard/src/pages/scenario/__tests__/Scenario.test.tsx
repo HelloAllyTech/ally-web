@@ -62,11 +62,10 @@ vi.mock("framer-motion", () => ({
         {children}
       </button>
     ),
-    div: ({ children, className, variants, initial, animate, exit, ...props }: any) => (
+    div: ({ children, className, initial, animate, exit, ...props }: any) => (
       <div
         data-testid="motion-div"
         className={className}
-        data-variants={JSON.stringify(variants)}
         data-initial={initial}
         data-animate={animate}
         data-exit={exit}

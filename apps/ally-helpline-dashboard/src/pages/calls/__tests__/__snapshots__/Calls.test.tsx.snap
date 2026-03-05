@@ -31,20 +31,9 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="flex gap-2 items-center"
+          class="flex gap-2 items-center font-tertiary"
           data-testid="calls-action-buttons"
         >
-          <button
-            data-testid="calls-upload-audio-button"
-            variant="secondary"
-          >
-            <div
-              data-testid="upload-icon"
-            >
-              Upload
-            </div>
-            Upload audio
-          </button>
           <button
             data-testid="calls-start-session-button"
           >
@@ -89,6 +78,16 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
         data-testid="close-audio-dialog"
       >
         Close Audio Dialog
+      </button>
+    </div>
+    <div
+      data-testid="custom-menu"
+      style="display: none;"
+    >
+      <button
+        data-testid="custom-menu-item-0"
+      >
+        Archives
       </button>
     </div>
   </div>
@@ -126,20 +125,9 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
           </div>
         </div>
         <div
-          class="flex gap-2 items-center"
+          class="flex gap-2 items-center font-tertiary"
           data-testid="calls-action-buttons"
         >
-          <button
-            data-testid="calls-upload-audio-button"
-            variant="secondary"
-          >
-            <div
-              data-testid="upload-icon"
-            >
-              Upload
-            </div>
-            Upload audio
-          </button>
           <button
             data-testid="calls-start-session-button"
           >
@@ -184,6 +172,16 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
         data-testid="close-audio-dialog"
       >
         Close Audio Dialog
+      </button>
+    </div>
+    <div
+      data-testid="custom-menu"
+      style="display: none;"
+    >
+      <button
+        data-testid="custom-menu-item-0"
+      >
+        Archives
       </button>
     </div>
   </div>

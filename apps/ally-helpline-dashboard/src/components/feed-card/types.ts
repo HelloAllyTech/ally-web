@@ -36,7 +36,7 @@ export interface FeedApiResponse {
 export interface Comment {
   id: string;
   createdBy: {
-    id: string;
+    id: number;
     name: string;
     profileImage?: string;
   };
@@ -53,12 +53,13 @@ export interface FeedCardProps {
   scenario: FeedScenario;
   reactions: Reactions;
   commentsCount: number;
-  comments?: Comment[];
-  isCommentsLoading?: boolean;
-  isCommentsExpanded?: boolean;
   onReviewTranscript?: () => void;
-  onCardClick?: () => void;
-  onCommentsClick?: () => void;
   duration?: number;
   dateTime?: string;
+  badgeBgColor?: string;
+  badgeTextColor?: string;
+  badgeText?: string;
+  isEdited?: boolean;
+  isViewMoreExpanded?: boolean;
+  onTapViewMore?: () => void;
 }

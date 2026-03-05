@@ -1,20 +1,19 @@
-import { aiAPI } from "@src/api/aiAPI";
 import { ApiEndpoints, HttpMethod } from "@src/constants";
 import { GetPreviewVoiceBody, PreviewVoiceResponse } from "@src/types";
 
-const previewVoiceAPI = aiAPI.injectEndpoints({
+import { baseAPI } from "./baseApi";
+
+const previewVoiceAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
-    getPreviewVoice: builder.mutation<PreviewVoiceResponse, GetPreviewVoiceBody>({
+    getPreviewVoice: builder.query<PreviewVoiceResponse, GetPreviewVoiceBody>({
       query: body => ({
-        url: ApiEndpoints.AI.GET_PREVIEW_VOICE,
-        method: HttpMethod.POST,
-        body,
-        responseHandler: async response => {
-          return response.arrayBuffer();
-        },
+        url: ApiEndpoints.AI.GET_PREVIEW_VOICE(body.voiceId),
+        method: HttpMethod.GET,
+        responseHandler: async (response: Response) => response.arrayBuffer(),
+        validateStatus: (response: Response) => response.status === 200 || response.status === 304,
       }),
     }),
   }),
 });
 
-export const { useGetPreviewVoiceMutation } = previewVoiceAPI;
+export const { useLazyGetPreviewVoiceQuery } = previewVoiceAPI;

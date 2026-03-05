@@ -21,6 +21,7 @@ interface ImageUploadProps {
   onUpload: (payload: imageUploadType) => Promise<any>;
   details: any;
   onFailed?: () => void;
+  uploadHint?: string;
 }
 
 const ASPECT_RATIO_TOLERANCE = 0.01;
@@ -44,6 +45,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onFailed,
   onUpload,
   details,
+  uploadHint,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -194,7 +196,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       <div className="flex flex-col gap-2">
         <span className="text-base">{uploadTitle || "Image"}</span>
         <span className="w-32 text-typography-700 text-xs">
-          {"PNG or JPG files only 1:1 ratio (max 2mb)"}
+          {uploadHint || "PNG or JPG files only 1:1 ratio (max 2mb)"}
         </span>
         <button
           type="button"

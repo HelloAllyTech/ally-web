@@ -127,6 +127,7 @@ describe("ScenarioVoices Page", () => {
       config: { model: "neural", age: "adult" },
       createdAt: "2024-01-15T10:00:00Z",
       updatedAt: "2024-01-15T10:00:00Z",
+      active: true,
     },
     {
       id: "voice-2",
@@ -136,6 +137,7 @@ describe("ScenarioVoices Page", () => {
       config: { model: "standard", age: "child" },
       createdAt: "2024-01-14T10:00:00Z",
       updatedAt: "2024-01-14T10:00:00Z",
+      active: true,
     },
   ];
 

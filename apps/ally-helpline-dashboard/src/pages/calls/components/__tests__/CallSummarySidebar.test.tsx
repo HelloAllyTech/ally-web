@@ -22,13 +22,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   FEATURE_FLAGS_MAP: {
     LANGUAGE_CAPABILITY_FLAG: false,
     SIMULATION_VOICE_FLAG: false,
-    ORGANISATION_SETTINGS_FLAG: false,
-    SIMULATION_CREATOR_FLAG: false,
-    SCRIBE_SETTINGS_FLAG: true,
-    SIMULATION_CASES_FLAG: false,
     MAX_ACTIVE_USERS_POPUP_FLAG: false,
-    CHARACTER_LIBRARY_FLAG: false,
-    ADDITIONAL_CONFIG_FLAG: false,
   },
 }));
 
@@ -562,18 +556,18 @@ describe("CallSummarySidebar Component", () => {
       renderComponent();
 
       // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialogTitle = screen.getByText("Delete session log?");
       const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
 
       expect(deleteDialog).toBeInTheDocument();
-      expect(deleteDialogTitle).toHaveTextContent("Delete Session log?");
+      expect(deleteDialogTitle).toHaveTextContent("Delete session log?");
     });
 
     it("should handle delete confirmation", () => {
       const { mockRefetchCallLogs, mockSetCallSummary } = renderComponent();
 
       // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialogTitle = screen.getByText("Delete session log?");
       const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
 
       // Find the confirm button within the delete dialog
@@ -589,7 +583,7 @@ describe("CallSummarySidebar Component", () => {
       renderComponent();
 
       // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete Session log?");
+      const deleteDialogTitle = screen.getByText("Delete session log?");
       const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
 
       // Find the cancel button within the delete dialog

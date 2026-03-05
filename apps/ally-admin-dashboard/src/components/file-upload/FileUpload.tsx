@@ -157,18 +157,22 @@ export const FileUpload = ({
       const isVideo = file.type.startsWith("video/");
 
       if (isVideo) {
-        const duration = await getVideoDuration(file);
-        const response = await getCoverVideoUrl({
-          fileName: file.name,
-          fileSize: file.size,
-          duration,
-          contentType: file.type,
-        }).unwrap();
+        try {
+          const duration = await getVideoDuration(file);
 
-        await uploadToS3(file, response.presignedUrl);
+          const response = await getCoverVideoUrl({
+            fileName: file.name,
+            fileSize: file.size,
+            duration,
+            contentType: file.type,
+          }).unwrap();
+          await uploadToS3(file, response.presignedUrl);
 
-        setUploadedFile(file);
-        setValue(id, response.coverVideoUrl, { shouldValidate: true });
+          setUploadedFile(file);
+          setValue(id, response.coverVideoUrl, { shouldValidate: true });
+        } catch (error) {
+          toast.error((error as any)?.data?.message || en.errors.videoUploadFailed);
+        }
       } else {
         const response = await getCoverImageUrl({
           fileName: file.name,
@@ -297,7 +301,6 @@ export const FileUpload = ({
           {en.simulation.dragDrop}{" "}
           <span className="text-primary text-primary-500">{en.simulation.choose}</span>{" "}
           {en.simulation.pngUploadGuidelines}
-          {en.simulation.resolution}
           <div
             role="button"
             className="text-primary z-10 text-primary-500 cursor-pointer hover:text-primary-600"

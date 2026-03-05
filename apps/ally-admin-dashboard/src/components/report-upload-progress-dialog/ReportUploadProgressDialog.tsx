@@ -1,14 +1,15 @@
 import { FC, useEffect, useMemo, useState, useCallback } from "react";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 import { useCancelReportGenerationMutation } from "@api";
 import { ArrowDown, Cancel, Close, TickGreenBackground, Document, FailIcon } from "@assets";
 import { Button } from "@components";
+import { useScenarioReportsSocketUploads } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
 import { ButtonVariant } from "@components/types";
-import { ReportGenerationStatus } from "@constants/reportGeneration";
-import { cancelUpload, selectUploads, addUpload } from "@reducer/reportUploadReducer";
+import { ReportGenerationStatus, MAX_RECENT_UPLOADS_DISPLAY } from "@constants";
+import { addUpload, cancelInProgressUploadsForScenario } from "@reducer";
 
 import { ProgressCircleProps, UploadProgressHeaderProps } from "./types";
 import { getUploadHeader } from "./utils";
@@ -27,7 +28,7 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
         variant={ButtonVariant.ICON}
         aria-label={expanded ? "Collapse" : "Expand"}
       >
-        <ArrowDown className={expanded ? "rotate-180" : ""} />
+        <ArrowDown className={expanded ? "" : "rotate-180"} />
       </Button>
       <Button onClick={onClose} variant={ButtonVariant.ICON} aria-label="Clear all">
         <Close />
@@ -75,14 +76,16 @@ const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
 
 const UploadProgressDialog: FC = () => {
   const dispatch = useDispatch();
-  const uploads = useSelector(selectUploads);
+  const { socketUploads, markUploadCancelled } = useScenarioReportsSocketUploads();
   const [expanded, setExpanded] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [cancelReportGenerationMutation] = useCancelReportGenerationMutation();
 
   const sorted = useMemo(() => {
-    return [...uploads].reverse();
-  }, [uploads]);
+    return [...socketUploads].reverse();
+  }, [socketUploads]);
+
+  const displayedUploads = useMemo(() => sorted.slice(0, MAX_RECENT_UPLOADS_DISPLAY), [sorted]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -91,7 +94,7 @@ const UploadProgressDialog: FC = () => {
     };
 
     if (
-      uploads.some(
+      socketUploads.some(
         u =>
           u.status === ReportGenerationStatus.IN_PROGRESS ||
           u.status === ReportGenerationStatus.STARTED,
@@ -103,25 +106,26 @@ const UploadProgressDialog: FC = () => {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [uploads]);
+  }, [socketUploads]);
 
   useEffect(() => {
-    // Show dialog when new uploads are added
-    if (uploads.length > 0) {
+    // Show dialog when new uploads are added from socket
+    if (socketUploads.length > 0) {
       setIsVisible(true);
     }
-  }, [uploads.length]);
+  }, [socketUploads.length]);
 
-  const shouldScroll = uploads.length > 2;
+  const shouldScroll = displayedUploads.length > 2;
 
   const onUploadCancel = useCallback(
     async (reportId: string) => {
-      const upload = uploads.find(u => u.reportId === reportId);
+      const upload = socketUploads.find(u => u.reportId === reportId);
       if (!upload) return;
 
       if (reportId) {
         try {
           await cancelReportGenerationMutation({ reportId }).unwrap();
+          markUploadCancelled(reportId);
           dispatch(
             addUpload({
               fileName: upload.fileName,
@@ -131,17 +135,17 @@ const UploadProgressDialog: FC = () => {
               scenarioId: upload.scenarioId,
             }),
           );
+          if (upload.scenarioId != null) {
+            dispatch(cancelInProgressUploadsForScenario({ scenarioId: String(upload.scenarioId) }));
+          }
         } catch (error: any) {
           const errorMessage =
             error?.data?.message || error?.message || "Failed to cancel report generation";
           toast.error(errorMessage);
-          dispatch(cancelUpload(reportId));
         }
-      } else {
-        dispatch(cancelUpload(reportId));
       }
     },
-    [uploads, cancelReportGenerationMutation, dispatch],
+    [socketUploads, cancelReportGenerationMutation, dispatch, markUploadCancelled],
   );
 
   const onClose = () => {
@@ -164,35 +168,40 @@ const UploadProgressDialog: FC = () => {
         </div>
       );
     return (
-      <>
+      <div className="flex items-center justify-center mr-[-4px]">
         <ProgressCircle progress={progress} />
         <Cancel
           className="hidden group-hover:block cursor-pointer w-4 h-4"
           onClick={() => onUploadCancel(reportId)}
         />
-      </>
+      </div>
     );
   };
 
-  if (uploads.length === 0 || !isVisible) return null;
+  if (socketUploads.length === 0 || !isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 right-6 z-40 font-primary">
+    <div className="fixed bottom-0 right-6 z-40 font-primary">
       <div className="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden">
         <UploadProgressDialogHeader
-          uploads={uploads}
+          uploads={displayedUploads}
           expanded={expanded}
           onClose={onClose}
           onToggle={() => setExpanded(p => !p)}
         />
 
         {expanded ? (
-          <div className={`px-4 py-2 ${shouldScroll ? "max-h-[140px] overflow-y-auto" : ""}`}>
-            {sorted.map(({ reportId, fileName, status, progress }) => (
+          <div
+            className={`px-4 py-2 ${shouldScroll ? "max-h-[140px] overflow-y-auto custom-scrollbar" : ""}`}
+          >
+            {displayedUploads.map(({ reportId, fileName, status, progress }) => (
               <div key={reportId} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2 text-sm text-typography-900">
                   <Document className="w-4 h-4" />
-                  <span>{fileName}</span>
+                  <span>
+                    {fileName?.slice(0, 32)}
+                    {fileName?.length > 32 ? "..." : ""}
+                  </span>
                 </div>
                 <div className="group flex items-center gap-2 w-5 h-5 justify-end">
                   {getActionIcon(status, progress, reportId)}

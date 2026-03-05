@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { CircularProgress, Dialog } from "@mui/material";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled } from "@assets";
@@ -15,6 +16,7 @@ interface ReactionsModalProps {
 }
 
 const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) => {
+  const { t } = useTranslation();
   const {
     activeTab,
     showMoreEmojis,
@@ -90,7 +92,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
     if (userReactions.length === 0) {
       return (
         <div className="flex items-center justify-center h-[300px] text-typography-500">
-          No reactions yet
+          {t("review.reactionsModal.noReactionsYet")}
         </div>
       );
     }
@@ -156,7 +158,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
         </button>
 
         <div className="font-primary font-medium text-base leading-5 text-[#1A1A1A] pr-8">
-          Reactions
+          {t("review.reactionsModal.title")}
         </div>
 
         <div className="flex flex-col gap-4">
@@ -164,7 +166,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
             <div className="flex">
               {renderTabButton({
                 tabId: "all",
-                label: `All ${totalCount}`,
+                label: t("review.reactionsModal.all", { count: totalCount }),
                 isActive: activeTab === "all",
                 onClick: () => handleTabChange("all"),
               })}
@@ -179,7 +181,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
                     onClick={handleToggleMoreEmojis}
                     className="flex text-center items-center justify-center gap-0.5 px-1.5 py-3.5 text-[#1A1A1A] font-primary text-base leading-5"
                   >
-                    More
+                    {t("review.reactionsModal.more")}
                     <div className="flex items-center justify-center text-typography-600 w-4 h-4">
                       <ArrowDownFilled />
                     </div>

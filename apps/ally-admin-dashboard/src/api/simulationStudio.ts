@@ -40,9 +40,11 @@ import {
   CompetenciesResponse,
   Competency,
   CreateCompetencyRequest,
-  TranscriptMessage,
+  AutofillModelOption,
   RegenerateFieldRequest,
   RegenerateFieldResponse,
+  GetReportTranscriptInput,
+  GetReportTranscriptResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -588,11 +590,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      * @param {string} scenarioId - Scenario identifier
      * @returns {Promise<ReportData[]>} List of reports
      */
-    getReports: builder.query<{ data: ReportData[] }, { input: GetReportsInput }>({
+    getReports: builder.query<{ data: ReportData[]; count?: number }, { input: GetReportsInput }>({
       query: ({ input }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORTS(input.scenarioId),
         method: HttpMethod.GET,
-        params: input?.status ? { status: input.status } : undefined,
+        params: {
+          ...(input?.statuses && { statuses: input.statuses }),
+          ...(input?.limit != null && { limit: input.limit }),
+          ...(input?.offset != null && { offset: input.offset }),
+          ...(input?.sortBy && { sortBy: input.sortBy }),
+          ...(input?.order && { order: input.order }),
+        },
       }),
     }),
 
@@ -634,19 +642,25 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     cancelReportGeneration: builder.mutation<{ success: boolean }, { reportId: string }>({
       query: ({ reportId }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.CANCEL_REPORT_GENERATION(reportId),
-        method: HttpMethod.GET,
+        method: HttpMethod.POST,
       }),
     }),
 
     /**
-     * Get transcript for a specific report.
+     * Get transcript for a specific report (paginated).
      * @param {string} reportId - Report identifier
-     * @returns {Promise<TranscriptMessage[]>} List of transcript messages
+     * @param {number} limit - Page size
+     * @param {number} offset - Offset for pagination
+     * @returns {Promise<GetReportTranscriptResponse>} Paginated transcript messages
      */
-    getReportTranscript: builder.query<TranscriptMessage[], { reportId: string }>({
-      query: ({ reportId }) => ({
+    getReportTranscript: builder.query<GetReportTranscriptResponse, GetReportTranscriptInput>({
+      query: ({ reportId, limit, offset }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORT_TRANSCRIPT(reportId),
         method: HttpMethod.GET,
+        params:
+          limit != null || offset != null
+            ? { ...(limit != null && { limit }), ...(offset != null && { offset }) }
+            : undefined,
       }),
     }),
 
@@ -655,7 +669,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      */
     getCompetencies: builder.query<CompetenciesResponse, { name?: string }>({
       query: ({ name }) => ({
-        url: "/v1/learn/competencies",
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCIES,
         method: HttpMethod.GET,
         params: name ? { name } : undefined,
       }),
@@ -667,7 +681,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      */
     createCompetency: builder.mutation<Competency, CreateCompetencyRequest>({
       query: body => ({
-        url: "/v1/learn/competencies",
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCIES,
         method: HttpMethod.POST,
         body,
       }),
@@ -675,11 +689,21 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Get available OpenAI models for autofill/regenerate
+     */
+    getAutofillModels: builder.query<AutofillModelOption[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_AUTOFILL_MODELS,
+        method: HttpMethod.GET,
+      }),
+    }),
+
+    /**
      * Regenerate a field using AI
      */
     regenerateField: builder.mutation<RegenerateFieldResponse, RegenerateFieldRequest>({
       query: body => ({
-        url: "/v1/simulation/regenerate",
+        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_FIELD,
         method: HttpMethod.POST,
         body,
       }),
@@ -734,6 +758,7 @@ export const {
   useCreateHelperTagMutation,
   useGetImageLibraryQuery,
   useGetReportsQuery,
+  useLazyGetReportsQuery,
   useGetReportByIdQuery,
   useLazyGetReportByIdQuery,
   useGenerateReportMutation,
@@ -741,5 +766,7 @@ export const {
   useGetCompetenciesQuery,
   useCreateCompetencyMutation,
   useGetReportTranscriptQuery,
+  useLazyGetReportTranscriptQuery,
+  useGetAutofillModelsQuery,
   useRegenerateFieldMutation,
 } = simulationStudioAPI;

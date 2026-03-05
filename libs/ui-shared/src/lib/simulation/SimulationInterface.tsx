@@ -31,6 +31,8 @@ export interface SimulationInterfaceProps {
   isMuted: boolean;
   checklistMode?: ChecklistMode;
   checklistItems?: ChecklistItem[];
+  isMicrophoneGranted: boolean;
+  onEnableMicrophone: () => void;
 }
 
 export const SimulationInterface: FC<SimulationInterfaceProps> = ({
@@ -42,6 +44,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   isMuted,
   checklistMode = ChecklistMode.OFF,
   checklistItems = [],
+  isMicrophoneGranted,
+  onEnableMicrophone,
 }) => {
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
@@ -83,8 +87,30 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const connectingText = useMemo(() => {
     if (roomStatus === RoomStatus.CONNECTED || roomStatus === RoomStatus.CONNECTING)
       return "Waiting for agent to join...";
+    if (!isMicrophoneGranted) return "Click to allow microphone and join the session.";
     return "Connecting to session...";
   }, [roomStatus]);
+
+  const renderPendingStartContent = () => (
+    <div
+      data-testid="simulation-interface-pending-start"
+      className="flex flex-col items-center text-center font-['IBM_Plex_Serif'] gap-4"
+    >
+      <p className="text-[20px] text-white">
+        <span className="font-medium italic">{connectingText}</span>
+      </p>
+      <p className="text-[12px] text-[#B6B5B9]">
+        To start the simulation, please allow microphone permission from your browser.
+      </p>
+      <button
+        type="button"
+        onClick={onEnableMicrophone}
+        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+      >
+        Allow microphone permission
+      </button>
+    </div>
+  );
 
   const renderLoadingContent = () => (
     <div
@@ -101,6 +127,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   );
 
   const renderContent = () => {
+    if (!isMicrophoneGranted) return renderPendingStartContent();
+
     switch (roomStatus) {
       case RoomStatus.AGENT_JOINED:
         return renderConnectedContent();

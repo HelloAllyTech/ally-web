@@ -37,7 +37,7 @@ export interface Tenant {
   enabledDashboardIds: string[];
   enableMicrophoneMode: boolean;
   enableAudioUpload: boolean;
-  hideRankInLeaderboard: boolean;
+  hideRankInCommunity: boolean;
 }
 
 export interface GetTenantResponse {
@@ -119,6 +119,10 @@ export interface CreateTenantBody {
   code: string;
   description?: string;
   logoUrl?: string;
+  enabledDashboardIds?: string[];
+  enableMicrophoneMode?: boolean;
+  enableAudioUpload?: boolean;
+  hideRankInCommunity?: boolean;
 }
 
 export interface GetUsersResponse {
@@ -249,13 +253,13 @@ export interface DeleteLogoRequest {
 }
 
 export interface ScribeSettingsItem {
-  id: number;
+  id: string;
   label: string;
   visible: boolean;
 }
 
 export interface ScribeSettingsList {
-  id: number;
+  id: string;
   fields: ScribeSettingsItem[];
   label: string;
   enabled: boolean;

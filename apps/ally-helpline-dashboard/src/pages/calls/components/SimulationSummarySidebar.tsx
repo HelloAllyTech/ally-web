@@ -1,7 +1,9 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
@@ -10,11 +12,27 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import { AskAiTab, ReflectionTab, Button, SkillsTab } from "@components";
-import { Permissions, REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
+import {
+  AskAiTab,
+  ReflectionTab,
+  Button,
+  SkillsTab,
+  ToggleSwitch,
+  ShareForReview,
+} from "@components";
+import {
+  Permissions,
+  REVIEW_PRIVACY_OPTIONS,
+  REVIEW_PRIVACY_OPTIONS_VALUES,
+  ROUTES,
+} from "@constants";
 import { FeedbackDialog, SimulationSummary } from "@containers";
 import { RootState } from "@store";
-import { SessionType, SimulationSummary as SimulationSummaryType } from "@types";
+import {
+  SessionType,
+  ShareForReviewsInput,
+  SimulationSummary as SimulationSummaryType,
+} from "@types";
 
 import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
@@ -26,7 +44,9 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   canShowFeedback = true,
   councellorName,
 }) => {
+  const { t } = useTranslation();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
+  const [shareForReview, setShareForReview] = useState<boolean>(false);
 
   const hasFeedback = useRef<boolean>(false);
   const startTimeRef = useRef<number | null>(null);
@@ -54,31 +74,80 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     if (startTimeRef.current == null) return false;
     return Date.now() - startTimeRef.current >= SUMMARY_FEEDBACK_TIMEOUT;
   };
-
-  const handleCreateReview = async (status: string) => {
-    if (summary?.reviewId) {
-      await updateReview({ id: summary.reviewId, status });
-    } else {
-      await createReview({ scenarioSessionId: summaryId });
+  const handleCreateReview = async ({
+    note,
+    scenarioSessionId,
+    status,
+  }: {
+    note?: string;
+    scenarioSessionId: string;
+    status: string;
+  }) => {
+    const normalizedNote = note?.trim() || null;
+    try {
+      if (summary?.reviewId) {
+        const params: ShareForReviewsInput = {
+          scenarioSessionId: summary.reviewId,
+          status,
+        };
+        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
+          params.note = normalizedNote;
+        await updateReview(params).unwrap();
+      } else {
+        await createReview({
+          scenarioSessionId: scenarioSessionId,
+          note: normalizedNote,
+          status: status,
+        }).unwrap();
+      }
+    } catch (err: any) {
+      const message =
+        err?.data?.message ?? err?.message ?? "Something went wrong. Please try again.";
+      toast.error(message);
     }
   };
 
+  const handleToggleChange = (value: string) => {
+    if (value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW) {
+      setShareForReview(value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW);
+    } else {
+      handleCreateReview({ scenarioSessionId: summaryId, status: value });
+    }
+  };
   const SidebarTitle = (
     <div className="text-base flex items-center justify-between w-full gap-2">
-      <span className="font-semibold font-tertiary text-typography-800">Summary</span>
+      <span className="font-semibold font-tertiary text-typography-800">
+        {t("common.summary", "Summary")}
+      </span>
 
       {summary?.counselorId === user?.id && (
         <div
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 font-primary font-medium"
           style={{
             opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
           }}
         >
-          <Toggle
-            items={REVIEW_PRIVACY_OPTIONS}
-            initialValue={summary?.reviewStatus}
-            onChange={handleCreateReview}
-          />
+          {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
+            <div className="flex items-center gap-2">
+              <span className="font-primary font-medium text-sm">Share for review</span>
+              <ToggleSwitch
+                enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
+                onChange={(value: boolean) => {
+                  handleToggleChange(
+                    value
+                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                  );
+                }}
+              />
+            </div>
+          ) : (
+            <Toggle
+              items={REVIEW_PRIVACY_OPTIONS(t)}
+              initialValue={summary?.reviewStatus}
+              onChange={() => {}}
+            />
+          )}
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
@@ -87,21 +156,36 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
                   navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
                 }
                 variant="secondary"
-                className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg"
+                className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg relative"
               >
                 <Comment className="w-5 h-5 shrink-0" />
+                {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
               </Button>
             </>
           )}
         </div>
       )}
+      <ShareForReview
+        isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
+        onClose={() => {
+          setShareForReview(false);
+        }}
+        summaryDetails={summary}
+        onNoteChange={(note: string) => {
+          handleCreateReview({
+            scenarioSessionId: summaryId,
+            note: note,
+            status: REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW,
+          });
+        }}
+      />
     </div>
   );
 
   const tabList = [
     {
       id: 1,
-      label: "Session Review",
+      label: t("postSim.tabs.sessionReview", "Session Review"),
       content: (
         <SimulationSummary
           summaryId={summaryId}
@@ -114,26 +198,26 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       ? [
           {
             id: 2,
-            label: "Ask AI",
+            label: t("postSim.tabs.askAi", "Ask AI"),
             content: <AskAiTab sessionId={summaryId} />,
           },
         ]
       : []),
     {
       id: 3,
-      label: "Annotated Transcript",
+      label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
       content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
     },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
           {
             id: 5,
-            label: "Skills  Demonstrated",
+            label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
             content: <SkillsTab sessionId={summaryId} />,
           },
           {
             id: 4,
-            label: "Deeper Reflection",
+            label: t("postSim.tabs.deeperReflection", "Deeper Reflection"),
             content: <ReflectionTab sessionId={summaryId} className="flex-col" />,
           },
         ]

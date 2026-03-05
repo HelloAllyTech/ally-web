@@ -41,7 +41,6 @@ interface FooterProps {
 
 const IMAGE_LIBRARY_LIMIT = 30;
 const SKELETON_COUNT = 15;
-const GRID_COLS = 3;
 
 const Header: FC = () => (
   <div className="flex items-center justify-between px-4 py-3">
@@ -81,7 +80,7 @@ const Content: FC<ContentProps> = ({
 );
 
 const LoadingState: FC = () => (
-  <div className={`grid grid-cols-${String(GRID_COLS)} gap-5`}>
+  <div className="grid grid-cols-3 gap-5">
     {[...Array(SKELETON_COUNT)].map((_, index) => (
       <div
         key={`skeleton-${index}`}
@@ -102,7 +101,7 @@ const ImageGrid: FC<ImageGridProps> = ({ images, selectedImage, onImageClick }) 
   const validImages = useMemo(() => images.filter(img => img.imageUrl), [images]);
 
   return (
-    <div className={`grid grid-cols-${GRID_COLS} gap-5`}>
+    <div className="grid grid-cols-3 gap-5">
       {validImages.map((img, index) => (
         <ImageCard
           key={`${img.id}-${index}`}

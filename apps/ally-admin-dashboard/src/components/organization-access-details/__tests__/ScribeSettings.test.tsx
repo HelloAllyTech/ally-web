@@ -77,6 +77,8 @@ vi.mock("@constants", async importOriginal => {
       common: {
         cancel: "Cancel",
         save: "Save",
+        enabled: "Enabled",
+        disabled: "Disabled",
       },
       userManagement: {
         enabled: "Enabled",
@@ -88,66 +90,79 @@ vi.mock("@constants", async importOriginal => {
         saving: "Saving...",
         scribeSettingsNotEnabled: "Scribe settings is not enabled",
         failedToUpdateScribeSettings: "Failed to update scribe settings",
+        configureSimulationSettings: "Configure scribe fields",
+      },
+      errors: {
+        failedUpdateAccess: "Failed to update access",
       },
     },
   };
 });
 
-// Mock API
-const mockSummarySectionsData = {
-  sections: [
-    {
-      id: "1",
-      label: "Intake",
-      enabled: true,
-      fields: [
+// Mock API - use vi.hoisted to make mocks available before vi.mock hoisting
+const { mockUpdateSummarySections, mockUpdateSummaryFields, mockSummarySectionsData, mockTenant } =
+  vi.hoisted(() => ({
+    mockUpdateSummarySections: vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({ data: {} }),
+    }),
+    mockUpdateSummaryFields: vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({ data: {} }),
+    }),
+    mockSummarySectionsData: {
+      sections: [
         {
           id: "1",
-          label: "Intake Notes",
-          visible: true,
+          label: "Intake",
+          enabled: true,
+          fields: [
+            { id: "1", label: "Intake Notes", visible: true },
+            { id: "2", label: "Risk, Self Harm", visible: false },
+            { id: "3", label: "Risk, Self Harm Notes", visible: false },
+          ],
         },
         {
           id: "2",
-          label: "Risk, Self Harm",
-          visible: false,
-        },
-        {
-          id: "3",
-          label: "Risk, Self Harm Notes",
-          visible: false,
+          label: "Ongoing Risks",
+          enabled: false,
+          fields: [{ id: "4", label: "Risk, Self Harm Notes", visible: false }],
         },
       ],
     },
-    {
-      id: "2",
-      label: "Ongoing Risks",
-      enabled: false,
-      fields: [
-        {
-          id: "4",
-          label: "Risk, Self Harm Notes",
-          visible: false,
-        },
-      ],
+    mockTenant: {
+      id: "test-tenant-id",
+      enabledDashboardIds: [],
+      enableMicrophoneMode: false,
+      enableAudioUpload: false,
     },
-  ],
-};
+  }));
 
-const mockUpdateSummarySections = vi.fn().mockReturnValue({
-  unwrap: vi.fn().mockResolvedValue({ data: {} }),
-});
-const mockUpdateSummaryFields = vi.fn().mockReturnValue({
-  unwrap: vi.fn().mockResolvedValue({ data: {} }),
-});
+vi.mock("@api", () => {
+  const mockMutation = vi.fn().mockReturnValue({
+    unwrap: vi.fn().mockResolvedValue({ data: {} }),
+  });
 
-vi.mock("@api", () => ({
-  useGetSummarySectionsQuery: () => ({
-    data: mockSummarySectionsData,
-    isLoading: false,
-  }),
-  useUpdateSummarySectionsMutation: () => [mockUpdateSummarySections, { isLoading: false }],
-  useUpdateSummaryFieldsMutation: () => [mockUpdateSummaryFields, { isLoading: false }],
-}));
+  const mockDashboardSettingsAll = [
+    { id: "callLogAnalytics", label: "Call Log Analytics", type: "CALL_LOG_ANALYTICS" },
+    { id: "orgSectionAnalytics", label: "Org. Section Analytics", type: "ORG_ANALYTICS" },
+  ];
+  return {
+    useGetSummarySectionsQuery: () => ({
+      data: mockSummarySectionsData,
+      isLoading: false,
+    }),
+    useUpdateSummarySectionsMutation: () => [mockUpdateSummarySections, { isLoading: false }],
+    useUpdateSummaryFieldsMutation: () => [mockUpdateSummaryFields, { isLoading: false }],
+    useGetDashboardSettingsAllQuery: () => ({
+      data: mockDashboardSettingsAll,
+      isLoading: false,
+    }),
+    useGetTenantByIdQuery: () => ({
+      data: mockTenant,
+      isLoading: false,
+    }),
+    useUpdateTenantMutation: () => [mockMutation, { isLoading: false }],
+  };
+});
 
 describe("ScribeSettings", () => {
   const mockTenantId = "test-tenant-id";
@@ -158,7 +173,7 @@ describe("ScribeSettings", () => {
 
   it("renders the component with title", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    expect(screen.getByText("Additional Fields")).toBeInTheDocument();
+    expect(screen.getByText("Configure scribe fields")).toBeInTheDocument();
   });
 
   it("renders all parent accordions", () => {
@@ -307,11 +322,13 @@ describe("ScribeSettings", () => {
 
   it("displays correct enabled/disabled text for parent items", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    // Only parent sections show Enabled/Disabled text (not child checkboxes)
-    // Intake parent (enabled) = 1
+    // Enabled/Disabled text appears for:
+    // 1. Summary sections (Intake = Enabled, Ongoing Risks = Disabled)
+    // 2. SCRIBE_SETTINGS_ITEMS (4 items: Microphone Mode, Upload Call Recording,
+    //    Scribe Analytics, Org Session Analytics - all Disabled by default in mock)
+    // Total: 1 Enabled (Intake), 5 Disabled (Ongoing Risks + 4 settings items)
     expect(screen.getAllByText("Enabled")).toHaveLength(1);
-    // Ongoing Risks parent (disabled) = 1
-    expect(screen.getAllByText("Disabled")).toHaveLength(1);
+    expect(screen.getAllByText("Disabled")).toHaveLength(5);
   });
 
   it("renders Clear all and Select all buttons", () => {

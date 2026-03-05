@@ -12,12 +12,16 @@ const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement)
 
 const GOOGLE_AUTH_CLIENT_ID = import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID || "";
 
+const AppWithProviders = GOOGLE_AUTH_CLIENT_ID ? (
+  <GoogleOAuthProvider clientId={GOOGLE_AUTH_CLIENT_ID}>
+    <App />
+  </GoogleOAuthProvider>
+) : (
+  <App />
+);
+
 root.render(
   <StrictMode>
-    <Provider store={store}>
-      <GoogleOAuthProvider clientId={GOOGLE_AUTH_CLIENT_ID}>
-        <App />
-      </GoogleOAuthProvider>
-    </Provider>
+    <Provider store={store}>{AppWithProviders}</Provider>
   </StrictMode>,
 );

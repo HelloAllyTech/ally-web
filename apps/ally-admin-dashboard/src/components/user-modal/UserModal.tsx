@@ -2,14 +2,13 @@ import { useEffect, useRef, useState } from "react";
 
 import { Controller } from "react-hook-form";
 
-import { FEATURE_FLAGS_MAP, ImageUpload } from "@ally-ui-mono/ui-shared";
+import { ImageUpload, Tabs } from "@ally-ui-mono/ui-shared";
 import {
   Button,
   DropdownwithTag,
   CustomDropdown,
   CreditField,
   ProfileCard,
-  Tabs,
   ToggleSwitch,
 } from "@components";
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
@@ -335,8 +334,7 @@ export const UserModal: React.FC<UserModalProps> = ({
 
   if (!isOpen) return null;
 
-  const showTabs =
-    hasTabs && tabOptions?.length > 0 && FEATURE_FLAGS_MAP.ORGANISATION_SETTINGS_FLAG;
+  const showTabs = hasTabs && tabOptions?.length > 0;
   const isFirstTab = !hasTabs || activeTab === tabOptions?.[0]?.id;
   const isSecondTab = hasTabs && activeTab === tabOptions?.[1]?.id;
   const isPrimaryButtonDisabled = !isValid || !isDirty;

@@ -13,6 +13,12 @@ import { SimulationScoreMeter } from "./SimulationScoreMeter";
 import { SimulationPageProps, TriggerWarning, ChecklistMode } from "./types";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
 
+const MICROPHONE_STATE = {
+  GRANTED: "granted",
+  DENIED: "denied",
+  PROMPTED: "prompted",
+};
+
 const useWakeLock = (sessionId: string | undefined) => {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
@@ -72,6 +78,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [microphonePermission, setMicrophonePermission] = useState(MICROPHONE_STATE.GRANTED);
 
   const endAudio = useRef<HTMLAudioElement | null>(new Audio(EndSimulation));
   const startAudio = useRef<HTMLAudioElement | null>(new Audio(StartSimulation));
@@ -81,6 +88,25 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   useEffect(() => {
     startAudio.current?.play();
 
+    const checkMicrophonePermission = async () => {
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          const permissionStatus = await navigator.permissions.query({
+            name: "microphone" as PermissionName,
+          });
+          setMicrophonePermission(permissionStatus.state);
+
+          permissionStatus.onchange = () => {
+            setMicrophonePermission(permissionStatus.state);
+          };
+        }
+      } catch {
+        toast.error("Failed to check microphone permission");
+      }
+    };
+
+    checkMicrophonePermission();
+
     return () => {
       endAudio.current?.pause();
     };
@@ -89,6 +115,18 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   useEffect(() => {
     if (roomStatus === RoomStatus.AGENT_JOINED) startAudio.current?.pause();
   }, [roomStatus]);
+
+  const onEnableMicrophone = async () => {
+    try {
+      // Request microphone access - this triggers the browser's native permission popup
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+
+      setMicrophonePermission(MICROPHONE_STATE.GRANTED);
+    } catch {
+      setMicrophonePermission(MICROPHONE_STATE.DENIED);
+    }
+  };
 
   if (!roomData) return null;
 
@@ -138,6 +176,17 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     await onEndSimulation?.();
   };
 
+  const parseTimeValue = (timeStr: string): number => {
+    if (!timeStr) return 600000; // default 10 minutes
+    const parts = timeStr.split(":").map(Number);
+    const hours = parts[0] || 0;
+    const minutes = parts[1] || 0;
+    const seconds = parts[2] || 0;
+    return hours * 3600 + minutes * 60 + seconds;
+  };
+
+  const maxTimeSeconds = parseTimeValue(roomData?.maxTimeValue);
+
   const content = (
     <div
       data-testid="simulation-page"
@@ -184,7 +233,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       </div>
 
       {roomData?.timerMode && startTime && (
-        <SessionGoalTimer startTime={startTime} maxTimeValue={roomData?.maxTimeValue} />
+        <SessionGoalTimer startTime={startTime} maxTimeSeconds={maxTimeSeconds} />
       )}
 
       <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
@@ -197,25 +246,24 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           isFocusMode={isFocusMode}
           checklistMode={checklistMode}
           checklistItems={checklistItems}
+          isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
+          onEnableMicrophone={onEnableMicrophone}
         />
       </motion.div>
-      {checklistMode === ChecklistMode.OFF && roomData?.showScoreMeter !== false && (
-        <SimulationScoreMeter score={score} />
-      )}
+      {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}
 
-      {startTime && (
-        <BottomSection
-          isWarning={isWarning}
-          onTimeLimitWarning={onTimeLimitWarning}
-          onEndSimulation={handleEndSimulation}
-          onMuteSimulation={onMuteSimulation}
-          isMuted={isMuted}
-          isEndingSession={isEndingSession}
-          startTime={startTime}
-          isFocusMode={isFocusMode}
-          onFocusButtonClick={onFocusButtonClick}
-        />
-      )}
+      <BottomSection
+        isWarning={isWarning}
+        onTimeLimitWarning={onTimeLimitWarning}
+        onEndSimulation={handleEndSimulation}
+        onMuteSimulation={onMuteSimulation}
+        isMuted={isMuted}
+        isEndingSession={isEndingSession}
+        startTime={startTime}
+        timeLimit={maxTimeSeconds}
+        isFocusMode={isFocusMode}
+        onFocusButtonClick={onFocusButtonClick}
+      />
 
       {renderFooter?.()}
 

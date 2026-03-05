@@ -14,6 +14,7 @@ interface SuggestionsContainerProps {
   isRow?: boolean;
   isCenter?: boolean;
   mode?: SearchVariant;
+  suggestionsTitle?: string;
 }
 
 /**
@@ -27,6 +28,7 @@ const SuggestionsContainer: FC<SuggestionsContainerProps> = ({
   isRow = true,
   isCenter = false,
   mode = SearchVariant.LIGHT,
+  suggestionsTitle,
 }) => (
   <div
     data-testid="suggestions-container"
@@ -37,7 +39,7 @@ const SuggestionsContainer: FC<SuggestionsContainerProps> = ({
         className={`leading-[100%] tracking-[0] mb-4 ${suggestionsStyles[mode].header}`}
         data-testid="suggestions-header"
       >
-        Try:
+        {suggestionsTitle || "Try:"}
       </div>
       <div
         data-testid="suggestions-list"

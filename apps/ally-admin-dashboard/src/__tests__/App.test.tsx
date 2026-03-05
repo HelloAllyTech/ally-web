@@ -4,26 +4,15 @@ import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import App from "../App";
+import logsReducer from "@reducer/logsReducer";
 import reportUploadReducer from "@reducer/reportUploadReducer";
+import socketStatusReducer, { SocketConnectionStatus } from "@reducer/socketStatusReducer";
 
 // Mock the API first to prevent baseAPI.injectEndpoints errors
 vi.mock("@api/baseApi", () => ({
   baseAPI: {
     injectEndpoints: vi.fn(() => ({})),
     reducerPath: "baseAPI",
-    reducer: (state = {}) => state,
-    middleware: () => (next: any) => (action: any) => next(action),
-    util: {
-      resetApiState: vi.fn(),
-    },
-  },
-}));
-
-// Mock aiAPI
-vi.mock("@api/aiAPI", () => ({
-  aiAPI: {
-    injectEndpoints: vi.fn(() => ({})),
-    reducerPath: "aiAPI",
     reducer: (state = {}) => state,
     middleware: () => (next: any) => (action: any) => next(action),
     util: {
@@ -43,20 +32,16 @@ vi.mock("@api", () => ({
       resetApiState: vi.fn(),
     },
   },
-  aiAPI: {
-    injectEndpoints: vi.fn(() => ({})),
-    reducerPath: "aiAPI",
-    reducer: (state = {}) => state,
-    middleware: () => (next: any) => (action: any) => next(action),
-    util: {
-      resetApiState: vi.fn(),
-    },
-  },
 }));
 
 // Mock RouteLayout component
 vi.mock("@routes/RouteLayout", () => ({
   RouteLayout: () => <div data-testid="route-layout">RouteLayout</div>,
+}));
+
+// Mock LogViewer component
+vi.mock("@components/log-viewer", () => ({
+  LogViewer: () => <div data-testid="log-viewer">LogViewer</div>,
 }));
 
 // Mock useScenarioReportsSocket hook to prevent socket connection attempts
@@ -104,11 +89,23 @@ const createTestStore = () => {
   return configureStore({
     reducer: {
       reportUpload: reportUploadReducer.reducer,
+      logs: logsReducer.reducer,
+      socketStatus: socketStatusReducer.reducer,
     },
     preloadedState: {
       reportUpload: {
         uploads: [],
         currentScenarioId: undefined,
+      },
+      logs: {
+        logs: [],
+        isVisible: false,
+      },
+      socketStatus: {
+        scenarioReportsSocket: {
+          status: SocketConnectionStatus.DISCONNECTED,
+          connectionAttempts: 0,
+        },
       },
     },
   });

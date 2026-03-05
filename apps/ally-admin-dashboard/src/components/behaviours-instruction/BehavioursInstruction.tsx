@@ -1,8 +1,11 @@
-import { FC, useCallback, useMemo } from "react";
+import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
-import { Plus } from "@assets";
-import { NotionTable } from "@components";
+import { toast } from "sonner";
+
+import { Plus, Trash } from "@assets";
+import { Button, NotionTable } from "@components";
 import { BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS, en } from "@constants";
+import { ButtonVariant } from "@src/components/types";
 import { HelperTagItem } from "@types";
 
 interface BehaviourRow {
@@ -16,6 +19,7 @@ interface BehavioursInstructionProps {
   formMethods: any;
   id: string;
   isMandatory: boolean;
+  regenerateButton?: ReactNode;
 }
 
 const createEmptyFormValue = () => ({
@@ -29,8 +33,16 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
   formMethods,
   id,
   isMandatory,
+  regenerateButton,
 }) => {
   const formData: BehaviourRow[] = formMethods.watch(id) ?? [];
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (formData.length === 0) {
+      formMethods.setValue(id, [createEmptyFormValue()], { shouldDirty: false });
+    }
+  }, [formData.length, formMethods, id]);
 
   const createBehavioursInstructionObject = useCallback(
     (behavior: BehaviourRow) => ({
@@ -55,6 +67,11 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
   );
 
   const handleAddRow = useCallback(() => {
+    //TODO: max 10 behaviours instruction rows
+    if (formData.length >= 10) {
+      toast.error(en.errors.maxRowsBehavioursInstruction);
+      return;
+    }
     const formValue = createEmptyFormValue();
     formMethods.setValue(id, [...formData, formValue], { shouldDirty: true });
   }, [formMethods, id, formData]);
@@ -74,6 +91,12 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
     [formMethods, id, formData],
   );
 
+  const handleDeleteSelectedRows = useCallback(() => {
+    const updatedFormData = formData.filter(behavior => !selectedRows.includes(behavior.id));
+    formMethods.setValue(id, updatedFormData, { shouldDirty: true });
+    setSelectedRows([]);
+  }, [formMethods, id, formData, selectedRows]);
+
   const tableFooter = (
     <button
       type="button"
@@ -87,19 +110,38 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
 
   const tableStyle = { paddingBottom: "10px" };
 
+  const handleSelectionChange = useCallback((selectedRows: any[]) => {
+    setSelectedRows(selectedRows.map(row => row.id.value));
+  }, []);
+
   return (
     <div className="w-full flex flex-col gap-2">
-      <div className="text-base text-typography-900 font-primary flex gap-1">
-        {en.simulation.behavioursInstruction}
-        {isMandatory && <span className="text-destructive-500">*</span>}
+      <div className="text-base text-typography-900 font-primary flex gap-1 justify-between items-center min-h-10">
+        <div className="flex gap-1 items-center">
+          {en.simulation.behavioursInstruction}
+          {isMandatory && <span className="text-destructive-500">*</span>}
+        </div>
+        <div className="flex gap-2 items-cente">
+          {selectedRows.length > 0 && (
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={handleDeleteSelectedRows}
+              className="!h-[30px]"
+            >
+              <Trash />
+              {en.common.delete}
+            </Button>
+          )}
+          {regenerateButton}
+        </div>
       </div>
       <NotionTable
         tableData={tableData}
         tableFooter={tableFooter}
         onRowChange={handleRowChange}
         tableStyle={tableStyle}
+        onSelectionChange={handleSelectionChange}
         autoHeight
-        hideSelectionColumn
       />
     </div>
   );

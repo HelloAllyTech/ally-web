@@ -2,19 +2,23 @@ import { FC, useState, useEffect, useMemo, useCallback } from "react";
 
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import {
   useGetSummarySectionsQuery,
   useUpdateSummarySectionsMutation,
   useUpdateSummaryFieldsMutation,
+  useGetDashboardSettingsAllQuery,
+  useGetTenantByIdQuery,
+  useUpdateTenantMutation,
 } from "@api";
 import { ArrowSolid } from "@assets";
 import { ToggleSwitch, Accordion, Button } from "@components";
 import { en } from "@constants";
-import { ScribeSettingsItem, ScribeSettingsList } from "@types";
+import { SCRIBE_SETTINGS_ITEMS } from "@src/components/organization-access-details/constants";
+import { CreateTenantBody, ScribeSettingsItem, ScribeSettingsList } from "@types";
 
 interface ScribeSettingsProps {
   tenantId: string;
+  onUpdateTenant: () => void;
 }
 
 const cloneFields = (fields: ScribeSettingsItem[]): ScribeSettingsItem[] =>
@@ -59,7 +63,42 @@ const ScribeSettingsSkeleton = () => {
   );
 };
 
-export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
+export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTenant }) => {
+  const [enabledItems, setEnabledItems] = useState<string[]>([]);
+  const [enabledDashboardIds, setEnabledDashboardIds] = useState<string[]>([]);
+  const [updateTenant] = useUpdateTenantMutation();
+
+  const handleToggle = async (item: { id: string; type: string }) => {
+    try {
+      const dataVal: Partial<CreateTenantBody> = {};
+      if (item.type) {
+        if (enabledDashboardIds.includes(item.id)) {
+          dataVal.enabledDashboardIds = enabledDashboardIds.filter(id => id !== item.id);
+        } else {
+          dataVal.enabledDashboardIds = [...enabledDashboardIds, item.id];
+        }
+        setEnabledDashboardIds(dataVal.enabledDashboardIds);
+      } else {
+        dataVal[item.id] = !enabledItems.includes(item.id);
+        if (item.id === "enableMicrophoneMode") {
+          dataVal.enableAudioUpload = enabledItems.includes("enableAudioUpload");
+        } else if (item.id === "enableAudioUpload") {
+          dataVal.enableMicrophoneMode = enabledItems.includes("enableMicrophoneMode");
+        }
+      }
+      await updateTenant({ id: tenantId, data: dataVal });
+      onUpdateTenant?.();
+      setEnabledItems(prev =>
+        prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id],
+      );
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+      throw error;
+    }
+  };
+
+  const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery();
+  const { data: tenant } = useGetTenantByIdQuery(tenantId);
   const { data: summarySectionsData, isLoading: isSummarySectionsLoading } =
     useGetSummarySectionsQuery(tenantId);
   const [updateSummarySections, { isLoading: isUpdatingSections }] =
@@ -71,6 +110,45 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
   const [data, setData] = useState<ScribeSettingsList[]>([]);
   const [initialData, setInitialData] = useState<ScribeSettingsList[]>([]);
 
+  useEffect(() => {
+    if (tenant && dashboardSettingsAll) {
+      setEnabledDashboardIds(tenant.enabledDashboardIds ?? []);
+      const newEnabledItems = [];
+      if (tenant.enableMicrophoneMode) {
+        newEnabledItems.push("enableMicrophoneMode");
+      }
+      if (tenant.enableAudioUpload) {
+        newEnabledItems.push("enableAudioUpload");
+      }
+      setEnabledItems(newEnabledItems);
+      for (const dashboardId of tenant.enabledDashboardIds) {
+        const dashboard = dashboardSettingsAll?.find(setting => setting.id === dashboardId);
+        if (dashboard) {
+          newEnabledItems.push(dashboard.id);
+        }
+      }
+      setEnabledItems(newEnabledItems);
+    }
+  }, [tenant, dashboardSettingsAll]);
+
+  const optionValues = useMemo(() => {
+    return SCRIBE_SETTINGS_ITEMS.map(item => {
+      let id = "";
+      if (item.id !== "") {
+        id = item.id;
+      } else {
+        const dashboardId =
+          dashboardSettingsAll?.find(setting => setting.analyticsType === item.type)?.id ?? "";
+        id = dashboardId;
+      }
+      return {
+        id,
+        value: enabledItems.includes(id),
+        label: item.label,
+        type: item.type,
+      };
+    });
+  }, [dashboardSettingsAll, enabledItems]);
   const mergeSectionData = (
     newSections: ScribeSettingsList[],
     existingSections: ScribeSettingsList[],
@@ -426,14 +504,6 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
     ],
   );
 
-  if (!FEATURE_FLAGS_MAP.SCRIBE_SETTINGS_FLAG) {
-    return (
-      <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-full mt-4 pb-6">
-        {en.userManagement.scribeSettingsNotEnabled}
-      </div>
-    );
-  }
-
   if (isSummarySectionsLoading) {
     return <ScribeSettingsSkeleton />;
   }
@@ -441,8 +511,25 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId }) => {
   return (
     <div className="overflow-y-auto w-full mb-4">
       <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-[60%] mb-4 pb-2">
+        <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary">
+          {optionValues.map(item => (
+            <div key={item.id} className="flex h-9 flex-row justify-between items-center">
+              <div className="text-sm text-typography-700 font-normal">{item.label}</div>
+              <div className="flex flex-row items-center gap-3">
+                <ToggleSwitch
+                  enabled={enabledItems.includes(item.id)}
+                  onChange={() => handleToggle(item)}
+                />
+                <span className="text-sm text-typography-900 font-normal">
+                  {enabledItems.includes(item.id) ? en.common.enabled : en.common.disabled}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div className="text-base font-medium text-typography-900">
-          {en.userManagement.additionalFields}
+          {en.userManagement.configureSimulationSettings}
         </div>
         {data.map(item => renderScribeSettingsListItem(item))}
       </div>

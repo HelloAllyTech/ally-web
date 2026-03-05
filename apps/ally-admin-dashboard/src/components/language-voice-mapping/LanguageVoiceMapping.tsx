@@ -3,11 +3,10 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useGetAvailableLanguageVoicesQuery, useGetPreviewVoiceMutation } from "@api";
+import { useGetAvailableLanguageVoicesQuery, useLazyGetPreviewVoiceQuery } from "@api";
 import { DropdownField } from "@components";
 import { en } from "@constants";
 import { BlackTick, PauseIcon, PlayIcon } from "@src/assets";
-import { convertKeysToSnakeCase } from "@utils";
 
 interface VoiceOption {
   id: string;
@@ -60,7 +59,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   formMethods,
   isMandatory,
 }) => {
-  const [getPreviewVoice] = useGetPreviewVoiceMutation();
+  const [getPreviewVoice] = useLazyGetPreviewVoiceQuery();
   const { data: availableLanguages = [], isLoading: isLoadingAvailableLanguages } =
     useGetAvailableLanguageVoicesQuery({
       active: true,
@@ -157,14 +156,9 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
         const voice = options.find(opt => opt.value === voiceId);
         const voiceConfig = { ...voice?.config };
         delete voiceConfig.languageCode;
-        const config = convertKeysToSnakeCase(voiceConfig);
 
         try {
-          const result = await getPreviewVoice({
-            provider: voice?.provider ?? "",
-            config,
-            language_code: language.value ?? "",
-          }).unwrap();
+          const result = await getPreviewVoice({ voiceId }).unwrap();
 
           // Cache the result and play
           setVoicePreviewCache(prev => ({
@@ -245,6 +239,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
               }
               optionsRenderer={FEATURE_FLAGS_MAP.SIMULATION_VOICE_FLAG ? renderOption : undefined}
               onClose={() => handlePause()}
+              allowDeselect={true}
             />
           </div>
         </div>

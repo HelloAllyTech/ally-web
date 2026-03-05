@@ -24,10 +24,7 @@ import { Calls } from "../Calls";
 // Mock feature flags
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
   FEATURE_FLAGS_MAP: {
-    SCRIBE_SETTINGS_FLAG: false,
     LANGUAGE_CAPABILITY_FLAG: false,
-    SIMULATION_CREATOR_FLAG: false,
-    CHARACTER_LIBRARY_FLAG: false,
     SIMULATION_REPORT_FLAG: false,
   },
 }));

@@ -318,6 +318,7 @@ export const CreatePath: FC = () => {
         onSaveDraft={handleSaveDraft}
         title={title}
         showPreview={false}
+        type="Track"
       />
 
       <div className="flex h-[calc(100vh-100px)]">

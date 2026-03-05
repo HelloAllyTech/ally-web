@@ -1,6 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
@@ -23,32 +24,34 @@ enum TabId {
   TRACKS = "tracks",
   CASES = "cases",
 }
-const LEARN_TABS = [
-  { id: TabId.SIMULATIONS, label: "Simulations" },
-  { id: TabId.TRACKS, label: "Tracks" },
-  FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG && { id: TabId.CASES, label: "Cases" }, // TODO: remove this when the feature flag is enabled
+const LEARN_TABS = (t: any) => [
+  { id: TabId.SIMULATIONS, label: t("learn.tabs.simulations") },
+  { id: TabId.TRACKS, label: t("learn.tabs.tracks") },
+  { id: TabId.CASES, label: t("learn.tabs.cases") },
 ];
 
-type LearnTabId = (typeof LEARN_TABS)[number]["id"];
+type LearnTabId = TabId;
 
 export const Learn: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { permissions, isAuthenticated } = useUser();
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
   const hasCasePermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS); // TODO: remove this skip when the feature flag is enabled
   const [searchParams, setSearchParams] = useSearchParams();
+  const tabs = LEARN_TABS(t).filter(Boolean) as Array<{ id: TabId; label: string }>;
 
   const isValidTabId = (tab: string | null): tab is LearnTabId => {
-    return LEARN_TABS.some(t => t.id === tab);
+    return tabs.some(t => t.id === tab);
   };
   const tabFromUrl = searchParams.get("tab");
-  const activeTab: LearnTabId = isValidTabId(tabFromUrl) ? tabFromUrl : LEARN_TABS[0].id;
+  const activeTab: LearnTabId = isValidTabId(tabFromUrl) ? tabFromUrl : tabs[0].id;
 
   useEffect(() => {
     if (!tabFromUrl || !isValidTabId(tabFromUrl)) {
-      setSearchParams({ tab: LEARN_TABS[0].id }, { replace: true });
+      setSearchParams({ tab: tabs[0].id }, { replace: true });
     }
-  }, [tabFromUrl, setSearchParams]);
+  }, [tabFromUrl, setSearchParams, tabs]);
 
   const {
     data: scenariosData,
@@ -68,10 +71,7 @@ export const Learn: FC = () => {
     data: casesData,
     isLoading: isCasesLoading,
     refetch: refetchCases,
-  } = useGetScenarioCasesQuery(
-    {},
-    { skip: !hasCasePermissions || !FEATURE_FLAGS_MAP.SIMULATION_CASES_FLAG },
-  ); // TODO: remove this skip when the feature flag is enabled
+  } = useGetScenarioCasesQuery({}, { skip: !hasCasePermissions });
 
   const handleTabChange = (newValue: LearnTabId) => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
@@ -168,16 +168,16 @@ export const Learn: FC = () => {
           animate="visible"
           className="w-full font-secondary text-3xl text-typography-900 sm:mb-[30px] mb-[48px] sm:leading-[40px] leading-[28px] pt-[30px]"
         >
-          <span>Use </span>
-          <span className={emphasisStyles}>AI-voice based </span>
-          hyper realistic training
-          <span className={emphasisStyles}> role plays </span>
-          to build mental healthcare skills.
+          <span>{t("learn.header.prefix")} </span>
+          <span className={emphasisStyles}>{t("learn.header.emphasis1")} </span>
+          {t("learn.header.middle")}
+          <span className={emphasisStyles}> {t("learn.header.emphasis2")} </span>
+          {t("learn.header.suffix")}
         </motion.div>
         {hasPathPermissions && (
           <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
             <TabGroup
-              tabs={LEARN_TABS.map(tab => ({ label: tab.label, value: tab.id }))}
+              tabs={tabs.map(tab => ({ label: tab.label, value: tab.id }))}
               value={activeTab}
               className="border-none max-w-[330px]"
               onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
@@ -193,6 +193,7 @@ export const Learn: FC = () => {
                       onChange={handleLanguageDropdownChange}
                       disabled={isUpdatingPreferences || isLanguagesLoading}
                       label=""
+                      searchPlaceholder={t("nav.tabs.search", "Search")}
                       valueClassName="font-primary text-base text-typography-700"
                     />
                   </div>
@@ -207,20 +208,17 @@ export const Learn: FC = () => {
   };
 
   const renderEmptyGrid = (type: "scenarios" | "pathways" | "cases" = "scenarios") => {
-    const typeLabel = type === "pathways" ? "pathways" : type === "cases" ? "cases" : "scenarios";
     const refetchFunction =
       type === "pathways" ? refetchPathways : type === "cases" ? refetchCases : refetchScenarios;
 
     return (
       <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
-        <div className="text-typography-700 text-lg mb-4">
-          No {typeLabel} available at the moment
-        </div>
+        <div className="text-typography-700 text-lg mb-4">{t(`learn.empty.${type}` as any)}</div>
         <button
           onClick={() => refetchFunction()}
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
         >
-          Refresh Page
+          {t("learn.empty.refresh")}
         </button>
       </div>
     );
@@ -247,19 +245,19 @@ export const Learn: FC = () => {
       [TabId.CASES]: {
         isLoading: isCasesLoading,
         data: casesData?.data,
-        ariaLabel: "Available cases",
+        ariaLabel: t("learn.aria.availableCases"),
         emptyType: "cases" as const,
       },
       [TabId.TRACKS]: {
         isLoading: isPathwaysLoading,
         data: pathwaysData?.data,
-        ariaLabel: "Available pathways",
+        ariaLabel: t("learn.aria.availablePathways"),
         emptyType: "pathways" as const,
       },
       [TabId.SIMULATIONS]: {
         isLoading: isScenariosLoading,
         data: getSortedScenarios(),
-        ariaLabel: "Available scenarios",
+        ariaLabel: t("learn.aria.availableScenarios"),
         emptyType: "scenarios" as const,
       },
     };
@@ -307,7 +305,11 @@ export const Learn: FC = () => {
   const renderContent = () => {
     const isCaseTab = activeTab === TabId.CASES;
     const isPathwayTab = activeTab === TabId.TRACKS;
-    const title = isCaseTab ? "Case" : isPathwayTab ? "Track" : "Scenario";
+    const title = isCaseTab
+      ? t("learn.choose.case")
+      : isPathwayTab
+        ? t("learn.choose.track")
+        : t("learn.choose.scenario");
 
     return (
       <>
@@ -319,7 +321,7 @@ export const Learn: FC = () => {
           className="mb-[14px]"
         >
           <h1 className="text-2xl sm:text-4xl text-typography-900 font-secondary pt-[30px] pl-[10px]">
-            <span className="font-[350]">Choose your</span>
+            <span className="font-[350]">{t("learn.choose.prefix")}</span>
             <span className="font-[700] italic"> {title}</span>
           </h1>
         </motion.div>

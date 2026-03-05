@@ -134,7 +134,7 @@ vi.mock("../learn/constants", () => ({
   },
 }));
 
-// Mock feature flags to enable all tabs
+// Mock feature flags so snapshot is deterministic (no env variance between local vs CI)
 vi.mock("@ally-ui-mono/ui-shared/index", async importOriginal => {
   const actual = await importOriginal<typeof import("@ally-ui-mono/ui-shared/index")>();
   return {
@@ -142,6 +142,7 @@ vi.mock("@ally-ui-mono/ui-shared/index", async importOriginal => {
     FEATURE_FLAGS_MAP: {
       ...actual.FEATURE_FLAGS_MAP,
       SUMMARY_TABS_FLAG: true,
+      SHARE_FOR_REVIEW_FLAG: true,
     },
   };
 });
@@ -560,7 +561,6 @@ describe("PostSimulationSummary Component", () => {
       expect(tabs).toHaveClass("normal-case");
       expect(tabs).toHaveClass("border-b");
       expect(tabs).toHaveClass("border-[#DBDBDB]");
-      expect(tabs).toHaveClass("mb-4");
     });
 
     it("should render all tab buttons", () => {

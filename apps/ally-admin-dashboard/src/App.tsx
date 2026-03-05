@@ -1,6 +1,6 @@
 import { Toaster } from "sonner";
 
-import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
+import { LogViewer } from "@components/log-viewer";
 import { RouteLayout } from "@routes/RouteLayout";
 
 export function App() {
@@ -11,15 +11,16 @@ export function App() {
     },
   };
   return (
-    <ScenarioReportsSocketProvider>
+    <>
       <RouteLayout />
+      {import.meta.env.VITE_SHOW_LOG_TERMINAL === "true" && <LogViewer />}
       <Toaster
         position="bottom-right"
         richColors
         toastOptions={toastOptions}
         style={toastOptions.style}
       />
-    </ScenarioReportsSocketProvider>
+    </>
   );
 }
 

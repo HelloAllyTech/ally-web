@@ -2,8 +2,10 @@ import { FC, useState } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
@@ -11,12 +13,24 @@ import {
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
-import { BackCircle } from "@assets";
-import { AskAiTab, ReflectionTab, SkillsTab } from "@components";
-import { Permissions, REVIEW_PRIVACY_OPTIONS } from "@constants";
+import { BackCircle, Comment } from "@assets";
+import {
+  AskAiTab,
+  Button,
+  ReflectionTab,
+  ShareForReview,
+  SkillsTab,
+  ToggleSwitch,
+} from "@components";
+import {
+  Permissions,
+  REVIEW_PRIVACY_OPTIONS,
+  REVIEW_PRIVACY_OPTIONS_VALUES,
+  ROUTES,
+} from "@constants";
 import { SimulationSummary } from "@containers";
 import { RootState } from "@store";
-import { pageType } from "@types";
+import { pageType, ShareForReviewsInput } from "@types";
 
 import { UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
@@ -27,6 +41,7 @@ export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { permissions } = useSelector((state: RootState) => state.user);
+  const { t } = useTranslation();
 
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
   const [createReview] = useCreateReviewMutation();
@@ -88,16 +103,43 @@ export const PostSimulationSummary: FC = () => {
   ];
 
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
+  const [shareForReview, setShareForReview] = useState<boolean>(false);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
   };
 
-  const handleCreateReview = async (status: string) => {
-    if (summary?.reviewId) {
-      await updateReview({ id: summary.reviewId, status });
+  const handleCreateReview = async (status: string, note?: string) => {
+    const normalizedNote = note?.trim() || null;
+    try {
+      if (summary?.reviewId) {
+        const params: ShareForReviewsInput = {
+          scenarioSessionId: summary.reviewId,
+          status,
+        };
+        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
+          params.note = normalizedNote;
+        await updateReview(params).unwrap();
+      } else {
+        const params: ShareForReviewsInput = {
+          scenarioSessionId: sessionId,
+          status,
+        };
+
+        if (normalizedNote) params.note = normalizedNote;
+
+        await createReview(params).unwrap();
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message ?? "Something went wrong. Please try again.");
+    }
+  };
+
+  const handleToggleChange = (value: string) => {
+    if (value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW) {
+      setShareForReview(true);
     } else {
-      await createReview({ scenarioSessionId: sessionId });
+      handleCreateReview(value);
     }
   };
 
@@ -119,19 +161,58 @@ export const PostSimulationSummary: FC = () => {
             Simulation <em>Summary</em>
           </div>
 
-          <div className="flex justify-center gap-2">
-            <Toggle
-              items={REVIEW_PRIVACY_OPTIONS}
-              initialValue={summary?.reviewStatus}
-              onChange={handleCreateReview}
-            />
+          <div className="flex justify-center gap-2 items-center">
+            {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
+              <div className="flex items-center gap-2">
+                <span className="font-primary font-medium text-sm">Share for review</span>
+                <ToggleSwitch
+                  enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
+                  onChange={(value: boolean) => {
+                    handleToggleChange(
+                      value
+                        ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                        : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                    );
+                  }}
+                />
+              </div>
+            ) : (
+              <Toggle
+                items={REVIEW_PRIVACY_OPTIONS(t)}
+                initialValue={summary?.reviewStatus}
+                onChange={handleCreateReview}
+              />
+            )}
+            {summary?.reviewId && (
+              <>
+                <div className="border-l border-border h-5" />
+                <Button
+                  onClick={() =>
+                    navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
+                  }
+                  variant="secondary"
+                  className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg relative"
+                >
+                  <Comment className="w-5 h-5 shrink-0" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
-
+        <ShareForReview
+          isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
+          onClose={() => {
+            setShareForReview(false);
+          }}
+          summaryDetails={summary}
+          onNoteChange={(note: string) => {
+            handleCreateReview(REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW, note);
+          }}
+        />
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}
-          className="w-full normal-case border-b border-[#DBDBDB] mb-4"
+          className="w-full normal-case border-b border-[#DBDBDB]"
           sx={{
             "& .MuiButtonBase-root": {
               fontFamily: "IBM_Plex_Serif",

@@ -1,15 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { differenceInMinutes } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage, SimulationDetailsModal, Toggle } from "@ally-ui-mono/ui-shared";
+import {
+  CustomImage,
+  FEATURE_FLAGS_MAP,
+  SimulationDetailsModal,
+  Toggle,
+} from "@ally-ui-mono/ui-shared";
 import {
   useAddReactionMutation,
+  useGetGeneralCommentsQuery,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
   useUpdateReviewMutation,
+  useMarkReviewAsReadMutation,
 } from "@api";
 import { ChatBubble, LeftArrow, Smiley, InfoIcon } from "@assets";
 import {
@@ -19,23 +28,33 @@ import {
   ReviewCommentsSidepanel,
   Transcription,
   NativeEmoji,
+  ShareForReview,
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS, TAG_TYPES } from "@constants";
 import { baseAPI } from "@src/api/baseAPI";
+import AddReviewNote from "@src/components/add-review-note/AddReviewNote";
+import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { RootState } from "@store";
-import { CommentChangeParams, ReactionsType, SimulationTranscriptMessage, Thread } from "@types";
+import {
+  CommentChangeParams,
+  CommentItem,
+  ReactionsType,
+  SimulationTranscriptMessage,
+  Thread,
+} from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
-import { TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
+import { GENERAL_COMMENTS_PAGE_SIZE, TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
   const { reviewId } = useParams<{ reviewId: string }>();
   const { user } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
-  const [commentsCount, setCommentsCount] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [deletedReplyId, setDeletedReplyId] = useState<string | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string>("");
   const [showCommentsSidepanel, setShowCommentsSidepanel] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState<string>("");
@@ -46,6 +65,10 @@ export const ReviewDetails = () => {
   const [showReactionsModal, setShowReactionsModal] = useState(false);
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
+  const [hasMoreGeneralComments, setHasMoreGeneralComments] = useState(true);
+  const [generalComments, setGeneralComments] = useState<CommentItem[]>([]);
+  const [generalCommentsOffset, setGeneralCommentsOffset] = useState(0);
+  const [showShareForReviewModal, setShowShareForReviewModal] = useState<boolean>(false);
 
   const selectEmojiRef = useRef<HTMLDivElement>(null);
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
@@ -61,14 +84,28 @@ export const ReviewDetails = () => {
       limit: TRANSCRIPT_PAGE_SIZE,
       sortBy: "startSeconds",
     });
+
+  const { data: generalCommentsList, isLoading: isGetGeneralCommentsLoading } =
+    useGetGeneralCommentsQuery({
+      reviewId: reviewId || "",
+      limit: GENERAL_COMMENTS_PAGE_SIZE,
+      offset: generalCommentsOffset,
+    });
   const [addReactions] = useAddReactionMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
+  const [markReviewAsRead] = useMarkReviewAsReadMutation();
 
   useEffect(() => {
     return () => {
       dispatch(baseAPI.util.invalidateTags([TAG_TYPES.REVIEW]));
     };
   }, []);
+
+  useEffect(() => {
+    if (reviewId) {
+      markReviewAsRead({ id: reviewId });
+    }
+  }, [reviewId, markReviewAsRead]);
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
@@ -80,15 +117,13 @@ export const ReviewDetails = () => {
     }
   }, [reviewDetails]);
 
-  useEffect(() => {
-    if (reviewDetails?.commentsCount) {
-      setCommentsCount(reviewDetails?.commentsCount);
-    }
-  }, [reviewDetails?.commentsCount]);
-
   const isFeedOwner = useMemo(() => {
     return user?.id === reviewDetails?.createdBy?.id;
   }, [user?.id, reviewDetails?.createdBy?.id]);
+
+  const timeDiff = useMemo(() => {
+    return differenceInMinutes(new Date(), new Date(reviewDetails?.createdAt));
+  }, [reviewDetails?.createdAt]);
 
   useEffect(() => {
     if (simulationTranscript) {
@@ -110,6 +145,25 @@ export const ReviewDetails = () => {
       }
     }
   }, [simulationTranscript]);
+
+  useEffect(() => {
+    if (generalCommentsList?.data) {
+      if (generalCommentsList.data.length > 0) {
+        setGeneralComments(prev => {
+          if (generalCommentsOffset > 0) {
+            const existingIds = new Set((prev || []).map(item => item.id));
+            const newItems = generalCommentsList.data.filter(item => !existingIds.has(item.id));
+            return [...(prev || []), ...newItems];
+          } else {
+            return [...generalCommentsList.data];
+          }
+        });
+        setHasMoreGeneralComments(true);
+      } else {
+        setHasMoreGeneralComments(false);
+      }
+    }
+  }, [generalCommentsList]);
 
   const handleCloseSelectedComment = () => {
     setSelectedThreadId(null);
@@ -270,37 +324,59 @@ export const ReviewDetails = () => {
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
 
+  const handleGeneralCommentsLoadMore = () => {
+    if (!hasMoreGeneralComments || isGetGeneralCommentsLoading) return;
+    setGeneralCommentsOffset(prev => prev + GENERAL_COMMENTS_PAGE_SIZE);
+  };
+
   const handleReactionsClick = () => {
     setShowReactionsModal(true);
   };
 
-  const handleCreateReview = async (status: string) => {
-    await updateReview({ id: reviewDetails.id, status });
+  const handleCreateReview = async (status?: string, note?: string) => {
+    if (!reviewDetails?.id) return;
+    await updateReview({
+      scenarioSessionId: reviewDetails.id,
+      status: status || reviewDetails.reviewStatus,
+      note: note,
+    });
   };
+
+  const isNoteEditable = () => {
+    return timeDiff < 10 && (reviewDetails?.note?.length ?? 0) > 0;
+  };
+
+  const onTapAddNote = () => {
+    setShowShareForReviewModal(true);
+  };
+  const showAddReviewNotesSection = useMemo(() => {
+    if (!isFeedOwner) return false;
+    return timeDiff < 10 || (reviewDetails?.note?.length ?? 0) > 0;
+  }, [timeDiff, isFeedOwner, reviewDetails?.note]);
 
   const renderBottomSection = () => {
     return (
       <div className="absolute z-10 flex justify-center bottom-9 left-0 right-0 w-full">
-        <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl">
+        <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl max-w-[95vw] overflow-x-auto">
           {isFeedOwner && (
             <div
               className="flex items-center gap-2 min-w-fit"
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
               <Toggle
-                items={REVIEW_PRIVACY_OPTIONS}
+                items={REVIEW_PRIVACY_OPTIONS(t)}
                 initialValue={reviewDetails?.reviewStatus || "IN_REVIEW"}
-                onChange={handleCreateReview}
+                onChange={(status: string) => handleCreateReview(status)}
               />
             </div>
           )}
           <div
             onClick={() => setShowCommentsSidepanel(!showCommentsSidepanel)}
-            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3"
+            className="group flex items-center h-full w-fit cursor-pointer hover:border-[#0957D0] gap-2.5 rounded-full border justify-center px-3 shrink-0"
           >
-            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#0957D0]" />
-            <div className="text-typography-900 font-primary group-hover:text-[#0957D0] text-sm">
-              Comments
+            <ChatBubble className="w-5 h-5 text-neutral-600 group-hover:text-[#0957D0] shrink-0" />
+            <div className="text-typography-900 font-primary group-hover:text-[#0957D0] text-sm whitespace-nowrap">
+              {t("review.details.comments")}
             </div>
           </div>
           <div className="relative w-fit">
@@ -333,7 +409,10 @@ export const ReviewDetails = () => {
               >
                 <EmojiStack unicodeCodes={reviewReactions} />
                 <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800 truncate">
-                  {displayTotalReactionCount} reaction{reviewReactions?.length !== 1 ? "s" : ""}
+                  {displayTotalReactionCount}{" "}
+                  {reviewReactions?.length !== 1
+                    ? t("review.feedCard.reactions_plural")
+                    : t("review.feedCard.reactions")}
                 </span>
               </button>
             </div>
@@ -385,10 +464,14 @@ export const ReviewDetails = () => {
                   fallbackText={reviewDetails?.createdBy?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
                 />
               </div>
-              {isFeedOwner ? <div>You</div> : <div>By {reviewDetails?.createdBy?.name}</div>}
+              {isFeedOwner ? (
+                <div>{t("review.details.you")}</div>
+              ) : (
+                <div>{t("review.details.by", { name: reviewDetails?.createdBy?.name })}</div>
+              )}
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
-                Date & time:{" "}
+                {t("review.details.dateAndTime")}:{" "}
                 {getFormattedDateTime(
                   reviewDetails?.scenarioSession?.createdAt,
                   "MMM dd, yyyy hh:mm a",
@@ -397,20 +480,32 @@ export const ReviewDetails = () => {
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
                 {reviewDetails?.scenarioSession?.duration < 60
-                  ? `Duration: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "ss")} sec`
-                  : `Duration: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} min`}
+                  ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "ss")} ${t("review.feedCard.sec")}`
+                  : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} ${t("review.feedCard.min")}`}
               </div>
             </div>
           </div>
         )}
       </div>
+
       <div className="flex w-full h-[calc(100%-103px)]">
         <div
           ref={transcriptScrollRef}
           className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
         >
+          {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showAddReviewNotesSection && (
+            <div className="pb-6">
+              <AddReviewNote
+                isEditable={isNoteEditable()}
+                note={reviewDetails?.note}
+                isEdited={reviewDetails?.noteEditedAt !== null}
+                onAddNote={onTapAddNote}
+                onEditNote={onTapAddNote}
+              />
+            </div>
+          )}
           <Transcription
-            councellorName={isFeedOwner ? "You" : reviewDetails?.createdBy?.name}
+            councellorName={isFeedOwner ? t("review.details.you") : reviewDetails?.createdBy?.name}
             agentName={reviewDetails?.scenario?.name}
             commentsList={
               threads.find(
@@ -419,8 +514,6 @@ export const ReviewDetails = () => {
                   thread.id === selectedThreadId,
               )?.comments
             }
-            onDeleteComment={(val: number = 1) => setCommentsCount(prev => prev - val)}
-            onAddComment={() => setCommentsCount(prev => prev + 1)}
             isFeedOwner={isFeedOwner}
             handleCommentClick={handleCommentClick}
             selectedThreadId={selectedThreadId}
@@ -435,14 +528,40 @@ export const ReviewDetails = () => {
             onCloseSelectedComment={handleCloseSelectedComment}
             onCommentChange={handleCommentChange}
           />
+
+          {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
+            <div className="w-full border-t-[0.5px] border-border-light font-primary">
+              <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4 px-4">
+                <div className="text-typography-900 font-medium text-lg">
+                  {t("review.details.comments")}
+                </div>
+              </div>
+              <GeneralCommentsToShow
+                generalComments={generalComments}
+                handleLoadMore={handleGeneralCommentsLoadMore}
+                hasMoreComments={hasMoreGeneralComments}
+                isLoading={isGetGeneralCommentsLoading}
+                setComments={setGeneralComments}
+                deletedReplyId={deletedReplyId}
+                setDeletedReplyId={setDeletedReplyId}
+                show
+              />
+            </div>
+          )}
         </div>
         <ReviewCommentsSidepanel
           isFeedOwner={isFeedOwner}
           threads={threads as Thread[]}
-          totalComments={commentsCount}
           isOpen={showCommentsSidepanel}
           onCommentClick={handleCommentClick}
+          generalComments={generalComments}
+          isGeneralCommentsLoading={isGetGeneralCommentsLoading}
+          handleGeneralCommentsLoadMore={handleGeneralCommentsLoadMore}
+          hasMoreGeneralComments={hasMoreGeneralComments}
+          setComments={setGeneralComments}
           className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
+          deletedReplyId={deletedReplyId}
+          setDeletedReplyId={setDeletedReplyId}
         />
       </div>
       {transcriptList.length > 0 && renderBottomSection()}
@@ -464,6 +583,16 @@ export const ReviewDetails = () => {
         scenarioLabel="Scenario:"
         showActionButtons={false}
         onClickOutside={() => setShowSimulationDetailsModal(false)}
+      />
+      <ShareForReview
+        isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showShareForReviewModal}
+        onClose={() => setShowShareForReviewModal(false)}
+        summaryDetails={reviewDetails}
+        onNoteChange={(note: string) => handleCreateReview(reviewDetails?.reviewStatus, note)}
+        shareLabel={reviewDetails?.note?.length > 0 ? "Save" : "Add"}
+        modalHeader={reviewDetails?.note?.length > 0 ? "Edit note" : "Add note"}
+        sessionCreatedAt={reviewDetails?.scenarioSession?.createdAt}
+        sessionCallDuration={reviewDetails?.scenarioSession?.duration}
       />
     </div>
   );

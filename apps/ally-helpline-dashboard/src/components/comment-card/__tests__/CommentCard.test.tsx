@@ -903,7 +903,9 @@ describe("CommentCard Component", () => {
         createdAt: new Date().toISOString(),
       };
       const onUpdateCommentMock = vi.fn();
-      renderWithProvider(<CommentCard comment={myComment} onUpdateComment={onUpdateCommentMock} />);
+      renderWithProvider(
+        <CommentCard comment={myComment} enableLikeUpdate onUpdateComment={onUpdateCommentMock} />,
+      );
 
       const menuButton = screen.getByLabelText("Comment options");
       fireEvent.click(menuButton);

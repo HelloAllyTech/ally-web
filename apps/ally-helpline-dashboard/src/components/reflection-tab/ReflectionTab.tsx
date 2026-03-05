@@ -39,7 +39,10 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
   const [updateReflectionPrompt] = useUpdateReflectionPromptMutation();
   const isInitialMount = useRef(true);
 
-  const prompts = reflectionPrompts?.reflectionPrompts ?? PROMPTS;
+  const prompts =
+    reflectionPrompts?.reflectionPrompts?.length > 0
+      ? reflectionPrompts?.reflectionPrompts
+      : PROMPTS;
 
   useEffect(() => {
     setResponses(prompts.map(prompt => prompt?.response ?? ""));
@@ -120,19 +123,19 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
     return (
       <div
         key={text?.id}
-        className="flex flex-col gap-4 bg-[#FFFDFB] rounded-md h-full w-full min-w-[300px] border border-[#D4B896] p-6 shadow-sm"
+        className="flex flex-col gap-4 bg-[#B39DDB10] rounded-md h-full w-full min-w-[300px] border border-[#7E57C2] p-6 shadow-sm"
       >
-        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#8B6F47] flex items-center justify-center text-white font-semibold text-lg">
+        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#7E57C2] flex items-center justify-center text-white font-semibold text-lg">
           {index + 1}
         </div>
-        <p className="text-[#8B6F47] text-xl leading-relaxed pt-2 font-serif">{text?.prompt}</p>
+        <p className="text-[#7E57C2] text-xl leading-relaxed pt-2 font-serif">{text?.prompt}</p>
 
         <div className="flex-1 min-h-0 flex flex-col">
           <textarea
             value={responses[index] ?? ""}
             onChange={e => updateResponse(index, e.target.value)}
             placeholder="Write your thoughts here..."
-            className="h-full min-h-[300px] w-full outline-none resize-none text-base text-typography-900 font-sans"
+            className="h-full min-h-[300px] bg-transparent w-full outline-none resize-none text-base text-typography-900 font-sans"
           />
         </div>
       </div>
@@ -142,7 +145,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
   return (
     <div className="flex flex-col gap-4 w-full h-[90%] font-primary rounded-lg border border-gray-200 bg-white p-4 pb-10">
       <div className="flex flex-row gap-4 justify-between border-b border-gray-200 pb-2">
-        <span className="text-typography-900 font-primary text-base font-semibold">
+        <span className="text-typography-900 font-primary text-base font-medium">
           Deeper Reflection
         </span>
         {renderAutosave()}

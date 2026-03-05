@@ -1,14 +1,17 @@
 import { FunctionComponent, useEffect, useMemo, useState } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyGetDashboardsQuery, useLazyGetDashboardUrlQuery } from "@api";
 import { NoAnalytics } from "@assets";
 import { ToggleButtonGroup } from "@components";
 import { AnalyticsType } from "@constants";
 
-import { analyticsTypeOptions, ANALYTICS_DASHBOARD_REFRESH_INTERVAL } from "./constants";
+import { getAnalyticsTypeOptions, ANALYTICS_DASHBOARD_REFRESH_INTERVAL } from "./constants";
 
 export const Analytics: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [getDashboardUrl] = useLazyGetDashboardUrlQuery();
   const [getDashboards, { data: dashboards }] = useLazyGetDashboardsQuery();
 
@@ -23,11 +26,11 @@ export const Analytics: FunctionComponent = () => {
   const analyticsToggleOptions = useMemo(
     () =>
       dashboards
-        ? analyticsTypeOptions.filter(option =>
+        ? getAnalyticsTypeOptions(t).filter(option =>
             dashboards.some(dashboard => dashboard.analyticsType === option.value),
           )
         : [],
-    [dashboards],
+    [dashboards, t],
   );
 
   useEffect(() => {
@@ -84,7 +87,7 @@ export const Analytics: FunctionComponent = () => {
           className="text-typography-900 font-secondary text-2xl font-[500] flex items-center gap-2 mb-2"
           data-testid="analytics-title"
         >
-          Session Analytics
+          {t("analytics.title")}
         </div>
         {analyticsToggleOptions?.length > 1 && (
           <ToggleButtonGroup
@@ -104,7 +107,7 @@ export const Analytics: FunctionComponent = () => {
             <iframe
               key={id}
               data-testid={`analytics-dashboard-${id}`}
-              title="Metabase dashboard"
+              title={t("analytics.dashboardTitle")}
               src={dashboardUrls[id]?.replace("bordered=true", "bordered=false")}
               width="100%"
               height="100%"
@@ -113,10 +116,13 @@ export const Analytics: FunctionComponent = () => {
           ))}
         {dashboards?.length === 0 && !hasValidDashboards && (
           <div
-            className="flex-1 w-full flex items-center justify-center"
+            className="flex-1 w-full flex items-center justify-center flex-col gap-2"
             data-testid="analytics-empty-state"
           >
             <NoAnalytics data-testid="analytics-no-data-icon" />
+            <p className="text-typography-600 text-sm text-center">
+              {t("analytics.empty.description")}
+            </p>
           </div>
         )}
       </div>

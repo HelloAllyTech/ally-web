@@ -11,7 +11,9 @@ import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { FileUpload } from "../file-upload";
 import { InputField } from "../input-field";
+import { KnowledgeSource } from "../knowledge-source";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
+import { LinguisticStyleSamples } from "../linguistic-style-samples";
 import { RadioButtonGroup } from "../radio-button-group";
 import { RegenerateButton } from "../regenerate-button";
 import { StateInstruction } from "../states-instruction";
@@ -158,6 +160,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             isMandatory={isMandatory}
           />
         );
+      case FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES:
+        return <LinguisticStyleSamples id={id} label={label} formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:
@@ -202,7 +206,12 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION:
         return (
-          <BehavioursInstruction formMethods={formMethods} id={id} isMandatory={isMandatory} />
+          <BehavioursInstruction
+            formMethods={formMethods}
+            id={id}
+            isMandatory={isMandatory}
+            regenerateButton={regenerateButton}
+          />
         );
       case FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION:
         return (
@@ -216,6 +225,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.COMPETENCY:
         return (
           <Competency formMethods={formMethods} id={id} isMandatory={isMandatory} label={label} />
+        );
+      case FORM_FIELD_TYPES.KNOWLEDGE_SOURCE:
+        return (
+          <KnowledgeSource
+            formMethods={formMethods}
+            id={id}
+            isMandatory={isMandatory}
+            label={label}
+          />
         );
       default:
         return null;

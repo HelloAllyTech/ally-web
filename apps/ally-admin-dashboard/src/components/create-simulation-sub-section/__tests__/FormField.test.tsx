@@ -84,6 +84,13 @@ vi.mock("../../time-input", () => ({
 
 // Mock constants
 vi.mock("@constants", () => ({
+  ReportGenerationStatus: {
+    STARTED: "STARTED",
+    IN_PROGRESS: "IN_PROGRESS",
+    COMPLETED: "COMPLETED",
+    CANCELLED: "CANCELLED",
+    FAILED: "FAILED",
+  },
   FORM_FIELD_TYPES: {
     SELECT: "select",
     TEXT: "text",
@@ -673,7 +680,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        placeholder: "00:00:01 - 01:30:00",
+        placeholder: "00:05:00 - 02:00:00",
       };
 
       render(
@@ -728,7 +735,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        placeholder: "00:00:01 - 01:30:00",
+        placeholder: "00:05:00 - 02:00:00",
       };
 
       render(
@@ -745,7 +752,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        note: "Range 00:00:01 - 01:30:00",
+        note: "Range 00:05:00 - 02:00:00",
       };
 
       render(
@@ -754,7 +761,7 @@ describe("FormField", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Range 00:00:01 - 01:30:00")).toBeInTheDocument();
+      expect(screen.getByText("Range 00:05:00 - 02:00:00")).toBeInTheDocument();
     });
 
     it("does not render note text when not provided", () => {
@@ -831,7 +838,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        placeholder: "00:00:01 - 01:30:00",
+        placeholder: "00:05:00 - 02:00:00",
       };
 
       render(
@@ -891,7 +898,7 @@ describe("FormField", () => {
         id: "maxTimeValue" as any,
         label: "Maximum Time",
         type: "time_input",
-        note: "Range: 00:00:01 - 01:30:00",
+        note: "Range: 00:05:00 - 02:00:00",
       };
 
       const { container } = render(
@@ -900,7 +907,7 @@ describe("FormField", () => {
         </TestWrapper>,
       );
 
-      const noteElement = screen.getByText("Range: 00:00:01 - 01:30:00");
+      const noteElement = screen.getByText("Range: 00:05:00 - 02:00:00");
       expect(noteElement).toHaveClass("text-typography-500");
       expect(noteElement).toHaveClass("text-sm");
     });

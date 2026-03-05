@@ -1,16 +1,17 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
-import { Divider } from "@mui/material";
+import { Divider, Tooltip } from "@mui/material";
 
+import { useGetScenarioLanguagesQuery } from "@api";
 import { CustomDropdownField, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { LANGUAGE_OPTIONS, REPORT_GENERATION_MESSAGES, TURNS_OPTIONS } from "@constants";
+import { REPORT_GENERATION_MESSAGES, TURNS_OPTIONS, toolTipStyles } from "@constants";
+import { ScenarioLanguage } from "@types";
 
 import { PromptConfigurationProps } from "./types";
 
 const PromptConfiguration: FC<PromptConfigurationProps> = ({
   prompt,
-  language,
   turns,
   onPromptChange,
   onLanguageChange,
@@ -18,9 +19,27 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
   onButtonClick,
   buttonText,
   buttonDisabled = false,
+  buttonTooltip,
+  selectedLanguage,
 }) => {
-  const selectedLanguageOption = LANGUAGE_OPTIONS.find(option => option.value === language);
-  const languageLabel = selectedLanguageOption?.label || language;
+  const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
+    active: true,
+    hasVoices: true,
+  }) as {
+    data: ScenarioLanguage[];
+  };
+
+  const scenarioLanguage = languageOptions?.map(language => ({
+    value: String(language.language_id),
+    label: language.label,
+  }));
+
+  const defaultLanguage = selectedLanguage ||
+    scenarioLanguage?.[0] || { value: "1", label: "English (India)" }; // assume english should be default language(with id=1)
+
+  const [touched, setTouched] = useState(false);
+  const isEmpty = !prompt || prompt.trim().length === 0;
+  const showError = touched && isEmpty;
 
   return (
     <div className="space-y-4">
@@ -28,26 +47,29 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
       <div className="flex flex-col border border-gray-200 rounded-lg pt-4">
         <label className="text-sm font-medium text-typography-900 mb-2 block px-4">
           {REPORT_GENERATION_MESSAGES.HELPER_AGENT_PROMPT}
+          <span className="text-red-500 ml-1">*</span>
         </label>
         <textarea
           value={prompt}
           onChange={e => onPromptChange?.(e.target.value)}
+          onBlur={() => setTouched(true)}
           className="px-4 w-full min-h-[320px] bg-white p-4 font-primary text-base resize-none focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
           placeholder={REPORT_GENERATION_MESSAGES.PROMPT_PLACEHOLDER}
+          required
         />
+        {showError && (
+          <p className="text-red-500 text-sm px-4 pb-2">Helper Agent prompt is required</p>
+        )}
         <Divider className="py-0 my-0" />
         {/* Language, Turns, and Button */}
         <div className="flex gap-4 items-end px-4 py-3 bg-neutral-50 rounded-bl-lg rounded-br-lg">
           <div className="flex-1">
             <CustomDropdownField
-              options={LANGUAGE_OPTIONS}
+              options={scenarioLanguage}
               placeholder="Select language"
               customStyle={{ minWidth: "100px" }}
-              defaultOption={{
-                value: language,
-                label: languageLabel,
-              }}
-              onHandleSelect={option => onLanguageChange(option.value)}
+              defaultOption={defaultLanguage}
+              onHandleSelect={option => onLanguageChange(option)}
             />
           </div>
 
@@ -65,14 +87,29 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
           </div>
 
           <div className="flex-shrink-0">
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              onClick={onButtonClick}
-              disabled={buttonDisabled}
-              className="px-6 py-2.5 h-[36px]"
-            >
-              {buttonText}
-            </Button>
+            {buttonDisabled && buttonTooltip ? (
+              <Tooltip title={buttonTooltip} placement="top" arrow slotProps={toolTipStyles}>
+                <span>
+                  <Button
+                    variant={ButtonVariant.PRIMARY}
+                    onClick={onButtonClick}
+                    disabled={buttonDisabled}
+                    className="px-6 py-2.5 h-[36px]"
+                  >
+                    {buttonText}
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button
+                variant={ButtonVariant.PRIMARY}
+                onClick={onButtonClick}
+                disabled={buttonDisabled}
+                className="px-6 py-2.5 h-[36px]"
+              >
+                {buttonText}
+              </Button>
+            )}
           </div>
         </div>
       </div>

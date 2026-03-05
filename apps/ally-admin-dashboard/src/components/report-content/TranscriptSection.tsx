@@ -1,94 +1,96 @@
 import { FC } from "react";
 
+import { CircularProgress } from "@mui/material";
+
+import { Plus } from "@assets";
+import { UserRole } from "@src/constants";
 import { TranscriptMessage } from "@types";
 
 interface TranscriptSectionProps {
   transcripts?: TranscriptMessage[];
   isLoading?: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
-const formatTimestamp = (seconds: number): string => {
-  return seconds.toFixed(2);
-};
+const TranscriptSection: FC<TranscriptSectionProps> = ({
+  transcripts,
+  isLoading = false,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore,
+}) => {
+  const list = Array.isArray(transcripts) ? transcripts : [];
 
-const TranscriptSection: FC<TranscriptSectionProps> = ({ transcripts, isLoading = false }) => {
-  const transcriptData = transcripts;
+  const userRoleLabel = (role: string) => {
+    switch (role) {
+      case UserRole.COUNSELLOR:
+        return "Counsellor";
+      case UserRole.CLIENT:
+        return "Client";
+      default:
+        return role;
+    }
+  };
+
+  const formatTimeToMinutesAndSeconds = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes?.toString()?.padStart(2, "0")}:${seconds?.toFixed(0)?.padStart(2, "0")}`;
+  };
 
   if (isLoading) {
     return (
-      <div className="border border-gray-200 rounded-lg p-6">
-        <div className="flex flex-col gap-2">
-          {[1, 2, 3, 4, 5].map(index => {
-            const isHelper = index % 3 === 0; // Every 3rd item is a helper message
-            return (
-              <div
-                key={index}
-                className={`flex gap-4 ${isHelper ? "bg-[#FAFAFA] p-4 rounded" : ""}`}
-              >
-                {/* Timestamp skeleton */}
-                <div className="w-12 h-4 bg-gray-200 rounded animate-pulse shrink-0" />
-                <div className="flex-1">
-                  {isHelper ? (
-                    <div className="flex flex-col gap-1">
-                      {/* Helper label skeleton */}
-                      <div className="w-16 h-4 bg-gray-200 rounded animate-pulse" />
-                      {/* Content skeleton */}
-                      <div className="space-y-1">
-                        <div className="w-full h-4 bg-gray-200 rounded animate-pulse" />
-                        <div className="w-5/6 h-4 bg-gray-200 rounded animate-pulse" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      <div className="w-full h-4 bg-gray-200 rounded animate-pulse" />
-                      <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      <div className="p-6 min-h-[200px] flex items-center justify-center">
+        <p className="text-gray-500">Loading transcript...</p>
       </div>
     );
   }
 
-  if (!transcriptData || transcriptData.length === 0) {
+  if (list.length === 0) {
     return (
-      <div className=" p-6 min-h-[300px] flex items-center justify-center">
+      <div className="p-6 min-h-[200px] flex items-center justify-center">
         <p className="text-gray-500">No transcript available</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {transcriptData.map((message: TranscriptMessage) => {
-        const isHelper =
-          message.role?.toLowerCase() === "helper" || message.role?.toLowerCase() === "counsellor";
-
+    <div className="flex flex-col gap-2 py-6">
+      {list.map((message, index) => {
         return (
-          <div key={message.id} className={`flex gap-4`}>
-            <div className="text-sm text-typography-900 font-normal shrink-0 font-primary">
-              {formatTimestamp(message.startSeconds)}
-            </div>
-            <div className="flex-1">
-              {isHelper ? (
-                <div className="flex flex-col gap-1">
-                  <div className="text-sm font-medium text-primary-500 font-primary">Helper</div>
-                  <div className="text-sm text-[rgba(0,0,0,0.87)] font-primary">
-                    {message.content}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-sm text-[rgba(0,0,0,0.87)] font-primary">
-                  {message.content}
-                </div>
-              )}
+          <div key={message.id ?? `msg-${index}`} className="flex gap-3 flex-row">
+            <span className="text-base text-typography-800">
+              {formatTimeToMinutesAndSeconds(message.startSeconds ?? 0)}
+            </span>
+            <div className="flex flex-col gap-0">
+              <span
+                className={`text-base font-medium ${message.role === UserRole.COUNSELLOR ? "text-primary-500" : "text-typography-900"} shrink-0 w-16`}
+              >
+                {userRoleLabel(message.role)}
+              </span>
+              <span className="text-base text-typography-900 font-normal">{message.content}</span>
             </div>
           </div>
         );
       })}
+      {hasMore && typeof onLoadMore === "function" && (
+        <div className="flex justify-center mt-4 pb-[20px]">
+          <button
+            type="button"
+            onClick={() => {
+              if (!isLoadingMore) onLoadMore();
+            }}
+            disabled={isLoadingMore}
+            className="flex cursor-pointer text-center items-center hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed border-0 bg-transparent p-0 font-inherit text-inherit"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-primary text-base ml-[5px]">Load More</span>
+            {isLoadingMore && <CircularProgress color="primary" size={20} className="mx-2" />}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

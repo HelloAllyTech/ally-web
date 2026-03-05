@@ -53,7 +53,7 @@ export const Competency: React.FC<CompetencyProps> = ({
 
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setSearchTerm(value.trim());
+    setSearchTerm(value);
   };
 
   const handleCreateCompetency = async (field: any) => {
@@ -76,7 +76,7 @@ export const Competency: React.FC<CompetencyProps> = ({
         <div className="sticky top-0 p-2 bg-white">
           <input
             type="text"
-            placeholder={en.common.search}
+            placeholder={en.common.searchOrCreate}
             value={searchTerm}
             onChange={handleTextChange}
             className="w-full rounded border border-border-light px-3 py-1 bg-white text-md cursor-pointer flex items-center justify-between focus-none"

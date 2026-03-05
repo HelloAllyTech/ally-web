@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -29,6 +30,7 @@ const PATHS_PAGE_SIZE = 30;
 const INITIAL_WINDOW = "LAST_WEEK";
 
 export const Leaderboard = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [pathsOffset, setPathsOffset] = useState(0);
   const [window, setWindow] = useState(INITIAL_WINDOW);
@@ -49,8 +51,8 @@ export const Leaderboard = () => {
   const { data: currentUser } = useGetCurrentUserQuery({ window: window.toUpperCase() });
 
   useEffect(() => {
-    if (!leaderBoardList?.data?.length) return;
     setHasMore(leaderBoardList?.data?.length === PATHS_PAGE_SIZE);
+    if (!leaderBoardList?.data?.length) return;
     setLeaderboardData(prevData => {
       if (pathsOffset === 0) {
         return leaderBoardList.data;
@@ -114,7 +116,7 @@ export const Leaderboard = () => {
         className="text-typography-900 font-secondary text-xl sm:text-2xl font-[500] flex items-center"
         data-testid="leaderboard-title"
       >
-        Community
+        {t("community.title")}
       </div>
       <div className="flex flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
         <LeaderboardList
