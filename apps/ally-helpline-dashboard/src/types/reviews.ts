@@ -93,7 +93,7 @@ export interface GetReviewsReactionsInput {
 export interface CommentItem {
   id: string;
   createdBy: {
-    id: string;
+    id: number;
     name: string;
     profileImage: string | null;
   };
