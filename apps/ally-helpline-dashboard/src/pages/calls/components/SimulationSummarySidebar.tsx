@@ -3,6 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
@@ -11,7 +12,14 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import { AskAiTab, ReflectionTab, Button, SkillsTab } from "@components";
+import {
+  AskAiTab,
+  ReflectionTab,
+  Button,
+  SkillsTab,
+  ToggleSwitch,
+  ShareForReview,
+} from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
 import { FeedbackDialog, SimulationSummary } from "@containers";
 import { RootState } from "@store";
@@ -29,6 +37,8 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
+  const [shareForReview, setShareForReview] = useState<boolean>(false);
+  const [reviewStatus, setReviewStatus] = useState<string>("HIDDEN");
 
   const hasFeedback = useRef<boolean>(false);
   const startTimeRef = useRef<number | null>(null);
@@ -52,19 +62,47 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     }
   }, [summaryId]);
 
+  useEffect(() => {
+    if (summary?.reviewStatus != null) {
+      setReviewStatus(summary.reviewStatus);
+    }
+  }, [summary?.reviewStatus]);
+
   const hasThresholdElapsed = (): boolean => {
     if (startTimeRef.current == null) return false;
     return Date.now() - startTimeRef.current >= SUMMARY_FEEDBACK_TIMEOUT;
   };
-
-  const handleCreateReview = async (status: string) => {
-    if (summary?.reviewId) {
-      await updateReview({ id: summary.reviewId, status });
-    } else {
-      await createReview({ scenarioSessionId: summaryId });
+  const handleCreateReview = async ({
+    note,
+    scenarioSessionId,
+  }: {
+    note?: string;
+    scenarioSessionId: string;
+  }) => {
+    try {
+      if (summary?.reviewId) {
+        await updateReview({
+          id: summary.reviewId,
+          updateReviewInput: { note: note, status: reviewStatus },
+        }).unwrap();
+      } else {
+        await createReview({
+          scenarioSessionId: scenarioSessionId,
+          note: note,
+          status: reviewStatus,
+        }).unwrap();
+      }
+    } catch (err: any) {
+      const message =
+        err?.data?.message ?? err?.message ?? "Something went wrong. Please try again.";
+      toast.error(message);
     }
   };
 
+  const handleToggleChange = (value: string) => {
+    setReviewStatus(value);
+    setShareForReview(value === "IN_REVIEW");
+  };
   const SidebarTitle = (
     <div className="text-base flex items-center justify-between w-full gap-2">
       <span className="font-semibold font-tertiary text-typography-800">
@@ -73,16 +111,28 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
       {summary?.counselorId === user?.id && (
         <div
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 font-primary font-medium"
           style={{
             opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
           }}
         >
-          <Toggle
-            items={REVIEW_PRIVACY_OPTIONS(t)}
-            initialValue={summary?.reviewStatus}
-            onChange={handleCreateReview}
-          />
+          {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
+            <div className="flex items-center gap-2">
+              <span className="font-primary font-medium text-sm">Share for review</span>
+              <ToggleSwitch
+                enabled={reviewStatus === "IN_REVIEW"}
+                onChange={(value: boolean) => {
+                  handleToggleChange(value ? "IN_REVIEW" : "HIDDEN");
+                }}
+              />
+            </div>
+          ) : (
+            <Toggle
+              items={REVIEW_PRIVACY_OPTIONS(t)}
+              initialValue={summary?.reviewStatus}
+              onChange={() => {}}
+            />
+          )}
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
@@ -100,6 +150,16 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           )}
         </div>
       )}
+      <ShareForReview
+        isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
+        onClose={() => {
+          setShareForReview(false);
+        }}
+        summaryDetails={summary}
+        onNoteChange={(note: string) => {
+          handleCreateReview({ scenarioSessionId: summaryId, note: note });
+        }}
+      />
     </div>
   );
 
