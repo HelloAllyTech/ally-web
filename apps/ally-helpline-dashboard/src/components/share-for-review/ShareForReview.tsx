@@ -13,6 +13,10 @@ export interface ShareForReviewProps {
   onClose: () => void;
   summaryDetails: any;
   onNoteChange: (note: string) => void;
+  shareLabel?: string;
+  modalHeader?: string;
+  sessionCreatedAt?: string;
+  sessionCallDuration?: number;
 }
 
 interface ScenarioDetailsScenario {
@@ -205,6 +209,10 @@ export const ShareForReview = ({
   onClose,
   summaryDetails,
   onNoteChange,
+  shareLabel = "Share",
+  modalHeader = "Share this for review",
+  sessionCreatedAt,
+  sessionCallDuration,
 }: ShareForReviewProps) => {
   const shareForReviewRef = useRef<HTMLDivElement>(null);
   const [note, setNote] = useState("");
@@ -237,18 +245,18 @@ export const ShareForReview = ({
       >
         <div className="p-6 pb-4">
           <div className="flex flex-col gap-4 font-primary font-medium text-typography-900">
-            <ModalHeader title="Share this for review" onClose={onClose} />
+            <ModalHeader title={modalHeader} onClose={onClose} />
 
             <NoteTextarea note={note} onNoteChange={handleNoteChange} />
 
             <SubSection
-              createdAt={summaryDetails?.details?.createdAt}
-              callDurationMs={summaryDetails?.details?.callDuration}
+              createdAt={sessionCreatedAt || summaryDetails?.details?.createdAt}
+              callDurationMs={sessionCallDuration || summaryDetails?.details?.callDuration}
             />
 
             <ScenarioDetails scenario={summaryDetails?.scenario} />
 
-            <ModalActions onCancel={onClose} onShare={handleShare} />
+            <ModalActions onCancel={onClose} onShare={handleShare} shareLabel={shareLabel} />
           </div>
         </div>
       </div>

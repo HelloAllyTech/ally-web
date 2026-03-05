@@ -28,6 +28,7 @@ const { mockUseGetReviewsQuery, mockUseGetReviewThreadsQuery, mockNavigate, mock
     mockUseGetReviewsQuery: vi.fn(),
     mockUseGetReviewThreadsQuery: vi.fn(),
     mockNavigate: vi.fn(),
+    mockFeatureFlags: { SCRIBE_REVIEW_FLAG: true },
   }));
 
 // --------------------- Mock hooks and modules --------------------- //
@@ -48,6 +49,17 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
     <div data-testid="infinite-scroll" data-is-loading={isLoading}>
       {children}
       <button data-testid="load-more-trigger" onClick={onInfiniteScroll}>
+        Load More
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("@ally-ui-mono/ui-shared/lib/infinite-scroll", () => ({
+  default: ({ children, onInfiniteScroll, isLoading }: any) => (
+    <div data-testid="infinite-scroll" data-is-loading={String(isLoading)}>
+      {children}
+      <button data-testid="load-more-trigger" onClick={onInfiniteScroll} type="button">
         Load More
       </button>
     </div>
@@ -89,6 +101,20 @@ vi.mock("@components", () => ({
           {button.text}
         </button>
       )}
+    </div>
+  ),
+  TabGroup: ({ tabs, value, onChange }: any) => (
+    <div data-testid="tab-group">
+      {tabs?.map((tab: any) => (
+        <button
+          key={tab.value}
+          data-testid={`tab-${tab.value}`}
+          onClick={() => onChange?.(null, tab.value)}
+          className={value === tab.value ? "active" : ""}
+        >
+          {tab.label}
+        </button>
+      ))}
     </div>
   ),
   ToggleButtonGroup: ({ value, onValueChange, items }: any) => (
