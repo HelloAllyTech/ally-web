@@ -336,11 +336,9 @@ export const ReviewDetails = () => {
   const handleCreateReview = async (status?: string, note?: string) => {
     if (!reviewDetails?.id) return;
     await updateReview({
-      id: reviewDetails.id,
-      updateReviewInput: {
-        status: status || reviewDetails.reviewStatus,
-        note: note,
-      },
+      scenarioSessionId: reviewDetails.id,
+      status: status || reviewDetails.reviewStatus,
+      note: note,
     });
   };
 

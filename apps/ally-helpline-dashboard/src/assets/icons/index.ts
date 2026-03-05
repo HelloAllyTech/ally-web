@@ -58,6 +58,7 @@ import DockToRight from "./dockToRight.svg?react";
 import DominantFeelings from "./dominant-feelings.svg?react";
 import Download from "./download.svg?react";
 import Edit from "./edit.svg?react";
+import Emoji from "./emoji.svg?react";
 import EndSessionIllustration from "./end-session-illustration.svg?react";
 import Enhance from "./enhance.svg?react";
 import ErrorIcon from "./error-icon.svg?react";
@@ -310,4 +311,5 @@ export {
   ArrowDownBlue,
   PencilIcon,
   AddIcon,
+  Emoji,
 };

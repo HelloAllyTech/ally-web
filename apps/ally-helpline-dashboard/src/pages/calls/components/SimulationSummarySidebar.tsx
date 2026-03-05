@@ -20,10 +20,19 @@ import {
   ToggleSwitch,
   ShareForReview,
 } from "@components";
-import { Permissions, REVIEW_PRIVACY_OPTIONS, ROUTES } from "@constants";
+import {
+  Permissions,
+  REVIEW_PRIVACY_OPTIONS,
+  REVIEW_PRIVACY_OPTIONS_VALUES,
+  ROUTES,
+} from "@constants";
 import { FeedbackDialog, SimulationSummary } from "@containers";
 import { RootState } from "@store";
-import { SessionType, SimulationSummary as SimulationSummaryType } from "@types";
+import {
+  SessionType,
+  ShareForReviewsInput,
+  SimulationSummary as SimulationSummaryType,
+} from "@types";
 
 import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
@@ -38,7 +47,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const { t } = useTranslation();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
   const [shareForReview, setShareForReview] = useState<boolean>(false);
-  const [reviewStatus, setReviewStatus] = useState<string>("HIDDEN");
 
   const hasFeedback = useRef<boolean>(false);
   const startTimeRef = useRef<number | null>(null);
@@ -62,12 +70,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     }
   }, [summaryId]);
 
-  useEffect(() => {
-    if (summary?.reviewStatus != null) {
-      setReviewStatus(summary.reviewStatus);
-    }
-  }, [summary?.reviewStatus]);
-
   const hasThresholdElapsed = (): boolean => {
     if (startTimeRef.current == null) return false;
     return Date.now() - startTimeRef.current >= SUMMARY_FEEDBACK_TIMEOUT;
@@ -75,21 +77,27 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const handleCreateReview = async ({
     note,
     scenarioSessionId,
+    status,
   }: {
     note?: string;
     scenarioSessionId: string;
+    status: string;
   }) => {
+    const normalizedNote = note?.trim() || null;
     try {
       if (summary?.reviewId) {
-        await updateReview({
-          id: summary.reviewId,
-          updateReviewInput: { note: note, status: reviewStatus },
-        }).unwrap();
+        const params: ShareForReviewsInput = {
+          scenarioSessionId: summary.reviewId,
+          status,
+        };
+        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
+          params.note = normalizedNote;
+        await updateReview(params).unwrap();
       } else {
         await createReview({
           scenarioSessionId: scenarioSessionId,
-          note: note,
-          status: reviewStatus,
+          note: normalizedNote,
+          status: status,
         }).unwrap();
       }
     } catch (err: any) {
@@ -100,8 +108,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   };
 
   const handleToggleChange = (value: string) => {
-    setReviewStatus(value);
-    setShareForReview(value === "IN_REVIEW");
+    if (value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW) {
+      setShareForReview(value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW);
+    } else {
+      handleCreateReview({ scenarioSessionId: summaryId, status: value });
+    }
   };
   const SidebarTitle = (
     <div className="text-base flex items-center justify-between w-full gap-2">
@@ -120,9 +131,13 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
             <div className="flex items-center gap-2">
               <span className="font-primary font-medium text-sm">Share for review</span>
               <ToggleSwitch
-                enabled={reviewStatus === "IN_REVIEW"}
+                enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
                 onChange={(value: boolean) => {
-                  handleToggleChange(value ? "IN_REVIEW" : "HIDDEN");
+                  handleToggleChange(
+                    value
+                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                  );
                 }}
               />
             </div>
@@ -157,7 +172,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         }}
         summaryDetails={summary}
         onNoteChange={(note: string) => {
-          handleCreateReview({ scenarioSessionId: summaryId, note: note });
+          handleCreateReview({
+            scenarioSessionId: summaryId,
+            note: note,
+            status: REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW,
+          });
         }}
       />
     </div>
