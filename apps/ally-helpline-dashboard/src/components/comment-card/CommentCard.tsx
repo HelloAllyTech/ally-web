@@ -77,7 +77,9 @@ const CommentCard = ({
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
   const { reviewId } = useParams<{ reviewId: string }>();
   const isMyComment =
-    user?.id != null && comment?.createdBy?.id != null && String(user.id) === comment.createdBy.id;
+    user?.id != null &&
+    comment?.createdBy?.id != null &&
+    String(user.id) === String(comment.createdBy.id);
 
   const [repliesOffset, setRepliesOffset] = useState(0);
   const [hasMoreReplies, setHasMoreReplies] = useState(true);
