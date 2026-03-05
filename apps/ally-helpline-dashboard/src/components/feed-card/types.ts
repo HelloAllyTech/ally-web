@@ -36,7 +36,7 @@ export interface FeedApiResponse {
 export interface Comment {
   id: string;
   createdBy: {
-    id: string;
+    id: number;
     name: string;
     profileImage?: string;
   };

@@ -197,6 +197,11 @@ describe("ReviewCommentsSidepanel Component", () => {
 
   const defaultProps = {
     threads: mockThreads,
+    generalComments: [],
+    setComments: vi.fn(),
+    isGeneralCommentsLoading: false,
+    handleGeneralCommentsLoadMore: vi.fn(),
+    hasMoreGeneralComments: false,
     totalComments: 3,
     onCommentClick: mockOnCommentClick,
   };
@@ -241,7 +246,7 @@ describe("ReviewCommentsSidepanel Component", () => {
     });
 
     it("should display '0 Comments' when totalComments is undefined", async () => {
-      renderWithProviders(<ReviewCommentsSidepanel threads={[]} />);
+      renderWithProviders(<ReviewCommentsSidepanel {...defaultProps} threads={[]} />);
       await waitFor(() => {
         expect(screen.getByText("0 Comments")).toBeInTheDocument();
       });
@@ -309,7 +314,7 @@ describe("ReviewCommentsSidepanel Component", () => {
   // --- Click Handler Tests ---
   describe("Click Handler", () => {
     it("should use default empty function when onCommentClick not provided", async () => {
-      renderWithProviders(<ReviewCommentsSidepanel threads={mockThreads} />);
+      renderWithProviders(<ReviewCommentsSidepanel {...defaultProps} threads={mockThreads} />);
       await waitFor(() => {
         expect(screen.getByTestId("thread-card-thread-1")).toBeInTheDocument();
       });
