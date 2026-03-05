@@ -5,7 +5,7 @@ import { Tooltip } from "@mui/material";
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { InfoIcon } from "@assets";
 import { NumberInput, TimeInput } from "@components";
-import { DETECTION_CONFIG_FIELDS, toolTipStyles } from "@constants";
+import { DETECTION_CONFIG_FIELDS, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
 import { isInfinityValue, toggleInfinityValue, getInfinityDisplay } from "@utils";
 
 interface TimeWindowValues {
@@ -14,6 +14,7 @@ interface TimeWindowValues {
 }
 
 interface OccurrenceControlValues {
+  eventType?: string;
   maxOccurrences?: number;
   minGapTime?: string | null | undefined;
   minTriggerCount?: number;
@@ -139,6 +140,7 @@ export const TimeWindowSection: React.FC<TimeWindowValues & TimeWindowCallbacks>
 export const OccurrenceControlSection: React.FC<
   OccurrenceControlValues & OccurrenceControlCallbacks
 > = ({
+  eventType,
   maxOccurrences = "∞",
   minGapTime = "00:00:00",
   minTriggerCount = 0,
@@ -181,22 +183,23 @@ export const OccurrenceControlSection: React.FC<
           className="ml-[-10px]"
         />
       </FieldRow>
-      {FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG && (
-        <FieldRow
-          label="Minimum trigger count"
-          tooltip
-          tooltipTitle="Triggers when this event occurs {N} times. Then triggers again at {2N}, {3N}, …"
-        >
-          <NumberInput
-            value={minTriggerCount}
-            onChange={handleMinTriggerCountChange}
-            placeholder="0"
-            min={1}
-            className="w-[80px]"
-            inputClassName="!py-0 text-base"
-          />
-        </FieldRow>
-      )}
+      {FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG &&
+        eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION && (
+          <FieldRow
+            label="Minimum trigger count"
+            tooltip
+            tooltipTitle="Triggers when this event occurs {N} times. Then triggers again at {2N}, {3N}, …"
+          >
+            <NumberInput
+              value={minTriggerCount}
+              onChange={handleMinTriggerCountChange}
+              placeholder="0"
+              min={1}
+              className="w-[80px]"
+              inputClassName="!py-0 text-base"
+            />
+          </FieldRow>
+        )}
     </>
   );
 };

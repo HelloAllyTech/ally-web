@@ -3,7 +3,6 @@ import { FC, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-
 import {
   ListToolbar,
   FilterDropdown,
