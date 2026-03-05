@@ -53,6 +53,7 @@ vi.mock("@hooks", () => ({
     isStreaming: false,
     sendMessage: vi.fn(),
   }),
+  useClickOutside: () => vi.fn(),
 }));
 
 // Mock child components

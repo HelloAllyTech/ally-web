@@ -46,6 +46,7 @@ import ReviewCommentsSidepanel from "./review-comments-sidepanel/ReviewCommentsS
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
+import { ShareForReview } from "./share-for-review";
 import ShinyText from "./shiny-text";
 import SkillsTab from "./skills-tab";
 import { StarRating } from "./star-rating";
@@ -55,6 +56,7 @@ import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
 import ThreadCard from "./thread-card/ThreadCard";
 import ToggleButtonGroup from "./toggle-button-group";
+import { ToggleSwitch } from "./toggle-switch";
 import TranscriptListing from "./transcript-listing";
 import Transcription from "./transcription";
 import { UpNextSimulationCard } from "./up-next-simulation-card";
@@ -135,4 +137,6 @@ export {
   ReflectionTab,
   Checklist,
   SkillsTab,
+  ShareForReview,
+  ToggleSwitch,
 };

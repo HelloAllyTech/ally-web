@@ -17,6 +17,7 @@ import ActionsIcon from "./actions-icon.svg?react";
 import Alarm from "./alarm.svg?react";
 import Ally from "./ally.svg?react";
 import Archive from "./archive.svg?react";
+import ArrowDownBlue from "./arrow-down-blue.svg?react";
 import ArrowDownFilled from "./arrow-down-filled.svg?react";
 import ArrowLeft from "./arrow-left.svg?react";
 import ArrowRight from "./arrow-right.svg?react";
@@ -304,4 +305,5 @@ export {
   UpArrow,
   AskAiIcon,
   SendArrow,
+  ArrowDownBlue,
 };
