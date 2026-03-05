@@ -25,6 +25,7 @@ import { DatePicker, TimePicker } from "./date-time-pickers";
 import DraggableArea from "./draggable-area";
 import Drawer from "./drawer";
 import Dropdown from "./dropdown";
+import { EmojiPickerTrigger } from "./emoji-picker";
 import FallbackUI from "./fallback-ui";
 import EmojiStack from "./feed-card/EmojiStack";
 import FeedCard from "./feed-card/FeedCard";
@@ -141,4 +142,5 @@ export {
   SkillsTab,
   ShareForReview,
   ToggleSwitch,
+  EmojiPickerTrigger,
 };

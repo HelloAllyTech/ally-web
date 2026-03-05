@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { CustomImage, CustomVideo } from "@ally-ui-mono/ui-shared/index";
 import { ArrowDownBlue, CloseIcon } from "@assets";
-import { Button } from "@components";
-import { useClickOutside } from "@hooks";
+import { Button, EmojiPickerTrigger } from "@components";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 export interface ShareForReviewProps {
@@ -41,37 +41,45 @@ const ModalHeader = ({ title, onClose }: { title: string; onClose: () => void })
   </div>
 );
 
+const NOTE_MAX_LENGTH = 250;
+
 const NoteTextarea = ({
   note,
   onNoteChange,
+  isExpired,
+  textareaRef,
 }: {
   note?: string;
   onNoteChange: (note: string) => void;
+  isExpired: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
-      onNoteChange(value);
-      const el = textareaRef.current;
-      if (el) {
-        el.style.height = "auto";
-        el.style.height = `${el.scrollHeight}px`;
-      }
+      onNoteChange(value.length > NOTE_MAX_LENGTH ? value.slice(0, NOTE_MAX_LENGTH) : value);
     },
     [onNoteChange],
   );
 
+  const currentLength = (note ?? "").length;
+
   return (
-    <textarea
-      ref={textareaRef}
-      placeholder="Add a note..."
-      rows={1}
-      onChange={handleInput}
-      className="outline-none border-none placeholder:text-typography-400 placeholder:text-md font-primary text-lg font-normal overflow-hidden resize-none"
-      value={note ?? ""}
-    />
+    <div className="flex flex-col gap-2">
+      <textarea
+        ref={textareaRef}
+        placeholder="Add a note..."
+        rows={3}
+        maxLength={NOTE_MAX_LENGTH}
+        onChange={handleInput}
+        disabled={isExpired}
+        className={`flex-1 min-h-[4.5rem] max-h-40 outline-none border-none placeholder:text-typography-400 placeholder:text-md font-primary text-md font-normal overflow-y-auto resize-none custom-scrollbar ${isExpired ? "opacity-50 cursor-not-allowed" : ""}`}
+        value={note ?? ""}
+      />
+      <span className="text-typography-500 text-sm font-primary text-right">
+        {currentLength}/{NOTE_MAX_LENGTH}
+      </span>
+    </div>
   );
 };
 
@@ -120,7 +128,7 @@ const DescriptionToggle = ({
   isExpanded,
   onToggle,
 }: {
-  description: string | undefined;
+  description: string;
   isExpanded: boolean;
   onToggle: () => void;
 }) => {
@@ -145,17 +153,36 @@ const DescriptionToggle = ({
   );
 };
 
-const ScenarioDetails = ({
-  scenario,
-}: {
-  scenario: ScenarioDetailsScenario | undefined | null;
-}) => {
+const ScenarioDetails = ({ scenario }: { scenario: ScenarioDetailsScenario | null }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isClamped, setIsClamped] = useState(false);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
+
   const toggleDescription = useCallback(() => {
     setIsDescriptionExpanded(prev => !prev);
   }, []);
 
-  if (!scenario) return null;
+  useEffect(() => {
+    const el = descriptionRef.current;
+    if (el) {
+      setIsClamped(el.scrollHeight > el.clientHeight);
+    }
+  }, [scenario?.description]);
+
+  if (!scenario)
+    return (
+      <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start animate-pulse">
+        <div className="w-1/3 aspect-video bg-neutral-200 rounded" />
+        <div className="flex flex-col gap-2 w-2/3">
+          <div className="h-5 w-3/4 bg-neutral-200 rounded" />
+          <div className="flex flex-col gap-1.5">
+            <div className="h-3 w-full bg-neutral-200 rounded" />
+            <div className="h-3 w-full bg-neutral-200 rounded" />
+            <div className="h-3 w-2/3 bg-neutral-200 rounded" />
+          </div>
+        </div>
+      </div>
+    );
 
   return (
     <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start">
@@ -166,17 +193,20 @@ const ScenarioDetails = ({
         <h3 className="text-lg text-typography-900">{scenario.title}</h3>
         <div className="flex flex-col gap-1">
           <p
+            ref={descriptionRef}
             className={`text-base text-typography-800 leading-relaxed ${
-              isDescriptionExpanded ? "" : "line-clamp-2"
+              isDescriptionExpanded ? "" : "line-clamp-3"
             }`}
           >
             {scenario.description}
           </p>
-          <DescriptionToggle
-            description={scenario.description}
-            isExpanded={isDescriptionExpanded}
-            onToggle={toggleDescription}
-          />
+          {isClamped && (
+            <DescriptionToggle
+              description={scenario.description}
+              isExpanded={isDescriptionExpanded}
+              onToggle={toggleDescription}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -215,20 +245,46 @@ export const ShareForReview = ({
   sessionCallDuration,
 }: ShareForReviewProps) => {
   const shareForReviewRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [note, setNote] = useState("");
+
+  const timeDiff = useMemo(() => {
+    return differenceInMinutes(
+      new Date(),
+      new Date(sessionCreatedAt || summaryDetails?.reviewCreatedAt),
+    );
+  }, [sessionCreatedAt, summaryDetails?.reviewCreatedAt]);
 
   useEffect(() => {
     if (isOpen) {
-      setNote(summaryDetails?.note ?? "");
+      setNote(summaryDetails?.note ?? summaryDetails?.reviewNote ?? "");
     }
-  }, [isOpen, summaryDetails?.note]);
-
-  const handleClose = useCallback(() => onClose(), [onClose]);
-  useClickOutside(shareForReviewRef, handleClose);
+  }, [isOpen, summaryDetails?.note, summaryDetails?.reviewNote]);
 
   const handleNoteChange = useCallback((newNote: string) => {
-    setNote(newNote);
+    setNote(newNote.length > NOTE_MAX_LENGTH ? newNote.slice(0, NOTE_MAX_LENGTH) : newNote);
   }, []);
+
+  const insertEmoji = useCallback(
+    (emoji: string) => {
+      const el = textareaRef.current;
+      const currentNote = el?.value ?? note ?? "";
+      const start = el?.selectionStart ?? currentNote.length;
+      const end = el?.selectionEnd ?? currentNote.length;
+      let newNote = currentNote.slice(0, start) + emoji + currentNote.slice(end);
+      if (newNote.length > NOTE_MAX_LENGTH) newNote = newNote.slice(0, NOTE_MAX_LENGTH);
+      setNote(newNote);
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const input = textareaRef.current;
+          input.focus();
+          const newPos = Math.min(start + emoji.length, newNote.length);
+          input.setSelectionRange(newPos, newPos);
+        }
+      }, 0);
+    },
+    [note],
+  );
 
   const handleShare = useCallback(() => {
     onNoteChange(note);
@@ -247,7 +303,12 @@ export const ShareForReview = ({
           <div className="flex flex-col gap-4 font-primary font-medium text-typography-900">
             <ModalHeader title={modalHeader} onClose={onClose} />
 
-            <NoteTextarea note={note} onNoteChange={handleNoteChange} />
+            <NoteTextarea
+              note={note}
+              onNoteChange={handleNoteChange}
+              isExpired={timeDiff <= 10}
+              textareaRef={textareaRef}
+            />
 
             <SubSection
               createdAt={sessionCreatedAt || summaryDetails?.details?.createdAt}
@@ -255,6 +316,8 @@ export const ShareForReview = ({
             />
 
             <ScenarioDetails scenario={summaryDetails?.scenario} />
+
+            <EmojiPickerTrigger onEmojiClick={insertEmoji} isExpired={timeDiff <= 10} />
 
             <ModalActions onCancel={onClose} onShare={handleShare} shareLabel={shareLabel} />
           </div>

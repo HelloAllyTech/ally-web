@@ -67,31 +67,25 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </em>
           </div>
           <div
-            class="flex justify-center gap-2"
+            class="flex justify-center gap-2 items-center"
           >
             <div
-              class="flex flex-col gap-2 w-fit"
+              class="flex items-center gap-2"
             >
-              <div
-                class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+              <span
+                class="font-primary font-medium text-sm"
               >
-                <div
-                  class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-                  style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+                Share for review
+              </span>
+              <button
+                aria-label="Toggle"
+                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none bg-neutral-200"
+                type="button"
+              >
+                <span
+                  class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"
                 />
-                <div
-                  class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-                  style="color: rgb(0, 0, 0);"
-                >
-                  Keep it private
-                </div>
-                <div
-                  class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-                  style="color: rgba(0, 0, 0, 0.376);"
-                >
-                  Share for review
-                </div>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -230,31 +224,25 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             </em>
           </div>
           <div
-            class="flex justify-center gap-2"
+            class="flex justify-center gap-2 items-center"
           >
             <div
-              class="flex flex-col gap-2 w-fit"
+              class="flex items-center gap-2"
             >
-              <div
-                class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+              <span
+                class="font-primary font-medium text-sm"
               >
-                <div
-                  class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-                  style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+                Share for review
+              </span>
+              <button
+                aria-label="Toggle"
+                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none bg-neutral-200"
+                type="button"
+              >
+                <span
+                  class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"
                 />
-                <div
-                  class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-                  style="color: rgb(0, 0, 0);"
-                >
-                  Keep it private
-                </div>
-                <div
-                  class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-                  style="color: rgba(0, 0, 0, 0.376);"
-                >
-                  Share for review
-                </div>
-              </div>
+              </button>
             </div>
           </div>
         </div>
