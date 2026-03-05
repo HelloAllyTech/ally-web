@@ -306,7 +306,7 @@ export const ShareForReview = ({
             <NoteTextarea
               note={note}
               onNoteChange={handleNoteChange}
-              isExpired={timeDiff <= 10}
+              isExpired={timeDiff >= 10}
               textareaRef={textareaRef}
             />
 
@@ -317,7 +317,7 @@ export const ShareForReview = ({
 
             <ScenarioDetails scenario={summaryDetails?.scenario} />
 
-            <EmojiPickerTrigger onEmojiClick={insertEmoji} isExpired={timeDiff <= 10} />
+            <EmojiPickerTrigger onEmojiClick={insertEmoji} isExpired={timeDiff >= 10} />
 
             <ModalActions onCancel={onClose} onShare={handleShare} shareLabel={shareLabel} />
           </div>
