@@ -148,11 +148,6 @@ export interface TextSegment {
 
 export interface ShareForReviewsInput {
   scenarioSessionId: string;
-  note: string;
-  status: string;
-}
-
-export interface UpdateReviewInput {
   note?: string;
   status: string;
 }

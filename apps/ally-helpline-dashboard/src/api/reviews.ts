@@ -8,7 +8,6 @@ import {
   GetReviewsReactionsInput,
   CommentItem,
   ShareForReviewsInput,
-  UpdateReviewInput,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -77,11 +76,11 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @param {string} status - The status of the review
      * @returns {Promise<Review>} Review data
      */
-    updateReview: builder.mutation<void, { id: string; updateReviewInput: UpdateReviewInput }>({
-      query: ({ id, updateReviewInput: body }) => ({
-        url: ApiEndpoints.REVIEWS.UPDATE_REVIEW(id),
+    updateReview: builder.mutation<void, ShareForReviewsInput>({
+      query: ({ scenarioSessionId, note, status }) => ({
+        url: ApiEndpoints.REVIEWS.UPDATE_REVIEW(scenarioSessionId),
         method: HttpMethod.PATCH,
-        body,
+        body: { ...(note && { note }), status },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
