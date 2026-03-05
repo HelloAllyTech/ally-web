@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
 import { Skeleton } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -6,10 +6,11 @@ import { useTranslation } from "react-i18next";
 import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared/index";
 import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import ThreadsToShow from "@src/components/review-comments-sidepanel/components/ThreadsToShow";
-import { Thread } from "@types";
+import { CommentItem, Thread } from "@types";
 
 interface ReviewCommentsSidepanelProps {
   threads: Thread[] | null;
+  generalComments: CommentItem[] | null;
   isFeedOwner?: boolean;
   className?: string;
   isOpen?: boolean;
@@ -19,6 +20,12 @@ interface ReviewCommentsSidepanelProps {
     endIndex: number;
     threadId: string;
   }) => void;
+  setComments: Dispatch<SetStateAction<CommentItem[]>>;
+  isGeneralCommentsLoading: boolean;
+  handleGeneralCommentsLoadMore: () => void;
+  hasMoreGeneralComments: boolean;
+  deletedReplyId?: string;
+  setDeletedReplyId?: (id: string) => void;
 }
 
 type TabType = "inline" | "general";
@@ -27,7 +34,14 @@ const ReviewCommentsSidepanel = ({
   isFeedOwner,
   className,
   isOpen = true,
+  generalComments,
+  setComments,
+  isGeneralCommentsLoading,
+  handleGeneralCommentsLoadMore,
+  hasMoreGeneralComments,
   onCommentClick = () => {},
+  deletedReplyId,
+  setDeletedReplyId,
 }: ReviewCommentsSidepanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("inline");
@@ -86,7 +100,16 @@ const ReviewCommentsSidepanel = ({
               />
             )}
             {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
-              <GeneralCommentsToShow show={activeTab === "general"} />
+              <GeneralCommentsToShow
+                show={activeTab === "general"}
+                generalComments={generalComments}
+                handleLoadMore={handleGeneralCommentsLoadMore}
+                hasMoreComments={hasMoreGeneralComments}
+                isLoading={isGeneralCommentsLoading}
+                setComments={setComments}
+                deletedReplyId={deletedReplyId}
+                setDeletedReplyId={setDeletedReplyId}
+              />
             )}
           </>
         )}

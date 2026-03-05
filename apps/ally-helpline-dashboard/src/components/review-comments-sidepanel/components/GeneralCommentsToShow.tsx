@@ -1,51 +1,41 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
-import {
-  useCreateCommentMutation,
-  useGetGeneralCommentsQuery,
-  useGetReviewByIdQuery,
-} from "@src/api";
+import { CommentCard } from "@components";
+import { useCreateCommentMutation, useGetReviewByIdQuery } from "@src/api";
 import { Button } from "@src/components/button";
-import CommentCard from "@src/components/comment-card/CommentCard";
 import { RootState } from "@src/store";
 import { CommentItem } from "@src/types";
 
+import CommentSkeleton from "./CommentsSkeleton";
+
 interface GeneralCommentsToShowProps {
   show: boolean;
+  generalComments: CommentItem[] | null;
+  handleLoadMore: () => void;
+  hasMoreComments: boolean;
+  isLoading: boolean;
+  setComments: Dispatch<SetStateAction<CommentItem[]>>;
+  deletedReplyId?: string;
+  setDeletedReplyId?: (id: string) => void;
 }
 
-const CommentSkeleton = () => (
-  <div className="flex gap-3 w-full animate-pulse">
-    <div className="w-8 h-8 rounded-full bg-neutral-200 flex-shrink-0" />
-    <div className="flex-1 space-y-2">
-      <div className="flex items-center gap-2">
-        <div className="h-4 w-24 bg-neutral-200 rounded" />
-        <div className="h-3 w-16 bg-neutral-100 rounded" />
-      </div>
-      <div className="space-y-1.5">
-        <div className="h-3 w-full bg-neutral-200 rounded" />
-        <div className="h-3 w-3/4 bg-neutral-200 rounded" />
-      </div>
-      <div className="flex gap-4 mt-2">
-        <div className="h-3 w-10 bg-neutral-100 rounded" />
-        <div className="h-3 w-10 bg-neutral-100 rounded" />
-      </div>
-    </div>
-  </div>
-);
-
-const PAGE_SIZE = 10;
-const GeneralCommentsToShow = ({ show }: GeneralCommentsToShowProps) => {
+const GeneralCommentsToShow = ({
+  show,
+  generalComments,
+  handleLoadMore,
+  hasMoreComments,
+  isLoading,
+  setComments,
+  deletedReplyId,
+  setDeletedReplyId,
+}: GeneralCommentsToShowProps) => {
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState<CommentItem[]>([]);
   const [commentThreadId, setCommentThreadId] = useState<string | null>(null);
-  const [commentsOffset, setCommentsOffset] = useState(0);
-  const [hasMoreComments, setHasMoreComments] = useState(true);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const { reviewId } = useParams<{ reviewId: string }>();
   const user = useSelector((state: RootState) => state.user.user);
@@ -61,11 +51,6 @@ const GeneralCommentsToShow = ({ show }: GeneralCommentsToShowProps) => {
     },
   ] = useCreateCommentMutation();
 
-  const { data: generalComments, isLoading } = useGetGeneralCommentsQuery({
-    reviewId,
-    limit: PAGE_SIZE,
-    offset: commentsOffset,
-  });
   const handleCancel = () => {
     setShowCommentBox(false);
     setComment("");
@@ -74,22 +59,12 @@ const GeneralCommentsToShow = ({ show }: GeneralCommentsToShowProps) => {
   useEffect(() => {
     if (createCommentData?.thread?.id) {
       setCommentThreadId(createCommentData?.thread?.id);
-    } else if (comments.length === 0) {
+    } else if (generalComments.length === 0) {
       setCommentThreadId(null);
     } else if (review?.generalCommentsThreadId) {
       setCommentThreadId(review?.generalCommentsThreadId);
     }
-  }, [review, createCommentData, comments]);
-
-  useEffect(() => {
-    if (generalComments) {
-      if (commentsOffset === 0) {
-        setComments(generalComments.data);
-      } else {
-        setComments(prev => [...prev, ...generalComments.data]);
-      }
-    }
-  }, [generalComments]);
+  }, [review, createCommentData, generalComments]);
 
   useEffect(() => {
     if (isCreateCommentSuccess) {
@@ -99,7 +74,11 @@ const GeneralCommentsToShow = ({ show }: GeneralCommentsToShowProps) => {
         {
           id: createCommentData?.comment?.id,
           content: comment,
-          createdBy: { id: user?.id, name: user?.name, profileImage: user?.profileImageUrl },
+          createdBy: {
+            id: String(user?.id),
+            name: user?.name ?? "",
+            profileImage: user?.profileImageUrl ?? null,
+          },
           createdAt: createCommentData?.data?.createdAt,
           reactions: {},
           replyCount: 0,
@@ -134,13 +113,6 @@ const GeneralCommentsToShow = ({ show }: GeneralCommentsToShowProps) => {
     }
   };
 
-  const handleLoadMore = () => {
-    setCommentsOffset(prev => prev + PAGE_SIZE);
-    if (generalComments?.data.length === 0) {
-      setHasMoreComments(false);
-    }
-  };
-
   const handleDeleteComment = (id: string) => {
     setComments(prev => prev.filter(comment => comment.id !== id));
   };
@@ -153,6 +125,20 @@ const GeneralCommentsToShow = ({ show }: GeneralCommentsToShowProps) => {
 
   const handleCommentChange = (comment: CommentItem) => {
     setComments(prev => prev.map(c => (c.id === comment.id ? comment : c)));
+  };
+
+  const updateReplyCount = (replyCount: number, commentId: string) => {
+    setComments(prev =>
+      prev.map(comment => (comment.id === commentId ? { ...comment, replyCount } : comment)),
+    );
+  };
+
+  const handleDeleteReply = (commentId: string) => {
+    setComments(prev =>
+      prev.map(comment =>
+        comment.id === commentId ? { ...comment, replyCount: comment.replyCount - 1 } : comment,
+      ),
+    );
   };
 
   if (!show) return null;
@@ -221,7 +207,7 @@ const GeneralCommentsToShow = ({ show }: GeneralCommentsToShowProps) => {
               isLoading={isLoading}
               hasMore={hasMoreComments}
             >
-              {comments.map(comment => (
+              {generalComments.map(comment => (
                 <CommentCard
                   onUpdateComment={handleUpdateComment}
                   onDelete={handleDeleteComment}
@@ -231,6 +217,10 @@ const GeneralCommentsToShow = ({ show }: GeneralCommentsToShowProps) => {
                   showLike
                   enableLikeUpdate
                   onCommentChange={handleCommentChange}
+                  updateReplyCount={count => updateReplyCount(count, comment.id)}
+                  onDeleteReply={() => handleDeleteReply(comment.id)}
+                  deletedReplyId={deletedReplyId}
+                  setDeletedReplyId={setDeletedReplyId}
                 />
               ))}
             </InfiniteScroll>
