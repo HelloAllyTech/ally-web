@@ -239,10 +239,12 @@ export interface Prompt {
   description: string;
   promptCode: string;
   prompt: string;
-  useCase?: string;
+  useDashboardOverride?: boolean;
   currentVersion?: number;
   createdAt?: string;
   updatedAt?: string;
+  /** Variable placeholders (e.g. {var_name}) parsed from prompt template, from API or fallback */
+  availableVariables?: string[];
 }
 
 export interface GetPromptsQuery {

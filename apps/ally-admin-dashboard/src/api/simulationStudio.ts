@@ -360,6 +360,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Dispatch agent to preview room (local dev only, when webhook unreachable)
+     */
+    dispatchPreviewAgent: builder.mutation<void, { roomName: string }>({
+      query: ({ roomName }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DISPATCH_PREVIEW_AGENT,
+        method: HttpMethod.POST,
+        body: { roomName },
+      }),
+    }),
+
+    /**
      * End scenario preview
      */
     endScenarioPreview: builder.mutation<void, { roomName: string }>({
@@ -470,6 +481,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(id),
         method: HttpMethod.PUT,
         body,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Revert prompt to codebase default
+     */
+    revertPrompt: builder.mutation<boolean, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.REVERT_PROMPT(id),
+        method: HttpMethod.POST,
       }),
       invalidatesTags: [TAG_TYPES.PROMPTS],
     }),
@@ -735,6 +757,7 @@ export const {
   useGetAvailableLanguageVoicesQuery,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
+  useDispatchPreviewAgentMutation,
   useEndScenarioPreviewMutation,
   useMapScenarioEventsMutation,
   useDeleteScenarioEventsMutation,
@@ -748,6 +771,7 @@ export const {
   useGetPromptsQuery,
   useCreatePromptMutation,
   useUpdatePromptMutation,
+  useRevertPromptMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,

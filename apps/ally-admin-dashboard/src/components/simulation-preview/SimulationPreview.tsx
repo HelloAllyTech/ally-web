@@ -65,7 +65,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   );
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
-    const { accessToken, scenario, checklistEvents } = response;
+    const { accessToken, scenario, checklistEvents, useDirectAgentDispatch } = response;
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({
@@ -81,6 +81,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
           coverImageUrl: scenario?.coverImageUrl || simulation.coverImageUrl,
         },
         accessToken: accessToken.token,
+        roomName: accessToken?.roomName,
         createdAt: new Date(),
         serverUrl: accessToken.serverUrl,
         maxTimeValue: scenario?.metadata?.maxTimeValue,
@@ -89,6 +90,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         experienceMode: scenario?.metadata?.experienceMode,
         checklistType: scenario?.metadata?.checklistType,
         showScoreMeter: scenario?.metadata?.showScoreMeter,
+        useDirectAgentDispatch: useDirectAgentDispatch ?? false,
       }),
     );
     navigate(ROUTES.SIMULATION_PREVIEW(accessToken?.roomName));

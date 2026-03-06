@@ -153,6 +153,13 @@ export const Cell = ({
         </span>
       );
       break;
+    case cellTypes.wrapText:
+      element = (
+        <span className="block overflow-hidden text-ellipsis line-clamp-2 break-words">
+          {value.value ?? ""}
+        </span>
+      );
+      break;
     case cellTypes.image:
       element = <CustomImage src={value.value} alt="User badge" width={100} height={100} />;
       break;
