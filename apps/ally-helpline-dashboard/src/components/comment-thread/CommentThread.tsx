@@ -3,8 +3,9 @@ import { useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { useGetReviewThreadCommentsQuery } from "@api";
 import { Button, CommentCard } from "@components";
-import { useGetReviewThreadCommentsQuery } from "@src/api";
+import { COMMENT_MAX_LENGTH } from "@constants";
 import { RootState } from "@store";
 import { CommentItem, CommentChangeParams } from "@types";
 
@@ -106,6 +107,7 @@ const CommentThread = ({
               onChange={setComment}
               autoFocus={true}
               placeholder="Add Comment"
+              maxLength={COMMENT_MAX_LENGTH}
               className="w-full border rounded-sm text-sm font-medium !px-2 !py-2 mt-2 min-h-20"
             />
             <div className="flex gap-2 flex-row my-2 justify-end">

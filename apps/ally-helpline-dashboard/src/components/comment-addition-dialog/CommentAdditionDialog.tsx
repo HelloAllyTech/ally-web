@@ -3,6 +3,7 @@ import { FC, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { AutoExpandableTextarea, CustomImage } from "@ally-ui-mono/ui-shared";
+import { COMMENT_MAX_LENGTH } from "@constants";
 import { RootState } from "@store";
 
 import { Button } from "../button";
@@ -34,6 +35,7 @@ const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel, onCom
           value={comment}
           onChange={setComment}
           placeholder="Add Comment"
+          maxLength={COMMENT_MAX_LENGTH}
           className="w-full border rounded-sm text-sm !px-2 !py-2 min-h-20"
         />
         <div className="grid grid-cols-2 gap-2">

@@ -22,7 +22,7 @@ import {
   MenuItem,
   ConfirmationPopover,
 } from "@components";
-import { COMMENT_DELETE_CONFIRMATION } from "@src/components/comment-card/constants";
+import { COMMENT_MAX_LENGTH, COMMENT_DELETE_CONFIRMATION } from "@constants";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
 import { formatRelativeTime } from "@utils";
@@ -395,6 +395,7 @@ const CommentCard = ({
               value={replyText}
               onChange={setReplyText}
               placeholder="Add reply"
+              maxLength={COMMENT_MAX_LENGTH}
               className="w-full border rounded-sm text-sm !px-2 !py-2 mt-2 min-h-20"
             />
             <div className="flex gap-2 flex-row mt-1 justify-end">
@@ -438,6 +439,7 @@ const CommentCard = ({
             autoFocus={true}
             onChange={(content: string) => setCommentContent(content)}
             placeholder="Edit comment"
+            maxLength={COMMENT_MAX_LENGTH}
           />
         </div>
         <div className="flex gap-2 flex-row my-2 justify-end">
@@ -460,7 +462,9 @@ const CommentCard = ({
   const renderCommentContent = () => {
     return (
       <>
-        <div className="text-typography-900 font-primary text-sm">{comment.content}</div>
+        <div className="text-typography-900 font-primary text-sm whitespace-pre-wrap">
+          {comment.content}
+        </div>
         <div className="flex gap-2 items-center">
           {showLike && (selectedEmoji || enableLikeUpdate) && (
             <div className="relative">
