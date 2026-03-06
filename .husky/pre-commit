@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run tests before commit
+# Run tests before commit (skip cache to avoid stale/failed cache blocking commits)
 echo "Running tests before commit..."
-npm test
+npm test -- --skip-nx-cache
 
 # Run lint-staged for code formatting and linting
 npx lint-staged
