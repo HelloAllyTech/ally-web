@@ -88,14 +88,17 @@ vi.mock("@mui/material", () => ({
 
 // Mock containers
 vi.mock("@containers", () => ({
-  SimulationSummary: vi.fn(({ summaryId, className, onSummaryClose, isInSidebar }) => (
-    <div data-testid="simulation-summary" className={className} data-in-sidebar={isInSidebar}>
-      <div data-testid="summary-id">{summaryId}</div>
-      <button data-testid="close-summary-btn" onClick={onSummaryClose}>
-        Close Summary
-      </button>
+  SimulationSummary: vi.fn(({ sessionId, summaryData, retryMaxReached, className }: any) => (
+    <div
+      data-testid="simulation-summary"
+      className={className}
+      data-has-summary={String(!!summaryData)}
+      data-retry-max={String(retryMaxReached)}
+    >
+      <div data-testid="summary-session-id">{sessionId}</div>
     </div>
   )),
+  useSimulationSummaryPolling: () => ({ summaryData: undefined, retryMaxReached: false }),
 }));
 
 // Mock SimulationTranscriptTab
@@ -288,7 +291,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("summary-id")).toHaveTextContent("456");
+      expect(screen.getByTestId("summary-session-id")).toHaveTextContent("456");
     });
 
     it("should handle missing sessionId parameter", () => {
@@ -410,21 +413,10 @@ describe("PostSimulationSummary Component", () => {
 
       const simulationSummary = screen.getByTestId("simulation-summary");
       expect(simulationSummary).toHaveClass("max-h-[calc(100vh-212px)]");
-      expect(screen.getByTestId("summary-id")).toHaveTextContent("123");
+      expect(screen.getByTestId("summary-session-id")).toHaveTextContent("123");
     });
 
-    it("should pass onSummaryClose callback to SimulationSummary", () => {
-      render(
-        <TestWrapper>
-          <PostSimulationSummary />
-        </TestWrapper>,
-      );
-
-      const closeButton = screen.getByTestId("close-summary-btn");
-      expect(closeButton).toBeInTheDocument();
-    });
-
-    it("should pass summaryId and className to SimulationSummary", () => {
+    it("should pass sessionId, summaryData, retryMaxReached and className to SimulationSummary", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -433,9 +425,11 @@ describe("PostSimulationSummary Component", () => {
 
       const lastCallArgs = vi.mocked(SimulationSummary).mock.calls.at(-1) ?? [];
       expect(lastCallArgs[0]).toMatchObject({
-        summaryId: "123",
+        sessionId: "123",
         className: "max-h-[calc(100vh-212px)]",
       });
+      expect(lastCallArgs[0]).toHaveProperty("summaryData");
+      expect(lastCallArgs[0]).toHaveProperty("retryMaxReached");
     });
   });
 
@@ -915,8 +909,8 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      expect(closeButton).toBeInTheDocument();
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
     });
   });
 
@@ -935,7 +929,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("summary-id")).toHaveTextContent(longSessionId);
+      expect(screen.getByTestId("summary-session-id")).toHaveTextContent(longSessionId);
     });
 
     it("should handle special characters in sessionId", () => {
@@ -948,7 +942,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("summary-id")).toHaveTextContent(specialSessionId);
+      expect(screen.getByTestId("summary-session-id")).toHaveTextContent(specialSessionId);
     });
 
     it("should render consistently on multiple renders", () => {

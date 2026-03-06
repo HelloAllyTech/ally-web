@@ -32,14 +32,14 @@ vi.mock("@containers", () => ({
       </button>
     </div>
   ),
-  SimulationSummary: ({ summaryId, onSummaryFetch }: any) => (
+  SimulationSummary: ({ sessionId, summaryData, retryMaxReached }: any) => (
     <div data-testid="simulation-summary">
-      <div data-testid="simulation-summary-id">{summaryId}</div>
-      <button onClick={() => onSummaryFetch({ hasFeedback: false })} data-testid="fetch-summary">
-        Fetch Summary
-      </button>
+      <div data-testid="simulation-summary-session-id">{sessionId}</div>
+      <div data-testid="simulation-summary-has-data">{String(!!summaryData)}</div>
+      <div data-testid="simulation-summary-retry-max">{String(retryMaxReached)}</div>
     </div>
   ),
+  useSimulationSummaryPolling: () => ({ summaryData: undefined, retryMaxReached: false }),
 }));
 
 // Mock hooks
@@ -162,7 +162,9 @@ describe("SimulationSummarySidebar Component", () => {
       renderComponent();
 
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(screen.getByTestId("simulation-summary-id")).toHaveTextContent("test-summary-id");
+      expect(screen.getByTestId("simulation-summary-session-id")).toHaveTextContent(
+        "test-summary-id",
+      );
     });
 
     it("should render simulation transcript tab", () => {
@@ -198,11 +200,9 @@ describe("SimulationSummarySidebar Component", () => {
     it.skip("should not show feedback dialog when feedback already added", async () => {
       const { mockCloseSummarySidebar } = renderComponent();
 
-      // Simulate summary fetch with feedback already added
-      const fetchButton = screen.getByTestId("fetch-summary");
-      fireEvent.click(fetchButton);
+      // When useSimulationSummaryPolling returns summaryData with hasFeedback, sidebar
+      // sets hasFeedback.current and closing should not show dialog.
 
-      // Fast forward time to exceed threshold
       act(() => {
         vi.advanceTimersByTime(SUMMARY_FEEDBACK_TIMEOUT + 1000);
       });
@@ -278,15 +278,14 @@ describe("SimulationSummarySidebar Component", () => {
     });
   });
 
-  describe("Summary Fetch", () => {
-    it("should handle summary fetch callback", () => {
+  describe("Summary Content", () => {
+    it("should render simulation summary with polling data from hook", () => {
       renderComponent();
 
-      const fetchButton = screen.getByTestId("fetch-summary");
-      fireEvent.click(fetchButton);
-
-      // Should not throw any errors
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("simulation-summary-session-id")).toHaveTextContent(
+        "test-summary-id",
+      );
     });
   });
 

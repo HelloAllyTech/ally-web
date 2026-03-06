@@ -9,6 +9,7 @@ import { useGetReviewsQuery, useGetReviewThreadsQuery, useGetScribeReviewsQuery 
 import { NoResults, ReviewsEmptyState } from "@assets";
 import { FallbackUI, TabGroup, ToggleButtonGroup } from "@components";
 import { ROUTES } from "@constants";
+import ScribeReview from "@pages/review/components/ScribeReview";
 import {
   FILTER_OPTIONS,
   PAGE_SIZE,
@@ -17,7 +18,6 @@ import {
   TABS,
   containerVariants,
 } from "@pages/review/constants";
-import ScribeReview from "@src/pages/review/components/ScribeReview";
 import { ReviewItem } from "@types";
 
 import FeedCardSkeleton from "./components/FeedCardSkeleton";

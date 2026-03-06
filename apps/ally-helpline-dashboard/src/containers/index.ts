@@ -1,4 +1,8 @@
 import FeedbackDialog from "./feedback-dialog";
-import { SimulationSummary } from "./simulation-summary-state";
+import {
+  ShortSessionUI,
+  SimulationSummary,
+  useSimulationSummaryPolling,
+} from "./simulation-summary-state";
 
-export { FeedbackDialog, SimulationSummary };
+export { FeedbackDialog, ShortSessionUI, SimulationSummary, useSimulationSummaryPolling };
