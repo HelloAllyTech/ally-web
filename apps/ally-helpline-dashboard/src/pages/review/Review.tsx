@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useGetReviewsQuery, useGetReviewThreadsQuery } from "@api";
+import { useGetReviewsQuery, useGetReviewThreadsQuery, useGetScribeReviewsQuery } from "@api";
 import { NoResults, ReviewsEmptyState } from "@assets";
 import { FallbackUI, TabGroup, ToggleButtonGroup } from "@components";
 import { ROUTES } from "@constants";
@@ -132,11 +132,16 @@ const ReviewWithTabs: FC = () => {
     isFetching: isScribeReviewsFetching,
     refetch: refetchScribeReviews,
     error: scribeReviewsError,
-  } = useGetReviewsQuery({
-    limit: PAGE_SIZE,
-    offset: scribeOffset,
-    sortBy: scribeFilter,
-  });
+  } = useGetScribeReviewsQuery(
+    {
+      limit: PAGE_SIZE,
+      offset: scribeOffset,
+      sortBy: scribeFilter,
+    },
+    {
+      skip: !FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG,
+    },
+  );
 
   const { data: simulationReviewThreadsData, isLoading: isSimulationReviewThreadsLoading } =
     useGetReviewThreadsQuery(

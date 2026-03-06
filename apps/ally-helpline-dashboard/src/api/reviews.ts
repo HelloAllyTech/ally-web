@@ -27,6 +27,18 @@ const reviewsAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.REVIEW],
     }),
     /**
+     * Retrieves paginated scribe reviews with sorting options.
+     * @param {GetReviewsInput} params - Query parameters for pagination and sorting
+     * @returns {Promise<GetReviewsResponse>} Paginated scribe reviews data
+     */
+    getScribeReviews: builder.query<GetReviewsResponse, GetReviewsInput>({
+      query: params => ({
+        url: ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEWS,
+        params,
+      }),
+      providesTags: [TAG_TYPES.REVIEW],
+    }),
+    /**
      * Retrieves a review by its ID.
      * @param {string} id - The ID of the review
      * @returns {Promise<Review>} Review data
@@ -226,6 +238,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
 
 export const {
   useGetReviewsQuery,
+  useGetScribeReviewsQuery,
   useGetReviewByIdQuery,
   useGetReviewDetailsWithMessagesQuery,
   useCreateReviewMutation,

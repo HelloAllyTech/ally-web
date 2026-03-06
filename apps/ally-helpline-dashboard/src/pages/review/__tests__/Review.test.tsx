@@ -23,13 +23,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ReviewItem } from "@types";
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
-const { mockUseGetReviewsQuery, mockUseGetReviewThreadsQuery, mockNavigate, mockFeatureFlags } =
-  vi.hoisted(() => ({
-    mockUseGetReviewsQuery: vi.fn(),
-    mockUseGetReviewThreadsQuery: vi.fn(),
-    mockNavigate: vi.fn(),
-    mockFeatureFlags: { SCRIBE_REVIEW_FLAG: true },
-  }));
+const {
+  mockUseGetReviewsQuery,
+  mockUseGetReviewThreadsQuery,
+  mockUseGetScribeReviewsQuery,
+  mockNavigate,
+  mockFeatureFlags,
+} = vi.hoisted(() => ({
+  mockUseGetReviewsQuery: vi.fn(),
+  mockUseGetReviewThreadsQuery: vi.fn(),
+  mockUseGetScribeReviewsQuery: vi.fn(),
+  mockNavigate: vi.fn(),
+  mockFeatureFlags: { SCRIBE_REVIEW_FLAG: true },
+}));
 
 // --------------------- Mock hooks and modules --------------------- //
 
@@ -37,6 +43,8 @@ vi.mock("@api", () => ({
   useGetReviewsQuery: () => mockUseGetReviewsQuery(),
   useGetReviewThreadsQuery: (params: any, options: any) =>
     mockUseGetReviewThreadsQuery(params, options),
+  useGetScribeReviewsQuery: (params: any, options: any) =>
+    mockUseGetScribeReviewsQuery(params, options),
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -250,6 +258,13 @@ const defaultThreadsQueryReturn = {
   isLoading: false,
 };
 
+const defaultScribeReviewsQueryReturn = {
+  data: { data: mockReviewItems, count: 2 },
+  isFetching: false,
+  refetch: vi.fn(),
+  error: null,
+};
+
 // Test wrapper component
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>{children}</BrowserRouter>
@@ -262,6 +277,7 @@ describe("Review Component", () => {
     vi.clearAllMocks();
     mockUseGetReviewsQuery.mockReturnValue(defaultReviewsQueryReturn);
     mockUseGetReviewThreadsQuery.mockReturnValue(defaultThreadsQueryReturn);
+    mockUseGetScribeReviewsQuery.mockReturnValue(defaultScribeReviewsQueryReturn);
   });
 
   afterEach(() => {
@@ -348,12 +364,14 @@ describe("Review Component", () => {
    */
   describe("Loading State", () => {
     it("shows skeleton loaders when initial loading", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
+      const loadingReturn = {
         data: undefined,
         isFetching: true,
         refetch: vi.fn(),
         error: null,
-      });
+      };
+      mockUseGetReviewsQuery.mockReturnValue(loadingReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(loadingReturn);
 
       render(
         <TestWrapper>
@@ -367,12 +385,14 @@ describe("Review Component", () => {
     });
 
     it("shows skeleton loader when loading more", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
+      const loadingMoreReturn = {
         data: { data: mockReviewItems, count: 20 },
         isFetching: true,
         refetch: vi.fn(),
         error: null,
-      });
+      };
+      mockUseGetReviewsQuery.mockReturnValue(loadingMoreReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(loadingMoreReturn);
 
       render(
         <TestWrapper>
@@ -387,12 +407,14 @@ describe("Review Component", () => {
     });
 
     it("passes isLoading prop to InfiniteScroll when loading more", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
+      const loadingMoreReturn = {
         data: { data: mockReviewItems, count: 20 },
         isFetching: true,
         refetch: vi.fn(),
         error: null,
-      });
+      };
+      mockUseGetReviewsQuery.mockReturnValue(loadingMoreReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(loadingMoreReturn);
 
       render(
         <TestWrapper>
@@ -409,13 +431,16 @@ describe("Review Component", () => {
    * TEST GROUP: Empty State
    */
   describe("Empty State", () => {
+    const emptyReturn = {
+      data: { data: [], count: 0 },
+      isFetching: false,
+      refetch: vi.fn(),
+      error: null,
+    };
+
     it("shows empty state when no reviews exist", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
-        data: { data: [], count: 0 },
-        isFetching: false,
-        refetch: vi.fn(),
-        error: null,
-      });
+      mockUseGetReviewsQuery.mockReturnValue(emptyReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(emptyReturn);
 
       render(
         <TestWrapper>
@@ -431,12 +456,8 @@ describe("Review Component", () => {
     });
 
     it("shows refresh button in empty state", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
-        data: { data: [], count: 0 },
-        isFetching: false,
-        refetch: vi.fn(),
-        error: null,
-      });
+      mockUseGetReviewsQuery.mockReturnValue(emptyReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(emptyReturn);
 
       render(
         <TestWrapper>
@@ -450,10 +471,12 @@ describe("Review Component", () => {
     it("calls refetch when refresh button is clicked", () => {
       const mockRefetch = vi.fn();
       mockUseGetReviewsQuery.mockReturnValue({
-        data: { data: [], count: 0 },
-        isFetching: false,
+        ...emptyReturn,
         refetch: mockRefetch,
-        error: null,
+      });
+      mockUseGetScribeReviewsQuery.mockReturnValue({
+        ...emptyReturn,
+        refetch: mockRefetch,
       });
 
       render(
@@ -471,13 +494,16 @@ describe("Review Component", () => {
    * TEST GROUP: Error State
    */
   describe("Error State", () => {
+    const errorReturn = {
+      data: undefined,
+      isFetching: false,
+      refetch: vi.fn(),
+      error: { message: "Network error" },
+    };
+
     it("shows fallback UI when there is an error", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
-        data: undefined,
-        isFetching: false,
-        refetch: vi.fn(),
-        error: { message: "Network error" },
-      });
+      mockUseGetReviewsQuery.mockReturnValue(errorReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(errorReturn);
 
       render(
         <TestWrapper>
@@ -489,12 +515,8 @@ describe("Review Component", () => {
     });
 
     it("shows correct error message", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
-        data: undefined,
-        isFetching: false,
-        refetch: vi.fn(),
-        error: { message: "Network error" },
-      });
+      mockUseGetReviewsQuery.mockReturnValue(errorReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(errorReturn);
 
       render(
         <TestWrapper>
@@ -511,12 +533,8 @@ describe("Review Component", () => {
     });
 
     it("shows NoResults icon in error state", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
-        data: undefined,
-        isFetching: false,
-        refetch: vi.fn(),
-        error: { message: "Network error" },
-      });
+      mockUseGetReviewsQuery.mockReturnValue(errorReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(errorReturn);
 
       render(
         <TestWrapper>
@@ -528,12 +546,8 @@ describe("Review Component", () => {
     });
 
     it("shows retry button in error state", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
-        data: undefined,
-        isFetching: false,
-        refetch: vi.fn(),
-        error: { message: "Network error" },
-      });
+      mockUseGetReviewsQuery.mockReturnValue(errorReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(errorReturn);
 
       render(
         <TestWrapper>
@@ -547,12 +561,8 @@ describe("Review Component", () => {
 
     it("calls refetch when retry button is clicked", () => {
       const mockRefetch = vi.fn();
-      mockUseGetReviewsQuery.mockReturnValue({
-        data: undefined,
-        isFetching: false,
-        refetch: mockRefetch,
-        error: { message: "Network error" },
-      });
+      mockUseGetReviewsQuery.mockReturnValue({ ...errorReturn, refetch: mockRefetch });
+      mockUseGetScribeReviewsQuery.mockReturnValue({ ...errorReturn, refetch: mockRefetch });
 
       render(
         <TestWrapper>
@@ -625,12 +635,14 @@ describe("Review Component", () => {
    */
   describe("Infinite Scroll", () => {
     it("triggers load more when InfiniteScroll callback is called", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
+      const loadMoreReturn = {
         data: { data: mockReviewItems, count: 20 },
         isFetching: false,
         refetch: vi.fn(),
         error: null,
-      });
+      };
+      mockUseGetReviewsQuery.mockReturnValue(loadMoreReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(loadMoreReturn);
 
       render(
         <TestWrapper>
@@ -647,12 +659,14 @@ describe("Review Component", () => {
     });
 
     it("does not show InfiniteScroll when in empty state", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
+      const emptyReturn = {
         data: { data: [], count: 0 },
         isFetching: false,
         refetch: vi.fn(),
         error: null,
-      });
+      };
+      mockUseGetReviewsQuery.mockReturnValue(emptyReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(emptyReturn);
 
       render(
         <TestWrapper>
@@ -863,12 +877,14 @@ describe("Review Component", () => {
         commentsCount: 0,
       }));
 
-      mockUseGetReviewsQuery.mockReturnValue({
+      const manyReviewsReturn = {
         data: { data: manyReviews, count: 5 },
         isFetching: false,
         refetch: vi.fn(),
         error: null,
-      });
+      };
+      mockUseGetReviewsQuery.mockReturnValue(manyReviewsReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(manyReviewsReturn);
 
       render(
         <TestWrapper>
@@ -898,12 +914,14 @@ describe("Review Component", () => {
    */
   describe("Edge Cases", () => {
     it("handles undefined data gracefully", () => {
-      mockUseGetReviewsQuery.mockReturnValue({
+      const undefinedDataReturn = {
         data: undefined,
         isFetching: false,
         refetch: vi.fn(),
         error: null,
-      });
+      };
+      mockUseGetReviewsQuery.mockReturnValue(undefinedDataReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(undefinedDataReturn);
 
       const { container } = render(
         <TestWrapper>
@@ -935,12 +953,14 @@ describe("Review Component", () => {
         },
       ];
 
-      mockUseGetReviewsQuery.mockReturnValue({
+      const missingUserReturn = {
         data: { data: reviewsWithMissingData, count: 1 },
         isFetching: false,
         refetch: vi.fn(),
         error: null,
-      });
+      };
+      mockUseGetReviewsQuery.mockReturnValue(missingUserReturn);
+      mockUseGetScribeReviewsQuery.mockReturnValue(missingUserReturn);
 
       const { container } = render(
         <TestWrapper>
