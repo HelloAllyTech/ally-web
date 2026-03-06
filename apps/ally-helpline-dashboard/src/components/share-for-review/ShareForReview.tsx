@@ -65,20 +65,21 @@ const NoteTextarea = ({
   const currentLength = (note ?? "").length;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 relative">
       <textarea
         ref={textareaRef}
         placeholder="Add a note..."
-        rows={3}
         maxLength={NOTE_MAX_LENGTH}
         onChange={handleInput}
         disabled={isExpired}
-        className={`flex-1 min-h-[4.5rem] max-h-40 outline-none border-none placeholder:text-typography-400 placeholder:text-md font-primary text-md font-normal overflow-y-auto resize-none custom-scrollbar ${isExpired ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`flex-1 pr-[40px] max-h-40 outline-none border-none placeholder:text-typography-400 placeholder:text-md font-primary text-md font-normal overflow-y-auto resize-none custom-scrollbar ${isExpired ? "opacity-50 cursor-not-allowed bg-white" : ""}`}
         value={note ?? ""}
       />
-      <span className="text-typography-500 text-sm font-primary text-right">
-        {currentLength}/{NOTE_MAX_LENGTH}
-      </span>
+      {!isExpired && (
+        <span className="text-typography-500 absolute bottom-0 right-0 text-sm font-primary text-right">
+          {currentLength}/{NOTE_MAX_LENGTH}
+        </span>
+      )}
     </div>
   );
 };
@@ -195,7 +196,7 @@ const ScenarioDetails = ({ scenario }: { scenario: ScenarioDetailsScenario | nul
           <p
             ref={descriptionRef}
             className={`text-base text-typography-800 leading-relaxed ${
-              isDescriptionExpanded ? "" : "line-clamp-3"
+              isDescriptionExpanded ? "" : "line-clamp-2"
             }`}
           >
             {scenario.description}
