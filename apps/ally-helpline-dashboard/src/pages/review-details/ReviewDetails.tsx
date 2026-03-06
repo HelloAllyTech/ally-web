@@ -99,6 +99,7 @@ export const ReviewDetails = () => {
   useEffect(() => {
     return () => {
       dispatch(baseAPI.util.invalidateTags([TAG_TYPES.REVIEW]));
+      dispatch(baseAPI.util.invalidateTags([TAG_TYPES.GENERAL_COMMENTS]));
     };
   }, []);
 
