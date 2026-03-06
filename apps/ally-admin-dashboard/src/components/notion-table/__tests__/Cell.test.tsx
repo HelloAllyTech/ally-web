@@ -530,6 +530,28 @@ describe("Cell", () => {
     });
   });
 
+  describe("wrapText Cell Type", () => {
+    it("renders text with line clamp", () => {
+      const wrapColumn = { ...defaultColumn, dataType: cellTypes.wrapText };
+      render(<Cell {...defaultProps} value="Short text" column={wrapColumn} />);
+
+      const span = screen.getByText("Short text");
+      expect(span).toBeInTheDocument();
+      expect(span).toHaveClass("line-clamp-2");
+    });
+
+    it("handles undefined value", () => {
+      const wrapColumn = { ...defaultColumn, dataType: cellTypes.wrapText };
+      const { container } = render(
+        <Cell {...defaultProps} value={undefined} column={wrapColumn} />,
+      );
+
+      const span = container.querySelector("span");
+      expect(span).toBeInTheDocument();
+      expect(span).toHaveTextContent("");
+    });
+  });
+
   describe("Default/Unknown Cell Type", () => {
     it("renders empty span for unknown cell type", () => {
       const unknownColumn = { ...defaultColumn, dataType: "unknown-type" };

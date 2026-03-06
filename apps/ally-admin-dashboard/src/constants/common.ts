@@ -55,6 +55,7 @@ export const ApiEndpoints = {
     GET_MAPPED_SCENARIO_EVENTS: (id: number | string) => `/v1/learn/scenarios/${id}/events`,
     SCENARIO_EVENTS: "/v1/learn/scenarios/events",
     SCENARIO_PREVIEW: "/v1/learn/scenarios/preview",
+    DISPATCH_PREVIEW_AGENT: "/v1/learn/scenarios/preview/dispatch-agent",
     END_SCENARIO_PREVIEW: (sessionId: number | string) =>
       `/v1/learn/scenarios/preview/${sessionId}/end`,
     SIMULATION_TENANT_VISIBILITY: (tenantId: string) => `v1/learn/scenario/tenant/${tenantId}`,
@@ -78,6 +79,7 @@ export const ApiEndpoints = {
     GET_PROMPTS: "/v1/prompts",
     CREATE_PROMPT: "/v1/prompts",
     UPDATE_PROMPT: (id: string | number) => `/v1/prompts/${id}`,
+    REVERT_PROMPT: (id: string | number) => `/v1/prompts/${id}/revert`,
     GET_REPORT_BY_ID: (reportId: string) => `/v1/learn/scenarios/reports/${reportId}`,
     GET_REPORTS: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
     GENERATE_REPORT: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,

@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
-import { useEndScenarioPreviewMutation } from "@api";
+import { useDispatchPreviewAgentMutation, useEndScenarioPreviewMutation } from "@api";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
 import { decodeUint8ToJson } from "@utils";
@@ -19,6 +19,7 @@ export const useLiveKitRoom = (
   const navigate = useNavigate();
   const { id } = useParams();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
+  const [dispatchPreviewAgent] = useDispatchPreviewAgentMutation();
 
   const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
@@ -130,14 +131,36 @@ export const useLiveKitRoom = (
 
         await room.connect(livekitUrl, token);
         setRoomStatus(RoomStatus.CONNECTED);
-        await room.localParticipant.setMicrophoneEnabled(true);
 
-        // Reset last event timestamp on a fresh connection
-        lastEventTimestampRef.current = null;
-
+        // Register listeners BEFORE dispatch so we don't miss ParticipantConnected if agent joins quickly
         room.on(RoomEvent.DataReceived, onDataReceived);
         room.on(RoomEvent.Disconnected, onRoomDisconnect);
         room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
+
+        const checkAgentJoined = () => {
+          if (room.remoteParticipants.size > 0) {
+            onRemoteParticipantConnected();
+          }
+        };
+        checkAgentJoined();
+
+        await room.localParticipant.setMicrophoneEnabled(true);
+
+        const shouldDispatch = id && typeof id === "string" && id.startsWith("preview-");
+        if (shouldDispatch) {
+          try {
+            logger.info(`[LiveKit] Dispatching agent to preview room: ${id}`);
+            await dispatchPreviewAgent({ roomName: id }).unwrap();
+            logger.info(`[LiveKit] Agent dispatch request sent successfully`);
+          } catch (dispatchError) {
+            logger.warn(
+              `Direct agent dispatch failed: ${dispatchError}. If running locally, ensure ally-be has ALLOW_DIRECT_AGENT_DISPATCH or NODE_ENV=development.`,
+            );
+          }
+        }
+
+        // Reset last event timestamp on a fresh connection
+        lastEventTimestampRef.current = null;
       }
     } catch (error) {
       logger.error(`Failed to connect to LiveKit room: ${error}`);
@@ -165,6 +188,16 @@ export const useLiveKitRoom = (
       cleanupRoom();
     };
   }, [cleanupRoom]);
+
+  useEffect(() => {
+    if (roomStatus !== RoomStatus.CONNECTED) return () => {};
+    const interval = setInterval(() => {
+      if (room.remoteParticipants.size > 0) {
+        onRemoteParticipantConnected();
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [roomStatus, room, onRemoteParticipantConnected]);
 
   return {
     error,

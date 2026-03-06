@@ -42,9 +42,11 @@ vi.mock("@components", () => ({
         onChange={e => onSearchChange(e.target.value)}
         placeholder="Search..."
       />
-      <button data-testid="create-button" onClick={action.onClick}>
-        {action.label}
-      </button>
+      {action && (
+        <button data-testid="create-button" onClick={action.onClick}>
+          {action.label}
+        </button>
+      )}
     </div>
   ),
   PromptSidePanel: ({ isOpen, selectedPrompt, onClose, onUpdate }: any) =>
@@ -71,6 +73,7 @@ vi.mock("@components", () => ({
   cellTypes: {
     editableText: "editableText",
     normalText: "normalText",
+    wrapText: "wrapText",
     dropdown: "dropdown",
     triggerConditions: "triggerConditions",
     textAreaWithDropdown: "textAreaWithDropdown",
@@ -129,7 +132,7 @@ describe("PromptManagement Component", () => {
       { isLoading: false },
     ]);
     mockUpdatePromptMutation.mockReturnValue([
-      vi.fn().mockResolvedValue({ error: null }),
+      vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve(true) }),
       { isLoading: false },
     ]);
   });
@@ -150,7 +153,7 @@ describe("PromptManagement Component", () => {
     expect(screen.getByText("Prompts")).toBeInTheDocument();
   });
 
-  it("should render the list toolbar with search and create button", () => {
+  it("should render the list toolbar with search", () => {
     const store = createMockStore();
     render(
       <Provider store={store}>
@@ -160,7 +163,6 @@ describe("PromptManagement Component", () => {
 
     expect(screen.getByTestId("list-toolbar")).toBeInTheDocument();
     expect(screen.getByTestId("search-input")).toBeInTheDocument();
-    expect(screen.getByTestId("create-button")).toBeInTheDocument();
   });
 
   it("should render the notion table with data", async () => {
@@ -198,22 +200,6 @@ describe("PromptManagement Component", () => {
     expect(mockGetPromptsQuery).toHaveBeenCalled();
   });
 
-  it("should open side panel when create button is clicked", async () => {
-    const store = createMockStore();
-    render(
-      <Provider store={store}>
-        <PromptManagement />
-      </Provider>,
-    );
-
-    const createButton = screen.getByTestId("create-button");
-    fireEvent.click(createButton);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
-    });
-  });
-
   it("should open side panel when table row is clicked", async () => {
     const store = createMockStore();
     render(
@@ -236,14 +222,18 @@ describe("PromptManagement Component", () => {
 
   it("should close side panel when close button is clicked", async () => {
     const store = createMockStore();
-    const { rerender } = render(
+    render(
       <Provider store={store}>
         <PromptManagement />
       </Provider>,
     );
 
-    const createButton = screen.getByTestId("create-button");
-    fireEvent.click(createButton);
+    await waitFor(() => {
+      expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+    });
+
+    const tableRow = screen.getByTestId("table-row-0");
+    fireEvent.click(tableRow);
 
     await waitFor(() => {
       expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
@@ -251,40 +241,11 @@ describe("PromptManagement Component", () => {
 
     const closeButton = screen.getByTestId("side-panel-close");
     fireEvent.click(closeButton);
-
-    // Side panel should be closed (this is a simplified test)
-    // In a real scenario, we would check that the state has been updated
-  });
-
-  it("should handle create prompt submission", async () => {
-    const store = createMockStore();
-    const createMutation = vi.fn().mockResolvedValue({ error: null });
-    mockCreatePromptMutation.mockReturnValue([createMutation, { isLoading: false }]);
-
-    render(
-      <Provider store={store}>
-        <PromptManagement />
-      </Provider>,
-    );
-
-    const createButton = screen.getByTestId("create-button");
-    fireEvent.click(createButton);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
-    });
-
-    const saveButton = screen.getByTestId("side-panel-save");
-    fireEvent.click(saveButton);
-
-    await waitFor(() => {
-      expect(createMutation).toHaveBeenCalled();
-    });
   });
 
   it("should handle update prompt submission", async () => {
     const store = createMockStore();
-    const updateMutation = vi.fn().mockResolvedValue({ error: null });
+    const updateMutation = vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve(true) });
     mockUpdatePromptMutation.mockReturnValue([updateMutation, { isLoading: false }]);
 
     render(
@@ -384,10 +345,9 @@ describe("PromptManagement Component", () => {
       expect(screen.getByTestId("notion-table")).toBeInTheDocument();
     });
 
-    // Verify that table rows contain the prompt data
+    // Verify that table rows contain the prompt data (name is visible; promptCode column was removed)
     const tableRow = screen.getByTestId("table-row-0");
     expect(within(tableRow).getByText("Test Prompt 1")).toBeInTheDocument();
-    expect(within(tableRow).getByText("test_prompt_1")).toBeInTheDocument();
   });
 
   it("should reset offset when search query changes", async () => {
