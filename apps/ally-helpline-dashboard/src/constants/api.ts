@@ -114,6 +114,7 @@ export const ApiEndpoints = {
   },
   REVIEWS: {
     GET_REVIEWS: "/v1/reviews",
+    GET_SCRIBE_REVIEWS: "/v1/reviews", // TODO: Change to /v1/reviews/scribe
     GET_GENERAL_COMMENTS: (reviewId: string) => `/v1/reviews/${reviewId}/comments`,
     GET_REVIEW_BY_ID: (reviewId: string) => `/v1/reviews/${reviewId}`,
     GET_REVIEW_DETAILS_AND_MESSAGES: (reviewId: string) => `/v1/reviews/${reviewId}/messages`,
