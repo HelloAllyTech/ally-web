@@ -22,6 +22,8 @@ interface GeneralCommentsToShowProps {
   setComments: Dispatch<SetStateAction<CommentItem[]>>;
   deletedReplyId?: string;
   setDeletedReplyId?: (id: string) => void;
+  onReplyChange?: (reply: CommentItem) => void;
+  changedReply?: CommentItem;
 }
 
 const GeneralCommentsToShow = ({
@@ -33,6 +35,8 @@ const GeneralCommentsToShow = ({
   setComments,
   deletedReplyId,
   setDeletedReplyId,
+  onReplyChange,
+  changedReply,
 }: GeneralCommentsToShowProps) => {
   const [comment, setComment] = useState("");
   const [commentThreadId, setCommentThreadId] = useState<string | null>(null);
@@ -75,7 +79,7 @@ const GeneralCommentsToShow = ({
           id: createCommentData?.comment?.id,
           content: comment,
           createdBy: {
-            id: String(user?.id),
+            id: user?.id,
             name: user?.name ?? "",
             profileImage: user?.profileImageUrl ?? null,
           },
@@ -221,6 +225,8 @@ const GeneralCommentsToShow = ({
                   onDeleteReply={() => handleDeleteReply(comment.id)}
                   deletedReplyId={deletedReplyId}
                   setDeletedReplyId={setDeletedReplyId}
+                  onReplyChange={onReplyChange}
+                  changedReply={changedReply}
                 />
               ))}
             </InfiniteScroll>

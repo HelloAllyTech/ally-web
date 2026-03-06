@@ -68,6 +68,7 @@ export const ReviewDetails = () => {
   const [hasMoreGeneralComments, setHasMoreGeneralComments] = useState(true);
   const [generalComments, setGeneralComments] = useState<CommentItem[]>([]);
   const [generalCommentsOffset, setGeneralCommentsOffset] = useState(0);
+  const [changedReply, setChangedReply] = useState<CommentItem | null>(null);
   const [showShareForReviewModal, setShowShareForReviewModal] = useState<boolean>(false);
 
   const selectEmojiRef = useRef<HTMLDivElement>(null);
@@ -213,6 +214,9 @@ export const ReviewDetails = () => {
     return reactionsCount;
   }, [reviewReactions]);
 
+  const handleReplyChange = (reply: CommentItem) => {
+    setChangedReply(reply);
+  };
   const handleCommentChange = ({
     comments,
     threadId,
@@ -544,6 +548,8 @@ export const ReviewDetails = () => {
                 setComments={setGeneralComments}
                 deletedReplyId={deletedReplyId}
                 setDeletedReplyId={setDeletedReplyId}
+                changedReply={changedReply}
+                onReplyChange={handleReplyChange}
                 show
               />
             </div>
@@ -562,6 +568,8 @@ export const ReviewDetails = () => {
           className={showCommentsSidepanel ? "min-w-[300px] w-[30%]" : "w-0 border-none"}
           deletedReplyId={deletedReplyId}
           setDeletedReplyId={setDeletedReplyId}
+          handleReplyChange={handleReplyChange}
+          changedReply={changedReply}
         />
       </div>
       {transcriptList.length > 0 && renderBottomSection()}

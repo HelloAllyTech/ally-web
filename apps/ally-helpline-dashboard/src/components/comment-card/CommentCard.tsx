@@ -50,7 +50,9 @@ interface CommentCardProps {
   onAddComment?: () => void;
   onDeleteReply?: () => void;
   deletedReplyId?: string;
+  changedReply?: CommentItem;
   setDeletedReplyId?: (id: string) => void;
+  onReplyChange?: (reply: CommentItem) => void;
 }
 const CommentCard = ({
   comment,
@@ -72,6 +74,8 @@ const CommentCard = ({
   onDeleteReply,
   deletedReplyId,
   setDeletedReplyId,
+  onReplyChange,
+  changedReply,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
@@ -104,7 +108,7 @@ const CommentCard = ({
   const commentCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (comment?.myReaction) setSelectedEmoji(comment.myReaction);
+    if (comment?.myReaction !== undefined) setSelectedEmoji(comment.myReaction);
   }, [comment?.myReaction]);
 
   useEffect(() => {
@@ -117,6 +121,12 @@ const CommentCard = ({
       setReplies(prev => prev.filter(reply => reply.id !== deletedReplyId));
     }
   }, [deletedReplyId]);
+
+  useEffect(() => {
+    if (changedReply) {
+      setReplies(prev => prev.map(reply => (reply.id === changedReply.id ? changedReply : reply)));
+    }
+  }, [changedReply]);
 
   useEffect(() => {
     if (commentThreadScrollRef?.current) {
@@ -252,6 +262,7 @@ const CommentCard = ({
 
   const onEachReplyChange = (reply: CommentItem) => {
     setReplies(prev => prev.map(r => (r.id === reply.id ? reply : r)));
+    onReplyChange?.(reply);
   };
   const handleCancelReply = () => {
     setReplyText("");
