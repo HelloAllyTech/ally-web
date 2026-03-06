@@ -60,7 +60,7 @@ const CommentItem: FC<CommentItemProps> = ({ comment }) => {
             {relativeTime}
           </span>
         </div>
-        <p className="font-primary text-xs sm:text-[13px] leading-[1.23] text-black/87">
+        <p className="font-primary text-xs sm:text-[13px] leading-[1.23] text-black/87 whitespace-pre-wrap">
           {content}
         </p>
       </div>
