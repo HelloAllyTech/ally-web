@@ -1,8 +1,9 @@
-import { SimulationSummary } from "@src/types";
+import { SimulationSummary as SimulationSummaryType } from "@src/types";
 
 export interface SimulationSummaryProps {
   className?: string;
-  onSummaryFetch?: (summary: SimulationSummary) => void;
-  summaryId: string;
   hideSection?: boolean;
+  retryMaxReached?: boolean;
+  sessionId: string;
+  summaryData?: SimulationSummaryType;
 }

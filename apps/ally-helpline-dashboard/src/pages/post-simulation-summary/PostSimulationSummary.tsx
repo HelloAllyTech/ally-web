@@ -28,7 +28,7 @@ import {
   REVIEW_PRIVACY_OPTIONS_VALUES,
   ROUTES,
 } from "@constants";
-import { SimulationSummary } from "@containers";
+import { ShortSessionUI, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { RootState } from "@store";
 import { pageType, ShareForReviewsInput } from "@types";
 
@@ -44,6 +44,7 @@ export const PostSimulationSummary: FC = () => {
   const { t } = useTranslation();
 
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
+  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(sessionId);
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
 
@@ -55,7 +56,14 @@ export const PostSimulationSummary: FC = () => {
     {
       id: 1,
       label: "Session Review",
-      content: <SimulationSummary summaryId={sessionId} className="max-h-[calc(100vh-212px)]" />,
+      content: (
+        <SimulationSummary
+          sessionId={sessionId ?? ""}
+          summaryData={summaryData}
+          retryMaxReached={retryMaxReached}
+          className="max-h-[calc(100vh-212px)]"
+        />
+      ),
     },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
@@ -160,70 +168,77 @@ export const PostSimulationSummary: FC = () => {
             </button>
             Simulation <em>Summary</em>
           </div>
-
-          <div className="flex justify-center gap-2 items-center">
-            {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
-              <div className="flex items-center gap-2">
-                <span className="font-primary font-medium text-sm">Share for review</span>
-                <ToggleSwitch
-                  enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
-                  onChange={(value: boolean) => {
-                    handleToggleChange(
-                      value
-                        ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                        : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                    );
-                  }}
+          {!isShortSession && (
+            <div className="flex justify-center gap-2 items-center">
+              {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
+                <div className="flex items-center gap-2">
+                  <span className="font-primary font-medium text-sm">Share for review</span>
+                  <ToggleSwitch
+                    enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
+                    onChange={(value: boolean) => {
+                      handleToggleChange(
+                        value
+                          ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                          : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                      );
+                    }}
+                  />
+                </div>
+              ) : (
+                <Toggle
+                  items={REVIEW_PRIVACY_OPTIONS(t)}
+                  initialValue={summary?.reviewStatus}
+                  onChange={handleCreateReview}
                 />
-              </div>
-            ) : (
-              <Toggle
-                items={REVIEW_PRIVACY_OPTIONS(t)}
-                initialValue={summary?.reviewStatus}
-                onChange={handleCreateReview}
-              />
-            )}
-            {summary?.reviewId && (
-              <>
-                <div className="border-l border-border h-5" />
-                <Button
-                  onClick={() =>
-                    navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
-                  }
-                  variant="secondary"
-                  className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg relative"
-                >
-                  <Comment className="w-5 h-5 shrink-0" />
-                </Button>
-              </>
-            )}
-          </div>
+              )}
+              {summary?.reviewId && (
+                <>
+                  <div className="border-l border-border h-5" />
+                  <Button
+                    onClick={() =>
+                      navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
+                    }
+                    variant="secondary"
+                    className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg relative"
+                  >
+                    <Comment className="w-5 h-5 shrink-0" />
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
         </div>
-        <ShareForReview
-          isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
-          onClose={() => {
-            setShareForReview(false);
-          }}
-          summaryDetails={summary}
-          onNoteChange={(note: string) => {
-            handleCreateReview(REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW, note);
-          }}
-        />
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          className="w-full normal-case border-b border-[#DBDBDB]"
-          sx={{
-            "& .MuiButtonBase-root": {
-              fontFamily: "IBM_Plex_Serif",
-            },
-          }}
-        >
-          {tabList?.map(tab => (
-            <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
-          ))}
-        </Tabs>
-        {getTabContent()}
+        {isShortSession ? (
+          <ShortSessionUI className="flex-1" />
+        ) : (
+          <>
+            <ShareForReview
+              isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
+              onClose={() => {
+                setShareForReview(false);
+              }}
+              summaryDetails={summary}
+              onNoteChange={(note: string) => {
+                handleCreateReview(REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW, note);
+              }}
+            />
+            <Tabs
+              value={selectedTab}
+              onChange={handleTabChange}
+              className="w-full normal-case border-b border-[#DBDBDB]"
+              sx={{
+                "& .MuiButtonBase-root": {
+                  fontFamily: "IBM_Plex_Serif",
+                },
+              }}
+            >
+              {tabList?.map(tab => (
+                <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
+              ))}
+            </Tabs>
+            {getTabContent()}
+          </>
+        )}
       </motion.div>
     </div>
   );
