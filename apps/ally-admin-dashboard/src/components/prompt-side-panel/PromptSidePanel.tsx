@@ -3,8 +3,9 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { useRevertPromptMutation } from "@api";
 import { DoubleArrowRight } from "@assets";
-import { ActionConfirmationPopup, Button } from "@components";
+import { ActionConfirmationPopup, Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { Prompt } from "@types";
@@ -14,6 +15,17 @@ interface PromptSidePanelProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (prompt: Prompt) => void;
+}
+
+function parseVariablesFromPrompt(text: string): string[] {
+  const vars = new Set<string>();
+  const singleBrace = text.matchAll(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g); // {var_name} - ally-ai-learn
+  const doubleMatch = text.matchAll(/\{\{(\w+)\}\}/g);
+  const angleMatch = text.matchAll(/<(\w+)>/g);
+  for (const m of singleBrace) vars.add(m[1]);
+  for (const m of doubleMatch) vars.add(m[1]);
+  for (const m of angleMatch) vars.add(m[1]);
+  return Array.from(vars).sort();
 }
 
 interface FieldProps {
@@ -33,19 +45,14 @@ const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => 
   </div>
 );
 
-const PanelHeader: React.FC<{
-  onClose: () => void;
-  hasPrompt: boolean;
-}> = ({ onClose, hasPrompt }) => (
+const PanelHeader: React.FC<{ onClose: () => void }> = ({ onClose }) => (
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
       className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
     >
       <DoubleArrowRight width={14} height={14} />
-      <span className="text-base font-tertiary font-[500]">
-        {hasPrompt ? en.simulation.editPrompt : en.simulation.createPrompt}
-      </span>
+      <span className="text-base font-tertiary font-[500]">{en.simulation.editPrompt}</span>
     </button>
   </div>
 );
@@ -61,10 +68,12 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     description: "",
     promptCode: "",
     prompt: "",
-    useCase: "",
+    useDashboardOverride: false,
   });
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [showRevertConfirmModal, setShowRevertConfirmModal] = useState(false);
+  const [revertPrompt, { isLoading: isReverting }] = useRevertPromptMutation();
 
   const handleFieldChange = useCallback((field: keyof Prompt, value: any) => {
     setFormData(previousData => ({
@@ -82,23 +91,39 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         description: "",
         promptCode: "",
         prompt: "",
-        useCase: "",
+        useDashboardOverride: false,
       });
     }
   }, [selectedPrompt]);
 
+  const availableVariables = useMemo(() => {
+    const promptEdited = formData.prompt !== selectedPrompt?.prompt;
+    if (promptEdited) {
+      return parseVariablesFromPrompt(formData.prompt || "");
+    }
+    if (selectedPrompt?.availableVariables?.length) {
+      return selectedPrompt.availableVariables;
+    }
+    return parseVariablesFromPrompt(formData.prompt || "");
+  }, [selectedPrompt?.availableVariables, selectedPrompt?.prompt, formData.prompt]);
+
   const handleSave = useCallback(() => {
-    if (!formData.name || !formData.description || !formData.promptCode || !formData.prompt) {
+    const promptCode = selectedPrompt?.promptCode ?? formData.promptCode ?? "";
+    if (!formData.name || !formData.description || !promptCode || !formData.prompt) {
       toast.error(en.simulation.promptRequired);
       return;
     }
 
+    // Backend only persists prompt content when useDashboardOverride is true
+    const useDashboardOverride =
+      formData.prompt !== selectedPrompt?.prompt ? true : (formData.useDashboardOverride ?? false);
+
     const updatedPrompt: Prompt = {
       name: formData.name || "",
       description: formData.description || "",
-      promptCode: formData.promptCode || "",
+      promptCode,
       prompt: formData.prompt || "",
-      useCase: formData.useCase || "",
+      useDashboardOverride,
       ...(selectedPrompt?.id && {
         id: selectedPrompt.id,
         createdAt: selectedPrompt.createdAt || new Date().toISOString(),
@@ -126,10 +151,39 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     setShowConfirmationModal(false);
   }, []);
 
+  const handleRevertClick = useCallback(() => {
+    setShowRevertConfirmModal(true);
+  }, []);
+
+  const handleRevertConfirm = useCallback(async () => {
+    if (!selectedPrompt?.id) return;
+    try {
+      const result = await revertPrompt(selectedPrompt.id).unwrap();
+      if (result) {
+        toast.success(en.simulation.revertPromptSuccess);
+        setShowRevertConfirmModal(false);
+        onClose();
+      }
+    } catch {
+      toast.error(en.simulation.revertPromptFailed);
+    }
+  }, [selectedPrompt?.id, revertPrompt, onClose]);
+
+  const handleRevertCancel = useCallback(() => {
+    setShowRevertConfirmModal(false);
+  }, []);
+
   // Check if form is valid for saving
   const isFormValid = useMemo(() => {
-    return !!(formData.name && formData.description && formData.promptCode && formData.prompt);
-  }, [formData.name, formData.description, formData.promptCode, formData.prompt]);
+    const promptCode = selectedPrompt?.promptCode ?? formData.promptCode;
+    return !!(formData.name && formData.description && promptCode && formData.prompt);
+  }, [
+    formData.name,
+    formData.description,
+    formData.promptCode,
+    formData.prompt,
+    selectedPrompt?.promptCode,
+  ]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -142,27 +196,22 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     [isFormValid, handleSave],
   );
 
-  if (!isOpen) return null;
+  if (!isOpen || !selectedPrompt) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
       <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
-        <PanelHeader onClose={handleClose} hasPrompt={!!selectedPrompt?.id} />
+        <PanelHeader onClose={handleClose} />
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
-          <div className="mb-4">
-            <input
-              type="text"
-              value={formData.promptCode || ""}
-              onChange={event => handleFieldChange("promptCode", event.target.value)}
-              placeholder={en.simulation.enterPromptCode}
-              disabled={!!selectedPrompt?.id}
-              className="border-none focus:outline-none text-2xl font-light w-full disabled:text-typography-500 disabled:cursor-not-allowed"
-            />
-          </div>
-
           <div className="space-y-3">
+            <Field label="Prompt Code">
+              <span className="font-mono text-base text-typography-800">
+                {selectedPrompt?.promptCode ?? formData.promptCode ?? "—"}
+              </span>
+            </Field>
+
             <Field label={en.simulation.promptName}>
               <input
                 type="text"
@@ -197,23 +246,40 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
               </div>
             </Field>
 
-            <Field label={en.simulation.promptUseCase || "Use Case"} multiline={true}>
-              <div className="flex flex-col w-full gap-1">
-                <input
-                  type="text"
-                  value={formData.useCase || ""}
-                  onChange={event => handleFieldChange("useCase", event.target.value)}
-                  placeholder={en.simulation.enterPromptUseCase || "N/A"}
-                  className="border-none focus:outline-none text-base w-full px-0"
-                />
-                <span className="text-sm text-typography-500 italic">
-                  {en.simulation.useCaseEditWarning}
-                </span>
-              </div>
-            </Field>
+            {availableVariables.length > 0 && (
+              <Field label={en.simulation.availableVariables}>
+                <div className="flex flex-wrap gap-2">
+                  {availableVariables.map(v => (
+                    <span
+                      key={v}
+                      className="inline-flex px-2 py-0.5 rounded text-sm bg-neutral-100 text-typography-700 font-mono"
+                    >
+                      {v}
+                    </span>
+                  ))}
+                </div>
+              </Field>
+            )}
+
+            {selectedPrompt?.id && (
+              <Field label={en.simulation.useDashboardOverrideLabel}>
+                <div className="flex flex-col w-full gap-1">
+                  <div className="flex items-center gap-2">
+                    <ToggleSwitch
+                      enabled={formData.useDashboardOverride ?? false}
+                      onChange={value => handleFieldChange("useDashboardOverride", value)}
+                      label={en.simulation.useDashboardOverrideLabel}
+                    />
+                  </div>
+                  <span className="text-sm text-typography-500 italic">
+                    {en.simulation.useDashboardOverride}
+                  </span>
+                </div>
+              </Field>
+            )}
           </div>
 
-          <div className="flex gap-3 mt-8 pb-6 justify-center">
+          <div className="flex gap-3 mt-8 pb-6 justify-center items-center">
             <Button
               variant={ButtonVariant.PRIMARY}
               onClick={handleSave}
@@ -224,6 +290,14 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
             </Button>
             <Button variant={ButtonVariant.SECONDARY} onClick={handleClose}>
               Cancel
+            </Button>
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={handleRevertClick}
+              disabled={isReverting}
+              title={en.simulation.revertToDefault}
+            >
+              {en.simulation.revertToDefault}
             </Button>
           </div>
         </div>
@@ -241,6 +315,20 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         secondaryButton={{
           label: "Keep Editing",
           onClick: handleCancelClose,
+        }}
+      />
+      <ActionConfirmationPopup
+        isOpen={showRevertConfirmModal}
+        onClose={handleRevertCancel}
+        title={en.simulation.revertToDefault}
+        description={en.simulation.revertToDefaultConfirm}
+        primaryButton={{
+          label: "Revert",
+          onClick: handleRevertConfirm,
+        }}
+        secondaryButton={{
+          label: "Cancel",
+          onClick: handleRevertCancel,
         }}
       />
     </div>

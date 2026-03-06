@@ -256,10 +256,6 @@ export const en = {
     enterPromptName: "Enter prompt name",
     promptCode: "Prompt Code",
     enterPromptCode: "Enter prompt code",
-    promptUseCase: "Use Case",
-    enterPromptUseCase: "Enter use case",
-    useCaseEditWarning:
-      "Note: Please be careful when editing the use case as this will affect how the prompt is utilized.",
     promptDescription: "Description",
     enterPromptDescription: "Enter description",
     promptText: "Prompt",
@@ -269,6 +265,14 @@ export const en = {
     noPromptsFound: "No prompts found",
     createFirstPrompt: "Create your first prompt to get started",
     promptRequired: "Prompt name, description, prompt code and prompt text are required",
+    useDashboardOverride: "Use dashboard version (when OFF, prompt is read from codebase folder)",
+    useDashboardOverrideLabel: "Use dashboard version",
+    availableVariables: "Available variables",
+    revertToDefault: "Revert to default",
+    revertPromptSuccess: "Prompt reverted to codebase default",
+    revertToDefaultConfirm:
+      "Revert this prompt to the codebase default? Your dashboard edits will be replaced.",
+    revertPromptFailed: "Failed to revert prompt to codebase default.",
     deletePrompts: "Delete Prompts",
     deletePromptsConfirmation:
       "Are you sure you want to delete selected prompts? This action cannot be undone.",

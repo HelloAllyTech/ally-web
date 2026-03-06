@@ -12,6 +12,7 @@ export const cellTypes = {
   switch: "switch",
   emoji_select: "emoji_select",
   normalText: "normalText",
+  wrapText: "wrapText",
   triggerConditions: "triggerConditions",
   timeInput: "timeInput",
   score: "score",

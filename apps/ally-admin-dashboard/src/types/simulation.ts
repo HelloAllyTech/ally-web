@@ -193,6 +193,7 @@ export interface CreateSimulationResponse {
 
 export interface StartSimulationResponse {
   accessToken: { token: string; serverUrl: string; roomName: string };
+  useDirectAgentDispatch?: boolean;
   scenario?: {
     id?: string;
     title?: string;

@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useGetPromptsQuery, useCreatePromptMutation, useUpdatePromptMutation } from "@api";
+import { useGetPromptsQuery, useUpdatePromptMutation } from "@api";
 import { NotionTable, ListToolbar, PromptSidePanel } from "@components";
-import { ButtonVariant } from "@components/types";
 import { en, PROMPT_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import { Prompt } from "@types";
 
@@ -50,7 +49,6 @@ export const PromptManagement: React.FC = () => {
     };
   }, [searchQuery]);
 
-  const [createPrompt] = useCreatePromptMutation();
   const [updatePrompt] = useUpdatePromptMutation();
 
   // Handle data updates when query data changes
@@ -80,18 +78,6 @@ export const PromptManagement: React.FC = () => {
     setOffset(0);
   };
 
-  const handleNewPromptClick = () => {
-    const newPromptData: Prompt = {
-      name: "",
-      description: "",
-      promptCode: "",
-      prompt: "",
-      useCase: "",
-    };
-    setSelectedPrompt(newPromptData);
-    setIsSidePanelOpen(true);
-  };
-
   const handlePromptSelect = (rowIndex: number) => {
     if (rowIndex !== null && prompts?.length > 0) {
       setSelectedPrompt(prompts[rowIndex]);
@@ -105,37 +91,42 @@ export const PromptManagement: React.FC = () => {
   };
 
   const handlePromptUpdate = async (promptData: Prompt) => {
+    if (!selectedPrompt?.id) return;
     try {
-      if (selectedPrompt?.id) {
-        // Update existing prompt
-        const response = await updatePrompt({
-          id: selectedPrompt.id,
-          prompt: {
-            name: promptData.name,
-            description: promptData.description,
-            promptCode: promptData.promptCode,
-            prompt: promptData.prompt,
-            useCase: promptData.useCase,
-          },
-        });
-        if (response.error) {
-          toast.error(en.errors.failedToCreateEvent);
-        } else {
-          toast.success(en.simulation.promptUpdatedSuccessfully);
-          handleSidePanelClose();
-        }
-      } else {
-        // Create new prompt (no ID yet)
-        const response = await createPrompt({
-          prompts: [promptData],
-        });
-        if (response.error) {
-          toast.error(en.errors.failedToCreateEvent);
-        } else {
-          toast.success(en.simulation.promptCreatedSuccessfully);
-          handleSidePanelClose();
-        }
-      }
+      await updatePrompt({
+        id: selectedPrompt.id,
+        prompt: {
+          name: promptData.name,
+          description: promptData.description,
+          promptCode: promptData.promptCode,
+          prompt: promptData.prompt,
+          useDashboardOverride: promptData.useDashboardOverride,
+        },
+      }).unwrap();
+      toast.success(en.simulation.promptUpdatedSuccessfully);
+      handleSidePanelClose();
+    } catch {
+      toast.error(en.errors.failedToCreateEvent);
+    }
+  };
+
+  const handleRowChange = async (action: { columnId?: string; value?: unknown; row?: Prompt }) => {
+    const { columnId, value, row } = action;
+    if (columnId !== "useDashboardOverride" || value === undefined || !row?.id) return;
+
+    const prompt = prompts.find(p => p.id === row!.id) ?? row!;
+    try {
+      await updatePrompt({
+        id: prompt.id,
+        prompt: {
+          name: prompt.name,
+          description: prompt.description,
+          promptCode: prompt.promptCode,
+          prompt: prompt.prompt,
+          useDashboardOverride: Boolean(value),
+        },
+      }).unwrap();
+      toast.success(en.simulation.promptUpdatedSuccessfully);
     } catch {
       toast.error(en.errors.failedToCreateEvent);
     }
@@ -146,12 +137,11 @@ export const PromptManagement: React.FC = () => {
     setOffset(prev => prev + limit);
   };
 
-  const formatTableData = prompts.map(prompt => {
-    return {
-      ...prompt,
-      createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
-    };
-  });
+  const formatTableData = prompts.map(prompt => ({
+    ...prompt,
+    useDashboardOverride: prompt.useDashboardOverride ?? false,
+    createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
+  }));
 
   const tableFooter = (
     <button
@@ -179,11 +169,6 @@ export const PromptManagement: React.FC = () => {
           searchValue={searchQuery}
           onSearchChange={handleSearchChange}
           placeholder={en.simulation.searchPrompts || "Search prompts..."}
-          action={{
-            label: en.simulation.createPrompt || "Create new prompt",
-            variant: ButtonVariant.PRIMARY,
-            onClick: handleNewPromptClick,
-          }}
         />
         <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
           <NotionTable
@@ -191,7 +176,7 @@ export const PromptManagement: React.FC = () => {
               data: formatTableData,
               columns: PROMPT_COLUMNS,
             }}
-            onRowChange={() => {}}
+            onRowChange={handleRowChange}
             onRowClick={handlePromptSelect}
             onSelectionChange={() => {}}
             tableFooter={tableFooter}
