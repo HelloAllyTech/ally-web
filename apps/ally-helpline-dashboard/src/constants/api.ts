@@ -113,27 +113,32 @@ export const ApiEndpoints = {
     GET_CURRENT_USER: "/v1/community/leaderboard/my-rank",
   },
   REVIEWS: {
-    GET_REVIEWS: "/v1/reviews",
-    GET_SCRIBE_REVIEWS: "/v1/reviews", // TODO: Change to /v1/reviews/scribe
-    GET_GENERAL_COMMENTS: (reviewId: string) => `/v1/reviews/${reviewId}/comments`,
-    GET_REVIEW_BY_ID: (reviewId: string) => `/v1/reviews/${reviewId}`,
-    GET_REVIEW_DETAILS_AND_MESSAGES: (reviewId: string) => `/v1/reviews/${reviewId}/messages`,
-    CREATE_REVIEW: `/v1/reviews`,
-    UPDATE_REVIEW: (reviewId: string) => `/v1/reviews/${reviewId}`,
-    CREATE_COMMENT: (reviewId: string) => `/v1/reviews/${reviewId}/comments`,
-    GET_REVIEW_THREADS: (reviewId: string) => `/v1/reviews/${reviewId}/threads`,
-    ADD_REACTION: (reviewId: string) => `/v1/reviews/${reviewId}/reactions`,
-    GET_REVIEW_REACTIONS: (reviewId: string) => `/v1/reviews/${reviewId}/reactions`,
-    GET_REVIEW_REACTIONS_COUNT: (reviewId: string) => `/v1/reviews/${reviewId}/reactions/count`,
-    ADD_COMMENT_REACTION: (commentId: string) => `/v1/reviews/comments/${commentId}/reactions`,
+    GET_REVIEWS: "/v1/scenario-session-reviews",
+    GET_GENERAL_COMMENTS: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/comments`,
+    GET_REVIEW_BY_ID: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}`,
+    GET_REVIEW_DETAILS_AND_MESSAGES: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/messages`,
+    CREATE_REVIEW: `/v1/scenario-session-reviews`,
+    UPDATE_REVIEW: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}`,
+    CREATE_COMMENT: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/comments`,
+    GET_REVIEW_THREADS: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/threads`,
+    ADD_REACTION: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/reactions`,
+    GET_REVIEW_REACTIONS: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/reactions`,
+    GET_REVIEW_REACTIONS_COUNT: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/reactions/count`,
+    ADD_COMMENT_REACTION: (commentId: string) =>
+      `/v1/scenario-session-reviews/comments/${commentId}/reactions`,
     TOGGLE_COMMENT_VISIBILITY: (commentId: string) =>
-      `/v1/reviews/comments/${commentId}/visibility`,
-    EDIT_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
-    DELETE_COMMENT: (commentId: string) => `/v1/reviews/comments/${commentId}`,
-    GET_COMMENT_REPLIES: (commentId: string) => `/v1/reviews/comments/${commentId}/replies`,
-    GET_REVIEW_THREAD_COMMENTS: (threadId: string) => `/v1/reviews/threads/${threadId}/comments`,
-    GET_UNREAD_COUNT: "/v1/reviews/unread-count",
-    MARK_READ: (reviewId: string) => `/v1/reviews/${reviewId}/mark-read`,
+      `/v1/scenario-session-reviews/comments/${commentId}/visibility`,
+    EDIT_COMMENT: (commentId: string) => `/v1/scenario-session-reviews/comments/${commentId}`,
+    DELETE_COMMENT: (commentId: string) => `/v1/scenario-session-reviews/comments/${commentId}`,
+    GET_COMMENT_REPLIES: (commentId: string) =>
+      `/v1/scenario-session-reviews/comments/${commentId}/replies`,
+    GET_REVIEW_THREAD_COMMENTS: (threadId: string) =>
+      `/v1/scenario-session-reviews/threads/${threadId}/comments`,
+    GET_UNREAD_COUNT: "/v1/scenario-session-reviews/unread-count",
+    MARK_READ: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/mark-read`,
   },
   BADGES: {
     GET_AVAILABLE_BADGES: "/v1/badges/me/available",
