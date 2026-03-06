@@ -145,7 +145,8 @@ ally-web/
 ├── libs/
 │   └── ui-shared/                  # Shared UI components
 ├── docs/
-│   └── colima.md                   # Colima setup guide
+│   ├── colima.md                   # Colima setup guide
+│   └── prompts-meta.md             # Prompt name/description via .meta.json (ally-be / ally-ai-learn)
 ├── scripts/
 │   └── docker-switch.sh            # Switch Docker environments
 ├── compose.yaml                    # Docker Compose configuration
@@ -292,6 +293,7 @@ npm install
 
 - **Documentation**: Check the `docs/` folder
 - **Colima Setup**: See [docs/colima.md](docs/colima.md)
+- **Prompt display names (meta JSON)**: See [docs/prompts-meta.md](docs/prompts-meta.md)
 - **Scripts**: See [scripts/README.md](scripts/README.md)
 - **Issues**: Open an issue on GitHub
 - **Team**: Contact the development team
