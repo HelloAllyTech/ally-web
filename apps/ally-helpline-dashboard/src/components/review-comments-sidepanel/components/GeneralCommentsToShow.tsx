@@ -5,11 +5,12 @@ import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
+import { useCreateCommentMutation, useGetReviewByIdQuery } from "@api";
 import { CommentCard } from "@components";
-import { useCreateCommentMutation, useGetReviewByIdQuery } from "@src/api";
-import { Button } from "@src/components/button";
-import { RootState } from "@src/store";
-import { CommentItem } from "@src/types";
+import { Button } from "@components/button";
+import { COMMENT_MAX_LENGTH } from "@constants";
+import { RootState } from "@store";
+import { CommentItem } from "@types";
 
 import CommentSkeleton from "./CommentsSkeleton";
 
@@ -180,6 +181,7 @@ const GeneralCommentsToShow = ({
                 onChange={setComment}
                 autoFocus={true}
                 placeholder="Add a comment"
+                maxLength={COMMENT_MAX_LENGTH}
                 className="w-full border rounded-sm text-sm font-medium !px-2 !py-2 mt-2 min-h-20"
               />
               <div className="flex gap-2 flex-row my-2 justify-end">
