@@ -347,6 +347,7 @@ const CommentCard = ({
   const handleUpdateReply = (content: string, id: string) => {
     const currentReplies = replies.map(reply => (reply.id === id ? { ...reply, content } : reply));
     setReplies(currentReplies);
+    onReplyChange?.({ ...currentReplies.find(reply => reply.id === id), content });
   };
 
   const handleReplyComment = async (replyComment: string, parentCommentId: string | null) => {
