@@ -346,17 +346,16 @@ export const ReviewDetails = () => {
     });
   };
 
-  const isNoteEditable = () => {
-    return timeDiff < 10 && (reviewDetails?.note?.length ?? 0) > 0;
-  };
+  const isNoteEditable = useMemo(() => {
+    return isFeedOwner && timeDiff < 10;
+  }, [isFeedOwner, timeDiff]);
 
   const onTapAddNote = () => {
     setShowShareForReviewModal(true);
   };
   const showAddReviewNotesSection = useMemo(() => {
-    if (!isFeedOwner) return false;
-    return timeDiff < 10 || (reviewDetails?.note?.length ?? 0) > 0;
-  }, [timeDiff, isFeedOwner, reviewDetails?.note]);
+    return isFeedOwner || (reviewDetails?.note?.length ?? 0) > 0;
+  }, [isFeedOwner, reviewDetails?.note]);
 
   const renderBottomSection = () => {
     return (
@@ -500,7 +499,7 @@ export const ReviewDetails = () => {
           {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showAddReviewNotesSection && (
             <div className="pb-6">
               <AddReviewNote
-                isEditable={isNoteEditable()}
+                isEditable={isNoteEditable}
                 note={reviewDetails?.note}
                 isEdited={reviewDetails?.noteEditedAt !== null}
                 onAddNote={onTapAddNote}
