@@ -180,10 +180,10 @@ export const EventManagement: React.FC = () => {
       },
       ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
         ? {
-            minTriggerCount: {
-              value: event.detectionConfig?.minTriggerCount,
+            occurrenceInterval: {
+              value: event.detectionConfig?.occurrenceInterval,
               disabled:
-                isDisabled || event.detectionType !== EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION,
+                isDisabled || event.detectionType !== EVENT_DETECTION_TYPES.BINARY_CLASSIFIER,
               rowId: event.id,
             },
           }

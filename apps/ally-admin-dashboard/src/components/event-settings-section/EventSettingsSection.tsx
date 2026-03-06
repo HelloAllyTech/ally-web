@@ -17,7 +17,7 @@ interface OccurrenceControlValues {
   eventType?: string;
   maxOccurrences?: number;
   minGapTime?: string | null | undefined;
-  minTriggerCount?: number;
+  occurrenceInterval?: number;
 }
 
 interface ScoreWindowValues {
@@ -33,7 +33,7 @@ interface TimeWindowCallbacks {
 interface OccurrenceControlCallbacks {
   onMaxOccurrencesChange?: (value: number) => void;
   onMinGapTimeChange?: (value: string) => void;
-  onMinTriggerCountChange?: (value: number) => void;
+  onOccurrenceIntervalChange?: (value: number) => void;
 }
 
 interface ScoreWindowCallbacks {
@@ -143,10 +143,10 @@ export const OccurrenceControlSection: React.FC<
   eventType,
   maxOccurrences = "∞",
   minGapTime = "00:00:00",
-  minTriggerCount = 0,
+  occurrenceInterval = 0,
   onMaxOccurrencesChange,
   onMinGapTimeChange,
-  onMinTriggerCountChange,
+  onOccurrenceIntervalChange,
 }) => {
   const handleMaxOccurrencesChange = (value: number) => {
     onMaxOccurrencesChange?.(value);
@@ -156,8 +156,8 @@ export const OccurrenceControlSection: React.FC<
     onMinGapTimeChange?.(value);
   };
 
-  const handleMinTriggerCountChange = (value: number) => {
-    onMinTriggerCountChange?.(value);
+  const handleOccurrenceIntervalChange = (value: number) => {
+    onOccurrenceIntervalChange?.(value);
   };
 
   return (
@@ -184,15 +184,15 @@ export const OccurrenceControlSection: React.FC<
         />
       </FieldRow>
       {FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG &&
-        eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION && (
+        eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFIER && (
           <FieldRow
-            label="Minimum trigger count"
+            label="Occurrence Interval"
             tooltip
             tooltipTitle="Triggers when this event occurs {N} times. Then triggers again at {2N}, {3N}, …"
           >
             <NumberInput
-              value={minTriggerCount}
-              onChange={handleMinTriggerCountChange}
+              value={occurrenceInterval}
+              onChange={handleOccurrenceIntervalChange}
               placeholder="0"
               min={1}
               className="w-[80px]"
