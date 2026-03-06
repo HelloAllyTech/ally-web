@@ -49,10 +49,38 @@ vi.mock("@api", () => ({
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   FEATURE_FLAGS_MAP: mockFeatureFlags,
+  Tabs: ({ items, activeId, onChange, className }: any) => (
+    <div data-testid="tabs" className={className}>
+      {items?.map((item: any) => (
+        <button
+          key={item.id}
+          data-testid={`tab-${item.id}`}
+          onClick={() => onChange(item.id)}
+          className={activeId === item.id ? "active" : ""}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  ),
 }));
 
 vi.mock("@ally-ui-mono/ui-shared/index", () => ({
   FEATURE_FLAGS_MAP: mockFeatureFlags,
+  Tabs: ({ items, activeId, onChange, className }: any) => (
+    <div data-testid="tabs" className={className}>
+      {items?.map((item: any) => (
+        <button
+          key={item.id}
+          data-testid={`tab-${item.id}`}
+          onClick={() => onChange(item.id)}
+          className={activeId === item.id ? "active" : ""}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  ),
   InfiniteScroll: ({ children, onInfiniteScroll, isLoading }: any) => (
     <div data-testid="infinite-scroll" data-is-loading={isLoading}>
       {children}

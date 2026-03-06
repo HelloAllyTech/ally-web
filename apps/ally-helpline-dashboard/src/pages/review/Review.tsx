@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
 import { useGetReviewsQuery, useGetReviewThreadsQuery, useGetScribeReviewsQuery } from "@api";
 import { NoResults, ReviewsEmptyState } from "@assets";
-import { FallbackUI, TabGroup, ToggleButtonGroup } from "@components";
+import { FallbackUI, ToggleButtonGroup } from "@components";
 import { ROUTES } from "@constants";
 import ScribeReview from "@pages/review/components/ScribeReview";
 import {
@@ -327,11 +327,12 @@ const ReviewWithTabs: FC = () => {
         </motion.div>
         <div className="w-full max-w-4xl px-4 sm:px-6 lg:px-8 pt-3">
           <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
-            <TabGroup
-              tabs={TABS}
-              value={activeTab}
-              className="border-none max-w-[330px] text-base font-primary "
-              onChange={(_, newValue) => handleTabSwitch(newValue)}
+            <Tabs
+              items={TABS.map(tab => ({ id: tab.value, label: tab.label }))}
+              activeId={activeTab}
+              onChange={handleTabSwitch}
+              className="border-none max-w-[330px] text-base font-primary"
+              showCount={false}
             />
           </div>
         </div>

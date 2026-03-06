@@ -1058,7 +1058,7 @@ describe("Tab Navigation", () => {
         <Learn />
       </TestWrapper>,
     );
-    expect(screen.getByTestId("tab-group")).not.toBeNull();
+    expect(screen.getByTestId("tabs")).not.toBeNull();
   });
 
   it("should render Simulations tab", () => {
