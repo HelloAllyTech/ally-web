@@ -127,6 +127,7 @@ export const TAG_TYPES = {
   UNREAD_REVIEW_COUNT: "UnreadReviewCount",
   BADGES: "Badges",
   REFLECTION_PROMPTS: "ReflectionPrompts",
+  GENERAL_COMMENTS: "GeneralComments",
 };
 
 export const SORT_ORDER = {
