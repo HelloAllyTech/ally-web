@@ -17,7 +17,7 @@ export type EventType =
   | "TIME_BASED"
   | "SCORE_BASED"
   | "COMBINATION"
-  | "BINARY_CLASSIFICATION";
+  | "BINARY_CLASSIFIER";
 
 export interface EventTypeOption {
   value: EventType;
@@ -40,7 +40,7 @@ export const EVENT_TYPE_POPUP_OPTIONS: EventTypeOption[] = [
     icon: SemanticSimilarity,
   },
   {
-    value: "BINARY_CLASSIFICATION",
+    value: "BINARY_CLASSIFIER",
     label: "Binary Classification (Zero-shot)",
     description: "Trigger based on binary classification.",
     icon: BinaryClassification,

@@ -16,7 +16,7 @@ export const MAPPED_EVENT_FIELDS = {
   // Detection config fields
   MAX_OCCURRENCES: "maxOccurrences",
   MIN_GAP_TIME: "minGapTime",
-  MIN_TRIGGER_COUNT: "minTriggerCount",
+  OCCURRENCE_INTERVAL: "occurrenceInterval",
   START_TIME: "startTime",
   END_TIME: "endTime",
   MIN_SCORE: "minScore",
@@ -70,7 +70,7 @@ export const createNewEvent = (): UpdateScenarioEventDataParam => {
     maxOccurrences: createCell(DEFAULT_EVENT_VALUES.MAX_OCCURRENCES, true, eventId),
     minGapTime: createCell(DEFAULT_EVENT_VALUES.MIN_GAP_TIME, true, eventId),
     ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG && {
-      minTriggerCount: createCell(DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT, true, eventId),
+      occurrenceInterval: createCell(DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT, true, eventId),
     }),
     startTime: createCell(DEFAULT_EVENT_VALUES.START_TIME, true, eventId),
     endTime: createCell(DEFAULT_EVENT_VALUES.END_TIME, true, eventId),
@@ -153,6 +153,7 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
   const branchingStatus = true;
   const scoreBased = event.detectionType === SessionEventDetectionType.SCORE;
   const timeBased = event.detectionType === SessionEventDetectionType.TIME;
+  const isBinaryClassifier = event.detectionType === SessionEventDetectionType.BINARY_CLASSIFIER;
 
   return {
     id: createCell(event.id, false, event.id),
@@ -187,9 +188,9 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
       event.id,
     ),
     ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG && {
-      minTriggerCount: createCell(
-        event.detectionConfig?.minTriggerCount ?? DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT,
-        false,
+      occurrenceInterval: createCell(
+        event.detectionConfig?.occurrenceInterval ?? DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT,
+        !isBinaryClassifier,
         event.id,
       ),
     }),
@@ -239,7 +240,7 @@ export const convertToApiFormat = (events: UpdateScenarioEventDataParam[]) => {
         maxOccurrences: event.maxOccurrences?.value,
         minGapTime: timeStringToSeconds(event.minGapTime?.value),
         ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
-          ? { minTriggerCount: event.minTriggerCount?.value }
+          ? { occurrenceInterval: event.occurrenceInterval?.value }
           : {}),
         startTime: timeStringToSeconds(event.startTime?.value),
         endTime: timeStringToSeconds(event.endTime?.value),
@@ -266,7 +267,7 @@ export const formatApiResponseToMappedEvent = (
     tags?: string[];
     detectionConfig?: {
       maxOccurrences?: number;
-      minTriggerCount?: number;
+      occurrenceInterval?: number;
       minGapTime?: string | number;
       startTime?: string | number;
       endTime?: string | number;
@@ -280,6 +281,7 @@ export const formatApiResponseToMappedEvent = (
   const eventId = event.id || event.eventId || "";
   const scoreBased = detectionType === SessionEventDetectionType.SCORE;
   const timeBased = detectionType === SessionEventDetectionType.TIME;
+  const isBinaryClassifier = detectionType === SessionEventDetectionType.BINARY_CLASSIFIER;
   return {
     id: createCell(eventId, false, eventId),
     name: createCell(event.name || eventId, false, eventId),
@@ -316,9 +318,9 @@ export const formatApiResponseToMappedEvent = (
       false,
       eventId,
     ),
-    minTriggerCount: createCell(
-      event.detectionConfig?.minTriggerCount ?? DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT,
-      false,
+    occurrenceInterval: createCell(
+      event.detectionConfig?.occurrenceInterval ?? DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT,
+      !isBinaryClassifier,
       eventId,
     ),
     startTime: createCell(
