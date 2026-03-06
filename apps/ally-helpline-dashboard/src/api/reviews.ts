@@ -232,6 +232,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { limit, offset },
       }),
+      providesTags: [TAG_TYPES.GENERAL_COMMENTS],
     }),
   }),
 });
