@@ -25,7 +25,7 @@ export const EVENT_TYPE_OPTIONS = [
   { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
   { value: "SEMANTIC_SIMILARITY", label: "Semantic Similarity" },
   { value: "COMBINATION", label: "Combination" },
-  { value: "BINARY_CLASSIFICATION", label: "Binary Classification" },
+  { value: "BINARY_CLASSIFIER", label: "Binary Classification" },
 ];
 
 export const GENDER_OPTIONS = [
@@ -466,9 +466,9 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
   ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
     ? [
         {
-          id: "minTriggerCount",
-          label: "Min trigger count",
-          accessor: "minTriggerCount",
+          id: "occurrenceInterval",
+          label: "Occurrence Interval",
+          accessor: "occurrenceInterval",
           dataType: cellTypes.number,
           options: [],
           minWidth: 120,

@@ -50,7 +50,7 @@ const mapDetectionTypeToBackend = (detectionType: string | undefined): string | 
     SCORE_BASED: SessionEventDetectionType.SCORE,
     SENTENCE_SIMILARITY: SessionEventDetectionType.SENTENCE_SIMILARITY,
     SEMANTIC_SIMILARITY: SessionEventDetectionType.SEMANTIC_SIMILARITY,
-    BINARY_CLASSIFICATION: SessionEventDetectionType.BINARY_CLASSIFIER,
+    BINARY_CLASSIFIER: SessionEventDetectionType.BINARY_CLASSIFIER,
     COMBINATION: SessionEventDetectionType.COMBINATION,
   };
 
@@ -208,7 +208,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
       if (isNonEmptyString(speaker)) detectionData.speaker = speaker;
     }
   }
-  if (event.detectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION) {
+  if (event.detectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFIER) {
     if (isNonEmptyObject(event.triggerCondition)) {
       if (isNonEmptyArray(className)) detectionData.className = className?.join(" ");
       if (isNonEmptyString(speaker)) detectionData.speaker = speaker;
@@ -257,7 +257,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     }
   }
 
-  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore, minTriggerCount } =
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore, occurrenceInterval } =
     event?.detectionConfig || {};
 
   const updatedDetectionConfig = {
@@ -267,7 +267,7 @@ export const convertEventToApiPayload = (event: UpdateEventDataParam): SessionEv
     endTime: endTime && convertTimeToSeconds(String(endTime)),
     minScore,
     maxScore,
-    minTriggerCount,
+    occurrenceInterval,
   };
 
   const payload: SessionEvent = {
@@ -327,7 +327,7 @@ const mapDetectionTypeToFrontend = (detectionType: string | undefined): string |
     [SessionEventDetectionType.SENTENCE_SIMILARITY]: EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY,
     [SessionEventDetectionType.SEMANTIC_SIMILARITY]: EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY,
     [SessionEventDetectionType.COMBINATION]: EVENT_DETECTION_TYPES.COMBINATION,
-    [SessionEventDetectionType.BINARY_CLASSIFIER]: EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION,
+    [SessionEventDetectionType.BINARY_CLASSIFIER]: EVENT_DETECTION_TYPES.BINARY_CLASSIFIER,
   };
 
   return mapping[detectionType] || detectionType;
@@ -384,7 +384,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
           sentences: detectionData.sentences || undefined,
         };
       }
-    } else if (frontendDetectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION) {
+    } else if (frontendDetectionType === EVENT_DETECTION_TYPES.BINARY_CLASSIFIER) {
       if (detectionData.className) {
         triggerCondition = {
           className: [detectionData.className],
@@ -399,7 +399,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     }
   }
 
-  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore, minTriggerCount } =
+  const { maxOccurrences, minGapTime, startTime, endTime, minScore, maxScore, occurrenceInterval } =
     apiEvent?.detectionConfig || {};
   const updatedDetectionConfig = {
     maxOccurrences,
@@ -408,7 +408,7 @@ export const convertApiResponseToEvent = (apiEvent: SessionEvent): UpdateEventDa
     endTime: endTime && convertSecondsToTimeString(Number(endTime)),
     minScore,
     maxScore,
-    minTriggerCount,
+    occurrenceInterval,
   };
 
   return {

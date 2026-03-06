@@ -10,7 +10,7 @@ export const DETECTION_CONFIG_FIELDS = {
   END_TIME: "endTime",
   MIN_SCORE: "minScore",
   MAX_SCORE: "maxScore",
-  MIN_TRIGGER_COUNT: "minTriggerCount",
+  MIN_TRIGGER_COUNT: "occurrenceInterval",
 } as const;
 
 export type DetectionConfigField =

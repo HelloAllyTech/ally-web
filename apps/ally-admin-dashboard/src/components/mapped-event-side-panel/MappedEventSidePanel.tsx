@@ -31,7 +31,7 @@ const FIELD_DEPENDENCIES: Record<string, readonly string[]> = {
   detectionConfigStatus: [
     MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
     MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
-    MAPPED_EVENT_FIELDS.MIN_TRIGGER_COUNT,
+    MAPPED_EVENT_FIELDS.OCCURRENCE_INTERVAL,
     MAPPED_EVENT_FIELDS.START_TIME,
     MAPPED_EVENT_FIELDS.END_TIME,
     MAPPED_EVENT_FIELDS.MIN_SCORE,
@@ -418,17 +418,18 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
             </Field>
 
             <OccurrenceControlSection
+              eventType={selectedEventDetectionType as string}
               maxOccurrences={formData?.maxOccurrences?.value}
               minGapTime={formData?.minGapTime?.value as string}
-              minTriggerCount={formData?.minTriggerCount?.value}
+              occurrenceInterval={formData?.occurrenceInterval?.value}
               onMaxOccurrencesChange={value =>
                 handleFieldChange(MAPPED_EVENT_FIELDS.MAX_OCCURRENCES, value)
               }
               onMinGapTimeChange={value =>
                 handleFieldChange(MAPPED_EVENT_FIELDS.MIN_GAP_TIME, value)
               }
-              onMinTriggerCountChange={value =>
-                handleFieldChange(MAPPED_EVENT_FIELDS.MIN_TRIGGER_COUNT, value)
+              onOccurrenceIntervalChange={value =>
+                handleFieldChange(MAPPED_EVENT_FIELDS.OCCURRENCE_INTERVAL, value)
               }
             />
 

@@ -164,7 +164,7 @@ describe("EventTypeSelectionDialog", () => {
       const eventTypes: EventType[] = [
         "SENTENCE_SIMILARITY",
         "SEMANTIC_SIMILARITY",
-        "BINARY_CLASSIFICATION",
+        "BINARY_CLASSIFIER",
         "TIME_BASED",
         "SCORE_BASED",
         "COMBINATION",
@@ -204,7 +204,7 @@ describe("EventTypeSelectionDialog", () => {
       const expectedTypes: EventType[] = [
         "SENTENCE_SIMILARITY",
         "SEMANTIC_SIMILARITY",
-        "BINARY_CLASSIFICATION",
+        "BINARY_CLASSIFIER",
         "TIME_BASED",
         "SCORE_BASED",
         "COMBINATION",
@@ -221,7 +221,7 @@ describe("EventTypeSelectionDialog", () => {
       const expectedLabels: Record<EventType, string> = {
         SENTENCE_SIMILARITY: "Sentence Similarity",
         SEMANTIC_SIMILARITY: "Semantic Similarity",
-        BINARY_CLASSIFICATION: "Binary Classification (Zero-shot)",
+        BINARY_CLASSIFIER: "Binary Classification (Zero-shot)",
         TIME_BASED: "Time Based",
         SCORE_BASED: "Score Based",
         COMBINATION: "Combination of",
@@ -236,7 +236,7 @@ describe("EventTypeSelectionDialog", () => {
       const expectedDescriptions: Record<EventType, string> = {
         SENTENCE_SIMILARITY: "Trigger based on what the speaker says.",
         SEMANTIC_SIMILARITY: "Trigger based on similar meaning.",
-        BINARY_CLASSIFICATION: "Trigger based on binary classification.",
+        BINARY_CLASSIFIER: "Trigger based on binary classification.",
         TIME_BASED: "Trigger before, after, or at a specific time.",
         SCORE_BASED: "Trigger when score is greater, less, or equal to threshold.",
         COMBINATION: "Trigger based on multiple events.",
@@ -259,7 +259,7 @@ describe("EventTypeSelectionDialog", () => {
       const validTypes: EventType[] = [
         "SENTENCE_SIMILARITY",
         "SEMANTIC_SIMILARITY",
-        "BINARY_CLASSIFICATION",
+        "BINARY_CLASSIFIER",
         "TIME_BASED",
         "SCORE_BASED",
         "COMBINATION",
