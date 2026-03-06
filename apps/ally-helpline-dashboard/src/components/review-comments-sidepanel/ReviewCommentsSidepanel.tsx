@@ -26,6 +26,8 @@ interface ReviewCommentsSidepanelProps {
   hasMoreGeneralComments: boolean;
   deletedReplyId?: string;
   setDeletedReplyId?: (id: string) => void;
+  handleReplyChange?: (reply: CommentItem) => void;
+  changedReply?: CommentItem;
 }
 
 type TabType = "inline" | "general";
@@ -42,6 +44,8 @@ const ReviewCommentsSidepanel = ({
   onCommentClick = () => {},
   deletedReplyId,
   setDeletedReplyId,
+  handleReplyChange,
+  changedReply,
 }: ReviewCommentsSidepanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("inline");
@@ -109,6 +113,8 @@ const ReviewCommentsSidepanel = ({
                 setComments={setComments}
                 deletedReplyId={deletedReplyId}
                 setDeletedReplyId={setDeletedReplyId}
+                changedReply={changedReply}
+                onReplyChange={handleReplyChange}
               />
             )}
           </>
