@@ -26,13 +26,9 @@ import {
   REVIEW_PRIVACY_OPTIONS_VALUES,
   ROUTES,
 } from "@constants";
-import { FeedbackDialog, SimulationSummary } from "@containers";
+import { FeedbackDialog, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { RootState } from "@store";
-import {
-  SessionType,
-  ShareForReviewsInput,
-  SimulationSummary as SimulationSummaryType,
-} from "@types";
+import { SessionType, ShareForReviewsInput } from "@types";
 
 import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
@@ -55,12 +51,15 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const { user, permissions } = useSelector((state: RootState) => state.user);
   const { data: summary } = useGetSimulationSummaryQuery(summaryId);
+  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(summaryId);
   const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
 
-  const onSummaryFetch = (summary: SimulationSummaryType) => {
-    hasFeedback.current = summary.hasFeedback;
-  };
+  useEffect(() => {
+    if (summaryData) {
+      hasFeedback.current = summaryData.hasFeedback;
+    }
+  }, [summaryData]);
 
   useEffect(() => {
     if (summaryId) {
@@ -120,7 +119,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         {t("common.summary", "Summary")}
       </span>
 
-      {summary?.counselorId === user?.id && (
+      {!isShortSession && summary?.counselorId === user?.id && (
         <div
           className="flex items-center gap-2 font-primary font-medium"
           style={{
@@ -188,9 +187,10 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       label: t("postSim.tabs.sessionReview", "Session Review"),
       content: (
         <SimulationSummary
-          summaryId={summaryId}
+          sessionId={summaryId}
+          summaryData={summaryData}
+          retryMaxReached={retryMaxReached}
           className="max-h-[calc(100vh-150px)]"
-          onSummaryFetch={onSummaryFetch}
         />
       ),
     },
@@ -245,7 +245,12 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   };
 
   return (
-    <SummarySidebarWrapper tabList={tabList} onSidebarClose={onSidebarClose} title={SidebarTitle}>
+    <SummarySidebarWrapper
+      isShortSession={isShortSession}
+      tabList={tabList}
+      onSidebarClose={onSidebarClose}
+      title={SidebarTitle}
+    >
       <FeedbackDialog
         open={showFeedbackDialog}
         onClose={onCloseFeedbackDialog}
