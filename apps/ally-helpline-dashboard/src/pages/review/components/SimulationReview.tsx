@@ -79,6 +79,10 @@ const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
     });
   };
 
+  const onReviewTranscript = (reviewId: string) => {
+    navigate(ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", reviewId));
+  };
+
   const isInitialLoading = isSimulationReviewsFetching && feedData.length === 0;
   const isEmpty =
     !isSimulationReviewsFetching &&
@@ -123,7 +127,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
             scenario={item.scenario}
             reactions={item.reactions}
             commentsCount={item.commentsCount}
-            onReviewTranscript={() => navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", item.id))}
+            onReviewTranscript={() => onReviewTranscript(item.id)}
             duration={item.scenarioSession?.duration}
             dateTime={item.scenarioSession?.createdAt}
             badgeBgColor="#EDE7F6"

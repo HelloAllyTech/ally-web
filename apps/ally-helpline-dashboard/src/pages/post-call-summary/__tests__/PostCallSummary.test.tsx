@@ -62,21 +62,22 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// Mock components
-vi.mock("@components", () => ({
-  TabGroup: vi.fn(({ children, value, onChange, tabs }) => (
-    <div data-testid="tab-group">
-      <div data-testid="tab-value">{value}</div>
-      <div data-testid="tab-tabs">{tabs?.length || 0}</div>
-      <button
-        data-testid="tab-change-btn"
-        onClick={() => onChange?.(null, SectionType.SessionSummary)}
-      >
-        Change Tab
-      </button>
-      {children}
+// Mock Tabs from ui-shared (PostCallSummary uses Tabs, not TabGroup)
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  Tabs: ({ items, activeId, onChange }: any) => (
+    <div data-testid="tabs">
+      {items?.map((item: any) => (
+        <button
+          key={item.id}
+          data-testid={`tab-${item.id}`}
+          onClick={() => onChange?.(item.id)}
+          className={activeId === item.id ? "active" : ""}
+        >
+          {item.label}
+        </button>
+      ))}
     </div>
-  )),
+  ),
 }));
 
 const mockUseUser = vi.fn(() => ({
@@ -269,14 +270,14 @@ describe("PostCallSummary Component", () => {
       expect(mainContainer?.className).toContain("bg-white");
     });
 
-    it("should render TabGroup component", () => {
+    it("should render Tabs component", () => {
       render(
         <TestWrapper>
           <PostCallSummary />
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("tab-group")).toBeInTheDocument();
+      expect(screen.getByTestId("tabs")).toBeInTheDocument();
     });
 
     it("should render motion div containers", () => {
@@ -363,7 +364,8 @@ describe("PostCallSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("tab-value")).toHaveTextContent("Box breathing");
+      // Box breathing tab is selected; label is "Return to Self"
+      expect(screen.getByTestId("tab-Box breathing")).toHaveTextContent("Return to Self");
     });
 
     it("should render correct number of tabs", () => {
@@ -373,7 +375,8 @@ describe("PostCallSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("tab-tabs")).toHaveTextContent("2");
+      const tabButtons = screen.getAllByTestId(/^tab-/);
+      expect(tabButtons).toHaveLength(2);
     });
 
     it("should handle tab change", async () => {
@@ -383,8 +386,8 @@ describe("PostCallSummary Component", () => {
         </TestWrapper>,
       );
 
-      const changeButton = screen.getByTestId("tab-change-btn");
-      changeButton.click();
+      const sessionSummaryTab = screen.getByTestId("tab-Session summary");
+      sessionSummaryTab.click();
 
       // Should render SessionSummary after tab change
       await waitFor(() => {

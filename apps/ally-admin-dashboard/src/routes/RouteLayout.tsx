@@ -39,7 +39,7 @@ export const RouteLayout: React.FC = () => {
           }
         />
 
-         <Route
+        <Route
           path={ROUTES.MAGIC_VERIFY}
           element={
             <PublicRoute>

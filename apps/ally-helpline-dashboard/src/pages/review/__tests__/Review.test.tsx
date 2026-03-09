@@ -117,14 +117,18 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-vi.mock("@assets", () => ({
-  ReviewsEmptyState: ({ className }: { className?: string }) => (
-    <div data-testid="reviews-empty-state" className={className}>
-      Empty State Icon
-    </div>
-  ),
-  NoResults: () => <div data-testid="no-results-icon">No Results</div>,
-}));
+vi.mock("@assets", async importOriginal => {
+  const actual = await importOriginal<typeof import("@assets")>();
+  return {
+    ...actual,
+    ReviewsEmptyState: ({ className }: { className?: string }) => (
+      <div data-testid="reviews-empty-state" className={className}>
+        Empty State Icon
+      </div>
+    ),
+    NoResults: () => <div data-testid="no-results-icon">No Results</div>,
+  };
+});
 
 vi.mock("@components", () => ({
   FallbackUI: ({ icon, mainMessage, description, button }: any) => (
@@ -214,12 +218,6 @@ vi.mock("@components/feed-card", () => ({
       </button>
     </div>
   ),
-}));
-
-vi.mock("@constants", () => ({
-  ROUTES: {
-    REVIEW_DETAILS: "/review/:reviewId",
-  },
 }));
 
 import { BrowserRouter } from "react-router-dom";
@@ -866,7 +864,7 @@ describe("Review Component", () => {
 
       fireEvent.click(screen.getByTestId("review-transcript-review-1"));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/review/review-1");
+      expect(mockNavigate).toHaveBeenCalledWith("/scribe-review/review-1");
     });
 
     it("navigates to correct review details for different reviews", () => {
@@ -878,7 +876,7 @@ describe("Review Component", () => {
 
       fireEvent.click(screen.getByTestId("review-transcript-review-2"));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/review/review-2");
+      expect(mockNavigate).toHaveBeenCalledWith("/scribe-review/review-2");
     });
   });
 

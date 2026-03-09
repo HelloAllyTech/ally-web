@@ -167,7 +167,16 @@ const PrivateRouteLayout: FC = () => {
           }
         />
         <Route
-          path={ROUTES.REVIEW_DETAILS}
+          path={ROUTES.SIMULATION_REVIEW_DETAILS}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_REVIEW]}
+              element={<ReviewDetails />}
+            />
+          }
+        />
+        <Route
+          path={ROUTES.SCRIBE_REVIEW_DETAILS}
           element={
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_REVIEW]}

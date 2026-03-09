@@ -147,6 +147,10 @@ export const Review: FC = () => {
     setOffset(prev => prev + PAGE_SIZE);
   };
 
+  const onReviewTranscript = (reviewId: string) => {
+    navigate(ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", reviewId));
+  };
+
   const isInitialLoading = isReviewsFetching && feedData.length === 0;
   const isEmpty = !isReviewsFetching && feedData.length === 0 && reviewsData?.data?.length === 0;
   const isLoadingMore = isReviewsFetching && feedData.length > 0;
@@ -173,9 +177,7 @@ export const Review: FC = () => {
               scenario={item.scenario}
               reactions={item.reactions}
               commentsCount={item.commentsCount}
-              onReviewTranscript={() => {
-                navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", item.id));
-              }}
+              onReviewTranscript={() => onReviewTranscript(item.id)}
               duration={item.scenarioSession?.duration}
               dateTime={item.scenarioSession?.createdAt}
               note={item.note}
