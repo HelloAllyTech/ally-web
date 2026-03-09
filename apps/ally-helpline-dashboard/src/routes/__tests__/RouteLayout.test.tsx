@@ -8,6 +8,7 @@ import RouteLayout from "../RouteLayout";
 vi.mock("@pages", () => ({
   Health: () => <div data-testid="health-page">Health Page</div>,
   Login: () => <div data-testid="login-page">Login Page</div>,
+  MagicLinkVerify: () => <div data-testid="magic-link-verify-page">Magic Link Verify Page</div>,
   Learn: () => <div data-testid="learn-page">Learn Page</div>,
   Scenario: () => <div data-testid="scenario-page">Scenario Page</div>,
   CaseTrackDetails: () => <div data-testid="case-track-details-page">Case Track Details Page</div>,
@@ -38,6 +39,7 @@ vi.mock("@constants", () => ({
   ROUTES: {
     LOGIN: "/login",
     HEALTH: "/health",
+    MAGIC_VERIFY: "/auth/verify",
     LEARN: "/learn",
     SCENARIO: "/scenario/:scenarioId",
     PATHWAY: "/pathway/:pathwayId",

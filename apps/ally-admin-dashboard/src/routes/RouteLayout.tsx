@@ -6,6 +6,7 @@ import { Permissions, ROUTES } from "@constants";
 import {
   CreateSimulation,
   Login,
+  MagicLinkVerify,
   LiveSimulationPreview,
   SimulationStudio,
   UserManagement,
@@ -34,6 +35,15 @@ export const RouteLayout: React.FC = () => {
           element={
             <PublicRoute>
               <Login />
+            </PublicRoute>
+          }
+        />
+
+         <Route
+          path={ROUTES.MAGIC_VERIFY}
+          element={
+            <PublicRoute>
+              <MagicLinkVerify />
             </PublicRoute>
           }
         />
