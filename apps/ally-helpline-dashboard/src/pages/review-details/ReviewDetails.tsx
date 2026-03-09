@@ -550,6 +550,7 @@ export const ReviewDetails = () => {
                 setDeletedReplyId={setDeletedReplyId}
                 changedReply={changedReply}
                 onReplyChange={handleReplyChange}
+                isFeedOwner={isFeedOwner}
                 show
               />
             </div>

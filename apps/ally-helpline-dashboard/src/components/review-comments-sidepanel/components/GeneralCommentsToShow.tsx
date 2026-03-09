@@ -25,6 +25,7 @@ interface GeneralCommentsToShowProps {
   setDeletedReplyId?: (id: string) => void;
   onReplyChange?: (reply: CommentItem) => void;
   changedReply?: CommentItem;
+  isFeedOwner?: boolean;
 }
 
 const GeneralCommentsToShow = ({
@@ -38,6 +39,7 @@ const GeneralCommentsToShow = ({
   setDeletedReplyId,
   onReplyChange,
   changedReply,
+  isFeedOwner,
 }: GeneralCommentsToShowProps) => {
   const [comment, setComment] = useState("");
   const [commentThreadId, setCommentThreadId] = useState<string | null>(null);
@@ -229,6 +231,7 @@ const GeneralCommentsToShow = ({
                   setDeletedReplyId={setDeletedReplyId}
                   onReplyChange={onReplyChange}
                   changedReply={changedReply}
+                  isFeedOwner={isFeedOwner}
                 />
               ))}
             </InfiniteScroll>
