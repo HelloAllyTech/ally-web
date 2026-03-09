@@ -288,9 +288,14 @@ export const ShareForReview = ({
   );
 
   const handleShare = useCallback(() => {
+    if (timeDiff >= 10) {
+      onNoteChange("");
+      onClose();
+      return;
+    }
     onNoteChange(note);
     onClose();
-  }, [note, onNoteChange, onClose]);
+  }, [note, timeDiff, onNoteChange, onClose]);
 
   if (!isOpen) return null;
 
