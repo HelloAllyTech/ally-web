@@ -21,6 +21,7 @@ const FeedCard: FC<FeedCardProps> = ({
   scenario,
   reactions,
   commentsCount,
+  note,
   onReviewTranscript,
   duration,
   dateTime,
@@ -272,9 +273,7 @@ const FeedCard: FC<FeedCardProps> = ({
       </div>
     ) : (
       <div className="flex flex-col gap-2 cursor-default">
-        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">
-          {t("review.feedCard.sharedSimulation")}
-        </div>
+        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">{note}</div>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
           <span className="font-primary text-xs sm:text-[13px] leading-[1.38] text-black/60">
