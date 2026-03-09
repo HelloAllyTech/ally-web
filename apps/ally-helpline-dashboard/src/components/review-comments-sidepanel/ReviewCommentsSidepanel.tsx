@@ -115,6 +115,7 @@ const ReviewCommentsSidepanel = ({
                 setDeletedReplyId={setDeletedReplyId}
                 changedReply={changedReply}
                 onReplyChange={handleReplyChange}
+                isFeedOwner={isFeedOwner}
               />
             )}
           </>
