@@ -65,6 +65,7 @@ export interface CallTranscriptTabProps {
 
 export interface SummarySidebarWrapperProps {
   isShortSession?: boolean;
+  summaryData?: SimulationSummary;
   onSidebarClose?: () => void;
   extraHeaderList?: {
     alt: string;
