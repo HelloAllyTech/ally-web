@@ -17,6 +17,7 @@ export interface ShareForReviewProps {
   modalHeader?: string;
   sessionCreatedAt?: string;
   sessionCallDuration?: number;
+  sessionReviewCreatedAt?: string;
 }
 
 interface ScenarioDetailsScenario {
@@ -244,6 +245,7 @@ export const ShareForReview = ({
   modalHeader = "Share this for review",
   sessionCreatedAt,
   sessionCallDuration,
+  sessionReviewCreatedAt,
 }: ShareForReviewProps) => {
   const shareForReviewRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -252,9 +254,9 @@ export const ShareForReview = ({
   const timeDiff = useMemo(() => {
     return differenceInMinutes(
       new Date(),
-      new Date(sessionCreatedAt || summaryDetails?.reviewCreatedAt),
+      new Date(sessionReviewCreatedAt || summaryDetails?.reviewCreatedAt),
     );
-  }, [sessionCreatedAt, summaryDetails?.reviewCreatedAt]);
+  }, [sessionReviewCreatedAt, summaryDetails?.reviewCreatedAt]);
 
   useEffect(() => {
     if (isOpen) {
