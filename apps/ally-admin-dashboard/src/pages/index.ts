@@ -1,4 +1,5 @@
 export * from "./Login/Login";
+export * from "./MagicLinkVerify/MagicLinkVerify";
 export * from "./SimulationStudio/SimulationStudio";
 export * from "./UserManagement/UserManagement";
 export * from "./OrganizationDetail/OrganizationDetail";

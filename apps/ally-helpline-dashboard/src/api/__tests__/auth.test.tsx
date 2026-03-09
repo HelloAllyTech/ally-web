@@ -12,6 +12,7 @@ import {
   useLazyGetPermissionsQuery,
   useGenerateOTPMutation,
   useVerifyOTPMutation,
+  useVerifyMagicLinkMutation,
 } from "../auth";
 import { baseAPI } from "../baseAPI";
 
@@ -24,6 +25,7 @@ vi.mock("@constants", () => ({
       GET_USER: "/auth/user",
       GENERATE_OTP: "/auth/generate-otp",
       VERIFY_OTP: "/auth/verify-otp",
+      MAGIC_LINK_VERIFY: "/auth/magic-link/verify",
     },
     AUTHORIZATION: {
       GET_PERMISSIONS: "/authorization/permissions",
@@ -81,6 +83,7 @@ describe("auth API", () => {
     expect(useLazyGetPermissionsQuery).toBeDefined();
     expect(useGenerateOTPMutation).toBeDefined();
     expect(useVerifyOTPMutation).toBeDefined();
+    expect(useVerifyMagicLinkMutation).toBeDefined();
   });
 
   it("should have correct hook configurations", () => {
@@ -90,6 +93,7 @@ describe("auth API", () => {
     expect(typeof useLazyGetPermissionsQuery).toBe("function");
     expect(typeof useGenerateOTPMutation).toBe("function");
     expect(typeof useVerifyOTPMutation).toBe("function");
+    expect(typeof useVerifyMagicLinkMutation).toBe("function");
   });
 
   it("should render login mutation hook without errors", () => {
@@ -219,5 +223,23 @@ describe("auth API", () => {
         email: "test@example.com",
       }),
     ).not.toThrow();
+  });
+
+  it("should render verify magic link mutation hook without errors", () => {
+    const { result } = renderHook(() => useVerifyMagicLinkMutation(), {
+      wrapper: TestWrapper,
+    });
+
+    expect(result.current).toHaveLength(2); // [trigger, result]
+  });
+
+  it("should handle verify magic link trigger", () => {
+    const { result } = renderHook(() => useVerifyMagicLinkMutation(), {
+      wrapper: TestWrapper,
+    });
+
+    const [trigger] = result.current;
+    expect(typeof trigger).toBe("function");
+    expect(() => trigger({ token: "test-magic-link-token" })).not.toThrow();
   });
 });

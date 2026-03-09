@@ -19,7 +19,7 @@ import {
   logoUrlResponse,
 } from "@types";
 
-import { baseAPI } from "./baseAPI";
+import { baseAPI, baseQuery } from "./baseAPI";
 
 const ALLOWED_ROLES = [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER, UserRole.REVIEWER];
 
@@ -148,6 +148,29 @@ const authAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.AUTH.LOGO_URL,
       }),
     }),
+
+    /**
+     * Verifies magic link token and authenticates user.
+     * @param {string} token - Magic link token from URL
+     * @returns {Promise<VerifyOTPResponse>} Authentication response with tokens
+     */
+    verifyMagicLink: builder.mutation<VerifyOTPResponse, { token: string }>({
+      queryFn: async ({ token }, api, extraOptions) => {
+        const result = await baseQuery(
+          {
+            url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
+            method: HttpMethod.POST,
+            body: { token, allowedRoles: ALLOWED_ROLES },
+          },
+          api,
+          extraOptions,
+        );
+        if (result.error) {
+          return { error: result.error };
+        }
+        return { data: result.data as VerifyOTPResponse };
+      },
+    }),
   }),
 });
 
@@ -163,4 +186,5 @@ export const {
   useDeleteProfileImageMutation,
   useGetProfileImageUrlMutation,
   useGetLogoUrlQuery,
+  useVerifyMagicLinkMutation,
 } = authAPI;

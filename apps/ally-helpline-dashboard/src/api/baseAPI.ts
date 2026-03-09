@@ -43,7 +43,7 @@ const handleLogout = () => {
  * Automatically adds Bearer token to all API requests if available in localStorage.
  * The base URL is constructed from environment variables.
  */
-const baseQuery = fetchBaseQuery({
+export const baseQuery = fetchBaseQuery({
   baseUrl: API_URL + "/api",
   prepareHeaders: headers => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
