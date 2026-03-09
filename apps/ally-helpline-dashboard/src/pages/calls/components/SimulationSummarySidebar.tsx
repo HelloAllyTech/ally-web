@@ -247,6 +247,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   return (
     <SummarySidebarWrapper
       isShortSession={isShortSession}
+      summaryData={summaryData}
       tabList={tabList}
       onSidebarClose={onSidebarClose}
       title={SidebarTitle}
