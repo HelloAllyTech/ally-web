@@ -112,6 +112,12 @@ const CommentCard = ({
   }, [comment?.myReaction]);
 
   useEffect(() => {
+    if (!isReply) {
+      setReplies(prev => prev.map(reply => ({ ...reply, hidden: comment.hidden })));
+    }
+  }, [comment?.hidden]);
+
+  useEffect(() => {
     setReplyCount(comment?.replyCount || 0);
     updateReplyCount?.(comment?.replyCount || 0);
   }, [comment?.replyCount, comment?.id]);
@@ -285,6 +291,9 @@ const CommentCard = ({
         hidden,
       }).unwrap();
       onToggleHide?.(hidden, comment.id);
+      if (!isReply) {
+        setReplies(prev => prev.map(reply => ({ ...reply, hidden })));
+      }
       toast.success(
         hidden
           ? `${isReply ? "Reply" : "Comment"} hidden successfully`
@@ -373,6 +382,7 @@ const CommentCard = ({
     const reply = replies.find(reply => reply.id === id);
     if (reply) {
       setReplies(prev => prev.map(reply => (reply.id === id ? { ...reply, hidden } : reply)));
+      onReplyChange?.({ ...reply, hidden });
     }
   };
   const renderReplyBox = () => {
