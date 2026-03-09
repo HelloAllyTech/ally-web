@@ -191,6 +191,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
                 onChange={value => formMethods.setValue(id, value)}
                 placeholder={placeholder}
                 disabled={false}
+                minTime="00:05:00"
               />
             </div>
           </div>
