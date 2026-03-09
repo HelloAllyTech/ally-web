@@ -177,7 +177,9 @@ describe("CommentThread Component", () => {
 
   const mockOnCommentAddition = vi.fn();
   const mockOnDeleteComment = vi.fn();
-  const mockSetComments = vi.fn();
+  const mockSetComments = vi.fn(fn => {
+    if (typeof fn === "function") fn(mockComments);
+  });
   const mockOnCommentChange = vi.fn();
   const mockSetThreadsOffset = vi.fn();
   const mockOnAddComment = vi.fn();
