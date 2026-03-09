@@ -9,6 +9,9 @@ import i18n from "../../i18n";
 const LANGUAGE_OPTIONS: Array<{ code: string; label: string }> = [
   { code: "en", label: "English" },
   { code: "hi", label: "हिंदी" },
+  { code: "mr", label: "मराठी" },
+  { code: "ta", label: "தமிழ்" },
+  { code: "kn", label: "ಕನ್ನಡ" },
 ];
 
 const getLabelFromCode = (code: string): string => {

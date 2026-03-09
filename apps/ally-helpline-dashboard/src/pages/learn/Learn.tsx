@@ -4,14 +4,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { DropdownField, FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenariosQuery,
   useGetScenarioPathwaysQuery,
   useGetScenarioCasesQuery,
   useUpdateUserPreferencesMutation,
 } from "@api";
-import { CreditsDisplay, ScenarioCard, TabGroup } from "@components";
+import { CreditsDisplay, ScenarioCard } from "@components";
 import { Permissions } from "@constants";
 import { useUser, useScenarioLanguages } from "@hooks";
 import { LanguageOption, ScenarioStatus } from "@types";
@@ -176,11 +176,13 @@ export const Learn: FC = () => {
         </motion.div>
         {hasPathPermissions && (
           <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
-            <TabGroup
-              tabs={tabs.map(tab => ({ label: tab.label, value: tab.id }))}
-              value={activeTab}
-              className="border-none max-w-[330px]"
-              onChange={(_, newValue) => handleTabChange(newValue as LearnTabId)}
+            <Tabs
+              items={tabs.map(tab => ({ id: tab.id, label: tab.label }))}
+              activeId={activeTab}
+              onChange={id => handleTabChange(id as LearnTabId)}
+              className="border-none max-w-[330px] font-primary"
+              showCount={false}
+              tabStyles={{ minWidth: "100px" }}
             />
 
             <div className="w-full flex justify-end">

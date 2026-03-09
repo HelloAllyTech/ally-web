@@ -1,17 +1,15 @@
-// File: apps/ally-helpline-dashboard/src/i18n/index.ts
-
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
 // Import JSON resources (one file per language)
 // Using bundler module resolution: Vite + TS supports JSON imports
-import { en, hi } from "./locales";
+import { en, hi, mr, ta, kn } from "./locales";
 
 // Keys
 export const DEFAULT_FALLBACK_LNG = "en" as const;
 // Expanded language support including regional/script variants where relevant
-export const SUPPORTED_LANGUAGES = ["en", "hi"] as const;
+export const SUPPORTED_LANGUAGES = ["en", "hi", "mr", "ta", "kn"] as const;
 
 void i18n
   .use(LanguageDetector)
@@ -20,6 +18,9 @@ void i18n
     resources: {
       en: { translation: en },
       hi: { translation: hi },
+      mr: { translation: mr },
+      ta: { translation: ta },
+      kn: { translation: kn },
     },
     fallbackLng: DEFAULT_FALLBACK_LNG,
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
