@@ -198,7 +198,11 @@ describe("reviews API", () => {
 
       const [trigger] = result.current;
       expect(typeof trigger).toBe("function");
-      expect(() => trigger({ scenarioSessionId: "session-123" })).not.toThrow();
+      expect(() =>
+        trigger({
+          body: { scenarioSessionId: "session-123", status: "IN_REVIEW" },
+        }),
+      ).not.toThrow();
     });
 
     it("should handle updateReview trigger", () => {
@@ -208,7 +212,11 @@ describe("reviews API", () => {
 
       const [trigger] = result.current;
       expect(typeof trigger).toBe("function");
-      expect(() => trigger({ id: "review-123", status: "APPROVED" })).not.toThrow();
+      expect(() =>
+        trigger({
+          body: { scenarioSessionId: "review-123", status: "APPROVED" },
+        }),
+      ).not.toThrow();
     });
 
     it("should handle createComment trigger", () => {

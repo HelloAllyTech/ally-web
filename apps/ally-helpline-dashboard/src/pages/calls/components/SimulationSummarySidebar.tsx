@@ -86,21 +86,23 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     try {
       if (summary?.reviewId) {
         const params: ShareForReviewsInput = {
-          scenarioSessionId: summary.reviewId,
-          status,
+          body: {
+            scenarioSessionId: summary.reviewId,
+            status,
+          },
         };
         if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
-          params.note = normalizedNote;
+          params.body.note = normalizedNote;
         await updateReview(params).unwrap();
       } else {
-        const params: ShareForReviewsInput = {
+        const params: { scenarioSessionId: string; status: string; note?: string } = {
           scenarioSessionId: scenarioSessionId,
           status,
         };
 
         if (normalizedNote) params.note = normalizedNote;
 
-        await createReview(params).unwrap();
+        await createReview({ body: params }).unwrap();
       }
     } catch (err: any) {
       const message =
