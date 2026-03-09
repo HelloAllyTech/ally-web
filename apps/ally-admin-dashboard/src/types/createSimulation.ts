@@ -239,6 +239,7 @@ export interface Prompt {
   description: string;
   promptCode: string;
   prompt: string;
+  defaultPrompt?: string;
   useDashboardOverride?: boolean;
   currentVersion?: number;
   createdAt?: string;

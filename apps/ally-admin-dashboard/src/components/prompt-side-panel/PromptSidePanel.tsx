@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { useRevertPromptMutation } from "@api";
 import { DoubleArrowRight } from "@assets";
-import { ActionConfirmationPopup, Button, ToggleSwitch } from "@components";
+import { ActionConfirmationPopup, Accordion, Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { Prompt } from "@types";
@@ -276,6 +276,23 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                   </span>
                 </div>
               </Field>
+            )}
+
+            {selectedPrompt?.defaultPrompt && formData.useDashboardOverride && (
+              <Accordion title="View Original Codebase Default">
+                <Field label="Codebase Default" multiline={true}>
+                  <div className="w-full pt-1 pb-4">
+                    <AutoExpandableTextarea
+                      maxLines={15}
+                      minHeight={20}
+                      value={selectedPrompt.defaultPrompt}
+                      disabled={true}
+                      onChange={() => undefined}
+                      className="py-2 pt-4 px-3 border border-border-light rounded-md bg-neutral-50 text-neutral-500 text-sm w-full resize-none overflow-y-auto custom-scrollbar font-mono"
+                    />
+                  </div>
+                </Field>
+              </Accordion>
             )}
           </div>
 
