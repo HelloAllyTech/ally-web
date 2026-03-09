@@ -6,12 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import {
-  CustomImage,
-  FEATURE_FLAGS_MAP,
-  SimulationDetailsModal,
-  Toggle,
-} from "@ally-ui-mono/ui-shared";
+import { CustomImage, FEATURE_FLAGS_MAP, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import {
   useAddReactionMutation,
   useGetGeneralCommentsQuery,
@@ -29,13 +24,9 @@ import {
   Transcription,
   NativeEmoji,
   ShareForReview,
+  ToggleSwitch,
 } from "@components";
-import {
-  KeyboardKeys,
-  REVIEW_PRIVACY_OPTIONS,
-  REVIEW_PRIVACY_OPTIONS_VALUES,
-  TAG_TYPES,
-} from "@constants";
+import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS_VALUES, TAG_TYPES } from "@constants";
 import { baseAPI } from "@src/api/baseAPI";
 import AddReviewNote from "@src/components/add-review-note/AddReviewNote";
 import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
@@ -375,11 +366,24 @@ export const ReviewDetails = () => {
               className="flex items-center gap-2 min-w-fit"
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
-              <Toggle
+              <span className="ml-1 font-primary font-regular text-base leading-[1.3] text-[#1A1A1A]">
+                Share for review
+              </span>
+              <ToggleSwitch
+                enabled={reviewDetails?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
+                onChange={(value: boolean) =>
+                  handleCreateReview(
+                    value
+                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                  )
+                }
+              />
+              {/* <Toggle
                 items={REVIEW_PRIVACY_OPTIONS(t)}
                 initialValue={reviewDetails?.reviewStatus || "IN_REVIEW"}
                 onChange={(status: string) => handleCreateReview(status)}
-              />
+              /> */}
             </div>
           )}
           <div
