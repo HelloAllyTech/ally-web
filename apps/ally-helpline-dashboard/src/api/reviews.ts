@@ -44,8 +44,10 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<Review>} Review data
      */
     getReviewById: builder.query({
-      query: (id: string) => ({
-        url: ApiEndpoints.REVIEWS.GET_REVIEW_BY_ID(id),
+      query: (id: string, isScribe?: boolean) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_BY_ID(id)
+          : ApiEndpoints.REVIEWS.GET_REVIEW_BY_ID(id),
         method: HttpMethod.GET,
       }),
       forceRefetch: () => true,
@@ -60,8 +62,10 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<ReviewDetailsWithMessages>} Review details and messages data
      */
     getReviewDetailsWithMessages: builder.query({
-      query: ({ id, offset, limit, sortBy }) => ({
-        url: ApiEndpoints.REVIEWS.GET_REVIEW_DETAILS_AND_MESSAGES(id),
+      query: ({ id, offset, limit, sortBy, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_DETAILS_AND_MESSAGES(id)
+          : ApiEndpoints.REVIEWS.GET_REVIEW_DETAILS_AND_MESSAGES(id),
         method: HttpMethod.GET,
         params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
@@ -75,8 +79,10 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<Review>} Review data
      */
     createReview: builder.mutation<void, ShareForReviewsInput>({
-      query: body => ({
-        url: ApiEndpoints.REVIEWS.CREATE_REVIEW,
+      query: ({ body, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.CREATE_SCRIBE_REVIEW
+          : ApiEndpoints.REVIEWS.CREATE_REVIEW,
         method: HttpMethod.POST,
         body,
       }),
@@ -89,10 +95,12 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<Review>} Review data
      */
     updateReview: builder.mutation<void, ShareForReviewsInput>({
-      query: ({ scenarioSessionId, note, status }) => ({
-        url: ApiEndpoints.REVIEWS.UPDATE_REVIEW(scenarioSessionId),
+      query: ({ body, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.UPDATE_SCRIBE_REVIEW(body.scenarioSessionId)
+          : ApiEndpoints.REVIEWS.UPDATE_REVIEW(body.scenarioSessionId),
         method: HttpMethod.PATCH,
-        body: { ...(note && { note }), status },
+        body: body,
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
@@ -103,18 +111,22 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<ReviewComment>} Comment data
      */
     createComment: builder.mutation({
-      query: ({ reviewId, body }) => ({
-        url: ApiEndpoints.REVIEWS.CREATE_COMMENT(reviewId),
+      query: ({ reviewId, body, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.CREATE_SCRIBE_COMMENT(reviewId)
+          : ApiEndpoints.REVIEWS.CREATE_COMMENT(reviewId),
         method: HttpMethod.POST,
         body,
       }),
     }),
     getReviewThreads: builder.query<
       GetReviewThreadsResponse,
-      { id: string; limit?: number; offset?: number }
+      { id: string; limit?: number; offset?: number; isScribe?: boolean }
     >({
-      query: ({ id, limit, offset }) => ({
-        url: ApiEndpoints.REVIEWS.GET_REVIEW_THREADS(id),
+      query: ({ id, limit, offset, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_THREADS(id)
+          : ApiEndpoints.REVIEWS.GET_REVIEW_THREADS(id),
         method: HttpMethod.GET,
         params: { limit, offset },
       }),
@@ -122,41 +134,60 @@ const reviewsAPI = baseAPI.injectEndpoints({
     }),
     getReviewThreadComments: builder.query<
       { data: CommentItem[]; count: number },
-      { id: string; limit: number; offset: number }
+      { id: string; limit: number; offset: number; isScribe?: boolean }
     >({
-      query: ({ id, limit, offset }) => ({
-        url: ApiEndpoints.REVIEWS.GET_REVIEW_THREAD_COMMENTS(id),
+      query: ({ id, limit, offset, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_THREAD_COMMENTS(id)
+          : ApiEndpoints.REVIEWS.GET_REVIEW_THREAD_COMMENTS(id),
         method: HttpMethod.GET,
         params: { limit, offset },
       }),
       forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
-    addReaction: builder.mutation<boolean, { id: string; reaction: ReactionInput }>({
-      query: ({ id, reaction }) => ({
-        url: ApiEndpoints.REVIEWS.ADD_REACTION(id),
+    addReaction: builder.mutation<
+      boolean,
+      { id: string; reaction: ReactionInput; isScribe?: boolean }
+    >({
+      query: ({ id, reaction, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.ADD_SCRIBE_REACTION(id)
+          : ApiEndpoints.REVIEWS.ADD_REACTION(id),
         method: HttpMethod.POST,
         body: reaction,
       }),
       invalidatesTags: [TAG_TYPES.REVIEW],
     }),
     getReviewReactions: builder.query<GetReviewReactionsResponse, GetReviewsReactionsInput>({
-      query: ({ reviewId, limit, offset, reaction }) => ({
-        url: ApiEndpoints.REVIEWS.GET_REVIEW_REACTIONS(reviewId),
+      query: ({ reviewId, limit, offset, reaction, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_REACTIONS(reviewId)
+          : ApiEndpoints.REVIEWS.GET_REVIEW_REACTIONS(reviewId),
         method: HttpMethod.GET,
         params: { limit, offset, reaction },
       }),
     }),
-    getReviewReactionsCount: builder.query<Record<string, number>, { reviewId: string }>({
-      query: ({ reviewId }) => ({
-        url: ApiEndpoints.REVIEWS.GET_REVIEW_REACTIONS_COUNT(reviewId),
+    getReviewReactionsCount: builder.query<
+      Record<string, number>,
+      { reviewId: string; isScribe?: boolean }
+    >({
+      query: ({ reviewId, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_REACTIONS_COUNT(reviewId)
+          : ApiEndpoints.REVIEWS.GET_REVIEW_REACTIONS_COUNT(reviewId),
         method: HttpMethod.GET,
       }),
       transformResponse: (response: { reactions: Record<string, number> }) => response.reactions,
     }),
-    addCommentReaction: builder.mutation<boolean, { commentId: string; reaction: ReactionInput }>({
-      query: ({ commentId, reaction }) => ({
-        url: ApiEndpoints.REVIEWS.ADD_COMMENT_REACTION(commentId),
+    addCommentReaction: builder.mutation<
+      boolean,
+      { commentId: string; reaction: ReactionInput; isScribe?: boolean }
+    >({
+      query: ({ commentId, reaction, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.ADD_SCRIBE_COMMENT_REACTION(commentId)
+          : ApiEndpoints.REVIEWS.ADD_COMMENT_REACTION(commentId),
         method: HttpMethod.POST,
         body: reaction,
       }),
@@ -167,9 +198,14 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @param {boolean} hidden - Whether the comment should be hidden
      * @returns {Promise<void>} Success response
      */
-    toggleCommentVisibility: builder.mutation<void, { commentId: string; hidden: boolean }>({
-      query: ({ commentId, hidden }) => ({
-        url: ApiEndpoints.REVIEWS.TOGGLE_COMMENT_VISIBILITY(commentId),
+    toggleCommentVisibility: builder.mutation<
+      void,
+      { commentId: string; hidden: boolean; isScribe?: boolean }
+    >({
+      query: ({ commentId, hidden, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.TOGGLE_SCRIBE_COMMENT_VISIBILITY(commentId)
+          : ApiEndpoints.REVIEWS.TOGGLE_COMMENT_VISIBILITY(commentId),
         method: HttpMethod.PATCH,
         body: { hidden },
       }),
@@ -180,9 +216,11 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @param {string} commentId - The ID of the comment to delete
      * @returns {Promise<void>} Success response
      */
-    deleteComment: builder.mutation<void, { commentId: string }>({
-      query: ({ commentId }) => ({
-        url: ApiEndpoints.REVIEWS.DELETE_COMMENT(commentId),
+    deleteComment: builder.mutation<void, { commentId: string; isScribe?: boolean }>({
+      query: ({ commentId, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.DELETE_SCRIBE_COMMENT(commentId)
+          : ApiEndpoints.REVIEWS.DELETE_COMMENT(commentId),
         method: HttpMethod.DELETE,
       }),
     }),
@@ -193,42 +231,54 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @param {string} content - The updated content of the comment
      * @returns {Promise<void>} Success response
      */
-    editComment: builder.mutation<void, { commentId: string; content: string }>({
-      query: ({ commentId, content }) => ({
-        url: ApiEndpoints.REVIEWS.EDIT_COMMENT(commentId),
-        method: HttpMethod.PATCH,
-        body: { content },
-      }),
-    }),
+    editComment: builder.mutation<void, { commentId: string; content: string; isScribe?: boolean }>(
+      {
+        query: ({ commentId, content, isScribe = false }) => ({
+          url: isScribe
+            ? ApiEndpoints.REVIEWS.EDIT_SCRIBE_COMMENT(commentId)
+            : ApiEndpoints.REVIEWS.EDIT_COMMENT(commentId),
+          method: HttpMethod.PATCH,
+          body: { content },
+        }),
+      },
+    ),
 
     getCommentReplies: builder.query({
-      query: ({ commentId, limit, offset }) => ({
-        url: ApiEndpoints.REVIEWS.GET_COMMENT_REPLIES(commentId),
+      query: ({ commentId, limit, offset, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_COMMENT_REPLIES(commentId)
+          : ApiEndpoints.REVIEWS.GET_COMMENT_REPLIES(commentId),
         method: HttpMethod.GET,
         params: { limit, offset },
       }),
       forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
     }),
-    getUnreadReviewCount: builder.query<{ count: number }, void>({
-      query: () => ({
-        url: ApiEndpoints.REVIEWS.GET_UNREAD_COUNT,
+    getUnreadReviewCount: builder.query<{ count: number }, { isScribe?: boolean }>({
+      query: ({ isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_UNREAD_COUNT
+          : ApiEndpoints.REVIEWS.GET_UNREAD_COUNT,
       }),
       providesTags: [TAG_TYPES.UNREAD_REVIEW_COUNT],
     }),
-    markReviewAsRead: builder.mutation<void, { id: string }>({
-      query: ({ id }) => ({
-        url: ApiEndpoints.REVIEWS.MARK_READ(id),
+    markReviewAsRead: builder.mutation<void, { id: string; isScribe?: boolean }>({
+      query: ({ id, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.MARK_SCRIBE_READ(id)
+          : ApiEndpoints.REVIEWS.MARK_READ(id),
         method: HttpMethod.PATCH,
       }),
       invalidatesTags: [TAG_TYPES.UNREAD_REVIEW_COUNT],
     }),
     getGeneralComments: builder.query<
       { data: CommentItem[]; count: number },
-      { reviewId: string; limit: number; offset: number }
+      { reviewId: string; limit: number; offset: number; isScribe?: boolean }
     >({
-      query: ({ reviewId, limit, offset }) => ({
-        url: ApiEndpoints.REVIEWS.GET_GENERAL_COMMENTS(reviewId),
+      query: ({ reviewId, limit, offset, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_GENERAL_COMMENTS(reviewId)
+          : ApiEndpoints.REVIEWS.GET_GENERAL_COMMENTS(reviewId),
         method: HttpMethod.GET,
         params: { limit, offset },
       }),

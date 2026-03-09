@@ -88,6 +88,7 @@ export interface GetReviewsReactionsInput {
   offset?: number;
   reaction?: string;
   reviewId: string;
+  isScribe?: boolean;
 }
 
 export interface CommentItem {
@@ -147,7 +148,10 @@ export interface TextSegment {
 }
 
 export interface ShareForReviewsInput {
-  scenarioSessionId: string;
-  note?: string;
-  status: string;
+  body: {
+    scenarioSessionId: string;
+    note?: string;
+    status: string;
+  };
+  isScribe?: boolean;
 }

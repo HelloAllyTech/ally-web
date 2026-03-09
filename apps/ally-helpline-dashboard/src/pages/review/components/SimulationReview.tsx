@@ -1,21 +1,74 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-import InfiniteScroll from "@ally-ui-mono/ui-shared/lib/infinite-scroll";
+import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { useGetReviewsQuery } from "@api";
+import { NoResults } from "@assets";
+import { FallbackUI } from "@components";
 import FeedCard from "@components/feed-card";
+import { ROUTES } from "@constants";
+import { ReviewItem } from "@types";
 
+import { PAGE_SIZE, SKELETON_COUNT } from "../constants";
 import { itemVariants } from "../constants";
+import EmptyState from "./EmptyState";
 import FeedCardSkeleton from "./FeedCardSkeleton";
 import { SimulationReviewProps } from "../types";
 
-const SimulationReview: FC<SimulationReviewProps> = ({
-  handleLoadMore,
-  isLoadingMore,
-  feedData,
-  onReviewTranscript,
-}) => {
+const SkeletonList: FC = () => (
+  <>
+    {Array.from({ length: SKELETON_COUNT }, (_, index) => (
+      <FeedCardSkeleton key={index} />
+    ))}
+  </>
+);
+
+const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const [offset, setOffset] = useState(0);
+  const [feedData, setFeedData] = useState<ReviewItem[]>([]);
   const [expandedViewMoreIds, setExpandedViewMoreIds] = useState<Set<string>>(new Set());
+
+  const {
+    data: simulationReviewsData,
+    isFetching: isSimulationReviewsFetching,
+    refetch: refetchSimulationReviews,
+    error: simulationReviewsError,
+  } = useGetReviewsQuery({
+    limit: PAGE_SIZE,
+    offset,
+    sortBy: filter,
+  });
+
+  useEffect(() => {
+    setOffset(0);
+    setFeedData([]);
+  }, [filter]);
+
+  useEffect(() => {
+    if (!simulationReviewsData?.data) return;
+    if (offset === 0) {
+      setFeedData(simulationReviewsData.data);
+    } else {
+      setFeedData(prev => {
+        const existingIds = new Set(prev.map(item => item.id));
+        const newItems = simulationReviewsData.data.filter(item => !existingIds.has(item.id));
+        return [...prev, ...newItems];
+      });
+    }
+  }, [simulationReviewsData, offset]);
+
+  const hasMore = simulationReviewsData ? offset + PAGE_SIZE < simulationReviewsData.count : true;
+
+  const handleLoadMore = () => {
+    if (!hasMore || isSimulationReviewsFetching || feedData.length === 0) return;
+    setOffset(prev => prev + PAGE_SIZE);
+  };
 
   const handleTapViewMore = (cardId: string) => {
     setExpandedViewMoreIds(prev => {
@@ -25,6 +78,32 @@ const SimulationReview: FC<SimulationReviewProps> = ({
       return next;
     });
   };
+
+  const isInitialLoading = isSimulationReviewsFetching && feedData.length === 0;
+  const isEmpty =
+    !isSimulationReviewsFetching &&
+    feedData.length === 0 &&
+    simulationReviewsData?.data?.length === 0;
+  const isLoadingMore = isSimulationReviewsFetching && feedData.length > 0;
+
+  if (simulationReviewsError) {
+    return (
+      <div className="flex h-[80vh] sm:h-[90vh] items-center justify-center px-4 sm:px-6">
+        <FallbackUI
+          icon={<NoResults />}
+          mainMessage={t("review.error.title")}
+          description={t("review.error.description")}
+          button={{
+            text: t("review.error.retry"),
+            onClick: refetchSimulationReviews,
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (isInitialLoading) return <SkeletonList />;
+  if (isEmpty) return <EmptyState onRefresh={refetchSimulationReviews} />;
 
   return (
     <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isLoadingMore}>
@@ -44,7 +123,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({
             scenario={item.scenario}
             reactions={item.reactions}
             commentsCount={item.commentsCount}
-            onReviewTranscript={() => onReviewTranscript(item.id)}
+            onReviewTranscript={() => navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", item.id))}
             duration={item.scenarioSession?.duration}
             dateTime={item.scenarioSession?.createdAt}
             badgeBgColor="#EDE7F6"
