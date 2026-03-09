@@ -694,7 +694,7 @@ describe("CreateSimulationSubSection", () => {
 
     it("SESSION_TIMER_CONFIG constants are within valid range", () => {
       expect(SESSION_TIMER_CONFIG.DEFAULT_MAX_TIME).toBe("00:10:00");
-      expect(SESSION_TIMER_CONFIG.MIN_TIME).toBe("00:05:00");
+      expect(SESSION_TIMER_CONFIG.MIN_TIME).toBe("00:00:00");
       expect(SESSION_TIMER_CONFIG.MAX_TIME).toBe("02:00:00");
     });
   });

@@ -10,7 +10,7 @@ export const minInputHeight = {
 export const SESSION_TIMER_CONFIG = {
   DEFAULT_MAX_TIME: "00:10:00",
   MAX_TIME: "02:00:00", // 120 minutes (7200 seconds)
-  MIN_TIME: "00:05:00", // 5 minutes (300 seconds)
+  MIN_TIME: "00:00:00", // 0 minutes (0 seconds)
 };
 
 export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
