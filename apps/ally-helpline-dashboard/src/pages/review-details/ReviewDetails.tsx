@@ -30,7 +30,12 @@ import {
   NativeEmoji,
   ShareForReview,
 } from "@components";
-import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS, TAG_TYPES } from "@constants";
+import {
+  KeyboardKeys,
+  REVIEW_PRIVACY_OPTIONS,
+  REVIEW_PRIVACY_OPTIONS_VALUES,
+  TAG_TYPES,
+} from "@constants";
 import { baseAPI } from "@src/api/baseAPI";
 import AddReviewNote from "@src/components/add-review-note/AddReviewNote";
 import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
@@ -39,6 +44,7 @@ import {
   CommentChangeParams,
   CommentItem,
   ReactionsType,
+  ShareForReviewsInput,
   SimulationTranscriptMessage,
   Thread,
 } from "@types";
@@ -340,11 +346,14 @@ export const ReviewDetails = () => {
 
   const handleCreateReview = async (status?: string, note?: string) => {
     if (!reviewDetails?.id) return;
-    await updateReview({
+    const normalizedNote = note?.trim() || null;
+    const params: ShareForReviewsInput = {
       scenarioSessionId: reviewDetails.id,
-      status: status || reviewDetails.reviewStatus,
-      note: note,
-    });
+      status,
+    };
+    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
+      params.note = normalizedNote;
+    await updateReview(params).unwrap();
   };
 
   const isNoteEditable = useMemo(() => {
@@ -360,8 +369,8 @@ export const ReviewDetails = () => {
 
   const renderBottomSection = () => {
     return (
-      <div className="absolute z-10 flex justify-center bottom-9 left-0 right-0 w-full">
-        <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl max-w-[95vw] overflow-x-auto">
+      <div className="absolute z-10 flex justify-center bottom-9 left-0 right-0 w-full pointer-events-none">
+        <div className="p-2 h-14 rounded-full border flex items-center gap-2 bg-white shadow-2xl max-w-[95vw] overflow-x-auto pointer-events-auto">
           {isFeedOwner && (
             <div
               className="flex items-center gap-2 min-w-fit"

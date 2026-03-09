@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { motion } from "framer-motion";
 
 import InfiniteScroll from "@ally-ui-mono/ui-shared/lib/infinite-scroll";
-import FeedCard, { Comment } from "@components/feed-card";
+import FeedCard from "@components/feed-card";
 
 import { itemVariants } from "../constants";
 import FeedCardSkeleton from "./FeedCardSkeleton";
@@ -13,11 +13,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({
   handleLoadMore,
   isLoadingMore,
   feedData,
-  selectedReviewId,
-  reviewThreadsData,
   onReviewTranscript,
-  onCommentsClick,
-  isReviewThreadsLoading,
 }) => {
   const [expandedViewMoreIds, setExpandedViewMoreIds] = useState<Set<string>>(new Set());
 
@@ -28,20 +24,6 @@ const SimulationReview: FC<SimulationReviewProps> = ({
       else next.add(cardId);
       return next;
     });
-  };
-
-  const getCommentsList = (): Comment[] => {
-    let comments: Comment[] = [];
-    if (reviewThreadsData?.data?.length === 0) {
-      return [];
-    }
-    comments = reviewThreadsData?.data?.flatMap(thread => thread.comments) ?? [];
-
-    if (comments.length < 2) {
-      return comments;
-    } else {
-      return comments.slice(0, 2);
-    }
   };
 
   return (
@@ -62,11 +44,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({
             scenario={item.scenario}
             reactions={item.reactions}
             commentsCount={item.commentsCount}
-            comments={selectedReviewId === item.id ? getCommentsList() : []}
-            isCommentsLoading={selectedReviewId === item.id && isReviewThreadsLoading}
-            isCommentsExpanded={selectedReviewId === item.id}
             onReviewTranscript={() => onReviewTranscript(item.id)}
-            onCommentsClick={() => onCommentsClick(item.id)}
             duration={item.scenarioSession?.duration}
             dateTime={item.scenarioSession?.createdAt}
             badgeBgColor="#EDE7F6"
@@ -75,6 +53,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({
             isEdited={item.isEdited}
             isViewMoreExpanded={expandedViewMoreIds.has(item.id)}
             onTapViewMore={() => handleTapViewMore(item.id)}
+            note={item.note}
           />
         </motion.div>
       ))}
