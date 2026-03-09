@@ -4,4 +4,5 @@ export interface AddReviewNoteProps {
   onEditNote?: () => void;
   onAddNote?: () => void;
   isEdited?: boolean;
+  reviewCreatedAt?: string;
 }
