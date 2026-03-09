@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { CustomImage, CustomVideo } from "@ally-ui-mono/ui-shared/index";
 import { ArrowDownBlue, CloseIcon } from "@assets";
 import { Button, EmojiPickerTrigger } from "@components";
-import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
+import { getFormattedDateTime } from "@utils";
 
 export interface ShareForReviewProps {
   isOpen: boolean;
@@ -25,12 +25,6 @@ interface ScenarioDetailsScenario {
   coverVideoUrl?: string | null;
   coverImageUrl?: string;
 }
-
-const formatCallDuration = (callDurationMs: number | undefined): string => {
-  const ms = callDurationMs ?? 0;
-  const seconds = Math.floor(ms / 1000);
-  return seconds < 60 ? `${seconds} sec` : `${getFormattedTimeFromDuration(seconds, "mm:ss")} min`;
-};
 
 const ModalHeader = ({ title, onClose }: { title: string; onClose: () => void }) => (
   <div className="flex items-center justify-between border-b border-border pb-3 text-lg">
@@ -86,20 +80,19 @@ const NoteTextarea = ({
 
 const SubSection = ({
   createdAt,
-  callDurationMs,
+  callDuration,
 }: {
   createdAt: string | undefined;
-  callDurationMs: number | undefined;
+  callDuration: number | undefined;
 }) => {
   const { t } = useTranslation();
   const formattedDate = getFormattedDateTime(createdAt, "MMM dd, yyyy hh:mm a");
-  const formattedDuration = formatCallDuration(callDurationMs);
 
   return (
     <div className="flex items-center gap-1 text-typography-600 font-primary text-sm">
       {t("review.details.dateAndTime")}: {formattedDate}
       <span className="w-1 h-1 bg-neutral-500 rounded-full mx-1" aria-hidden />
-      <span className="font-primary leading-4">{formattedDuration}</span>
+      <span className="font-primary leading-4">{callDuration}</span>
     </div>
   );
 };
@@ -318,7 +311,7 @@ export const ShareForReview = ({
 
             <SubSection
               createdAt={sessionCreatedAt || summaryDetails?.details?.createdAt}
-              callDurationMs={sessionCallDuration || summaryDetails?.details?.callDuration}
+              callDuration={sessionCallDuration || summaryDetails?.details?.callDuration}
             />
 
             <ScenarioDetails scenario={summaryDetails?.scenario} />
