@@ -5,6 +5,7 @@ export const ApiEndpoints = {
     GET_USER: "/v1/users/me",
     GENERATE_OTP: "/v2/auth/generate-otp",
     VERIFY_OTP: "/v2/auth/verify-otp",
+    MAGIC_LINK_VERIFY: "/v1/auth/magic-link/verify",
     REFRESH: "/v1/auth/refresh",
     TERMS_AND_AGREEMENT: "/v1/users/terms-and-agreement-status",
     GOOGLE_SIGN_IN: "/v1/auth/google",

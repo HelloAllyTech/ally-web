@@ -5,7 +5,7 @@
  * - User profile and permissions retrieval
  */
 
-import { baseAPI } from "@api";
+import { baseAPI, baseQuery } from "@api";
 import { ApiEndpoints, HttpMethod, Permissions, TAG_TYPES, UserRole } from "@constants";
 import {
   VerifyOTPRequest,
@@ -128,6 +128,29 @@ const authAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.USERS],
     }),
+
+    /**
+     * Verifies magic link token and authenticates user.
+     * @param {string} token - Magic link token from URL
+     * @returns {Promise<VerifyOTPResponse>} Authentication response with tokens
+     */
+    verifyMagicLink: builder.mutation<VerifyOTPResponse, { token: string }>({
+      queryFn: async ({ token }, api, extraOptions) => {
+        const result = await baseQuery(
+          {
+            url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
+            method: HttpMethod.POST,
+            body: { token, allowedRoles: [UserRole.SUPER_ADMIN] },
+          },
+          api,
+          extraOptions,
+        );
+        if (result.error) {
+          return { error: result.error };
+        }
+        return { data: result.data as VerifyOTPResponse };
+      },
+    }),
   }),
 });
 
@@ -144,4 +167,5 @@ export const {
   useUploadProfileImageMutation,
   useDeleteProfileImageMutation,
   useGetProfileImageUrlMutation,
+  useVerifyMagicLinkMutation,
 } = authAPI;

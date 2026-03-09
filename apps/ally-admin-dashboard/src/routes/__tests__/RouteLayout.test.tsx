@@ -21,6 +21,7 @@ vi.mock("@pages", () => ({
   CreatePath: () => <div>CreatePathPage</div>,
   CreateCase: () => <div>CreateCasePage</div>,
   Login: () => <div>LoginPage</div>,
+  MagicLinkVerify: () => <div>MagicLinkVerifyPage</div>,
   LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
   SimulationStudio: () => <div>SimulationStudioPage</div>,
   UserManagement: () => <div>UserManagementPage</div>,
@@ -43,6 +44,12 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.LOGIN);
     render(<RouteLayout />);
     expect(screen.getByText("LoginPage")).toBeInTheDocument();
+  });
+
+  it("renders MagicLinkVerify route", () => {
+    window.history.pushState({}, "", ROUTES.MAGIC_VERIFY);
+    render(<RouteLayout />);
+    expect(screen.getByText("MagicLinkVerifyPage")).toBeInTheDocument();
   });
 
   it("renders Simulation Studio route", () => {
