@@ -114,32 +114,60 @@ export const ApiEndpoints = {
   },
   REVIEWS: {
     GET_REVIEWS: "/v1/scenario-session-reviews",
-    GET_SCRIBE_REVIEWS: "/v1/learn/scenario-sessions", // TODO: change to the correct endpoint later
+    GET_SCRIBE_REVIEWS: "/v1/scenario-session-reviews", // TODO: change to the correct endpoint later
     GET_GENERAL_COMMENTS: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/comments`,
+    GET_SCRIBE_GENERAL_COMMENTS: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/comments`, // TODO: change to the correct endpoint later
     GET_REVIEW_BY_ID: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}`,
+    GET_SCRIBE_REVIEW_BY_ID: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}`, // TODO: change to the correct endpoint later
     GET_REVIEW_DETAILS_AND_MESSAGES: (reviewId: string) =>
       `/v1/scenario-session-reviews/${reviewId}/messages`,
+    GET_SCRIBE_REVIEW_DETAILS_AND_MESSAGES: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/messages`, // TODO: change to the correct endpoint later
     CREATE_REVIEW: `/v1/scenario-session-reviews`,
+    CREATE_SCRIBE_REVIEW: `/v1/scenario-session-reviews`, // TODO: change to the correct endpoint later
     UPDATE_REVIEW: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}`,
+    UPDATE_SCRIBE_REVIEW: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}`, // TODO: change to the correct endpoint later
     CREATE_COMMENT: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/comments`,
+    CREATE_SCRIBE_COMMENT: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/comments`, // TODO: change to the correct endpoint later
     GET_REVIEW_THREADS: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/threads`,
+    GET_SCRIBE_REVIEW_THREADS: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/threads`, // TODO: change to the correct endpoint later
     ADD_REACTION: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/reactions`,
+    ADD_SCRIBE_REACTION: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/reactions`, // TODO: change to the correct endpoint later
     GET_REVIEW_REACTIONS: (reviewId: string) =>
       `/v1/scenario-session-reviews/${reviewId}/reactions`,
+    GET_SCRIBE_REVIEW_REACTIONS: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/reactions`, // TODO: change to the correct endpoint later
     GET_REVIEW_REACTIONS_COUNT: (reviewId: string) =>
       `/v1/scenario-session-reviews/${reviewId}/reactions/count`,
+    GET_SCRIBE_REVIEW_REACTIONS_COUNT: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/reactions/count`, // TODO: change to the correct endpoint later
     ADD_COMMENT_REACTION: (commentId: string) =>
       `/v1/scenario-session-reviews/comments/${commentId}/reactions`,
+    ADD_SCRIBE_COMMENT_REACTION: (commentId: string) =>
+      `/v1/scenario-session-reviews/${commentId}/reactions`, // TODO: change to the correct endpoint later
     TOGGLE_COMMENT_VISIBILITY: (commentId: string) =>
       `/v1/scenario-session-reviews/comments/${commentId}/visibility`,
+    TOGGLE_SCRIBE_COMMENT_VISIBILITY: (commentId: string) =>
+      `/v1/scenario-session-reviews/${commentId}/visibility`, // TODO: change to the correct endpoint later
     EDIT_COMMENT: (commentId: string) => `/v1/scenario-session-reviews/comments/${commentId}`,
+    EDIT_SCRIBE_COMMENT: (commentId: string) => `/v1/scenario-session-reviews/${commentId}`, // TODO: change to the correct endpoint later
     DELETE_COMMENT: (commentId: string) => `/v1/scenario-session-reviews/comments/${commentId}`,
+    DELETE_SCRIBE_COMMENT: (commentId: string) => `/v1/scenario-session-reviews/${commentId}`, // TODO: change to the correct endpoint later
     GET_COMMENT_REPLIES: (commentId: string) =>
       `/v1/scenario-session-reviews/comments/${commentId}/replies`,
+    GET_SCRIBE_COMMENT_REPLIES: (commentId: string) =>
+      `/v1/scenario-session-reviews/${commentId}/replies`, // TODO: change to the correct endpoint later
     GET_REVIEW_THREAD_COMMENTS: (threadId: string) =>
       `/v1/scenario-session-reviews/threads/${threadId}/comments`,
+    GET_SCRIBE_REVIEW_THREAD_COMMENTS: (threadId: string) =>
+      `/v1/scenario-session-reviews/${threadId}/comments`, // TODO: change to the correct endpoint later
     GET_UNREAD_COUNT: "/v1/scenario-session-reviews/unread-count",
+    GET_SCRIBE_UNREAD_COUNT: "/v1/scenario-session-reviews/unread-count", // TODO: change to the correct endpoint later
     MARK_READ: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/mark-read`,
+    MARK_SCRIBE_READ: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/mark-read`, // TODO: change to the correct endpoint later
   },
   BADGES: {
     GET_AVAILABLE_BADGES: "/v1/badges/me/available",

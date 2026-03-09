@@ -44,7 +44,6 @@ import {
   CommentChangeParams,
   CommentItem,
   ReactionsType,
-  ShareForReviewsInput,
   SimulationTranscriptMessage,
   Thread,
 } from "@types";
@@ -347,13 +346,13 @@ export const ReviewDetails = () => {
   const handleCreateReview = async (status?: string, note?: string) => {
     if (!reviewDetails?.id) return;
     const normalizedNote = note?.trim() || null;
-    const params: ShareForReviewsInput = {
+    const params: { scenarioSessionId: string; status: string; note?: string } = {
       scenarioSessionId: reviewDetails.id,
       status,
     };
     if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
       params.note = normalizedNote;
-    await updateReview(params).unwrap();
+    await updateReview({ body: params }).unwrap();
   };
 
   const isNoteEditable = useMemo(() => {
