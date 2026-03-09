@@ -171,11 +171,13 @@ const CommentCard = ({
 
   const handleReplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (comment?.hidden) return;
     setShowReplyInput(prev => !prev);
   };
 
   const onReplyClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (comment?.hidden) return;
     if (!showReplies && replyCount > 0 && replies.length === 0) {
       try {
         const data = await getReplies({
