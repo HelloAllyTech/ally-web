@@ -66,8 +66,6 @@ const GeneralCommentsToShow = ({
   useEffect(() => {
     if (createCommentData?.thread?.id) {
       setCommentThreadId(createCommentData?.thread?.id);
-    } else if (generalComments.length === 0) {
-      setCommentThreadId(null);
     } else if (review?.generalCommentsThreadId) {
       setCommentThreadId(review?.generalCommentsThreadId);
     }
@@ -121,7 +119,13 @@ const GeneralCommentsToShow = ({
   };
 
   const handleDeleteComment = (id: string) => {
-    setComments(prev => prev.filter(comment => comment.id !== id));
+    setComments(prev => {
+      const newComments = prev.filter(comment => comment.id !== id);
+      if (newComments.length === 0) {
+        setCommentThreadId(null);
+      }
+      return newComments;
+    });
   };
 
   const handleUpdateComment = (content: string, id: string) => {
@@ -145,6 +149,12 @@ const GeneralCommentsToShow = ({
       prev.map(comment =>
         comment.id === commentId ? { ...comment, replyCount: comment.replyCount - 1 } : comment,
       ),
+    );
+  };
+
+  const handleCommentHide = (hidden: boolean, commentId: string) => {
+    setComments(prev =>
+      prev.map(comment => (comment.id === commentId ? { ...comment, hidden } : comment)),
     );
   };
 
@@ -232,6 +242,7 @@ const GeneralCommentsToShow = ({
                   onReplyChange={onReplyChange}
                   changedReply={changedReply}
                   isFeedOwner={isFeedOwner}
+                  onToggleHide={handleCommentHide}
                 />
               ))}
             </InfiniteScroll>
