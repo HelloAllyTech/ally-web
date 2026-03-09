@@ -1,10 +1,10 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
-import { Tabs, Tab } from "@mui/material";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import { Archive, MoreVertIcon, Refresh, StartSession, UploadIcon } from "@assets";
 import { Button, ButtonVariant, CustomMenu, PermissionGuard, ToggleButtonGroup } from "@components";
 import { CallType, Permissions, ROUTES } from "@constants";
@@ -13,7 +13,7 @@ import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
 
 import { AudioUploadDialog, AdminLogsTable, StartSessionDialog, UserLogsTable } from "./components";
-import { SessionUserGroup, tabStyles } from "./constants";
+import { SessionUserGroup } from "./constants";
 import {
   getFormattedSupportedSessionUserGroups,
   getPermittedSessionLogList,
@@ -63,13 +63,6 @@ export const Calls: FC = () => {
       ),
     [sessionUserGroup, permittedSessionLogViewList, t],
   );
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: SessionUserGroup) => {
-    setSessionUserGroup(newValue);
-    setSessionType(
-      supportedLogList?.length > 0 ? (supportedLogList[0].sessionType as SessionType) : undefined,
-    );
-  };
 
   const getContent = () => {
     if (sessionUserGroup === SessionUserGroup.ORG_LOGS) {
@@ -156,27 +149,22 @@ export const Calls: FC = () => {
           </div>
         </div>
         {userGroupList?.length > 1 && (
-          <Tabs
-            data-testid="calls-user-group-tabs"
-            value={sessionUserGroup}
-            onChange={handleTabChange}
-            className="w-full normal-case border-b border-border mb-4"
-            sx={{
-              "& .MuiButtonBase-root": {
-                fontFamily: "IBM_Plex_Serif",
-              },
-            }}
-          >
-            {userGroupList?.map(tab => (
-              <Tab
-                key={tab.id}
-                label={tab.label}
-                value={tab.id}
-                sx={tabStyles}
-                data-testid={`calls-tab-${tab.id}`}
-              />
-            ))}
-          </Tabs>
+          <div className="w-full border-b border-border mb-4" data-testid="calls-user-group-tabs">
+            <Tabs
+              items={userGroupList.map(tab => ({ id: tab.id, label: tab.label }))}
+              activeId={sessionUserGroup}
+              onChange={newId => {
+                setSessionUserGroup(newId as SessionUserGroup);
+                setSessionType(
+                  supportedLogList?.length > 0
+                    ? (supportedLogList[0].sessionType as SessionType)
+                    : undefined,
+                );
+              }}
+              className="border-none w-full normal-case text-base font-primary"
+              showCount={false}
+            />
+          </div>
         )}
         <div className="flex justify-between items-center gap-2">
           {sessionTypeList?.length > 1 && (

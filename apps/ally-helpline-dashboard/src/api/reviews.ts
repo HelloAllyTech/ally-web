@@ -255,11 +255,14 @@ const reviewsAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.REVIEW],
     }),
     getUnreadReviewCount: builder.query<{ count: number }, { isScribe?: boolean }>({
-      query: ({ isScribe = false }) => ({
-        url: isScribe
-          ? ApiEndpoints.REVIEWS.GET_SCRIBE_UNREAD_COUNT
-          : ApiEndpoints.REVIEWS.GET_UNREAD_COUNT,
-      }),
+      query: (arg = { isScribe: false }) => {
+        const { isScribe = false } = arg;
+        return {
+          url: isScribe
+            ? ApiEndpoints.REVIEWS.GET_SCRIBE_UNREAD_COUNT
+            : ApiEndpoints.REVIEWS.GET_UNREAD_COUNT,
+        };
+      },
       providesTags: [TAG_TYPES.UNREAD_REVIEW_COUNT],
     }),
     markReviewAsRead: builder.mutation<void, { id: string; isScribe?: boolean }>({

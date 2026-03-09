@@ -75,7 +75,7 @@ describe("SummarySidebarWrapper", () => {
     render(<SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList} />);
 
     expect(screen.getByText("Content One")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("tab", { name: /Tab Two/i }));
+    await userEvent.click(screen.getByRole("button", { name: /Tab Two/i }));
     expect(screen.getByText("Content Two")).toBeInTheDocument();
   });
 

@@ -80,7 +80,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
     useUser();
 
-  const { data: unreadData } = useGetUnreadReviewCountQuery();
+  const { data: unreadData } = useGetUnreadReviewCountQuery({ isScribe: false });
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(tab => {

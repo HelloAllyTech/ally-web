@@ -38,15 +38,15 @@ export const MagicLinkVerify: React.FC = () => {
         const errorData = err.data as { message: string } | undefined;
         const errorMessage = errorData?.message ?? "Invalid or expired magic link.";
         toast.error(errorMessage);
-        
+
         setTimeout(() => navigate(ROUTES.LOGIN), 5000); // Increased to 5 seconds
       } else if (isSuccess && data) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, data.accessToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, data.refreshToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
-        
+
         toast.success("Login successful!");
-        
+
         const userData = await checkAuth();
         if (userData) {
           navigate("/");

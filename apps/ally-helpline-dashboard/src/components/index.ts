@@ -52,7 +52,6 @@ import { ShareForReview } from "./share-for-review";
 import ShinyText from "./shiny-text";
 import SkillsTab from "./skills-tab";
 import { StarRating } from "./star-rating";
-import TabGroup from "./tab-group";
 import TagGroup from "./tag-group";
 import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
@@ -113,7 +112,6 @@ export {
   SearchResources,
   ShinyText,
   StarRating,
-  TabGroup,
   TagGroup,
   TextField,
   TimePicker,

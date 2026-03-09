@@ -1,7 +1,15 @@
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 
 import { ROUTES } from "@constants";
-import { Health, Login, Learn, MagicLinkVerify, Scenario, CaseTrackDetails, SuspendedUser } from "@pages";
+import {
+  Health,
+  Login,
+  Learn,
+  MagicLinkVerify,
+  Scenario,
+  CaseTrackDetails,
+  SuspendedUser,
+} from "@pages";
 
 import HybridRouteLayout from "./HybridRouteLayout";
 import PrivateRouteLayout from "./PrivateRouteLayout";
