@@ -1,6 +1,7 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import { Tooltip } from "@mui/material";
+import { differenceInMinutes } from "date-fns";
 
 import { AddIcon, PencilIcon } from "@src/assets";
 import { AddReviewNoteProps } from "@src/components/add-review-note/types";
@@ -12,7 +13,12 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
   onEditNote,
   onAddNote,
   isEdited = false,
+  reviewCreatedAt,
 }) => {
+  const timeDiff = useMemo(() => {
+    return differenceInMinutes(new Date(), new Date(reviewCreatedAt));
+  }, [reviewCreatedAt]);
+
   const getActionComponent = () => {
     if (!note || note.length === 0) {
       return (
@@ -40,14 +46,19 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
     }
     return null;
   };
+
   return (
     <div
-      className={`flex flex-col gap-1 ${note && note.length > 0 ? "bg-[#FFF3E080]" : "bg-white"} p-4 border-l-[1px] border-l-[#FFA726]`}
+      className={`flex flex-col gap-1 ${(note && note.length > 0) || timeDiff < 10 ? "bg-[#FFF3E080] p-4 border-l-[1px] border-l-[#FFA726]" : "bg-white"} `}
     >
-      <div className="flex items-center gap-2.5">
-        <div className="text-base text-[#E65100] leading-5 font-tertiary tracking-[2px]">NOTE</div>
-        {getActionComponent()}
-      </div>
+      {(timeDiff < 10 || (note && note.length > 0)) && (
+        <div className="flex items-center gap-2.5">
+          <div className="text-base text-[#E65100] leading-5 font-tertiary tracking-[2px]">
+            NOTE
+          </div>
+          {getActionComponent()}
+        </div>
+      )}
       {note && note.length > 0 && (
         <div className="text-base text-black leading-4 font-primary">
           {note}{" "}

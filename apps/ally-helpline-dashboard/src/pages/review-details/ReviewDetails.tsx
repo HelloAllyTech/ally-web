@@ -513,6 +513,7 @@ export const ReviewDetails = () => {
                 isEdited={reviewDetails?.noteEditedAt !== null}
                 onAddNote={onTapAddNote}
                 onEditNote={onTapAddNote}
+                reviewCreatedAt={reviewDetails?.createdAt}
               />
             </div>
           )}
@@ -608,7 +609,7 @@ export const ReviewDetails = () => {
         onNoteChange={(note: string) => handleCreateReview(reviewDetails?.reviewStatus, note)}
         shareLabel={reviewDetails?.note?.length > 0 ? "Save" : "Add"}
         modalHeader={reviewDetails?.note?.length > 0 ? "Edit note" : "Add note"}
-        sessionCreatedAt={reviewDetails?.scenarioSession?.createdAt}
+        sessionCreatedAt={reviewDetails?.createdAt}
         sessionCallDuration={reviewDetails?.scenarioSession?.duration}
       />
     </div>
