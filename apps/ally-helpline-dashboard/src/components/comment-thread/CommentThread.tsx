@@ -144,38 +144,35 @@ const CommentThread = ({
   };
 
   const handleToggleHide = (hidden: boolean, commentId: string) => {
-    onCommentChange?.({
-      comments: comments.map(comment =>
+    setComments?.(prev => {
+      const updatedComments = prev.map(comment =>
         comment.id === commentId ? { ...comment, hidden } : comment,
-      ),
-      threadId: id,
+      );
+      onCommentChange?.({ comments: updatedComments, threadId: id });
+      return updatedComments;
     });
-    setComments?.(prev =>
-      prev.map(comment => (comment.id === commentId ? { ...comment, hidden } : comment)),
-    );
   };
 
   const onUpdateComment = (content: string, commentId: string) => {
-    onCommentChange?.({
-      comments: comments.map(comment =>
+    setComments?.(prev => {
+      const updatedComments = prev.map(comment =>
         comment.id === commentId ? { ...comment, content } : comment,
-      ),
-      threadId: id,
+      );
+      onCommentChange?.({ comments: updatedComments, threadId: id });
+      return updatedComments;
     });
-    setComments?.(prev =>
-      prev.map(comment => (comment.id === commentId ? { ...comment, content } : comment)),
-    );
   };
 
   const handleDeleteComment = (commentId: string) => {
     const currentComment = comments.find(comment => comment.id === commentId);
     const replyCount = currentComment?.replyCount ?? 0;
-    onCommentChange?.({
-      comments: comments.filter(comment => comment.id !== commentId),
-      threadId: id,
+    const currentLength = (comments ?? []).length;
+    setComments?.(prev => {
+      const filteredComments = prev.filter(comment => comment.id !== commentId);
+      onCommentChange?.({ comments: filteredComments, threadId: id });
+      return filteredComments;
     });
-    setComments?.(prev => prev.filter(comment => comment.id !== commentId));
-    onDeleteComment((comments ?? []).length - 1, replyCount + 1);
+    onDeleteComment(currentLength - 1, replyCount + 1);
   };
 
   const handleDeleteReply = () => {
