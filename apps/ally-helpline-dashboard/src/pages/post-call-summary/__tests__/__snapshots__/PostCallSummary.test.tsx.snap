@@ -1,0 +1,117 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PostCallSummary Component > Snapshot Testing > should match snapshot for BoxBreathing section 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="h-[100vh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white"
+    >
+      <div
+        class="w-full border-b border-[#E5E7EB]"
+      >
+        <div
+          data-testid="tabs"
+        >
+          <button
+            class="active"
+            data-testid="tab-Box breathing"
+          >
+            Return to Self
+          </button>
+          <button
+            class=""
+            data-testid="tab-Session summary"
+          >
+            Session summary
+          </button>
+        </div>
+      </div>
+      <div
+        class="h-fit overflow-hidden w-full"
+        data-testid="motion-div"
+        layout="position"
+        layoutid="content-container"
+        transition="[object Object]"
+      >
+        <div
+          class="flex flex-col gap-4"
+          data-testid="motion-div"
+        >
+          <div
+            data-testid="stress-buster-step"
+          >
+            <button
+              data-testid="proceed-btn"
+            >
+              Proceed
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`PostCallSummary Component > Snapshot Testing > should match snapshot for SessionSummary section 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="h-[100vh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white"
+    >
+      <div
+        class="w-full border-b border-[#E5E7EB]"
+      >
+        <div
+          data-testid="tabs"
+        >
+          <button
+            class=""
+            data-testid="tab-Box breathing"
+          >
+            Return to Self
+          </button>
+          <button
+            class="active"
+            data-testid="tab-Session summary"
+          >
+            Session summary
+          </button>
+        </div>
+      </div>
+      <div
+        class="h-fit overflow-hidden w-full"
+        data-testid="motion-div"
+        layout="position"
+        layoutid="content-container"
+        transition="[object Object]"
+      >
+        <div
+          class="flex flex-col gap-4"
+          data-testid="motion-div"
+        >
+          <div
+            class="max-h-[calc(100vh-250px)]"
+            data-testid="call-summary"
+          >
+            <div
+              data-testid="chat-id"
+            >
+              123
+            </div>
+            <button
+              data-testid="post-process-btn"
+            >
+              Post Process
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

@@ -162,9 +162,7 @@ describe("MagicLinkVerify Component", () => {
     it("should show error toast and redirect when no token is provided", () => {
       renderWithRouter(["/auth/verify"]);
 
-      expect(mockToastError).toHaveBeenCalledWith(
-        "Invalid magic link. Redirecting to login...",
-      );
+      expect(mockToastError).toHaveBeenCalledWith("Invalid magic link. Redirecting to login...");
 
       // Fast-forward timer for the redirect
       vi.advanceTimersByTime(2000);
@@ -243,9 +241,7 @@ describe("MagicLinkVerify Component", () => {
       renderWithRouter(["/auth/verify?token="]);
 
       // Empty token evaluates to falsy, should show error
-      expect(mockToastError).toHaveBeenCalledWith(
-        "Invalid magic link. Redirecting to login...",
-      );
+      expect(mockToastError).toHaveBeenCalledWith("Invalid magic link. Redirecting to login...");
     });
 
     it("should handle token with special characters", () => {

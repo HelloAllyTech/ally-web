@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useParams } from "react-router-dom";
 
-import { TabGroup } from "@components";
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import { updateQueryParamListWithoutReload } from "@utils";
 
 import { CallSummary, StressBusterStep } from "./components";
@@ -74,9 +74,18 @@ export const PostCallSummary = () => {
       {isDeeplink ? (
         <Content />
       ) : (
-        <TabGroup value={selectedTab} onChange={onTabChange} tabs={isDeeplink ? [] : summaryTabs}>
+        <>
+          <div className="w-full border-b border-[#E5E7EB]">
+            <Tabs
+              items={summaryTabs.map(tab => ({ id: tab.value, label: tab.label }))}
+              activeId={selectedTab}
+              onChange={newId => onTabChange(null, newId as SectionType)}
+              className="border-none w-full text-base font-primary"
+              showCount={false}
+            />
+          </div>
           <Content />
-        </TabGroup>
+        </>
       )}
     </div>
   );

@@ -40,7 +40,8 @@ export const ROUTES = {
   COMMUNITY_LEADERBOARD: "/community",
   REVIEW: "/review",
   ACHIEVEMENTS_VIEW_ALL: "/achievements",
-  REVIEW_DETAILS: "/review/:reviewId",
+  SIMULATION_REVIEW_DETAILS: "/simulation-review/:reviewId",
+  SCRIBE_REVIEW_DETAILS: "/scribe-review/:reviewId",
   ARCHIVES: "/archives",
 } as const;
 
@@ -68,7 +69,7 @@ export const navBarOptions = [
     key: "nav.tabs.review",
     Icon: ReviewNavIcon,
     path: ROUTES.REVIEW,
-    activePages: [ROUTES.REVIEW_DETAILS],
+    activePages: [ROUTES.REVIEW, ROUTES.SIMULATION_REVIEW_DETAILS, ROUTES.SCRIBE_REVIEW_DETAILS],
     permissions: [Permissions.REVIEWER_ACCESS],
   },
   {

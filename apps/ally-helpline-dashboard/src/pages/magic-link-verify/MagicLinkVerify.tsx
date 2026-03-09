@@ -84,9 +84,7 @@ export const MagicLinkVerify: React.FC = () => {
             <div className="w-12 h-12 rounded-full bg-error-100 flex items-center justify-center">
               <span className="text-2xl text-error-600">✕</span>
             </div>
-            <h2 className="text-2xl font-secondary text-typography-900">
-              Invalid or Expired Link
-            </h2>
+            <h2 className="text-2xl font-secondary text-typography-900">Invalid or Expired Link</h2>
             <p className="text-sm text-typography-600">Redirecting to login...</p>
           </>
         )}
@@ -95,9 +93,7 @@ export const MagicLinkVerify: React.FC = () => {
             <div className="w-12 h-12 rounded-full bg-success-100 flex items-center justify-center">
               <span className="text-2xl text-success-600">✓</span>
             </div>
-            <h2 className="text-2xl font-secondary text-typography-900">
-              Login Successful
-            </h2>
+            <h2 className="text-2xl font-secondary text-typography-900">Login Successful</h2>
             <p className="text-sm text-typography-600">Redirecting to dashboard...</p>
           </>
         )}

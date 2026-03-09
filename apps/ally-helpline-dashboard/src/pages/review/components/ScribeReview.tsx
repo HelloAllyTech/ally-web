@@ -81,6 +81,10 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
     });
   };
 
+  const onReviewTranscript = (reviewId: string) => {
+    navigate(ROUTES.SCRIBE_REVIEW_DETAILS?.replace(":reviewId", reviewId));
+  };
+
   const isInitialLoading = isScribeReviewsFetching && feedData.length === 0;
   const isEmpty =
     !isScribeReviewsFetching && feedData.length === 0 && scribeReviewsData?.data?.length === 0;
@@ -123,7 +127,7 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
             scenario={item.scenario}
             reactions={item.reactions}
             commentsCount={item.commentsCount}
-            onReviewTranscript={() => navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", item.id))}
+            onReviewTranscript={() => onReviewTranscript(item.id)}
             duration={item.scenarioSession?.duration}
             dateTime={item.scenarioSession?.createdAt}
             badgeBgColor="#FFF3E0"

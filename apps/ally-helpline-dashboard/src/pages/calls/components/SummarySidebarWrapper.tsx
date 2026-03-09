@@ -1,11 +1,9 @@
 import { FC, useEffect, useState } from "react";
 
-import { Tabs, Tab } from "@mui/material";
-
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import { Drawer } from "@components";
 import { ShortSessionUI } from "@containers";
 
-import { tabStyles } from "../constants";
 import { SummarySidebarWrapperProps } from "./types";
 
 const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
@@ -25,10 +23,6 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
     }
   }, [tabList]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue);
-  };
-
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
   return (
@@ -46,20 +40,15 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
       ) : (
         <>
           <div className="w-[50vw] h-full flex flex-col">
-            <Tabs
-              value={selectedTab}
-              onChange={handleTabChange}
-              className="w-full normal-case border-b border-[#DBDBDB] mb-4"
-              sx={{
-                "& .MuiButtonBase-root": {
-                  fontFamily: "IBM_Plex_Serif",
-                },
-              }}
-            >
-              {tabList?.map(tab => (
-                <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
-              ))}
-            </Tabs>
+            <div className="w-full border-b border-[#DBDBDB] mb-4">
+              <Tabs
+                items={tabList?.map(tab => ({ id: String(tab.id), label: tab.label })) ?? []}
+                activeId={String(selectedTab)}
+                onChange={newId => setSelectedTab(Number(newId))}
+                className="border-none w-full normal-case text-base font-primary"
+                showCount={false}
+              />
+            </div>
             {getTabContent()}
           </div>
           {children}
