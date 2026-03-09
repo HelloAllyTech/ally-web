@@ -14,6 +14,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
   tabList,
   title,
   isShortSession = false,
+  summaryData,
   children,
 }) => {
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
@@ -41,7 +42,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
       headerButtons={extraHeaderList?.length > 0 ? extraHeaderList : []}
     >
       {isShortSession ? (
-        <ShortSessionUI className="mx-3" />
+        <ShortSessionUI summaryData={summaryData} className="!min-w-[50vw]" />
       ) : (
         <>
           <div className="w-[50vw] h-full flex flex-col">

@@ -69,7 +69,7 @@ import Flow from "./flow.svg?react";
 import Focus from "./focus.svg?react";
 import Hide from "./hide.svg?react";
 import HomeworkRecommended from "./homework-recommended.svg?react";
-import HoverGlass from "./hover-glass.svg?react";
+import HourGlass from "./hour-glass.svg?react";
 import InDoubt from "./in-doubt.svg?react";
 import InfoIcon from "./info-icon.svg?react";
 import Info from "./info.svg?react";
@@ -313,5 +313,5 @@ export {
   PencilIcon,
   AddIcon,
   Emoji,
-  HoverGlass,
+  HourGlass,
 };

@@ -209,7 +209,7 @@ export const PostSimulationSummary: FC = () => {
           )}
         </div>
         {isShortSession ? (
-          <ShortSessionUI className="flex-1" />
+          <ShortSessionUI className="flex-1" summaryData={summaryData} />
         ) : (
           <>
             <ShareForReview
