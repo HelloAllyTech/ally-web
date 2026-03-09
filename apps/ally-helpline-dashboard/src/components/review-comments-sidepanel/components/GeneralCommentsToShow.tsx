@@ -93,8 +93,8 @@ const GeneralCommentsToShow = ({
           hidden: false,
         },
       ]);
+      setComment("");
     }
-    setComment("");
   }, [isCreateCommentSuccess]);
 
   useEffect(() => {
