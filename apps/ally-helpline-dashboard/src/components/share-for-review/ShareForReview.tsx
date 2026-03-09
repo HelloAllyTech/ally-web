@@ -111,7 +111,7 @@ const ScenarioMedia = ({ scenario }: { scenario: ScenarioDetailsScenario }) => {
       <CustomVideo
         src={scenario.coverVideoUrl}
         alt="Scenario Cover Video"
-        className="w-full h-1/2 object-cover"
+        className="w-full h-[110px] object-cover"
       />
     );
   }
@@ -119,7 +119,7 @@ const ScenarioMedia = ({ scenario }: { scenario: ScenarioDetailsScenario }) => {
     <CustomImage
       src={scenario.coverImageUrl}
       alt="Scenario Cover Image"
-      className="w-full h-1/2 object-cover"
+      className="w-full h-[110px] object-cover"
     />
   );
 };
