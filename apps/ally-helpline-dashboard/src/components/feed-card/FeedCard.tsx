@@ -69,7 +69,7 @@ const FeedCard: FC<FeedCardProps> = ({
   const formattedDateTime = formatDateTime(dateTime);
   const relativeTime = formatRelativeTime(createdAt, t);
 
-  const entries = Object.entries(reactions);
+  const entries = Object.entries(reactions ?? {});
   const unicodeCodes = entries.map(([code]) => code);
   const totalReactionCount = entries.reduce((sum, [, count]) => sum + count, 0);
 
@@ -127,7 +127,7 @@ const FeedCard: FC<FeedCardProps> = ({
   };
 
   const userImage = useMemo(() => {
-    if (user.id === currentDetails?.id) {
+    if (user?.id === currentDetails?.id) {
       return currentDetails?.profileImageUrl;
     }
     return user?.profileImage;
