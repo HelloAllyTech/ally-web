@@ -18,6 +18,7 @@ export interface ShareForReviewProps {
   sessionCreatedAt?: string;
   sessionCallDuration?: number;
   sessionReviewCreatedAt?: string;
+  tag?: string;
 }
 
 interface ScenarioDetailsScenario {
@@ -148,7 +149,13 @@ const DescriptionToggle = ({
   );
 };
 
-const ScenarioDetails = ({ scenario }: { scenario: ScenarioDetailsScenario | null }) => {
+const ScenarioDetails = ({
+  scenario,
+  tag,
+}: {
+  scenario: ScenarioDetailsScenario | null;
+  tag?: string;
+}) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
@@ -185,6 +192,9 @@ const ScenarioDetails = ({ scenario }: { scenario: ScenarioDetailsScenario | nul
         <ScenarioMedia scenario={scenario} />
       </div>
       <div className="flex flex-col gap-2 w-2/3">
+        <div className="text-xs bg-[#EDE7F6] text-[#7E57C2] px-2 w-fit font-normal rounded-[3px]">
+          {tag}
+        </div>
         <h3 className="text-lg text-typography-900">{scenario.title}</h3>
         <div className="flex flex-col gap-1">
           <p
@@ -239,6 +249,7 @@ export const ShareForReview = ({
   sessionCreatedAt,
   sessionCallDuration,
   sessionReviewCreatedAt,
+  tag,
 }: ShareForReviewProps) => {
   const shareForReviewRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -316,7 +327,7 @@ export const ShareForReview = ({
               callDuration={sessionCallDuration || summaryDetails?.details?.callDuration}
             />
 
-            <ScenarioDetails scenario={summaryDetails?.scenario} />
+            <ScenarioDetails scenario={summaryDetails?.scenario} tag={tag} />
 
             <EmojiPickerTrigger onEmojiClick={insertEmoji} isExpired={timeDiff >= 10} />
 
