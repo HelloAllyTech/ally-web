@@ -135,7 +135,7 @@ const SelectableText = ({
         hidden: false,
       };
       onCommentChange?.({
-        comments: [...(selectedThreadId ? comments : []), newComment],
+        comments: [newComment, ...(selectedThreadId ? comments : [])],
         threadId: createCommentData.thread?.id ?? selectedThreadId,
         transcript: {
           id: transcript.id,
@@ -150,7 +150,7 @@ const SelectableText = ({
       });
       setAddCommentDialogOpen(null);
       onAddComment?.();
-      setComments(prev => [...(prev ?? []), newComment]);
+      setComments(prev => [newComment, ...(prev ?? [])]);
       setNewCommentSelection(null);
     }
   }, [isCreateCommentSuccess]);
