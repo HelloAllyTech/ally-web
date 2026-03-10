@@ -225,3 +225,8 @@ export enum UserRole {
   CLIENT = "CLIENT",
   REVIEWER = "REVIEWER",
 }
+
+export enum AppType {
+  ADMIN = "ADMIN",
+  APP = "APP",
+}
