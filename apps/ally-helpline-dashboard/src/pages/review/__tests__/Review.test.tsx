@@ -119,8 +119,8 @@ vi.mock("react-router-dom", async () => {
 });
 
 let mockPermissionsList: string[] = [
-  Permissions.VIEW_SIMULATION_REVIEW,
-  Permissions.VIEW_SCRIBE_REVIEW,
+  Permissions.VIEW_SIMULATION_REVIEWS,
+  Permissions.VIEW_SCRIBE_REVIEWS,
 ];
 vi.mock("@hooks", async importOriginal => {
   const actual = await importOriginal<typeof import("@hooks")>();
@@ -314,7 +314,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe("Review Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEW, Permissions.VIEW_SCRIBE_REVIEW];
+    mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS];
     mockUseGetReviewsQuery.mockReturnValue(defaultReviewsQueryReturn);
     mockUseGetReviewThreadsQuery.mockReturnValue(defaultThreadsQueryReturn);
     mockUseGetScribeReviewsQuery.mockReturnValue(defaultScribeReviewsQueryReturn);
@@ -404,7 +404,7 @@ describe("Review Component", () => {
    */
   describe("Permission-based tab filtering", () => {
     it("shows tab UI when user has both review permissions", () => {
-      mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEW, Permissions.VIEW_SCRIBE_REVIEW];
+      mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS];
       render(
         <TestWrapper>
           <Review />
@@ -414,7 +414,7 @@ describe("Review Component", () => {
     });
 
     it("hides tab UI and renders content when user has only one review permission", () => {
-      mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEW];
+      mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEWS];
       render(
         <TestWrapper>
           <Review />
