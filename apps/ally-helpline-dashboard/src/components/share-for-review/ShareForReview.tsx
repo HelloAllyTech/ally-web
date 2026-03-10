@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -255,12 +255,10 @@ export const ShareForReview = ({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [note, setNote] = useState("");
 
-  const timeDiff = useMemo(() => {
-    return differenceInMinutes(
-      new Date(),
-      new Date(sessionReviewCreatedAt || summaryDetails?.reviewCreatedAt),
-    );
-  }, [sessionReviewCreatedAt, summaryDetails?.reviewCreatedAt]);
+  const timeDiff = differenceInMinutes(
+    new Date(),
+    new Date(sessionReviewCreatedAt || summaryDetails?.reviewCreatedAt),
+  );
 
   useEffect(() => {
     if (isOpen) {
