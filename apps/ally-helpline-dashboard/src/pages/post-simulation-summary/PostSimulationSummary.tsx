@@ -198,7 +198,9 @@ export const PostSimulationSummary: FC = () => {
                   <div className="border-l border-border h-5" />
                   <Button
                     onClick={() =>
-                      navigate(ROUTES.REVIEW_DETAILS.replace(":reviewId", summary.reviewId))
+                      navigate(
+                        ROUTES.SIMULATION_REVIEW_DETAILS.replace(":reviewId", summary.reviewId),
+                      )
                     }
                     variant="secondary"
                     className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg relative"
@@ -223,6 +225,7 @@ export const PostSimulationSummary: FC = () => {
               onNoteChange={(note: string) => {
                 handleCreateReview(REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW, note);
               }}
+              tag="Simulation"
             />
             <Tabs
               value={selectedTab}
