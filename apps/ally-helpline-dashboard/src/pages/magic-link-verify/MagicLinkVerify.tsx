@@ -88,15 +88,6 @@ export const MagicLinkVerify: React.FC = () => {
             <p className="text-sm text-typography-600">Redirecting to login...</p>
           </>
         )}
-        {!error && isSuccess && !isOpenTermsAndAgreement && (
-          <>
-            <div className="w-12 h-12 rounded-full bg-success-100 flex items-center justify-center">
-              <span className="text-2xl text-success-600">✓</span>
-            </div>
-            <h2 className="text-2xl font-secondary text-typography-900">Login Successful</h2>
-            <p className="text-sm text-typography-600">Redirecting to dashboard...</p>
-          </>
-        )}
         {!error && !isSuccess && isLoading && (
           <>
             <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
