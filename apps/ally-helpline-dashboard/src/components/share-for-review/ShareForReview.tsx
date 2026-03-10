@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { CustomImage, CustomVideo } from "@ally-ui-mono/ui-shared/index";
 import { ArrowDownBlue, CloseIcon } from "@assets";
 import { Button, EmojiPickerTrigger } from "@components";
-import { getFormattedDateTime } from "@utils";
+import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 export interface ShareForReviewProps {
   isOpen: boolean;
@@ -89,12 +89,16 @@ const SubSection = ({
 }) => {
   const { t } = useTranslation();
   const formattedDate = getFormattedDateTime(createdAt, "MMM dd, yyyy hh:mm a");
+  const formattedCallDuration =
+    callDuration < 60
+      ? `${callDuration} sec`
+      : `${getFormattedTimeFromDuration(callDuration, "mm:ss")} Min`;
 
   return (
     <div className="flex items-center gap-1 text-typography-600 font-primary text-sm">
       {t("review.details.dateAndTime")}: {formattedDate}
       <span className="w-1 h-1 bg-neutral-500 rounded-full mx-1" aria-hidden />
-      <span className="font-primary leading-4">{callDuration}</span>
+      <span className="font-primary leading-4">{formattedCallDuration}</span>
     </div>
   );
 };
