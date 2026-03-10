@@ -180,7 +180,8 @@ export interface UserModalProps {
 
 export type Option = {
   id: string | number;
-  value: string;
+  value?: string;
+  name?: string;
 };
 export interface FieldProps {
   id: string;
@@ -214,6 +215,7 @@ export interface EditUserBody {
 export interface UserRoles {
   id: number;
   name: string;
+  value?: string;
 }
 
 export interface CreditFieldProps {

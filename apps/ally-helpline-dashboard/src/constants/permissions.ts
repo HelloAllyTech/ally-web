@@ -32,6 +32,8 @@ export enum Permissions {
   VIEW_LEADERBOARD = "view:community:leaderboard",
   VIEW_SIMULATION_REVIEWS = "view:simulation-reviews",
   VIEW_SCRIBE_REVIEWS = "view:scribe-reviews",
+  VIEW_SIMULATION_REVIEW = "view:simulation-review",
+  VIEW_SCRIBE_REVIEW = "view:scribe-review",
   VIEW_BADGES = "view:user:badges",
   ARCHIVE_CALL_LOG = "archive:call-log",
   ARCHIVE_CHAT = "ARCHIVE_CHAT",
