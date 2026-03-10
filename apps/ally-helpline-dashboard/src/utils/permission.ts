@@ -13,7 +13,11 @@ export const hasSessionLogsPermission = (permissions: Permissions[]) =>
   permissions?.some(permission => SESSION_LOGS_PERMISSIONS.includes(permission));
 
 export const hasReviewPermission = (permissions: Permissions[]) =>
-  permissions?.find(permission => permission === Permissions.REVIEWER_ACCESS);
+  permissions?.some(
+    permission =>
+      permission === Permissions.VIEW_SIMULATION_REVIEW ||
+      permission === Permissions.VIEW_SCRIBE_REVIEW,
+  );
 
 export const hasPermissions = (
   permissions: Permissions[] | null | undefined,
