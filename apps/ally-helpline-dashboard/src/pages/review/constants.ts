@@ -33,10 +33,10 @@ export enum ReviewTab {
 }
 
 export const TABS = [
-  { label: "Scribe", value: ReviewTab.SCRIBE, permission: Permissions.VIEW_SCRIBE_REVIEW },
+  { label: "Scribe", value: ReviewTab.SCRIBE, permission: Permissions.VIEW_SCRIBE_REVIEWS },
   {
     label: "Simulation",
     value: ReviewTab.SIMULATION,
-    permission: Permissions.VIEW_SIMULATION_REVIEW,
+    permission: Permissions.VIEW_SIMULATION_REVIEWS,
   },
 ];

@@ -22,7 +22,13 @@ import {
 
 import { baseAPI, baseQuery } from "./baseAPI";
 
-const ALLOWED_ROLES = [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER, UserRole.REVIEWER];
+const ALLOWED_ROLES = [
+  UserRole.COUNSELLOR,
+  UserRole.ADMIN,
+  UserRole.LEARNER,
+  UserRole.SIMULATION_REVIEWER,
+  UserRole.SCRIBE_REVIEWER,
+];
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
