@@ -182,6 +182,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
             status: REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW,
           });
         }}
+        tag="Simulation"
       />
     </div>
   );
