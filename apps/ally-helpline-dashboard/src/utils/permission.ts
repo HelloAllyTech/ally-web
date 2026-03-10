@@ -15,8 +15,8 @@ export const hasSessionLogsPermission = (permissions: Permissions[]) =>
 export const hasReviewPermission = (permissions: Permissions[]) =>
   permissions?.some(
     permission =>
-      permission === Permissions.VIEW_SIMULATION_REVIEW ||
-      permission === Permissions.VIEW_SCRIBE_REVIEW,
+      permission === Permissions.VIEW_SIMULATION_REVIEWS ||
+      permission === Permissions.VIEW_SCRIBE_REVIEWS,
   );
 
 export const hasPermissions = (

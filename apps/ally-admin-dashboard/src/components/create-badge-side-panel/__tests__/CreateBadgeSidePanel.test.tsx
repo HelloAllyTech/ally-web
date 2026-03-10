@@ -13,7 +13,7 @@ const mockDeleteBadgeIcon = vi.fn();
 // Mock roles data - LEARNER role for SIMULATION_MINUTES badge type
 const mockRolesData = [
   { id: 1, name: "LEARNER" },
-  { id: 2, name: "REVIEWER" },
+  { id: 2, name: "SIMULATION_REVIEWER" },
 ];
 
 // Mock API hooks

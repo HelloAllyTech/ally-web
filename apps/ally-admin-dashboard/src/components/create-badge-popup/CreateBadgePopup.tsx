@@ -38,7 +38,7 @@ export const BADGE_POPUP_OPTIONS: BadgeOption[] = [
     label: "Contribution Badges",
     description: "Earned when giving comment or reactions.",
     icon: Contribution,
-    role: "REVIEWER",
+    role: "SIMULATION_REVIEWER",
   },
   {
     value: "COMMENTS_REACTIONS_RECEIVED",
