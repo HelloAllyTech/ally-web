@@ -1,6 +1,9 @@
+import { AppType } from "./user";
+
 export interface GenerateOTPRequest {
   phone?: string;
   email?: string;
+  appType?: AppType;
 }
 
 export interface VerifyOTPRequest {
