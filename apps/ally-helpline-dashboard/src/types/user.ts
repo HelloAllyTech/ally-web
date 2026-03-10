@@ -15,6 +15,11 @@ export enum UserRole {
   REVIEWER = "REVIEWER",
 }
 
+export enum AppType {
+  ADMIN = "ADMIN",
+  APP = "APP",
+}
+
 export interface UserPreferences {
   [key: string]: any;
 }
