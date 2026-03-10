@@ -6,6 +6,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import CommentCard from "../CommentCard";
+import { formatRelativeTime } from "@src/utils";
 
 // Mock NativeEmoji component
 vi.mock("@components", async () => {
@@ -16,6 +17,9 @@ vi.mock("@components", async () => {
       <span data-testid={`emoji-${unified}`} role="img" aria-label={`emoji-${unified}`}>
         {unified}
       </span>
+    ),
+    Timer: ({ startTime }: { startTime: string }) => (
+      <div data-testid="timer">{formatRelativeTime(startTime)}</div>
     ),
   };
 });
@@ -425,12 +429,6 @@ describe("CommentCard Component", () => {
       renderWithProvider(<CommentCard comment={mockComment} />);
       const nameElement = screen.getByText("John Doe");
       expect(nameElement).toHaveClass("text-[14px]", "font-medium");
-    });
-
-    it("should apply correct class to timestamp", () => {
-      renderWithProvider(<CommentCard comment={mockComment} />);
-      const timestampElement = screen.getByText("2 hours ago");
-      expect(timestampElement).toHaveClass("text-[12px]", "text-gray-500");
     });
 
     it("should apply cursor-pointer to Reply button", () => {
