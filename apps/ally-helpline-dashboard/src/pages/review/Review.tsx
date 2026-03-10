@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useMemo } from "react";
 
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,8 @@ import { useSearchParams } from "react-router-dom";
 
 import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
 import { ToggleButtonGroup } from "@components";
+import { useUser } from "@hooks";
+import { hasPermissions } from "@utils";
 
 import ScribeReview from "./components/ScribeReview";
 import SimulationReview from "./components/SimulationReview";
@@ -22,6 +24,12 @@ export const Review: FC = () => {
 const ReviewWithTabs: FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
+  const { permissions } = useUser();
+
+  const visibleTabs = useMemo(
+    () => TABS.filter(tab => hasPermissions(permissions, tab.permission)),
+    [permissions],
+  );
 
   const filterOptions = FILTER_OPTIONS(t);
 
@@ -29,8 +37,12 @@ const ReviewWithTabs: FC = () => {
   const filterFromUrl = searchParams.get("filter");
   const isValidTab = (tab: string | null) =>
     tab === ReviewTab.SCRIBE || tab === ReviewTab.SIMULATION;
+  const isVisibleTab = (tab: string | null) => visibleTabs.some(t => t.value === tab);
   const isValidFilter = (f: string | null) => f && filterOptions.some(option => option.value === f);
-  const initialTab = isValidTab(tabFromUrl) ? tabFromUrl : TABS[0].value;
+  const initialTab =
+    isValidTab(tabFromUrl) && isVisibleTab(tabFromUrl)
+      ? tabFromUrl
+      : (visibleTabs[0]?.value ?? TABS[0].value);
   const initialFilterFromUrl = isValidFilter(filterFromUrl) ? filterFromUrl! : "ALL";
 
   const [simulationFilter, setSimulationFilter] = useState(
@@ -40,6 +52,14 @@ const ReviewWithTabs: FC = () => {
     initialTab === ReviewTab.SCRIBE ? initialFilterFromUrl : "ALL",
   );
   const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  const showTabUI = visibleTabs.length > 1;
+
+  useEffect(() => {
+    if (visibleTabs.length > 0 && !visibleTabs.some(t => t.value === activeTab)) {
+      setActiveTab(visibleTabs[0].value);
+    }
+  }, [visibleTabs, activeTab]);
 
   const currentTabFilter = activeTab === ReviewTab.SIMULATION ? simulationFilter : scribeFilter;
   useEffect(() => {
@@ -82,23 +102,25 @@ const ReviewWithTabs: FC = () => {
             {t("review.title")}
           </h1>
         </motion.div>
-        <div className="w-full max-w-4xl px-4 sm:px-6 lg:px-8 pt-3">
-          <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
-            <Tabs
-              items={TABS.map(tab => ({ id: tab.value, label: tab.label }))}
-              activeId={activeTab}
-              onChange={handleTabSwitch}
-              className="border-none max-w-[330px] text-base font-primary"
-              showCount={false}
-            />
+        {showTabUI && (
+          <div className="w-full max-w-4xl px-4 sm:px-6 lg:px-8 pt-3">
+            <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
+              <Tabs
+                items={visibleTabs.map(tab => ({ id: tab.value, label: tab.label }))}
+                activeId={activeTab}
+                onChange={handleTabSwitch}
+                className="border-none max-w-[330px] text-base font-primary"
+                showCount={false}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="w-full max-w-4xl px-4 sm:px-6 lg:px-8"
+          className={`w-full max-w-4xl px-4 sm:px-6 lg:px-8 ${!showTabUI ? "pt-3" : ""}`}
         >
           <div className="py-3 sm:py-4 md:py-6 w-full">
             <ToggleButtonGroup

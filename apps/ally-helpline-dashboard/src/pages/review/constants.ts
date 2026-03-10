@@ -1,3 +1,5 @@
+import { Permissions } from "@constants";
+
 export const FILTER_OPTIONS = (t: any) => [
   { value: "ALL", label: t("review.filter.all") },
   { value: "LATEST", label: t("review.filter.latest") },
@@ -31,6 +33,10 @@ export enum ReviewTab {
 }
 
 export const TABS = [
-  { label: "Simulation", value: ReviewTab.SIMULATION },
-  { label: "Scribe", value: ReviewTab.SCRIBE },
+  { label: "Scribe", value: ReviewTab.SCRIBE, permission: Permissions.VIEW_SCRIBE_REVIEW },
+  {
+    label: "Simulation",
+    value: ReviewTab.SIMULATION,
+    permission: Permissions.VIEW_SIMULATION_REVIEW,
+  },
 ];
