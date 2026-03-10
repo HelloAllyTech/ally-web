@@ -135,6 +135,7 @@ export const UserModal: React.FC<UserModalProps> = ({
             </label>
             <input
               {...controllerField}
+              value={controllerField.value ?? ""}
               id={field.id}
               type={field.inputType}
               placeholder={field.placeholder}
@@ -241,6 +242,7 @@ export const UserModal: React.FC<UserModalProps> = ({
             </label>
             <textarea
               {...controllerField}
+              value={controllerField.value ?? ""}
               id={field.id}
               placeholder={field.placeholder}
               className="border rounded-md px-2 py-2 font-primary outline-none placeholder:text-typography-600"
@@ -302,7 +304,8 @@ export const UserModal: React.FC<UserModalProps> = ({
         <input
           id={field.id}
           type={field.inputType}
-          placeholder={details?.[field.id] ?? ""}
+          value={details?.[field.id] ?? ""}
+          placeholder={field.placeholder ?? ""}
           disabled
           className="border rounded-md px-2 py-2 outline-none text-base font-primary"
         />

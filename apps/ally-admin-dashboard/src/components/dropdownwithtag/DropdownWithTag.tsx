@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { createPortal } from "react-dom";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { ArrowSolid, Close } from "@assets";
 import { en } from "@constants";
 import { useCreatePortal } from "@hooks";
@@ -119,20 +120,25 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
               width: dropdownPosition.width,
             }}
           >
-            {options.map(role => {
-              const roleName = role.name || role.value;
-              const isSelected = value.includes(roleName);
+            {/* TODO: Remove the filter when the SCRIBE_REVIEWER role is removed */}
+            {options
+              ?.filter(
+                role => role.value !== "SCRIBE_REVIEWER" && FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG,
+              )
+              ?.map(role => {
+                const roleName = role.name || role.value;
+                const isSelected = value.includes(roleName);
 
-              return (
-                <div
-                  key={role.id || role.value}
-                  className={`px-3 py-2 text-sm cursor-pointer font-primary ${isSelected ? "bg-neutral-100" : ""}`}
-                  onClick={() => toggleRole(role)}
-                >
-                  {formatCapitalizedEnum(roleName)}
-                </div>
-              );
-            })}
+                return (
+                  <div
+                    key={role.id || role.value}
+                    className={`px-3 py-2 text-sm cursor-pointer font-primary ${isSelected ? "bg-neutral-100" : ""}`}
+                    onClick={() => toggleRole(role)}
+                  >
+                    {formatCapitalizedEnum(roleName)}
+                  </div>
+                );
+              })}
           </div>,
           document.body,
         )}
