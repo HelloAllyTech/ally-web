@@ -6,7 +6,7 @@
  */
 
 import { baseAPI, baseQuery } from "@api";
-import { ApiEndpoints, HttpMethod, Permissions, TAG_TYPES, UserRole } from "@constants";
+import { ApiEndpoints, AppType, HttpMethod, Permissions, TAG_TYPES, UserRole } from "@constants";
 import {
   VerifyOTPRequest,
   VerifyOTPResponse,
@@ -72,7 +72,7 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, email }) => ({
         url: ApiEndpoints.AUTH.GENERATE_OTP,
         method: HttpMethod.POST,
-        body: { phone, email, allowedRoles: [UserRole.SUPER_ADMIN] },
+        body: { phone, email, allowedRoles: [UserRole.SUPER_ADMIN], appType: AppType.ADMIN },
       }),
     }),
 

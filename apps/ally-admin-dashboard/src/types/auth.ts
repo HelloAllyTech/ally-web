@@ -1,8 +1,9 @@
-import { CallType, UserRole } from "@constants";
+import { AppType, CallType, UserRole } from "@constants";
 
 export interface GenerateOTPRequest {
   phone?: string;
   email?: string;
+  appType?: AppType;
 }
 
 export interface VerifyOTPRequest {
