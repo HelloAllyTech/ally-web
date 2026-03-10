@@ -3,6 +3,7 @@ import { FC } from "react";
 import { Plus, TrashRed } from "@assets";
 import { en, FORM_FIELD_IDS } from "@constants";
 import { CustomFieldType } from "@types";
+import { ToggleSwitch } from "../toggle-switch/ToggleSwitch";
 
 interface CustomFieldGroupProps {
   formMethods: any;
@@ -34,9 +35,9 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
     setValue(FORM_FIELD_IDS.CUSTOM_FIELDS, updatedFields, { shouldDirty: true });
   };
 
-  const handleToggleField = (id: string) => {
+  const handleToggleField = (id: string, value: boolean) => {
     const updatedFields = customFields.map(field =>
-      field.id === id ? { ...field, useInDefaultPrompt: !(field.useInDefaultPrompt ?? true) } : field,
+      field.id === id ? { ...field, useInDefaultPrompt: value } : field,
     );
     setValue(FORM_FIELD_IDS.CUSTOM_FIELDS, updatedFields, { shouldDirty: true });
   };
@@ -65,18 +66,11 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
                 className="text-typography-900 text-base bg-transparent border-none outline-none focus:ring-0 p-0 cursor-text flex-1"
               />
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={useInDefaultPrompt}
-                  aria-label={`${useInDefaultPrompt ? "Disable" : "Enable"} ${field.name}`}
-                  onClick={() => handleToggleField(field.id)}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${useInDefaultPrompt ? "bg-blue-500" : "bg-gray-300"}`}
-                >
-                  <span
-                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${useInDefaultPrompt ? "translate-x-[18px]" : "translate-x-1"}`}
-                  />
-                </button>
+                <ToggleSwitch
+                  enabled={useInDefaultPrompt}
+                  onChange={value => handleToggleField(field.id, value)}
+                  label={`${useInDefaultPrompt ? "Disable" : "Enable"} ${field.name}`}
+                />
                 <button
                   type="button"
                   onClick={() => handleDeleteField(field.id)}
