@@ -111,6 +111,7 @@ export interface CustomFieldType {
   id?: string;
   name?: string;
   value?: string;
+  useInDefaultPrompt?: boolean;
 }
 export interface terminationEvent {
   eventId: string;
