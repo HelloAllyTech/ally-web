@@ -170,7 +170,11 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SIMULATION_REVIEW_DETAILS}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS]}
+              permission={[
+                Permissions.VIEW_SIMULATION_REVIEWS,
+                Permissions.VIEW_SCRIBE_REVIEWS,
+                Permissions.VIEW_SIMULATION_REVIEW,
+              ]}
               element={<ReviewDetails />}
             />
           }
@@ -179,7 +183,11 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.SCRIBE_REVIEW_DETAILS}
           element={
             <PermissionGuardedRoute
-              permission={[Permissions.VIEW_SCRIBE_REVIEWS, Permissions.VIEW_SIMULATION_REVIEWS]}
+              permission={[
+                Permissions.VIEW_SCRIBE_REVIEWS,
+                Permissions.VIEW_SIMULATION_REVIEWS,
+                Permissions.VIEW_SCRIBE_REVIEW,
+              ]}
               element={<ReviewDetails />}
             />
           }
