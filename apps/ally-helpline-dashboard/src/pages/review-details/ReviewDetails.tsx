@@ -28,8 +28,6 @@ import {
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS_VALUES, TAG_TYPES } from "@constants";
 import { baseAPI } from "@src/api/baseAPI";
-import AddReviewNote from "@src/components/add-review-note/AddReviewNote";
-import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { RootState } from "@store";
 import {
   CommentChangeParams,
@@ -40,6 +38,8 @@ import {
 } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
+import AddReviewNote from "../../components/add-review-note/AddReviewNote";
+import GeneralCommentsToShow from "../../components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { GENERAL_COMMENTS_PAGE_SIZE, TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
@@ -616,6 +616,7 @@ export const ReviewDetails = () => {
         sessionCreatedAt={reviewDetails?.createdAt}
         sessionCallDuration={reviewDetails?.scenarioSession?.duration}
         tag="Simulation"
+        sessionReviewCreatedAt={reviewDetails?.createdAt}
       />
     </div>
   );
