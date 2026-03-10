@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { createPortal } from "react-dom";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { ArrowSolid, Close } from "@assets";
 import { en } from "@constants";
 import { useCreatePortal } from "@hooks";
@@ -122,9 +121,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
           >
             {/* TODO: Remove the filter when the SCRIBE_REVIEWER role is removed */}
             {options
-              ?.filter(
-                role => role.value !== "SCRIBE_REVIEWER" && FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG,
-              )
+              ?.filter(role => role.value !== "SCRIBE_REVIEWER")
               ?.map(role => {
                 const roleName = role.name || role.value;
                 const isSelected = value.includes(roleName);
