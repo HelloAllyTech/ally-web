@@ -143,22 +143,20 @@ const CommentCard = ({
 
   useEffect(() => {
     if (createCommentData) {
-      if (replies.length > 0) {
-        const newReply: CommentItem = {
-          id: createCommentData.reply.id,
-          content: replyText,
-          createdBy: {
-            id: user?.id,
-            name: user?.name ?? "",
-            profileImage: user?.profileImageUrl ?? null,
-          },
-          createdAt: new Date().toISOString(),
-          reactions: {},
-          replyCount: 0,
-          myReaction: null,
-        };
-        setReplies(prev => [...(prev || []), newReply]);
-      }
+      const newReply: CommentItem = {
+        id: createCommentData.reply.id,
+        content: replyText,
+        createdBy: {
+          id: user?.id,
+          name: user?.name ?? "",
+          profileImage: user?.profileImageUrl ?? null,
+        },
+        createdAt: new Date().toISOString(),
+        reactions: {},
+        replyCount: 0,
+        myReaction: null,
+      };
+      setReplies(prev => [newReply, ...(prev || [])]);
       setReplyCount(prev => {
         const newReplyCount = prev + 1;
         updateReplyCount?.(newReplyCount);

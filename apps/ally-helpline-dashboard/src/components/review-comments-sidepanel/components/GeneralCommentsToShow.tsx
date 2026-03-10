@@ -75,7 +75,6 @@ const GeneralCommentsToShow = ({
     if (isCreateCommentSuccess) {
       toast.success("Comment created successfully");
       setComments(prev => [
-        ...(prev || []),
         {
           id: createCommentData?.comment?.id,
           content: comment,
@@ -90,6 +89,7 @@ const GeneralCommentsToShow = ({
           myReaction: null,
           hidden: false,
         },
+        ...(prev || []),
       ]);
       setComment("");
     }
