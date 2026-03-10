@@ -20,6 +20,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+import { Permissions } from "@constants";
 import { ReviewItem } from "@types";
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
@@ -114,6 +115,18 @@ vi.mock("react-router-dom", async () => {
   return {
     ...actual,
     useNavigate: () => mockNavigate,
+  };
+});
+
+let mockPermissionsList: string[] = [
+  Permissions.VIEW_SIMULATION_REVIEW,
+  Permissions.VIEW_SCRIBE_REVIEW,
+];
+vi.mock("@hooks", async importOriginal => {
+  const actual = await importOriginal<typeof import("@hooks")>();
+  return {
+    ...actual,
+    useUser: () => ({ permissions: mockPermissionsList }),
   };
 });
 
@@ -301,6 +314,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe("Review Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEW, Permissions.VIEW_SCRIBE_REVIEW];
     mockUseGetReviewsQuery.mockReturnValue(defaultReviewsQueryReturn);
     mockUseGetReviewThreadsQuery.mockReturnValue(defaultThreadsQueryReturn);
     mockUseGetScribeReviewsQuery.mockReturnValue(defaultScribeReviewsQueryReturn);
@@ -382,6 +396,33 @@ describe("Review Component", () => {
         </TestWrapper>,
       );
       expect(screen.getByTestId("infinite-scroll")).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Permission-based tab filtering
+   */
+  describe("Permission-based tab filtering", () => {
+    it("shows tab UI when user has both review permissions", () => {
+      mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEW, Permissions.VIEW_SCRIBE_REVIEW];
+      render(
+        <TestWrapper>
+          <Review />
+        </TestWrapper>,
+      );
+      expect(screen.getByTestId("tabs")).toBeInTheDocument();
+    });
+
+    it("hides tab UI and renders content when user has only one review permission", () => {
+      mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEW];
+      render(
+        <TestWrapper>
+          <Review />
+        </TestWrapper>,
+      );
+      expect(screen.queryByTestId("tabs")).not.toBeInTheDocument();
+      expect(screen.getByTestId("toggle-button-group")).toBeInTheDocument();
+      expect(screen.getByTestId("feed-card-review-1")).toBeInTheDocument();
     });
   });
 
@@ -864,7 +905,7 @@ describe("Review Component", () => {
 
       fireEvent.click(screen.getByTestId("review-transcript-review-1"));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/scribe-review/review-1");
+      expect(mockNavigate).toHaveBeenCalledWith("/simulation-review/review-1");
     });
 
     it("navigates to correct review details for different reviews", () => {
@@ -876,7 +917,7 @@ describe("Review Component", () => {
 
       fireEvent.click(screen.getByTestId("review-transcript-review-2"));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/scribe-review/review-2");
+      expect(mockNavigate).toHaveBeenCalledWith("/simulation-review/review-2");
     });
   });
 
