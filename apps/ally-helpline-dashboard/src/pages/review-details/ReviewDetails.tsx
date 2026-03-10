@@ -615,6 +615,7 @@ export const ReviewDetails = () => {
         modalHeader={reviewDetails?.note?.length > 0 ? "Edit note" : "Add note"}
         sessionCreatedAt={reviewDetails?.createdAt}
         sessionCallDuration={reviewDetails?.scenarioSession?.duration}
+        tag="Simulation"
       />
     </div>
   );

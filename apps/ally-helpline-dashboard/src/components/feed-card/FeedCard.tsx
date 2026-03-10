@@ -298,6 +298,9 @@ const FeedCard: FC<FeedCardProps> = ({
             </div>
 
             <div className="flex flex-col justify-start gap-1 sm:gap-2 flex-1 min-w-0">
+              <div className="text-xs bg-[#EDE7F6] text-[#7E57C2] px-2 w-fit font-normal rounded-[3px]">
+                Simulation
+              </div>
               <h4 className="font-primary text-sm sm:text-base leading-[1.3] text-[#1A1A1A]">
                 {scenario?.title}
               </h4>
