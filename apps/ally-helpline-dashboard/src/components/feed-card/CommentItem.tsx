@@ -1,9 +1,7 @@
 import { FC } from "react";
 
-import { useTranslation } from "react-i18next";
-
 import { CustomImage } from "@ally-ui-mono/ui-shared";
-import { formatRelativeTime } from "@utils";
+import Timer from "@src/components/timer";
 
 import EmojiStack from "./EmojiStack";
 import { Comment } from "./types";
@@ -14,14 +12,11 @@ interface CommentItemProps {
 
 const CommentItem: FC<CommentItemProps> = ({ comment }) => {
   const { createdBy, createdAt, content, replyCount } = comment;
-  const { t } = useTranslation();
 
   const entries = comment.reactions ? Object.entries(comment.reactions) : [];
   const unicodeCodes = entries?.map(([code]) => code) ?? [];
   const displayUnicodeCodes = unicodeCodes.length > 3 ? unicodeCodes.slice(0, 3) : unicodeCodes;
   const totalReactionCount = entries?.reduce((sum, [, count]) => sum + count, 0) ?? 0;
-
-  const relativeTime = formatRelativeTime(createdAt, t);
 
   const fallbackText = () => {
     if (createdBy?.name?.length > 1) {
@@ -57,7 +52,7 @@ const CommentItem: FC<CommentItemProps> = ({ comment }) => {
             {createdBy?.name}
           </span>
           <span className="font-primary text-[10px] sm:text-xs leading-[1.25] text-black/60">
-            {relativeTime}
+            <Timer startTime={createdAt} />
           </span>
         </div>
         <p className="font-primary text-xs sm:text-[13px] leading-[1.23] text-black/87 whitespace-pre-wrap">

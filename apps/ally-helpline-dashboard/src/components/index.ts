@@ -56,6 +56,7 @@ import TagGroup from "./tag-group";
 import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
 import ThreadCard from "./thread-card/ThreadCard";
+import Timer from "./timer";
 import ToggleButtonGroup from "./toggle-button-group";
 import { ToggleSwitch } from "./toggle-switch";
 import TranscriptListing from "./transcript-listing";
@@ -141,4 +142,5 @@ export {
   ShareForReview,
   ToggleSwitch,
   EmojiPickerTrigger,
+  Timer,
 };
