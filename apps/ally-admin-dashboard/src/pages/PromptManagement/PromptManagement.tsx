@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useGetPromptsQuery, useUpdatePromptMutation } from "@api";
-import { NotionTable, ListToolbar, PromptSidePanel } from "@components";
+import { useGetPromptsQuery, useUpdatePromptMutation, useDeletePromptMutation } from "@api";
+import { NotionTable, ListToolbar, PromptSidePanel, ActionConfirmationPopup } from "@components";
+import { ButtonVariant } from "@components/types";
 import { en, PROMPT_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import { Prompt } from "@types";
 
@@ -17,6 +18,7 @@ export const PromptManagement: React.FC = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
+  const [promptToDelete, setPromptToDelete] = useState<Prompt | null>(null);
   const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const { data: promptsResponse, isFetching: isQueryFetching } = useGetPromptsQuery({
@@ -50,6 +52,7 @@ export const PromptManagement: React.FC = () => {
   }, [searchQuery]);
 
   const [updatePrompt] = useUpdatePromptMutation();
+  const [deletePrompt] = useDeletePromptMutation();
 
   // Handle data updates when query data changes
   useEffect(() => {
@@ -132,6 +135,17 @@ export const PromptManagement: React.FC = () => {
     }
   };
 
+  const handleDeleteObsoletePrompt = async () => {
+    if (!promptToDelete?.id) return;
+    try {
+      await deletePrompt(promptToDelete.id).unwrap();
+      toast.success("Prompt permanently deleted");
+      setPromptToDelete(null);
+    } catch {
+      toast.error("Failed to delete prompt");
+    }
+  };
+
   const handleLoadMore = () => {
     if (isFetching || !hasMore) return;
     setOffset(prev => prev + limit);
@@ -141,6 +155,7 @@ export const PromptManagement: React.FC = () => {
     ...prompt,
     useDashboardOverride: prompt.useDashboardOverride ?? false,
     createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
+    isObsolete: prompt.isObsolete ? "OBSOLETE" : "ACTIVE",
   }));
 
   const tableFooter = (
@@ -189,6 +204,24 @@ export const PromptManagement: React.FC = () => {
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           onUpdate={handlePromptUpdate}
+        />
+      )}
+      {promptToDelete && (
+        <ActionConfirmationPopup
+          isOpen={!!promptToDelete}
+          onClose={() => setPromptToDelete(null)}
+          title="Delete Prompt"
+          description="Are you sure you want to permanently delete this obsolete prompt?"
+          primaryButton={{
+            label: en.common.delete,
+            onClick: handleDeleteObsoletePrompt,
+            variant: ButtonVariant.DESTRUCTIVE,
+          }}
+          secondaryButton={{
+            label: en.common.cancel,
+            onClick: () => setPromptToDelete(null),
+            variant: ButtonVariant.SECONDARY,
+          }}
         />
       )}
     </div>

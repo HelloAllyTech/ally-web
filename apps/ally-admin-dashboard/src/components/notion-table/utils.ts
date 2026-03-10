@@ -21,6 +21,7 @@ export const cellTypes = {
   dropdownTags: "dropdownTags",
   status: "status",
   roles: "roles",
+  actionItem: "actionItem",
 };
 
 export const keyCodes = {

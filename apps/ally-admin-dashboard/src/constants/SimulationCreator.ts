@@ -663,6 +663,14 @@ export const PROMPT_COLUMNS = [
     editable: true,
   },
   {
+    id: "isObsolete",
+    label: "Status",
+    accessor: "isObsolete",
+    dataType: cellTypes.status,
+    minWidth: 120,
+    editable: false,
+  },
+  {
     id: "createdAt",
     label: "Created Date",
     accessor: "createdAt",

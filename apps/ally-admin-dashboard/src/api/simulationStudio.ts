@@ -496,6 +496,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.PROMPTS],
     }),
 
+    /**
+     * Delete an obsolete prompt
+     */
+    deletePrompt: builder.mutation<void, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(id), // DELETE /prompts/:id
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
@@ -772,6 +783,7 @@ export const {
   useCreatePromptMutation,
   useUpdatePromptMutation,
   useRevertPromptMutation,
+  useDeletePromptMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,
