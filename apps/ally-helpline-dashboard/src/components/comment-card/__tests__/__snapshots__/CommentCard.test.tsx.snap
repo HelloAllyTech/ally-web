@@ -32,7 +32,9 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
           <div
             class="text-[12px] text-gray-500"
           >
-            2 hours ago
+            <div>
+              2 hours ago
+            </div>
           </div>
         </div>
       </div>
@@ -81,7 +83,9 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
           <div
             class="text-[12px] text-gray-500"
           >
-            2 hours ago
+            <div>
+              2 hours ago
+            </div>
           </div>
         </div>
       </div>

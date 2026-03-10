@@ -21,11 +21,11 @@ import {
   ReactionSelector,
   MenuItem,
   ConfirmationPopover,
+  Timer,
 } from "@components";
 import { COMMENT_MAX_LENGTH, COMMENT_DELETE_CONFIRMATION } from "@constants";
 import { RootState } from "@store";
 import { ReactionsType, CommentItem } from "@types";
-import { formatRelativeTime } from "@utils";
 
 interface CommentCardProps {
   comment: CommentItem;
@@ -554,7 +554,7 @@ const CommentCard = ({
     );
   };
 
-  const menuItems = useMemo(() => {
+  const getMenuItems = () => {
     const items: MenuItem[] = [];
     if (isFeedOwner) {
       items.push({
@@ -589,7 +589,7 @@ const CommentCard = ({
     }
 
     return items;
-  }, [isFeedOwner, isMyComment, comment.hidden, comment.content]);
+  };
 
   const hideReplies = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -628,10 +628,10 @@ const CommentCard = ({
                 {comment?.createdBy?.name || "Unknown"}
               </div>
               <div className="text-[12px] text-gray-500">
-                {formatRelativeTime(comment.createdAt)}
+                <Timer startTime={comment.createdAt} />
               </div>
             </div>
-            {menuItems.length > 0 && enableLikeUpdate && (
+            {getMenuItems().length > 0 && enableLikeUpdate && (
               <div className="flex flex-row justify-between items-center">
                 <button
                   onClick={handleMenuOpen}
@@ -642,7 +642,7 @@ const CommentCard = ({
                 </button>
                 <CustomMenu
                   anchorElement={menuAnchorEl}
-                  items={menuItems}
+                  items={getMenuItems()}
                   onClose={handleMenuClose}
                 />
               </div>

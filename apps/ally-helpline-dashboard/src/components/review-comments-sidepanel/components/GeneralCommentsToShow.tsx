@@ -84,7 +84,7 @@ const GeneralCommentsToShow = ({
             name: user?.name ?? "",
             profileImage: user?.profileImageUrl ?? null,
           },
-          createdAt: createCommentData?.data?.createdAt,
+          createdAt: createCommentData?.comment?.createdAt,
           reactions: {},
           replyCount: 0,
           myReaction: null,
