@@ -125,7 +125,6 @@ export const en = {
     pleaseWait: "Please wait while we verify your link",
     magicLinkExpired: "Invalid or Expired Link",
     redirectingToLogin: "Redirecting to login page...",
-    loginSuccessful: "Login Successful!",
     redirectingToDashboard: "Redirecting to dashboard...",
   },
   simulation: {
