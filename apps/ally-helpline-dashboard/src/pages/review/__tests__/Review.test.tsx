@@ -864,7 +864,7 @@ describe("Review Component", () => {
 
       fireEvent.click(screen.getByTestId("review-transcript-review-1"));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/scribe-review/review-1");
+      expect(mockNavigate).toHaveBeenCalledWith("/simulation-review/review-1");
     });
 
     it("navigates to correct review details for different reviews", () => {
@@ -876,7 +876,7 @@ describe("Review Component", () => {
 
       fireEvent.click(screen.getByTestId("review-transcript-review-2"));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/scribe-review/review-2");
+      expect(mockNavigate).toHaveBeenCalledWith("/simulation-review/review-2");
     });
   });
 

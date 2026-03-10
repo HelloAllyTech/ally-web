@@ -31,6 +31,6 @@ export enum ReviewTab {
 }
 
 export const TABS = [
-  { label: "Scribe", value: ReviewTab.SCRIBE },
   { label: "Simulation", value: ReviewTab.SIMULATION },
+  { label: "Scribe", value: ReviewTab.SCRIBE },
 ];
