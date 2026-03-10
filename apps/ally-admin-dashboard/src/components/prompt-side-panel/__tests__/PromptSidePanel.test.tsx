@@ -56,8 +56,10 @@ vi.mock("@components", () => ({
 
 // Mock API
 const mockRevertPrompt = vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve(true) });
+const mockDeletePrompt = vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve(true) });
 vi.mock("@api", () => ({
   useRevertPromptMutation: () => [mockRevertPrompt, { isLoading: false }],
+  useDeletePromptMutation: () => [mockDeletePrompt, { isLoading: false }],
 }));
 
 // Mock constants
