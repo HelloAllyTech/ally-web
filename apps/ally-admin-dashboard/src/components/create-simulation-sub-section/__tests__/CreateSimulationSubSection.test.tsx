@@ -168,7 +168,7 @@ describe("CreateSimulationSubSection", () => {
 
       const mainContainer = container.firstChild;
       expect(mainContainer).toHaveClass("w-[60%]");
-      expect(mainContainer).toHaveClass("min-w-[500px]");
+      expect(mainContainer).toHaveClass("min-w-[850px]");
     });
 
     it("uses flex-wrap layout", () => {
@@ -452,7 +452,7 @@ describe("CreateSimulationSubSection", () => {
 
       const mainContainer = container.firstChild;
       expect(mainContainer).toHaveClass("w-[60%]");
-      expect(mainContainer).toHaveClass("min-w-[500px]");
+      expect(mainContainer).toHaveClass("min-w-[850px]");
     });
   });
 
