@@ -237,9 +237,7 @@ export const ReviewDetails = () => {
                 thread.id === threadId
                   ? {
                       ...thread,
-                      comments: [...(comments || [])].sort(
-                        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-                      ),
+                      comments: [...(comments || [])],
                     }
                   : thread,
               )
