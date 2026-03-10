@@ -111,6 +111,7 @@ export interface CustomFieldType {
   id?: string;
   name?: string;
   value?: string;
+  isEnabled?: boolean;
 }
 export interface terminationEvent {
   eventId: string;

@@ -48,6 +48,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       id: `${FORM_FIELD_IDS.CUSTOM_FIELDS}${index + 1}}`,
       name: field.name,
       value: field.value,
+      isEnabled: field.isEnabled ?? true,
     })),
     agentDialogues: Array.isArray(data?.metadata?.agentDialogues)
       ? data?.metadata?.agentDialogues.join("\n")
