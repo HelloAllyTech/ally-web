@@ -70,7 +70,7 @@ export const navBarOptions = [
     Icon: ReviewNavIcon,
     path: ROUTES.REVIEW,
     activePages: [ROUTES.REVIEW, ROUTES.SIMULATION_REVIEW_DETAILS, ROUTES.SCRIBE_REVIEW_DETAILS],
-    permissions: [Permissions.VIEW_SIMULATION_REVIEW, Permissions.VIEW_SCRIBE_REVIEW],
+    permissions: [Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS],
   },
   {
     id: TabId.BADGES,
