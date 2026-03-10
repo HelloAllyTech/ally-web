@@ -10,7 +10,7 @@ interface CustomFieldGroupProps {
 
 interface CustomFieldWithValue extends CustomFieldType {
   value?: string;
-  isEnabled?: boolean;
+  useInDefaultPrompt?: boolean;
 }
 
 export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => {
@@ -36,7 +36,7 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
 
   const handleToggleField = (id: string) => {
     const updatedFields = customFields.map(field =>
-      field.id === id ? { ...field, isEnabled: !(field.isEnabled ?? true) } : field,
+      field.id === id ? { ...field, useInDefaultPrompt: !(field.useInDefaultPrompt ?? true) } : field,
     );
     setValue(FORM_FIELD_IDS.CUSTOM_FIELDS, updatedFields, { shouldDirty: true });
   };
@@ -45,7 +45,7 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
     const newField: CustomFieldWithValue = {
       id: `${FORM_FIELD_IDS.CUSTOM_FIELDS}${customFields.length + 1}`,
       name: `Custom field ${customFields.length + 1}`,
-      isEnabled: true,
+      useInDefaultPrompt: true,
     };
     setValue(FORM_FIELD_IDS.CUSTOM_FIELDS, [...customFields, newField], { shouldDirty: true });
   };
@@ -53,7 +53,7 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
   return (
     <div className="flex flex-col gap-6 w-full">
       {customFields?.map(field => {
-        const isEnabled = field.isEnabled ?? true;
+        const useInDefaultPrompt = field.useInDefaultPrompt ?? true;
 
         return (
           <div key={field.id} className="flex flex-col gap-2">
@@ -68,13 +68,13 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
                 <button
                   type="button"
                   role="switch"
-                  aria-checked={isEnabled}
-                  aria-label={`${isEnabled ? "Disable" : "Enable"} ${field.name}`}
+                  aria-checked={useInDefaultPrompt}
+                  aria-label={`${useInDefaultPrompt ? "Disable" : "Enable"} ${field.name}`}
                   onClick={() => handleToggleField(field.id)}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${isEnabled ? "bg-blue-500" : "bg-gray-300"}`}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${useInDefaultPrompt ? "bg-blue-500" : "bg-gray-300"}`}
                 >
                   <span
-                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${isEnabled ? "translate-x-[18px]" : "translate-x-1"}`}
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${useInDefaultPrompt ? "translate-x-[18px]" : "translate-x-1"}`}
                   />
                 </button>
                 <button

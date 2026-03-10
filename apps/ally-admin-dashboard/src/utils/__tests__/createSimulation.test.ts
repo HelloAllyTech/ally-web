@@ -258,7 +258,7 @@ describe("createSimulation utils", () => {
       expect(result.age).toBeUndefined();
     });
 
-    describe("customFields isEnabled toggle (issue #108)", () => {
+    describe("customFields useInDefaultPrompt toggle (issue #108)", () => {
       const baseResponse = {
         id: "sim-1",
         title: "T",
@@ -273,33 +273,33 @@ describe("createSimulation utils", () => {
         difficultyLevel: "easy",
       } as const;
 
-      it("should map isEnabled: true when API field has isEnabled: true", () => {
+      it("should map useInDefaultPrompt: true when API field has useInDefaultPrompt: true", () => {
         const mockResponse = {
           ...baseResponse,
           metadata: {
-            customFields: [{ name: "Field A", value: "val", isEnabled: true }],
+            customFields: [{ name: "Field A", value: "val", useInDefaultPrompt: true }],
           },
         } as any;
 
         const result = formatSimulationResponseData(mockResponse);
 
-        expect(result.customFields?.[0].isEnabled).toBe(true);
+        expect(result.customFields?.[0].useInDefaultPrompt).toBe(true);
       });
 
-      it("should map isEnabled: false when API field has isEnabled: false", () => {
+      it("should map useInDefaultPrompt: false when API field has useInDefaultPrompt: false", () => {
         const mockResponse = {
           ...baseResponse,
           metadata: {
-            customFields: [{ name: "Field B", value: "hello", isEnabled: false }],
+            customFields: [{ name: "Field B", value: "hello", useInDefaultPrompt: false }],
           },
         } as any;
 
         const result = formatSimulationResponseData(mockResponse);
 
-        expect(result.customFields?.[0].isEnabled).toBe(false);
+        expect(result.customFields?.[0].useInDefaultPrompt).toBe(false);
       });
 
-      it("should default isEnabled to true when API field does not include it (backward compat)", () => {
+      it("should default useInDefaultPrompt to true when API field does not include it (backward compat)", () => {
         const mockResponse = {
           ...baseResponse,
           metadata: {
@@ -309,26 +309,26 @@ describe("createSimulation utils", () => {
 
         const result = formatSimulationResponseData(mockResponse);
 
-        expect(result.customFields?.[0].isEnabled).toBe(true);
+        expect(result.customFields?.[0].useInDefaultPrompt).toBe(true);
       });
 
-      it("should handle mixed fields — some with isEnabled, some without", () => {
+      it("should handle mixed fields — some with useInDefaultPrompt, some without", () => {
         const mockResponse = {
           ...baseResponse,
           metadata: {
             customFields: [
-              { name: "Field 1", value: "v1", isEnabled: false },
-              { name: "Field 2", value: "v2" }, // no isEnabled
-              { name: "Field 3", value: "v3", isEnabled: true },
+              { name: "Field 1", value: "v1", useInDefaultPrompt: false },
+              { name: "Field 2", value: "v2" }, // no useInDefaultPrompt
+              { name: "Field 3", value: "v3", useInDefaultPrompt: true },
             ],
           },
         } as any;
 
         const result = formatSimulationResponseData(mockResponse);
 
-        expect(result.customFields?.[0].isEnabled).toBe(false);
-        expect(result.customFields?.[1].isEnabled).toBe(true); // defaulted
-        expect(result.customFields?.[2].isEnabled).toBe(true);
+        expect(result.customFields?.[0].useInDefaultPrompt).toBe(false);
+        expect(result.customFields?.[1].useInDefaultPrompt).toBe(true); // defaulted
+        expect(result.customFields?.[2].useInDefaultPrompt).toBe(true);
       });
 
       it("should return empty array when customFields is empty", () => {

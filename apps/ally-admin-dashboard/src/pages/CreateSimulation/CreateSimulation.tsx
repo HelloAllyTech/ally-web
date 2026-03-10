@@ -311,7 +311,7 @@ export const CreateSimulation: FC = () => {
     const customFieldGroupList = customFields?.map((field: any) => ({
       name: field.name,
       value: field.value,
-      isEnabled: field.isEnabled ?? true,
+      useInDefaultPrompt: field.useInDefaultPrompt ?? true,
     }));
 
     const normalizeInstructions = (value: unknown): string[] =>
