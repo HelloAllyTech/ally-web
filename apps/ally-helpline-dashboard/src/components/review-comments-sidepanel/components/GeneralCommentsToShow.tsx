@@ -26,6 +26,7 @@ interface GeneralCommentsToShowProps {
   onReplyChange?: (reply: CommentItem) => void;
   changedReply?: CommentItem;
   isFeedOwner?: boolean;
+  isScribeReview?: boolean;
 }
 
 const GeneralCommentsToShow = ({
@@ -39,6 +40,7 @@ const GeneralCommentsToShow = ({
   setDeletedReplyId,
   onReplyChange,
   changedReply,
+  isScribeReview,
   isFeedOwner,
 }: GeneralCommentsToShowProps) => {
   const [comment, setComment] = useState("");
@@ -46,7 +48,7 @@ const GeneralCommentsToShow = ({
   const [showCommentBox, setShowCommentBox] = useState(false);
   const { reviewId } = useParams<{ reviewId: string }>();
   const user = useSelector((state: RootState) => state.user.user);
-  const { data: review } = useGetReviewByIdQuery(reviewId);
+  const { data: review } = useGetReviewByIdQuery({ id: reviewId, isScribe: isScribeReview });
 
   const [
     createComment,
