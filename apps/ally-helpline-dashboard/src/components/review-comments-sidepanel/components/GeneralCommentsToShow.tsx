@@ -26,7 +26,6 @@ interface GeneralCommentsToShowProps {
   onReplyChange?: (reply: CommentItem) => void;
   changedReply?: CommentItem;
   isFeedOwner?: boolean;
-  setCommentsCount: Dispatch<SetStateAction<number>>;
 }
 
 const GeneralCommentsToShow = ({
@@ -41,7 +40,6 @@ const GeneralCommentsToShow = ({
   onReplyChange,
   changedReply,
   isFeedOwner,
-  setCommentsCount,
 }: GeneralCommentsToShowProps) => {
   const [comment, setComment] = useState("");
   const [commentThreadId, setCommentThreadId] = useState<string | null>(null);
@@ -94,7 +92,6 @@ const GeneralCommentsToShow = ({
         ...(prev || []),
       ]);
       setComment("");
-      setCommentsCount(prev => prev + 1);
     }
   }, [isCreateCommentSuccess]);
 
@@ -130,7 +127,6 @@ const GeneralCommentsToShow = ({
       }
       return newComments;
     });
-    setCommentsCount(prev => prev - 1);
   };
 
   const handleUpdateComment = (content: string, id: string) => {
@@ -155,7 +151,6 @@ const GeneralCommentsToShow = ({
         comment.id === commentId ? { ...comment, replyCount: comment.replyCount - 1 } : comment,
       ),
     );
-    setCommentsCount(prev => prev - 1);
   };
 
   const handleCommentHide = (hidden: boolean, commentId: string) => {
@@ -251,7 +246,6 @@ const GeneralCommentsToShow = ({
                   changedReply={changedReply}
                   isFeedOwner={isFeedOwner}
                   onToggleHide={handleCommentHide}
-                  onAddComment={() => setCommentsCount(prev => prev + 1)}
                 />
               ))}
             </InfiniteScroll>
