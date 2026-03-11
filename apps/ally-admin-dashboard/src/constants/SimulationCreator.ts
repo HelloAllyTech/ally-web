@@ -655,14 +655,6 @@ export const PROMPT_COLUMNS = [
     editable: false,
   },
   {
-    id: "useDashboardOverride",
-    label: "Use Dashboard",
-    accessor: "useDashboardOverride",
-    dataType: cellTypes.switch,
-    minWidth: 120,
-    editable: true,
-  },
-  {
     id: "createdAt",
     label: "Created Date",
     accessor: "createdAt",
