@@ -1,5 +1,4 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
 
 # Run tests before commit (skip cache to avoid stale/failed cache blocking commits)
 echo "Running tests before commit..."
