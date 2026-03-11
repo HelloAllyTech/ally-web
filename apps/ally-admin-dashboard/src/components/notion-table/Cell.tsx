@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
+import { Trash } from "@assets";
 import { EmojiPickerComponent, TimeInput, TagList, HelperTag } from "@components";
 import {
   EditableTextPopup,
@@ -289,6 +290,25 @@ export const Cell = ({
               ? formatCapitalizedEnum(value.value)
               : "--"}
         </span>
+      );
+      break;
+    case cellTypes.actionItem:
+      element = value.value ? (
+        <div
+          onClick={e => {
+            e.stopPropagation();
+            if (typeof value.value === "function") {
+              value.value(row);
+            }
+          }}
+          className="cursor-pointer text-red-500 hover:text-red-700 p-2 flex items-center"
+        >
+          <div className="w-4 h-4">
+            <Trash />
+          </div>
+        </div>
+      ) : (
+        <span />
       );
       break;
     default:

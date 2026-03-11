@@ -28,8 +28,6 @@ import {
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS_VALUES, TAG_TYPES } from "@constants";
 import { baseAPI } from "@src/api/baseAPI";
-import AddReviewNote from "@src/components/add-review-note/AddReviewNote";
-import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { RootState } from "@store";
 import {
   CommentChangeParams,
@@ -40,6 +38,8 @@ import {
 } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
+import AddReviewNote from "../../components/add-review-note/AddReviewNote";
+import GeneralCommentsToShow from "../../components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { GENERAL_COMMENTS_PAGE_SIZE, TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
@@ -237,9 +237,7 @@ export const ReviewDetails = () => {
                 thread.id === threadId
                   ? {
                       ...thread,
-                      comments: [...(comments || [])].sort(
-                        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-                      ),
+                      comments: [...(comments || [])],
                     }
                   : thread,
               )
@@ -460,9 +458,12 @@ export const ReviewDetails = () => {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col justify-center gap-1.5 font-primary text-base">
-            <div className="text-xl font-medium text-typography-900 flex flex-row items-center">
-              <span className="line-clamp-1">{reviewDetails?.scenario?.title}</span>
+          <div className="flex flex-col justify-center gap-1.5 font-primary">
+            <div className="font-medium text-typography-900 flex flex-row items-center">
+              <div className="text-[10px] font-normal text-[#7E57C2] bg-[#EDE7F6] px-1 py-[1.5px] rounded-[2px] mr-1.5">
+                Simulation
+              </div>
+              <span className="text-xl line-clamp-1">{reviewDetails?.scenario?.title}</span>
               <div
                 onClick={() => setShowSimulationDetailsModal(true)}
                 className="text-xs cursor-pointer text-neutral-500 ml-[4px]"
@@ -470,7 +471,7 @@ export const ReviewDetails = () => {
                 <InfoIcon />
               </div>
             </div>
-            <div className="flex gap-2 items-center text-gray-500">
+            <div className="flex gap-2 items-center text-gray-500 text-base">
               <div className="w-[28px] h-[28px] rounded-full">
                 <CustomImage
                   src={reviewDetails?.createdBy?.profileImage}
@@ -504,7 +505,7 @@ export const ReviewDetails = () => {
         )}
       </div>
 
-      <div className="flex w-full h-[calc(100%-103px)]">
+      <div className="flex w-full h-[calc(100%-103px)] text-base">
         <div
           ref={transcriptScrollRef}
           className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
@@ -616,6 +617,7 @@ export const ReviewDetails = () => {
         sessionCreatedAt={reviewDetails?.createdAt}
         sessionCallDuration={reviewDetails?.scenarioSession?.duration}
         tag="Simulation"
+        sessionReviewCreatedAt={reviewDetails?.createdAt}
       />
     </div>
   );
