@@ -43,11 +43,11 @@ vi.mock("@hooks", () => ({
     logout: logoutMock,
     filteredNavigationItems: [
       { id: "SIMULATION_STUDIO", label: "Simulation Studio", path: "/simulation-studio" },
-      { id: "EVENT_MANAGEMENT", label: "Event Management", path: "/events" },
+      { id: "EVENT_MANAGEMENT", label: "Events", path: "/events" },
       { id: "SCENARIO_LANGUAGES", label: "Scenario Languages", path: "/manage-scenario-languages" },
       { id: "SCENARIO_VOICES", label: "Scenario Voices", path: "/manage-scenario-voices" },
       { id: "PROMPTS", label: "Prompts", path: "/manage-prompts" },
-      { id: "USER_MANAGEMENT", label: "User Management", path: "/users" },
+      { id: "USERS", label: "Users", path: "/users" },
     ],
   }),
 }));
@@ -62,7 +62,7 @@ vi.mock("@constants", () => ({
   },
   SIDEBAR_ITEMS: {
     SIMULATION_STUDIO: "SIMULATION_STUDIO",
-    USER_MANAGEMENT: "USER_MANAGEMENT",
+    USERS: "USERS",
     EVENT_MANAGEMENT: "EVENT_MANAGEMENT",
     SCENARIO_VOICES: "SCENARIO_VOICES",
     SCENARIO_LANGUAGES: "SCENARIO_LANGUAGES",
@@ -201,9 +201,9 @@ describe("Sidebar", () => {
     renderWithProvider(<Sidebar />);
 
     expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
-    expect(screen.getByText("Event Management")).toBeInTheDocument();
+    expect(screen.getByText("Events")).toBeInTheDocument();
     expect(screen.getByText("Scenario Voices")).toBeInTheDocument();
     expect(screen.getByText("Scenario Languages")).toBeInTheDocument();
-    expect(screen.getByText("User Management")).toBeInTheDocument();
+    expect(screen.getByText("Users")).toBeInTheDocument();
   });
 });

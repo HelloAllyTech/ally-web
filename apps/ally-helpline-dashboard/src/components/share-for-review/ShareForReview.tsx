@@ -98,7 +98,7 @@ const SubSection = ({
     <div className="flex items-center gap-1 text-typography-600 font-primary text-sm">
       {t("review.details.dateAndTime")}: {formattedDate}
       <span className="w-1 h-1 bg-neutral-500 rounded-full mx-1" aria-hidden />
-      <span className="font-primary leading-4">{formattedCallDuration}</span>
+      <span className="font-primary leading-4">Duration: {formattedCallDuration}</span>
     </div>
   );
 };

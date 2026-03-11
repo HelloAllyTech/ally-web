@@ -63,7 +63,7 @@ export const Header: FC<HeaderProps> = ({
     <>
       <div className="flex items-center px-2 py-4 gap-2">
         <span className="text-typography-800 cursor-pointer" onClick={onBack}>
-          {en.simulation.simulationstudio}
+          {en.simulation.rolePlays}
         </span>
         <span className="-rotate-90">
           <ArrowDown />

@@ -115,6 +115,7 @@ const GeneralCommentsToShow = ({
           selection: null,
         },
       });
+      setShowCommentBox(false);
     } catch (error) {
       toast.error(error?.data?.message || "Failed to create comment");
     }
