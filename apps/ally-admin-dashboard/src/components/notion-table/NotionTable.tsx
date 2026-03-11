@@ -112,7 +112,7 @@ export const NotionTable = ({
   hideSelectionColumn = false,
 }: NotionTableProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { columns, data } = tableData;
+  const { columns = [], data = [] } = tableData || {};
 
   // Auto-size columns based on content
   const autoSizedColumns = useMemo(() => {
@@ -179,17 +179,17 @@ export const NotionTable = ({
         hideSelectionColumn
           ? columns
           : [
-              {
-                id: "selection",
-                minWidth: 50,
-                width: 50,
-                maxWidth: 50,
-                disableResizing: true,
-                Header: SelectionHeaderCell,
-                Cell: SelectionRowCell,
-              },
-              ...columns,
-            ],
+            {
+              id: "selection",
+              minWidth: 50,
+              width: 50,
+              maxWidth: 50,
+              disableResizing: true,
+              Header: SelectionHeaderCell,
+              Cell: SelectionRowCell,
+            },
+            ...columns,
+          ],
       );
     },
   );
