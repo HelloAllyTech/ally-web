@@ -338,7 +338,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
         description={selectedScenario.description}
         coverImageUrl={selectedScenario.coverImageUrl}
         coverVideoUrl={selectedScenario.coverVideoUrl}
-        headerTitle={t("common.details")}
+        headerTitle={t("common.simulation")}
         headerSubtitle={t("common.details")}
         scenarioLabel={t("learn.scenario.scenarioLabel")}
         primaryButtonText={isStarting ? t("common.starting") : t("common.startSimulation")}

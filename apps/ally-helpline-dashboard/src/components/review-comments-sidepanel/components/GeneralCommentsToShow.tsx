@@ -178,7 +178,9 @@ const GeneralCommentsToShow = ({
               className="w-full min-h-[36px] cursor-pointer rounded-[8px]"
               onClick={() => setShowCommentBox(true)}
             >
-              <div className="text-sm font-medium px-2 mt-2 text-typography-600">Add a comment</div>
+              <div className="text-md font-medium px-2 mt-2 text-typography-600 font-normal">
+                Add a comment
+              </div>
             </div>
           ) : (
             <div
@@ -197,10 +199,10 @@ const GeneralCommentsToShow = ({
                 className="w-full border rounded-sm text-sm font-medium !px-2 !py-2 mt-2 min-h-20"
               />
               <div className="flex gap-2 flex-row my-2 justify-end">
-                <Button variant="secondary" className="py-0 h-8" onClick={handleCancel}>
+                <Button variant="secondary" className="py-0" onClick={handleCancel}>
                   Cancel
                 </Button>
-                <Button variant="primary" className="py-0 h-8" onClick={handleComment}>
+                <Button variant="primary" className="py-0" onClick={handleComment}>
                   Comment
                 </Button>
               </div>
@@ -209,7 +211,7 @@ const GeneralCommentsToShow = ({
         </div>
       </div>
       <div
-        className="w-full flex flex-col gap-4 overflow-y-auto -mr-2 pr-2 custom-scrollbar"
+        className="w-full flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar"
         style={{ maxHeight: showCommentBox ? "calc(100% - 240px)" : "calc(100% - 150px)" }}
       >
         {isLoading ? (
