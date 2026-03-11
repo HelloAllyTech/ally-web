@@ -57,28 +57,30 @@ export const MagicLinkVerify: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="flex flex-col items-center gap-4 p-8 rounded-lg bg-white shadow-lg">
-        {error && (
-          <>
-            <div className="w-12 h-12 rounded-full bg-error-100 flex items-center justify-center">
-              <span className="text-2xl text-error-600">✕</span>
-            </div>
-            <h2 className="text-2xl font-secondary text-typography-900">
-              {en.auth.magicLinkExpired}
-            </h2>
-            <p className="text-sm text-typography-600">{en.auth.redirectingToLogin}</p>
-          </>
-        )}
-        {!error && !isSuccess && isLoading && (
-          <>
-            <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
-            <h2 className="text-2xl font-secondary text-typography-900">
-              {en.auth.verifyingMagicLink}
-            </h2>
-            <p className="text-sm text-typography-600">{en.auth.pleaseWait}</p>
-          </>
-        )}
-      </div>
+      {(error || (!error && !isSuccess && isLoading)) && (
+        <div className="flex flex-col items-center gap-4 p-8 rounded-lg bg-white shadow-lg">
+          {error && (
+            <>
+              <div className="w-12 h-12 rounded-full bg-error-100 flex items-center justify-center">
+                <span className="text-2xl text-error-600">✕</span>
+              </div>
+              <h2 className="text-2xl font-secondary text-typography-900">
+                {en.auth.magicLinkExpired}
+              </h2>
+              <p className="text-sm text-typography-600">{en.auth.redirectingToLogin}</p>
+            </>
+          )}
+          {!error && !isSuccess && isLoading && (
+            <>
+              <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              <h2 className="text-2xl font-secondary text-typography-900">
+                {en.auth.verifyingMagicLink}
+              </h2>
+              <p className="text-sm text-typography-600">{en.auth.pleaseWait}</p>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -345,14 +345,13 @@ export const ReviewDetails = () => {
   const handleCreateReview = async (status?: string, note?: string) => {
     if (!reviewDetails?.id) return;
 
-    const isExpired =
-      differenceInMinutes(new Date(), new Date(reviewDetails?.reviewCreatedAt)) > 10;
+    const isExpired = differenceInMinutes(new Date(), new Date(reviewDetails?.createdAt)) > 10;
     const normalizedNote = note?.trim() || null;
     const params: { scenarioSessionId: string; status: string; note?: string } = {
       scenarioSessionId: reviewDetails.id,
       status,
     };
-    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN || !isExpired) params.note = normalizedNote;
+    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired) params.note = normalizedNote;
     await updateReview({ body: params }).unwrap();
   };
 

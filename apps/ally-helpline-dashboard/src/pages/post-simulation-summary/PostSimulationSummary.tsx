@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { Tab, Tabs } from "@mui/material";
+import { differenceInMinutes } from "date-fns";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -118,6 +119,8 @@ export const PostSimulationSummary: FC = () => {
 
   const handleCreateReview = async (status: string, note?: string) => {
     const normalizedNote = note?.trim() || null;
+    const isExpired = differenceInMinutes(new Date(), new Date(summary?.reviewCreatedAt)) >= 10;
+
     try {
       if (summary?.reviewId) {
         const params: ShareForReviewsInput = {
@@ -126,7 +129,8 @@ export const PostSimulationSummary: FC = () => {
             status,
           },
         };
-        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN) params.body.note = normalizedNote;
+        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired)
+          params.body.note = normalizedNote;
         await updateReview(params).unwrap();
       } else {
         const params: ShareForReviewsInput = {
