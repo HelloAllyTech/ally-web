@@ -15,9 +15,9 @@ export enum Permissions {
 
 export const SIDEBAR_ITEMS = {
   SIMULATION_STUDIO: "simulation-studio",
-  EVENT_MANAGEMENT: "event-management",
+  EVENTS: "events",
   CHARACTER_LIBRARY: "character-library",
-  USER_MANAGEMENT: "user-management",
+  USERS: "users",
   SCENARIO_VOICES: "scenario-voices",
   SCENARIO_LANGUAGES: "scenario-languages",
   PROMPTS: "prompts",

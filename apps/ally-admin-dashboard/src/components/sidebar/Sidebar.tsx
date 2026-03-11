@@ -118,9 +118,9 @@ export const Sidebar: React.FC = () => {
     switch (id) {
       case SIDEBAR_ITEMS.SIMULATION_STUDIO:
         return <Book />;
-      case SIDEBAR_ITEMS.USER_MANAGEMENT:
+      case SIDEBAR_ITEMS.USERS:
         return <Users />;
-      case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
+      case SIDEBAR_ITEMS.EVENTS:
         return <HappyEmoji />;
       case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
         return <CharacterLibrary />;
@@ -184,7 +184,7 @@ export const Sidebar: React.FC = () => {
                 title={!isExpanded ? item.label : ""}
               >
                 <span
-                  className={`${isExpanded ? "mr-3" : "mx-auto"} ${isActive ? "text-typography-800" : "text-typography-600"}`}
+                  className={`w-6 flex items-center justify-center ${isExpanded ? "mr-3" : "mx-auto"} ${isActive ? "text-typography-800" : "text-typography-600"}`}
                 >
                   {renderIcon(item.id)}
                 </span>

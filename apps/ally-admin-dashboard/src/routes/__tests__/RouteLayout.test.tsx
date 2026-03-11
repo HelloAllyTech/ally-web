@@ -23,7 +23,7 @@ vi.mock("@pages", () => ({
   Login: () => <div>LoginPage</div>,
   MagicLinkVerify: () => <div>MagicLinkVerifyPage</div>,
   LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
-  SimulationStudio: () => <div>SimulationStudioPage</div>,
+  SimulationStudio: () => <div>RolePlaysPage</div>,
   UserManagement: () => <div>UserManagementPage</div>,
   OrganizationDetail: () => <div>OrganizationDetailPage</div>,
   EventManagement: () => <div>EventManagementPage</div>,
@@ -55,7 +55,7 @@ describe("RouteLayout", () => {
   it("renders Simulation Studio route", () => {
     window.history.pushState({}, "", ROUTES.SIMULATION_STUDIO);
     render(<RouteLayout />);
-    expect(screen.getByText("SimulationStudioPage")).toBeInTheDocument();
+    expect(screen.getByText("RolePlaysPage")).toBeInTheDocument();
   });
 
   it("renders User Management route", () => {
@@ -112,6 +112,6 @@ describe("RouteLayout", () => {
   it("redirects unknown route to Simulation Studio", () => {
     window.history.pushState({}, "", "/unknown-path");
     render(<RouteLayout />);
-    expect(screen.getByText("SimulationStudioPage")).toBeInTheDocument();
+    expect(screen.getByText("RolePlaysPage")).toBeInTheDocument();
   });
 });

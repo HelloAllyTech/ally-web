@@ -179,17 +179,17 @@ export const NotionTable = ({
         hideSelectionColumn
           ? columns
           : [
-            {
-              id: "selection",
-              minWidth: 50,
-              width: 50,
-              maxWidth: 50,
-              disableResizing: true,
-              Header: SelectionHeaderCell,
-              Cell: SelectionRowCell,
-            },
-            ...columns,
-          ],
+              {
+                id: "selection",
+                minWidth: 50,
+                width: 50,
+                maxWidth: 50,
+                disableResizing: true,
+                Header: SelectionHeaderCell,
+                Cell: SelectionRowCell,
+              },
+              ...columns,
+            ],
       );
     },
   );
