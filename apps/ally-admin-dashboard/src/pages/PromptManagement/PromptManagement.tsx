@@ -114,28 +114,6 @@ export const PromptManagement: React.FC = () => {
     }
   };
 
-  const handleRowChange = async (action: { columnId?: string; value?: unknown; row?: Prompt }) => {
-    const { columnId, value, row } = action;
-    if (columnId !== "useDashboardOverride" || value === undefined || !row?.id) return;
-
-    const prompt = prompts.find(p => p.id === row!.id) ?? row!;
-    try {
-      await updatePrompt({
-        id: prompt.id,
-        prompt: {
-          name: prompt.name,
-          description: prompt.description,
-          promptCode: prompt.promptCode,
-          prompt: prompt.prompt,
-          useDashboardOverride: Boolean(value),
-        },
-      }).unwrap();
-      toast.success(en.simulation.promptUpdatedSuccessfully);
-    } catch {
-      toast.error(en.errors.failedToCreateEvent);
-    }
-  };
-
   const handleLoadMore = () => {
     if (isFetching || !hasMore) return;
     setOffset(prev => prev + limit);
@@ -145,7 +123,6 @@ export const PromptManagement: React.FC = () => {
     () =>
       filteredPrompts.map(prompt => ({
         ...prompt,
-        useDashboardOverride: prompt.useDashboardOverride ?? false,
         createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
       })),
     [filteredPrompts],
@@ -184,7 +161,9 @@ export const PromptManagement: React.FC = () => {
               data: formatTableData,
               columns: PROMPT_COLUMNS,
             }}
-            onRowChange={handleRowChange}
+            hideSelectionColumn={true}
+            editIndex={0}
+            onRowChange={() => {}}
             onRowClick={handlePromptSelect}
             onSelectionChange={() => {}}
             tableFooter={tableFooter}

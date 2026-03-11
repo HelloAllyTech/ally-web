@@ -272,11 +272,11 @@ export const en = {
     useDashboardOverride: "Use dashboard version (when OFF, prompt is read from codebase folder)",
     useDashboardOverrideLabel: "Use dashboard version",
     availableVariables: "Available variables",
-    revertToDefault: "Revert to default",
-    revertPromptSuccess: "Prompt reverted to codebase default",
+    revertPromptSuccess: "Prompt restored to default successfully",
+    revertPromptFailed: "Failed to restore prompt to default",
+    restoreDefault: "Restore default",
     revertToDefaultConfirm:
-      "Revert this prompt to the codebase default? Your dashboard edits will be replaced.",
-    revertPromptFailed: "Failed to revert prompt to codebase default.",
+      "Are you sure you want to restore this prompt to its codebase default? Your dashboard edits will be replaced.",
     deletePrompts: "Delete Prompts",
     deletePromptsConfirmation:
       "Are you sure you want to delete selected prompts? This action cannot be undone.",

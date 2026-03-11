@@ -72,7 +72,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
 
   // Create provider options from existing providers
   const providerOptions: Array<{ value: string; label: string }> = [
-    ...existingProviders.map(provider => ({
+    ...Array.from(new Set(existingProviders)).map(provider => ({
       value: provider,
       label: provider,
     })),
