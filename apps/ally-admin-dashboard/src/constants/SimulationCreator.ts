@@ -465,15 +465,15 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
   },
   ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
     ? [
-        {
-          id: "occurrenceInterval",
-          label: "Occurrence Interval",
-          accessor: "occurrenceInterval",
-          dataType: cellTypes.number,
-          options: [],
-          minWidth: 120,
-        },
-      ]
+      {
+        id: "occurrenceInterval",
+        label: "Occurrence Interval",
+        accessor: "occurrenceInterval",
+        dataType: cellTypes.number,
+        options: [],
+        minWidth: 120,
+      },
+    ]
     : []),
   {
     id: "maxOccurrences",

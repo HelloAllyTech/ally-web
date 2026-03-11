@@ -141,7 +141,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
           ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_THREAD_COMMENTS(id)
           : ApiEndpoints.REVIEWS.GET_REVIEW_THREAD_COMMENTS(id),
         method: HttpMethod.GET,
-        params: { limit, offset },
+        params: { limit, offset, order: "DESC", sortBy: "createdAt" },
       }),
       forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
@@ -249,7 +249,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
           ? ApiEndpoints.REVIEWS.GET_SCRIBE_COMMENT_REPLIES(commentId)
           : ApiEndpoints.REVIEWS.GET_COMMENT_REPLIES(commentId),
         method: HttpMethod.GET,
-        params: { limit, offset },
+        params: { limit, offset, order: "DESC", sortBy: "createdAt" },
       }),
       forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
@@ -283,7 +283,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
           ? ApiEndpoints.REVIEWS.GET_SCRIBE_GENERAL_COMMENTS(reviewId)
           : ApiEndpoints.REVIEWS.GET_GENERAL_COMMENTS(reviewId),
         method: HttpMethod.GET,
-        params: { limit, offset },
+        params: { limit, offset, order: "DESC", sortBy: "createdAt" },
       }),
       providesTags: [TAG_TYPES.GENERAL_COMMENTS],
     }),
