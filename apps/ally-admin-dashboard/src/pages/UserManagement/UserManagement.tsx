@@ -435,7 +435,7 @@ export const UserManagement: FC = () => {
   return (
     <div className="space-y-6 font-primary h-[100vh] overflow-y-hidden">
       <h1 className="text-2xl font-normal text-typography-900 font-secondary">
-        {en.userManagement.userManagement}
+        {en.userManagement.users}
       </h1>
       <Tabs items={TABS} activeId={activeTab} onChange={id => setSearchParams({ tab: id })} />
       {renderBody()}

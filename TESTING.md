@@ -243,7 +243,7 @@ npm run test:docker:clean
 docker system prune -a --volumes
 
 # Or use the Colima cleanup script
-cd ../infra
+# Ensure you have the backend and services running locally.
 ./colima-cleanup.sh
 ```
 

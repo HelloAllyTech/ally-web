@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -78,9 +78,13 @@ export const PromptManagement: React.FC = () => {
     setOffset(0);
   };
 
+  const filteredPrompts = useMemo(() => {
+    return prompts.filter(prompt => !prompt.isObsolete);
+  }, [prompts]);
+
   const handlePromptSelect = (rowIndex: number) => {
-    if (rowIndex !== null && prompts?.length > 0) {
-      setSelectedPrompt(prompts[rowIndex]);
+    if (rowIndex !== null && filteredPrompts?.length > 0) {
+      setSelectedPrompt(filteredPrompts[rowIndex]);
       setIsSidePanelOpen(true);
     }
   };
@@ -137,13 +141,15 @@ export const PromptManagement: React.FC = () => {
     setOffset(prev => prev + limit);
   };
 
-  const formatTableData = prompts
-    .filter(prompt => !prompt.isObsolete)
-    .map(prompt => ({
-      ...prompt,
-      useDashboardOverride: prompt.useDashboardOverride ?? false,
-      createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
-    }));
+  const formatTableData = useMemo(
+    () =>
+      filteredPrompts.map(prompt => ({
+        ...prompt,
+        useDashboardOverride: prompt.useDashboardOverride ?? false,
+        createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
+      })),
+    [filteredPrompts],
+  );
 
   const tableFooter = (
     <button

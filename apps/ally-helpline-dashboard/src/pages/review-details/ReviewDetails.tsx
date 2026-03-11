@@ -38,6 +38,7 @@ import {
 } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
+import Loader from "./Loader";
 import AddReviewNote from "../../components/add-review-note/AddReviewNote";
 import GeneralCommentsToShow from "../../components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { GENERAL_COMMENTS_PAGE_SIZE, TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
@@ -343,15 +344,14 @@ export const ReviewDetails = () => {
 
   const handleCreateReview = async (status?: string, note?: string) => {
     if (!reviewDetails?.id) return;
+    const isExpired =
+      differenceInMinutes(new Date(), new Date(reviewDetails?.reviewCreatedAt)) > 10;
     const normalizedNote = note?.trim() || null;
-    const params: { scenarioSessionId: string; status: string; note?: string; isScribe?: boolean } =
-      {
-        scenarioSessionId: reviewDetails.id,
-        status,
-        isScribe: isScribeReview,
-      };
-    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
-      params.note = normalizedNote;
+    const params: { scenarioSessionId: string; status: string; note?: string } = {
+      scenarioSessionId: reviewDetails.id,
+      status,
+    };
+    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN || !isExpired) params.note = normalizedNote;
     await updateReview({ body: params }).unwrap();
   };
 
@@ -457,17 +457,7 @@ export const ReviewDetails = () => {
           <LeftArrow className=" w-5 h-5" />
         </div>
         {isGetReviewDetailsLoading ? (
-          <div className="flex flex-col justify-center gap-2 font-primary animate-pulse">
-            <div className="h-6 w-64 bg-gray-200 rounded" />
-            <div className="flex gap-2 items-center">
-              <div className="w-4 h-4 bg-gray-200 rounded-full" />
-              <div className="h-4 w-24 bg-gray-200 rounded" />
-              <div className="w-1 h-1 bg-gray-200 rounded-full mx-1" />
-              <div className="h-4 w-48 bg-gray-200 rounded" />
-              <div className="w-1 h-1 bg-gray-200 rounded-full mx-1" />
-              <div className="h-4 w-32 bg-gray-200 rounded" />
-            </div>
-          </div>
+          <Loader />
         ) : (
           <div className="flex flex-col justify-center gap-1.5 font-primary">
             <div className="font-medium text-typography-900 flex flex-row items-center">
