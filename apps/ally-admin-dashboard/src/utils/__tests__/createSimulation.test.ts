@@ -257,6 +257,109 @@ describe("createSimulation utils", () => {
       expect(result.name).toBeUndefined();
       expect(result.age).toBeUndefined();
     });
+
+    describe("customFields useInDefaultPrompt toggle (issue #108)", () => {
+      const baseResponse = {
+        id: "sim-1",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/img.jpg",
+        createdBy: "u1",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "easy",
+      } as const;
+
+      it("should map useInDefaultPrompt: true when API field has useInDefaultPrompt: true", () => {
+        const mockResponse = {
+          ...baseResponse,
+          metadata: {
+            customFields: [{ name: "Field A", value: "val", useInDefaultPrompt: true }],
+          },
+        } as any;
+
+        const result = formatSimulationResponseData(mockResponse);
+
+        expect(result.customFields?.[0].useInDefaultPrompt).toBe(true);
+      });
+
+      it("should map useInDefaultPrompt: false when API field has useInDefaultPrompt: false", () => {
+        const mockResponse = {
+          ...baseResponse,
+          metadata: {
+            customFields: [{ name: "Field B", value: "hello", useInDefaultPrompt: false }],
+          },
+        } as any;
+
+        const result = formatSimulationResponseData(mockResponse);
+
+        expect(result.customFields?.[0].useInDefaultPrompt).toBe(false);
+      });
+
+      it("should default useInDefaultPrompt to true when API field does not include it (backward compat)", () => {
+        const mockResponse = {
+          ...baseResponse,
+          metadata: {
+            customFields: [{ name: "Legacy Field", value: "legacy value" }],
+          },
+        } as any;
+
+        const result = formatSimulationResponseData(mockResponse);
+
+        expect(result.customFields?.[0].useInDefaultPrompt).toBe(true);
+      });
+
+      it("should handle mixed fields — some with useInDefaultPrompt, some without", () => {
+        const mockResponse = {
+          ...baseResponse,
+          metadata: {
+            customFields: [
+              { name: "Field 1", value: "v1", useInDefaultPrompt: false },
+              { name: "Field 2", value: "v2" }, // no useInDefaultPrompt
+              { name: "Field 3", value: "v3", useInDefaultPrompt: true },
+            ],
+          },
+        } as any;
+
+        const result = formatSimulationResponseData(mockResponse);
+
+        expect(result.customFields?.[0].useInDefaultPrompt).toBe(false);
+        expect(result.customFields?.[1].useInDefaultPrompt).toBe(true); // defaulted
+        expect(result.customFields?.[2].useInDefaultPrompt).toBe(true);
+      });
+
+      it("should return empty array when customFields is empty", () => {
+        const mockResponse = {
+          ...baseResponse,
+          metadata: { customFields: [] },
+        } as any;
+
+        const result = formatSimulationResponseData(mockResponse);
+
+        expect(result.customFields).toEqual([]);
+      });
+
+      it("should assign sequential id to each mapped custom field", () => {
+        const mockResponse = {
+          ...baseResponse,
+          metadata: {
+            customFields: [
+              { name: "A", value: "1" },
+              { name: "B", value: "2" },
+            ],
+          },
+        } as any;
+
+        const result = formatSimulationResponseData(mockResponse);
+
+        expect(result.customFields?.[0].id).toContain("customFields");
+        expect(result.customFields?.[1].id).toContain("customFields");
+        expect(result.customFields?.[0].id).not.toBe(result.customFields?.[1].id);
+      });
+    });
   });
 
   describe("extractValidData", () => {
