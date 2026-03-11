@@ -342,8 +342,7 @@ export const ReviewDetails = () => {
       scenarioSessionId: reviewDetails.id,
       status,
     };
-    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
-      params.note = normalizedNote;
+    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN) params.note = normalizedNote;
     await updateReview({ body: params }).unwrap();
   };
 
