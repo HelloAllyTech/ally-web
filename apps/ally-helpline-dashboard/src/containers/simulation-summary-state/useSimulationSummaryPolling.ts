@@ -36,7 +36,7 @@ export function useSimulationSummaryPolling(summaryId: string | undefined): {
 
         if (data) {
           if (isMounted) setSummaryData(data);
-          setIsShortSession(data?.details?.callDuration <= 30000); // 30 seconds
+          setIsShortSession(data?.details?.callDuration <= 30); // 30 seconds
         }
 
         if (data?.details?.summary?.feedback) return;
