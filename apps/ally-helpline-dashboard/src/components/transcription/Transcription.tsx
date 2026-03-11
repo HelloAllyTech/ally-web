@@ -246,7 +246,7 @@ const Transcription: FC<TranscriptionProps> = ({
   return (
     <div
       ref={scrollContainerRef as RefObject<HTMLDivElement>}
-      className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}
+      className={`flex flex-col pt-10 -mt-10 gap-4 font-primary font-lg ${className}`}
     >
       <InfiniteScroll
         onInfiniteScroll={handleLoadMore}

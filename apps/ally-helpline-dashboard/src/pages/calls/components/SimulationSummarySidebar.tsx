@@ -12,14 +12,7 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import {
-  AskAiTab,
-  ReflectionTab,
-  Button,
-  SkillsTab,
-  ToggleSwitch,
-  ShareForReview,
-} from "@components";
+import { AskAiTab, ReflectionTab, SkillsTab, ToggleSwitch, ShareForReview } from "@components";
 import {
   Permissions,
   REVIEW_PRIVACY_OPTIONS,
@@ -133,7 +126,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         >
           {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
             <div className="flex items-center gap-2">
-              <span className="font-primary font-medium text-sm">Share for review</span>
+              <span className="font-primary font-normal text-sm">Share for review</span>
               <ToggleSwitch
                 enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
                 onChange={(value: boolean) => {
@@ -155,16 +148,15 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
-              <Button
+              <button
                 onClick={() =>
                   navigate(ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", summary.reviewId))
                 }
-                variant="secondary"
-                className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg relative"
+                className="flex items-center justify-center h-[40px] w-[40px] p-0 relative"
               >
-                <Comment className="w-5 h-5 shrink-0" />
+                <Comment className="w-6 h-6 shrink-0" />
                 {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
-              </Button>
+              </button>
             </>
           )}
         </div>
