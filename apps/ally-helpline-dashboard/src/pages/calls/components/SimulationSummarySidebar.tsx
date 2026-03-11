@@ -1,6 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { Tooltip } from "@mui/material";
+import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -77,6 +78,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     status: string;
   }) => {
     const normalizedNote = note?.trim() || null;
+    const isExpired = differenceInMinutes(new Date(), new Date(summary?.reviewCreatedAt)) >= 10;
     try {
       if (summary?.reviewId) {
         const params: ShareForReviewsInput = {
@@ -85,7 +87,8 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
             status,
           },
         };
-        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN) params.body.note = normalizedNote;
+        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired)
+          params.body.note = normalizedNote;
         await updateReview(params).unwrap();
       } else {
         const params: { scenarioSessionId: string; status: string; note?: string } = {
