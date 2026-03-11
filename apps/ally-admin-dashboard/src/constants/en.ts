@@ -352,6 +352,7 @@ export const en = {
     keyLifeEventsPlaceholder: "Describe the key life events",
     familyBackground: "Family background and relation",
     familyBackgroundPlaceholder: "Describe family background and relation",
+    simulationstudio: "Simulation Studio",
     rolePlays: "Roleplays",
     editSimulation: "Edit Simulation",
     publishTooltipMessage: "Publish becomes available after required details are filled and saved.",
