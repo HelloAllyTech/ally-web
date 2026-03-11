@@ -94,7 +94,8 @@ vi.mock("sonner", () => ({
 const createMockStore = () => {
   return configureStore({
     reducer: {
-      // Add reducers as needed
+      // Add a dummy reducer to satisfy configureStore requirements
+      _dummy: (state = {}) => state,
     },
   });
 };

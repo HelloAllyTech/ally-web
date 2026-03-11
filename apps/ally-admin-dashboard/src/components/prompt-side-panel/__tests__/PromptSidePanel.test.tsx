@@ -15,7 +15,7 @@ vi.mock("sonner", () => ({
 
 // Mock UI component
 vi.mock("@ally-ui-mono/ui-shared", () => ({
-  AutoExpandableTextarea: ({ value, onChange, onKeyDown, placeholder, ...props }: any) => (
+  AutoExpandableTextarea: ({ value, onChange, onKeyDown, placeholder, maxLines, minHeight, ...props }: any) => (
     <textarea
       data-testid="auto-expandable-textarea"
       value={value}
