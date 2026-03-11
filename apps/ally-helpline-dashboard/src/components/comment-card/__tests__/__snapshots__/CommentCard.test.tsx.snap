@@ -39,7 +39,7 @@ exports[`CommentCard Component > should match snapshot when rendered with basic 
         </div>
       </div>
       <div
-        class="text-typography-900 font-primary text-sm whitespace-pre-wrap"
+        class="text-typography-900 font-primary text-md whitespace-pre-wrap"
       >
         This is a test comment
       </div>
@@ -90,7 +90,7 @@ exports[`CommentCard Component > should match snapshot with all props enabled 1`
         </div>
       </div>
       <div
-        class="text-typography-900 font-primary text-sm whitespace-pre-wrap"
+        class="text-typography-900 font-primary text-md whitespace-pre-wrap"
       >
         This is a test comment
       </div>

@@ -14,14 +14,7 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { BackCircle, Comment } from "@assets";
-import {
-  AskAiTab,
-  Button,
-  ReflectionTab,
-  ShareForReview,
-  SkillsTab,
-  ToggleSwitch,
-} from "@components";
+import { AskAiTab, ReflectionTab, ShareForReview, SkillsTab, ToggleSwitch } from "@components";
 import {
   Permissions,
   REVIEW_PRIVACY_OPTIONS,
@@ -174,7 +167,7 @@ export const PostSimulationSummary: FC = () => {
             <div className="flex justify-center gap-2 items-center">
               {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
                 <div className="flex items-center gap-2">
-                  <span className="font-primary font-medium text-sm">Share for review</span>
+                  <span className="font-primary font-normal text-sm">Share for review</span>
                   <ToggleSwitch
                     enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
                     onChange={(value: boolean) => {
@@ -196,17 +189,16 @@ export const PostSimulationSummary: FC = () => {
               {summary?.reviewId && (
                 <>
                   <div className="border-l border-border h-5" />
-                  <Button
+                  <button
                     onClick={() =>
                       navigate(
                         ROUTES.SIMULATION_REVIEW_DETAILS.replace(":reviewId", summary.reviewId),
                       )
                     }
-                    variant="secondary"
-                    className="flex items-center justify-center h-[40px] w-[40px] p-0 shadow-lg relative"
+                    className="flex items-center justify-center h-[40px] w-[40px] p-0 relative"
                   >
-                    <Comment className="w-5 h-5 shrink-0" />
-                  </Button>
+                    <Comment className="w-6 h-6 shrink-0" />
+                  </button>
                 </>
               )}
             </div>

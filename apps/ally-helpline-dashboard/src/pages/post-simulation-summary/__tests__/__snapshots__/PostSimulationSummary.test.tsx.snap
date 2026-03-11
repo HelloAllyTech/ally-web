@@ -73,7 +73,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
               class="flex items-center gap-2"
             >
               <span
-                class="font-primary font-medium text-sm"
+                class="font-primary font-normal text-sm"
               >
                 Share for review
               </span>
@@ -227,7 +227,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
               class="flex items-center gap-2"
             >
               <span
-                class="font-primary font-medium text-sm"
+                class="font-primary font-normal text-sm"
               >
                 Share for review
               </span>

@@ -472,7 +472,7 @@ const CommentCard = ({
   const renderCommentContent = () => {
     return (
       <>
-        <div className="text-typography-900 font-primary text-sm whitespace-pre-wrap">
+        <div className="text-typography-900 font-primary text-md whitespace-pre-wrap">
           {comment.content}
         </div>
         <div className="flex gap-2 items-center">

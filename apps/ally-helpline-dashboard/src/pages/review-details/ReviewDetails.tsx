@@ -505,7 +505,7 @@ export const ReviewDetails = () => {
         )}
       </div>
 
-      <div className="flex w-full h-[calc(100%-103px)] text-base">
+      <div className="flex w-full h-[calc(100%-103px)]">
         <div
           ref={transcriptScrollRef}
           className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
@@ -549,8 +549,8 @@ export const ReviewDetails = () => {
 
           {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
             <div className="w-full border-t-[0.5px] border-border-light font-primary">
-              <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4 px-4">
-                <div className="text-typography-900 font-medium text-lg">
+              <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4">
+                <div className="text-typography-800 font-medium text-lg">
                   {t("review.details.comments")}
                 </div>
               </div>
