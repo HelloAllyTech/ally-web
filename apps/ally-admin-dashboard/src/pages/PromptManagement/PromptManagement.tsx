@@ -18,7 +18,6 @@ export const PromptManagement: React.FC = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
-  const [promptToDelete, setPromptToDelete] = useState<Prompt | null>(null);
   const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const { data: promptsResponse, isFetching: isQueryFetching } = useGetPromptsQuery({
@@ -135,28 +134,19 @@ export const PromptManagement: React.FC = () => {
     }
   };
 
-  const handleDeleteObsoletePrompt = async () => {
-    if (!promptToDelete?.id) return;
-    try {
-      await deletePrompt(promptToDelete.id).unwrap();
-      toast.success("Prompt permanently deleted");
-      setPromptToDelete(null);
-    } catch {
-      toast.error("Failed to delete prompt");
-    }
-  };
 
   const handleLoadMore = () => {
     if (isFetching || !hasMore) return;
     setOffset(prev => prev + limit);
   };
 
-  const formatTableData = prompts.map(prompt => ({
-    ...prompt,
-    useDashboardOverride: prompt.useDashboardOverride ?? false,
-    createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
-    isObsolete: prompt.isObsolete ? "OBSOLETE" : "ACTIVE",
-  }));
+  const formatTableData = prompts
+    .filter(prompt => !prompt.isObsolete)
+    .map(prompt => ({
+      ...prompt,
+      useDashboardOverride: prompt.useDashboardOverride ?? false,
+      createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
+    }));
 
   const tableFooter = (
     <button
@@ -193,7 +183,7 @@ export const PromptManagement: React.FC = () => {
             }}
             onRowChange={handleRowChange}
             onRowClick={handlePromptSelect}
-            onSelectionChange={() => {}}
+            onSelectionChange={() => { }}
             tableFooter={tableFooter}
           />
         </div>
@@ -204,24 +194,6 @@ export const PromptManagement: React.FC = () => {
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           onUpdate={handlePromptUpdate}
-        />
-      )}
-      {promptToDelete && (
-        <ActionConfirmationPopup
-          isOpen={!!promptToDelete}
-          onClose={() => setPromptToDelete(null)}
-          title="Delete Prompt"
-          description="Are you sure you want to permanently delete this obsolete prompt?"
-          primaryButton={{
-            label: en.common.delete,
-            onClick: handleDeleteObsoletePrompt,
-            variant: ButtonVariant.DESTRUCTIVE,
-          }}
-          secondaryButton={{
-            label: en.common.cancel,
-            onClick: () => setPromptToDelete(null),
-            variant: ButtonVariant.SECONDARY,
-          }}
         />
       )}
     </div>
