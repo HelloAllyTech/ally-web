@@ -210,7 +210,13 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     {
       id: 3,
       label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
-      content: <SimulationTranscriptTab sessionId={summaryId} councellorName={councellorName} />,
+      content: (
+        <SimulationTranscriptTab
+          sessionId={summaryId}
+          councellorName={councellorName}
+          agentName={summary?.scenario?.metadata?.name}
+        />
+      ),
     },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
