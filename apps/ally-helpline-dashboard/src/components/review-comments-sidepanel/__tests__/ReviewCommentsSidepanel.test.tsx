@@ -204,6 +204,7 @@ describe("ReviewCommentsSidepanel Component", () => {
     hasMoreGeneralComments: false,
     totalComments: 3,
     onCommentClick: mockOnCommentClick,
+    setCommentsCount: vi.fn(),
   };
 
   beforeEach(() => {
