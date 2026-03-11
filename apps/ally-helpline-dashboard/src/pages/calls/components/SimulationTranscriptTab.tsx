@@ -15,7 +15,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   sessionId,
   className,
   councellorName,
-  summary,
+  agentName,
 }) => {
   const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
@@ -121,7 +121,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         hasMore={hasMoreTranscripts}
         scrollContainerRef={scrollContainerRef}
         counsellorName={councellorName}
-        agentName={summary?.scenario?.metadata?.name}
+        agentName={agentName}
       />
     </div>
   );

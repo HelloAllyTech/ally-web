@@ -115,7 +115,7 @@ export interface SimulationTranscriptTabProps {
   sessionId: string;
   className?: string;
   councellorName?: string;
-  summary?: SimulationSummary;
+  agentName?: string;
 }
 
 export interface AudioUploadDialogProps {
