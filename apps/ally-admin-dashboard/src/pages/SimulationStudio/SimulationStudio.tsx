@@ -220,9 +220,7 @@ export const SimulationStudio: React.FC = () => {
   const renderHeader = () => {
     return (
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl text-typography-900 font-secondary">
-          {en.simulation.simulationstudio}
-        </h1>
+        <h1 className="text-2xl text-typography-900 font-secondary">{en.simulation.rolePlays}</h1>
         <Button
           variant={ButtonVariant.PRIMARY}
           onClick={openCreatePopup}

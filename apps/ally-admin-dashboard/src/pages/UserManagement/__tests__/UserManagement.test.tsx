@@ -229,7 +229,7 @@ describe("UserManagement", () => {
     it("should render user management page", () => {
       renderUserManagement();
 
-      expect(screen.getByText("User Management")).toBeInTheDocument();
+      expect(screen.getByText("Users")).toBeInTheDocument();
       expect(screen.getByTestId("tabs")).toBeInTheDocument();
     });
 

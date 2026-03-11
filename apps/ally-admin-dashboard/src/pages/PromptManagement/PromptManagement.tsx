@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useGetPromptsQuery, useUpdatePromptMutation, useDeletePromptMutation } from "@api";
-import { NotionTable, ListToolbar, PromptSidePanel, ActionConfirmationPopup } from "@components";
-import { ButtonVariant } from "@components/types";
+import { useGetPromptsQuery, useUpdatePromptMutation } from "@api";
+import { NotionTable, ListToolbar, PromptSidePanel } from "@components";
 import { en, PROMPT_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import { Prompt } from "@types";
 
@@ -51,7 +50,6 @@ export const PromptManagement: React.FC = () => {
   }, [searchQuery]);
 
   const [updatePrompt] = useUpdatePromptMutation();
-  const [deletePrompt] = useDeletePromptMutation();
 
   // Handle data updates when query data changes
   useEffect(() => {
@@ -134,7 +132,6 @@ export const PromptManagement: React.FC = () => {
     }
   };
 
-
   const handleLoadMore = () => {
     if (isFetching || !hasMore) return;
     setOffset(prev => prev + limit);
@@ -183,7 +180,7 @@ export const PromptManagement: React.FC = () => {
             }}
             onRowChange={handleRowChange}
             onRowClick={handlePromptSelect}
-            onSelectionChange={() => { }}
+            onSelectionChange={() => {}}
             tableFooter={tableFooter}
           />
         </div>

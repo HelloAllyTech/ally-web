@@ -47,44 +47,44 @@ export const useUser = () => {
   const navigationItems: NavigationItem[] = [
     {
       id: SIDEBAR_ITEMS.SIMULATION_STUDIO,
-      label: en.simulation.simulationStudio,
+      label: en.simulation.rolePlays,
       path: ROUTES.SIMULATION_STUDIO,
     },
     {
-      id: SIDEBAR_ITEMS.EVENT_MANAGEMENT,
-      label: en.simulation.eventManagement,
+      id: SIDEBAR_ITEMS.EVENTS,
+      label: en.simulation.events,
       path: ROUTES.MANAGE_EVENTS,
     },
 
     {
       id: SIDEBAR_ITEMS.CHARACTER_LIBRARY,
-      label: "Character Library",
+      label: "Characters",
       path: ROUTES.CHARACTER_LIBRARY,
     },
 
     {
       id: SIDEBAR_ITEMS.SCENARIO_VOICES,
-      label: en.simulation.voicesManagement,
+      label: en.simulation.voices,
       path: ROUTES.MANAGE_SCENARIO_VOICES,
     },
     {
       id: SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
-      label: en.simulation.languagesManagement,
+      label: en.simulation.languages,
       path: ROUTES.MANAGE_SCENARIO_LANGUAGES,
     },
     {
       id: SIDEBAR_ITEMS.PROMPTS,
-      label: en.simulation.promptsManagement,
+      label: en.simulation.prompts,
       path: ROUTES.MANAGE_PROMPTS,
     },
     {
       id: SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
-      label: "Conversational Guardrails",
+      label: en.simulation.guardrails,
       path: ROUTES.MANAGE_GUARDRAILS,
     },
     {
-      id: SIDEBAR_ITEMS.USER_MANAGEMENT,
-      label: en.userManagement.userManagement,
+      id: SIDEBAR_ITEMS.USERS,
+      label: en.userManagement.users,
       path: ROUTES.USER_MANAGEMENT,
     },
     {
@@ -161,7 +161,7 @@ export const useUser = () => {
       switch (item.id) {
         case SIDEBAR_ITEMS.SIMULATION_STUDIO:
           return permissions.includes(Permissions.EDIT_SCENARIO);
-        case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
+        case SIDEBAR_ITEMS.EVENTS:
           return permissions.includes(Permissions.EDIT_EVENT);
         case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
           return permissions.includes(Permissions.EDIT_CHARACTER_LIBRARY);
@@ -171,7 +171,7 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
         case SIDEBAR_ITEMS.PROMPTS:
           return permissions.includes(Permissions.EDIT_PROMPT);
-        case SIDEBAR_ITEMS.USER_MANAGEMENT:
+        case SIDEBAR_ITEMS.USERS:
           return permissions.includes(Permissions.EDIT_USER);
         case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
           return permissions.includes(Permissions.EDIT_GUARDRAIL);
