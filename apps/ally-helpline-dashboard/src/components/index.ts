@@ -44,10 +44,15 @@ import ProfileSettings from "./profile-settings";
 import ReactionsModal from "./reaction-modal/ReactionModal";
 import ReactionSelector from "./reaction-selector";
 import { ReflectionTab } from "./reflection-tab";
-import ReviewCommentsSidepanel from "./review-comments-sidepanel/ReviewCommentsSidepanel";
+import {
+  ReviewCommentsSidepanel,
+  ThreadsToShow,
+  GeneralCommentsToShow,
+} from "./review-comments-sidepanel";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
+import SelectableText from "./selectable-text/SelectableText";
 import { ShareForReview } from "./share-for-review";
 import ShinyText from "./shiny-text";
 import SkillsTab from "./skills-tab";
@@ -124,6 +129,7 @@ export {
   LeaderboardList,
   ProfileSettings,
   AchievementItem,
+  SelectableText,
   LeaderboardUser,
   ReactionSelector,
   ThreadCard,
@@ -143,4 +149,6 @@ export {
   ToggleSwitch,
   EmojiPickerTrigger,
   Timer,
+  GeneralCommentsToShow,
+  ThreadsToShow,
 };

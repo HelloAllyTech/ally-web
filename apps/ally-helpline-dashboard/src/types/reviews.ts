@@ -30,9 +30,13 @@ export interface ReviewItem {
   scenario: ReviewScenario;
   reactions: Record<string, number>;
   commentsCount: number;
-  scenarioSession: {
-    duration: number;
-    createdAt: string;
+  scenarioSession?: {
+    duration?: number;
+    createdAt?: string;
+  };
+  scribeSession?: {
+    duration?: number;
+    createdAt?: string;
   };
   note: string;
   noteEditedAt: string;

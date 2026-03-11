@@ -128,8 +128,8 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
             reactions={item.reactions}
             commentsCount={item.commentsCount}
             onReviewTranscript={() => onReviewTranscript(item.id)}
-            duration={item.scenarioSession?.duration}
-            dateTime={item.scenarioSession?.createdAt}
+            duration={item.scribeSession?.duration}
+            dateTime={item.scribeSession?.createdAt}
             badgeBgColor="#FFF3E0"
             badgeTextColor="#E65100"
             badgeText="Scribe"
