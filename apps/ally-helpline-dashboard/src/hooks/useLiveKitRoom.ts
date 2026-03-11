@@ -55,10 +55,8 @@ export const useLiveKitRoom = (
   }, []);
 
   const onRemoteParticipantConnected = useCallback(() => {
-    if (!startTime) {
-      setStartTime(new Date());
-      setRoomStatus(RoomStatus.AGENT_JOINED);
-    }
+    setStartTime(prev => prev || new Date());
+    setRoomStatus(RoomStatus.AGENT_JOINED);
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
