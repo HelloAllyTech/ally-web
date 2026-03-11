@@ -419,4 +419,65 @@ describe("PromptManagement Component", () => {
     // Verify the mock was called
     expect(mockGetPromptsQuery).toHaveBeenCalled();
   });
+
+  it("should open the correct prompt even if there are obsolete prompts in the results", async () => {
+    const customPrompts = [
+      {
+        id: "1",
+        name: "Normal 1",
+        isObsolete: false,
+        promptCode: "p1",
+        prompt: "p1",
+        description: "d1",
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
+      },
+      {
+        id: "2",
+        name: "Obsolete",
+        isObsolete: true,
+        promptCode: "p2",
+        prompt: "p2",
+        description: "d2",
+        createdAt: "2024-01-02T00:00:00Z",
+        updatedAt: "2024-01-02T00:00:00Z",
+      },
+      {
+        id: "3",
+        name: "Normal 2",
+        isObsolete: false,
+        promptCode: "p3",
+        prompt: "p3",
+        description: "d3",
+        createdAt: "2024-01-03T00:00:00Z",
+        updatedAt: "2024-01-03T00:00:00Z",
+      },
+    ] as Prompt[];
+
+    mockGetPromptsQuery.mockReturnValue({
+      data: customPrompts,
+      isFetching: false,
+    });
+
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("table-row-1")).toBeInTheDocument();
+    });
+
+    // Row 1 should be "Normal 2" (index 2 in unfiltered list, index 1 in filtered list)
+    const row1 = screen.getByTestId("table-row-1");
+    expect(within(row1).getByText("Normal 2")).toBeInTheDocument();
+
+    fireEvent.click(row1);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("prompt-side-panel")).toBeInTheDocument();
+    });
+  });
 });

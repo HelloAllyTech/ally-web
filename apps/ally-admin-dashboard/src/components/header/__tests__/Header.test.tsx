@@ -12,7 +12,7 @@ vi.mock("@constants", () => ({
   },
   en: {
     simulation: {
-      simulationstudio: "Simulation Studio",
+      rolePlays: "Roleplays",
       createSimulation: "Create Simulation",
       editSimulation: "Edit Simulation",
       createNewSimulation: "Create New Simulation",
@@ -83,7 +83,7 @@ describe("Header", () => {
     );
 
     expect(screen.getAllByText("Create Simulation").length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByText("Simulation Studio"));
+    fireEvent.click(screen.getByText("Roleplays"));
     expect(onBack).toHaveBeenCalled();
   });
 
