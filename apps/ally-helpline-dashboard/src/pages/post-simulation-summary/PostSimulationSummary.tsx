@@ -71,7 +71,13 @@ export const PostSimulationSummary: FC = () => {
     {
       id: 2,
       label: "Annotated Transcript",
-      content: <SimulationTranscriptTab sessionId={sessionId} className="w-full" />,
+      content: (
+        <SimulationTranscriptTab
+          sessionId={sessionId}
+          className="w-full"
+          agentName={summary?.scenario?.metadata?.name}
+        />
+      ),
     },
     ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
       ? [
