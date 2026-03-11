@@ -44,7 +44,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<Review>} Review data
      */
     getReviewById: builder.query({
-      query: (id: string, isScribe?: boolean) => ({
+      query: ({ id, isScribe = false }) => ({
         url: isScribe
           ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_BY_ID(id)
           : ApiEndpoints.REVIEWS.GET_REVIEW_BY_ID(id),

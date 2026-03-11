@@ -34,17 +34,25 @@ vi.mock("@mui/material", () => ({
   ),
 }));
 
-// Mock child components to avoid Redux/API dependencies
-vi.mock("@src/components/review-comments-sidepanel/components/GeneralCommentsToShow", () => ({
-  default: ({ show }: any) =>
+// Mock @components (component imports GeneralCommentsToShow and ThreadsToShow from here)
+vi.mock("@components", () => ({
+  ThreadCard: ({ thread, isFeedOwner }: any) => (
+    <div data-testid={`thread-card-${thread.id}`} data-is-feed-owner={isFeedOwner}>
+      <span data-testid="thread-text">{thread.selection.text}</span>
+      <span data-testid="comment-count">{thread.comments.length}</span>
+    </div>
+  ),
+  CommentCard: ({ comment }: any) => (
+    <div data-testid={`comment-card-${comment.id}`}>
+      <span data-testid="comment-content">{comment.content}</span>
+      <span data-testid="comment-author">{comment.createdBy.name}</span>
+    </div>
+  ),
+  GeneralCommentsToShow: ({ show }: any) =>
     show ? <div data-testid="general-comments">General Comments</div> : null,
-}));
-
-vi.mock("@src/components/review-comments-sidepanel/components/ThreadsToShow", () => ({
-  default: ({ threads, isOpen, onCommentClick, isFeedOwner }: any) => {
+  ThreadsToShow: ({ threads, isOpen, onCommentClick, isFeedOwner }: any) => {
     const filteredThreads = threads?.filter((thread: any) => thread?.comments?.[0] != null) || [];
     const totalThreads = filteredThreads.length;
-
     return (
       <div data-testid="threads-to-show">
         {filteredThreads.map((thread: any, index: number) => {
@@ -79,22 +87,6 @@ vi.mock("@src/components/review-comments-sidepanel/components/ThreadsToShow", ()
       </div>
     );
   },
-}));
-
-// Mock ThreadCard component
-vi.mock("@components", () => ({
-  ThreadCard: ({ thread, isFeedOwner }: any) => (
-    <div data-testid={`thread-card-${thread.id}`} data-is-feed-owner={isFeedOwner}>
-      <span data-testid="thread-text">{thread.selection.text}</span>
-      <span data-testid="comment-count">{thread.comments.length}</span>
-    </div>
-  ),
-  CommentCard: ({ comment }: any) => (
-    <div data-testid={`comment-card-${comment.id}`}>
-      <span data-testid="comment-content">{comment.content}</span>
-      <span data-testid="comment-author">{comment.createdBy.name}</span>
-    </div>
-  ),
 }));
 
 // Mock ui-shared
