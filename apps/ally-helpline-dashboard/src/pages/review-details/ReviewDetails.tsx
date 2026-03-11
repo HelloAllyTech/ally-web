@@ -352,7 +352,7 @@ export const ReviewDetails = () => {
       scenarioSessionId: reviewDetails.id,
       status,
     };
-    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN || !isExpired) params.note = normalizedNote;
+    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired) params.note = normalizedNote;
     await updateReview({ body: params }).unwrap();
   };
 
