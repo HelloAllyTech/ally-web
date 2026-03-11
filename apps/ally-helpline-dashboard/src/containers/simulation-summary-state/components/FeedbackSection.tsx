@@ -67,7 +67,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
 
   const formattedData = getFormattedFeedbackSection(props);
-  const callDurationInSeconds = Math.floor(formattedData.callDuration / 1000);
+  const callDurationInSeconds = Number(formattedData?.callDuration || 0);
   const formattedCallDuration =
     callDurationInSeconds < 60
       ? `${callDurationInSeconds} sec`

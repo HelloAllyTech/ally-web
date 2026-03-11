@@ -500,6 +500,10 @@ export const ReviewDetails = () => {
                   ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "ss")} ${t("review.feedCard.sec")}`
                   : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} ${t("review.feedCard.min")}`}
               </div>
+              <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
+              <div className="font-primary  leading-4 text-black/60">
+                {`${t("review.details.comments")} : ${reviewDetails?.commentsCount}`}
+              </div>
             </div>
           </div>
         )}
