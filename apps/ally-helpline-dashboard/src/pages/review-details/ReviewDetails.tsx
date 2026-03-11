@@ -67,7 +67,6 @@ export const ReviewDetails = () => {
   const [generalCommentsOffset, setGeneralCommentsOffset] = useState(0);
   const [changedReply, setChangedReply] = useState<CommentItem | null>(null);
   const [showShareForReviewModal, setShowShareForReviewModal] = useState<boolean>(false);
-  const [commentsCount, setCommentsCount] = useState<number>(0);
 
   const selectEmojiRef = useRef<HTMLDivElement>(null);
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
@@ -115,7 +114,6 @@ export const ReviewDetails = () => {
     if (reviewDetails?.myReaction?.length > 0) {
       setSelectedEmoji(reviewDetails?.myReaction);
     }
-    setCommentsCount(reviewDetails?.commentsCount);
   }, [reviewDetails]);
 
   const isFeedOwner = useMemo(() => {
@@ -494,7 +492,7 @@ export const ReviewDetails = () => {
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
-                {`${t("review.details.comments")} : ${commentsCount}`}
+                {`${t("review.details.comments")} : ${reviewDetails?.commentsCount}`}
               </div>
             </div>
           </div>
@@ -551,7 +549,6 @@ export const ReviewDetails = () => {
                 </div>
               </div>
               <GeneralCommentsToShow
-                setCommentsCount={setCommentsCount}
                 generalComments={generalComments}
                 handleLoadMore={handleGeneralCommentsLoadMore}
                 hasMoreComments={hasMoreGeneralComments}
@@ -582,7 +579,6 @@ export const ReviewDetails = () => {
           setDeletedReplyId={setDeletedReplyId}
           handleReplyChange={handleReplyChange}
           changedReply={changedReply}
-          setCommentsCount={setCommentsCount}
         />
       </div>
       {transcriptList.length > 0 && renderBottomSection()}
