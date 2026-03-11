@@ -121,7 +121,7 @@ vi.mock("@components/types", () => ({
 vi.mock("@constants", () => ({
   en: {
     simulation: {
-      characterLibrary: "Character Library",
+      characters: "Characters",
       characterCreatedSuccessfully: "Character created successfully",
       characterUpdatedSuccessfully: "Character updated successfully",
       characterDeletedSuccessfully: "Character deleted successfully",
@@ -206,7 +206,7 @@ describe("CharacterLibrary", () => {
 
   it("renders the page title", () => {
     render(<CharacterLibrary />);
-    expect(screen.getByRole("heading", { name: /character library/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /characters/i })).toBeInTheDocument();
   });
 
   it("renders list toolbar with create new character action when no selection", () => {

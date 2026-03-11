@@ -452,7 +452,7 @@ describe("SimulationStudio", () => {
   describe("Initial rendering", () => {
     it("renders the page title", () => {
       renderComponent();
-      expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
+      expect(screen.getByText("Roleplays")).toBeInTheDocument();
     });
 
     it("renders the create button", () => {

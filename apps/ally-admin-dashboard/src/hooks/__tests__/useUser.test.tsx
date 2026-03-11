@@ -363,7 +363,7 @@ describe("useUser", () => {
       });
 
       expect(result.current.filteredNavigationItems).toHaveLength(1);
-      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.EVENT_MANAGEMENT);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.EVENTS);
     });
 
     it("should filter navigation items based on EDIT_USER permission", () => {
@@ -376,7 +376,7 @@ describe("useUser", () => {
       });
 
       expect(result.current.filteredNavigationItems).toHaveLength(1);
-      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.USER_MANAGEMENT);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.USERS);
     });
 
     it("should filter navigation items based on EDIT_PROMPT permission", () => {
@@ -412,12 +412,12 @@ describe("useUser", () => {
       expect(result.current.filteredNavigationItems).toHaveLength(7);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
-        SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+        SIDEBAR_ITEMS.EVENTS,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.PROMPTS,
         SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
-        SIDEBAR_ITEMS.USER_MANAGEMENT,
+        SIDEBAR_ITEMS.USERS,
       ]);
     });
 
@@ -441,7 +441,7 @@ describe("useUser", () => {
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.PROMPTS,
         SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
-        SIDEBAR_ITEMS.USER_MANAGEMENT,
+        SIDEBAR_ITEMS.USERS,
       ]);
     });
 
@@ -493,7 +493,7 @@ describe("useUser", () => {
       expect(newResult.current.filteredNavigationItems).toHaveLength(4);
       expect(newResult.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
-        SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+        SIDEBAR_ITEMS.EVENTS,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       ]);
@@ -597,7 +597,7 @@ describe("useUser", () => {
       });
 
       const eventManagementItem = result.current.filteredNavigationItems.find(
-        item => item.id === SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+        item => item.id === SIDEBAR_ITEMS.EVENTS,
       );
 
       expect(eventManagementItem).toBeDefined();
@@ -615,7 +615,7 @@ describe("useUser", () => {
       });
 
       const userManagementItem = result.current.filteredNavigationItems.find(
-        item => item.id === SIDEBAR_ITEMS.USER_MANAGEMENT,
+        item => item.id === SIDEBAR_ITEMS.USERS,
       );
 
       expect(userManagementItem).toBeDefined();

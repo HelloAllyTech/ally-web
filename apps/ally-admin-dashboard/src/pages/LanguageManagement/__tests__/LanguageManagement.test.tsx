@@ -76,7 +76,7 @@ vi.mock("sonner", () => ({
 
 import { toast } from "sonner";
 
-describe("Languages Management Page", () => {
+describe("Languages Page", () => {
   const mockLanguages = [
     {
       id: "lang-1",

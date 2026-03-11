@@ -240,7 +240,7 @@ export const CharacterLibrary: React.FC = () => {
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
         <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
-          {en.simulation.characterLibrary}
+          {en.simulation.characters}
         </h1>
         <ListToolbar
           searchValue={characterSearch}
