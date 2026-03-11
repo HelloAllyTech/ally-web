@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { CustomImage, FEATURE_FLAGS_MAP, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
@@ -48,6 +48,9 @@ export const ReviewDetails = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const isScribeReview = pathname.includes("scribe-review");
+
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [deletedReplyId, setDeletedReplyId] = useState<string | null>(null);
@@ -71,7 +74,10 @@ export const ReviewDetails = () => {
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
 
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
-    reviewId || "",
+    { id: reviewId || "", isScribe: isScribeReview },
+    {
+      skip: !reviewId,
+    },
   );
 
   const { data: simulationTranscript, isLoading: isGetTranscriptLoading } =
@@ -80,6 +86,7 @@ export const ReviewDetails = () => {
       offset: transcriptOffset,
       limit: TRANSCRIPT_PAGE_SIZE,
       sortBy: "startSeconds",
+      isScribe: isScribeReview,
     });
 
   const { data: generalCommentsList, isLoading: isGetGeneralCommentsLoading } =
@@ -87,6 +94,7 @@ export const ReviewDetails = () => {
       reviewId: reviewId || "",
       limit: GENERAL_COMMENTS_PAGE_SIZE,
       offset: generalCommentsOffset,
+      isScribe: isScribeReview,
     });
   const [addReactions] = useAddReactionMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
@@ -101,7 +109,7 @@ export const ReviewDetails = () => {
 
   useEffect(() => {
     if (reviewId) {
-      markReviewAsRead({ id: reviewId });
+      markReviewAsRead({ id: reviewId, isScribe: isScribeReview });
     }
   }, [reviewId, markReviewAsRead]);
   useEffect(() => {
@@ -279,6 +287,7 @@ export const ReviewDetails = () => {
   const sendReaction = (reaction: string, action: ReactionsType) =>
     addReactions({
       id: reviewId,
+      isScribe: isScribeReview,
       reaction: { reaction, action },
     }).unwrap();
 
@@ -335,10 +344,12 @@ export const ReviewDetails = () => {
   const handleCreateReview = async (status?: string, note?: string) => {
     if (!reviewDetails?.id) return;
     const normalizedNote = note?.trim() || null;
-    const params: { scenarioSessionId: string; status: string; note?: string } = {
-      scenarioSessionId: reviewDetails.id,
-      status,
-    };
+    const params: { scenarioSessionId: string; status: string; note?: string; isScribe?: boolean } =
+      {
+        scenarioSessionId: reviewDetails.id,
+        status,
+        isScribe: isScribeReview,
+      };
     if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
       params.note = normalizedNote;
     await updateReview({ body: params }).unwrap();
@@ -570,6 +581,7 @@ export const ReviewDetails = () => {
                 onReplyChange={handleReplyChange}
                 isFeedOwner={isFeedOwner}
                 show
+                isScribeReview={isScribeReview}
               />
             </div>
           )}
