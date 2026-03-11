@@ -28,6 +28,7 @@ interface ReviewCommentsSidepanelProps {
   setDeletedReplyId?: (id: string) => void;
   handleReplyChange?: (reply: CommentItem) => void;
   changedReply?: CommentItem;
+  setCommentsCount: Dispatch<SetStateAction<number>>;
 }
 
 type TabType = "inline" | "general";
@@ -46,6 +47,7 @@ const ReviewCommentsSidepanel = ({
   setDeletedReplyId,
   handleReplyChange,
   changedReply,
+  setCommentsCount,
 }: ReviewCommentsSidepanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("inline");
@@ -116,6 +118,7 @@ const ReviewCommentsSidepanel = ({
                 changedReply={changedReply}
                 onReplyChange={handleReplyChange}
                 isFeedOwner={isFeedOwner}
+                setCommentsCount={setCommentsCount}
               />
             )}
           </>

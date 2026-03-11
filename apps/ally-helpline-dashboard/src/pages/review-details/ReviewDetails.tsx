@@ -38,6 +38,7 @@ import {
 } from "@types";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
+import Loader from "./Loader";
 import AddReviewNote from "../../components/add-review-note/AddReviewNote";
 import GeneralCommentsToShow from "../../components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { GENERAL_COMMENTS_PAGE_SIZE, TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
@@ -66,6 +67,7 @@ export const ReviewDetails = () => {
   const [generalCommentsOffset, setGeneralCommentsOffset] = useState(0);
   const [changedReply, setChangedReply] = useState<CommentItem | null>(null);
   const [showShareForReviewModal, setShowShareForReviewModal] = useState<boolean>(false);
+  const [commentsCount, setCommentsCount] = useState<number>(0);
 
   const selectEmojiRef = useRef<HTMLDivElement>(null);
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
@@ -113,6 +115,7 @@ export const ReviewDetails = () => {
     if (reviewDetails?.myReaction?.length > 0) {
       setSelectedEmoji(reviewDetails?.myReaction);
     }
+    setCommentsCount(reviewDetails?.commentsCount);
   }, [reviewDetails]);
 
   const isFeedOwner = useMemo(() => {
@@ -446,17 +449,7 @@ export const ReviewDetails = () => {
           <LeftArrow className=" w-5 h-5" />
         </div>
         {isGetReviewDetailsLoading ? (
-          <div className="flex flex-col justify-center gap-2 font-primary animate-pulse">
-            <div className="h-6 w-64 bg-gray-200 rounded" />
-            <div className="flex gap-2 items-center">
-              <div className="w-4 h-4 bg-gray-200 rounded-full" />
-              <div className="h-4 w-24 bg-gray-200 rounded" />
-              <div className="w-1 h-1 bg-gray-200 rounded-full mx-1" />
-              <div className="h-4 w-48 bg-gray-200 rounded" />
-              <div className="w-1 h-1 bg-gray-200 rounded-full mx-1" />
-              <div className="h-4 w-32 bg-gray-200 rounded" />
-            </div>
-          </div>
+          <Loader />
         ) : (
           <div className="flex flex-col justify-center gap-1.5 font-primary">
             <div className="font-medium text-typography-900 flex flex-row items-center">
@@ -502,7 +495,7 @@ export const ReviewDetails = () => {
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
-                {`${t("review.details.comments")} : ${reviewDetails?.commentsCount}`}
+                {`${t("review.details.comments")} : ${commentsCount}`}
               </div>
             </div>
           </div>
@@ -559,6 +552,7 @@ export const ReviewDetails = () => {
                 </div>
               </div>
               <GeneralCommentsToShow
+                setCommentsCount={setCommentsCount}
                 generalComments={generalComments}
                 handleLoadMore={handleGeneralCommentsLoadMore}
                 hasMoreComments={hasMoreGeneralComments}
@@ -589,6 +583,7 @@ export const ReviewDetails = () => {
           setDeletedReplyId={setDeletedReplyId}
           handleReplyChange={handleReplyChange}
           changedReply={changedReply}
+          setCommentsCount={setCommentsCount}
         />
       </div>
       {transcriptList.length > 0 && renderBottomSection()}
