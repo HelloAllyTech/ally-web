@@ -120,17 +120,16 @@ export const PostSimulationSummary: FC = () => {
             status,
           },
         };
-        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
-          params.body.note = normalizedNote;
+        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN) params.body.note = normalizedNote;
         await updateReview(params).unwrap();
       } else {
         const params: ShareForReviewsInput = {
           body: {
             scenarioSessionId: sessionId ?? "",
             status,
+            note: normalizedNote,
           },
         };
-        if (normalizedNote) params.body.note = normalizedNote;
         await createReview(params).unwrap();
       }
     } catch (err: any) {

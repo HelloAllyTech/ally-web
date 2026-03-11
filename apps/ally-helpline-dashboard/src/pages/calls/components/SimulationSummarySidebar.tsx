@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -84,16 +85,14 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
             status,
           },
         };
-        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && normalizedNote)
-          params.body.note = normalizedNote;
+        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN) params.body.note = normalizedNote;
         await updateReview(params).unwrap();
       } else {
         const params: { scenarioSessionId: string; status: string; note?: string } = {
           scenarioSessionId: scenarioSessionId,
           status,
+          note: normalizedNote,
         };
-
-        if (normalizedNote) params.note = normalizedNote;
 
         await createReview({ body: params }).unwrap();
       }
@@ -148,15 +147,19 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
-              <button
-                onClick={() =>
-                  navigate(ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", summary.reviewId))
-                }
-                className="flex items-center justify-center h-[40px] w-[40px] p-0 relative"
-              >
-                <Comment className="w-6 h-6 shrink-0" />
-                {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
-              </button>
+              <Tooltip title="Comments" arrow>
+                <button
+                  onClick={() =>
+                    navigate(
+                      ROUTES.SIMULATION_REVIEW_DETAILS?.replace(":reviewId", summary.reviewId),
+                    )
+                  }
+                  className="flex items-center justify-center h-[40px] w-[40px] p-0 relative"
+                >
+                  <Comment className="w-6 h-6 shrink-0" />
+                  {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
+                </button>
+              </Tooltip>
             </>
           )}
         </div>
