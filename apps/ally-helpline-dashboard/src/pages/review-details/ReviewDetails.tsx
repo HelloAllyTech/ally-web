@@ -344,6 +344,7 @@ export const ReviewDetails = () => {
 
   const handleCreateReview = async (status?: string, note?: string) => {
     if (!reviewDetails?.id) return;
+
     const isExpired =
       differenceInMinutes(new Date(), new Date(reviewDetails?.reviewCreatedAt)) > 10;
     const normalizedNote = note?.trim() || null;
