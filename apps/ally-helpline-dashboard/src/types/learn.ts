@@ -197,6 +197,8 @@ export interface SimulationSummary {
   events: KeyEvent[];
   hasFeedback: boolean;
   scenario: Scenario;
+  reviewCreatedAt: string;
+  reviewNote: string | null;
 }
 
 export interface KeyEvent {

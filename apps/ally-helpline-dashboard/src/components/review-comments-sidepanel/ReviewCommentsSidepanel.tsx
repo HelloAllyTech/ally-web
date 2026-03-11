@@ -3,9 +3,8 @@ import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { Skeleton } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared/index";
-import GeneralCommentsToShow from "@src/components/review-comments-sidepanel/components/GeneralCommentsToShow";
-import ThreadsToShow from "@src/components/review-comments-sidepanel/components/ThreadsToShow";
+import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
+import { GeneralCommentsToShow, ThreadsToShow } from "@components";
 import { CommentItem, Thread } from "@types";
 
 interface ReviewCommentsSidepanelProps {

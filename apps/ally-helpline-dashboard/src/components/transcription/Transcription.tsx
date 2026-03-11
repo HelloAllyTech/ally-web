@@ -3,8 +3,8 @@ import { FC, useEffect, useRef, useState, useCallback, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import "./styles.css";
 
-import { InfiniteScroll } from "@ally-ui-mono/ui-shared/index";
-import SelectableText from "@src/components/selectable-text/SelectableText";
+import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { SelectableText } from "@components";
 import { CommentItem, CommentChangeParams, SimulationTranscriptMessage, Thread } from "@types";
 
 import { getFreshUserRange, splitByCommentRanges } from "./utils";
