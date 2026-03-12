@@ -27,6 +27,7 @@ interface ReviewCommentsSidepanelProps {
   setDeletedReplyId?: (id: string) => void;
   handleReplyChange?: (reply: CommentItem) => void;
   changedReply?: CommentItem;
+  isScribeReview?: boolean;
 }
 
 type TabType = "inline" | "general";
@@ -45,6 +46,7 @@ const ReviewCommentsSidepanel = ({
   setDeletedReplyId,
   handleReplyChange,
   changedReply,
+  isScribeReview,
 }: ReviewCommentsSidepanelProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("inline");
@@ -99,6 +101,7 @@ const ReviewCommentsSidepanel = ({
                 threads={threadsToShow}
                 isOpen={isOpen}
                 isFeedOwner={isFeedOwner}
+                isScribeReview={isScribeReview}
                 onCommentClick={onCommentClick}
               />
             )}
@@ -115,6 +118,7 @@ const ReviewCommentsSidepanel = ({
                 changedReply={changedReply}
                 onReplyChange={handleReplyChange}
                 isFeedOwner={isFeedOwner}
+                isScribeReview={isScribeReview}
               />
             )}
           </>

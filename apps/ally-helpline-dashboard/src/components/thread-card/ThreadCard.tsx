@@ -7,8 +7,9 @@ import { Thread } from "@types";
 interface ThreadCardProps {
   thread: Thread;
   isFeedOwner?: boolean;
+  isScribeReview?: boolean;
 }
-const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
+const ThreadCard = ({ thread, isFeedOwner, isScribeReview }: ThreadCardProps) => {
   const [showComments, setShowComments] = useState(false);
 
   const updateShowComments = event => {
@@ -27,6 +28,7 @@ const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
       </div>
 
       <CommentCard
+        isScribeReview={isScribeReview}
         isFeedOwner={isFeedOwner}
         showLike
         enableLikeUpdate={false}
@@ -49,6 +51,7 @@ const ThreadCard = ({ thread, isFeedOwner }: ThreadCardProps) => {
               }}
             >
               <CommentCard
+                isScribeReview={isScribeReview}
                 isFeedOwner={isFeedOwner}
                 showLike
                 enableLikeUpdate={false}

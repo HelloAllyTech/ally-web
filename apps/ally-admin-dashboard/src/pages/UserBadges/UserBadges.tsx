@@ -289,7 +289,7 @@ export const UserBadges = () => {
   return (
     <div className="py-[2px] font-primary">
       <h1 className="text-2xl h-14 text-typography-900 font-secondary">
-        {en.userManagement.userBadges}
+        {en.userManagement.badges}
       </h1>
       <div className="pt-2 w-full flex justify-between items-center">
         <ListToolbar

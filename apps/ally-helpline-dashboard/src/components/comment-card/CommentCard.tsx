@@ -53,6 +53,7 @@ interface CommentCardProps {
   changedReply?: CommentItem;
   setDeletedReplyId?: (id: string) => void;
   onReplyChange?: (reply: CommentItem) => void;
+  isScribeReview?: boolean;
 }
 const CommentCard = ({
   comment,
@@ -76,6 +77,7 @@ const CommentCard = ({
   setDeletedReplyId,
   onReplyChange,
   changedReply,
+  isScribeReview,
 }: CommentCardProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
@@ -221,6 +223,7 @@ const CommentCard = ({
     addCommentReactions({
       commentId: comment.id,
       reaction: { reaction, action },
+      isScribe: isScribeReview,
     }).unwrap();
 
   const handleEmojiClick = async (emoji: string) => {
@@ -371,6 +374,7 @@ const CommentCard = ({
       await createComment({
         reviewId: reviewId,
         body: body,
+        isScribe: isScribeReview,
       });
       toast.success(`Reply created successfully`);
       onAddComment?.();
@@ -659,6 +663,7 @@ const CommentCard = ({
                     >
                       {replies.map(reply => (
                         <CommentCard
+                          isScribeReview={isScribeReview}
                           key={reply.id}
                           comment={reply}
                           isFeedOwner={isFeedOwner}

@@ -15,6 +15,7 @@ import {
   useUpdateReviewMutation,
   useMarkReviewAsReadMutation,
 } from "@api";
+import { baseAPI } from "@api/baseAPI";
 import { ChatBubble, LeftArrow, Smiley, InfoIcon } from "@assets";
 import {
   ReactionSelector,
@@ -25,9 +26,10 @@ import {
   NativeEmoji,
   ShareForReview,
   ToggleSwitch,
+  AddReviewNote,
+  GeneralCommentsToShow,
 } from "@components";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS_VALUES, TAG_TYPES } from "@constants";
-import { baseAPI } from "@src/api/baseAPI";
 import { RootState } from "@store";
 import {
   CommentChangeParams,
@@ -39,8 +41,6 @@ import {
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
 import Loader from "./Loader";
-import AddReviewNote from "../../components/add-review-note/AddReviewNote";
-import GeneralCommentsToShow from "../../components/review-comments-sidepanel/components/GeneralCommentsToShow";
 import { GENERAL_COMMENTS_PAGE_SIZE, TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
 
 export const ReviewDetails = () => {
@@ -347,10 +347,12 @@ export const ReviewDetails = () => {
 
     const isExpired = differenceInMinutes(new Date(), new Date(reviewDetails?.createdAt)) > 10;
     const normalizedNote = note?.trim() || null;
-    const params: { scenarioSessionId: string; status: string; note?: string } = {
-      scenarioSessionId: reviewDetails.id,
-      status,
-    };
+    const params: { scenarioSessionId: string; status: string; note?: string; isScribe?: boolean } =
+      {
+        scenarioSessionId: reviewDetails.id,
+        status,
+        isScribe: isScribeReview,
+      };
     if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired) params.note = normalizedNote;
     await updateReview({ body: params }).unwrap();
   };
@@ -388,11 +390,6 @@ export const ReviewDetails = () => {
                   )
                 }
               />
-              {/* <Toggle
-                items={REVIEW_PRIVACY_OPTIONS(t)}
-                initialValue={reviewDetails?.reviewStatus || "IN_REVIEW"}
-                onChange={(status: string) => handleCreateReview(status)}
-              /> */}
             </div>
           )}
           <div
@@ -461,16 +458,22 @@ export const ReviewDetails = () => {
         ) : (
           <div className="flex flex-col justify-center gap-1.5 font-primary">
             <div className="font-medium text-typography-900 flex flex-row items-center">
-              <div className="text-[10px] font-normal text-[#7E57C2] bg-[#EDE7F6] px-1 py-[1.5px] rounded-[2px] mr-1.5">
-                Simulation
-              </div>
-              <span className="text-xl line-clamp-1">{reviewDetails?.scenario?.title}</span>
               <div
-                onClick={() => setShowSimulationDetailsModal(true)}
-                className="text-xs cursor-pointer text-neutral-500 ml-[4px]"
+                className={`text-[10px] font-normal ${isScribeReview ? "bg-[#FFF3E0] text-[#E65100]" : "bg-[#EDE7F6] text-[#7E57C2]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
               >
-                <InfoIcon />
+                {isScribeReview ? "Scribe" : "Simulation"}
               </div>
+              <span className="text-xl line-clamp-1">
+                {reviewDetails?.scenario?.title || `CALL-${reviewDetails?.scribeSession?.id}`}
+              </span>
+              {!isScribeReview && (
+                <div
+                  onClick={() => setShowSimulationDetailsModal(true)}
+                  className="text-xs cursor-pointer text-neutral-500 ml-[4px]"
+                >
+                  <InfoIcon />
+                </div>
+              )}
             </div>
             <div className="flex gap-2 items-center text-gray-500 text-base">
               <div className="w-[28px] h-[28px] rounded-full">
@@ -491,15 +494,16 @@ export const ReviewDetails = () => {
               <div>
                 {t("review.details.dateAndTime")}:{" "}
                 {getFormattedDateTime(
-                  reviewDetails?.scenarioSession?.createdAt,
+                  reviewDetails?.scenarioSession?.createdAt ||
+                    reviewDetails?.scribeSession?.createdAt,
                   "MMM dd, yyyy hh:mm a",
                 )}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
                 {reviewDetails?.scenarioSession?.duration < 60
-                  ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "ss")} ${t("review.feedCard.sec")}`
-                  : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration, "mm:ss")} ${t("review.feedCard.min")}`}
+                  ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration || reviewDetails?.scribeSession?.duration, "ss")} ${t("review.feedCard.sec")}`
+                  : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(reviewDetails?.scenarioSession?.duration || reviewDetails?.scribeSession?.duration, "mm:ss")} ${t("review.feedCard.min")}`}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div className="font-primary  leading-4 text-black/60">
@@ -550,6 +554,7 @@ export const ReviewDetails = () => {
             selectedEndIndex={selectedEndIndex}
             onCloseSelectedComment={handleCloseSelectedComment}
             onCommentChange={handleCommentChange}
+            isScribeReview={isScribeReview}
           />
 
           {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
@@ -591,6 +596,7 @@ export const ReviewDetails = () => {
           setDeletedReplyId={setDeletedReplyId}
           handleReplyChange={handleReplyChange}
           changedReply={changedReply}
+          isScribeReview={isScribeReview}
         />
       </div>
       {transcriptList.length > 0 && renderBottomSection()}
@@ -599,6 +605,7 @@ export const ReviewDetails = () => {
         isOpen={showReactionsModal}
         onClose={() => setShowReactionsModal(false)}
         reviewId={reviewId || ""}
+        isScribeReview={isScribeReview}
       />
 
       <SimulationDetailsModal

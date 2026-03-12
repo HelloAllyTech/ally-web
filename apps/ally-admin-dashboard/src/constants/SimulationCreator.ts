@@ -100,9 +100,7 @@ export const StepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
   { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
   { id: SIMULATION_CREATOR_STEP_IDS.advancedSettings, title: "Advanced Settings" },
-  ...(FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG
-    ? [{ id: SIMULATION_CREATOR_STEP_IDS.report, title: "Report" }]
-    : []),
+  { id: SIMULATION_CREATOR_STEP_IDS.report, title: "Report" },
 ];
 
 export const FORM_FIELD_TYPES = {

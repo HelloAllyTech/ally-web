@@ -3,6 +3,7 @@ import { AchievementBadgeModal } from "./achievement-badge-modal";
 import { AchievementItem, AchievementItemData } from "./achievement-item";
 import AchievementsCard from "./achievements-card";
 import ActionDialog from "./action-dialog";
+import { AddReviewNote } from "./add-review-note";
 import { AskAiTab } from "./ask-ai-tab";
 import { AudioTranscriptPlayer } from "./audio-transcript-player";
 import BoxBreathing from "./box-breathing";
@@ -151,4 +152,5 @@ export {
   Timer,
   GeneralCommentsToShow,
   ThreadsToShow,
+  AddReviewNote,
 };

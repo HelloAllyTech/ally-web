@@ -114,6 +114,7 @@ const GeneralCommentsToShow = ({
           messageId: null,
           selection: null,
         },
+        isScribe: isScribeReview,
       });
       setShowCommentBox(false);
     } catch (error) {
@@ -232,6 +233,7 @@ const GeneralCommentsToShow = ({
             >
               {generalComments.map(comment => (
                 <CommentCard
+                  isScribeReview={isScribeReview}
                   onUpdateComment={handleUpdateComment}
                   onDelete={handleDeleteComment}
                   key={comment.id}

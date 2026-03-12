@@ -73,12 +73,6 @@ vi.mock("@hooks", () => ({
   useDebounce: (fn: any) => fn, // Return the function immediately without debouncing
 }));
 
-vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
-  FEATURE_FLAGS_MAP: {
-    SIMULATION_REPORT_FLAG: false,
-  },
-}));
-
 // Mock components
 vi.mock("@components", () => ({
   Header: ({ onBack, onSaveDraft, onPublish, onPreview, isValid }: any) => (

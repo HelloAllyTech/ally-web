@@ -63,4 +63,5 @@ export interface FeedCardProps {
   isViewMoreExpanded?: boolean;
   onTapViewMore?: () => void;
   note?: string;
+  isScribeReview?: boolean;
 }

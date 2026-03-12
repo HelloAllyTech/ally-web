@@ -3,7 +3,6 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { useRevertPromptMutation } from "@api";
 import { Refresh, DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -89,7 +88,6 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showRevertConfirmModal, setShowRevertConfirmModal] = useState(false);
-  const [revertPrompt, { isLoading: isReverting }] = useRevertPromptMutation();
 
   const handleFieldChange = useCallback((field: keyof Prompt, value: any) => {
     setFormData(previousData => ({
