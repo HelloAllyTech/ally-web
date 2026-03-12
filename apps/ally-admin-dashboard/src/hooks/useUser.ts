@@ -89,7 +89,7 @@ export const useUser = () => {
     },
     {
       id: SIDEBAR_ITEMS.USER_BADGES,
-      label: en.userManagement.userBadges,
+      label: en.userManagement.badges,
       path: ROUTES.USER_BADGES,
     },
   ];

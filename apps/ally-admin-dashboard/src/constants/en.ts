@@ -421,7 +421,7 @@ export const en = {
     regenerate: "Regenerate",
     generate: "Generate",
     generating: "Generating...",
-    guardrails: "Conversational Guardrails",
+    guardrails: "Guardrails",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",

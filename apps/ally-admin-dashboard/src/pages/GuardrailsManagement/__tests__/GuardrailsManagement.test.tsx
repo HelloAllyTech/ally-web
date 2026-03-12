@@ -197,6 +197,9 @@ vi.mock("@constants", () => ({
       loadMore: "Load more",
       noMoreData: "No more data",
     },
+    simulation: {
+      guardrails: "Guardrails",
+    },
   },
   SORT_BY: {
     CREATED_AT: "createdAt",
@@ -283,7 +286,7 @@ describe("GuardrailsManagement", () => {
   describe("Initial rendering", () => {
     it("renders the page title", () => {
       renderComponent();
-      expect(screen.getByText("Conversational Guardrails")).toBeInTheDocument();
+      expect(screen.getByText("Guardrails")).toBeInTheDocument();
     });
 
     it("renders the search toolbar", () => {

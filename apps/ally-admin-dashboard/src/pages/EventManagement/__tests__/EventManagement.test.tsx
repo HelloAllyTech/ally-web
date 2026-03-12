@@ -221,6 +221,7 @@ vi.mock("@constants", async importOriginal => {
       ...(actual.en || {}),
       simulation: {
         simulationEvents: "Simulation Events",
+        events: "Events",
         createNewEvent: "Create New Event",
         eventCreatedSuccessfully: "Event created successfully",
         eventsDeletedSuccessfully: "Events deleted successfully",
@@ -356,7 +357,7 @@ describe("EventManagement", () => {
   describe("Initial rendering", () => {
     it("renders the page title", () => {
       renderComponent();
-      expect(screen.getByText("Simulation Events")).toBeInTheDocument();
+      expect(screen.getByText("Events")).toBeInTheDocument();
     });
 
     it("renders the search toolbar", () => {
@@ -1031,7 +1032,7 @@ describe("EventManagement", () => {
 
       renderComponent();
 
-      expect(screen.getByText("Simulation Events")).toBeInTheDocument();
+      expect(screen.getByText("Events")).toBeInTheDocument();
     });
 
     it("handles API error gracefully", async () => {
