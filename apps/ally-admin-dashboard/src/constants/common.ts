@@ -114,6 +114,8 @@ export const ApiEndpoints = {
     SUMMARY_SECTIONS: `/v1/settings/summary-sections`,
     SUMMARY_FIELDS: `/v1/settings/summary-fields`,
     DASHBOARD_SETTINGS_ALL: `/v1/analytics/dashboard/all`,
+    USER_ADMIN_TENANTS: (userId: number) => `/v1/users/${userId}/admin-tenants`,
+    ADMIN_TENANTS: "/v1/users/admin-tenants",
   },
   USER_BADGES: {
     GET_BADGES: "/v1/badges",
@@ -220,6 +222,7 @@ export const TAG_TYPES = {
   USER_BADGES: "userBadges",
   HELPER_TAGS: "helperTags",
   COMPETENCIES: "competencies",
+  ADMIN_TENANTS: "adminTenants",
 };
 
 export const CUSTOM_CHARACTER_ID = "custom";

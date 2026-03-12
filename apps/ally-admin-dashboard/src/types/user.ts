@@ -176,6 +176,7 @@ export interface UserModalProps {
     label: string;
     onClick: (enabled: boolean) => void;
   }[];
+  extraContent?: ReactNode;
 }
 
 export type Option = {
@@ -280,4 +281,25 @@ export interface UpdateSummarySectionsBody {
 export interface UpdateSummaryFieldsBody {
   tenantId: string;
   hiddenFields: string[];
+}
+
+export interface AdminTenant {
+  id: string;
+  name: string;
+  logoUrl?: string;
+}
+
+export interface GetAdminTenantsResponse {
+  data: AdminTenant[];
+  count: number;
+}
+
+export interface AssignAdminTenantsBody {
+  userId: number;
+  tenantIds: string[];
+}
+
+export interface RemoveAdminTenantsBody {
+  userId: number;
+  tenantIds: string[];
 }

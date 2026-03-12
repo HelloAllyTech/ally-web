@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { TabType } from "@types";
@@ -7,10 +8,15 @@ import { TabType } from "@types";
 import * as useOrganizationManagementHook from "../useOrganizationManagement";
 import { UserManagement } from "../UserManagement";
 import * as useUserManagementHook from "../useUserManagement";
+import { Permissions } from "@constants";
 
 // Mock hooks
 vi.mock("../useUserManagement");
 vi.mock("../useOrganizationManagement");
+vi.mock("react-redux", () => ({
+  useSelector: vi.fn(),
+  useDispatch: vi.fn(),
+}));
 
 // Mock components
 vi.mock("@components", () => ({
@@ -90,7 +96,7 @@ vi.mock("@components", () => ({
   ),
   UserListLoader: () => <div data-testid="user-loader">Loading users...</div>,
   OrganizationListLoader: () => <div data-testid="org-loader">Loading organizations...</div>,
-  UserModal: ({ isOpen, onClose, title, handleClick }: any) => {
+  UserModal: ({ isOpen, onClose, title, handleClick, extraContent }: any) => {
     // If isOpen is explicitly false, don't render
     if (isOpen === false) return null;
     // Otherwise render (when isOpen is true or undefined)
@@ -99,6 +105,7 @@ vi.mock("@components", () => ({
         <h2>{title}</h2>
         <button onClick={handleClick}>Submit</button>
         <button onClick={onClose}>Close</button>
+        {extraContent && <div data-testid="modal-extra-content">{extraContent}</div>}
       </div>
     );
   },
@@ -110,6 +117,10 @@ vi.mock("@components", () => ({
         <button onClick={secondaryButton.onClick}>{secondaryButton.label}</button>
       </div>
     ) : null,
+  AssignedOrganizations: () => (
+    <div data-testid="assigned-organizations">Assigned Organizations</div>
+  ),
+  StatusBadge: () => <div data-testid="status-badge">Status Badge</div>,
 }));
 
 describe("UserManagement", () => {
@@ -209,6 +220,9 @@ describe("UserManagement", () => {
   };
 
   beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useSelector).mockReturnValue([]); // Default permissions
+
     vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue(
       mockUserManagementHook as any,
     );
@@ -629,6 +643,23 @@ describe("UserManagement", () => {
 
       expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
       expect(screen.getAllByText("Grant Access").length).toBeGreaterThan(0);
+    });
+
+    it("should show AssignedOrganizations in modal for MULTI_TENANT_ADMIN user", () => {
+      vi.mocked(useSelector).mockReturnValue([Permissions.EDIT_MULTI_TENANT_ADMINS]);
+
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Edit details",
+        selectedUser: { ...mockUsers[0], roles: ["MULTI_TENANT_ADMIN"] },
+        activeTab: TabType.USERS,
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("user-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("modal-extra-content")).toBeInTheDocument();
+      expect(screen.getByTestId("assigned-organizations")).toBeInTheDocument();
     });
   });
 });

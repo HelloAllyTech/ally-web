@@ -351,6 +351,26 @@ describe("UserModal", () => {
 
       expect(screen.getByTestId("save-button")).toHaveTextContent("Submit");
     });
+
+    it("renders extra content when provided", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => (
+            <UserModal
+              isOpen={true}
+              onClose={mockOnClose}
+              title="Test Modal"
+              fields={basicFields}
+              formMethods={formMethods}
+              extraContent={<div data-testid="extra-content">Extra Content</div>}
+            />
+          )}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("extra-content")).toBeInTheDocument();
+      expect(screen.getByText("Extra Content")).toBeInTheDocument();
+    });
   });
 
   describe("Field rendering", () => {

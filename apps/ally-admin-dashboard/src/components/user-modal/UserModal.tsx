@@ -33,6 +33,7 @@ export const UserModal: React.FC<UserModalProps> = ({
   hasTabs = false,
   tabOptions,
   optionValues,
+  extraContent,
 }) => {
   const [activeTab, setActiveTab] = useState(tabOptions?.[0]?.id);
 
@@ -382,6 +383,9 @@ export const UserModal: React.FC<UserModalProps> = ({
                 />
               )}
               {fields.map((field, index) => renderField(field, index))}
+              {extraContent && (
+                <div className="pt-2 border-t border-border-light">{extraContent}</div>
+              )}
             </div>
           )}
 
