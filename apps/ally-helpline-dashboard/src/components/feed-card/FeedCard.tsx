@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useLazyGetGeneralCommentsQuery, useLazyGetReviewThreadsQuery } from "@api";
-import { ReviewTranscript } from "@assets";
+import { ReviewTranscript, ScribeImage } from "@assets";
 import { ReactionsModal } from "@components";
 import { useUser } from "@hooks";
 import { getFormattedTimeFromDuration, formatDateTime, formatRelativeTime } from "@utils";
@@ -32,6 +32,7 @@ const FeedCard: FC<FeedCardProps> = ({
   isViewMoreExpanded = false,
   isScribeReview,
   onTapViewMore,
+  scribeSummaryName,
 }) => {
   const { user: currentDetails } = useUser();
   const { t } = useTranslation();
@@ -93,7 +94,12 @@ const FeedCard: FC<FeedCardProps> = ({
     const willExpand = !isCommentsExpanded;
     if (willExpand && id) {
       if (FEATURE_FLAGS_MAP?.GENERAL_COMMENTS_FLAG) {
-        fetchGeneralComments({ reviewId: id, limit: 2, offset: 0 });
+        fetchGeneralComments({
+          reviewId: id,
+          limit: 2,
+          offset: 0,
+          isScribe: isScribeReview ?? false,
+        });
       } else {
         fetchReviewThreads({ id, limit: 2, offset: 0 });
       }
@@ -214,31 +220,46 @@ const FeedCard: FC<FeedCardProps> = ({
   const scenarioSection = () => {
     return FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG ? (
       <div className="flex flex-col gap-2 cursor-default">
-        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">{note}</div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-          <span className="font-primary text-xs sm:text-[13px] leading-[1.38] text-black/60">
-            {t("review.feedCard.dateTime")}: {formattedDateTime}
-          </span>
-          <span className="font-tertiary text-lg text-border-medium hidden sm:block">•</span>
-          <span className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
-            {duration < 60
-              ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(duration, "ss")} ${t("review.feedCard.sec")}`
-              : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(duration, "mm:ss")} ${t("review.feedCard.min")}`}
-          </span>
+        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">
+          {isScribeReview
+            ? "Could you review how I handled holding emotional space? I tried to avoid giving advice too early, but I’m not sure if I did that effectively."
+            : t("review.feedCard.sharedSimulation")}
         </div>
+        {!isScribeReview && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+            <span className="font-primary text-xs sm:text-[13px] leading-[1.38] text-black/60">
+              {t("review.feedCard.dateTime")}: {formattedDateTime}
+            </span>
+            <span className="font-tertiary text-lg text-border-medium hidden sm:block">•</span>
+            <span className="font-primary text-xs sm:text-[13px] leading-4 text-black/60">
+              {duration < 60
+                ? `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(duration, "ss")} ${t("review.feedCard.sec")}`
+                : `${t("review.feedCard.duration")}: ${getFormattedTimeFromDuration(duration, "mm:ss")} ${t("review.feedCard.min")}`}
+            </span>
+          </div>
+        )}
 
         <div className="border-[0.5px] rounded-[12px] overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 p-3 sm:p-4">
-            <div className="flex-shrink-0 w-full sm:w-[200px] h-[120px] sm:h-[110px] rounded-[4px] overflow-hidden">
-              <CustomImage
-                src={scenario?.coverImageUrl}
-                alt={scenario?.title}
-                className="w-full h-full object-cover"
-              />
+            <div
+              className={`flex-shrink-0 w-full sm:w-[200px] rounded-[4px] overflow-hidden ${isScribeReview ? "h-[95px] sm:h-[85px]" : "h-[120px] sm:h-[110px]"}`}
+            >
+              {isScribeReview ? (
+                <div className="w-full h-full flex items-center justify-center bg-neutral-50 rounded-[8px]">
+                  <ScribeImage className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <CustomImage
+                  src={scenario?.coverImageUrl}
+                  alt={scenario?.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
 
-            <div className="flex flex-col justify-center flex-1 min-w-0 relative overflow-hidden sm:min-h-[110px]">
+            <div
+              className={`flex flex-col justify-center flex-1 min-w-0 relative overflow-hidden ${isScribeReview ? "sm:min-h-[85px]" : "sm:min-h-[110px]"}`}
+            >
               {badgeText && badgeText.length > 0 && badgeSection()}
               {/* Hidden: measure if title wraps to 2 lines (overflow 1 line) */}
               <div
@@ -249,7 +270,7 @@ const FeedCard: FC<FeedCardProps> = ({
                 {scenario?.title}
               </div>
               <div className="overflow-hidden font-primary text-sm sm:text-lg sm:leading-[1.3] text-[#1A1A1A] py-1 sm:py-2 line-clamp-2">
-                {scenario?.title}
+                {isScribeReview ? scribeSummaryName : scenario?.title}
               </div>
               {/* Hidden: measure if description overflows 1 or 2 lines */}
               <div
@@ -260,9 +281,15 @@ const FeedCard: FC<FeedCardProps> = ({
                 {scenario?.description}
               </div>
               <div
-                className={`font-primary text-xs sm:text-sm text-black/60 sm:leading-[1.3] ${descriptionLineClampClass}`}
+                className={`font-primary text-xs sm:text-sm text-black/60 sm:leading-[1.3] ${descriptionLineClampClass} ${isScribeReview ? "whitespace-pre-wrap" : ""}`}
               >
-                {scenario?.description}
+                {isScribeReview
+                  ? `Date & time: ${formattedDateTime}   Duration: ${
+                      duration < 60
+                        ? `${getFormattedTimeFromDuration(duration, "ss")} ${t("review.feedCard.sec")}`
+                        : `${getFormattedTimeFromDuration(duration, "mm:ss")} ${t("review.feedCard.min")}`
+                    }`
+                  : scenario?.description}
               </div>
 
               {shouldShowViewMoreButton && renderShowMoreLess()}
@@ -289,11 +316,15 @@ const FeedCard: FC<FeedCardProps> = ({
         <div className="border-[0.5px] rounded-[12px] overflow-hidden">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4">
             <div className="flex-shrink-0 w-full sm:w-[200px] h-[120px] sm:h-[100px] rounded-[4px] overflow-hidden">
-              <CustomImage
-                src={scenario?.coverImageUrl}
-                alt={scenario?.title}
-                className="w-full h-full object-cover"
-              />
+              {isScribeReview ? (
+                <ScribeImage />
+              ) : (
+                <CustomImage
+                  src={scenario?.coverImageUrl}
+                  alt={scenario?.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
 
             <div className="flex flex-col justify-start gap-1 sm:gap-2 flex-1 min-w-0">

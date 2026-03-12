@@ -233,7 +233,7 @@ vi.mock("@components/feed-card", () => ({
   ),
 }));
 
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, MemoryRouter } from "react-router-dom";
 
 import { Review } from "../Review";
 
@@ -380,10 +380,11 @@ describe("Review Component", () => {
     });
 
     it("displays scenario titles in feed cards", () => {
+      // Simulation tab passes scenario to FeedCard; Scribe tab does not. Use MemoryRouter so initial URL is set.
       render(
-        <TestWrapper>
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION&filter=ALL"]}>
           <Review />
-        </TestWrapper>,
+        </MemoryRouter>,
       );
       expect(screen.getByText("Test Scenario 1")).toBeInTheDocument();
       expect(screen.getByText("Test Scenario 2")).toBeInTheDocument();

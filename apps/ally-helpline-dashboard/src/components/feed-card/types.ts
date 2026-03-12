@@ -9,6 +9,11 @@ export interface FeedScenario {
   coverVideoUrl?: string;
 }
 
+export interface ScribeSession {
+  duration: number;
+  createdAt: string;
+}
+
 export interface FeedUser {
   name: string;
   profileImage?: string;
@@ -50,7 +55,7 @@ export interface FeedCardProps {
   id: string;
   createdAt: string;
   user: ReviewUser;
-  scenario: FeedScenario;
+  scenario?: FeedScenario;
   reactions: Reactions;
   commentsCount: number;
   onReviewTranscript?: () => void;
@@ -64,4 +69,5 @@ export interface FeedCardProps {
   onTapViewMore?: () => void;
   note?: string;
   isScribeReview?: boolean;
+  scribeSummaryName?: string;
 }
