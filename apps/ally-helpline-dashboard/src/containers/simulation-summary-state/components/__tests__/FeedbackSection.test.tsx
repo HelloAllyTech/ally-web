@@ -26,13 +26,23 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
     ) : null,
 }));
 
-// Mock Accordion component
+// Mock Accordion and Checklist (FeedbackSection imports Checklist from @src/components)
 vi.mock("@components", () => ({
   Accordion: ({ children, title, defaultExpanded }: any) => (
     <div data-testid="accordion">
       <div data-testid="accordion-title">{title}</div>
       {defaultExpanded && <div data-testid="accordion-content">{children}</div>}
     </div>
+  ),
+  Checklist: ({ className, sessionId }: any) => (
+    <div data-testid="checklist" className={className} data-session-id={sessionId} />
+  ),
+}));
+
+// Component imports Checklist from @src/components; ensure it's mocked for that path too
+vi.mock("@src/components", () => ({
+  Checklist: ({ className, sessionId }: any) => (
+    <div data-testid="checklist" className={className} data-session-id={sessionId} />
   ),
 }));
 

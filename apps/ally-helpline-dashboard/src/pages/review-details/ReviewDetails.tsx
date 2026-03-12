@@ -347,10 +347,12 @@ export const ReviewDetails = () => {
 
     const isExpired = differenceInMinutes(new Date(), new Date(reviewDetails?.createdAt)) > 10;
     const normalizedNote = note?.trim() || null;
-    const params: { scenarioSessionId: string; status: string; note?: string } = {
-      scenarioSessionId: reviewDetails.id,
-      status,
-    };
+    const params: { scenarioSessionId: string; status: string; note?: string; isScribe?: boolean } =
+      {
+        scenarioSessionId: reviewDetails.id,
+        status,
+        isScribe: isScribeReview,
+      };
     if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired) params.note = normalizedNote;
     await updateReview({ body: params }).unwrap();
   };
@@ -388,11 +390,6 @@ export const ReviewDetails = () => {
                   )
                 }
               />
-              {/* <Toggle
-                items={REVIEW_PRIVACY_OPTIONS(t)}
-                initialValue={reviewDetails?.reviewStatus || "IN_REVIEW"}
-                onChange={(status: string) => handleCreateReview(status)}
-              /> */}
             </div>
           )}
           <div

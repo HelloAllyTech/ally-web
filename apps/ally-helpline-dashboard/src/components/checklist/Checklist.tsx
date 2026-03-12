@@ -1,6 +1,5 @@
 import { FC } from "react";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetSimulationChecklistQuery } from "@api";
 import { CrossRedBackground, TickGreenBackground } from "@assets";
 import { ChecklistItem } from "@types";
@@ -42,7 +41,7 @@ export const Checklist: FC<ChecklistProps> = ({
 }) => {
   const { data, isLoading, isError } = useGetSimulationChecklistQuery(
     { sessionId: sessionId || "" },
-    { skip: !sessionId || !FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG },
+    { skip: !sessionId },
   );
 
   // Use dummy data if API fails or returns no data
