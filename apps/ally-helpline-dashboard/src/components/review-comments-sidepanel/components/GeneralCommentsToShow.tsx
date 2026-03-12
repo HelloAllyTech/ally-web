@@ -114,6 +114,7 @@ const GeneralCommentsToShow = ({
           messageId: null,
           selection: null,
         },
+        isScribe: isScribeReview,
       });
       setShowCommentBox(false);
     } catch (error) {

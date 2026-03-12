@@ -198,15 +198,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         />
       ),
     },
-    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG && summary?.counselorId === user?.id
-      ? [
-          {
-            id: 2,
-            label: t("postSim.tabs.askAi", "Ask AI"),
-            content: <AskAiTab sessionId={summaryId} />,
-          },
-        ]
-      : []),
+    {
+      id: 2,
+      label: t("postSim.tabs.askAi", "Ask AI"),
+      content: <AskAiTab sessionId={summaryId} />,
+    },
     {
       id: 3,
       label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
@@ -218,20 +214,16 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         />
       ),
     },
-    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
-      ? [
-          {
-            id: 5,
-            label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
-            content: <SkillsTab sessionId={summaryId} />,
-          },
-          {
-            id: 4,
-            label: t("postSim.tabs.deeperReflection", "Deeper Reflection"),
-            content: <ReflectionTab sessionId={summaryId} className="flex-col" />,
-          },
-        ]
-      : []),
+    {
+      id: 5,
+      label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
+      content: <SkillsTab sessionId={summaryId} />,
+    },
+    {
+      id: 4,
+      label: t("postSim.tabs.deeperReflection", "Deeper Reflection"),
+      content: <ReflectionTab sessionId={summaryId} className="flex-col" />,
+    },
   ];
 
   const onSidebarClose = () => {

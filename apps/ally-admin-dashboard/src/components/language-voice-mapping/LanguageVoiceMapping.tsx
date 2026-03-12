@@ -2,7 +2,6 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetAvailableLanguageVoicesQuery, useLazyGetPreviewVoiceQuery } from "@api";
 import { DropdownField } from "@components";
 import { en } from "@constants";
@@ -237,7 +236,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
                   ? options.find(opt => opt.value === selectedVoiceId)?.label
                   : en.simulation.selectVoice
               }
-              optionsRenderer={FEATURE_FLAGS_MAP.SIMULATION_VOICE_FLAG ? renderOption : undefined}
+              optionsRenderer={renderOption}
               onClose={() => handlePause()}
               allowDeselect={true}
             />

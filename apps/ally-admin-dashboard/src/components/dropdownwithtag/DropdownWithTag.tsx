@@ -119,23 +119,20 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
               width: dropdownPosition.width,
             }}
           >
-            {/* TODO: Remove the filter when the SCRIBE_REVIEWER role is removed */}
-            {options
-              ?.filter(role => role.value !== "SCRIBE_REVIEWER")
-              ?.map(role => {
-                const roleName = role.name || role.value;
-                const isSelected = value.includes(roleName);
+            {options?.map(role => {
+              const roleName = role.name || role.value;
+              const isSelected = value.includes(roleName);
 
-                return (
-                  <div
-                    key={role.id || role.value}
-                    className={`px-3 py-2 text-sm cursor-pointer font-primary ${isSelected ? "bg-neutral-100" : ""}`}
-                    onClick={() => toggleRole(role)}
-                  >
-                    {formatCapitalizedEnum(roleName)}
-                  </div>
-                );
-              })}
+              return (
+                <div
+                  key={role.id || role.value}
+                  className={`px-3 py-2 text-sm cursor-pointer font-primary ${isSelected ? "bg-neutral-100" : ""}`}
+                  onClick={() => toggleRole(role)}
+                >
+                  {formatCapitalizedEnum(roleName)}
+                </div>
+              );
+            })}
           </div>,
           document.body,
         )}
