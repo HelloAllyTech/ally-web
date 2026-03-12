@@ -144,7 +144,6 @@ vi.mock("@ally-ui-mono/ui-shared/index", async importOriginal => {
     ...actual,
     FEATURE_FLAGS_MAP: {
       ...actual.FEATURE_FLAGS_MAP,
-      SUMMARY_TABS_FLAG: true,
       SHARE_FOR_REVIEW_FLAG: true,
     },
   };
@@ -565,8 +564,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const tabButtons = screen.getAllByRole("tab");
-      // With SUMMARY_TABS_FLAG enabled, we have 5 tabs: Summary, Transcription, Ask AI, Skills, Reflection
-      expect(tabButtons).toHaveLength(5);
+      expect(tabButtons).toHaveLength(6);
     });
   });
 
