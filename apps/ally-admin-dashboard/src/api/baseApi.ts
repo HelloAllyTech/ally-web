@@ -112,6 +112,7 @@ export const baseAPI = createApi({
     TAG_TYPES.TRIGGER_WARNINGS,
     TAG_TYPES.HELPER_TAGS,
     TAG_TYPES.COMPETENCIES,
+    TAG_TYPES.ADMIN_TENANTS,
   ],
   endpoints: () => ({}),
 });

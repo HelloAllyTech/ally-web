@@ -1,5 +1,6 @@
 import { FC, useCallback, useMemo } from "react";
 
+import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
@@ -14,6 +15,7 @@ import {
   UserModal,
   ActionConfirmationPopup,
   StatusBadge,
+  AssignedOrganizations,
 } from "@components";
 import { ButtonVariant, FilterValues } from "@components/types";
 import {
@@ -32,7 +34,10 @@ import {
   USER_MANAGEMENT_TABS,
   USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_1,
   USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_2,
+  UserRole,
+  Permissions,
 } from "@constants";
+import { RootState } from "@store";
 import { TabType } from "@types";
 import { formatCapitalizedEnum } from "@utils";
 
@@ -50,6 +55,8 @@ export const UserManagement: FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get("tab") as TabType) || TabType.USERS;
+  const permissions = useSelector((state: RootState) => state.user.permissions);
+  const canEditMultiTenantAdmins = permissions.includes(Permissions.EDIT_MULTI_TENANT_ADMINS);
 
   // Organization management hook
   const {
@@ -187,6 +194,15 @@ export const UserManagement: FC = () => {
             details={selectedUser}
             formMethods={userMethods}
             handleClick={handleEditUser}
+            extraContent={
+              selectedUser?.roles?.includes(UserRole.MULTI_TENANT_ADMIN) ? (
+                <AssignedOrganizations
+                  userId={selectedUser.id}
+                  canEdit={canEditMultiTenantAdmins}
+                  allTenants={tenants}
+                />
+              ) : undefined
+            }
           />
         );
       case UserMenuOptions.CHANGE_ROLE:

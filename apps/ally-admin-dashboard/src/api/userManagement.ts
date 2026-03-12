@@ -19,6 +19,9 @@ import {
   ScribeSettingsListResponse,
   UpdateSummarySectionsBody,
   UpdateSummaryFieldsBody,
+  GetAdminTenantsResponse,
+  AssignAdminTenantsBody,
+  RemoveAdminTenantsBody,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
@@ -254,6 +257,31 @@ const userManagementAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SUMMARY_SECTIONS],
     }),
+
+    getAdminTenants: builder.query<GetAdminTenantsResponse, number>({
+      query: userId => ({
+        url: ApiEndpoints.USER_MANAGEMENT.USER_ADMIN_TENANTS(userId),
+      }),
+      providesTags: [TAG_TYPES.ADMIN_TENANTS],
+    }),
+
+    assignAdminTenants: builder.mutation<{ success: boolean }, AssignAdminTenantsBody>({
+      query: body => ({
+        url: ApiEndpoints.USER_MANAGEMENT.ADMIN_TENANTS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.ADMIN_TENANTS],
+    }),
+
+    removeAdminTenants: builder.mutation<{ success: boolean }, RemoveAdminTenantsBody>({
+      query: body => ({
+        url: ApiEndpoints.USER_MANAGEMENT.ADMIN_TENANTS,
+        method: HttpMethod.DELETE,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.ADMIN_TENANTS],
+    }),
   }),
 });
 
@@ -286,4 +314,8 @@ export const {
   useGetDashboardSettingsAllQuery,
   useEnableCaseMutation,
   useDisableCaseMutation,
+  useGetAdminTenantsQuery,
+  useLazyGetAdminTenantsQuery,
+  useAssignAdminTenantsMutation,
+  useRemoveAdminTenantsMutation,
 } = userManagementAPI;
