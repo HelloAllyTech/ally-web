@@ -36,6 +36,7 @@ interface TranscriptionProps {
   onCommentChange?: (params: CommentChangeParams) => void;
   onDeleteComment?: (val?: number) => void;
   onAddComment?: () => void;
+  isScribeReview?: boolean;
 }
 
 const Transcription: FC<TranscriptionProps> = ({
@@ -59,6 +60,7 @@ const Transcription: FC<TranscriptionProps> = ({
   onAddComment = () => {},
   onCommentChange = () => {},
   onDeleteComment = () => {},
+  isScribeReview,
 }) => {
   const { t } = useTranslation();
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -317,6 +319,7 @@ const Transcription: FC<TranscriptionProps> = ({
                       setNewCommentSelection={setNewCommentSelection}
                       onCancelComment={onCancelComment}
                       onAddComment={onAddComment}
+                      isScribeReview={isScribeReview}
                     />
                   );
                 })}

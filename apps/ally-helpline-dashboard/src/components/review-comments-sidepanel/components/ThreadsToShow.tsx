@@ -13,9 +13,10 @@ interface ThreadsToShowProps {
     startIndex: number;
     endIndex: number;
   }) => void;
+  isScribeReview?: boolean;
 }
 const ThreadsToShow = (props: ThreadsToShowProps) => {
-  const { threads, onCommentClick, isOpen, isFeedOwner } = props;
+  const { threads, onCommentClick, isOpen, isFeedOwner, isScribeReview } = props;
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-4 overflow-auto h-[calc(100%-40px)] pb-8 -mr-4 pr-4 py-4 custom-scrollbar">
@@ -39,7 +40,11 @@ const ThreadsToShow = (props: ThreadsToShowProps) => {
                 transitionDelay: isOpen ? `${index * 50}ms` : `${(threads.length - index) * 30}ms`,
               }}
             >
-              <ThreadCard thread={thread} isFeedOwner={isFeedOwner} />
+              <ThreadCard
+                thread={thread}
+                isFeedOwner={isFeedOwner}
+                isScribeReview={isScribeReview}
+              />
             </div>
           ),
       )}

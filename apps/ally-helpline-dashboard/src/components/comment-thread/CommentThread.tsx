@@ -26,6 +26,7 @@ interface CommentThreadProps {
   threadsOffset: number;
   setThreadsOffset: React.Dispatch<React.SetStateAction<number>>;
   onAddComment: () => void;
+  isScribeReview?: boolean;
 }
 const CommentThread = ({
   comments,
@@ -40,6 +41,7 @@ const CommentThread = ({
   threadsOffset,
   setThreadsOffset,
   onAddComment,
+  isScribeReview,
 }: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [comment, setComment] = useState("");
@@ -52,6 +54,7 @@ const CommentThread = ({
     id,
     limit: PAGE_SIZE,
     offset: threadsOffset,
+    isScribe: isScribeReview,
   });
 
   useEffect(() => {
@@ -215,6 +218,7 @@ const CommentThread = ({
           >
             {(comments ?? []).map(comment => (
               <CommentCard
+                isScribeReview={isScribeReview}
                 key={comment.id}
                 comment={comment}
                 isFeedOwner={isFeedOwner}

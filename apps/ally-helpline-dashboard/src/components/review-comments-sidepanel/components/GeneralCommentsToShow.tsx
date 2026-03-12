@@ -233,6 +233,7 @@ const GeneralCommentsToShow = ({
             >
               {generalComments.map(comment => (
                 <CommentCard
+                  isScribeReview={isScribeReview}
                   onUpdateComment={handleUpdateComment}
                   onDelete={handleDeleteComment}
                   key={comment.id}

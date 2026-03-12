@@ -8,9 +8,10 @@ const PAGE_SIZE = 20;
 export interface UseReactionModalProps {
   reviewId: string;
   isOpen: boolean;
+  isScribeReview?: boolean;
 }
 
-export const useReactionModal = ({ reviewId, isOpen }: UseReactionModalProps) => {
+export const useReactionModal = ({ reviewId, isOpen, isScribeReview }: UseReactionModalProps) => {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [showMoreEmojis, setShowMoreEmojis] = useState(false);
   const [offset, setOffset] = useState(0);
@@ -21,7 +22,7 @@ export const useReactionModal = ({ reviewId, isOpen }: UseReactionModalProps) =>
 
   const { data: reactionsData, isLoading: isReactionsCountLoading } =
     useGetReviewReactionsCountQuery(
-      { reviewId },
+      { reviewId, isScribe: isScribeReview },
       {
         skip: !isOpen || !reviewId,
         refetchOnMountOrArgChange: true,
@@ -48,6 +49,7 @@ export const useReactionModal = ({ reviewId, isOpen }: UseReactionModalProps) =>
           reaction: reactionParam,
           limit: PAGE_SIZE,
           offset: 0,
+          isScribe: isScribeReview,
         }).unwrap();
 
         const newReactions = result.data ?? [];
@@ -72,6 +74,7 @@ export const useReactionModal = ({ reviewId, isOpen }: UseReactionModalProps) =>
         reaction: reactionParam,
         limit: PAGE_SIZE,
         offset: newOffset,
+        isScribe: isScribeReview,
       }).unwrap();
 
       const newReactions = result.data ?? [];

@@ -147,23 +147,24 @@ export const ApiEndpoints = {
     ADD_COMMENT_REACTION: (commentId: string) =>
       `/v1/scenario-session-reviews/comments/${commentId}/reactions`,
     ADD_SCRIBE_COMMENT_REACTION: (commentId: string) =>
-      `/v1/scribe-session-reviews/${commentId}/reactions`,
+      `/v1/scribe-session-reviews/comments/${commentId}/reactions`,
     TOGGLE_COMMENT_VISIBILITY: (commentId: string) =>
       `/v1/scenario-session-reviews/comments/${commentId}/visibility`,
     TOGGLE_SCRIBE_COMMENT_VISIBILITY: (commentId: string) =>
-      `/v1/scribe-session-reviews/${commentId}/visibility`,
+      `/v1/scribe-session-reviews/comments/${commentId}/visibility`,
     EDIT_COMMENT: (commentId: string) => `/v1/scenario-session-reviews/comments/${commentId}`,
-    EDIT_SCRIBE_COMMENT: (commentId: string) => `/v1/scribe-session-reviews/${commentId}`,
+    EDIT_SCRIBE_COMMENT: (commentId: string) => `/v1/scribe-session-reviews/comments/${commentId}`,
     DELETE_COMMENT: (commentId: string) => `/v1/scenario-session-reviews/comments/${commentId}`,
-    DELETE_SCRIBE_COMMENT: (commentId: string) => `/v1/scribe-session-reviews/${commentId}`,
+    DELETE_SCRIBE_COMMENT: (commentId: string) =>
+      `/v1/scribe-session-reviews/comments/${commentId}`,
     GET_COMMENT_REPLIES: (commentId: string) =>
       `/v1/scenario-session-reviews/comments/${commentId}/replies`,
     GET_SCRIBE_COMMENT_REPLIES: (commentId: string) =>
-      `/v1/scribe-session-reviews/${commentId}/replies`,
+      `/v1/scribe-session-reviews/comments/${commentId}/replies`,
     GET_REVIEW_THREAD_COMMENTS: (threadId: string) =>
       `/v1/scenario-session-reviews/threads/${threadId}/comments`,
     GET_SCRIBE_REVIEW_THREAD_COMMENTS: (threadId: string) =>
-      `/v1/scribe-session-reviews/${threadId}/comments`,
+      `/v1/scribe-session-reviews/threads/${threadId}/comments`,
     GET_UNREAD_COUNT: "/v1/scenario-session-reviews/unread-count",
     GET_SCRIBE_UNREAD_COUNT: "/v1/scribe-session-reviews/unread-count",
     MARK_READ: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/mark-read`,
