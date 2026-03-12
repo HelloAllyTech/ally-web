@@ -115,6 +115,7 @@ import ReviewTranscript from "./review-transcript.svg?react";
 import ReviewsEmptyState from "./reviews_empty_state.svg?react";
 import RoundCheckmark from "./round-checkmark.svg?react";
 import ScenarioIcon from "./scenario-icon.svg?react";
+import ScribeImage from "./scribe-image.svg?react";
 import ScribeIcon from "./scribe.svg?react";
 import SearchIcon from "./search.svg?react";
 import SendArrow from "./send-arrow.svg?react";
@@ -314,4 +315,5 @@ export {
   AddIcon,
   Emoji,
   HourGlass,
+  ScribeImage,
 };

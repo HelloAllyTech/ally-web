@@ -103,7 +103,11 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
         Object.values(formFieldIds).forEach(fieldId => {
           const value = characterData[fieldId as keyof CharacterData];
           // Ensure we never set null or undefined - always use empty string as fallback
-          setValue(fieldId, value ?? "", { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+          setValue(fieldId, value ?? "", {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+          });
         });
       }
 
@@ -146,7 +150,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     if (selectedCharacterId === CUSTOM_CHARACTER_ID || !selectedCharacterId) {
       if (charactersData?.characters) {
         const currentValues = getValues();
-        
+
         // Strategy 1: All fields match an existing character perfectly -> revert to that character
         const perfectMatch = charactersData.characters.find(char => {
           return Object.values(formFieldIds).every(fieldId => {
@@ -165,12 +169,12 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
         // Strategy 2: If the name just changed and it matches an existing character's name
         if (currentName !== previousNameRef.current) {
           previousNameRef.current = currentName;
-          
+
           if (currentName) {
             const nameMatch = charactersData.characters.find(
-              char => char.name?.trim().toLowerCase() === currentName.trim().toLowerCase()
+              char => char.name?.trim().toLowerCase() === currentName.trim().toLowerCase(),
             );
-            
+
             if (nameMatch && nameMatch.id) {
               handleCharacterSelect(nameMatch.id, nameMatch);
             }
@@ -180,7 +184,14 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     } else {
       previousNameRef.current = currentName;
     }
-  }, [watchedValuesString, currentName, charactersData?.characters, selectedCharacterId, getValues, handleCharacterSelect]);
+  }, [
+    watchedValuesString,
+    currentName,
+    charactersData?.characters,
+    selectedCharacterId,
+    getValues,
+    handleCharacterSelect,
+  ]);
 
   const getDisplayLabel = () => {
     if (selectedCharacterId === CUSTOM_CHARACTER_ID) return "Custom";
@@ -207,7 +218,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                 className="w-full rounded border border-border-light px-3 py-1 bg-white text-base cursor-pointer flex items-center justify-between hover:border-border-dark transition-colors"
                 onClick={() => setIsCharacterDropdownOpen(prev => !prev)}
               >
-                <span className={selectedCharacterId ? "text-typography-900" : "text-typography-500"}>
+                <span
+                  className={selectedCharacterId ? "text-typography-900" : "text-typography-500"}
+                >
                   {getDisplayLabel()}
                 </span>
                 <span

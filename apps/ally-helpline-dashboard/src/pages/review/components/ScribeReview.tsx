@@ -124,7 +124,6 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
             id={item.id}
             createdAt={item.createdAt}
             user={item.createdBy}
-            scenario={item.scenario}
             reactions={item.reactions}
             commentsCount={item.commentsCount}
             onReviewTranscript={() => onReviewTranscript(item.id)}
@@ -133,10 +132,11 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
             badgeBgColor="#FFF3E0"
             badgeTextColor="#E65100"
             badgeText="Scribe"
-            isEdited={item.isEdited}
             isViewMoreExpanded={expandedViewMoreIds.has(item.id)}
             onTapViewMore={() => handleTapViewMore(item.id)}
             note={item.note}
+            isScribeReview={true}
+            scribeSummaryName={item.scribeSession?.summaryName}
           />
         </motion.div>
       ))}

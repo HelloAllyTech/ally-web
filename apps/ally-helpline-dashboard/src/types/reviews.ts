@@ -37,6 +37,7 @@ export interface ReviewItem {
   scribeSession?: {
     duration?: number;
     createdAt?: string;
+    summaryName?: string;
   };
   note: string;
   noteEditedAt: string;
