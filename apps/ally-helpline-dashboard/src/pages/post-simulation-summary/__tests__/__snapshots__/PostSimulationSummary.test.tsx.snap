@@ -135,6 +135,14 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             Deeper Reflection
           </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-3"
+            data-value="3"
+            role="tab"
+          >
+            Up Next
+          </button>
         </div>
         <div
           class="max-h-[calc(100vh-212px)]"
@@ -288,6 +296,14 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             role="tab"
           >
             Deeper Reflection
+          </button>
+          <button
+            aria-selected="false"
+            data-testid="tab-3"
+            data-value="3"
+            role="tab"
+          >
+            Up Next
           </button>
         </div>
         <div

@@ -17,7 +17,7 @@ import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { UserRole, SessionType } from "@types";
+import { UserRole } from "@types";
 
 import { Calls } from "../Calls";
 
@@ -25,7 +25,6 @@ import { Calls } from "../Calls";
 vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
   FEATURE_FLAGS_MAP: {
     LANGUAGE_CAPABILITY_FLAG: false,
-    SIMULATION_REPORT_FLAG: false,
   },
 }));
 
