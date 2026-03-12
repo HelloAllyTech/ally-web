@@ -13,9 +13,10 @@ interface ReactionsModalProps {
   isOpen: boolean;
   onClose: () => void;
   reviewId: string;
+  isScribeReview?: boolean;
 }
 
-const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) => {
+const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, isScribeReview }) => {
   const { t } = useTranslation();
   const {
     activeTab,
@@ -30,7 +31,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId }) 
     handleToggleMoreEmojis,
     handleSelectHiddenReaction,
     resetState,
-  } = useReactionModal({ reviewId, isOpen });
+  } = useReactionModal({ reviewId, isOpen, isScribeReview });
 
   const handleClose = () => {
     resetState();

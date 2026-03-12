@@ -56,6 +56,7 @@ interface SelectableTextProps {
   onCancelComment: () => void;
   onCommentChange: (params: CommentChangeParams) => void;
   onAddComment: () => void;
+  isScribeReview?: boolean;
 }
 const SelectableText = ({
   segment,
@@ -79,6 +80,7 @@ const SelectableText = ({
   onCommentChange,
   onAddComment,
   onDeleteComment,
+  isScribeReview,
 }: SelectableTextProps) => {
   const { reviewId } = useParams<{ reviewId: string }>();
   const [
@@ -299,6 +301,7 @@ const SelectableText = ({
     await createComment({
       reviewId: reviewId,
       body: body,
+      isScribe: isScribeReview,
     });
   };
 
@@ -318,6 +321,7 @@ const SelectableText = ({
     await createComment({
       reviewId: reviewId,
       body: body,
+      isScribe: isScribeReview,
     });
   };
 
