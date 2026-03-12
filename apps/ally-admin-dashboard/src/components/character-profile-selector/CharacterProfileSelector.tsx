@@ -10,6 +10,7 @@ import {
   GENDER_IDENTITY_OPTIONS,
   SEXUAL_ORIENTATION_OPTIONS,
   en,
+  CUSTOM_CHARACTER_ID,
 } from "@constants";
 import { useClickOutside } from "@hooks";
 import { CharacterData } from "@types";
@@ -93,7 +94,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
       // Store the character ID in the main field
       setValue(id, characterId);
 
-      if (characterId === "custom") {
+      if (characterId === CUSTOM_CHARACTER_ID) {
         Object.values(formFieldIds).forEach(fieldId => {
           setValue(fieldId, "", { shouldDirty: true, shouldTouch: true });
         });
@@ -125,7 +126,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 
   // Watch fields and switch to custom if modified manually
   useEffect(() => {
-    if (selectedCharacterId && selectedCharacterId !== "custom" && selectedCharacter) {
+    if (selectedCharacterId && selectedCharacterId !== CUSTOM_CHARACTER_ID && selectedCharacter) {
       const currentValues = getValues();
       const hasChanged = Object.values(formFieldIds).some(fieldId => {
         const formValue = currentValues[fieldId];
@@ -134,15 +135,15 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
       });
 
       if (hasChanged) {
-        setSelectedCharacterId("custom");
-        setValue(id, "custom");
+        setSelectedCharacterId(CUSTOM_CHARACTER_ID);
+        setValue(id, CUSTOM_CHARACTER_ID);
       }
     }
   }, [watchedValuesString, selectedCharacterId, selectedCharacter, getValues, id, setValue]);
 
   // Auto-select character if name perfectly matches, or if all fields perfectly match
   useEffect(() => {
-    if (selectedCharacterId === "custom" || !selectedCharacterId) {
+    if (selectedCharacterId === CUSTOM_CHARACTER_ID || !selectedCharacterId) {
       if (charactersData?.characters) {
         const currentValues = getValues();
         
@@ -182,7 +183,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
   }, [watchedValuesString, currentName, charactersData?.characters, selectedCharacterId, getValues, handleCharacterSelect]);
 
   const getDisplayLabel = () => {
-    if (selectedCharacterId === "custom") return "Custom";
+    if (selectedCharacterId === CUSTOM_CHARACTER_ID) return "Custom";
     if (selectedCharacter) {
       return `${selectedCharacter.name} (${selectedCharacter.gender}, ${selectedCharacter.age}, ${selectedCharacter.profession})`;
     }
@@ -239,13 +240,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                     ) : charactersData && charactersData?.characters?.length > 0 ? (
                       <>
                         <div
-                          key="custom"
+                          key={CUSTOM_CHARACTER_ID}
                           className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                            selectedCharacterId === "custom"
+                            selectedCharacterId === CUSTOM_CHARACTER_ID
                               ? "bg-primary-50 text-primary font-weight-400"
                               : "text-typography-900 hover:bg-background-secondary"
                           }`}
-                          onClick={() => handleCharacterSelect("custom")}
+                          onClick={() => handleCharacterSelect(CUSTOM_CHARACTER_ID)}
                         >
                           Custom
                         </div>

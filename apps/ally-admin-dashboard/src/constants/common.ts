@@ -221,3 +221,5 @@ export const TAG_TYPES = {
   HELPER_TAGS: "helperTags",
   COMPETENCIES: "competencies",
 };
+
+export const CUSTOM_CHARACTER_ID = "custom";
