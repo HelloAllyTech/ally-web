@@ -30,6 +30,7 @@ const FeedCard: FC<FeedCardProps> = ({
   badgeText,
   isEdited = false,
   isViewMoreExpanded = false,
+  isScribeReview,
   onTapViewMore,
 }) => {
   const { user: currentDetails } = useUser();
@@ -436,6 +437,7 @@ const FeedCard: FC<FeedCardProps> = ({
         isOpen={isReactionsModalOpen}
         onClose={handleCloseReactionsModal}
         reviewId={id}
+        isScribeReview={isScribeReview}
       />
     </>
   );
