@@ -4,7 +4,6 @@ import { Tab, Tabs } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,14 +15,8 @@ import {
 } from "@api";
 import { BackCircle, Comment } from "@assets";
 import { AskAiTab, ReflectionTab, ShareForReview, SkillsTab, ToggleSwitch } from "@components";
-import {
-  Permissions,
-  REVIEW_PRIVACY_OPTIONS,
-  REVIEW_PRIVACY_OPTIONS_VALUES,
-  ROUTES,
-} from "@constants";
+import { REVIEW_PRIVACY_OPTIONS, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { ShortSessionUI, SimulationSummary, useSimulationSummaryPolling } from "@containers";
-import { RootState } from "@store";
 import { pageType, ShareForReviewsInput } from "@types";
 
 import { UpNextTab } from "./components";
@@ -34,17 +27,12 @@ import { containerVariants } from "../learn/constants";
 export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const { permissions } = useSelector((state: RootState) => state.user);
   const { t } = useTranslation();
 
   const { data: summary } = useGetSimulationSummaryQuery(sessionId);
   const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(sessionId);
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
-
-  const canShowUpNextTab =
-    (summary?.scenarioPathSessionItemId || summary?.caseSessionItemId) &&
-    permissions?.includes(Permissions.EDIT_SCENARIO_SESSION);
 
   const tabList = [
     {
@@ -59,15 +47,11 @@ export const PostSimulationSummary: FC = () => {
         />
       ),
     },
-    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
-      ? [
-          {
-            id: 4,
-            label: "Ask AI",
-            content: <AskAiTab sessionId={sessionId} />,
-          },
-        ]
-      : []),
+    {
+      id: 4,
+      label: "Ask AI",
+      content: <AskAiTab sessionId={sessionId} />,
+    },
     {
       id: 2,
       label: "Annotated Transcript",
@@ -79,35 +63,27 @@ export const PostSimulationSummary: FC = () => {
         />
       ),
     },
-    ...(FEATURE_FLAGS_MAP.SUMMARY_TABS_FLAG
-      ? [
-          {
-            id: 5,
-            label: "Skills  Demonstrated",
-            content: <SkillsTab sessionId={sessionId} />,
-          },
-          {
-            id: 6,
-            label: "Deeper Reflection",
-            content: <ReflectionTab sessionId={sessionId} />,
-          },
-        ]
-      : []),
-    ...(canShowUpNextTab
-      ? [
-          {
-            id: 3,
-            label: "Up Next",
-            content: (
-              <UpNextTab
-                sessionId={sessionId}
-                pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
-                metaData={summary?.metadata}
-              />
-            ),
-          },
-        ]
-      : []),
+    {
+      id: 5,
+      label: "Skills  Demonstrated",
+      content: <SkillsTab sessionId={sessionId} />,
+    },
+    {
+      id: 6,
+      label: "Deeper Reflection",
+      content: <ReflectionTab sessionId={sessionId} />,
+    },
+    {
+      id: 3,
+      label: "Up Next",
+      content: (
+        <UpNextTab
+          sessionId={sessionId}
+          pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
+          metaData={summary?.metadata}
+        />
+      ),
+    },
   ];
 
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);

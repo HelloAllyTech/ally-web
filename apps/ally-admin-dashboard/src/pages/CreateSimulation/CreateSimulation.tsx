@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
@@ -120,7 +119,6 @@ export const CreateSimulation: FC = () => {
     if (
       simulationId &&
       isReportGenerationInProgress &&
-      FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG &&
       !hasSetInitialStepForReportInProgress.current
     ) {
       setCurrentStep(stepIds.report);
@@ -440,9 +438,7 @@ export const CreateSimulation: FC = () => {
       }
     }
     //TODO: add report step to the requiresSave condition
-    const requiresSave =
-      stepId === stepIds.advancedSettings ||
-      (FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG && stepId === stepIds.report);
+    const requiresSave = stepId === stepIds.advancedSettings || stepId === stepIds.report;
 
     if (requiresSave && !simulationId) {
       const response = await handleSaveDraft();
@@ -496,26 +492,21 @@ export const CreateSimulation: FC = () => {
       case stepIds.advancedSettings:
         return <SimulationEventMapTable simulationId={simulationId} />;
       case stepIds.report:
-        if (FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG) {
-          return (
-            <ReportSection
-              ref={reportStepRef}
-              scenarioId={simulationId}
-              areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
-              onPrimaryTabChange={setReportPrimaryTab}
-              hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
-            />
-          );
-        }
-        return null;
+        return (
+          <ReportSection
+            ref={reportStepRef}
+            scenarioId={simulationId}
+            areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
+            onPrimaryTabChange={setReportPrimaryTab}
+            hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
+          />
+        );
       default:
         return null;
     }
   };
 
-  const isLastStep = FEATURE_FLAGS_MAP.SIMULATION_REPORT_FLAG
-    ? currentStep === stepIds.report
-    : currentStep === stepIds.advancedSettings;
+  const isLastStep = currentStep === stepIds.report;
 
   const handleNext = async () => {
     if (currentStep === stepIds.overview) {

@@ -16,7 +16,6 @@ vi.mock("@ally-ui-mono/ui-shared", async () => {
     ...actual,
     FEATURE_FLAGS_MAP: {
       ...(actual as any).FEATURE_FLAGS_MAP,
-      SUMMARY_TABS_FLAG: true,
     },
   };
 });
