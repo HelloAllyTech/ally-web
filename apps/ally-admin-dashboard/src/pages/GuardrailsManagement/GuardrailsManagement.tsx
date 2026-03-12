@@ -227,7 +227,7 @@ export const GuardrailsManagement: React.FC = () => {
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
         <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
-          Conversational Guardrails
+          {en.simulation.guardrails}
         </h1>
         <ListToolbar
           searchValue={search}
