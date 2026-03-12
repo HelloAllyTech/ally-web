@@ -11,6 +11,7 @@ export enum Permissions {
   VIEW_PROMPT = "view:admin:prompts",
   VIEW_ADMIN_BADGE = "view:admin:badges",
   EDIT_GUARDRAIL = "edit:admin:guardrails",
+  EDIT_MULTI_TENANT_ADMINS = "edit:multi-tenant-admins",
 }
 
 export const SIDEBAR_ITEMS = {
