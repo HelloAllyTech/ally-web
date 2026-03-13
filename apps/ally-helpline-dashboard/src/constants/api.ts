@@ -128,7 +128,8 @@ export const ApiEndpoints = {
     CREATE_REVIEW: `/v1/scenario-session-reviews`,
     CREATE_SCRIBE_REVIEW: `/v1/scribe-session-reviews`,
     UPDATE_REVIEW: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}`,
-    UPDATE_SCRIBE_REVIEW: (reviewId: string) => `/v1/scribe-session-reviews/${reviewId}`,
+    UPDATE_SCRIBE_REVIEW: (scribeSessionId: number) =>
+      `/v1/scribe-session-reviews/${scribeSessionId}`,
     CREATE_COMMENT: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/comments`,
     CREATE_SCRIBE_COMMENT: (reviewId: string) => `/v1/scribe-session-reviews/${reviewId}/comments`,
     GET_REVIEW_THREADS: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/threads`,

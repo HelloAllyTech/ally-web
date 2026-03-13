@@ -153,10 +153,13 @@ export interface TextSegment {
 }
 
 export interface ShareForReviewsInput {
-  body: {
-    scenarioSessionId: string;
-    note?: string;
-    status: string;
-  };
-  isScribe?: boolean;
+  scenarioSessionId: string;
+  note?: string;
+  status: string;
+}
+
+export interface ShareForReviewsScribeInput {
+  scribeSessionId: number;
+  note?: string;
+  status: string;
 }

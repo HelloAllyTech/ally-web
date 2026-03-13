@@ -3,11 +3,12 @@ import { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
-import { Ally, Arrow, Bolt, Logout, ManageAccount } from "@assets";
+import { Ally, Arrow, Bolt, DataPolicy, Logout, ManageAccount } from "@assets";
 import { PermissionGuard } from "@components";
-import { Permissions } from "@constants";
+import { ALLY_DATA_POLICY_URL, Permissions } from "@constants";
 import { useSimulationCredits } from "@hooks";
 import { User } from "@types";
+import { openLinkInNewTab } from "@utils";
 
 const UserInfo: FC<{
   user?: User;
@@ -144,7 +145,7 @@ const UserInfo: FC<{
             </div>
             <div className="border-b" data-testid="user-info-divider" />
           </PermissionGuard>
-          <div className="flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center text-base">
             <button
               onClick={onProfileSettings}
               className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
@@ -152,6 +153,14 @@ const UserInfo: FC<{
               <ManageAccount />
               {t("profile.settings.title")}
             </button>
+            <button
+              onClick={() => openLinkInNewTab(ALLY_DATA_POLICY_URL)}
+              className="flex items-center gap-3 text-typography-700 hover:bg-gray-100 p-1  rounded justify-start w-full border-gray-200"
+            >
+              <DataPolicy />
+              {t("user.dataPolicy")}
+            </button>
+            <button></button>
             <button
               data-testid="user-info-logout-button"
               onClick={onLogout}

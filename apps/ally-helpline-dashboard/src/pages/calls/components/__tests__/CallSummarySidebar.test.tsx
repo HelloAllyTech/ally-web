@@ -47,6 +47,9 @@ vi.mock("@api", () => ({
   useDeleteCallLogMutation: vi.fn(() => [vi.fn()]),
   useArchiveCallLogMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useGetSummaryFieldsQuery: vi.fn(() => ({ refetch: vi.fn() })),
+  useGetCallSummaryQuery: vi.fn(() => ({ data: undefined, refetch: vi.fn() })),
+  useCreateScribeReviewMutation: vi.fn(() => [vi.fn()]),
+  useUpdateScribeReviewMutation: vi.fn(() => [vi.fn()]),
 }));
 
 // Mock assets
@@ -92,6 +95,14 @@ vi.mock("@assets", () => ({
 
 // Mock components
 vi.mock("@components", () => ({
+  Button: ({ children, onClick, ...props }: any) => (
+    <button onClick={onClick} data-testid={props["data-testid"] ?? "button"} {...props}>
+      {children}
+    </button>
+  ),
+  ButtonVariant: { ICON: "icon", PRIMARY: "primary", SECONDARY: "secondary" },
+  ShareForReview: (props: any) => <div data-testid="share-for-review" {...props} />,
+  ToggleSwitch: (props: any) => <input type="checkbox" data-testid="toggle-switch" {...props} />,
   ActionDialog: ({ open, onClose, primaryButton, secondaryButton, title, children }: any) => (
     <div data-testid="action-dialog" style={{ display: open ? "block" : "none" }}>
       <div data-testid="dialog-title">{title}</div>
@@ -466,9 +477,8 @@ describe("CallSummarySidebar Component", () => {
     it("should show export button for non-admin users with successful summary", () => {
       renderComponent();
 
-      const exportButton = screen.getByRole("button", { name: "Export summary" });
+      const exportButton = screen.getByTestId("drawer-header-button-Export");
       expect(exportButton).toBeInTheDocument();
-      expect(exportButton).toHaveTextContent("Export summary");
     });
 
     it.skip("should not show export button for admin users", () => {
@@ -488,10 +498,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent(callSummaryWithPendingStatus);
 
-      // Export button is at index 2 (Data policy=0, Delete=1, Export=2)
-      const exportButton = screen.getByTestId("header-button-2");
-      expect(exportButton).toHaveTextContent("Export summary");
-      expect(exportButton).not.toBeVisible();
+      expect(screen.queryByTestId("drawer-header-button-Export")).not.toBeInTheDocument();
     });
 
     it("should handle successful export", () => {
@@ -504,7 +511,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByRole("button", { name: "Export summary" });
+      const exportButton = screen.getByTestId("drawer-header-button-Export");
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -519,7 +526,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByRole("button", { name: "Export summary" });
+      const exportButton = screen.getByTestId("drawer-header-button-Export");
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -532,7 +539,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByRole("button", { name: "Export summary" });
+      const exportButton = screen.getByTestId("drawer-header-button-Export");
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -543,7 +550,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByRole("button", { name: "Export summary" });
+      const exportButton = screen.getByTestId("drawer-header-button-Export");
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
