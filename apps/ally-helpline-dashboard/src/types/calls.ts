@@ -22,6 +22,7 @@ export interface CallLog {
   counselorId: number;
   status: string;
   summaryStatus: ChatSummaryStatus;
+  archivedAt: string | null;
   startedAt: string;
   endedAt: string;
   details: any;
@@ -31,6 +32,9 @@ export interface CallLog {
     name: string;
     phone: string;
   };
+  reviewStatus: string | null;
+  reviewId: string | null;
+  reviewCreatedAt: string | null;
 }
 
 export interface GetCallLogsResponse {

@@ -1,24 +1,30 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { Tooltip } from "@mui/material";
+import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
 import {
   useLazyExportCallSummaryQuery,
   useArchiveCallLogMutation,
   useGetSummaryFieldsQuery,
+  useCreateScribeReviewMutation,
+  useUpdateScribeReviewMutation,
+  useGetCallSummaryQuery,
 } from "@api";
-import { Archive, DataPolicy, Delete, Download, Unarchive } from "@assets";
-import { ALLY_DATA_POLICY_URL, CallProvider, Permissions } from "@constants";
+import { Archive, Delete, Download, Unarchive } from "@assets";
+import { Button, ButtonVariant, ShareForReview, ToggleSwitch } from "@components";
+import { CallProvider, Permissions, REVIEW_PRIVACY_OPTIONS_VALUES } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
+import { toolTipStyles } from "@src/constants";
 import ArchiveDialog from "@src/pages/calls/components/ArchiveDialog";
 import { RootState } from "@store";
-import { ChatSummaryStatus, SessionType } from "@types";
-import { openLinkInNewTab } from "@utils";
+import { ChatSummaryStatus, SessionType, ShareForReviewsScribeInput } from "@types";
 
 import {
   SummaryHeader,
@@ -46,11 +52,18 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
   const [isArchived, setIsArchived] = useState<boolean>(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState<boolean>(false);
+  const [shareForReview, setShareForReview] = useState<boolean>(false);
 
   const startTimeRef = useRef<number | null>(null);
 
   const [exportCallSummary] = useLazyExportCallSummaryQuery();
   const [archiveCallLog] = useArchiveCallLogMutation();
+  const { data: individualCallSummary, refetch: refetchCallSummary } = useGetCallSummaryQuery(
+    callSummary?.id,
+    { skip: !callSummary?.id },
+  );
+  const [createScribeReview] = useCreateScribeReviewMutation();
+  const [updateScribeReview] = useUpdateScribeReviewMutation();
 
   const { exportTxtFromText } = useFileExport();
 
@@ -115,6 +128,51 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     }
   };
 
+  const handleCreateReview = async ({
+    note,
+    scribeSessionId,
+    status,
+  }: {
+    note?: string;
+    scribeSessionId?: number;
+    status: string;
+  }) => {
+    const normalizedNote = note?.trim() || null;
+    const isExpired =
+      differenceInMinutes(new Date(), new Date(individualCallSummary?.reviewCreatedAt)) >= 10;
+    try {
+      if (individualCallSummary?.reviewId) {
+        const params: ShareForReviewsScribeInput = {
+          scribeSessionId: individualCallSummary?.reviewId,
+          status,
+        };
+        if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired)
+          params.note = normalizedNote;
+        await updateScribeReview(params).unwrap();
+      } else {
+        const params: ShareForReviewsScribeInput = {
+          scribeSessionId: scribeSessionId,
+          status,
+          note: normalizedNote,
+        };
+
+        await createScribeReview(params).unwrap();
+      }
+    } catch (err: any) {
+      const message =
+        err?.data?.message ?? err?.message ?? "Something went wrong. Please try again.";
+      toast.error(message);
+    }
+  };
+
+  const handleToggleChange = (value: string) => {
+    if (value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW) {
+      setShareForReview(true);
+    } else {
+      handleCreateReview({ status: value });
+    }
+  };
+
   const renderComments = () => {
     return (
       <>
@@ -161,13 +219,6 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
 
   const extraHeaderList = [
     {
-      alt: "Data policy",
-      icon: <DataPolicy />,
-      onClick: () => openLinkInNewTab(ALLY_DATA_POLICY_URL),
-      show: true,
-      text: "Data policy",
-    },
-    {
       alt: "Delete Log",
       icon: <Delete className="-m-1.5" />,
       onClick: () => {
@@ -198,6 +249,72 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     },
   ];
 
+  const SidebarTitle = (
+    <div className="text-base flex items-center justify-between w-full gap-2">
+      <span className="font-semibold font-tertiary text-typography-800">
+        {t("common.summary", "Summary")}
+      </span>
+      <div className="flex items-center gap-3">
+        {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
+          individualCallSummary?.details?.transcript?.length > 0 &&
+          !callSummary?.archivedAt && (
+            <div className="flex items-center gap-2">
+              <span className="font-primary font-normal text-sm">Share for review</span>{" "}
+              <ToggleSwitch
+                enabled={
+                  individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                }
+                onChange={(value: boolean) => {
+                  handleToggleChange(
+                    value
+                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                  );
+                }}
+              />
+            </div>
+          )}
+        {extraHeaderList
+          .filter(button => button.show)
+          .map(button => (
+            <Tooltip
+              key={button.alt}
+              title={button.text ?? ""}
+              placement="top"
+              arrow
+              slotProps={toolTipStyles}
+            >
+              <span style={{ display: "inline-flex" }}>
+                <Button
+                  data-testid={`drawer-header-button-${button.alt}`}
+                  variant={ButtonVariant.ICON}
+                  onClick={button.onClick}
+                  className="flex items-center gap-2 font-tertiary text-xs text-typography-900"
+                >
+                  {button.icon}
+                </Button>
+              </span>
+            </Tooltip>
+          ))}
+      </div>
+      <ShareForReview
+        isOpen={shareForReview}
+        onClose={() => {
+          setShareForReview(false);
+        }}
+        summaryDetails={individualCallSummary}
+        onNoteChange={(note: string) => {
+          handleCreateReview({
+            scribeSessionId: callSummary?.id,
+            status: REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW,
+            note,
+          });
+        }}
+        tag={"Scribe"}
+      />
+    </div>
+  );
+
   const tabList = [
     {
       id: 1,
@@ -216,6 +333,8 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
           }
           className="max-h-[calc(100vh-320px)]"
           chatId={callSummary.id}
+          callSummaryData={individualCallSummary}
+          onRefetchSummary={refetchCallSummary}
           postProcess={refetchCallLogs}
           isInSidebar={true}
           canEditSummary={canEditSummary}
@@ -303,9 +422,8 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   return (
     <SummarySidebarWrapper
       onSidebarClose={onSidebarClose}
-      extraHeaderList={extraHeaderList}
       tabList={permittedTabList}
-      title={t("common.summary", "Summary")}
+      title={SidebarTitle}
     >
       <FeedbackDialog
         open={showFeedbackDialog}

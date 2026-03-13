@@ -4,7 +4,7 @@ import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 
 import { CustomImage, CustomVideo } from "@ally-ui-mono/ui-shared/index";
-import { ArrowDownBlue, CloseIcon } from "@assets";
+import { ArrowDownBlue, CloseIcon, ScribeImage } from "@assets";
 import { Button, EmojiPickerTrigger } from "@components";
 import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
 
@@ -26,6 +26,11 @@ interface ScenarioDetailsScenario {
   description?: string;
   coverVideoUrl?: string | null;
   coverImageUrl?: string;
+}
+
+enum TagType {
+  SIMULATION = "Simulation",
+  SCRIBE = "Scribe",
 }
 
 const ModalHeader = ({ title, onClose }: { title: string; onClose: () => void }) => (
@@ -222,6 +227,51 @@ const ScenarioDetails = ({
   );
 };
 
+const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagType }) => {
+  const formattedCallDuration =
+    scribeSession?.details?.callDuration < 60
+      ? `${scribeSession?.details?.callDuration} sec`
+      : `${getFormattedTimeFromDuration(scribeSession?.details?.callDuration, "mm:ss")} Min`;
+  if (!scribeSession)
+    return (
+      <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start animate-pulse">
+        <div className="w-1/3 aspect-video bg-neutral-200 rounded" />
+        <div className="flex flex-col gap-2 w-2/3">
+          <div className="h-5 w-3/4 bg-neutral-200 rounded" />
+          <div className="flex flex-col gap-1.5">
+            <div className="h-3 w-full bg-neutral-200 rounded" />
+            <div className="h-3 w-full bg-neutral-200 rounded" />
+            <div className="h-3 w-2/3 bg-neutral-200 rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  return (
+    <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start">
+      <div className="w-1/3">
+        <ScribeImage />
+      </div>
+      <div className="flex flex-col gap-2 w-2/3">
+        <div className="text-xs bg-[#FFF3E0] text-[#E65100] px-2 w-fit font-normal rounded-[3px]">
+          {tag}
+        </div>
+        <h3 className="text-lg text-typography-900">
+          {scribeSession?.details?.callInfo?.summaryName}
+        </h3>
+        <div className="flex flex-col gap-1 font-normal">
+          <p className="text-base text-typography-800 leading-relaxed text-sm">
+            Date and Time:{" "}
+            {getFormattedDateTime(scribeSession?.details?.createdAt, "MMM dd, yyyy hh:mm a")}
+          </p>
+          <p className="text-base text-typography-800 leading-relaxed text-sm">
+            Duration: {formattedCallDuration}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ModalActions = ({
   onCancel,
   onShare,
@@ -324,12 +374,17 @@ export const ShareForReview = ({
               textareaRef={textareaRef}
             />
 
-            <SubSection
-              createdAt={sessionCreatedAt || summaryDetails?.details?.createdAt}
-              callDuration={sessionCallDuration || summaryDetails?.details?.callDuration}
-            />
+            {tag === TagType.SIMULATION && (
+              <SubSection
+                createdAt={sessionCreatedAt || summaryDetails?.details?.createdAt}
+                callDuration={sessionCallDuration || summaryDetails?.details?.callDuration}
+              />
+            )}
 
-            <ScenarioDetails scenario={summaryDetails?.scenario} tag={tag} />
+            {tag === TagType.SIMULATION && (
+              <ScenarioDetails scenario={summaryDetails?.scenario} tag={tag} />
+            )}
+            {tag === TagType.SCRIBE && <ScribeDetails scribeSession={summaryDetails} tag={tag} />}
 
             <EmojiPickerTrigger onEmojiClick={insertEmoji} isExpired={timeDiff >= 10} />
 

@@ -40,6 +40,8 @@ const CallSummary: FC<CallSummaryProps> = ({
   headerContent,
   postProcess,
   canEditSummary = true,
+  callSummaryData: callSummaryDataProp,
+  onRefetchSummary,
 }) => {
   const { t } = useTranslation();
   const { permissions, user } = useSelector((state: RootState) => state.user);
@@ -58,11 +60,14 @@ const CallSummary: FC<CallSummaryProps> = ({
   const navigate = useNavigate();
 
   const {
-    data: callSummary,
-    refetch: refetchSummary,
+    data: callSummaryFromQuery,
+    refetch: refetchFromQuery,
     isLoading: isSummaryLoading,
     error: summaryLoadingError,
-  } = useGetCallSummaryQuery(chatId);
+  } = useGetCallSummaryQuery(chatId, { skip: callSummaryDataProp != null });
+
+  const callSummary = callSummaryDataProp != null ? callSummaryDataProp : callSummaryFromQuery;
+  const refetchSummary = onRefetchSummary ?? refetchFromQuery;
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery(
     undefined,
     {

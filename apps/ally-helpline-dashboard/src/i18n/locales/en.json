@@ -171,7 +171,8 @@
   "user": {
     "creditUsage": "Credit usage",
     "logout": "Logout",
-    "profileAlt": "Profile"
+    "profileAlt": "Profile",
+    "dataPolicy": "Data policy"
   },
   "learn": {
     "tabs": {

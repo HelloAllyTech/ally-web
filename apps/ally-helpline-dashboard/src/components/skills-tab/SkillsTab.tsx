@@ -1,6 +1,14 @@
 import { FC, useMemo } from "react";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 import { useGetSimulationSkillsQuery, useGetSimulationSummaryQuery } from "@api";
 import { OverallScoreMeter } from "@src/components";
@@ -70,6 +78,23 @@ const CustomDot: FC<CustomDotProps> = ({ cx, cy, payload }) => {
   // Only show dot for original data points, not interpolated ones
   if (cx === undefined || cy === undefined || !payload?.isOriginal) return null;
   return <circle cx={cx} cy={cy} r={3} fill="#FFF" stroke="#7FBA7A" strokeWidth={2} />;
+};
+
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; payload: EmotionalDataPoint }>;
+  label?: number;
+}
+
+const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  const point = payload[0].payload;
+  return (
+    <div className="bg-white border border-[#B39DDB] rounded-md text-typography-900 font-medium shadow-lg px-3 py-2 text-sm font-primary">
+      <div>Time: {point.time}</div>
+      <div>Level: {point.level}</div>
+    </div>
+  );
 };
 
 const LoadingState: FC = () => (
@@ -255,6 +280,12 @@ const EmotionalMovementChart: FC<{
                   fontFamily: "IBM_Plex_Serif",
                 },
               }}
+            />
+            <Tooltip
+              content={<ChartTooltip />}
+              cursor={{ strokeWidth: 0 }}
+              isAnimationActive={false}
+              animationDuration={0}
             />
             <Line
               type="monotone"

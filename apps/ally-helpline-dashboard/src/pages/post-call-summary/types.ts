@@ -59,6 +59,8 @@ export interface CallSummaryProps {
   className?: string;
   postProcess?: (status?: ChatSummaryStatus) => void;
   chatId: number;
+  callSummaryData?: unknown;
+  onRefetchSummary?: () => Promise<{ data?: unknown }>;
   refetchCallLogs?: () => void;
   isInSidebar?: boolean;
   headerContent?: React.ReactNode;
