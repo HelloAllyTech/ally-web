@@ -1,5 +1,5 @@
 import { triggerWarning } from "@ally-ui-mono/ui-shared/types";
-import { Thread } from "@types";
+import { Citation, Thread } from "@types";
 
 export enum ScenarioStatus {
   ACTIVE = "ACTIVE",
@@ -427,6 +427,7 @@ export interface GetChatHistoryResponse {
   userId: string;
   role: string;
   content: string;
+  citations: Citation[];
   createdAt: string;
   updatedAt: string;
 }
