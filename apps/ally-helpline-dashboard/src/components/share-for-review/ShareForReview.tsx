@@ -231,7 +231,7 @@ const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagTyp
   const formattedCallDuration =
     scribeSession?.details?.callDuration < 60
       ? `${scribeSession?.details?.callDuration} sec`
-      : `${getFormattedTimeFromDuration(scribeSession?.details?.callDuration, "mm:ss")} Min`;
+      : `${getFormattedTimeFromDuration(scribeSession?.details?.callDuration || scribeSession?.scribeSession?.duration, "mm:ss")} Min`;
   if (!scribeSession)
     return (
       <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start animate-pulse">
@@ -261,7 +261,10 @@ const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagTyp
         <div className="flex flex-col gap-1 font-normal">
           <p className="text-base text-typography-800 leading-relaxed text-sm">
             Date and Time:{" "}
-            {getFormattedDateTime(scribeSession?.details?.createdAt, "MMM dd, yyyy hh:mm a")}
+            {getFormattedDateTime(
+              scribeSession?.details?.createdAt || scribeSession?.scribeSession?.createdAt,
+              "MMM dd, yyyy hh:mm a",
+            )}
           </p>
           <p className="text-base text-typography-800 leading-relaxed text-sm">
             Duration: {formattedCallDuration}
