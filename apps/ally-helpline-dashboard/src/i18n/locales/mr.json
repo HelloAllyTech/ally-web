@@ -171,7 +171,8 @@
   "user": {
     "creditUsage": "क्रेडिट वापर",
     "logout": "लॉगआउट",
-    "profileAlt": "प्रोफाइल"
+    "profileAlt": "प्रोफाइल",
+    "dataPolicy": "डेटा धोरण"
   },
   "learn": {
     "tabs": {

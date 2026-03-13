@@ -171,7 +171,8 @@
   "user": {
     "creditUsage": "கிரெடிட் பயன்பாடு",
     "logout": "வெளியேறு",
-    "profileAlt": "சுயவிவரம்"
+    "profileAlt": "சுயவிவரம்",
+    "dataPolicy": "தரவியல் கொள்கை"
   },
   "learn": {
     "tabs": {
