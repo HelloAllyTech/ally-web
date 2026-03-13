@@ -80,10 +80,10 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<Review>} Review data
      */
     createReview: builder.mutation<void, ShareForReviewsInput>({
-      query: ({ note, status }) => ({
+      query: body => ({
         url: ApiEndpoints.REVIEWS.CREATE_REVIEW,
         method: HttpMethod.POST,
-        body: { note, status },
+        body,
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),

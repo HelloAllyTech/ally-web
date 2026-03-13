@@ -14,6 +14,7 @@ import {
   useGetReviewDetailsWithMessagesQuery,
   useUpdateReviewMutation,
   useMarkReviewAsReadMutation,
+  useUpdateScribeReviewMutation,
 } from "@api";
 import { baseAPI } from "@api/baseAPI";
 import { ChatBubble, LeftArrow, Smiley, InfoIcon } from "@assets";
@@ -35,6 +36,8 @@ import {
   CommentChangeParams,
   CommentItem,
   ReactionsType,
+  ShareForReviewsInput,
+  ShareForReviewsScribeInput,
   SimulationTranscriptMessage,
   Thread,
 } from "@types";
@@ -99,6 +102,7 @@ export const ReviewDetails = () => {
     });
   const [addReactions] = useAddReactionMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
+  const [updateScribeReview] = useUpdateScribeReviewMutation();
   const [markReviewAsRead] = useMarkReviewAsReadMutation();
 
   useEffect(() => {
@@ -342,19 +346,28 @@ export const ReviewDetails = () => {
     setShowReactionsModal(true);
   };
 
-  const handleCreateReview = async (status?: string, note?: string) => {
+  const handleCreateReview = async ({ status, note }: { status?: string; note?: string }) => {
     if (!reviewDetails?.id) return;
 
     const isExpired = differenceInMinutes(new Date(), new Date(reviewDetails?.createdAt)) > 10;
     const normalizedNote = note?.trim() || null;
-    const params: { scenarioSessionId: string; status: string; note?: string; isScribe?: boolean } =
-      {
-        scenarioSessionId: reviewDetails.id,
+    if (isScribeReview) {
+      const params: ShareForReviewsScribeInput = {
+        scribeSessionId: reviewDetails?.id,
         status,
-        isScribe: isScribeReview,
       };
-    if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired) params.note = normalizedNote;
-    await updateReview({ body: params }).unwrap();
+      if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired)
+        params.note = normalizedNote;
+      await updateScribeReview(params).unwrap();
+    } else {
+      const params: ShareForReviewsInput = {
+        scenarioSessionId: reviewDetails?.id,
+        status,
+      };
+      if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired)
+        params.note = normalizedNote;
+      await updateReview(params).unwrap();
+    }
   };
 
   const isNoteEditable = useMemo(() => {
@@ -385,8 +398,11 @@ export const ReviewDetails = () => {
                 onChange={(value: boolean) =>
                   handleCreateReview(
                     value
-                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                      ? {
+                          status: REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW,
+                          note: reviewDetails?.note,
+                        }
+                      : { status: REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN },
                   )
                 }
               />
@@ -624,13 +640,17 @@ export const ReviewDetails = () => {
         isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showShareForReviewModal}
         onClose={() => setShowShareForReviewModal(false)}
         summaryDetails={reviewDetails}
-        onNoteChange={(note: string) => handleCreateReview(reviewDetails?.reviewStatus, note)}
+        onNoteChange={(note: string) =>
+          handleCreateReview({ status: reviewDetails?.reviewStatus, note: note })
+        }
         shareLabel={reviewDetails?.note?.length > 0 ? "Save" : "Add"}
         modalHeader={reviewDetails?.note?.length > 0 ? "Edit note" : "Add note"}
         sessionCreatedAt={reviewDetails?.createdAt}
-        sessionCallDuration={reviewDetails?.scenarioSession?.duration}
-        tag="Simulation"
+        sessionCallDuration={
+          reviewDetails?.scenarioSession?.duration || reviewDetails?.scribeSession?.duration
+        }
         sessionReviewCreatedAt={reviewDetails?.createdAt}
+        tag={isScribeReview ? "Scribe" : "Simulation"}
       />
     </div>
   );

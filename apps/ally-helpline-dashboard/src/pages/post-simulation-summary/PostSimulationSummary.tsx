@@ -96,25 +96,20 @@ export const PostSimulationSummary: FC = () => {
   const handleCreateReview = async (status: string, note?: string) => {
     const normalizedNote = note?.trim() || null;
     const isExpired = differenceInMinutes(new Date(), new Date(summary?.reviewCreatedAt)) >= 10;
-
     try {
       if (summary?.reviewId) {
         const params: ShareForReviewsInput = {
-          body: {
-            scenarioSessionId: summary.reviewId,
-            status,
-          },
+          scenarioSessionId: summary.reviewId,
+          status,
         };
         if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired)
-          params.body.note = normalizedNote;
+          params.note = normalizedNote;
         await updateReview(params).unwrap();
       } else {
         const params: ShareForReviewsInput = {
-          body: {
-            scenarioSessionId: sessionId ?? "",
-            status,
-            note: normalizedNote,
-          },
+          scenarioSessionId: sessionId ?? "",
+          status,
+          note: normalizedNote,
         };
         await createReview(params).unwrap();
       }
