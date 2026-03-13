@@ -405,6 +405,7 @@ const SelectableText = ({
           }}
         >
           <CommentThread
+            isScribeReview={isScribeReview}
             id={selectedThreadId}
             isFeedOwner={isFeedOwner}
             messageId={String(transcript.id)}

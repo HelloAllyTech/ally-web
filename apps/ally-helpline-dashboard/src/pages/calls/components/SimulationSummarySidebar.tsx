@@ -74,7 +74,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     status,
   }: {
     note?: string;
-    scenarioSessionId: string;
+    scenarioSessionId?: string;
     status: string;
   }) => {
     const normalizedNote = note?.trim() || null;
@@ -82,13 +82,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     try {
       if (summary?.reviewId) {
         const params: ShareForReviewsInput = {
-          body: {
-            scenarioSessionId: summary.reviewId,
-            status,
-          },
+          scenarioSessionId: summary.reviewId,
+          status,
         };
         if (status !== REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN && !isExpired)
-          params.body.note = normalizedNote;
+          params.note = normalizedNote;
         await updateReview(params).unwrap();
       } else {
         const params: { scenarioSessionId: string; status: string; note?: string } = {
@@ -97,7 +95,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           note: normalizedNote,
         };
 
-        await createReview({ body: params }).unwrap();
+        await createReview(params).unwrap();
       }
     } catch (err: any) {
       const message =
@@ -108,9 +106,9 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const handleToggleChange = (value: string) => {
     if (value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW) {
-      setShareForReview(value === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW);
+      setShareForReview(true);
     } else {
-      handleCreateReview({ scenarioSessionId: summaryId, status: value });
+      handleCreateReview({ status: value });
     }
   };
   const SidebarTitle = (

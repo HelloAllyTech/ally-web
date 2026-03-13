@@ -8,6 +8,7 @@ import {
   GetReviewsReactionsInput,
   CommentItem,
   ShareForReviewsInput,
+  ShareForReviewsScribeInput,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -79,12 +80,10 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<Review>} Review data
      */
     createReview: builder.mutation<void, ShareForReviewsInput>({
-      query: ({ body, isScribe = false }) => ({
-        url: isScribe
-          ? ApiEndpoints.REVIEWS.CREATE_SCRIBE_REVIEW
-          : ApiEndpoints.REVIEWS.CREATE_REVIEW,
+      query: ({ note, status }) => ({
+        url: ApiEndpoints.REVIEWS.CREATE_REVIEW,
         method: HttpMethod.POST,
-        body,
+        body: { note, status },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
     }),
@@ -95,14 +94,30 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<Review>} Review data
      */
     updateReview: builder.mutation<void, ShareForReviewsInput>({
-      query: ({ body, isScribe = false }) => ({
-        url: isScribe
-          ? ApiEndpoints.REVIEWS.UPDATE_SCRIBE_REVIEW(body.scenarioSessionId)
-          : ApiEndpoints.REVIEWS.UPDATE_REVIEW(body.scenarioSessionId),
+      query: ({ scenarioSessionId, note, status }) => ({
+        url: ApiEndpoints.REVIEWS.UPDATE_REVIEW(scenarioSessionId),
         method: HttpMethod.PATCH,
-        body: body,
+        body: { note, status },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_SUMMARY, TAG_TYPES.REVIEW],
+    }),
+
+    createScribeReview: builder.mutation<void, ShareForReviewsScribeInput>({
+      query: body => ({
+        url: ApiEndpoints.REVIEWS.CREATE_SCRIBE_REVIEW,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.REVIEW],
+    }),
+
+    updateScribeReview: builder.mutation<void, ShareForReviewsScribeInput>({
+      query: ({ scribeSessionId, note, status }) => ({
+        url: ApiEndpoints.REVIEWS.UPDATE_SCRIBE_REVIEW(scribeSessionId),
+        method: HttpMethod.PATCH,
+        body: { note, status },
+      }),
+      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.REVIEW],
     }),
     /**
      * Creates a new comment for a review.
@@ -314,4 +329,6 @@ export const {
   useMarkReviewAsReadMutation,
   useGetGeneralCommentsQuery,
   useLazyGetGeneralCommentsQuery,
+  useCreateScribeReviewMutation,
+  useUpdateScribeReviewMutation,
 } = reviewsAPI;
