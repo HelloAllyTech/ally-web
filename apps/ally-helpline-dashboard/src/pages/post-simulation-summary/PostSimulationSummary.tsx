@@ -50,7 +50,7 @@ export const PostSimulationSummary: FC = () => {
     {
       id: 4,
       label: "Ask AI",
-      content: <AskAiTab sessionId={sessionId} />,
+      content: <AskAiTab sessionId={sessionId} agentName={summary?.scenario?.metadata?.name} />,
     },
     {
       id: 2,

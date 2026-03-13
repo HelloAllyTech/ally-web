@@ -199,7 +199,13 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     {
       id: 2,
       label: t("postSim.tabs.askAi", "Ask AI"),
-      content: <AskAiTab sessionId={summaryId} />,
+      content: (
+        <AskAiTab
+          sessionId={summaryId}
+          councellorName={councellorName}
+          agentName={summary?.scenario?.metadata?.name}
+        />
+      ),
     },
     {
       id: 3,

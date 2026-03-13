@@ -13,9 +13,11 @@ import {
   clearStreamSession,
   setError,
   startStreaming,
+  setStreamingCitations,
+  replaceStreamingContent,
 } from "@reducer";
 import { RootState, store } from "@store";
-import { ChatMessagePayload } from "@types";
+import { ChatMessagePayload, Citation } from "@types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -25,6 +27,8 @@ type StreamBroadcast =
   | { type: "clear_error"; sessionId: string }
   | { type: "start_streaming"; sessionId: string }
   | { type: "chunk"; sessionId: string; text: string }
+  | { type: "citations"; sessionId: string; citations: Citation[] }
+  | { type: "done"; sessionId: string; content: string; citations: Citation[] }
   | { type: "commit"; sessionId: string; message: ChatMessagePayload }
   | { type: "finish"; sessionId: string }
   | { type: "error"; sessionId: string; failedMessage: string };
@@ -35,7 +39,6 @@ const broadcast = (msg: StreamBroadcast) => {
   try {
     streamChannel.postMessage(msg);
   } catch {
-    /* channel closed */
     logger.info("Broadcast channel closed");
   }
 };
@@ -56,6 +59,18 @@ streamChannel.addEventListener("message", (e: MessageEvent<StreamBroadcast>) => 
     case "chunk":
       dispatch(appendStreamingChunk({ sessionId: msg.sessionId, text: msg.text }));
       break;
+    case "citations":
+      dispatch(setStreamingCitations({ sessionId: msg.sessionId, citations: msg.citations }));
+      break;
+    case "done":
+      dispatch(
+        replaceStreamingContent({
+          sessionId: msg.sessionId,
+          content: msg.content,
+          citations: msg.citations,
+        }),
+      );
+      break;
     case "commit":
       dispatch(commitStreamingMessage({ sessionId: msg.sessionId, message: msg.message }));
       break;
@@ -70,17 +85,45 @@ streamChannel.addEventListener("message", (e: MessageEvent<StreamBroadcast>) => 
   }
 });
 
-type ParsedSSE = { done: true } | { done: false; text: string };
+type ParsedSSE =
+  | { type: "start" }
+  | { type: "token"; text: string }
+  | { type: "citations"; citations: Citation[] }
+  | { type: "done"; content: string; citations: Citation[] };
 
 const parseSSEData = (raw: string): ParsedSSE => {
   try {
     const parsed = JSON.parse(raw);
-    if (parsed.type === "done") return { done: true };
-    if (parsed.type === "token" && parsed.content != null)
-      return { done: false, text: String(parsed.content) };
-    return { done: false, text: parsed.content != null ? String(parsed.content) : "" };
+
+    if (parsed.type === "start") {
+      return { type: "start" };
+    }
+
+    if (parsed.type === "token") {
+      return {
+        type: "token",
+        text: parsed.content != null ? String(parsed.content) : "",
+      };
+    }
+
+    if (parsed.type === "citations") {
+      return {
+        type: "citations",
+        citations: parsed.citations ?? [],
+      };
+    }
+
+    if (parsed.type === "done") {
+      return {
+        type: "done",
+        content: parsed.content ?? "",
+        citations: parsed.citations ?? [],
+      };
+    }
+
+    return { type: "token", text: "" };
   } catch {
-    return { done: false, text: raw };
+    return { type: "token", text: raw };
   }
 };
 
@@ -136,6 +179,44 @@ const fetchWithAuth = async (url: string, body: string): Promise<Response> => {
   return result;
 };
 
+const handleSSEEvent = (sessionId: string, parsed: ParsedSSE) => {
+  const { dispatch } = store;
+
+  switch (parsed.type) {
+    case "start":
+      break;
+
+    case "token":
+      if (parsed.text) {
+        dispatch(appendStreamingChunk({ sessionId, text: parsed.text }));
+        broadcast({ type: "chunk", sessionId, text: parsed.text });
+      }
+      break;
+
+    case "citations":
+      dispatch(setStreamingCitations({ sessionId, citations: parsed.citations }));
+      broadcast({ type: "citations", sessionId, citations: parsed.citations });
+      break;
+
+    case "done":
+      dispatch(
+        replaceStreamingContent({
+          sessionId,
+          content: parsed.content,
+          citations: parsed.citations,
+        }),
+      );
+      broadcast({
+        type: "done",
+        sessionId,
+        content: parsed.content,
+        citations: parsed.citations,
+      });
+      commitAndFinish(sessionId);
+      break;
+  }
+};
+
 /**
  * Module-level streaming function — runs independently of React lifecycle.
  * Dispatches directly to the Redux store so an in-flight stream keeps
@@ -177,6 +258,7 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
     const reader = result.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    let receivedDone = false;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -192,17 +274,15 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
           if (line.startsWith("data: ")) {
             const raw = line.slice(6);
             const parsed = parseSSEData(raw);
-            if (parsed.done) {
-              commitAndFinish(sessionId);
-              return;
-            }
-            if (parsed.done === false && parsed.text) {
-              dispatch(appendStreamingChunk({ sessionId, text: parsed.text }));
-              broadcast({ type: "chunk", sessionId, text: parsed.text });
+            handleSSEEvent(sessionId, parsed);
+            if (parsed.type === "done") {
+              receivedDone = true;
             }
           }
         }
       }
+
+      if (receivedDone) return;
     }
 
     if (buffer.trim()) {
@@ -210,15 +290,17 @@ const processStream = async (sessionId: string, message: string, isRetry: boolea
         if (line.startsWith("data: ")) {
           const raw = line.slice(6);
           const parsed = parseSSEData(raw);
-          if (parsed.done === false && parsed.text) {
-            dispatch(appendStreamingChunk({ sessionId, text: parsed.text }));
-            broadcast({ type: "chunk", sessionId, text: parsed.text });
+          handleSSEEvent(sessionId, parsed);
+          if (parsed.type === "done") {
+            receivedDone = true;
           }
         }
       }
     }
 
-    commitAndFinish(sessionId);
+    if (!receivedDone) {
+      commitAndFinish(sessionId);
+    }
   } catch {
     dispatch(finishStreaming({ sessionId }));
     dispatch(setError({ sessionId, message }));
