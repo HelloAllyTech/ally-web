@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useGetChatHistoryQuery } from "@api";
@@ -9,9 +10,37 @@ import { chatCards } from "@constants";
 import { useSendMessage } from "@hooks";
 import { initSession } from "@reducer";
 import { RootState } from "@store";
-import { ChatMessagePayload } from "@types";
+import { ChatMessagePayload, Citation } from "@types";
 
-type Message = { role: string; content: string };
+type Message = { role: string; content: string; citations?: Citation[] };
+
+/** Parse content into text, citation [m:ss], and bold **text** segments in one pass */
+type ContentSegment =
+  | { type: "text"; value: string }
+  | { type: "citation"; timestamp: string }
+  | { type: "bold"; value: string };
+
+const parseContentSegments = (text: string): ContentSegment[] => {
+  const segments: ContentSegment[] = [];
+  const citationOrBoldPattern = /\[(\d{1,2}:\d{2})\]|\*\*(.+?)\*\*/g;
+  let previousMatchEnd = 0;
+  let match: RegExpExecArray | null;
+  while ((match = citationOrBoldPattern.exec(text)) !== null) {
+    if (match.index > previousMatchEnd) {
+      segments.push({ type: "text", value: text.slice(previousMatchEnd, match.index) });
+    }
+    if (match[1] !== undefined) {
+      segments.push({ type: "citation", timestamp: match[1] });
+    } else if (match[2] !== undefined) {
+      segments.push({ type: "bold", value: match[2] });
+    }
+    previousMatchEnd = citationOrBoldPattern.lastIndex;
+  }
+  if (previousMatchEnd < text.length) {
+    segments.push({ type: "text", value: text.slice(previousMatchEnd) });
+  }
+  return segments.length ? segments : [{ type: "text", value: text }];
+};
 
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -86,19 +115,90 @@ const InitialScreen = ({
     </div>
   );
 };
-const ChatBubble = ({ message }: { message: Message }) => {
+const CitationsTable = ({
+  citations,
+  councellorName,
+  agentName,
+}: {
+  citations: Citation[];
+  councellorName: string;
+  agentName: string;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden border-primary-100">
+      <div className="text-base font-primary px-3 py-2 bg-primary-50 w-full">
+        Transcript References
+      </div>
+      <table className="w-full text-xs font-primary">
+        <tbody className="text-base">
+          {citations.map((citation, idx) => (
+            <tr key={idx} className="w-full" data-citation-row={idx}>
+              <td className="px-3 w-[8%] min-w-[50px] py-2 align-top text-typography-800">
+                {citation.timestamp}
+              </td>
+              <td className="text-typography-900 w-[92%] font-primary">
+                <span className="font-medium pr-1">
+                  {citation.senderId === -1
+                    ? `${agentName} (${t("transcription.aiClientSuffix")})`
+                    : councellorName}
+                  :
+                </span>
+                {citation.content}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const ChatBubble = ({
+  message,
+  councellorName,
+  agentName,
+}: {
+  message: Message;
+  councellorName: string;
+  agentName: string;
+}) => {
   const isUser = message.role === "user";
+  const citations = message.citations ?? [];
+
   return (
     <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
       <div className={`max-w-[80%] px-4 py-2.5 rounded-[20px] ${isUser ? "bg-primary-50" : ""}`}>
         <div className="flex items-start gap-3">
           {!isUser && <AskAiIcon className="w-8 h-8 shrink-0 mt-0.5" />}
           <div className="flex flex-col gap-1">
-            {message.content.split("\n").map((item, index) => (
-              <span key={index} className="text-sm font-primary break-words">
-                {item}
-              </span>
-            ))}
+            {message.content.split("\n").map((line, lineIndex) => {
+              const segments = parseContentSegments(line);
+              return (
+                <span key={lineIndex} className="text-base font-primary break-words">
+                  {segments.map((seg, segIndex) =>
+                    seg.type === "text" ? (
+                      <span key={segIndex}>{seg.value}</span>
+                    ) : seg.type === "bold" ? (
+                      <strong key={segIndex} className="font-semibold">
+                        {seg.value}
+                      </strong>
+                    ) : (
+                      <span className="text-primary-600 font-medium hover:text-primary-700 cursor-pointer bg-transparent border-none p-0">
+                        [{seg.timestamp}]
+                      </span>
+                    ),
+                  )}
+                </span>
+              );
+            })}
+            {citations.length > 0 && (
+              <CitationsTable
+                citations={citations}
+                councellorName={councellorName || "You"}
+                agentName={agentName}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -175,7 +275,15 @@ const AskAiInput = ({
   );
 };
 
-export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
+export const AskAiTab = ({
+  sessionId,
+  councellorName,
+  agentName,
+}: {
+  sessionId: string;
+  councellorName?: string;
+  agentName?: string;
+}) => {
   const dispatch = useDispatch();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sessionExists = useSelector((state: RootState) => state.chatHistory.sessions[sessionId]);
@@ -189,6 +297,7 @@ export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
       const initial: ChatMessagePayload[] = history.map(msg => ({
         role: msg.role,
         content: msg.content,
+        citations: msg.citations,
       }));
       dispatch(initSession({ sessionId, messages: initial }));
     }
@@ -208,9 +317,22 @@ export const AskAiTab = ({ sessionId }: { sessionId: string }) => {
           ) : messages.length === 0 ? (
             <InitialScreen handleSend={sendMessage} disabled={isStreaming} />
           ) : (
-            messages.map((msg, index) => <ChatBubble key={`${msg.role}-${index}`} message={msg} />)
+            messages.map((msg, index) => (
+              <ChatBubble
+                key={`${msg.role}-${index}`}
+                message={msg}
+                councellorName={councellorName}
+                agentName={agentName}
+              />
+            ))
           )}
-          {streamingMessage && <ChatBubble message={streamingMessage} />}
+          {streamingMessage && (
+            <ChatBubble
+              message={streamingMessage}
+              councellorName={councellorName}
+              agentName={agentName}
+            />
+          )}
           {error && (
             <div className="flex w-full justify-start">
               <button
