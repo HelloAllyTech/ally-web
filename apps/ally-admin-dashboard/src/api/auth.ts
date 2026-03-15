@@ -72,7 +72,12 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, email }) => ({
         url: ApiEndpoints.AUTH.GENERATE_OTP,
         method: HttpMethod.POST,
-        body: { phone, email, allowedRoles: [UserRole.SUPER_ADMIN], appType: AppType.ADMIN },
+        body: {
+          phone,
+          email,
+          allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN],
+          appType: AppType.ADMIN,
+        },
       }),
     }),
 
@@ -85,7 +90,12 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, otp, email }) => ({
         url: ApiEndpoints.AUTH.VERIFY_OTP,
         method: HttpMethod.POST,
-        body: { phone, otp, email, allowedRoles: [UserRole.SUPER_ADMIN] },
+        body: {
+          phone,
+          otp,
+          email,
+          allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN],
+        },
       }),
     }),
     // /**
@@ -97,7 +107,7 @@ const authAPI = baseAPI.injectEndpoints({
       query: data => ({
         url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
         method: HttpMethod.POST,
-        body: { ...data, allowedRoles: [UserRole.SUPER_ADMIN] },
+        body: { ...data, allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN] },
       }),
     }),
     getProfileImageUrl: builder.mutation<GetProfileUrlResponse, GetProfileUrlRequest>({
@@ -140,7 +150,7 @@ const authAPI = baseAPI.injectEndpoints({
           {
             url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
             method: HttpMethod.POST,
-            body: { token, allowedRoles: [UserRole.SUPER_ADMIN] },
+            body: { token, allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN] },
           },
           api,
           extraOptions,
