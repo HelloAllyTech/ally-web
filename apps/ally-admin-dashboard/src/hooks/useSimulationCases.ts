@@ -16,9 +16,13 @@ const CASES_PAGE_SIZE = 30;
 
 interface UseSimulationCasesProps {
   selectedFilters: Array<{ id: string; label: string }>;
+  enabled?: boolean;
 }
 
-export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps) => {
+export const useSimulationCases = ({
+  selectedFilters,
+  enabled = true,
+}: UseSimulationCasesProps) => {
   const navigate = useNavigate();
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -39,13 +43,18 @@ export const useSimulationCases = ({ selectedFilters }: UseSimulationCasesProps)
     data: casesResponse,
     isFetching: isCasesFetching,
     isLoading: isCasesLoading,
-  } = useGetScenarioCasesQuery({
-    status:
-      selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
-    offset: casesOffset,
-    limit: casesLimit,
-    search: "",
-  });
+  } = useGetScenarioCasesQuery(
+    {
+      status:
+        selectedFilters.length > 0
+          ? selectedFilters?.map(filter => filter.id)?.join(",")
+          : undefined,
+      offset: casesOffset,
+      limit: casesLimit,
+      search: "",
+    },
+    { skip: !enabled },
+  );
 
   const [deleteCaseById] = useDeleteScenarioCaseByIdMutation();
   const [duplicateScenarioCase] = useDuplicateScenarioCaseMutation();

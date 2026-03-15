@@ -197,6 +197,7 @@ describe("SimulationList", () => {
     onArchive: vi.fn(),
     onUnpublish: vi.fn(),
     onUnarchive: vi.fn(),
+    isSuperAdmin: true,
   };
 
   beforeEach(() => {
@@ -375,6 +376,79 @@ describe("SimulationList", () => {
     });
   });
 
+  describe("Action Visibility Restrictions", () => {
+    const creatorUser = { name: "John Doe", id: 101, userId: 101 };
+    const otherUser = { name: "Jane Smith", id: 102, userId: 102 };
+    const superAdminUser = { name: "Super Admin", id: 1, userId: 1 };
+    const simulation = { ...mockSimulations[0], createdBy: "John Doe" };
+
+    it("shows all actions for the creator", () => {
+      renderWithStore(
+        <SimulationList
+          simulations={[simulation]}
+          {...mockCallbacks}
+          currentUser={creatorUser}
+          isSuperAdmin={false}
+        />,
+      );
+
+      expect(screen.getByTestId("edit-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("unpublish-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("archive-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("delete-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("copy-icon")).toBeInTheDocument();
+    });
+
+    it("hides management actions for non-creators", () => {
+      renderWithStore(
+        <SimulationList
+          simulations={[simulation]}
+          {...mockCallbacks}
+          currentUser={otherUser}
+          isSuperAdmin={false}
+        />,
+      );
+
+      expect(screen.queryByTestId("edit-icon")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("unpublish-icon")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("archive-icon")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("delete-icon")).not.toBeInTheDocument();
+      // Duplicate should still be visible
+      expect(screen.getByTestId("copy-icon")).toBeInTheDocument();
+    });
+
+    it("shows all actions for super admins even if not creator", () => {
+      renderWithStore(
+        <SimulationList
+          simulations={[simulation]}
+          {...mockCallbacks}
+          currentUser={otherUser}
+          isSuperAdmin={true}
+        />,
+      );
+
+      expect(screen.getByTestId("edit-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("unpublish-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("archive-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("delete-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("copy-icon")).toBeInTheDocument();
+    });
+
+    it("matches creator by ID if name doesn't match", () => {
+      const simWithId = { ...simulation, createdBy: "102" };
+      renderWithStore(
+        <SimulationList
+          simulations={[simWithId]}
+          {...mockCallbacks}
+          currentUser={otherUser}
+          isSuperAdmin={false}
+        />,
+      );
+
+      expect(screen.getByTestId("edit-icon")).toBeInTheDocument();
+    });
+  });
+
   describe("Preview Functionality", () => {
     it("renders preview button for ACTIVE simulations", () => {
       renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
@@ -508,7 +582,7 @@ describe("SimulationList", () => {
     });
 
     it("handles callbacks being undefined", () => {
-      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} />);
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} isSuperAdmin={true} />);
 
       const editButton = screen.getByTestId("edit-icon");
       expect(() => fireEvent.click(editButton)).not.toThrow();
