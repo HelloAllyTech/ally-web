@@ -20,8 +20,9 @@ import {
   en,
   PATH_STATUS_OPTIONS,
   SimulationStatus,
+  UserRole,
 } from "@constants";
-import { useSimulations, useSimulationPathways, useSimulationCases } from "@hooks";
+import { useSimulations, useSimulationPathways, useSimulationCases, useUser } from "@hooks";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
@@ -29,11 +30,11 @@ const TAB_KEYS = {
   CASES: "cases",
 };
 
-const TABS = [
-  { id: "simulations", label: "Simulations" },
-  { id: "tracks", label: "Tracks" },
-  { id: "cases", label: "Cases" },
-].filter(Boolean) as Array<{ id: string; label: string }>;
+const TABS_CONFIG = [
+  { id: TAB_KEYS.SIMULATIONS, label: "Simulations" },
+  { id: TAB_KEYS.TRACKS, label: "Tracks" },
+  { id: TAB_KEYS.CASES, label: "Cases" },
+];
 
 export const SimulationStudio: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -42,9 +43,25 @@ export const SimulationStudio: React.FC = () => {
 
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useUser();
+  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
 
   // Get active tab from URL params, default to SIMULATIONS
   const activeTab = searchParams.get("tab") || TAB_KEYS.SIMULATIONS;
+
+  // Effect to redirect unauthorized users from restricted tabs
+  React.useEffect(() => {
+    if (!isSuperAdmin && (activeTab === TAB_KEYS.TRACKS || activeTab === TAB_KEYS.CASES)) {
+      setSearchParams({ tab: TAB_KEYS.SIMULATIONS });
+    }
+  }, [isSuperAdmin, activeTab, setSearchParams]);
+
+  const filteredTabs = TABS_CONFIG.filter(tab => {
+    if (tab.id === TAB_KEYS.TRACKS || tab.id === TAB_KEYS.CASES) {
+      return isSuperAdmin;
+    }
+    return true;
+  });
 
   // Use the custom hook for simulations
   const {
@@ -108,7 +125,7 @@ export const SimulationStudio: React.FC = () => {
     isPathEditPopupOpen,
     setIsPathEditPopupOpen,
     handleEditPathway,
-  } = useSimulationPathways({ selectedFilters });
+  } = useSimulationPathways({ selectedFilters, enabled: isSuperAdmin });
 
   // Use the custom hook for cases
   const {
@@ -135,7 +152,7 @@ export const SimulationStudio: React.FC = () => {
     isCaseEditPopupOpen,
     setIsCaseEditPopupOpen,
     handleEditCase,
-  } = useSimulationCases({ selectedFilters });
+  } = useSimulationCases({ selectedFilters, enabled: isSuperAdmin });
 
   const handleFilterClick = () => {
     setIsFilterOpen(!isFilterOpen);
@@ -163,27 +180,39 @@ export const SimulationStudio: React.FC = () => {
     setSelectedFilters([]);
   };
 
-  const createOptions = [
-    {
-      id: en.simulation.newSimulation,
-      label: en.simulation.newSimulation,
-      icon: <SimulationIcon className="w-5 h-5" />,
-      onClick: handleNewSimulation,
-    },
-    {
-      id: en.simulation.newTrack,
-      label: en.simulation.newTrack,
-      icon: <Pathway className="w-5 h-5" />,
-      onClick: handleNewPathway,
-    },
+  const createOptions = React.useMemo(
+    () => [
+      {
+        id: en.simulation.newSimulation,
+        label: en.simulation.newSimulation,
+        icon: <SimulationIcon className="w-5 h-5" />,
+        onClick: handleNewSimulation,
+      },
+      {
+        id: en.simulation.newTrack,
+        label: en.simulation.newTrack,
+        icon: <Pathway className="w-5 h-5" />,
+        onClick: handleNewPathway,
+      },
 
-    {
-      id: "New Case",
-      label: "New Case",
-      icon: <Case className="w-5 h-5" />,
-      onClick: handleNewCase,
-    },
-  ];
+      {
+        id: "New Case",
+        label: "New Case",
+        icon: <Case className="w-5 h-5" />,
+        onClick: handleNewCase,
+      },
+    ],
+    [handleNewSimulation, handleNewPathway, handleNewCase],
+  );
+
+  const filteredCreateOptions = React.useMemo(() => {
+    return createOptions.filter(option => {
+      if (option.id === en.simulation.newTrack || option.id === "New Case") {
+        return isSuperAdmin;
+      }
+      return true;
+    });
+  }, [createOptions, isSuperAdmin]);
 
   const renderFooter = () => {
     const isCasesTab = activeTab === TAB_KEYS.CASES;
@@ -313,6 +342,8 @@ export const SimulationStudio: React.FC = () => {
             onCreateSimulation={handleCreateSimulation}
             onDuplicate={onDuplicateSimulation}
             footer={renderFooter()}
+            currentUser={user}
+            isSuperAdmin={isSuperAdmin}
           />
         );
       default:
@@ -333,7 +364,7 @@ export const SimulationStudio: React.FC = () => {
     <div className="min-h-full font-secondary">
       {renderHeader()}
       <Tabs
-        items={TABS}
+        items={filteredTabs}
         className="mb-2 mt-6 border-b border-border-light font-primary"
         activeId={activeTab}
         showCount={false}
@@ -472,7 +503,7 @@ export const SimulationStudio: React.FC = () => {
       <OptionsPopup
         isOpen={isCreatePopupOpen}
         onClose={() => setIsCreatePopupOpen(false)}
-        options={createOptions}
+        options={filteredCreateOptions}
         anchorElement={createButtonRef.current}
         className="min-w-[220px]"
       />

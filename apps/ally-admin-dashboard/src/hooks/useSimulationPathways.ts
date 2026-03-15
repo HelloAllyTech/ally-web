@@ -16,9 +16,13 @@ const PATHWAYS_PAGE_SIZE = 30;
 
 interface UseSimulationPathwaysProps {
   selectedFilters: Array<{ id: string; label: string }>;
+  enabled?: boolean;
 }
 
-export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathwaysProps) => {
+export const useSimulationPathways = ({
+  selectedFilters,
+  enabled = true,
+}: UseSimulationPathwaysProps) => {
   const navigate = useNavigate();
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -39,13 +43,18 @@ export const useSimulationPathways = ({ selectedFilters }: UseSimulationPathways
     data: pathwaysResponse,
     isFetching: isPathwaysFetching,
     isLoading: isPathwaysLoading,
-  } = useGetScenarioPathsQuery({
-    status:
-      selectedFilters.length > 0 ? selectedFilters?.map(filter => filter.id)?.join(",") : undefined,
-    offset: pathwaysOffset,
-    limit: pathwaysLimit,
-    search: "",
-  });
+  } = useGetScenarioPathsQuery(
+    {
+      status:
+        selectedFilters.length > 0
+          ? selectedFilters?.map(filter => filter.id)?.join(",")
+          : undefined,
+      offset: pathwaysOffset,
+      limit: pathwaysLimit,
+      search: "",
+    },
+    { skip: !enabled },
+  );
 
   const [deletePathwayById] = useDeleteScenarioPathByIdMutation();
   const [duplicateScenarioPath] = useDuplicateScenarioPathMutation();
