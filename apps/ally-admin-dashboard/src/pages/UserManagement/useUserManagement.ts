@@ -29,7 +29,7 @@ import { getChipValue } from "@utils";
 
 export const USERS_PAGE_SIZE = 20;
 
-export function useUserManagement(tenants: Tenant[]) {
+export function useUserManagement(tenants: Tenant[], canEditUser?: boolean) {
   const [search, setSearch] = useState<string>("");
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [addUsermodalOpen, setAddUserModalOpen] = useState<boolean>(false);
@@ -73,7 +73,7 @@ export function useUserManagement(tenants: Tenant[]) {
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [changeRole] = useChangeRoleMutation();
   const [addSimulationCreditLimit] = useAddSimulationCreditLimitMutation();
-  const { data: userRoles } = useGetRoleQuery();
+  const { data: userRoles } = useGetRoleQuery(undefined, { skip: !canEditUser });
 
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
 
