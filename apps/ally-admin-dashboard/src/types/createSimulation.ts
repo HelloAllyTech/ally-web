@@ -9,6 +9,7 @@ import {
   behaviourInstruction,
   Competency,
   CustomFieldType,
+  knowledgeSource,
 } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
@@ -40,6 +41,7 @@ export type FormData = {
   maxTimeValue?: string;
   showScoreMeter?: boolean;
   optGuardrails?: boolean;
+  knowledgeSources?: knowledgeSource[];
 };
 
 export interface DemographicsSectionProps {

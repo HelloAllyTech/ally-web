@@ -39,6 +39,14 @@ export interface stateInstruction {
   dialogues: string[];
 }
 
+export interface knowledgeSource {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export type KnowledgeSourceInput = { id?: string; title: string; content: string };
+
 export enum enumBehaviourInstructionCategory {
   HELPER_SHOULD_DO = "SHOULD_DO",
   HELPER_SHOULD_NOT_DO = "SHOULD_NOT_DO",
@@ -91,6 +99,7 @@ export interface SimulationInput {
   optGuardrails?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
+  knowledgeSources?: KnowledgeSourceInput[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -164,6 +173,7 @@ export interface GetSimulationByIdResponse {
     optGuardrails?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
+    knowledgeSources?: knowledgeSource[];
   };
   competency?: Competency;
   terminationEvents?: terminationEvent[];

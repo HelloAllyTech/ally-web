@@ -155,6 +155,7 @@ export const FORM_FIELD_IDS = {
   MAX_TIME_VALUE: "maxTimeValue",
   SHOW_SCORE_METER: "showScoreMeter",
   OPT_GUARDRAILS: "optGuardrails",
+  KNOWLEDGE_SOURCE: "knowledgeSources",
 };
 
 export const REGENERATE_TYPE = {
@@ -274,6 +275,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 1500,
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: true,
+      },
+      {
+        id: "knowledgeSources",
+        label: "Knowledge Sources",
+        type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
+        fullWidth: true,
       },
       {
         id: "behaviorInstructions",
