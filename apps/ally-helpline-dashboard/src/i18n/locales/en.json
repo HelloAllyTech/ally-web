@@ -550,7 +550,8 @@
     "enhance": "Enhance",
     "tabs": {
       "returnToSelf": "Return to Self",
-      "sessionSummary": "Session summary"
+      "sessionSummary": "Session summary",
+      "transcript": "Transcript"
     },
     "sections": {
       "featuresAndDemographics": "Features and Demographics",

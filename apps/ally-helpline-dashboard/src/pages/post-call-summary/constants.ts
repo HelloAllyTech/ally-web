@@ -28,6 +28,7 @@ import { FieldType, SectionType, SummaryField, SummarySectionKey } from "./types
 export const getSummaryTabs = (t: TFunction) => [
   { label: t("summary.tabs.returnToSelf"), value: SectionType.BoxBreathing },
   { label: t("summary.tabs.sessionSummary"), value: SectionType.SessionSummary },
+  { label: t("summary.tabs.transcript"), value: SectionType.Transcript },
 ];
 
 export const getSummarySections = (t: TFunction) => [
