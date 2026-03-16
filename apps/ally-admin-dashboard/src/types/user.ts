@@ -76,6 +76,7 @@ export interface UserListProps {
   renderFooter?: () => ReactNode;
   formatDate: (iso: string) => string;
   onOptionSelect?: (option: string, user: UserListUser) => void;
+  canEditUser?: boolean;
 }
 
 export interface OrganizationListProps {

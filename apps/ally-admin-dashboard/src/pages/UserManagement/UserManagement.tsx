@@ -57,6 +57,7 @@ export const UserManagement: FC = () => {
   const activeTab = (searchParams.get("tab") as TabType) || TabType.USERS;
   const permissions = useSelector((state: RootState) => state.user.permissions);
   const canEditMultiTenantAdmins = permissions.includes(Permissions.EDIT_MULTI_TENANT_ADMINS);
+  const canEditUser = permissions.includes(Permissions.EDIT_USER);
 
   // Organization management hook
   const {
@@ -322,10 +323,14 @@ export const UserManagement: FC = () => {
               filterChips={filterChips}
               addFilterCta={addFilterCtaMemo}
               addFilterButtonRef={addFilterBtnRef}
-              action={{
-                label: en.userManagement.addUser,
-                onClick: handleUserAddClick,
-              }}
+              action={
+                canEditUser
+                  ? {
+                      label: en.userManagement.addUser,
+                      onClick: handleUserAddClick,
+                    }
+                  : undefined
+              }
             />
 
             <UserModal
@@ -382,6 +387,7 @@ export const UserManagement: FC = () => {
                 users={users}
                 formatDate={formatDate}
                 onOptionSelect={handleOptionSelect}
+                canEditUser={canEditUser}
                 renderFooter={() =>
                   renderFooter(loadUsers, isUsersFetching, usersCount > users.length)
                 }
@@ -397,7 +403,11 @@ export const UserManagement: FC = () => {
             <ListToolbar
               searchValue={orgSearch}
               onSearchChange={setOrgSearch}
-              action={{ label: en.userManagement.addOrganization, onClick: handleNewgroupClick }}
+              action={
+                canEditUser
+                  ? { label: en.userManagement.addOrganization, onClick: handleNewgroupClick }
+                  : undefined
+              }
             />
             <UserModal
               hasTabs={true}
