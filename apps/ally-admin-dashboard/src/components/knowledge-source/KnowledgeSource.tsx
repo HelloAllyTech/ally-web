@@ -46,7 +46,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
 
   const handleAddTab = () => {
     const newTab: KnowledgeSourceItem = {
-      id: `${Date.now()}`,
+      id: crypto.randomUUID(),
       title: "",
       content: "",
     };

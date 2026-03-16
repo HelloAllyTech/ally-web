@@ -1,5 +1,5 @@
 import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
-import { GetSimulationByIdResponse } from "@types";
+import { GetSimulationByIdResponse, knowledgeSource } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
   return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
@@ -63,5 +63,10 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     showScoreMeter: data?.metadata?.showScoreMeter,
     characterProfileText: data?.metadata?.characterProfileText,
     competency: data?.competency,
+    knowledgeSources: data?.metadata?.knowledgeSources?.map((source: knowledgeSource) => ({
+      id: source.id,
+      title: source.title,
+      content: source.content,
+    })),
   };
 };
