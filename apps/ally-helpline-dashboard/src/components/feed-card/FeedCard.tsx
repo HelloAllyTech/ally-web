@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useLazyGetGeneralCommentsQuery, useLazyGetReviewThreadsQuery } from "@api";
+import { useLazyGetGeneralCommentsOverviewQuery, useLazyGetReviewThreadsQuery } from "@api";
 import { ReviewTranscript, ScribeImage } from "@assets";
 import { ReactionsModal } from "@components";
 import { useUser } from "@hooks";
@@ -79,8 +79,10 @@ const FeedCard: FC<FeedCardProps> = ({
   const [fetchReviewThreads, { data: reviewThreadsData, isLoading: isReviewThreadsLoading }] =
     useLazyGetReviewThreadsQuery();
 
-  const [fetchGeneralComments, { data: generalCommentsData, isLoading: isGeneralCommentsLoading }] =
-    useLazyGetGeneralCommentsQuery();
+  const [
+    fetchGeneralCommentsOverview,
+    { data: generalCommentsData, isLoading: isGeneralCommentsLoading },
+  ] = useLazyGetGeneralCommentsOverviewQuery();
 
   const comments = useMemo(() => {
     if (FEATURE_FLAGS_MAP?.GENERAL_COMMENTS_FLAG) {
@@ -94,7 +96,7 @@ const FeedCard: FC<FeedCardProps> = ({
     const willExpand = !isCommentsExpanded;
     if (willExpand && id) {
       if (FEATURE_FLAGS_MAP?.GENERAL_COMMENTS_FLAG) {
-        fetchGeneralComments({
+        fetchGeneralCommentsOverview({
           reviewId: id,
           limit: 2,
           offset: 0,
@@ -431,7 +433,13 @@ const FeedCard: FC<FeedCardProps> = ({
         </div>
       );
     if (comments.length > 0)
-      return <CommentsSection comments={comments} collapseComments={collapseComments} />;
+      return (
+        <CommentsSection
+          comments={comments}
+          collapseComments={collapseComments}
+          handleShowMore={generalCommentsData?.count > 2 ? () => onReviewTranscript() : null}
+        />
+      );
     return (
       <div className="flex items-center justify-center py-4">
         <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800">
