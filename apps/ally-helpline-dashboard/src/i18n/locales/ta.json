@@ -550,7 +550,8 @@
     "enhance": "மேம்படுத்தவும்",
     "tabs": {
       "returnToSelf": "சுயத்திற்கு திரும்பவும்",
-      "sessionSummary": "அடிக்குறிப்பு சுருக்கம்"
+      "sessionSummary": "அடிக்குறிப்பு சுருக்கம்",
+      "transcript": "பதிவு"
     },
     "sections": {
       "featuresAndDemographics": "சிறப்பம்சங்கள் மற்றும் மக்கள் தொகை",

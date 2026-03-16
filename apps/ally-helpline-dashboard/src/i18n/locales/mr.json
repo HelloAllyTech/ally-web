@@ -550,7 +550,8 @@
     "enhance": "वाढवा",
     "tabs": {
       "returnToSelf": "स्वतःकडे परत जा",
-      "sessionSummary": "सत्राचा सारांश"
+      "sessionSummary": "सत्राचा सारांश",
+      "transcript": "प्रतिलिपी"
     },
     "sections": {
       "featuresAndDemographics": "वैशिष्ट्ये आणि लोकसंख्या सांख्यिकी",
