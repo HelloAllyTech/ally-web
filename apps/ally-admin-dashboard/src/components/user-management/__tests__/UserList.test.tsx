@@ -82,6 +82,7 @@ describe("UserList", () => {
       creditLimit: 100,
       consumedCredits: 25,
       secondsAllowedPerCredit: 60,
+      profileImageUrl: "",
     },
     {
       id: 2,
@@ -100,6 +101,7 @@ describe("UserList", () => {
       creditLimit: 50,
       consumedCredits: 10,
       secondsAllowedPerCredit: 60,
+      profileImageUrl: "",
     },
     {
       id: 3,
@@ -118,6 +120,7 @@ describe("UserList", () => {
       creditLimit: null,
       consumedCredits: null,
       secondsAllowedPerCredit: 60,
+      profileImageUrl: "",
     },
   ];
 
@@ -128,6 +131,7 @@ describe("UserList", () => {
     users: mockUsers,
     formatDate: mockFormatDate,
     onOptionSelect: mockOnOptionSelect,
+    canEditUser: true,
   };
 
   beforeEach(() => {
@@ -347,6 +351,12 @@ describe("UserList", () => {
       expect(screen.getByTestId("user-option-dropdown")).toBeInTheDocument();
     });
 
+    it("does NOT show menu button when canEditUser is false", () => {
+      render(<UserList {...defaultProps} canEditUser={false} />);
+
+      expect(screen.queryByText("⋮")).not.toBeInTheDocument();
+    });
+
     it("closes dropdown when same menu button is clicked again", () => {
       render(<UserList {...defaultProps} />);
 
@@ -452,6 +462,7 @@ describe("UserList", () => {
         creditLimit: null,
         consumedCredits: null,
         secondsAllowedPerCredit: 60,
+        profileImageUrl: "",
       };
 
       render(<UserList {...defaultProps} users={[minimalUser]} />);

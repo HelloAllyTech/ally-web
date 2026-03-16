@@ -1,6 +1,7 @@
 export enum Permissions {
   EDIT_SCENARIO = "edit:scenario",
   EDIT_USER = "edit:user",
+  VIEW_USERS = "view:users",
   EDIT_LIVEKIT = "edit:livekit",
   EDIT_EVENT = "edit:session-events",
   VIEW_ADMIN_SCENARIO = "view:admin:scenario",

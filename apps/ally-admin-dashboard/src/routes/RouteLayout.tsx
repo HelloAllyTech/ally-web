@@ -60,7 +60,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.USER_MANAGEMENT}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER]}>
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER, Permissions.VIEW_USERS]}>
               <UserManagement />
             </PrivateLayout>
           }
@@ -68,7 +68,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ORGANIZATION_DETAIL(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER]}>
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER, Permissions.VIEW_USERS]}>
               <OrganizationDetail />
             </PrivateLayout>
           }

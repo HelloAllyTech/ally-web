@@ -379,6 +379,19 @@ describe("useUser", () => {
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.USERS);
     });
 
+    it("should filter navigation items based on VIEW_USERS permission", () => {
+      store = createMockStore({
+        permissions: [Permissions.VIEW_USERS],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.USERS);
+    });
+
     it("should filter navigation items based on EDIT_PROMPT permission", () => {
       store = createMockStore({
         permissions: [Permissions.EDIT_PROMPT],

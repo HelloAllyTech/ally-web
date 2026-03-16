@@ -11,6 +11,7 @@ export const UserList: React.FC<UserListProps> = ({
   formatDate,
   onOptionSelect,
   renderFooter,
+  canEditUser,
 }) => {
   const [openDropdownUserId, setOpenDropdownUserId] = useState<number | null>(null);
   const [anchorElement, setAnchorElement] = useState<HTMLButtonElement | null>(null);
@@ -96,12 +97,14 @@ export const UserList: React.FC<UserListProps> = ({
               <div className="col-span-6 pr-1">{formatDate(user.createdAt)}</div>
               <div className="col-span-5 pr-1  flex items-center justify-between w-full min-w-[100px]">
                 <StatusBadge status={user.status} />
-                <button
-                  className="text-typography-800 hover:text-typography-900"
-                  onClick={e => toggleDropdown(user.id, e)}
-                >
-                  ⋮
-                </button>
+                {canEditUser && (
+                  <button
+                    className="text-typography-800 hover:text-typography-900"
+                    onClick={e => toggleDropdown(user.id, e)}
+                  >
+                    ⋮
+                  </button>
+                )}
                 {openDropdownUserId === user.id && (
                   <UserOptionDropdown
                     isOpen
