@@ -9,7 +9,7 @@ import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
 import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
-import { navBarOptions, TOOLTIP_LIGHT_PROPS, TabId } from "@constants";
+import { navBarOptions, TOOLTIP_LIGHT_PROPS, TabId, Permissions } from "@constants";
 import { useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
@@ -80,7 +80,10 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
     useUser();
 
-  const { data: unreadData } = useGetUnreadReviewCountQuery({ isScribe: false });
+  const { data: unreadData } = useGetUnreadReviewCountQuery(
+    { isScribe: false },
+    { skip: !permissions.includes(Permissions.VIEW_SIMULATION_REVIEWS) },
+  );
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(tab => {

@@ -62,7 +62,7 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// Mock Tabs from ui-shared (PostCallSummary uses Tabs, not TabGroup)
+// Mock Tabs and FEATURE_FLAGS_MAP from ui-shared (PostCallSummary uses Tabs and FEATURE_FLAGS_MAP in Header)
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   Tabs: ({ items, activeId, onChange }: any) => (
     <div data-testid="tabs">
@@ -78,6 +78,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       ))}
     </div>
   ),
+  FEATURE_FLAGS_MAP: {
+    SCRIBE_REVIEW_FLAG: false,
+  },
 }));
 
 const mockUseUser = vi.fn(() => ({
@@ -95,8 +98,12 @@ vi.mock("@utils", () => ({
 
 // Mock API hooks
 const mockUseGetCallSummaryQuery = vi.fn();
+const mockCreateScribeReview = vi.fn();
+const mockUpdateScribeReview = vi.fn();
 vi.mock("@api", () => ({
   useGetCallSummaryQuery: () => mockUseGetCallSummaryQuery(),
+  useCreateScribeReviewMutation: () => [mockCreateScribeReview, { isLoading: false }],
+  useUpdateScribeReviewMutation: () => [mockUpdateScribeReview, { isLoading: false }],
 }));
 
 // Mock post-call-summary components
@@ -437,7 +444,7 @@ describe("PostCallSummary Component", () => {
       );
 
       const callSummary = screen.getByTestId("call-summary");
-      expect(callSummary).toHaveClass("max-h-[calc(100vh-250px)]");
+      expect(callSummary).toHaveClass("max-h-[calc(100vh-300px)]");
       expect(screen.getByTestId("chat-id")).toHaveTextContent("123");
     });
 
