@@ -480,7 +480,7 @@ export const ReviewDetails = () => {
                 {isScribeReview ? "Scribe" : "Simulation"}
               </div>
               <span className="text-xl line-clamp-1">
-                {reviewDetails?.scenario?.title || `CALL-${reviewDetails?.scribeSession?.id}`}
+                {reviewDetails?.scenario?.title || reviewDetails?.scribeSession?.summaryName}
               </span>
               {!isScribeReview && (
                 <div
