@@ -222,11 +222,7 @@ const FeedCard: FC<FeedCardProps> = ({
   const scenarioSection = () => {
     return FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG ? (
       <div className="flex flex-col gap-2 cursor-default">
-        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">
-          {isScribeReview
-            ? "Could you review how I handled holding emotional space? I tried to avoid giving advice too early, but I’m not sure if I did that effectively."
-            : t("review.feedCard.sharedSimulation")}
-        </div>
+        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">{note}</div>
         {!isScribeReview && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
             <span className="font-primary text-xs sm:text-[13px] leading-[1.38] text-black/60">

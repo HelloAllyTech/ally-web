@@ -12,6 +12,67 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
         class="w-full border-b border-[#E5E7EB]"
       >
         <div
+          class="flex items-center gap-2 font-secondary justify-between"
+        >
+          <div
+            class="flex items-center gap-2"
+          >
+            <button>
+              <svg
+                fill="none"
+                height="48"
+                viewBox="0 0 48 48"
+                width="48"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g
+                  clip-path="url(#clip0_2523_4287)"
+                >
+                  <rect
+                    fill="#F9F9F9"
+                    height="40"
+                    rx="20"
+                    width="40"
+                    x="4"
+                    y="4"
+                  />
+                  <path
+                    d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
+                    fill="#49454F"
+                  />
+                </g>
+                <defs>
+                  <clippath
+                    id="clip0_2523_4287"
+                  >
+                    <rect
+                      fill="white"
+                      height="40"
+                      rx="20"
+                      width="40"
+                      x="4"
+                      y="4"
+                    />
+                  </clippath>
+                </defs>
+              </svg>
+            </button>
+            <span
+              class="text-4xl"
+            >
+              Session
+            </span>
+            <span
+              class="text-4xl font-semibold italic"
+            >
+              Summary
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2"
+          />
+        </div>
+        <div
           data-testid="tabs"
         >
           <button
@@ -67,6 +128,67 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
         class="w-full border-b border-[#E5E7EB]"
       >
         <div
+          class="flex items-center gap-2 font-secondary justify-between"
+        >
+          <div
+            class="flex items-center gap-2"
+          >
+            <button>
+              <svg
+                fill="none"
+                height="48"
+                viewBox="0 0 48 48"
+                width="48"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g
+                  clip-path="url(#clip0_2523_4287)"
+                >
+                  <rect
+                    fill="#F9F9F9"
+                    height="40"
+                    rx="20"
+                    width="40"
+                    x="4"
+                    y="4"
+                  />
+                  <path
+                    d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
+                    fill="#49454F"
+                  />
+                </g>
+                <defs>
+                  <clippath
+                    id="clip0_2523_4287"
+                  >
+                    <rect
+                      fill="white"
+                      height="40"
+                      rx="20"
+                      width="40"
+                      x="4"
+                      y="4"
+                    />
+                  </clippath>
+                </defs>
+              </svg>
+            </button>
+            <span
+              class="text-4xl"
+            >
+              Session
+            </span>
+            <span
+              class="text-4xl font-semibold italic"
+            >
+              Summary
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2"
+          />
+        </div>
+        <div
           data-testid="tabs"
         >
           <button
@@ -95,7 +217,7 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
           data-testid="motion-div"
         >
           <div
-            class="max-h-[calc(100vh-250px)]"
+            class="max-h-[calc(100vh-300px)]"
             data-testid="call-summary"
           >
             <div
