@@ -331,7 +331,7 @@ const CommentCard = ({
   const handleDeleteComment = async () => {
     try {
       setIsDeleting(true);
-      await deleteComment({ commentId: comment.id }).unwrap();
+      await deleteComment({ commentId: comment.id, isScribe: isScribeReview }).unwrap();
       onDelete?.(comment.id);
       toast.success(`${isReply ? "Reply" : "Comment"} deleted successfully`);
       if (isReply) {
@@ -348,7 +348,11 @@ const CommentCard = ({
 
   const handleEditComment = async () => {
     try {
-      await editComment({ commentId: comment.id, content: commentContent?.trim() }).unwrap();
+      await editComment({
+        commentId: comment.id,
+        content: commentContent?.trim(),
+        isScribe: isScribeReview,
+      }).unwrap();
       toast.success(`${isReply ? "Reply" : "Comment"} updated successfully`);
       onUpdateComment?.(commentContent, comment.id);
       handleMenuClose();
