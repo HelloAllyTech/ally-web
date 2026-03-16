@@ -76,7 +76,7 @@ export const UserManagement: FC = () => {
     handleTenantFormSubmit,
     onCloseOrganizationEditModal,
     logoUpload,
-  } = useOrganizationManagement();
+  } = useOrganizationManagement(canEditUser);
 
   // User management hook (depends on tenants)
   const {
@@ -109,7 +109,7 @@ export const UserManagement: FC = () => {
     handleAddUserClose,
     handleUserAddClick,
     handleAddCredit,
-  } = useUserManagement(tenants);
+  } = useUserManagement(tenants, canEditUser);
 
   const TABS = [
     { id: TabType.USERS, label: en.userManagement.users, count: usersCount },
