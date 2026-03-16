@@ -15,7 +15,6 @@ import {
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
   useUpdateCallSummaryNotesMutation,
-  useGetCallSummaryQuery,
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
@@ -40,8 +39,10 @@ const CallSummary: FC<CallSummaryProps> = ({
   headerContent,
   postProcess,
   canEditSummary = true,
-  callSummaryData: callSummaryDataProp,
+  callSummary,
   onRefetchSummary,
+  isSummaryLoading,
+  summaryLoadingError,
 }) => {
   const { t } = useTranslation();
   const { permissions, user } = useSelector((state: RootState) => state.user);
@@ -59,15 +60,6 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const navigate = useNavigate();
 
-  const {
-    data: callSummaryFromQuery,
-    refetch: refetchFromQuery,
-    isLoading: isSummaryLoading,
-    error: summaryLoadingError,
-  } = useGetCallSummaryQuery(chatId, { skip: callSummaryDataProp != null });
-
-  const callSummary = callSummaryDataProp != null ? callSummaryDataProp : callSummaryFromQuery;
-  const refetchSummary = onRefetchSummary ?? refetchFromQuery;
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery(
     undefined,
     {
@@ -489,7 +481,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const retriggerSummary = async () => {
     setCanShowSummary(false);
-    const result = await refetchSummary();
+    const result = await onRefetchSummary();
     if (
       [ChatSummaryStatus.PENDING, ChatSummaryStatus.IN_PROGRESS].includes(
         result?.data?.summaryStatus,
