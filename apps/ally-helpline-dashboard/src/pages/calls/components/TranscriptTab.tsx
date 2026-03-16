@@ -23,7 +23,7 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="flex-1 p-4">
+    <div className="flex-1 p-4 font-primary">
       <h3 className="font-semibold text-base mb-4">{t("transcription.title")}</h3>
       {transcriptList?.length > 0 ? (
         <div
