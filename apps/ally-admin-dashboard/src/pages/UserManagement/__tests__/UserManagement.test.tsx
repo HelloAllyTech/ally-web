@@ -64,14 +64,18 @@ vi.mock("@components", () => ({
         </button>
       </div>
     ) : null,
-  UserList: ({ users, onOptionSelect, renderFooter }: any) => (
+  UserList: ({ users, onOptionSelect, renderFooter, canEditUser }: any) => (
     <div data-testid="user-list">
       {users.map((user: any) => (
         <div key={user.id} data-testid={`user-${user.id}`}>
           <span>{user.name}</span>
-          <button onClick={() => onOptionSelect(user, "EDIT_DETAILS")}>Edit</button>
-          <button onClick={() => onOptionSelect(user, "SUSPEND_USER")}>Suspend</button>
-          <button onClick={() => onOptionSelect(user, "REMOVE_USER")}>Remove</button>
+          {canEditUser && (
+            <>
+              <button onClick={() => onOptionSelect(user, "EDIT_DETAILS")}>Edit</button>
+              <button onClick={() => onOptionSelect(user, "SUSPEND_USER")}>Suspend</button>
+              <button onClick={() => onOptionSelect(user, "REMOVE_USER")}>Remove</button>
+            </>
+          )}
         </div>
       ))}
       {renderFooter()}
@@ -231,6 +235,16 @@ describe("UserManagement", () => {
     );
   });
 
+  const setPermissions = (permissions: Permissions[]) => {
+    vi.mocked(useSelector).mockImplementation((selector: any) => {
+      // Mock RootState
+      const state = {
+        user: { permissions },
+      };
+      return selector(state);
+    });
+  };
+
   const renderUserManagement = (initialEntries = ["/"]) => {
     return render(
       <MemoryRouter initialEntries={initialEntries}>
@@ -285,13 +299,22 @@ describe("UserManagement", () => {
       expect(mockUserManagementHook.setSearch).toHaveBeenCalledWith("John");
     });
 
-    it("should show add user button", () => {
+    it("should show add user button when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       expect(screen.getByText("Add user")).toBeInTheDocument();
     });
 
+    it("should NOT show add user button when user lacks EDIT_USER permission", () => {
+      setPermissions([]);
+      renderUserManagement();
+
+      expect(screen.queryByText("Add user")).not.toBeInTheDocument();
+    });
+
     it("should open add user modal when add user button is clicked", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       const addUserButton = screen.getByText("Add user");
@@ -326,7 +349,8 @@ describe("UserManagement", () => {
   });
 
   describe("User Actions", () => {
-    it("should handle edit user", () => {
+    it("should handle edit user when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       const editButtons = screen.getAllByText("Edit");
@@ -338,7 +362,17 @@ describe("UserManagement", () => {
       );
     });
 
-    it("should handle suspend user", () => {
+    it("should NOT show user action buttons when user lacks EDIT_USER permission", () => {
+      setPermissions([]);
+      renderUserManagement();
+
+      expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+      expect(screen.queryByText("Suspend")).not.toBeInTheDocument();
+      expect(screen.queryByText("Remove")).not.toBeInTheDocument();
+    });
+
+    it("should handle suspend user when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       const suspendButtons = screen.getAllByText("Suspend");
@@ -350,7 +384,8 @@ describe("UserManagement", () => {
       );
     });
 
-    it("should handle remove user", () => {
+    it("should handle remove user when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       const removeButtons = screen.getAllByText("Remove");
@@ -429,13 +464,22 @@ describe("UserManagement", () => {
       expect(screen.getByText("Organization 2")).toBeInTheDocument();
     });
 
-    it("should show add organization button", () => {
+    it("should show add organization button when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement(["/?tab=organizations"]);
 
       expect(screen.getByText("Add organization")).toBeInTheDocument();
     });
 
-    it("should open add organization modal", () => {
+    it("should NOT show add organization button when user lacks EDIT_USER permission", () => {
+      setPermissions([]);
+      renderUserManagement(["/?tab=organizations"]);
+
+      expect(screen.queryByText("Add organization")).not.toBeInTheDocument();
+    });
+
+    it("should open add organization modal when add organization button is clicked", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement(["/?tab=organizations"]);
 
       const addOrgButton = screen.getByText("Add organization");
