@@ -1,4 +1,4 @@
-import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
+import { ApiEndpoints, HttpMethod, SORT_ORDER, TAG_TYPES } from "@constants";
 import {
   GetReviewsInput,
   GetReviewsResponse,
@@ -302,6 +302,18 @@ const reviewsAPI = baseAPI.injectEndpoints({
       }),
       providesTags: [TAG_TYPES.GENERAL_COMMENTS],
     }),
+    getGeneralCommentsOverview: builder.query<
+      { data: CommentItem[]; count: number },
+      { reviewId: string; limit?: number; offset?: number; isScribe?: boolean }
+    >({
+      query: ({ reviewId, limit = 20, offset = 0, isScribe = false }) => ({
+        url: isScribe
+          ? ApiEndpoints.REVIEWS.GET_SCRIBE_GENERAL_COMMENTS_OVERVIEW(reviewId)
+          : ApiEndpoints.REVIEWS.GET_GENERAL_COMMENTS_OVERVIEW(reviewId),
+        method: HttpMethod.GET,
+        params: { limit, offset, order: SORT_ORDER.DESC, sortBy: "createdAt" },
+      }),
+    }),
   }),
 });
 
@@ -331,4 +343,5 @@ export const {
   useLazyGetGeneralCommentsQuery,
   useCreateScribeReviewMutation,
   useUpdateScribeReviewMutation,
+  useLazyGetGeneralCommentsOverviewQuery,
 } = reviewsAPI;

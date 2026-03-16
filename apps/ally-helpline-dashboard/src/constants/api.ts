@@ -119,6 +119,10 @@ export const ApiEndpoints = {
     GET_GENERAL_COMMENTS: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}/comments`,
     GET_SCRIBE_GENERAL_COMMENTS: (reviewId: string) =>
       `/v1/scribe-session-reviews/${reviewId}/comments`,
+    GET_GENERAL_COMMENTS_OVERVIEW: (reviewId: string) =>
+      `/v1/scenario-session-reviews/${reviewId}/comments-overview`,
+    GET_SCRIBE_GENERAL_COMMENTS_OVERVIEW: (reviewId: string) =>
+      `/v1/scribe-session-reviews/${reviewId}/comments-overview`,
     GET_REVIEW_BY_ID: (reviewId: string) => `/v1/scenario-session-reviews/${reviewId}`,
     GET_SCRIBE_REVIEW_BY_ID: (reviewId: string) => `/v1/scribe-session-reviews/${reviewId}`,
     GET_REVIEW_DETAILS_AND_MESSAGES: (reviewId: string) =>
