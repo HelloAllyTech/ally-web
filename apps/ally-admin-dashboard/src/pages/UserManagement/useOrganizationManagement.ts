@@ -16,7 +16,7 @@ import { Tenant } from "@types";
 
 export const TENANTS_PAGE_SIZE = 100;
 
-export function useOrganizationManagement() {
+export function useOrganizationManagement(canEditUser?: boolean) {
   const [orgSearch, setOrgSearch] = useState<string>("");
   const [addOrganizationModalOpen, setAddOrganizationModalOpen] = useState<boolean>(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
@@ -58,7 +58,9 @@ export function useOrganizationManagement() {
   const [updateTenant] = useUpdateTenantMutation();
   const [logoUpload] = usePostLogoUrlMutation();
   const [deleteLogo] = useDeleteLogoMutation();
-  const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery();
+  const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery(undefined, {
+    skip: !canEditUser,
+  });
 
   const tenantParams = {
     limit: TENANTS_PAGE_SIZE,
