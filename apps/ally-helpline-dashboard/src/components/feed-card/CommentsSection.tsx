@@ -8,9 +8,14 @@ import { Comment } from "./types";
 interface CommentsSectionProps {
   comments: Comment[];
   collapseComments?: () => void;
+  handleShowMore?: () => void;
 }
 
-const CommentsSection: FC<CommentsSectionProps> = ({ comments, collapseComments }) => {
+const CommentsSection: FC<CommentsSectionProps> = ({
+  comments,
+  collapseComments,
+  handleShowMore,
+}) => {
   if (comments.length === 0) {
     return null;
   }
@@ -24,6 +29,17 @@ const CommentsSection: FC<CommentsSectionProps> = ({ comments, collapseComments 
           <CommentItem key={comment.id} comment={comment} />
         ))}
       </div>
+
+      {handleShowMore && (
+        <div className="flex flex-row items-center px-[6px]">
+          <button
+            onClick={handleShowMore}
+            className="font-primary font-medium text-xs sm:text-sm leading-[1.5] text-primary-500 hover:underline flex flex-row items-center justify-center gap-2.5"
+          >
+            Show more
+          </button>
+        </div>
+      )}
 
       {collapseComments && (
         <button
