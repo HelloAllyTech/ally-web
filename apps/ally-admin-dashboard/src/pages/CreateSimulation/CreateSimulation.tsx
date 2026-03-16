@@ -42,6 +42,7 @@ import {
   triggerWarning,
   behaviourInstruction,
   stateInstruction,
+  knowledgeSource,
 } from "@types";
 import {
   getCreateSimulationSubSectionById,
@@ -350,6 +351,13 @@ export const CreateSimulation: FC = () => {
       competencyId: restForm.competency?.id,
       maxTimeValue: timerMode ? maxTimeValue : null,
       timerMode: timerMode,
+      knowledgeSources: Array.isArray(restForm.knowledgeSources)
+        ? restForm.knowledgeSources.map((item: knowledgeSource) => ({
+            id: item.id,
+            title: item.title,
+            content: item.content,
+          }))
+        : [],
     };
 
     let response;

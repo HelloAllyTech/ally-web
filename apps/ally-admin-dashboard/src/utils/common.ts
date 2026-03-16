@@ -230,6 +230,9 @@ export const extractValidData = (
         case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:
           return [key, isNonEmptyString(value) ? value : null];
 
+        case FORM_FIELD_TYPES.KNOWLEDGE_SOURCE:
+          return [key, Array.isArray(value) ? value : []];
+
         default:
           return [
             key,
