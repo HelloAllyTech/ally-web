@@ -4,6 +4,7 @@ import { Tooltip } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
@@ -15,9 +16,9 @@ import {
   useUpdateScribeReviewMutation,
   useGetCallSummaryQuery,
 } from "@api";
-import { Archive, Delete, Download, Unarchive } from "@assets";
+import { Archive, Comment, Delete, Download, Unarchive } from "@assets";
 import { Button, ButtonVariant, ShareForReview, ToggleSwitch } from "@components";
-import { CallProvider, Permissions, REVIEW_PRIVACY_OPTIONS_VALUES } from "@constants";
+import { CallProvider, Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
@@ -56,12 +57,16 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
 
   const startTimeRef = useRef<number | null>(null);
 
+  const navigate = useNavigate();
+
   const [exportCallSummary] = useLazyExportCallSummaryQuery();
   const [archiveCallLog] = useArchiveCallLogMutation();
-  const { data: individualCallSummary, refetch: refetchCallSummary } = useGetCallSummaryQuery(
-    callSummary?.id,
-    { skip: !callSummary?.id },
-  );
+  const {
+    data: individualCallSummary,
+    refetch: refetchCallSummary,
+    isLoading: isSummaryLoading,
+    error: summaryLoadingError,
+  } = useGetCallSummaryQuery(callSummary?.id, { skip: !callSummary?.id });
   const [createScribeReview] = useCreateScribeReviewMutation();
   const [updateScribeReview] = useUpdateScribeReviewMutation();
 
@@ -274,6 +279,27 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               />
             </div>
           )}
+        {individualCallSummary?.reviewId && (
+          <>
+            <div className="border-l border-border h-5" />
+            <Tooltip title="Comments" arrow>
+              <button
+                onClick={() =>
+                  navigate(
+                    ROUTES.SCRIBE_REVIEW_DETAILS?.replace(
+                      ":reviewId",
+                      individualCallSummary.reviewId,
+                    ),
+                  )
+                }
+                className="flex items-center justify-center h-[40px] w-[40px]"
+              >
+                <Comment className="w-6 h-6 shrink-0" />
+                {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
+              </button>
+            </Tooltip>
+          </>
+        )}
         {extraHeaderList
           .filter(button => button.show)
           .map(button => (
@@ -333,11 +359,13 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
           }
           className="max-h-[calc(100vh-320px)]"
           chatId={callSummary.id}
-          callSummaryData={individualCallSummary}
+          callSummary={individualCallSummary}
           onRefetchSummary={refetchCallSummary}
           postProcess={refetchCallLogs}
           isInSidebar={true}
           canEditSummary={canEditSummary}
+          isSummaryLoading={isSummaryLoading}
+          summaryLoadingError={summaryLoadingError}
         />
       ),
     },

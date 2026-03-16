@@ -3,6 +3,7 @@ import { ChatSummaryStatus, SummaryFieldKey } from "@types";
 export enum SectionType {
   BoxBreathing = "Box breathing",
   SessionSummary = "Session summary",
+  Transcript = "Transcript",
 }
 
 export enum SummarySectionKey {
@@ -59,12 +60,14 @@ export interface CallSummaryProps {
   className?: string;
   postProcess?: (status?: ChatSummaryStatus) => void;
   chatId: number;
-  callSummaryData?: unknown;
-  onRefetchSummary?: () => Promise<{ data?: unknown }>;
+  callSummary?: any;
+  onRefetchSummary: () => Promise<{ data?: any }>;
   refetchCallLogs?: () => void;
   isInSidebar?: boolean;
   headerContent?: React.ReactNode;
   canEditSummary?: boolean;
+  isSummaryLoading?: boolean;
+  summaryLoadingError?: any;
 }
 
 export interface SummaryLoadingProps {

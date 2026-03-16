@@ -292,6 +292,7 @@ const CommentCard = ({
       await toggleCommentVisibility({
         commentId: comment.id,
         hidden,
+        isScribe: isScribeReview,
       }).unwrap();
       onToggleHide?.(hidden, comment.id);
       if (!isReply) {
