@@ -705,5 +705,61 @@ describe("UserManagement", () => {
       expect(screen.getByTestId("modal-extra-content")).toBeInTheDocument();
       expect(screen.getByTestId("assigned-organizations")).toBeInTheDocument();
     });
+
+    it("should show AssignedOrganizations reactively when role is changed in Change Role modal", () => {
+      vi.mocked(useSelector).mockReturnValue([Permissions.EDIT_MULTI_TENANT_ADMINS]);
+
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Change role",
+        selectedUser: mockUsers[0],
+        userMethods: {
+          ...mockUserManagementHook.userMethods,
+          watch: vi.fn().mockReturnValue(["MULTI_TENANT_ADMIN"]),
+        },
+        activeTab: TabType.USERS,
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("user-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("modal-extra-content")).toBeInTheDocument();
+      expect(screen.getByTestId("assigned-organizations")).toBeInTheDocument();
+    });
+
+    it("should show assignment message for new MULTI_TENANT_ADMIN user", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        addUsermodalOpen: true,
+        userMethods: {
+          ...mockUserManagementHook.userMethods,
+          watch: vi.fn().mockReturnValue(["MULTI_TENANT_ADMIN"]),
+        },
+        activeTab: TabType.USERS,
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("user-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("modal-extra-content")).toBeInTheDocument();
+      expect(
+        screen.getByText(/Organizations can be assigned after the user is created/i),
+      ).toBeInTheDocument();
+    });
+
+    it("should show AssignedOrganizations if user has MULTI_TENANT_ADMIN in role field", () => {
+      vi.mocked(useSelector).mockReturnValue([Permissions.EDIT_MULTI_TENANT_ADMINS]);
+
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Edit details",
+        selectedUser: { ...mockUsers[0], role: "MULTI_TENANT_ADMIN" },
+        activeTab: TabType.USERS,
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("assigned-organizations")).toBeInTheDocument();
+    });
   });
 });
