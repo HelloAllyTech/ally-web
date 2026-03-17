@@ -111,6 +111,13 @@ export const UserManagement: FC = () => {
     handleAddCredit,
   } = useUserManagement(tenants);
 
+  const watchedRoles = userMethods.watch("roles") || [];
+
+  const isMultiTenantAdmin =
+    watchedRoles.includes(UserRole.MULTI_TENANT_ADMIN) ||
+    selectedUser?.role === UserRole.MULTI_TENANT_ADMIN ||
+    selectedUser?.roles?.includes(UserRole.MULTI_TENANT_ADMIN);
+
   const TABS = [
     { id: TabType.USERS, label: en.userManagement.users, count: usersCount },
     { id: TabType.ORGANIZATIONS, label: en.userManagement.organizations, count: tenantsCount },
@@ -196,9 +203,9 @@ export const UserManagement: FC = () => {
             formMethods={userMethods}
             handleClick={handleEditUser}
             extraContent={
-              selectedUser?.roles?.includes(UserRole.MULTI_TENANT_ADMIN) ? (
+              isMultiTenantAdmin ? (
                 <AssignedOrganizations
-                  userId={selectedUser.id}
+                  userId={selectedUser?.id as number}
                   canEdit={canEditMultiTenantAdmins}
                   allTenants={tenants}
                 />
@@ -216,6 +223,15 @@ export const UserManagement: FC = () => {
             buttonName={en.userManagement.confirm}
             formMethods={userMethods}
             handleClick={handleChangeRole}
+            extraContent={
+              isMultiTenantAdmin ? (
+                <AssignedOrganizations
+                  userId={selectedUser?.id as number}
+                  canEdit={canEditMultiTenantAdmins}
+                  allTenants={tenants}
+                />
+              ) : undefined
+            }
           />
         );
       case UserMenuOptions.MANAGE_CREDITS:
@@ -341,6 +357,14 @@ export const UserManagement: FC = () => {
               buttonName={en.userManagement.addUser}
               formMethods={userMethods}
               handleClick={handleAddUser}
+              extraContent={
+                isMultiTenantAdmin ? (
+                  <div className="text-sm text-typography-600 bg-background-secondary p-3 rounded-lg border border-border-light italic">
+                    {en.userManagement.noAssignedOrganizations}. Organizations can be assigned after
+                    the user is created.
+                  </div>
+                ) : undefined
+              }
             />
 
             <FilterDropdown<FilterValues>

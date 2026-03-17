@@ -206,7 +206,7 @@ export function useUserManagement(tenants: Tenant[]) {
       email: user.email,
       externalId: user.externalId,
       tenantId: user.tenantId,
-      roles: user.roles || [],
+      roles: user.roles?.length ? user.roles : user.role ? [user.role] : [],
     });
   };
 
