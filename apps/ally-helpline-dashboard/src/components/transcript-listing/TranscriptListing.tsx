@@ -47,9 +47,9 @@ const TranscriptItem = ({
 }) => {
   const isAIClient = transcript.senderId === -1;
   const speakerName = isAIClient
-    ? agentName
+    ? transcript.id && agentName
       ? `${agentName} (${aiClientSuffix})`
-      : aiAgentName
+      : (agentName ?? aiAgentName)
     : counsellorName || youLabel;
 
   return (
