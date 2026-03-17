@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetChatHistoryQuery } from "@api";
 import { AskAiIcon, Refresh, SendArrow, UpArrow } from "@assets";
 import { Button, CharacterCount } from "@components";
@@ -192,7 +193,7 @@ const ChatBubble = ({
                 </span>
               );
             })}
-            {citations.length > 0 && (
+            {citations.length > 0 && FEATURE_FLAGS_MAP.CITATION_FLAG && (
               <CitationsTable
                 citations={citations}
                 councellorName={councellorName || "You"}

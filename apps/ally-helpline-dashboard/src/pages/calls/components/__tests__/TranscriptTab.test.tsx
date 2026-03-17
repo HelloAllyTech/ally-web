@@ -18,7 +18,7 @@ describe("TranscriptTab", () => {
         isLoading={false}
       />,
     );
-    expect(screen.getByText("Transcript")).toBeInTheDocument();
+    expect(screen.getByText("Annotated Transcript")).toBeInTheDocument();
   });
 
   it("renders transcript list when available", () => {

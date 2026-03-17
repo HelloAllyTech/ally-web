@@ -406,6 +406,7 @@ export const ReviewDetails = () => {
                   )
                 }
               />
+              <div className="border-l border-border h-5" />
             </div>
           )}
           <div
