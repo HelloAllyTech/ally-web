@@ -277,13 +277,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
       },
       {
-        id: "knowledgeSources",
-        label: "Knowledge Sources",
-        type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
-        fullWidth: true,
-        visibleWhen: () => FEATURE_FLAGS_MAP.KNOWLEDGE_SOURCE_FLAG,
-      },
-      {
         id: "behaviorInstructions",
         label: "Behaviour Instructions",
         type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
@@ -306,6 +299,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM_FIELDS,
         fullWidth: true,
         isDashedLineAbove: true,
+      },
+      {
+        id: "knowledgeSources",
+        label: "Knowledge Sources",
+        type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
+        fullWidth: true,
+        visibleWhen: () => FEATURE_FLAGS_MAP.KNOWLEDGE_SOURCE_FLAG,
       },
       {
         id: "openingStatements",
