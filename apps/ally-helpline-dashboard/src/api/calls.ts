@@ -6,7 +6,7 @@
  * - Chat type definitions
  */
 
-import { CallType, ApiEndpoints, HttpMethod } from "@constants";
+import { CallType, ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   GetCallLogsInput,
   GetCallLogsResponse,
@@ -37,7 +37,7 @@ const callsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALLS.GET_CALL_LOGS,
         params,
       }),
-      providesTags: ["CallLogs"],
+      providesTags: ["CallLogs", TAG_TYPES.CALL_LOGS],
     }),
 
     /**

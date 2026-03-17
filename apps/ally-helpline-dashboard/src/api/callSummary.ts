@@ -105,6 +105,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: callInfo,
       }),
+      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
     }),
 
     /**

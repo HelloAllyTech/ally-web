@@ -270,7 +270,9 @@ const Transcription: FC<TranscriptionProps> = ({
                   <span className="text-typography-900">
                     {agentName
                       ? `${agentName} (${t("transcription.aiClientSuffix")}) :`
-                      : t("transcription.agentLabel")}
+                      : isScribeReview
+                        ? t("transcription.scribeAgentLabel")
+                        : t("transcription.agentLabel")}
                   </span>
                 ) : (
                   <span className="text-primary-700">
