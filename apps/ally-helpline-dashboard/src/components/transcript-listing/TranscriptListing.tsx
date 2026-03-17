@@ -3,10 +3,10 @@ import { FC, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
-import { SimulationTranscriptMessage } from "@types";
+import { SimulationTranscriptMessage, TranscriptMessage } from "@types";
 
 interface TranscriptListingProps {
-  transcriptList: SimulationTranscriptMessage[];
+  transcriptList: SimulationTranscriptMessage[] | TranscriptMessage[];
   handleLoadMore?: () => void;
   isLoading?: boolean;
   hasMore?: boolean;
@@ -145,7 +145,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
       >
         {transcriptList?.map((transcript, index) => (
           <TranscriptItem
-            key={`${transcript.id}-${transcript.startSeconds}-${index}`}
+            key={`${transcript.id ?? transcript.chatId}-${transcript.startSeconds}-${index}`}
             transcript={transcript}
             agentName={agentName}
             counsellorName={counsellorName}

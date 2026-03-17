@@ -98,10 +98,12 @@ vi.mock("@utils", () => ({
 
 // Mock API hooks
 const mockUseGetCallSummaryQuery = vi.fn();
+const mockUseGetTranscriptQuery = vi.fn(() => ({ data: undefined, isLoading: false }));
 const mockCreateScribeReview = vi.fn();
 const mockUpdateScribeReview = vi.fn();
 vi.mock("@api", () => ({
   useGetCallSummaryQuery: () => mockUseGetCallSummaryQuery(),
+  useGetTranscriptQuery: () => mockUseGetTranscriptQuery(),
   useCreateScribeReviewMutation: () => [mockCreateScribeReview, { isLoading: false }],
   useUpdateScribeReviewMutation: () => [mockUpdateScribeReview, { isLoading: false }],
 }));
@@ -444,7 +446,7 @@ describe("PostCallSummary Component", () => {
       );
 
       const callSummary = screen.getByTestId("call-summary");
-      expect(callSummary).toHaveClass("max-h-[calc(100vh-300px)]");
+      expect(callSummary).toHaveClass("max-h-[calc(100vh-350px)]");
       expect(screen.getByTestId("chat-id")).toHaveTextContent("123");
     });
 
