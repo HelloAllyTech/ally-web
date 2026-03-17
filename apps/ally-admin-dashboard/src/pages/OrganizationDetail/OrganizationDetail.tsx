@@ -1,5 +1,6 @@
-import { useState, useEffect, FC } from "react";
+import { useState, useEffect, FC, useMemo } from "react";
 
+import { useSelector } from "react-redux";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -23,7 +24,8 @@ import {
   CasesTab,
   BadgesTab,
 } from "@components";
-import { en, ROUTES } from "@constants";
+import { en, ROUTES, UserRole } from "@constants";
+import { RootState } from "@store";
 import { Tenant } from "@types";
 
 enum TAB_IDS {
@@ -35,7 +37,7 @@ enum TAB_IDS {
   SIMULATION_SETTINGS = "simulationSettings",
 }
 
-const tabs = [
+const defaultTabs = [
   { id: TAB_IDS.SIMULATIONS, label: en.userManagement.simulations },
   { id: TAB_IDS.PATH, label: en.userManagement.path },
   { id: TAB_IDS.CASES, label: en.userManagement.cases },
@@ -50,10 +52,28 @@ export const OrganizationDetail: FC = () => {
 
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.user.user);
+  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
+
+  const filteredTabs = useMemo(() => {
+    return defaultTabs.filter(tab => {
+      if (tab.id === TAB_IDS.PATH || tab.id === TAB_IDS.CASES) {
+        return isSuperAdmin;
+      }
+      return true;
+    });
+  }, [isSuperAdmin]);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Get active tab from URL params, default to SIMULATIONS
-  const activeTab = searchParams.get("tab") || TAB_IDS.SIMULATIONS;
+  // Get active tab from URL params, default to first available tab
+  const tabFromUrl = searchParams.get("tab");
+  const activeTab = useMemo(() => {
+    if (tabFromUrl && filteredTabs.some(tab => tab.id === tabFromUrl)) {
+      return tabFromUrl;
+    }
+    return filteredTabs[0]?.id || TAB_IDS.SIMULATIONS;
+  }, [tabFromUrl, filteredTabs]);
 
   // Fetch organization data
   const [getTenantById, { data: tenantsResponse, isLoading: isTenantsLoading }] =
@@ -242,7 +262,7 @@ export const OrganizationDetail: FC = () => {
 
         {/* Tabs */}
         <Tabs
-          items={tabs}
+          items={filteredTabs}
           activeId={activeTab}
           onChange={id => setSearchParams({ tab: id })}
           showCount={false}
