@@ -531,6 +531,7 @@
     "title": "प्रतिलिपी",
     "empty": "कोणताही ट्रान्सक्रिप्ट उपलब्ध नाही",
     "agentLabel": "एआय एजंट:",
+    "scribeAgentLabel": "क्लायंट:",
     "youLabel": "तू",
     "clientLabel": "क्लायंट",
     "counsellorLabel": "सलाहकार",
