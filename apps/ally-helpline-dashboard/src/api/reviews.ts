@@ -133,6 +133,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
+      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
     getReviewThreads: builder.query<
       GetReviewThreadsResponse,
@@ -238,6 +239,7 @@ const reviewsAPI = baseAPI.injectEndpoints({
           : ApiEndpoints.REVIEWS.DELETE_COMMENT(commentId),
         method: HttpMethod.DELETE,
       }),
+      invalidatesTags: [TAG_TYPES.REVIEW],
     }),
 
     /**
