@@ -40,7 +40,7 @@ export const StateInstruction: FC<StateInstructionProps> = ({
 
   return (
     <div className="w-full flex flex-col gap-2">
-      <div className="flex flex-row justify-between text-base text-typography-900 font-primary flex gap-1">
+      <div className="flex flex-row justify-between text-base text-typography-900 font-primary gap-1">
         <span>
           {en.simulation.statesInstruction}
           {isMandatory && <span className="text-destructive-500">*</span>}

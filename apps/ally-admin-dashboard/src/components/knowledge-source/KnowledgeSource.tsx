@@ -58,8 +58,6 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
   const handleRemoveTab = (event: React.MouseEvent<HTMLButtonElement>, tabId: string) => {
     event.stopPropagation();
 
-    if (knowledgeSources.length <= 1) return;
-
     const removedIndex = knowledgeSources.findIndex(
       (item: KnowledgeSourceItem) => item.id === tabId,
     );
@@ -145,26 +143,32 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
                 onMouseEnter={() => setShowRemoveTooltip(item.id)}
                 onMouseLeave={() => setShowRemoveTooltip(null)}
               >
-                <button
-                  type="button"
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setActiveTabIndex(actualIndex)}
-                  className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors border-b border-border-light ${
+                  onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveTabIndex(actualIndex);
+                    }
+                  }}
+                  className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors border-b border-border-light cursor-pointer ${
                     activeTabIndex === actualIndex
                       ? "bg-background-secondary text-typography-900"
                       : "text-typography-700 hover:bg-background-tertiary"
                   }`}
                 >
                   <span className="text-base truncate pr-2">{item.title || "Untitled"}</span>
-                  {knowledgeSources.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={event => handleRemoveTab(event, item.id)}
-                      className="text-typography-500 hover:text-destructive-500 text-lg leading-none flex-shrink-0"
-                    >
-                      <Close className="w-4 h-4" />
-                    </button>
-                  )}
-                </button>
+
+                  <button
+                    type="button"
+                    onClick={event => handleRemoveTab(event, item.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-typography-500 hover:text-destructive-500 text-lg leading-none flex-shrink-0"
+                  >
+                    <Close className="w-4 h-4" />
+                  </button>
+                </div>
 
                 {/* Remove Tooltip */}
                 {showRemoveTooltip === item.id && knowledgeSources.length > 1 && (
@@ -260,7 +264,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
         defaultValue={knowledgeSources}
         rules={{ required: isMandatory ? `${label} is required` : false }}
         render={() => (
-          <div className="bg-white border border-border-light rounded-lg">
+          <div className="bg-white border border-border-light rounded-sm-">
             <div className="flex gap-0 h-[270px]">
               {renderKnowledgeSources()}
               {renderCreateKnowledgeSource()}
