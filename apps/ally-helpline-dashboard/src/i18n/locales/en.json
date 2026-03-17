@@ -531,6 +531,7 @@
     "title": "Annotated Transcript",
     "empty": "No transcript available",
     "agentLabel": "AI Agent:",
+    "scribeAgentLabel": "Client:",
     "youLabel": "You",
     "clientLabel": "Client",
     "counsellorLabel": "Counsellor",

@@ -177,13 +177,16 @@ const CommentCard = ({
 
   const onReplyClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (comment?.hidden) return;
+    if (comment?.hidden) {
+      return;
+    }
     if (!showReplies && replyCount > 0 && replies.length === 0) {
       try {
         const data = await getReplies({
           commentId: comment.id,
           limit: 10,
           offset: repliesOffset,
+          isScribe: isScribeReview,
         }).unwrap();
         setRepliesOffset(prev => prev + 10);
         setHasMoreReplies(repliesOffset + 10 < data?.count);
@@ -201,6 +204,7 @@ const CommentCard = ({
       commentId: comment.id,
       limit: 10,
       offset: repliesOffset,
+      isScribe: isScribeReview,
     }).unwrap();
     setRepliesOffset(prev => prev + 10);
     setHasMoreReplies(repliesOffset + 10 < data?.count);
