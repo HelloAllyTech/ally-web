@@ -208,7 +208,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "characterProfileText",
-        label: "Character profile text",
+        label: "Character Backstory",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
         fullWidth: true,
@@ -672,6 +672,13 @@ export const PROMPT_COLUMNS = [
 
 export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
   {
+    id: "coverImageUrl",
+    label: "Cover Image",
+    accessor: "coverImageUrl",
+    dataType: cellTypes.image,
+    minWidth: 180,
+  },
+  {
     id: "name",
     label: "Name",
     accessor: "name",
@@ -726,6 +733,13 @@ export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
     dataType: cellTypes.dropdown,
     options: SEXUAL_ORIENTATION_OPTIONS,
     minWidth: 180,
+  },
+  {
+    id: "characterProfileText",
+    label: "Character Backstory",
+    accessor: "characterProfileText",
+    dataType: cellTypes.wrapText,
+    minWidth: 300,
   },
 ];
 export const USER_BADGES_TABLE_COLUMNS = [

@@ -32,6 +32,9 @@ const formFieldIds = {
   CURRENT_LOCATION: "currentLocation",
   GENDER_IDENTITY: "genderIdentity",
   SEXUAL_ORIENTATION: "sexualOrientation",
+  COVER_IMAGE_URL: "coverImageUrl",
+  COVER_VIDEO_URL: "coverVideoUrl",
+  CHARACTER_PROFILE_TEXT: "characterProfileText",
 };
 
 const formFieldNames = {
@@ -42,6 +45,9 @@ const formFieldNames = {
   CURRENT_LOCATION: "Current location",
   GENDER_IDENTITY: "Gender identity",
   SEXUAL_ORIENTATION: "Sexual orientation",
+  COVER_IMAGE_URL: "Cover Image",
+  COVER_VIDEO_URL: "Cover Video",
+  CHARACTER_PROFILE_TEXT: "Character Backstory",
 };
 
 export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> = ({
