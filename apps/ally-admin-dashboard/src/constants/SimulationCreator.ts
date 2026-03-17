@@ -649,7 +649,7 @@ export const PROMPT_COLUMNS = [
     label: "Prompt Name",
     accessor: "name",
     dataType: cellTypes.wrapText,
-    minWidth: 280,
+    minWidth: 500,
     editable: false,
   },
   {
@@ -657,7 +657,7 @@ export const PROMPT_COLUMNS = [
     label: "Description",
     accessor: "description",
     dataType: cellTypes.wrapText,
-    minWidth: 400,
+    minWidth: 1000,
     editable: false,
   },
   {
@@ -665,7 +665,7 @@ export const PROMPT_COLUMNS = [
     label: "Created Date",
     accessor: "createdAt",
     dataType: cellTypes.normalText,
-    minWidth: 150,
+    minWidth: 250,
     editable: false,
   },
 ];
