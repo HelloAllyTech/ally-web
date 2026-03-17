@@ -145,11 +145,9 @@ export const PromptManagement: React.FC = () => {
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
-        <div className="flex items-center gap-3 pb-6">
-          <h1 className="text-2xl text-typography-900 font-secondary">
-            {en.simulation.scenarioPrompts}
-          </h1>
-        </div>
+        <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
+          {en.simulation.scenarioPrompts}
+        </h1>
         <ListToolbar
           searchValue={searchQuery}
           onSearchChange={handleSearchChange}
