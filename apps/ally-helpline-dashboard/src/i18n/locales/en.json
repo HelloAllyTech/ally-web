@@ -528,7 +528,7 @@
     }
   },
   "transcription": {
-    "title": "Transcript",
+    "title": "Annotated Transcript",
     "empty": "No transcript available",
     "agentLabel": "AI Agent:",
     "youLabel": "You",
