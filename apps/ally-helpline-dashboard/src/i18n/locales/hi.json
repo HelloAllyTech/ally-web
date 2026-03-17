@@ -531,6 +531,7 @@
     "title": "ट्रांसक्रिप्ट",
     "empty": "कोई ट्रांसक्रिप्ट उपलब्ध नहीं",
     "agentLabel": "AI एजेंट:",
+    "scribeAgentLabel": "क्लाइंट:",
     "youLabel": "आप",
     "clientLabel": "क्लाइंट",
     "counsellorLabel": "काउंसलर",
