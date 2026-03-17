@@ -112,11 +112,7 @@ vi.mock("@components", async importOriginal => {
       const isCreatorOrSuperAdmin = (simulation: any) => {
         if (isSuperAdmin) return true;
         const createdBy = simulation.createdBy?.toLowerCase();
-        return (
-          createdBy === currentUser?.name?.toLowerCase() ||
-          createdBy === String(currentUser?.id) ||
-          createdBy === String(currentUser?.userId)
-        );
+        return createdBy === String(currentUser?.id) || createdBy === String(currentUser?.userId);
       };
 
       return (

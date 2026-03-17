@@ -377,10 +377,10 @@ describe("SimulationList", () => {
   });
 
   describe("Action Visibility Restrictions", () => {
-    const creatorUser = { name: "John Doe", id: 101, userId: 101 };
-    const otherUser = { name: "Jane Smith", id: 102, userId: 102 };
-    const superAdminUser = { name: "Super Admin", id: 1, userId: 1 };
-    const simulation = { ...mockSimulations[0], createdBy: "John Doe" };
+    const creatorUser = { id: 101, userId: 101 };
+    const otherUser = { id: 102, userId: 102 };
+    const superAdminUser = { id: 1, userId: 1 };
+    const simulation = { ...mockSimulations[0], createdBy: "101" };
 
     it("shows all actions for the creator", () => {
       renderWithStore(
