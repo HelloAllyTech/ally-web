@@ -328,6 +328,16 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
               />
             </Field>
 
+            <Field label="Character Backstory">
+              <textarea
+                value={formData.characterProfileText || ""}
+                onChange={(e) => handleFieldChange("characterProfileText", e.target.value)}
+                maxLength={2500}
+                placeholder="Enter character backstory"
+                className="w-full px-3 py-2 text-base border border-border-light rounded-md focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px] resize-y"
+              />
+            </Field>
+
             <Field label="Cover Image">
               <div className="w-full">
                 <FileUpload
@@ -352,16 +362,6 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                   fileType={FILE_TYPE.VIDEO}
                 />
               </div>
-            </Field>
-
-            <Field label="Character Backstory">
-              <textarea
-                value={formData.characterProfileText || ""}
-                onChange={(e) => handleFieldChange("characterProfileText", e.target.value)}
-                maxLength={2500}
-                placeholder="Enter character backstory"
-                className="w-full px-3 py-2 text-base border border-border-light rounded-md focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px] resize-y"
-              />
             </Field>
           </div>
         </div>
