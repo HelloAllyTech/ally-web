@@ -266,6 +266,7 @@ export const en = {
     enterPrompt: "Enter prompt text",
     promptCreatedSuccessfully: "Prompt created successfully",
     promptUpdatedSuccessfully: "Prompt updated successfully",
+    failedToUpdatePrompt: "Failed to update prompt",
     noPromptsFound: "No prompts found",
     createFirstPrompt: "Create your first prompt to get started",
     promptRequired: "Prompt name, description, prompt code and prompt text are required",

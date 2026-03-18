@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { Tooltip } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
@@ -101,7 +101,15 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     if (transcriptOffset === 0) {
       setTranscriptList(transcriptData.data);
     } else {
-      setTranscriptList(prev => [...prev, ...transcriptData.data]);
+      setTranscriptList(prev => {
+        const existingKeys = new Set(
+          prev.map(msg => `${msg.senderId}-${msg.startSeconds}-${msg.content}`),
+        );
+        const newMessages = transcriptData.data.filter(
+          msg => !existingKeys.has(`${msg.senderId}-${msg.startSeconds}-${msg.content}`),
+        );
+        return [...prev, ...newMessages];
+      });
     }
   }, [transcriptData, transcriptOffset]);
 
@@ -254,22 +262,37 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     );
   };
 
-  const TranscriptionSubTab = () => (
-    <div className="flex flex-col overflow-y-hidden border rounded-md p-3 gap-3 h-full">
-      <div className="text-base font-medium text-typography-900 border-b border-border-light pb-2">
-        {t("postSim.tabs.annotatedTranscript")}
+  const transcriptionContent = useMemo(
+    () => (
+      <div className="flex flex-col overflow-y-hidden border rounded-md p-3 gap-3 h-full">
+        <div className="text-base font-medium text-typography-900 border-b border-border-light pb-2">
+          {t("summary.tabs.transcript")}
+        </div>
+        <TranscriptListing
+          transcriptList={transcriptList}
+          handleLoadMore={handleTranscriptLoadMore}
+          isLoading={isGetTranscriptLoading}
+          hasMore={transcriptList.length < (transcriptData?.count ?? 0)}
+          agentName={t("transcription.clientLabel")}
+          counsellorName={
+            individualCallSummary?.counselorId === user?.id
+              ? t("transcription.youLabel")
+              : t("transcription.counsellorLabel")
+          }
+          className="max-h-[calc(100vh-100px)] overflow-y-auto w-full"
+        />
+        {transcriptList.length > 0 && renderComments()}
       </div>
-      <TranscriptListing
-        transcriptList={transcriptList}
-        handleLoadMore={handleTranscriptLoadMore}
-        isLoading={isGetTranscriptLoading}
-        hasMore={transcriptList.length < (transcriptData?.count ?? 0)}
-        agentName={t("transcription.clientLabel")}
-        counsellorName={t("transcription.counsellorLabel")}
-        className="max-h-[calc(100vh-100px)] overflow-y-auto w-full"
-      />
-      {transcriptList.length > 0 && renderComments()}
-    </div>
+    ),
+    [
+      transcriptList,
+      handleTranscriptLoadMore,
+      isGetTranscriptLoading,
+      transcriptData?.count,
+      t,
+      callSummary?.details?.comments,
+      selectedComment,
+    ],
   );
 
   const hasAdequatePermission = (permission: Permissions) => permissions?.includes(permission);
@@ -394,41 +417,56 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     </div>
   );
 
-  const tabList = [
-    {
-      id: 1,
-      label: t("common.summary", "Summary"),
-      permissions: [Permissions.VIEW_CHAT_DETAILS],
-      content: (
-        <CallSummary
-          headerContent={
-            <SummaryHeader
-              summaryName={summaryName}
-              setSummaryName={setSummaryName}
-              chatId={callSummary.id}
-              canEditSummary={canEditSummary}
-              counsellorId={callSummary.counselorId}
-            />
-          }
-          className="max-h-[calc(100vh-320px)]"
-          chatId={callSummary.id}
-          callSummary={individualCallSummary}
-          onRefetchSummary={refetchCallSummary}
-          postProcess={refetchCallLogs}
-          isInSidebar={true}
-          canEditSummary={canEditSummary}
-          isSummaryLoading={isSummaryLoading}
-          summaryLoadingError={summaryLoadingError}
-        />
-      ),
-    },
-    {
-      id: 2,
-      label: t("postSim.tabs.annotatedTranscript", "Annotated Transcript"),
-      permissions: [Permissions.VIEW_TRANSCRIPTION],
-      content: <TranscriptionSubTab />,
-    },
-  ];
+  const tabList = useMemo(
+    () => [
+      {
+        id: 1,
+        label: t("common.summary", "Summary"),
+        permissions: [Permissions.VIEW_CHAT_DETAILS],
+        content: (
+          <CallSummary
+            headerContent={
+              <SummaryHeader
+                summaryName={summaryName}
+                setSummaryName={setSummaryName}
+                chatId={callSummary.id}
+                canEditSummary={canEditSummary}
+                counsellorId={callSummary.counselorId}
+              />
+            }
+            className="max-h-[calc(100vh-320px)]"
+            chatId={callSummary.id}
+            callSummary={individualCallSummary}
+            onRefetchSummary={refetchCallSummary}
+            postProcess={refetchCallLogs}
+            isInSidebar={true}
+            canEditSummary={canEditSummary}
+            isSummaryLoading={isSummaryLoading}
+            summaryLoadingError={summaryLoadingError}
+          />
+        ),
+      },
+      {
+        id: 2,
+        label: t("summary.tabs.transcript", "Annotated Transcript"),
+        permissions: [Permissions.VIEW_TRANSCRIPTION],
+        content: transcriptionContent,
+      },
+    ],
+    [
+      t,
+      summaryName,
+      callSummary.id,
+      callSummary.counselorId,
+      canEditSummary,
+      individualCallSummary,
+      refetchCallSummary,
+      refetchCallLogs,
+      isSummaryLoading,
+      summaryLoadingError,
+      transcriptionContent,
+    ],
+  );
 
   const permittedTabList = tabList.filter(tab =>
     tab.permissions?.some(item => hasAdequatePermission(item)),
