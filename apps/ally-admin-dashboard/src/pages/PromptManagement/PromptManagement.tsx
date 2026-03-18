@@ -79,7 +79,7 @@ export const PromptManagement: React.FC = () => {
   };
 
   const filteredPrompts = useMemo(() => {
-    return prompts.filter(prompt => !prompt.isObsolete);
+    return prompts.filter(prompt => !prompt.isObsolete && prompt.kind !== "block");
   }, [prompts]);
 
   const handlePromptSelect = (rowIndex: number) => {
@@ -95,22 +95,22 @@ export const PromptManagement: React.FC = () => {
   };
 
   const handlePromptUpdate = async (promptData: Prompt) => {
-    if (!selectedPrompt?.id) return;
+    if (!promptData.id) return;
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, createdAt, updatedAt, ...rest } = promptData;
       await updatePrompt({
-        id: selectedPrompt.id,
-        prompt: {
-          name: promptData.name,
-          description: promptData.description,
-          promptCode: promptData.promptCode,
-          prompt: promptData.prompt,
-          useDashboardOverride: promptData.useDashboardOverride,
-        },
+        id: promptData.id,
+        prompt: rest,
       }).unwrap();
       toast.success(en.simulation.promptUpdatedSuccessfully);
-      handleSidePanelClose();
+
+      // Only close the panel if we updated the main prompt, not a sub-block
+      if (promptData.id === selectedPrompt?.id) {
+        handleSidePanelClose();
+      }
     } catch {
-      toast.error(en.errors.failedToCreateEvent);
+      toast.error(en.simulation.failedToUpdatePrompt);
     }
   };
 
@@ -171,6 +171,7 @@ export const PromptManagement: React.FC = () => {
       {isSidePanelOpen && (
         <PromptSidePanel
           selectedPrompt={selectedPrompt}
+          allPrompts={prompts}
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           onUpdate={handlePromptUpdate}
