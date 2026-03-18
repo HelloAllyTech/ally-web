@@ -11,6 +11,7 @@ import { Prompt } from "@types";
 
 interface PromptSidePanelProps {
   selectedPrompt: Prompt | null;
+  allPrompts: Prompt[];
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (prompt: Prompt) => void;
@@ -72,8 +73,73 @@ const PanelHeader: React.FC<{
   </div>
 );
 
+const BlockEditorPopup: React.FC<{
+  block: Prompt | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (block: Prompt) => void;
+}> = ({ block, isOpen, onClose, onSave }) => {
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    if (block) setText(block.prompt);
+  }, [block]);
+
+  if (!isOpen || !block) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+        <div className="p-6 border-b border-border-light flex justify-between items-center">
+          <h3 className="text-xl font-secondary text-typography-900">Edit Block: {block.name}</h3>
+          <button onClick={onClose} className="text-typography-500 hover:text-typography-900">
+            ✕
+          </button>
+        </div>
+        <div className="p-6 overflow-y-auto flex-1">
+          <div className="space-y-4">
+            <div>
+              <span className="text-sm font-medium text-typography-600 block mb-1">
+                Prompt Code
+              </span>
+              <span className="font-mono text-sm bg-neutral-50 px-2 py-1 rounded">
+                {block.promptCode}
+              </span>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-typography-600 block mb-2">
+                Block Content
+              </span>
+              <AutoExpandableTextarea
+                maxLines={20}
+                minHeight={150}
+                value={text}
+                onChange={setText}
+                placeholder="Enter block content..."
+                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="p-6 border-t border-border-light flex justify-end gap-3">
+          <Button variant={ButtonVariant.SECONDARY} onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant={ButtonVariant.PRIMARY}
+            onClick={() => onSave({ ...block, prompt: text, useDashboardOverride: true })}
+          >
+            Save Block
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   selectedPrompt,
+  allPrompts,
   isOpen,
   onClose,
   onUpdate,
@@ -88,6 +154,34 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showRevertConfirmModal, setShowRevertConfirmModal] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<Prompt | null>(null);
+
+  const getBlockByCode = useCallback(
+    (code: string) => {
+      return allPrompts.find(p => p.promptCode === code);
+    },
+    [allPrompts],
+  );
+
+  const handleBlockClick = useCallback(
+    (code: string) => {
+      const block = getBlockByCode(code);
+      if (block) {
+        setEditingBlock(block);
+      } else {
+        toast.error(`Block with code "${code}" not found.`);
+      }
+    },
+    [getBlockByCode],
+  );
+
+  const handleBlockUpdate = useCallback(
+    async (blockData: Prompt) => {
+      onUpdate(blockData);
+      setEditingBlock(null);
+    },
+    [onUpdate],
+  );
 
   const handleFieldChange = useCallback((field: keyof Prompt, value: any) => {
     setFormData(previousData => ({
@@ -276,6 +370,23 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                 </div>
               </Field>
             )}
+
+            {selectedPrompt.usesBlocks && selectedPrompt.usesBlocks.length > 0 && (
+              <Field label="Used Blocks" multiline={true}>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {selectedPrompt.usesBlocks.map(code => (
+                    <button
+                      key={code}
+                      onClick={() => handleBlockClick(code)}
+                      className="inline-flex px-2 py-0.5 rounded text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-mono border border-blue-200"
+                      title="Click to edit block"
+                    >
+                      {code.replace("ally_ai_learn_system_", "")}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+            )}
           </div>
 
           <div className="flex flex-row items-center justify-between mt-8 pb-6">
@@ -324,6 +435,13 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
           label: "Cancel",
           onClick: handleRevertCancel,
         }}
+      />
+
+      <BlockEditorPopup
+        isOpen={!!editingBlock}
+        block={editingBlock}
+        onClose={() => setEditingBlock(null)}
+        onSave={handleBlockUpdate}
       />
     </div>
   );
