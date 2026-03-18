@@ -213,7 +213,7 @@ const CommentCard = ({
       const newReplies = [
         ...(prev || []),
         ...(data?.data || []).filter(reply => !existingReplies.has(reply.id)),
-      ].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      ];
       return newReplies;
     });
   };
