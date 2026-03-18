@@ -259,4 +259,6 @@ export interface GetPromptsQuery {
   offset?: number;
   sortBy?: string;
   order?: string;
+  /** When false, excludes prompts with kind="block" */
+  includeBlocks?: boolean;
 }

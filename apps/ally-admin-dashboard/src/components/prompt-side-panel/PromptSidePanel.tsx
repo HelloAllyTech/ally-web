@@ -206,13 +206,24 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
 
   const availableVariables = useMemo(() => {
     const promptEdited = formData.prompt !== selectedPrompt?.prompt;
+    let vars: string[] = [];
+
     if (promptEdited) {
-      return parseVariablesFromPrompt(formData.prompt || "");
+      vars = parseVariablesFromPrompt(formData.prompt || "");
+    } else if (selectedPrompt?.availableVariables?.length) {
+      vars = selectedPrompt.availableVariables;
+    } else {
+      vars = parseVariablesFromPrompt(formData.prompt || "");
     }
-    if (selectedPrompt?.availableVariables?.length) {
-      return selectedPrompt.availableVariables;
-    }
-    return parseVariablesFromPrompt(formData.prompt || "");
+
+    // Filter out block placeholders to keep the UI clean
+    return vars.filter(
+      v =>
+        !v.endsWith("_block") &&
+        v !== "life_history" &&
+        v !== "response_length" &&
+        v !== "agent_dialogues",
+    );
   }, [selectedPrompt?.availableVariables, selectedPrompt?.prompt, formData.prompt]);
 
   const handleSave = useCallback(() => {
