@@ -25,6 +25,7 @@ export const PromptManagement: React.FC = () => {
     offset,
     sortBy: SORT_BY.CREATED_AT,
     order: SORT_ORDER.DESC,
+    includeBlocks: false,
   });
 
   useEffect(() => {
