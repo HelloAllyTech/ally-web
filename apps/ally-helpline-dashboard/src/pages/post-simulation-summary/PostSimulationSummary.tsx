@@ -205,7 +205,8 @@ export const PostSimulationSummary: FC = () => {
               className="w-full normal-case border-b border-[#DBDBDB]"
               sx={{
                 "& .MuiButtonBase-root": {
-                  fontFamily: "IBM_Plex_Serif",
+                  fontFamily: "'IBM Plex Serif', serif",
+                  fontWeight: 400,
                 },
               }}
             >

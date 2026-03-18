@@ -410,7 +410,7 @@ describe("CallSummarySidebar Component", () => {
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Summary");
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Annotated Transcript");
+      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Transcript");
     });
 
     it("should render call summary component in summary tab", () => {
@@ -433,7 +433,7 @@ describe("CallSummarySidebar Component", () => {
       renderComponent();
 
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Annotated Transcript");
+      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Transcript");
       // Transcript tab shows either empty state or transcript listing depending on data
       const emptyState = screen.queryByText("No transcript available");
       const transcriptListing = screen.queryByTestId("transcript-listing");

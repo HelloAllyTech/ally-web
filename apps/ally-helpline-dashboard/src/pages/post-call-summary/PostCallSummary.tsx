@@ -220,7 +220,7 @@ export const PostCallSummary = () => {
         return (
           <div className="relative h-[calc(100vh-240px)] custom-scrollbar p-4 border border-gray-200 rounded-md overflow-y-auto">
             <span className="text-typography-900 font-primary text-base font-medium">
-              {t("postSim.tabs.annotatedTranscript")}
+              {t("summary.tabs.transcript")}
             </span>
             <hr className="mb-5 mt-2 border-border-light" />
             <TranscriptListing
@@ -229,7 +229,6 @@ export const PostCallSummary = () => {
               isLoading={isGetTranscriptLoading}
               hasMore={transcriptList.length < (transcriptData?.count ?? 0)}
               agentName={t("transcription.clientLabel")}
-              counsellorName={t("transcription.counsellorLabel")}
               className="max-h-[calc(100vh-300px)] overflow-y-auto"
             />
           </div>
