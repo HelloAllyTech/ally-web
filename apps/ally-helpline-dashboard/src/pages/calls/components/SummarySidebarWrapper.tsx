@@ -21,7 +21,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
     if (tabList?.length) {
       setSelectedTab(tabList[0].id);
     }
-  }, [tabList]);
+  }, []);
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
