@@ -46,6 +46,7 @@ describe("DeleteCallLogConfirmationDialog", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockDeleteCallLog.mockReturnValue({ unwrap: () => Promise.resolve() });
     vi.mocked(useDeleteCallLogMutation).mockReturnValue([
       mockDeleteCallLog,
       { isLoading: false },
@@ -104,7 +105,6 @@ describe("DeleteCallLogConfirmationDialog", () => {
   // --- Interaction Tests ---
 
   it("should call deleteCallLog when delete button is clicked", async () => {
-    mockDeleteCallLog.mockResolvedValue({});
     render(<DeleteCallLogConfirmationDialog chatId={1} closeDialog={mockCloseDialog} />);
 
     const deleteButton = screen.getByTestId("delete-button");
@@ -116,7 +116,6 @@ describe("DeleteCallLogConfirmationDialog", () => {
   });
 
   it("should call closeDialog with true after successful delete", async () => {
-    mockDeleteCallLog.mockResolvedValue({});
     render(<DeleteCallLogConfirmationDialog chatId={1} closeDialog={mockCloseDialog} />);
 
     const deleteButton = screen.getByTestId("delete-button");

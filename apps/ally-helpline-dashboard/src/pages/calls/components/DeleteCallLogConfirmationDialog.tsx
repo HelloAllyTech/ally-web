@@ -1,6 +1,7 @@
 import { FC } from "react";
 
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { useDeleteCallLogMutation } from "@api";
 import { ConfirmationDialog } from "@components";
@@ -16,8 +17,14 @@ const DeleteCallLogConfirmationDialog: FC<DeleteCallLogDialogDataProps> = ({
 
   const onDeleteConfirm = async () => {
     if (!chatId) return;
-    await deleteCallLog(chatId);
-    closeDialog(true);
+    try {
+      await deleteCallLog(chatId).unwrap();
+      closeDialog(true);
+    } catch (error) {
+      const errorMessage = `Failed to delete call log. ${error?.data?.message ?? ""}`;
+      toast.error(errorMessage);
+      closeDialog(false);
+    }
   };
 
   return (
