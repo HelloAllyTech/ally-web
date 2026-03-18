@@ -249,6 +249,8 @@ export interface Prompt {
   isObsolete?: boolean;
   /** Variable placeholders (e.g. {var_name}) parsed from prompt template, from API or fallback */
   availableVariables?: string[];
+  kind?: string;
+  usesBlocks?: string[];
 }
 
 export interface GetPromptsQuery {
