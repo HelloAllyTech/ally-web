@@ -11,6 +11,7 @@ export const PromptManagement: React.FC = () => {
   const limit = 30;
   const [offset, setOffset] = useState<number>(0);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [blockPrompts, setBlockPrompts] = useState<Prompt[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(false);
@@ -26,6 +27,16 @@ export const PromptManagement: React.FC = () => {
     sortBy: SORT_BY.CREATED_AT,
     order: SORT_ORDER.DESC,
     includeBlocks: false,
+  });
+
+  // Fetch blocks separately so "Used Blocks" editor can open them.
+  // This list is not used in the table.
+  const { data: blocksResponse } = useGetPromptsQuery({
+    limit: 500,
+    offset: 0,
+    sortBy: SORT_BY.CREATED_AT,
+    order: SORT_ORDER.DESC,
+    includeBlocks: true,
   });
 
   useEffect(() => {
@@ -74,6 +85,11 @@ export const PromptManagement: React.FC = () => {
     }
   }, [promptsResponse, offset]);
 
+  useEffect(() => {
+    if (!blocksResponse) return;
+    setBlockPrompts(blocksResponse.filter(p => p.kind === "block"));
+  }, [blocksResponse]);
+
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     setOffset(0);
@@ -82,6 +98,17 @@ export const PromptManagement: React.FC = () => {
   const filteredPrompts = useMemo(() => {
     return prompts.filter(prompt => !prompt.isObsolete && prompt.kind !== "block");
   }, [prompts]);
+
+  const allPromptsForEditor = useMemo(() => {
+    const merged = [...prompts, ...blockPrompts];
+    const seen = new Set<string>();
+    return merged.filter(p => {
+      if (!p?.id) return false;
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+  }, [prompts, blockPrompts]);
 
   const handlePromptSelect = (rowIndex: number) => {
     if (rowIndex !== null && filteredPrompts?.length > 0) {
@@ -172,7 +199,7 @@ export const PromptManagement: React.FC = () => {
       {isSidePanelOpen && (
         <PromptSidePanel
           selectedPrompt={selectedPrompt}
-          allPrompts={prompts}
+          allPrompts={allPromptsForEditor}
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           onUpdate={handlePromptUpdate}
