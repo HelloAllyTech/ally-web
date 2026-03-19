@@ -122,6 +122,7 @@ describe("CallTranscriptTab", () => {
         chatId: 1,
         offset: 0,
       }),
+      expect.any(Object),
     );
   });
 
@@ -136,6 +137,7 @@ describe("CallTranscriptTab", () => {
         chatId: 2,
         offset: 0,
       }),
+      expect.any(Object),
     );
   });
 
@@ -154,6 +156,7 @@ describe("CallTranscriptTab", () => {
         expect.objectContaining({
           offset: 30, // TRANSCRIPT_PAGE_SIZE
         }),
+        expect.any(Object),
       );
     });
   });
@@ -197,6 +200,7 @@ describe("CallTranscriptTab", () => {
         expect.objectContaining({
           offset: 30,
         }),
+        expect.any(Object),
       );
     });
 
