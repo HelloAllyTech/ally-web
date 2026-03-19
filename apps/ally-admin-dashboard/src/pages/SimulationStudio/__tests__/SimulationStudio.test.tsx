@@ -111,8 +111,8 @@ vi.mock("@components", async importOriginal => {
 
       const isCreatorOrSuperAdmin = (simulation: any) => {
         if (isSuperAdmin) return true;
-        const createdBy = simulation.createdBy?.toLowerCase();
-        return createdBy === String(currentUser?.id) || createdBy === String(currentUser?.userId);
+        const createdBy = simulation.createdByUserId;
+        return createdBy === currentUser?.id;
       };
 
       return (
@@ -343,6 +343,7 @@ describe("SimulationStudio", () => {
       status: SimulationStatus.DRAFT,
       isPreviewEnabled: true,
       usage: 10,
+      createdByUserId: 2,
     },
     {
       id: "sim-2",
@@ -354,6 +355,7 @@ describe("SimulationStudio", () => {
       status: SimulationStatus.PUBLISHED,
       isPreviewEnabled: true,
       usage: 20,
+      createdByUserId: 1,
     },
   ];
 

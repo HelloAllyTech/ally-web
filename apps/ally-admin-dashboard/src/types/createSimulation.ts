@@ -101,6 +101,7 @@ export interface Simulation {
   isAssignedToTenant: boolean;
   usage: string;
   triggerWarnings?: triggerWarning[];
+  createdByUserId: number;
 }
 
 export interface GetSimulationsQueryParams {
