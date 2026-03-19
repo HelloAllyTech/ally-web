@@ -47,7 +47,11 @@ export const PostCallSummary = () => {
   } = useGetCallSummaryQuery(Number(chatId));
   const [createScribeReview] = useCreateScribeReviewMutation();
   const [updateScribeReview] = useUpdateScribeReviewMutation();
-  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery(
+  const {
+    data: transcriptData,
+    isLoading: isGetTranscriptLoading,
+    refetch: refetchTranscript,
+  } = useGetTranscriptQuery(
     {
       chatId: individualCallSummary?.id,
       offset: transcriptOffset,
@@ -71,9 +75,15 @@ export const PostCallSummary = () => {
     if (transcriptOffset === 0) {
       setTranscriptList(transcriptData.data);
     } else {
-      setTranscriptList(prev => [...prev, ...transcriptData.data]);
+      const existingIds = new Set(
+        transcriptList.map(item => `${item.senderId}-${item.startSeconds}-${item.content}`),
+      );
+      const newMessages = transcriptData.data.filter(
+        msg => !existingIds.has(`${msg.senderId}-${msg.startSeconds}-${msg.content}`),
+      );
+      setTranscriptList(prev => [...prev, ...newMessages]);
     }
-  }, [transcriptData, transcriptOffset]);
+  }, [transcriptData, transcriptOffset, selectedTab]);
 
   const handleTranscriptLoadMore = () => {
     const total = transcriptData?.count ?? 0;
@@ -244,6 +254,10 @@ export const PostCallSummary = () => {
   const onTabChange = (_event: React.SyntheticEvent, newValue: SectionType) => {
     setSelectedTab(newValue);
 
+    if (newValue === SectionType.Transcript && transcriptList?.length === 0) {
+      setTranscriptOffset(0);
+      refetchTranscript();
+    }
     const queryParamList = [
       { key: SectionQueryKey, value: getNumberForSectionKey(newValue)?.toString() },
     ];
