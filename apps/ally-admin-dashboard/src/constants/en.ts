@@ -552,7 +552,7 @@ export const en = {
     title: "Title",
     content: "Content",
     untitled: "Untitled",
-    addNewTab: "Add new tab",
+    addNewTab: "Add document",
     remove: "Remove",
     deleteContent: "Delete content",
     selectTabToViewContent: "Select a tab to view content",
@@ -560,6 +560,7 @@ export const en = {
     createKnowledgeSource: "Create Knowledge Source",
     enterTitle: "Enter title",
     enterContent: "Enter content",
+    titleAndContentRequired: "Please enter a title and content",
   },
   badge: {
     badgeAddedToTenant: "Badge added to tenant successfully",
