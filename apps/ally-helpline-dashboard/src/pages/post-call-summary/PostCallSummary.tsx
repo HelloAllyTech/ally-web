@@ -47,12 +47,15 @@ export const PostCallSummary = () => {
   } = useGetCallSummaryQuery(Number(chatId));
   const [createScribeReview] = useCreateScribeReviewMutation();
   const [updateScribeReview] = useUpdateScribeReviewMutation();
-  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery({
-    chatId: individualCallSummary?.id,
-    offset: transcriptOffset,
-    limit: TRANSCRIPT_PAGE_SIZE,
-    sortBy: "startSeconds",
-  });
+  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery(
+    {
+      chatId: individualCallSummary?.id,
+      offset: transcriptOffset,
+      limit: TRANSCRIPT_PAGE_SIZE,
+      sortBy: "startSeconds",
+    },
+    { skip: !individualCallSummary?.id },
+  );
 
   const [transcriptList, setTranscriptList] = useState<TranscriptMessage[]>([]);
 
