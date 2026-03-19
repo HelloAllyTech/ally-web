@@ -334,7 +334,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 onChange={(e) => handleFieldChange("characterProfileText", e.target.value)}
                 maxLength={2500}
                 placeholder="Enter character backstory"
-                className="w-full px-3 py-2 text-base border border-border-light rounded-md focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px] resize-y"
+                className="w-full px-3 py-2 text-base border border-border-light rounded-md focus:outline-none min-h-[100px] resize-y"
               />
             </Field>
 
@@ -375,9 +375,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           >
             {isCreating || isUpdating
               ? "Saving..."
-              : isNewCharacter
-                ? en.common.create
-                : en.common.update}
+              : en.common.save}
           </Button>
           <Button
             variant={ButtonVariant.SECONDARY}

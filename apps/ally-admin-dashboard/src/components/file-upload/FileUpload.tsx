@@ -411,7 +411,8 @@ export const FileUpload = ({
 
           <input {...getInputProps()} />
 
-          {!uploadedFile && renderUploadPlaceholder()}
+          {!isNonEmptyString(uploadedFileUrl) && !isUploading && renderUploadPlaceholder()}
+          {isUploading && renderUploadPlaceholder()}
           {renderFilePreview()}
         </div>
 
