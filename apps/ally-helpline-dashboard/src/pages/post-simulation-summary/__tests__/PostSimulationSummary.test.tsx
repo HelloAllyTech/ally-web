@@ -149,6 +149,15 @@ vi.mock("@ally-ui-mono/ui-shared/index", async importOriginal => {
   };
 });
 
+// Mock API so summary query returns stable data (deterministic snapshots and consistency test)
+vi.mock("@api", async importOriginal => {
+  const actual = await importOriginal<typeof import("@api")>();
+  return {
+    ...actual,
+    useGetSimulationSummaryQuery: vi.fn(() => ({ data: undefined, isLoading: false })),
+  };
+});
+
 // Test Wrapper (Provider required for useGetSimulationSummaryQuery / RTK Query)
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <Provider store={store}>
@@ -564,7 +573,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const tabButtons = screen.getAllByRole("tab");
-      expect(tabButtons).toHaveLength(6);
+      expect(tabButtons).toHaveLength(5);
     });
   });
 

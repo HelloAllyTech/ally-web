@@ -50,8 +50,8 @@ vi.mock("@api", () => ({
   useGetSummaryFieldsQuery: vi.fn(() => ({ refetch: vi.fn() })),
   useGetCallSummaryQuery: vi.fn(() => ({ data: undefined, refetch: vi.fn() })),
   useGetTranscriptQuery: (...args: unknown[]) => mockUseGetTranscriptQuery(...args),
-  useCreateScribeReviewMutation: vi.fn(() => [vi.fn()]),
-  useUpdateScribeReviewMutation: vi.fn(() => [vi.fn()]),
+  useCreateScribeReviewMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useUpdateScribeReviewMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
 }));
 
 // Mock assets

@@ -325,21 +325,44 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
 };
 
 const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
-  const areasForGrowth = summary?.details?.summary?.feedback?.improvements || [];
+  const feedback = summary?.details?.summary?.feedback;
+  const hasValidAreasOfGrowth =
+    Array.isArray(feedback?.areasOfGrowth) &&
+    feedback.areasOfGrowth.length > 0 &&
+    feedback.areasOfGrowth.some(
+      (item: { improvement?: string; recommendation?: string }) =>
+        (item.improvement ?? "").trim() !== "" || (item.recommendation ?? "").trim() !== "",
+    );
+  const areasForGrowth =
+    (hasValidAreasOfGrowth ? feedback?.areasOfGrowth : feedback?.improvements) || [];
 
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">Areas for growth</h3>
       </div>
-      <div className="px-6 py-6">
+      <ul className="px-6 py-6 space-y-6 list-none">
         {areasForGrowth?.map((area, index) => (
-          <li key={index} className="flex items-start">
+          <li key={index} className="flex items-start gap-2">
             <span className="text-typography-900 mr-2">•</span>
-            <span className="text-typography-900 font-primary text-base">{area}</span>
+            <div className="flex flex-col gap-2 w-full">
+              <span className="text-typography-900 font-primary text-base">
+                {area.improvement || area}
+              </span>
+              {area.recommendation && (
+                <div className="text-typography-900 bg-[#FFF3E080] border-l-[1px] border-l-[#FFA726] flex flex-col gap-1 pl-2 py-2">
+                  <span className="text-[#E65100] tracking-[2px] text-xs font-medium font-tertiary">
+                    RECOMMENDED
+                  </span>
+                  <span className="text-typography-900 text-base font-primary">
+                    {area.recommendation}
+                  </span>
+                </div>
+              )}
+            </div>
           </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 };

@@ -188,7 +188,8 @@ export interface SimulationSummary {
     callDuration: number;
     summary: {
       feedback: {
-        improvements: string[];
+        improvements?: string[];
+        areasOfGrowth?: { improvement: string; recommendation: string }[];
         positives: string[];
       };
       errorMessage?: string;

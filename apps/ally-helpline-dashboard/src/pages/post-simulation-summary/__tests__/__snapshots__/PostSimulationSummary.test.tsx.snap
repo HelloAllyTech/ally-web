@@ -135,14 +135,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             Deeper Reflection
           </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-3"
-            data-value="3"
-            role="tab"
-          >
-            Up Next
-          </button>
         </div>
         <div
           class="max-h-[calc(100vh-212px)]"
@@ -156,6 +148,13 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             123
           </div>
         </div>
+        <button
+          class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px] 
+        transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
+        disabled:cursor-default disabled:opacity-50 text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary/50 font-tertiary  undefined"
+        >
+          Try another simulation
+        </button>
       </div>
     </div>
   </div>
@@ -297,14 +296,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             Deeper Reflection
           </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-3"
-            data-value="3"
-            role="tab"
-          >
-            Up Next
-          </button>
         </div>
         <div
           class="max-h-[calc(100vh-212px)]"
@@ -318,6 +309,13 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             789
           </div>
         </div>
+        <button
+          class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px] 
+        transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
+        disabled:cursor-default disabled:opacity-50 text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary/50 font-tertiary  undefined"
+        >
+          Try another simulation
+        </button>
       </div>
     </div>
   </div>
