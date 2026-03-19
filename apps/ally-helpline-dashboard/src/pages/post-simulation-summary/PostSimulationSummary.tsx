@@ -14,7 +14,14 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { BackCircle, Comment } from "@assets";
-import { AskAiTab, ReflectionTab, ShareForReview, SkillsTab, ToggleSwitch } from "@components";
+import {
+  AskAiTab,
+  Button,
+  ReflectionTab,
+  ShareForReview,
+  SkillsTab,
+  ToggleSwitch,
+} from "@components";
 import { REVIEW_PRIVACY_OPTIONS, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { ShortSessionUI, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { pageType, ShareForReviewsInput } from "@types";
@@ -29,7 +36,7 @@ export const PostSimulationSummary: FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { data: summary } = useGetSimulationSummaryQuery(sessionId);
+  const { data: summary, isLoading } = useGetSimulationSummaryQuery(sessionId);
   const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(sessionId);
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
@@ -73,17 +80,21 @@ export const PostSimulationSummary: FC = () => {
       label: "Deeper Reflection",
       content: <ReflectionTab sessionId={sessionId} />,
     },
-    {
-      id: 3,
-      label: "Up Next",
-      content: (
-        <UpNextTab
-          sessionId={sessionId}
-          pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
-          metaData={summary?.metadata}
-        />
-      ),
-    },
+    ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
+      ? [
+          {
+            id: 3,
+            label: "Up Next",
+            content: (
+              <UpNextTab
+                sessionId={sessionId}
+                pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
+                metaData={summary?.metadata}
+              />
+            ),
+          },
+        ]
+      : []),
   ];
 
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
@@ -215,6 +226,9 @@ export const PostSimulationSummary: FC = () => {
               ))}
             </Tabs>
             {getTabContent()}
+            {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
+              <Button onClick={() => navigate(-1)}>Try another simulation</Button>
+            )}
           </>
         )}
       </motion.div>
