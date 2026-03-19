@@ -96,8 +96,8 @@ export const SimulationList: React.FC<SimulationListProps> = ({
 
   const isCreatorOrSuperAdmin = (simulation: Simulation) => {
     if (isSuperAdmin) return true;
-    const createdBy = simulation.createdBy?.toLowerCase();
-    return createdBy === String(currentUser?.id) || createdBy === String(currentUser?.userId);
+    const createdBy = simulation.createdByUserId;
+    return createdBy === currentUser?.id;
   };
 
   // Define columns configuration
