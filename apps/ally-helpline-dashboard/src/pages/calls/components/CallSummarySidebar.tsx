@@ -74,8 +74,10 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     isLoading: isSummaryLoading,
     error: summaryLoadingError,
   } = useGetCallSummaryQuery(callSummary?.id, { skip: !callSummary?.id });
-  const [createScribeReview] = useCreateScribeReviewMutation();
-  const [updateScribeReview] = useUpdateScribeReviewMutation();
+  const [createScribeReview, { isLoading: isCreateReviewLoading }] =
+    useCreateScribeReviewMutation();
+  const [updateScribeReview, { isLoading: isUpdateReviewLoading }] =
+    useUpdateScribeReviewMutation();
 
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<TranscriptMessage[]>([]);
@@ -265,9 +267,6 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const transcriptionContent = useMemo(
     () => (
       <div className="flex flex-col overflow-y-hidden border rounded-md p-3 gap-3 h-full">
-        <div className="text-base font-medium text-typography-900 border-b border-border-light pb-2">
-          {t("summary.tabs.transcript")}
-        </div>
         <TranscriptListing
           transcriptList={transcriptList}
           handleLoadMore={handleTranscriptLoadMore}
@@ -357,47 +356,52 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               </span>
             </Tooltip>
           ))}
-        <div className="border-l border-border h-5" />
         {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
           individualCallSummary?.details?.transcript?.length > 0 &&
           !callSummary?.archivedAt &&
           callSummary?.counselorId === user?.id && (
-            <div className="flex items-center gap-2">
-              <span className="font-primary font-normal text-sm">Share for review</span>{" "}
-              <ToggleSwitch
-                enabled={
-                  individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                }
-                onChange={(value: boolean) => {
-                  handleToggleChange(
-                    value
-                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                  );
-                }}
-              />
+            <div
+              className="flex items-center gap-2 font-primary font-medium"
+              style={{
+                opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
+              }}
+            >
+              <div className="border-l border-border h-5" />
+              <div className="flex items-center gap-2">
+                <span className="font-primary font-normal text-sm">Share for review</span>
+                <ToggleSwitch
+                  enabled={
+                    individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                  }
+                  onChange={(value: boolean) => {
+                    handleToggleChange(
+                      value
+                        ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                        : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                    );
+                  }}
+                />
+              </div>
+              {individualCallSummary?.reviewId && (
+                <Tooltip title="Comments" arrow slotProps={toolTipStyles}>
+                  <button
+                    onClick={() =>
+                      navigate(
+                        ROUTES.SCRIBE_REVIEW_DETAILS?.replace(
+                          ":reviewId",
+                          individualCallSummary.reviewId,
+                        ),
+                      )
+                    }
+                    className="flex items-center justify-center"
+                  >
+                    <Comment className="w-6 h-6 shrink-0" />
+                    {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
+                  </button>
+                </Tooltip>
+              )}
             </div>
           )}
-        {individualCallSummary?.reviewId && (
-          <>
-            <Tooltip title="Comments" arrow slotProps={toolTipStyles}>
-              <button
-                onClick={() =>
-                  navigate(
-                    ROUTES.SCRIBE_REVIEW_DETAILS?.replace(
-                      ":reviewId",
-                      individualCallSummary.reviewId,
-                    ),
-                  )
-                }
-                className="flex items-center justify-center"
-              >
-                <Comment className="w-6 h-6 shrink-0" />
-                {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
-              </button>
-            </Tooltip>
-          </>
-        )}
       </div>
       <ShareForReview
         isOpen={shareForReview}

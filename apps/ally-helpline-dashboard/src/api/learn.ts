@@ -119,9 +119,10 @@ const learnAPI = baseAPI.injectEndpoints({
      * @returns {Promise<EndSimulationResponse>} End simulation response
      */
     endSimulation: builder.mutation<EndSimulationResponse, EndSimulationInput>({
-      query: params => ({
-        url: ApiEndpoints.LEARN.END_SIMULATION(params.sessionId),
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.END_SIMULATION(sessionId),
         method: HttpMethod.POST,
+        body: { enableRecommendations: true },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_LOGS, TAG_TYPES.SIMULATION_CREDITS],
     }),
@@ -174,6 +175,7 @@ const learnAPI = baseAPI.injectEndpoints({
       query: sessionId => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_SUMMARY(sessionId),
         method: HttpMethod.GET,
+        params: { enableRecommendations: true },
       }),
       providesTags: [TAG_TYPES.SIMULATION_SUMMARY],
     }),
