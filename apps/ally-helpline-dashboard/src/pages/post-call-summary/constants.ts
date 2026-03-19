@@ -1269,7 +1269,11 @@ export const labelShownSections = [
   SummarySectionKey.Metrics,
 ];
 
-export const postCallSectionOrder = [SectionType.BoxBreathing, SectionType.SessionSummary];
+export const postCallSectionOrder = [
+  SectionType.BoxBreathing,
+  SectionType.SessionSummary,
+  SectionType.Transcript,
+];
 
 export const SectionQueryKey = "section";
 
