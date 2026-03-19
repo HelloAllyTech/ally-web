@@ -1,6 +1,8 @@
 import { useState } from "react";
 
+import { Tooltip } from "@mui/material";
 import { Controller } from "react-hook-form";
+import { toast } from "sonner";
 
 import { Close, Delete, Plus, Search } from "@assets";
 import { en } from "@constants";
@@ -18,7 +20,7 @@ interface KnowledgeSourceProps {
   label?: string;
 }
 
-const MAX_CONTENT_LENGTH = 250;
+const MAX_CONTENT_LENGTH = 2500;
 
 export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
   id,
@@ -27,7 +29,6 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
   label = en.knowledgeSource.label,
 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [showRemoveTooltip, setShowRemoveTooltip] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const {
@@ -45,6 +46,10 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
   const activeTab = knowledgeSources[activeTabIndex];
 
   const handleAddTab = () => {
+    if (activeTab.title.trim() === "" || activeTab.content.trim() === "") {
+      toast.error(en.knowledgeSource.titleAndContentRequired);
+      return;
+    }
     const newTab: KnowledgeSourceItem = {
       id: crypto.randomUUID(),
       title: "",
@@ -72,7 +77,6 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
       setActiveTabIndex(activeTabIndex - 1);
     }
 
-    setShowRemoveTooltip(null);
     setSearchTerm("");
   };
 
@@ -92,57 +96,51 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
 
   const handleContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
-    if (value.length <= MAX_CONTENT_LENGTH) {
-      handleUpdateTab(activeTabIndex, "content", value);
-    }
+
+    handleUpdateTab(activeTabIndex, "content", value);
   };
 
   const renderKnowledgeSources = () => {
     return (
-      <div className="w-[35%] min-w-[150px] border-r border-border-light flex flex-col">
+      <div className="w-[35%] min-w-[150px] max-w-[280px] shrink-0 overflow-hidden border-r border-border-light flex flex-col">
         <div className="p-4 border-b border-border-light">
           <div className="flex items-center justify-between gap-2 mb-3">
             <span className="text-typography-900 text-md">
-              Tabs <span className="text-primary-500">{knowledgeSources.length}</span>
+              Documents ({knowledgeSources.length})
             </span>
-            <button
-              type="button"
-              onClick={handleAddTab}
-              className="w-6 h-6 rounded border border-border-light hover:bg-background-secondary flex items-center justify-center text-typography-600 hover:text-typography-900 transition-colors"
-              title={en.knowledgeSource.addNewTab}
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+            <Tooltip title={en.knowledgeSource.addNewTab} placement="top" arrow>
+              <button
+                type="button"
+                onClick={handleAddTab}
+                className="w-6 h-6 rounded-sm border border-border-light hover:bg-background-secondary flex items-center justify-center text-typography-600 hover:text-typography-900 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </Tooltip>
           </div>
 
           {/* Search Input */}
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-500">
-              <Search className="w-4 h-4" />
-            </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder={en.knowledgeSource.search}
-              className="w-full pl-10 pr-3 py-2 rounded border border-border-light bg-white text-sm"
-            />
+
+          <div className="left-3 top-1/2 -translate-y-1/2 text-typography-500">
+            <Search className="w-4 h-4" />
           </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder={en.knowledgeSource.search}
+            className="w-full pl-10 pr-3 py-2 rounded border border-border-light bg-white text-sm"
+          />
         </div>
 
         {/* Tab List - Vertical */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden">
+        <div className="flex-1 min-w-0 overflow-y-auto custom-scrollbar overflow-x-hidden">
           {filteredSources.map((item: KnowledgeSourceItem) => {
             const actualIndex = knowledgeSources.findIndex(
               (source: KnowledgeSourceItem) => source.id === item.id,
             );
             return (
-              <div
-                key={item.id}
-                className="relative group"
-                onMouseEnter={() => setShowRemoveTooltip(item.id)}
-                onMouseLeave={() => setShowRemoveTooltip(null)}
-              >
+              <div key={item.id} className="relative group">
                 <div
                   role="button"
                   tabIndex={0}
@@ -153,29 +151,26 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
                       setActiveTabIndex(actualIndex);
                     }
                   }}
-                  className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors border-b border-border-light cursor-pointer ${
+                  className={`w-full min-w-0 px-4 py-3 text-left flex items-center justify-between gap-2 transition-colors cursor-pointer ${
                     activeTabIndex === actualIndex
                       ? "bg-background-secondary text-typography-900"
                       : "text-typography-700 hover:bg-background-tertiary"
                   }`}
                 >
-                  <span className="text-base truncate pr-2">{item.title || "Untitled"}</span>
+                  <span className="text-base truncate pr-2 min-w-0 flex-1">
+                    {item.title || "Untitled"}
+                  </span>
 
-                  <button
-                    type="button"
-                    onClick={event => handleRemoveTab(event, item.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-typography-500 hover:text-destructive-500 text-lg leading-none flex-shrink-0"
-                  >
-                    <Close className="w-4 h-4" />
-                  </button>
+                  <Tooltip title={en.knowledgeSource.remove} placement="top" arrow>
+                    <button
+                      type="button"
+                      onClick={event => handleRemoveTab(event, item.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-typography-500 hover:text-destructive-500 text-lg leading-none flex-shrink-0"
+                    >
+                      <Close className="w-4 h-4" />
+                    </button>
+                  </Tooltip>
                 </div>
-
-                {/* Remove Tooltip */}
-                {showRemoveTooltip === item.id && knowledgeSources.length > 1 && (
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 bg-typography-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-20">
-                    {en.knowledgeSource.remove}
-                  </div>
-                )}
               </div>
             );
           })}
@@ -186,43 +181,42 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
 
   const renderCreateKnowledgeSource = () => {
     return (
-      <div className="flex-1 h-full p-3 relative">
+      <div className="flex-1 min-w-0 h-full p-3 overflow-hidden">
         {activeTab ? (
-          <div className="flex flex-col gap-1 h-full">
-            <div className="flex flex-col">
+          <div className="flex flex-col gap-1 h-full min-h-0">
+            <div className="flex-shrink-0 min-w-0 overflow-hidden">
               <input
                 type="text"
                 value={activeTab.title}
                 onChange={e => handleUpdateTab(activeTabIndex, "title", e.target.value)}
                 placeholder={en.knowledgeSource.title}
-                className="w-full rounded border-none bg-white p-1 text-base focus:outline-none"
+                className="w-full min-w-0 rounded border-none bg-white p-1 text-base focus:outline-none"
               />
             </div>
 
-            <div className="flex flex-col relative h-full">
+            <div className="flex-1 min-h-0 flex flex-col">
               <textarea
+                maxLength={MAX_CONTENT_LENGTH}
                 value={activeTab.content}
                 onChange={handleContentChange}
                 placeholder={en.knowledgeSource.content}
-                rows={8}
-                className="w-full rounded border-none p-1  bg-white text-base resize-none focus:outline-none"
+                className="w-full flex-1 min-h-0 rounded border-none p-1 bg-white text-base resize-none focus:outline-none overflow-y-auto"
               />
 
               {/* Character Count and Delete Button */}
-              <div className="absolute bottom-0 right-0 z-10">
-                <div className="flex items-center gap-3">
-                  <span className="text-typography-500 text-sm">
-                    {activeTab.content.length}/{MAX_CONTENT_LENGTH}
-                  </span>
+              <div className="flex-shrink-0 flex items-center justify-end gap-3 pt-1">
+                <span className="text-typography-500 text-sm">
+                  {activeTab.content.length}/{MAX_CONTENT_LENGTH}
+                </span>
+                <Tooltip title={en.knowledgeSource.deleteContent} placement="top" arrow>
                   <button
                     type="button"
                     onClick={handleDeleteAllContent}
                     className="text-destructive-500 hover:text-destructive-600 transition-colors"
-                    title={en.knowledgeSource.deleteContent}
                   >
                     <Delete className="w-4 h-4" />
                   </button>
-                </div>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -265,7 +259,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
         rules={{ required: isMandatory ? `${label} is required` : false }}
         render={() => (
           <div className="bg-white border border-border-light rounded-sm-">
-            <div className="flex gap-0 h-[270px]">
+            <div className="flex w-full min-w-0 gap-0 h-[360px] overflow-hidden">
               {renderKnowledgeSources()}
               {renderCreateKnowledgeSource()}
             </div>
