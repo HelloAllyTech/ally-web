@@ -41,6 +41,7 @@ export type FormData = {
   maxTimeValue?: string;
   showScoreMeter?: boolean;
   optGuardrails?: boolean;
+  currentState?: boolean;
   knowledgeSources?: knowledgeSource[];
 };
 
