@@ -38,21 +38,57 @@ const getFeedbackSectionByType = ({
           <span className="w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base">
             {label}
           </span>
-          <ul className="p-4 space-y-2 text-base">
+          <ul className="p-4 space-y-6 text-base">
             {(!data || (Array.isArray(data) && data?.length === 0)) && (
               <div className="text-typography-700 font-primary text-center mb-2">No data found</div>
             )}
             {Array.isArray(data)
               ? data.map((item, index) => (
-                  <li key={index} className="flex items-start">
+                  <li key={index} className="flex items-start gap-2">
                     <span className="text-typography-900 mr-2">•</span>
-                    <span className="text-typography-900">{item}</span>
+                    {typeof item === "object" ? (
+                      <div className="flex flex-col gap-2 w-full">
+                        <span className="text-typography-900 font-primary text-base">
+                          {item.improvement}
+                        </span>
+                        {item.recommendation && (
+                          <div className="text-typography-900 bg-[#FFF3E080] border-l-[1px] border-l-[#FFA726] flex flex-col gap-1 pl-2 py-2">
+                            <span className="text-[#E65100] tracking-[2px] text-xs font-medium font-tertiary">
+                              RECOMMENDED
+                            </span>
+                            <span className="text-typography-900 text-base font-primary">
+                              {item.recommendation}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-typography-900">{item}</span>
+                    )}
                   </li>
                 ))
               : data && (
-                  <li className="flex items-start">
+                  <li className="flex items-start gap-2">
                     <span className="text-typography-900 mr-2">•</span>
-                    <span className="text-typography-900">{data}</span>
+                    {typeof data === "object" ? (
+                      <div className="flex flex-col gap-2 w-full">
+                        <span className="text-typography-900 font-primary text-base">
+                          {data.improvement}
+                        </span>
+                        {data.recommendation && (
+                          <div className="text-typography-900 bg-[#FFF3E080] border-l-[1px] border-l-[#FFA726] flex flex-col gap-1 pl-2 py-2">
+                            <span className="text-[#E65100] tracking-[2px] text-xs font-medium font-tertiary">
+                              RECOMMENDED
+                            </span>
+                            <span className="text-typography-900 text-base font-primary">
+                              {data.recommendation}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-typography-900">{data}</span>
+                    )}
                   </li>
                 )}
           </ul>

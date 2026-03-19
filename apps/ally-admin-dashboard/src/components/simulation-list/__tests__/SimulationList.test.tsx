@@ -158,6 +158,7 @@ describe("SimulationList", () => {
       description: "Description for simulation 1",
       coverImageUrl: "https://example.com/image1.jpg",
       createdBy: "John Doe",
+      createdByUserId: 1,
       updatedAt: "2024-01-15T10:00:00Z",
       status: SimulationStatus.ACTIVE,
       usage: "10",
@@ -170,6 +171,7 @@ describe("SimulationList", () => {
       description: "Description for simulation 2",
       coverImageUrl: "https://example.com/image2.jpg",
       createdBy: "Jane Smith",
+      createdByUserId: 2,
       updatedAt: "2024-01-20T15:30:00Z",
       status: SimulationStatus.DRAFT,
       usage: "0",
@@ -182,6 +184,7 @@ describe("SimulationList", () => {
       description: "Description for simulation 3",
       coverImageUrl: "https://example.com/image3.jpg",
       createdBy: "Bob Johnson",
+      createdByUserId: 3,
       updatedAt: "2024-02-01T08:45:00Z",
       status: SimulationStatus.ARCHIVED,
       usage: "25",
@@ -380,7 +383,7 @@ describe("SimulationList", () => {
     const creatorUser = { id: 101, userId: 101 };
     const otherUser = { id: 102, userId: 102 };
     const superAdminUser = { id: 1, userId: 1 };
-    const simulation = { ...mockSimulations[0], createdBy: "101" };
+    const simulation = { ...mockSimulations[0], createdBy: "101", createdByUserId: 101 };
 
     it("shows all actions for the creator", () => {
       renderWithStore(
@@ -432,20 +435,6 @@ describe("SimulationList", () => {
       expect(screen.getByTestId("archive-icon")).toBeInTheDocument();
       expect(screen.getByTestId("delete-icon")).toBeInTheDocument();
       expect(screen.getByTestId("copy-icon")).toBeInTheDocument();
-    });
-
-    it("matches creator by ID if name doesn't match", () => {
-      const simWithId = { ...simulation, createdBy: "102" };
-      renderWithStore(
-        <SimulationList
-          simulations={[simWithId]}
-          {...mockCallbacks}
-          currentUser={otherUser}
-          isSuperAdmin={false}
-        />,
-      );
-
-      expect(screen.getByTestId("edit-icon")).toBeInTheDocument();
     });
   });
 
@@ -566,6 +555,7 @@ describe("SimulationList", () => {
         description: "",
         coverImageUrl: "",
         createdBy: "",
+        createdByUserId: 0,
         updatedAt: "2024-01-01T00:00:00Z",
         status: SimulationStatus.DRAFT,
         usage: "0",
