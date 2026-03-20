@@ -58,12 +58,11 @@ const PanelHeader: React.FC<{
       </span>
     </button>
     {hasCharacter && !isNewCharacter && onDelete && (
-      <button
-        onClick={() => onDelete(characterId)}
-        className="flex items-center gap-2 text-typography-900 hover:text-red-600"
-      >
+      <button onClick={() => onDelete(characterId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
-        <span className="text-base font-tertiary font-medium">{en.common.delete}</span>
+        <span className="text-base font-tertiary font-medium text-typography-900">
+          {en.common.delete} character
+        </span>
       </button>
     )}
   </div>
@@ -108,8 +107,6 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const isSavingRef = useRef(false);
 
-
-
   const [createCharacter, { isLoading: isCreating }] = useCreateCharacterMutation();
   const [updateCharacter, { isLoading: isUpdating }] = useUpdateCharacterMutation();
 
@@ -131,19 +128,27 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
   );
 
   const [fileErrors, setFileErrors] = useState<Record<string, any>>({});
-  const formMethodsShim = React.useMemo(() => ({
-    watch: (id: string) => formData[id as keyof CharacterData],
-    setValue: (id: string, value: any) => handleFieldChange(id as keyof CharacterData, value),
-    setError: (id: string, error: any) => setFileErrors(prev => ({ ...prev, [id]: error })),
-    clearErrors: (id: string) => setFileErrors(prev => { const newE = {...prev}; delete newE[id]; return newE; }),
-    formState: { errors: fileErrors },
-    register: (id: string, options: any) => ({
-      name: id,
-      onChange: (e: any) => handleFieldChange(id as keyof CharacterData, e.target.value),
-      onBlur: () => {},
-      ref: () => {}
-    })
-  }), [formData, handleFieldChange, fileErrors]);
+  const formMethodsShim = React.useMemo(
+    () => ({
+      watch: (id: string) => formData[id as keyof CharacterData],
+      setValue: (id: string, value: any) => handleFieldChange(id as keyof CharacterData, value),
+      setError: (id: string, error: any) => setFileErrors(prev => ({ ...prev, [id]: error })),
+      clearErrors: (id: string) =>
+        setFileErrors(prev => {
+          const newE = { ...prev };
+          delete newE[id];
+          return newE;
+        }),
+      formState: { errors: fileErrors },
+      register: (id: string) => ({
+        name: id,
+        onChange: (e: any) => handleFieldChange(id as keyof CharacterData, e.target.value),
+        onBlur: () => {},
+        ref: () => {},
+      }),
+    }),
+    [formData, handleFieldChange, fileErrors],
+  );
 
   const handleDelete = useCallback(() => {
     setShowDeleteConfirmation(true);
@@ -331,7 +336,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
             <Field label="Character Backstory">
               <textarea
                 value={formData.characterProfileText || ""}
-                onChange={(e) => handleFieldChange("characterProfileText", e.target.value)}
+                onChange={e => handleFieldChange("characterProfileText", e.target.value)}
                 maxLength={2500}
                 placeholder="Enter character backstory"
                 className="w-full px-3 py-2 text-base border border-border-light rounded-md focus:outline-none min-h-[100px] resize-y"
@@ -373,9 +378,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
             disabled={!isFormValid() || !hasFormChanged() || isCreating || isUpdating}
             className="min-w-[120px]"
           >
-            {isCreating || isUpdating
-              ? "Saving..."
-              : en.common.save}
+            {isCreating || isUpdating ? "Saving..." : en.common.save}
           </Button>
           <Button
             variant={ButtonVariant.SECONDARY}
