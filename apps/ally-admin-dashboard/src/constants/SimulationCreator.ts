@@ -155,6 +155,7 @@ export const FORM_FIELD_IDS = {
   MAX_TIME_VALUE: "maxTimeValue",
   SHOW_SCORE_METER: "showScoreMeter",
   OPT_GUARDRAILS: "optGuardrails",
+  CURRENT_STATE: "currentState",
   KNOWLEDGE_SOURCE: "knowledgeSources",
 };
 
@@ -400,6 +401,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         disabled: true,
+      },
+      {
+        id: "currentState",
+        label: "Current State",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
       },
     ] as FormFieldConfig[],
   },
@@ -839,6 +846,7 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
     editable: false,
     format: (value: any) => `State ${value}`,
   },
+  { key: "name", header: "Name", editable: true },
   { key: "instruction", header: "Instruction", editable: true },
   {
     key: "dialogues",
@@ -850,8 +858,8 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
 ];
 
 export const DEFAULT_STATE_INSTRUCTIONS = [
-  { stateId: "1", instruction: "", dialogues: [] },
-  { stateId: "2", instruction: "", dialogues: [] },
-  { stateId: "3", instruction: "", dialogues: [] },
-  { stateId: "4", instruction: "", dialogues: [] },
+  { stateId: "1", name: "", instruction: "", dialogues: [] },
+  { stateId: "2", name: "", instruction: "", dialogues: [] },
+  { stateId: "3", name: "", instruction: "", dialogues: [] },
+  { stateId: "4", name: "", instruction: "", dialogues: [] },
 ];
