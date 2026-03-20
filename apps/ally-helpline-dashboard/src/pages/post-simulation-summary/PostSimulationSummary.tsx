@@ -44,7 +44,7 @@ export const PostSimulationSummary: FC = () => {
   const tabList = [
     {
       id: 1,
-      label: "Session Review",
+      label: t("postSim.tabs.sessionReview"),
       content: (
         <SimulationSummary
           sessionId={sessionId ?? ""}
@@ -56,12 +56,12 @@ export const PostSimulationSummary: FC = () => {
     },
     {
       id: 4,
-      label: "Ask AI",
+      label: t("postSim.tabs.askAi"),
       content: <AskAiTab sessionId={sessionId} agentName={summary?.scenario?.metadata?.name} />,
     },
     {
       id: 2,
-      label: "Annotated Transcript",
+      label: t("postSim.tabs.annotatedTranscript"),
       content: (
         <SimulationTranscriptTab
           sessionId={sessionId}
@@ -72,19 +72,19 @@ export const PostSimulationSummary: FC = () => {
     },
     {
       id: 5,
-      label: "Skills  Demonstrated",
+      label: t("postSim.tabs.skillsDemonstrated"),
       content: <SkillsTab sessionId={sessionId} />,
     },
     {
       id: 6,
-      label: "Deeper Reflection",
+      label: t("postSim.tabs.deeperReflection"),
       content: <ReflectionTab sessionId={sessionId} />,
     },
     ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
       ? [
           {
             id: 3,
-            label: "Up Next",
+            label: t("postSim.tabs.upNext"),
             content: (
               <UpNextTab
                 sessionId={sessionId}
@@ -125,7 +125,7 @@ export const PostSimulationSummary: FC = () => {
         await createReview(params).unwrap();
       }
     } catch (err: any) {
-      toast.error(err?.data?.message ?? "Something went wrong. Please try again.");
+      toast.error(err?.data?.message ?? t("common.somethingWentWrong"));
     }
   };
 
@@ -152,13 +152,15 @@ export const PostSimulationSummary: FC = () => {
             <button onClick={() => navigate(-1)}>
               <BackCircle />
             </button>
-            Simulation <em>Summary</em>
+            {t("postSim.titlePrefix")} <em>{t("common.summary")}</em>
           </div>
           {!isShortSession && (
             <div className="flex justify-center gap-2 items-center">
               {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
                 <div className="flex items-center gap-2">
-                  <span className="font-primary font-normal text-sm">Share for review</span>
+                  <span className="font-primary font-normal text-sm">
+                    {t("postSim.common.shareForReview")}
+                  </span>
                   <ToggleSwitch
                     enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
                     onChange={(value: boolean) => {
@@ -208,7 +210,7 @@ export const PostSimulationSummary: FC = () => {
               onNoteChange={(note: string) => {
                 handleCreateReview(REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW, note);
               }}
-              tag="Simulation"
+              tag={t("postSim.titlePrefix")}
             />
             <Tabs
               value={selectedTab}
@@ -227,7 +229,7 @@ export const PostSimulationSummary: FC = () => {
             </Tabs>
             {getTabContent()}
             {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
-              <Button onClick={() => navigate(-1)}>Try another simulation</Button>
+              <Button onClick={() => navigate(-1)}>{t("postSim.common.tryAnother")}</Button>
             )}
           </>
         )}

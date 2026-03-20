@@ -1,6 +1,7 @@
 import { FC, useCallback } from "react";
 
 import { Accept, FileRejection, useDropzone } from "react-dropzone";
+import { Trans } from "react-i18next";
 import { toast } from "sonner";
 
 import { FileUpload } from "@assets";
@@ -52,9 +53,15 @@ const DraggableArea: FC<DraggableAreaProps> = ({
       <input {...getInputProps()} />
       <FileUpload />
       <span className="text-typography-800 font-primary text-sm">
-        Drag & drop or <span className="text-primary-500 font-medium">choose</span> a{" "}
-        {getAllowedUniqueExtensionsDisplay(supportedExtensions)} file under{" "}
-        {formatSizeByByteSize(sizeInBytes)}
+        <Trans
+          i18nKey="common.draggableArea.text"
+          values={{
+            extensions: getAllowedUniqueExtensionsDisplay(supportedExtensions),
+            size: formatSizeByByteSize(sizeInBytes),
+          }}
+        >
+          <span className="text-primary-500 font-medium">choose</span>
+        </Trans>
       </span>
     </div>
   );

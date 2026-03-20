@@ -1,6 +1,7 @@
 import { FC } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog } from "@components";
@@ -10,6 +11,7 @@ import { CAROUSEL_SLIDES, ROUTES } from "@constants";
 import { StartSessionDialogProps } from "./types";
 
 const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const onStartSession = () => {
@@ -25,34 +27,42 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
       transition={{ delay: 0.5, duration: 0.3 }}
     >
       <span className="text-base text-typography-900" data-testid="start-session-embed-title">
-        Listen Live
+        {t("calls.dialog.startSession.embedTitle")}
       </span>
       <span className="text-xs text-typography-800" data-testid="start-session-embed-description">
-        Ally will hear audio alongside you
+        {t("calls.dialog.startSession.embedDesc")}
       </span>
     </motion.div>
   );
 
+  const slides = CAROUSEL_SLIDES.map((slide, index) => {
+    const slideKeys = ["noRecording", "noTrainingData", "personalInfoRemoved", "encrypted"];
+    return { ...slide, text: t(`carousel.slides.${slideKeys[index]}`) };
+  });
+
   return (
     <ConfirmationDialog
       data-testid="start-session-dialog"
-      title={{ normal: "Start", italic: "Session" }}
+      title={{
+        normal: t("calls.dialog.startSession.titleNormal"),
+        italic: t("calls.dialog.startSession.titleItalic"),
+      }}
       isOpen={isOpen}
       onClose={onClose}
       buttonVariant={ButtonVariant.PRIMARY}
       onButtonClick={onStartSession}
-      buttonText="Start Session now"
-      footerText="By starting, you confirm everyone being transcribed has given consent."
+      buttonText={t("calls.dialog.startSession.button")}
+      footerText={t("calls.dialog.startSession.footer")}
     >
       <Carousel
-        slides={CAROUSEL_SLIDES}
+        slides={slides}
         variant={CarouselVariant.LIGHT}
         size={CarouselSize.SMALL}
         className="max-h-[254px] max-w-[236px]"
       />
-      <div className="flex flex-col justify-center font-primary">
-        <span>Ally’s mental health AI scribe safely listens, transcribes </span>
-        <span className="flex justify-center">and writes session notes for you.</span>
+      <div className="flex flex-col justify-center font-primary text-center">
+        <span>{t("calls.dialog.startSession.description1")}</span>
+        <span>{t("calls.dialog.startSession.description2")}</span>
       </div>
 
       <StartSessionEmbed />
