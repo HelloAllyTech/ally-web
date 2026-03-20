@@ -319,13 +319,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
       },
       {
-        id: "voiceId",
-        label: "Voice",
-        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
-        isMandatory: true,
-        fullWidth: true,
-      },
-      {
         id: "languageVoices",
         label: "Language-Voice",
         type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,

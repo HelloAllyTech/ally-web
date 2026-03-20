@@ -172,7 +172,6 @@ describe("createSimulation utils", () => {
         languageVoices: {
           1: "voice-123",
         },
-        voiceId: "voice-123",
         difficultyLevel: "medium",
         responseLength: undefined,
         prompt: undefined,
