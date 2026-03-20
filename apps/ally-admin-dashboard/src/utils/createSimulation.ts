@@ -28,7 +28,6 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     sexualOrientation: data?.metadata?.sexualOrientation,
     startingState: data?.metadata?.startingState,
     tone: data?.metadata?.tone,
-    voiceId: data?.metadata?.voiceId,
     languageVoices: (data?.metadata as any)?.languageVoices,
     linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
     coverImageUrl: data?.coverImageUrl,
