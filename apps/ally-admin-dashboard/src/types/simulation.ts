@@ -406,6 +406,9 @@ export interface CharacterData {
   currentLocation: string;
   genderIdentity: string;
   sexualOrientation: string;
+  coverImageUrl?: string;
+  coverVideoUrl?: string;
+  characterProfileText?: string;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: number;

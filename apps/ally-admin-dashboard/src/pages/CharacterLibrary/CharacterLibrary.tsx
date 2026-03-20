@@ -145,6 +145,21 @@ export const CharacterLibrary: React.FC = () => {
         disabled: true,
         rowId: character.id,
       },
+      coverImageUrl: {
+        value: character.coverImageUrl || "",
+        disabled: true,
+        rowId: character.id,
+      },
+      coverVideoUrl: {
+        value: character.coverVideoUrl || "",
+        disabled: true,
+        rowId: character.id,
+      },
+      characterProfileText: {
+        value: character.characterProfileText || "",
+        disabled: true,
+        rowId: character.id,
+      },
     };
   }, []);
 

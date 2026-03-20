@@ -32,6 +32,7 @@ interface FileUploadProps {
   label: string;
   header?: React.ReactNode;
   fileType?: string;
+  hideHeader?: boolean;
 }
 
 export const FileUpload = ({
@@ -41,6 +42,7 @@ export const FileUpload = ({
   label,
   header,
   fileType = FILE_TYPE.IMAGE,
+  hideHeader = false,
 }: FileUploadProps) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -381,13 +383,15 @@ export const FileUpload = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label
-        htmlFor={id}
-        className="text-typography-900 text-base cursor-pointer flex items-center"
-      >
-        {header || en.simulation.file}
-        {isMandatory && <span className="text-destructive-500">*</span>}
-      </label>
+      {!hideHeader && (
+        <label
+          htmlFor={id}
+          className="text-typography-900 text-base cursor-pointer flex items-center"
+        >
+          {header || en.simulation.file}
+          {isMandatory && <span className="text-destructive-500">*</span>}
+        </label>
+      )}
 
       <div>
         <div
@@ -407,7 +411,8 @@ export const FileUpload = ({
 
           <input {...getInputProps()} />
 
-          {!uploadedFile && renderUploadPlaceholder()}
+          {!isNonEmptyString(uploadedFileUrl) && !isUploading && renderUploadPlaceholder()}
+          {isUploading && renderUploadPlaceholder()}
           {renderFilePreview()}
         </div>
 
