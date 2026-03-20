@@ -275,6 +275,13 @@ describe("CreateSimulation", () => {
       expect(screen.getByTestId("vertical-stepper")).toBeInTheDocument();
       expect(screen.getByTestId("footer")).toBeInTheDocument();
     });
+
+    it("should not render the deprecated 'Voice' standalone field", () => {
+      renderCreateSimulation();
+
+      expect(screen.queryByText("Voice")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("voice-dropdown-voice")).not.toBeInTheDocument();
+    });
   });
 
   describe("Navigation", () => {
