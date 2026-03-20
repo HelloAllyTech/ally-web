@@ -35,6 +35,7 @@ export interface UseLiveKitRoomReturn {
 
 export interface stateInstruction {
   stateId: number;
+  name?: string;
   instruction: string;
   dialogues: string[];
 }
@@ -97,6 +98,7 @@ export interface SimulationInput {
   timerMode?: boolean;
   maxTimeValue?: string;
   optGuardrails?: boolean;
+  currentState?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
   knowledgeSources?: KnowledgeSourceInput[];
@@ -171,6 +173,7 @@ export interface GetSimulationByIdResponse {
     showScoreMeter?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
+    currentState?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
     knowledgeSources?: knowledgeSource[];
