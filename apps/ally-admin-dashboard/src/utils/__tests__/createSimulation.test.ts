@@ -121,6 +121,7 @@ describe("createSimulation utils", () => {
           agentDialogues: ["Sample dialogues"],
           customFields: [],
           optGuardrails: false,
+          currentState: false,
           checklistType: "GUIDED",
           experienceMode: "CHECKLIST",
           maxTimeValue: "00:10:00",
@@ -128,6 +129,7 @@ describe("createSimulation utils", () => {
           stateInstructions: [
             {
               stateId: 1,
+              name: "test name",
               instruction: "test instruction",
               dialogues: ["test dialogue"],
             },
@@ -178,6 +180,7 @@ describe("createSimulation utils", () => {
         agentDialogues: "Sample dialogues",
         customFields: [],
         optGuardrails: false,
+        currentState: false,
         checklistType: "GUIDED",
         experienceMode: "CHECKLIST",
         maxTimeValue: "00:10:00",
@@ -185,6 +188,7 @@ describe("createSimulation utils", () => {
         stateInstructions: [
           {
             stateId: 1,
+            name: "test name",
             instruction: "test instruction",
             dialogues: ["test dialogue"],
           },
