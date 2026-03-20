@@ -61,7 +61,7 @@ const PanelHeader: React.FC<{
       <button onClick={() => onDelete(characterId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
         <span className="text-base font-tertiary font-medium text-typography-900">
-          {en.common.delete} character
+          {en.simulation.deleteCharacter}
         </span>
       </button>
     )}
