@@ -136,10 +136,12 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
         await processAudioUpload({ s3Key });
       }
     } catch {
-      store.dispatch(updateUploadError({ chatId, error: "Failed to upload audio" }));
+      store.dispatch(
+        updateUploadError({ chatId, error: t("calls.audioUpload.errors.genericError") }),
+      );
       // store.dispatch(removeAudioUpload(chatId));
       cancelAudioUpload({ chatId });
-      toast.error("Failed to upload audio");
+      toast.error(t("calls.audioUpload.errors.genericError"));
     }
   };
 

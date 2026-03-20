@@ -30,6 +30,7 @@ import {
   AddReviewNote,
   GeneralCommentsToShow,
 } from "@components";
+import { TagType } from "@components/share-for-review/ShareForReview";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS_VALUES, TAG_TYPES } from "@constants";
 import { RootState } from "@store";
 import {
@@ -316,7 +317,7 @@ export const ReviewDetails = () => {
       setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
-      toast.error(error?.data?.message || "Reaction update failed");
+      toast.error(error?.data?.message || t("review.details.reactionFailed"));
     }
   };
 
@@ -391,7 +392,7 @@ export const ReviewDetails = () => {
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
               <span className="ml-1 font-primary font-regular text-base leading-[1.3] text-[#1A1A1A]">
-                Share for review
+                {t("review.privacy.share")}
               </span>
               <ToggleSwitch
                 enabled={reviewDetails?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
@@ -478,7 +479,7 @@ export const ReviewDetails = () => {
               <div
                 className={`text-[10px] font-normal ${isScribeReview ? "bg-[#FFF3E0] text-[#E65100]" : "bg-[#EDE7F6] text-[#7E57C2]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
               >
-                {isScribeReview ? "Scribe" : "Simulation"}
+                {isScribeReview ? t("common.scribe") : t("common.simulation")}
               </div>
               <span className="text-xl line-clamp-1">
                 {reviewDetails?.scenario?.title || reviewDetails?.scribeSession?.summaryName}
@@ -631,9 +632,9 @@ export const ReviewDetails = () => {
         description={reviewDetails?.scenario?.description}
         coverImageUrl={reviewDetails?.scenario?.coverImageUrl}
         coverVideoUrl={reviewDetails?.scenario?.coverVideoUrl}
-        headerTitle="Simulation"
-        headerSubtitle="Details"
-        scenarioLabel="Scenario:"
+        headerTitle={t("learn.details.modal.headerTitle")}
+        headerSubtitle={t("learn.details.modal.headerSubtitle")}
+        scenarioLabel={t("common.scenario")}
         showActionButtons={false}
         onClickOutside={() => setShowSimulationDetailsModal(false)}
       />
@@ -644,14 +645,18 @@ export const ReviewDetails = () => {
         onNoteChange={(note: string) =>
           handleCreateReview({ status: reviewDetails?.reviewStatus, note: note })
         }
-        shareLabel={reviewDetails?.note?.length > 0 ? "Save" : "Add"}
-        modalHeader={reviewDetails?.note?.length > 0 ? "Edit note" : "Add note"}
+        shareLabel={reviewDetails?.note?.length > 0 ? t("common.save") : t("common.add")}
+        modalHeader={
+          reviewDetails?.note?.length > 0
+            ? t("review.details.editNote")
+            : t("review.details.addNote")
+        }
         sessionCreatedAt={reviewDetails?.createdAt}
         sessionCallDuration={
           reviewDetails?.scenarioSession?.duration || reviewDetails?.scribeSession?.duration
         }
         sessionReviewCreatedAt={reviewDetails?.createdAt}
-        tag={isScribeReview ? "Scribe" : "Simulation"}
+        tag={isScribeReview ? TagType.SCRIBE : TagType.SIMULATION}
       />
     </div>
   );

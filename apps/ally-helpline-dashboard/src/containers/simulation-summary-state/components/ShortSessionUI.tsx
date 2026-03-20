@@ -1,5 +1,7 @@
 import { FC, useState } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared/index";
 import { HourGlass, InfoIcon } from "@assets";
 import { SimulationSummary } from "@types";
@@ -11,6 +13,7 @@ export interface ShortSessionUIProps {
 }
 
 export const ShortSessionUI: FC<ShortSessionUIProps> = ({ className = "", summaryData }) => {
+  const { t } = useTranslation();
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
 
   const callDurationInSeconds = Math.floor((summaryData?.details?.callDuration ?? 0) / 1000);
@@ -26,7 +29,9 @@ export const ShortSessionUI: FC<ShortSessionUIProps> = ({ className = "", summar
         data-testid="short-session-message"
       >
         <div className="w-full pb-[10px]">
-          <div className="text-typography-900 text-md pb-[10px] font-primary">Session Review</div>
+          <div className="text-typography-900 text-md pb-[10px] font-primary">
+            {t("postSim.tabs.sessionReview")}
+          </div>
           <hr />
         </div>
         {summaryData && (
@@ -66,10 +71,10 @@ export const ShortSessionUI: FC<ShortSessionUIProps> = ({ className = "", summar
           <HourGlass />
           <div className="w-full px-6 py-5 text-center">
             <div className="text-typography-900 text-2xl font-medium font-primary">
-              Session ended too soon
+              {t("postSim.shortSession.title")}
             </div>
             <p className="font-primary text-base font-medium text-typography-700">
-              We need more interaction data to provide meaningful feedback.
+              {t("postSim.shortSession.description")}
             </p>
           </div>
         </div>
@@ -80,9 +85,9 @@ export const ShortSessionUI: FC<ShortSessionUIProps> = ({ className = "", summar
         description={summaryData?.scenario?.description}
         coverImageUrl={summaryData?.scenario?.coverImageUrl}
         coverVideoUrl={summaryData?.scenario?.coverVideoUrl}
-        headerTitle="Simulation"
-        headerSubtitle="Details"
-        scenarioLabel="Scenario:"
+        headerTitle={t("postSim.titlePrefix")}
+        headerSubtitle={t("postSim.common.details")}
+        scenarioLabel={t("postSim.common.scenario")}
         showActionButtons={false}
         onClickOutside={() => setShowSimulationDetailsModal(false)}
       />

@@ -30,6 +30,12 @@
     "tags": "टैग्स",
     "cancel": "रद्द करें",
     "save": "सहेजें",
+    "add": "जोड़ें",
+    "share": "साझा करें",
+    "viewMore": "और देखें",
+    "viewLess": "कम दिखाएं",
+    "scribe": "स्क्राइब",
+    "scenario": "परिदृश्य:",
     "retry": "पुनः प्रयास करें",
     "uploading": "अपलोड हो रहा है...",
     "maxActiveUsers": {
@@ -42,6 +48,9 @@
     "backToLearn": "सीखने के लिए वापस",
     "errors": {
       "locked": "आगामी सिमुलेशन लॉक किया गया है"
+    },
+    "draggableArea": {
+      "text": "ड्रैग और ड्रॉप करें या <0>चुनें</0> {{extensions}} फ़ाइल ({{size}} से कम)"
     }
   },
   "carousel": {
@@ -159,6 +168,7 @@
         "signingIn": "साइन इन किया जा रहा है..."
       },
       "google": {
+        "button": "Google से जारी रखें",
         "error": "Google से साइन‑इन विफल रहा"
       },
       "errors": {
@@ -362,9 +372,13 @@
       "loading": "कौशल डेटा लोड हो रहा है...",
       "failed": "कौशल डेटा लोड करने में विफल",
       "coverage": "कौशल कवरेज",
-      "emotionalMovement": "क्लाइंट भावनात्मक आंदोलन",
-      "level": "स्तर (1-10)",
-      "timeline": "सत्र समयरेखा"
+      "distressAlleviation": "क्लाइंट के संकट का निवारण",
+      "emotionalMovement": "क्लाइंट भावनात्मक गतिविधि",
+      "level": "स्तर (-5 to 5)",
+      "timeline": "सत्र समयरेखा",
+      "strengths": "दिखाई गई खूबियाँ और कौशल",
+      "areasForGrowth": "विकास के क्षेत्र",
+      "recommended": "सुझाव"
     },
     "tabs": {
       "transcription": "ट्रांसक्रिप्शन",
@@ -376,6 +390,21 @@
       "skills": "कौशल",
       "skillsDemonstrated": "प्रदर्शित कौशल",
       "sessionReview": "सत्र समीक्षा"
+    },
+    "simulationSummary": "सिमुलेशन सारांश",
+    "shortSession": {
+      "title": "सत्र बहुत जल्द समाप्त हो गया",
+      "description": "सार्थक प्रतिक्रिया प्रदान करने के लिए हमें और अधिक इंटरैक्शन डेटा की आवश्यकता है।"
+    },
+    "feedback": {
+      "sessionFeedback": "सत्र प्रतिक्रिया",
+      "noData": "कोई डेटा नहीं मिला"
+    },
+    "common": {
+      "tryAnother": "एक और सिमुलेशन आज़माएं",
+      "details": "विवरण",
+      "scenario": "परिदृश्य:",
+      "shareForReview": "समीक्षा के लिए साझा करें"
     }
   },
   "review": {
@@ -407,7 +436,11 @@
       "noCommentsYet": "अभी तक कोई टिप्पणी नहीं",
       "you": "आप",
       "by": "द्वारा {{name}}",
-      "dateAndTime": "तिथि और समय"
+      "dateAndTime": "तिथि और समय",
+      "addNote": "नोट जोड़ें",
+      "editNote": "नोट संपादित करें",
+      "addNotePlaceholder": "एक नोट जोड़ें...",
+      "shareModalHeader": "समीक्षा के लिए साझा करें"
     },
     "reactionsModal": {
       "title": "प्रतिक्रियाएं",
@@ -722,14 +755,14 @@
     },
     "dialog": {
       "startSession": {
-        "embedTitle": "प्रशिक्षण सत्र शीघ्र शुरू हो रहा है",
-        "embedDesc": "कृपया अपना माइक्रोफोन और परिवेश तैयार रखें।",
-        "titleNormal": "सत्र",
-        "titleItalic": "शुरू करें",
-        "button": "सत्र शुरू करें",
-        "footer": "आप किसी भी समय सत्र समाप्त कर सकते हैं।",
-        "description1": "आपका सत्र जल्द ही शुरू होगा।",
-        "description2": "ऑन‑स्क्रीन निर्देशों का पालन करें।"
+        "embedTitle": "लाइव सुनें",
+        "embedDesc": "एली आपके साथ ऑडियो सुनेगा",
+        "titleNormal": "शुरू करें",
+        "titleItalic": "सत्र",
+        "button": "अभी सत्र शुरू करें",
+        "footer": "शुरू करके, आप पुष्टि करते हैं कि हर किसी को ट्रांसक्रिप्ट किया जा रहा है उसने सहमति दी है।",
+        "description1": "एली का मानसिक स्वास्थ्य एआई स्क्राइब सुरक्षित रूप से सुनता है, ट्रांसक्राइब करता है ",
+        "description2": "और आपके लिए सत्र नोट्स लिखता है।"
       },
       "delete": {
         "titleNormal": "हटाएँ",
@@ -749,6 +782,8 @@
     },
     "audioUpload": {
       "title": "ऑडियो रिकॉर्डिंग अपलोड करें",
+      "uploading": "आपकी ऑडियो फ़ाइल अपलोड की जा रही है",
+      "loadingWaveform": "वेवफॉर्म लोड हो रहा है...",
       "fields": {
         "counsellor": {
           "label": "परामर्शदाता का नाम",
@@ -765,7 +800,28 @@
         "upload": "अपलोड करें"
       },
       "errors": {
-        "uploadFailed": "ऑडियो अपलोड विफल हुआ!"
+        "uploadFailed": "ऑडियो अपलोड विफल हुआ!",
+        "genericError": "ऑडियो अपलोड करने में विफल"
+      }
+    },
+    "uploadProgress": {
+      "cancelled": "अपलोड रद्द कर दिया गया",
+      "collapse": "छोटा करें",
+      "expand": "बड़ा करें",
+      "clearAll": "सभी साफ करें",
+      "noUploads": "कोई अपलोड नहीं",
+      "inProgress_one": "1 अपलोड प्रगति पर है",
+      "inProgress_other": "{{count}} अपलोड प्रगति पर हैं",
+      "summaryCancelled_one": "1 अपलोड रद्द कर दिया गया",
+      "summaryCancelled_other": "{{count}} अपलोड रद्द कर दिए गए",
+      "completed_one": "1 अपलोड पूरा हुआ",
+      "completed_other": "{{count}} अपलोड पूरे हुए",
+      "cancelDialog": {
+        "title": "रद्द करें",
+        "titleItalic": "अपलोड",
+        "content": "आपका अपलोड पूरा नहीं हुआ है। क्या आप अपलोड रद्द करना चाहेंगे?",
+        "primaryButton": "अपलोड रद्द करें",
+        "secondaryButton": "अपलोड जारी रखें"
       }
     }
   }
