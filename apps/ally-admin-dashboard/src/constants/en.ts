@@ -423,6 +423,7 @@ export const en = {
     generate: "Generate",
     generating: "Generating...",
     guardrails: "Guardrails",
+    deleteCharacter: "Delete character",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",

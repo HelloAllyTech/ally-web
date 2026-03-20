@@ -105,9 +105,19 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
           setValue(fieldId, "", { shouldDirty: true, shouldTouch: true });
         });
       } else if (characterData) {
+        // Media fields that should only be overwritten when the character has its own values
+        const mediaFieldIds = [formFieldIds.COVER_IMAGE_URL, formFieldIds.COVER_VIDEO_URL];
+
         // Prefill form fields using existing field IDs
         Object.values(formFieldIds).forEach(fieldId => {
           const value = characterData[fieldId as keyof CharacterData];
+
+          // For media fields, only update if the character has a non-empty value.
+          // Otherwise keep the simulation's existing media as a fallback.
+          if (mediaFieldIds.includes(fieldId) && !value) {
+            return;
+          }
+
           // Ensure we never set null or undefined - always use empty string as fallback
           setValue(fieldId, value ?? "", {
             shouldValidate: true,
