@@ -28,7 +28,7 @@ interface ScenarioDetailsScenario {
   coverImageUrl?: string;
 }
 
-enum TagType {
+export enum TagType {
   SIMULATION = "Simulation",
   SCRIBE = "Scribe",
 }
@@ -55,6 +55,7 @@ const NoteTextarea = ({
   isExpired: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) => {
+  const { t } = useTranslation();
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
@@ -69,7 +70,7 @@ const NoteTextarea = ({
     <div className="flex flex-col gap-2 relative">
       <textarea
         ref={textareaRef}
-        placeholder="Add a note..."
+        placeholder={t("review.details.addNotePlaceholder")}
         maxLength={NOTE_MAX_LENGTH}
         onChange={handleInput}
         disabled={isExpired}
@@ -96,14 +97,16 @@ const SubSection = ({
   const formattedDate = getFormattedDateTime(createdAt, "MMM dd, yyyy hh:mm a");
   const formattedCallDuration =
     callDuration < 60
-      ? `${callDuration} sec`
-      : `${getFormattedTimeFromDuration(callDuration, "mm:ss")} Min`;
+      ? `${callDuration} ${t("review.feedCard.sec")}`
+      : `${getFormattedTimeFromDuration(callDuration, "mm:ss")} ${t("review.feedCard.min")}`;
 
   return (
     <div className="flex items-center gap-1 text-typography-600 font-primary text-sm">
       {t("review.details.dateAndTime")}: {formattedDate}
       <span className="w-1 h-1 bg-neutral-500 rounded-full mx-1" aria-hidden />
-      <span className="font-primary leading-4">Duration: {formattedCallDuration}</span>
+      <span className="font-primary leading-4">
+        {t("review.feedCard.duration")}: {formattedCallDuration}
+      </span>
     </div>
   );
 };
@@ -137,6 +140,7 @@ const DescriptionToggle = ({
   isExpanded: boolean;
   onToggle: () => void;
 }) => {
+  const { t } = useTranslation();
   if (!description) return null;
   return (
     <button
@@ -146,11 +150,11 @@ const DescriptionToggle = ({
     >
       {isExpanded ? (
         <span className="flex">
-          View less <ArrowDownBlue className="rotate-180 w-8 h-8" />
+          {t("common.viewLess")} <ArrowDownBlue className="rotate-180 w-8 h-8" />
         </span>
       ) : (
         <span className="flex items-center">
-          View more
+          {t("common.viewMore")}
           <ArrowDownBlue className="w-8 h-8" />
         </span>
       )}
@@ -165,6 +169,7 @@ const ScenarioDetails = ({
   scenario: ScenarioDetailsScenario | null;
   tag?: string;
 }) => {
+  const { t } = useTranslation();
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
@@ -202,7 +207,7 @@ const ScenarioDetails = ({
       </div>
       <div className="flex flex-col gap-2 w-2/3">
         <div className="text-xs bg-[#EDE7F6] text-[#7E57C2] px-2 w-fit font-normal rounded-[3px]">
-          {tag}
+          {tag === TagType.SIMULATION ? t("common.simulation") : t("common.scribe")}
         </div>
         <h3 className="text-lg text-typography-900">{scenario.title}</h3>
         <div className="flex flex-col gap-1">
@@ -228,10 +233,11 @@ const ScenarioDetails = ({
 };
 
 const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagType }) => {
+  const { t } = useTranslation();
   const formattedCallDuration =
     scribeSession?.details?.callDuration < 60
-      ? `${scribeSession?.details?.callDuration} sec`
-      : `${getFormattedTimeFromDuration(scribeSession?.details?.callDuration || scribeSession?.scribeSession?.duration, "mm:ss")} Min`;
+      ? `${scribeSession?.details?.callDuration} ${t("review.feedCard.sec")}`
+      : `${getFormattedTimeFromDuration(scribeSession?.details?.callDuration || scribeSession?.scribeSession?.duration, "mm:ss")} ${t("review.feedCard.min")}`;
   if (!scribeSession)
     return (
       <div className="rounded-lg flex gap-4 border border-border-light p-5 items-start animate-pulse">
@@ -253,61 +259,64 @@ const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagTyp
       </div>
       <div className="flex flex-col gap-2 w-2/3">
         <div className="text-xs bg-[#FFF3E0] text-[#E65100] px-2 w-fit font-normal rounded-[3px]">
-          {tag}
+          {tag === TagType.SCRIBE ? t("common.scribe") : t("common.simulation")}
         </div>
         <h3 className="text-lg text-typography-900">
           {scribeSession?.details?.callInfo?.summaryName}
         </h3>
         <div className="flex flex-col gap-1 font-normal">
-          <p className="text-base text-typography-800 leading-relaxed text-sm">
-            Date and Time:{" "}
+          <p className="text-typography-800 leading-relaxed text-sm">
+            {t("review.details.dateAndTime")}:{" "}
             {getFormattedDateTime(
               scribeSession?.details?.createdAt || scribeSession?.scribeSession?.createdAt,
               "MMM dd, yyyy hh:mm a",
             )}
           </p>
-          <p className="text-base text-typography-800 leading-relaxed text-sm">
-            Duration: {formattedCallDuration}
+          <p className="text-typography-800 leading-relaxed text-sm">
+            {t("review.feedCard.duration")}: {formattedCallDuration}
           </p>
         </div>
       </div>
     </div>
   );
 };
-
 const ModalActions = ({
   onCancel,
   onShare,
-  cancelLabel = "Cancel",
-  shareLabel = "Share",
+  cancelLabel,
+  shareLabel,
 }: {
   onCancel: () => void;
   onShare: () => void;
   cancelLabel?: string;
   shareLabel?: string;
-}) => (
-  <div className="flex gap-2 justify-end border-t border-border-light pt-4">
-    <Button variant="secondary" onClick={onCancel} className="font-tertiary">
-      {cancelLabel}
-    </Button>
-    <Button variant="primary" onClick={onShare} className="font-tertiary">
-      {shareLabel}
-    </Button>
-  </div>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex gap-2 justify-end border-t border-border-light pt-4">
+      <Button variant="secondary" onClick={onCancel} className="font-tertiary">
+        {cancelLabel || t("common.cancel")}
+      </Button>
+      <Button variant="primary" onClick={onShare} className="font-tertiary">
+        {shareLabel || t("common.share")}
+      </Button>
+    </div>
+  );
+};
 
 export const ShareForReview = ({
   isOpen,
   onClose,
   summaryDetails,
   onNoteChange,
-  shareLabel = "Share",
-  modalHeader = "Share this for review",
+  shareLabel,
+  modalHeader,
   sessionCreatedAt,
   sessionCallDuration,
   sessionReviewCreatedAt,
   tag,
 }: ShareForReviewProps) => {
+  const { t } = useTranslation();
   const shareForReviewRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [note, setNote] = useState("");
@@ -350,7 +359,7 @@ export const ShareForReview = ({
 
   const handleShare = useCallback(() => {
     if (timeDiff >= 10) {
-      onNoteChange("");
+      onNoteChange(note);
       onClose();
       return;
     }
@@ -368,7 +377,10 @@ export const ShareForReview = ({
       >
         <div className="p-6 pb-4">
           <div className="flex flex-col gap-4 font-primary font-medium text-typography-900">
-            <ModalHeader title={modalHeader} onClose={onClose} />
+            <ModalHeader
+              title={modalHeader || t("review.details.shareModalHeader")}
+              onClose={onClose}
+            />
 
             <NoteTextarea
               note={note}
@@ -391,7 +403,12 @@ export const ShareForReview = ({
 
             <EmojiPickerTrigger onEmojiClick={insertEmoji} isExpired={timeDiff >= 10} />
 
-            <ModalActions onCancel={onClose} onShare={handleShare} shareLabel={shareLabel} />
+            <ModalActions
+              onCancel={onClose}
+              onShare={handleShare}
+              shareLabel={shareLabel}
+              cancelLabel={t("common.cancel")}
+            />
           </div>
         </div>
       </div>

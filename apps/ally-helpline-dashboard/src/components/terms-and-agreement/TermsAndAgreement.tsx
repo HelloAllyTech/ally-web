@@ -1,12 +1,14 @@
 import { useState } from "react";
 
 import { Dialog } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@components";
-import { PRIVACY_POLICY_URL, termsAndAgreementData } from "@constants";
+import { PRIVACY_POLICY_URL } from "@constants";
 import { parseContent } from "@utils";
 
 const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
+  const { t } = useTranslation();
   const [agreeCheck, setAgreeCheck] = useState<boolean>(false);
   const paperProps = {
     style: {
@@ -16,14 +18,19 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
     },
   };
 
+  const sections = t("terms.sections", { returnObjects: true }) as Array<{
+    heading: string;
+    content: string[];
+  }>;
+
   return (
     <Dialog open={isOpen} disableEscapeKeyDown PaperProps={paperProps}>
       <div className="flex items-center justify-center font-medium text-2xl font-secondary">
-        Terms and agreement
+        {t("terms.title")}
       </div>
       <div className="overflow-y-auto custom-scrollbar">
         <div className="border-b border-border-light">
-          {termsAndAgreementData.map(item => (
+          {sections.map(item => (
             <div className="flex flex-col p-2 font-primary" key={item.heading}>
               <div className="flex gap-2 font-semibold mb-1">
                 <span>{item.heading}</span>
@@ -43,14 +50,14 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
           ))}
         </div>
         <div className="text-[12px] text-typography-900 font-primary text-center pt-2">
-          For complete details, please review our
+          {t("terms.footerPrefix")}
           <a
             href={PRIVACY_POLICY_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 underline ml-1"
           >
-            Privacy Policy and User License Agreement
+            {t("terms.footerLinkText")}
           </a>
           .
         </div>
@@ -61,16 +68,14 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
               checked={agreeCheck}
               onChange={() => setAgreeCheck(prev => !prev)}
             />
-            <span className="text-[13px] text-typography-900">
-              I have read and agreed to these Terms & Conditions, and consent.
-            </span>
+            <span className="text-[13px] text-typography-900">{t("terms.agreeLabel")}</span>
           </div>
           <Button
             className="w-[100px] h-[40px] font-semibold text-base font-tertiary"
             onClick={handleAgreeButtonClick}
             disabled={!agreeCheck}
           >
-            Agree
+            {t("terms.agreeButton")}
           </Button>
         </div>
       </div>
