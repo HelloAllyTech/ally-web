@@ -162,7 +162,15 @@ export const Cell = ({
       );
       break;
     case cellTypes.image:
-      element = <CustomImage src={value.value} alt="User badge" width={100} height={100} />;
+      element = (
+        <CustomImage
+          src={value.value}
+          alt="User badge"
+          width={100}
+          height={100}
+          className="rounded-lg"
+        />
+      );
       break;
     case cellTypes.editableText:
       element = (
