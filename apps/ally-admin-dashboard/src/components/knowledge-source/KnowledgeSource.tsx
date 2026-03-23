@@ -46,7 +46,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
   const activeTab = knowledgeSources[activeTabIndex];
 
   const handleAddTab = () => {
-    if (activeTab.title.trim() === "" || activeTab.content.trim() === "") {
+    if (activeTab && (activeTab.title.trim() === "" || activeTab.content.trim() === "")) {
       toast.error(en.knowledgeSource.titleAndContentRequired);
       return;
     }
@@ -120,17 +120,19 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
           </div>
 
           {/* Search Input */}
-
-          <div className="left-3 top-1/2 -translate-y-1/2 text-typography-500">
-            <Search className="w-4 h-4" />
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-typography-500"
+              aria-hidden
+            />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder={en.knowledgeSource.search}
+              className="w-full rounded border border-border-light bg-white py-2 pl-10 pr-3 text-sm"
+            />
           </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            placeholder={en.knowledgeSource.search}
-            className="w-full pl-10 pr-3 py-2 rounded border border-border-light bg-white text-sm"
-          />
         </div>
 
         {/* Tab List - Vertical */}
