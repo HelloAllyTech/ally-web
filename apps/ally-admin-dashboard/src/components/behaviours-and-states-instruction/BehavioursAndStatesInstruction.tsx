@@ -1,36 +1,40 @@
-// TODO: Remove this component once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
 import { Plus, Trash } from "@assets";
 import { Button, NotionTable } from "@components";
-import { BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS, en } from "@constants";
+import { BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS, BEHAVIOUR_STATES, en } from "@constants";
 import { ButtonVariant } from "@src/components/types";
-import { HelperTagItem } from "@types";
+import { behaviourStateInstruction, HelperTagItem } from "@types";
 
 interface BehaviourRow {
   id?: string;
   category?: string;
   behaviors?: string[];
-  instructions?: string;
+  instructions?: string[];
+  stateInstructions?: behaviourStateInstruction[];
 }
 
-interface BehavioursInstructionProps {
+interface BehavioursAndStatesInstructionProps {
   formMethods: any;
   id: string;
   isMandatory: boolean;
   regenerateButton?: ReactNode;
 }
 
-const createEmptyFormValue = () => ({
-  id: `temp-${Date.now()}`,
+const createEmptyFormValue = (): BehaviourRow => ({
+  id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   category: "",
-  behaviors: [] as string[],
-  instructions: [] as string[],
+  behaviors: [],
+  instructions: [],
+  stateInstructions: BEHAVIOUR_STATES.map(state => ({
+    stateId: state.stateId,
+    instruction: "",
+  })),
 });
 
-export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
+export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionProps> = ({
   formMethods,
   id,
   isMandatory,
@@ -45,30 +49,34 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
     }
   }, [formData.length, formMethods, id]);
 
-  const createBehavioursInstructionObject = useCallback(
-    (behavior: BehaviourRow) => ({
+  const createTableRowObject = useCallback((behavior: BehaviourRow) => {
+    const row: Record<string, any> = {
       id: { value: behavior?.id ?? "", disabled: false, rowId: behavior.id },
       category: { value: behavior?.category ?? "", disabled: false, rowId: behavior.id },
-      behaviors: {
-        value: behavior?.behaviors,
+      behaviors: { value: behavior?.behaviors, disabled: false, rowId: behavior.id },
+    };
+
+    BEHAVIOUR_STATES.forEach(state => {
+      const stateInst = behavior.stateInstructions?.find(s => s.stateId === state.stateId);
+      row[`stateInstruction_${state.stateId}`] = {
+        value: stateInst?.instruction ?? "",
         disabled: false,
         rowId: behavior.id,
-      },
-      instructions: { value: behavior?.instructions ?? "", disabled: false, rowId: behavior.id },
-    }),
-    [],
-  );
+      };
+    });
+
+    return row;
+  }, []);
 
   const tableData = useMemo(
     () => ({
-      data: formData.map(behavior => createBehavioursInstructionObject(behavior)),
-      columns: BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS,
+      data: formData.map(behavior => createTableRowObject(behavior)),
+      columns: BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS,
     }),
-    [formData, createBehavioursInstructionObject],
+    [formData, createTableRowObject],
   );
 
   const handleAddRow = useCallback(() => {
-    //TODO: max 10 behaviours instruction rows
     if (formData.length >= 10) {
       toast.error(en.errors.maxRowsBehavioursInstruction);
       return;
@@ -82,12 +90,26 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
       const { columnId, value, rowId } = action;
       if (columnId == null || rowId == null || value === undefined) return;
 
-      const newValue = value;
-
-      const updatedFormData = formData.map(behavior =>
-        behavior.id !== rowId ? behavior : { ...behavior, [columnId]: newValue },
-      );
-      formMethods.setValue(id, updatedFormData, { shouldDirty: true });
+      if (columnId.startsWith("stateInstruction_")) {
+        const stateId = columnId.replace("stateInstruction_", "");
+        const updatedFormData = formData.map(behavior => {
+          if (behavior.id !== rowId) return behavior;
+          const stateInstructions = [...(behavior.stateInstructions || [])];
+          const existingIndex = stateInstructions.findIndex(s => s.stateId === stateId);
+          if (existingIndex >= 0) {
+            stateInstructions[existingIndex] = { stateId, instruction: value as string };
+          } else {
+            stateInstructions.push({ stateId, instruction: value as string });
+          }
+          return { ...behavior, stateInstructions };
+        });
+        formMethods.setValue(id, updatedFormData, { shouldDirty: true });
+      } else {
+        const updatedFormData = formData.map(behavior =>
+          behavior.id !== rowId ? behavior : { ...behavior, [columnId]: value },
+        );
+        formMethods.setValue(id, updatedFormData, { shouldDirty: true });
+      }
     },
     [formMethods, id, formData],
   );
@@ -122,7 +144,7 @@ export const BehavioursInstruction: FC<BehavioursInstructionProps> = ({
           {en.simulation.behavioursInstruction}
           {isMandatory && <span className="text-destructive-500">*</span>}
         </div>
-        <div className="flex gap-2 items-cente">
+        <div className="flex gap-2 items-center">
           {selectedRows.length > 0 && (
             <Button
               variant={ButtonVariant.SECONDARY}
