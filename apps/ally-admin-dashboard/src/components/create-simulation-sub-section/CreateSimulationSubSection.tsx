@@ -42,7 +42,7 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
   };
 
   return (
-    <div className="flex flex-row flex-wrap gap-5 w-[60%] min-w-[850px]">
+    <div className="flex flex-row flex-wrap gap-5 w-[60%] min-w-[930px]">
       {items?.map(item => {
         if (!shouldRenderField(item)) {
           return null;

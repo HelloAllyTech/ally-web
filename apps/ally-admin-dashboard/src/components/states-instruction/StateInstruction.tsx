@@ -1,3 +1,4 @@
+// TODO: Remove this component once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
 import { FC, ReactNode } from "react";
 
 import { en, DEFAULT_STATE_INSTRUCTIONS, STATES_INSTRUCTION_TABLE_HEADERS } from "@constants";

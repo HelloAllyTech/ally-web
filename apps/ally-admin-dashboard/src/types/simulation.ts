@@ -52,11 +52,17 @@ export enum enumBehaviourInstructionCategory {
   HELPER_SHOULD_DO = "SHOULD_DO",
   HELPER_SHOULD_NOT_DO = "SHOULD_NOT_DO",
 }
+export interface behaviourStateInstruction {
+  stateId: string;
+  instruction: string;
+}
+
 export interface behaviourInstruction {
   id?: string;
   category: enumBehaviourInstructionCategory;
   behaviors: string[];
   instructions: string[];
+  stateInstructions?: behaviourStateInstruction[];
 }
 
 export interface SimulationInput {
