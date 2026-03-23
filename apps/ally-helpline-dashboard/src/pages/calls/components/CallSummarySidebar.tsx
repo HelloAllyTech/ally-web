@@ -82,7 +82,11 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<TranscriptMessage[]>([]);
 
-  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery(
+  const {
+    data: transcriptData,
+    isLoading: isGetTranscriptLoading,
+    refetch: refetchTranscript,
+  } = useGetTranscriptQuery(
     {
       chatId: individualCallSummary?.id,
       offset: transcriptOffset,
@@ -542,11 +546,21 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     }
   };
 
+  const onTabChange = (nextTabId: number) => {
+    if (nextTabId === 2) {
+      // 2 is the id of the Annotated Transcript tab
+      setTranscriptOffset(0);
+      setTranscriptList([]);
+      refetchTranscript();
+    }
+  };
+
   return (
     <SummarySidebarWrapper
       onSidebarClose={onSidebarClose}
       tabList={permittedTabList}
       title={SidebarTitle}
+      onTabChange={onTabChange}
     >
       <FeedbackDialog
         open={showFeedbackDialog}

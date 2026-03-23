@@ -155,7 +155,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
         </div>
         <Checklist className="h-full" sessionId={props.sessionId} />
         {!isChecklistMode && (
-          <motion.div className="overflow-y-auto font-primary space-y-4">
+          <motion.div className="font-primary space-y-4">
             {feedbackSections.map(({ key, label, type, columns }, index) => {
               return (
                 <motion.div

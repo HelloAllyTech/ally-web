@@ -49,7 +49,7 @@ export const PostSimulationSummary: FC = () => {
           sessionId={sessionId ?? ""}
           summaryData={summaryData}
           retryMaxReached={retryMaxReached}
-          className="max-h-[calc(100vh-212px)]"
+          className="h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar"
         />
       ),
     },
@@ -139,7 +139,7 @@ export const PostSimulationSummary: FC = () => {
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
   return (
-    <div className="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center ">
+    <div className="bg-white w-full h-[100vh] flex flex-col items-center ">
       <motion.div
         variants={containerVariants}
         initial="hidden"

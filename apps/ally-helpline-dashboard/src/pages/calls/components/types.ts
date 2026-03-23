@@ -81,6 +81,7 @@ export interface SummarySidebarWrapperProps {
   }[];
   title: ReactNode;
   children?: ReactNode;
+  onTabChange?: (nextTabId: number) => void;
 }
 
 export interface SimulationSummarySidebarProps {
