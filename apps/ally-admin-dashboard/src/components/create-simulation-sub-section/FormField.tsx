@@ -4,6 +4,7 @@ import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
+import { BehavioursAndStatesInstruction } from "../behaviours-and-states-instruction";
 import { BehavioursInstruction } from "../behaviours-instruction";
 import { CharacterProfileSelector } from "../character-profile-selector";
 import { Competency } from "../competency";
@@ -217,6 +218,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION:
         return (
           <StateInstruction
+            formMethods={formMethods}
+            id={id}
+            isMandatory={isMandatory}
+            regenerateButton={regenerateButton}
+          />
+        );
+      case FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_STATES_INSTRUCTION:
+        return (
+          <BehavioursAndStatesInstruction
             formMethods={formMethods}
             id={id}
             isMandatory={isMandatory}

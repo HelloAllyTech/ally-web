@@ -63,6 +63,7 @@ export * from "./character-side-panel";
 export * from "./character-profile-selector";
 export * from "./accordion";
 export * from "./behaviours-instruction";
+export * from "./behaviours-and-states-instruction";
 export * from "./helper-tag";
 export * from "./icon-uploader";
 export * from "./states-instruction";

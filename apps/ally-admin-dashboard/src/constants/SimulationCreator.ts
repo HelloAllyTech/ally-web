@@ -118,6 +118,7 @@ export const FORM_FIELD_TYPES = {
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
     BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
     STATES_INSTRUCTION: "states_instruction",
+    BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -277,22 +278,36 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: true,
       },
-      {
-        id: "behaviorInstructions",
-        label: "Behaviour Instructions",
-        type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
-        fullWidth: true,
-        isMandatory: true,
-        regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
-      },
-      {
-        id: "stateInstructions",
-        label: "State Instructions & Dialogues",
-        type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
-        fullWidth: true,
-        isMandatory: true,
-        regenerateType: REGENERATE_TYPE.STATE_INSTRUCTIONS,
-      },
+      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
+      ...(FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG
+        ? [
+            {
+              id: "behaviorInstructions",
+              label: "Behaviour Instructions",
+              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_STATES_INSTRUCTION,
+              fullWidth: true,
+              isMandatory: true,
+              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+            },
+          ]
+        : [
+            {
+              id: "behaviorInstructions",
+              label: "Behaviour Instructions",
+              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
+              fullWidth: true,
+              isMandatory: true,
+              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+            },
+            {
+              id: "stateInstructions",
+              label: "State Instructions & Dialogues",
+              type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
+              fullWidth: true,
+              isMandatory: true,
+              regenerateType: REGENERATE_TYPE.STATE_INSTRUCTIONS,
+            },
+          ]),
 
       {
         id: "customFields",
@@ -830,6 +845,44 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
     minWidth: 310,
     width: "36%",
   },
+];
+
+export const BEHAVIOUR_STATES = [
+  { stateId: "1", label: "State 1 Instructions" },
+  { stateId: "2", label: "State 2 Instructions" },
+  { stateId: "3", label: "State 3 Instructions" },
+  { stateId: "4", label: "State 4 Instructions" },
+];
+
+export const BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS = [
+  {
+    id: "category",
+    label: "Category",
+    accessor: "category",
+    placeholder: "Select category",
+    dataType: cellTypes.dropdown,
+    options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
+    minWidth: 180,
+    width: "14%",
+  },
+  {
+    id: "behaviors",
+    label: "Helper behaviour classes",
+    accessor: "behaviors",
+    placeholder: "Add behaviour",
+    dataType: cellTypes.dropdownTags,
+    minWidth: 220,
+    width: "18%",
+  },
+  ...BEHAVIOUR_STATES.map(state => ({
+    id: `stateInstruction_${state.stateId}`,
+    label: state.label,
+    accessor: `stateInstruction_${state.stateId}`,
+    placeholder: "Add instruction",
+    dataType: cellTypes.editableText,
+    minWidth: 190,
+    width: "17%",
+  })),
 ];
 
 export const STATES_INSTRUCTION_TABLE_HEADERS = [

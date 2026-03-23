@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
@@ -159,10 +160,14 @@ export const CreateSimulation: FC = () => {
         const hasAnyVoiceSelected = !!mappings && Object.values(mappings).some(v => !!v);
         if (!hasAnyVoiceSelected) return false;
       }
-      if (fieldId === FORM_FIELD_IDS.STATE_INSTRUCTIONS) {
-        const stateInstructions = value as stateInstruction[];
+      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
+      if (
+        !FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG &&
+        fieldId === FORM_FIELD_IDS.STATE_INSTRUCTIONS
+      ) {
+        const stateInstructionsVal = value as stateInstruction[];
         if (
-          stateInstructions.some(
+          stateInstructionsVal.some(
             instruction =>
               instruction.instruction.trim() === "" || instruction.dialogues?.length === 0,
           )
@@ -171,15 +176,30 @@ export const CreateSimulation: FC = () => {
       }
       if (fieldId === FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) {
         const behaviorInstructions = value as behaviourInstruction[];
-        if (
-          behaviorInstructions.some(
-            instruction =>
-              instruction.behaviors.length === 0 ||
-              instruction.category.length === 0 ||
-              instruction.instructions.length === 0,
+        // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
+        if (FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG) {
+          if (
+            behaviorInstructions.some(
+              instruction =>
+                instruction.behaviors.length === 0 ||
+                instruction.category.length === 0 ||
+                !instruction.stateInstructions ||
+                instruction.stateInstructions.filter(si => si.instruction.trim().length > 0)
+                  .length === 0,
+            )
           )
-        )
-          return false;
+            return false;
+        } else {
+          if (
+            behaviorInstructions.some(
+              instruction =>
+                instruction.behaviors.length === 0 ||
+                instruction.category.length === 0 ||
+                instruction.instructions.length === 0,
+            )
+          )
+            return false;
+        }
       }
       return true;
     });
@@ -330,11 +350,22 @@ export const CreateSimulation: FC = () => {
           isNonEmptyArray(instruction?.behaviors) ||
           normalizeInstructions(instruction?.instructions).length > 0
         ) {
-          behaviourInstructionsArray.push({
+          const entry: any = {
             category: instruction.category,
             behaviors: instruction.behaviors?.map((behavior: any) => behavior?.id ?? behavior),
             instructions: normalizeInstructions(instruction.instructions),
-          });
+          };
+          // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
+          if (FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG) {
+            entry.stateInstructions = (instruction.stateInstructions ?? [])
+              .filter((si: any) => isNonEmptyString(si?.instruction))
+              .map((si: any) => ({
+                stateId: si.stateId,
+                instruction: si.instruction,
+              }));
+          }
+
+          behaviourInstructionsArray.push(entry);
         }
       });
     }
@@ -346,7 +377,8 @@ export const CreateSimulation: FC = () => {
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
       status,
-      stateInstructions,
+      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
+      ...(!FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG && { stateInstructions }),
       behaviorInstructions: behaviourInstructionsArray,
       competencyId: restForm.competency?.id,
       maxTimeValue: timerMode ? maxTimeValue : null,
