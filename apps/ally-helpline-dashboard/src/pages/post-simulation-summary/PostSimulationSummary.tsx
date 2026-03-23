@@ -139,12 +139,12 @@ export const PostSimulationSummary: FC = () => {
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
   return (
-    <div className="bg-white w-full h-[100vh] flex flex-col items-center ">
+    <div className="bg-white w-full h-[100vh] flex flex-col items-center  pb-[40px]">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        className="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center relative"
       >
         <div className="flex items-center justify-between w-full mt-8">
           <div className="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
@@ -220,7 +220,11 @@ export const PostSimulationSummary: FC = () => {
             </Tabs>
             {getTabContent()}
             {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
-              <Button onClick={() => navigate(-1)}>{t("postSim.common.tryAnother")}</Button>
+              <div className="flex justify-center items-center fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                <Button onClick={() => navigate(ROUTES.LEARN)}>
+                  {t("postSim.common.tryAnother")}
+                </Button>
+              </div>
             )}
           </>
         )}

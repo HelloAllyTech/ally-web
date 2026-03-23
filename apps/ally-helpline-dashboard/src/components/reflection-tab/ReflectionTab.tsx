@@ -143,7 +143,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-[calc(100vh-140px)] font-primary rounded-lg border border-gray-200 bg-white p-4">
+    <div className="flex flex-col gap-4 w-full h-[calc(100vh-260px)] font-primary rounded-lg border border-gray-200 bg-white p-4">
       <div className="flex flex-row gap-4 justify-between border-b border-gray-200 pb-2">
         <span className="text-typography-900 font-primary text-base font-medium">
           Deeper Reflection
@@ -151,7 +151,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
         {renderAutosave()}
       </div>
 
-      <div className={`flex gap-4 flex-1 min-h-0 overflow-auto custom-scrollbar ${className}`}>
+      <div className={`flex gap-4 flex-1 min-h-0 ${className}`}>
         {prompts?.map((text, index) => renderJournalCard(index, text))}
         {prompts?.length === 0 && (
           <div className="flex flex-col gap-4 h-full w-full min-w-[300px] p-10 items-center">
