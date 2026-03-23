@@ -3,7 +3,6 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetSessionEventsQuery,
   useUpdateSessionEventMutation,
@@ -178,16 +177,11 @@ export const EventManagement: React.FC = () => {
         disabled: isDisabled,
         rowId: event.id,
       },
-      ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
-        ? {
-            occurrenceInterval: {
-              value: event.detectionConfig?.occurrenceInterval,
-              disabled:
-                isDisabled || event.detectionType !== EVENT_DETECTION_TYPES.BINARY_CLASSIFIER,
-              rowId: event.id,
-            },
-          }
-        : {}),
+      occurrenceInterval: {
+        value: event.detectionConfig?.occurrenceInterval,
+        disabled: isDisabled || event.detectionType !== EVENT_DETECTION_TYPES.BINARY_CLASSIFIER,
+        rowId: event.id,
+      },
       startTime: {
         value: event.detectionConfig?.startTime,
         disabled: isDisabled || isTimeBased,

@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
@@ -22,7 +21,7 @@ import {
   SkillsTab,
   ToggleSwitch,
 } from "@components";
-import { REVIEW_PRIVACY_OPTIONS, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
+import { REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { ShortSessionUI, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { pageType, ShareForReviewsInput } from "@types";
 
@@ -156,29 +155,21 @@ export const PostSimulationSummary: FC = () => {
           </div>
           {!isShortSession && (
             <div className="flex justify-center gap-2 items-center">
-              {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
-                <div className="flex items-center gap-2">
-                  <span className="font-primary font-normal text-sm">
-                    {t("postSim.common.shareForReview")}
-                  </span>
-                  <ToggleSwitch
-                    enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
-                    onChange={(value: boolean) => {
-                      handleToggleChange(
-                        value
-                          ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                          : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                      );
-                    }}
-                  />
-                </div>
-              ) : (
-                <Toggle
-                  items={REVIEW_PRIVACY_OPTIONS(t)}
-                  initialValue={summary?.reviewStatus}
-                  onChange={handleCreateReview}
+              <div className="flex items-center gap-2">
+                <span className="font-primary font-normal text-sm">
+                  {t("postSim.common.shareForReview")}
+                </span>
+                <ToggleSwitch
+                  enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
+                  onChange={(value: boolean) => {
+                    handleToggleChange(
+                      value
+                        ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                        : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                    );
+                  }}
                 />
-              )}
+              </div>
               {summary?.reviewId && (
                 <>
                   <div className="border-l border-border h-5" />
@@ -202,7 +193,7 @@ export const PostSimulationSummary: FC = () => {
         ) : (
           <>
             <ShareForReview
-              isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
+              isOpen={shareForReview}
               onClose={() => {
                 setShareForReview(false);
               }}
