@@ -26,7 +26,7 @@ vi.mock("@assets", () => ({
   Carousel3: "Carousel3",
   Carousel4: "Carousel4",
   EndSessionIllustration: "EndSessionIllustration",
-  Focus: "Focus",
+  Focus: "Turn focus mode on",
   PauseIcon: "PauseIcon",
   Warning: "Warning",
   Lock: "Lock",

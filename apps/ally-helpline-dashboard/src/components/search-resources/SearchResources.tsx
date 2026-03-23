@@ -151,7 +151,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
         "search.headerDescription",
         "Guidance, safety, and support — whenever you need it.",
       )}
-      suggestionsTitle={t("search.suggestionsTitle", "Try:")}
+      suggestionsTitle={t("search.suggestionsTitle", "Try now")}
       noResultsLabel={t("search.noResults", 'No results found for "{{query}}"')}
       allLabel={t("search.allLabel", "All")}
       logoAlt={t("search.logoAlt", "Ally Logo")}

@@ -193,9 +193,9 @@ describe("ScenarioDetailsCard", () => {
 
   it("should render the Start session button", () => {
     renderComponent();
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start role Play/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute("aria-label", "Start simulation");
+    expect(button).toHaveAttribute("aria-label", "Start role play");
   });
 
   // --- Image Error Handling Tests ---
@@ -214,27 +214,27 @@ describe("ScenarioDetailsCard", () => {
 
   it("should disable button when isStarting is true", () => {
     renderComponent({ isStarting: true });
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start role play/i });
     expect(button).toBeDisabled();
     expect(button).toHaveClass("!bg-gray-400");
   });
 
   it("should disable button when noCredits is true", () => {
     renderComponent({ noCredits: true });
-    const button = screen.getByRole("button", { name: /Start simulation/i });
+    const button = screen.getByRole("button", { name: /Start role play/i });
     expect(button).toBeDisabled();
     expect(button).toHaveClass("!bg-gray-400");
   });
 
   it("should disable button when both isStarting and noCredits are true", () => {
     renderComponent({ isStarting: true, noCredits: true });
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start role play/i });
     expect(button).toBeDisabled();
   });
 
   it("should enable button when both isStarting and noCredits are false", () => {
     renderComponent({ isStarting: false, noCredits: false });
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start role play/i });
     expect(button).not.toBeDisabled();
   });
 
@@ -253,7 +253,7 @@ describe("ScenarioDetailsCard", () => {
 
   it("should show notification dialog when Start simulation button is clicked", () => {
     renderComponent();
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start role play/i });
 
     fireEvent.click(button);
 
@@ -264,7 +264,7 @@ describe("ScenarioDetailsCard", () => {
 
   it("should call onStart when Start Session is clicked in notification dialog", () => {
     renderComponent();
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start role play/i });
 
     fireEvent.click(button);
 
@@ -282,7 +282,7 @@ describe("ScenarioDetailsCard", () => {
       card.addEventListener("click", parentClickHandler);
     }
 
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
+    const button = screen.getByRole("button", { name: /Start role play/i });
     fireEvent.click(button);
 
     expect(screen.getByTestId("notification-dialog")).toBeInTheDocument();

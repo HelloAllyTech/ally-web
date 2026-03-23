@@ -39,7 +39,7 @@ const SuggestionsContainer: FC<SuggestionsContainerProps> = ({
         className={`leading-[100%] tracking-[0] mb-4 ${suggestionsStyles[mode].header}`}
         data-testid="suggestions-header"
       >
-        {suggestionsTitle || "Try:"}
+        {suggestionsTitle || "Try now"}
       </div>
       <div
         data-testid="suggestions-list"

@@ -199,7 +199,7 @@ vi.mock("@components", () => ({
       <span data-testid="feed-card-comments-count">{commentsCount}</span>
       {isCommentsLoading && <span data-testid="comments-loading">Loading comments...</span>}
       <button data-testid={`review-transcript-${id}`} onClick={onReviewTranscript}>
-        Review Transcript
+        Review Conversation
       </button>
       <button data-testid={`comments-click-${id}`} onClick={onCommentsClick}>
         View Comments
@@ -224,7 +224,7 @@ vi.mock("@components/feed-card", () => ({
       <span data-testid="feed-card-comments-count">{commentsCount}</span>
       {isCommentsLoading && <span data-testid="comments-loading">Loading comments...</span>}
       <button data-testid={`review-transcript-${id}`} onClick={onReviewTranscript}>
-        Review Transcript
+        Review Conversation
       </button>
       <button data-testid={`comments-click-${id}`} onClick={onCommentsClick}>
         View Comments
@@ -897,7 +897,7 @@ describe("Review Component", () => {
    * TEST GROUP: Navigation
    */
   describe("Navigation", () => {
-    it("navigates to review details when review transcript is clicked", () => {
+    it("navigates to review details when Review Conversation is clicked", () => {
       render(
         <TestWrapper>
           <Review />

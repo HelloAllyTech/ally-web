@@ -35,10 +35,10 @@ vi.mock("@utils", () => ({
 
 vi.mock("../constants", () => ({
   BOX_BREATHING_STEPS: [
-    { label: "Inhale", duration: 4 },
-    { label: "Hold", duration: 4 },
+    { label: "Inhale now", duration: 4 },
+    { label: "Hold breathe", duration: 4 },
     { label: "Exhale", duration: 4 },
-    { label: "Hold", duration: 4 },
+    { label: "Hold breathe", duration: 4 },
   ],
 }));
 

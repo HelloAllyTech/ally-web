@@ -21,7 +21,7 @@ export interface BadgeOption {
 export const BADGE_POPUP_OPTIONS: BadgeOption[] = [
   {
     value: "SIMULATION_MINUTES",
-    label: "Journey Badges",
+    label: " App Journey Badges",
     description: "Earned when completing simulation minutes.",
     icon: Timer,
     role: "LEARNER",

@@ -33,7 +33,7 @@ const CallControls: FC<CallControlsProps> = ({
       isDisabled: isPauseTranscriptionDisabled,
       leftIcon: isPaused ? <ResumeIcon /> : <PauseIcon />,
       show: showPauseTranscription,
-      text: isPaused ? "Resume Transcription" : "Pause Transcription",
+      text: isPaused ? "Resume note taking" : "Pause note taking",
     },
     {
       action: () => onFocusButtonClick(!isFocusMode),
@@ -41,7 +41,7 @@ const CallControls: FC<CallControlsProps> = ({
       isDisabled: isFocusButtonDisabled,
       leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
       show: showFocusButton,
-      text: isFocusMode ? "Focused" : "Focus",
+      text: isFocusMode ? "Turn focus mode off" : "Turn focus mode on",
     },
     {
       action: onEndSessionClick,

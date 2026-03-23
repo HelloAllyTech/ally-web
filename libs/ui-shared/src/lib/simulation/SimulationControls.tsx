@@ -33,7 +33,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       isDisabled: isEndingSession,
       leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
       show: true,
-      text: isFocusMode ? "Focused" : "Focus",
+      text: isFocusMode ? "Turn focus mode off" : "Turn focus mode on",
       testId: "simulation-controls-focus-button",
     },
     {

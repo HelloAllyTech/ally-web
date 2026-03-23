@@ -38,7 +38,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
               for="notes"
             >
               <span>
-                Add Notes(Optional)
+                Add Notes (Optional)
               </span>
             </label>
           </div>
@@ -46,7 +46,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
             class="b"
             componentsprops="[object Object]"
             data-testid="tooltip"
-            data-title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
             placement="bottom-end"
           >
             <svg
@@ -59,7 +59,7 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
           class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
           disabled=""
           id="notes"
-          placeholder="Jot down your thoughts"
+          placeholder="write down your thoughts"
           rows="4"
         />
       </div>
@@ -132,7 +132,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
               for="notes"
             >
               <span>
-                Add Notes(Optional)
+                Add Notes (Optional)
               </span>
             </label>
           </div>
@@ -140,7 +140,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
             class="b"
             componentsprops="[object Object]"
             data-testid="tooltip"
-            data-title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
             placement="bottom-end"
           >
             <svg
@@ -153,7 +153,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
           class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
           disabled=""
           id="notes"
-          placeholder="Jot down your thoughts"
+          placeholder="write down your thoughts"
           rows="4"
         />
       </div>
@@ -225,7 +225,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
               for="notes"
             >
               <span>
-                Add Notes(Optional)
+                Add Notes (Optional)
               </span>
             </label>
           </div>
@@ -233,7 +233,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
             class="b"
             componentsprops="[object Object]"
             data-testid="tooltip"
-            data-title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
             placement="bottom-end"
           >
             <svg
@@ -246,7 +246,7 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
           class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
           disabled=""
           id="notes"
-          placeholder="Jot down your thoughts"
+          placeholder="write down your thoughts"
           rows="4"
         />
       </div>
@@ -308,7 +308,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
               for="notes"
             >
               <span>
-                Add Notes(Optional)
+                Add Notes (Optional)
               </span>
             </label>
           </div>
@@ -316,7 +316,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
             class="b"
             componentsprops="[object Object]"
             data-testid="tooltip"
-            data-title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
+            data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
             placement="bottom-end"
           >
             <svg
@@ -329,7 +329,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
           class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
           disabled=""
           id="notes"
-          placeholder="Jot down your thoughts"
+          placeholder="write down your thoughts"
           rows="4"
         />
       </div>

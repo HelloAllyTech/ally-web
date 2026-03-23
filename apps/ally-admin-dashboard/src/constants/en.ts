@@ -309,7 +309,7 @@ export const en = {
     save: "Save",
     preview: "Preview",
     status: "Status",
-    scenario: "Scenario",
+    scenario: "Situation",
     cancel: "Cancel",
     saveAndExit: "Save & Exit",
     discardChanges: "Discard Changes",
