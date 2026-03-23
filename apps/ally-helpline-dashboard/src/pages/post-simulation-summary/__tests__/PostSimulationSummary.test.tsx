@@ -144,7 +144,6 @@ vi.mock("@ally-ui-mono/ui-shared/index", async importOriginal => {
     ...actual,
     FEATURE_FLAGS_MAP: {
       ...actual.FEATURE_FLAGS_MAP,
-      SHARE_FOR_REVIEW_FLAG: true,
     },
   };
 });

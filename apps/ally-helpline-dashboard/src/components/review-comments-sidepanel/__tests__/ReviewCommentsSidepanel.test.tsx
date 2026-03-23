@@ -91,9 +91,6 @@ vi.mock("@components", () => ({
 
 // Mock ui-shared
 vi.mock("@ally-ui-mono/ui-shared/index", () => ({
-  FEATURE_FLAGS_MAP: {
-    GENERAL_COMMENTS_FLAG: false,
-  },
   Tabs: ({ items, activeId, onChange }: any) => (
     <div data-testid="tabs">
       {items.map((item: any) => (
@@ -231,17 +228,17 @@ describe("ReviewCommentsSidepanel Component", () => {
 
   // --- Header Tests ---
   describe("Header", () => {
-    it("should display '0 Comments' when totalComments is 0", async () => {
+    it("should display 'Comments' when totalComments is 0", async () => {
       renderWithProviders(<ReviewCommentsSidepanel {...defaultProps} threads={[]} />);
       await waitFor(() => {
-        expect(screen.getByText("0 Comments")).toBeInTheDocument();
+        expect(screen.getByText("Comments")).toBeInTheDocument();
       });
     });
 
-    it("should display '0 Comments' when totalComments is undefined", async () => {
+    it("should display 'Comments' when totalComments is undefined", async () => {
       renderWithProviders(<ReviewCommentsSidepanel {...defaultProps} threads={[]} />);
       await waitFor(() => {
-        expect(screen.getByText("0 Comments")).toBeInTheDocument();
+        expect(screen.getByText("Comments")).toBeInTheDocument();
       });
     });
   });
@@ -368,7 +365,7 @@ describe("ReviewCommentsSidepanel Component", () => {
       renderWithProviders(<ReviewCommentsSidepanel {...defaultProps} threads={singleThread} />);
       await waitFor(() => {
         expect(screen.getByTestId("thread-card-thread-1")).toBeInTheDocument();
-        expect(screen.getByText("1 Comment")).toBeInTheDocument();
+        expect(screen.getByText("Comments")).toBeInTheDocument();
       });
     });
 

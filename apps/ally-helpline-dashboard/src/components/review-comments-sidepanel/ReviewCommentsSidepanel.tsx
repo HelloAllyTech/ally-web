@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { Skeleton } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import { GeneralCommentsToShow, ThreadsToShow } from "@components";
 import { CommentItem, Thread } from "@types";
 
@@ -71,28 +71,24 @@ const ReviewCommentsSidepanel = ({
       <div
         className="w-full pt-4 px-4 flex items-center justify-between"
         style={{
-          borderBottom: FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG ? "none" : "0.5px solid #E5E7EB",
+          borderBottom: "none",
         }}
       >
         <div className="text-typography-900 font-medium text-lg">
-          {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG
-            ? t("review.details.comments")
-            : t("review.details.comment", { count: threads?.length })}
+          {t("review.details.comments")}
         </div>
       </div>
-      {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
-        <div className="w-full px-4">
-          <Tabs
-            items={[
-              { id: "inline", label: "Inline" },
-              { id: "general", label: "General" },
-            ]}
-            activeId={activeTab}
-            showCount={false}
-            onChange={id => setActiveTab(id as TabType)}
-          />
-        </div>
-      )}
+      <div className="w-full px-4">
+        <Tabs
+          items={[
+            { id: "inline", label: "Inline" },
+            { id: "general", label: "General" },
+          ]}
+          activeId={activeTab}
+          showCount={false}
+          onChange={id => setActiveTab(id as TabType)}
+        />
+      </div>
       <div className="w-full h-full px-4">
         {!isLoading && (
           <>
@@ -105,22 +101,20 @@ const ReviewCommentsSidepanel = ({
                 onCommentClick={onCommentClick}
               />
             )}
-            {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
-              <GeneralCommentsToShow
-                show={activeTab === "general"}
-                generalComments={generalComments}
-                handleLoadMore={handleGeneralCommentsLoadMore}
-                hasMoreComments={hasMoreGeneralComments}
-                isLoading={isGeneralCommentsLoading}
-                setComments={setComments}
-                deletedReplyId={deletedReplyId}
-                setDeletedReplyId={setDeletedReplyId}
-                changedReply={changedReply}
-                onReplyChange={handleReplyChange}
-                isFeedOwner={isFeedOwner}
-                isScribeReview={isScribeReview}
-              />
-            )}
+            <GeneralCommentsToShow
+              show={activeTab === "general"}
+              generalComments={generalComments}
+              handleLoadMore={handleGeneralCommentsLoadMore}
+              hasMoreComments={hasMoreGeneralComments}
+              isLoading={isGeneralCommentsLoading}
+              setComments={setComments}
+              deletedReplyId={deletedReplyId}
+              setDeletedReplyId={setDeletedReplyId}
+              changedReply={changedReply}
+              onReplyChange={handleReplyChange}
+              isFeedOwner={isFeedOwner}
+              isScribeReview={isScribeReview}
+            />
           </>
         )}
         {isLoading && (

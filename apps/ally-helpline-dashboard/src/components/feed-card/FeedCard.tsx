@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import { useLazyGetGeneralCommentsOverviewQuery, useLazyGetReviewThreadsQuery } from "@api";
+import { useLazyGetGeneralCommentsOverviewQuery } from "@api";
 import { ReviewTranscript, ScribeImage } from "@assets";
 import { ReactionsModal } from "@components";
 import { useUser } from "@hooks";
@@ -76,35 +76,25 @@ const FeedCard: FC<FeedCardProps> = ({
   const unicodeCodes = entries.map(([code]) => code);
   const totalReactionCount = entries.reduce((sum, [, count]) => sum + count, 0);
 
-  const [fetchReviewThreads, { data: reviewThreadsData, isLoading: isReviewThreadsLoading }] =
-    useLazyGetReviewThreadsQuery();
-
   const [
     fetchGeneralCommentsOverview,
     { data: generalCommentsData, isLoading: isGeneralCommentsLoading },
   ] = useLazyGetGeneralCommentsOverviewQuery();
 
   const comments = useMemo(() => {
-    if (FEATURE_FLAGS_MAP?.GENERAL_COMMENTS_FLAG) {
-      return generalCommentsData?.data ?? [];
-    }
-    return reviewThreadsData?.data?.flatMap(thread => thread.comments) ?? [];
-  }, [reviewThreadsData, generalCommentsData]);
+    return generalCommentsData?.data ?? [];
+  }, [generalCommentsData]);
 
   const handleCommentsClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     const willExpand = !isCommentsExpanded;
     if (willExpand && id) {
-      if (FEATURE_FLAGS_MAP?.GENERAL_COMMENTS_FLAG) {
-        fetchGeneralCommentsOverview({
-          reviewId: id,
-          limit: 2,
-          offset: 0,
-          isScribe: isScribeReview ?? false,
-        });
-      } else {
-        fetchReviewThreads({ id, limit: 2, offset: 0 });
-      }
+      fetchGeneralCommentsOverview({
+        reviewId: id,
+        limit: 2,
+        offset: 0,
+        isScribe: isScribeReview ?? false,
+      });
     }
     setIsCommentsExpanded(willExpand);
   };
@@ -422,7 +412,7 @@ const FeedCard: FC<FeedCardProps> = ({
   };
 
   const renderCommentsSection = () => {
-    if (isReviewThreadsLoading || isGeneralCommentsLoading)
+    if (isGeneralCommentsLoading)
       return (
         <div className="flex items-center justify-center py-4">
           <div className="w-5 h-5 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin" />
