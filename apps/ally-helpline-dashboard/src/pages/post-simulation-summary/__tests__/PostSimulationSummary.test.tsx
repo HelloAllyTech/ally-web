@@ -226,7 +226,6 @@ describe("PostSimulationSummary Component", () => {
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("w-full");
       expect(mainContainer?.className).toContain("h-[100vh]");
-      expect(mainContainer?.className).toContain("overflow-y-auto");
       expect(mainContainer?.className).toContain("flex");
       expect(mainContainer?.className).toContain("flex-col");
       expect(mainContainer?.className).toContain("items-center");
@@ -419,7 +418,9 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const simulationSummary = screen.getByTestId("simulation-summary");
-      expect(simulationSummary).toHaveClass("max-h-[calc(100vh-212px)]");
+      expect(simulationSummary).toHaveClass("h-[calc(100vh-140px)]");
+      expect(simulationSummary).toHaveClass("overflow-y-auto");
+      expect(simulationSummary).toHaveClass("custom-scrollbar");
       expect(screen.getByTestId("summary-session-id")).toHaveTextContent("123");
     });
 
@@ -433,7 +434,7 @@ describe("PostSimulationSummary Component", () => {
       const lastCallArgs = vi.mocked(SimulationSummary).mock.calls.at(-1) ?? [];
       expect(lastCallArgs[0]).toMatchObject({
         sessionId: "123",
-        className: "max-h-[calc(100vh-212px)]",
+        className: "h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar",
       });
       expect(lastCallArgs[0]).toHaveProperty("summaryData");
       expect(lastCallArgs[0]).toHaveProperty("retryMaxReached");

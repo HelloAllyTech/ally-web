@@ -424,7 +424,7 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const isChecklistMode = simulationMode === "CHECKLIST";
 
   return (
-    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto min-h-[70vh]">
+    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto h-[calc(100vh-140px)]">
       <h2 className="text-base font-medium font-primary text-typography-900">
         {t("postSim.tabs.skillsDemonstrated")}
       </h2>

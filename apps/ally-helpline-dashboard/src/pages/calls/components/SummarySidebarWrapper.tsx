@@ -14,6 +14,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
   isShortSession = false,
   summaryData,
   children,
+  onTabChange,
 }) => {
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
 
@@ -22,6 +23,10 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
       setSelectedTab(tabList[0].id);
     }
   }, []);
+
+  useEffect(() => {
+    onTabChange?.(selectedTab);
+  }, [selectedTab]);
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
