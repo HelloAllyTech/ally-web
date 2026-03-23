@@ -547,10 +547,9 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   };
 
   const onTabChange = (nextTabId: number) => {
-    if (nextTabId === 2) {
+    if (nextTabId === 2 && transcriptList.length === 0) {
       // 2 is the id of the Annotated Transcript tab
       setTranscriptOffset(0);
-      setTranscriptList([]);
       refetchTranscript();
     }
   };
