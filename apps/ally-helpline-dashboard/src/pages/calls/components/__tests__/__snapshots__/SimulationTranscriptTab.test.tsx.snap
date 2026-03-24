@@ -3,7 +3,7 @@
 exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
 <DocumentFragment>
   <div
-    class="relative h-[calc(100vh-140px)] custom-scrollbar p-4 border border-gray-200 rounded-md overflow-y-auto undefined"
+    class="relative flex h-full min-h-0 flex-col overflow-y-auto border border-gray-200 rounded-md p-4 custom-scrollbar undefined"
   >
     <span
       class="text-typography-900 font-primary text-base font-medium"

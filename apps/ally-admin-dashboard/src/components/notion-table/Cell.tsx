@@ -28,7 +28,7 @@ import { cellTypes } from "./utils";
 export const Cell = ({
   value: initialValue,
   rowIndex: index,
-  column: { dataType, options, minWidth, width, id, placeholder },
+  column: { dataType, options, minWidth, width, id, placeholder, maxLength },
   onCellChange,
   row,
 }) => {
@@ -181,6 +181,7 @@ export const Cell = ({
           onChange={updateCellValue}
           placeholder={placeholder}
           disabled={isDisabled}
+          maxLength={maxLength}
         />
       );
       break;

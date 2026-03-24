@@ -178,7 +178,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           sessionId={summaryId}
           summaryData={summaryData}
           retryMaxReached={retryMaxReached}
-          className="max-h-[calc(100vh-150px)]"
+          className="h-full min-h-0 flex flex-col overflow-hidden"
         />
       ),
     },
