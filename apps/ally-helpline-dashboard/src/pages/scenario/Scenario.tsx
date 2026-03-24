@@ -74,6 +74,8 @@ export const Scenario: FC = () => {
       const errorData = error as { data?: { statusCode?: number; entityId?: string } };
       if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
         setIsExistingSimulationConfirmOpen(true);
+      } else if (errorData.data?.statusCode === 429) {
+        setIsMaxActiveUsersPopupOpen(true);
       }
     },
   });
@@ -159,6 +161,11 @@ export const Scenario: FC = () => {
       setNoEnoughCredits(false);
     }
     setButtonDisable(true);
+  };
+
+  const handleMaxActiveUsersRetry = () => {
+    setIsMaxActiveUsersPopupOpen(false);
+    handleStartSimulation();
   };
   // TODO: Add loading fallback UI for scenario
 
@@ -260,7 +267,7 @@ export const Scenario: FC = () => {
               <MaxActiveUsersDialog
                 open={isMaxActiveUsersPopupOpen}
                 onClose={() => setIsMaxActiveUsersPopupOpen(false)}
-                onRetry={() => {}}
+                onRetry={handleMaxActiveUsersRetry}
               />
             )}
           </motion.div>
