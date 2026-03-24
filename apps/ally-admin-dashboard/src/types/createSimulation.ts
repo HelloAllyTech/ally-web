@@ -249,7 +249,7 @@ export interface Prompt {
   createdAt?: string;
   updatedAt?: string;
   isObsolete?: boolean;
-  /** Variable placeholders (e.g. {var_name}) parsed from prompt template, from API or fallback */
+  /** Source-synced variable placeholders available for runtime substitution */
   availableVariables?: string[];
   kind?: string;
   usesBlocks?: string[];
