@@ -383,18 +383,29 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
             )}
 
             {selectedPrompt.usesBlocks && selectedPrompt.usesBlocks.length > 0 && (
-              <Field label="Used Blocks" multiline={true}>
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {selectedPrompt.usesBlocks.map(code => (
-                    <button
-                      key={code}
-                      onClick={() => handleBlockClick(code)}
-                      className="inline-flex px-2 py-0.5 rounded text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-mono border border-blue-200"
-                      title="Click to edit block"
-                    >
-                      {code.replace("ally_ai_learn_system_", "")}
-                    </button>
-                  ))}
+              <Field label={en.simulation.usedBlocks} multiline={true}>
+                <div className="w-full space-y-3 pt-2">
+                  <div className="rounded-md border border-border-light bg-neutral-50 px-3 py-3">
+                    <div className="text-sm font-medium text-typography-900">
+                      {en.simulation.blocksHelpTitle}
+                    </div>
+                    <p className="mt-1 text-sm leading-5 text-typography-700">
+                      {en.simulation.blocksHelpText}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPrompt.usesBlocks.map(code => (
+                      <button
+                        key={code}
+                        onClick={() => handleBlockClick(code)}
+                        className="inline-flex px-2 py-0.5 rounded text-sm bg-neutral-100 text-typography-800 hover:bg-neutral-200 transition-colors font-mono border border-border-light"
+                        title="Click to edit block"
+                      >
+                        {code.replace("ally_ai_learn_system_", "")}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </Field>
             )}
