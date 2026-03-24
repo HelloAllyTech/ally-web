@@ -17,17 +17,6 @@ interface PromptSidePanelProps {
   onUpdate: (prompt: Prompt) => void;
 }
 
-function parseVariablesFromPrompt(text: string): string[] {
-  const vars = new Set<string>();
-  const singleBrace = text.matchAll(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g); // {var_name} - ally-ai-learn
-  const doubleMatch = text.matchAll(/\{\{(\w+)\}\}/g);
-  const angleMatch = text.matchAll(/<(\w+)>/g);
-  for (const m of singleBrace) vars.add(m[1]);
-  for (const m of doubleMatch) vars.add(m[1]);
-  for (const m of angleMatch) vars.add(m[1]);
-  return Array.from(vars).sort();
-}
-
 interface FieldProps {
   label: string;
   children: React.ReactNode;
@@ -205,26 +194,30 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   }, [selectedPrompt]);
 
   const availableVariables = useMemo(() => {
-    const promptEdited = formData.prompt !== selectedPrompt?.prompt;
-    let vars: string[] = [];
+    const vars = selectedPrompt?.availableVariables;
 
-    if (promptEdited) {
-      vars = parseVariablesFromPrompt(formData.prompt || "");
-    } else if (selectedPrompt?.availableVariables?.length) {
-      vars = selectedPrompt.availableVariables;
-    } else {
-      vars = parseVariablesFromPrompt(formData.prompt || "");
+    if (!vars || vars.length === 0) {
+      return [];
     }
 
     // Filter out block placeholders to keep the UI clean
-    return vars.filter(
+    const filtered = vars.filter(
       v =>
         !v.endsWith("_block") &&
-        v !== "life_history" &&
-        v !== "response_length" &&
-        v !== "agent_dialogues",
+        !v.endsWith("_prompt") &&
+        !v.includes("prompt_") &&
+        !v.includes("_instructions"),
     );
-  }, [selectedPrompt?.availableVariables, selectedPrompt?.prompt, formData.prompt]);
+
+    return [...filtered].sort();
+  }, [selectedPrompt?.availableVariables]);
+
+  const hasAnyBlocks = useMemo(() => {
+    return (
+      (selectedPrompt?.usesBlocks?.length ?? 0) > 0 ||
+      selectedPrompt?.availableVariables?.some((v: string) => v.endsWith("_block"))
+    );
+  }, [selectedPrompt?.usesBlocks, selectedPrompt?.availableVariables]);
 
   const handleSave = useCallback(() => {
     const promptCode = selectedPrompt?.promptCode ?? formData.promptCode ?? "";
@@ -382,7 +375,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
               </Field>
             )}
 
-            {selectedPrompt.usesBlocks && selectedPrompt.usesBlocks.length > 0 && (
+            {hasAnyBlocks && (
               <Field label={en.simulation.usedBlocks} multiline={true}>
                 <div className="w-full space-y-3 pt-2">
                   <div className="rounded-md border border-border-light bg-neutral-50 px-3 py-3">
@@ -394,18 +387,20 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    {selectedPrompt.usesBlocks.map(code => (
-                      <button
-                        key={code}
-                        onClick={() => handleBlockClick(code)}
-                        className="inline-flex px-2 py-0.5 rounded text-sm bg-neutral-100 text-typography-800 hover:bg-neutral-200 transition-colors font-mono border border-border-light"
-                        title="Click to edit block"
-                      >
-                        {code.replace("ally_ai_learn_system_", "")}
-                      </button>
-                    ))}
-                  </div>
+                  {selectedPrompt.usesBlocks && selectedPrompt.usesBlocks.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPrompt.usesBlocks.map(code => (
+                        <button
+                          key={code}
+                          onClick={() => handleBlockClick(code)}
+                          className="inline-flex px-2 py-0.5 rounded text-sm bg-neutral-100 text-typography-800 hover:bg-neutral-200 transition-colors font-mono border border-border-light"
+                          title="Click to edit block"
+                        >
+                          {code.replace("ally_ai_learn_system_", "")}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Field>
             )}
