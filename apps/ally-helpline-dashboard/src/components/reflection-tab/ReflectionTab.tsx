@@ -123,19 +123,21 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
     return (
       <div
         key={text?.id}
-        className="flex flex-col gap-4 bg-[#B39DDB10] rounded-md h-full w-full min-w-[300px] border border-[#7E57C2] p-6 shadow-sm"
+        className="flex min-h-0 flex-1 basis-0 flex-col gap-4 overflow-hidden bg-[#B39DDB10] rounded-md border border-[#7E57C2] p-6 shadow-sm min-w-[300px] w-full"
       >
-        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#7E57C2] flex items-center justify-center text-white font-semibold text-lg">
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#7E57C2] text-lg font-semibold text-white">
           {index + 1}
         </div>
-        <p className="text-[#7E57C2] text-xl leading-relaxed pt-2 font-serif">{text?.prompt}</p>
+        <p className="flex-shrink-0 break-words pt-2 font-serif text-xl leading-relaxed text-[#7E57C2]">
+          {text?.prompt}
+        </p>
 
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="relative min-h-0 flex-1">
           <textarea
             value={responses[index] ?? ""}
             onChange={e => updateResponse(index, e.target.value)}
             placeholder="Write your thoughts here..."
-            className="h-full min-h-[300px] bg-transparent w-full outline-none resize-none text-base text-typography-900 font-sans"
+            className="absolute inset-0 box-border w-full resize-none overflow-y-auto bg-transparent px-0 py-2 pb-3 font-sans text-base leading-normal text-typography-900 outline-none custom-scrollbar"
           />
         </div>
       </div>
@@ -143,15 +145,15 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-[calc(100vh-260px)] font-primary rounded-lg border border-gray-200 bg-white p-4 overflow-y-auto custom-scrollbar">
-      <div className="flex flex-row gap-4 justify-between border-b border-gray-200 pb-2">
+    <div className="flex h-full min-h-0 w-full flex-col gap-4 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 font-primary">
+      <div className="flex flex-shrink-0 flex-row justify-between gap-4 border-b border-gray-200 pb-2">
         <span className="text-typography-900 font-primary text-base font-medium">
           Deeper Reflection
         </span>
         {renderAutosave()}
       </div>
 
-      <div className={`flex gap-4 flex-1 min-h-0 ${className}`}>
+      <div className={`flex min-h-0 flex-1 gap-4 overflow-hidden ${className}`}>
         {prompts?.map((text, index) => renderJournalCard(index, text))}
         {prompts?.length === 0 && (
           <div className="flex flex-col gap-4 h-full w-full min-w-[300px] p-10 items-center">

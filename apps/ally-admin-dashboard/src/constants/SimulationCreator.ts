@@ -844,11 +844,13 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
 ];
 
 export const BEHAVIOUR_STATES = [
+  { stateId: "-1", label: "State -1 Instructions" },
   { stateId: "1", label: "State 1 Instructions" },
   { stateId: "2", label: "State 2 Instructions" },
   { stateId: "3", label: "State 3 Instructions" },
-  { stateId: "4", label: "State 4 Instructions" },
 ];
+
+export const BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH = 1000;
 
 export const BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS = [
   {
@@ -878,6 +880,7 @@ export const BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS = [
     dataType: cellTypes.editableText,
     minWidth: 190,
     width: "17%",
+    maxLength: BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH,
   })),
 ];
 

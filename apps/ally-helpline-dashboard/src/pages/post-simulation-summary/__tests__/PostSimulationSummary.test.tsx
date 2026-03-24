@@ -225,7 +225,7 @@ describe("PostSimulationSummary Component", () => {
       const mainContainer = container.querySelector("div.bg-white");
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("w-full");
-      expect(mainContainer?.className).toContain("h-[100vh]");
+      expect(mainContainer?.className).toContain("h-[100dvh]");
       expect(mainContainer?.className).toContain("flex");
       expect(mainContainer?.className).toContain("flex-col");
       expect(mainContainer?.className).toContain("items-center");
@@ -245,7 +245,8 @@ describe("PostSimulationSummary Component", () => {
       expect(motionDiv.className).toContain("gap-6");
       expect(motionDiv.className).toContain("max-w-4xl");
       expect(motionDiv.className).toContain("w-full");
-      expect(motionDiv.className).toContain("h-full");
+      expect(motionDiv.className).toContain("flex-1");
+      expect(motionDiv.className).toContain("min-h-0");
       expect(motionDiv.className).toContain("pb-8");
       expect(motionDiv.className).toContain("sm:pb-16");
       expect(motionDiv.className).toContain("px-4");
@@ -418,9 +419,9 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const simulationSummary = screen.getByTestId("simulation-summary");
-      expect(simulationSummary).toHaveClass("h-[calc(100vh-140px)]");
-      expect(simulationSummary).toHaveClass("overflow-y-auto");
-      expect(simulationSummary).toHaveClass("custom-scrollbar");
+      expect(simulationSummary).toHaveClass("h-full");
+      expect(simulationSummary).toHaveClass("min-h-0");
+      expect(simulationSummary).toHaveClass("overflow-hidden");
       expect(screen.getByTestId("summary-session-id")).toHaveTextContent("123");
     });
 
@@ -434,7 +435,7 @@ describe("PostSimulationSummary Component", () => {
       const lastCallArgs = vi.mocked(SimulationSummary).mock.calls.at(-1) ?? [];
       expect(lastCallArgs[0]).toMatchObject({
         sessionId: "123",
-        className: "h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar",
+        className: "h-full min-h-0 flex flex-col overflow-hidden",
       });
       expect(lastCallArgs[0]).toHaveProperty("summaryData");
       expect(lastCallArgs[0]).toHaveProperty("retryMaxReached");
@@ -620,8 +621,7 @@ describe("PostSimulationSummary Component", () => {
 
       const transcriptTab = screen.getByTestId("simulation-transcript-tab");
       expect(transcriptTab).toBeInTheDocument();
-      // The className prop is passed to SimulationTranscriptTab which includes "w-full max-h-[calc(100vh-10px)]"
-      // The actual rendering depends on the component implementation
+      // PostSimulationSummary passes className="w-full"; tab panel height comes from flex layout (h-full chain).
     });
 
     it("should handle different sessionId for Transcription tab", () => {
