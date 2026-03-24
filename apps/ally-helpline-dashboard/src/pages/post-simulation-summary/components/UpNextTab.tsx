@@ -53,7 +53,7 @@ export const UpNextTab: FC<UpNextTabProps> = ({ sessionId, pageType, metaData })
     };
   }, [sessionId]);
   return (
-    <div className="relative h-auto w-full  border border-border-light pb-20 rounded-lg">
+    <div className="relative flex h-full min-h-0 w-full flex-col overflow-y-auto rounded-lg border border-border-light pb-20">
       {upComingSimulation?.currentSession?.eventStatus === EVENT_STATUS.COMPLETED && (
         <div className="text-typography-900 text-base font-medium mb-2 border-b border-border-light p-3 font-primary mx-3">
           Up Next

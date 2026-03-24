@@ -151,7 +151,8 @@
   },
   "overrides": {
     "assertion-error": "1.1.0",
-    "string-width": "4.2.3"
+    "string-width": "4.2.3",
+    "serialize-javascript": "^7.0.3"
   },
   "workspaces": [
     "apps/*",

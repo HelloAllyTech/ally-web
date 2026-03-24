@@ -6,6 +6,7 @@ export interface EditableTextPopupProps {
   className?: string;
   width?: number;
   minWidth?: number;
+  maxLength?: number;
 }
 
 export interface EditableTextPopupState {
