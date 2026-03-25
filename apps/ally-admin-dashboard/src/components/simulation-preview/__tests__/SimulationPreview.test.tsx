@@ -111,6 +111,19 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       </div>
     </div>
   ),
+  MaxActiveUsersDialog: ({ open, onClose, onRetry, translations }: any) =>
+    open ? (
+      <div data-testid="max-active-users-dialog">
+        <h2>{translations.title}</h2>
+        <p>{translations.description}</p>
+        <button onClick={onRetry}>{translations.retry}</button>
+        <button onClick={onClose}>Close</button>
+      </div>
+    ) : null,
+  FEATURE_FLAGS_MAP: {
+    MAX_ACTIVE_USERS_POPUP_FLAG: true,
+    LANGUAGE_CAPABILITY_FLAG: true,
+  },
 }));
 
 vi.mock("@components", () => ({
@@ -165,6 +178,16 @@ vi.mock("@hooks", () => ({
 // which imports SimulationCreator (and thus cellTypes) transitively
 vi.mock("@constants", () => ({
   en: {
+    common: {
+      maxActiveUsers: {
+        title: "We're at capacity right now",
+        description:
+          "We're currently handling the maximum number of active users. Please wait a moment and try again access usually frees up shortly.",
+        retry: "Retry",
+        manualRetry: "You can retry in {seconds}s",
+        autoRetry: "We'll automatically retry in {seconds}s",
+      },
+    },
     simulation: {
       simulation: "Simulation",
       preview: "Preview",
@@ -407,5 +430,67 @@ describe("SimulationPreview", () => {
     });
 
     expect(scenarioPreviewTrigger).not.toHaveBeenCalled();
+  });
+
+  it("shows MaxActiveUsersDialog when 429 error occurs", async () => {
+    const error429 = { data: { statusCode: 429 } };
+
+    scenarioPreviewTrigger.mockImplementationOnce(() => ({
+      unwrap: () => Promise.reject(error429),
+    }));
+
+    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+
+    const [, startButton] = screen.getAllByRole("button");
+    fireEvent.click(startButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+
+    const notificationPopup = screen.getByTestId("notification-popup");
+    fireEvent.click(within(notificationPopup).getByText("Start Session"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("max-active-users-dialog")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("We're at capacity right now")).toBeInTheDocument();
+  });
+
+  it("retries preview when retry is clicked in MaxActiveUsersDialog", async () => {
+    const error429 = { data: { statusCode: 429 } };
+
+    scenarioPreviewTrigger
+      .mockImplementationOnce(() => ({ unwrap: () => Promise.reject(error429) }))
+      .mockImplementationOnce(() => ({ unwrap: () => Promise.resolve(createSuccessResponse()) }));
+
+    render(<SimulationPreview simulation={simulation} isOpen onClose={vi.fn()} />);
+
+    const [, startButton] = screen.getAllByRole("button");
+    fireEvent.click(startButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("notification-popup")).toBeInTheDocument();
+    });
+
+    const notificationPopup = screen.getByTestId("notification-popup");
+    fireEvent.click(within(notificationPopup).getByText("Start Session"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("max-active-users-dialog")).toBeInTheDocument();
+    });
+
+    const maxActiveUsersDialog = screen.getByTestId("max-active-users-dialog");
+    const retryButton = within(maxActiveUsersDialog).getByText("Retry");
+    fireEvent.click(retryButton);
+
+    await waitFor(() => {
+      expect(scenarioPreviewTrigger).toHaveBeenCalledTimes(2);
+    });
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledTimes(1);
+    });
   });
 });

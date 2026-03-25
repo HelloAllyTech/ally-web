@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { DropdownField, FEATURE_FLAGS_MAP, MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
@@ -17,7 +17,6 @@ import {
   FallbackUI,
   CreditInfo,
   CreditsDisplay,
-  MaxActiveUsersDialog,
 } from "@components";
 import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits, useStartSimulation } from "@hooks";
@@ -270,6 +269,13 @@ export const Scenario: FC = () => {
                 open={isMaxActiveUsersPopupOpen}
                 onClose={() => setIsMaxActiveUsersPopupOpen(false)}
                 onRetry={handleMaxActiveUsersRetry}
+                translations={{
+                  title: t("common.maxActiveUsers.title"),
+                  description: t("common.maxActiveUsers.description"),
+                  retry: t("common.maxActiveUsers.retry"),
+                  manualRetry: t("common.maxActiveUsers.manualRetry"),
+                  autoRetry: t("common.maxActiveUsers.autoRetry"),
+                }}
               />
             )}
           </motion.div>
