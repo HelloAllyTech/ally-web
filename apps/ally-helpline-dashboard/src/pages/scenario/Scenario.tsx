@@ -23,6 +23,7 @@ import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constan
 import { useSimulationCredits, useStartSimulation } from "@hooks";
 import { LanguageOption } from "@types";
 
+import i18n from "../../i18n";
 import { learnPageExpandedVariants } from "../learn/constants";
 
 export const Scenario: FC = () => {
@@ -61,6 +62,7 @@ export const Scenario: FC = () => {
   } = useGetScenarioQuery({
     scenarioId: id,
     isPrivate: isAuthenticated(),
+    languageCode: i18n.language,
   });
   const [endSimulation] = useEndSimulationMutation();
 
