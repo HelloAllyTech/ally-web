@@ -241,6 +241,7 @@ export interface Prompt {
   id?: string;
   name: string;
   description: string;
+  category?: string;
   promptCode: string;
   prompt: string;
   version?: number;
