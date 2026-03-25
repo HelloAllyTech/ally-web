@@ -45,12 +45,16 @@ const learnAPI = baseAPI.injectEndpoints({
      * Get all scenarios available in the Learn catalog.
      * @returns {Promise<GetScenariosResponse>} List of scenarios
      */
-    getScenarios: builder.query<{ data: Scenario[] }, { isPrivate: boolean }>({
-      query: ({ isPrivate }) => ({
+    getScenarios: builder.query<
+      { data: Scenario[] },
+      { isPrivate: boolean; languageCode?: string }
+    >({
+      query: ({ isPrivate, languageCode }) => ({
         url: isPrivate
           ? ApiEndpoints.LEARN.GET_SCENARIOS_PRIVATE
           : ApiEndpoints.LEARN.GET_SCENARIOS,
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
     }),
 
@@ -61,12 +65,12 @@ const learnAPI = baseAPI.injectEndpoints({
      * @returns {Promise<GetScenarioResponse>} Scenario details
      */
     getScenario: builder.query<Scenario, GetScenarioInput>({
-      query: ({ scenarioId, isPrivate }) => ({
+      query: ({ scenarioId, isPrivate, languageCode }) => ({
         url: isPrivate
           ? ApiEndpoints.LEARN.GET_SCENARIO(scenarioId)
           : ApiEndpoints.LEARN.GET_SCENARIO_PUBLIC(scenarioId),
         method: HttpMethod.GET,
-        params: { scenarioId },
+        params: { scenarioId, languageCode },
       }),
     }),
 
