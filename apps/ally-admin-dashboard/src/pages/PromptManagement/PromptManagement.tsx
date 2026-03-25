@@ -3,9 +3,13 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { useGetPromptsQuery, useUpdatePromptMutation } from "@api";
-import { NotionTable, ListToolbar, PromptSidePanel } from "@components";
+import { FilterDropdown, NotionTable, ListToolbar, PromptSidePanel } from "@components";
 import { en, PROMPT_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import { Prompt } from "@types";
+
+type PromptManagementFilters = {
+  categories: string[];
+};
 
 export const PromptManagement: React.FC = () => {
   const limit = 30;
@@ -19,6 +23,11 @@ export const PromptManagement: React.FC = () => {
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
   const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const addFilterBtnRef = useRef<HTMLButtonElement>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const [filters, setFilters] = useState<PromptManagementFilters>({
+    categories: [],
+  });
 
   const { data: promptsResponse, isFetching: isQueryFetching } = useGetPromptsQuery({
     searchName: debouncedSearchQuery,
@@ -29,8 +38,17 @@ export const PromptManagement: React.FC = () => {
     includeBlocks: false,
   });
 
+  const { data: promptCatalogResponse = [] } = useGetPromptsQuery({
+    searchName: debouncedSearchQuery,
+    limit: 500,
+    offset: 0,
+    sortBy: SORT_BY.CREATED_AT,
+    order: SORT_ORDER.DESC,
+    includeBlocks: false,
+  });
+  const promptCatalog = promptCatalogResponse ?? [];
+
   // Fetch blocks separately so "Used Blocks" editor can open them.
-  // This list is not used in the table.
   const { data: blocksResponse } = useGetPromptsQuery({
     limit: 500,
     offset: 0,
@@ -95,9 +113,59 @@ export const PromptManagement: React.FC = () => {
     setOffset(0);
   };
 
+  const handleApplyFilters = (newFilters: PromptManagementFilters) => {
+    setFilters(newFilters);
+    setIsFilterOpen(false);
+  };
+
   const filteredPrompts = useMemo(() => {
-    return prompts.filter(prompt => !prompt.isObsolete && prompt.kind !== "block");
-  }, [prompts]);
+    const sourcePrompts = filters.categories.length > 0 ? promptCatalog : prompts;
+
+    return sourcePrompts.filter(prompt => {
+      if (prompt.isObsolete || prompt.kind === "block") {
+        return false;
+      }
+
+      if (filters.categories.length === 0) {
+        return true;
+      }
+
+      return prompt.category ? filters.categories.includes(prompt.category) : false;
+    });
+  }, [filters.categories, promptCatalog, prompts]);
+
+  const categoryOptions = useMemo(() => {
+    return [...new Set(promptCatalog.map(prompt => prompt.category).filter(Boolean))]
+      .sort((a, b) => a!.localeCompare(b!))
+      .map(category => ({
+        label: category as string,
+        value: category as string,
+      }));
+  }, [promptCatalog]);
+
+  const filterChips = useMemo(() => {
+    if (filters.categories.length === 0) {
+      return [];
+    }
+
+    return [
+      {
+        label: "Category",
+        value: filters.categories.join(", "),
+        allValue: filters.categories,
+        onClear: () => setFilters({ categories: [] }),
+      },
+    ];
+  }, [filters.categories]);
+
+  const addFilterCta = useMemo(
+    () => ({
+      label: "Filter",
+      onClick: () => setIsFilterOpen(prev => !prev),
+      active: isFilterOpen,
+    }),
+    [isFilterOpen],
+  );
 
   const allPromptsForEditor = useMemo(() => {
     const merged = [...prompts, ...blockPrompts];
@@ -156,19 +224,20 @@ export const PromptManagement: React.FC = () => {
     [filteredPrompts],
   );
 
-  const tableFooter = (
-    <button
-      type="button"
-      onClick={handleLoadMore}
-      className="flex justify-start items-center py-4 text-typography-700 hover:text-typography-900 disabled:opacity-50 w-[200px]"
-      disabled={isFetching || !hasMore}
-    >
-      <span>+</span>
-      <span className="text-base ml-[5px] font-primary">
-        {isFetching ? en.common.loading : hasMore ? en.common.loadMore : en.common.noMoreData}
-      </span>
-    </button>
-  );
+  const tableFooter =
+    filters.categories.length > 0 ? null : (
+      <button
+        type="button"
+        onClick={handleLoadMore}
+        className="flex justify-start items-center py-4 text-typography-700 hover:text-typography-900 disabled:opacity-50 w-[200px]"
+        disabled={isFetching || !hasMore}
+      >
+        <span>+</span>
+        <span className="text-base ml-[5px] font-primary">
+          {isFetching ? en.common.loading : hasMore ? en.common.loadMore : en.common.noMoreData}
+        </span>
+      </button>
+    );
 
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
@@ -180,6 +249,9 @@ export const PromptManagement: React.FC = () => {
           searchValue={searchQuery}
           onSearchChange={handleSearchChange}
           placeholder={en.simulation.searchPrompts || "Search prompts..."}
+          filterChips={filterChips}
+          addFilterCta={addFilterCta}
+          addFilterButtonRef={addFilterBtnRef}
         />
         <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
           <NotionTable
@@ -196,6 +268,20 @@ export const PromptManagement: React.FC = () => {
           />
         </div>
       </div>
+      <FilterDropdown<PromptManagementFilters>
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        sections={[
+          {
+            id: "categories",
+            label: "Category",
+            options: categoryOptions,
+          },
+        ]}
+        onApplyFilters={handleApplyFilters}
+        anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
+        currentFilters={filters}
+      />
       {isSidePanelOpen && (
         <PromptSidePanel
           selectedPrompt={selectedPrompt}

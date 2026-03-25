@@ -1,6 +1,6 @@
 # Prompt display names and descriptions (meta JSON)
 
-The Admin Dashboard (Simulation Studio → Scenario Prompts) shows each prompt’s **name** and **description**. Those values can be defined in the codebase via optional **`.meta.json`** files, so they appear clearly in the UI without editing in the dashboard.
+The Admin Dashboard (Simulation Studio → Scenario Prompts) shows each prompt’s **name**, **description**, and category used for filtering. Those values can be defined in the codebase via optional **`.meta.json`** files, so they appear clearly in the UI without editing in the dashboard.
 
 ## Where meta JSON lives
 
