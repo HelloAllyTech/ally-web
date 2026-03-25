@@ -54,7 +54,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        className={`bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] font-primary overflow-y-auto ${containerClassName}`}
+        className={`bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] font-primary ${containerClassName}`}
         ref={previewRef}
       >
         {/* Header */}
@@ -95,7 +95,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
             </div>
 
             {/* Content Section */}
-            <div className="space-y-3 w-full">
+            <div className="space-y-3 w-full max-h-[30vh] overflow-y-auto">
               <h3 className="text-lg text-typography-900">{title}</h3>
               <div>
                 <h4 className="text-base font-semibold text-typography-800">{scenarioLabel}</h4>
