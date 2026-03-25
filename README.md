@@ -26,20 +26,20 @@ The system is organised as an Nx monorepo with three applications and one shared
 
 ### Technology Stack
 
-| Component          | Tech Used                                        |
-| ------------------ | ------------------------------------------------ |
-| Landing Page       | Next.js 14 (React 18), CSS Modules               |
-| Helpline Dashboard | Vite + React 18, Tailwind CSS, MUI, Redux Toolkit |
-| Admin Dashboard    | Vite + React 18, Tailwind CSS, RTK Query         |
-| State Management   | Redux Toolkit / RTK Query                        |
-| Real-time Comm     | LiveKit (voice/video)                            |
-| Authentication     | JWT via Ally Backend API                         |
-| Internationalisation | i18next, react-i18next                         |
-| Forms              | React Hook Form                                  |
-| Animations         | Framer Motion                                    |
-| Testing            | Vitest + Testing Library                         |
-| Monorepo Tooling   | Nx                                               |
-| Code Quality       | ESLint + Prettier                                |
+| Component            | Tech Used                                         |
+| -------------------- | ------------------------------------------------- |
+| Landing Page         | Next.js 14 (React 18), CSS Modules                |
+| Helpline Dashboard   | Vite + React 18, Tailwind CSS, MUI, Redux Toolkit |
+| Admin Dashboard      | Vite + React 18, Tailwind CSS, RTK Query          |
+| State Management     | Redux Toolkit / RTK Query                         |
+| Real-time Comm       | LiveKit (voice/video)                             |
+| Authentication       | JWT via Ally Backend API                          |
+| Internationalisation | i18next, react-i18next                            |
+| Forms                | React Hook Form                                   |
+| Animations           | Framer Motion                                     |
+| Testing              | Vitest + Testing Library                          |
+| Monorepo Tooling     | Nx                                                |
+| Code Quality         | ESLint + Prettier                                 |
 
 ## Codebase Directory Structure
 
@@ -182,12 +182,12 @@ If you prefer to run without Docker:
 
 Each application reads environment variables from its own `.env` file. Refer to the `compose.yaml` for the variables required by each service:
 
-| Variable                    | Service  | Description                        |
-| --------------------------- | -------- | ---------------------------------- |
-| `NEXT_PUBLIC_API_BASE_URL`  | web      | Backend API base URL               |
-| `NEXT_PUBLIC_API_VERSION`   | web      | Backend API version (e.g. `v1`)    |
-| `VITE_API_BASE_URL`         | helpline | Backend API base URL               |
-| `VITE_API_BASE_URL`         | admin    | Backend API base URL               |
+| Variable                   | Service  | Description                     |
+| -------------------------- | -------- | ------------------------------- |
+| `NEXT_PUBLIC_API_BASE_URL` | web      | Backend API base URL            |
+| `NEXT_PUBLIC_API_VERSION`  | web      | Backend API version (e.g. `v1`) |
+| `VITE_API_BASE_URL`        | helpline | Backend API base URL            |
+| `VITE_API_BASE_URL`        | admin    | Backend API base URL            |
 
 ## 🏗️ Building for Production
 

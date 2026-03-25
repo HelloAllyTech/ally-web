@@ -18,6 +18,7 @@ import { LanguageOption, ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
+import i18n from "../../i18n";
 
 enum TabId {
   SIMULATIONS = "simulations",
@@ -57,7 +58,10 @@ export const Learn: FC = () => {
     data: scenariosData,
     isLoading: isScenariosLoading,
     refetch: refetchScenarios,
-  } = useGetScenariosQuery({ isPrivate: isAuthenticated });
+  } = useGetScenariosQuery({
+    isPrivate: isAuthenticated,
+    languageCode: i18n.language,
+  });
 
   const scenarios = scenariosData?.data || [];
 
