@@ -27,6 +27,14 @@ export const en = {
     successfullyDeleted: "Successfully deleted",
     thisActionCannotBeUndone: "This action cannot be undone.",
     areYouSureYouWantToDelete: "Are you sure you want to delete",
+    maxActiveUsers: {
+      title: "We're at capacity right now",
+      description:
+        "We're currently handling the maximum number of active users. Please wait a moment and try again access usually frees up shortly.",
+      retry: "Retry",
+      manualRetry: "You can retry in {seconds}s",
+      autoRetry: "We'll automatically retry in {seconds}s",
+    },
   },
   errors: {
     maxRowsBehavioursInstruction: "You can only add up to 10 rows of behaviours instruction.",

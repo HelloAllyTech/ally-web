@@ -34,7 +34,6 @@ import InfoBanner from "./info-banner";
 import Input from "./input";
 import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
 import LoginDialog from "./login-dialog";
-import MaxActiveUsersDialog from "./max-active-users-dialog";
 import { NativeEmoji } from "./native-emoji";
 import NavSideBar from "./nav-sidebar";
 import OTP from "./otp";
@@ -140,7 +139,6 @@ export {
   ReviewCommentsSidepanel,
   Transcription,
   TranscriptListing,
-  MaxActiveUsersDialog,
   UpNextSimulationCard,
   AskAiTab,
   ReflectionTab,

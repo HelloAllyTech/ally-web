@@ -2,7 +2,13 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import { SimulationDetailsModal, CustomImage, DropdownField } from "@ally-ui-mono/ui-shared";
+import {
+  SimulationDetailsModal,
+  CustomImage,
+  DropdownField,
+  MaxActiveUsersDialog,
+  FEATURE_FLAGS_MAP,
+} from "@ally-ui-mono/ui-shared";
 import {
   useEndScenarioPreviewMutation,
   useScenarioPreviewMutation,
@@ -25,6 +31,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showNotification, setShowNotification] = useState<boolean>(false);
+  const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
   const shouldLoadLanguages = simulation.status === SimulationStatus.ACTIVE;
   const { data: languageOptions = [] } = useGetScenarioLanguagesQuery(
     {
@@ -117,7 +124,15 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
       }).unwrap();
       if (response) onStartSimulationSuccess(response);
     } catch (error: any) {
+      const statusCode = error?.data?.statusCode;
       const entityId = error?.data?.entityId;
+
+      if (statusCode === 429) {
+        setIsMaxActiveUsersPopupOpen(true);
+        setIsLoading(false);
+        return;
+      }
+
       if (entityId) {
         await endScenarioPreview({ roomName: entityId }).unwrap();
         const retry = await scenarioPreview({
@@ -131,6 +146,11 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleMaxActiveUsersRetry = () => {
+    setIsMaxActiveUsersPopupOpen(false);
+    onPreview();
   };
 
   const renderAdditionalContent = useCallback(() => {
@@ -187,6 +207,20 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
           onClick: onPreview,
         }}
       />
+      {FEATURE_FLAGS_MAP.MAX_ACTIVE_USERS_POPUP_FLAG && (
+        <MaxActiveUsersDialog
+          open={isMaxActiveUsersPopupOpen}
+          onClose={() => setIsMaxActiveUsersPopupOpen(false)}
+          onRetry={handleMaxActiveUsersRetry}
+          translations={{
+            title: en.common.maxActiveUsers.title,
+            description: en.common.maxActiveUsers.description,
+            retry: en.common.maxActiveUsers.retry,
+            manualRetry: en.common.maxActiveUsers.manualRetry,
+            autoRetry: en.common.maxActiveUsers.autoRetry,
+          }}
+        />
+      )}
     </>
   );
 };
