@@ -57,6 +57,18 @@ export const ScenarioVoices: React.FC = () => {
   const previewUrlCacheRef = useRef<Record<string, string>>({});
   const [getPreviewVoice] = useLazyGetPreviewVoiceQuery();
 
+  const resetAudioPlayback = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.onended = null;
+    audio.onerror = null;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = "";
+    audioRef.current = null;
+  };
+
   const [filters, setFilters] = useState<ScenarioVoiceFilters>({
     providers: [],
     languages: [],
@@ -80,11 +92,7 @@ export const ScenarioVoices: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-      }
-
+      resetAudioPlayback();
       Object.values(previewUrlCacheRef.current).forEach(url => URL.revokeObjectURL(url));
       previewUrlCacheRef.current = {};
     };
@@ -265,11 +273,7 @@ export const ScenarioVoices: React.FC = () => {
   };
 
   const handlePausePreview = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
+    resetAudioPlayback();
     setPlayingVoiceId(null);
     setLoadingVoiceId(null);
   };
@@ -286,10 +290,7 @@ export const ScenarioVoices: React.FC = () => {
       return;
     }
 
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
+    resetAudioPlayback();
 
     setPlayingVoiceId(voiceId);
 
