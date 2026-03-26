@@ -202,11 +202,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
 
     // Filter out block placeholders to keep the UI clean
     const filtered = vars.filter(
-      v =>
-        !v.endsWith("_block") &&
-        !v.endsWith("_prompt") &&
-        !v.includes("prompt_") &&
-        !v.includes("_instructions"),
+      v => !v.endsWith("_block") && !v.endsWith("_prompt") && !v.includes("prompt_"),
     );
 
     return [...filtered].sort();
