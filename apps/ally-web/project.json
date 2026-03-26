@@ -9,7 +9,7 @@
         "script": "build"
       },
       "metadata": {
-        "scriptContent": "next build",
+        "scriptContent": "next build --webpack",
         "runCommand": "npm run build"
       },
       "configurations": {},
