@@ -4,6 +4,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Cell } from "../Cell";
 import { cellTypes } from "../utils";
 
+vi.mock("@assets", () => ({
+  Trash: () => <svg data-testid="trash-icon" />,
+  PlayIcon: (props: any) => <svg data-testid="play-icon" {...props} />,
+  PauseIcon: (props: any) => <svg data-testid="pause-icon" {...props} />,
+}));
+
 // Mock the child components
 vi.mock("@components", () => ({
   EmojiPickerComponent: ({ onEmojiClick, buttonText, disabled }: any) => (
@@ -295,6 +301,59 @@ describe("Cell", () => {
 
       const select = screen.getByTestId("dropdown-select");
       expect(select).toBeDisabled();
+    });
+  });
+
+  describe("Preview Audio Cell", () => {
+    const previewColumn = {
+      ...defaultColumn,
+      id: "preview",
+      dataType: cellTypes.previewAudio,
+    };
+
+    it("renders play control for an idle preview", () => {
+      const onPlay = vi.fn();
+      render(
+        <Cell
+          {...defaultProps}
+          value={{ isPlaying: false, isLoading: false, onPlay, onPause: vi.fn() }}
+          column={previewColumn}
+        />,
+      );
+
+      expect(screen.getByRole("button", { name: "Play voice preview" })).toBeInTheDocument();
+      expect(screen.getByTestId("play-icon")).toBeInTheDocument();
+    });
+
+    it("calls play handler when play is clicked", () => {
+      const onPlay = vi.fn();
+      render(
+        <Cell
+          {...defaultProps}
+          value={{ isPlaying: false, isLoading: false, onPlay, onPause: vi.fn() }}
+          column={previewColumn}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Play voice preview" }));
+
+      expect(onPlay).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls pause handler when pause is clicked", () => {
+      const onPause = vi.fn();
+      render(
+        <Cell
+          {...defaultProps}
+          value={{ isPlaying: true, isLoading: false, onPlay: vi.fn(), onPause }}
+          column={previewColumn}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Pause voice preview" }));
+
+      expect(onPause).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId("pause-icon")).toBeInTheDocument();
     });
   });
 

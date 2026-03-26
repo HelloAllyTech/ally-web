@@ -7,6 +7,7 @@ vi.mock("@api", () => ({
   useGetAvailableLanguageVoicesQuery: vi.fn(),
   useCreateScenarioVoiceMutation: vi.fn(),
   useUpdateScenarioVoiceMutation: vi.fn(),
+  useLazyGetPreviewVoiceQuery: vi.fn(),
 }));
 
 import * as api from "@api";
@@ -100,6 +101,7 @@ vi.mock("@constants", () => ({
     },
     errors: {
       failedToCreateEvent: "Failed to create event",
+      failedToSaveVoice: "Failed to save voice",
     },
   },
   SCENARIO_VOICE_COLUMNS: [],
@@ -170,6 +172,8 @@ describe("ScenarioVoices Page", () => {
       vi.fn().mockResolvedValue({ data: mockVoices[0] }),
       { isLoading: false },
     ]);
+
+    (api.useLazyGetPreviewVoiceQuery as any).mockReturnValue([vi.fn(), { isFetching: false }]);
   });
 
   it("renders scenario voices page with toolbar and table", () => {
