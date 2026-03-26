@@ -410,13 +410,14 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
               />
             </div>
             <div>
-              <label className="text-typography-900 text-base font-weight-400 mb-2 block">
-                {formFieldNames.PROFESSION}
+              <label className="text-typography-900 text-base font-weight-400 mb-2 flex items-center gap-1">
+                {formFieldNames.PROFESSION} <span className="text-destructive-500">*</span>
               </label>
               <Controller
                 name={formFieldIds.PROFESSION}
                 control={formMethods.control}
                 defaultValue=""
+                rules={{ required: "Profession is required" }}
                 render={({ field }) => (
                   <input
                     type="text"
@@ -430,6 +431,11 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                   />
                 )}
               />
+              {errors[formFieldIds.PROFESSION]?.message && (
+                <p className="text-destructive-500 text-sm mt-1">
+                  {String(errors[formFieldIds.PROFESSION].message)}
+                </p>
+              )}
             </div>
           </div>
 
