@@ -564,6 +564,13 @@ export const SCENARIO_VOICE_COLUMNS = [
     minWidth: 200,
   },
   {
+    id: "preview",
+    label: "Preview",
+    accessor: "preview",
+    dataType: cellTypes.previewAudio,
+    minWidth: 120,
+  },
+  {
     id: "provider",
     label: "Provider",
     accessor: "provider",

@@ -22,6 +22,7 @@ export const cellTypes = {
   status: "status",
   roles: "roles",
   actionItem: "actionItem",
+  previewAudio: "previewAudio",
 };
 
 export const keyCodes = {
