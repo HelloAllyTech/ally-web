@@ -66,6 +66,7 @@ vi.mock("@api", () => ({
   useLazyGetAdminSimulationByIdQuery: () => [mockGetSimulationById, { data: null }],
   useDeleteCoverImageMutation: () => [mockDeleteCoverImage],
   useGetAvailableLanguageVoicesQuery: () => ({ data: [] }),
+  useGetPromptsQuery: () => ({ data: [] }),
 }));
 
 // Mock hooks
@@ -156,6 +157,7 @@ vi.mock("@constants", () => ({
   FORM_FIELD_IDS: {
     LANGUAGES_VOICES: "languageVoices",
   },
+  ROLE_INSTRUCTION_PROMPT_CODE: "openai_simulation_role_instruction",
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
     EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
@@ -236,6 +238,7 @@ describe("CreateSimulation", () => {
       triggerWarningIds: [],
       languageVoices: { "1": "voice-1" },
     })) as any,
+    setValue: vi.fn(),
     reset: vi.fn(),
   };
 
