@@ -205,6 +205,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       formData.name.trim() !== "" &&
       formData.age !== "" &&
       formData.gender !== "" &&
+      (formData.profession || "").trim() !== "" &&
       formData.currentLocation.trim() !== "" &&
       formData.genderIdentity !== "" &&
       formData.sexualOrientation !== ""
@@ -283,11 +284,11 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
               />
             </Field>
 
-            <Field label="Profession">
+            <Field label="Profession" required>
               <input
                 type="text"
                 value={formData.profession || ""}
-                onChange={e => handleFieldChange("profession", e.target.value || null)}
+                onChange={e => handleFieldChange("profession", e.target.value)}
                 placeholder="Enter profession"
                 className="w-full px-0 py-2 text-base border-none focus:outline-none"
               />
