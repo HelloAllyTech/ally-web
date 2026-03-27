@@ -133,10 +133,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   }
 
   return (
-    <div
-      ref={scrollContainerRef as RefObject<HTMLDivElement>}
-      className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}
-    >
+    <div className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}>
       <InfiniteScroll
         onInfiniteScroll={handleLoadMore}
         isLoading={isLoading}

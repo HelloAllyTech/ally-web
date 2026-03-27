@@ -108,6 +108,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
 
   return (
     <div
+      ref={scrollContainerRef}
       className={`relative flex h-full min-h-0 flex-col overflow-y-auto border border-gray-200 rounded-md p-4 custom-scrollbar ${className}`}
     >
       <span className="text-typography-900 font-primary text-base font-medium">
