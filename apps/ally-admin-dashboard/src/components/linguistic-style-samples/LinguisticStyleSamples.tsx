@@ -1,5 +1,6 @@
 import { FC, useCallback, useMemo, useState } from "react";
 
+import { useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useGetAvailableLanguageVoicesQuery, useRegenerateFieldMutation } from "@api";
@@ -18,6 +19,7 @@ interface LinguisticStyleSamplesProps {
   id?: string;
   label?: string;
   formMethods: any;
+  isMandatory?: boolean;
 }
 
 const SAMPLE_COUNT = 10;
@@ -26,21 +28,22 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   id = "linguisticStyleSamples",
   label = "Linguistic Style Samples",
   formMethods,
+  isMandatory = false,
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
   const [regeneratingAll, setRegeneratingAll] = useState(false);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
 
-  const { watch, setValue } = formMethods;
+  const { setValue, control } = formMethods;
 
   const { data: availableLanguages = [], isLoading } = useGetAvailableLanguageVoicesQuery({
     active: true,
     voicesNeeded: true,
   }) as { data: LanguageOption[]; isLoading: boolean };
 
-  const linguisticStyleSamples = watch(id) ?? {};
-  const languageVoices = watch("languageVoices") ?? {};
+  const linguisticStyleSamples = useWatch({ control, name: id }) ?? {};
+  const languageVoices = useWatch({ control, name: "languageVoices" }) ?? {};
 
   const languagesToShow = useMemo(() => {
     const selectedLanguageIds = new Set(
@@ -53,13 +56,6 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
       selectedLanguageIds.has(String(lang.language_id)),
     );
   }, [availableLanguages, languageVoices]);
-
-  const hasNonEnglishLanguages = useMemo(() => {
-    return (languagesToShow as LanguageOption[]).some(
-      lang =>
-        (lang.value ?? "").toLowerCase() && !(lang.value ?? "").toLowerCase().startsWith("en"),
-    );
-  }, [languagesToShow]);
 
   const activeLanguageId = useMemo(() => {
     if (
@@ -170,7 +166,7 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
       <div className="flex justify-between items-center py-2 w-full gap-4 flex-wrap">
         <span className="font-regular text-base text-typography-900">
           {label}
-          {hasNonEnglishLanguages && <span className="text-destructive-500"> *</span>}
+          {isMandatory && <span className="text-destructive-500"> *</span>}
         </span>
         <div className="flex items-center gap-2">
           <AutofillModelSelect

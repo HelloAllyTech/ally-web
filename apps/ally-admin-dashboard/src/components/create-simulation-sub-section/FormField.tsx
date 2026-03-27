@@ -152,7 +152,14 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES:
-        return <LinguisticStyleSamples id={id} label={label} formMethods={formMethods} />;
+        return (
+          <LinguisticStyleSamples
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
+        );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:

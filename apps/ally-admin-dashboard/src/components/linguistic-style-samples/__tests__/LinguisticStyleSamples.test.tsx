@@ -8,6 +8,18 @@ const { mockRegenerateField, mockSetValue } = vi.hoisted(() => ({
   mockSetValue: vi.fn(),
 }));
 
+vi.mock("react-hook-form", () => ({
+  useWatch: ({ name }: { name: string }) => {
+    if (name === "languageVoices") {
+      return { "2": "voice-hi" };
+    }
+    if (name === "linguisticStyleSamples") {
+      return {};
+    }
+    return undefined;
+  },
+}));
+
 vi.mock("@api", () => ({
   useGetAvailableLanguageVoicesQuery: () => ({
     data: [
@@ -73,15 +85,8 @@ describe("LinguisticStyleSamples", () => {
 
   it("shows only languages with selected voices", () => {
     const formMethods = {
-      watch: vi.fn((field: string) => {
-        if (field === "languageVoices") {
-          return { "2": "voice-hi" };
-        }
-        if (field === "linguisticStyleSamples") {
-          return {};
-        }
-        return undefined;
-      }),
+      control: {},
+      watch: vi.fn(),
       setValue: mockSetValue,
       getValues: vi.fn(() => ({
         title: "Test title",
@@ -107,15 +112,8 @@ describe("LinguisticStyleSamples", () => {
 
   it("generates samples only for selected languages", async () => {
     const formMethods = {
-      watch: vi.fn((field: string) => {
-        if (field === "languageVoices") {
-          return { "2": "voice-hi" };
-        }
-        if (field === "linguisticStyleSamples") {
-          return {};
-        }
-        return undefined;
-      }),
+      control: {},
+      watch: vi.fn(),
       setValue: mockSetValue,
       getValues: vi.fn(() => ({
         title: "Test title",
