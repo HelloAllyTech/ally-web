@@ -32,7 +32,6 @@ export type FormData = {
   stateInstructions?: stateInstruction[];
   customFields?: CustomFieldType[];
   openingStatements: string;
-  voiceId?: string;
   tone: string;
   autoTerminationStatus?: boolean;
   experienceMode?: string;

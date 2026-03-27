@@ -110,7 +110,6 @@ export const FORM_FIELD_TYPES = {
   IMAGE_UPLOAD: "image_upload",
   VIDEO_UPLOAD: "video_upload",
   CUSTOM: {
-    VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
     LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
@@ -145,7 +144,6 @@ export const FORM_FIELD_IDS = {
   STATE_INSTRUCTIONS: "stateInstructions",
   CUSTOM_FIELDS: "customFields",
   OPENING_STATEMENTS: "openingStatements",
-  VOICE_ID: "voiceId",
   LANGUAGES_VOICES: "languageVoices",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   TONE: "tone",
