@@ -79,7 +79,7 @@ export const en = {
     failedToCancelReportGeneration: "Failed to cancel report generation",
     failedToRegenerate: "Failed to regenerate",
     linguisticStyleSamplesRequired:
-      "Linguistic style samples are required for non-English languages. Please provide at least one sample for each configured non-English language.",
+      "Linguistic style samples are required. Please provide at least one sample for each selected language.",
   },
   accessDenied: {
     title: "This page is not accessible",

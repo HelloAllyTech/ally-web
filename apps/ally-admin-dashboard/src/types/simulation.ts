@@ -88,7 +88,6 @@ export interface SimulationInput {
   emotionalNeeds?: string;
   tone?: string;
   openingStatements?: string[];
-  voiceId?: string;
   agentGoal?: string;
   autoTerminationStatus?: boolean;
   terminationEventId?: string;

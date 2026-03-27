@@ -110,7 +110,6 @@ export const FORM_FIELD_TYPES = {
   IMAGE_UPLOAD: "image_upload",
   VIDEO_UPLOAD: "video_upload",
   CUSTOM: {
-    VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
     LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
@@ -145,7 +144,6 @@ export const FORM_FIELD_IDS = {
   STATE_INSTRUCTIONS: "stateInstructions",
   CUSTOM_FIELDS: "customFields",
   OPENING_STATEMENTS: "openingStatements",
-  VOICE_ID: "voiceId",
   LANGUAGES_VOICES: "languageVoices",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   TONE: "tone",
@@ -169,7 +167,23 @@ export const REGENERATE_TYPE = {
   BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
 };
 
-const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
+export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
+
+export const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.
+
+Important Instructions:
+- Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").
+- Allow the counselor to guide the conversation.
+- If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.
+- Maintain consistency with your life history but allow natural variation in tone and detail.
+- Respond naturally, as a real client would.
+- Keep answers concise (2–6 sentences), unless a longer response is natural.
+- Reveal information gradually, not all at once.
+- Start with few details and open up more as the counsellor asks questions.
+- Show authentic emotions and natural hesitations.
+- Do not give therapy advice or act as the counselor.
+- If sensitive topics arise, respond realistically but without graphic detail.
+- Keep each reply under ~120 words.`;
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
   //TODO: uncomment these fields once the fields are added to the API
@@ -344,6 +358,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "linguisticStyleSamples",
         label: "Linguistic Style Samples",
         type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
+        isMandatory: true,
         fullWidth: true,
       },
       {
