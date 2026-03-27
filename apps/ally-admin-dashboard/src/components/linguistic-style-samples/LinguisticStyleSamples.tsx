@@ -40,10 +40,19 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   }) as { data: LanguageOption[]; isLoading: boolean };
 
   const linguisticStyleSamples = watch(id) ?? {};
+  const languageVoices = watch("languageVoices") ?? {};
 
   const languagesToShow = useMemo(() => {
-    return (availableLanguages ?? []) as LanguageOption[];
-  }, [availableLanguages]);
+    const selectedLanguageIds = new Set(
+      Object.entries(languageVoices)
+        .filter(([, voiceId]) => Boolean(voiceId))
+        .map(([languageId]) => String(languageId)),
+    );
+
+    return ((availableLanguages ?? []) as LanguageOption[]).filter(lang =>
+      selectedLanguageIds.has(String(lang.language_id)),
+    );
+  }, [availableLanguages, languageVoices]);
 
   const hasNonEnglishLanguages = useMemo(() => {
     return (languagesToShow as LanguageOption[]).some(
