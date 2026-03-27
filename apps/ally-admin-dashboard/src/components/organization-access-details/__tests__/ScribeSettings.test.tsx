@@ -132,6 +132,7 @@ const { mockUpdateSummarySections, mockUpdateSummaryFields, mockSummarySectionsD
       id: "test-tenant-id",
       enabledDashboardIds: [],
       enableMicrophoneMode: false,
+      enableDictationMode: false,
       enableAudioUpload: false,
     },
   }));
@@ -324,11 +325,11 @@ describe("ScribeSettings", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     // Enabled/Disabled text appears for:
     // 1. Summary sections (Intake = Enabled, Ongoing Risks = Disabled)
-    // 2. SCRIBE_SETTINGS_ITEMS (4 items: Microphone Mode, Upload Call Recording,
+    // 2. SCRIBE_SETTINGS_ITEMS (5 items: Microphone Mode, Dictation Mode, Upload Call Recording,
     //    Scribe Analytics, Org Session Analytics - all Disabled by default in mock)
-    // Total: 1 Enabled (Intake), 5 Disabled (Ongoing Risks + 4 settings items)
+    // Total: 1 Enabled (Intake), 6 Disabled (Ongoing Risks + 5 settings items)
     expect(screen.getAllByText("Enabled")).toHaveLength(1);
-    expect(screen.getAllByText("Disabled")).toHaveLength(5);
+    expect(screen.getAllByText("Disabled")).toHaveLength(6);
   });
 
   it("renders Clear all and Select all buttons", () => {
