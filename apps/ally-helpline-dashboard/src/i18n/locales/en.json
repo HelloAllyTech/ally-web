@@ -22,8 +22,8 @@
     "simulationEndedSuccess": "Simulation ended successfully",
     "somethingWentWrong": "Something went wrong!",
     "summary": "Summary",
-    "startSimulation": "Start Simulation",
-    "simulation": "Simulation",
+    "startSimulation": "Start role play",
+    "simulation": "role play",
     "triggerWarnings": "Trigger warnings:",
     "sessionId": "Session ID",
     "duration": "Duration",
@@ -177,22 +177,22 @@
   "learn": {
     "tabs": {
       "simulations": "Simulations",
-      "tracks": "Tracks",
+      "tracks": "Learning Pathways",
       "cases": "Cases"
     },
     "header": {
       "prefix": "Use",
       "emphasis1": "AI-voice based",
-      "middle": "hyper realistic training",
-      "emphasis2": "role plays",
-      "suffix": "to build mental healthcare skills."
+      "middle": "real-world practice situation",
+      "emphasis2": "to build",
+      "suffix": "mental health skills."
     },
     "credits": {
       "used": "Credits used:"
     },
     "scenario": {
       "pageTitlePrefix": "Start",
-      "pageTitleEmphasis": "Simulation",
+      "pageTitleEmphasis": "role play",
       "backAria": "Close scenario details",
       "previewAltSuffix": "scenario preview",
       "mediaUnavailable": "Media not available",
@@ -200,7 +200,7 @@
       "shareAria": "Share scenario",
       "shareTitle": "Share this scenario",
       "shareCopied": "Scenario link copied to clipboard!",
-      "scenarioLabel": "Scenario:",
+      "scenarioLabel": "Situation",
       "startAria": "Start simulation",
       "preStart": {
         "titleNormal": "Before you get started",
@@ -254,13 +254,13 @@
       "prefix": "Choose your",
       "case": "Case",
       "track": "Track",
-      "scenario": "Scenario"
+      "scenario": "situation"
     },
     "details": {
       "progress": "{{completed}} of {{total}} completed",
       "loadingDetailsError": "Failed to load simulation details",
       "track": {
-        "breadcrumb": "Tracks",
+        "breadcrumb": "Learning Pathways",
         "notFound": "Track not found"
       },
       "case": {
@@ -268,7 +268,7 @@
         "notFound": "Case not found"
       },
       "modal": {
-        "headerTitle": "Simulation",
+        "headerTitle": "role play",
         "headerSubtitle": "Details"
       }
     },
@@ -355,7 +355,7 @@
     }
   },
   "postSim": {
-    "titlePrefix": "Simulation",
+    "titlePrefix": "role play",
     "skills": {
       "shownInSession": "Skills shown in this session",
       "empty": "No skills data available for this session",
@@ -384,7 +384,7 @@
       "all": "All",
       "latest": "Latest",
       "mostReviewed": "Most reviewed",
-      "undiscovered": "Undiscovered"
+      "undiscovered": "Yet to view"
     },
     "empty": {
       "title": "No shared sessions yet",
@@ -416,12 +416,12 @@
       "noReactionsYet": "No reactions yet"
     },
     "feedCard": {
-      "sharedSimulation": "Shared simulation for review",
+      "sharedSimulation": "Role play session shared for feedback",
       "dateTime": "Date & time",
       "duration": "Duration",
       "sec": "sec",
       "min": "min",
-      "reviewTranscript": "Review transcript",
+      "reviewTranscript": "Review Conversation",
       "reactions": "reaction",
       "reactions_plural": "reactions",
       "comments": "comment",
@@ -711,7 +711,7 @@
     },
     "sessionTypes": {
       "call": "Call",
-      "simulation": "Simulation"
+      "simulation": "role play"
     },
     "fallback": {
       "callEmptyTitle": "No call logs found",
