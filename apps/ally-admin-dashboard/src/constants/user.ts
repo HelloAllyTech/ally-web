@@ -13,7 +13,6 @@ export enum FieldOptions {
   DROPDOWN_WITH_TAG = "dropdownWithTag",
   TEXTAREA = "textarea",
   CREDITS = "credits",
-  DISABLED_FIELD = "disabledField",
 }
 
 export enum UserMenuOptions {
@@ -35,8 +34,6 @@ export const USER_MODAL_FIELDS_IDS = {
   ORGNAME: "orgname",
   ORGCODE: "orgcode",
   DESCRIPTION: "description",
-  ORGLOGO: "orglogo",
-  PROFILE: "profileImageUrl",
 };
 
 export const userEditMenu = [
@@ -188,7 +185,7 @@ export const addNewOrganizationModal = [
     required: false,
   },
 ];
-export const userRoleItems = ["COUNSELOR", "ADMIN", "LEARNER", "MULTI_TENANT_ADMIN"];
+export const userRoleItems = ["COUNSELOR", "ADMIN", "LEARNER"];
 export const userStatusItems = ["ACTIVE", "SUSPENDED"];
 
 export enum FilterDropdownOptions {
@@ -223,12 +220,4 @@ export enum UserRole {
   LEARNER = "LEARNER",
   SUPER_ADMIN = "SUPER_ADMIN",
   CLIENT = "CLIENT",
-  SIMULATION_REVIEWER = "SIMULATION_REVIEWER",
-  SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
-  MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
-}
-
-export enum AppType {
-  ADMIN = "ADMIN",
-  APP = "APP",
 }

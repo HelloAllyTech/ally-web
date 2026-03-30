@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Chip > should match snapshot when rendered with custom className 1`] = `
+<DocumentFragment>
+  <div
+    class="inline-flex items-center gap-2 px-2 py-[1] rounded-full text-sm font-medium transition-colors duration-200 undefined custom-class"
+  >
+    <div
+      class="w-2 h-2 rounded-full flex-shrink-0 undefined"
+    />
+    <span
+      class="whitespace-nowrap"
+    >
+      Test Chip
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Chip > should match snapshot when rendered with default config 1`] = `
+<DocumentFragment>
+  <div
+    class="inline-flex items-center gap-2 px-2 py-[1] rounded-full text-sm font-medium transition-colors duration-200 undefined "
+  >
+    <div
+      class="w-2 h-2 rounded-full flex-shrink-0 undefined"
+    />
+    <span
+      class="whitespace-nowrap"
+    >
+      Test Chip
+    </span>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Chip > should match snapshot when rendered with icon 1`] = `
+<DocumentFragment>
+  <div
+    class="inline-flex items-center gap-2 px-2 py-[1] rounded-full text-sm font-medium transition-colors duration-200 undefined "
+  >
+    <svg
+      data-testid="mock-icon"
+    />
+    <span
+      class="whitespace-nowrap"
+    >
+      Test Chip
+    </span>
+  </div>
+</DocumentFragment>
+`;

@@ -2,7 +2,7 @@ import React from "react";
 
 import { Tooltip } from "@mui/material";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage } from "@lifeline-ui-mono/ui-shared";
 import { toolTipStyles } from "@constants";
 import { Simulation, ScenarioPath } from "@types";
 
@@ -24,7 +24,6 @@ export interface ActionButton<T> {
   tooltip: string | ((item: T) => string);
   onClick: (item: T) => void;
   show?: (item: T) => boolean;
-  disabled?: (item: T) => boolean;
 }
 
 export interface DataListProps<T extends DataListItem> {
@@ -72,12 +71,11 @@ export function DataList<T extends DataListItem>({
 
   const renderActionButtons = (item: T) => {
     return (
-      <div className="flex flex-row items-center justify-end gap-[7px] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+      <div className="flex flex-row items-center justify-end gap-[10px] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
         {actions.map((action, index) => {
           const shouldShow = action.show ? action.show(item) : true;
           if (!shouldShow) return null;
 
-          const isDisabled = action.disabled ? action.disabled(item) : false;
           const tooltipText =
             typeof action.tooltip === "function" ? action.tooltip(item) : action.tooltip;
 
@@ -89,10 +87,7 @@ export function DataList<T extends DataListItem>({
               arrow
               slotProps={toolTipStyles}
             >
-              <div
-                onClick={() => !isDisabled && action.onClick(item)}
-                className={isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
-              >
+              <div onClick={() => action.onClick(item)} className="cursor-pointer">
                 {action.icon}
               </div>
             </Tooltip>

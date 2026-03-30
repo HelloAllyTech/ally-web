@@ -6,7 +6,6 @@ export interface DropdownFieldProps {
   onChange: (value: string) => void;
   onHandleSearch?: (query: string) => void | undefined;
   options: string[];
-  searchPlaceholder?: string;
 }
 
 export interface DropdownProps {
@@ -15,5 +14,4 @@ export interface DropdownProps {
   className?: string;
   style?: React.CSSProperties;
   onHandleSearch?: (query: string) => void;
-  searchPlaceholder?: string;
 }

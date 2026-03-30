@@ -4,11 +4,12 @@ import { FC, useState, useEffect } from "react";
 
 import SearchIcon from "@mui/icons-material/Search";
 import { Autocomplete, TextField, InputAdornment } from "@mui/material";
-import type { AutocompleteRenderOptionState } from "@mui/material";
 import { X } from "lucide-react";
 
 import { searchBarStyles } from "./constants";
 import { SearchVariant } from "../../types";
+
+import type { AutocompleteRenderOptionState } from "@mui/material";
 
 /**
  * Props for SearchBar component.
@@ -19,7 +20,6 @@ export interface SearchBarProps {
   initialValue?: string;
   suggestions?: string[];
   mode?: SearchVariant;
-  placeholder?: string;
 }
 
 const MAX_CHARACTER_LIMIT = 150;
@@ -34,7 +34,6 @@ const SearchBar: FC<SearchBarProps> = ({
   initialValue = "",
   suggestions = [],
   mode = SearchVariant.LIGHT,
-  placeholder,
 }) => {
   // Initialize with initialValue to match server render
   const [searchTerm, setSearchTerm] = useState(initialValue);
@@ -94,7 +93,7 @@ const SearchBar: FC<SearchBarProps> = ({
         {...params}
         data-testid="search-bar-input"
         variant="outlined"
-        placeholder={placeholder || "Need guidance? Search here.."}
+        placeholder="Need guidance? Search here.."
         value={searchTerm}
         maxLength={MAX_CHARACTER_LIMIT}
         onChange={e => setSearchTerm(e.target.value.slice(0, MAX_CHARACTER_LIMIT))}
@@ -102,6 +101,7 @@ const SearchBar: FC<SearchBarProps> = ({
         sx={{
           borderRadius: "8px",
           overflow: "hidden",
+          border: searchBarStyles[mode].border,
           "& .MuiOutlinedInput-root": {
             height: searchBarStyles[mode].rootHeight,
             fontFamily: "IBM_Plex_Serif",

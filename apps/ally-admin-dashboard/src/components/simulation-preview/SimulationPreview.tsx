@@ -1,20 +1,13 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import {
-  SimulationDetailsModal,
-  CustomImage,
-  DropdownField,
-  MaxActiveUsersDialog,
-  FEATURE_FLAGS_MAP,
-} from "@ally-ui-mono/ui-shared";
+import { SimulationDetailsModal, CustomImage, DropdownField } from "@lifeline-ui-mono/ui-shared";
 import {
   useEndScenarioPreviewMutation,
   useScenarioPreviewMutation,
   useGetScenarioLanguagesQuery,
 } from "@api";
-import { ActionConfirmationPopup } from "@components";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useUser } from "@hooks";
 import {
@@ -30,8 +23,6 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [scenarioPreview] = useScenarioPreviewMutation();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showNotification, setShowNotification] = useState<boolean>(false);
-  const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
   const shouldLoadLanguages = simulation.status === SimulationStatus.ACTIVE;
   const { data: languageOptions = [] } = useGetScenarioLanguagesQuery(
     {
@@ -62,17 +53,16 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
     return option?.language_id;
   }, [languageOptions, selectedLanguageLabel]);
 
-  const handleLanguageChange = useCallback(
-    async (label: string) => {
-      const option = languageOptions.find(opt => opt.label === label);
-      if (!option) return;
-      setSelectedLanguageLabel(option.label);
-    },
-    [languageOptions],
-  );
+  const handleLanguageChange = async (label: string) => {
+    const option = languageOptions.find(opt => opt.label === label);
+    if (!option) return;
+    setSelectedLanguageLabel(option.label);
+  };
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
-    const { accessToken, scenario, checklistEvents, useDirectAgentDispatch } = response;
+    const { accessToken, scenario } = response;
+
+    // TODO: Add trigger warnings to the room data
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({
@@ -81,38 +71,20 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         triggerWarnings: scenario?.triggerWarnings || [],
         localParticipant: {
           name: user?.name,
-          coverImageUrl: user?.profileImageUrl,
         },
         remoteParticipant: {
           name: scenario?.metadata?.name || simulation.title,
           coverImageUrl: scenario?.coverImageUrl || simulation.coverImageUrl,
         },
         accessToken: accessToken.token,
-        roomName: accessToken?.roomName,
         createdAt: new Date(),
         serverUrl: accessToken.serverUrl,
-        maxTimeValue: scenario?.metadata?.maxTimeValue,
-        timerMode: scenario?.metadata?.timerMode,
-        checklistEvents: checklistEvents || [],
-        experienceMode: scenario?.metadata?.experienceMode,
-        checklistType: scenario?.metadata?.checklistType,
-        showScoreMeter: scenario?.metadata?.showScoreMeter,
-        useDirectAgentDispatch: useDirectAgentDispatch ?? false,
       }),
     );
     navigate(ROUTES.SIMULATION_PREVIEW(accessToken?.roomName));
   };
 
-  const handleStartSessionClick = () => {
-    setShowNotification(true);
-  };
-
-  const handleNotificationClose = () => {
-    setShowNotification(false);
-  };
-
   const onPreview = async () => {
-    setShowNotification(false);
     if (isLoading) return;
     setIsLoading(true);
     try {
@@ -124,15 +96,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
       }).unwrap();
       if (response) onStartSimulationSuccess(response);
     } catch (error: any) {
-      const statusCode = error?.data?.statusCode;
       const entityId = error?.data?.entityId;
-
-      if (statusCode === 429) {
-        setIsMaxActiveUsersPopupOpen(true);
-        setIsLoading(false);
-        return;
-      }
-
       if (entityId) {
         await endScenarioPreview({ roomName: entityId }).unwrap();
         const retry = await scenarioPreview({
@@ -143,84 +107,48 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         }).unwrap();
         onStartSimulationSuccess(retry);
       }
-    } finally {
+    } finlifeline {
       setIsLoading(false);
     }
   };
 
-  const handleMaxActiveUsersRetry = () => {
-    setIsMaxActiveUsersPopupOpen(false);
-    onPreview();
-  };
-
-  const renderAdditionalContent = useCallback(() => {
-    if (!(shouldLoadLanguages && languageOptions.length > 0)) return null;
-
-    return (
-      <div className="w-full flex justify-start">
-        <div className="flex flex-col">
-          <div className="relative w-48">
-            <DropdownField
-              options={languageOptions.map(option => option.label)}
-              value={selectedLanguageLabel || languageOptions[0]?.label || ""}
-              onChange={handleLanguageChange}
-              label=""
-              valueClassName="font-primary text-base text-typography-700"
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }, [handleLanguageChange, languageOptions, selectedLanguageLabel, shouldLoadLanguages]);
-
   return (
-    <>
-      <SimulationDetailsModal
-        isOpen={isOpen}
-        title={simulation.title}
-        description={simulation.description}
-        coverImageUrl={simulation.coverImageUrl}
-        coverVideoUrl={simulation.coverVideoUrl}
-        headerTitle={en.simulation.simulation}
-        headerSubtitle={en.simulation.preview}
-        scenarioLabel={`${en.simulation.scenario}:`}
-        primaryButtonText={isLoading ? en.simulation.starting : en.simulation.startSession}
-        secondaryButtonText={en.simulation.close}
-        onPrimaryClick={handleStartSessionClick}
-        onSecondaryClick={onClose}
-        onClickOutside={onClose}
-        isPrimaryLoading={isLoading}
-        triggerWarnings={simulation.triggerWarnings}
-        renderCustomImage={({ src, alt, className }) => (
-          <CustomImage src={src} alt={alt} className={className} />
-        )}
-        renderAdditionalContent={renderAdditionalContent}
-      />
-      <ActionConfirmationPopup
-        isOpen={showNotification}
-        onClose={handleNotificationClose}
-        title={en.notification.beforeYouGetStarted}
-        titleItalic=""
-        description={en.notification.botDelayMessage}
-        primaryButton={{
-          label: en.notification.startSession,
-          onClick: onPreview,
-        }}
-      />
-      {FEATURE_FLAGS_MAP.MAX_ACTIVE_USERS_POPUP_FLAG && (
-        <MaxActiveUsersDialog
-          open={isMaxActiveUsersPopupOpen}
-          onClose={() => setIsMaxActiveUsersPopupOpen(false)}
-          onRetry={handleMaxActiveUsersRetry}
-          translations={{
-            title: en.common.maxActiveUsers.title,
-            description: en.common.maxActiveUsers.description,
-            retry: en.common.maxActiveUsers.retry,
-            manualRetry: en.common.maxActiveUsers.manualRetry,
-            autoRetry: en.common.maxActiveUsers.autoRetry,
-          }}
-        />
+    <SimulationDetailsModal
+      isOpen={isOpen}
+      title={simulation.title}
+      description={simulation.description}
+      coverImageUrl={simulation.coverImageUrl}
+      coverVideoUrl={simulation.coverVideoUrl}
+      headerTitle={en.simulation.simulation}
+      headerSubtitle={en.simulation.preview}
+      scenarioLabel={`${en.simulation.scenario}:`}
+      primaryButtonText={isLoading ? en.simulation.starting : en.simulation.startSession}
+      secondaryButtonText={en.simulation.close}
+      onPrimaryClick={onPreview}
+      onSecondaryClick={onClose}
+      onClickOutside={onClose}
+      isPrimaryLoading={isLoading}
+      triggerWarnings={simulation.triggerWarnings}
+      renderCustomImage={({ src, alt, className }) => (
+        <CustomImage src={src} alt={alt} className={className} />
       )}
-    </>
+      renderAdditionalContent={() =>
+        shouldLoadLanguages && languageOptions.length > 0 ? (
+          <div className="w-full flex justify-start">
+            <div className="flex flex-col">
+              <div className="relative w-48">
+                <DropdownField
+                  options={languageOptions.map(option => option.label)}
+                  value={selectedLanguageLabel || languageOptions[0]?.label || ""}
+                  onChange={handleLanguageChange}
+                  label=""
+                  valueClassName="font-primary text-base text-typography-700"
+                />
+              </div>
+            </div>
+          </div>
+        ) : null
+      }
+    />
   );
 };

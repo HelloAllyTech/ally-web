@@ -1,18 +1,16 @@
 import { Carousel1, Carousel4, Carousel3, Carousel2 } from "@assets";
 import { CarouselSlideType } from "@components";
 
-export const ALLY_URL = "https://www.helloally.ai";
-export const ALLY_TERMS_URL = "https://www.helloally.ai/terms";
-export const ALLY_PRIVACY_POLICY_URL = "https://www.helloally.ai/policy";
-export const ALLY_DATA_POLICY_URL = "https://www.helloally.ai/policy";
+export const lifeline_URL = "https://www.hellolifeline.ai";
+export const lifeline_TERMS_URL = "https://www.hellolifeline.ai/terms";
+export const lifeline_PRIVACY_POLICY_URL = "https://www.hellolifeline.ai/policy";
+export const lifeline_DATA_POLICY_URL = "https://www.hellolifeline.ai/policy";
 
 export enum MediaRecorderState {
   INACTIVE = "inactive",
   RECORDING = "recording",
   PAUSED = "paused",
 }
-
-export const PLATFORM_EMOJIS = ["1f44d", "2764-fe0f", "1f604", "1f44f", "1f4a1", "1F44E"];
 
 export enum KeyboardKeys {
   BACKSPACE = "Backspace",
@@ -77,7 +75,7 @@ export const CAROUSEL_SLIDES: CarouselSlideType[] = [
   },
   {
     imageSrc: Carousel3,
-    text: "Personal information of clients is automatically removed",
+    text: "Personal information of clients is automaticlifeline removed",
   },
   {
     imageSrc: Carousel4,
@@ -118,31 +116,6 @@ export const TAG_TYPES = {
   CALL_SUMMARY: "CallSummary",
   CALL_LOGS: "CallLogs",
   SIMULATION_LOGS: "SimulationLogs",
-  SIMULATION_SUMMARY: "SimulationSummary",
   SCENARIO_PATHWAY_DETAILS: "ScenarioPathwayDetails",
-  SCENARIO_CASE_DETAILS: "ScenarioCaseDetails",
   SIMULATION_CREDITS: "SimulationCredits",
-  USER: "User",
-  REVIEW: "Review",
-  UNREAD_REVIEW_COUNT: "UnreadReviewCount",
-  BADGES: "Badges",
-  REFLECTION_PROMPTS: "ReflectionPrompts",
-  GENERAL_COMMENTS: "GeneralComments",
-};
-
-export const SORT_ORDER = {
-  ASC: "ASC",
-  DESC: "DESC",
-};
-
-export const toolTipStyles = {
-  tooltip: {
-    sx: {
-      backgroundColor: "#000",
-      color: "white",
-      borderRadius: "5px",
-      maxWidth: "250px",
-      whiteSpace: "normal",
-    },
-  },
 };

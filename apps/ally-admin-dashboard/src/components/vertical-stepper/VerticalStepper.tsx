@@ -8,12 +8,7 @@ const stepStatusMap = {
   pending: "pending",
 };
 
-export const VerticalStepper: FC<VerticalStepperProps> = ({
-  steps,
-  currentStep,
-  onStepClick,
-  disabled = false,
-}) => {
+export const VerticalStepper: FC<VerticalStepperProps> = ({ steps, currentStep, onStepClick }) => {
   const getStepStatus = (_step: Step, stepIndex: number) => {
     const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
@@ -68,18 +63,12 @@ export const VerticalStepper: FC<VerticalStepperProps> = ({
   };
 
   return (
-    <div
-      className={`min-w-[150px] lg:min-w-[200px] border-r border-border-light px-2 py-3 transition-opacity ${disabled ? "opacity-50" : ""}`}
-    >
+    <div className="min-w-[150px] lg:min-w-[200px] border-r border-border-light px-2 py-3">
       <nav>
         {steps.map((step, index) => {
           const status = getStepStatus(step, index);
           return (
-            <div
-              key={step.id}
-              className={disabled ? "cursor-not-allowed" : "cursor-pointer"}
-              onClick={() => !disabled && onStepClick?.(step.id)}
-            >
+            <div key={step.id} className="cursor-pointer" onClick={() => onStepClick?.(step.id)}>
               <div className={getStepStyles(step, index)}>
                 <div className={getCircleStyles(step, index)}>
                   {status === stepStatusMap.active && <div className={getDotStyles(step, index)} />}

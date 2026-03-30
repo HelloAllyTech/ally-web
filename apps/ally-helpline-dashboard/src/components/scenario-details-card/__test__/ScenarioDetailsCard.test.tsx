@@ -70,33 +70,14 @@ vi.mock("@components", async importOriginal => {
     </button>
   );
 
-  const MockConfirmationDialog = ({
-    isOpen,
-    onButtonClick,
-    buttonText,
-    content,
-    title,
-    onClose,
-  }: any) =>
-    isOpen ? (
-      <div data-testid="notification-dialog">
-        <span>{title.normal}</span>
-        <p>{content}</p>
-        <button onClick={onButtonClick}>{buttonText}</button>
-        <button onClick={onClose}>Close</button>
-      </div>
-    ) : null;
-
   return {
     ...original,
     Button: MockButton,
-    ConfirmationDialog: MockConfirmationDialog,
-    ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" },
   };
 });
 
 // Mock CustomVideo and FEATURE_FLAGS_MAP from ui-shared
-vi.mock("@ally-ui-mono/ui-shared", () => ({
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({
   CustomVideo: ({ src, alt, className }: any) => (
     <video data-testid="custom-video" src={src} aria-label={alt} className={className} />
   ),
@@ -251,26 +232,11 @@ describe("ScenarioDetailsCard", () => {
 
   // --- Interaction Tests ---
 
-  it("should show notification dialog when Start simulation button is clicked", () => {
+  it("should call onStart when Start simulation button is clicked", () => {
     renderComponent();
     const button = screen.getByRole("button", { name: /Start Simulation/i });
 
     fireEvent.click(button);
-
-    expect(screen.getByTestId("notification-dialog")).toBeInTheDocument();
-    expect(screen.getByText("Before you get started")).toBeInTheDocument();
-    expect(mockOnStart).not.toHaveBeenCalled();
-  });
-
-  it("should call onStart when Start Session is clicked in notification dialog", () => {
-    renderComponent();
-    const button = screen.getByRole("button", { name: /Start Simulation/i });
-
-    fireEvent.click(button);
-
-    const startSessionButton = screen.getByRole("button", { name: /Start Session/i });
-    fireEvent.click(startSessionButton);
-
     expect(mockOnStart).toHaveBeenCalledTimes(1);
   });
 
@@ -285,7 +251,7 @@ describe("ScenarioDetailsCard", () => {
     const button = screen.getByRole("button", { name: /Start Simulation/i });
     fireEvent.click(button);
 
-    expect(screen.getByTestId("notification-dialog")).toBeInTheDocument();
+    expect(mockOnStart).toHaveBeenCalledTimes(1);
     // Note: In a real scenario, event.stopPropagation would prevent parent handler
     // This test verifies the code calls stopPropagation
   });

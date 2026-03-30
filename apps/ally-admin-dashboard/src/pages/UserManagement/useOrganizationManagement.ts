@@ -3,18 +3,11 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import {
-  useCreateTenantMutation,
-  useUpdateTenantMutation,
-  useGetTenantsQuery,
-  usePostLogoUrlMutation,
-  useDeleteLogoMutation,
-  useGetDashboardSettingsAllQuery,
-} from "@api";
+import { useCreateTenantMutation, useUpdateTenantMutation, useGetTenantsQuery } from "@api";
 import { SORT_BY, SORT_ORDER, en } from "@constants";
 import { Tenant } from "@types";
 
-export const TENANTS_PAGE_SIZE = 100;
+export const TENANTS_PAGE_SIZE = 30;
 
 export function useOrganizationManagement() {
   const [orgSearch, setOrgSearch] = useState<string>("");
@@ -26,25 +19,10 @@ export function useOrganizationManagement() {
   const [tenantsOffset, setTenantsOffset] = useState<number>(0);
 
   // Form default values (match field ids used in modal configuration)
-
-  const defaultTenantValues: {
-    orgname: string;
-    orgcode: string;
-    description: string;
-    logoUrl?: string;
-    enabledDashboardIds: string[];
-    enableMicrophoneMode: boolean;
-    enableAudioUpload: boolean;
-    hideRankInCommunity: boolean;
-  } = {
-    logoUrl: "",
+  const defaultTenantValues: { orgname: string; orgcode: string; description: string } = {
     orgname: "",
     orgcode: "",
     description: "",
-    enabledDashboardIds: [],
-    enableMicrophoneMode: false,
-    enableAudioUpload: false,
-    hideRankInCommunity: false,
   };
 
   // Form methods
@@ -56,9 +34,6 @@ export function useOrganizationManagement() {
   // Mutations
   const [createTenant] = useCreateTenantMutation();
   const [updateTenant] = useUpdateTenantMutation();
-  const [logoUpload] = usePostLogoUrlMutation();
-  const [deleteLogo] = useDeleteLogoMutation();
-  const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery(undefined);
 
   const tenantParams = {
     limit: TENANTS_PAGE_SIZE,
@@ -101,36 +76,17 @@ export function useOrganizationManagement() {
   };
 
   const handleCreateTenant = async (data: {
-    logoUrl?: string;
     orgname: string;
     orgcode: string;
     description?: string;
-    enabledDashboardIds: string[];
-    enableMicrophoneMode: boolean;
-    enableAudioUpload: boolean;
-    hideRankInCommunity: boolean;
   }) => {
     try {
-      const payload: {
-        name: string;
-        code: string;
-        description: string;
-        logoUrl?: string;
-        enabledDashboardIds: string[];
-        enableMicrophoneMode: boolean;
-        enableAudioUpload: boolean;
-        hideRankInCommunity: boolean;
-      } = {
+      const payload = {
         name: data.orgname,
         code: data.orgcode,
-        description: data.description ?? "",
-        enabledDashboardIds: data.enabledDashboardIds ?? [],
-        enableMicrophoneMode: data.enableMicrophoneMode ?? false,
-        enableAudioUpload: data.enableAudioUpload ?? false,
-        hideRankInCommunity: data.hideRankInCommunity ?? false,
+        description: data.description || "",
       };
-      // T
-      payload.logoUrl = data.logoUrl;
+
       await createTenant(payload).unwrap();
       setAddOrganizationModalOpen(false);
       tenantMethods.reset(defaultTenantValues);
@@ -143,50 +99,26 @@ export function useOrganizationManagement() {
   const onEditTenant = (tenant: Tenant) => {
     setSelectedTenant(tenant);
     tenantMethods.reset({
-      logoUrl: tenant.logoUrl ?? "",
       orgname: tenant.name ?? "",
       orgcode: tenant.code ?? "",
       description: tenant.description ?? "",
-      enabledDashboardIds: tenant.enabledDashboardIds ?? [],
-      enableMicrophoneMode: tenant.enableMicrophoneMode ?? false,
-      enableAudioUpload: tenant.enableAudioUpload ?? false,
-      hideRankInCommunity: tenant.hideRankInCommunity ?? false,
     });
     setAddOrganizationModalOpen(true);
   };
 
   const handleEditTenant = async (data: {
-    logoUrl?: string;
     orgname: string;
     orgcode: string;
     description?: string;
-    enabledDashboardIds: string[];
-    enableMicrophoneMode: boolean;
-    enableAudioUpload: boolean;
-    hideRankInCommunity: boolean;
   }) => {
     if (!selectedTenant) return;
     try {
-      const payload: {
-        name: string;
-        code: string;
-        description: string;
-        logoUrl?: string;
-        enabledDashboardIds: string[];
-        enableMicrophoneMode: boolean;
-        enableAudioUpload: boolean;
-        hideRankInCommunity: boolean;
-      } = {
+      const payload = {
         name: data.orgname,
         code: data.orgcode,
         description: data.description || "",
-        enabledDashboardIds: data.enabledDashboardIds ?? [],
-        enableMicrophoneMode: data.enableMicrophoneMode ?? false,
-        enableAudioUpload: data.enableAudioUpload ?? false,
-        hideRankInCommunity: data.hideRankInCommunity ?? false,
       };
 
-      payload.logoUrl = data.logoUrl;
       await updateTenant({ id: selectedTenant.id, data: payload }).unwrap();
       setAddOrganizationModalOpen(false);
       setSelectedTenant(null);
@@ -200,30 +132,12 @@ export function useOrganizationManagement() {
   const handleTenantFormSubmit = async (data: {
     orgname: string;
     orgcode: string;
-    description: string;
-    logoUrl?: string;
-    enabledDashboardIds: string[];
-    enableMicrophoneMode: boolean;
-    enableAudioUpload: boolean;
-    hideRankInCommunity: boolean;
+    description?: string;
   }) => {
-    const payload = {
-      orgname: data.orgname,
-      orgcode: data.orgcode,
-      description: data.description,
-      logoUrl: data.logoUrl,
-      enabledDashboardIds: data.enabledDashboardIds ?? [],
-      enableMicrophoneMode: data.enableMicrophoneMode ?? false,
-      enableAudioUpload: data.enableAudioUpload ?? false,
-      hideRankInCommunity: data.hideRankInCommunity ?? false,
-    };
-
-    if (selectedTenant && selectedTenant.logoUrl) deleteLogo({ logoUrl: selectedTenant.logoUrl });
-
     if (selectedTenant) {
-      await handleEditTenant(payload);
+      await handleEditTenant(data);
     } else {
-      await handleCreateTenant(payload);
+      await handleCreateTenant(data);
     }
   };
 
@@ -263,9 +177,5 @@ export function useOrganizationManagement() {
     // mutations
     createTenant,
     updateTenant,
-    logoUpload,
-
-    // analytics
-    dashboardSettingsAll,
   };
 }

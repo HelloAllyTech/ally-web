@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Edit } from "@assets";
 import { ActionConfirmationPopup } from "@components";
 import { en } from "@constants";
@@ -49,20 +48,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
               onClick={e => handleRowClick(tenant, e)}
               className="grid grid-cols-12 items-center px-4 py-3 text-typography-900 border-b border-border-light hover:bg-background-secondary cursor-pointer"
             >
-              <div className="col-span-3 text-typography-900">
-                <span className="flex items-center">
-                  <div className="w-10 h-10 rounded-full mr-3">
-                    <CustomImage
-                      src={tenant.logoUrl}
-                      alt="org-logo"
-                      fallbackClassName="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
-                      fallbackText={tenant.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
-                      className="rounded-full mr-3"
-                    />
-                  </div>
-                  {tenant.name}
-                </span>
-              </div>
+              <div className="col-span-3 text-typography-900">{tenant.name}</div>
               <div className="col-span-2 text-typography-900">{tenant.code}</div>
               <div className="col-span-3 text-typography-900 overflow-hidden whitespace-nowrap truncate w-[200px]">
                 {tenant.description}

@@ -22,7 +22,6 @@ let mockStartTime = new Date();
 let mockEvents: any[] = [];
 let mockScore = 0;
 let mockError: any = null;
-let mockdetectedEventIds: string[] = [];
 
 // Mock wake lock
 const mockWakeLockRelease = vi.fn().mockResolvedValue(undefined);
@@ -51,7 +50,6 @@ vi.mock("@hooks", () => ({
     handleRetryConnection: mockHandleRetryConnection,
     events: mockEvents,
     score: mockScore,
-    detectedEventIds: mockdetectedEventIds,
   }),
 }));
 
@@ -71,7 +69,7 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-vi.mock("@ally-ui-mono/ui-shared/logger", () => ({
+vi.mock("@lifeline-ui-mono/ui-shared/logger", () => ({
   logger: {
     info: vi.fn(),
     error: vi.fn(),
@@ -124,7 +122,7 @@ vi.mock("@constants", () => ({
   },
 }));
 
-vi.mock("@ally-ui-mono/ui-shared", () => ({
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({
   SimulationPage: ({ children, ...props }: any) => (
     <div data-testid="simulation-page" {...props}>
       Simulation Page
@@ -149,7 +147,6 @@ describe("Simulation", () => {
     mockStartTime = new Date();
     mockEvents = [];
     mockScore = 0;
-    mockdetectedEventIds = [];
     mockError = null;
     mockRoom = {
       localParticipant: {

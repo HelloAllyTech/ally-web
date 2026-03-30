@@ -47,23 +47,6 @@ vi.mock("../CombinationTriggerConditions", () => ({
   ),
 }));
 
-vi.mock("../MultiLevelCombinationTriggerConditions", () => ({
-  MultiLevelCombinationTriggerConditions: ({
-    triggerCondition,
-    onChange,
-    isInTable,
-    currentEventId,
-  }: any) => (
-    <div data-testid="combination-trigger-conditions">
-      <span data-testid="combination-expression">
-        {JSON.stringify(triggerCondition.expression)}
-      </span>
-      <span data-testid="combination-in-table">{String(isInTable)}</span>
-      <span data-testid="combination-current-event-id">{currentEventId || "none"}</span>
-    </div>
-  ),
-}));
-
 vi.mock("../../types/triggerConditions", async importOriginal => {
   const actual = await importOriginal<typeof import("../../types/triggerConditions")>();
   return {

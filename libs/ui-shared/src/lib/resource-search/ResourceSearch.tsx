@@ -35,15 +35,6 @@ export interface ResourceSearchProps {
   isSuggestionsRow?: boolean;
   mode?: SearchVariant;
   categoryCountList?: { [key: string]: number };
-  allLabel?: string;
-  noResultsLabel?: string;
-  suggestionsTitle?: string;
-  searchPlaceholder?: string;
-  headerDescription?: string;
-  logoAlt?: string;
-  translateCategory?: (category: string) => string;
-  viewMoreLabel?: string;
-  viewLessLabel?: string;
 }
 
 const ResourceSearch: FC<ResourceSearchProps> = ({
@@ -62,15 +53,6 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   isSuggestionsRow = false,
   categoryCountList,
   mode = SearchVariant.LIGHT,
-  allLabel,
-  noResultsLabel,
-  suggestionsTitle,
-  searchPlaceholder,
-  headerDescription,
-  logoAlt,
-  translateCategory,
-  viewMoreLabel,
-  viewLessLabel,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -137,18 +119,13 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
   const renderNoResults = () => {
     return (
       <div className="w-full text-left px-4 pt-[10px]">
-        <span className="text-[#ADADAD]">
-          {noResultsLabel
-            ? noResultsLabel.replace("{{query}}", searchQuery ?? "")
-            : `No results found for "${searchQuery ?? ""}"`}
-        </span>
+        <span className="text-[#ADADAD]">{`No results found for "${searchQuery}"`}</span>
         <SuggestionsContainer
           suggestions={sampleSuggestions}
           isRow={false}
           isCenter={isSuggestionsCenter}
           onSelect={handleSearch}
           mode={mode}
-          suggestionsTitle={suggestionsTitle}
         />
       </div>
     );
@@ -167,7 +144,6 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
           suggestions={sampleSuggestions}
           onSelect={handleSearch}
           mode={mode}
-          suggestionsTitle={suggestionsTitle}
         />
       );
     }
@@ -184,8 +160,6 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
                 categoryCountList={categoryCountList}
                 setSelectedCategory={onCategoryChange}
                 mode={mode}
-                allLabel={allLabel}
-                translateCategory={translateCategory}
               />
             )}
           </div>
@@ -213,8 +187,6 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
                     setExpandedCard={(expanded: boolean) =>
                       setExpandedCard(expanded ? resource.id : null)
                     }
-                    viewMoreLabel={viewMoreLabel}
-                    viewLessLabel={viewLessLabel}
                   />
                 ))}
               </InfiniteScroll>
@@ -239,22 +211,15 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
       <div
         className={`${
           fullWidth ? "w-full" : "w-full"
-        } min-w-0 md:min-w-0 lg:min-w-[300px] flex flex-col items-center mb-32`}
+        } min-w-0 md:min-w-0 lg:min-w-[300px] flex flex-col items-center overflow-hidden`}
       >
         <div className="w-full flex flex-col gap-2 items-center justify-center px-4 mb-2 md:px-4 lg:px-0">
-          {showHeader && (
-            <SearchHeader
-              showDescriptionInMobile={showHeaderDescriptionInMobile}
-              description={headerDescription}
-              logoAlt={logoAlt}
-            />
-          )}
+          {showHeader && <SearchHeader showDescriptionInMobile={showHeaderDescriptionInMobile} />}
           <ResourceSearchBar
             onSearch={handleSearch}
             suggestions={sampleSuggestions}
             initialValue={searchQuery ?? ""}
             mode={mode}
-            placeholder={searchPlaceholder}
           />
         </div>
         {renderResultsBody()}

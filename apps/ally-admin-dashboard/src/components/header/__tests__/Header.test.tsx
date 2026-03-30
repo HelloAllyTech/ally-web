@@ -1,18 +1,11 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock constants early - plain mock with ReportGenerationStatus for transitive imports (report-section)
+// Mock constants early to avoid importing real module that pulls in SimulationCreator
 vi.mock("@constants", () => ({
-  ReportGenerationStatus: {
-    STARTED: "STARTED",
-    IN_PROGRESS: "IN_PROGRESS",
-    COMPLETED: "COMPLETED",
-    CANCELLED: "CANCELLED",
-    FAILED: "FAILED",
-  },
   en: {
     simulation: {
-      rolePlays: "Roleplays",
+      simulationstudio: "Simulation Studio",
       createSimulation: "Create Simulation",
       editSimulation: "Edit Simulation",
       createNewSimulation: "Create New Simulation",
@@ -83,7 +76,7 @@ describe("Header", () => {
     );
 
     expect(screen.getAllByText("Create Simulation").length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByText("Roleplays"));
+    fireEvent.click(screen.getByText("Simulation Studio"));
     expect(onBack).toHaveBeenCalled();
   });
 

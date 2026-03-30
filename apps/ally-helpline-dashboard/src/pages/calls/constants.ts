@@ -1,5 +1,3 @@
-import { TFunction } from "i18next";
-
 import { Permissions } from "@constants";
 import { SessionType } from "@types";
 
@@ -50,8 +48,6 @@ export const tabStyles = {
   textTransform: "none",
   fontWeight: 500,
   color: "#49454F",
-  fontFamily: "IBM_Plex_Serif",
-  font: "IBM Plex Serif",
 };
 
 export const defaultDeleteDialogData = {
@@ -113,18 +109,3 @@ export const sessionLogsMap = {
     label: "Simulations",
   },
 };
-
-export const getSessionLogsMap = (t: TFunction) => ({
-  [SessionUserGroup.MY_LOGS]: {
-    label: t("calls.userGroups.my"),
-  },
-  [SessionUserGroup.ORG_LOGS]: {
-    label: t("calls.userGroups.org"),
-  },
-  [SessionType.CALL]: {
-    label: t("analytics.types.callLogs"),
-  },
-  [SessionType.SIMULATION]: {
-    label: t("analytics.types.simulations"),
-  },
-});

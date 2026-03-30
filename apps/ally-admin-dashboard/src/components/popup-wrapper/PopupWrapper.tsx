@@ -29,7 +29,7 @@ const calculatePopupPosition = (
   const rect = anchorElement.getBoundingClientRect();
 
   let top = rect.bottom + POPUP_GAP;
-  let left = rect.left;
+  let left = rect.right - popupWidth;
 
   if (top + popupHeight > window.innerHeight) top = rect.top - popupHeight - POPUP_GAP;
 

@@ -20,7 +20,7 @@ export const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 0 
         data-testid="simulation-score-meter-label"
         className="text-[#9CA3AF] text-[12px] font-medium mr-1"
       >
-        Points
+        Simulation Score
       </div>
       <div
         data-testid="simulation-score-meter-bar"

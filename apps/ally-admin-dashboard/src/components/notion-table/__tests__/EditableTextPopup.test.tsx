@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableTextPopup } from "../EditableTextPopup";
 
 // Mock AutoExpandableTextarea component
-vi.mock("@ally-ui-mono/ui-shared", () => ({
+vi.mock("@components", () => ({
   AutoExpandableTextarea: ({
     value,
     onChange,
@@ -94,16 +94,16 @@ describe("EditableTextPopup", () => {
   });
 
   describe("Disabled State", () => {
-    it("displays value when disabled", () => {
+    it("displays '--' when disabled", () => {
       render(<EditableTextPopup {...defaultProps} disabled={true} />);
 
-      expect(screen.getByText("Test value")).toBeInTheDocument();
+      expect(screen.getByText("--")).toBeInTheDocument();
     });
 
     it("does not open popup when clicking disabled field", () => {
       render(<EditableTextPopup {...defaultProps} disabled={true} />);
 
-      const displayText = screen.getByText("Test value");
+      const displayText = screen.getByText("--");
       fireEvent.click(displayText);
 
       expect(screen.queryByTestId("auto-expandable-textarea")).not.toBeInTheDocument();
@@ -144,7 +144,7 @@ describe("EditableTextPopup", () => {
     it("does not open popup when disabled and clicked", () => {
       render(<EditableTextPopup {...defaultProps} disabled={true} />);
 
-      const disabledText = screen.getByText("Test value");
+      const disabledText = screen.getByText("--");
       fireEvent.click(disabledText);
 
       expect(screen.queryByTestId("auto-expandable-textarea")).not.toBeInTheDocument();
@@ -272,12 +272,12 @@ describe("EditableTextPopup", () => {
         expect(textarea).toHaveValue("Initial");
       });
 
-      rerender(<EditableTextPopup {...defaultProps} value="Changed externally" />);
+      rerender(<EditableTextPopup {...defaultProps} value="Changed externlifeline" />);
 
       await waitFor(() => {
         const textarea = screen.queryByTestId("auto-expandable-textarea");
         if (textarea) {
-          expect(textarea).toHaveValue("Changed externally");
+          expect(textarea).toHaveValue("Changed externlifeline");
         }
       });
     });
@@ -395,16 +395,12 @@ describe("EditableTextPopup", () => {
     });
   });
 
-  describe("Text Display", () => {
-    it("displays text with proper container styling", () => {
-      const { getByText } = render(<EditableTextPopup {...defaultProps} value="Test content" />);
+  describe("Max Height", () => {
+    it("applies max height to display text", () => {
+      const { container } = render(<EditableTextPopup {...defaultProps} />);
 
-      const displayText = getByText("Test content");
-      expect(displayText).toBeInTheDocument();
-
-      // Verify container has h-full class for proper height
-      const outerContainer = displayText.closest(".h-full");
-      expect(outerContainer).toBeInTheDocument();
+      const displayContainer = container.querySelector(".max-h-\\[36px\\]");
+      expect(displayContainer).toBeInTheDocument();
     });
   });
 });

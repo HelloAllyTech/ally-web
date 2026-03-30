@@ -1,4 +1,4 @@
-import allyIcon from "./ally.svg?url";
+import lifelineIcon from "./lifeline.svg?url";
 
 /**
  * SearchHeader component displays the main header and optional description for the search UI.
@@ -7,23 +7,15 @@ import allyIcon from "./ally.svg?url";
  * @param {boolean} [props.showDescriptionInMobile=true] - Whether to show the description on mobile devices.
  */
 
-const SearchHeader = ({
-  showDescriptionInMobile = true,
-  description,
-  logoAlt,
-}: {
-  showDescriptionInMobile?: boolean;
-  description?: string;
-  logoAlt?: string;
-}) => {
+const SearchHeader = ({ showDescriptionInMobile = true }) => {
   return (
     <div
       className="w-full flex flex-col gap-2 items-center justify-center font-['IBM_Plex_Serif'] mb-4 mt-10"
       data-testid="search-header"
     >
       <img
-        src={allyIcon}
-        alt={logoAlt || "Ally Logo"}
+        src={lifelineIcon}
+        alt="lifeline Logo"
         className="w-24 h-16"
         data-testid="search-header-logo"
       />
@@ -33,7 +25,7 @@ const SearchHeader = ({
           showDescriptionInMobile ? "block" : "hidden"
         } sm:block text-[#000] text-center px-[10%]`}
       >
-        {description || "Guidance, safety, and support — whenever you need it."}
+        Guidance, safety, and support — whenever you need it.
       </span>
     </div>
   );

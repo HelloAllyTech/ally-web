@@ -1,13 +1,7 @@
 import { useSelector } from "react-redux";
 
-import { logger } from "@ally-ui-mono/ui-shared";
-import {
-  useLazyGetUserQuery,
-  useLazyGetPermissionsQuery,
-  useGetProfileImageUrlMutation,
-  useDeleteProfileImageMutation,
-  useUploadProfileImageMutation,
-} from "@api";
+import { logger } from "@lifeline-ui-mono/ui-shared";
+import { useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@api";
 import { baseAPI } from "@api/baseAPI";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
@@ -20,26 +14,6 @@ export const useUser = () => {
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
-  const [getProfileUrl] = useGetProfileImageUrlMutation();
-  const [deleteProfile] = useDeleteProfileImageMutation();
-  const [uploadProfile] = useUploadProfileImageMutation();
-
-  /**
-   * Refetches user data and updates Redux store
-   * Used when profile is updated to reflect changes immediately
-   */
-  const refetchUser = async () => {
-    try {
-      const userData = await getUser();
-      if (userData?.data) {
-        store.dispatch(setUser(userData.data));
-      }
-      return userData?.data;
-    } catch (error) {
-      logger.info(`Error refetching user: ${error}`);
-      return null;
-    }
-  };
 
   /**
    * Checks user authentication status and fetches user data if authenticated.
@@ -112,11 +86,7 @@ export const useUser = () => {
     isAuthenticated,
     logout,
     permissions,
-    refetchUser,
     setUser,
     user,
-    getProfileUrl,
-    deleteProfile,
-    uploadProfile,
   };
 };

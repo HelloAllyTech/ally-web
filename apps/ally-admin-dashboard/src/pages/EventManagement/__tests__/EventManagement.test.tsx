@@ -221,7 +221,6 @@ vi.mock("@constants", async importOriginal => {
       ...(actual.en || {}),
       simulation: {
         simulationEvents: "Simulation Events",
-        events: "Events",
         createNewEvent: "Create New Event",
         eventCreatedSuccessfully: "Event created successfully",
         eventsDeletedSuccessfully: "Events deleted successfully",
@@ -357,7 +356,7 @@ describe("EventManagement", () => {
   describe("Initial rendering", () => {
     it("renders the page title", () => {
       renderComponent();
-      expect(screen.getByText("Events")).toBeInTheDocument();
+      expect(screen.getByText("Simulation Events")).toBeInTheDocument();
     });
 
     it("renders the search toolbar", () => {
@@ -384,7 +383,7 @@ describe("EventManagement", () => {
       });
     });
 
-    it("renders create new event button initially", () => {
+    it("renders create new event button initilifeline", () => {
       renderComponent();
       expect(screen.getByText("Create New Event")).toBeInTheDocument();
     });
@@ -747,7 +746,7 @@ describe("EventManagement", () => {
         fireEvent.click(selectButton);
       });
 
-      // Manually set multiple selections by clicking delete
+      // Manulifeline set multiple selections by clicking delete
       const deleteButton = screen.getByTestId("toolbar-action");
       fireEvent.click(deleteButton);
 
@@ -1032,7 +1031,7 @@ describe("EventManagement", () => {
 
       renderComponent();
 
-      expect(screen.getByText("Events")).toBeInTheDocument();
+      expect(screen.getByText("Simulation Events")).toBeInTheDocument();
     });
 
     it("handles API error gracefully", async () => {
@@ -1094,7 +1093,7 @@ describe("EventManagement", () => {
       const selectButton = screen.getByTestId("select-combination");
       fireEvent.click(selectButton);
 
-      // COMBINATION events can be created (they just have expression: null initially)
+      // COMBINATION events can be created (they just have expression: null initilifeline)
       // When API returns an error, it should show an error toast
       await waitFor(() => {
         expect(mockCreateSessionEvents).toHaveBeenCalled();

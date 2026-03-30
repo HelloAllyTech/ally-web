@@ -1,10 +1,9 @@
-import { FC, useCallback, useMemo } from "react";
+import { FC } from "react";
 
-import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
+  Tabs,
   ListToolbar,
   FilterDropdown,
   UserList,
@@ -14,10 +13,8 @@ import {
   OrganizationListLoader,
   UserModal,
   ActionConfirmationPopup,
-  StatusBadge,
-  AssignedOrganizations,
 } from "@components";
-import { ButtonVariant, FilterValues } from "@components/types";
+import { ButtonVariant } from "@components/types";
 import {
   addCredit,
   addNewOrganizationModal,
@@ -27,19 +24,8 @@ import {
   userEditModal,
   UserMenuOptions,
   ROUTES,
-  userRoleItems,
-  userStatusItems,
-  FilterDropdownOptions,
-  userStatus,
-  USER_MANAGEMENT_TABS,
-  USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_1,
-  USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_2,
-  UserRole,
-  Permissions,
 } from "@constants";
-import { RootState } from "@store";
 import { TabType } from "@types";
-import { formatCapitalizedEnum } from "@utils";
 
 import { useOrganizationManagement } from "./useOrganizationManagement";
 import { useUserManagement } from "./useUserManagement";
@@ -55,13 +41,9 @@ export const UserManagement: FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get("tab") as TabType) || TabType.USERS;
-  const permissions = useSelector((state: RootState) => state.user.permissions);
-  const canEditMultiTenantAdmins = permissions.includes(Permissions.EDIT_MULTI_TENANT_ADMINS);
-  const canEditUser = permissions.includes(Permissions.EDIT_USER);
 
   // Organization management hook
   const {
-    dashboardSettingsAll,
     tenantsCount,
     orgSearch,
     setOrgSearch,
@@ -75,7 +57,6 @@ export const UserManagement: FC = () => {
     onEditTenant,
     handleTenantFormSubmit,
     onCloseOrganizationEditModal,
-    logoUpload,
   } = useOrganizationManagement();
 
   // User management hook (depends on tenants)
@@ -111,86 +92,11 @@ export const UserManagement: FC = () => {
     handleAddCredit,
   } = useUserManagement(tenants);
 
-  const watchedRoles = userMethods.watch("roles") || [];
-
-  const isMultiTenantAdmin =
-    watchedRoles.includes(UserRole.MULTI_TENANT_ADMIN) ||
-    selectedUser?.role === UserRole.MULTI_TENANT_ADMIN ||
-    selectedUser?.roles?.includes(UserRole.MULTI_TENANT_ADMIN);
-
   const TABS = [
     { id: TabType.USERS, label: en.userManagement.users, count: usersCount },
     { id: TabType.ORGANIZATIONS, label: en.userManagement.organizations, count: tenantsCount },
   ];
 
-  const logoValue = tenantMethods.watch("logoUrl");
-  const enabledDashboardIds = tenantMethods.watch("enabledDashboardIds") ?? [];
-  const enableMicrophoneMode = tenantMethods.watch("enableMicrophoneMode");
-  const enableAudioUpload = tenantMethods.watch("enableAudioUpload");
-  const hideRankInCommunity = tenantMethods.watch("hideRankInCommunity");
-
-  const getSettingValue = useCallback(
-    (optionId: string): boolean => {
-      switch (optionId) {
-        case "enableMicrophoneMode":
-          return enableMicrophoneMode;
-        case "enableAudioUpload":
-          return enableAudioUpload;
-        case "hideRankInCommunity":
-          return hideRankInCommunity;
-        default:
-          return false;
-      }
-    },
-    [enableMicrophoneMode, enableAudioUpload, hideRankInCommunity],
-  );
-
-  const optionValues = useMemo(
-    () => [
-      ...USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_1.map(option => {
-        const dashboardId =
-          dashboardSettingsAll?.find(setting => setting.analyticsType === option.type)?.id ?? "";
-        return {
-          id: dashboardId,
-          value: enabledDashboardIds.includes(dashboardId),
-          label: option.label,
-          onClick: (enabled: boolean) => {
-            const currentEnabledDashboardIds = tenantMethods.getValues("enabledDashboardIds") ?? [];
-            if (enabled) {
-              // Add the id to enabledDashboardIds if not already present
-              if (!currentEnabledDashboardIds.includes(dashboardId)) {
-                tenantMethods.setValue(
-                  "enabledDashboardIds",
-                  [...currentEnabledDashboardIds, dashboardId],
-                  { shouldDirty: true },
-                );
-              }
-            } else {
-              // Remove the id from enabledDashboardIds
-              tenantMethods.setValue(
-                "enabledDashboardIds",
-                currentEnabledDashboardIds.filter((id: string) => id !== dashboardId),
-                { shouldDirty: true },
-              );
-            }
-          },
-        };
-      }),
-      ...USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_2.map(option => ({
-        id: option.id,
-        value: getSettingValue(option.id),
-        label: option.label,
-        onClick: (enabled: boolean) => {
-          tenantMethods.setValue(
-            option.id as "enableMicrophoneMode" | "enableAudioUpload" | "hideRankInCommunity",
-            enabled,
-            { shouldDirty: true },
-          );
-        },
-      })),
-    ],
-    [dashboardSettingsAll, tenantMethods, enabledDashboardIds, getSettingValue],
-  );
   const renderEditModal = () => {
     switch (selectedOption) {
       case UserMenuOptions.EDIT_DETAILS:
@@ -202,15 +108,6 @@ export const UserManagement: FC = () => {
             details={selectedUser}
             formMethods={userMethods}
             handleClick={handleEditUser}
-            extraContent={
-              isMultiTenantAdmin ? (
-                <AssignedOrganizations
-                  userId={selectedUser?.id as number}
-                  canEdit={canEditMultiTenantAdmins}
-                  allTenants={tenants}
-                />
-              ) : undefined
-            }
           />
         );
       case UserMenuOptions.CHANGE_ROLE:
@@ -223,15 +120,6 @@ export const UserManagement: FC = () => {
             buttonName={en.userManagement.confirm}
             formMethods={userMethods}
             handleClick={handleChangeRole}
-            extraContent={
-              isMultiTenantAdmin ? (
-                <AssignedOrganizations
-                  userId={selectedUser?.id as number}
-                  canEdit={canEditMultiTenantAdmins}
-                  allTenants={tenants}
-                />
-              ) : undefined
-            }
           />
         );
       case UserMenuOptions.MANAGE_CREDITS:
@@ -339,14 +227,10 @@ export const UserManagement: FC = () => {
               filterChips={filterChips}
               addFilterCta={addFilterCtaMemo}
               addFilterButtonRef={addFilterBtnRef}
-              action={
-                canEditUser
-                  ? {
-                      label: en.userManagement.addUser,
-                      onClick: handleUserAddClick,
-                    }
-                  : undefined
-              }
+              action={{
+                label: en.userManagement.addUser,
+                onClick: handleUserAddClick,
+              }}
             />
 
             <UserModal
@@ -357,46 +241,15 @@ export const UserManagement: FC = () => {
               buttonName={en.userManagement.addUser}
               formMethods={userMethods}
               handleClick={handleAddUser}
-              extraContent={
-                isMultiTenantAdmin ? (
-                  <div className="text-sm text-typography-600 bg-background-secondary p-3 rounded-lg border border-border-light italic">
-                    {en.userManagement.noAssignedOrganizations}. Organizations can be assigned after
-                    the user is created.
-                  </div>
-                ) : undefined
-              }
             />
 
-            <FilterDropdown<FilterValues>
+            <FilterDropdown
               isOpen={isFilterOpen}
               onClose={() => setIsFilterOpen(false)}
-              currentFilters={filters}
+              organizations={tenants.map(org => org.name)}
               onApplyFilters={handleApplyFilters}
               anchorRect={addFilterBtnRef.current?.getBoundingClientRect() ?? null}
-              sections={[
-                {
-                  id: "roles",
-                  label: FilterDropdownOptions.ROLE,
-                  options: userRoleItems.map(role => ({ label: role, value: role })),
-                  renderOption: option => formatCapitalizedEnum(option.value),
-                },
-                {
-                  id: "organizations",
-                  label: FilterDropdownOptions.ORGANIZATION,
-                  options: tenants.map(org => ({ label: org.name, value: org.name })),
-                },
-                {
-                  id: "statuses",
-                  label: FilterDropdownOptions.STATUS,
-                  options: userStatusItems.map(status => ({ label: status, value: status })),
-                  renderOption: option =>
-                    option.value === userStatus.SUSPENDED || option.value === userStatus.ACTIVE ? (
-                      <StatusBadge status={option.value} />
-                    ) : (
-                      formatCapitalizedEnum(option.value)
-                    ),
-                },
-              ]}
+              currentFilters={filters}
             />
 
             {users.length === 0 && isUsersFetching ? (
@@ -411,7 +264,6 @@ export const UserManagement: FC = () => {
                 users={users}
                 formatDate={formatDate}
                 onOptionSelect={handleOptionSelect}
-                canEditUser={canEditUser}
                 renderFooter={() =>
                   renderFooter(loadUsers, isUsersFetching, usersCount > users.length)
                 }
@@ -427,16 +279,9 @@ export const UserManagement: FC = () => {
             <ListToolbar
               searchValue={orgSearch}
               onSearchChange={setOrgSearch}
-              action={
-                canEditUser
-                  ? { label: en.userManagement.addOrganization, onClick: handleNewgroupClick }
-                  : undefined
-              }
+              action={{ label: en.userManagement.addOrganization, onClick: handleNewgroupClick }}
             />
             <UserModal
-              hasTabs={true}
-              optionValues={optionValues}
-              tabOptions={USER_MANAGEMENT_TABS}
               isOpen={addOrganizationModalOpen}
               onClose={onCloseOrganizationEditModal}
               title={
@@ -449,15 +294,6 @@ export const UserManagement: FC = () => {
               formMethods={tenantMethods}
               details={selectedTenant}
               handleClick={handleTenantFormSubmit}
-              imageUpload
-              uploadId="logoUrl"
-              uploadButtonName={
-                logoValue || selectedTenant?.logoUrl
-                  ? en.userManagement.changeLogo
-                  : en.userManagement.uploadLogo
-              }
-              uploadTitle="Logo"
-              uploadImageUrl={logoUpload}
             />
             {isTenantsFetching ? (
               <OrganizationListLoader />
@@ -485,7 +321,7 @@ export const UserManagement: FC = () => {
   return (
     <div className="space-y-6 font-primary h-[100vh] overflow-y-hidden">
       <h1 className="text-2xl font-normal text-typography-900 font-secondary">
-        {en.userManagement.users}
+        {en.userManagement.userManagement}
       </h1>
       <Tabs items={TABS} activeId={activeTab} onChange={id => setSearchParams({ tab: id })} />
       {renderBody()}

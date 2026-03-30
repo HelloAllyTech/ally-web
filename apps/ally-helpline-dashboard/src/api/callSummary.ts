@@ -8,7 +8,7 @@
  * - Export functionality
  */
 
-import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
+import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   EnhanceContentRequest,
   EnhanceContentResponse,
@@ -45,7 +45,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
      */
     getCallSummary: builder.query({
       query: chatId => `${ApiEndpoints.CALL_SUMMARY.GET_CALL_SUMMARY}/${chatId}`,
-      providesTags: [TAG_TYPES.CALL_SUMMARY],
+      providesTags: ["CallSummary"],
     }),
 
     /**
@@ -62,12 +62,12 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PUT,
         body: data,
       }),
-      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
+      invalidatesTags: ["CallSummary", "CallLogs"],
     }),
 
     /**
      * Uses AI to improve and enhance the provided content,
-     * typically used for improving call summaries or notes.
+     * typiclifeline used for improving call summaries or notes.
      * @param {EnhanceContentRequest} data - Content to be enhanced
      * @returns {Promise<EnhanceContentResponse>} Enhanced content response
      */
@@ -105,7 +105,6 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: callInfo,
       }),
-      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
     }),
 
     /**
@@ -149,7 +148,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
     getTranscript: builder.query<GetTranscriptResponse, GetTranscriptRequest>({
       query: ({ chatId, offset, limit, sortBy }) => ({
         url: ApiEndpoints.CALL_SUMMARY.GET_TRANSCRIPT(chatId),
-        params: { offset, limit, sortOrder: "ASC", sortBy, includeTags: true },
+        params: { offset, limit, sortOrder: "ASC", sortBy },
       }),
     }),
 

@@ -270,9 +270,8 @@ describe("auth API", () => {
     });
 
     it("should handle different user roles", () => {
-      const roles = [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN];
+      const roles = [UserRole.SUPER_ADMIN];
       expect(roles).toContain(UserRole.SUPER_ADMIN);
-      expect(roles).toContain(UserRole.MULTI_TENANT_ADMIN);
     });
 
     it("should handle user with minimal data", () => {
@@ -358,11 +357,10 @@ describe("auth API", () => {
       const otpRequest = {
         phone: "+1234567890",
         email: "user@example.com",
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN],
+        allowedRoles: [UserRole.SUPER_ADMIN],
       };
 
       expect(otpRequest.allowedRoles).toContain(UserRole.SUPER_ADMIN);
-      expect(otpRequest.allowedRoles).toContain(UserRole.MULTI_TENANT_ADMIN);
       expect(Array.isArray(otpRequest.allowedRoles)).toBe(true);
     });
 
@@ -371,11 +369,10 @@ describe("auth API", () => {
         phone: "+1234567890",
         email: "user@example.com",
         otp: "123456",
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN],
+        allowedRoles: [UserRole.SUPER_ADMIN],
       };
 
       expect(verifyRequest.allowedRoles).toContain(UserRole.SUPER_ADMIN);
-      expect(verifyRequest.allowedRoles).toContain(UserRole.MULTI_TENANT_ADMIN);
     });
   });
 });

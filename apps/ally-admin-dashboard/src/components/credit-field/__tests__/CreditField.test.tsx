@@ -109,13 +109,13 @@ describe("CreditField", () => {
       expect(input.value).toBe("0");
     });
 
-    it("displays default value when value is undefined", () => {
+    it("displays empty string when value is undefined", () => {
       render(
         <CreditField onChange={mockOnChange} userData={mockUserData} value={undefined as any} />,
       );
 
       const input = screen.getByRole("spinbutton") as HTMLInputElement;
-      expect(input.value).toBe("20");
+      expect(input.value).toBe("");
     });
 
     it("displays consumed credits from user data", () => {

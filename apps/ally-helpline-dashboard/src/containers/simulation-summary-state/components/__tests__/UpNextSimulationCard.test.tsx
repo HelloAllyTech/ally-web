@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { UpNextSimulationCard } from "@components/up-next-simulation-card";
+import { UpNextSimulationCard } from "../UpNextSimulationCard";
 
 // Define the types inline to avoid import issues
 interface UpcomingScenario {
@@ -19,18 +19,14 @@ interface UpcomingScenario {
 
 interface CurrentSession {
   scenarioId?: string;
-  isScenarioPathSessionCompleted?: boolean;
-  isCaseSessionCompleted?: boolean;
+  isScenarioPathSessionCompleted?: string;
   coverImageUrl?: string;
   title?: string;
   scenarioPathSessionItemId?: string;
-  caseSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
   scenarioPathSessionStatus?: boolean;
   scenarioPathSessionItemStatus?: string;
-  caseSessionItemStatus?: string;
-  sessionGlimpse?: string;
 }
 
 interface GetUpComingSimulationResponse {
@@ -79,11 +75,6 @@ vi.mock("@components", () => ({
   },
 }));
 
-// Mock assets
-vi.mock("@assets", () => ({
-  ArrowDownFilled: () => <svg data-testid="arrow-down-filled" />,
-}));
-
 // Mock constants
 vi.mock("@constants", () => ({
   ROUTES: {
@@ -124,14 +115,14 @@ describe("UpNextSimulationCard", () => {
       order: 2,
       title: "Hopeless Male, 40",
       description:
-        "A 40-year-old male is experiencing deep hopelessness. He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socially. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope.",
+        "A 40-year-old male is experiencing deep hopelessness. He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socilifeline. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope.",
       coverImageUrl: "https://via.placeholder.com/120",
       scenarioPathSessionItemId: "path-item-123",
     },
     currentSession: {
       scenarioId: "current-sim-123",
-      isScenarioPathSessionCompleted: false, // Must be falsy to show Up Next card
-      caseSessionItemStatus: "COMPLETED", // Must be COMPLETED to show "Great work!"
+      isScenarioPathSessionCompleted: "", // Must be falsy to show Up Next card
+      scenarioPathSessionItemStatus: "COMPLETED", // Must be COMPLETED to show "Great work!"
       transitionMessageTitle: "Great work!",
       transitionMessageContent: "You've completed the previous simulation.",
       title: "Current Simulation",
@@ -144,13 +135,13 @@ describe("UpNextSimulationCard", () => {
     it("should render the simulation card with all elements", () => {
       render(<UpNextSimulationCard data={getMockData()} />);
 
-      expect(screen.getByText(/Simulation 2/)).toBeInTheDocument();
+      expect(screen.getByText("Up next - Simulation 2")).toBeInTheDocument();
       expect(screen.getByText("Hopeless Male, 40")).toBeInTheDocument();
       expect(screen.getByText("Scenario:")).toBeInTheDocument();
       expect(
         screen.getByText(/A 40-year-old male is experiencing deep hopelessness/),
       ).toBeInTheDocument();
-      expect(screen.getByText(/Great work!/)).toBeInTheDocument();
+      expect(screen.getByText("Great work!")).toBeInTheDocument();
       expect(screen.getByText("You've completed the previous simulation.")).toBeInTheDocument();
     });
 
@@ -171,7 +162,7 @@ describe("UpNextSimulationCard", () => {
       }
       render(<UpNextSimulationCard data={customData} />);
 
-      expect(screen.getByText(/Simulation 5/)).toBeInTheDocument();
+      expect(screen.getByText("Up next - Simulation 5")).toBeInTheDocument();
     });
 
     it("should display custom title", () => {
@@ -243,7 +234,7 @@ describe("UpNextSimulationCard", () => {
       }
       render(<UpNextSimulationCard data={customData} />);
 
-      expect(screen.getByText(/Simulation 0/)).toBeInTheDocument();
+      expect(screen.getByText("Up next - Simulation 0")).toBeInTheDocument();
     });
 
     it("should handle long description text", () => {

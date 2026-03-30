@@ -8,12 +8,7 @@ import { store } from "@store";
 
 import { useUser } from "../useUser";
 
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  logger: { info: vi.fn() },
-  FEATURE_FLAGS_MAP: {
-    PEER_REVIEW_FLAG: false,
-  },
-}));
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({ logger: { info: vi.fn() } }));
 
 const apiMocks = {
   getUser: vi.fn(),
@@ -24,10 +19,6 @@ vi.mock("@api", async () => {
   return {
     useLazyGetUserQuery: () => [apiMocks.getUser, { isLoading: false }],
     useLazyGetPermissionsQuery: () => [apiMocks.getPermissions, { isLoading: false }],
-    useGetProfileImageUrlMutation: () => [vi.fn()],
-    useDeleteProfileImageMutation: () => [vi.fn()],
-    useUploadProfileImageMutation: () => [vi.fn()],
-    useGetLogoUrlQuery: () => ({ data: null }),
   } as any;
 });
 

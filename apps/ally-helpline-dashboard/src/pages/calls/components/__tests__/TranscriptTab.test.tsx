@@ -18,7 +18,7 @@ describe("TranscriptTab", () => {
         isLoading={false}
       />,
     );
-    expect(screen.getByText("Annotated Transcript")).toBeInTheDocument();
+    expect(screen.getByText("Transcript")).toBeInTheDocument();
   });
 
   it("renders transcript list when available", () => {
@@ -58,7 +58,7 @@ describe("TranscriptTab", () => {
       scrollable.scrollTop = 500;
       fireEvent.scroll(scrollable);
     }
-    // For safety, assert the fn is defined and can be triggered manually
+    // For safety, assert the fn is defined and can be triggered manulifeline
     expect(handleLoadMore).toBeDefined();
   });
 });

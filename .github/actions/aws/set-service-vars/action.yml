@@ -1,0 +1,65 @@
+name: "Set Service Variables"
+description: "Generates service-specific names and configurations"
+
+inputs:
+  service_name:
+    description: "Service name"
+    required: true
+  project_prefix:
+    description: "Project prefix"
+    required: true
+  project_region:
+    description: "Project region"
+    required: true
+
+outputs:
+  ecs_cluster:
+    description: "ECS cluster name"
+    value: ${{ steps.set-vars.outputs.ecs_cluster }}
+  ecs_service:
+    description: "ECS service name"
+    value: ${{ steps.set-vars.outputs.ecs_service }}
+  ecr_repository_name:
+    description: "ECR repository name"
+    value: ${{ steps.set-vars.outputs.ecr_repository_name }}
+  task_definition:
+    description: "Task definition name"
+    value: ${{ steps.set-vars.outputs.task_definition }}
+  s3_bucket:
+    description: "S3 bucket name"
+    value: ${{ steps.set-vars.outputs.s3_bucket }}
+  container_name:
+    description: "Container name"
+    value: ${{ steps.set-vars.outputs.container_name }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Service Variables
+      id: set-vars
+      shell: bash
+      run: |
+        # Generate service-specific names
+        ECS_CLUSTER="${{ inputs.project_prefix }}-${{ inputs.project_region }}-ecs-cluster"
+        ECS_SERVICE="${{ inputs.project_prefix }}-svc-${{ inputs.service_name }}"
+        ECR_REPOSITORY_NAME="${{ inputs.project_prefix }}-ecr-${{ inputs.service_name }}"
+        TASK_DEFINITION="${{ inputs.project_prefix }}-td-${{ inputs.service_name }}"
+        S3_BUCKET="${{ inputs.project_prefix }}-s3-environment"
+        CONTAINER_NAME="${{ inputs.project_prefix }}-cntr-${{ inputs.service_name }}"
+
+        # Output variables
+        echo "ecs_cluster=$ECS_CLUSTER" >> $GITHUB_OUTPUT
+        echo "ecs_service=$ECS_SERVICE" >> $GITHUB_OUTPUT
+        echo "ecr_repository_name=$ECR_REPOSITORY_NAME" >> $GITHUB_OUTPUT
+        echo "task_definition=$TASK_DEFINITION" >> $GITHUB_OUTPUT
+        echo "s3_bucket=$S3_BUCKET" >> $GITHUB_OUTPUT
+        echo "container_name=$CONTAINER_NAME" >> $GITHUB_OUTPUT
+
+        # Add to step summary
+        echo ":gear: Service Configuration" >> $GITHUB_STEP_SUMMARY
+        echo "- ECS Cluster: $ECS_CLUSTER" >> $GITHUB_STEP_SUMMARY
+        echo "- ECS Service: $ECS_SERVICE" >> $GITHUB_STEP_SUMMARY
+        echo "- ECR Repository: $ECR_REPOSITORY_NAME" >> $GITHUB_STEP_SUMMARY
+        echo "- Task Definition: $TASK_DEFINITION" >> $GITHUB_STEP_SUMMARY 
+        echo "- S3 Bucket: $S3_BUCKET" >> $GITHUB_STEP_SUMMARY
+        echo "- Container Name: $CONTAINER_NAME" >> $GITHUB_STEP_SUMMARY

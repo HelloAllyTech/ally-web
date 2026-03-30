@@ -13,15 +13,6 @@ import {
   GetCreditResponse,
   AddCreditBody,
   disableSuccessResponse,
-  GetLogoUrlRequest,
-  GetLogoUrlResponse,
-  DeleteLogoRequest,
-  ScribeSettingsListResponse,
-  UpdateSummarySectionsBody,
-  UpdateSummaryFieldsBody,
-  GetAdminTenantsResponse,
-  AssignAdminTenantsBody,
-  RemoveAdminTenantsBody,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
@@ -35,11 +26,8 @@ const userManagementAPI = baseAPI.injectEndpoints({
     }),
 
     getTenantById: builder.query<Tenant, string>({
-      query: (id: string, includeUserCount: boolean = true) => ({
+      query: id => ({
         url: `${ApiEndpoints.USER_MANAGEMENT.TENANTS_BY_ID(id)}`,
-        params: {
-          includeUserCount,
-        },
       }),
     }),
 
@@ -159,24 +147,6 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
 
-    enableCase: builder.mutation<{ success: boolean }, { tenantId: string; caseIds: number[] }>({
-      query: ({ tenantId, caseIds }) => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CASE_TENANT_VISIBILITY(tenantId)}`,
-        method: HttpMethod.POST,
-        body: { caseIds },
-      }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_CASES],
-    }),
-
-    disableCase: builder.mutation<disableSuccessResponse, { tenantId: string; caseIds: number[] }>({
-      query: ({ tenantId, caseIds }) => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.CASE_TENANT_VISIBILITY(tenantId)}`,
-        method: HttpMethod.DELETE,
-        body: { caseIds },
-      }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_CASES],
-    }),
-
     enablePath: builder.mutation<
       { success: boolean },
       { tenantId: string; scenarioPathIds: number[] }
@@ -200,94 +170,11 @@ const userManagementAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
-
-    postLogoUrl: builder.mutation<GetLogoUrlResponse, GetLogoUrlRequest>({
-      query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.POST_LOGO_URL,
-        method: HttpMethod.POST,
-        body,
-      }),
-    }),
-
-    /**
-     * Delete cover image from S3
-     */
-    deleteLogo: builder.mutation<boolean, DeleteLogoRequest>({
-      query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.DELETE_LOGO,
-        method: HttpMethod.DELETE,
-        body,
-      }),
-    }),
-
-    getSummarySections: builder.query<ScribeSettingsListResponse, string>({
-      query: tenantId => ({
-        url: ApiEndpoints.USER_MANAGEMENT.SUMMARY_SECTIONS,
-        params: { tenantId },
-      }),
-      providesTags: [TAG_TYPES.SUMMARY_SECTIONS],
-    }),
-
-    updateSummarySections: builder.mutation<{ success: boolean }, UpdateSummarySectionsBody>({
-      query: ({ tenantId, hiddenSections }) => ({
-        url: ApiEndpoints.USER_MANAGEMENT.SUMMARY_SECTIONS,
-        method: HttpMethod.PUT,
-        body: {
-          tenantId,
-          hiddenSections,
-        },
-      }),
-      invalidatesTags: [TAG_TYPES.SUMMARY_SECTIONS],
-    }),
-
-    getDashboardSettingsAll: builder.query<any, void>({
-      query: () => ({
-        url: ApiEndpoints.USER_MANAGEMENT.DASHBOARD_SETTINGS_ALL,
-      }),
-    }),
-
-    updateSummaryFields: builder.mutation<{ success: boolean }, UpdateSummaryFieldsBody>({
-      query: ({ tenantId, hiddenFields }) => ({
-        url: ApiEndpoints.USER_MANAGEMENT.SUMMARY_FIELDS,
-        method: HttpMethod.PUT,
-        body: {
-          tenantId,
-          hiddenFields,
-        },
-      }),
-      invalidatesTags: [TAG_TYPES.SUMMARY_SECTIONS],
-    }),
-
-    getAdminTenants: builder.query<GetAdminTenantsResponse, number>({
-      query: userId => ({
-        url: ApiEndpoints.USER_MANAGEMENT.USER_ADMIN_TENANTS(userId),
-      }),
-      providesTags: [TAG_TYPES.ADMIN_TENANTS],
-    }),
-
-    assignAdminTenants: builder.mutation<{ success: boolean }, AssignAdminTenantsBody>({
-      query: body => ({
-        url: ApiEndpoints.USER_MANAGEMENT.ADMIN_TENANTS,
-        method: HttpMethod.POST,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.ADMIN_TENANTS],
-    }),
-
-    removeAdminTenants: builder.mutation<{ success: boolean }, RemoveAdminTenantsBody>({
-      query: body => ({
-        url: ApiEndpoints.USER_MANAGEMENT.ADMIN_TENANTS,
-        method: HttpMethod.DELETE,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.ADMIN_TENANTS],
-    }),
   }),
 });
 
 export const {
   useGetUsersQuery,
-  useGetTenantByIdQuery,
   useLazyGetTenantByIdQuery,
   useGetTenantsQuery,
   useLazyGetUsersQuery,
@@ -306,16 +193,4 @@ export const {
   useEnableSimulationMutation,
   useEnablePathMutation,
   useDisablePathMutation,
-  usePostLogoUrlMutation,
-  useDeleteLogoMutation,
-  useGetSummarySectionsQuery,
-  useUpdateSummarySectionsMutation,
-  useUpdateSummaryFieldsMutation,
-  useGetDashboardSettingsAllQuery,
-  useEnableCaseMutation,
-  useDisableCaseMutation,
-  useGetAdminTenantsQuery,
-  useLazyGetAdminTenantsQuery,
-  useAssignAdminTenantsMutation,
-  useRemoveAdminTenantsMutation,
 } = userManagementAPI;

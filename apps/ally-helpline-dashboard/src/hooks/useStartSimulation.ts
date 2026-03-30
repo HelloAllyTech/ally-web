@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { logger } from "@lifeline-ui-mono/ui-shared";
 import { useEndSimulationMutation, useStartSimulationMutation } from "@api";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 import { useUser } from "@hooks";
@@ -11,7 +11,6 @@ import { useUser } from "@hooks";
 interface StartSimulationParams {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
-  caseSessionItemId?: string;
   languageId?: number;
 }
 
@@ -61,11 +60,10 @@ export const useStartSimulation = (
     if (isStarting) return;
     setIsStarting(true);
     try {
-      const { scenarioId, scenarioPathSessionItemId, caseSessionItemId, languageId } = params;
+      const { scenarioId, scenarioPathSessionItemId, languageId } = params;
       const dataParams: {
         scenarioId: number;
         scenarioPathSessionItemId?: string;
-        caseSessionItemId?: string;
         languageId?: number;
       } = {
         scenarioId,
@@ -74,10 +72,6 @@ export const useStartSimulation = (
 
       if (scenarioPathSessionItemId?.length > 0) {
         dataParams.scenarioPathSessionItemId = scenarioPathSessionItemId;
-      }
-
-      if (caseSessionItemId?.length > 0) {
-        dataParams.caseSessionItemId = caseSessionItemId;
       }
 
       const { data, error } = await startSimulationMutation(dataParams);
@@ -95,7 +89,6 @@ export const useStartSimulation = (
             triggerWarnings: scenario?.triggerWarnings || [],
             localParticipant: {
               name: user?.name,
-              coverImageUrl: user?.profileImageUrl,
             },
             remoteParticipant: {
               name: scenario?.metadata?.name || metadata?.title,
@@ -104,12 +97,6 @@ export const useStartSimulation = (
             accessToken: accessToken.token,
             createdAt: scenarioSession.startedAt,
             serverUrl: accessToken.serverUrl,
-            checklistEvents: scenario?.checklistEvents || [],
-            experienceMode: scenario?.experienceMode,
-            checklistType: scenario?.checklistType,
-            maxTimeValue: scenario?.maxTimeValue,
-            timerMode: scenario?.timerMode,
-            showScoreMeter: scenario?.showScoreMeter,
           }),
         );
 

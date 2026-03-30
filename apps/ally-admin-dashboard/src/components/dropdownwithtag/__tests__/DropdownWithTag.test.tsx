@@ -72,19 +72,19 @@ describe("DropdownwithTag", () => {
     );
 
     const trigger = container.querySelector(".border.rounded-md") as HTMLElement;
-    const getDropdownPanel = () => document.body.querySelector(".fixed.bg-white") as HTMLElement;
 
-    // Open and select "admin" (options are portaled to document.body)
+    // Open and select "admin" from options list (not from tag)
     fireEvent.click(trigger);
-    fireEvent.click(within(getDropdownPanel()).getByText(/admin/i));
+    const optionsList = container.querySelector(".absolute.left-0.top-full") as HTMLElement;
+    fireEvent.click(within(optionsList).getByText(/admin/i));
     expect(onChange).toHaveBeenLastCalledWith(["admin"]);
 
     // Select "viewer"
-    fireEvent.click(within(getDropdownPanel()).getByText(/viewer/i));
+    fireEvent.click(within(optionsList).getByText(/viewer/i));
     expect(onChange).toHaveBeenLastCalledWith(["admin", "viewer"]);
 
-    // Deselect "admin" (click option in dropdown, not the tag)
-    fireEvent.click(within(getDropdownPanel()).getByText(/admin/i));
+    // Deselect "admin"
+    fireEvent.click(within(optionsList).getByText(/admin/i));
     expect(onChange).toHaveBeenLastCalledWith(["viewer"]);
   });
 

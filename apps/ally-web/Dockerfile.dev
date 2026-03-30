@@ -1,9 +1,17 @@
-# Dev image for ally-web (Next.js)
-# Use prebuilt deps image which already has all dependencies and workspace setup
-FROM ally-web/deps:dev
+# Dev image for lifeline-web (Next.js)
+# Use prebuilt deps image to leverage cached node_modules
+FROM lifeline-web/deps:dev
 
 # Set working directory for subsequent commands
 WORKDIR /app
+
+# Install dependencies at image build using workspace manifests for better caching
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
+COPY apps/lifeline-web/package*.json ./apps/lifeline-web/
+
+RUN npm ci --legacy-peer-deps
 
 # Configure development environment variables
 ENV NODE_ENV=development
@@ -14,4 +22,4 @@ ENV WATCHPACK_POLLING=true
 EXPOSE 3000
 
 # Start the Next.js dev server via Nx
-CMD ["npx", "nx", "dev", "ally-web", "--hostname", "0.0.0.0"]
+CMD ["npx", "nx", "dev", "lifeline-web", "--hostname", "0.0.0.0"]

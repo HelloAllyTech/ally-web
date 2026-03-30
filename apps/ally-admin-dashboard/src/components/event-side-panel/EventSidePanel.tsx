@@ -1,25 +1,17 @@
 import React, { useState, useCallback, useEffect } from "react";
 
-import { Tooltip } from "@mui/material";
-
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared/index";
-import { DoubleArrowRight, InfoIcon, Trash } from "@assets";
+import { DoubleArrowRight, Trash } from "@assets";
 import {
   ActionConfirmationPopup,
+  AutoExpandableTextarea,
   EmojiPickerComponent,
   TriggerConditions,
   NumberInput,
-  OccurrenceControlSection,
-  ScoreWindowSection,
-  TimeWindowSection,
-  EVENT_TYPE_POPUP_OPTIONS,
-  TextareaWithTriggerDropdown,
-  SimpleTagSelector,
 } from "@components";
-import { en, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
+import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam, isCombinationTriggerCondition, COMBINATION_OPERATOR } from "@types";
-import { isValidCombinationExpression } from "@utils";
+import { isExactlyOneEventSelected } from "@utils";
 
 interface EventSidePanelProps {
   selectedEvent: UpdateEventDataParam | null;
@@ -33,29 +25,14 @@ interface FieldProps {
   label: string;
   children: React.ReactNode;
   multiline?: boolean;
-  tooltip?: boolean;
-  tooltipTitle?: string;
 }
 
-const Field: React.FC<FieldProps> = ({
-  label,
-  children,
-  multiline = false,
-  tooltip,
-  tooltipTitle,
-}) => (
+const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => (
   <div
     className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
-    <div className={`w-[40%] flex items-center gap-2 ${multiline && "mt-[8px]"}`}>
+    <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
       <span className="text-base font-regular text-typography-800">{label}</span>
-      {tooltip && (
-        <Tooltip title={tooltipTitle || label} placement="top" arrow slotProps={toolTipStyles}>
-          <span className="cursor-pointer items-center ">
-            <InfoIcon />
-          </span>
-        </Tooltip>
-      )}
     </div>
     <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
   </div>
@@ -160,25 +137,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
     [selectedEvent],
   );
 
-  /**
-   * Helper to update detection config fields
-   * Reduces repetitive code for updating nested detectionConfig properties
-   */
-  const handleDetectionConfigChange = useCallback(
-    (field: string, value: any) => {
-      if (!selectedEvent) return;
-
-      setFormData(previousData => ({
-        ...previousData,
-        detectionConfig: {
-          ...previousData.detectionConfig,
-          [field]: value,
-        },
-      }));
-    },
-    [selectedEvent],
-  );
-
   const handleDelete = useCallback(() => {
     if (selectedEvent?.id) {
       onDelete(selectedEvent.id);
@@ -194,17 +152,13 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
       isCombinationTriggerCondition(formData.triggerCondition)
     ) {
       const expression = formData.triggerCondition.expression;
-      if (!isValidCombinationExpression(expression)) {
+      if (isExactlyOneEventSelected(expression)) {
         setShowConfirmationModal(true);
         return; // Show modal instead of closing
       }
     }
     onClose();
   }, [formData, onClose]);
-
-  const convertEventTypeFormat = (eventType: string) => {
-    return EVENT_TYPE_POPUP_OPTIONS.find(option => option.value === eventType)?.label || eventType;
-  };
 
   const handleConfirmClose = useCallback(() => {
     setShowConfirmationModal(false);
@@ -241,14 +195,10 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           </div>
 
           <div className="space-y-3">
-            <div>
-              <Field label="Event code">
-                <div className="text-base text-neutral-800">{formData.eventCode || "—"}</div>
-              </Field>
-              <Field label="Event type">
-                <div>{convertEventTypeFormat(formData.detectionType || "-")}</div>
-              </Field>
-            </div>
+            <Field label="Event code">
+              <div className="text-base text-neutral-800">{formData.eventCode || "—"}</div>
+            </Field>
+
             {/* Trigger Conditions Field */}
 
             <TriggerConditions
@@ -258,56 +208,24 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               currentEventId={formData.id}
             />
 
-            <OccurrenceControlSection
-              eventType={formData.detectionType}
-              maxOccurrences={formData?.detectionConfig?.maxOccurrences}
-              minGapTime={formData?.detectionConfig?.minGapTime as string}
-              occurrenceInterval={formData?.detectionConfig?.occurrenceInterval}
-              onMaxOccurrencesChange={value => handleDetectionConfigChange("maxOccurrences", value)}
-              onMinGapTimeChange={value => handleDetectionConfigChange("minGapTime", value)}
-              onOccurrenceIntervalChange={value =>
-                handleDetectionConfigChange("occurrenceInterval", value)
-              }
-            />
-
-            {formData?.detectionType !== EVENT_DETECTION_TYPES.TIME_BASED && (
-              <TimeWindowSection
-                startTime={formData?.detectionConfig?.startTime as string}
-                endTime={formData?.detectionConfig?.endTime as string}
-                onStartTimeChange={value => handleDetectionConfigChange("startTime", value)}
-                onEndTimeChange={value => handleDetectionConfigChange("endTime", value)}
-              />
-            )}
-
-            {formData?.detectionType !== EVENT_DETECTION_TYPES.SCORE_BASED && (
-              <ScoreWindowSection
-                minScore={formData?.detectionConfig?.minScore}
-                maxScore={formData?.detectionConfig?.maxScore}
-                onMinScoreChange={value => handleDetectionConfigChange("minScore", value)}
-                onMaxScoreChange={value => handleDetectionConfigChange("maxScore", value)}
-              />
-            )}
-
-            <div className="flex-1 h-[1px] bg-border-light" />
-            <Field
-              label="Branch description"
-              multiline
-              tooltip
-              tooltipTitle='Use "<" to access dynamic content for branching in simulations.'
-            >
-              <TextareaWithTriggerDropdown
+            <Field label="Branch description" multiline={true}>
+              <AutoExpandableTextarea
+                maxLines={20}
+                minHeight={20}
                 value={formData.branchInstruction}
                 onChange={value => handleFieldChange("branchInstruction", value)}
                 placeholder="Add instruction"
-                alwaysOpen
+                className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
               />
             </Field>
+
             <Field label="Default session quality score">
               <NumberInput
                 value={Number(formData.score)}
                 onChange={value => handleFieldChange("score", value)}
               />
             </Field>
+
             <Field label="Default real time feedback message" multiline={true}>
               <AutoExpandableTextarea
                 maxLines={20}
@@ -325,16 +243,6 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
                 onEmojiClick={emoji => handleFieldChange("emoji", emoji)}
                 buttonText={formData.emoji}
               />
-            </Field>
-
-            <Field label="Tags">
-              <div className="w-full">
-                <SimpleTagSelector
-                  tags={formData.tags || []}
-                  updateTags={tags => handleFieldChange("tags", tags)}
-                  label=""
-                />
-              </div>
             </Field>
           </div>
         </div>

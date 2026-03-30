@@ -4,7 +4,7 @@ import React, { useState } from "react";
 
 export interface CustomImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
-  alt?: string;
+  alt: string;
   fallbackClassName?: string;
   fallbackText?: string;
   containerClassName?: string;

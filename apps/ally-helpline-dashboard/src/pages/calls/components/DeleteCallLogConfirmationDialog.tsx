@@ -1,8 +1,5 @@
 import { FC } from "react";
 
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-
 import { useDeleteCallLogMutation } from "@api";
 import { ConfirmationDialog } from "@components";
 
@@ -12,19 +9,12 @@ const DeleteCallLogConfirmationDialog: FC<DeleteCallLogDialogDataProps> = ({
   chatId,
   closeDialog,
 }) => {
-  const { t } = useTranslation();
   const [deleteCallLog] = useDeleteCallLogMutation();
 
   const onDeleteConfirm = async () => {
     if (!chatId) return;
-    try {
-      await deleteCallLog(chatId).unwrap();
-      closeDialog(true);
-    } catch (error) {
-      const errorMessage = `Failed to delete call log. ${error?.data?.message ?? ""}`;
-      toast.error(errorMessage);
-      closeDialog(false);
-    }
+    await deleteCallLog(chatId);
+    closeDialog(true);
   };
 
   return (
@@ -32,14 +22,11 @@ const DeleteCallLogConfirmationDialog: FC<DeleteCallLogDialogDataProps> = ({
       isOpen={!!chatId}
       onClose={() => closeDialog(false)}
       onButtonClick={onDeleteConfirm}
-      title={{
-        normal: t("calls.dialog.delete.titleNormal"),
-        italic: t("calls.dialog.delete.titleItalic"),
-      }}
-      content={t("calls.dialog.delete.content")}
-      buttonText={t("calls.dialog.delete.primary")}
+      title={{ normal: "Delete", italic: "Session log?" }}
+      content="Do you relifeline want to delete this record? This process cannot be undone."
+      buttonText="Delete"
       buttonVariant="destructive"
-      secondaryButtonText={t("calls.dialog.delete.secondary")}
+      secondaryButtonText="Cancel"
       onSecondaryButtonClick={() => closeDialog(false)}
     />
   );

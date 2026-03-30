@@ -14,19 +14,11 @@
  */
 
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { UserRole } from "@types";
+import { UserRole, SessionType } from "@types";
 
 import { Calls } from "../Calls";
-
-// Mock feature flags
-vi.mock("@ally-ui-mono/ui-shared/featureFlag", () => ({
-  FEATURE_FLAGS_MAP: {
-    LANGUAGE_CAPABILITY_FLAG: false,
-  },
-}));
 
 // Mock framer-motion
 vi.mock("framer-motion", () => ({
@@ -44,8 +36,6 @@ vi.mock("@assets", () => ({
   ),
   StartSession: () => <div data-testid="start-session-icon">StartSession</div>,
   UploadIcon: () => <div data-testid="upload-icon">Upload</div>,
-  Archive: () => <div data-testid="archive-icon">Archive</div>,
-  MoreVertIcon: () => <div data-testid="more-vert-icon">MoreVert</div>,
 }));
 
 // Mock components
@@ -85,22 +75,6 @@ vi.mock("@components", () => ({
     );
     return hasAccess ? children : null;
   },
-  CustomMenu: ({ anchorElement, items, onClose }: any) => (
-    <div data-testid="custom-menu" style={{ display: anchorElement ? "block" : "none" }}>
-      {items?.map((item: any, index: number) => (
-        <button
-          key={index}
-          data-testid={`custom-menu-item-${index}`}
-          onClick={() => {
-            item.onClick?.();
-            onClose?.();
-          }}
-        >
-          {item.label}
-        </button>
-      ))}
-    </div>
-  ),
 }));
 
 // Mock child components
@@ -184,15 +158,6 @@ vi.mock("@constants", () => ({
 
 // Get mock functions after mocks are set up
 
-// Helper function to render Calls component with Router
-const renderCalls = (props = {}) => {
-  return render(
-    <BrowserRouter>
-      <Calls {...props} />
-    </BrowserRouter>,
-  );
-};
-
 describe("Calls Component", () => {
   const mockUser = {
     id: "user123",
@@ -223,18 +188,18 @@ describe("Calls Component", () => {
    */
   describe("Basic Rendering", () => {
     it("should render successfully", () => {
-      renderCalls();
+      render(<Calls />);
       expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
     it("should render without throwing errors", () => {
       expect(() => {
-        renderCalls();
+        render(<Calls />);
       }).not.toThrow();
     });
 
     it("should render a non-empty component", () => {
-      const { container } = renderCalls();
+      const { container } = render(<Calls />);
       expect(container.firstChild).not.toBeNull();
     });
   });
@@ -245,18 +210,18 @@ describe("Calls Component", () => {
    */
   describe("Component Structure", () => {
     it("should render main container with correct classes", () => {
-      const { container } = renderCalls();
+      const { container } = render(<Calls />);
       const mainContainer = container.querySelector("div.px-6.pb-6.h-full.flex.flex-col");
       expect(mainContainer).not.toBeNull();
     });
 
     it("should render call logs table", () => {
-      renderCalls();
+      render(<Calls />);
       expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
     it("should render Session Logs heading", () => {
-      renderCalls();
+      render(<Calls />);
       expect(screen.getByText("Session Logs")).toBeInTheDocument();
     });
   });
@@ -267,7 +232,7 @@ describe("Calls Component", () => {
    */
   describe("State Management", () => {
     it("should initialize with correct default state", () => {
-      renderCalls();
+      render(<Calls />);
 
       // Dialog should be closed by default
       expect(screen.getByTestId("start-session-dialog")).toHaveAttribute("data-is-open", "false");
@@ -289,12 +254,12 @@ describe("Calls Component", () => {
         permissions: mockPermissions,
       });
 
-      renderCalls();
+      render(<Calls />);
       expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
     it("should show Start Session button for non-admin with MICROPHONE_CHAT", () => {
-      renderCalls();
+      render(<Calls />);
       expect(screen.getByText("Start Session")).toBeInTheDocument();
     });
 
@@ -305,7 +270,7 @@ describe("Calls Component", () => {
         permissions: [], // Admin users don't have START_MICROPHONE_CHAT permission
       });
 
-      renderCalls();
+      render(<Calls />);
       expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
     });
   });
@@ -316,7 +281,7 @@ describe("Calls Component", () => {
    */
   describe("Button Interactions", () => {
     it("should handle start session button click", () => {
-      renderCalls();
+      render(<Calls />);
 
       const startSessionButton = screen.getByText("Start Session");
       fireEvent.click(startSessionButton);
@@ -325,7 +290,7 @@ describe("Calls Component", () => {
     });
 
     it("should handle refresh button click", () => {
-      renderCalls();
+      render(<Calls />);
 
       const refreshIcon = screen.getByTestId("refresh-icon");
       fireEvent.click(refreshIcon);
@@ -341,7 +306,7 @@ describe("Calls Component", () => {
    */
   describe("Dialog Management", () => {
     it("should open start session dialog", () => {
-      renderCalls();
+      render(<Calls />);
 
       const startSessionButton = screen.getByText("Start Session");
       fireEvent.click(startSessionButton);
@@ -350,7 +315,7 @@ describe("Calls Component", () => {
     });
 
     it("should close start session dialog", () => {
-      renderCalls();
+      render(<Calls />);
 
       const startSessionButton = screen.getByText("Start Session");
       fireEvent.click(startSessionButton);
@@ -368,7 +333,7 @@ describe("Calls Component", () => {
    */
   describe("Refresh Functionality", () => {
     it("should increment refresh key on refresh", () => {
-      renderCalls();
+      render(<Calls />);
 
       const refreshIcon = screen.getByTestId("refresh-icon");
 
@@ -385,7 +350,7 @@ describe("Calls Component", () => {
     });
 
     it("should pass refresh key to child components", () => {
-      renderCalls();
+      render(<Calls />);
 
       expect(screen.getByTestId("user-logs-table")).toHaveAttribute("data-refresh-key");
     });
@@ -402,7 +367,7 @@ describe("Calls Component", () => {
         permissions: {},
       });
 
-      renderCalls();
+      render(<Calls />);
       expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
@@ -413,7 +378,7 @@ describe("Calls Component", () => {
         permissions: {},
       });
 
-      renderCalls();
+      render(<Calls />);
       expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
@@ -424,7 +389,7 @@ describe("Calls Component", () => {
         permissions: ["edit:summary"], // No permissions when no available chat types
       });
 
-      renderCalls();
+      render(<Calls />);
       expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
     });
   });
@@ -435,14 +400,14 @@ describe("Calls Component", () => {
    */
   describe("Accessibility", () => {
     it("should have proper button roles", () => {
-      renderCalls();
+      render(<Calls />);
 
       const buttons = screen.getAllByRole("button");
       expect(buttons.length).toBeGreaterThan(0);
     });
 
     it("should have proper button labels", () => {
-      renderCalls();
+      render(<Calls />);
 
       expect(screen.getByText("Start Session")).toBeInTheDocument();
     });
@@ -454,7 +419,7 @@ describe("Calls Component", () => {
    */
   describe("Snapshot Testing", () => {
     it("should match snapshot", () => {
-      const { asFragment } = renderCalls();
+      const { asFragment } = render(<Calls />);
       expect(asFragment()).toMatchSnapshot();
     });
 
@@ -465,7 +430,7 @@ describe("Calls Component", () => {
         permissions: mockPermissions,
       });
 
-      const { asFragment } = renderCalls();
+      const { asFragment } = render(<Calls />);
       expect(asFragment()).toMatchSnapshot();
     });
   });
@@ -480,13 +445,13 @@ describe("Calls Component", () => {
     });
 
     it("should return a valid React element", () => {
-      const { container } = renderCalls();
+      const { container } = render(<Calls />);
       expect(container.firstChild).not.toBeNull();
     });
 
     it("should be callable as a React component", () => {
       expect(() => {
-        renderCalls();
+        render(<Calls />);
       }).not.toThrow();
     });
   });

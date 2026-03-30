@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
-import { getSimulationEvents, logger, SimulationPage } from "@ally-ui-mono/ui-shared";
+import { getSimulationEvents, logger, SimulationPage } from "@lifeline-ui-mono/ui-shared";
 import { useEndSimulationMutation } from "@api";
 import { SimulationWarningIllustration } from "@assets";
 import { ButtonVariant, ConfirmationDialog } from "@components";
@@ -23,7 +23,7 @@ export const Simulation = () => {
 
   const endSessionButtonRef = useRef<boolean>(false);
 
-  const { room, roomData, roomStatus, startTime, events, score, detectedEventIds } = useLiveKitRoom(
+  const { room, roomData, roomStatus, startTime, events, score } = useLiveKitRoom(
     handleRoomDisconnected,
     endSessionButtonRef,
   );
@@ -72,12 +72,9 @@ export const Simulation = () => {
         roomData={roomData}
         roomStatus={roomStatus}
         sessionId={id}
-        isEndingSession={
-          roomStatus !== RoomStatus.CONNECTED && roomStatus !== RoomStatus.AGENT_JOINED
-        }
-        startTime={startTime?.toISOString()}
+        isEndingSession={roomStatus !== RoomStatus.CONNECTED}
+        startTime={startTime.toISOString()}
         events={getSimulationEvents(events)}
-        detectedEventIds={detectedEventIds}
         score={score}
         onEndSimulation={onEndSimulation}
         renderWarningDialog={renderWarningDialog}

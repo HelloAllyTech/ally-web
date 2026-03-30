@@ -1,6 +1,5 @@
 export enum CallType {
   MICROPHONE_CHAT = "MICROPHONE_CHAT",
-  AUDIO_UPLOAD = "AUDIO_UPLOAD",
 }
 
 export enum CallProvider {

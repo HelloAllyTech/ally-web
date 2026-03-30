@@ -2,9 +2,9 @@ import { FC, useEffect, useRef, useState } from "react";
 
 import { Skeleton } from "@mui/material";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { logger } from "@lifeline-ui-mono/ui-shared";
 import { useEnhanceContentMutation } from "@api";
-import { WandStars } from "@assets";
+import { Enhance } from "@assets";
 import { EnhanceButtonProps } from "@types";
 
 export const useEnhance = () => {
@@ -28,7 +28,7 @@ export const useEnhance = () => {
    * Triggers content enhancement for a specific field with streaming effect.
    * - Calls the enhance content API with the provided text
    * - Shows loading state during API call
-   * - Creates a streaming effect by gradually updating the text
+   * - Creates a streaming effect by gradulifeline updating the text
    * - Handles errors gracefully with proper cleanup
    * - Updates the specified field with enhanced content
    * @param {string} key - Unique identifier for the field being enhanced
@@ -53,7 +53,7 @@ export const useEnhance = () => {
       }
 
       let currentIndex = 0;
-      // Create streaming effect by updating text gradually
+      // Create streaming effect by updating text gradulifeline
       setStreaming(key);
       setEnhancing("");
 
@@ -99,17 +99,14 @@ export const useEnhance = () => {
    */
   const EnhanceButton: FC<EnhanceButtonProps> = ({ fieldName, inputText, updateValue }) => (
     <div
-      className={
-        enhancing === fieldName || streaming === fieldName ? "opacity-50 pointer-events-none" : ""
-      }
+      className={`absolute bottom-2 right-2 
+        ${
+          enhancing === fieldName || streaming === fieldName ? "opacity-50 pointer-events-none" : ""
+        }`}
       onClick={() => triggerEnhance(fieldName, inputText, updateValue)}
     >
-      <div className="border-[0.5px] border-[#49454F] active:border-primary-500 hover:border-primary-500 rounded-full p-2 cursor-pointer bg-white group">
-        <WandStars
-          height={24}
-          width={24}
-          className="[&_path]:fill-[#49454F] group-hover:[&_path]:fill-[#0957D0]"
-        />
+      <div className="border-[0.5px] border-[#49454F] rounded-full p-2 cursor-pointer bg-white">
+        <Enhance />
       </div>
     </div>
   );

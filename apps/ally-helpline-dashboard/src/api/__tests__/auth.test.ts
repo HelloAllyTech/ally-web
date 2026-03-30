@@ -19,7 +19,6 @@ vi.mock("@constants", () => ({
       GET_USER: "/auth/user",
       GENERATE_OTP: "/auth/generate-otp",
       VERIFY_OTP: "/auth/verify-otp",
-      MAGIC_LINK_VERIFY: "/auth/magic-link/verify",
     },
     AUTHORIZATION: {
       GET_PERMISSIONS: "/authorization/permissions",
@@ -60,7 +59,6 @@ describe("auth API", () => {
       "/auth/user",
       "/auth/generate-otp",
       "/auth/verify-otp",
-      "/auth/magic-link/verify",
     ];
 
     expectedPaths.forEach(path => {

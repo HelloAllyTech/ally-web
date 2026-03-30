@@ -10,7 +10,7 @@ export interface ConfirmationDialogProps {
     italic: string;
   };
   icon?: FC<SVGProps<SVGSVGElement>>;
-  content?: string;
+  content: string;
   buttonText: string;
   buttonVariant: ButtonVariantType;
   onButtonClick: () => void;

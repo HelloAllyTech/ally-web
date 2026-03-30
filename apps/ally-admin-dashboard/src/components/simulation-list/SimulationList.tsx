@@ -1,5 +1,6 @@
 import React from "react";
 
+import { FEATURE_FLAGS_MAP } from "@lifeline-ui-mono/ui-shared";
 import { Add, Edit, Unpublish, Archive, Delete, Play, Unarchive, Copy } from "@assets";
 import {
   DataList,
@@ -31,8 +32,6 @@ interface SimulationListProps {
   onUnarchive?: (simulation: Simulation) => void;
   onDuplicate?: (simulation: Simulation) => void;
   onCreateSimulation?: () => void;
-  currentUser?: any;
-  isSuperAdmin?: boolean;
 }
 
 export const SimulationList: React.FC<SimulationListProps> = ({
@@ -48,8 +47,6 @@ export const SimulationList: React.FC<SimulationListProps> = ({
   onUnarchive,
   onCreateSimulation,
   onDuplicate,
-  currentUser,
-  isSuperAdmin,
 }) => {
   // Handle loading state
   if (isLoading && !isNonEmptyArray(simulations)) {
@@ -93,12 +90,6 @@ export const SimulationList: React.FC<SimulationListProps> = ({
     simulation.status !== SimulationStatus.ARCHIVED
       ? onArchive?.(simulation)
       : onUnarchive?.(simulation);
-
-  const isCreatorOrSuperAdmin = (simulation: Simulation) => {
-    if (isSuperAdmin) return true;
-    const createdBy = simulation.createdByUserId;
-    return createdBy === currentUser?.id;
-  };
 
   // Define columns configuration
   const columns: ColumnConfig<Simulation>[] = [
@@ -176,7 +167,6 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       icon: <Edit />,
       tooltip: en.simulation.edit,
       onClick: simulation => onEdit?.(simulation),
-      show: simulation => isCreatorOrSuperAdmin(simulation),
     },
     {
       icon: <Unpublish />,
@@ -184,8 +174,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       onClick: simulation => onUnpublish?.(simulation),
       show: simulation =>
         simulation.status !== SimulationStatus.DRAFT &&
-        simulation.status !== SimulationStatus.ARCHIVED &&
-        isCreatorOrSuperAdmin(simulation),
+        simulation.status !== SimulationStatus.ARCHIVED,
     },
     {
       icon: <Archive />,
@@ -193,26 +182,27 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       onClick: simulation => handleArchive(simulation),
       show: simulation =>
         simulation.status !== SimulationStatus.DRAFT &&
-        simulation.status !== SimulationStatus.ARCHIVED &&
-        isCreatorOrSuperAdmin(simulation),
+        simulation.status !== SimulationStatus.ARCHIVED,
     },
-    {
-      icon: <Copy />,
-      tooltip: en.simulation.duplicate,
-      onClick: simulation => onDuplicate?.(simulation),
-    },
+    ...(FEATURE_FLAGS_MAP.DUPLICATE_SIMULATION_FLAG
+      ? [
+          {
+            icon: <Copy />,
+            tooltip: en.simulation.duplicate,
+            onClick: simulation => onDuplicate?.(simulation),
+          },
+        ]
+      : []),
     {
       icon: <Unarchive />,
       tooltip: en.simulation.unarchive,
       onClick: simulation => handleArchive(simulation),
-      show: simulation =>
-        simulation.status === SimulationStatus.ARCHIVED && isCreatorOrSuperAdmin(simulation),
+      show: simulation => simulation.status === SimulationStatus.ARCHIVED,
     },
     {
       icon: <Delete />,
       tooltip: en.simulation.delete,
       onClick: simulation => onDelete?.(simulation),
-      show: simulation => isCreatorOrSuperAdmin(simulation),
     },
   ];
 

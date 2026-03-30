@@ -1,7 +1,7 @@
 import React from "react";
 
 import { configureStore } from "@reduxjs/toolkit";
-import { render, screen, fireEvent, waitFor, act, within } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { Provider, useSelector } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -15,13 +15,9 @@ import { SUMMARY_FEEDBACK_TIMEOUT } from "../constants";
 // Remove the useSelector mock - we'll use the actual Redux store
 
 // Mock UI shared components
-vi.mock("@ally-ui-mono/ui-shared", () => ({
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
-  },
-  FEATURE_FLAGS_MAP: {
-    LANGUAGE_CAPABILITY_FLAG: false,
-    MAX_ACTIVE_USERS_POPUP_FLAG: false,
   },
 }));
 
@@ -39,28 +35,18 @@ Object.defineProperty(document, "fonts", {
   writable: true,
 });
 
-// Mock API hooks - useGetTranscriptQuery is configurable for comments test (comments render only when transcript has data)
-const mockUseGetTranscriptQuery = vi.fn(() => ({ data: undefined, isLoading: false }));
+// Mock API hooks
 vi.mock("@api", () => ({
   useLazyExportCallSummaryQuery: vi.fn(() => [vi.fn(), {}, {}]),
   useUpdateCallSummaryMutation: vi.fn(() => [vi.fn()]),
   useDeleteCallSummaryMutation: vi.fn(() => [vi.fn()]),
   useDeleteCallLogMutation: vi.fn(() => [vi.fn()]),
-  useArchiveCallLogMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
-  useGetSummaryFieldsQuery: vi.fn(() => ({ refetch: vi.fn() })),
-  useGetCallSummaryQuery: vi.fn(() => ({ data: undefined, refetch: vi.fn() })),
-  useGetTranscriptQuery: (...args: unknown[]) => mockUseGetTranscriptQuery(...args),
-  useCreateScribeReviewMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
-  useUpdateScribeReviewMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
 }));
 
 // Mock assets
 vi.mock("@assets", () => ({
   Download: () => <div data-testid="download-icon">Download</div>,
   Delete: () => <div data-testid="delete-icon">Delete</div>,
-  Archive: () => <div data-testid="archive-icon">Archive</div>,
-  Unarchive: () => <div data-testid="unarchive-icon">Unarchive</div>,
-  DataPolicy: () => <div data-testid="data-policy-icon">Data Policy</div>,
   Carousel1: "Carousel1",
   Carousel2: "Carousel2",
   Carousel3: "Carousel3",
@@ -85,26 +71,10 @@ vi.mock("@assets", () => ({
   ScenarioIcon: () => <div data-testid="scenario-icon">Scenario</div>,
   SessionScoreIcon: () => <div data-testid="session-score-icon">Score</div>,
   InDoubt: () => <div data-testid="in-doubt-icon">In Doubt</div>,
-  LearnIcon: () => <svg data-testid="learn-icon" />,
-  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
-  ScribeIcon: () => <svg data-testid="scribe-icon" />,
-  StatsIcon: () => <svg data-testid="stats-icon" />,
-  SearchIcon: () => <svg data-testid="search-icon" />,
-  NoBadges: () => <div data-testid="no-badges" />,
-  Badge: () => <svg data-testid="badge-icon" />,
-  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
 
 // Mock components
 vi.mock("@components", () => ({
-  Button: ({ children, onClick, ...props }: any) => (
-    <button onClick={onClick} data-testid={props["data-testid"] ?? "button"} {...props}>
-      {children}
-    </button>
-  ),
-  ButtonVariant: { ICON: "icon", PRIMARY: "primary", SECONDARY: "secondary" },
-  ShareForReview: (props: any) => <div data-testid="share-for-review" {...props} />,
-  ToggleSwitch: (props: any) => <input type="checkbox" data-testid="toggle-switch" {...props} />,
   ActionDialog: ({ open, onClose, primaryButton, secondaryButton, title, children }: any) => (
     <div data-testid="action-dialog" style={{ display: open ? "block" : "none" }}>
       <div data-testid="dialog-title">{title}</div>
@@ -134,7 +104,6 @@ vi.mock("@components", () => ({
       </button>
     </div>
   ),
-  TranscriptListing: (props: any) => <div data-testid="transcript-listing" {...props} />,
 }));
 
 // Mock containers
@@ -258,19 +227,14 @@ vi.mock("../SummarySidebarWrapper", () => ({
   ),
 }));
 
-// Mock Redux store - include export:summary so Export button is visible for export tests
+// Mock Redux store
 const createMockStore = (userState: any = { user: { role: UserRole.COUNSELLOR } }) => {
   return configureStore({
     reducer: {
       user: (
         state = {
           user: userState,
-          permissions: [
-            "edit:scenario-session",
-            "view:chat:details",
-            "view:messages",
-            "export:summary",
-          ],
+          permissions: ["edit:scenario-session", "view:chat:details", "view:messages"],
         },
         action,
       ) => state,
@@ -278,12 +242,7 @@ const createMockStore = (userState: any = { user: { role: UserRole.COUNSELLOR } 
     preloadedState: {
       user: {
         user: userState,
-        permissions: [
-          "edit:scenario-session",
-          "view:chat:details",
-          "view:messages",
-          "export:summary",
-        ],
+        permissions: ["edit:scenario-session", "view:chat:details", "view:messages"],
       },
     },
   });
@@ -383,7 +342,6 @@ describe("CallSummarySidebar Component", () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
 
-    mockUseGetTranscriptQuery.mockReturnValue({ data: undefined, isLoading: false });
     mockUseLazyExportCallSummaryQuery.mockReturnValue([
       mockExportCallSummary,
       { reset: vi.fn() },
@@ -410,7 +368,7 @@ describe("CallSummarySidebar Component", () => {
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Summary");
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Transcript");
+      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Transcription");
     });
 
     it("should render call summary component in summary tab", () => {
@@ -432,28 +390,16 @@ describe("CallSummarySidebar Component", () => {
     it("should render transcript tab with call summary", () => {
       renderComponent();
 
-      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Transcript");
-      // Transcript tab shows either empty state or transcript listing depending on data
-      const emptyState = screen.queryByText("No transcript available");
-      const transcriptListing = screen.queryByTestId("transcript-listing");
-      expect(emptyState ?? transcriptListing).toBeTruthy();
+      expect(screen.getByTestId("call-transcript-tab")).toBeInTheDocument();
+      expect(screen.getByTestId("transcript-call-id")).toHaveTextContent("1");
     });
   });
 
   describe("Comments Rendering", () => {
-    it.skip("should render comments when available", async () => {
-      // TODO: Comments render inside transcript tab when transcript has data; async state update from useGetTranscriptQuery mock causes timeout
-      mockUseGetTranscriptQuery.mockReturnValue({
-        data: {
-          data: [{ speaker: "Agent", content: "Hello", startSeconds: 0, endSeconds: 1 }] as any,
-          count: 1,
-        },
-        isLoading: false,
-      });
+    it("should render comments when available", () => {
       renderComponent();
 
-      expect(await screen.findByText("Comments", {}, { timeout: 3000 })).toBeInTheDocument();
+      expect(screen.getByText("Comments")).toBeInTheDocument();
       expect(screen.getByText(/Test Comment 1/)).toBeInTheDocument();
       expect(screen.getByText("Test Description 1")).toBeInTheDocument();
       expect(screen.getByText(/Test Comment 2/)).toBeInTheDocument();
@@ -493,8 +439,9 @@ describe("CallSummarySidebar Component", () => {
     it("should show export button for non-admin users with successful summary", () => {
       renderComponent();
 
-      const exportButton = screen.getByTestId("drawer-header-button-Export");
+      const exportButton = screen.getByTestId("header-button-1");
       expect(exportButton).toBeInTheDocument();
+      expect(exportButton).toHaveTextContent("Export summary");
     });
 
     it.skip("should not show export button for admin users", () => {
@@ -514,7 +461,8 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent(callSummaryWithPendingStatus);
 
-      expect(screen.queryByTestId("drawer-header-button-Export")).not.toBeInTheDocument();
+      const exportButton = screen.getByTestId("header-button-1");
+      expect(exportButton).not.toBeVisible();
     });
 
     it("should handle successful export", () => {
@@ -527,7 +475,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByTestId("drawer-header-button-Export");
+      const exportButton = screen.getByTestId("header-button-1");
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -542,7 +490,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByTestId("drawer-header-button-Export");
+      const exportButton = screen.getByTestId("header-button-1");
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -555,7 +503,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByTestId("drawer-header-button-Export");
+      const exportButton = screen.getByTestId("header-button-1");
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -566,7 +514,7 @@ describe("CallSummarySidebar Component", () => {
 
       renderComponent();
 
-      const exportButton = screen.getByTestId("drawer-header-button-Export");
+      const exportButton = screen.getByTestId("header-button-1");
       fireEvent.click(exportButton);
 
       expect(mockExportCallSummary).toHaveBeenCalledWith({ chatId: 1 });
@@ -577,23 +525,14 @@ describe("CallSummarySidebar Component", () => {
     it("should render delete dialog", () => {
       renderComponent();
 
-      // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete session log?");
-      const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
-
-      expect(deleteDialog).toBeInTheDocument();
-      expect(deleteDialogTitle).toHaveTextContent("Delete session log?");
+      expect(screen.getByTestId("confirmation-dialog")).toBeInTheDocument();
+      expect(screen.getByTestId("confirmation-title")).toHaveTextContent("Delete Session log?");
     });
 
     it("should handle delete confirmation", () => {
       const { mockRefetchCallLogs, mockSetCallSummary } = renderComponent();
 
-      // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete session log?");
-      const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
-
-      // Find the confirm button within the delete dialog
-      const deleteButton = within(deleteDialog as HTMLElement).getByTestId("confirm-button");
+      const deleteButton = screen.getByTestId("confirm-button");
       fireEvent.click(deleteButton);
 
       // Just verify the button click works without checking mock calls
@@ -604,16 +543,11 @@ describe("CallSummarySidebar Component", () => {
     it("should handle delete cancellation", () => {
       renderComponent();
 
-      // Find the delete confirmation dialog by its title
-      const deleteDialogTitle = screen.getByText("Delete session log?");
-      const deleteDialog = deleteDialogTitle.closest('[data-testid="confirmation-dialog"]');
-
-      // Find the cancel button within the delete dialog
-      const cancelButton = within(deleteDialog as HTMLElement).getByTestId("cancel-button");
+      const cancelButton = screen.getByTestId("cancel-button");
       fireEvent.click(cancelButton);
 
       // Dialog should still be rendered but closed
-      expect(deleteDialog).toBeInTheDocument();
+      expect(screen.getByTestId("confirmation-dialog")).toBeInTheDocument();
     });
   });
 
@@ -803,21 +737,15 @@ describe("CallSummarySidebar Component", () => {
       renderComponent();
 
       expect(screen.getByTestId("close-sidebar")).toBeInTheDocument();
-      // Both delete and archive dialogs have confirm and cancel buttons
-      const confirmButtons = screen.getAllByTestId("confirm-button");
-      const cancelButtons = screen.getAllByTestId("cancel-button");
-      expect(confirmButtons.length).toBeGreaterThanOrEqual(1);
-      expect(cancelButtons.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByTestId("confirm-button")).toBeInTheDocument();
+      expect(screen.getByTestId("cancel-button")).toBeInTheDocument();
     });
 
     it("should have proper dialog structure", () => {
       renderComponent();
 
-      // Both delete and archive dialogs have confirmation dialogs
-      const confirmationDialogs = screen.getAllByTestId("confirmation-dialog");
-      const confirmationTitles = screen.getAllByTestId("confirmation-title");
-      expect(confirmationDialogs.length).toBeGreaterThanOrEqual(1);
-      expect(confirmationTitles.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByTestId("confirmation-dialog")).toBeInTheDocument();
+      expect(screen.getByTestId("confirmation-title")).toBeInTheDocument();
     });
   });
 });

@@ -2,7 +2,6 @@ import { FC, useEffect, useState } from "react";
 
 import { CircularProgress, Tooltip } from "@mui/material";
 import { Check, Info, CircleX } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { SummaryGenenerationVideo } from "@assets";
@@ -18,84 +17,73 @@ import { Permissions, SESSION_STORAGE_KEYS, TOOLTIP_DARK_PROPS } from "@constant
 import { RootState } from "@store";
 import { ChatSummaryStatus } from "@types";
 
-import { getPostCallProcessingMessages, SUMMARY_GENERATION_START_INDEX } from "../constants";
+import { PostCallProcessingMessages, SUMMARY_GENERATION_START_INDEX } from "../constants";
 import { SummaryLoadingProps } from "../types";
 
-const SummaryGeneratedState = () => {
-  const { t } = useTranslation();
-  return (
-    <>
-      <SummaryGeneratedIllustration className="w-64" />
-      <h1 className="font-semibold mb-2 font-primary text-2xl">{t("summaryLoading.generated")}</h1>
-      <p className="text-typography-800 text-base text-center max-w-md font-primary mb-1">
-        {t("summaryLoading.generatedDesc")}
-      </p>
-    </>
-  );
-};
+const SummaryGeneratedState = () => (
+  <>
+    <SummaryGeneratedIllustration className="w-64" />
+    <h1 className="font-semibold mb-2 font-primary text-2xl">Summary is generated</h1>
+    <p className="text-typography-800 text-base text-center max-w-md font-primary mb-1">
+      You can review the session now.
+    </p>
+  </>
+);
 
-const SummaryFailedState = ({ extraMessage = "" }) => {
-  const { t } = useTranslation();
-  return (
-    <>
-      {extraMessage?.length > 0 && (
-        <span className="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-destructive-400 text-xs mb-8 flex items-center gap-1">
-          <CircleX className="w-4 h-4 text-destructive-300" /> {t("summaryLoading.noAudioDetected")}
-        </span>
-      )}
-      <SummaryFailed className="w-64" />
-      <h1 className="font-semibold mb-2 font-primary text-2xl">
-        {t("summaryLoading.failedTitle")}
-      </h1>
-    </>
-  );
-};
+const SummaryFailedState = ({ extraMessage = "" }) => (
+  <>
+    {extraMessage?.length > 0 && (
+      <span className="rounded-full border-[0.5px] border-destructive-300 px-2 py-1 text-destructive-400 text-xs mb-8 flex items-center gap-1">
+        <CircleX className="w-4 h-4 text-destructive-300" /> No audio detected
+      </span>
+    )}
+    <SummaryFailed className="w-64" />
+    <h1 className="font-semibold mb-2 font-primary text-2xl">Failed to generate session summary</h1>
+  </>
+);
 
 const SummaryProcessingState = ({
   showInfoBanner,
   summaryMessage,
   estimatedTime,
   inSummarySidebar,
-}) => {
-  const { t } = useTranslation();
-  return (
-    <>
-      <div className="h-8">
-        {showInfoBanner && (
-          <InfoBanner
-            message={t("summaryLoading.transcriptionDeleted")}
-            icon={() => <VerifiedBadge className="text-primary-500" />}
-            wrapperClassName="rounded-full py-1 px-2 border-primary-500 bg-primary-50"
-            messageClassName="text-text-primary-500"
-          />
-        )}
-      </div>
-      <video
-        src={SummaryGenenerationVideo}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="w-64 object-contain"
-      />
-
-      {/* Shiny Text Animation */}
-      <div className="mb-8">
-        <ShinyText text={summaryMessage} className="text-xl font-primary" />
-      </div>
-      <p className="text-neutral-600 text-base text-center font-primary mb-1">
-        {inSummarySidebar
-          ? t("summaryLoading.processingDescSidebar")
-          : t("summaryLoading.processingDescMain")}
-      </p>
-      {!!estimatedTime && (
-        <p className="text-neutral-600 text-base text-center max-w-md font-primary">
-          {t("summaryLoading.estimatedTime", { time: estimatedTime })}
-        </p>
+}) => (
+  <>
+    <div className="h-8">
+      {showInfoBanner && (
+        <InfoBanner
+          message="Transcription generated & audio deleted"
+          icon={() => <VerifiedBadge className="text-primary-500" />}
+          wrapperClassName="rounded-full py-1 px-2 border-primary-500 bg-primary-50"
+          messageClassName="text-text-primary-500"
+        />
       )}
-    </>
-  );
-};
+    </div>
+    <video
+      src={SummaryGenenerationVideo}
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="w-64 object-contain"
+    />
+
+    {/* Shiny Text Animation */}
+    <div className="mb-8">
+      <ShinyText text={summaryMessage} className="text-xl font-primary" />
+    </div>
+    <p className="text-neutral-600 text-base text-center font-primary mb-1">
+      {inSummarySidebar
+        ? "An AI-generated summary will be available shortly on this screen. In the meantime, you can add notes below."
+        : "An AI-generated summary will be available shortly on this screen and in the session logs. In the meantime, you can add notes below."}
+    </p>
+    {!!estimatedTime && (
+      <p className="text-neutral-600 text-base text-center max-w-md font-primary">
+        Estimated time: ~ {estimatedTime} min
+      </p>
+    )}
+  </>
+);
 
 const SummaryLoading: FC<SummaryLoadingProps> = ({
   summaryStatus,
@@ -108,8 +96,6 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
   inSummarySidebar = false,
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
-  const { t } = useTranslation();
-  const processingMessages = getPostCallProcessingMessages(t);
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(
     inSummarySidebar ? SUMMARY_GENERATION_START_INDEX : 0,
@@ -129,7 +115,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
 
     const interval = setInterval(() => {
       setCurrentMessageIndex(prev => {
-        if (prev < processingMessages.length - 1) {
+        if (prev < PostCallProcessingMessages.length - 1) {
           if (prev === SUMMARY_GENERATION_START_INDEX - 1 && !inSummarySidebar) {
             sessionStorage.setItem(
               SESSION_STORAGE_KEYS.TRANSCRIPTION_GENERATION_VIDEO_SEEN,
@@ -157,27 +143,23 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               htmlFor="notes"
               className="flex items-center gap-2 font-primary text-sm font-medium text-typography-800"
             >
-              <span>{t("summaryLoading.addNotes")}</span>
+              <span>Add Notes(Optional)</span>
               {isNotesSaving && (
                 <>
                   <Cloud />
-                  <span className="text-sm font-primary text-neutral-500">
-                    {t("summaryLoading.autosaving")}
-                  </span>
+                  <span className="text-sm font-primary text-neutral-500">Autosaving</span>
                 </>
               )}
               {!isNotesSaving && !!notes && (
                 <>
                   <Check className="w-4 h-4 text-neutral-500" />
-                  <span className="text-sm font-primary text-neutral-500">
-                    {t("summaryLoading.saved")}
-                  </span>
+                  <span className="text-sm font-primary text-neutral-500">Saved</span>
                 </>
               )}
             </label>
           </div>
           <Tooltip
-            title={t("summaryLoading.notesTooltip")}
+            title="Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated"
             placement="bottom-end"
             className="b"
             componentsProps={TOOLTIP_DARK_PROPS}
@@ -192,7 +174,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
           value={notes}
           disabled={!hasEditSummaryPermission}
           onChange={e => onNotesChange(e.target.value)}
-          placeholder={t("summaryLoading.notesPlaceholder")}
+          placeholder="Jot down your thoughts"
           className="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
         />
       </div>
@@ -212,7 +194,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
       case ChatSummaryStatus.SUCCESS:
         return (
           <Button variant={ButtonVariant.SECONDARY} disabled={true} className="w-72">
-            <CircularProgress size={16} /> {t("summaryLoading.settingUp")}
+            <CircularProgress size={16} /> Setting up your summary screen
           </Button>
         );
       case ChatSummaryStatus.IN_PROGRESS:
@@ -225,7 +207,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
                 onClick={onViewCallLogs}
                 className=" w-40 font-primary"
               >
-                {t("summaryLoading.checkLater")}
+                I’ll check later
               </Button>
             )}
             <Button
@@ -234,7 +216,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               className=" w-40 font-primary"
             >
               {isSummaryRefetching && <CircularProgress size={16} />}
-              {t("summaryLoading.seeIfReady")}
+              See if its ready
             </Button>
           </>
         );
@@ -248,7 +230,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
                 onClick={onViewCallLogs}
                 className=" w-40 font-primary"
               >
-                {t("summaryLoading.backToSessionLogs")}
+                Back to session logs
               </Button>
             )}
           </>
@@ -267,7 +249,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
         return (
           <SummaryProcessingState
             showInfoBanner={currentMessageIndex >= SUMMARY_GENERATION_START_INDEX}
-            summaryMessage={processingMessages[currentMessageIndex]}
+            summaryMessage={PostCallProcessingMessages[currentMessageIndex]}
             estimatedTime={estimatedTime}
             inSummarySidebar={inSummarySidebar}
           />

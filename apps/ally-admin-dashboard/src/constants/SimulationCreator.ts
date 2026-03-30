@@ -1,16 +1,8 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { cellTypes } from "@components";
-import { en, ExperienceMode } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
 export const minInputHeight = {
   narrativeContext: "250",
-};
-
-export const SESSION_TIMER_CONFIG = {
-  DEFAULT_MAX_TIME: "00:10:00",
-  MAX_TIME: "02:00:00", // 120 minutes (7200 seconds)
-  MIN_TIME: "00:00:00", // 0 minutes (0 seconds)
 };
 
 export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
@@ -25,7 +17,7 @@ export const EVENT_TYPE_OPTIONS = [
   { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
   { value: "SEMANTIC_SIMILARITY", label: "Semantic Similarity" },
   { value: "COMBINATION", label: "Combination" },
-  { value: "BINARY_CLASSIFIER", label: "Binary Classification" },
+  { value: "BINARY_CLASSIFICATION", label: "Binary Classification" },
 ];
 
 export const GENDER_OPTIONS = [
@@ -73,34 +65,34 @@ export const RESPONSE_LENGTH_OPTIONS = [
   { value: "MEDIUM", label: "Medium" },
   { value: "ELABORATE", label: "Elaborate" },
 ];
-
-export const EXPERIENCE_MODE_OPTIONS = [
-  { value: "FEEDBACK", label: "Feedback Mode" },
-  { value: "CHECKLIST", label: "Checklist Mode" },
-];
-
-export const CHECKLIST_TYPE_OPTIONS = [
-  { value: "GUIDED", label: "Guided" },
-  { value: "UNGUIDED", label: "Unguided" },
-];
-
 export const SIMULATION_CREATOR_STEP_IDS = {
   overview: "overview",
   basicSettings: "basic-settings",
   advancedSettings: "advanced-settings",
-  report: "report",
 };
 
-export const BEHAVIOURS_INSTRUCTION_CATEGORIES = [
-  { value: "SHOULD_DO", label: "Helper should do" },
-  { value: "SHOULD_NOT_DO", label: "Helper should not do" },
-];
+// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+export const SIMULATION_CREATOR_STEP_IDS_OLD = {
+  basicInfo: "basic-info",
+  characterIdentity: "character-identity",
+  traitsNeeds: "traits-and-needs",
+  conversationStyle: "conversation-style",
+  eventConfiguration: "event-configuration",
+};
 
 export const StepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
   { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
   { id: SIMULATION_CREATOR_STEP_IDS.advancedSettings, title: "Advanced Settings" },
-  { id: SIMULATION_CREATOR_STEP_IDS.report, title: "Report" },
+];
+
+// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+export const StepperListOld = [
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.basicInfo, title: "Basic Information" },
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.characterIdentity, title: "Character Identity" },
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.traitsNeeds, title: "Traits & Needs" },
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.conversationStyle, title: "Conversation Style" },
+  { id: SIMULATION_CREATOR_STEP_IDS_OLD.eventConfiguration, title: "Event Configuration" },
 ];
 
 export const FORM_FIELD_TYPES = {
@@ -110,87 +102,63 @@ export const FORM_FIELD_TYPES = {
   IMAGE_UPLOAD: "image_upload",
   VIDEO_UPLOAD: "video_upload",
   CUSTOM: {
+    VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
-    LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
-    RADIO_BUTTONS: "radio_buttons",
-    CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
-    BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
-    STATES_INSTRUCTION: "states_instruction",
-    BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
   CUSTOM_FIELDS: "custom_fields",
-  TIME_INPUT: "time_input",
-  COMPETENCY: "competency",
-  KNOWLEDGE_SOURCE: "knowledge_source",
 };
 
 export const FORM_FIELD_IDS = {
+  BASIC_INFO: "basicInfo",
+  CHARACTER_IDENTITY: "characterIdentity",
+  TRAITS_NEEDS: "traitsNeeds",
+  CONVERSATION_STYLE: "conversationStyle",
+  EVENT_CONFIGURATION: "eventConfiguration",
+  IS_GLOBAL: "isGlobal",
   TITLE: "title",
-  COMPETENCY: "competency",
-  DIFFICULTY_LEVEL: "difficultyLevel",
-  CHARACTER_PROFILE_SELECTOR: "characterProfileSelector",
-  CHARACTER_PROFILE_TEXT: "characterProfileText",
+  DESCRIPTION: "description",
+  AGE: "age",
+  NAME: "name",
+  CONTEXT: "context",
+  CORE_MEMORIES: "coreMemories",
+  AGENT_GOAL: "agentGoal",
+  CURRENT_LOCATION: "currentLocation",
+  EMOTIONAL_NEEDS: "emotionalNeeds",
+  GENDER: "gender",
+  GENDER_IDENTITY: "genderIdentity",
   COVER_IMAGE_URL: "coverImageUrl",
   COVER_VIDEO_URL: "coverVideoUrl",
-  IS_GLOBAL: "isGlobal",
-  IS_PUBLIC: "isPublic",
   TRIGGER_WARNING_IDS: "triggerWarningIds",
-  DESCRIPTION: "description",
-  PROMPT: "prompt",
-  BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
-  STATE_INSTRUCTIONS: "stateInstructions",
   CUSTOM_FIELDS: "customFields",
+  LIFE_HISTORY: "lifeHistory",
   OPENING_STATEMENTS: "openingStatements",
-  LANGUAGES_VOICES: "languageVoices",
-  LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
+  PERSONALITY: "personality",
+  PROFESSION: "profession",
+  SESSION_BEHAVIOR_GUIDELINES: "sessionBehaviorGuidelines",
+  SEXUAL_ORIENTATION: "sexualOrientation",
+  STARTING_STATE: "startingState",
   TONE: "tone",
+  VOICE_ID: "voiceId",
   AUTO_TERMINATION_STATUS: "autoTerminationStatus",
-  EXPERIENCE_MODE: "experienceMode",
-  CHECKLIST_TYPE: "checklistType",
-  TIMER_MODE: "timerMode",
-  MAX_TIME_VALUE: "maxTimeValue",
-  SHOW_SCORE_METER: "showScoreMeter",
-  OPT_GUARDRAILS: "optGuardrails",
-  CURRENT_STATE: "currentState",
-  KNOWLEDGE_SOURCE: "knowledgeSources",
+  TERMINATION_EVENT_ID: "terminationEventId",
+  TERMINATION_MESSAGE: "terminationMessage",
+  TERMINATION_NAME: "terminationName",
 };
-
-export const REGENERATE_TYPE = {
-  OPENING_STATEMENTS: "openingStatements",
-  CHARACTER_PROFILE_TEXT: "characterProfileText",
-  DESCRIPTION: "description",
-  STATE_INSTRUCTIONS: "stateInstructions",
-  CHALLENGE_DESCRIPTION: "challengeDescription",
-  BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
-};
-
-export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
-
-export const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.
-
-Important Instructions:
-- Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").
-- Allow the counselor to guide the conversation.
-- If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.
-- Maintain consistency with your life history but allow natural variation in tone and detail.
-- Respond naturally, as a real client would.
-- Keep answers concise (2–6 sentences), unless a longer response is natural.
-- Reveal information gradually, not all at once.
-- Start with few details and open up more as the counsellor asks questions.
-- Show authentic emotions and natural hesitations.
-- Do not give therapy advice or act as the counselor.
-- If sensitive topics arise, respond realistically but without graphic detail.
-- Keep each reply under ~120 words.`;
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
-  //TODO: uncomment these fields once the fields are added to the API
   {
     id: SIMULATION_CREATOR_STEP_IDS.overview,
     label: "Overview",
     fields: [
+      {
+        id: "isGlobal",
+        label: "Default org-level visibility",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+      },
       {
         id: "title",
         label: "Title",
@@ -199,39 +167,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
         fullWidth: true,
         maxLength: 100,
-      },
-      {
-        id: "competency",
-        label: "Pick Competency",
-        type: FORM_FIELD_TYPES.COMPETENCY,
-        options: [],
-        isMandatory: true,
-      },
-      {
-        id: "difficultyLevel",
-        label: "Difficulty Level",
-        type: FORM_FIELD_TYPES.SELECT,
-        options: DIFFICULTY_LEVEL_OPTIONS,
-        isMandatory: true,
-      },
-      {
-        id: "characterProfileSelector",
-        label: "Character Profile Selector",
-        type: FORM_FIELD_TYPES.CUSTOM.CHARACTER_PROFILE_SELECTOR,
-        isMandatory: false,
-        fullWidth: true,
-        isDashedLineAbove: true,
-      },
-      {
-        id: "characterProfileText",
-        label: "Character Backstory",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 2500,
-        isMandatory: true,
-        regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
-        isDashedLineAbove: true,
       },
       {
         id: "coverImageUrl",
@@ -248,30 +183,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "isGlobal",
-        label: "Default org-level visibility",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-      },
-      {
-        id: "isPublic",
-        label: "Public visibility",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-      },
-      {
-        id: "triggerWarningIds",
-        label: "Trigger warnings",
-        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
-        fullWidth: true,
-      },
-    ] as FormFieldConfig[],
-  },
-  {
-    id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
-    label: "Basic Settings",
-    fields: [
-      {
         id: "description",
         label: "Challenge Description",
         placeholder: "What is the primary learning goal?",
@@ -280,84 +191,144 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.DESCRIPTION,
       },
+      {
+        id: "difficultyLevel",
+        label: "Difficulty level",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: DIFFICULTY_LEVEL_OPTIONS,
+        isMandatory: true,
+      },
+      {
+        id: "triggerWarningIds",
+        label: "Trigger warnings",
+        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
+        fullWidth: true,
+      },
+      {
+        id: "name",
+        label: "Your name",
+        placeholder: "Enter name",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        maxLength: 100,
+        isDashedLineAbove: true,
+      },
+      {
+        id: "age",
+        label: "Your age",
+        placeholder: "e.g. 25",
+        type: FORM_FIELD_TYPES.NUMBER,
+        isMandatory: true,
+        maxLength: 100,
+      },
+      {
+        id: "gender",
+        label: "Your gender",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: GENDER_OPTIONS,
+        isMandatory: true,
+      },
+      {
+        id: "profession",
+        label: "Your profession",
+        placeholder: "e.g. Software Engineer",
+        type: FORM_FIELD_TYPES.TEXT,
+        maxLength: 100,
+      },
+      {
+        id: "currentLocation",
+        label: "Current location",
+        placeholder: "e.g. Kolkata, India",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        maxLength: 100,
+      },
+    ].filter(Boolean) as FormFieldConfig[],
+  },
+  {
+    id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
+    label: "Character Identity",
+    fields: [
       {
         id: "prompt",
         label: "Role instruction",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
         fullWidth: true,
-        maxLength: 1500,
-        defaultValue: DEFAULT_ROLE_INSTRUCTION,
+        maxLength: 1000,
         isMandatory: true,
       },
-      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
-      ...(FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG
-        ? [
-            {
-              id: "behaviorInstructions",
-              label: "Behaviour Instructions",
-              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_STATES_INSTRUCTION,
-              fullWidth: true,
-              isMandatory: true,
-              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
-            },
-          ]
-        : [
-            {
-              id: "behaviorInstructions",
-              label: "Behaviour Instructions",
-              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
-              fullWidth: true,
-              isMandatory: true,
-              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
-            },
-            {
-              id: "stateInstructions",
-              label: "State Instructions & Dialogues",
-              type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
-              fullWidth: true,
-              isMandatory: true,
-              regenerateType: REGENERATE_TYPE.STATE_INSTRUCTIONS,
-            },
-          ]),
-
+      {
+        id: "responseLength",
+        label: "Length of your responses",
+        type: FORM_FIELD_TYPES.SELECT,
+        isMandatory: true,
+        options: RESPONSE_LENGTH_OPTIONS,
+      },
+      {
+        id: "genderIdentity",
+        label: "Your gender identity",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: GENDER_IDENTITY_OPTIONS,
+        maxLength: 100,
+        isDashedLineAbove: true,
+        isMandatory: true,
+      },
+      {
+        id: "sexualOrientation",
+        label: "Your sexual orientation",
+        placeholder: "Select sexual orientation",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: SEXUAL_ORIENTATION_OPTIONS,
+        maxLength: 100,
+        isMandatory: true,
+      },
+      {
+        id: "context",
+        label: "Your context",
+        placeholder: "Describe the immediate situations",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
       {
         id: "customFields",
-        label: "Custom Fields",
+        label: "Custom fields",
         type: FORM_FIELD_TYPES.CUSTOM_FIELDS,
         fullWidth: true,
-        isDashedLineAbove: true,
       },
       {
-        id: "knowledgeSources",
-        label: "Knowledge Sources",
-        type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
-        fullWidth: true,
-        visibleWhen: () => FEATURE_FLAGS_MAP.KNOWLEDGE_SOURCE_FLAG,
-      },
-      {
-        id: "openingStatements",
-        label: "Opening Dialogues",
+        id: "agentDialogues",
+        label: "Your dialogues",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.OPENING_STATEMENTS,
         isMandatory: true,
+      },
+      {
+        id: "openingStatements",
+        label: "Opening dialogues",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+        isMandatory: true,
+      },
+      {
+        id: "voiceId",
+        label: "Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
+        isMandatory: true,
+        fullWidth: true,
       },
       {
         id: "languageVoices",
         label: "Language-Voice",
         type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
-        isMandatory: true,
-        fullWidth: true,
-      },
-      {
-        id: "linguisticStyleSamples",
-        label: "Linguistic Style Samples",
-        type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
         isMandatory: true,
         fullWidth: true,
       },
@@ -371,67 +342,250 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       {
         id: "autoTerminationStatus",
         label: "Auto termination",
+        fullWidth: true,
         type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
+      },
+    ] as FormFieldConfig[],
+  },
+];
+
+// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
+export const SIMULATION_CREATOR_FIELD_GROUPS_OLD: CreatorFieldGroups[] = [
+  {
+    id: SIMULATION_CREATOR_STEP_IDS_OLD.basicInfo,
+    label: "Basic Information",
+    fields: [
+      {
+        id: "isGlobal",
+        label: "Default org-level visibility",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
       },
       {
-        id: "experienceMode",
-        label: "Experience Mode",
-        type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
-        options: EXPERIENCE_MODE_OPTIONS,
-        fullWidth: false,
+        id: "title",
+        label: "Title",
+        placeholder: "Enter title",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        fullWidth: true,
+        maxLength: 100,
+      },
+      {
+        id: "coverImageUrl",
+        label: "Cover Image",
+        type: FORM_FIELD_TYPES.IMAGE_UPLOAD,
+        isMandatory: true,
+        fullWidth: true,
+      },
+      {
+        id: "coverVideoUrl",
+        label: "Cover Video",
+        type: FORM_FIELD_TYPES.VIDEO_UPLOAD,
+        isMandatory: false,
+        fullWidth: true,
+      },
+
+      {
+        id: "description",
+        label: "Learning goal",
+        placeholder: "What is the primary learning goal?",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+      {
+        id: "triggerWarningIds",
+        label: "Trigger Warnings",
+        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
+        fullWidth: true,
+      },
+      {
+        id: "agentGoal",
+        label: "Agent goal",
+        placeholder: "Describe the agent’s goal for this session.",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+    ].filter(Boolean) as FormFieldConfig[],
+  },
+  {
+    id: SIMULATION_CREATOR_STEP_IDS_OLD.characterIdentity,
+    label: "Character Identity",
+    fields: [
+      {
+        id: "name",
+        label: "Your name",
+        placeholder: "Enter name",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        maxLength: 100,
+      },
+      {
+        id: "age",
+        label: "Your age",
+        placeholder: "e.g. 25",
+        type: FORM_FIELD_TYPES.NUMBER,
+        isMandatory: true,
+        maxLength: 100,
+      },
+      {
+        id: "gender",
+        label: "Your gender",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: GENDER_OPTIONS,
         isMandatory: true,
       },
       {
-        id: "checklistType",
-        label: "Checklist Type",
-        type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
-        options: CHECKLIST_TYPE_OPTIONS,
-        fullWidth: false,
-        dependsOn: "experienceMode",
-        visibleWhen: (formValues: any) => formValues.experienceMode === ExperienceMode.CHECKLIST,
+        id: "genderIdentity",
+        label: "Your gender identity",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: GENDER_IDENTITY_OPTIONS,
+        maxLength: 100,
       },
       {
-        id: "timerMode",
-        label: "Session Timer",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        id: "sexualOrientation",
+        label: "Your sexual orientation",
+        placeholder: "Select sexual orientation",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: SEXUAL_ORIENTATION_OPTIONS,
+        maxLength: 100,
+      },
+      {
+        id: "profession",
+        label: "Your profession",
+        placeholder: "e.g. Software Engineer",
+        type: FORM_FIELD_TYPES.TEXT,
+        maxLength: 100,
+      },
+      {
+        id: "currentLocation",
+        label: "Current location",
+        placeholder: "e.g. Kolkata, India",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        maxLength: 100,
+      },
+      {
+        id: "context",
+        label: "Your current context",
+        placeholder: "Describe the immediate situations",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
         isDashedLineAbove: true,
+        maxLength: 1000,
+      },
+      {
+        id: "lifeHistory",
+        label: "Summary of your life's history",
+        placeholder: "Describe the key life events",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+      {
+        id: "coreMemories",
+        label: "Your core memories influencing your beliefs & actions",
+        placeholder: "Describe core influencing memories",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+    ],
+  },
+  {
+    id: SIMULATION_CREATOR_STEP_IDS_OLD.traitsNeeds,
+    label: "Traits & Needs",
+    fields: [
+      {
+        id: "personality",
+        label: "Your personality",
+        placeholder: "Describe personality",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+      {
+        id: "startingState",
+        label: "Your current thoughts:",
+        placeholder: "Describe current thoughts",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+      {
+        id: "emotionalNeeds",
+        label: "Your emotional needs from this counselling session:",
+        placeholder: "Describe emotional needs",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+    ],
+  },
+  {
+    id: SIMULATION_CREATOR_STEP_IDS_OLD.conversationStyle,
+    label: "Conversation Style",
+    fields: [
+      {
+        id: "voiceId",
+        label: "Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
+        isMandatory: true,
         fullWidth: true,
       },
       {
-        id: "maxTimeValue",
-        label: "Maximum time",
-        placeholder: "00:05:00 - 02:00:00",
-        type: FORM_FIELD_TYPES.TIME_INPUT,
-        fullWidth: true,
-        dependsOn: "timerMode",
-        visibleWhen: (formValues: any) => formValues.timerMode === true,
-        defaultValue: "00:10:00",
-        note: "Range 00:05:00 - 02:00:00",
-        minTime: "00:05:00",
-        maxTime: "02:00:00",
-      },
-      {
-        id: "showScoreMeter",
-        label: "Score",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        id: "languageVoices",
+        label: "Language-Voice",
+        type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
+        isMandatory: true,
         fullWidth: true,
       },
       {
-        id: "optGuardrails",
-        label: "Conversational Guardrails",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-        defaultValue: true,
-        disabled: true,
+        id: "tone",
+        label: "Your tone",
+        type: FORM_FIELD_TYPES.TEXT,
+        placeholder: "e.g. Casual",
+        maxLength: 100,
       },
       {
-        id: "currentState",
-        label: "Current State",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        id: "openingStatements",
+        label: "Begin the conversation by saying:",
+        type: FORM_FIELD_TYPES.TEXT,
+        placeholder: "Add opening statements as new line",
+        isMandatory: true,
+        multiline: true,
         fullWidth: true,
+        maxLength: 1000,
       },
-    ] as FormFieldConfig[],
+      {
+        id: "sessionBehaviorGuidelines",
+        label: "How will you behave in this session:",
+        type: FORM_FIELD_TYPES.TEXT,
+        placeholder: "How should the character act during the session?",
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+      },
+      {
+        id: "autoTerminationStatus",
+        label: "Auto termination",
+        fullWidth: true,
+        type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
+      },
+    ],
   },
 ];
 
@@ -471,7 +625,7 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     label: "Default branch description",
     accessor: "branchInstruction",
     placeholder: "Add Instruction",
-    dataType: cellTypes.textAreaWithDropdown,
+    dataType: cellTypes.editableText,
     options: [],
     minWidth: 240,
   },
@@ -482,62 +636,6 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     dataType: cellTypes.number,
     options: [],
     minWidth: 200,
-  },
-  {
-    id: "startTime",
-    label: "Applicable from",
-    accessor: "startTime",
-    dataType: cellTypes.timeInput,
-    options: [],
-    minWidth: 120,
-  },
-  {
-    id: "endTime",
-    label: "Applicable till",
-    accessor: "endTime",
-    dataType: cellTypes.timeInput,
-    options: [],
-    minWidth: 120,
-  },
-  {
-    id: "occurrenceInterval",
-    label: "Occurrence Interval",
-    accessor: "occurrenceInterval",
-    dataType: cellTypes.number,
-    options: [],
-    minWidth: 120,
-  },
-  {
-    id: "maxOccurrences",
-    label: "Max occurrences",
-    accessor: "maxOccurrences",
-    dataType: cellTypes.score,
-    options: [],
-    minWidth: 120,
-  },
-  {
-    id: "minGapTime",
-    label: "Min gap time",
-    accessor: "minGapTime",
-    dataType: cellTypes.timeInput,
-    options: [],
-    minWidth: 120,
-  },
-  {
-    id: "minScore",
-    label: "Min score",
-    accessor: "minScore",
-    dataType: cellTypes.score,
-    options: [],
-    minWidth: 120,
-  },
-  {
-    id: "maxScore",
-    label: "Max score",
-    accessor: "maxScore",
-    dataType: cellTypes.score,
-    options: [],
-    minWidth: 120,
   },
   {
     id: "message",
@@ -556,377 +654,8 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     options: [],
     minWidth: 200,
   },
-  {
-    id: "tags",
-    label: "Tags",
-    accessor: "tags",
-    dataType: cellTypes.tags,
-    options: [],
-    minWidth: 200,
-  },
 ];
 
 export const SESSION_EVENT_STATUS_OPTIONS = {
   ACTIVE: "ACTIVE",
 };
-
-export const SCENARIO_VOICE_COLUMNS = [
-  {
-    id: "name",
-    label: "Voice Name",
-    accessor: "name",
-    dataType: cellTypes.editableText,
-    minWidth: 200,
-  },
-  {
-    id: "preview",
-    label: "Preview",
-    accessor: "preview",
-    dataType: cellTypes.previewAudio,
-    minWidth: 120,
-  },
-  {
-    id: "provider",
-    label: "Provider",
-    accessor: "provider",
-    dataType: cellTypes.dropdown,
-    minWidth: 200,
-    options: [], // Will be populated dynamically from API/existing voices
-  },
-  {
-    id: "config",
-    label: "Configuration",
-    accessor: "config",
-    dataType: cellTypes.normalText,
-    minWidth: 300,
-  },
-  {
-    id: "language",
-    label: "Language",
-    accessor: "languageId",
-    dataType: cellTypes.dropdown,
-    minWidth: 200,
-    options: [], // Will be populated dynamically from API
-  },
-  {
-    id: "active",
-    label: "Status",
-    accessor: "active",
-    dataType: cellTypes.switch,
-    minWidth: 150,
-  },
-  {
-    id: "createdAt",
-    label: "Created Date",
-    accessor: "createdAt",
-    dataType: cellTypes.normalText,
-    minWidth: 200,
-  },
-];
-
-export const SCENARIO_LANGUAGE_COLUMNS = [
-  {
-    id: "label",
-    label: "Language Name",
-    accessor: "label",
-    dataType: cellTypes.editableText,
-    minWidth: 150,
-  },
-  {
-    id: "value",
-    label: "Language Code",
-    accessor: "value",
-    dataType: cellTypes.editableText,
-    minWidth: 150,
-  },
-  {
-    id: "translationCode",
-    label: "Translation Code",
-    accessor: "translationCode",
-    dataType: cellTypes.editableText,
-    minWidth: 200,
-  },
-  {
-    id: "llmProviderConfig",
-    label: "LLM Provider Config",
-    accessor: "llmProviderConfig",
-    dataType: cellTypes.normalText,
-    minWidth: 200,
-  },
-  {
-    id: "sttProviderConfig",
-    label: "STT Provider Config",
-    accessor: "sttProviderConfig",
-    dataType: cellTypes.normalText,
-    minWidth: 200,
-  },
-  {
-    id: "active",
-    label: "Status",
-    accessor: "active",
-    dataType: cellTypes.switch,
-    minWidth: 120,
-  },
-  {
-    id: "createdAt",
-    label: "Created Date",
-    accessor: "createdAt",
-    dataType: cellTypes.normalText,
-    minWidth: 120,
-  },
-];
-
-export const PROMPT_COLUMNS = [
-  {
-    id: "name",
-    label: "Prompt Name",
-    accessor: "name",
-    dataType: cellTypes.wrapText,
-    minWidth: 500,
-    editable: false,
-  },
-  {
-    id: "description",
-    label: "Description",
-    accessor: "description",
-    dataType: cellTypes.wrapText,
-    minWidth: 1000,
-    editable: false,
-  },
-  {
-    id: "createdAt",
-    label: "Created Date",
-    accessor: "createdAt",
-    dataType: cellTypes.normalText,
-    minWidth: 250,
-    editable: false,
-  },
-];
-
-export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
-  {
-    id: "coverImageUrl",
-    label: "Cover Image",
-    accessor: "coverImageUrl",
-    dataType: cellTypes.image,
-    minWidth: 180,
-  },
-  {
-    id: "name",
-    label: "Name",
-    accessor: "name",
-    placeholder: "Add Name",
-    dataType: cellTypes.editableText,
-    minWidth: 180,
-  },
-  {
-    id: "age",
-    label: "Age",
-    accessor: "age",
-    placeholder: "Add Age",
-    dataType: cellTypes.number,
-    minWidth: 100,
-  },
-  {
-    id: "gender",
-    label: "Gender",
-    accessor: "gender",
-    dataType: cellTypes.dropdown,
-    options: GENDER_OPTIONS,
-    minWidth: 150,
-  },
-  {
-    id: "profession",
-    label: "Profession",
-    accessor: "profession",
-    placeholder: "Add Profession",
-    dataType: cellTypes.editableText,
-    minWidth: 180,
-  },
-  {
-    id: "currentLocation",
-    label: "Current location",
-    accessor: "currentLocation",
-    placeholder: "Add Location",
-    dataType: cellTypes.editableText,
-    minWidth: 200,
-  },
-  {
-    id: "genderIdentity",
-    label: "Gender identity",
-    accessor: "genderIdentity",
-    dataType: cellTypes.dropdown,
-    options: GENDER_IDENTITY_OPTIONS,
-    minWidth: 180,
-  },
-  {
-    id: "sexualOrientation",
-    label: "Sexual orientation",
-    accessor: "sexualOrientation",
-    dataType: cellTypes.dropdown,
-    options: SEXUAL_ORIENTATION_OPTIONS,
-    minWidth: 180,
-  },
-  {
-    id: "characterProfileText",
-    label: "Character Backstory",
-    accessor: "characterProfileText",
-    dataType: cellTypes.wrapText,
-    minWidth: 300,
-  },
-];
-export const USER_BADGES_TABLE_COLUMNS = [
-  {
-    id: "imageUrl",
-    label: en.simulation.icon,
-    accessor: "imageUrl",
-    dataType: cellTypes.image,
-    minWidth: 80,
-  },
-  {
-    id: "name",
-    label: en.simulation.name,
-    accessor: "name",
-    dataType: cellTypes.normalText,
-    minWidth: 200,
-  },
-  {
-    id: "description",
-    label: en.simulation.description,
-    accessor: "description",
-    dataType: cellTypes.normalText,
-    minWidth: 300,
-  },
-  {
-    id: "status",
-    label: en.simulation.status,
-    accessor: "status",
-    dataType: cellTypes.status,
-    minWidth: 120,
-  },
-  {
-    id: "visibilityType",
-    label: en.simulation.orgVisibility,
-    accessor: "visibilityType",
-    dataType: cellTypes.normalText,
-    minWidth: 140,
-  },
-  {
-    id: "category",
-    label: en.simulation.category,
-    accessor: "category",
-    dataType: cellTypes.normalText,
-    minWidth: 120,
-  },
-  {
-    id: "role",
-    label: en.userManagement.role,
-    accessor: "roles",
-    dataType: cellTypes.roles,
-    minWidth: 140,
-  },
-  {
-    id: "updatedAt",
-    label: en.simulation.lastModified,
-    accessor: "updatedAt",
-    dataType: cellTypes.normalText,
-    minWidth: 150,
-  },
-];
-
-export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
-  {
-    id: "category",
-    label: "Category",
-    accessor: "category",
-    placeholder: "Add Name",
-    dataType: cellTypes.dropdown,
-    options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
-    minWidth: 200,
-    width: "21%",
-  },
-  {
-    id: "behaviors",
-    label: "Helper behaviours",
-    accessor: "behaviors",
-    placeholder: "Add Instruction",
-    dataType: cellTypes.dropdownTags,
-    minWidth: 290,
-    width: "36%",
-  },
-  {
-    id: "instructions",
-    label: "Actors response",
-    accessor: "instructions",
-    placeholder: "Add Response",
-    dataType: cellTypes.editableText,
-    minWidth: 310,
-    width: "36%",
-  },
-];
-
-export const BEHAVIOUR_STATES = [
-  { stateId: "-1", label: "State -1 Instructions" },
-  { stateId: "1", label: "State 1 Instructions" },
-  { stateId: "2", label: "State 2 Instructions" },
-  { stateId: "3", label: "State 3 Instructions" },
-];
-
-export const BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH = 1000;
-
-export const BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS = [
-  {
-    id: "category",
-    label: "Category",
-    accessor: "category",
-    placeholder: "Select category",
-    dataType: cellTypes.dropdown,
-    options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
-    minWidth: 180,
-    width: "14%",
-  },
-  {
-    id: "behaviors",
-    label: "Helper behaviour classes",
-    accessor: "behaviors",
-    placeholder: "Add behaviour",
-    dataType: cellTypes.dropdownTags,
-    minWidth: 220,
-    width: "18%",
-  },
-  ...BEHAVIOUR_STATES.map(state => ({
-    id: `stateInstruction_${state.stateId}`,
-    label: state.label,
-    accessor: `stateInstruction_${state.stateId}`,
-    placeholder: "Add instruction",
-    dataType: cellTypes.editableText,
-    minWidth: 190,
-    width: "17%",
-    maxLength: BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH,
-  })),
-];
-
-export const STATES_INSTRUCTION_TABLE_HEADERS = [
-  {
-    key: "stateId",
-    header: "States",
-    editable: false,
-    format: (value: any) => `State ${value}`,
-  },
-  { key: "name", header: "Name", editable: true },
-  { key: "instruction", header: "Instruction", editable: true },
-  {
-    key: "dialogues",
-    header: "Dialogues",
-    editable: true,
-    getEditableValue: (value: any) =>
-      Array.isArray(value) ? value.filter(Boolean).join("\n") : String(value ?? ""),
-  },
-];
-
-export const DEFAULT_STATE_INSTRUCTIONS = [
-  { stateId: "1", name: "", instruction: "", dialogues: [] },
-  { stateId: "2", name: "", instruction: "", dialogues: [] },
-  { stateId: "3", name: "", instruction: "", dialogues: [] },
-  { stateId: "4", name: "", instruction: "", dialogues: [] },
-];

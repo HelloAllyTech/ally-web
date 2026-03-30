@@ -1,17 +1,16 @@
-# Production Release Pipeline - Ally Web
+# Production Release Pipeline - lifeline Web
 #
-# This workflow handles production releases for ally-web (ECS service) with semantic versioning
+# This workflow handles production releases for lifeline-web (ECS service) with semantic versioning
 # 
 # Required GitHub Variables:
 # PRD_AWS_ROLE, PRD_AWS_REGION, PRD_ECR_REPOSITORY
 #
 # Usage:
-# - Manually trigger this workflow from GitHub Actions
-# - Specify the version tag in format: web-v{major}.{minor}.{patch} (e.g., web-v1.0.0, web-v1.2.3)
+# - Manulifeline trigger this workflow from GitHub Actions
+# - Specify the version tag in format: v{major}.{minor}.{patch} (e.g., v1.0.0, v1.2.3, v2.0.0)
 # - The workflow will create the tag, build, deploy to ECS, and create a release draft
-# - Note: This is a monorepo, so each service has its own tag prefix (admin-, helpline-, web-)
 
-name: Production Release - Ally Web
+name: Production Release - lifeline Web
 
 permissions:
   id-token: write
@@ -23,7 +22,7 @@ on:
       version_tag:
         required: true
         type: string
-        description: 'Version tag (e.g., web-v1.0.0, web-v1.2.3, web-v2.0.0)'
+        description: 'Version tag (e.g., v1.0.0, v1.2.3, v2.0.0)'
 
 jobs:
   validate-and-tag:
@@ -50,9 +49,9 @@ jobs:
           TAG="${{ github.event.inputs.version_tag }}"
           echo "Processing tag: $TAG"
           
-          # Validate tag format (web-v{major}.{minor}.{patch})
-          if [[ ! $TAG =~ ^web-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Error: Tag must be in format web-v{major}.{minor}.{patch} (e.g., web-v1.0.0)"
+          # Validate tag format (v{major}.{minor}.{patch})
+          if [[ ! $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Error: Tag must be in format v{major}.{minor}.{patch} (e.g., v1.0.0)"
             exit 1
           fi
           
@@ -63,7 +62,7 @@ jobs:
           fi
           
           # Check if tag is newer than latest existing tag
-          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^web-v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          LATEST_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
           
           if [ -n "$LATEST_TAG" ]; then
             echo "Latest existing tag: $LATEST_TAG"
@@ -87,7 +86,7 @@ jobs:
           fi
           
           # Remove 'v' prefix and parse version components
-          VERSION=${TAG#web-v}
+          VERSION=${TAG#v}
           MAJOR=$(echo $VERSION | cut -d. -f1)
           MINOR=$(echo $VERSION | cut -d. -f2)
           PATCH=$(echo $VERSION | cut -d. -f3)
@@ -98,7 +97,7 @@ jobs:
           echo "PATCH=$PATCH" >> $GITHUB_OUTPUT
           echo "TAG=$TAG" >> $GITHUB_OUTPUT
           
-          echo "## :rocket: Release Version - Ally Web" >> $GITHUB_STEP_SUMMARY
+          echo "## :rocket: Release Version - lifeline Web" >> $GITHUB_STEP_SUMMARY
           echo "- **Tag**: $TAG" >> $GITHUB_STEP_SUMMARY
           if [ -n "$LATEST_TAG" ]; then
             echo "- **Previous Tag**: $LATEST_TAG" >> $GITHUB_STEP_SUMMARY
@@ -110,14 +109,14 @@ jobs:
           echo "- **Minor**: $MINOR" >> $GITHUB_STEP_SUMMARY
           echo "- **Patch**: $PATCH" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: master" >> $GITHUB_STEP_SUMMARY
-          echo "- **Service**: ally-web (ECS)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service**: lifeline-web (ECS)" >> $GITHUB_STEP_SUMMARY
       
       - name: Create and push tag
         run: |
           TAG="${{ steps.parse-version.outputs.TAG }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Release ally-web version ${{ steps.parse-version.outputs.VERSION }}"
+          git tag -a "$TAG" -m "Release lifeline-web version ${{ steps.parse-version.outputs.VERSION }}"
           git push origin "$TAG"
           echo "✅ Tag $TAG created and pushed" >> $GITHUB_STEP_SUMMARY
 
@@ -193,7 +192,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          echo ":test_tube: Running tests for ally-web..." >> $GITHUB_STEP_SUMMARY
+          echo ":test_tube: Running tests for lifeline-web..." >> $GITHUB_STEP_SUMMARY
           npm run test:web
           npm run test:ui-shared
           echo ":white_check_mark: All tests passed" >> $GITHUB_STEP_SUMMARY
@@ -224,7 +223,7 @@ jobs:
         id: build-push
         uses: ./.github/actions/docker/build-push
         with:
-          app_path: apps/ally-web
+          app_path: apps/lifeline-web
           dockerfile_path: dockerfile
           ecr_repository: ${{ needs.prepare-env.outputs.ecr_repository }}
           ecr_repository_name: ${{ needs.prepare-env.outputs.ecr_repository_name }}
@@ -322,7 +321,7 @@ jobs:
           
           git fetch origin tag "$TAG"
           
-          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^web-v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^$TAG$" | head -n 1)
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^$TAG$" | head -n 1)
           
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "No previous tag found, using first commit"
@@ -336,26 +335,25 @@ jobs:
           echo "" >> CHANGELOG.md
           
           # Get commits since last tag (limit to 100 to avoid issues)
-          git log $PREVIOUS_TAG..master --pretty=format:"- %s (%h) @%an" --no-merges -- apps/ally-web libs | head -100 >> CHANGELOG.md
+          git log $PREVIOUS_TAG..master --pretty=format:"- %s (%h) @%an" --no-merges -- apps/lifeline-web libs | head -100 >> CHANGELOG.md
           
           # Use a unique delimiter that won't appear in commit messages
           DELIMITER="CHANGELOG_END_$(date +%s)"
           echo "CHANGELOG<<${DELIMITER}" >> $GITHUB_OUTPUT
           cat CHANGELOG.md >> $GITHUB_OUTPUT
-          echo "" >> $GITHUB_OUTPUT
           echo "${DELIMITER}" >> $GITHUB_OUTPUT
 
       - name: Create Release Draft
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          name: Release Ally Web v${{ needs.validate-and-tag.outputs.VERSION }}
+          name: Release lifeline Web v${{ needs.validate-and-tag.outputs.VERSION }}
           tag_name: ${{ needs.validate-and-tag.outputs.TAG }}
           body: |
-            ## Release Ally Web v${{ needs.validate-and-tag.outputs.VERSION }}
+            ## Release lifeline Web v${{ needs.validate-and-tag.outputs.VERSION }}
             
             ### Version Information
-            - **Service**: ally-web
+            - **Service**: lifeline-web
             - **Version**: ${{ needs.validate-and-tag.outputs.VERSION }}
             - **Major**: ${{ needs.validate-and-tag.outputs.MAJOR }}
             - **Minor**: ${{ needs.validate-and-tag.outputs.MINOR }}
@@ -374,6 +372,7 @@ jobs:
             ---
             
             **Note**: This is a draft release. Please review and publish when ready.
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

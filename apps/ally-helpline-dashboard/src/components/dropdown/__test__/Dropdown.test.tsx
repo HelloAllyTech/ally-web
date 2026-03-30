@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import Dropdown from "../Dropdown";
-import React from "react";
+
 interface Option {
   value: string;
   label: string;

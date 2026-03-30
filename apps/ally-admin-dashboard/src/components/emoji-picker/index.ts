@@ -1,0 +1,1 @@
+export { EmojiPickerComponent } from "./EmojiPicker";

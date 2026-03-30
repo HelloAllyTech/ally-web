@@ -1,40 +1,26 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Provider } from "react-redux";
+
+import { Sidebar } from "../Sidebar";
 
 const navigateMock = vi.fn();
 const logoutMock = vi.fn();
-
-// Mock API first to prevent store initialization errors
-vi.mock("@api", async importOriginal => {
-  const actual = await importOriginal<typeof import("@api")>();
-  return {
-    ...actual,
-  };
-});
-
-import { store } from "../../../store";
-import { Sidebar } from "../Sidebar";
 
 vi.mock("react-router-dom", () => ({
   useLocation: vi.fn(() => ({ pathname: "/simulation-studio" })),
   useNavigate: vi.fn(() => navigateMock),
 }));
 
-vi.mock("@assets", async importOriginal => {
-  const actual = await importOriginal<typeof import("@assets")>();
-  return {
-    ...actual,
-    ArrowDown: () => <svg data-testid="arrow-down" />,
-    Book: () => <svg data-testid="icon-book" />,
-    User: () => <svg data-testid="icon-user" />,
-    Users: () => <svg data-testid="icon-users" />,
-    Ally: () => <svg data-testid="logo-ally" />,
-    DockToRight: () => <svg data-testid="dock" />,
-    Logout: () => <svg data-testid="logout" />,
-    HappyEmoji: () => <svg data-testid="happy" />,
-  };
-});
+vi.mock("@assets", () => ({
+  ArrowDown: () => <svg data-testid="arrow-down" />,
+  Book: () => <svg data-testid="icon-book" />,
+  User: () => <svg data-testid="icon-user" />,
+  Users: () => <svg data-testid="icon-users" />,
+  lifeline: () => <svg data-testid="logo-lifeline" />,
+  DockToRight: () => <svg data-testid="dock" />,
+  Logout: () => <svg data-testid="logout" />,
+  HappyEmoji: () => <svg data-testid="happy" />,
+}));
 
 vi.mock("@hooks", () => ({
   useClickOutside: (_ref: any, _handler: any) => {},
@@ -43,55 +29,26 @@ vi.mock("@hooks", () => ({
     logout: logoutMock,
     filteredNavigationItems: [
       { id: "SIMULATION_STUDIO", label: "Simulation Studio", path: "/simulation-studio" },
-      { id: "EVENT_MANAGEMENT", label: "Events", path: "/events" },
-      { id: "SCENARIO_LANGUAGES", label: "Scenario Languages", path: "/manage-scenario-languages" },
-      { id: "SCENARIO_VOICES", label: "Scenario Voices", path: "/manage-scenario-voices" },
-      { id: "PROMPTS", label: "Prompts", path: "/manage-prompts" },
-      { id: "USERS", label: "Users", path: "/users" },
+      { id: "USER_MANAGEMENT", label: "User Management", path: "/users" },
+      { id: "EVENT_MANAGEMENT", label: "Event Management", path: "/events" },
     ],
   }),
 }));
 
 vi.mock("@constants", () => ({
-  ReportGenerationStatus: {
-    STARTED: "STARTED",
-    IN_PROGRESS: "IN_PROGRESS",
-    COMPLETED: "COMPLETED",
-    CANCELLED: "CANCELLED",
-    FAILED: "FAILED",
-  },
   SIDEBAR_ITEMS: {
     SIMULATION_STUDIO: "SIMULATION_STUDIO",
-    USERS: "USERS",
+    USER_MANAGEMENT: "USER_MANAGEMENT",
     EVENT_MANAGEMENT: "EVENT_MANAGEMENT",
-    SCENARIO_VOICES: "SCENARIO_VOICES",
-    SCENARIO_LANGUAGES: "SCENARIO_LANGUAGES",
-    PROMPTS: "PROMPTS",
   },
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
     CREATE_SIMULATION: "/simulation-studio/create",
-    CREATE_PATH: "/create-path",
     USER_MANAGEMENT: "/users",
     MANAGE_EVENTS: "/events",
-    MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
-    MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
-    MANAGE_PROMPTS: "/manage-prompts",
     LOGIN: "/login",
   },
-  en: {
-    auth: {
-      logout: "Logout",
-      profileSettings: "Profile Settings",
-      uploadImage: "Upload Image",
-      profileImage: "Profile Image",
-    },
-    simulation: {
-      triggerEvent: "Trigger Event",
-      triggerMessage: "Trigger Message",
-      terminationMessagePlaceholder: "Enter termination message",
-    },
-  },
+  en: { auth: { logout: "Logout" } },
   TAG_TYPES: {
     USERS: "users",
     TENANTS: "tenants",
@@ -99,22 +56,7 @@ vi.mock("@constants", () => ({
     SIMULATION: "simulation",
     SIMULATION_EVENTS: "simulationEvents",
   },
-  profileSettings: [
-    { name: "name", label: "Name", type: "text" },
-    { name: "email", label: "Email", type: "email" },
-  ],
-  USER_MODAL_FIELDS_IDS: {
-    PROFILE: "profile",
-  },
-  KeyboardKeys: {
-    KEYDOWN: "keydown",
-    ESCAPE: "Escape",
-  },
 }));
-
-const renderWithProvider = (component: React.ReactElement) => {
-  return render(<Provider store={store}>{component}</Provider>);
-};
 
 describe("Sidebar", () => {
   beforeEach(() => {
@@ -131,7 +73,7 @@ describe("Sidebar", () => {
   it("renders navigation items by title when collapsed", () => {
     // Mock narrow window to force collapsed state
     Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 800 });
-    renderWithProvider(<Sidebar />);
+    render(<Sidebar />);
 
     const simItem = screen.getByTitle("Simulation Studio");
     expect(simItem).toBeInTheDocument();
@@ -141,7 +83,7 @@ describe("Sidebar", () => {
   });
 
   it("toggles expand/collapse via the toggle button", () => {
-    renderWithProvider(<Sidebar />);
+    render(<Sidebar />);
 
     // Sidebar starts expanded when window is wide
     const simItem = screen.getByText("Simulation Studio");
@@ -156,7 +98,7 @@ describe("Sidebar", () => {
   });
 
   it("opens user menu and logs out when expanded", () => {
-    renderWithProvider(<Sidebar />);
+    render(<Sidebar />);
 
     // Click profile section (name/email present when expanded)
     fireEvent.click(screen.getByText("Alice"));
@@ -169,41 +111,7 @@ describe("Sidebar", () => {
   });
 
   it("marks the active tab based on location", () => {
-    renderWithProvider(<Sidebar />);
+    render(<Sidebar />);
     expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
-  });
-
-  it("renders Scenario Voices navigation item", () => {
-    renderWithProvider(<Sidebar />);
-
-    const voicesItem = screen.getByText("Scenario Voices");
-    expect(voicesItem).toBeInTheDocument();
-  });
-
-  it("navigates to Scenario Voices when clicked", () => {
-    renderWithProvider(<Sidebar />);
-
-    const voicesItem = screen.getByText("Scenario Voices");
-    fireEvent.click(voicesItem);
-
-    expect(navigateMock).toHaveBeenCalledWith("/manage-scenario-voices");
-  });
-
-  it("displays Scenario Voices with correct title when collapsed", () => {
-    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 800 });
-    renderWithProvider(<Sidebar />);
-
-    const voicesItem = screen.getByTitle("Scenario Voices");
-    expect(voicesItem).toBeInTheDocument();
-  });
-
-  it("includes all navigation items in order", () => {
-    renderWithProvider(<Sidebar />);
-
-    expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
-    expect(screen.getByText("Events")).toBeInTheDocument();
-    expect(screen.getByText("Scenario Voices")).toBeInTheDocument();
-    expect(screen.getByText("Scenario Languages")).toBeInTheDocument();
-    expect(screen.getByText("Users")).toBeInTheDocument();
   });
 });

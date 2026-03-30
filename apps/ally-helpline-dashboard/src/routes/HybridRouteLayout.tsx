@@ -8,6 +8,7 @@ import { NavbarWrapper } from "./components";
 
 const HybridRouteLayout: FC = () => {
   const { isAuthenticated } = useUser();
+
   useAutoActiveCallRedirect(isAuthenticated);
 
   return (

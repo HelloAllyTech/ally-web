@@ -202,16 +202,11 @@ export const extractValidData = (
     Object.entries(formData).map(([key, value]) => {
       const field = allFields.find(field => field.id === key);
       if (Array.isArray(value) && value.length === 0) {
-        return [
-          key,
-          field?.type !== FORM_FIELD_TYPES.IMAGE_UPLOAD &&
-          field?.type !== FORM_FIELD_TYPES.VIDEO_UPLOAD
-            ? []
-            : null,
-        ];
+        return [key, null];
       }
       switch (field?.type) {
         case FORM_FIELD_TYPES.SELECT:
+        case FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN: //handles dropdown case
           return [key, isNonEmptyString(value) ? value : null];
 
         case FORM_FIELD_TYPES.NUMBER: //convert string to number and empty val to null
@@ -226,23 +221,8 @@ export const extractValidData = (
         case FORM_FIELD_TYPES.TOGGLE_BUTTON:
           return [key, Boolean(value)];
 
-        case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:
-          return [key, isNonEmptyString(value) ? value : null];
-
-        case FORM_FIELD_TYPES.KNOWLEDGE_SOURCE:
-          return [key, Array.isArray(value) ? value : []];
-
         default:
-          return [
-            key,
-            typeof value === "boolean"
-              ? value
-              : isNumber(value) || isNonEmptyArray(value) || isNonEmptyObject(value)
-                ? value
-                : isNonEmptyString(value)
-                  ? value.trim()
-                  : null,
-          ];
+          return [key, isNonEmptyString(value) ? value.trim() : value];
       }
     }),
   );
@@ -261,105 +241,4 @@ export const convertSecondsToTimeString = (seconds: number | undefined): string 
   const secs = seconds % 60;
 
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-};
-
-/**
- * Validates and formats time string to HH:MM:SS format
- * @param timeString - Time string in HH:MM:SS format (e.g., "00:20:00")
- * @returns Validated and formatted time string (e.g., "00:20:00")
- */
-export const validateTime = (timeString: string): string => {
-  if (!timeString) {
-    return timeString;
-  }
-
-  // Extract digits and pad to 6 digits with trailing zeros
-  const digits = timeString.replace(/\D/g, "").padEnd(6, "0").slice(0, 6);
-  const paddedTime = `${digits.slice(0, 2)}:${digits.slice(2, 4)}:${digits.slice(4, 6)}`;
-
-  const parts = paddedTime.split(":");
-  if (parts.length !== 3) {
-    return timeString;
-  }
-
-  let hours = parseInt(parts[0], 10);
-  let minutes = parseInt(parts[1], 10);
-  let seconds = parseInt(parts[2], 10);
-
-  // Clamp values to valid ranges
-  if (!isNaN(hours)) {
-    hours = Math.max(0, Math.min(23, hours));
-  }
-  if (!isNaN(minutes)) {
-    minutes = Math.max(0, Math.min(59, minutes));
-  }
-  if (!isNaN(seconds)) {
-    seconds = Math.max(0, Math.min(59, seconds));
-  }
-
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-};
-
-/**
- * Validates if a time string is within the specified min/max range
- * @param timeStr - Time string in HH:MM:SS format
- * @param minTime - Optional minimum allowed time in HH:MM:SS format
- * @param maxTime - Optional maximum allowed time in HH:MM:SS format
- * @returns Object with isValid boolean and optional error message
- */
-export const validateTimeRange = (
-  timeStr: string,
-  minTime?: string,
-  maxTime?: string,
-): { isValid: boolean; error?: string } => {
-  if (!timeStr) return { isValid: true };
-
-  // Convert HH:MM:SS to seconds for comparison
-  const timeToSeconds = (time: string): number => {
-    const [h, m, s] = time.split(":").map(Number);
-    return h * 3600 + m * 60 + s;
-  };
-
-  const seconds = timeToSeconds(timeStr);
-
-  if (minTime && seconds < timeToSeconds(minTime)) {
-    return { isValid: false, error: `Minimum time is ${minTime}` };
-  }
-
-  if (maxTime && seconds > timeToSeconds(maxTime)) {
-    return { isValid: false, error: `Maximum time is ${maxTime}` };
-  }
-
-  return { isValid: true };
-};
-
-/**
- * Converts a camelCase string to snake_case
- * @param str - camelCase string (e.g., "voiceId")
- * @returns snake_case string (e.g., "voice_id")
- */
-export const camelToSnakeCase = (str: string): string => {
-  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-};
-
-/**
- * Converts an object's keys from camelCase to snake_case
- * Only includes properties that have defined values (not undefined)
- * @param obj - Object with camelCase keys
- * @returns New object with snake_case keys
- */
-export const convertKeysToSnakeCase = <T extends Record<string, unknown>>(
-  obj: T | undefined,
-): Record<string, unknown> => {
-  if (!obj) return {};
-
-  return Object.entries(obj).reduce(
-    (acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[camelToSnakeCase(key)] = value;
-      }
-      return acc;
-    },
-    {} as Record<string, unknown>,
-  );
 };

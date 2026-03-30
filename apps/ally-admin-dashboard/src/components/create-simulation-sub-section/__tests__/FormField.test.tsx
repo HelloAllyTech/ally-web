@@ -6,34 +6,6 @@ import { FormFieldConfig } from "@types";
 
 import { FormField } from "../FormField";
 
-// Hoist mock functions
-const { regenerateFieldMock } = vi.hoisted(() => ({
-  regenerateFieldMock: vi.fn(),
-}));
-
-// Mock baseAPI first
-vi.mock("@api/baseApi", () => ({
-  baseAPI: {
-    injectEndpoints: vi.fn(() => ({})),
-    reducerPath: "baseAPI",
-    reducer: (state = {}) => state,
-    middleware: () => (next: any) => (action: any) => next(action),
-  },
-}));
-
-// Mock the API hooks
-vi.mock("@api", async importOriginal => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    useRegenerateFieldMutation: () => [
-      () => ({
-        unwrap: () => regenerateFieldMock(),
-      }),
-    ],
-  };
-});
-
 // Mock child components
 vi.mock("../../dropdown-field", () => ({
   DropdownField: ({ id, label, placeholder }: any) => (
@@ -57,44 +29,19 @@ vi.mock("../../input-field", () => ({
   ),
 }));
 
-vi.mock("../../radio-button-group", () => ({
-  RadioButtonGroup: ({ id, label, options, isMandatory }: any) => (
-    <div data-testid={`radio-button-group-${id}`}>
-      <label>
-        {label}
-        {isMandatory && <span>*</span>}
-      </label>
-      {options.map((option: any) => (
-        <div key={option.value}>
-          <input type="radio" name={id} value={option.value} />
-          <label>{option.label}</label>
-        </div>
-      ))}
-    </div>
-  ),
-}));
-
-vi.mock("../../time-input", () => ({
-  TimeInput: ({ id, label }: any) => <div data-testid={`time-input-${id}`}>{label}</div>,
+vi.mock("../../voice-dropdown", () => ({
+  VoiceDropdown: ({ id, label }: any) => <div data-testid={`voice-dropdown-${id}`}>{label}</div>,
 }));
 
 // Mock constants
 vi.mock("@constants", () => ({
-  ReportGenerationStatus: {
-    STARTED: "STARTED",
-    IN_PROGRESS: "IN_PROGRESS",
-    COMPLETED: "COMPLETED",
-    CANCELLED: "CANCELLED",
-    FAILED: "FAILED",
-  },
   FORM_FIELD_TYPES: {
     SELECT: "select",
     TEXT: "text",
     IMAGE_UPLOAD: "image_upload",
     CUSTOM: {
-      RADIO_BUTTONS: "radio_buttons",
+      VOICE_DROPDOWN: "voice_dropdown",
     },
-    TIME_INPUT: "time_input",
   },
   TAG_TYPES: {
     USERS: "users",
@@ -201,7 +148,7 @@ describe("FormField", () => {
     });
 
     it("error message styling is defined in component", () => {
-      // Error messages are rendered conditionally based on formState.errors
+      // Error messages are rendered conditionlifeline based on formState.errors
       // The styling is defined in the component code
       expect(true).toBe(true);
     });
@@ -304,100 +251,36 @@ describe("FormField", () => {
     });
   });
 
-  describe("RADIO_BUTTONS Field Type", () => {
-    const radioButtonsConfig: FormFieldConfig = {
-      id: "experienceMode",
-      label: "Experience Mode",
-      type: "radio_buttons",
-      options: [
-        { value: "FEEDBACK", label: "Feedback" },
-        { value: "CHECKLIST", label: "Checklist" },
-      ],
+  describe("VOICE_DROPDOWN Field Type", () => {
+    const voiceDropdownConfig: FormFieldConfig = {
+      id: "voice",
+      label: "Voice",
+      type: "voice_dropdown",
       isMandatory: true,
     };
 
-    it("renders RadioButtonGroup for radio_buttons type", () => {
+    it("renders VoiceDropdown for voice_dropdown type", () => {
       render(
         <TestWrapper>
           {(formMethods: any) => (
-            <FormField config={radioButtonsConfig} formMethods={formMethods} />
+            <FormField config={voiceDropdownConfig} formMethods={formMethods} />
           )}
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("radio-button-group-experienceMode")).toBeInTheDocument();
+      expect(screen.getByTestId("voice-dropdown-voice")).toBeInTheDocument();
     });
 
-    it("renders label for radio button group", () => {
+    it("renders label for voice dropdown", () => {
       render(
         <TestWrapper>
           {(formMethods: any) => (
-            <FormField config={radioButtonsConfig} formMethods={formMethods} />
+            <FormField config={voiceDropdownConfig} formMethods={formMethods} />
           )}
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Experience Mode")).toBeInTheDocument();
-    });
-
-    it("renders mandatory indicator for radio button group", () => {
-      render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <FormField config={radioButtonsConfig} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      const asterisk = screen.getByText("*");
-      expect(asterisk).toBeInTheDocument();
-    });
-
-    it("renders all radio button options", () => {
-      render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <FormField config={radioButtonsConfig} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Feedback")).toBeInTheDocument();
-      expect(screen.getByText("Checklist")).toBeInTheDocument();
-    });
-
-    it("does not render mandatory indicator when not required", () => {
-      const nonMandatoryConfig = { ...radioButtonsConfig, isMandatory: false };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <FormField config={nonMandatoryConfig} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      // Should only have one asterisk from the label text itself, not from mandatory indicator
-      const asterisks = screen.queryAllByText("*");
-      expect(asterisks.length).toBe(0);
-    });
-
-    it("renders with empty options array", () => {
-      const configWithNoOptions = {
-        ...radioButtonsConfig,
-        options: [],
-      };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <FormField config={configWithNoOptions} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByTestId("radio-button-group-experienceMode")).toBeInTheDocument();
-      expect(screen.getByText("Experience Mode")).toBeInTheDocument();
+      expect(screen.getByText("Voice")).toBeInTheDocument();
     });
   });
 
@@ -507,6 +390,23 @@ describe("FormField", () => {
 
       expect(screen.getByTestId("file-upload-file")).toBeInTheDocument();
     });
+
+    it("passes all relevant props to VoiceDropdown", () => {
+      const config: FormFieldConfig = {
+        id: "voice",
+        label: "Voice",
+        type: "voice_dropdown",
+        isMandatory: true,
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("voice-dropdown-voice")).toBeInTheDocument();
+    });
   });
 
   describe("Edge Cases", () => {
@@ -612,282 +512,6 @@ describe("FormField", () => {
       const flexContainer = container.querySelector(".flex-col");
       expect(flexContainer).toBeInTheDocument();
       expect(flexContainer).toHaveClass("gap-2");
-    });
-  });
-
-  describe("TIME_INPUT Field Type", () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
-    });
-
-    it("renders TIME_INPUT field", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        placeholder: "00:05:00 - 02:00:00",
-      };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
-    });
-
-    it("renders TIME_INPUT with required asterisk when isMandatory is true", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        isMandatory: true,
-      };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      const label = screen.getByText("Maximum Time");
-      expect(label).toBeInTheDocument();
-      // Check for asterisk in the label's parent
-      expect(label.parentElement?.textContent).toContain("*");
-    });
-
-    it("does not render asterisk when isMandatory is false", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        isMandatory: false,
-      };
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      const destructive = container.querySelector(".text-destructive-500");
-      expect(destructive).not.toBeInTheDocument();
-    });
-
-    it("renders placeholder text for TimeInput", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        placeholder: "00:05:00 - 02:00:00",
-      };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
-    });
-
-    it("renders note text when provided", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        note: "Range 00:05:00 - 02:00:00",
-      };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Range 00:05:00 - 02:00:00")).toBeInTheDocument();
-    });
-
-    it("does not render note text when not provided", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-      };
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      const notes = container.querySelectorAll(".text-typography-500");
-      // Should not have any note elements (besides potentially other elements with same class)
-      expect(notes.length).toBeLessThanOrEqual(0);
-    });
-
-    it("renders label only when label is provided", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-      };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
-    });
-
-    it("uses defaultValue when provided", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        defaultValue: "00:10:00",
-      };
-
-      render(
-        <TestWrapper defaultValues={{ maxTimeValue: "00:10:00" }}>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
-    });
-
-    it("has flex-col layout for TIME_INPUT", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-      };
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      const flexContainer = container.querySelector(".flex-col");
-      expect(flexContainer).toBeInTheDocument();
-      expect(flexContainer).toHaveClass("gap-4");
-    });
-
-    it("renders TimeInput component with correct props", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        placeholder: "00:05:00 - 02:00:00",
-      };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      // TimeInput component should be rendered (through mocking or real component)
-      expect(screen.getByText("Maximum Time")).toBeInTheDocument();
-    });
-
-    it("handles form value updates for TIME_INPUT", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-      };
-
-      let capturedFormMethods: any;
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => {
-            capturedFormMethods = formMethods;
-            return <FormField config={config} formMethods={formMethods} />;
-          }}
-        </TestWrapper>,
-      );
-
-      // Test that form methods are passed correctly
-      expect(capturedFormMethods).toBeDefined();
-      expect(capturedFormMethods.watch).toBeDefined();
-      expect(capturedFormMethods.setValue).toBeDefined();
-    });
-
-    it("TIME_INPUT field renders with correct text styling for label", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-      };
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      const label = screen.getByText("Maximum Time");
-      expect(label).toHaveClass("text-typography-900");
-      expect(label).toHaveClass("text-base");
-    });
-
-    it("note text has correct styling", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        note: "Range: 00:05:00 - 02:00:00",
-      };
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      const noteElement = screen.getByText("Range: 00:05:00 - 02:00:00");
-      expect(noteElement).toHaveClass("text-typography-500");
-      expect(noteElement).toHaveClass("text-sm");
-    });
-
-    it("TIME_INPUT field structure matches expected DOM hierarchy", () => {
-      const config: FormFieldConfig = {
-        id: "maxTimeValue" as any,
-        label: "Maximum Time",
-        type: "time_input",
-        note: "Test note",
-        isMandatory: true,
-      };
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      // Verify wrapper div exists
-      const wrapper = container.querySelector("div > div");
-      expect(wrapper).toBeInTheDocument();
-
-      // Verify flex-col container
-      const flexContainer = wrapper?.querySelector(".flex-col");
-      expect(flexContainer).toBeInTheDocument();
-
-      // Verify label wrapper with gap-2 exists
-      const labelWrapper = flexContainer?.querySelector(".flex.items-center.gap-2");
-      expect(labelWrapper).toBeInTheDocument();
-
-      // Verify note is displayed inside the wrapper
-      const noteElement = screen.getByText("Test note");
-      expect(noteElement).toBeInTheDocument();
-      expect(noteElement).toHaveClass("text-typography-500");
     });
   });
 });

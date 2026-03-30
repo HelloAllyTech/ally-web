@@ -13,6 +13,7 @@ import {
   formatDate,
   formatCapitalizedEnum,
   getButtonStyles,
+  getSimulationStatusColor,
   formatSimulationUsage,
   getChipValue,
   getSimulationVoiceOptions,
@@ -20,7 +21,6 @@ import {
   isNumber,
   isNonEmptyString,
   isArray,
-  validateTimeRange,
 } from "../common";
 
 describe("common utils", () => {
@@ -459,92 +459,6 @@ describe("common utils", () => {
     it("should return false for array-like objects", () => {
       expect(isArray({ length: 0 })).toBe(false);
       expect(isArray({ 0: "a", 1: "b", length: 2 })).toBe(false);
-    });
-  });
-
-  describe("validateTimeRange", () => {
-    it("should return valid for time within range", () => {
-      const result = validateTimeRange("00:10:00", "00:05:00", "02:00:00");
-      expect(result.isValid).toBe(true);
-      expect(result.error).toBeUndefined();
-    });
-
-    it("should return invalid for time below minimum", () => {
-      const result = validateTimeRange("00:03:00", "00:05:00", "02:00:00");
-      expect(result.isValid).toBe(false);
-      expect(result.error).toBe("Minimum time is 00:05:00");
-    });
-
-    it("should return invalid for time above maximum", () => {
-      const result = validateTimeRange("02:00:01", "00:05:00", "02:00:00");
-      expect(result.isValid).toBe(false);
-      expect(result.error).toBe("Maximum time is 02:00:00");
-    });
-
-    it("should accept minimum boundary value", () => {
-      const result = validateTimeRange("00:05:00", "00:05:00", "02:00:00");
-      expect(result.isValid).toBe(true);
-      expect(result.error).toBeUndefined();
-    });
-
-    it("should accept maximum boundary value", () => {
-      const result = validateTimeRange("02:00:00", "00:05:00", "02:00:00");
-      expect(result.isValid).toBe(true);
-      expect(result.error).toBeUndefined();
-    });
-
-    it("should return valid when no constraints provided", () => {
-      const result = validateTimeRange("23:59:59");
-      expect(result.isValid).toBe(true);
-      expect(result.error).toBeUndefined();
-    });
-
-    it("should return valid for empty string", () => {
-      const result = validateTimeRange("", "00:05:00", "02:00:00");
-      expect(result.isValid).toBe(true);
-      expect(result.error).toBeUndefined();
-    });
-
-    it("should handle only minTime constraint", () => {
-      const resultValid = validateTimeRange("00:10:00", "00:05:00", undefined);
-      expect(resultValid.isValid).toBe(true);
-
-      const resultInvalid = validateTimeRange("00:03:00", "00:05:00", undefined);
-      expect(resultInvalid.isValid).toBe(false);
-      expect(resultInvalid.error).toBe("Minimum time is 00:05:00");
-    });
-
-    it("should handle only maxTime constraint", () => {
-      const resultValid = validateTimeRange("01:00:00", undefined, "02:00:00");
-      expect(resultValid.isValid).toBe(true);
-
-      const resultInvalid = validateTimeRange("02:00:01", undefined, "02:00:00");
-      expect(resultInvalid.isValid).toBe(false);
-      expect(resultInvalid.error).toBe("Maximum time is 02:00:00");
-    });
-
-    it("should correctly compare times with different hours", () => {
-      const result1 = validateTimeRange("01:00:00", "00:30:00", "02:00:00");
-      expect(result1.isValid).toBe(true);
-
-      const result2 = validateTimeRange("02:30:00", "00:30:00", "02:00:00");
-      expect(result2.isValid).toBe(false);
-    });
-
-    it("should correctly compare times with same hours but different minutes", () => {
-      const result1 = validateTimeRange("01:15:00", "01:10:00", "01:20:00");
-      expect(result1.isValid).toBe(true);
-
-      const result2 = validateTimeRange("01:05:00", "01:10:00", "01:20:00");
-      expect(result2.isValid).toBe(false);
-    });
-
-    it("should correctly compare times with same hours and minutes but different seconds", () => {
-      const result1 = validateTimeRange("01:15:30", "01:15:20", "01:15:40");
-      expect(result1.isValid).toBe(true);
-
-      const result2 = validateTimeRange("01:15:10", "01:15:20", "01:15:40");
-      expect(result2.isValid).toBe(false);
     });
   });
 });

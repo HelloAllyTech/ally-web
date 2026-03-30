@@ -18,8 +18,6 @@ export interface ResourceTabsProps {
   selectedCategory: string;
   setSelectedCategory: (category: string, isSearchTriggered?: boolean) => void;
   mode?: SearchVariant;
-  allLabel?: string;
-  translateCategory?: (category: string) => string;
 }
 
 const ResourceTabs: FC<ResourceTabsProps> = ({
@@ -28,8 +26,6 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
   categoryCountList,
   setSelectedCategory,
   mode = SearchVariant.LIGHT,
-  allLabel,
-  translateCategory,
 }) => {
   /**
    * Returns the count of resources in a category.
@@ -46,20 +42,17 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
    * @returns {string}
    */
   const getCategoryLabel = (category: string) => {
-    const label = allLabel || "All";
-    const displayCategory = translateCategory ? translateCategory(category) : category;
-
     if (categoryCountList) {
       if (category === "All") {
         const totalCount = Object.values(categoryCountList).reduce((sum, count) => sum + count, 0);
-        return `${label} (${totalCount})`;
+        return `All (${totalCount})`;
       }
-      return `${displayCategory} (${categoryCountList[category] || 0})`;
+      return `${category} (${categoryCountList[category] || 0})`;
     }
     if (category === "All") {
-      return `${label} (${resources?.length || 0})`;
+      return `All (${resources?.length || 0})`;
     }
-    return `${displayCategory} (${getCategoryCount(category) || 0})`;
+    return `${category} (${getCategoryCount(category) || 0})`;
   };
 
   const categoryList = useMemo(() => {

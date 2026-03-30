@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
-import { SimulationPage, getSimulationEvents } from "@ally-ui-mono/ui-shared";
+import { SimulationPage, getSimulationEvents } from "@lifeline-ui-mono/ui-shared";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
 import { LOCAL_STORAGE_KEYS } from "@constants";
@@ -19,16 +19,10 @@ export const LiveSimulationPreview: React.FC = () => {
 
   const endSessionButtonRef = useRef<boolean>(false);
 
-  const {
-    room,
-    roomData,
-    roomStatus,
-    events,
-    score,
-    startTime,
-    detectedEventIds,
-    handleEndSession,
-  } = useLiveKitRoom(handleRoomDisconnected, endSessionButtonRef);
+  const { room, roomData, roomStatus, events, score, startTime, handleEndSession } = useLiveKitRoom(
+    handleRoomDisconnected,
+    endSessionButtonRef,
+  );
 
   const renderWarningDialog = ({ isOpen, onClose, onContinue, onEnd }) => (
     <ActionConfirmationPopup
@@ -52,12 +46,9 @@ export const LiveSimulationPreview: React.FC = () => {
       roomData={roomData}
       roomStatus={roomStatus}
       sessionId={id}
-      isEndingSession={
-        roomStatus !== RoomStatus.CONNECTED && roomStatus !== RoomStatus.AGENT_JOINED
-      }
-      startTime={startTime?.toISOString()}
+      isEndingSession={roomStatus !== RoomStatus.CONNECTED}
+      startTime={startTime.toISOString()}
       events={getSimulationEvents(events)}
-      detectedEventIds={detectedEventIds}
       score={score}
       isPreview
       onEndSimulation={handleEndSession}

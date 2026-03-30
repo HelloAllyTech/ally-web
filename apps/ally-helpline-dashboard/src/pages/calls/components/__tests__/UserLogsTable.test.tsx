@@ -18,7 +18,7 @@ vi.mock("@mui/material", () => ({
 }));
 
 // Mock UI shared components
-vi.mock("@ally-ui-mono/ui-shared", () => ({
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({
   GenericTable: React.forwardRef(
     ({ columns, data, isLoading, handleLoadMore, fallbackUI, className }: any, ref: any) => (
       <div ref={ref} className={className} data-testid="generic-table">
@@ -64,20 +64,12 @@ vi.mock("@assets", () => ({
   ScenarioIcon: () => <div data-testid="scenario-icon">Scenario</div>,
   SessionScoreIcon: () => <div data-testid="session-score-icon">Score</div>,
   SourceIcon: () => <div data-testid="source-icon">Source</div>,
-  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 
   // FIX: Add all missing 'Carousel' exports
   Carousel1: () => <div data-testid="carousel-1-icon">Carousel 1</div>,
   Carousel2: () => <div data-testid="carousel-2-icon">Carousel 2</div>,
   Carousel3: () => <div data-testid="carousel-3-icon">Carousel 3</div>, // ADDED
   Carousel4: () => <div data-testid="carousel-4-icon">Carousel 4</div>, // ADDED
-  LearnIcon: () => <svg data-testid="learn-icon" />,
-  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
-  ScribeIcon: () => <svg data-testid="scribe-icon" />,
-  StatsIcon: () => <svg data-testid="stats-icon" />,
-  SearchIcon: () => <svg data-testid="search-icon" />,
-  NoBadges: () => <div data-testid="no-badges" />,
-  Badge: () => <svg data-testid="badge-icon" />,
 }));
 
 // Mock components
@@ -472,8 +464,10 @@ describe("CallLogsTable Component", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
-        expect(screen.getByText("No call logs found")).toBeInTheDocument();
-        expect(screen.getByText("Try adjusting filters or refresh the page.")).toBeInTheDocument();
+        expect(screen.getByText("No call records found")).toBeInTheDocument();
+        expect(
+          screen.getByText("Your recent calls and insights will be listed here."),
+        ).toBeInTheDocument();
       });
     });
 
@@ -488,8 +482,10 @@ describe("CallLogsTable Component", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("fallback-ui")).toBeInTheDocument();
-        expect(screen.getByText("No simulation logs found")).toBeInTheDocument();
-        expect(screen.getByText("Try adjusting filters or refresh the page.")).toBeInTheDocument();
+        expect(screen.getByText("No simulation records found")).toBeInTheDocument();
+        expect(
+          screen.getByText("Your recent simulations will be listed here."),
+        ).toBeInTheDocument();
       });
     });
   });

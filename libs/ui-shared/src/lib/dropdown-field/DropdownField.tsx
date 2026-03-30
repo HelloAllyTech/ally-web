@@ -19,7 +19,6 @@ const DropdownField: FC<DropdownFieldProps> = ({
   options,
   valueClassName,
   onHandleSearch,
-  searchPlaceholder,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -65,7 +64,6 @@ const DropdownField: FC<DropdownFieldProps> = ({
           options={options}
           handleChange={handleChange}
           onHandleSearch={onHandleSearch}
-          searchPlaceholder={searchPlaceholder}
           className="top-5 left-0 font-secondary"
         />
       )}

@@ -1,1 +1,0 @@
-export { Competency } from "./Competency";

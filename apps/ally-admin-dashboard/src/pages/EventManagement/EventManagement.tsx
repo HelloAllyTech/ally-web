@@ -16,6 +16,7 @@ import {
   ListToolbar,
   ActionConfirmationPopup,
   EventTypeSelectionDialog,
+  EventType,
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
@@ -24,15 +25,10 @@ import {
   EVENT_MANAGEMENT_TABLE_COLUMNS,
   en,
   SESSION_EVENT_STATUS_OPTIONS,
-  EVENT_DETECTION_TYPES,
 } from "@constants";
 import { setAvailableEvents } from "@reducer";
 import { UpdateEventDataParam } from "@types";
-import {
-  convertEventToApiPayload,
-  convertApiResponseToEvent,
-  isDetectionConfigField,
-} from "@utils";
+import { convertEventToApiPayload, convertApiResponseToEvent } from "@utils";
 
 export const EventManagement: React.FC = () => {
   const limit = 30;
@@ -93,7 +89,7 @@ export const EventManagement: React.FC = () => {
     setShowEventTypeDialog(true);
   };
 
-  const handleEventTypeSelect = async (eventType: string) => {
+  const handleEventTypeSelect = async (eventType: EventType) => {
     const newEvent: UpdateEventDataParam = {
       name: "New Event",
       description: "",
@@ -104,7 +100,6 @@ export const EventManagement: React.FC = () => {
       detectionType: eventType,
       visibilityType: "ACTIVE",
       triggerCondition: null,
-      tags: [],
     };
 
     const eventPayload = convertEventToApiPayload(newEvent);
@@ -147,63 +142,18 @@ export const EventManagement: React.FC = () => {
 
   const createEventObject = useCallback((event: UpdateEventDataParam) => {
     const triggerCondition = event.triggerCondition || {};
-    const isEditable = event.isEditable ?? true;
-    const isDisabled = !isEditable;
-    const isTimeBased = event.detectionType === EVENT_DETECTION_TYPES.TIME_BASED;
-    const isScoreBased = event.detectionType === EVENT_DETECTION_TYPES.SCORE_BASED;
 
     return {
       id: { value: event.id || "", disabled: false, rowId: event.id },
       detectionType: { value: event.detectionType || "", disabled: true, rowId: event.id },
-      name: { value: event.name || "", disabled: isDisabled, rowId: event.id },
+      name: { value: event.name || "", disabled: false, rowId: event.id },
       eventCode: { value: event.eventCode || "", disabled: true, rowId: event.id },
-      triggerCondition: { value: triggerCondition, disabled: isDisabled, rowId: event.id },
-      branchInstruction: {
-        value: event.branchInstruction || "",
-        disabled: isDisabled,
-        rowId: event.id,
-      },
-      score: { value: event.score ?? 0, disabled: isDisabled, rowId: event.id },
-      message: { value: event.message || "", disabled: isDisabled, rowId: event.id },
-      emoji: { value: event.emoji || "", disabled: isDisabled, rowId: event.id },
-      visibilityType: { value: event.visibilityType || "", disabled: isDisabled, rowId: event.id },
-      maxOccurrences: {
-        value: event.detectionConfig?.maxOccurrences,
-        disabled: isDisabled,
-        rowId: event.id,
-      },
-      minGapTime: {
-        value: event.detectionConfig?.minGapTime,
-        disabled: isDisabled,
-        rowId: event.id,
-      },
-      occurrenceInterval: {
-        value: event.detectionConfig?.occurrenceInterval,
-        disabled: isDisabled || event.detectionType !== EVENT_DETECTION_TYPES.BINARY_CLASSIFIER,
-        rowId: event.id,
-      },
-      startTime: {
-        value: event.detectionConfig?.startTime,
-        disabled: isDisabled || isTimeBased,
-        rowId: event.id,
-      },
-      endTime: {
-        value: event.detectionConfig?.endTime,
-        disabled: isDisabled || isTimeBased,
-        rowId: event.id,
-      },
-      minScore: {
-        value: event.detectionConfig?.minScore,
-        disabled: isDisabled || isScoreBased,
-        rowId: event.id,
-      },
-      maxScore: {
-        value: event.detectionConfig?.maxScore,
-        disabled: isDisabled || isScoreBased,
-        rowId: event.id,
-      },
-      isEditable: { value: isEditable, disabled: false, rowId: event.id },
-      tags: { value: event.tags || [], disabled: true, rowId: event.id },
+      triggerCondition: { value: triggerCondition, disabled: false, rowId: event.id },
+      branchInstruction: { value: event.branchInstruction || "", disabled: false, rowId: event.id },
+      score: { value: event.score ?? 0, disabled: false, rowId: event.id },
+      message: { value: event.message || "", disabled: false, rowId: event.id },
+      emoji: { value: event.emoji || "", disabled: false, rowId: event.id },
+      visibilityType: { value: event.visibilityType || "", disabled: false, rowId: event.id },
     };
   }, []);
 
@@ -222,9 +172,6 @@ export const EventManagement: React.FC = () => {
       emoji: selectedEvent.emoji || "",
       visibilityType: selectedEvent.visibilityType || "",
       triggerCondition: selectedEvent.triggerCondition,
-      detectionConfig: selectedEvent.detectionConfig,
-      isEditable: selectedEvent.isEditable ?? true,
-      tags: selectedEvent.tags || [],
     };
   }, [selectedEvent]);
 
@@ -273,12 +220,7 @@ export const EventManagement: React.FC = () => {
     const selectedEvent = events.find(event => event.id === rowId);
     if (value !== undefined && selectedEvent) {
       const updatedEvent: UpdateEventDataParam = { ...selectedEvent };
-      if (isDetectionConfigField(columnId)) {
-        const updatedEventDetectionConfig = { ...selectedEvent.detectionConfig, [columnId]: value };
-        updatedEvent.detectionConfig = updatedEventDetectionConfig;
-      } else {
-        (updatedEvent as any)[columnId] = value;
-      }
+      (updatedEvent as any)[columnId] = value;
 
       onUpdateEvent(updatedEvent);
     }
@@ -350,7 +292,9 @@ export const EventManagement: React.FC = () => {
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
-        <h1 className="text-2xl text-typography-900 pb-6 font-secondary">{en.simulation.events}</h1>
+        <h1 className="text-2xl text-typography-900 pb-6 font-secondary">
+          {en.simulation.simulationEvents}
+        </h1>
         <ListToolbar
           searchValue={eventSearch}
           onSearchChange={onSearchChange}

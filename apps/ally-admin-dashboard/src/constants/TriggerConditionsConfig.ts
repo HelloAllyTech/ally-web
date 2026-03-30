@@ -22,7 +22,7 @@
  * HOW THE DYNAMIC RENDERING SYSTEM WORKS:
  * - The TriggerConditions component receives an eventType prop and routes to:
  *   - StandardTriggerConditions: For TIME_BASED, SCORE_BASED, SENTENCE_SIMILARITY event types
- *   - CombinationTriggerConditions: For COMBINATION event type (uses config partially)
+ *   - CombinationTriggerConditions: For COMBINATION event type (uses config partilifeline)
  *
  * - StandardTriggerConditions:
  *   - Uses getTriggerConditionConfig(eventType) to get the configuration
@@ -191,9 +191,9 @@ const SEMANTIC_SIMILARITY_CONFIG = {
   ],
 };
 /**
- * Configuration for BINARY_CLASSIFIER event type**/
-const BINARY_CLASSIFIER_CONFIG = {
-  id: "BINARY_CLASSIFIER" as EventType,
+ * Configuration for BINARY_CLASSIFICATION event type**/
+const BINARY_CLASSIFICATION_CONFIG = {
+  id: "BINARY_CLASSIFICATION" as EventType,
   label: "Binary Classification",
   fields: [
     {
@@ -255,7 +255,7 @@ export const TRIGGER_CONDITION_CONFIGS = {
   SCORE_BASED: SCORE_BASED_CONFIG,
   SENTENCE_SIMILARITY: SENTENCE_SIMILARITY_CONFIG,
   SEMANTIC_SIMILARITY: SEMANTIC_SIMILARITY_CONFIG,
-  BINARY_CLASSIFIER: BINARY_CLASSIFIER_CONFIG,
+  BINARY_CLASSIFICATION: BINARY_CLASSIFICATION_CONFIG,
   COMBINATION: COMBINATION_CONFIG,
 } as const;
 

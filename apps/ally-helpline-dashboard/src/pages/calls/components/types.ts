@@ -2,9 +2,7 @@ import { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { Dayjs } from "dayjs";
 
-import { CallLog, ChatSummaryStatus, SessionType, SimulationSummary } from "@types";
-
-import { SessionUserGroup } from "../constants";
+import { CallLog, ChatSummaryStatus, SessionType } from "@types";
 
 export interface StartSessionDialogProps {
   isOpen: boolean;
@@ -40,13 +38,6 @@ export interface LogsTableProps {
   className?: string;
 }
 
-export interface ArchivesLogsTableProps {
-  sessionType: SessionType;
-  className?: string;
-  refreshKey?: number;
-  sessionUserGroup: SessionUserGroup;
-}
-
 export interface SummaryHeaderProps {
   summaryName: string;
   setSummaryName: (summaryName: string) => void;
@@ -64,15 +55,13 @@ export interface CallTranscriptTabProps {
 }
 
 export interface SummarySidebarWrapperProps {
-  isShortSession?: boolean;
-  summaryData?: SimulationSummary;
   onSidebarClose?: () => void;
   extraHeaderList?: {
     alt: string;
     icon: ReactNode;
     onClick: () => void;
-    show?: boolean;
-    text?: string;
+    show: boolean;
+    text: string;
   }[];
   tabList: {
     id: number;
@@ -81,14 +70,13 @@ export interface SummarySidebarWrapperProps {
   }[];
   title: ReactNode;
   children?: ReactNode;
-  onTabChange?: (nextTabId: number) => void;
 }
 
 export interface SimulationSummarySidebarProps {
   summaryId: string;
+  summaryName: string;
   closeSummarySidebar: () => void;
   canShowFeedback?: boolean;
-  councellorName?: string;
 }
 
 export interface CallSummarySidebarProps {
@@ -98,7 +86,6 @@ export interface CallSummarySidebarProps {
   setCallSummary: Dispatch<SetStateAction<CallLog>>;
   canEditSummary?: boolean;
   canShowFeedback?: boolean;
-  showArchiveButton?: boolean;
 }
 
 export interface TranscriptTabProps {
@@ -109,14 +96,10 @@ export interface TranscriptTabProps {
   }[];
   handleLoadMore: () => void;
   isLoading: boolean;
-  hasMore?: boolean;
 }
 
 export interface SimulationTranscriptTabProps {
   sessionId: string;
-  className?: string;
-  councellorName?: string;
-  agentName?: string;
 }
 
 export interface AudioUploadDialogProps {

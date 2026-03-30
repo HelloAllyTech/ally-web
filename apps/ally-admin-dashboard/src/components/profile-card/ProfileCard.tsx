@@ -1,6 +1,5 @@
 import React from "react";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Bolt } from "@assets";
 import { en } from "@constants";
 import { UserListUser } from "@types";
@@ -12,18 +11,19 @@ interface ProfileFieldProps {
 }
 
 export const ProfileCard: React.FC<ProfileFieldProps> = ({ user, showCredits = false }) => {
+  const Avatar: React.FC<{ name: string }> = ({ name }) => {
+    const initial = name?.[0]?.toUpperCase() ?? "?";
+    return (
+      <div className="w-[40px] h-[40px] rounded-full border border-border-light text-typography-800 flex items-center justify-center mr-2">
+        {initial}
+      </div>
+    );
+  };
+
   return (
     <div className="flex items-center gap-2 text-xs">
       <div className="flex items-center  pr-4">
-        <div className="w-10 h-10 rounded-full mr-3">
-          <CustomImage
-            src={user.profileImageUrl}
-            alt="user"
-            className="w-10 h-10 rounded-full"
-            fallbackClassName="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
-            fallbackText={user.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
-          />
-        </div>
+        <Avatar name={user.name} />
         <div className="min-w-0">
           <div className="truncate">{formatCapitalizedEnum(user.name)}</div>
           <div className="text-typography-800 truncate">{user.email}</div>

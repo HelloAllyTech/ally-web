@@ -6,20 +6,12 @@ import { Permissions, ROUTES } from "@constants";
 import {
   CreateSimulation,
   Login,
-  MagicLinkVerify,
   LiveSimulationPreview,
   SimulationStudio,
   UserManagement,
   OrganizationDetail,
   EventManagement,
-  CharacterLibrary,
   CreatePath,
-  CreateCase,
-  ScenarioVoices,
-  ScenarioLanguages,
-  GuardrailsManagement,
-  PromptManagement,
-  UserBadges,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -39,15 +31,6 @@ export const RouteLayout: React.FC = () => {
           }
         />
 
-        <Route
-          path={ROUTES.MAGIC_VERIFY}
-          element={
-            <PublicRoute>
-              <MagicLinkVerify />
-            </PublicRoute>
-          }
-        />
-
         {/* Private Routes */}
         <Route
           path={ROUTES.SIMULATION_STUDIO}
@@ -60,7 +43,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.USER_MANAGEMENT}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER, Permissions.VIEW_USERS]}>
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER]}>
               <UserManagement />
             </PrivateLayout>
           }
@@ -68,7 +51,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ORGANIZATION_DETAIL(":id")}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER, Permissions.VIEW_USERS]}>
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_USER]}>
               <OrganizationDetail />
             </PrivateLayout>
           }
@@ -107,46 +90,6 @@ export const RouteLayout: React.FC = () => {
           }
         />
         <Route
-          path={ROUTES.USER_BADGES}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_BADGE]}>
-              <UserBadges />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.CHARACTER_LIBRARY}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_CHARACTER_LIBRARY]}>
-              <CharacterLibrary />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.MANAGE_SCENARIO_VOICES}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
-              <ScenarioVoices />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.MANAGE_SCENARIO_LANGUAGES}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
-              <ScenarioLanguages />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.MANAGE_PROMPTS}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_PROMPT]}>
-              <PromptManagement />
-            </PrivateLayout>
-          }
-        />
-        <Route
           path={ROUTES.CREATE_PATH}
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
@@ -159,30 +102,6 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
               <CreatePath />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.CREATE_CASE}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
-              <CreateCase />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.EDIT_CASE(":id")}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
-              <CreateCase />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.MANAGE_GUARDRAILS}
-          element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
-              <GuardrailsManagement />
             </PrivateLayout>
           }
         />

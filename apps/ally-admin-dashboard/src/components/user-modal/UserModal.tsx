@@ -1,16 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { Controller } from "react-hook-form";
 
-import { ImageUpload, Tabs } from "@ally-ui-mono/ui-shared";
-import {
-  Button,
-  DropdownwithTag,
-  CustomDropdown,
-  CreditField,
-  ProfileCard,
-  ToggleSwitch,
-} from "@components";
+import { Button, DropdownwithTag, CustomDropdown, CreditField, ProfileCard } from "@components";
 import { en, FieldOptions, KeyboardKeys, USER_MODAL_FIELDS_IDS, UserRole } from "@constants";
 import { UserModalProps, FieldProps } from "@types";
 
@@ -18,35 +10,17 @@ import { ButtonVariant } from "../types";
 
 export const UserModal: React.FC<UserModalProps> = ({
   isOpen = true,
-  onClose: onCloseProp,
+  onClose,
   title,
   fields,
   buttonName = "Save",
   details,
   handleClick,
   formMethods,
-  imageUpload = false,
-  uploadButtonName,
-  uploadTitle,
-  uploadId,
-  uploadImageUrl,
-  hasTabs = false,
-  tabOptions,
-  optionValues,
-  extraContent,
 }) => {
-  const [activeTab, setActiveTab] = useState(tabOptions?.[0]?.id);
-
-  useEffect(() => {
-    setActiveTab(tabOptions?.[0]?.id);
-  }, [tabOptions]);
   // Handle ESC key to close modal
 
   useEffect(() => {
-    const onClose = () => {
-      setActiveTab(tabOptions?.[0]?.id);
-      onCloseProp();
-    };
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === KeyboardKeys.ESCAPE && isOpen) return onClose();
     };
@@ -61,7 +35,7 @@ export const UserModal: React.FC<UserModalProps> = ({
       document.removeEventListener(KeyboardKeys.KEYDOWN, handleEscKey);
       document.body.style.overflow = "unset";
     };
-  }, [isOpen, onCloseProp, tabOptions]);
+  }, [isOpen, onClose]);
 
   const control = formMethods?.control;
   const watchRoles = formMethods?.watch?.(USER_MODAL_FIELDS_IDS.ROLES) || [];
@@ -77,8 +51,7 @@ export const UserModal: React.FC<UserModalProps> = ({
     : handleClick;
 
   const handleCancel = () => {
-    setActiveTab(tabOptions?.[0]?.id);
-    onCloseProp();
+    onClose();
   };
 
   const shouldShowField = (selectedField: FieldProps) => {
@@ -97,19 +70,6 @@ export const UserModal: React.FC<UserModalProps> = ({
         shouldValidate: true,
       });
     }
-  };
-
-  const handleBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    backdropMouseDownRef.current = e.target === e.currentTarget;
-  };
-
-  const handleBackdropMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
-    const isBackdropTarget = e.target === e.currentTarget;
-    if (backdropMouseDownRef.current && isBackdropTarget) {
-      setActiveTab(tabOptions?.[0]?.id);
-      onCloseProp();
-    }
-    backdropMouseDownRef.current = false;
   };
 
   const renderInputField = (field: FieldProps, index: number) => {
@@ -136,7 +96,6 @@ export const UserModal: React.FC<UserModalProps> = ({
             </label>
             <input
               {...controllerField}
-              value={controllerField.value ?? ""}
               id={field.id}
               type={field.inputType}
               placeholder={field.placeholder}
@@ -243,7 +202,6 @@ export const UserModal: React.FC<UserModalProps> = ({
             </label>
             <textarea
               {...controllerField}
-              value={controllerField.value ?? ""}
               id={field.id}
               placeholder={field.placeholder}
               className="border rounded-md px-2 py-2 font-primary outline-none placeholder:text-typography-600"
@@ -268,10 +226,10 @@ export const UserModal: React.FC<UserModalProps> = ({
         name={field.id}
         control={control}
         rules={{
-          validate: value => {
+          validate: (value: { consumedCredits: number; newCredits: number }) => {
             if (!value) return en.userManagement.creditRequiredError;
-            if (value < 0) return en.userManagement.creditNotNegativeError;
-            if (value > field.maxLength) return en.userManagement.creditLimitError;
+            if (value.newCredits < 0) return en.userManagement.creditNotNegativeError;
+            if (value.newCredits > field.maxLength) return en.userManagement.creditLimitError;
             return true;
           },
         }}
@@ -292,28 +250,6 @@ export const UserModal: React.FC<UserModalProps> = ({
     );
   };
 
-  const renderDisabledField = (field: FieldProps) => {
-    return (
-      <div key={field.id} className="flex flex-col gap-2">
-        <label
-          htmlFor={field.id}
-          className="text-sm text-typography-900 cursor-pointer font-primary"
-        >
-          {field.label}
-        </label>
-
-        <input
-          id={field.id}
-          type={field.inputType}
-          value={details?.[field.id] ?? ""}
-          placeholder={field.placeholder ?? ""}
-          disabled
-          className="border rounded-md px-2 py-2 outline-none text-base font-primary"
-        />
-      </div>
-    );
-  };
-
   const renderField = (field: FieldProps, index: number) => {
     if (!shouldShowField(field)) {
       return null;
@@ -329,8 +265,6 @@ export const UserModal: React.FC<UserModalProps> = ({
         return renderTextareaField(field, index);
       case FieldOptions.CREDITS:
         return renderCreditField(field, index);
-      case FieldOptions.DISABLED_FIELD:
-        return renderDisabledField(field);
       default:
         return null;
     }
@@ -338,10 +272,17 @@ export const UserModal: React.FC<UserModalProps> = ({
 
   if (!isOpen) return null;
 
-  const showTabs = hasTabs && tabOptions?.length > 0;
-  const isFirstTab = !hasTabs || activeTab === tabOptions?.[0]?.id;
-  const isSecondTab = hasTabs && activeTab === tabOptions?.[1]?.id;
-  const isPrimaryButtonDisabled = !isValid || !isDirty;
+  const handleBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    backdropMouseDownRef.current = e.target === e.currentTarget;
+  };
+
+  const handleBackdropMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    const isBackdropTarget = e.target === e.currentTarget;
+    if (backdropMouseDownRef.current && isBackdropTarget) {
+      onClose();
+    }
+    backdropMouseDownRef.current = false;
+  };
 
   return (
     <div
@@ -349,91 +290,29 @@ export const UserModal: React.FC<UserModalProps> = ({
       onMouseDown={handleBackdropMouseDown}
       onMouseUp={handleBackdropMouseUp}
     >
-      <div className="py-5 px-6 bg-white min-w-[400px] max-w-[90vw] max-h-[90vh] w-auto flex flex-col gap-5 relative font-primary rounded-[10px] shadow-2xl animate-fadeIn">
+      <div className="py-5 px-6 bg-white min-w-[400px] max-w-[90vw] w-auto flex flex-col gap-5 relative font-primary rounded-[10px] shadow-2xl animate-fadeIn">
         {/* Header */}
-        <div className="text-typography-900 flex justify-center w-full text-2xl font-primary relative flex-shrink-0">
+        <div className="text-typography-900 flex justify-center w-full text-2xl font-primary relative">
           {title}
         </div>
 
-        {/* Tabs */}
-        {showTabs && (
-          <div className="w-full mb-6 flex-shrink-0">
-            <Tabs
-              items={tabOptions}
-              tabStyles={{ width: "100%" }}
-              activeId={activeTab}
-              showCount={false}
-              onChange={setActiveTab}
-            />
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="overflow-y-auto flex-1 min-h-0">
-          {isFirstTab && (
-            <div className="flex flex-col gap-5">
-              {imageUpload && (
-                <ImageUpload
-                  formMethods={formMethods}
-                  uploadId={uploadId}
-                  uploadButtonName={uploadButtonName}
-                  uploadTitle={uploadTitle}
-                  onUpload={uploadImageUrl}
-                  details={details}
-                />
-              )}
-              {fields.map((field, index) => renderField(field, index))}
-              {extraContent && (
-                <div className="pt-2 border-t border-border-light">{extraContent}</div>
-              )}
-            </div>
-          )}
-
-          {isSecondTab && (
-            <div className="flex flex-col gap-4">
-              {optionValues?.map(tab => (
-                <div key={tab.id} className="flex justify-between items-center gap-2 h-9">
-                  <label
-                    htmlFor={tab.id}
-                    className="text-sm text-typography-900 cursor-pointer font-primary"
-                  >
-                    {tab.label}
-                  </label>
-                  <div className="flex gap-2 items-center">
-                    <ToggleSwitch
-                      enabled={tab.value}
-                      onChange={() => tab.onClick(!tab.value)}
-                      switchStyles={{
-                        height: "20px",
-                        width: "20px",
-                        boxShadow: "0px 0.67px 1.33px 0px #0000001A",
-                        transform: tab.value ? "translateX(23px)" : "translateX(2px)",
-                      }}
-                    />
-                    <span className="text-sm text-typography-600 font-normal">
-                      {tab.value ? en.common.enabled : en.common.disabled}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Dynamic Form Fields */}
+        {fields.map((field, index) => renderField(field, index))}
 
         {/* Action Buttons */}
-        <div className="flex gap-3 py-2 flex-shrink-0">
+        <div className="flex gap-3 py-2">
           <Button variant={ButtonVariant.SECONDARY} className="w-full" onClick={handleCancel}>
             {en.userManagement.cancel}
           </Button>
           <Button
             variant={ButtonVariant.PRIMARY}
             className={`w-full ${
-              isPrimaryButtonDisabled
-                ? "bg-neutral-400 cursor-not-allowed"
-                : "bg-primary-500 hover:bg-primary-700"
+              isValid && isDirty
+                ? "bg-primary-500 hover:bg-primary-700"
+                : "bg-neutral-400 cursor-not-allowed"
             }`}
             onClick={handlePrimaryAction}
-            disabled={isPrimaryButtonDisabled}
+            disabled={!isValid || !isDirty}
           >
             {buttonName}
           </Button>

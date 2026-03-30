@@ -54,7 +54,6 @@ export interface FooterProps {
   showPrevious?: boolean;
   showNext?: boolean;
   isNextDisabled?: boolean;
-  isPreviousDisabled?: boolean;
   isLastStep?: boolean;
 }
 
@@ -70,9 +69,6 @@ export interface InputFieldProps {
   minHeight?: string;
   infoIconContent?: string;
   isMandatory?: boolean;
-  defaultValue?: string;
-  disabled?: boolean;
-  regenerateButton?: ReactNode;
 }
 
 // DropdownField
@@ -86,12 +82,6 @@ export interface DropdownFieldProps {
   isSearchable?: boolean;
   handleSearchTextChange?: (searchTerm: string) => void;
   defaultOption?: string;
-  optionsRenderer?: (
-    option: { value: string; label: string },
-    onSelect: (value: string) => void,
-  ) => ReactNode;
-  onClose?: () => void;
-  allowDeselect?: boolean;
 }
 
 // NarrativeContext
@@ -141,7 +131,6 @@ export interface VerticalStepperProps {
   steps: Step[];
   currentStep: string;
   onStepClick?: (stepId: string) => void;
-  disabled?: boolean;
 }
 
 // Sidebar
@@ -205,6 +194,14 @@ export interface TabItem {
   count?: number;
 }
 
+export interface TabsProps {
+  items: TabItem[];
+  activeId: string;
+  onChange: (id: string) => void;
+  className?: string;
+  showCount?: boolean;
+}
+
 export interface FilterChipProps {
   label: string;
   value: string;
@@ -233,25 +230,4 @@ export interface ListToolbarProps {
   action?: ActionProps;
   className?: string;
   addFilterButtonRef?: React.RefObject<HTMLButtonElement>;
-}
-
-export interface RequestFilterOption {
-  label: string;
-  value: string;
-}
-
-export interface FilterSectionConfig<T> {
-  id: keyof T;
-  label: string;
-  options: RequestFilterOption[];
-  renderOption?: (option: RequestFilterOption) => React.ReactNode;
-}
-
-export interface GenericFilterDropdownProps<T> {
-  isOpen: boolean;
-  onClose: () => void;
-  sections: FilterSectionConfig<T>[];
-  onApplyFilters: (filters: T) => void;
-  anchorRect?: DOMRect | null;
-  currentFilters: T;
 }

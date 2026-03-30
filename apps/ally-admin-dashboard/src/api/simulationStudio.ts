@@ -17,34 +17,11 @@ import {
   GetCoverVideoUrlResponse,
   DeleteCoverVideoRequest,
   ScenarioVoice,
-  GetScenarioVoicesQuery,
   getTriggerWarningsQueryParams,
   triggerWarningsRequest,
   createTriggerResponse,
   ScenarioLanguage,
   triggerWarning,
-  GetLanguagesQuery,
-  Language,
-  CharacterData,
-  DeleteCharacterRequest,
-  Prompt,
-  GetPromptsQuery,
-  GetReportsInput,
-  ReportData,
-  GenerateReportInput,
-  GenerateReportResponse,
-  GetImageLibraryQueryParams,
-  GetImageLibraryResponse,
-  GetHelperTagsQueryParams,
-  HelperTagInput,
-  CompetenciesResponse,
-  Competency,
-  CreateCompetencyRequest,
-  AutofillModelOption,
-  RegenerateFieldRequest,
-  RegenerateFieldResponse,
-  GetReportTranscriptInput,
-  GetReportTranscriptResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -186,18 +163,6 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Get session event tags with optional search
-     */
-    getSessionEventTags: builder.query<{ data: string[] }, { search?: string } | undefined>({
-      query: params => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.SESSION_EVENT_TAGS,
-        method: HttpMethod.GET,
-        params: params || {},
-      }),
-      providesTags: [TAG_TYPES.SESSION_EVENT_TAGS],
-    }),
-
-    /**
      * Get presigned URL for S3 upload
      */
     getCoverImageUrl: builder.mutation<GetCoverImageUrlResponse, GetCoverImageUrlRequest>({
@@ -244,51 +209,18 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Get all scenario voices
      */
-    getScenarioVoices: builder.query<ScenarioVoice[], GetScenarioVoicesQuery>({
-      query: params => ({
+    getScenarioVoices: builder.query<ScenarioVoice[], void>({
+      query: () => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VOICES,
         method: HttpMethod.GET,
-        params,
       }),
-      providesTags: [TAG_TYPES.SCENARIO_VOICES],
-    }),
-
-    /**
-     * Create a new scenario voice
-     */
-
-    createScenarioVoice: builder.mutation<ScenarioVoice[], { voices: ScenarioVoice[] }>({
-      query: ({ voices }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_SCENARIO_VOICE,
-        method: HttpMethod.POST,
-        body: { voices },
-      }),
-      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
-    }),
-
-    /**
-     * Update a scenario voice
-     */
-    updateScenarioVoice: builder.mutation<
-      ScenarioVoice,
-      { id: string; voice: Omit<ScenarioVoice, "id" | "createdAt" | "updatedAt"> }
-    >({
-      query: ({ id, voice: body }) => ({
-        url: `${ApiEndpoints.SIMULATION_STUDIO.UPDATE_SCENARIO_VOICE(id)}`,
-        method: HttpMethod.PUT,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
     }),
 
     /**
      * Get all available scenario languages
      */
-    getAvailableLanguageVoices: builder.query<
-      ScenarioLanguage[],
-      { active?: boolean; voicesNeeded: boolean }
-    >({
-      query: (params = { active: true, voicesNeeded: true }) => ({
+    getAvailableLanguageVoices: builder.query<ScenarioLanguage[], { active?: boolean }>({
+      query: (params = {}) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VOICE_LANGUAGES,
         method: HttpMethod.GET,
         params: params, // This will pass through any params you provide
@@ -360,17 +292,6 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Dispatch agent to preview room (local dev only, when webhook unreachable)
-     */
-    dispatchPreviewAgent: builder.mutation<void, { roomName: string }>({
-      query: ({ roomName }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.DISPATCH_PREVIEW_AGENT,
-        method: HttpMethod.POST,
-        body: { roomName },
-      }),
-    }),
-
-    /**
      * End scenario preview
      */
     endScenarioPreview: builder.mutation<void, { roomName: string }>({
@@ -406,341 +327,6 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION],
     }),
-
-    /**
-     * Get all scenario languages with pagination and search
-     */
-    getLanguages: builder.query<Language[], GetLanguagesQuery>({
-      query: params => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GET_LANGUAGES,
-        method: HttpMethod.GET,
-        params,
-      }),
-      providesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
-    }),
-
-    /**
-     * Create a new scenario language
-     */
-    createLanguage: builder.mutation<Language[], { languages: Language[] }>({
-      query: ({ languages }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_LANGUAGE,
-        method: HttpMethod.POST,
-        body: { languages },
-      }),
-      invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
-    }),
-
-    /**
-     * Update a scenario language
-     */
-    updateLanguage: builder.mutation<
-      Language,
-      { id: number; language: Omit<Language, "id" | "createdAt" | "updatedAt"> }
-    >({
-      query: ({ id, language: body }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_LANGUAGE(id),
-        method: HttpMethod.PUT,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.SCENARIO_LANGUAGES],
-    }),
-
-    /**
-     * Get all prompts with pagination and search
-     */
-    getPrompts: builder.query<Prompt[], GetPromptsQuery>({
-      query: params => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GET_PROMPTS,
-        method: HttpMethod.GET,
-        params,
-      }),
-      providesTags: [TAG_TYPES.PROMPTS],
-    }),
-
-    /**
-     * Create a new prompt
-     */
-    createPrompt: builder.mutation<Prompt, { prompts: Prompt[] }>({
-      query: ({ prompts }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.CREATE_PROMPT,
-        method: HttpMethod.POST,
-        body: { prompts },
-      }),
-      invalidatesTags: [TAG_TYPES.PROMPTS],
-    }),
-
-    /**
-     * Update a prompt
-     */
-    updatePrompt: builder.mutation<
-      Prompt,
-      { id: string; prompt: Omit<Prompt, "id" | "createdAt" | "updatedAt"> }
-    >({
-      query: ({ id, prompt: body }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(id),
-        method: HttpMethod.PUT,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.PROMPTS],
-    }),
-
-    /**
-     * Revert prompt to codebase default
-     */
-    revertPrompt: builder.mutation<boolean, string>({
-      query: id => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.REVERT_PROMPT(id),
-        method: HttpMethod.POST,
-      }),
-      invalidatesTags: [TAG_TYPES.PROMPTS],
-    }),
-
-    /**
-     * Delete an obsolete prompt
-     */
-    deletePrompt: builder.mutation<void, string>({
-      query: id => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_PROMPT(id), // DELETE /prompts/:id
-        method: HttpMethod.DELETE,
-      }),
-      invalidatesTags: [TAG_TYPES.PROMPTS],
-    }),
-
-    getDynamicBranchingInstruction: builder.query<string[], number | void>({
-      query: id => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
-        method: HttpMethod.GET,
-        params: id ? { scenarioId: id } : undefined,
-      }),
-    }),
-
-    /**
-     * Get all characters
-     */
-    getCharacters: builder.query<
-      { characters: CharacterData[]; count: number },
-      { limit?: number; offset?: number; search?: string; sortBy?: string; order?: string }
-    >({
-      query: params => ({
-        url: ApiEndpoints.CHARACTERS.GET_CHARACTERS,
-        method: HttpMethod.GET,
-        params,
-      }),
-      providesTags: [TAG_TYPES.CHARACTERS],
-    }),
-
-    /**
-     * Get character by ID
-     */
-    getCharacterById: builder.query<CharacterData, string>({
-      query: id => ({
-        url: ApiEndpoints.CHARACTERS.GET_CHARACTER_BY_ID(id),
-        method: HttpMethod.GET,
-      }),
-      providesTags: [TAG_TYPES.CHARACTERS],
-    }),
-
-    /**
-     * Create a new character
-     */
-    createCharacter: builder.mutation<
-      CharacterData,
-      Omit<CharacterData, "id" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy">
-    >({
-      query: body => ({
-        url: ApiEndpoints.CHARACTERS.CREATE_CHARACTER,
-        method: HttpMethod.POST,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.CHARACTERS],
-    }),
-
-    /**
-     * Update a character
-     */
-    updateCharacter: builder.mutation<
-      CharacterData,
-      {
-        id: string;
-        data: Omit<CharacterData, "id" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy">;
-      }
-    >({
-      query: ({ id, data }) => ({
-        url: ApiEndpoints.CHARACTERS.UPDATE_CHARACTER(id),
-        method: HttpMethod.PUT,
-        body: data,
-      }),
-      invalidatesTags: [TAG_TYPES.CHARACTERS],
-    }),
-
-    /**
-     * Delete a character
-     */
-    deleteCharacter: builder.mutation<{ success: boolean }, DeleteCharacterRequest>({
-      query: body => ({
-        url: ApiEndpoints.CHARACTERS.DELETE_CHARACTER,
-        method: HttpMethod.DELETE,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.CHARACTERS],
-    }),
-
-    getHelperTags: builder.query<HelperTagInput, GetHelperTagsQueryParams>({
-      query: (params: GetHelperTagsQueryParams) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.HELPER_TAGS,
-        method: HttpMethod.GET,
-        params,
-      }),
-      providesTags: [TAG_TYPES.HELPER_TAGS],
-    }),
-
-    createHelperTag: builder.mutation<HelperTagInput, { name: string }>({
-      query: ({ name }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.HELPER_TAGS,
-        method: HttpMethod.POST,
-        body: { name },
-      }),
-      invalidatesTags: [TAG_TYPES.HELPER_TAGS],
-    }),
-
-    getImageLibrary: builder.query<GetImageLibraryResponse, GetImageLibraryQueryParams>({
-      query: (params: GetImageLibraryQueryParams) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_COVER_IMAGE_LIBRARY,
-        method: HttpMethod.GET,
-        params: {
-          limit: params.limit,
-          offset: params.offset,
-          sortBy: params.sortBy || "createdAt",
-          sortOrder: params.sortOrder || "desc",
-          ...(params.searchName && { searchName: params.searchName }),
-        },
-      }),
-    }),
-
-    /**
-     * Get reports for a specific scenario.
-     * @param {string} scenarioId - Scenario identifier
-     * @returns {Promise<ReportData[]>} List of reports
-     */
-    getReports: builder.query<{ data: ReportData[]; count?: number }, { input: GetReportsInput }>({
-      query: ({ input }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORTS(input.scenarioId),
-        method: HttpMethod.GET,
-        params: {
-          ...(input?.statuses && { statuses: input.statuses }),
-          ...(input?.limit != null && { limit: input.limit }),
-          ...(input?.offset != null && { offset: input.offset }),
-          ...(input?.sortBy && { sortBy: input.sortBy }),
-          ...(input?.order && { order: input.order }),
-        },
-      }),
-    }),
-
-    /**
-     * Get report by ID.
-     * @param {string} id - Report identifier
-     * @returns {Promise<ReportData>} Report data
-     */
-    getReportById: builder.query<ReportData, { id: string }>({
-      query: ({ id }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORT_BY_ID(id),
-        method: HttpMethod.GET,
-      }),
-    }),
-
-    /**
-     * Generate a report for a specific scenario.
-     * @param {string} scenarioId - Scenario identifier
-     * @returns {Promise<ReportData>} Report data
-     */
-    generateReport: builder.mutation<GenerateReportResponse, { input: GenerateReportInput }>({
-      query: ({ input }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_REPORT(input.scenarioId),
-        method: HttpMethod.POST,
-        body: {
-          languageId: input.config.languageId,
-          turns: input.config.turns,
-          helperAgentPrompt: input.config.helperAgentPrompt,
-        },
-      }),
-    }),
-
-    /**
-     * Cancel a report generation.
-     * @param {Object} params - Cancel report parameters
-     * @param {string} params.reportId - Report identifier
-     * @returns {Promise<{ success: boolean }>} Success response
-     */
-    cancelReportGeneration: builder.mutation<{ success: boolean }, { reportId: string }>({
-      query: ({ reportId }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.CANCEL_REPORT_GENERATION(reportId),
-        method: HttpMethod.POST,
-      }),
-    }),
-
-    /**
-     * Get transcript for a specific report (paginated).
-     * @param {string} reportId - Report identifier
-     * @param {number} limit - Page size
-     * @param {number} offset - Offset for pagination
-     * @returns {Promise<GetReportTranscriptResponse>} Paginated transcript messages
-     */
-    getReportTranscript: builder.query<GetReportTranscriptResponse, GetReportTranscriptInput>({
-      query: ({ reportId, limit, offset }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GET_REPORT_TRANSCRIPT(reportId),
-        method: HttpMethod.GET,
-        params:
-          limit != null || offset != null
-            ? { ...(limit != null && { limit }), ...(offset != null && { offset }) }
-            : undefined,
-      }),
-    }),
-
-    /**
-     * Get all competencies
-     */
-    getCompetencies: builder.query<CompetenciesResponse, { name?: string }>({
-      query: ({ name }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCIES,
-        method: HttpMethod.GET,
-        params: name ? { name } : undefined,
-      }),
-      providesTags: [TAG_TYPES.COMPETENCIES],
-    }),
-
-    /**
-     * Create a new competency
-     */
-    createCompetency: builder.mutation<Competency, CreateCompetencyRequest>({
-      query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCIES,
-        method: HttpMethod.POST,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.COMPETENCIES],
-    }),
-
-    /**
-     * Get available OpenAI models for autofill/regenerate
-     */
-    getAutofillModels: builder.query<AutofillModelOption[], void>({
-      query: () => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GET_AUTOFILL_MODELS,
-        method: HttpMethod.GET,
-      }),
-    }),
-
-    /**
-     * Regenerate a field using AI
-     */
-    regenerateField: builder.mutation<RegenerateFieldResponse, RegenerateFieldRequest>({
-      query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_FIELD,
-        method: HttpMethod.POST,
-        body,
-      }),
-    }),
   }),
 });
 
@@ -757,18 +343,14 @@ export const {
   useCreateSessionEventsMutation,
   useUpdateSessionEventMutation,
   useDeleteSessionEventsMutation,
-  useGetSessionEventTagsQuery,
   useGetCoverImageUrlMutation,
   useDeleteCoverImageMutation,
   useGetCoverVideoUrlMutation,
   useDeleteCoverVideoMutation,
   useGetScenarioVoicesQuery,
-  useCreateScenarioVoiceMutation,
-  useUpdateScenarioVoiceMutation,
   useGetAvailableLanguageVoicesQuery,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
-  useDispatchPreviewAgentMutation,
   useEndScenarioPreviewMutation,
   useMapScenarioEventsMutation,
   useDeleteScenarioEventsMutation,
@@ -776,33 +358,4 @@ export const {
   useGetTriggerWarningsQuery,
   useCreateTriggerWarningMutation,
   useDuplicateSimulationMutation,
-  useGetLanguagesQuery,
-  useCreateLanguageMutation,
-  useUpdateLanguageMutation,
-  useGetPromptsQuery,
-  useCreatePromptMutation,
-  useUpdatePromptMutation,
-  useRevertPromptMutation,
-  useDeletePromptMutation,
-  useGetDynamicBranchingInstructionQuery,
-  useGetCharactersQuery,
-  useGetCharacterByIdQuery,
-  useCreateCharacterMutation,
-  useUpdateCharacterMutation,
-  useDeleteCharacterMutation,
-  useGetHelperTagsQuery,
-  useCreateHelperTagMutation,
-  useGetImageLibraryQuery,
-  useGetReportsQuery,
-  useLazyGetReportsQuery,
-  useGetReportByIdQuery,
-  useLazyGetReportByIdQuery,
-  useGenerateReportMutation,
-  useCancelReportGenerationMutation,
-  useGetCompetenciesQuery,
-  useCreateCompetencyMutation,
-  useGetReportTranscriptQuery,
-  useLazyGetReportTranscriptQuery,
-  useGetAutofillModelsQuery,
-  useRegenerateFieldMutation,
 } = simulationStudioAPI;

@@ -17,11 +17,6 @@ vi.mock("@mui/material", () => ({
       {children}
     </div>
   ),
-  Tooltip: ({ children, title }: any) => (
-    <div data-testid="tooltip" title={title}>
-      {children}
-    </div>
-  ),
 }));
 
 vi.mock("lucide-react", () => ({
@@ -80,10 +75,10 @@ describe("Drawer", () => {
       </Drawer>,
     );
 
-    // only shown button - use testid since button doesn't have accessible text
-    const shown = screen.getByTestId("drawer-header-button-a");
+    // only shown button
+    const shown = screen.getByRole("button", { name: /Shown/ });
     expect(shown).toBeInTheDocument();
-    expect(screen.queryByTestId("drawer-header-button-b")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Hidden/ })).toBeNull();
 
     fireEvent.click(shown);
     expect(onShown).toHaveBeenCalled();

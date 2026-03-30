@@ -13,8 +13,6 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   items,
   className,
   successValue,
-  equalWidth,
-  inheritFontSize = false,
 }) => {
   const handleChange = (_: React.MouseEvent<HTMLElement>, newValue: string) => {
     if (newValue !== null) {
@@ -28,25 +26,20 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
       exclusive
       disabled={disabled}
       onChange={handleChange}
-      className={cn(
-        "h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium",
-        className,
-      )}
+      className={cn("h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border", className)}
       sx={{
         "& .MuiToggleButton-root": {
           border: "none",
           borderRadius: "4px",
           padding: "16px 24px",
           textTransform: "none",
-          fontSize: inheritFontSize ? "inherit" : "14px",
+          fontSize: "14px",
           fontWeight: 500,
-          fontFamily: "Roboto, sans-serif",
           "&.Mui-selected": {
             backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
             color: "#4D4D4D",
             boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-            borderLeft: "0.5px solid #D2D2D2",
-            borderRight: "0.5px solid #D2D2D2",
+            border: "0.5px solid #D2D2D2",
             "&:hover": {
               backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
             },
@@ -66,10 +59,6 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
             "&.Mui-disabled": {
               border: "none",
             },
-            ...(equalWidth && {
-              flex: 1,
-              minWidth: 0,
-            }),
           }}
         >
           {label}

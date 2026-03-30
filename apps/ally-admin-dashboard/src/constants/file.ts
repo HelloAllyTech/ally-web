@@ -16,7 +16,6 @@ export const FILE_SIZE_LIMITS = {
 
 export const ASPECT_RATIO = 16 / 9;
 export const ASPECT_RATIO_TOLERANCE = 0.01;
-export const PROFILE_ASPECT_RATIO = 1 / 1;
 
 export const ACCEPTED_FILE_TYPES = {
   IMAGE: { "image/jpeg": [".jpeg", ".jpg"], "image/png": [".png"] },

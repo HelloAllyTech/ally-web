@@ -22,8 +22,6 @@ export interface ResourceCardProps {
   mode?: SearchVariant;
   isExpanded: boolean;
   setExpandedCard: (value: boolean) => void;
-  viewMoreLabel?: string;
-  viewLessLabel?: string;
 }
 
 const ResourceCard: FC<ResourceCardProps> = ({
@@ -34,8 +32,6 @@ const ResourceCard: FC<ResourceCardProps> = ({
   mode = SearchVariant.LIGHT,
   isExpanded = false,
   setExpandedCard,
-  viewMoreLabel,
-  viewLessLabel,
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [shouldShowButton, setShouldShowButton] = useState(false);
@@ -126,12 +122,12 @@ const ResourceCard: FC<ResourceCardProps> = ({
           >
             {isExpanded ? (
               <div className="flex items-center" data-testid="resource-card-view-less">
-                {viewLessLabel || "View less"}
+                View less
                 <ArrowDropDownIcon className="rotate-180" />
               </div>
             ) : (
               <div className="flex items-center" data-testid="resource-card-view-more">
-                {viewMoreLabel || "View more"}
+                View more
                 <ArrowDropDownIcon />
               </div>
             )}

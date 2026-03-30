@@ -1,65 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
-import {
-  ArrowDown,
-  Book,
-  User,
-  Users,
-  Ally,
-  DockToRight,
-  Logout,
-  HappyEmoji,
-  ManageAccounts,
-  Globe,
-  Mic,
-  CharacterLibrary,
-  FrameSource,
-  Guardrails,
-  Badge,
-} from "@assets";
-import { UserModal } from "@components";
-import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
+import { ArrowDown, Book, User, Users, lifeline, DockToRight, Logout, HappyEmoji } from "@assets";
+import { SIDEBAR_ITEMS, ROUTES, en } from "@constants";
 import { useClickOutside, useUser } from "@hooks";
 
 const EXPANDED_WIDTH = 1200;
 
-const defaultProfileUploadValues: {
-  profileImageUrl: string;
-} = {
-  profileImageUrl: "",
-};
-
 export const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const {
-    user,
-    logout,
-    filteredNavigationItems,
-    getProfileUrl,
-    deleteProfile,
-    uploadProfileImage,
-    refetchUser,
-  } = useUser();
+  const { user, logout, filteredNavigationItems } = useUser();
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
-  const [openSettings, setOpenSettings] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(containerRef, () => setIsUserMenuOpen(false));
-
-  const profileSettingsForm = useForm({
-    defaultValues: defaultProfileUploadValues,
-    mode: "onChange",
-  });
-
-  const imageUploaded = profileSettingsForm.watch("profileImageUrl");
 
   useEffect(() => {
     if (
@@ -99,41 +58,15 @@ export const Sidebar: React.FC = () => {
   const handleToggleSidebar = () => {
     setIsExpanded(!isExpanded);
   };
-  const handleProfileSettingClick = () => {
-    setIsUserMenuOpen(false);
-    setOpenSettings(true);
-  };
-
-  const uploadProfile = async () => {
-    const existingProfileUrl = user.profileImageUrl;
-    await uploadProfileImage({ profileImageUrl: imageUploaded });
-
-    if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
-    await refetchUser();
-
-    setOpenSettings(false);
-  };
 
   const renderIcon = (id: string): React.ReactNode | undefined => {
     switch (id) {
       case SIDEBAR_ITEMS.SIMULATION_STUDIO:
         return <Book />;
-      case SIDEBAR_ITEMS.USERS:
+      case SIDEBAR_ITEMS.USER_MANAGEMENT:
         return <Users />;
-      case SIDEBAR_ITEMS.EVENTS:
+      case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
         return <HappyEmoji />;
-      case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
-        return <CharacterLibrary />;
-      case SIDEBAR_ITEMS.SCENARIO_VOICES:
-        return <Mic />;
-      case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
-        return <Globe />;
-      case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
-        return <Guardrails />;
-      case SIDEBAR_ITEMS.PROMPTS:
-        return <FrameSource />;
-      case SIDEBAR_ITEMS.USER_BADGES:
-        return <Badge />;
       default:
         return null;
     }
@@ -150,18 +83,6 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.USER_MANAGEMENT);
       case ROUTES.MANAGE_EVENTS:
         return location.pathname.includes(ROUTES.MANAGE_EVENTS);
-      case ROUTES.CHARACTER_LIBRARY:
-        return location.pathname.includes(ROUTES.CHARACTER_LIBRARY);
-      case ROUTES.MANAGE_SCENARIO_LANGUAGES:
-        return location.pathname.includes(ROUTES.MANAGE_SCENARIO_LANGUAGES);
-      case ROUTES.MANAGE_SCENARIO_VOICES:
-        return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
-      case ROUTES.MANAGE_PROMPTS:
-        return location.pathname.includes(ROUTES.MANAGE_PROMPTS);
-      case ROUTES.MANAGE_GUARDRAILS:
-        return location.pathname.includes(ROUTES.MANAGE_GUARDRAILS);
-      case ROUTES.USER_BADGES:
-        return location.pathname.includes(ROUTES.USER_BADGES);
       default:
         return false;
     }
@@ -184,7 +105,7 @@ export const Sidebar: React.FC = () => {
                 title={!isExpanded ? item.label : ""}
               >
                 <span
-                  className={`w-6 flex items-center justify-center ${isExpanded ? "mr-3" : "mx-auto"} ${isActive ? "text-typography-800" : "text-typography-600"}`}
+                  className={`${isExpanded ? "mr-3" : "mx-auto"} ${isActive ? "text-typography-800" : "text-typography-600"}`}
                 >
                   {renderIcon(item.id)}
                 </span>
@@ -202,83 +123,57 @@ export const Sidebar: React.FC = () => {
   );
 
   const profileSection = (
-    <>
-      <div ref={containerRef} className="border-t border-border-light py-4">
+    <div ref={containerRef} className="border-t border-border-light py-4">
+      {isExpanded ? (
         <div
           onClick={handleUserMenuToggle}
           className="flex flex-row justify-between items-center h-8 py-0 cursor-pointer"
         >
-          <div className="flex gap-2 items-center w-full justify-center object-cover">
-            <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex items-center justify-center">
-              {user?.profileImageUrl ? (
-                <CustomImage
-                  src={user?.profileImageUrl}
-                  alt="profile"
-                  containerClassName="w-full h-full"
-                  fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
-                  fallbackText="NA"
-                />
-              ) : (
-                <User />
-              )}
+          <div className="flex flex-row items-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center mr-2">
+              <User />
             </div>
-
-            {isExpanded && (
-              <div className="flex-1 min-w-0 text-left">
-                <div className="text-lg text-typography-900 truncate">{user?.name}</div>
-                <div className="text-xs mb-1 text-typography-800 truncate">{user?.email}</div>
+            <div className="flex-1 text-left w-full min-w-[100px]">
+              <div className="text-lg text-typography-900 text-ellipsis overflow-hidden whitespace-nowrap">
+                {user?.name}
               </div>
-            )}
-          </div>
-          {isExpanded && (
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
-            >
-              <ArrowDown />
+              <div className="text-xs mb-1 text-typography-800 text-ellipsis overflow-hidden whitespace-nowrap">
+                {user?.email}
+              </div>
             </div>
-          )}
-        </div>
-
-        {/* User Menu Dropdown */}
-        {isUserMenuOpen && (
+          </div>
           <div
-            onBlur={handleUserMenuToggle}
-            className={`absolute bottom-[10px] ${isExpanded ? "left-[230px]" : "left-[100px]"} min-w-[250px] z-[999] mb-2 bg-white border border-border-light rounded-lg shadow-lg`}
+            className={`w-8 h-8 rounded-full flex items-center justify-center ml-3 ${isUserMenuOpen ? "rotate-[-90deg]" : ""}`}
           >
-            <div className="py-1">
-              <button
-                onClick={handleProfileSettingClick}
-                className="flex flex-row items-center w-full px-4 py-2 gap-2 text-left text-sm text-typography-900 hover:bg-background-secondary"
-              >
-                <ManageAccounts />
-                <span>{en.auth.profileSettings}</span>
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex flex-row items-center w-full px-4 py-2 gap-2 text-left text-sm text-typography-900 hover:bg-background-secondary transition-colors"
-              >
-                <Logout />
-                <span>{en.auth.logout}</span>
-              </button>
-            </div>
+            <ArrowDown />
           </div>
-        )}
-      </div>
-      <UserModal
-        isOpen={openSettings}
-        onClose={() => setOpenSettings(false)}
-        title={en.auth.profileSettings}
-        imageUpload
-        fields={profileSettings}
-        details={user}
-        uploadTitle={en.auth.profileImage}
-        handleClick={uploadProfile}
-        formMethods={profileSettingsForm}
-        uploadId={USER_MODAL_FIELDS_IDS.PROFILE}
-        uploadButtonName={imageUploaded ? en.userManagement.changeImage : en.auth.uploadImage}
-        uploadImageUrl={getProfileUrl}
-      />
-    </>
+        </div>
+      ) : (
+        <div onClick={handleUserMenuToggle} className="flex justify-center">
+          <div className="w-8 flex items-center justify-center">
+            <User />
+          </div>
+        </div>
+      )}
+
+      {/* User Menu Dropdown */}
+      {isUserMenuOpen && (
+        <div
+          onBlur={handleUserMenuToggle}
+          className={`absolute bottom-[10px] ${isExpanded ? "left-[230px]" : "left-[100px]"} min-w-[250px] z-[999] mb-2 bg-white border border-border-light rounded-lg shadow-lg`}
+        >
+          <div className="py-1">
+            <button
+              onClick={handleLogout}
+              className="flex flex-row items-center w-full px-4 py-2 text-left text-sm text-typography-900 hover:bg-background-secondary transition-colors"
+            >
+              <Logout />
+              <span className="ml-2">{en.auth.logout}</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -289,7 +184,7 @@ export const Sidebar: React.FC = () => {
     >
       <div className="flex justify-between border-b border-border-light relative">
         <div className={`px-2 pr-5 py-4  flex items-center justify-between`}>
-          <Ally />
+          <lifeline />
         </div>
         <button
           onClick={handleToggleSidebar}

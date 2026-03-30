@@ -233,7 +233,7 @@ describe("DropdownField", () => {
     const trigger = screen.getByText("Select");
     const arrowContainer = container.querySelector(".transition-transform");
 
-    // Initially not rotated
+    // Initilifeline not rotated
     expect(arrowContainer?.className).not.toContain("rotate-180");
 
     fireEvent.click(trigger);
@@ -507,116 +507,5 @@ describe("DropdownField", () => {
 
     const selectedValue = screen.getByText("Option 1");
     expect(selectedValue).toBeInTheDocument();
-  });
-
-  it("renders custom optionsRenderer", () => {
-    const customRenderer = (
-      option: { value: string; label: string },
-      onSelect: (value: string) => void,
-    ) => (
-      <div
-        key={option.value}
-        data-testid={`custom-option-${option.value}`}
-        onClick={() => onSelect(option.value)}
-      >
-        Custom: {option.label}
-      </div>
-    );
-
-    render(
-      <TestWrapper>
-        {formMethods => (
-          <DropdownField
-            label="Category"
-            id="category"
-            formMethods={formMethods}
-            options={mockOptions}
-            optionsRenderer={customRenderer}
-          />
-        )}
-      </TestWrapper>,
-    );
-
-    const trigger = screen.getByText("Select");
-    fireEvent.click(trigger);
-
-    expect(screen.getByText("Custom: Option 1")).toBeInTheDocument();
-    expect(screen.getByText("Custom: Option 2")).toBeInTheDocument();
-    expect(screen.getByText("Custom: Option 3")).toBeInTheDocument();
-  });
-
-  it("optionsRenderer onSelect callback updates form value and closes dropdown", async () => {
-    const customRenderer = (
-      option: { value: string; label: string },
-      onSelect: (value: string) => void,
-    ) => (
-      <div
-        key={option.value}
-        data-testid={`custom-option-${option.value}`}
-        onClick={() => onSelect(option.value)}
-      >
-        Custom: {option.label}
-      </div>
-    );
-
-    render(
-      <TestWrapper>
-        {formMethods => (
-          <DropdownField
-            label="Category"
-            id="category"
-            formMethods={formMethods}
-            options={mockOptions}
-            optionsRenderer={customRenderer}
-          />
-        )}
-      </TestWrapper>,
-    );
-
-    const trigger = screen.getByText("Select");
-    fireEvent.click(trigger);
-
-    const customOption = screen.getByTestId("custom-option-option1");
-    fireEvent.click(customOption);
-
-    // Dropdown should close
-    await waitFor(() => {
-      expect(screen.queryByTestId("custom-option-option2")).not.toBeInTheDocument();
-    });
-
-    // Selected value should be displayed
-    expect(screen.getByText("Option 1")).toBeInTheDocument();
-  });
-
-  it("optionsRenderer receives onSelect function as second argument", () => {
-    const mockOptionsRenderer = vi.fn(
-      (option: { value: string; label: string }, onSelect: (value: string) => void) => (
-        <div key={option.value} onClick={() => onSelect(option.value)}>
-          {option.label}
-        </div>
-      ),
-    );
-
-    render(
-      <TestWrapper>
-        {formMethods => (
-          <DropdownField
-            label="Category"
-            id="category"
-            formMethods={formMethods}
-            options={mockOptions}
-            optionsRenderer={mockOptionsRenderer}
-          />
-        )}
-      </TestWrapper>,
-    );
-
-    const trigger = screen.getByText("Select");
-    fireEvent.click(trigger);
-
-    // Verify optionsRenderer was called with option and onSelect function
-    expect(mockOptionsRenderer).toHaveBeenCalledTimes(3);
-    expect(mockOptionsRenderer.mock.calls[0][0]).toEqual({ value: "option1", label: "Option 1" });
-    expect(typeof mockOptionsRenderer.mock.calls[0][1]).toBe("function");
   });
 });

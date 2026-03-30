@@ -27,18 +27,12 @@ export interface Tenant {
   code: string;
   description: string;
   status: string;
-  logoUrl: string;
   metadata: Record<string, unknown>;
   settings: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
   userCount: string;
-  enabledDashboardIds: string[];
-  enableMicrophoneMode: boolean;
-  enableDictationMode: boolean;
-  enableAudioUpload: boolean;
-  hideRankInCommunity: boolean;
 }
 
 export interface GetTenantResponse {
@@ -69,7 +63,6 @@ export interface UserListUser {
   creditLimit: number | null;
   consumedCredits: number | null;
   secondsAllowedPerCredit: number;
-  profileImageUrl: string;
 }
 
 export interface UserListProps {
@@ -77,7 +70,6 @@ export interface UserListProps {
   renderFooter?: () => ReactNode;
   formatDate: (iso: string) => string;
   onOptionSelect?: (option: string, user: UserListUser) => void;
-  canEditUser?: boolean;
 }
 
 export interface OrganizationListProps {
@@ -120,12 +112,6 @@ export interface CreateTenantBody {
   name: string;
   code: string;
   description?: string;
-  logoUrl?: string;
-  enabledDashboardIds?: string[];
-  enableMicrophoneMode?: boolean;
-  enableDictationMode?: boolean;
-  enableAudioUpload?: boolean;
-  hideRankInCommunity?: boolean;
 }
 
 export interface GetUsersResponse {
@@ -152,11 +138,6 @@ export type AddUserFormData = {
   simulationCreditLimit?: number;
 };
 
-export interface TabOption {
-  id: string;
-  label: string;
-}
-
 export interface UserModalProps {
   isOpen?: boolean;
   onClose: () => void;
@@ -166,26 +147,11 @@ export interface UserModalProps {
   details?: any;
   handleClick?: any;
   formMethods?: any;
-  imageUpload?: boolean;
-  uploadButtonName?: string;
-  uploadTitle?: string;
-  uploadId?: string;
-  uploadImageUrl?: (payload: GetLogoUrlRequest) => Promise<any>;
-  hasTabs?: boolean;
-  tabOptions?: TabOption[];
-  optionValues?: {
-    id: string;
-    value: boolean;
-    label: string;
-    onClick: (enabled: boolean) => void;
-  }[];
-  extraContent?: ReactNode;
 }
 
 export type Option = {
   id: string | number;
-  value?: string;
-  name?: string;
+  value: string;
 };
 export interface FieldProps {
   id: string;
@@ -219,7 +185,6 @@ export interface EditUserBody {
 export interface UserRoles {
   id: number;
   name: string;
-  value?: string;
 }
 
 export interface CreditFieldProps {
@@ -242,67 +207,4 @@ export interface AddCreditBody {
 export interface disableSuccessResponse {
   success: boolean;
   message: string;
-}
-export interface GetLogoUrlRequest {
-  fileName: string;
-  fileSize: number;
-  contentType: string;
-}
-
-export interface GetLogoUrlResponse {
-  presignedUrl: string;
-  logoUrl: string;
-}
-
-export interface DeleteLogoRequest {
-  logoUrl: string;
-}
-
-export interface ScribeSettingsItem {
-  id: string;
-  label: string;
-  visible: boolean;
-}
-
-export interface ScribeSettingsList {
-  id: string;
-  fields: ScribeSettingsItem[];
-  label: string;
-  enabled: boolean;
-  defaultVisibility: boolean;
-}
-
-export interface ScribeSettingsListResponse {
-  sections: ScribeSettingsList[];
-}
-
-export interface UpdateSummarySectionsBody {
-  tenantId: string;
-  hiddenSections: string[];
-}
-
-export interface UpdateSummaryFieldsBody {
-  tenantId: string;
-  hiddenFields: string[];
-}
-
-export interface AdminTenant {
-  id: string;
-  name: string;
-  logoUrl?: string;
-}
-
-export interface GetAdminTenantsResponse {
-  data: AdminTenant[];
-  count: number;
-}
-
-export interface AssignAdminTenantsBody {
-  userId: number;
-  tenantIds: string[];
-}
-
-export interface RemoveAdminTenantsBody {
-  userId: number;
-  tenantIds: string[];
 }

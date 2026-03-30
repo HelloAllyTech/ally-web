@@ -8,6 +8,4 @@ export interface ToggleButtonGroupProps {
   }[];
   className?: string;
   successValue?: string;
-  equalWidth?: boolean;
-  inheritFontSize?: boolean;
 }

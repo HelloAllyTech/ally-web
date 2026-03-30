@@ -63,59 +63,6 @@ const simulationPathApi = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_PATHS],
     }),
-
-    getScenarioCases: builder.query<GetScenarioPathsResponse, GetScenarioPathsQueryParams>({
-      query: (params: GetScenarioPathsQueryParams) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_CASES,
-        method: HttpMethod.GET,
-        params,
-      }),
-      providesTags: [TAG_TYPES.SIMULATION_CASES],
-    }),
-
-    deleteScenarioCaseById: builder.mutation<void, number>({
-      query: id => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_CASE_BY_ID(id),
-        method: HttpMethod.DELETE,
-      }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_CASES],
-    }),
-
-    updateSimulationCaseById: builder.mutation<
-      { success: boolean },
-      { id: number | string; data: Partial<CreatePathInput> }
-    >({
-      query: ({ id, data }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_CASE_BY_ID(id),
-        method: HttpMethod.PUT,
-        body: data,
-      }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_CASES],
-    }),
-
-    duplicateScenarioCase: builder.mutation<{ success: boolean }, string | number>({
-      query: id => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.DUPLICATE_SCENARIO_CASE(id),
-        method: HttpMethod.POST,
-      }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_CASES],
-    }),
-
-    createSimulationCase: builder.mutation<CreatePathResponse, CreatePathInput>({
-      query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_CASES,
-        method: HttpMethod.POST,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_CASES],
-    }),
-
-    getScenarioCaseById: builder.query<GetPathByIdResponse, string>({
-      query: id => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_CASE_BY_ID(id),
-        method: HttpMethod.GET,
-      }),
-    }),
   }),
 });
 
@@ -126,10 +73,4 @@ export const {
   useCreateSimulationPathMutation,
   useUpdateSimulationPathByIdMutation,
   useDuplicateScenarioPathMutation,
-  useGetScenarioCasesQuery,
-  useDeleteScenarioCaseByIdMutation,
-  useUpdateSimulationCaseByIdMutation,
-  useDuplicateScenarioCaseMutation,
-  useCreateSimulationCaseMutation,
-  useLazyGetScenarioCaseByIdQuery,
 } = simulationPathApi;

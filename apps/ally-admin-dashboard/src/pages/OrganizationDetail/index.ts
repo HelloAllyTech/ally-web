@@ -1,0 +1,1 @@
+export { OrganizationDetail } from "./OrganizationDetail";

@@ -7,14 +7,10 @@ import {
   SourceQueryKey,
   summaryFields,
 } from "./constants";
-import { SectionType, SummarySectionKey, SummaryField } from "./types";
+import { SectionType, SummarySectionKey } from "./types";
 
-export const getSectionFields = (
-  section: SummarySectionKey,
-  visibleFields: SummaryFieldKey[],
-  allFields: SummaryField[] = summaryFields,
-) => {
-  return allFields.filter(
+export const getSectionFields = (section: SummarySectionKey, visibleFields: SummaryFieldKey[]) => {
+  return summaryFields.filter(
     field => field.sectionKey === section && visibleFields?.includes(field.key),
   );
 };

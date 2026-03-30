@@ -5,17 +5,14 @@
  * - User profile and permissions retrieval
  */
 
-import { baseAPI, baseQuery } from "@api";
-import { ApiEndpoints, AppType, HttpMethod, Permissions, TAG_TYPES, UserRole } from "@constants";
+import { baseAPI } from "@api";
+import { ApiEndpoints, HttpMethod, Permissions, UserRole } from "@constants";
 import {
   VerifyOTPRequest,
   VerifyOTPResponse,
   GenerateOTPRequest,
   GenerateOTPResponse,
   User,
-  GetProfileUrlResponse,
-  GetProfileUrlRequest,
-  profileUrlRequest,
 } from "@types";
 
 const authAPI = baseAPI.injectEndpoints({
@@ -72,12 +69,7 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, email }) => ({
         url: ApiEndpoints.AUTH.GENERATE_OTP,
         method: HttpMethod.POST,
-        body: {
-          phone,
-          email,
-          allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN],
-          appType: AppType.ADMIN,
-        },
+        body: { phone, email, allowedRoles: [UserRole.SUPER_ADMIN] },
       }),
     }),
 
@@ -90,76 +82,8 @@ const authAPI = baseAPI.injectEndpoints({
       query: ({ phone, otp, email }) => ({
         url: ApiEndpoints.AUTH.VERIFY_OTP,
         method: HttpMethod.POST,
-        body: {
-          phone,
-          otp,
-          email,
-          allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN],
-        },
+        body: { phone, otp, email, allowedRoles: [UserRole.SUPER_ADMIN] },
       }),
-    }),
-    // /**
-    //  * Authenticates user credentials and returns access/refresh tokens.
-    //  * @param {any} data - idToken
-    //  * @returns {Promise<any>} googleSignIn response with tokens
-    //  */
-    googleSignIn: builder.mutation<VerifyOTPResponse, any>({
-      query: data => ({
-        url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
-        method: HttpMethod.POST,
-        body: { ...data, allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN] },
-      }),
-    }),
-    getProfileImageUrl: builder.mutation<GetProfileUrlResponse, GetProfileUrlRequest>({
-      query: body => ({
-        url: ApiEndpoints.AUTH.PROFILE_IMAGE_URL,
-        method: HttpMethod.POST,
-        body,
-      }),
-    }),
-
-    /**
-     * Delete cover image from S3
-     */
-    deleteProfileImage: builder.mutation<boolean, profileUrlRequest>({
-      query: body => ({
-        url: ApiEndpoints.AUTH.PROFILE_IMAGE,
-        method: HttpMethod.DELETE,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.USERS],
-    }),
-
-    uploadProfileImage: builder.mutation<boolean, profileUrlRequest>({
-      query: body => ({
-        url: ApiEndpoints.AUTH.PROFILE_IMAGE,
-        method: HttpMethod.PATCH,
-        body,
-      }),
-      invalidatesTags: [TAG_TYPES.USERS],
-    }),
-
-    /**
-     * Verifies magic link token and authenticates user.
-     * @param {string} token - Magic link token from URL
-     * @returns {Promise<VerifyOTPResponse>} Authentication response with tokens
-     */
-    verifyMagicLink: builder.mutation<VerifyOTPResponse, { token: string }>({
-      queryFn: async ({ token }, api, extraOptions) => {
-        const result = await baseQuery(
-          {
-            url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
-            method: HttpMethod.POST,
-            body: { token, allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MULTI_TENANT_ADMIN] },
-          },
-          api,
-          extraOptions,
-        );
-        if (result.error) {
-          return { error: result.error };
-        }
-        return { data: result.data as VerifyOTPResponse };
-      },
     }),
   }),
 });
@@ -173,9 +97,4 @@ export const {
   useLazyGetPermissionsQuery,
   useGenerateOTPMutation,
   useVerifyOTPMutation,
-  useGoogleSignInMutation,
-  useUploadProfileImageMutation,
-  useDeleteProfileImageMutation,
-  useGetProfileImageUrlMutation,
-  useVerifyMagicLinkMutation,
 } = authAPI;

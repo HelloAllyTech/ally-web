@@ -1,10 +1,8 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-
-import { createPortal } from "react-dom";
+import { useState, useRef, useCallback } from "react";
 
 import { ArrowSolid } from "@assets";
 import { en } from "@constants";
-import { useCreatePortal } from "@hooks";
+import { useClickOutside } from "@hooks";
 import { Option, UserRoles } from "@types";
 import { formatCapitalizedEnum } from "@utils";
 
@@ -27,30 +25,12 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const portalRef = useRef<HTMLDivElement>(null);
-
-  const dropdownPosition = useCreatePortal(triggerRef, isOpen, {
-    matchTriggerWidth: true,
-    dropdownHeight: 240,
-  });
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
   }, []);
 
-  useEffect(() => {
-    if (!isOpen) return () => {};
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (dropdownRef.current?.contains(target) || portalRef.current?.contains(target)) {
-        return;
-      }
-      handleClose();
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, handleClose]);
+  useClickOutside(dropdownRef, handleClose);
 
   // Helper function to get option id
   const getOptionId = (option: Option | UserRoles): string | number => {
@@ -75,7 +55,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
         {label}
         {required && <span className="text-destructive-500">*</span>}
       </label>
-      <div className="relative" ref={triggerRef}>
+      <div className="relative">
         <div
           className="border rounded-md px-3 py-2 bg-white w-full outline-none font-primary text-base cursor-pointer flex items-center justify-between hover:border-border-dark transition-colors"
           onClick={() => setIsOpen(!isOpen)}
@@ -91,48 +71,37 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
           </div>
         </div>
 
-        {isOpen &&
-          dropdownPosition &&
-          createPortal(
-            <div
-              ref={portalRef}
-              className="fixed bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-[9999] animate-fadeIn custom-scrollbar"
-              style={{
-                top: dropdownPosition.top,
-                left: dropdownPosition.left,
-                width: dropdownPosition.width,
-              }}
-            >
-              {options.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-typography-900 ">
-                  {en.common.noOptionsAvailable}
-                </div>
-              ) : (
-                options.map(option => {
-                  const optionId = getOptionId(option);
-                  const optionValue = getOptionValue(option);
-                  const isSelected = optionId.toString() === value.toString();
+        {isOpen && (
+          <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-10 animate-fadeIn ">
+            {options.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-typography-900 ">
+                {en.common.noOptionsAvailable}
+              </div>
+            ) : (
+              options.map(option => {
+                const optionId = getOptionId(option);
+                const optionValue = getOptionValue(option);
+                const isSelected = optionId.toString() === value.toString();
 
-                  return (
-                    <div
-                      key={optionId}
-                      className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                        isSelected
-                          ? "bg-primary-50 text-primary font-medium"
-                          : "text-typography-900 hover:bg-background-secondary"
-                      }`}
-                      onClick={() => handleSelect(optionId)}
-                    >
-                      <div className="flex items-center justify-between text-sm font-primary">
-                        <span>{formatCapitalizedEnum(optionValue)}</span>
-                      </div>
+                return (
+                  <div
+                    key={optionId}
+                    className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                      isSelected
+                        ? "bg-primary-50 text-primary font-medium"
+                        : "text-typography-900 hover:bg-background-secondary"
+                    }`}
+                    onClick={() => handleSelect(optionId)}
+                  >
+                    <div className="flex items-center justify-between text-base font-primary">
+                      <span>{formatCapitalizedEnum(optionValue)}</span>
                     </div>
-                  );
-                })
-              )}
-            </div>,
-            document.body,
-          )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

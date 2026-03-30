@@ -1,17 +1,14 @@
 import { FunctionComponent, useEffect, useMemo, useState } from "react";
 
-import { useTranslation } from "react-i18next";
-
-import { logger } from "@ally-ui-mono/ui-shared";
+import { logger } from "@lifeline-ui-mono/ui-shared";
 import { useLazyGetDashboardsQuery, useLazyGetDashboardUrlQuery } from "@api";
 import { NoAnalytics } from "@assets";
 import { ToggleButtonGroup } from "@components";
 import { AnalyticsType } from "@constants";
 
-import { getAnalyticsTypeOptions, ANALYTICS_DASHBOARD_REFRESH_INTERVAL } from "./constants";
+import { analyticsTypeOptions, ANALYTICS_DASHBOARD_REFRESH_INTERVAL } from "./constants";
 
 export const Analytics: FunctionComponent = () => {
-  const { t } = useTranslation();
   const [getDashboardUrl] = useLazyGetDashboardUrlQuery();
   const [getDashboards, { data: dashboards }] = useLazyGetDashboardsQuery();
 
@@ -26,11 +23,11 @@ export const Analytics: FunctionComponent = () => {
   const analyticsToggleOptions = useMemo(
     () =>
       dashboards
-        ? getAnalyticsTypeOptions(t).filter(option =>
+        ? analyticsTypeOptions.filter(option =>
             dashboards.some(dashboard => dashboard.analyticsType === option.value),
           )
         : [],
-    [dashboards, t],
+    [dashboards],
   );
 
   useEffect(() => {
@@ -87,7 +84,7 @@ export const Analytics: FunctionComponent = () => {
           className="text-typography-900 font-secondary text-2xl font-[500] flex items-center gap-2 mb-2"
           data-testid="analytics-title"
         >
-          {t("analytics.title")}
+          Session Analytics
         </div>
         {analyticsToggleOptions?.length > 1 && (
           <ToggleButtonGroup
@@ -107,7 +104,7 @@ export const Analytics: FunctionComponent = () => {
             <iframe
               key={id}
               data-testid={`analytics-dashboard-${id}`}
-              title={t("analytics.dashboardTitle")}
+              title="Metabase dashboard"
               src={dashboardUrls[id]?.replace("bordered=true", "bordered=false")}
               width="100%"
               height="100%"
@@ -116,13 +113,10 @@ export const Analytics: FunctionComponent = () => {
           ))}
         {dashboards?.length === 0 && !hasValidDashboards && (
           <div
-            className="flex-1 w-full flex items-center justify-center flex-col gap-2"
+            className="flex-1 w-full flex items-center justify-center"
             data-testid="analytics-empty-state"
           >
             <NoAnalytics data-testid="analytics-no-data-icon" />
-            <p className="text-typography-600 text-sm text-center">
-              {t("analytics.empty.description")}
-            </p>
           </div>
         )}
       </div>

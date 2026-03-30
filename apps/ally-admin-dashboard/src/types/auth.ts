@@ -1,9 +1,8 @@
-import { AppType, CallType, UserRole } from "@constants";
+import { CallType, UserRole } from "@constants";
 
 export interface GenerateOTPRequest {
   phone?: string;
   email?: string;
-  appType?: AppType;
 }
 
 export interface VerifyOTPRequest {
@@ -28,7 +27,6 @@ export interface RefreshResponse {
 }
 
 export interface User {
-  profileImageUrl?: string;
   email: string;
   id: number;
   name: string;
@@ -180,16 +178,7 @@ export interface ApiError {
   data?: any;
 }
 
-export interface GetProfileUrlRequest {
-  fileName: string;
-  fileSize: number;
-  contentType: string;
-}
-export interface GetProfileUrlResponse {
-  presignedUrl: string;
-  profileImageUrl: string;
-}
-
-export interface profileUrlRequest {
-  profileImageUrl: string;
+export interface RefreshResponse {
+  accessToken: string;
+  refreshToken: string;
 }

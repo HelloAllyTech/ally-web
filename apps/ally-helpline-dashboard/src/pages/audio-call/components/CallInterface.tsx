@@ -1,0 +1,166 @@
+import { FC, useEffect, useState } from "react";
+
+import { Tooltip } from "@mui/material";
+import { motion } from "framer-motion";
+import { X } from "lucide-react";
+import { LiveAudioVisualizer } from "react-audio-visualize";
+
+import { Lock, WarningTriangle } from "@assets";
+import { CallProvider, TOOLTIP_LIGHT_PROPS } from "@constants";
+
+import { ErrorScreen } from ".";
+import { CallInterfaceProps } from "../types";
+import { formatTime } from "../utils";
+
+const PrivacyTooltip = () => (
+  <ul className="list-disc list-inside">
+    <li>We do not save audio recordings</li>
+    <li>Data is encrypted</li>
+    <li>We do not use your client’s data to train our models</li>
+    <li>Personal information of clients is automaticlifeline removed</li>
+  </ul>
+);
+
+const CallInterface: FC<CallInterfaceProps> = ({
+  activeChat,
+  isUserJoined,
+  mediaRecorder,
+  isMicrophoneMode,
+  isExotelMode,
+  socketDisconnectionReason,
+}) => {
+  const [seconds, setSeconds] = useState(0);
+  const [showExotelBanner, setShowExotelBanner] = useState(true);
+
+  const isSharedMicrophoneMode =
+    isMicrophoneMode && activeChat?.chatId && activeChat?.provider === CallProvider.MICROPHONE;
+
+  useEffect(() => {
+    // Don't start timer if no chat has started and not in microphone mode
+    if (!activeChat?.startedAt && !isMicrophoneMode) return () => {};
+
+    const updateElapsedTime = () => {
+      if (isMicrophoneMode && !activeChat?.startedAt) {
+        // In microphone mode without startedAt, increment from current seconds
+        setSeconds(prev => prev + 1);
+      } else if (activeChat?.startedAt) {
+        // Calculate elapsed time from startedAt
+        const now = Date.now();
+        const diffInSeconds = Math.floor((now - Date.parse(activeChat.startedAt)) / 1000);
+        setSeconds(diffInSeconds);
+      }
+    };
+    // Initial update
+    updateElapsedTime();
+
+    // Set up interval
+    const interval = setInterval(updateElapsedTime, 1000);
+
+    // Cleanup on unmount or dependency change
+    return () => clearInterval(interval);
+  }, [activeChat?.startedAt, isMicrophoneMode]);
+
+  const getEmptyScreen = () => {
+    let message;
+    if (socketDisconnectionReason) {
+      return <ErrorScreen socketDisconnectionReason={socketDisconnectionReason} />;
+    }
+    if (!isUserJoined && isMicrophoneMode) {
+      message = "Connecting to your session...";
+    } else if (!isUserJoined) {
+      message = "Session is starting now..";
+    }
+    return (
+      <motion.div
+        key={message}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="text-white text-4xl font-normal">{message}</div>
+        {isUserJoined === false && !isMicrophoneMode && (
+          <div className="text-white text-sm text-center mt-1">
+            You can wait for them to rejoin or end the call.
+          </div>
+        )}
+      </motion.div>
+    );
+  };
+  const getDescriptionText = () => {
+    if (activeChat?.platform && activeChat?.platform !== "WEB") {
+      return "Note: This call was initiated from a different platform. You can listen but cannot control the call (mute/unmute).";
+    } else if (isSharedMicrophoneMode) {
+      return "Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).";
+    } else {
+      return "Note: Refreshing, closing the active tab, or network interruptions will end the call.";
+    }
+  };
+
+  return (
+    <>
+      {isUserJoined && !socketDisconnectionReason ? (
+        <div className="flex flex-col pt-9 items-center gap-4 z-10 transition-all duration-500 ease-in-out min-h-[20vh] relative">
+          {isExotelMode && showExotelBanner && (
+            <div className="w-fit flex gap-4 justify-between items-center bg-[#EEF8FF] border-[0.5px] border-[#0171D9] rounded-[8px] p-2 absolute top-[-24px]">
+              <div className="flex items-center gap-[2px] ">
+                <WarningTriangle />
+                <span className="text-typography-900 text-sm whitespace-nowrap">
+                  The scribe will stop taking notes once you end the call.
+                </span>
+              </div>
+              <X className="w-4 h-4 cursor-pointer" onClick={() => setShowExotelBanner(false)} />
+            </div>
+          )}
+          <div className="text-white flex justify-center items-center flex-col gap-2">
+            <div className="flex items-center gap-2 font-primary font-medium">
+              <Tooltip
+                title={<PrivacyTooltip />}
+                placement="top"
+                arrow
+                slotProps={TOOLTIP_LIGHT_PROPS}
+              >
+                <span>
+                  <Lock />
+                </span>
+              </Tooltip>
+              Taking notes
+            </div>
+            <div className="text-base font-semibold font-tertiary">{formatTime(seconds)}</div>
+            <div className="text-xs text-secondary-500 text-center max-w-xs mt-1">
+              {getDescriptionText()}
+            </div>
+          </div>
+          <div className="relative gap-1 flex rounded-lg">
+            {mediaRecorder && (
+              <div className="rotate-180 z-0 translate-x-[4px] translate-y-[1px]  ">
+                <LiveAudioVisualizer
+                  mediaRecorder={mediaRecorder}
+                  width={200}
+                  height={140}
+                  barWidth={4}
+                  barColor="#fff"
+                />
+              </div>
+            )}
+            {mediaRecorder && (
+              <div className="z-0">
+                <LiveAudioVisualizer
+                  mediaRecorder={mediaRecorder}
+                  width={200}
+                  height={140}
+                  barWidth={4}
+                  barColor="#fff"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        getEmptyScreen()
+      )}
+    </>
+  );
+};
+
+export default CallInterface;

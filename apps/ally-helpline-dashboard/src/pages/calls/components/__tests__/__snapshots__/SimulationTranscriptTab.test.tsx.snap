@@ -3,63 +3,51 @@
 exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
 <DocumentFragment>
   <div
-    class="relative flex h-full min-h-0 flex-col overflow-y-auto border border-gray-200 rounded-md p-4 custom-scrollbar undefined"
+    data-testid="transcript-tab"
   >
-    <span
-      class="text-typography-900 font-primary text-base font-medium"
-    >
-      Annotated Transcript
-    </span>
-    <hr
-      class="mb-5 mt-2 border-border-light"
-    />
     <div
-      data-testid="transcript-tab"
+      data-testid="transcript-list"
     >
       <div
-        data-testid="transcript-list"
+        data-testid="transcript-item-0"
       >
         <div
-          data-testid="transcript-item-0"
+          data-testid="speaker-0"
         >
-          <div
-            data-testid="sender-0"
-          >
-            Client
-          </div>
-          <div
-            data-testid="content-0"
-          >
-            Client message 1
-          </div>
+          Client
         </div>
         <div
-          data-testid="transcript-item-1"
+          data-testid="content-0"
         >
-          <div
-            data-testid="sender-1"
-          >
-            Counsellor
-          </div>
-          <div
-            data-testid="content-1"
-          >
-            Counsellor message 1
-          </div>
+          Client message 1
+        </div>
+      </div>
+      <div
+        data-testid="transcript-item-1"
+      >
+        <div
+          data-testid="speaker-1"
+        >
+          Counsellor
         </div>
         <div
-          data-testid="transcript-item-2"
+          data-testid="content-1"
         >
-          <div
-            data-testid="sender-2"
-          >
-            Client
-          </div>
-          <div
-            data-testid="content-2"
-          >
-            Client message 2
-          </div>
+          Counsellor message 1
+        </div>
+      </div>
+      <div
+        data-testid="transcript-item-2"
+      >
+        <div
+          data-testid="speaker-2"
+        >
+          Client
+        </div>
+        <div
+          data-testid="content-2"
+        >
+          Client message 2
         </div>
       </div>
     </div>

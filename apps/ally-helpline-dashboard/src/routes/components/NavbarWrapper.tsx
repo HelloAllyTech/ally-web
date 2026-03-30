@@ -4,24 +4,19 @@ import { MenuIcon } from "lucide-react";
 import { matchPath, useLocation, useNavigate } from "react-router-dom";
 
 import { NavSideBar } from "@components";
-import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
-import { useUser, useAchievementBadgeModal } from "@hooks";
+import { excludeNavBar, navBarOptions, TabId, LOCAL_STORAGE_KEYS } from "@constants";
+import { useUser } from "@hooks";
 import { isPathExcluded } from "@utils";
 
 import UploadProgressDialog from "./UploadProgressDialog";
 
 // TODO: Rename to LayoutWrapper
 const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, checkAuth, isAuthenticated } = useUser();
+  const { user, checkAuth } = useUser();
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
-
-  const { BadgeModal } = useAchievementBadgeModal();
-
-  const shouldShowBadgeModal =
-    isAuthenticated && !isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
 
   useEffect(() => {
     // checkAuth only for logged in users
@@ -66,7 +61,6 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
           </button>
           {children}
           <UploadProgressDialog />
-          {shouldShowBadgeModal && BadgeModal}
         </div>
       </div>
     </div>

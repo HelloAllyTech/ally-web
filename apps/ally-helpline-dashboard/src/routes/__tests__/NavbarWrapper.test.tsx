@@ -14,13 +14,6 @@ import NavbarWrapper from "../components/NavbarWrapper";
 const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
   useUser: () => mockUseUser(),
-  useAchievementBadgeModal: () => ({
-    currentBadge: null,
-    closeModal: vi.fn(),
-    resetModal: vi.fn(),
-    BadgeModal: null,
-    isLoading: false,
-  }),
 }));
 
 // Mock the NavSideBar component
@@ -267,7 +260,7 @@ describe("NavbarWrapper", () => {
       .find(button => button.className.includes("md:hidden"));
     expect(menuButton).toBeInTheDocument();
 
-    // Initially sidebar should be closed
+    // Initilifeline sidebar should be closed
     expect(screen.getByTestId("nav-sidebar")).toHaveAttribute("data-is-open", "false");
 
     // Click to open sidebar

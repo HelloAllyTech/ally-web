@@ -2,7 +2,7 @@
 
 import { FC } from "react";
 
-import { Warning } from "@ally-ui-mono/ui-shared/assets";
+import { Warning } from "@lifeline-ui-mono/ui-shared/assets";
 
 import { SimulationControls } from "./SimulationControls";
 import { SimulationTimer } from "./SimulationTimer";
@@ -18,7 +18,6 @@ export const BottomSection: FC<BottomSectionProps> = ({
   isEndingSession,
   startTime,
   onFocusButtonClick,
-  timeLimit,
 }) => {
   return (
     <div
@@ -29,8 +28,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
         isWarning={isWarning}
         onWarning={onTimeLimitWarning}
         onTimeLimit={onEndSimulation}
-        startTime={startTime?.toString()}
-        timeLimit={timeLimit}
+        startTime={startTime.toString()}
       />
       <SimulationControls
         isMuted={isMuted}

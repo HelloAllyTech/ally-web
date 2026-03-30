@@ -76,7 +76,7 @@ const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange 
       {/* Page Numbers */}
       {pageNumbers.map((num, idx) =>
         num === "..." ? (
-          <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">
+          <span key={idx} className="px-2 text-gray-400">
             …
           </span>
         ) : (

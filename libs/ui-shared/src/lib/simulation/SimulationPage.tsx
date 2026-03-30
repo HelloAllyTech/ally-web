@@ -1,23 +1,16 @@
 "use client";
 
-import { FC, useEffect, useRef, useState, useMemo } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { SessionGoalTimer } from "./SessionGoalTimer";
 import { BottomSection } from "./SimulationBottomSection";
 import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
-import { SimulationPageProps, TriggerWarning, ChecklistMode } from "./types";
+import { SimulationPageProps, TriggerWarning } from "./types";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
-
-const MICROPHONE_STATE = {
-  GRANTED: "granted",
-  DENIED: "denied",
-  PROMPTED: "prompted",
-};
 
 const useWakeLock = (sessionId: string | undefined) => {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -67,7 +60,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   isEndingSession,
   startTime,
   events,
-  detectedEventIds,
   score,
   isPreview = false,
   onEndSimulation,
@@ -78,7 +70,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
-  const [microphonePermission, setMicrophonePermission] = useState(MICROPHONE_STATE.GRANTED);
 
   const endAudio = useRef<HTMLAudioElement | null>(new Audio(EndSimulation));
   const startAudio = useRef<HTMLAudioElement | null>(new Audio(StartSimulation));
@@ -86,67 +77,16 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   useWakeLock(sessionId);
 
   useEffect(() => {
-    startAudio.current?.play();
-
-    const checkMicrophonePermission = async () => {
-      try {
-        if (navigator.permissions && navigator.permissions.query) {
-          const permissionStatus = await navigator.permissions.query({
-            name: "microphone" as PermissionName,
-          });
-          setMicrophonePermission(permissionStatus.state);
-
-          permissionStatus.onchange = () => {
-            setMicrophonePermission(permissionStatus.state);
-          };
-        }
-      } catch {
-        toast.error("Failed to check microphone permission");
-      }
-    };
-
-    checkMicrophonePermission();
+    if (roomStatus === RoomStatus.CONNECTING) startAudio.current?.play();
 
     return () => {
       endAudio.current?.pause();
     };
-  }, []);
-
-  useEffect(() => {
-    if (roomStatus === RoomStatus.AGENT_JOINED) startAudio.current?.pause();
   }, [roomStatus]);
-
-  const onEnableMicrophone = async () => {
-    try {
-      // Request microphone access - this triggers the browser's native permission popup
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(track => track.stop());
-
-      setMicrophonePermission(MICROPHONE_STATE.GRANTED);
-    } catch {
-      setMicrophonePermission(MICROPHONE_STATE.DENIED);
-    }
-  };
 
   if (!roomData) return null;
 
-  const {
-    triggerWarnings = [],
-    title,
-    experienceMode,
-    checklistType,
-    checklistEvents,
-  } = roomData ?? {};
-
-  const checklistMode: ChecklistMode = useMemo(() => {
-    if (experienceMode !== "CHECKLIST") return ChecklistMode.OFF;
-    return checklistType;
-  }, [experienceMode, checklistType]);
-
-  const checklistItems = useMemo(() => {
-    if (checklistMode === ChecklistMode.OFF || !checklistEvents) return [];
-    return checklistEvents;
-  }, [checklistMode, checklistEvents]);
+  const { triggerWarnings = [], title } = roomData ?? {};
 
   const onTimeLimitWarning = () => {
     setIsWarning(true);
@@ -175,17 +115,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     endAudio.current?.play();
     await onEndSimulation?.();
   };
-
-  const parseTimeValue = (timeStr: string): number => {
-    if (!timeStr) return 600000; // default 10 minutes
-    const parts = timeStr.split(":").map(Number);
-    const hours = parts[0] || 0;
-    const minutes = parts[1] || 0;
-    const seconds = parts[2] || 0;
-    return hours * 3600 + minutes * 60 + seconds;
-  };
-
-  const maxTimeSeconds = parseTimeValue(roomData?.maxTimeValue);
 
   const content = (
     <div
@@ -232,25 +161,16 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         )}
       </div>
 
-      {roomData?.timerMode && startTime && (
-        <SessionGoalTimer startTime={startTime} maxTimeSeconds={maxTimeSeconds} />
-      )}
-
-      <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
+      <motion.div layout className="max-h-[calc(100vh-170px)] w-full flex flex-1 gap-2">
         <SimulationInterface
           roomStatus={roomStatus}
           roomData={roomData}
           events={events}
-          detectedEventIds={detectedEventIds}
           isMuted={isMuted}
           isFocusMode={isFocusMode}
-          checklistMode={checklistMode}
-          checklistItems={checklistItems}
-          isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
-          onEnableMicrophone={onEnableMicrophone}
         />
       </motion.div>
-      {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}
+      <SimulationScoreMeter score={score} />
 
       <BottomSection
         isWarning={isWarning}
@@ -260,7 +180,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         isMuted={isMuted}
         isEndingSession={isEndingSession}
         startTime={startTime}
-        timeLimit={maxTimeSeconds}
         isFocusMode={isFocusMode}
         onFocusButtonClick={onFocusButtonClick}
       />

@@ -351,7 +351,11 @@ describe("NotionTable", () => {
 
   describe("Edge Cases", () => {
     it("handles undefined tableData gracefully", () => {
-      expect(() => render(<NotionTable tableData={undefined as any} />)).not.toThrow();
+      const propsWithUndefined: NotionTableProps = {
+        tableData: undefined,
+      };
+
+      expect(() => render(<NotionTable {...propsWithUndefined} />)).toThrow();
     });
 
     it("handles single row", () => {

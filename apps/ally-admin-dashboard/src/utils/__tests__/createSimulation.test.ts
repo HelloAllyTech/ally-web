@@ -9,6 +9,13 @@ import {
   formatSimulationResponseData,
 } from "../createSimulation";
 
+// Mock feature flags to enable NEW_CREATE_SIMULATION_FLAG
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+  FEATURE_FLAGS_MAP: {
+    NEW_CREATE_SIMULATION_FLAG: true,
+  },
+}));
+
 describe("createSimulation utils", () => {
   describe("getCreateSimulationSubSectionById", () => {
     it("should return the correct section for valid id", () => {
@@ -24,6 +31,7 @@ describe("createSimulation utils", () => {
 
       expect(section).toBeDefined();
       expect(section?.id).toBe("basic-settings");
+      expect(section?.label).toBe("Character Identity");
     });
 
     it("should return undefined for non-existent id", () => {
@@ -51,35 +59,6 @@ describe("createSimulation utils", () => {
       expect(Array.isArray(section?.fields)).toBe(true);
       expect(section?.fields.length).toBeGreaterThan(0);
     });
-    describe("overview section fields", () => {
-      const getOverviewSection = () => getCreateSimulationSubSectionById("overview");
-
-      it("should have title field correctly configured in overview section", () => {
-        const section = getOverviewSection();
-        const field = section?.fields.find(f => f.id === "title");
-        expect(field).toBeDefined();
-        expect(field?.label).toBe("Title");
-        expect(field?.type).toBe("text");
-        expect(field?.isMandatory).toBe(true);
-      });
-
-      it("should have difficultyLevel field correctly configured in overview section", () => {
-        const section = getOverviewSection();
-        const field = section?.fields.find(f => f.id === "difficultyLevel");
-        expect(field).toBeDefined();
-        expect(field?.type).toBe("select");
-        expect(field?.isMandatory).toBe(true);
-      });
-
-      it("should have coverImageUrl field correctly configured in overview section", () => {
-        const section = getOverviewSection();
-        const field = section?.fields.find(f => f.id === "coverImageUrl");
-        expect(field).toBeDefined();
-        expect(field?.label).toBe("Cover Image");
-        expect(field?.type).toBe("image_upload");
-        expect(field?.isMandatory).toBe(true);
-      });
-    });
   });
 
   describe("formatSimulationResponseData", () => {
@@ -90,14 +69,9 @@ describe("createSimulation utils", () => {
         description: "Test Description",
         status: "ACTIVE",
         isGlobal: false,
-        isPublic: false,
         coverImageUrl: "https://example.com/image.jpg",
-        createdBy: "user-1",
-        lastModified: "2024-01-01T00:00:00Z",
-        triggerWarnings: [],
-        difficultyLevel: "medium",
         metadata: {
-          age: 25,
+          age: "25",
           name: "John Doe",
           context: "Test context",
           coreMemories: "Test memories",
@@ -107,7 +81,7 @@ describe("createSimulation utils", () => {
           gender: "male",
           genderIdentity: "Male/Man",
           lifeHistory: "Test history",
-          openingStatements: ["Hello, how are you?"],
+          openingStatements: "Hello, how are you?",
           personality: "Friendly",
           profession: "Engineer",
           sessionBehaviorGuidelines: "Be supportive",
@@ -117,22 +91,8 @@ describe("createSimulation utils", () => {
           languageVoices: {
             1: "voice-123",
           },
-          agentDialogues: ["Sample dialogues"],
-          customFields: [],
-          optGuardrails: false,
-          currentState: false,
-          checklistType: "GUIDED",
-          experienceMode: "CHECKLIST",
-          maxTimeValue: "00:10:00",
-          timerMode: true,
-          stateInstructions: [
-            {
-              stateId: 1,
-              name: "test name",
-              instruction: "test instruction",
-              dialogues: ["test dialogue"],
-            },
-          ],
+          voiceId: "voice-123",
+          agentDialogues: "Sample dialogues",
         },
       } as GetSimulationByIdResponse;
 
@@ -141,56 +101,40 @@ describe("createSimulation utils", () => {
       expect(result).toEqual({
         title: "Test Simulation",
         description: "Test Description",
-        age: 25,
+        age: "25",
         name: "John Doe",
         context: "Test context",
         coreMemories: "Test memories",
         isGlobal: false,
-        isPublic: false,
         agentGoal: "Test goal",
-        behaviorInstructions: [],
-        characterProfileText: undefined,
-        competency: undefined,
         currentLocation: "New York",
         emotionalNeeds: "Test needs",
         gender: "male",
         genderIdentity: "Male/Man",
         lifeHistory: "Test history",
-        linguisticStyleSamples: undefined,
         openingStatements: "Hello, how are you?",
         personality: "Friendly",
         profession: "Engineer",
         sessionBehaviorGuidelines: "Be supportive",
         sexualOrientation: "Heterosexual",
-        showScoreMeter: undefined,
         startingState: "Calm",
         tone: "Casual",
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
-        terminationEvents: undefined,
+        autoTerminationStatus: false,
+        terminationEventId: undefined,
+        terminationMessage: undefined,
         languageVoices: {
           1: "voice-123",
         },
-        difficultyLevel: "medium",
+        voiceId: "voice-123",
+        terminationName: undefined,
+        difficultyLevel: undefined,
         responseLength: undefined,
         prompt: undefined,
-        triggerWarningIds: [],
+        triggerWarningIds: undefined,
         agentDialogues: "Sample dialogues",
-        customFields: [],
-        optGuardrails: false,
-        currentState: false,
-        checklistType: "GUIDED",
-        experienceMode: "CHECKLIST",
-        maxTimeValue: "00:10:00",
-        timerMode: true,
-        stateInstructions: [
-          {
-            stateId: 1,
-            name: "test name",
-            instruction: "test instruction",
-            dialogues: ["test dialogue"],
-          },
-        ],
+        customFields: undefined,
       });
     });
 
@@ -200,17 +144,10 @@ describe("createSimulation utils", () => {
         title: "Test Simulation",
         description: "Test Description",
         status: "DRAFT",
-        isGlobal: false,
-        isPublic: false,
         coverImageUrl: "https://example.com/image.jpg",
-        createdBy: "user-1",
-        lastModified: "2024-01-01T00:00:00Z",
-        triggerWarnings: [],
-        difficultyLevel: "medium",
         metadata: {
           name: "John Doe",
-          age: 25,
-          customFields: [],
+          age: "25",
         },
       } as GetSimulationByIdResponse;
 
@@ -219,7 +156,7 @@ describe("createSimulation utils", () => {
       expect(result.title).toBe("Test Simulation");
       expect(result.description).toBe("Test Description");
       expect(result.name).toBe("John Doe");
-      expect(result.age).toBe(25);
+      expect(result.age).toBe("25");
       expect(result.context).toBeUndefined();
       expect(result.coreMemories).toBeUndefined();
       expect(result.agentGoal).toBeUndefined();
@@ -260,107 +197,50 @@ describe("createSimulation utils", () => {
       expect(result.age).toBeUndefined();
     });
 
-    describe("customFields useInDefaultPrompt toggle (issue #108)", () => {
-      const baseResponse = {
-        id: "sim-1",
-        title: "T",
-        description: "D",
-        status: "DRAFT",
-        isGlobal: false,
-        isPublic: false,
-        coverImageUrl: "https://example.com/img.jpg",
-        createdBy: "u1",
-        lastModified: "2024-01-01T00:00:00Z",
+    it("should preserve all metadata fields when present", () => {
+      const mockResponse: GetSimulationByIdResponse = {
+        id: "sim-123",
+        title: "Test",
+        description: "Test",
+        status: "ACTIVE",
+        coverImageUrl: "url",
+        isGlobal: true,
         triggerWarnings: [],
-        difficultyLevel: "easy",
-      } as const;
-
-      it("should map useInDefaultPrompt: true when API field has useInDefaultPrompt: true", () => {
-        const mockResponse = {
-          ...baseResponse,
-          metadata: {
-            customFields: [{ name: "Field A", value: "val", useInDefaultPrompt: true }],
+        metadata: {
+          age: "30",
+          name: "Jane",
+          context: "context",
+          coreMemories: "memories",
+          agentGoal: "goal",
+          currentLocation: "location",
+          emotionalNeeds: "needs",
+          gender: "female",
+          genderIdentity: "identity",
+          lifeHistory: "history",
+          openingStatements: "statements",
+          personality: "personality",
+          profession: "profession",
+          sessionBehaviorGuidelines: "guidelines",
+          sexualOrientation: "orientation",
+          startingState: "state",
+          tone: "tone",
+          languageVoices: {
+            1: "voice-123",
           },
-        } as any;
+          voiceId: "voice-123",
+        },
+      } as GetSimulationByIdResponse;
 
-        const result = formatSimulationResponseData(mockResponse);
+      const result = formatSimulationResponseData(mockResponse);
 
-        expect(result.customFields?.[0].useInDefaultPrompt).toBe(true);
-      });
-
-      it("should map useInDefaultPrompt: false when API field has useInDefaultPrompt: false", () => {
-        const mockResponse = {
-          ...baseResponse,
-          metadata: {
-            customFields: [{ name: "Field B", value: "hello", useInDefaultPrompt: false }],
-          },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
-
-        expect(result.customFields?.[0].useInDefaultPrompt).toBe(false);
-      });
-
-      it("should default useInDefaultPrompt to true when API field does not include it (backward compat)", () => {
-        const mockResponse = {
-          ...baseResponse,
-          metadata: {
-            customFields: [{ name: "Legacy Field", value: "legacy value" }],
-          },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
-
-        expect(result.customFields?.[0].useInDefaultPrompt).toBe(true);
-      });
-
-      it("should handle mixed fields — some with useInDefaultPrompt, some without", () => {
-        const mockResponse = {
-          ...baseResponse,
-          metadata: {
-            customFields: [
-              { name: "Field 1", value: "v1", useInDefaultPrompt: false },
-              { name: "Field 2", value: "v2" }, // no useInDefaultPrompt
-              { name: "Field 3", value: "v3", useInDefaultPrompt: true },
-            ],
-          },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
-
-        expect(result.customFields?.[0].useInDefaultPrompt).toBe(false);
-        expect(result.customFields?.[1].useInDefaultPrompt).toBe(true); // defaulted
-        expect(result.customFields?.[2].useInDefaultPrompt).toBe(true);
-      });
-
-      it("should return empty array when customFields is empty", () => {
-        const mockResponse = {
-          ...baseResponse,
-          metadata: { customFields: [] },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
-
-        expect(result.customFields).toEqual([]);
-      });
-
-      it("should assign sequential id to each mapped custom field", () => {
-        const mockResponse = {
-          ...baseResponse,
-          metadata: {
-            customFields: [
-              { name: "A", value: "1" },
-              { name: "B", value: "2" },
-            ],
-          },
-        } as any;
-
-        const result = formatSimulationResponseData(mockResponse);
-
-        expect(result.customFields?.[0].id).toContain("customFields");
-        expect(result.customFields?.[1].id).toContain("customFields");
-        expect(result.customFields?.[0].id).not.toBe(result.customFields?.[1].id);
-      });
+      // Check all fields are present (title, description, coverImageUrl, coverVideoUrl, autoTerminationStatus, terminationEventId, terminationMessage, terminationName, difficultyLevel, responseLength, prompt, isGlobal, triggerWarningIds, customFieldGroup, agentDialoguesArray + 18 metadata fields = 33 total)
+      expect(Object.keys(result)).toHaveLength(34);
+      expect(result.title).toBe("Test");
+      expect(result.description).toBe("Test");
+      expect(result.coverImageUrl).toBe("url");
+      expect(result.age).toBe("30");
+      expect(result.name).toBe("Jane");
+      expect(result.voiceId).toBe("voice-123");
     });
   });
 
@@ -377,20 +257,38 @@ describe("createSimulation utils", () => {
 
     it("should convert empty select field to null", () => {
       const formData = {
-        difficultyLevel: "",
+        gender: "",
       };
 
       const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
-      expect(result.difficultyLevel).toBeNull();
+      expect(result.gender).toBeNull();
     });
 
     it("should keep non-empty select field as is", () => {
       const formData = {
-        difficultyLevel: "MEDIUM",
+        gender: "female",
       };
 
       const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
-      expect(result.difficultyLevel).toBe("MEDIUM");
+      expect(result.gender).toBe("female");
+    });
+
+    it("should parse number fields correctly", () => {
+      const formData = {
+        age: "25",
+      };
+
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.age).toBe(25);
+    });
+
+    it("should convert empty number fields to null", () => {
+      const formData = {
+        age: "",
+      };
+
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.age).toBeNull();
     });
 
     it("should handle image upload field with valid URL", () => {
@@ -431,16 +329,18 @@ describe("createSimulation utils", () => {
 
     it("should handle multiple field types together", () => {
       const formData = {
-        title: "  Test Title  ",
-        difficultyLevel: "",
+        name: " John ",
+        age: "30",
+        gender: "",
         coverImageUrl: "",
       };
 
       const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
 
       expect(result).toEqual({
-        title: "Test Title", // trimmed
-        difficultyLevel: null, // empty select
+        name: "John", // trimmed
+        age: 30, // parsed
+        gender: null, // empty select
         coverImageUrl: null, // empty string returns null
       });
     });

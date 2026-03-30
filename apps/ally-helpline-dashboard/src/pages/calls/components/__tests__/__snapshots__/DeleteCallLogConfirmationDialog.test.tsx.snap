@@ -13,12 +13,12 @@ exports[`DeleteCallLogConfirmationDialog > should match snapshot when chatId is 
     <div
       data-testid="dialog-title-italic"
     >
-      session log?
+      Session log?
     </div>
     <div
       data-testid="dialog-content"
     >
-      This action cannot be undone.
+      Do you relifeline want to delete this record? This process cannot be undone.
     </div>
     <button
       data-testid="delete-button"

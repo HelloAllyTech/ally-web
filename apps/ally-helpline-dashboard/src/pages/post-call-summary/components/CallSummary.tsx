@@ -1,13 +1,12 @@
 import { FC, useEffect, useState } from "react";
 
-import { CircularProgress, Divider, Tooltip } from "@mui/material";
+import { CircularProgress, Divider } from "@mui/material";
 import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { logger, DropdownField } from "@ally-ui-mono/ui-shared";
+import { logger, DropdownField } from "@lifeline-ui-mono/ui-shared";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
@@ -15,10 +14,11 @@ import {
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
   useUpdateCallSummaryNotesMutation,
+  useGetCallSummaryQuery,
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
-import { LanguageMap, Permissions, ROUTES, toolTipStyles } from "@constants";
+import { LanguageMap, Permissions, ROUTES } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce } from "@hooks";
 import { RootState } from "@store";
@@ -26,7 +26,7 @@ import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag } from "@types";
 import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions } from "@utils";
 
 import { SummaryLoading } from ".";
-import { getSummaryFields, getSummarySections, labelShownSections } from "../constants";
+import { labelShownSections, summarySections } from "../constants";
 import { CallSummaryProps, FieldType, SummaryField, SummarySectionKey } from "../types";
 import { getSectionFields } from "../utils";
 
@@ -39,15 +39,8 @@ const CallSummary: FC<CallSummaryProps> = ({
   headerContent,
   postProcess,
   canEditSummary = true,
-  callSummary,
-  onRefetchSummary,
-  isSummaryLoading,
-  summaryLoadingError,
 }) => {
-  const { t } = useTranslation();
   const { permissions, user } = useSelector((state: RootState) => state.user);
-  const sections = getSummarySections(t);
-  const translatedFields = getSummaryFields(t);
 
   const [summaryData, setSummaryData] = useState(null);
   const [searchedLocations, setSearchedLocations] = useState(null);
@@ -60,6 +53,12 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const navigate = useNavigate();
 
+  const {
+    data: callSummary,
+    refetch: refetchSummary,
+    isLoading: isSummaryLoading,
+    error: summaryLoadingError,
+  } = useGetCallSummaryQuery(chatId);
   const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery(
     undefined,
     {
@@ -146,9 +145,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         return callSummary?.details?.chatId || summaryData.callId;
       case SummaryFieldKey.CallDuration: {
         const duration = callSummary?.details?.callDuration || summaryData.callDuration;
-        return duration
-          ? `${Math.floor(Number(duration) / 60)} ${t("common.minutes_other", { count: Math.floor(Number(duration) / 60) })}`
-          : "--";
+        return duration ? `${Math.floor(Number(duration) / 60)} minutes` : "--";
       }
       case SummaryFieldKey.CallDate:
         return getFormattedDateTime(callSummary?.details?.startTime, "do MMMM yyyy");
@@ -188,10 +185,10 @@ const CallSummary: FC<CallSummaryProps> = ({
       case FieldType.Dropdown:
         return (
           <div key={field.key} className="flex gap-1">
-            <span className="font-medium text-lg text-typography-800 whitespace-nowrap bg-green">{`${field.label}: `}</span>
+            <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
             <DropdownField
               disabled={isFieldDisabled(field)}
-              value={value ?? field.placeholder ?? "--"}
+              value={value ?? "--"}
               valueClassName={`${field.isEditable ? "text-typography-900" : "text-typography-800"} 
                 text-lg font-primary`}
               onChange={value => setSummaryData(prev => ({ ...prev, [field.key]: value }))}
@@ -228,26 +225,17 @@ const CallSummary: FC<CallSummaryProps> = ({
               InputProps={{
                 readOnly: isFieldDisabled(field),
                 startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
-                endAdornment: field.isEnhanceable && shouldAllowEdit && value && value.trim() && (
-                  <Tooltip
-                    title={t("summary.enhance")}
-                    placement="bottom"
-                    arrow
-                    slotProps={toolTipStyles}
-                  >
-                    <span className="absolute bottom-2 right-2">
-                      <EnhanceButton
-                        fieldName={field.key}
-                        inputText={value}
-                        updateValue={text =>
-                          setSummaryData(prev => ({
-                            ...prev,
-                            [field.key]: text,
-                          }))
-                        }
-                      />
-                    </span>
-                  </Tooltip>
+                endAdornment: field.isEnhanceable && shouldAllowEdit && (
+                  <EnhanceButton
+                    fieldName={field.key}
+                    inputText={value}
+                    updateValue={text =>
+                      setSummaryData(prev => ({
+                        ...prev,
+                        [field.key]: text,
+                      }))
+                    }
+                  />
                 ),
               }}
             />
@@ -385,10 +373,10 @@ const CallSummary: FC<CallSummaryProps> = ({
       <div className="flex h-[90vh] items-center justify-center">
         <FallbackUI
           icon={<PageNotFoundIllustration />}
-          mainMessage={t("summary.notFoundTitle")}
-          description={t("summary.notFoundDesc")}
+          mainMessage="Summary Not Found"
+          description="The summary you are looking for does not exist."
           button={{
-            text: t("summary.goHome"),
+            text: "Go to Home",
             onClick: () => navigate(ROUTES.HOME),
           }}
         />
@@ -400,7 +388,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     return (
       <>
         <InfoBanner
-          message={t("summary.disclaimer")}
+          message="This summary has been generated by AI. lifeline AI can make mistakes. Review and edit important info before saving the summary."
           icon={() => (
             <Warning className="border-[#EC930F] border-[0.5px] rounded-[100px] p-2 w-8 h-8 shadow-lg" />
           )}
@@ -409,8 +397,8 @@ const CallSummary: FC<CallSummaryProps> = ({
         />
         {headerContent}
         <div className={`overflow-y-auto font-primary pb-[60px] ${className}`}>
-          {sections.map(({ title, icon, key }, index) => {
-            const sectionFields = getSectionFields(key, visibleFields, translatedFields);
+          {summarySections.map(({ title, icon, key }, index) => {
+            const sectionFields = getSectionFields(key, visibleFields);
             if (sectionFields?.length === 0) return null;
 
             return (
@@ -437,21 +425,21 @@ const CallSummary: FC<CallSummaryProps> = ({
               </motion.div>
             );
           })}
-          {/* TO DO: For now Additional Notes is not conditionally rendered, because it is not generated by the AI( and not involved in config).
-          In future, we will conditionally render this accordion based on the notes field */}
+          {/* TO DO: For now Additional Notes is not conditionlifeline rendered, because it is not generated by the AI( and not involved in config).
+          In future, we will conditionlifeline render this accordion based on the notes field */}
           <motion.div
             key="notes"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.4,
-              delay: ((sections?.length ?? 0) + 1) * 0.1,
+              delay: ((summarySections?.length ?? 0) + 1) * 0.1,
               ease: "easeOut",
             }}
           >
             <Accordion
               key="notes"
-              title={t("summary.additionalNotes")}
+              title="Additional Notes"
               titleIcon={{ icon: Assessment, alt: "Notes" }}
               defaultExpanded={false}
             >
@@ -465,7 +453,7 @@ const CallSummary: FC<CallSummaryProps> = ({
         {shouldAllowEdit && (
           <div className="flex justify-center">
             <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged())}>
-              {isUpdateLoading || isGetTagsLoading ? t("summary.saving") : t("summary.save")}
+              {isUpdateLoading || isGetTagsLoading ? "Saving..." : "Save"}
             </Button>
           </div>
         )}
@@ -481,7 +469,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const retriggerSummary = async () => {
     setCanShowSummary(false);
-    const result = await onRefetchSummary();
+    const result = await refetchSummary();
     if (
       [ChatSummaryStatus.PENDING, ChatSummaryStatus.IN_PROGRESS].includes(
         result?.data?.summaryStatus,

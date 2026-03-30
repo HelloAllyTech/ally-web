@@ -23,7 +23,7 @@ vi.mock("@mui/material", () => ({
 }));
 
 // Mock UI shared components
-vi.mock("@ally-ui-mono/ui-shared", () => ({
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({
   GenericTable: React.forwardRef(
     ({ columns, data, isLoading, handleLoadMore, fallbackUI, className }: any, ref: any) => (
       <div ref={ref} className={className} data-testid="generic-table">
@@ -203,10 +203,7 @@ vi.mock("../constants", () => ({
 }));
 
 // Mock Redux store
-const createMockStore = (
-  callsState: any = { filters: { offset: 0 } },
-  userState: any = { user: { role: "COUNSELLOR" } },
-) => {
+const createMockStore = (callsState: any = { filters: { offset: 0 } }) => {
   return configureStore({
     reducer: {
       calls: (state = callsState, action: any) => {
@@ -215,11 +212,9 @@ const createMockStore = (
         }
         return state;
       },
-      user: (state = userState, action: any) => state,
     },
     preloadedState: {
       calls: callsState,
-      user: userState,
     },
   });
 };
@@ -291,9 +286,8 @@ const renderComponent = (
   sessionType: SessionType,
   refreshKey?: number,
   callsState: any = { filters: { offset: 0 } },
-  userState: any = { user: { role: "COUNSELLOR" } },
 ) => {
-  const store = createMockStore(callsState, userState);
+  const store = createMockStore(callsState);
   return render(
     <Provider store={store}>
       <BrowserRouter>

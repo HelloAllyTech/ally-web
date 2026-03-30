@@ -1,12 +1,11 @@
 import { useEffect, useState, useRef, FC } from "react";
 
 import { CircularProgress } from "@mui/material";
-import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
-import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
+import { GenericTable } from "@lifeline-ui-mono/ui-shared";
+import { Column } from "@lifeline-ui-mono/ui-shared/lib/generic-table/types";
 import { useGetCallLogsQuery, useGetSimulationLogsQuery } from "@api";
 import {
   NoResults,
@@ -35,7 +34,6 @@ import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { t } = useTranslation();
 
   const { filters } = useSelector((state: RootState) => state.calls);
 
@@ -58,7 +56,6 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     {
       limit: CALL_LOGS_PAGINATION_LIMIT,
       offset: offset,
-      archive: false,
     },
     { skip: !isCall },
   );
@@ -181,46 +178,46 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const callColumns: Column<any>[] = [
     {
       key: "callName",
-      header: t("summary.fields.callId"),
+      header: "Session ID",
       style: { width: "17%" },
       icon: <CallIdIcon />,
     },
     {
       key: "dateAndTime",
-      header: t("calls.table.dateTime"),
+      header: "Date & Time",
       style: { width: "20%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
-      header: t("common.duration"),
+      header: "Duration",
       style: { width: "12%" },
       icon: <TimerIcon />,
     },
     {
       key: "tags",
-      header: t("common.tags"),
+      header: "Tags",
       style: { width: "25%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
     },
     {
       key: "summaryStatus",
-      header: t("calls.table.summaryStatus"),
+      header: "Summary Status",
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
-      header: t("calls.table.source"),
+      header: "Source",
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
       icon: <SourceIcon />,
     },
     {
       key: "summary",
-      header: t("common.summary"),
+      header: "Summary",
       style: { width: "6%" },
       render: (_value, row) => (
         <Button
@@ -258,37 +255,37 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const simulationColumns: Column<any>[] = [
     {
       key: "sessionId",
-      header: t("summary.fields.callId"),
+      header: "Session ID",
       style: { width: "20%" },
       icon: <CallIdIcon />,
     },
     {
       key: "scenarioTitle",
-      header: t("calls.table.scenario"),
+      header: "Scenario",
       style: { width: "20%" },
       icon: <ScenarioIcon />,
     },
     {
       key: "dateAndTime",
-      header: t("calls.table.dateTime"),
+      header: "Date & Time",
       style: { width: "20%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
-      header: t("common.duration"),
+      header: "Duration",
       style: { width: "15%" },
       icon: <TimerIcon />,
     },
     {
       key: "sessionScore",
-      header: t("calls.table.sessionScore"),
+      header: "Session score",
       style: { width: "15%" },
       icon: <SessionScoreIcon />,
     },
     {
       key: "summary",
-      header: t("common.summary"),
+      header: "Summary",
       style: { width: "10%" },
       render: (_value, row) => (
         <Button
@@ -311,11 +308,11 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       return (
         <FallbackUI
           icon={<NoResults />}
-          mainMessage={
-            isCall ? t("calls.fallback.callEmptyTitle") : t("calls.fallback.simEmptyTitle")
-          }
+          mainMessage={isCall ? "No call records found" : "No simulation records found"}
           description={
-            isCall ? t("calls.fallback.callEmptyDesc") : t("calls.fallback.simEmptyDesc")
+            isCall
+              ? "Your recent calls and insights will be listed here."
+              : "Your recent simulations will be listed here."
           }
           className="py-[100px]"
         />
@@ -352,6 +349,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
         return (
           <SimulationSummarySidebar
             summaryId={summary?.id as string}
+            summaryName={(summary as SimulationLog)?.metadata?.sessionName ?? ""}
             closeSummarySidebar={closeSummarySidebar}
           />
         );

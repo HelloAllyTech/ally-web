@@ -1,7 +1,6 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
 import { ChevronDown, ChevronUp, XCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { useCancelAudioUploadMutation } from "@api";
@@ -20,32 +19,23 @@ const UploadProgressDialogHeader: FC<UploadProgressHeaderProps> = ({
   expanded,
   onClose,
   onToggle,
-}) => {
-  const { t } = useTranslation();
-  return (
-    <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
-      <span className="text-sm font-medium text-typography-900">{getUploadHeader(uploads, t)}</span>
-      <div className="flex items-center gap-2 text-typography-800">
-        <Button
-          onClick={onToggle}
-          variant={ButtonVariant.ICON}
-          aria-label={
-            expanded ? t("calls.uploadProgress.collapse") : t("calls.uploadProgress.expand")
-          }
-        >
-          {expanded ? <ChevronDown /> : <ChevronUp />}
-        </Button>
-        <Button
-          onClick={onClose}
-          variant={ButtonVariant.ICON}
-          aria-label={t("calls.uploadProgress.clearAll")}
-        >
-          <Close />
-        </Button>
-      </div>
+}) => (
+  <div className="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]">
+    <span className="text-sm font-medium text-typography-900">{getUploadHeader(uploads)}</span>
+    <div className="flex items-center gap-2 text-typography-800">
+      <Button
+        onClick={onToggle}
+        variant={ButtonVariant.ICON}
+        aria-label={expanded ? "Collapse" : "Expand"}
+      >
+        {expanded ? <ChevronDown /> : <ChevronUp />}
+      </Button>
+      <Button onClick={onClose} variant={ButtonVariant.ICON} aria-label="Clear all">
+        <Close />
+      </Button>
     </div>
-  );
-};
+  </div>
+);
 
 const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
   const size = 20;
@@ -85,7 +75,6 @@ const ProgressCircle: FC<ProgressCircleProps> = ({ progress }) => {
 };
 
 const UploadProgressDialog: FC = () => {
-  const { t } = useTranslation();
   const uploads = useSelector((s: RootState) => s.calls.audioUpload);
 
   const [expanded, setExpanded] = useState(true);
@@ -148,9 +137,7 @@ const UploadProgressDialog: FC = () => {
   const getActionIcon = (status: UploadStatus, progress: number, chatId: number) => {
     if (status === UploadStatus.CANCELLED)
       return (
-        <span className="whitespace-nowrap text-xs text-typography-400">
-          {t("calls.uploadProgress.cancelled")}
-        </span>
+        <span className="whitespace-nowrap text-xs text-typography-400">Upload cancelled</span>
       );
     if (status === UploadStatus.COMPLETED) return <TickGreenBackground />;
     if (status === UploadStatus.FAILED) return <XCircle className="w-4 h-4 text-destructive-500" />;
@@ -199,15 +186,12 @@ const UploadProgressDialog: FC = () => {
       <ConfirmationDialog
         isOpen={isCancelDialogOpen}
         onClose={() => setIsCancelDialogOpen(false)}
-        title={{
-          normal: t("calls.uploadProgress.cancelDialog.title"),
-          italic: t("calls.uploadProgress.cancelDialog.titleItalic"),
-        }}
-        content={t("calls.uploadProgress.cancelDialog.content")}
-        buttonText={t("calls.uploadProgress.cancelDialog.primaryButton")}
+        title={{ normal: "Cancel", italic: "upload" }}
+        content="Your upload is not complete. Would you like to cancel the upload?"
+        buttonText="Cancel Upload"
         buttonVariant={ButtonVariant.SECONDARY}
         onButtonClick={onCancelAllUploads}
-        secondaryButtonText={t("calls.uploadProgress.cancelDialog.secondaryButton")}
+        secondaryButtonText="Continue Upload"
         secondaryButtonVariant={ButtonVariant.PRIMARY}
         onSecondaryButtonClick={() => setIsCancelDialogOpen(false)}
       />

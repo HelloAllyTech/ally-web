@@ -1,5 +1,3 @@
 export { SimulationsTab } from "./SimulationsTab";
 export { PathTab } from "./PathTab";
-export { CasesTab } from "./CasesTab";
-export { ScribeSettings } from "./ScribeSettings";
-export { SimulationsSettings } from "./SimulationsSettings";
+export { SimulationAndPathToggleCard } from "./SimulationAndPathToggleCard";

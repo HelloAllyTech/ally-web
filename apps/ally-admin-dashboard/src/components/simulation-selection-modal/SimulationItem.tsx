@@ -6,7 +6,7 @@ import { Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage } from "@lifeline-ui-mono/ui-shared";
 import { CloseRed, DragIndicator, InfoIcon, Plus } from "@assets";
 import { en, toolTipStyles } from "@constants";
 import { SimulationCardItemProps } from "@types";
@@ -23,7 +23,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
   setOpenMessageIndex,
   handleMessageClick,
   renderMessage,
-  addMessageRef,
+  addButtonRef,
   isDisabled = false,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -176,17 +176,16 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
       <>
         {!simulation.messageTitle ? (
           <div className="relative flex justify-center my-4">
-            <div ref={element => (addMessageRef.current[index] = element)}>
-              <button
-                className="border border-dashed rounded-md hover:bg-secondary-50 flex gap-2 text-typography-500 p-3"
-                onClick={() => handleMessageClick(index)}
-                type="button"
-                disabled={isDisabled}
-              >
-                <Plus className="mt-1" />
-                {en.simulation.addMessage}
-              </button>
-            </div>
+            <button
+              className="border border-dashed rounded-md hover:bg-secondary-50 flex gap-2 text-typography-500 p-3"
+              ref={element => (addButtonRef.current[index] = element)}
+              onClick={() => handleMessageClick(index)}
+              type="button"
+              disabled={isDisabled}
+            >
+              <Plus className="mt-1" />
+              {en.simulation.addMessage}
+            </button>
           </div>
         ) : (
           <AnimatePresence>
@@ -225,7 +224,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
                     }}
                     handlePrimaryAction={handleAddMessage}
                     isOpen
-                    anchorElement={addMessageRef?.current?.[index]}
+                    anchorElement={addButtonRef.current[index]}
                   />
                 </motion.div>
               </AnimatePresence>

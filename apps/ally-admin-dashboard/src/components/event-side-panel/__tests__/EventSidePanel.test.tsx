@@ -8,24 +8,23 @@ vi.mock("@assets", () => ({
   DoubleArrowRight: () => <svg data-testid="double-arrow-right" />,
   Trash: () => <svg data-testid="trash-icon" />,
   Close: () => <svg data-testid="close-icon" />,
-  InfoIcon: () => <svg data-testid="info-icon" />,
-}));
-
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  AutoExpandableTextarea: ({ value, onChange, placeholder, disabled, className }: any) => (
-    <textarea
-      data-testid="auto-expandable-textarea"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      className={className}
-    />
-  ),
-  FEATURE_FLAGS_MAP: {},
 }));
 
 vi.mock("@components", () => ({
+  AutoExpandableTextarea: ({
+    value = "",
+    onChange = () => {},
+    placeholder = "",
+    className = "",
+  }: any) => (
+    <textarea
+      data-testid="auto-textarea"
+      value={value}
+      placeholder={placeholder}
+      className={className}
+      onChange={e => onChange(e.target.value)}
+    />
+  ),
   EmojiPickerComponent: ({ onEmojiClick = () => {}, buttonText = "😀", className = "" }: any) => (
     <button
       type="button"
@@ -71,70 +70,6 @@ vi.mock("@components", () => ({
         </button>
       </div>
     ) : null,
-  OccurrenceControlSection: ({ maxOccurrences, minGapTime }: any) => (
-    <div data-testid="occurrence-control-section">
-      <span>Max Occurrences: {maxOccurrences}</span>
-      <span>Min Gap Time: {minGapTime}</span>
-    </div>
-  ),
-  TimeWindowSection: ({ startTime, endTime }: any) => (
-    <div data-testid="time-window-section">
-      <span>Start Time: {startTime}</span>
-      <span>End Time: {endTime}</span>
-    </div>
-  ),
-  ScoreWindowSection: ({ minScore, maxScore }: any) => (
-    <div data-testid="score-window-section">
-      <span>Min Score: {minScore}</span>
-      <span>Max Score: {maxScore}</span>
-    </div>
-  ),
-  EVENT_TYPE_POPUP_OPTIONS: [
-    { value: "SENTENCE_SIMILARITY", label: "Sentence Similarity" },
-    { value: "TIME_BASED", label: "Time Based" },
-    { value: "SCORE_BASED", label: "Score Based" },
-    { value: "COMBINATION", label: "Combination Event" },
-  ],
-  TextareaWithTriggerDropdown: ({ value, onChange, placeholder }: any) => (
-    <textarea
-      data-testid="textarea-trigger-dropdown"
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-    />
-  ),
-  SimpleTagSelector: ({ tags, updateTags, label }: any) => (
-    <div data-testid="simple-tag-selector">
-      {label && <label>{label}</label>}
-      <div>
-        {Array.isArray(tags) && tags.length > 0 ? (
-          tags.map((tag: string, index: number) => (
-            <span key={index} data-testid={`tag-${index}`}>
-              {tag}
-              <button
-                onClick={() => updateTags(tags.filter((_: any, i: number) => i !== index))}
-                data-testid={`remove-tag-${index}`}
-              >
-                ×
-              </button>
-            </span>
-          ))
-        ) : (
-          <span data-testid="no-tags">No tags</span>
-        )}
-        <button
-          data-testid="add-tag-button"
-          onClick={() => {
-            // Simulate adding a tag
-            const newTag = "new-tag";
-            updateTags([...tags, newTag]);
-          }}
-        >
-          Add +
-        </button>
-      </div>
-    </div>
-  ),
 }));
 
 vi.mock("@constants", () => ({
@@ -151,16 +86,6 @@ vi.mock("@constants", () => ({
     SCORE_BASED: "SCORE_BASED",
     SENTENCE_SIMILARITY: "SENTENCE_SIMILARITY",
     COMBINATION: "COMBINATION",
-  },
-  toolTipStyles: {
-    tooltip: {
-      sx: {
-        bgcolor: "common.black",
-        "& .MuiTooltip-arrow": {
-          color: "common.black",
-        },
-      },
-    },
   },
 }));
 

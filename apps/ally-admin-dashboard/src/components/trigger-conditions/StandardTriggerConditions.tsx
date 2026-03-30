@@ -26,7 +26,7 @@ export const StandardTriggerConditions: React.FC<StandardTriggerConditionsProps>
   const isSentenceSimilarity = eventType === EVENT_DETECTION_TYPES.SENTENCE_SIMILARITY;
   const isSemanticSimilarity = eventType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY;
   const isScoreBased = eventType === EVENT_DETECTION_TYPES.SCORE_BASED;
-  const isBinaryClassification = eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFIER;
+  const isBinaryClassification = eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION;
 
   // Both sentence similarity , semantic similarity  and binary classification use the same layout
   const isMultilineLayout = isSentenceSimilarity || isSemanticSimilarity || isBinaryClassification;

@@ -1,14 +1,9 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useForm } from "react-hook-form";
-import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
-import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { toast } from "sonner";
 
 import { CreateSimulation } from "../CreateSimulation";
-import { ChecklistType, ExperienceMode } from "@constants";
-import reportUploadReducer from "@reducer/reportUploadReducer";
 
 // Hoist constants mock
 const mockEn = vi.hoisted(() => ({
@@ -65,13 +60,18 @@ vi.mock("@api", () => ({
   useUpdateSimulationByIdMutation: () => [mockUpdateSimulation],
   useLazyGetAdminSimulationByIdQuery: () => [mockGetSimulationById, { data: null }],
   useDeleteCoverImageMutation: () => [mockDeleteCoverImage],
-  useGetAvailableLanguageVoicesQuery: () => ({ data: [] }),
-  useGetPromptsQuery: () => ({ data: [] }),
 }));
 
 // Mock hooks
 vi.mock("@hooks", () => ({
   useDebounce: (fn: any) => fn, // Return the function immediately without debouncing
+}));
+
+// Mock feature flags to enable NEW_CREATE_SIMULATION_FLAG
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+  FEATURE_FLAGS_MAP: {
+    NEW_CREATE_SIMULATION_FLAG: true,
+  },
 }));
 
 // Mock components
@@ -145,19 +145,6 @@ vi.mock("@components", () => ({
 // Mock constants
 vi.mock("@constants", () => ({
   en: mockEn,
-  ExperienceMode: {
-    FEEDBACK: "FEEDBACK",
-    CHECKLIST: "CHECKLIST",
-  },
-  ChecklistType: {
-    GUIDED: "GUIDED",
-    UNGUIDED: "UNGUIDED",
-  },
-  // Provide FORM_FIELD_IDS to satisfy CreateSimulation import
-  FORM_FIELD_IDS: {
-    LANGUAGES_VOICES: "languageVoices",
-  },
-  ROLE_INSTRUCTION_PROMPT_CODE: "openai_simulation_role_instruction",
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
     EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
@@ -193,9 +180,17 @@ vi.mock("@constants", () => ({
       fields: [
         { id: "title", isMandatory: true },
         { id: "description", isMandatory: true },
-        // Include language-voice mapping as mandatory to match app behavior
-        { id: "languageVoices", isMandatory: true },
         { id: "age", isMandatory: false },
+      ],
+    },
+  ],
+  SIMULATION_CREATOR_FIELD_GROUPS_OLD: [
+    {
+      id: "basic-info",
+      label: "Basic Information",
+      fields: [
+        { id: "title", isMandatory: true },
+        { id: "description", isMandatory: true },
       ],
     },
   ],
@@ -229,16 +224,12 @@ describe("CreateSimulation", () => {
       title: "Test Title",
       description: "Test Description",
       triggerWarningIds: [],
-      // Provide at least one language->voice mapping by default so header is enabled
-      languageVoices: { "1": "voice-1" },
     })),
     getValues: vi.fn(() => ({
       title: "Test Title",
       description: "Test Description",
       triggerWarningIds: [],
-      languageVoices: { "1": "voice-1" },
     })) as any,
-    setValue: vi.fn(),
     reset: vi.fn(),
   };
 
@@ -251,22 +242,11 @@ describe("CreateSimulation", () => {
     Element.prototype.scrollTo = vi.fn();
   });
 
-  const createTestStore = () =>
-    configureStore({
-      reducer: { reportUpload: reportUploadReducer.reducer },
-      preloadedState: {
-        reportUpload: { uploads: [], currentScenarioId: undefined },
-      },
-    });
-
   const renderCreateSimulation = () => {
-    const store = createTestStore();
     return render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <CreateSimulation />
-        </BrowserRouter>
-      </Provider>,
+      <BrowserRouter>
+        <CreateSimulation />
+      </BrowserRouter>,
     );
   };
 
@@ -277,13 +257,6 @@ describe("CreateSimulation", () => {
       expect(screen.getByTestId("header")).toBeInTheDocument();
       expect(screen.getByTestId("vertical-stepper")).toBeInTheDocument();
       expect(screen.getByTestId("footer")).toBeInTheDocument();
-    });
-
-    it("should not render the deprecated 'Voice' standalone field", () => {
-      renderCreateSimulation();
-
-      expect(screen.queryByText("Voice")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("voice-dropdown-voice")).not.toBeInTheDocument();
     });
   });
 
@@ -562,7 +535,6 @@ describe("CreateSimulation", () => {
         title: "",
         description: "",
         triggerWarningIds: [],
-        languageVoices: { "1": "" },
       });
       renderCreateSimulation();
 
@@ -575,7 +547,6 @@ describe("CreateSimulation", () => {
         title: "Test",
         description: "Test Description",
         triggerWarningIds: [],
-        languageVoices: { "1": "voice-1" },
       });
       renderCreateSimulation();
 
@@ -626,131 +597,6 @@ describe("CreateSimulation", () => {
               scenarios: expect.arrayContaining([
                 expect.objectContaining({
                   openingStatements: ["Statement 1", "Statement 2", "Statement 3"],
-                }),
-              ]),
-            }),
-          );
-        },
-        { timeout: 500 },
-      );
-    });
-  });
-
-  describe("Timer Mode Validation", () => {
-    it("should validate maxTimeValue when timerMode is enabled", async () => {
-      mockFormMethods.getValues.mockReturnValue({
-        title: "Test Title",
-        description: "Test Description",
-        timerMode: true,
-        maxTimeValue: "00:05:00",
-        triggerWarningIds: [],
-      });
-
-      renderCreateSimulation();
-
-      const saveDraftButton = screen.getByText("Save Draft");
-      fireEvent.click(saveDraftButton);
-
-      await waitFor(
-        () => {
-          // Valid time should not show error
-          expect(screen.queryByText(/maxTimeError/)).not.toBeInTheDocument();
-        },
-        { timeout: 500 },
-      );
-    });
-
-    it("should show error when maxTimeValue exceeds max time", async () => {
-      mockFormMethods.getValues.mockReturnValue({
-        title: "Test Title",
-        description: "Test Description",
-        timerMode: true,
-        maxTimeValue: "02:00:00", // Exceeds 02:00:00
-        triggerWarningIds: [],
-      });
-
-      renderCreateSimulation();
-
-      const saveDraftButton = screen.getByText("Save Draft");
-      fireEvent.click(saveDraftButton);
-
-      await waitFor(() => {
-        // Should call toast.error for invalid time
-        expect(toast.error).toHaveBeenCalled();
-      });
-    });
-
-    it("should skip maxTimeValue validation when timerMode is disabled", async () => {
-      mockFormMethods.getValues.mockReturnValue({
-        title: "Test Title",
-        description: "Test Description",
-        timerMode: false,
-        maxTimeValue: undefined,
-        triggerWarningIds: [],
-      });
-      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
-
-      renderCreateSimulation();
-
-      const saveDraftButton = screen.getByText("Save Draft");
-      fireEvent.click(saveDraftButton);
-
-      await waitFor(
-        () => {
-          expect(mockCreateSimulation).toHaveBeenCalled();
-        },
-        { timeout: 500 },
-      );
-    });
-
-    it("should skip validation when timerMode is true but maxTimeValue is not provided", async () => {
-      mockFormMethods.getValues.mockReturnValue({
-        title: "Test Title",
-        description: "Test Description",
-        timerMode: true,
-        maxTimeValue: undefined,
-        triggerWarningIds: [],
-      });
-
-      renderCreateSimulation();
-
-      const saveDraftButton = screen.getByText("Save Draft");
-      fireEvent.click(saveDraftButton);
-
-      // Should not validate if maxTimeValue is not provided
-      await waitFor(
-        () => {
-          expect(screen.queryByText(/titleIsRequired/)).not.toBeInTheDocument();
-        },
-        { timeout: 500 },
-      );
-    });
-  });
-
-  describe("Experience Mode and Checklist Type", () => {
-    it("should keep checklistType when experienceMode is CHECKLIST", async () => {
-      mockFormMethods.getValues.mockReturnValue({
-        title: "Test Title",
-        description: "Test Description",
-        experienceMode: ExperienceMode.CHECKLIST,
-        checklistType: ChecklistType.GUIDED,
-        triggerWarningIds: [],
-      });
-      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
-
-      renderCreateSimulation();
-
-      const saveDraftButton = screen.getByText("Save Draft");
-      fireEvent.click(saveDraftButton);
-
-      await waitFor(
-        () => {
-          expect(mockCreateSimulation).toHaveBeenCalledWith(
-            expect.objectContaining({
-              scenarios: expect.arrayContaining([
-                expect.objectContaining({
-                  experienceMode: ExperienceMode.CHECKLIST,
-                  checklistType: ChecklistType.GUIDED,
                 }),
               ]),
             }),

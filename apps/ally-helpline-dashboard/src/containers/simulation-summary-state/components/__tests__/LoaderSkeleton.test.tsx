@@ -55,20 +55,20 @@ describe("LoaderSkeleton", () => {
       expect(topSection).toBeInTheDocument();
     });
 
-    it("should render header area with image and text placeholders", () => {
+    it("should render two-column layout for demographics", () => {
       render(<LoaderSkeleton />);
 
-      // Check for the header layout with image placeholder and text bars
-      const headerLayout = document.querySelector(".flex.items-center.gap-5.p-4");
-      expect(headerLayout).toBeInTheDocument();
+      // Check for the two-column layout
+      const twoColumnLayout = document.querySelector(".flex.flex-row.gap-4.mb-4");
+      expect(twoColumnLayout).toBeInTheDocument();
     });
 
-    it("should render image placeholder in header", () => {
+    it("should render icon elements", () => {
       render(<LoaderSkeleton />);
 
-      // Check for the image placeholder (w-[150px] h-[77px])
-      const imagePlaceholder = document.querySelector(".w-\\[150px\\].h-\\[77px\\].bg-gray-200");
-      expect(imagePlaceholder).toBeInTheDocument();
+      // Check for icon placeholders
+      const iconElements = document.querySelectorAll(".w-6.h-6.bg-gray-200.rounded.animate-pulse");
+      expect(iconElements.length).toBeGreaterThan(0);
     });
   });
 
@@ -92,8 +92,8 @@ describe("LoaderSkeleton", () => {
     it("should have responsive width classes", () => {
       render(<LoaderSkeleton />);
 
-      // Check for width classes (component uses w-1/2 for header bar)
-      const responsiveElements = document.querySelectorAll("[class*='w-1/2'], [class*='w-full']");
+      // Check for responsive width classes
+      const responsiveElements = document.querySelectorAll(".w-1\\/2, .w-1\\/3, .w-2\\/3");
       expect(responsiveElements.length).toBeGreaterThan(0);
     });
 
@@ -101,7 +101,7 @@ describe("LoaderSkeleton", () => {
       render(<LoaderSkeleton />);
 
       // Check for margin and padding classes
-      const spacingElements = document.querySelectorAll(".mb-4, .mb-8, .p-4");
+      const spacingElements = document.querySelectorAll(".mb-4, .mb-8, .mr-4");
       expect(spacingElements.length).toBeGreaterThan(0);
     });
   });
@@ -157,7 +157,7 @@ describe("LoaderSkeleton", () => {
 
       // Should have a consistent number of skeleton elements
       const skeletonElements = container.querySelectorAll(".animate-pulse");
-      expect(skeletonElements.length).toBeGreaterThan(10);
+      expect(skeletonElements.length).toBeGreaterThan(15);
     });
   });
 });

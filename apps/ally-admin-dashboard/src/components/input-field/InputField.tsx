@@ -1,9 +1,6 @@
-import { useEffect } from "react";
-
 import { InfoIcon } from "@assets";
 import { InputFieldProps } from "@components/types";
 import { FORM_FIELD_TYPES } from "@constants";
-import { isNonEmptyString } from "@utils";
 
 export const InputField: React.FC<InputFieldProps> = ({
   label,
@@ -16,9 +13,6 @@ export const InputField: React.FC<InputFieldProps> = ({
   infoIconContent,
   isMandatory = false,
   maxLength,
-  defaultValue = "",
-  disabled = false,
-  regenerateButton,
 }) => {
   const isAgeField = id === "age";
   const MAX_AGE = 150;
@@ -69,15 +63,6 @@ export const InputField: React.FC<InputFieldProps> = ({
     }
   };
 
-  useEffect(() => {
-    // if the url contains edit, don't set the default value (Edit flow)
-    if (window.location.pathname.includes("edit") && id === "prompt") return;
-
-    if (!isNonEmptyString(formMethods.getValues(id)) && isNonEmptyString(defaultValue)) {
-      formMethods.setValue(id, defaultValue);
-    }
-  }, [formMethods, id, defaultValue]);
-
   const inputTrack = formMethods.watch(id, "") || "";
   const {
     formState: { errors },
@@ -96,7 +81,6 @@ export const InputField: React.FC<InputFieldProps> = ({
           {isMandatory && <span className="text-destructive-500">*</span>}
           {infoIconContent && <InfoIcon />}
         </label>
-        {regenerateButton}
       </div>
       <div className="relative mb-[15px]">
         {multiline ? (
@@ -105,9 +89,8 @@ export const InputField: React.FC<InputFieldProps> = ({
             id={id}
             maxLength={maxLength}
             placeholder={placeholder}
-            disabled={disabled}
             style={{ minHeight: `${minHeight}px`, fontSize: "14px" }}
-            className={`w-full rounded custom-scrollbar border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:primary-500 px-2 py-1 pr-16`}
+            className={`w-full rounded border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:outline-none px-2 py-1 pr-16`}
           />
         ) : (
           <input
@@ -116,7 +99,6 @@ export const InputField: React.FC<InputFieldProps> = ({
             type={type}
             {...(maxLength && { maxLength })}
             placeholder={placeholder}
-            disabled={disabled}
             {...(isAgeField
               ? {
                   inputMode: "numeric",

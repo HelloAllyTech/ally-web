@@ -1,8 +1,6 @@
-import { FC, useRef } from "react";
+import { FC } from "react";
 
-import { useTranslation } from "react-i18next";
-
-import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { InfiniteScroll } from "@lifeline-ui-mono/ui-shared";
 
 import { TranscriptTabProps } from "./types";
 
@@ -13,29 +11,13 @@ const formatTime = (startSeconds: number) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
-const TranscriptTab: FC<TranscriptTabProps> = ({
-  transcriptList,
-  handleLoadMore,
-  isLoading,
-  hasMore = true,
-}) => {
-  const { t } = useTranslation();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
+const TranscriptTab: FC<TranscriptTabProps> = ({ transcriptList, handleLoadMore, isLoading }) => {
   return (
-    <div className="flex-1 p-4 font-primary">
-      <h3 className="font-semibold text-base mb-4">{t("transcription.title")}</h3>
+    <div className="flex-1 overflow-y-scroll p-4">
+      <h3 className="font-semibold text-base mb-4">Transcript</h3>
       {transcriptList?.length > 0 ? (
-        <div
-          ref={scrollContainerRef}
-          className="space-y-4 flex-1 mb-[12px] h-[calc(100vh-250px)] overflow-y-auto"
-        >
-          <InfiniteScroll
-            onInfiniteScroll={handleLoadMore}
-            isLoading={isLoading}
-            hasMore={hasMore}
-            scrollContainerRef={scrollContainerRef}
-          >
+        <div className="space-y-4 flex-1 mb-[12px] h-[calc(100vh-250px)] overflow-y-auto">
+          <InfiniteScroll onInfiniteScroll={handleLoadMore} isLoading={isLoading}>
             {transcriptList.map(({ speaker, content, startSeconds }, index: number) => (
               <div key={`${speaker}-${index}`} className="flex">
                 <span className="mr-3">{startSeconds ? formatTime(startSeconds) : ""}</span>
@@ -49,7 +31,7 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
         </div>
       ) : (
         <div className="space-y-4 flex-1 mb-[12px]">
-          <div className="text-sm text-typography-700">{t("transcription.empty")}</div>
+          <div className="text-sm text-typography-700">No transcript available</div>
         </div>
       )}
     </div>

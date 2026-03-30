@@ -10,7 +10,6 @@ export const cellTypes = {
   switch: "switch",
   emoji_select: "emoji_select",
   normalText: "normalText",
-  wrapText: "wrapText",
 };
 
 // Common component mocks that can be reused

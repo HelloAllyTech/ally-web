@@ -1,37 +1,55 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import { Trash } from "@assets";
-import { GenericFilterDropdownProps, RequestFilterOption } from "@components/types";
-import { KeyboardKeys, en } from "@constants";
+import { FilterDropdownProps, FilterValues } from "@components/types";
+import {
+  KeyboardKeys,
+  en,
+  FilterDropdownOptions,
+  userRoleItems,
+  userStatusItems,
+  userStatus,
+} from "@constants";
+import { formatCapitalizedEnum } from "@utils";
+
+import { StatusBadge } from "../status-badge";
 
 const listWidth = 200;
 
-export function FilterDropdown<T extends Record<string, any>>({
+export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   isOpen,
   onClose,
-  sections,
+  organizations,
   onApplyFilters,
   anchorRect,
   currentFilters,
-}: GenericFilterDropdownProps<T>) {
-  const [viewSubList, setViewSubList] = useState<keyof T | null>(null);
+}) => {
+  const orgItems = organizations || [];
 
-  // Initialize with correct type
-  const [selectedFilters, setSelectedFilters] = useState<Record<keyof T, Record<string, boolean>>>(
-    {} as any,
+  const menuItems = [
+    FilterDropdownOptions.ROLE,
+    FilterDropdownOptions.ORGANIZATION,
+    FilterDropdownOptions.STATUS,
+  ];
+
+  const [viewSubList, setViewSubList] = useState<FilterDropdownOptions | null>(null);
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, Record<string, boolean>>>({
+    organizations: {},
+    roles: {},
+    statuses: {},
+  });
+
+  const selectedCounts = useMemo(
+    () => ({
+      [FilterDropdownOptions.ORGANIZATION]: Object.values(selectedFilters.organizations).filter(
+        Boolean,
+      ).length,
+      [FilterDropdownOptions.ROLE]: Object.values(selectedFilters.roles).filter(Boolean).length,
+      [FilterDropdownOptions.STATUS]: Object.values(selectedFilters.statuses).filter(Boolean)
+        .length,
+    }),
+    [selectedFilters],
   );
-
-  // Initialize count map
-  const selectedCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    sections.forEach(section => {
-      const sectionFilters = selectedFilters[section.id];
-      counts[section.id as string] = sectionFilters
-        ? Object.values(sectionFilters).filter(Boolean).length
-        : 0;
-    });
-    return counts;
-  }, [selectedFilters, sections]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -47,27 +65,24 @@ export function FilterDropdown<T extends Record<string, any>>({
     };
   }, [isOpen, onClose]);
 
-  // Reset internal state when isOpen opens or currentFilters change
   useEffect(() => {
-    if (!sections.length) return;
+    // Initialize selected filters based on current filters
+    const initializeFilterSection = (items: string[], selectedItems: string[]) => {
+      return items.reduce(
+        (accumulator, itemName) => ({
+          ...accumulator,
+          [itemName]: selectedItems.includes(itemName),
+        }),
+        {},
+      );
+    };
 
-    const newSelectedFilters: any = {};
-
-    sections.forEach(section => {
-      // currentFilters[section.id] should be string[]
-      const currentSectionFilters = (currentFilters[section.id] as unknown as string[]) || [];
-
-      const selectionMap: Record<string, boolean> = {};
-      // Ensure specific options are marked
-      currentSectionFilters.forEach(val => {
-        selectionMap[val] = true;
-      });
-
-      newSelectedFilters[section.id] = selectionMap;
+    setSelectedFilters({
+      organizations: initializeFilterSection(orgItems, currentFilters.organizations),
+      roles: initializeFilterSection(userRoleItems, currentFilters.roles),
+      statuses: initializeFilterSection(userStatusItems, currentFilters.statuses),
     });
-
-    setSelectedFilters(newSelectedFilters);
-  }, [currentFilters, sections, isOpen]); // Added isOpen to reset on open
+  }, [currentFilters, organizations, orgItems]);
 
   if (!isOpen) return null;
 
@@ -77,85 +92,101 @@ export function FilterDropdown<T extends Record<string, any>>({
   };
 
   const handleApplyFilters = () => {
-    const result: any = {};
-
-    sections.forEach(section => {
-      const sectionSelection = selectedFilters[section.id] || {};
-      const selectedValues = Object.keys(sectionSelection).filter(key => sectionSelection[key]);
-      result[section.id] = selectedValues;
-    });
-
-    onApplyFilters(result as T);
-    handleClose(); // Close after apply? Original did.
+    const filters: FilterValues = {
+      organizations: orgItems.filter(name => selectedFilters.organizations[name]),
+      roles: userRoleItems.filter(name => selectedFilters.roles[name]),
+      statuses: userStatusItems.filter(name => selectedFilters.statuses[name]),
+    };
+    onApplyFilters(filters);
+    handleClose();
   };
 
-  const updateSelectedFilters = (sectionId: keyof T, itemValue: string, checked: boolean) => {
-    setSelectedFilters(prev => ({
-      ...prev,
-      [sectionId]: {
-        ...(prev[sectionId] || {}),
-        [itemValue]: checked,
+  const updateSelectedFilters = (
+    filterType: keyof typeof selectedFilters,
+    itemName: string,
+    checked: boolean,
+  ) => {
+    setSelectedFilters(previousFilters => ({
+      ...previousFilters,
+      [filterType]: {
+        ...previousFilters[filterType],
+        [itemName]: checked,
       },
     }));
   };
 
-  const clearFilterSection = (sectionId: keyof T) => {
-    setSelectedFilters(prev => ({
-      ...prev,
-      [sectionId]: {},
+  const clearFilterSection = (filterType: keyof typeof selectedFilters) => {
+    setSelectedFilters(previousFilters => ({
+      ...previousFilters,
+      [filterType]: {},
     }));
   };
 
   const top = anchorRect ? anchorRect.bottom + 8 : 100;
   const left = anchorRect ? anchorRect.left : 100;
 
-  const renderSelectablePanel = (sectionId: keyof T) => {
-    const section = sections.find(s => s.id === sectionId);
-    if (!section) return null;
-
-    const selected = selectedFilters[sectionId] || {};
-
+  const renderSelectablePanel = (
+    title: string,
+    items: string[],
+    filterType: keyof typeof selectedFilters,
+  ) => {
+    const selected = selectedFilters[filterType];
     return (
       <>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-typography-600 text-base">{section.label}</div>
+          <div className="text-typography-600 text-base">{title}</div>
           <button
             className="text-typography-600 hover:text-typography-800"
             title="Clear"
-            onClick={() => clearFilterSection(sectionId)}
+            onClick={() => clearFilterSection(filterType)}
           >
             <Trash />
           </button>
         </div>
         <div className="max-h-64 overflow-auto pr-2">
-          {section.options.map((option: RequestFilterOption) => (
-            <label key={option.value} className="flex items-center gap-3 px-1 py-2">
+          {items.map(name => (
+            <label key={name} className="flex items-center gap-3 px-1 py-2">
               <input
                 type="checkbox"
                 className="h-4 w-4 border-border-dark"
-                checked={!!selected[option.value]}
-                onChange={e => updateSelectedFilters(sectionId, option.value, e.target.checked)}
+                checked={!!selected[name]}
+                onChange={e => updateSelectedFilters(filterType, name, e.target.checked)}
               />
               <span className={"text-typography-900 text-base"}>
-                {section.renderOption ? section.renderOption(option) : option.label}
+                {name === userStatus.SUSPENDED || name === userStatus.ACTIVE ? (
+                  <StatusBadge status={name} />
+                ) : (
+                  formatCapitalizedEnum(name)
+                )}
               </span>
             </label>
           ))}
-          {section.options.length === 0 && (
-            <div className="p-4 text-center text-sm text-gray-500 italic">
-              {en.common.noOptionsAvailable}
-            </div>
-          )}
         </div>
       </>
     );
   };
 
   const renderRightPanel = () => {
-    if (!viewSubList) return null;
+    let children = null;
+    switch (viewSubList) {
+      case FilterDropdownOptions.ORGANIZATION:
+        children = renderSelectablePanel(
+          FilterDropdownOptions.ORGANIZATION,
+          orgItems,
+          "organizations",
+        );
+        break;
+      case FilterDropdownOptions.ROLE:
+        children = renderSelectablePanel(FilterDropdownOptions.ROLE, userRoleItems, "roles");
+        break;
+      case FilterDropdownOptions.STATUS:
+        children = renderSelectablePanel(FilterDropdownOptions.STATUS, userStatusItems, "statuses");
+        break;
+      default:
+        children = null;
+    }
 
-    const children = renderSelectablePanel(viewSubList);
-    if (!children) return null; // Should not happen if viewSubList is set correctly
+    if (!children) return null;
 
     return (
       <div
@@ -177,28 +208,28 @@ export function FilterDropdown<T extends Record<string, any>>({
 
   return (
     <div>
-      <div className="fixed inset-0 z-[9998]" onClick={handleClose} />
+      <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       <div
         className={`fixed z-[9999] w-[${listWidth}px] bg-white border border-border-light shadow-lg rounded-lg`}
         style={{ top, left }}
       >
-        {sections.map(section => {
-          const isActive = viewSubList === section.id;
-          const count = selectedCounts[section.id as string] ?? 0;
+        {menuItems.map(item => {
+          const isActive = viewSubList === item;
+          const count = selectedCounts[item] ?? 0;
           return (
             <button
-              key={section.id as string}
+              key={item}
               className={`block font-normal text-base text-typography-900 text-left px-4 py-2 m-2 rounded-md transition-colors ${
                 isActive
                   ? "bg-neutral-100 text-typography-900"
                   : "hover:bg-background-secondary text-neutral-800"
               }`}
-              onClick={() => setViewSubList(section.id)}
+              onClick={() => setViewSubList(item)}
               style={{ width: listWidth - 20 }}
               aria-pressed={isActive}
             >
               <div className="flex items-center justify-between">
-                <span>{section.label}</span>
+                <span>{item}</span>
                 {count > 0 && <span className="text-primary">{count}</span>}
               </div>
             </button>
@@ -208,4 +239,4 @@ export function FilterDropdown<T extends Record<string, any>>({
       {renderRightPanel()}
     </div>
   );
-}
+};

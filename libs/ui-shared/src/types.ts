@@ -24,7 +24,6 @@ export interface triggerWarning {
 
 export interface SimulationDetailsModalProps {
   isOpen: boolean;
-  showActionButtons?: boolean;
   title: string;
   description: string;
   coverImageUrl?: string;
@@ -32,10 +31,10 @@ export interface SimulationDetailsModalProps {
   headerTitle?: string;
   headerSubtitle?: string;
   scenarioLabel?: string;
-  primaryButtonText?: string;
-  secondaryButtonText?: string;
-  onPrimaryClick?: () => void;
-  onSecondaryClick?: () => void;
+  primaryButtonText: string;
+  secondaryButtonText: string;
+  onPrimaryClick: () => void;
+  onSecondaryClick: () => void;
   onClickOutside?: () => void;
   isPrimaryLoading?: boolean;
   primaryButtonClassName?: string;
@@ -45,7 +44,6 @@ export interface SimulationDetailsModalProps {
   contentClassName?: string;
   imageContainerClassName?: string;
   triggerWarnings?: triggerWarning[];
-  triggerWarningsLabel?: string;
   renderCustomImage?: (props: { src?: string; alt: string; className?: string }) => ReactNode;
   renderAdditionalContent?: () => ReactNode;
 }

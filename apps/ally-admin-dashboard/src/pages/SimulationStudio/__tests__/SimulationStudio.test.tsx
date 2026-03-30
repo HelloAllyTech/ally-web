@@ -6,20 +6,15 @@ import { SimulationStatus } from "@constants";
 import type { Simulation } from "@types";
 
 // Hoist mocks to avoid initialization errors
-const { mockUseSimulations, mockUseSimulationPathways, mockUseSimulationCases, mockUseUser } =
-  vi.hoisted(() => ({
-    mockUseSimulations: vi.fn(),
-    mockUseSimulationPathways: vi.fn(),
-    mockUseSimulationCases: vi.fn(),
-    mockUseUser: vi.fn(),
-  }));
+const { mockUseSimulations, mockUseSimulationPathways } = vi.hoisted(() => ({
+  mockUseSimulations: vi.fn(),
+  mockUseSimulationPathways: vi.fn(),
+}));
 
 // Mock the custom hooks
 vi.mock("@hooks", () => ({
   useSimulations: mockUseSimulations,
   useSimulationPathways: mockUseSimulationPathways,
-  useSimulationCases: mockUseSimulationCases,
-  useUser: mockUseUser,
 }));
 
 // Mock components
@@ -77,8 +72,6 @@ vi.mock("@components", async importOriginal => {
       onUnarchive,
       onCreateSimulation,
       footer,
-      currentUser,
-      isSuperAdmin,
     }: any) => {
       // Handle loading state
       if (isLoading && simulations.length === 0) {
@@ -109,61 +102,45 @@ vi.mock("@components", async importOriginal => {
         );
       }
 
-      const isCreatorOrSuperAdmin = (simulation: any) => {
-        if (isSuperAdmin) return true;
-        const createdBy = simulation.createdByUserId;
-        return createdBy === currentUser?.id;
-      };
-
       return (
         <div data-testid="simulation-list">
           {simulations.map((simulation: any) => (
             <div key={simulation.id} data-testid={`simulation-${simulation.id}`}>
               <h3>{simulation.title}</h3>
               <span>Status: {simulation.status}</span>
-              {isCreatorOrSuperAdmin(simulation) && (
-                <button onClick={() => onEdit?.(simulation)} data-testid={`edit-${simulation.id}`}>
-                  Edit
-                </button>
-              )}
-              {isCreatorOrSuperAdmin(simulation) && (
-                <button
-                  onClick={() => onDelete?.(simulation)}
-                  data-testid={`delete-${simulation.id}`}
-                >
-                  Delete
-                </button>
-              )}
+              <button onClick={() => onEdit?.(simulation)} data-testid={`edit-${simulation.id}`}>
+                Edit
+              </button>
+              <button
+                onClick={() => onDelete?.(simulation)}
+                data-testid={`delete-${simulation.id}`}
+              >
+                Delete
+              </button>
               <button
                 onClick={() => onPreview?.(simulation)}
                 data-testid={`preview-${simulation.id}`}
               >
                 Preview
               </button>
-              {isCreatorOrSuperAdmin(simulation) && (
-                <button
-                  onClick={() => onArchive?.(simulation)}
-                  data-testid={`archive-${simulation.id}`}
-                >
-                  Archive
-                </button>
-              )}
-              {isCreatorOrSuperAdmin(simulation) && (
-                <button
-                  onClick={() => onUnpublish?.(simulation)}
-                  data-testid={`unpublish-${simulation.id}`}
-                >
-                  Unpublish
-                </button>
-              )}
-              {isCreatorOrSuperAdmin(simulation) && (
-                <button
-                  onClick={() => onUnarchive?.(simulation)}
-                  data-testid={`unarchive-${simulation.id}`}
-                >
-                  Unarchive
-                </button>
-              )}
+              <button
+                onClick={() => onArchive?.(simulation)}
+                data-testid={`archive-${simulation.id}`}
+              >
+                Archive
+              </button>
+              <button
+                onClick={() => onUnpublish?.(simulation)}
+                data-testid={`unpublish-${simulation.id}`}
+              >
+                Unpublish
+              </button>
+              <button
+                onClick={() => onUnarchive?.(simulation)}
+                data-testid={`unarchive-${simulation.id}`}
+              >
+                Unarchive
+              </button>
             </div>
           ))}
           {footer}
@@ -343,7 +320,6 @@ describe("SimulationStudio", () => {
       status: SimulationStatus.DRAFT,
       isPreviewEnabled: true,
       usage: 10,
-      createdByUserId: 2,
     },
     {
       id: "sim-2",
@@ -355,7 +331,6 @@ describe("SimulationStudio", () => {
       status: SimulationStatus.PUBLISHED,
       isPreviewEnabled: true,
       usage: 20,
-      createdByUserId: 1,
     },
   ];
 
@@ -412,61 +387,12 @@ describe("SimulationStudio", () => {
     handleNewPathway: vi.fn(),
     onEditPathway: vi.fn(),
     handleDeletePathway: vi.fn(),
-    currentPathway: null,
-    isDuplicatePathwayPopupOpen: false,
-    isUnpublishPathwayPopupOpen: false,
-    isDeletePathwayPopupOpen: false,
-    setIsDuplicatePathwayPopupOpen: vi.fn(),
-    setIsUnpublishPathwayPopupOpen: vi.fn(),
-    setIsDeletePathwayPopupOpen: vi.fn(),
-    onDeletePathway: vi.fn(),
-    handleUnpublishPathway: vi.fn(),
-    handleChangePathwayStatus: vi.fn(),
-    handleDuplicatePathway: vi.fn(),
-    onDuplicatePathway: vi.fn(),
-    isPathEditPopupOpen: false,
-    setIsPathEditPopupOpen: vi.fn(),
-    handleEditPathway: vi.fn(),
-  };
-
-  const defaultCasesHookReturn = {
-    cases: [],
-    hasMore: false,
-    isCasesLoading: false,
-    isCasesFetching: false,
-    loadCases: vi.fn(),
-    handleNewCase: vi.fn(),
-    onEditCase: vi.fn(),
-    handleDeleteCase: vi.fn(),
-    currentCase: null,
-    isDuplicateCasePopupOpen: false,
-    isUnpublishCasePopupOpen: false,
-    isDeleteCasePopupOpen: false,
-    setIsDuplicateCasePopupOpen: vi.fn(),
-    setIsUnpublishCasePopupOpen: vi.fn(),
-    setIsDeleteCasePopupOpen: vi.fn(),
-    onDeleteCase: vi.fn(),
-    handleUnpublishCase: vi.fn(),
-    handleChangeCaseStatus: vi.fn(),
-    handleDuplicateCase: vi.fn(),
-    onDuplicateCase: vi.fn(),
-    isCaseEditPopupOpen: false,
-    setIsCaseEditPopupOpen: vi.fn(),
-    handleEditCase: vi.fn(),
-  };
-
-  const defaultUserHookReturn = {
-    user: {
-      role: "SUPER_ADMIN",
-    },
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseSimulations.mockReturnValue(defaultSimulationsHookReturn);
     mockUseSimulationPathways.mockReturnValue(defaultPathwaysHookReturn);
-    mockUseSimulationCases.mockReturnValue(defaultCasesHookReturn);
-    mockUseUser.mockReturnValue(defaultUserHookReturn);
   });
 
   const renderComponent = (initialEntries = ["/"]) => {
@@ -480,7 +406,7 @@ describe("SimulationStudio", () => {
   describe("Initial rendering", () => {
     it("renders the page title", () => {
       renderComponent();
-      expect(screen.getByText("Roleplays")).toBeInTheDocument();
+      expect(screen.getByText("Simulation Studio")).toBeInTheDocument();
     });
 
     it("renders the create button", () => {
@@ -513,7 +439,7 @@ describe("SimulationStudio", () => {
     it("Simulations tab is active by default", () => {
       renderComponent();
       const simulationsTab = screen.getByTestId("tab-simulations");
-      expect(simulationsTab).toHaveClass("text-primary-500");
+      expect(simulationsTab).toHaveClass("active");
     });
   });
 
@@ -610,7 +536,7 @@ describe("SimulationStudio", () => {
       fireEvent.click(screen.getByTestId("tab-tracks"));
 
       const pathwaysTab = screen.getByTestId("tab-tracks");
-      expect(pathwaysTab).toHaveClass("text-primary-500");
+      expect(pathwaysTab).toHaveClass("active");
     });
 
     it("clears filters when switching tabs", () => {
@@ -1182,71 +1108,6 @@ describe("SimulationStudio", () => {
 
       // Pathways don't have preview, test that the pathway list is rendered
       expect(screen.getByText("Test Pathway 1")).toBeInTheDocument();
-    });
-  });
-
-  describe("Role-based access", () => {
-    it("hides tracks and cases tabs for non-super admins", () => {
-      mockUseUser.mockReturnValue({
-        user: { role: "ADMIN" },
-      });
-
-      renderComponent();
-
-      expect(screen.getByTestId("tab-simulations")).toBeInTheDocument();
-      expect(screen.queryByTestId("tab-tracks")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("tab-cases")).not.toBeInTheDocument();
-    });
-
-    it("hides restricted create options for non-super admins", () => {
-      mockUseUser.mockReturnValue({
-        user: { role: "ADMIN" },
-      });
-
-      renderComponent();
-
-      const createButton = screen.getByText("Create");
-      fireEvent.click(createButton);
-
-      expect(screen.getByText("New simulation")).toBeInTheDocument();
-      expect(screen.queryByText("New track")).not.toBeInTheDocument();
-      expect(screen.queryByText("New Case")).not.toBeInTheDocument();
-    });
-
-    it("shows all tabs and options for super admins", () => {
-      mockUseUser.mockReturnValue({
-        user: { role: "SUPER_ADMIN" },
-      });
-
-      renderComponent();
-
-      expect(screen.getByTestId("tab-simulations")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-tracks")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-cases")).toBeInTheDocument();
-
-      const createButton = screen.getByText("Create");
-      fireEvent.click(createButton);
-
-      expect(screen.getByText("New simulation")).toBeInTheDocument();
-      expect(screen.getByText("New track")).toBeInTheDocument();
-      expect(screen.getByText("New Case")).toBeInTheDocument();
-    });
-
-    it("hides management buttons for non-creators with ADMIN role", () => {
-      mockUseUser.mockReturnValue({
-        user: { role: "ADMIN", name: "Other User", userId: 999 },
-      });
-
-      renderComponent();
-
-      // Test Simulation 1 was created by "user1"
-      expect(screen.getByText("Test Simulation 1")).toBeInTheDocument();
-      expect(screen.queryByTestId("edit-sim-1")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("delete-sim-1")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("archive-sim-1")).not.toBeInTheDocument();
-
-      // Preview should still be visible
-      expect(screen.getByTestId("preview-sim-1")).toBeInTheDocument();
     });
   });
 });

@@ -62,25 +62,21 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// Mock Tabs and FEATURE_FLAGS_MAP from ui-shared (PostCallSummary uses Tabs and FEATURE_FLAGS_MAP in Header)
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  Tabs: ({ items, activeId, onChange }: any) => (
-    <div data-testid="tabs">
-      {items?.map((item: any) => (
-        <button
-          key={item.id}
-          data-testid={`tab-${item.id}`}
-          onClick={() => onChange?.(item.id)}
-          className={activeId === item.id ? "active" : ""}
-        >
-          {item.label}
-        </button>
-      ))}
+// Mock components
+vi.mock("@components", () => ({
+  TabGroup: vi.fn(({ children, value, onChange, tabs }) => (
+    <div data-testid="tab-group">
+      <div data-testid="tab-value">{value}</div>
+      <div data-testid="tab-tabs">{tabs?.length || 0}</div>
+      <button
+        data-testid="tab-change-btn"
+        onClick={() => onChange?.(null, SectionType.SessionSummary)}
+      >
+        Change Tab
+      </button>
+      {children}
     </div>
-  ),
-  FEATURE_FLAGS_MAP: {
-    SCRIBE_REVIEW_FLAG: false,
-  },
+  )),
 }));
 
 const mockUseUser = vi.fn(() => ({
@@ -98,14 +94,8 @@ vi.mock("@utils", () => ({
 
 // Mock API hooks
 const mockUseGetCallSummaryQuery = vi.fn();
-const mockUseGetTranscriptQuery = vi.fn(() => ({ data: undefined, isLoading: false }));
-const mockCreateScribeReview = vi.fn();
-const mockUpdateScribeReview = vi.fn();
 vi.mock("@api", () => ({
   useGetCallSummaryQuery: () => mockUseGetCallSummaryQuery(),
-  useGetTranscriptQuery: () => mockUseGetTranscriptQuery(),
-  useCreateScribeReviewMutation: () => [mockCreateScribeReview, { isLoading: false }],
-  useUpdateScribeReviewMutation: () => [mockUpdateScribeReview, { isLoading: false }],
 }));
 
 // Mock post-call-summary components
@@ -130,7 +120,7 @@ vi.mock("../components", () => ({
 // Mock constants
 vi.mock("../constants", () => ({
   SectionQueryKey: "section",
-  getSummaryTabs: vi.fn(() => [
+  summaryTabs: [
     {
       label: "Return to Self",
       value: "Box breathing",
@@ -139,7 +129,7 @@ vi.mock("../constants", () => ({
       label: "Session summary",
       value: "Session summary",
     },
-  ]),
+  ],
 }));
 
 // Mock utils
@@ -279,14 +269,14 @@ describe("PostCallSummary Component", () => {
       expect(mainContainer?.className).toContain("bg-white");
     });
 
-    it("should render Tabs component", () => {
+    it("should render TabGroup component", () => {
       render(
         <TestWrapper>
           <PostCallSummary />
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("tabs")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-group")).toBeInTheDocument();
     });
 
     it("should render motion div containers", () => {
@@ -373,8 +363,7 @@ describe("PostCallSummary Component", () => {
         </TestWrapper>,
       );
 
-      // Box breathing tab is selected; label is "Return to Self"
-      expect(screen.getByTestId("tab-Box breathing")).toHaveTextContent("Return to Self");
+      expect(screen.getByTestId("tab-value")).toHaveTextContent("Box breathing");
     });
 
     it("should render correct number of tabs", () => {
@@ -384,8 +373,7 @@ describe("PostCallSummary Component", () => {
         </TestWrapper>,
       );
 
-      const tabButtons = screen.getAllByTestId(/^tab-/);
-      expect(tabButtons).toHaveLength(2);
+      expect(screen.getByTestId("tab-tabs")).toHaveTextContent("2");
     });
 
     it("should handle tab change", async () => {
@@ -395,8 +383,8 @@ describe("PostCallSummary Component", () => {
         </TestWrapper>,
       );
 
-      const sessionSummaryTab = screen.getByTestId("tab-Session summary");
-      sessionSummaryTab.click();
+      const changeButton = screen.getByTestId("tab-change-btn");
+      changeButton.click();
 
       // Should render SessionSummary after tab change
       await waitFor(() => {
@@ -446,7 +434,7 @@ describe("PostCallSummary Component", () => {
       );
 
       const callSummary = screen.getByTestId("call-summary");
-      expect(callSummary).toHaveClass("max-h-[calc(100vh-350px)]");
+      expect(callSummary).toHaveClass("max-h-[calc(100vh-250px)]");
       expect(screen.getByTestId("chat-id")).toHaveTextContent("123");
     });
 

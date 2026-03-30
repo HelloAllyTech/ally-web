@@ -14,7 +14,6 @@ import { formatCapitalizedEnum, formatDate, getStatusColor, isNonEmptyArray } fr
 
 export interface PathwayListProps {
   pathways: ScenarioPath[];
-  isCases?: boolean;
   footer?: React.ReactNode;
   isLoading?: boolean;
   hasFilters?: boolean;
@@ -27,7 +26,6 @@ export interface PathwayListProps {
 
 export const PathwayList: React.FC<PathwayListProps> = ({
   pathways,
-  isCases = false,
   footer,
   isLoading = false,
   hasFilters = false,
@@ -74,14 +72,14 @@ export const PathwayList: React.FC<PathwayListProps> = ({
   const columns: ColumnConfig<ScenarioPath>[] = [
     {
       key: "pathways",
-      label: isCases ? en.simulation.cases : en.simulation.paths,
-      width: "w-[37%]",
+      label: en.simulation.paths,
+      width: "w-[38%]",
       render: () => null,
     },
     {
       key: "actions",
       label: "",
-      width: "w-[9%] min-w-[160px]",
+      width: "w-[8%] min-w-[150px]",
       render: () => null,
     },
     {
@@ -113,7 +111,7 @@ export const PathwayList: React.FC<PathwayListProps> = ({
     {
       key: "simulationCount",
       label: "Simulation count",
-      width: "w-[13%]",
+      width: "w-[12%]",
       render: pathway => <span>{pathway.totalScenarios}</span>,
     },
   ];

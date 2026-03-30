@@ -1,9 +1,9 @@
 import React from "react";
 
 import { EventType } from "@components";
-import { en, EVENT_DETECTION_TYPES } from "@constants";
+import { EVENT_DETECTION_TYPES } from "@constants";
 
-import { MultiLevelCombinationTriggerConditions } from "./MultiLevelCombinationTriggerConditions";
+import { CombinationTriggerConditions } from "./CombinationTriggerConditions";
 import { StandardTriggerConditions } from "./StandardTriggerConditions";
 import {
   TriggerCondition,
@@ -24,9 +24,7 @@ interface TriggerConditionsProps {
 const SidePanelWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="flex flex-col">
     <div className="flex items-center mb-2">
-      <span className="text-xs font-regular text-typography-600 mr-2">
-        {en.simulation.triggerCondition}
-      </span>
+      <span className="text-base font-regular text-typography-800 mr-2">Trigger conditions</span>
       <div className="flex-1 border-t"></div>
     </div>
     <div className="flex items-start relative">
@@ -35,6 +33,7 @@ const SidePanelWrapper: React.FC<{ children: React.ReactNode }> = ({ children })
         {children}
       </div>
     </div>
+    <div className="border-t mt-4"></div>
   </div>
 );
 
@@ -48,7 +47,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
   if (!eventType) return null;
 
   const renderCombinationConditions = (condition: CombinationTriggerCondition) => (
-    <MultiLevelCombinationTriggerConditions
+    <CombinationTriggerConditions
       triggerCondition={condition}
       onChange={onChange || (() => {})}
       isInTable={isInTable}
@@ -71,7 +70,7 @@ export const TriggerConditions: React.FC<TriggerConditionsProps> = ({
         effectiveTriggerCondition = {} as TriggerCondition;
       } else if (eventType === EVENT_DETECTION_TYPES.SEMANTIC_SIMILARITY) {
         effectiveTriggerCondition = {} as TriggerCondition;
-      } else if (eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFIER) {
+      } else if (eventType === EVENT_DETECTION_TYPES.BINARY_CLASSIFICATION) {
         effectiveTriggerCondition = {} as TriggerCondition;
       }
     }

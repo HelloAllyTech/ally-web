@@ -1,33 +1,20 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { logger } from "@lifeline-ui-mono/ui-shared";
 import { useSubmitCallFeedbackMutation } from "@api";
 import { Button, StarRating, TextField } from "@components";
 import { IssueOptions } from "@types";
 
+import { issueOptions } from "../constants";
 import { FeedbackSectionProps } from "../types";
 
 export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete }) => {
-  const { t } = useTranslation();
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState<string>("");
   const [issues, setIssues] = useState<IssueOptions[]>([]);
-
-  const issueOptions = [
-    { text: t("callFeedback.issues.missingKeyInfo"), value: IssueOptions.MISSING_KEY_INFORMATION },
-    { text: t("callFeedback.issues.inaccurate"), value: IssueOptions.INACCURATE },
-    { text: t("callFeedback.issues.tooVague"), value: IssueOptions.TOO_VAGUE },
-    {
-      text: t("callFeedback.issues.difficultToUnderstand"),
-      value: IssueOptions.DIFFICULT_TO_UNDERSTAND,
-    },
-    { text: t("callFeedback.issues.tooShort"), value: IssueOptions.TOO_SHORT },
-    { text: t("callFeedback.issues.other"), value: IssueOptions.OTHER },
-  ];
 
   const isPrevFive = useRef<boolean | null>(null);
 
@@ -50,8 +37,20 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
     isLoading;
 
   const getCallRatingText = (rating: number) => {
-    const key = String(rating) as "1" | "2" | "3" | "4" | "5";
-    return t(`callFeedback.ratings.${key}`, "");
+    switch (rating) {
+      case 1:
+        return "Poor quality - Needs significant improvement";
+      case 2:
+        return "Below expectations - Could be much better";
+      case 3:
+        return "Average quality - Meets basic expectations";
+      case 4:
+        return "Good quality - Above expectations";
+      case 5:
+        return "Excellent quality - Highly recommended";
+      default:
+        return "";
+    }
   };
 
   const onIssueClick = (option: IssueOptions) => {
@@ -68,7 +67,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
     if (response.error) {
       logger.info(`Error submitting feedback: ${response.error}`);
     } else if (response.data) {
-      toast.success(t("callFeedback.submitted"));
+      toast.success("Feedback submitted successfully");
       onSubmitComplete();
     }
   };
@@ -80,13 +79,11 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
     if (rating === 5) {
       return (
         <>
-          <span className="text-typography-900 text-base text-center">
-            {t("callFeedback.moreSuggestions")}
-          </span>
+          <span className="text-typography-900 text-base text-center">Any more suggestions?</span>
           <TextField
             value={comment}
             onChange={e => setComment(e.target.value)}
-            placeholder={t("callFeedback.suggestionPlaceholder")}
+            placeholder="Anything else that you’d like to share about the summary?"
             multiline
             rows={4}
             fullWidth
@@ -98,7 +95,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
       return (
         <>
           <span className="text-typography-900 font-medium text-center">
-            {t("callFeedback.selectIssues")}
+            Please select one or more issues
           </span>
           <div className="flex flex-wrap gap-2 justify-center w-full">
             {issueOptions.map(({ text, value }) => {
@@ -128,7 +125,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
                 <TextField
                   value={comment}
                   onChange={e => setComment(e.target.value)}
-                  placeholder={t("callFeedback.concernPlaceholder")}
+                  placeholder="Describe your concern here."
                   multiline
                   rows={4}
                   fullWidth
@@ -143,9 +140,9 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
 
   return (
     <>
-      <span className="text-typography-900 font-medium">{t("callFeedback.rateTitle")}</span>
+      <span className="text-typography-900 font-medium">Rate the AI-generated summary?</span>
       <span className="text-typography-800 text-base text-center">
-        {t("callFeedback.rateSubtitle")}
+        Please rate the quality, let us know what worked well, and share areas for improvement.
       </span>
       <span className={`text-typography-900 text-base ${rating === null ? "hidden" : ""}`}>
         {getCallRatingText(rating)}
@@ -170,7 +167,7 @@ export const CallFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete })
       </AnimatePresence>
 
       <Button onClick={onSubmit} disabled={isSubmitDisabled}>
-        {isLoading ? t("callFeedback.submitting") : t("callFeedback.submit")}
+        {isLoading ? "Submitting..." : "Submit"}
       </Button>
     </>
   );

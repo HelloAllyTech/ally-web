@@ -1,9 +1,17 @@
-# Dev image for ally-helpline-dashboard (Vite)
-# Use prebuilt deps image which already has all dependencies and workspace setup
-FROM ally-web/deps:dev
+# Dev image for lifeline-helpline-dashboard (Vite)
+# Use prebuilt deps image to leverage cached node_modules
+FROM lifeline-web/deps:dev
 
 # Set working directory for subsequent commands
 WORKDIR /app
+
+# Install dependencies using workspace manifests for cache efficiency
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
+COPY apps/lifeline-helpline-dashboard/package*.json ./apps/lifeline-helpline-dashboard/
+
+RUN npm ci --legacy-peer-deps
 
 # Configure development environment variables
 ENV NODE_ENV=development
@@ -12,4 +20,4 @@ ENV NODE_ENV=development
 EXPOSE 8080
 
 # Start the Vite dev server via Nx
-CMD ["npx", "nx", "serve", "ally-helpline-dashboard"]
+CMD ["npx", "nx", "serve", "lifeline-helpline-dashboard"]

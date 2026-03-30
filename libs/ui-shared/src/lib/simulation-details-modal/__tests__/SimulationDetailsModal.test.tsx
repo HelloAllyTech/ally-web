@@ -13,7 +13,6 @@ describe("SimulationDetailsModal", () => {
     secondaryButtonText: "Close",
     onPrimaryClick: vi.fn(),
     onSecondaryClick: vi.fn(),
-    showActionButtons: true,
   };
 
   it("should not render when isOpen is false", () => {
@@ -173,28 +172,5 @@ describe("SimulationDetailsModal", () => {
   it("should render without headerSubtitle when not provided", () => {
     render(<SimulationDetailsModal {...defaultProps} headerTitle="Title Only" headerSubtitle="" />);
     expect(screen.getByText("Title Only")).toBeInTheDocument();
-  });
-
-  it("should render trigger warnings when provided", () => {
-    const triggerWarnings = [
-      { id: "1", name: "Warning 1" },
-      { id: "2", name: "Warning 2" },
-    ];
-    render(<SimulationDetailsModal {...defaultProps} triggerWarnings={triggerWarnings} />);
-    expect(screen.getByText("Trigger warnings:")).toBeInTheDocument();
-    expect(screen.getByText("Warning 1")).toBeInTheDocument();
-    expect(screen.getByText("Warning 2")).toBeInTheDocument();
-  });
-
-  it("should render custom trigger warnings label", () => {
-    const triggerWarnings = [{ id: "1", name: "Warning 1" }];
-    render(
-      <SimulationDetailsModal
-        {...defaultProps}
-        triggerWarnings={triggerWarnings}
-        triggerWarningsLabel="Custom Warnings:"
-      />,
-    );
-    expect(screen.getByText("Custom Warnings:")).toBeInTheDocument();
   });
 });

@@ -1,5 +1,4 @@
 import AdminLogsTable from "./AdminLogsTable";
-import ArchivesLogsTable from "./ArchivesLogsTable";
 import AudioUploadDialog from "./AudioUploadDialog";
 import AudioUploadInterface from "./AudioUploadInterface";
 import CallSummarySidebar from "./CallSummarySidebar";
@@ -17,7 +16,6 @@ export {
   AudioUploadDialog,
   AudioUploadInterface,
   AdminLogsTable,
-  ArchivesLogsTable,
   CallSummarySidebar,
   CallTranscriptTab,
   DeleteCallLogConfirmationDialog,

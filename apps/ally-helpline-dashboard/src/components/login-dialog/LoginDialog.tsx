@@ -3,14 +3,13 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { Dialog } from "@mui/material";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { BackCircle, CloseIcon } from "@assets";
 import {
-  ALLY_PRIVACY_POLICY_URL,
-  ALLY_TERMS_URL,
+  lifeline_PRIVACY_POLICY_URL,
+  lifeline_TERMS_URL,
   LOCAL_STORAGE_KEYS,
   LoginSection,
 } from "@constants";
@@ -23,7 +22,6 @@ import OTP from "../otp";
 import TextField from "../text-field";
 
 const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
-  const { t } = useTranslation();
   const [loginSection, setLoginSection] = useState<LoginSection>(LoginSection.EMAIL);
   const [email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<string>("");
@@ -67,7 +65,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
     if (generateOTPError) {
       const error = generateOTPError as FetchBaseQueryError;
       const errorData = error.data as { message: string } | undefined;
-      const errorMessage = errorData?.message ?? t("auth.login.errors.generateOtp");
+      const errorMessage = errorData?.message ?? "Failed to generate OTP. Please try again.";
       toast.error(errorMessage);
     } else if (isGenerateOTPSuccess && generateOTPData) {
       setLoginSection(LoginSection.OTP);
@@ -92,7 +90,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
       if (verifyOTPError) {
         const error = verifyOTPError as FetchBaseQueryError;
         const errorData = error.data as { message: string } | undefined;
-        const errorMessage = errorData?.message ?? t("auth.login.errors.verifyOtp");
+        const errorMessage = errorData?.message ?? "Failed to verify OTP. Please try again.";
         toast.error(errorMessage);
       } else if (isVerifyOTPSuccess && verifyOTPData) {
         localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, verifyOTPData.accessToken);
@@ -114,7 +112,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
 
   const handleNext = () => {
     if (!validateEmail(email)) {
-      setEmailError(t("auth.login.email.error"));
+      setEmailError("Please enter a valid email address");
       return;
     }
     if (rememberMe) {
@@ -150,24 +148,24 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
           className="flex flex-col gap-4"
         >
           <div className="flex flex-col text-4xl font-secondary">
-            <span>{t("auth.login.greetingLine1")}</span>
+            <span>Hey,</span>
             <h1>
-              <span>{t("auth.login.greetingLine2", { app: "" }).replace("{{app}}", "")}</span>
-              <span className="font-bold italic">ally</span>
+              <span>Welcome to </span>
+              <span className="font-bold italic">lifeline</span>
             </h1>
-            <span className="text-2xl mt-[24px]">{t("auth.login.subtitle")}</span>
+            <span className="text-2xl mt-[24px]">Enter your email address to continue</span>
           </div>
           <div className="flex flex-col gap-1">
             <TextField
               fieldSize="medium"
               type="email"
               inputMode="email"
-              label={t("auth.login.email.label")}
+              label="Email"
               value={email}
               onChange={handleEmailChange}
               errorMessage={emailError}
               hideError={false}
-              placeholder={t("auth.login.email.placeholder")}
+              placeholder="Enter your email address"
               className="w-full rounded-xs"
             />
 
@@ -180,7 +178,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
                 onChange={e => setRememberMe(e.target.checked)}
               />
               <label htmlFor="remember" className="text-sm text-typography-700 cursor-pointer">
-                {t("auth.login.rememberMe")}
+                Remember me
               </label>
             </div>
           </div>
@@ -193,26 +191,26 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-                {t("auth.login.generatingOtp")}
+                Generating OTP...
               </div>
             ) : (
-              t("common.next")
+              "Next"
             )}
           </Button>
           <div className="text-xs text-typography-800 mt-2">
-            {t("auth.login.proceedAgree")}{" "}
+            By tapping next, you agree to lifeline's{" "}
             <span
               className="text-primary-500 cursor-pointer"
-              onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
+              onClick={() => openLinkInNewTab(lifeline_TERMS_URL)}
             >
-              {t("auth.login.terms")}
+              Terms & Conditions
             </span>{" "}
-            {t("auth.login.and")}{" "}
+            and acknowledge{" "}
             <span
               className="text-primary-500 cursor-pointer"
-              onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
+              onClick={() => openLinkInNewTab(lifeline_PRIVACY_POLICY_URL)}
             >
-              {t("auth.login.privacy")}
+              Privacy Policy
             </span>
             .
           </div>
@@ -229,9 +227,9 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
         className="flex flex-col justify-start gap-6"
       >
         <BackCircle className="self-start cursor-pointer" onClick={handleBack} />
-        <h1 className="text-4xl font-secondary">{t("auth.login.otp.title")}</h1>
+        <h1 className="text-4xl font-secondary">Verify your email address</h1>
         <div className="text-base mb-2 font-secondary flex flex-col">
-          <span className="text-2xl">{t("auth.login.otp.enterCode")}</span>
+          <span className="text-2xl">Enter the security code sent to</span>
           <span className="font-semibold text-2xl">{email}</span>
         </div>
         <div className="flex flex-col gap-2">
@@ -242,9 +240,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
               className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} cursor-pointer`}
               onClick={handleResendCode}
             >
-              {countdown > 0
-                ? t("auth.login.otp.resendWithCountdown", { seconds: countdown })
-                : t("auth.login.otp.resend")}
+              Resend {countdown > 0 ? `(${countdown}s)` : ""}
             </span>
           </div>
         </div>
@@ -257,10 +253,10 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
           {isLoading ? (
             <div className="flex items-center justify-center">
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-              {t("auth.login.otp.signingIn")}
+              Signing in...
             </div>
           ) : (
-            t("auth.login.otp.verify")
+            "Verify"
           )}
         </Button>
       </motion.div>

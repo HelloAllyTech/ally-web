@@ -1,4 +1,4 @@
-import { CALL_PERMISSIONS, Permissions, SESSION_LOGS_PERMISSIONS } from "@constants";
+import { CALL_PERMISSIONS, Permissions, SESSION_LOGS_PERMISSIONS } from "@src/constants";
 
 export const hasCallPermission = (permissions: Permissions[]) =>
   permissions?.some(permission => CALL_PERMISSIONS.includes(permission));
@@ -11,13 +11,6 @@ export const hasAnalyticsPermission = (permissions: Permissions[]) =>
 
 export const hasSessionLogsPermission = (permissions: Permissions[]) =>
   permissions?.some(permission => SESSION_LOGS_PERMISSIONS.includes(permission));
-
-export const hasReviewPermission = (permissions: Permissions[]) =>
-  permissions?.some(
-    permission =>
-      permission === Permissions.VIEW_SIMULATION_REVIEWS ||
-      permission === Permissions.VIEW_SCRIBE_REVIEWS,
-  );
 
 export const hasPermissions = (
   permissions: Permissions[] | null | undefined,

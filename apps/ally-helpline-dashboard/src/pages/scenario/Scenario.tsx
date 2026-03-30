@@ -1,12 +1,11 @@
 import { FC, useEffect, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { DropdownField, FEATURE_FLAGS_MAP, MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
+import { DropdownField, FEATURE_FLAGS_MAP } from "@lifeline-ui-mono/ui-shared";
 import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
@@ -22,11 +21,9 @@ import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constan
 import { useSimulationCredits, useStartSimulation } from "@hooks";
 import { LanguageOption } from "@types";
 
-import i18n from "../../i18n";
 import { learnPageExpandedVariants } from "../learn/constants";
 
 export const Scenario: FC = () => {
-  const { t } = useTranslation();
   const { scenarioId } = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -44,25 +41,18 @@ export const Scenario: FC = () => {
 
   const id = Number(scenarioId);
 
-  const isAuthenticated = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
-
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState<boolean>(false);
   const [isExistingSimulationConfirmOpen, setIsExistingSimulationConfirmOpen] =
     useState<boolean>(false);
   const [noCreditsLeft, setNoCreditsLeft] = useState<boolean>(false);
   const [notEnoughCredits, setNoEnoughCredits] = useState<boolean>(false);
   const [buttonDisable, setButtonDisable] = useState<boolean>(false);
-  const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
 
   const {
     data: scenario,
     isSuccess: isScenarioSuccess,
     isLoading: isScenarioLoading,
-  } = useGetScenarioQuery({
-    scenarioId: id,
-    isPrivate: isAuthenticated(),
-    languageCode: i18n.language,
-  });
+  } = useGetScenarioQuery({ scenarioId: id });
   const [endSimulation] = useEndSimulationMutation();
 
   const [startSimulationError, setStartSimulationError] = useState<unknown>(null);
@@ -75,8 +65,6 @@ export const Scenario: FC = () => {
       const errorData = error as { data?: { statusCode?: number; entityId?: string } };
       if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
         setIsExistingSimulationConfirmOpen(true);
-      } else if (errorData.data?.statusCode === 429) {
-        setIsMaxActiveUsersPopupOpen(true);
       }
     },
   });
@@ -91,6 +79,8 @@ export const Scenario: FC = () => {
     if (limitReached) setNoEnoughCredits(true);
   }, [credits]);
 
+  const isAuthenticated = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
+
   const renderBackButton = () => {
     return (
       <motion.button
@@ -101,7 +91,7 @@ export const Scenario: FC = () => {
         transition={{ duration: 0.3 }}
         onClick={() => navigate(ROUTES.LEARN)}
         className="hover:scale-105 transition-transform"
-        aria-label={t("learn.scenario.backAria")}
+        aria-label="Close scenario details"
       >
         <BackCircle />
       </motion.button>
@@ -141,13 +131,13 @@ export const Scenario: FC = () => {
       const errorData = startSimulationError.data as { entityId?: string };
       if (errorData.entityId) {
         await endSimulation({ sessionId: errorData.entityId });
-        toast.success(t("common.simulationEndedSuccess"));
+        toast.success("Simulation ended successfully");
         setIsExistingSimulationConfirmOpen(false);
         refetchCredits();
         return;
       }
     }
-    toast.error(t("common.somethingWentWrong"));
+    toast.error("Something went wrong!");
     setIsExistingSimulationConfirmOpen(false);
   };
 
@@ -162,11 +152,6 @@ export const Scenario: FC = () => {
       setNoEnoughCredits(false);
     }
     setButtonDisable(true);
-  };
-
-  const handleMaxActiveUsersRetry = () => {
-    setIsMaxActiveUsersPopupOpen(false);
-    handleStartSimulation();
   };
   // TODO: Add loading fallback UI for scenario
 
@@ -195,8 +180,8 @@ export const Scenario: FC = () => {
                   data-testid="scenario-title"
                 >
                   {renderBackButton()}
-                  <span>{t("learn.scenario.pageTitlePrefix")}</span>
-                  <span className="font-bold italic"> {t("learn.scenario.pageTitleEmphasis")}</span>
+                  <span>Start</span>
+                  <span className="font-bold italic"> Simulation</span>
                 </div>
                 <CreditsDisplay />
               </div>
@@ -234,17 +219,14 @@ export const Scenario: FC = () => {
             />
             <ConfirmationDialog
               data-testid="scenario-existing-simulation-dialog"
-              title={{
-                normal: t("learn.scenario.existing.titleNormal"),
-                italic: t("learn.scenario.existing.titleItalic"),
-              }}
+              title={{ normal: "Active Simulation ", italic: "Detected" }}
               isOpen={isExistingSimulationConfirmOpen}
               onClose={() => setIsExistingSimulationConfirmOpen(false)}
-              content={t("learn.scenario.existing.content")}
+              content="You have a running simulation. End the existing session to start a new one."
               buttonVariant={ButtonVariant.PRIMARY}
               onButtonClick={endExistingSimulation}
-              buttonText={t("learn.scenario.existing.primary")}
-              secondaryButtonText={t("common.cancel")}
+              buttonText="End session"
+              secondaryButtonText="Cancel"
               onSecondaryButtonClick={onSecondaryButtonClick}
               icon={ExistingCall}
             />
@@ -252,40 +234,26 @@ export const Scenario: FC = () => {
               data-testid="scenario-no-credits-dialog"
               open={noCreditsLeft}
               onClose={() => handleCreditClose("noCredits")}
-              title={t("learn.scenario.noCredits.title")}
-              description={t("learn.scenario.noCredits.desc")}
+              title="No Credits Left"
+              description="Looks like you have run out of simulation credits"
               autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
             />
             <CreditInfo
               data-testid="scenario-not-enough-credits-dialog"
               open={notEnoughCredits}
               onClose={() => handleCreditClose("notEnough")}
-              title={t("learn.scenario.notEnough.title")}
-              description={t("learn.scenario.notEnough.desc")}
+              title="Not Enough Credits"
+              description="You don't have enough simulation credits to start this session"
               autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
             />
-            {FEATURE_FLAGS_MAP.MAX_ACTIVE_USERS_POPUP_FLAG && (
-              <MaxActiveUsersDialog
-                open={isMaxActiveUsersPopupOpen}
-                onClose={() => setIsMaxActiveUsersPopupOpen(false)}
-                onRetry={handleMaxActiveUsersRetry}
-                translations={{
-                  title: t("common.maxActiveUsers.title"),
-                  description: t("common.maxActiveUsers.description"),
-                  retry: t("common.maxActiveUsers.retry"),
-                  manualRetry: t("common.maxActiveUsers.manualRetry"),
-                  autoRetry: t("common.maxActiveUsers.autoRetry"),
-                }}
-              />
-            )}
           </motion.div>
         ) : (
           <FallbackUI
             data-testid="scenario-not-found"
             icon={<PageNotFoundIllustration />}
             isLoading={isScenarioLoading}
-            mainMessage={t("learn.scenario.notFound.title")}
-            description={t("learn.scenario.notFound.desc")}
+            mainMessage="Scenario not found"
+            description="The scenario you are looking for does not exist."
           />
         )}
       </div>

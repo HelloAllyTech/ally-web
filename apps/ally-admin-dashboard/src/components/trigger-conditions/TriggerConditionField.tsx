@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { NumberInput, TimeInput } from "@components";
+import { AutoExpandableTextarea, NumberInput, TimeInput } from "@components";
 import { TRIGGER_FIELD_TYPES } from "@constants";
 
 import { TriggerConditionDropdown } from "./TriggerConditionDropdown";
@@ -68,7 +67,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
         return (
           <NumberInput
             value={fieldValue !== undefined && fieldValue !== null ? fieldValue : undefined}
-            onChange={numValue => onChange(field.id, numValue || 0)}
+            onChange={numValue => onChange(field.id, numValue)}
             placeholder={field.placeholder || "0"}
             className={`px-2 py-1 text-sm border h-6 rounded-sm w-[70px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
             inputClassName="w-auto min-w-0 pr-6 !py-0 text-sm"
@@ -82,7 +81,7 @@ export const TriggerConditionField: React.FC<TriggerConditionFieldProps> = ({
             value={fieldValue || ""}
             onChange={value => onChange(field.id, value)}
             placeholder={field.placeholder || "hh:mm:ss"}
-            className={`w-[100px] bg-[#F5F5F5] ${isInTable ? "bg-neutral-100" : "bg-neutral-50"}`}
+            className={`w-[100px] ${isInTable ? "bg-neutral-100" : "bg-neutral-50"}`}
           />
         );
 

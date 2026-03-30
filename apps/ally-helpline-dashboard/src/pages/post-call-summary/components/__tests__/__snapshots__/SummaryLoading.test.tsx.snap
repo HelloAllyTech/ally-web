@@ -164,7 +164,7 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
           class=" w-40 font-primary"
           data-variant="text"
         >
-          I'll check later
+          I’ll check later
         </button>
         <button
           class=" w-40 font-primary"

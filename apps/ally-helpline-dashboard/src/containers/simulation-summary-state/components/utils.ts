@@ -18,28 +18,10 @@ export const getFormattedFeedbackSection = (summary: SimulationSummary) => {
         return {
           time: `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
           event: item?.message || item?.events?.message,
-          score: item?.events?.score ?? 0,
+          score: item?.score || item?.events?.score,
         };
       }),
-    improvements: (() => {
-      const areasOfGrowth = summary.details?.summary?.feedback?.areasOfGrowth;
-      const improvementsRaw = summary.details?.summary?.feedback?.improvements;
-      const hasAreasOfGrowth =
-        Array.isArray(areasOfGrowth) &&
-        areasOfGrowth.length > 0 &&
-        areasOfGrowth.some(
-          (item: { improvement?: string; recommendation?: string }) =>
-            (item.improvement ?? "").trim() !== "" || (item.recommendation ?? "").trim() !== "",
-        );
-      return hasAreasOfGrowth ? areasOfGrowth : improvementsRaw;
-    })(),
+    improvements: summary.details?.summary?.feedback?.improvements,
     positives: summary.details?.summary?.feedback?.positives,
-    callDuration: summary.details?.callDuration,
-    sessionName: summary.metadata?.sessionName,
-    title: summary.scenario?.title,
-    sessionStartedAt: summary.startedAt,
-    coverImage: summary.scenario?.coverImageUrl,
-    description: summary.scenario?.description,
-    coverVideo: summary.scenario?.coverVideoUrl,
   };
 };

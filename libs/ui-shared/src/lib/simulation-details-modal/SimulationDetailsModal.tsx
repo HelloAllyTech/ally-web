@@ -28,8 +28,6 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
   contentClassName = "",
   imageContainerClassName = "",
   triggerWarnings = [],
-  triggerWarningsLabel = "Trigger warnings:",
-  showActionButtons = true,
   renderCustomImage,
   renderAdditionalContent,
 }) => {
@@ -54,11 +52,11 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        className={`bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] font-primary ${containerClassName}`}
+        className={`bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] font-primary overflow-y-auto ${containerClassName}`}
         ref={previewRef}
       >
         {/* Header */}
-        <div className={`p-6 pb-6 ${headerClassName}`}>
+        <div className={`p-6 pb-4 ${headerClassName}`}>
           <h2 className="text-4xl text-typography-900 mb-4 font-thin font-secondary">
             <span>{headerTitle}</span>
             <span className="font-secondary">{headerSubtitle && ` ${headerSubtitle}`}</span>
@@ -95,7 +93,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
             </div>
 
             {/* Content Section */}
-            <div className="space-y-3 w-full max-h-[30vh] overflow-y-auto">
+            <div className="space-y-3 w-full">
               <h3 className="text-lg text-typography-900">{title}</h3>
               <div>
                 <h4 className="text-base font-semibold text-typography-800">{scenarioLabel}</h4>
@@ -105,7 +103,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
                 {triggerWarnings?.length > 0 && (
                   <div className="flex flex-col pt-2">
                     <div className="text-base font-semibold text-typography-800 mb-1">
-                      {triggerWarningsLabel}
+                      Trigger warnings:
                     </div>
                     <ChipGroup items={triggerWarnings} chipClassName="text-sm" maxVisible={20} />
                   </div>
@@ -116,27 +114,21 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        {showActionButtons && (
-          <div className="px-6 pb-6 pt-3 flex flex-row items-center justify-between">
-            {onSecondaryClick && (
-              <button
-                onClick={onSecondaryClick}
-                className={`w-[49%] font-tertiary px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors text-md ${secondaryButtonClassName}`}
-              >
-                {secondaryButtonText}
-              </button>
-            )}
-            {onPrimaryClick && (
-              <button
-                onClick={onPrimaryClick}
-                disabled={isPrimaryLoading}
-                className={`w-[49%] font-tertiary px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-md ${primaryButtonClassName}`}
-              >
-                {primaryButtonText}
-              </button>
-            )}
-          </div>
-        )}
+        <div className="px-6 pb-6 pt-3 flex flex-row items-center justify-between">
+          <button
+            onClick={onSecondaryClick}
+            className={`w-[49%] font-tertiary px-6 py-2 border border-border-light rounded-[40px] text-typography-900 font-medium hover:bg-background-secondary transition-colors ${secondaryButtonClassName}`}
+          >
+            {secondaryButtonText}
+          </button>
+          <button
+            onClick={onPrimaryClick}
+            disabled={isPrimaryLoading}
+            className={`w-[49%] font-tertiary px-6 py-2 bg-primary-500 text-white rounded-[40px] font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${primaryButtonClassName}`}
+          >
+            {primaryButtonText}
+          </button>
+        </div>
       </div>
     </div>
   );

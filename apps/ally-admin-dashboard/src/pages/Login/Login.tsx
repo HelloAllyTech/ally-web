@@ -1,24 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
-import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
+import { CustomImage } from "@lifeline-ui-mono/ui-shared";
+import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
 import {
   LoginSection,
   LOCAL_STORAGE_KEYS,
-  ALLY_TERMS_URL,
-  ALLY_PRIVACY_POLICY_URL,
-  ALLY_URL,
+  lifeline_TERMS_URL,
+  lifeline_PRIVACY_POLICY_URL,
+  lifeline_URL,
   en,
 } from "@constants";
-import { useUser } from "@hooks";
+import { useUser } from "@hooks/useUser";
 import { RootState } from "@store";
 import { validateEmail, openLinkInNewTab } from "@utils";
 
@@ -54,8 +53,6 @@ export const Login: React.FC = () => {
       error: verifyOTPError,
     },
   ] = useVerifyOTPMutation();
-
-  const [googleSignIn] = useGoogleSignInMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
@@ -151,35 +148,6 @@ export const Login: React.FC = () => {
     verifyOTP({ email: email.trim(), otp });
   };
 
-  const handleGoogleSuccess = async (tokenData: { accessToken?: string; credential?: string }) => {
-    try {
-      const params = tokenData.credential
-        ? { idToken: tokenData.credential }
-        : { accessToken: tokenData.accessToken };
-
-      const response = await googleSignIn(params);
-      if (response?.data) {
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, response.data.accessToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, response.data.refreshToken);
-        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
-        const userData = await checkAuth();
-        if (userData) {
-          navigate("/");
-        }
-      } else {
-        const error = response.error as FetchBaseQueryError;
-        const errorData = error.data as { message: string } | undefined;
-        toast.error(errorData?.message ?? "Failed to sign in with Google");
-      }
-    } catch {
-      toast.error("Failed to sign in with Google");
-    }
-  };
-
-  const handleGoogleError = () => {
-    toast.error("Failed to sign in with Google");
-  };
-
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -195,7 +163,7 @@ export const Login: React.FC = () => {
             <span className="text-typography-900">{`${en.auth.hey},`}</span>
             <h1 className="text-typography-900">
               <span>{`${en.auth.welcomeTo} `}</span>
-              <span className="font-bold italic">{en.auth.ally}</span>
+              <span className="font-bold italic">{en.auth.lifeline}</span>
             </h1>
             <span className="text-2xl mt-[24px] text-typography-900">
               {en.auth.enterEmailToContinue}
@@ -243,31 +211,22 @@ export const Login: React.FC = () => {
               en.auth.next
             )}
           </Button>
-          <div className="text-sm text-typography-800 leading-relaxed">
-            {import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID && (
-              <div className="mb-3">
-                <div className="flex items-center mb-3">
-                  <div className="flex-grow border-t border-gray-300" />
-                  <span className="mx-3 text-xs text-gray-500">{en.common.or}</span>
-                  <div className="flex-grow border-t border-gray-300" />
-                </div>
-                <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
-              </div>
-            )}
+          <div className="text-sm text-typography-800 mt-2 leading-relaxed">
             {en.auth.byTappingNext}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
-              onClick={() => openLinkInNewTab(ALLY_TERMS_URL)}
+              onClick={() => openLinkInNewTab(lifeline_TERMS_URL)}
             >
               {en.auth.termsAndConditions}
             </span>{" "}
             {en.auth.andAcknowledge}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
-              onClick={() => openLinkInNewTab(ALLY_PRIVACY_POLICY_URL)}
+              onClick={() => openLinkInNewTab(lifeline_PRIVACY_POLICY_URL)}
             >
-              {en.auth.privacyPolicy}.
+              {en.auth.privacyPolicy}
             </span>
+            .
           </div>
         </motion.div>
       );
@@ -333,11 +292,13 @@ export const Login: React.FC = () => {
         />
         <div
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-background absolute bottom-0 right-0 cursor-pointer"
-          onClick={() => openLinkInNewTab(ALLY_URL)}
+          onClick={() => openLinkInNewTab(lifeline_URL)}
         >
           <div className="flex flex-col mr-4 font-secondary">
-            <span className="text-xl font-bold text-typography-900">{en.auth.ally}</span>
-            <span className="text-sm font-medium text-typography-800">{en.auth.helloAllyUrl}</span>
+            <span className="text-xl font-bold text-typography-900">{en.auth.lifeline}</span>
+            <span className="text-sm font-medium text-typography-800">
+              {en.auth.hellolifelineUrl}
+            </span>
           </div>
         </div>
       </div>

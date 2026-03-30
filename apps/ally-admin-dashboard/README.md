@@ -1,10 +1,10 @@
-# Ally Admin Dashboard
+# lifeline Admin Dashboard
 
-A comprehensive admin dashboard for managing simulations, events, and users in the Ally platform. Built with React, Vite, Tailwind CSS, and RTK Query in an Nx monorepo architecture.
+A comprehensive admin dashboard for managing simulations, events, and users in the lifeline platform. Built with React, Vite, Tailwind CSS, and RTK Query in an Nx monorepo architecture.
 
 ## Overview
 
-The Ally Admin Dashboard is a powerful administrative interface that enables administrators to:
+The lifeline Admin Dashboard is a powerful administrative interface that enables administrators to:
 
 - Create and manage voice-based simulation scenarios
 - Configure and map session events to simulations
@@ -43,7 +43,7 @@ npm install
 npm run start:admin
 
 # Or using Nx directly
-npx nx serve ally-admin-dashboard
+npx nx serve lifeline-admin-dashboard
 ```
 
 The app will be available at `http://localhost:8080`
@@ -53,19 +53,19 @@ The app will be available at `http://localhost:8080`
 ```bash
 # Development
 npm run start:admin                 # Start dev server on port 8080
-npx nx serve ally-admin-dashboard   # Alternative dev server command
+npx nx serve lifeline-admin-dashboard   # Alternative dev server command
 
 # Building
-npx nx build ally-admin-dashboard   # Build for production
-npx nx build ally-admin-dashboard --configuration=production
+npx nx build lifeline-admin-dashboard   # Build for production
+npx nx build lifeline-admin-dashboard --configuration=production
 
 # Testing
 npm run test:admin                  # Run all tests
-npx nx test ally-admin-dashboard --watch  # Watch mode
-npx nx test ally-admin-dashboard --configuration=coverage  # With coverage
+npx nx test lifeline-admin-dashboard --watch  # Watch mode
+npx nx test lifeline-admin-dashboard --configuration=coverage  # With coverage
 
 # Linting
-npx nx lint ally-admin-dashboard    # Run ESLint
+npx nx lint lifeline-admin-dashboard    # Run ESLint
 npm run lint:fix                    # Auto-fix linting issues
 
 # Code Formatting
@@ -76,7 +76,7 @@ npm run format:check                # Check formatting
 ## Project Structure
 
 ```
-apps/ally-admin-dashboard/
+apps/lifeline-admin-dashboard/
 ├── src/
 │   ├── api/                    # RTK Query API definitions
 │   │   ├── auth.ts            # Authentication endpoints
@@ -111,7 +111,7 @@ apps/ally-admin-dashboard/
 │   │   └── useUser.ts         # User state management
 │   ├── pages/                  # Top-level page components
 │   │   ├── CreateSimulation/  # Simulation creator page
-│   │   ├── Events/            # Event management page
+│   │   ├── EventManagement/   # Event management page
 │   │   ├── LiveSimulationPreview/ # Real-time preview page
 │   │   ├── Login/             # Login with OTP
 │   │   ├── SimulationStudio/  # Main simulations list
@@ -155,7 +155,7 @@ apps/ally-admin-dashboard/
 
 ## Core Features
 
-### 1. Simulation Studio / Roleplays
+### 1. Simulation Studio
 
 - **Simulation Management**: Create, edit, delete, and publish simulation scenarios
 - **Cover Image Upload**: Upload and manage simulation cover images with S3 integration
@@ -164,14 +164,14 @@ apps/ally-admin-dashboard/
 - **Filtering & Sorting**: Filter simulations by status, search, and sort options
 - **Preview Mode**: Test simulations in real-time with LiveKit integration
 
-### 2. Events
+### 2. Event Management
 
 - **Session Events**: Create and manage reusable session events
 - **Event Editor**: Rich editing interface with side panels
 - **Bulk Operations**: Create, update, and delete multiple events
 - **Event Mapping**: Associate events with simulation scenarios
 
-### 3. Users
+### 3. User Management
 
 - **User Administration**: Create, edit, and manage users
 - **Organization Management**: Manage tenants/organizations
@@ -195,7 +195,7 @@ apps/ally-admin-dashboard/
 
 ## API Integration
 
-The dashboard integrates with the Ally backend API through RTK Query:
+The dashboard integrates with the lifeline backend API through RTK Query:
 
 ### Authentication API
 
@@ -206,7 +206,7 @@ The dashboard integrates with the Ally backend API through RTK Query:
 - `GET /v1/users/me` - Get current user profile
 - `GET /v1/authorization/permissions` - Get user permissions
 
-### Simulation Studio / Roleplays API
+### Simulation Studio API
 
 - `GET /v1/learn/admin-scenarios` - Get all simulations
 - `GET /v1/learn/admin-scenarios/:id` - Get simulation by ID
@@ -226,7 +226,7 @@ The dashboard integrates with the Ally backend API through RTK Query:
 - `PUT /v1/session-events/events/:id` - Update event
 - `DELETE /v1/session-events/events` - Delete events
 
-### Users API
+### User Management API
 
 - `GET /v1/users` - Get all users
 - `POST /v1/users` - Create new user
@@ -270,7 +270,7 @@ The project uses TypeScript path aliases for cleaner imports:
 @routes/*        → src/routes/*
 @store/*         → src/store/*
 @reducer/*       → src/reducer/*
-@ally-ui-mono/ui-shared → libs/ui-shared/src
+@lifeline-ui-mono/ui-shared → libs/ui-shared/src
 ```
 
 ## Permissions System
@@ -298,13 +298,13 @@ The application uses Vitest for testing:
 npm run test:admin
 
 # Run tests in watch mode
-npx nx test ally-admin-dashboard --watch
+npx nx test lifeline-admin-dashboard --watch
 
 # Run tests with coverage
-npx nx test ally-admin-dashboard --configuration=coverage
+npx nx test lifeline-admin-dashboard --configuration=coverage
 
 # Update test snapshots
-npx nx test ally-admin-dashboard --update
+npx nx test lifeline-admin-dashboard --update
 ```
 
 ### Test Structure
@@ -313,7 +313,7 @@ npx nx test ally-admin-dashboard --update
 - Integration tests: API interactions and data flow
 - Snapshot tests: UI component rendering
 
-Coverage reports are generated in `coverage/apps/ally-admin-dashboard/`
+Coverage reports are generated in `coverage/apps/lifeline-admin-dashboard/`
 
 ## Technologies & Dependencies
 
@@ -363,10 +363,10 @@ Coverage reports are generated in `coverage/apps/ally-admin-dashboard/`
 
 ```bash
 # Build the application
-npx nx build ally-admin-dashboard --configuration=production
+npx nx build lifeline-admin-dashboard --configuration=production
 
 # Output directory
-dist/apps/ally-admin-dashboard/
+dist/apps/lifeline-admin-dashboard/
 ```
 
 ### Build Configuration
@@ -376,7 +376,7 @@ The production build:
 - Minifies JavaScript and CSS
 - Optimizes assets and images
 - Generates source maps
-- Outputs to `dist/apps/ally-admin-dashboard/`
+- Outputs to `dist/apps/lifeline-admin-dashboard/`
 - Enables tree-shaking for smaller bundle size
 
 ## Code Quality
@@ -385,7 +385,7 @@ The production build:
 
 ```bash
 # Lint all files
-npx nx lint ally-admin-dashboard
+npx nx lint lifeline-admin-dashboard
 
 # Auto-fix linting issues
 npm run lint:fix
@@ -422,7 +422,7 @@ The project uses Husky and lint-staged to ensure code quality:
 2. Make your changes following the existing code style
 3. Write tests for new features
 4. Ensure all tests pass: `npm run test:admin`
-5. Ensure linting passes: `npx nx lint ally-admin-dashboard`
+5. Ensure linting passes: `npx nx lint lifeline-admin-dashboard`
 6. Submit a pull request
 
 ## Troubleshooting
@@ -463,6 +463,6 @@ MIT
 
 ## Links
 
-- [Ally Website](https://www.helloally.ai)
-- [Terms of Service](https://www.helloally.ai/terms)
-- [Privacy Policy](https://www.helloally.ai/policy)
+- [lifeline Website](https://www.hellolifeline.ai)
+- [Terms of Service](https://www.hellolifeline.ai/terms)
+- [Privacy Policy](https://www.hellolifeline.ai/policy)

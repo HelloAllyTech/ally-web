@@ -30,34 +30,30 @@ vi.mock("@hooks/useLiveKitRoom", () => ({
 
 // Mock SimulationPage from ui-shared
 const mockSimulationPageProps = vi.fn();
-vi.mock("@ally-ui-mono/ui-shared", async importOriginal => {
-  const actual = await importOriginal<typeof import("@ally-ui-mono/ui-shared")>();
-  return {
-    ...actual,
-    SimulationPage: (props: any) => {
-      mockSimulationPageProps(props);
-      return (
-        <div data-testid="simulation-page">
-          <h1>{props.title || props.roomData?.title}</h1>
-          <div data-testid="room-status">{props.roomStatus}</div>
-          <div data-testid="score">{props.score}</div>
-          <div data-testid="events-count">{props.events?.length || 0}</div>
-          <button onClick={props.onEndSimulation} data-testid="end-simulation">
-            End Simulation
-          </button>
-          {props.renderWarningDialog &&
-            props.renderWarningDialog({
-              isOpen: true,
-              onClose: vi.fn(),
-              onContinue: vi.fn(),
-              onEnd: vi.fn(),
-            })}
-        </div>
-      );
-    },
-    getSimulationEvents: (events: any[]) => events,
-  };
-});
+vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+  SimulationPage: (props: any) => {
+    mockSimulationPageProps(props);
+    return (
+      <div data-testid="simulation-page">
+        <h1>{props.title || props.roomData?.title}</h1>
+        <div data-testid="room-status">{props.roomStatus}</div>
+        <div data-testid="score">{props.score}</div>
+        <div data-testid="events-count">{props.events?.length || 0}</div>
+        <button onClick={props.onEndSimulation} data-testid="end-simulation">
+          End Simulation
+        </button>
+        {props.renderWarningDialog &&
+          props.renderWarningDialog({
+            isOpen: true,
+            onClose: vi.fn(),
+            onContinue: vi.fn(),
+            onEnd: vi.fn(),
+          })}
+      </div>
+    );
+  },
+  getSimulationEvents: (events: any[]) => events,
+}));
 
 // Mock ActionConfirmationPopup
 vi.mock("@components", async importOriginal => {
@@ -181,7 +177,6 @@ describe("LiveSimulationPreview", () => {
     events: mockEvents,
     score: 8,
     startTime: new Date("2024-01-01T00:00:00Z"),
-    detectedEventIds: ["event1", "event2"],
     handleEndSession: vi.fn(),
     handleRetryConnection: vi.fn(),
     error: null,
@@ -376,33 +371,6 @@ describe("LiveSimulationPreview", () => {
       renderComponent();
       expect(screen.getByTestId("events-count")).toHaveTextContent("3");
       expect(screen.getByTestId("score")).toHaveTextContent("11");
-    });
-  });
-
-  describe("Detected event IDs", () => {
-    it("passes detected event IDs correctly", () => {
-      renderComponent();
-
-      expect(mockSimulationPageProps).toHaveBeenCalledWith(
-        expect.objectContaining({
-          detectedEventIds: ["event1", "event2"],
-        }),
-      );
-    });
-
-    it("handles empty detected event IDs array", () => {
-      mockUseLiveKitRoom.mockReturnValue({
-        ...defaultMockHookReturn,
-        detectedEventIds: [],
-      });
-
-      renderComponent();
-
-      expect(mockSimulationPageProps).toHaveBeenCalledWith(
-        expect.objectContaining({
-          detectedEventIds: [],
-        }),
-      );
     });
   });
 
@@ -630,7 +598,6 @@ describe("LiveSimulationPreview", () => {
       expect(typeof props.isEndingSession).toBe("boolean");
       expect(typeof props.startTime).toBe("string");
       expect(Array.isArray(props.events)).toBe(true);
-      expect(Array.isArray(props.detectedEventIds)).toBe(true);
       expect(typeof props.score).toBe("number");
       // expect(typeof props.title).toBe("string"); // title is not passed as prop
       expect(typeof props.onEndSimulation).toBe("function");

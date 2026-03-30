@@ -1,4 +1,4 @@
-name: Deploy Ally Web
+name: Deploy lifeline Web
 
 on:
   workflow_dispatch:
@@ -17,9 +17,9 @@ on:
         default: false
   push:
     branches:
-      - master
+      - dev
     paths:
-      - "apps/ally-web/**"
+      - "apps/lifeline-web/**"
       - "libs/**"
 
 permissions:
@@ -43,7 +43,7 @@ jobs:
         id: set-config
         run: |
           echo "service_name=web" >> $GITHUB_OUTPUT
-          echo "app_path=apps/ally-web" >> $GITHUB_OUTPUT
+          echo "app_path=apps/lifeline-web" >> $GITHUB_OUTPUT
           echo "dockerfile_path=dockerfile" >> $GITHUB_OUTPUT
           echo "build_command=npm run build" >> $GITHUB_OUTPUT
           echo "node_version=20" >> $GITHUB_OUTPUT
@@ -96,8 +96,11 @@ jobs:
             TARGET_ENV="$MANUAL_ENV"
           else
             case $BRANCH in
-              "master")
+              "dev")
                 TARGET_ENV="dev"
+                ;;
+              "prd")
+                TARGET_ENV="prd"
                 ;;
               *)
                 echo "No deployment configured for branch: $BRANCH"
