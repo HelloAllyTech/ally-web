@@ -32,8 +32,8 @@ export const Health = () => {
 
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <p className="text-sm text-typography-700 dark:text-typography-600">
-            All systems are operating normally. This page confirms that the frontend application
-            is running and responsive.
+            All systems are operating normally. This page confirms that the frontend application is
+            running and responsive.
           </p>
           <p className="text-xs text-typography-600 dark:text-typography-700 mt-2">
             Last checked: {lastChecked.toLocaleTimeString()}

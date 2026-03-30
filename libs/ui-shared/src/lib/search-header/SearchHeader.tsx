@@ -13,12 +13,7 @@ const SearchHeader = ({ showDescriptionInMobile = true }) => {
       className="w-full flex flex-col gap-2 items-center justify-center font-['IBM_Plex_Serif'] mb-4 mt-10"
       data-testid="search-header"
     >
-      <img
-        src={allyIcon}
-        alt="ally Logo"
-        className="w-24 h-16"
-        data-testid="search-header-logo"
-      />
+      <img src={allyIcon} alt="ally Logo" className="w-24 h-16" data-testid="search-header-logo" />
       <span
         data-testid="search-header-description"
         className={`${
