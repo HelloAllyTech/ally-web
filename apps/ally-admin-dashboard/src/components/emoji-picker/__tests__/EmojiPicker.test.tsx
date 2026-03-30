@@ -65,7 +65,7 @@ describe("EmojiPickerComponent", () => {
       expect(screen.getByTestId("arrow-down-icon")).toBeInTheDocument();
     });
 
-    it("does not render picker initilifeline", () => {
+    it("does not render picker initially", () => {
       render(<EmojiPickerComponent />);
 
       expect(screen.queryByTestId("emoji-picker")).not.toBeInTheDocument();

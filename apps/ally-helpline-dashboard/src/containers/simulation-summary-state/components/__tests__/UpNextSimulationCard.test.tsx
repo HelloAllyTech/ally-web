@@ -115,7 +115,7 @@ describe("UpNextSimulationCard", () => {
       order: 2,
       title: "Hopeless Male, 40",
       description:
-        "A 40-year-old male is experiencing deep hopelessness. He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socilifeline. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope.",
+        "A 40-year-old male is experiencing deep hopelessness. He feels overwhelmed by ongoing personal and professional failures, believes his situation won't improve, and is withdrawing socially. He's showing signs of resignation and low self-worth. Your goal is to explore his thoughts gently, offer validation, and begin rebuilding his sense of agency and hope.",
       coverImageUrl: "https://via.placeholder.com/120",
       scenarioPathSessionItemId: "path-item-123",
     },

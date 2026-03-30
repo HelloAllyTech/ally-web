@@ -3,7 +3,7 @@ import { FC, useState, useEffect, useRef } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 
-import { CustomImage } from "@lifeline-ui-mono/ui-shared";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGetSimulationsQuery } from "@api";
 import { Search } from "@assets";
 import { en } from "@constants";

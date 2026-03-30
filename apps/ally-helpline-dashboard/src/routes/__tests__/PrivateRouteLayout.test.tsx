@@ -108,7 +108,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 // Mock logger
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
   },

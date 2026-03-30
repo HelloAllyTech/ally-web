@@ -163,7 +163,7 @@ describe("EventTypeSelectionDialog", () => {
       expect(screen.getByText("Create event")).toBeInTheDocument();
     });
 
-    it("create event button is disabled initilifeline", () => {
+    it("create event button is disabled initially", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
       const createButton = screen.getByText("Create event");

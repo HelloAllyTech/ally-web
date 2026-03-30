@@ -1,6 +1,6 @@
 import React from "react";
 
-import { CustomImage } from "@lifeline-ui-mono/ui-shared";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ToggleSwitch } from "@components";
 import { en } from "@constants";
 import { Simulation } from "@types";

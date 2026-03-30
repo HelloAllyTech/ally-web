@@ -1,6 +1,6 @@
 import { useEffect, useState, FC } from "react";
 
-import { CustomImage } from "@lifeline-ui-mono/ui-shared";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGetScenarioPathsQuery } from "@api";
 import { BookWhite } from "@assets";
 import { ListToolbar, EmptyState, ToggleSwitch } from "@components";

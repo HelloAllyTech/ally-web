@@ -4,7 +4,7 @@ import { Tabs, Tab } from "@mui/material";
 
 import { DataPolicy } from "@assets";
 import { Drawer } from "@components";
-import { lifeline_DATA_POLICY_URL } from "@constants";
+import { ally_DATA_POLICY_URL } from "@constants";
 import { openLinkInNewTab } from "@utils";
 
 import { tabStyles } from "../constants";
@@ -41,7 +41,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
         {
           alt: "Data policy",
           icon: <DataPolicy />,
-          onClick: () => openLinkInNewTab(lifeline_DATA_POLICY_URL),
+          onClick: () => openLinkInNewTab(ally_DATA_POLICY_URL),
           show: true,
           text: "Data policy",
         },

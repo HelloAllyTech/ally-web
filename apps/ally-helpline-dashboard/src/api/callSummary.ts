@@ -67,7 +67,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
 
     /**
      * Uses AI to improve and enhance the provided content,
-     * typiclifeline used for improving call summaries or notes.
+     * typically used for improving call summaries or notes.
      * @param {EnhanceContentRequest} data - Content to be enhanced
      * @returns {Promise<EnhanceContentResponse>} Enhanced content response
      */

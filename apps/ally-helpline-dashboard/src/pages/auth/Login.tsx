@@ -12,12 +12,12 @@ import {
   usePutTermsAndAgreementMutation,
   useVerifyOTPMutation,
 } from "@api";
-import { lifeline, BackCircle, LoginImage, RedirectIcon } from "@assets";
+import { ally, BackCircle, LoginImage, RedirectIcon } from "@assets";
 import { Button, Carousel, OTP, TermsAndAgreement, TextField } from "@components";
 import {
-  lifeline_PRIVACY_POLICY_URL,
-  lifeline_TERMS_URL,
-  lifeline_URL,
+  ally_PRIVACY_POLICY_URL,
+  ally_TERMS_URL,
+  ally_URL,
   CAROUSEL_SLIDES,
   LOCAL_STORAGE_KEYS,
   LoginSection,
@@ -209,7 +209,7 @@ export const Login: FunctionComponent = () => {
             <span>Hey,</span>
             <h1>
               <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                Welcome to <lifeline className="mt-2" />
+                Welcome to <ally className="mt-2" />
               </span>
             </h1>
             <span className="text-2xl mt-[24px]">Enter your email address to continue</span>
@@ -257,17 +257,17 @@ export const Login: FunctionComponent = () => {
             )}
           </Button>
           <div className="text-sm text-typography-800 mt-2">
-            By tapping next, you agree to lifeline's{" "}
+            By tapping next, you agree to ally's{" "}
             <span
               className="text-primary-500 cursor-pointer"
-              onClick={() => openLinkInNewTab(lifeline_TERMS_URL)}
+              onClick={() => openLinkInNewTab(ally_TERMS_URL)}
             >
               Terms & Conditions
             </span>{" "}
             and acknowledge{" "}
             <span
               className="text-primary-500 cursor-pointer"
-              onClick={() => openLinkInNewTab(lifeline_PRIVACY_POLICY_URL)}
+              onClick={() => openLinkInNewTab(ally_PRIVACY_POLICY_URL)}
             >
               Privacy Policy
             </span>
@@ -341,11 +341,11 @@ export const Login: FunctionComponent = () => {
         />
         <div
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-white pl-5 absolute bottom-0 right-0 cursor-pointer"
-          onClick={() => openLinkInNewTab(lifeline_URL)}
+          onClick={() => openLinkInNewTab(ally_URL)}
         >
           <div className="flex flex-col mr-4 font-secondary">
-            <lifeline className="w-10 h-10" />
-            <span className="text-sm font-medium text-typography-800">hellolifeline.ai</span>
+            <ally className="w-10 h-10" />
+            <span className="text-sm font-medium text-typography-800">helloally.ai</span>
           </div>
           <RedirectIcon
             width={36}

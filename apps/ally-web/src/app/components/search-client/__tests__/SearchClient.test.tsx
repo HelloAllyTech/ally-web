@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/search",
 }));
 
-vi.mock("@lifeline-ui-mono/ui-shared", () => {
+vi.mock("@ally-ui-mono/ui-shared", () => {
   return {
     logger: {
       info: vi.fn(),

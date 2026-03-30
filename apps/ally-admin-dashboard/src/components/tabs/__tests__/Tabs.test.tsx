@@ -139,7 +139,7 @@ describe("Tabs", () => {
     expect(indicator?.className).toContain("bottom-[0px]");
   });
 
-  it("indicator is centered horizontlifeline", () => {
+  it("indicator is centered horizontally", () => {
     const onChange = vi.fn();
     const { container } = render(<Tabs items={mockItems} activeId="tab1" onChange={onChange} />);
 

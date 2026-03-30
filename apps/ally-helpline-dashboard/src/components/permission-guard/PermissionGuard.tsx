@@ -5,7 +5,7 @@ import { useUser } from "@hooks";
 import { PermissionGuardProps } from "./types";
 
 /**
- * Conditionlifeline renders children when the current user possesses all permissions
+ * Conditionally renders children when the current user possesses all permissions
  * listed in `requiredPermissions`.
  *
  * This component derives the user's permissions via `useUser()` and performs an

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useStartSimulationMutation } from "@api";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 import userSlice from "@reducer/userReducer";
@@ -13,7 +13,7 @@ import { useStartSimulation } from "../useStartSimulation";
 // Mock dependencies
 vi.mock("sonner");
 vi.mock("react-router-dom");
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     error: vi.fn(),
     info: vi.fn(),
@@ -317,7 +317,7 @@ describe("useStartSimulation", () => {
     });
 
     const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
-    // Update expectations to match what the hook actulifeline writes (including localParticipant/remoteParticipant structure)
+    // Update expectations to match what the hook actually writes (including localParticipant/remoteParticipant structure)
     expect(storedData).toMatchObject({
       roomId: "scenario-123",
       title: "Test Scenario",

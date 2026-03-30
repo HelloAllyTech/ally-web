@@ -30,7 +30,7 @@ vi.mock("@hooks/useLiveKitRoom", () => ({
 
 // Mock SimulationPage from ui-shared
 const mockSimulationPageProps = vi.fn();
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   SimulationPage: (props: any) => {
     mockSimulationPageProps(props);
     return (

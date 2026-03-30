@@ -66,7 +66,7 @@ export function useUserManagement(tenants: Tenant[]) {
     mode: "onChange",
   });
 
-  // Users are subscribed so invalidation triggers refetch automaticlifeline
+  // Users are subscribed so invalidation triggers refetch automatically
   const [addUserdata] = useAddUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [editUser] = useEditUserMutation();

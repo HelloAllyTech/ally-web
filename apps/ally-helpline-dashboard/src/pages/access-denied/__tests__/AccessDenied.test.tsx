@@ -422,7 +422,7 @@ describe("AccessDenied Component", () => {
       expect(rootDiv.onclick).toBeNull();
     });
 
-    it("should not render dynamiclifeline based on props (it accepts none)", () => {
+    it("should not render dynamically based on props (it accepts none)", () => {
       // AccessDenied is a pure presentational component with no props
       const { container: render1 } = render(<AccessDenied />);
       const { container: render2 } = render(<AccessDenied />);

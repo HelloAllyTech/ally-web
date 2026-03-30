@@ -22,7 +22,7 @@ A reusable, type-safe, and highly customizable table component for React. Suppor
 ### Basic Example
 
 ```tsx
-import { GenericTable, Column } from "@lifeline-ui-mono/ui-shared";
+import { GenericTable, Column } from "@ally-ui-mono/ui-shared";
 
 const columns: Column<MyRowType>[] = [
   { key: "id", header: "ID" },

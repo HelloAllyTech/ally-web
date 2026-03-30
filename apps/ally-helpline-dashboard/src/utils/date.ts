@@ -62,7 +62,7 @@ export const getFormattedDate = (date: Date | string): string => {
     hour12: true,
   });
 
-  return `${formattedDate} ${formattedTime}`; // Concatenating manulifeline to avoid 'at' in between
+  return `${formattedDate} ${formattedTime}`; // Concatenating manually to avoid 'at' in between
 };
 
 /**

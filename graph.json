@@ -1,11 +1,11 @@
 {
   "graph": {
     "nodes": {
-      "lifeline-helpline-dashboard": {
-        "name": "lifeline-helpline-dashboard",
+      "ally-helpline-dashboard": {
+        "name": "ally-helpline-dashboard",
         "type": "app",
         "data": {
-          "root": "apps/lifeline-helpline-dashboard",
+          "root": "apps/ally-helpline-dashboard",
           "projectType": "application",
           "targets": {
             "typecheck": {
@@ -18,7 +18,7 @@
                 }
               ],
               "options": {
-                "cwd": "apps/lifeline-helpline-dashboard",
+                "cwd": "apps/ally-helpline-dashboard",
                 "command": "tsc --noEmit -p tsconfig.app.json"
               },
               "metadata": {
@@ -42,9 +42,9 @@
               "outputs": ["{options.outputPath}"],
               "defaultConfiguration": "production",
               "options": {
-                "outputPath": "dist/apps/lifeline-helpline-dashboard",
-                "configFile": "apps/lifeline-helpline-dashboard/vite.config.ts",
-                "postcssConfig": "apps/lifeline-helpline-dashboard/postcss.config.cjs"
+                "outputPath": "dist/apps/ally-helpline-dashboard",
+                "configFile": "apps/ally-helpline-dashboard/vite.config.ts",
+                "postcssConfig": "apps/ally-helpline-dashboard/postcss.config.cjs"
               },
               "configurations": {
                 "development": {
@@ -60,18 +60,18 @@
               "executor": "@nx/vite:dev-server",
               "defaultConfiguration": "development",
               "options": {
-                "buildTarget": "lifeline-helpline-dashboard:build",
+                "buildTarget": "ally-helpline-dashboard:build",
                 "port": 8080,
                 "host": true,
-                "postcssConfig": "apps/lifeline-helpline-dashboard/postcss.config.cjs"
+                "postcssConfig": "apps/ally-helpline-dashboard/postcss.config.cjs"
               },
               "configurations": {
                 "development": {
-                  "buildTarget": "lifeline-helpline-dashboard:build:development",
+                  "buildTarget": "ally-helpline-dashboard:build:development",
                   "hmr": true
                 },
                 "production": {
-                  "buildTarget": "lifeline-helpline-dashboard:build:production",
+                  "buildTarget": "ally-helpline-dashboard:build:production",
                   "hmr": false
                 }
               },
@@ -104,7 +104,7 @@
               "executor": "@nx/vite:preview-server",
               "defaultConfiguration": "development",
               "options": {
-                "buildTarget": "lifeline-helpline-dashboard:build"
+                "buildTarget": "ally-helpline-dashboard:build"
               },
               "configurations": {},
               "parallelism": true,
@@ -132,7 +132,7 @@
               "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
-                "command": "npx nx watch --projects lifeline-helpline-dashboard --includeDependentProjects -- npx nx build-deps lifeline-helpline-dashboard"
+                "command": "npx nx watch --projects ally-helpline-dashboard --includeDependentProjects -- npx nx build-deps ally-helpline-dashboard"
               },
               "configurations": {},
               "parallelism": true
@@ -140,7 +140,7 @@
             "eslint:lint": {
               "cache": true,
               "options": {
-                "cwd": "apps/lifeline-helpline-dashboard",
+                "cwd": "apps/ally-helpline-dashboard",
                 "command": "eslint ."
               },
               "inputs": [
@@ -185,7 +185,7 @@
               "executor": "@nx/vite:test",
               "outputs": ["{options.reportsDirectory}"],
               "options": {
-                "reportsDirectory": "../../coverage/apps/lifeline-helpline-dashboard"
+                "reportsDirectory": "../../coverage/apps/ally-helpline-dashboard"
               },
               "configurations": {},
               "parallelism": true
@@ -194,7 +194,7 @@
               "executor": "@nx/eslint:lint",
               "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": ["apps/lifeline-helpline-dashboard/**/*.{ts,tsx,js,jsx}"]
+                "lintFilePatterns": ["apps/ally-helpline-dashboard/**/*.{ts,tsx,js,jsx}"]
               },
               "configurations": {},
               "parallelism": true
@@ -209,18 +209,18 @@
               "isInPackageManagerWorkspaces": true
             }
           },
-          "name": "lifeline-helpline-dashboard",
+          "name": "ally-helpline-dashboard",
           "tags": ["npm:private"],
           "$schema": "../../node_modules/nx/schemas/project-schema.json",
-          "sourceRoot": "apps/lifeline-helpline-dashboard/src",
+          "sourceRoot": "apps/ally-helpline-dashboard/src",
           "implicitDependencies": []
         }
       },
-      "lifeline-admin-dashboard": {
-        "name": "lifeline-admin-dashboard",
+      "ally-admin-dashboard": {
+        "name": "ally-admin-dashboard",
         "type": "app",
         "data": {
-          "root": "apps/lifeline-admin-dashboard",
+          "root": "apps/ally-admin-dashboard",
           "projectType": "application",
           "targets": {
             "typecheck": {
@@ -233,7 +233,7 @@
                 }
               ],
               "options": {
-                "cwd": "apps/lifeline-admin-dashboard",
+                "cwd": "apps/ally-admin-dashboard",
                 "command": "tsc --noEmit -p tsconfig.app.json"
               },
               "metadata": {
@@ -254,7 +254,7 @@
             },
             "test": {
               "options": {
-                "cwd": "apps/lifeline-admin-dashboard",
+                "cwd": "apps/ally-admin-dashboard",
                 "command": "vitest"
               },
               "cache": true,
@@ -268,7 +268,7 @@
                   "env": "CI"
                 }
               ],
-              "outputs": ["{workspaceRoot}/coverage/apps/lifeline-admin-dashboard"],
+              "outputs": ["{workspaceRoot}/coverage/apps/ally-admin-dashboard"],
               "metadata": {
                 "technologies": ["vite"],
                 "description": "Run Vite tests",
@@ -288,7 +288,7 @@
             },
             "build": {
               "options": {
-                "cwd": "apps/lifeline-admin-dashboard",
+                "cwd": "apps/ally-admin-dashboard",
                 "command": "vite build"
               },
               "cache": true,
@@ -300,7 +300,7 @@
                   "externalDependencies": ["vite"]
                 }
               ],
-              "outputs": ["{workspaceRoot}/dist/apps/lifeline-admin-dashboard"],
+              "outputs": ["{workspaceRoot}/dist/apps/ally-admin-dashboard"],
               "metadata": {
                 "technologies": ["vite"],
                 "description": "Run Vite build",
@@ -321,7 +321,7 @@
             "serve": {
               "continuous": true,
               "options": {
-                "cwd": "apps/lifeline-admin-dashboard",
+                "cwd": "apps/ally-admin-dashboard",
                 "command": "vite"
               },
               "metadata": {
@@ -344,7 +344,7 @@
             "dev": {
               "continuous": true,
               "options": {
-                "cwd": "apps/lifeline-admin-dashboard",
+                "cwd": "apps/ally-admin-dashboard",
                 "command": "vite"
               },
               "metadata": {
@@ -367,12 +367,12 @@
               "continuous": true,
               "dependsOn": ["build"],
               "options": {
-                "cwd": "apps/lifeline-admin-dashboard",
+                "cwd": "apps/ally-admin-dashboard",
                 "command": "vite preview"
               },
               "metadata": {
                 "technologies": ["vite"],
-                "description": "Loclifeline preview Vite production build",
+                "description": "Locally preview Vite production build",
                 "help": {
                   "command": "npx vite preview --help",
                   "example": {
@@ -408,7 +408,7 @@
               "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
-                "command": "npx nx watch --projects lifeline-admin-dashboard --includeDependentProjects -- npx nx build-deps lifeline-admin-dashboard"
+                "command": "npx nx watch --projects ally-admin-dashboard --includeDependentProjects -- npx nx build-deps ally-admin-dashboard"
               },
               "configurations": {},
               "parallelism": true
@@ -416,7 +416,7 @@
             "eslint:lint": {
               "cache": true,
               "options": {
-                "cwd": "apps/lifeline-admin-dashboard",
+                "cwd": "apps/ally-admin-dashboard",
                 "command": "eslint ."
               },
               "inputs": [
@@ -448,9 +448,9 @@
             }
           },
           "metadata": {},
-          "name": "lifeline-admin-dashboard",
+          "name": "ally-admin-dashboard",
           "$schema": "../../node_modules/nx/schemas/project-schema.json",
-          "sourceRoot": "apps/lifeline-admin-dashboard/src",
+          "sourceRoot": "apps/ally-admin-dashboard/src",
           "tags": [],
           "implicitDependencies": []
         }
@@ -571,7 +571,7 @@
           "metadata": {
             "targetGroups": {},
             "js": {
-              "packageName": "@lifeline-ui-mono/ui-shared",
+              "packageName": "@ally-ui-mono/ui-shared",
               "packageExports": {
                 ".": {
                   "types": "./src/index.ts",
@@ -589,11 +589,11 @@
           "implicitDependencies": []
         }
       },
-      "@lifeline-ui-mono/lifeline-web": {
-        "name": "@lifeline-ui-mono/lifeline-web",
+      "@ally-ui-mono/ally-web": {
+        "name": "@ally-ui-mono/ally-web",
         "type": "lib",
         "data": {
-          "root": "apps/lifeline-web",
+          "root": "apps/ally-web",
           "targets": {
             "build": {
               "executor": "nx:run-script",
@@ -634,7 +634,7 @@
             "serve-static": {
               "continuous": true,
               "options": {
-                "cwd": "apps/lifeline-web",
+                "cwd": "apps/ally-web",
                 "command": "next start"
               },
               "dependsOn": ["build"],
@@ -654,7 +654,7 @@
               "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
-                "command": "npx nx watch --projects @lifeline-ui-mono/lifeline-web --includeDependentProjects -- npx nx build-deps @lifeline-ui-mono/lifeline-web"
+                "command": "npx nx watch --projects @ally-ui-mono/ally-web --includeDependentProjects -- npx nx build-deps @ally-ui-mono/ally-web"
               },
               "configurations": {},
               "parallelism": true
@@ -662,7 +662,7 @@
             "eslint:lint": {
               "cache": true,
               "options": {
-                "cwd": "apps/lifeline-web",
+                "cwd": "apps/ally-web",
                 "command": "eslint ."
               },
               "inputs": [
@@ -692,14 +692,14 @@
               "parallelism": true
             }
           },
-          "name": "@lifeline-ui-mono/lifeline-web",
+          "name": "@ally-ui-mono/ally-web",
           "tags": ["npm:private"],
           "metadata": {
             "targetGroups": {
               "NPM Scripts": ["dev", "build", "start"]
             },
             "js": {
-              "packageName": "@lifeline-ui-mono/lifeline-web",
+              "packageName": "@ally-ui-mono/ally-web",
               "isInPackageManagerWorkspaces": true
             }
           },
@@ -708,24 +708,24 @@
       }
     },
     "dependencies": {
-      "lifeline-helpline-dashboard": [
+      "ally-helpline-dashboard": [
         {
-          "source": "lifeline-helpline-dashboard",
+          "source": "ally-helpline-dashboard",
           "target": "ui-shared",
           "type": "static"
         }
       ],
-      "lifeline-admin-dashboard": [
+      "ally-admin-dashboard": [
         {
-          "source": "lifeline-admin-dashboard",
+          "source": "ally-admin-dashboard",
           "target": "ui-shared",
           "type": "static"
         }
       ],
       "ui-shared": [],
-      "@lifeline-ui-mono/lifeline-web": [
+      "@ally-ui-mono/ally-web": [
         {
-          "source": "@lifeline-ui-mono/lifeline-web",
+          "source": "@ally-ui-mono/ally-web",
           "target": "ui-shared",
           "type": "static"
         }

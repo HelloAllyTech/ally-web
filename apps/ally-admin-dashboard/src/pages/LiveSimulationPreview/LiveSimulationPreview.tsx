@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
-import { SimulationPage, getSimulationEvents } from "@lifeline-ui-mono/ui-shared";
+import { SimulationPage, getSimulationEvents } from "@ally-ui-mono/ui-shared";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
 import { LOCAL_STORAGE_KEYS } from "@constants";

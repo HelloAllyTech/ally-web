@@ -47,7 +47,7 @@ export const TextDropdown = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Use options directly when onSearch is provided (global search), otherwise filter loclifeline
+  // Use options directly when onSearch is provided (global search), otherwise filter locally
   const filteredOptions = onSearch
     ? options
     : options?.filter(option => option?.label?.toLowerCase().includes(searchTerm.toLowerCase()));

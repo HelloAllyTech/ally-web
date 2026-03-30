@@ -383,7 +383,7 @@ describe("EventManagement", () => {
       });
     });
 
-    it("renders create new event button initilifeline", () => {
+    it("renders create new event button initially", () => {
       renderComponent();
       expect(screen.getByText("Create New Event")).toBeInTheDocument();
     });
@@ -746,7 +746,7 @@ describe("EventManagement", () => {
         fireEvent.click(selectButton);
       });
 
-      // Manulifeline set multiple selections by clicking delete
+      // Manually set multiple selections by clicking delete
       const deleteButton = screen.getByTestId("toolbar-action");
       fireEvent.click(deleteButton);
 
@@ -1093,7 +1093,7 @@ describe("EventManagement", () => {
       const selectButton = screen.getByTestId("select-combination");
       fireEvent.click(selectButton);
 
-      // COMBINATION events can be created (they just have expression: null initilifeline)
+      // COMBINATION events can be created (they just have expression: null initially)
       // When API returns an error, it should show an error toast
       await waitFor(() => {
         expect(mockCreateSessionEvents).toHaveBeenCalled();

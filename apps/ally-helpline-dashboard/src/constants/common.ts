@@ -1,10 +1,10 @@
 import { Carousel1, Carousel4, Carousel3, Carousel2 } from "@assets";
 import { CarouselSlideType } from "@components";
 
-export const lifeline_URL = "https://www.hellolifeline.ai";
-export const lifeline_TERMS_URL = "https://www.hellolifeline.ai/terms";
-export const lifeline_PRIVACY_POLICY_URL = "https://www.hellolifeline.ai/policy";
-export const lifeline_DATA_POLICY_URL = "https://www.hellolifeline.ai/policy";
+export const ally_URL = "https://www.helloally.ai";
+export const ally_TERMS_URL = "https://www.helloally.ai/terms";
+export const ally_PRIVACY_POLICY_URL = "https://www.helloally.ai/policy";
+export const ally_DATA_POLICY_URL = "https://www.helloally.ai/policy";
 
 export enum MediaRecorderState {
   INACTIVE = "inactive",
@@ -75,7 +75,7 @@ export const CAROUSEL_SLIDES: CarouselSlideType[] = [
   },
   {
     imageSrc: Carousel3,
-    text: "Personal information of clients is automaticlifeline removed",
+    text: "Personal information of clients is automatically removed",
   },
   {
     imageSrc: Carousel4,

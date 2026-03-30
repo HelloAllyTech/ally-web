@@ -3,7 +3,7 @@ import { FC, useState, useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { SimulationDetailsModal, CustomImage, DropdownField } from "@lifeline-ui-mono/ui-shared";
+import { SimulationDetailsModal, CustomImage, DropdownField } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenarioPathwayDetailsQuery,
   useLazyGetScenarioSessionByPathItemQuery,

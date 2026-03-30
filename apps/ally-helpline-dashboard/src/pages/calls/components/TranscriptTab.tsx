@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { InfiniteScroll } from "@lifeline-ui-mono/ui-shared";
+import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 
 import { TranscriptTabProps } from "./types";
 

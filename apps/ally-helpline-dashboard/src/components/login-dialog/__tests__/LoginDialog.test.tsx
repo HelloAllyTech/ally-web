@@ -57,8 +57,8 @@ vi.mock("@constants", async actual => {
   const real = await actual<typeof import("@constants")>();
   return {
     ...real,
-    lifeline_TERMS_URL: "https://example.com/terms",
-    lifeline_PRIVACY_POLICY_URL: "https://example.com/privacy",
+    ally_TERMS_URL: "https://example.com/terms",
+    ally_PRIVACY_POLICY_URL: "https://example.com/privacy",
   };
 });
 

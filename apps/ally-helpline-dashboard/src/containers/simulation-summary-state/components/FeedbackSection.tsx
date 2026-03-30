@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { motion } from "framer-motion";
 
-import { GenericTable } from "@lifeline-ui-mono/ui-shared";
+import { GenericTable } from "@ally-ui-mono/ui-shared";
 import { Accordion } from "@components";
 import { FeedbackSectionType } from "@types";
 

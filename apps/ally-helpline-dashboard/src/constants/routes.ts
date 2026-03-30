@@ -79,7 +79,7 @@ export const navBarOptions = [
     id: TabId.COMMUNITY,
     title: "Community",
     Icon: CommunityIcon,
-    path: "https://community.hellolifeline.ai/",
+    path: "https://community.helloally.ai/",
     activePages: [],
     permissions: [Permissions.VIEW_COMMUNITY],
   },

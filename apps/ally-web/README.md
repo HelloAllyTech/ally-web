@@ -1,4 +1,4 @@
-# lifeline Web - Mental Health Resource Library
+# ally Web - Mental Health Resource Library
 
 A comprehensive document search platform for mental health professionals, built with Next.js. This application provides access to evidence-based resources, guidelines, and professional documents to support mental health practice.
 
@@ -24,7 +24,7 @@ A comprehensive document search platform for mental health professionals, built 
 1. Navigate to the project root:
 
 ```bash
-cd lifeline-UI-mono
+cd ally-UI-mono
 ```
 
 2. Install dependencies (if not already done):
@@ -36,7 +36,7 @@ npm install
 3. Start the development server:
 
 ```bash
-npx nx dev lifeline-web
+npx nx dev ally-web
 ```
 
 The application will be available at `http://localhost:3000`
@@ -44,7 +44,7 @@ The application will be available at `http://localhost:3000`
 ## Project Structure
 
 ```
-lifeline-web/
+ally-web/
 ├── src/
 │   ├── app/                    # App router components
 │   │   ├── layout.tsx         # Root layout with fonts and metadata
@@ -64,18 +64,18 @@ lifeline-web/
 
 ```bash
 # Development
-npx nx dev lifeline-web           # Start development server
+npx nx dev ally-web           # Start development server
 
 # Building
-npx nx build lifeline-web        # Create production build
+npx nx build ally-web        # Create production build
 
 # Linting
-npx nx lint lifeline-web        # Run ESLint
+npx nx lint ally-web        # Run ESLint
 ```
 
 ## API Integration
 
-The application integrates with the lifeline backend API to provide:
+The application integrates with the ally backend API to provide:
 
 - **Document Search**: Search through mental health resources and documents
 - **Category Management**: Filter resources by categories and topics

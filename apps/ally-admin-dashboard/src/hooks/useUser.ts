@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { useSelector } from "react-redux";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyGetUserQuery, useLazyGetPermissionsQuery, baseAPI } from "@api";
 import { NavigationItem } from "@components/types";
 import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions } from "@constants";

@@ -290,7 +290,7 @@ describe("SimulationSummarySidebar Component", () => {
     it("should have proper dialog structure", () => {
       renderComponent();
 
-      // Dialog should be rendered but not visible initilifeline
+      // Dialog should be rendered but not visible initially
       expect(screen.getByTestId("feedback-dialog")).toBeInTheDocument();
     });
   });

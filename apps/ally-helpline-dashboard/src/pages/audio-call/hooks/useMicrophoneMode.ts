@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useEndCallMutation, useLazyGetCounsellorChatQuery, useGetNudgeStatusQuery } from "@api";
 import {
   SocketConnectionTypes,

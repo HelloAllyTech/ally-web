@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useEndCallMutation, useLazyGetCounsellorChatQuery, useGetNudgeStatusQuery } from "@api";
 import { SocketConnectionTypes, ROUTES } from "@constants";
 import { useSocket } from "@hooks";

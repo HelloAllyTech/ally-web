@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useSubmitCallFeedbackMutation } from "@api";
 import { Button, StarRating, TextField } from "@components";
 import { IssueOptions } from "@types";

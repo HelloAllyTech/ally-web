@@ -18,7 +18,7 @@ import userEvent from "@testing-library/user-event";
 import { Bolt } from "lucide-react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { FEATURE_FLAGS_MAP } from "@lifeline-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 
 import { Scenario } from "../Scenario";
@@ -136,8 +136,8 @@ vi.mock("@hooks", () => ({
   }),
 }));
 
-// Mock @lifeline-ui-mono/ui-shared
-vi.mock("@lifeline-ui-mono/ui-shared/index", () => ({
+// Mock @ally-ui-mono/ui-shared
+vi.mock("@ally-ui-mono/ui-shared/index", () => ({
   DropdownField: (props: any) => {
     mockDropdownField(props);
     const { options = [], value, onChange } = props;

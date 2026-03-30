@@ -8,13 +8,13 @@
  * - Use PascalCase for component names
  * - Use descriptive names that match the icon's purpose
  * - Add "Icon" suffix for generic icons (e.g., SearchIcon, UserIcon)
- * - Use specific names for unique icons (e.g., LifelineLogo, CallAttend)
+ * - Use specific names for unique icons (e.g., AllyLogo, CallAttend)
  */
 
 import AccountCircle from "./account-circle.svg?react";
 import ActionsIcon from "./actions-icon.svg?react";
 import Alarm from "./alarm.svg?react";
-import lifeline from "./lifeline.svg?react";
+import ally from "./ally.svg?react";
 import ArrowRight from "./arrow-right.svg?react";
 import Arrow from "./arrow.svg?react";
 import Assessment from "./assessment.svg?react";
@@ -61,7 +61,7 @@ import IssuesWorkedOn from "./issues-worked-on.svg?react";
 import KeyConcerns from "./key-concerns.svg?react";
 import KeyEvents from "./key-events.svg?react";
 import LearnIcon from "./learn-icon.svg?react";
-import LifelineLogo from "./lifeline-logo.svg?react";
+import AllyLogo from "./ally-logo.svg?react";
 import ListIcon from "./list-icon.svg?react";
 import Lock from "./lock.svg?react";
 import Logout from "./logout-icon.svg?react";
@@ -137,7 +137,7 @@ export {
   AccountCircle,
   ActionsIcon,
   Alarm,
-  lifeline,
+  ally,
   Assessment,
   AudioFile,
   BackCircle,
@@ -184,7 +184,7 @@ export {
   KeyConcerns,
   KeyEvents,
   LearnIcon,
-  LifelineLogo,
+  AllyLogo,
   ListIcon,
   Lock,
   Logout,

@@ -17,7 +17,7 @@ const PrivacyTooltip = () => (
     <li>We do not save audio recordings</li>
     <li>Data is encrypted</li>
     <li>We do not use your client’s data to train our models</li>
-    <li>Personal information of clients is automaticlifeline removed</li>
+    <li>Personal information of clients is automatically removed</li>
   </ul>
 );
 

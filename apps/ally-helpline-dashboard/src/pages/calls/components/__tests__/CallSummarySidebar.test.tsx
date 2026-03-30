@@ -15,7 +15,7 @@ import { SUMMARY_FEEDBACK_TIMEOUT } from "../constants";
 // Remove the useSelector mock - we'll use the actual Redux store
 
 // Mock UI shared components
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
   },

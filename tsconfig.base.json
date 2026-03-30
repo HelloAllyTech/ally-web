@@ -19,8 +19,8 @@
     "customConditions": ["development"],
     "baseUrl": ".",
     "paths": {
-      "@lifeline-ui-mono/ui-shared": ["./libs/ui-shared/src"],
-      "@lifeline-ui-mono/ui-shared/*": ["./libs/ui-shared/src/*"]
+      "@ally-ui-mono/ui-shared": ["./libs/ui-shared/src"],
+      "@ally-ui-mono/ui-shared/*": ["./libs/ui-shared/src/*"]
     }
   }
 }

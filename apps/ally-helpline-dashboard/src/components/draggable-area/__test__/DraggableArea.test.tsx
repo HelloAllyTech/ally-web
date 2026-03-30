@@ -151,7 +151,7 @@ describe("DraggableArea", () => {
       const acceptedFiles = [mockFile("document.pdf", "application/pdf", 500000)];
       const rejectedFiles: FileRejection[] = [];
 
-      // Manulifeline invoke the captured onDrop function
+      // Manually invoke the captured onDrop function
       capturedOnDrop(acceptedFiles, rejectedFiles);
 
       // Assert the accepted handler was called with the correct files
@@ -171,7 +171,7 @@ describe("DraggableArea", () => {
         },
       ];
 
-      // Manulifeline invoke the captured onDrop function
+      // Manually invoke the captured onDrop function
       capturedOnDrop(acceptedFiles, rejectedFiles);
 
       // Assert the accepted handler was NOT called

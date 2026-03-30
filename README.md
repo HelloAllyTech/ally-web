@@ -1,10 +1,10 @@
-# lifeline UI Monorepo
+# ally UI Monorepo
 
-This monorepo contains multiple applications for the lifeline platform:
+This monorepo contains multiple applications for the ally platform:
 
-- lifeline Web: A modern landing page for our mental health AI assistance platform
-- lifeline Helpline Dashboard: Dashboard application for mental health professionals
-- lifeline Admin Dashboard: Dashboard application for super admin
+- ally Web: A modern landing page for our mental health AI assistance platform
+- ally Helpline Dashboard: Dashboard application for mental health professionals
+- ally Admin Dashboard: Dashboard application for super admin
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ This monorepo contains multiple applications for the lifeline platform:
 
 ```bash
 git clone <repository-url>
-cd lifeline-UI-mono
+cd ally-UI-mono
 ```
 
 2. Install dependencies:
@@ -29,19 +29,19 @@ npm install
 
 3. Start the development servers:
 
-For lifeline Web:
+For ally Web:
 
 ```bash
 npm run start:web
 ```
 
-For lifeline Helpline Dashboard:
+For ally Helpline Dashboard:
 
 ```bash
 npm run start:helpline
 ```
 
-For lifeline Admin Dashboard:
+For ally Admin Dashboard:
 
 ```bash
 npm run start:admin
@@ -50,11 +50,11 @@ npm run start:admin
 ## Project Structure
 
 ```
-lifeline-UI-mono/
+ally-UI-mono/
 ├── apps/
-│   ├── lifeline-web/                  # Landing page application
-│   └── lifeline-helpline-dashboard/   # Main dashboard application
-│   └── lifeline-admin-dashboard/      # Main dashboard application
+│   ├── ally-web/                  # Landing page application
+│   └── ally-helpline-dashboard/   # Main dashboard application
+│   └── ally-admin-dashboard/      # Main dashboard application
 ├── libs/                          # Shared libraries
 ├── nx.json                        # NX configuration
 ├── package.json                   # Root dependencies
@@ -63,7 +63,7 @@ lifeline-UI-mono/
 
 ## Applications
 
-### lifeline Web (apps/lifeline-web)
+### ally Web (apps/ally-web)
 
 A Next.js application showcasing our platform's features and mission:
 
@@ -72,41 +72,41 @@ A Next.js application showcasing our platform's features and mission:
 - Interactive elements and smooth animations
 - Optimized for performance and accessibility
 
-### lifeline Helpline Dashboard (apps/lifeline-helpline-dashboard)
+### ally Helpline Dashboard (apps/ally-helpline-dashboard)
 
 The main dashboard application for mental health professionals.
 
-### lifeline Admin Dashboard (apps/lifeline-admin-dashboard)
+### ally Admin Dashboard (apps/ally-admin-dashboard)
 
 The main dashboard application for super admin for user managament and simulation management.
 
 ## Available Commands
 
 ```bash
-# lifeline Web Commands
+# ally Web Commands
 npm run start:web           # Start development server
 npm run build:web        # Build for production
 npm run test:web      # running test cases
-npx nx lint lifeline-web     # Lint code
+npx nx lint ally-web     # Lint code
 
-# lifeline Helpline Dashboard Commands
+# ally Helpline Dashboard Commands
 npm run start:helpline           # Start development server
 npm run build:helpline        # Build for production
 npm run test:helpline      # running test cases
-npx nx lint lifeline-helpline-dashboard
+npx nx lint ally-helpline-dashboard
 
-# lifeline Admin Dashboard Commands
+# ally Admin Dashboard Commands
 npm run start:admin           # Start development server
 npm run build:admin        # Build for production
 npm run test:admin      # running test cases
-npx nx lint lifeline-admin-dashboard
+npx nx lint ally-admin-dashboard
 ```
 
 ## Development Guidelines
 
 1. **Code Style**: Follow the project's ESLint and Prettier configurations
 2. **Styling**:
-   - lifeline Web: Uses CSS Modules with custom properties
+   - ally Web: Uses CSS Modules with custom properties
    - Helpline Dashboard: Uses Tailwind CSS
    - Admin Dashboard: Uses Tailwind CSS
 3. **TypeScript**: Maintain strict type checking and follow the base TSConfig
@@ -122,10 +122,10 @@ Use Docker for a consistent local dev environment leveraging a shared base image
 - **Build the shared base image (once or when deps change)**
 
 ```bash
-docker build -f Dockerfile.deps -t lifeline-web/deps:dev .
+docker build -f Dockerfile.deps -t ally-web/deps:dev .
 ```
 
-- **Rebuild app images (now FROM lifeline-web/deps:dev)**
+- **Rebuild app images (now FROM ally-web/deps:dev)**
 
 ```bash
 docker compose build

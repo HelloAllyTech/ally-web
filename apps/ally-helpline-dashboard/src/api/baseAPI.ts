@@ -1,5 +1,5 @@
 /**
- * This module provides the foundational API setup for the lifeline Helpline Dashboard application.
+ * This module provides the foundational API setup for the ally Helpline Dashboard application.
  * It includes automatic token refresh, authentication headers, and centralized error handling.
  *
  * Key Features:
@@ -17,7 +17,7 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, TAG_TYPES } from "@constants";
 import { RefreshResponse } from "@types";
 
@@ -40,7 +40,7 @@ const handleLogout = () => {
 };
 
 /**
- * Automaticlifeline adds Bearer token to all API requests if available in localStorage.
+ * Automatically adds Bearer token to all API requests if available in localStorage.
  * The base URL is constructed from environment variables.
  */
 const baseQuery = fetchBaseQuery({

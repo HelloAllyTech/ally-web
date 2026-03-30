@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { ArrowDown, Book, User, Users, lifeline, DockToRight, Logout, HappyEmoji } from "@assets";
+import { ArrowDown, Book, User, Users, ally, DockToRight, Logout, HappyEmoji } from "@assets";
 import { SIDEBAR_ITEMS, ROUTES, en } from "@constants";
 import { useClickOutside, useUser } from "@hooks";
 
@@ -184,7 +184,7 @@ export const Sidebar: React.FC = () => {
     >
       <div className="flex justify-between border-b border-border-light relative">
         <div className={`px-2 pr-5 py-4  flex items-center justify-between`}>
-          <lifeline />
+          <ally />
         </div>
         <button
           onClick={handleToggleSidebar}

@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, vi, it } from "vitest";
 
-import { lifeline_DATA_POLICY_URL } from "@constants";
+import { ally_DATA_POLICY_URL } from "@constants";
 import { openLinkInNewTab } from "@utils";
 
 import SummarySidebarWrapper from "../SummarySidebarWrapper";
@@ -92,7 +92,7 @@ describe("SummarySidebarWrapper", () => {
     render(<SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList} />);
 
     await userEvent.click(screen.getByText("Data policy"));
-    expect(openLinkInNewTab).toHaveBeenCalledWith(lifeline_DATA_POLICY_URL);
+    expect(openLinkInNewTab).toHaveBeenCalledWith(ally_DATA_POLICY_URL);
   });
 
   it("renders children content", () => {

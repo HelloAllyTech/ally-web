@@ -81,7 +81,7 @@ describe("main.tsx", () => {
   it("creates root with correct element", () => {
     render(<TestMainComponent />);
 
-    // The TestMainComponent doesn't actulifeline call createRoot, it just renders the structure
+    // The TestMainComponent doesn't actually call createRoot, it just renders the structure
     // This test verifies the component structure is correct
     expect(screen.getByTestId("styled-engine-provider")).toBeInTheDocument();
   });
@@ -141,7 +141,7 @@ describe("main.tsx", () => {
     // Mock document.getElementById to return null
     vi.spyOn(document, "getElementById").mockReturnValue(null);
 
-    // The TestMainComponent doesn't actulifeline check for root element, it just renders
+    // The TestMainComponent doesn't actually check for root element, it just renders
     // This test verifies the component can render without errors
     expect(() => {
       render(<TestMainComponent />);

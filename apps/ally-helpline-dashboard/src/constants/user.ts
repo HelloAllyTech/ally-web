@@ -14,7 +14,7 @@ export const TermsAndAgreementData = [
       "Your personal information remains encrypted and accessible only for service-related functions as defined in our ",
     link: {
       text: "Privacy Policy",
-      href: "https://www.hellolifeline.ai/policy",
+      href: "https://www.helloally.ai/policy",
     },
   },
   {
@@ -25,7 +25,7 @@ export const TermsAndAgreementData = [
   {
     heading: "Consent for Processing",
     content:
-      "By continuing, you consent to lifeline’s use of cookies, analytics, and AI models for improving your personalized experience.",
+      "By continuing, you consent to ally’s use of cookies, analytics, and AI models for improving your personalized experience.",
   },
   {
     heading: "Data Security",

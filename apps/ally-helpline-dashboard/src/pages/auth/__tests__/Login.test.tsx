@@ -62,9 +62,9 @@ vi.mock("@api", () => ({
 }));
 
 vi.mock("@assets", () => ({
-  lifeline: ({ className }: { className: string }) => (
-    <div data-testid="lifeline-logo" className={className}>
-      lifeline
+  ally: ({ className }: { className: string }) => (
+    <div data-testid="ally-logo" className={className}>
+      ally
     </div>
   ),
   BackCircle: ({ className }: { className: string }) => (
@@ -125,9 +125,9 @@ vi.mock("@components", () => ({
 }));
 
 vi.mock("@constants", () => ({
-  lifeline_PRIVACY_POLICY_URL: "https://privacy.example.com",
-  lifeline_TERMS_URL: "https://terms.example.com",
-  lifeline_URL: "https://lifeline.example.com",
+  ally_PRIVACY_POLICY_URL: "https://privacy.example.com",
+  ally_TERMS_URL: "https://terms.example.com",
+  ally_URL: "https://ally.example.com",
   CAROUSEL_SLIDES: [
     { title: "Slide 1", description: "Description 1" },
     { title: "Slide 2", description: "Description 2" },
@@ -302,7 +302,7 @@ describe("Login Component", () => {
       expect(emailInput).not.toBeNull();
     });
 
-    it("should have empty email initilifeline", () => {
+    it("should have empty email initially", () => {
       render(
         <TestWrapper store={mockStore}>
           <Login />
@@ -313,7 +313,7 @@ describe("Login Component", () => {
       expect(emailInput.value).toBe("");
     });
 
-    it("should have empty OTP initilifeline", () => {
+    it("should have empty OTP initially", () => {
       render(
         <TestWrapper store={mockStore}>
           <Login />
@@ -321,10 +321,10 @@ describe("Login Component", () => {
       );
 
       const otpInput = screen.queryByTestId("otp-input");
-      expect(otpInput).toBeNull(); // OTP input should not be visible initilifeline
+      expect(otpInput).toBeNull(); // OTP input should not be visible initially
     });
 
-    it("should have remember me unchecked initilifeline", () => {
+    it("should have remember me unchecked initially", () => {
       render(
         <TestWrapper store={mockStore}>
           <Login />
@@ -713,7 +713,7 @@ describe("Login Component", () => {
       expect(true).toBe(true);
     });
 
-    it("should open lifeline website in new tab", () => {
+    it("should open ally website in new tab", () => {
       render(
         <TestWrapper store={mockStore}>
           <Login />

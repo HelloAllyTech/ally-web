@@ -5,16 +5,16 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage } from "@lifeline-ui-mono/ui-shared";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
 import {
   LoginSection,
   LOCAL_STORAGE_KEYS,
-  lifeline_TERMS_URL,
-  lifeline_PRIVACY_POLICY_URL,
-  lifeline_URL,
+  ally_TERMS_URL,
+  ally_PRIVACY_POLICY_URL,
+  ally_URL,
   en,
 } from "@constants";
 import { useUser } from "@hooks/useUser";
@@ -163,7 +163,7 @@ export const Login: React.FC = () => {
             <span className="text-typography-900">{`${en.auth.hey},`}</span>
             <h1 className="text-typography-900">
               <span>{`${en.auth.welcomeTo} `}</span>
-              <span className="font-bold italic">{en.auth.lifeline}</span>
+              <span className="font-bold italic">{en.auth.ally}</span>
             </h1>
             <span className="text-2xl mt-[24px] text-typography-900">
               {en.auth.enterEmailToContinue}
@@ -215,14 +215,14 @@ export const Login: React.FC = () => {
             {en.auth.byTappingNext}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
-              onClick={() => openLinkInNewTab(lifeline_TERMS_URL)}
+              onClick={() => openLinkInNewTab(ally_TERMS_URL)}
             >
               {en.auth.termsAndConditions}
             </span>{" "}
             {en.auth.andAcknowledge}{" "}
             <span
               className="text-primary-500 cursor-pointer hover:text-primary-600"
-              onClick={() => openLinkInNewTab(lifeline_PRIVACY_POLICY_URL)}
+              onClick={() => openLinkInNewTab(ally_PRIVACY_POLICY_URL)}
             >
               {en.auth.privacyPolicy}
             </span>
@@ -292,12 +292,12 @@ export const Login: React.FC = () => {
         />
         <div
           className="flex items-center gap-2 p-3 rounded-tl-2xl bg-background absolute bottom-0 right-0 cursor-pointer"
-          onClick={() => openLinkInNewTab(lifeline_URL)}
+          onClick={() => openLinkInNewTab(ally_URL)}
         >
           <div className="flex flex-col mr-4 font-secondary">
-            <span className="text-xl font-bold text-typography-900">{en.auth.lifeline}</span>
+            <span className="text-xl font-bold text-typography-900">{en.auth.ally}</span>
             <span className="text-sm font-medium text-typography-800">
-              {en.auth.hellolifelineUrl}
+              {en.auth.helloallyUrl}
             </span>
           </div>
         </div>

@@ -412,7 +412,7 @@ describe("Calendar Component", () => {
       expect(rootDiv.onclick).toBeNull();
     });
 
-    it("should not render dynamiclifeline based on props (it accepts none)", () => {
+    it("should not render dynamically based on props (it accepts none)", () => {
       // Calendar is a pure presentational component with no props
       const { container: render1 } = render(<Calendar />);
       const { container: render2 } = render(<Calendar />);

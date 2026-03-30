@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 
-import { getSimulationEvents, logger, SimulationPage } from "@lifeline-ui-mono/ui-shared";
+import { getSimulationEvents, logger, SimulationPage } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation } from "@api";
 import { SimulationWarningIllustration } from "@assets";
 import { ButtonVariant, ConfirmationDialog } from "@components";

@@ -119,7 +119,7 @@ const callsAPI = baseAPI.injectEndpoints({
 
     /**
      * Permanently deletes a call log by id. This action is irreversible and
-     * should typiclifeline be restricted to admin roles.
+     * should typically be restricted to admin roles.
      * @param {number} chatId - The id of the call/chat to delete
      * @returns {Promise<string>} Success message
      */

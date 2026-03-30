@@ -12,7 +12,7 @@ describe("TimeInput", () => {
     expect(input).toBeInTheDocument();
   });
 
-  it("formats input automaticlifeline with colons", () => {
+  it("formats input automatically with colons", () => {
     const mockOnChange = vi.fn();
     render(<TimeInput value="" onChange={mockOnChange} />);
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 
 import { Socket, io } from "socket.io-client";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 import { SocketEvent, UseSocketOptions } from "@types";
 import { getPathForConnectionType } from "@utils";

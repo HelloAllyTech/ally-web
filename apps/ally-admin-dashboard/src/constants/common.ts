@@ -104,10 +104,10 @@ export enum KeyboardKeys {
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const SINGLE_DIGIT_REGEX = /^\d$/;
 
-export const lifeline_URL = "https://www.hellolifeline.ai";
-export const lifeline_TERMS_URL = "https://www.hellolifeline.ai/terms";
-export const lifeline_PRIVACY_POLICY_URL = "https://www.hellolifeline.ai/policy";
-export const lifeline_DATA_POLICY_URL = "https://www.hellolifeline.ai/policy";
+export const ally_URL = "https://www.helloally.ai";
+export const ally_TERMS_URL = "https://www.helloally.ai/terms";
+export const ally_PRIVACY_POLICY_URL = "https://www.helloally.ai/policy";
+export const ally_DATA_POLICY_URL = "https://www.helloally.ai/policy";
 
 export const SORT_BY = {
   CREATED_AT: "createdAt",

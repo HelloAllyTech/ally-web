@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { DropdownField, FEATURE_FLAGS_MAP } from "@lifeline-ui-mono/ui-shared";
+import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetScenariosQuery,
   useGetScenarioPathwaysQuery,

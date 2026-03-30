@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 export default function Error({ error }: { error: Error & { digest?: string } }) {
   useEffect(() => {

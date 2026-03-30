@@ -46,7 +46,7 @@ vi.mock("@assets", async importOriginal => {
   const original = (await importOriginal()) as Record<string, unknown>;
   return {
     ...original,
-    lifeline: ({ className, ...props }: any) => <svg className={className} {...props} />,
+    ally: ({ className, ...props }: any) => <svg className={className} {...props} />,
     DockToRight: (props: any) => <svg {...props} />,
     LogoutIllustration: (props: any) => <svg data-testid="logout-illustration" {...props} />,
     Carousel1: (props: any) => <svg data-testid="carousel-1" {...props} />,
@@ -145,7 +145,7 @@ vi.mock("@constants", async importOriginal => {
       id: TabId.COMMUNITY,
       title: "Community",
       Icon: ({ className, ...props }: any) => <svg className={className} {...props} />,
-      path: "https://community.hellolifeline.ai/",
+      path: "https://community.helloally.ai/",
       activePages: [],
       permissions: ["VIEW_COMMUNITY"],
     },
@@ -180,7 +180,7 @@ vi.mock("../button", () => ({
 
 // --- Test Setup ---
 
-// Define TabId enum loclifeline to match the real one
+// Define TabId enum locally to match the real one
 enum TabId {
   ANALYTICS = "ANALYTICS",
   CALENDER = "CALENDER",
@@ -238,7 +238,7 @@ describe("NavSideBar", () => {
     expect(sidebar).toBeInTheDocument();
   });
 
-  it("should render the lifeline logo", () => {
+  it("should render the ally logo", () => {
     renderComponent();
     expect(screen.getByTestId("nav-sidebar-logo")).toBeInTheDocument();
     expect(screen.getByTestId("nav-sidebar-logo")).toHaveClass("m-3", "flex-shrink-0");
@@ -301,7 +301,7 @@ describe("NavSideBar", () => {
     renderComponent();
     const toggleButton = screen.getByTitle("Collapse sidebar");
 
-    // Initilifeline expanded
+    // Initially expanded
     const sidebar = screen.getByTestId("nav-sidebar-logo").closest("div")?.parentElement;
     expect(sidebar).toHaveClass("w-64");
 
@@ -452,7 +452,7 @@ describe("NavSideBar", () => {
       "Are you sure you want to log out? You will need to enter secure OTP to login again.",
     );
     expect(screen.getByTestId("dialog-confirm-button")).toHaveTextContent(
-      "Logout & lock my lifeline account",
+      "Logout & lock my ally account",
     );
   });
 });

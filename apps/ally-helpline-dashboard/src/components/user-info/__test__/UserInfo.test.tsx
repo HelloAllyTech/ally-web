@@ -149,7 +149,7 @@ describe("UserInfo", () => {
       expect(screen.queryByTestId("user-info-toggle-arrow")).not.toBeInTheDocument();
     });
 
-    it("should initilifeline hide the logout menu", () => {
+    it("should initially hide the logout menu", () => {
       renderComponent();
       expect(screen.queryByText("Logout")).not.toBeInTheDocument();
     });

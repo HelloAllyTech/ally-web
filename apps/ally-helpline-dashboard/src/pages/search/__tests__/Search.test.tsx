@@ -94,7 +94,7 @@ describe("Search Component", () => {
       expect(mainContainer?.className).toContain("h-[calc(100vh-30px)]");
     });
 
-    it("should center content both horizontlifeline and verticlifeline", () => {
+    it("should center content both horizontally and vertically", () => {
       const { container } = render(<Search />);
       const mainContainer = container.querySelector("div");
       expect(mainContainer?.className).toContain("flex");
@@ -330,7 +330,7 @@ describe("Search Component", () => {
       expect(mainContainer?.onclick).toBeNull();
     });
 
-    it("should not render dynamiclifeline based on props (it accepts none)", () => {
+    it("should not render dynamically based on props (it accepts none)", () => {
       const { container: render1 } = render(<Search />);
       const { container: render2 } = render(<Search />);
 

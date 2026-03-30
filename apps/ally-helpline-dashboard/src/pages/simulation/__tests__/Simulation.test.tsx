@@ -69,7 +69,7 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-vi.mock("@lifeline-ui-mono/ui-shared/logger", () => ({
+vi.mock("@ally-ui-mono/ui-shared/logger", () => ({
   logger: {
     info: vi.fn(),
     error: vi.fn(),
@@ -122,7 +122,7 @@ vi.mock("@constants", () => ({
   },
 }));
 
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   SimulationPage: ({ children, ...props }: any) => (
     <div data-testid="simulation-page" {...props}>
       Simulation Page

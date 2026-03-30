@@ -203,10 +203,10 @@ describe("CallInterface Component", () => {
       expect(tooltipContent).toHaveTextContent("We do not save audio recordings");
       expect(tooltipContent).toHaveTextContent("Data is encrypted");
       expect(tooltipContent.textContent).toContain(
-        "We do not save audio recordingsData is encryptedWe do not use your client’s data to train our modelsPersonal information of clients is automaticlifeline removed",
+        "We do not save audio recordingsData is encryptedWe do not use your client’s data to train our modelsPersonal information of clients is automatically removed",
       );
       expect(tooltipContent).toHaveTextContent(
-        "Personal information of clients is automaticlifeline removed",
+        "Personal information of clients is automatically removed",
       );
     });
 

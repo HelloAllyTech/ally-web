@@ -272,12 +272,12 @@ describe("EditableTextPopup", () => {
         expect(textarea).toHaveValue("Initial");
       });
 
-      rerender(<EditableTextPopup {...defaultProps} value="Changed externlifeline" />);
+      rerender(<EditableTextPopup {...defaultProps} value="Changed externally" />);
 
       await waitFor(() => {
         const textarea = screen.queryByTestId("auto-expandable-textarea");
         if (textarea) {
-          expect(textarea).toHaveValue("Changed externlifeline");
+          expect(textarea).toHaveValue("Changed externally");
         }
       });
     });

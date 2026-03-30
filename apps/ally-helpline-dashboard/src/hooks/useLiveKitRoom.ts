@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Room, RoomEvent } from "livekit-client";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
-import { AutoTermination } from "@lifeline-ui-mono/ui-shared/assets";
+import { logger } from "@ally-ui-mono/ui-shared";
+import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus } from "@types";
 import { decodeUint8ToJson } from "@utils";

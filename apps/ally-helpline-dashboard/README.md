@@ -1,6 +1,6 @@
-# lifeline Helpline Dashboard
+# ally Helpline Dashboard
 
-A modern web interface for mental health professionals built with React, TypeScript, and Vite. This application is part of the lifeline UI monorepo.
+A modern web interface for mental health professionals built with React, TypeScript, and Vite. This application is part of the ally UI monorepo.
 
 ## Features
 
@@ -26,7 +26,7 @@ A modern web interface for mental health professionals built with React, TypeScr
 1. Ensure you're in the correct directory:
 
 ```bash
-cd apps/lifeline-helpline-dashboard
+cd apps/ally-helpline-dashboard
 ```
 
 2. Create a `.env` file with required variables:
@@ -38,7 +38,7 @@ VITE_API_BASE_URL=your_api_url
 3. Start the development server:
 
 ```bash
-npx nx serve lifeline-helpline-dashboard
+npx nx serve ally-helpline-dashboard
 ```
 
 The application will be available at `http://localhost:4200`
@@ -46,7 +46,7 @@ The application will be available at `http://localhost:4200`
 ## Project Structure
 
 ```
-lifeline-helpline-dashboard/
+ally-helpline-dashboard/
 ├── src/
 │   ├── components/     # Reusable UI components
 │   ├── lib/           # Utilities and helpers
@@ -64,12 +64,12 @@ lifeline-helpline-dashboard/
 
 ```bash
 # Development
-npx nx serve lifeline-helpline-dashboard    # Start dev server
-npx nx lint lifeline-helpline-dashboard     # Run ESLint
-npx nx test lifeline-helpline-dashboard     # Run tests
+npx nx serve ally-helpline-dashboard    # Start dev server
+npx nx lint ally-helpline-dashboard     # Run ESLint
+npx nx test ally-helpline-dashboard     # Run tests
 
 # Production
-npx nx build lifeline-helpline-dashboard    # Create production build
+npx nx build ally-helpline-dashboard    # Create production build
 ```
 
 ## Styling Guidelines

@@ -24,7 +24,7 @@ vi.mock("socket.io-client", () => {
   };
 });
 
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: { info: vi.fn(), debug: vi.fn() },
 }));
 

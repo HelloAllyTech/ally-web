@@ -569,7 +569,7 @@ describe("useDebounce", () => {
         vi.advanceTimersByTime(100);
       });
 
-      // Ensure the debounced call actulifeline happened
+      // Ensure the debounced call actually happened
       expect(errorCallback).toHaveBeenCalledTimes(1);
 
       // Assert the returned promise rejects with the thrown error

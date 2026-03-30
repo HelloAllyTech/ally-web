@@ -2,7 +2,7 @@ import { FC, useEffect, useRef, useState } from "react";
 
 import { Skeleton } from "@mui/material";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useEnhanceContentMutation } from "@api";
 import { Enhance } from "@assets";
 import { EnhanceButtonProps } from "@types";
@@ -28,7 +28,7 @@ export const useEnhance = () => {
    * Triggers content enhancement for a specific field with streaming effect.
    * - Calls the enhance content API with the provided text
    * - Shows loading state during API call
-   * - Creates a streaming effect by gradulifeline updating the text
+   * - Creates a streaming effect by gradually updating the text
    * - Handles errors gracefully with proper cleanup
    * - Updates the specified field with enhanced content
    * @param {string} key - Unique identifier for the field being enhanced
@@ -53,7 +53,7 @@ export const useEnhance = () => {
       }
 
       let currentIndex = 0;
-      // Create streaming effect by updating text gradulifeline
+      // Create streaming effect by updating text gradually
       setStreaming(key);
       setEnhancing("");
 

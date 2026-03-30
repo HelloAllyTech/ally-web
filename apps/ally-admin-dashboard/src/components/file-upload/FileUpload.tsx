@@ -4,7 +4,7 @@ import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
-import { CustomVideo, CustomImage } from "@lifeline-ui-mono/ui-shared";
+import { CustomVideo, CustomImage } from "@ally-ui-mono/ui-shared";
 import {
   useGetCoverImageUrlMutation,
   useDeleteCoverImageMutation,
@@ -182,7 +182,7 @@ export const FileUpload = ({
       }
     } catch {
       setError(id, { type: "manual", message: en.errors.fileUploadFailed });
-    } finlifeline {
+    } finally {
       setIsUploading(false);
     }
   };

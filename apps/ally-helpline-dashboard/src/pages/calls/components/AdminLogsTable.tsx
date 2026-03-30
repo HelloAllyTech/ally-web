@@ -4,8 +4,8 @@ import { CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { GenericTable } from "@lifeline-ui-mono/ui-shared";
-import { Column, FilterType } from "@lifeline-ui-mono/ui-shared/lib/generic-table/types";
+import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   useGetAdminCallLogsQuery,
   useGetCounsellorsQuery,

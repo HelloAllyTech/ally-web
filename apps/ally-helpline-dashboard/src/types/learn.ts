@@ -1,4 +1,4 @@
-import { triggerWarning } from "@lifeline-ui-mono/ui-shared/types";
+import { triggerWarning } from "@ally-ui-mono/ui-shared/types";
 
 export enum ScenarioStatus {
   ACTIVE = "ACTIVE",

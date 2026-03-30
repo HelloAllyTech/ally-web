@@ -34,7 +34,7 @@
       "@store/*": ["src/store/*"],
       "@reducer": ["src/reducer"],
       "@reducer/*": ["src/reducer/*"],
-      "@lifeline-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"],
+      "@ally-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"],
       "@ui-shared/*": ["../../libs/ui-shared/src/*"]
     },
     "noImplicitAny": false,

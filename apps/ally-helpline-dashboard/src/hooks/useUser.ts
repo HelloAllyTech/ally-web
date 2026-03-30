@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyGetUserQuery, useLazyGetPermissionsQuery } from "@api";
 import { baseAPI } from "@api/baseAPI";
 import { LOCAL_STORAGE_KEYS } from "@constants";

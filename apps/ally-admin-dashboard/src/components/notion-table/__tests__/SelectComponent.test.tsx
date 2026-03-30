@@ -533,7 +533,7 @@ describe("SelectComponent", () => {
   });
 
   describe("Multiple Selections", () => {
-    it("allows selecting different options sequentilifeline", () => {
+    it("allows selecting different options sequentially", () => {
       const mockOnChange = vi.fn();
       render(<SelectComponent {...defaultProps} onChange={mockOnChange} />);
 

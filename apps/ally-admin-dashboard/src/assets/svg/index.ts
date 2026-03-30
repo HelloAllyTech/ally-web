@@ -1,7 +1,7 @@
 import AccountTree from "./account_tree.svg?react";
 import Add from "./add.svg?react";
 import AlarmOn from "./alarm_on.svg?react";
-import lifeline from "./lifeline.svg?react";
+import ally from "./ally.svg?react";
 import Archive from "./archive.svg?react";
 import ArrowDown from "./arrowDown.svg?react";
 import ArrowDownFilled from "./arrowDownFilled.svg?react";
@@ -75,7 +75,7 @@ export {
   Plus,
   Close,
   CloseRed,
-  lifeline,
+  ally,
   ArrowSolid,
   Edit,
   DockToRight,

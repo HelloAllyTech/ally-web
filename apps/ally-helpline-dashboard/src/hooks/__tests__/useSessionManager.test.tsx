@@ -12,7 +12,7 @@ import { SocketEvent, UserRole } from "@types";
 import { useSessionManager } from "../useSessionManager";
 import * as socketHook from "../useSocket";
 
-vi.mock("@lifeline-ui-mono/ui-shared/logger", () => ({ logger: { info: vi.fn() } }));
+vi.mock("@ally-ui-mono/ui-shared/logger", () => ({ logger: { info: vi.fn() } }));
 
 vi.mock("@api", () => ({
   useLazyGetCounsellorChatQuery: () => [vi.fn(), { isLoading: false }],

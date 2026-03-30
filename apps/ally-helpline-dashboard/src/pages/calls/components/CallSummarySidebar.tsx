@@ -2,7 +2,7 @@ import { FC, useEffect, useRef, useState } from "react";
 
 import { useSelector } from "react-redux";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyExportCallSummaryQuery } from "@api";
 import { Delete, Download } from "@assets";
 import { CallProvider, Permissions } from "@constants";

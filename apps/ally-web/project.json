@@ -1,6 +1,6 @@
 {
-  "name": "@lifeline-ui-mono/lifeline-web",
-  "sourceRoot": "apps/lifeline-web/src",
+  "name": "@ally-ui-mono/ally-web",
+  "sourceRoot": "apps/ally-web/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -61,7 +61,7 @@
     "serve-static": {
       "continuous": true,
       "options": {
-        "cwd": "apps/lifeline-web",
+        "cwd": "apps/ally-web",
         "command": "next start"
       },
       "dependsOn": ["build"],
@@ -81,7 +81,7 @@
       "dependsOn": ["build-deps"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx nx watch --projects @lifeline-ui-mono/lifeline-web --includeDependentProjects -- npx nx build-deps @lifeline-ui-mono/lifeline-web"
+        "command": "npx nx watch --projects @ally-ui-mono/ally-web --includeDependentProjects -- npx nx build-deps @ally-ui-mono/ally-web"
       },
       "configurations": {},
       "parallelism": true

@@ -412,7 +412,7 @@ describe("Settings Component", () => {
       expect(rootDiv.onclick).toBeNull();
     });
 
-    it("should not render dynamiclifeline based on props (it accepts none)", () => {
+    it("should not render dynamically based on props (it accepts none)", () => {
       // Settings is a pure presentational component with no props
       const { container: render1 } = render(<Settings />);
       const { container: render2 } = render(<Settings />);

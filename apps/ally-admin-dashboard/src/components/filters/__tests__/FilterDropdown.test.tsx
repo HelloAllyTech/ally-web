@@ -76,7 +76,7 @@ describe("FilterDropdown", () => {
     const orgButton = screen.getByText(/organ/i);
     fireEvent.click(orgButton);
 
-    // org1 is checked initilifeline, toggle org2
+    // org1 is checked initially, toggle org2
     const checkboxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
     expect(checkboxes[0].checked).toBe(true);
     expect(checkboxes[1].checked).toBe(false);

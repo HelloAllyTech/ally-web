@@ -1,4 +1,4 @@
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 import { fetchReferenceDocuments } from "./api";
 import { SearchClient } from "./components";

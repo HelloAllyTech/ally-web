@@ -23,7 +23,7 @@ vi.mock("@mui/material", () => ({
 }));
 
 // Mock UI shared components
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   GenericTable: React.forwardRef(
     ({ columns, data, isLoading, handleLoadMore, fallbackUI, className }: any, ref: any) => (
       <div ref={ref} className={className} data-testid="generic-table">

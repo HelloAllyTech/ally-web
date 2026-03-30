@@ -4,7 +4,7 @@ import { FC } from "react";
 
 import { CircularProgress } from "@mui/material";
 
-import { MicOff, MicOn, Stop, Focus } from "@lifeline-ui-mono/ui-shared/assets";
+import { MicOff, MicOn, Stop, Focus } from "@ally-ui-mono/ui-shared/assets";
 
 import { SimulationControlsProps } from "./types";
 import ButtonGroup from "../button-group";

@@ -22,7 +22,7 @@
  * HOW THE DYNAMIC RENDERING SYSTEM WORKS:
  * - The TriggerConditions component receives an eventType prop and routes to:
  *   - StandardTriggerConditions: For TIME_BASED, SCORE_BASED, SENTENCE_SIMILARITY event types
- *   - CombinationTriggerConditions: For COMBINATION event type (uses config partilifeline)
+ *   - CombinationTriggerConditions: For COMBINATION event type (uses config partially)
  *
  * - StandardTriggerConditions:
  *   - Uses getTriggerConditionConfig(eventType) to get the configuration

@@ -19,9 +19,9 @@ export default [
       ".nx/**",
       ".nx/cache/**",
       ".nx/workspace-data/**",
-      "apps/lifeline-web/.next/**",
-      "apps/lifeline-helpline-dashboard/dist/**",
-      "apps/lifeline-web/dist/**",
+      "apps/ally-web/.next/**",
+      "apps/ally-helpline-dashboard/dist/**",
+      "apps/ally-web/dist/**",
       "libs/ui-shared/dist/**",
       "**/*.config.js",
       "**/*.config.cjs",
@@ -80,8 +80,8 @@ export default [
         typescript: {
           project: [
             "./tsconfig.json",
-            "./apps/lifeline-helpline-dashboard/tsconfig.json",
-            "./apps/lifeline-web/tsconfig.json",
+            "./apps/ally-helpline-dashboard/tsconfig.json",
+            "./apps/ally-web/tsconfig.json",
             "./libs/ui-shared/tsconfig.lib.json",
           ],
         },
@@ -104,7 +104,7 @@ export default [
           ],
           pathGroups: [
             { pattern: "react", group: "external", position: "before" },
-            { pattern: "@lifeline-ui-mono/**", group: "internal" },
+            { pattern: "@ally-ui-mono/**", group: "internal" },
             { pattern: "@store/**", group: "internal" },
             { pattern: "@types/**", group: "internal" },
             { pattern: "@reducer/**", group: "internal" },

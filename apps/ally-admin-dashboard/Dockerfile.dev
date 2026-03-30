@@ -1,6 +1,6 @@
-# Dev image for lifeline-admin-dashboard (Vite)
+# Dev image for ally-admin-dashboard (Vite)
 # Use prebuilt deps image to leverage cached node_modules
-FROM lifeline-web/deps:dev
+FROM ally-web/deps:dev
 
 # Set working directory for subsequent commands
 WORKDIR /app
@@ -20,4 +20,4 @@ EXPOSE 8081
 
 # Run vite directly; compose maps 8081->8081
 # Start the Vite dev server via Nx
-CMD ["npx", "nx", "serve", "lifeline-admin-dashboard", "--host=0.0.0.0", "--port=8081"]
+CMD ["npx", "nx", "serve", "ally-admin-dashboard", "--host=0.0.0.0", "--port=8081"]

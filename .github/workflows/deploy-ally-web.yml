@@ -1,4 +1,4 @@
-name: Deploy lifeline Web
+name: Deploy ally Web
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ on:
     branches:
       - dev
     paths:
-      - "apps/lifeline-web/**"
+      - "apps/ally-web/**"
       - "libs/**"
 
 permissions:
@@ -43,7 +43,7 @@ jobs:
         id: set-config
         run: |
           echo "service_name=web" >> $GITHUB_OUTPUT
-          echo "app_path=apps/lifeline-web" >> $GITHUB_OUTPUT
+          echo "app_path=apps/ally-web" >> $GITHUB_OUTPUT
           echo "dockerfile_path=dockerfile" >> $GITHUB_OUTPUT
           echo "build_command=npm run build" >> $GITHUB_OUTPUT
           echo "node_version=20" >> $GITHUB_OUTPUT

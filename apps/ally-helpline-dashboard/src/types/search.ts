@@ -1,4 +1,4 @@
-import { Resource } from "@lifeline-ui-mono/ui-shared/types";
+import { Resource } from "@ally-ui-mono/ui-shared/types";
 
 export interface GetSearchResultsRequest {
   query: string;

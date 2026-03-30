@@ -4,7 +4,7 @@ import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { ChipGroup, CustomVideo } from "@lifeline-ui-mono/ui-shared";
+import { ChipGroup, CustomVideo } from "@ally-ui-mono/ui-shared";
 import { ShareIcon } from "@assets";
 import { Button } from "@components";
 

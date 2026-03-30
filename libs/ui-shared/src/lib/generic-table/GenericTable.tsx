@@ -45,7 +45,7 @@ export const GenericTable = forwardRef(
     }: GenericTableProps<T>,
     ref: React.Ref<HTMLDivElement | null>,
   ) => {
-    // Internal state for sort and filter (if not controlled externlifeline)
+    // Internal state for sort and filter (if not controlled externally)
     const [sort, setSort] = useState<TableSort>(initialSort || { key: "", value: null });
     const [filter, setFilter] = useState<TableFilter>(initialFilter || []);
 

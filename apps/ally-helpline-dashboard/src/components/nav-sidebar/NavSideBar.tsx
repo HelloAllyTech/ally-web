@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from "react";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
 
-import { lifeline, DockToRight, LogoutIllustration } from "@assets";
+import { ally, DockToRight, LogoutIllustration } from "@assets";
 import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog, UserInfo } from "@components";
 import { TabId, navBarOptions, CAROUSEL_SLIDES } from "@constants";
 import { useUser } from "@hooks";
@@ -130,7 +130,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         } p-[12px] font-primary`}
       >
         <div className="flex justify-between" data-testid="nav-sidebar-header">
-          <lifeline className="m-3 flex-shrink-0" data-testid="nav-sidebar-logo" />
+          <ally className="m-3 flex-shrink-0" data-testid="nav-sidebar-logo" />
           <button
             data-testid="nav-sidebar-toggle"
             onClick={handleToggleSidebar}
@@ -162,7 +162,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         content="Are you sure you want to log out? You will need to enter secure OTP to login again."
         buttonVariant={ButtonVariant.DESTRUCTIVE}
         onButtonClick={handleConfirmLogout}
-        buttonText="Logout & lock my lifeline account"
+        buttonText="Logout & lock my ally account"
         icon={LogoutIllustration}
       />
       {isOpen && (

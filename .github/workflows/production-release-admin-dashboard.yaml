@@ -1,13 +1,13 @@
-# Production Release Pipeline - lifeline Admin Dashboard
+# Production Release Pipeline - ally Admin Dashboard
 #
-# This workflow handles production releases for lifeline-admin-dashboard (CDN/CloudFront) with semantic versioning
+# This workflow handles production releases for ally-admin-dashboard (CDN/CloudFront) with semantic versioning
 # 
 # Required GitHub Variables:
 # PRD_AWS_ROLE, PRD_AWS_REGION
 # PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID, PRD_ADMIN_DASHBOARD_S3_BUCKET
 #
 # Usage:
-# - Manulifeline trigger this workflow from GitHub Actions
+# - Manually trigger this workflow from GitHub Actions
 # - Specify the version tag in format: v{major}.{minor}.{patch} (e.g., v1.0.0, v1.2.3, v2.0.0)
 # - The workflow will create the tag, build, deploy to S3/CloudFront, and create a release draft
 
@@ -98,14 +98,14 @@ jobs:
             echo "- **First Release**: Yes ✨" >> $GITHUB_STEP_SUMMARY
           fi
           echo "- **Full Version**: $VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "- **Service**: lifeline-admin-dashboard (CDN)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service**: ally-admin-dashboard (CDN)" >> $GITHUB_STEP_SUMMARY
       
       - name: Create and push tag
         run: |
           TAG="${{ steps.parse-version.outputs.TAG }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Release lifeline-admin-dashboard version ${{ steps.parse-version.outputs.VERSION }}"
+          git tag -a "$TAG" -m "Release ally-admin-dashboard version ${{ steps.parse-version.outputs.VERSION }}"
           git push origin "$TAG"
           echo "✅ Tag $TAG created and pushed" >> $GITHUB_STEP_SUMMARY
 
@@ -175,7 +175,7 @@ jobs:
       - name: Run Tests with Coverage
         run: |
           echo ":test_tube: Running tests with coverage..." >> $GITHUB_STEP_SUMMARY
-          npx nx test lifeline-admin-dashboard --coverage
+          npx nx test ally-admin-dashboard --coverage
           echo ":white_check_mark: Tests completed successfully" >> $GITHUB_STEP_SUMMARY
 
   build-and-deploy:
@@ -213,9 +213,9 @@ jobs:
       - name: Download Environment Variables
         run: |
           echo ":gear: Downloading build-time environment variables..." >> $GITHUB_STEP_SUMMARY
-          if aws s3 cp s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env apps/lifeline-admin-dashboard/.env 2>/dev/null; then
+          if aws s3 cp s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env apps/ally-admin-dashboard/.env 2>/dev/null; then
             echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
-            cp apps/lifeline-admin-dashboard/.env .env
+            cp apps/ally-admin-dashboard/.env .env
           else
             echo ":information_source: No build-time environment variables found" >> $GITHUB_STEP_SUMMARY
           fi
@@ -224,8 +224,8 @@ jobs:
         env:
           NODE_ENV: production
         run: |
-          echo ":hammer: Building lifeline-admin-dashboard (v${{ needs.validate-and-tag.outputs.VERSION }})..." >> $GITHUB_STEP_SUMMARY
-          npx nx build lifeline-admin-dashboard
+          echo ":hammer: Building ally-admin-dashboard (v${{ needs.validate-and-tag.outputs.VERSION }})..." >> $GITHUB_STEP_SUMMARY
+          npx nx build ally-admin-dashboard
           echo ":white_check_mark: Build completed successfully" >> $GITHUB_STEP_SUMMARY
 
       - name: Set CDN Configuration
@@ -245,21 +245,21 @@ jobs:
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
           
-          aws s3 sync dist/apps/lifeline-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ \
+          aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ \
             --delete \
             --cache-control "public, max-age=86400" \
             --metadata-directive REPLACE
           
-          if [ -f "dist/apps/lifeline-admin-dashboard/.well-known/apple-app-site-association" ]; then
-            aws s3 cp dist/apps/lifeline-admin-dashboard/.well-known/apple-app-site-association \
+          if [ -f "dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association" ]; then
+            aws s3 cp dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association \
               s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/apple-app-site-association \
               --content-type "application/json" \
               --cache-control "public, max-age=86400" \
               --metadata-directive REPLACE
           fi
           
-          if [ -f "dist/apps/lifeline-admin-dashboard/.well-known/assetlinks.json" ]; then
-            aws s3 cp dist/apps/lifeline-admin-dashboard/.well-known/assetlinks.json \
+          if [ -f "dist/apps/ally-admin-dashboard/.well-known/assetlinks.json" ]; then
+            aws s3 cp dist/apps/ally-admin-dashboard/.well-known/assetlinks.json \
               s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/assetlinks.json \
               --content-type "application/json" \
               --cache-control "public, max-age=86400" \
@@ -317,7 +317,7 @@ jobs:
           echo "" >> CHANGELOG.md
           
           # Get commits since last tag (limit to 100 to avoid issues)
-          git log $PREVIOUS_TAG..master --pretty=format:"- %s (%h) @%an" --no-merges -- apps/lifeline-admin-dashboard libs | head -100 >> CHANGELOG.md
+          git log $PREVIOUS_TAG..master --pretty=format:"- %s (%h) @%an" --no-merges -- apps/ally-admin-dashboard libs | head -100 >> CHANGELOG.md
           
           # Use a unique delimiter that won't appear in commit messages
           DELIMITER="CHANGELOG_END_$(date +%s)"
@@ -335,7 +335,7 @@ jobs:
             ## Release Admin Dashboard v${{ needs.validate-and-tag.outputs.VERSION }}
             
             ### Version Information
-            - **Service**: lifeline-admin-dashboard
+            - **Service**: ally-admin-dashboard
             - **Version**: ${{ needs.validate-and-tag.outputs.VERSION }}
             - **Major**: ${{ needs.validate-and-tag.outputs.MAJOR }}
             - **Minor**: ${{ needs.validate-and-tag.outputs.MINOR }}

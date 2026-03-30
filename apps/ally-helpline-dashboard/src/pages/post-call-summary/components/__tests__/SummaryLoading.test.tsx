@@ -213,7 +213,7 @@ describe("SummaryLoading", () => {
     expect(screen.getByTestId("shiny-text")).toBeInTheDocument();
   });
 
-  it("should not show info banner initilifeline in IN_PROGRESS state", () => {
+  it("should not show info banner initially in IN_PROGRESS state", () => {
     renderComponent({ summaryStatus: ChatSummaryStatus.IN_PROGRESS });
     expect(screen.queryByTestId("info-banner")).not.toBeInTheDocument();
   });

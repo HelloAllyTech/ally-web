@@ -41,7 +41,7 @@ describe("summary utils", () => {
       expect(Number.isInteger(result)).toBe(true);
     });
 
-    it("should scale proportionlifeline with call duration", () => {
+    it("should scale proportionally with call duration", () => {
       const shortCall = getEstimatedSummaryGenerationTime(100, CallProvider.AUDIO_UPLOAD);
       const longCall = getEstimatedSummaryGenerationTime(1000, CallProvider.AUDIO_UPLOAD);
 

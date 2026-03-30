@@ -7,7 +7,7 @@ import * as api from "@api";
 
 import { useEnhance } from "../useEnhance";
 
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: { info: vi.fn() },
 }));
 

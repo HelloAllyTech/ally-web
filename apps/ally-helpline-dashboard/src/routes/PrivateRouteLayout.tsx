@@ -2,7 +2,7 @@ import { FC, useEffect } from "react";
 
 import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import { useGetChatTypesQuery } from "@api";
 import {
   LOCAL_STORAGE_KEYS,

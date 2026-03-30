@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { motion } from "framer-motion";
 
-import { CustomImage } from "@lifeline-ui-mono/ui-shared";
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Lock, TickGreenBackground } from "@assets";
 import { PathwayScenarioStatus } from "@types";
 

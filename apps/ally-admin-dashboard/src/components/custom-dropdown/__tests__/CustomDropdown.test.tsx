@@ -227,7 +227,7 @@ describe("CustomDropdown", () => {
       const trigger = screen.getByText("Select Organization");
       const arrowContainer = screen.getByTestId("arrow-icon").parentElement;
 
-      // Initilifeline not rotated
+      // Initially not rotated
       expect(arrowContainer).not.toHaveClass("rotate-180");
 
       // Open dropdown

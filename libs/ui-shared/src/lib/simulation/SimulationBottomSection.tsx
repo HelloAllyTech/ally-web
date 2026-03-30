@@ -2,7 +2,7 @@
 
 import { FC } from "react";
 
-import { Warning } from "@lifeline-ui-mono/ui-shared/assets";
+import { Warning } from "@ally-ui-mono/ui-shared/assets";
 
 import { SimulationControls } from "./SimulationControls";
 import { SimulationTimer } from "./SimulationTimer";

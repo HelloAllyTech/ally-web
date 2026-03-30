@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { DropdownField, FEATURE_FLAGS_MAP } from "@lifeline-ui-mono/ui-shared";
+import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {

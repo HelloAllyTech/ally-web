@@ -21,7 +21,7 @@ const { mockGetUser, mockGetPermissions, mockResetApiState, mockDispatch, mockGe
   }));
 
 // Mock the logger
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
     error: vi.fn(),

@@ -68,7 +68,7 @@ vi.mock("@hooks/useUser", () => ({
 
 // Mock components
 // Mock CustomImage from ui-shared
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   CustomImage: ({ src, alt }: any) => <img src={src} alt={alt} data-testid="custom-image" />,
 }));
 
@@ -122,14 +122,14 @@ vi.mock("@constants", () => ({
     ADMIN_REFRESH_TOKEN: "adminRefreshToken",
     ADMIN_IS_AUTHENTICATED: "adminIsAuthenticated",
   },
-  lifeline_TERMS_URL: "https://lifeline.com/terms",
-  lifeline_PRIVACY_POLICY_URL: "https://lifeline.com/privacy",
-  lifeline_URL: "https://lifeline.com",
+  ally_TERMS_URL: "https://ally.com/terms",
+  ally_PRIVACY_POLICY_URL: "https://ally.com/privacy",
+  ally_URL: "https://ally.com",
   en: {
     auth: {
       hey: "Hey",
       welcomeTo: "Welcome to",
-      lifeline: "lifeline",
+      ally: "ally",
       email: "Email",
       rememberMe: "Remember me",
       generatingOTP: "Generating OTP...",
@@ -140,7 +140,7 @@ vi.mock("@constants", () => ({
       enterEmailToContinue: "Enter your email address to continue",
       enterEmailPlaceholder: "Enter your email address",
       next: "Next",
-      byTappingNext: "By tapping next, you agree to lifeline's",
+      byTappingNext: "By tapping next, you agree to ally's",
       andAcknowledge: "and acknowledge",
       verifyYourEmail: "Verify your email address",
       enterSecurityCode: "Enter the security code sent to",
@@ -149,7 +149,7 @@ vi.mock("@constants", () => ({
       needNewCode: "Need a new code?",
       resend: "Resend",
       verify: "Verify",
-      hellolifelineUrl: "hellolifeline.ai",
+      helloallyUrl: "helloally.ai",
       failedToGenerateOTP: "Failed to generate OTP. Please try again.",
       failedToVerifyOTP: "Failed to verify OTP. Please try again.",
       invalidEmailError: "Please enter a valid email address",
@@ -467,7 +467,7 @@ describe("Login", () => {
       const otpInput = await screen.findByTestId("otp-input", {}, { timeout: 2000 });
       const verifyButton = screen.getByText("Verify");
 
-      // Initilifeline disabled
+      // Initially disabled
       expect(verifyButton).toBeDisabled();
 
       // Update OTP value
@@ -571,7 +571,7 @@ describe("Login", () => {
       const termsLink = screen.getByText("Terms and Conditions");
       fireEvent.click(termsLink);
 
-      expect(openLinkInNewTab).toHaveBeenCalledWith("https://lifeline.com/terms");
+      expect(openLinkInNewTab).toHaveBeenCalledWith("https://ally.com/terms");
     });
 
     it("should open privacy policy link", async () => {
@@ -582,7 +582,7 @@ describe("Login", () => {
       const privacyLink = screen.getByText("Privacy Policy");
       fireEvent.click(privacyLink);
 
-      expect(openLinkInNewTab).toHaveBeenCalledWith("https://lifeline.com/privacy");
+      expect(openLinkInNewTab).toHaveBeenCalledWith("https://ally.com/privacy");
     });
   });
 });

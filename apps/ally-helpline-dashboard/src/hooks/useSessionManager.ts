@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
-import { logger } from "@lifeline-ui-mono/ui-shared/logger";
+import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { useLazyGetCounsellorChatQuery } from "@api";
 import { SocketConnectionTypes, ROUTES } from "@constants";
 import { RootState } from "@store";

@@ -669,7 +669,7 @@ describe("UserOptionDropdown", () => {
   });
 
   describe("Multiple option clicks", () => {
-    it("handles clicking different options sequentilifeline", async () => {
+    it("handles clicking different options sequentially", async () => {
       const { rerender } = render(
         <UserOptionDropdown
           isOpen={true}

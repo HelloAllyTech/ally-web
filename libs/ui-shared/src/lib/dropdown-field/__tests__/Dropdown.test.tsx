@@ -8,7 +8,7 @@ import { describe, it, expect, vi } from "vitest";
 import Dropdown from "../Dropdown";
 
 describe("Dropdown", () => {
-  it("filters options loclifeline by default", () => {
+  it("filters options locally by default", () => {
     const handleChange = vi.fn();
     render(
       <Dropdown
@@ -25,7 +25,7 @@ describe("Dropdown", () => {
     expect(screen.queryByText("Banana")).not.toBeInTheDocument();
   });
 
-  it("calls onHandleSearch when provided and does not filter loclifeline", () => {
+  it("calls onHandleSearch when provided and does not filter locally", () => {
     const handleChange = vi.fn();
     const onHandleSearch = vi.fn();
     render(
@@ -39,7 +39,7 @@ describe("Dropdown", () => {
     const input = screen.getByPlaceholderText("Search");
     fireEvent.change(input, { target: { value: "zzz" } });
     expect(onHandleSearch).toHaveBeenCalledWith("zzz");
-    // options still visible because not loclifeline filtered
+    // options still visible because not locally filtered
     expect(screen.getByText("One")).toBeInTheDocument();
     expect(screen.getByText("Two")).toBeInTheDocument();
   });

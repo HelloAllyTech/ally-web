@@ -1,7 +1,7 @@
 {
-  "name": "lifeline-helpline-dashboard",
+  "name": "ally-helpline-dashboard",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/lifeline-helpline-dashboard/src",
+  "sourceRoot": "apps/ally-helpline-dashboard/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -9,9 +9,9 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/apps/lifeline-helpline-dashboard",
-        "configFile": "apps/lifeline-helpline-dashboard/vite.config.ts",
-        "postcssConfig": "apps/lifeline-helpline-dashboard/postcss.config.cjs"
+        "outputPath": "dist/apps/ally-helpline-dashboard",
+        "configFile": "apps/ally-helpline-dashboard/vite.config.ts",
+        "postcssConfig": "apps/ally-helpline-dashboard/postcss.config.cjs"
       },
       "configurations": {
         "development": {
@@ -26,18 +26,18 @@
       "executor": "@nx/vite:dev-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "lifeline-helpline-dashboard:build",
+        "buildTarget": "ally-helpline-dashboard:build",
         "port": 8080,
         "host": true,
-        "postcssConfig": "apps/lifeline-helpline-dashboard/postcss.config.cjs"
+        "postcssConfig": "apps/ally-helpline-dashboard/postcss.config.cjs"
       },
       "configurations": {
         "development": {
-          "buildTarget": "lifeline-helpline-dashboard:build:development",
+          "buildTarget": "ally-helpline-dashboard:build:development",
           "hmr": true
         },
         "production": {
-          "buildTarget": "lifeline-helpline-dashboard:build:production",
+          "buildTarget": "ally-helpline-dashboard:build:production",
           "hmr": false
         }
       }
@@ -46,7 +46,7 @@
       "executor": "@nx/vite:preview-server",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "lifeline-helpline-dashboard:build"
+        "buildTarget": "ally-helpline-dashboard:build"
       }
     },
     "test": {
@@ -72,7 +72,7 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/lifeline-helpline-dashboard/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["apps/ally-helpline-dashboard/**/*.{ts,tsx,js,jsx}"]
       }
     }
   },

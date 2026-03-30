@@ -5,7 +5,7 @@ import { Minimize } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { logger } from "@lifeline-ui-mono/ui-shared/logger";
+import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { BackgroundGradientBlue } from "@assets";
 import { BoxBreathing } from "@components";
 import { RootState } from "@store";

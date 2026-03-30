@@ -4,7 +4,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: apps/lifeline-web/Dockerfile.dev
+      dockerfile: apps/ally-web/Dockerfile.dev
     working_dir: /app
     ports:
       - "3000:3000"
@@ -15,14 +15,14 @@ services:
     volumes:
       - .:/app
       - web_node_modules:/app/node_modules
-      - web_app_node_modules:/app/apps/lifeline-web/node_modules
+      - web_app_node_modules:/app/apps/ally-web/node_modules
       - web_lib_node_modules:/app/libs/ui-shared/node_modules
     restart: unless-stopped
 
   helpline:
     build:
       context: .
-      dockerfile: apps/lifeline-helpline-dashboard/Dockerfile.dev
+      dockerfile: apps/ally-helpline-dashboard/Dockerfile.dev
     working_dir: /app
     ports:
       - "8080:8080"
@@ -38,7 +38,7 @@ services:
   admin:
     build:
       context: .
-      dockerfile: apps/lifeline-admin-dashboard/Dockerfile.dev
+      dockerfile: apps/ally-admin-dashboard/Dockerfile.dev
     working_dir: /app
     ports:
       - "8081:8081"

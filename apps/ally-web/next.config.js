@@ -8,7 +8,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Configure which pages should be staticlifeline generated
+  // Configure which pages should be statically generated
   pageExtensions: ["tsx", "ts", "jsx", "js"],
   webpack: config => {
     // Allow importing from workspace libs outside app dir

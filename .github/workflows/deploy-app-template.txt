@@ -28,7 +28,7 @@ env:
   # App Configuration - CUSTOMIZE THESE VALUES
   SERVICE_NAME: '[SERVICE_NAME]'            # e.g., 'user-api', 'admin-dashboard'
   APP_PATH: '[APP_PATH]'                    # e.g., 'apps/user-api'
-  DOCKERFILE_PATH: 'dockerfile'             # Path to Dockerfile (usulifeline 'dockerfile')
+  DOCKERFILE_PATH: 'dockerfile'             # Path to Dockerfile (usually 'dockerfile')
   BUILD_COMMAND: '[BUILD_COMMAND]'          # e.g., 'npm run build', 'npm run build:prod'
   NODE_VERSION: '[NODE_VERSION]'            # e.g., '18', '20'
   PORT: '[PORT]'                           # e.g., '3000', '8080'

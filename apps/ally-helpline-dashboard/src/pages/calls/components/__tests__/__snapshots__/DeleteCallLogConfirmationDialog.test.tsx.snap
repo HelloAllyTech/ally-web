@@ -18,7 +18,7 @@ exports[`DeleteCallLogConfirmationDialog > should match snapshot when chatId is 
     <div
       data-testid="dialog-content"
     >
-      Do you relifeline want to delete this record? This process cannot be undone.
+      Do you really want to delete this record? This process cannot be undone.
     </div>
     <button
       data-testid="delete-button"

@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
 
-import { ChipGroup } from "@lifeline-ui-mono/ui-shared";
+import { ChipGroup } from "@ally-ui-mono/ui-shared";
 import { CircularProgress } from "@components";
 
 import { scenarioDescriptionStyle } from "./constants";

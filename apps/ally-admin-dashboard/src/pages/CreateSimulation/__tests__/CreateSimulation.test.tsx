@@ -68,7 +68,7 @@ vi.mock("@hooks", () => ({
 }));
 
 // Mock feature flags to enable NEW_CREATE_SIMULATION_FLAG
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   FEATURE_FLAGS_MAP: {
     NEW_CREATE_SIMULATION_FLAG: true,
   },

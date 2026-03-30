@@ -1,4 +1,4 @@
-import { FEATURE_FLAGS_MAP } from "@lifeline-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   FORM_FIELD_IDS,
   SIMULATION_CREATOR_FIELD_GROUPS,

@@ -2,11 +2,11 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 
-import { logger } from "@lifeline-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 
 import ErrorComponent from "../error";
 
-vi.mock("@lifeline-ui-mono/ui-shared", () => {
+vi.mock("@ally-ui-mono/ui-shared", () => {
   return {
     logger: {
       info: vi.fn(),

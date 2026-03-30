@@ -148,7 +148,7 @@ describe("FormField", () => {
     });
 
     it("error message styling is defined in component", () => {
-      // Error messages are rendered conditionlifeline based on formState.errors
+      // Error messages are rendered conditionally based on formState.errors
       // The styling is defined in the component code
       expect(true).toBe(true);
     });

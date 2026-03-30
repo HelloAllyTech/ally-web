@@ -1,4 +1,4 @@
-import lifelineIcon from "./lifeline.svg?url";
+import allyIcon from "./ally.svg?url";
 
 /**
  * SearchHeader component displays the main header and optional description for the search UI.
@@ -14,8 +14,8 @@ const SearchHeader = ({ showDescriptionInMobile = true }) => {
       data-testid="search-header"
     >
       <img
-        src={lifelineIcon}
-        alt="lifeline Logo"
+        src={allyIcon}
+        alt="ally Logo"
         className="w-24 h-16"
         data-testid="search-header-logo"
       />

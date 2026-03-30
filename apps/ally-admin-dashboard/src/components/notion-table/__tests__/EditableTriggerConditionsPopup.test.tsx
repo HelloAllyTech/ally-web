@@ -281,7 +281,7 @@ describe("EditableTriggerConditionsPopup", () => {
       expect(conditionValue.textContent).toContain("GREATER_THAN");
     });
 
-    it("only calls onChange when value actulifeline changes", async () => {
+    it("only calls onChange when value actually changes", async () => {
       const { container } = render(<EditableTriggerConditionsPopup {...defaultProps} />);
 
       // Open and close without changes

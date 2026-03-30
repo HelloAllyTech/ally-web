@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { BackCircle, CloseIcon } from "@assets";
 import {
-  lifeline_PRIVACY_POLICY_URL,
-  lifeline_TERMS_URL,
+  ally_PRIVACY_POLICY_URL,
+  ally_TERMS_URL,
   LOCAL_STORAGE_KEYS,
   LoginSection,
 } from "@constants";
@@ -151,7 +151,7 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
             <span>Hey,</span>
             <h1>
               <span>Welcome to </span>
-              <span className="font-bold italic">lifeline</span>
+              <span className="font-bold italic">ally</span>
             </h1>
             <span className="text-2xl mt-[24px]">Enter your email address to continue</span>
           </div>
@@ -198,17 +198,17 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
             )}
           </Button>
           <div className="text-xs text-typography-800 mt-2">
-            By tapping next, you agree to lifeline's{" "}
+            By tapping next, you agree to ally's{" "}
             <span
               className="text-primary-500 cursor-pointer"
-              onClick={() => openLinkInNewTab(lifeline_TERMS_URL)}
+              onClick={() => openLinkInNewTab(ally_TERMS_URL)}
             >
               Terms & Conditions
             </span>{" "}
             and acknowledge{" "}
             <span
               className="text-primary-500 cursor-pointer"
-              onClick={() => openLinkInNewTab(lifeline_PRIVACY_POLICY_URL)}
+              onClick={() => openLinkInNewTab(ally_PRIVACY_POLICY_URL)}
             >
               Privacy Policy
             </span>

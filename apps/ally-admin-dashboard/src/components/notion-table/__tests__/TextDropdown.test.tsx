@@ -740,7 +740,7 @@ describe("TextDropdown", () => {
       expect(mockOnSearch).toHaveBeenCalledWith("test search");
     });
 
-    it("does not filter loclifeline when onSearch is provided", () => {
+    it("does not filter locally when onSearch is provided", () => {
       const mockOnSearch = vi.fn();
       render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
 
@@ -757,7 +757,7 @@ describe("TextDropdown", () => {
       expect(screen.getAllByText("Option 3").length).toBeGreaterThan(0);
     });
 
-    it("filters loclifeline when onSearch is not provided", () => {
+    it("filters locally when onSearch is not provided", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
@@ -770,7 +770,7 @@ describe("TextDropdown", () => {
       const dropdownOptions = screen.getAllByText("Option 2");
       expect(dropdownOptions.length).toBeGreaterThan(0);
 
-      // Option 1 appears in button text, so check specificlifeline in dropdown area
+      // Option 1 appears in button text, so check specifically in dropdown area
       // Count all instances - button + dropdown = should be 2 for Option 2, 1 for others
       expect(screen.getAllByText("Option 2").length).toBeGreaterThanOrEqual(1);
       expect(screen.queryAllByText("Option 3").length).toBe(0);

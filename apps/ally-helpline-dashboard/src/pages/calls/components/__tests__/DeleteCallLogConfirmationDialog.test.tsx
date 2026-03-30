@@ -84,7 +84,7 @@ describe("DeleteCallLogConfirmationDialog", () => {
   it("should render correct content", () => {
     render(<DeleteCallLogConfirmationDialog chatId={1} closeDialog={mockCloseDialog} />);
     expect(screen.getByTestId("dialog-content")).toHaveTextContent(
-      "Do you relifeline want to delete this record? This process cannot be undone.",
+      "Do you really want to delete this record? This process cannot be undone.",
     );
   });
 

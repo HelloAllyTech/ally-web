@@ -55,8 +55,8 @@ vi.mock("lucide-react", () => ({
   Minimize: () => <div data-testid="minimize-icon">Minimize</div>,
 }));
 
-// Mock @lifeline-ui-mono/ui-shared/logger
-vi.mock("@lifeline-ui-mono/ui-shared/logger", () => ({
+// Mock @ally-ui-mono/ui-shared/logger
+vi.mock("@ally-ui-mono/ui-shared/logger", () => ({
   logger: {
     error: vi.fn(),
     info: vi.fn(),
@@ -198,7 +198,7 @@ describe("StressBuster Component", () => {
         </TestWrapper>,
       );
 
-      // Initilifeline should show ending message - use getAllByText to handle multiple elements
+      // Initially should show ending message - use getAllByText to handle multiple elements
       const messages = screen.getAllByText((content, element) => {
         return element?.textContent === "You gave your best in that session";
       });
@@ -213,7 +213,7 @@ describe("StressBuster Component", () => {
         </TestWrapper>,
       );
 
-      // Initilifeline should show first message
+      // Initially should show first message
       const firstMessages = screen.getAllByText((content, element) => {
         return element?.textContent === "You gave your best in that session";
       });

@@ -11,7 +11,7 @@ enum FeedbackSectionType {
 }
 
 // Mock the child components
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   GenericTable: ({ data, columns, className }: any) => (
     <div data-testid="generic-table" className={className}>
       <div data-testid="table-data">{JSON.stringify(data)}</div>

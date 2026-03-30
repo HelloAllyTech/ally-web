@@ -1,9 +1,9 @@
 {
-  "name": "lifeline-admin-dashboard",
+  "name": "ally-admin-dashboard",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/lifeline-admin-dashboard/src",
+  "sourceRoot": "apps/ally-admin-dashboard/src",
   "projectType": "application",
   "tags": [],
-  "// targets": "to see all targets run: nx show project lifeline-admin-dashboard --web",
+  "// targets": "to see all targets run: nx show project ally-admin-dashboard --web",
   "targets": {}
 }

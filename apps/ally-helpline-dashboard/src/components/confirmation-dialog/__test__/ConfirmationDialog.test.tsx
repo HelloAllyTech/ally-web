@@ -1,6 +1,6 @@
 import React, { FC, ReactNode, SVGProps } from "react";
 
-import { Dialog } from "@mui/material"; // Staticlifeline import Dialog to access the mock function reference
+import { Dialog } from "@mui/material"; // Statically import Dialog to access the mock function reference
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -137,7 +137,7 @@ describe("ConfirmationDialog", () => {
     render(<ConfirmationDialog {...defaultProps} />);
 
     expect(Dialog).toHaveBeenCalledWith(
-      // Using the staticlifeline imported Dialog reference
+      // Using the statically imported Dialog reference
       expect.objectContaining({
         open: true,
         onClose: defaultProps.onClose,

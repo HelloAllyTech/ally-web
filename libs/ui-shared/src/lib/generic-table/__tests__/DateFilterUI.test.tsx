@@ -38,7 +38,7 @@ describe("DateFilterUI", () => {
     const onDateSelect = vi.fn();
     render(<DateFilterUI selectedValues={[]} onChange={onChange} onDateSelect={onDateSelect} />);
 
-    // initilifeline disabled
+    // initially disabled
     expect(screen.getByText("Save")).toBeDisabled();
 
     // pick a preset with a full range

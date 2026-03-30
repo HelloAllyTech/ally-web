@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { logger } from "@lifeline-ui-mono/ui-shared/logger";
+import { logger } from "@ally-ui-mono/ui-shared/logger";
 import { useLazyGetUpComingSimulationQuery, useLazyGetSimulationSummaryQuery } from "@api";
 import { Button, PermissionGuard } from "@components";
 import { Permissions } from "@constants";

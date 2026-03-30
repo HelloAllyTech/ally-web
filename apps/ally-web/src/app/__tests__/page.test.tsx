@@ -5,7 +5,7 @@ import "@testing-library/jest-dom";
 import SearchPage from "../page";
 
 // Mock the logger
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
     error: vi.fn(),

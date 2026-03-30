@@ -8,7 +8,7 @@ import { store } from "@store";
 
 import { useUser } from "../useUser";
 
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({ logger: { info: vi.fn() } }));
+vi.mock("@ally-ui-mono/ui-shared", () => ({ logger: { info: vi.fn() } }));
 
 const apiMocks = {
   getUser: vi.fn(),

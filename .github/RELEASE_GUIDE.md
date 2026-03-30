@@ -1,6 +1,6 @@
-# Production Release Guide - lifeline Web Services
+# Production Release Guide - ally Web Services
 
-This guide explains how to create production releases for all lifeline Web services using automated release pipelines with semantic versioning and release drafts.
+This guide explains how to create production releases for all ally Web services using automated release pipelines with semantic versioning and release drafts.
 
 ## Table of Contents
 
@@ -16,9 +16,9 @@ This guide explains how to create production releases for all lifeline Web servi
 
 ## Overview
 
-The lifeline-web repository contains three production services, each with its own release pipeline:
+The ally-web repository contains three production services, each with its own release pipeline:
 
-1. **lifeline Web** - Main web application (ECS deployment)
+1. **ally Web** - Main web application (ECS deployment)
 2. **Admin Dashboard** - Administration interface (CDN deployment)
 3. **Helpline Dashboard** - Helpline management interface (CDN deployment)
 
@@ -34,11 +34,11 @@ Each service has an independent release pipeline with:
 
 ## Services
 
-### 1. lifeline Web (ECS Service)
+### 1. ally Web (ECS Service)
 
 - **Pipeline**: `production-release-web.yaml`
 - **Deployment**: ECS (Docker container)
-- **App Path**: `apps/lifeline-web`
+- **App Path**: `apps/ally-web`
 - **Runtime**: Node.js 20
 - **Port**: 3000
 
@@ -46,7 +46,7 @@ Each service has an independent release pipeline with:
 
 - **Pipeline**: `production-release-admin-dashboard.yaml`
 - **Deployment**: S3 + CloudFront
-- **App Path**: `apps/lifeline-admin-dashboard`
+- **App Path**: `apps/ally-admin-dashboard`
 - **Build Tool**: Nx
 - **Type**: Static site
 
@@ -54,7 +54,7 @@ Each service has an independent release pipeline with:
 
 - **Pipeline**: `production-release-helpline-dashboard.yaml`
 - **Deployment**: S3 + CloudFront
-- **App Path**: `apps/lifeline-helpline-dashboard`
+- **App Path**: `apps/ally-helpline-dashboard`
 - **Build Tool**: npm (standalone)
 - **Type**: Static site
 
@@ -65,16 +65,16 @@ Each service has an independent release pipeline with:
 ### Prerequisites
 
 - All changes merged to **master** branch
-- Tests passing loclifeline or in CI
+- Tests passing locally or in CI
 - Code review completed
 - Production secrets configured
 
 ### How to Release (Any Service)
 
 1. **Go to GitHub Actions**
-   - Navigate to: `https://github.com/your-org/lifeline-web/actions`
+   - Navigate to: `https://github.com/your-org/ally-web/actions`
 2. **Select the Appropriate Workflow**
-   - **lifeline Web**: "Production Release - lifeline Web"
+   - **ally Web**: "Production Release - ally Web"
    - **Admin Dashboard**: "Production Release - Admin Dashboard"
    - **Helpline Dashboard**: "Production Release - Helpline Dashboard"
 
@@ -85,7 +85,7 @@ Each service has an independent release pipeline with:
    - Click **"Run workflow"**
 
 4. **Monitor Deployment**
-   - Watch the pipeline execute automaticlifeline
+   - Watch the pipeline execute automatically
    - All jobs must complete successfully
 
 5. **Publish Release**
@@ -128,7 +128,7 @@ We follow [Semantic Versioning 2.0.0](https://semver.org/): `vMAJOR.MINOR.PATCH`
 
 **Each service has its own version number!**
 
-- lifeline Web can be at `v2.1.0`
+- ally Web can be at `v2.1.0`
 - Admin Dashboard can be at `v1.5.2`
 - Helpline Dashboard can be at `v1.3.1`
 
@@ -145,7 +145,7 @@ Versions are independent because services are deployed separately.
 git tag -l "v*" --sort=-v:refname | head -1
 
 # View changes since last release
-git log v1.2.3..master --oneline -- apps/lifeline-web  # or other service path
+git log v1.2.3..master --oneline -- apps/ally-web  # or other service path
 
 # Decide version bump based on changes
 ```
@@ -182,7 +182,7 @@ The workflows run these jobs:
 
 **Service-Specific Jobs:**
 
-**lifeline Web (ECS):** 4. ✅ Build Docker image with multiple version tags 5. ✅ Deploy to ECS 6. ✅ Create release draft
+**ally Web (ECS):** 4. ✅ Build Docker image with multiple version tags 5. ✅ Deploy to ECS 6. ✅ Create release draft
 
 **Dashboards (CDN):** 4. ✅ Build static assets 5. ✅ Upload to S3 6. ✅ Invalidate CloudFront cache 7. ✅ Create release draft
 
@@ -190,11 +190,11 @@ The workflows run these jobs:
 
 ## Service-Specific Details
 
-### lifeline Web (ECS Service)
+### ally Web (ECS Service)
 
 **Build Process:**
 
-- Builds Docker image from `apps/lifeline-web`
+- Builds Docker image from `apps/ally-web`
 - Downloads build-time environment variables from S3
 - Creates multiple image tags:
   - `1.2.3` - Exact version
@@ -229,9 +229,9 @@ npm run test:ui-shared
 
 **Build Process:**
 
-- Builds using Nx: `npx nx build lifeline-admin-dashboard`
+- Builds using Nx: `npx nx build ally-admin-dashboard`
 - Downloads build-time environment variables from S3
-- Output: `dist/apps/lifeline-admin-dashboard/`
+- Output: `dist/apps/ally-admin-dashboard/`
 
 **Deployment:**
 
@@ -251,7 +251,7 @@ PRD_ADMIN_DASHBOARD_S3_BUCKET
 **Test Command:**
 
 ```bash
-npx nx test lifeline-admin-dashboard --coverage
+npx nx test ally-admin-dashboard --coverage
 ```
 
 ---
@@ -262,7 +262,7 @@ npx nx test lifeline-admin-dashboard --coverage
 
 - Builds using npm: `npm run build` (in app directory)
 - Downloads build-time environment variables from S3
-- Output: `apps/lifeline-helpline-dashboard/dist/`
+- Output: `apps/ally-helpline-dashboard/dist/`
 
 **Deployment:**
 
@@ -323,14 +323,14 @@ git tag -l "v*" --sort=-v:refname | head -1
 
 **Solution**:
 
-1. Run tests loclifeline:
+1. Run tests locally:
 
    ```bash
-   # For lifeline Web
+   # For ally Web
    npm run test:web
 
    # For Admin Dashboard
-   npx nx test lifeline-admin-dashboard
+   npx nx test ally-admin-dashboard
 
    # For Helpline Dashboard
    npm run test:helpline
@@ -341,7 +341,7 @@ git tag -l "v*" --sort=-v:refname | head -1
 4. Delete tag if created: `git push origin :refs/tags/v1.2.3`
 5. Re-run workflow
 
-### ECS Deployment Fails (lifeline Web Only)
+### ECS Deployment Fails (ally Web Only)
 
 **Error**: ECS deployment fails
 
@@ -369,7 +369,7 @@ git tag -l "v*" --sort=-v:refname | head -1
 
 **Common Issues:**
 
-**lifeline Web:**
+**ally Web:**
 
 - Docker build errors
 - Missing dependencies
@@ -387,18 +387,18 @@ git tag -l "v*" --sort=-v:refname | head -1
 - Missing dependencies
 - Build script issues
 
-**Debug Loclifeline:**
+**Debug Locally:**
 
 ```bash
-# For lifeline Web (Docker)
-cd apps/lifeline-web
+# For ally Web (Docker)
+cd apps/ally-web
 docker build -t test .
 
 # For Admin Dashboard (Nx)
-npx nx build lifeline-admin-dashboard
+npx nx build ally-admin-dashboard
 
 # For Helpline Dashboard (npm)
-cd apps/lifeline-helpline-dashboard
+cd apps/ally-helpline-dashboard
 npm run build
 ```
 
@@ -409,7 +409,7 @@ npm run build
 ### Before Release
 
 - ✅ Test in development environment
-- ✅ Run full test suite loclifeline
+- ✅ Run full test suite locally
 - ✅ Review all PRs merged since last release
 - ✅ Update service-specific documentation
 - ✅ Prepare release notes
@@ -450,7 +450,7 @@ PRD_AWS_ROLE          # AWS IAM role for production
 PRD_AWS_REGION        # AWS region
 ```
 
-**lifeline Web Only:**
+**ally Web Only:**
 
 ```
 PRD_ECR_REPOSITORY    # ECR repository URL
@@ -478,7 +478,7 @@ PRD_DASHBOARD_S3_BUCKET
 
 | Service            | Workflow File                                | Deployment Type |
 | ------------------ | -------------------------------------------- | --------------- |
-| lifeline Web           | `production-release-web.yaml`                | ECS             |
+| ally Web           | `production-release-web.yaml`                | ECS             |
 | Admin Dashboard    | `production-release-admin-dashboard.yaml`    | CDN             |
 | Helpline Dashboard | `production-release-helpline-dashboard.yaml` | CDN             |
 
@@ -486,16 +486,16 @@ PRD_DASHBOARD_S3_BUCKET
 
 | Service            | Command                             |
 | ------------------ | ----------------------------------- |
-| lifeline Web           | Docker build                        |
-| Admin Dashboard    | `npx nx build lifeline-admin-dashboard` |
+| ally Web           | Docker build                        |
+| Admin Dashboard    | `npx nx build ally-admin-dashboard` |
 | Helpline Dashboard | `npm run build` (in app dir)        |
 
 ### Test Commands
 
 | Service            | Command                            |
 | ------------------ | ---------------------------------- |
-| lifeline Web           | `npm run test:web`                 |
-| Admin Dashboard    | `npx nx test lifeline-admin-dashboard` |
+| ally Web           | `npm run test:web`                 |
+| Admin Dashboard    | `npx nx test ally-admin-dashboard` |
 | Helpline Dashboard | `npm run test:helpline`            |
 
 ---

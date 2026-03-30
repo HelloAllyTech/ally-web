@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import { CheckCircle } from "lucide-react";
 
-import { LifelineLogo } from "@assets";
+import { AllyLogo } from "@assets";
 
 export const Health = () => {
   const [lastChecked, setLastChecked] = useState(new Date());
@@ -19,7 +19,7 @@ export const Health = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
         <div className="flex items-center justify-center space-x-3 mb-6">
-          <LifelineLogo className="h-10 w-10" />
+          <AllyLogo className="h-10 w-10" />
           <h1 className="text-3xl font-bold text-typography-800 dark:text-white font-primary">
             Application Health Status
           </h1>
@@ -32,7 +32,7 @@ export const Health = () => {
 
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <p className="text-sm text-typography-700 dark:text-typography-600">
-            All systems are operating normlifeline. This page confirms that the frontend application
+            All systems are operating normally. This page confirms that the frontend application
             is running and responsive.
           </p>
           <p className="text-xs text-typography-600 dark:text-typography-700 mt-2">

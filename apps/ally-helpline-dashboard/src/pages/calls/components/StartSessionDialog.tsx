@@ -29,7 +29,7 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
         Listen Live
       </span>
       <span className="text-xs text-typography-800" data-testid="start-session-embed-description">
-        lifeline will hear audio alongside you
+        ally will hear audio alongside you
       </span>
     </motion.div>
   );
@@ -40,7 +40,7 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
       title={{ normal: "Start", italic: "Session" }}
       isOpen={isOpen}
       onClose={onClose}
-      content="lifeline's mental health AI scribe safely listens, transcribes and writes session notes for you."
+      content="ally's mental health AI scribe safely listens, transcribes and writes session notes for you."
       buttonVariant={ButtonVariant.PRIMARY}
       onButtonClick={onStartSession}
       buttonText="Start Session now"

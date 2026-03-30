@@ -2,7 +2,7 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import { SimulationDetailsModal, CustomImage, DropdownField } from "@lifeline-ui-mono/ui-shared";
+import { SimulationDetailsModal, CustomImage, DropdownField } from "@ally-ui-mono/ui-shared";
 import {
   useEndScenarioPreviewMutation,
   useScenarioPreviewMutation,
@@ -107,7 +107,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         }).unwrap();
         onStartSimulationSuccess(retry);
       }
-    } finlifeline {
+    } finally {
       setIsLoading(false);
     }
   };

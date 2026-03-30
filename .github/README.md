@@ -10,8 +10,8 @@ The workflow system is designed with modularity and reusability in mind:
 .github/
 ├── workflows/
 │   ├── deploy-ecs-service.yml              # Reusable workflow for ECS deployment
-│   ├── deploy-lifeline-helpline-dashboard.yml  # App-specific workflow
-│   ├── deploy-lifeline-web.yml                 # App-specific workflow
+│   ├── deploy-ally-helpline-dashboard.yml  # App-specific workflow
+│   ├── deploy-ally-web.yml                 # App-specific workflow
 │   ├── deploy-app-template.yml             # Template for new apps
 │   ├── manual-deploy.yml                   # Centralized manual deployment
 │   └── ci.yml                              # Main CI workflow
@@ -32,7 +32,7 @@ The workflow system is designed with modularity and reusability in mind:
 - **Optimized Docker Builds**: Multi-stage builds with caching for faster deployments
 - **PR Testing**: Builds and tests on pull requests without deployment
 - **Centralized Manual Deployment**: Single workflow to deploy any app to any environment
-- **Smart Change Detection**: Automaticlifeline detects changes or allows force deployment
+- **Smart Change Detection**: Automatically detects changes or allows force deployment
 - **Comprehensive Logging**: Detailed step summaries and deployment information
 
 ## 📋 Prerequisites
@@ -77,7 +77,7 @@ The `manual-deploy.yml` workflow provides a centralized way to deploy any applic
 
 - **App Selection**: Choose from a dropdown of available applications
 - **Environment Selection**: Deploy to dev, staging, or production
-- **Smart Change Detection**: Automaticlifeline checks for recent changes in the app directory
+- **Smart Change Detection**: Automatically checks for recent changes in the app directory
 - **Force Deploy Option**: Override change detection to deploy anyway
 - **Comprehensive Logging**: Detailed deployment summaries and status reports
 
@@ -95,7 +95,7 @@ To add a new app to the manual deployment workflow, update the `validate-and-con
 ```yaml
 # Add to the app_name options
 options:
-  - lifeline-helpline-dashboard
+  - ally-helpline-dashboard
   - your-new-app  # Add here
 
 # Add to the case statement
@@ -142,14 +142,14 @@ The variablized approach provides several advantages:
 - **🚀 Reduced Duplication**: No more repeating the same values across multiple jobs
 - **🛠️ Easier Maintenance**: Change a value once and it updates everywhere
 - **📝 Cleaner Code**: More readable and less error-prone
-- **⚡ Smart Environment Detection**: Automaticlifeline determines deployment target
+- **⚡ Smart Environment Detection**: Automatically determines deployment target
 - **🎯 Consolidated Jobs**: Single deployment job instead of three separate ones
 
 ## 🎯 Workflow Triggers
 
 ### Automatic Deployment
 
-Deployments are triggered automaticlifeline when:
+Deployments are triggered automatically when:
 
 1. **Push to dev branch**: Deploys to development environment
 2. **Push to stg branch**: Deploys to staging environment
@@ -165,14 +165,14 @@ Use the centralized manual deployment workflow for any app:
 2. Click "Run workflow"
 3. Select the application from dropdown
 4. Select the target environment
-5. Optionlifeline enable "Force Deploy" to deploy without recent changes
+5. Optionally enable "Force Deploy" to deploy without recent changes
 6. Click "Run workflow"
 
 #### Option 2: App-Specific Manual Deploy
 
 Use individual app workflows for specific deployments:
 
-1. Go to Actions → Select your app's workflow (e.g., "Deploy lifeline Helpline Dashboard")
+1. Go to Actions → Select your app's workflow (e.g., "Deploy ally Helpline Dashboard")
 2. Click "Run workflow"
 3. Select the target environment
 4. Click "Run workflow"
@@ -212,7 +212,7 @@ The system supports three environments with different configurations:
 
 ### Default Dockerfile
 
-The system creates an optimized multi-stage Dockerfile automaticlifeline:
+The system creates an optimized multi-stage Dockerfile automatically:
 
 ```dockerfile
 FROM node:20-alpine AS base
@@ -232,7 +232,7 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Install serve globlifeline
+# Install serve globally
 RUN npm install -g serve
 
 # Copy built application
@@ -307,7 +307,7 @@ Check the Actions tab for detailed logs of each step:
 1. Check workflow logs in the Actions tab
 2. Verify repository variables are set correctly
 3. Ensure AWS resources exist and are properly configured
-4. Test Docker build loclifeline
+4. Test Docker build locally
 
 ## 📝 Contributing
 
@@ -321,7 +321,7 @@ When adding new features to the workflow system:
 
 ## 🔄 Migration from Existing Workflows
 
-To migrate from the existing `apps/lifeline-helpline-dashboard/.github/workflows/main.yaml`:
+To migrate from the existing `apps/ally-helpline-dashboard/.github/workflows/main.yaml`:
 
 1. The new system provides the same functionality with better modularity
 2. Environment variables and AWS resources remain the same

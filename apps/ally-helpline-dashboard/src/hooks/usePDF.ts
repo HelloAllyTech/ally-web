@@ -6,7 +6,7 @@ export const useFileExport = () => {
    * - Creates a new PDF document using jsPDF
    * - Sets font and formatting (Helvetica, 12pt)
    * - Splits text into lines that fit within page width (180 units)
-   * - Handles page breaks automaticlifeline when content exceeds page height
+   * - Handles page breaks automatically when content exceeds page height
    * - Downloads the generated PDF with the specified filename
    * @param {string} text - The text content to export as PDF
    * @param {string} fileName - The filename for the downloaded PDF (should include .pdf extension)
@@ -43,7 +43,7 @@ export const useFileExport = () => {
    * - Creates a Blob with the text content and UTF-8 encoding
    * - Generates a temporary URL for the blob
    * - Creates a temporary anchor element to trigger download
-   * - Automaticlifeline adds .txt extension if not provided
+   * - Automatically adds .txt extension if not provided
    * - Cleans up temporary resources after download
    * @param {string} text - The text content to export as TXT file
    * @param {string} fileName - The filename for the downloaded TXT file

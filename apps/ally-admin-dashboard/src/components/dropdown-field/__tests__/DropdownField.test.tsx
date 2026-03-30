@@ -233,7 +233,7 @@ describe("DropdownField", () => {
     const trigger = screen.getByText("Select");
     const arrowContainer = container.querySelector(".transition-transform");
 
-    // Initilifeline not rotated
+    // Initially not rotated
     expect(arrowContainer?.className).not.toContain("rotate-180");
 
     fireEvent.click(trigger);

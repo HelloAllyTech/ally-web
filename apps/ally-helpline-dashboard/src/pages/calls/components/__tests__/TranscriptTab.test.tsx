@@ -58,7 +58,7 @@ describe("TranscriptTab", () => {
       scrollable.scrollTop = 500;
       fireEvent.scroll(scrollable);
     }
-    // For safety, assert the fn is defined and can be triggered manulifeline
+    // For safety, assert the fn is defined and can be triggered manually
     expect(handleLoadMore).toBeDefined();
   });
 });

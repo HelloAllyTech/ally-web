@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
 import { describe, test, expect, beforeEach, vi } from "vitest";
 
-import { Resource, SearchVariant } from "@lifeline-ui-mono/ui-shared";
-import { ResourceSearch as ResourceSearchMock } from "@lifeline-ui-mono/ui-shared";
+import { Resource, SearchVariant } from "@ally-ui-mono/ui-shared";
+import { ResourceSearch as ResourceSearchMock } from "@ally-ui-mono/ui-shared";
 
 import SearchResources from "../SearchResources";
 
@@ -24,7 +24,7 @@ vi.mock("@api", () => ({
 }));
 
 // FIX: Use vi.mock with a factory function instead of referencing a variable
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   ResourceSearch: vi.fn(props => (
     <div data-testid="resource-search-mock">
       <button data-testid="handler-search" onClick={() => props.onSearch("new query")}>

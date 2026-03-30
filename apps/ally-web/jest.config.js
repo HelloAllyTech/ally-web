@@ -13,7 +13,7 @@ const customJestConfig = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^react-calendar$": "<rootDir>/__mocks__/react-calendar.js",
-    "^@lifeline-ui-mono/ui-shared$": "<rootDir>/__mocks__/ui-shared.js",
+    "^@ally-ui-mono/ui-shared$": "<rootDir>/__mocks__/ui-shared.js",
   },
   transformIgnorePatterns: ["node_modules/(?!(react-calendar|@react-calendar|date-fns)/)"],
   collectCoverageFrom: [

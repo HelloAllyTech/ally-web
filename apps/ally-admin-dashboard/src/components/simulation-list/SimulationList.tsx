@@ -1,6 +1,6 @@
 import React from "react";
 
-import { FEATURE_FLAGS_MAP } from "@lifeline-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { Add, Edit, Unpublish, Archive, Delete, Play, Unarchive, Copy } from "@assets";
 import {
   DataList,

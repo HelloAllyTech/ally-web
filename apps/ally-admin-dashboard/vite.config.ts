@@ -9,7 +9,7 @@ import path from "path";
 const projectRoot = __dirname;
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: "../../node_modules/.vite/apps/lifeline-admin-dashboard",
+  cacheDir: "../../node_modules/.vite/apps/ally-admin-dashboard",
   server: {
     port: 8081,
     host: true,
@@ -37,7 +37,7 @@ export default defineConfig(() => ({
   //  plugins: [ nxViteTsPaths() ],
   // },
   build: {
-    outDir: "../../dist/apps/lifeline-admin-dashboard",
+    outDir: "../../dist/apps/ally-admin-dashboard",
     emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: {
@@ -63,7 +63,7 @@ export default defineConfig(() => ({
     include: ["{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     reporters: ["default"],
     coverage: {
-      reportsDirectory: "../../coverage/apps/lifeline-admin-dashboard",
+      reportsDirectory: "../../coverage/apps/ally-admin-dashboard",
       provider: "v8" as const,
       exclude: [
         "node_modules/",
@@ -109,7 +109,7 @@ export default defineConfig(() => ({
       "@store/*": path.resolve(projectRoot, "./src/store/*"),
       "@reducer": path.resolve(projectRoot, "./src/reducer"),
       "@reducer/*": path.resolve(projectRoot, "./src/reducer/*"),
-      "@lifeline-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
+      "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
       // Add any other aliases from tsconfig.base.json here
     },
   },

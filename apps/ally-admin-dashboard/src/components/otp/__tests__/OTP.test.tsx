@@ -216,7 +216,7 @@ describe("OTP", () => {
     expect(wrapper).toHaveClass("gap-6");
   });
 
-  it("centers inputs verticlifeline", () => {
+  it("centers inputs vertically", () => {
     const onChange = vi.fn();
     const { container } = render(<OTP value="" onChange={onChange} />);
     const wrapper = container.firstChild;

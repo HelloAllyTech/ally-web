@@ -260,7 +260,7 @@ describe("NavbarWrapper", () => {
       .find(button => button.className.includes("md:hidden"));
     expect(menuButton).toBeInTheDocument();
 
-    // Initilifeline sidebar should be closed
+    // Initially sidebar should be closed
     expect(screen.getByTestId("nav-sidebar")).toHaveAttribute("data-is-open", "false");
 
     // Click to open sidebar

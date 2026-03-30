@@ -18,9 +18,9 @@ import { Health } from "../Health";
 
 // Mock the assets module
 vi.mock("@assets", () => ({
-  LifelineLogo: ({ className }: { className: string }) => (
-    <div data-testid="lifeline-logo" className={className}>
-      LifelineLogo
+  AllyLogo: ({ className }: { className: string }) => (
+    <div data-testid="ally-logo" className={className}>
+      AllyLogo
     </div>
   ),
 }));
@@ -92,7 +92,7 @@ describe("Health Component", () => {
 
     it("should render header section with logo and title", () => {
       render(<Health />);
-      const logo = screen.getByTestId("lifeline-logo");
+      const logo = screen.getByTestId("ally-logo");
       const title = screen.getByText("Application Health Status");
 
       expect(logo).not.toBeNull();
@@ -111,7 +111,7 @@ describe("Health Component", () => {
 
     it("should render description section", () => {
       render(<Health />);
-      const description = screen.getByText(/All systems are operating normlifeline/);
+      const description = screen.getByText(/All systems are operating normally/);
       expect(description).not.toBeNull();
     });
   });
@@ -121,9 +121,9 @@ describe("Health Component", () => {
    * Verifies that logos and icons are properly rendered
    */
   describe("Logo and Icon Rendering", () => {
-    it("should render LifelineLogo with correct classes", () => {
+    it("should render AllyLogo with correct classes", () => {
       render(<Health />);
-      const logo = screen.getByTestId("lifeline-logo");
+      const logo = screen.getByTestId("ally-logo");
       expect(logo).not.toBeNull();
       expect(logo.className).toContain("h-10");
       expect(logo.className).toContain("w-10");
@@ -164,7 +164,7 @@ describe("Health Component", () => {
     it("should display system status description", () => {
       render(<Health />);
       const description = screen.getByText(
-        "All systems are operating normlifeline. This page confirms that the frontend application is running and responsive.",
+        "All systems are operating normally. This page confirms that the frontend application is running and responsive.",
       );
       expect(description).not.toBeNull();
     });
@@ -283,7 +283,7 @@ describe("Health Component", () => {
     it("should provide clear status information", () => {
       render(<Health />);
       const statusText = screen.getByText("Healthy");
-      const description = screen.getByText(/All systems are operating normlifeline/);
+      const description = screen.getByText(/All systems are operating normally/);
 
       expect(statusText).not.toBeNull();
       expect(description).not.toBeNull();
@@ -293,7 +293,7 @@ describe("Health Component", () => {
       render(<Health />);
       const title = screen.getByText("Application Health Status");
       const status = screen.getByText("Healthy");
-      const description = screen.getByText(/All systems are operating normlifeline/);
+      const description = screen.getByText(/All systems are operating normally/);
 
       expect(title.tagName.toLowerCase()).toBe("h1");
       expect(status.tagName.toLowerCase()).toBe("p");
@@ -348,7 +348,7 @@ describe("Health Component", () => {
   describe("Component Integration", () => {
     it("should integrate correctly with mocked assets", () => {
       render(<Health />);
-      const logo = screen.getByTestId("lifeline-logo");
+      const logo = screen.getByTestId("ally-logo");
       expect(logo).not.toBeNull();
     });
 

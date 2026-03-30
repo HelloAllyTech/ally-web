@@ -9,7 +9,7 @@ import { ROUTES } from "@constants";
 
 import { useLiveKitRoom } from "../useLiveKitRoom";
 
-vi.mock("@lifeline-ui-mono/ui-shared", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 

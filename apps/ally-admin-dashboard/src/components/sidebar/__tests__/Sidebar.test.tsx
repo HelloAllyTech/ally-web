@@ -16,7 +16,7 @@ vi.mock("@assets", () => ({
   Book: () => <svg data-testid="icon-book" />,
   User: () => <svg data-testid="icon-user" />,
   Users: () => <svg data-testid="icon-users" />,
-  lifeline: () => <svg data-testid="logo-lifeline" />,
+  ally: () => <svg data-testid="logo-ally" />,
   DockToRight: () => <svg data-testid="dock" />,
   Logout: () => <svg data-testid="logout" />,
   HappyEmoji: () => <svg data-testid="happy" />,
