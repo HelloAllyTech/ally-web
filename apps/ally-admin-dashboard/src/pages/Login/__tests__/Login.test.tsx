@@ -9,6 +9,20 @@ import { Login } from "../Login";
 // Mock react-router-dom hooks
 const mockNavigate = vi.fn();
 
+vi.mock("@react-oauth/google", () => ({
+  GoogleLogin: ({ onSuccess, onError }: any) => (
+    <button data-testid="google-login" onClick={() => onSuccess({ credential: "mock-credential" })}>
+      Continue with Google
+    </button>
+  ),
+  GoogleOAuthProvider: ({ children }: any) => <div>{children}</div>,
+  useGoogleLogin: ({ onSuccess, onError }: any) => {
+    return () => {
+      onSuccess({ access_token: "mock-access-token" });
+    };
+  },
+}));
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
@@ -48,10 +62,26 @@ const mockUseVerifyOTPMutation = vi.fn(() => [
     error: null,
   },
 ]);
-
+const mockGoogleSignInMutation = vi.fn(() => [
+  mockGoogleSignInMutation,
+  {
+    data: null,
+    error: null,
+  },
+]);
 vi.mock("@api", () => ({
   useGenerateOTPMutation: () => mockUseGenerateOTPMutation(),
   useVerifyOTPMutation: () => mockUseVerifyOTPMutation(),
+  useGoogleSignInMutation: () => mockGoogleSignInMutation(),
+  baseAPI: {
+    injectEndpoints: vi.fn(() => ({})),
+    reducerPath: "baseAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+    util: {
+      resetApiState: vi.fn(),
+    },
+  },
 }));
 
 // Mock useUser hook
@@ -64,12 +94,6 @@ const mockUseUser = vi.fn(() => ({
 
 vi.mock("@hooks/useUser", () => ({
   useUser: () => mockUseUser(),
-}));
-
-// Mock components
-// Mock CustomImage from ui-shared
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  CustomImage: ({ src, alt }: any) => <img src={src} alt={alt} data-testid="custom-image" />,
 }));
 
 vi.mock("@components", () => ({
@@ -117,15 +141,40 @@ vi.mock("@constants", () => ({
     EMAIL: "EMAIL",
     OTP: "OTP",
   },
+  TAG_TYPES: {
+    USERS: "users",
+    TENANTS: "tenants",
+    SESSION_EVENTS: "sessionEvents",
+    SESSION_EVENT_TAGS: "sessionEventTags",
+    SIMULATION: "simulation",
+    SIMULATION_EVENTS: "simulationEvents",
+    SIMULATION_PATHS: "simulationPaths",
+    SCENARIO_PATHS: "scenarioPaths",
+    EACH_SESSION: "eachSession",
+    SIMULATION_CASES: "simulationCases",
+    TRIGGER_WARNINGS: "triggerWarnings",
+    SCENARIO_VOICES: "scenarioVoices",
+    SCENARIO_LANGUAGES: "scenarioLanguages",
+    SUMMARY_SECTIONS: "summarySections",
+    UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
+    CHARACTERS: "characters",
+    PROMPTS: "prompts",
+    CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
+    USER_BADGES: "userBadges",
+    HELPER_TAGS: "helperTags",
+  },
   LOCAL_STORAGE_KEYS: {
     ADMIN_ACCESS_TOKEN: "adminAccessToken",
     ADMIN_REFRESH_TOKEN: "adminRefreshToken",
     ADMIN_IS_AUTHENTICATED: "adminIsAuthenticated",
   },
-  ally_TERMS_URL: "https://ally.com/terms",
-  ally_PRIVACY_POLICY_URL: "https://ally.com/privacy",
-  ally_URL: "https://ally.com",
+  ALLY_TERMS_URL: "https://ally.com/terms",
+  ALLY_PRIVACY_POLICY_URL: "https://ally.com/privacy",
+  ALLY_URL: "https://ally.com",
   en: {
+    common: {
+      or: "OR",
+    },
     auth: {
       hey: "Hey",
       welcomeTo: "Welcome to",
@@ -140,7 +189,7 @@ vi.mock("@constants", () => ({
       enterEmailToContinue: "Enter your email address to continue",
       enterEmailPlaceholder: "Enter your email address",
       next: "Next",
-      byTappingNext: "By tapping next, you agree to ally's",
+      byTappingNext: "By tapping next, you agree to Ally's",
       andAcknowledge: "and acknowledge",
       verifyYourEmail: "Verify your email address",
       enterSecurityCode: "Enter the security code sent to",
@@ -149,7 +198,7 @@ vi.mock("@constants", () => ({
       needNewCode: "Need a new code?",
       resend: "Resend",
       verify: "Verify",
-      helloallyUrl: "helloally.ai",
+      helloAllyUrl: "helloally.ai",
       failedToGenerateOTP: "Failed to generate OTP. Please try again.",
       failedToVerifyOTP: "Failed to verify OTP. Please try again.",
       invalidEmailError: "Please enter a valid email address",
@@ -172,6 +221,21 @@ vi.mock("framer-motion", () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   },
+}));
+
+// Mock @ally-ui-mono/ui-shared
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  CustomImage: ({ src, alt, ...props }: any) => (
+    <img data-testid="custom-image" src={src} alt={alt} {...props} />
+  ),
+  GoogleSignInButton: ({ onSuccess, onError, text = "Continue with Google" }: any) => (
+    <button
+      data-testid="google-sign-in-button"
+      onClick={() => onSuccess({ accessToken: "mock-token" })}
+    >
+      {text}
+    </button>
+  ),
 }));
 
 describe("Login", () => {
@@ -235,7 +299,7 @@ describe("Login", () => {
       renderLogin();
 
       expect(screen.getByText("Terms and Conditions")).toBeInTheDocument();
-      expect(screen.getByText("Privacy Policy")).toBeInTheDocument();
+      expect(screen.getByText("Privacy Policy.")).toBeInTheDocument();
     });
 
     it("should render login image", () => {
@@ -579,7 +643,7 @@ describe("Login", () => {
 
       renderLogin();
 
-      const privacyLink = screen.getByText("Privacy Policy");
+      const privacyLink = screen.getByText("Privacy Policy.");
       fireEvent.click(privacyLink);
 
       expect(openLinkInNewTab).toHaveBeenCalledWith("https://ally.com/privacy");

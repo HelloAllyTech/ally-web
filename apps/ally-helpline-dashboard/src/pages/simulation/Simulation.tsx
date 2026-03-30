@@ -23,7 +23,7 @@ export const Simulation = () => {
 
   const endSessionButtonRef = useRef<boolean>(false);
 
-  const { room, roomData, roomStatus, startTime, events, score } = useLiveKitRoom(
+  const { room, roomData, roomStatus, startTime, events, score, detectedEventIds } = useLiveKitRoom(
     handleRoomDisconnected,
     endSessionButtonRef,
   );
@@ -72,9 +72,12 @@ export const Simulation = () => {
         roomData={roomData}
         roomStatus={roomStatus}
         sessionId={id}
-        isEndingSession={roomStatus !== RoomStatus.CONNECTED}
-        startTime={startTime.toISOString()}
+        isEndingSession={
+          roomStatus !== RoomStatus.CONNECTED && roomStatus !== RoomStatus.AGENT_JOINED
+        }
+        startTime={startTime?.toISOString()}
         events={getSimulationEvents(events)}
+        detectedEventIds={detectedEventIds}
         score={score}
         onEndSimulation={onEndSimulation}
         renderWarningDialog={renderWarningDialog}

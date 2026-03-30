@@ -1,17 +1,8 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
-import {
-  FORM_FIELD_IDS,
-  SIMULATION_CREATOR_FIELD_GROUPS,
-  SIMULATION_CREATOR_FIELD_GROUPS_OLD,
-} from "@constants";
-import { GetSimulationByIdResponse } from "@types";
+import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import { GetSimulationByIdResponse, knowledgeSource } from "@types";
 
-// TODO: remove when NEW_CREATE_SIMULATION_FLAG is removed
 export const getCreateSimulationSubSectionById = (id: string) => {
-  const fieldGroups = FEATURE_FLAGS_MAP.NEW_CREATE_SIMULATION_FLAG
-    ? SIMULATION_CREATOR_FIELD_GROUPS
-    : SIMULATION_CREATOR_FIELD_GROUPS_OLD;
-  return fieldGroups.find(section => section.id === id);
+  return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
 };
 
 export const formatSimulationResponseData = (data: GetSimulationByIdResponse) => {
@@ -37,26 +28,45 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     sexualOrientation: data?.metadata?.sexualOrientation,
     startingState: data?.metadata?.startingState,
     tone: data?.metadata?.tone,
-    voiceId: data?.metadata?.voiceId,
     languageVoices: (data?.metadata as any)?.languageVoices,
+    linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
-    autoTerminationStatus: Boolean(data?.terminationEvent?.autoTerminationStatus),
-    terminationEventId: data?.terminationEvent?.eventId,
-    terminationMessage: data?.terminationEvent?.message,
-    terminationName: data?.terminationEvent?.name,
     difficultyLevel: data?.difficultyLevel,
+    terminationEvents: data?.terminationEvents?.map(event => ({
+      id: event.eventId,
+      name: event.name,
+      message: event.message,
+    })),
     responseLength: data?.metadata?.responseLength,
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),
+    isPublic: Boolean(data?.isPublic),
     triggerWarningIds: data?.triggerWarnings,
     customFields: data?.metadata?.customFields?.map((field, index) => ({
       id: `${FORM_FIELD_IDS.CUSTOM_FIELDS}${index + 1}}`,
       name: field.name,
       value: field.value,
+      useInDefaultPrompt: field.useInDefaultPrompt ?? true,
     })),
     agentDialogues: Array.isArray(data?.metadata?.agentDialogues)
       ? data?.metadata?.agentDialogues.join("\n")
       : (data?.metadata?.agentDialogues ?? ""),
+    experienceMode: data?.metadata?.experienceMode,
+    checklistType: data?.metadata?.checklistType,
+    timerMode: data?.metadata?.timerMode,
+    maxTimeValue: data?.metadata?.maxTimeValue,
+    optGuardrails: data?.metadata?.optGuardrails,
+    currentState: data?.metadata?.currentState,
+    stateInstructions: data?.metadata?.stateInstructions,
+    behaviorInstructions: data?.behaviorInstructions ?? [],
+    showScoreMeter: data?.metadata?.showScoreMeter,
+    characterProfileText: data?.metadata?.characterProfileText,
+    competency: data?.competency,
+    knowledgeSources: data?.metadata?.knowledgeSources?.map((source: knowledgeSource) => ({
+      id: source.id,
+      title: source.title,
+      content: source.content,
+    })),
   };
 };

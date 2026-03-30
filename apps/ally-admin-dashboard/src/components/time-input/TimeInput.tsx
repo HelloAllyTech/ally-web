@@ -1,26 +1,49 @@
 import React, { useState, useRef, useEffect } from "react";
 
+import { SESSION_TIMER_CONFIG } from "@constants";
+import { validateTime, validateTimeRange } from "@utils";
+
 export interface TimeInputProps {
-  value?: string;
+  value?: string | number;
   onChange?: (value: string) => void;
+  onBlur?: (value: string) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  minTime?: string;
+  maxTime?: string;
+  error?: string;
+  showError?: boolean;
 }
 
 export const TimeInput: React.FC<TimeInputProps> = ({
   value = "",
   onChange,
+  onBlur,
   placeholder = "hh:mm:ss",
   className = "",
   disabled = false,
+  minTime = SESSION_TIMER_CONFIG.MIN_TIME,
+  maxTime = SESSION_TIMER_CONFIG.MAX_TIME,
+  error,
+  showError = true,
 }) => {
-  const [displayValue, setDisplayValue] = useState(value);
+  const normalizeValue = (val: string | number): string => {
+    if (val === 0 || val === "0") return "00:00:00";
+    return String(val || "");
+  };
+
+  const [displayValue, setDisplayValue] = useState(normalizeValue(value));
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(error);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setDisplayValue(value);
+    setDisplayValue(normalizeValue(value));
   }, [value]);
+
+  useEffect(() => {
+    setErrorMessage(error);
+  }, [error]);
 
   const formatTime = (input: string): string => {
     const digits = input.replace(/\D/g, "");
@@ -36,34 +59,6 @@ export const TimeInput: React.FC<TimeInputProps> = ({
     }
 
     return formatted;
-  };
-
-  const validateTime = (timeString: string): string => {
-    if (!timeString || timeString.length < 5) {
-      return timeString;
-    }
-
-    const parts = timeString.split(":");
-    if (parts.length !== 3) {
-      return timeString;
-    }
-
-    let hours = parseInt(parts[0], 10);
-    let minutes = parseInt(parts[1], 10);
-    let seconds = parseInt(parts[2], 10);
-
-    // Clamp values to valid ranges
-    if (!isNaN(hours)) {
-      hours = Math.max(0, Math.min(23, hours));
-    }
-    if (!isNaN(minutes)) {
-      minutes = Math.max(0, Math.min(59, minutes));
-    }
-    if (!isNaN(seconds)) {
-      seconds = Math.max(0, Math.min(59, seconds));
-    }
-
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,9 +108,22 @@ export const TimeInput: React.FC<TimeInputProps> = ({
     if (displayValue) {
       const validated = validateTime(displayValue);
       setDisplayValue(validated);
+
+      // Validate time range if min/max are provided
+      const rangeValidation = validateTimeRange(validated, minTime, maxTime);
+      if (!rangeValidation.isValid) {
+        setErrorMessage(rangeValidation.error);
+      } else {
+        setErrorMessage(undefined);
+      }
+
+      onBlur?.(validated);
       if (onChange && validated !== displayValue) {
         onChange(validated);
       }
+    } else {
+      setErrorMessage(undefined);
+      onBlur?.(displayValue || null);
     }
   };
 
@@ -137,19 +145,28 @@ export const TimeInput: React.FC<TimeInputProps> = ({
     }, 0);
   };
 
+  const hasError = showError && errorMessage;
+
   return (
-    <input
-      ref={inputRef}
-      type="text"
-      value={displayValue}
-      onChange={handleChange}
-      onPaste={handlePaste}
-      onBlur={handleBlur}
-      placeholder={placeholder}
-      disabled={disabled}
-      maxLength={8}
-      pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
-      className={`w-full rounded-sm text-sm placeholder:text-typography-600 focus:outline-none px-2 py-1 h-6 ${className}`}
-    />
+    <div className="relative">
+      <input
+        ref={inputRef}
+        type="text"
+        value={displayValue}
+        onChange={handleChange}
+        onPaste={handlePaste}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        disabled={disabled}
+        maxLength={8}
+        pattern="^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$"
+        className={`w-full bg-transparent rounded-sm text-sm placeholder:text-typography-600 focus:outline-none px-2 py-1 h-6 disabled:cursor-not-allowed disabled:opacity-50 ${
+          hasError ? "border border-destructive-500" : ""
+        } ${className}`}
+      />
+      {hasError && (
+        <p className="absolute bottom-[-25px] text-destructive-500 text-sm">{errorMessage}</p>
+      )}
+    </div>
   );
 };

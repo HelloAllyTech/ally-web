@@ -19,7 +19,7 @@ export interface EmojiPickerState {
 }
 
 export interface NumberInputProps {
-  value?: number;
+  value?: number | string;
   onChange?: (value: number) => void;
   min?: number;
   max?: number;
@@ -63,11 +63,18 @@ export interface HeaderProps {
     getResizerProps: () => {
       [key: string]: any;
     };
+    hasResizer?: boolean;
     getHeaderProps: () => {
       key: string;
       [key: string]: any;
     };
   };
+}
+
+export interface InfiniteScrollConfig {
+  onLoadMore: () => void;
+  isLoading: boolean;
+  hasMore: boolean;
 }
 
 export interface NotionTableProps {
@@ -77,4 +84,15 @@ export interface NotionTableProps {
   onRowChange?: (action: any) => void;
   onRowClick?: (rowIndex: number) => void;
   onSelectionChange?: (selectedRows: any[]) => void;
+  infiniteScroll?: InfiniteScrollConfig;
+  autoHeight?: boolean;
+  editIndex?: number;
+  hasResizer?: boolean;
+  hideSelectionColumn?: boolean;
+}
+export enum Status {
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
+  ARCHIVED = "ARCHIVED",
+  PUBLISHED = "PUBLISHED",
 }

@@ -1,10 +1,10 @@
-# ally Admin Dashboard
+# Ally Admin Dashboard
 
-A comprehensive admin dashboard for managing simulations, events, and users in the ally platform. Built with React, Vite, Tailwind CSS, and RTK Query in an Nx monorepo architecture.
+A comprehensive admin dashboard for managing simulations, events, and users in the Ally platform. Built with React, Vite, Tailwind CSS, and RTK Query in an Nx monorepo architecture.
 
 ## Overview
 
-The ally Admin Dashboard is a powerful administrative interface that enables administrators to:
+The Ally Admin Dashboard is a powerful administrative interface that enables administrators to:
 
 - Create and manage voice-based simulation scenarios
 - Configure and map session events to simulations
@@ -111,7 +111,7 @@ apps/ally-admin-dashboard/
 │   │   └── useUser.ts         # User state management
 │   ├── pages/                  # Top-level page components
 │   │   ├── CreateSimulation/  # Simulation creator page
-│   │   ├── EventManagement/   # Event management page
+│   │   ├── Events/            # Event management page
 │   │   ├── LiveSimulationPreview/ # Real-time preview page
 │   │   ├── Login/             # Login with OTP
 │   │   ├── SimulationStudio/  # Main simulations list
@@ -155,7 +155,7 @@ apps/ally-admin-dashboard/
 
 ## Core Features
 
-### 1. Simulation Studio
+### 1. Simulation Studio / Roleplays
 
 - **Simulation Management**: Create, edit, delete, and publish simulation scenarios
 - **Cover Image Upload**: Upload and manage simulation cover images with S3 integration
@@ -164,14 +164,14 @@ apps/ally-admin-dashboard/
 - **Filtering & Sorting**: Filter simulations by status, search, and sort options
 - **Preview Mode**: Test simulations in real-time with LiveKit integration
 
-### 2. Event Management
+### 2. Events
 
 - **Session Events**: Create and manage reusable session events
 - **Event Editor**: Rich editing interface with side panels
 - **Bulk Operations**: Create, update, and delete multiple events
 - **Event Mapping**: Associate events with simulation scenarios
 
-### 3. User Management
+### 3. Users
 
 - **User Administration**: Create, edit, and manage users
 - **Organization Management**: Manage tenants/organizations
@@ -195,7 +195,7 @@ apps/ally-admin-dashboard/
 
 ## API Integration
 
-The dashboard integrates with the ally backend API through RTK Query:
+The dashboard integrates with the Ally backend API through RTK Query:
 
 ### Authentication API
 
@@ -206,7 +206,7 @@ The dashboard integrates with the ally backend API through RTK Query:
 - `GET /v1/users/me` - Get current user profile
 - `GET /v1/authorization/permissions` - Get user permissions
 
-### Simulation Studio API
+### Simulation Studio / Roleplays API
 
 - `GET /v1/learn/admin-scenarios` - Get all simulations
 - `GET /v1/learn/admin-scenarios/:id` - Get simulation by ID
@@ -226,7 +226,7 @@ The dashboard integrates with the ally backend API through RTK Query:
 - `PUT /v1/session-events/events/:id` - Update event
 - `DELETE /v1/session-events/events` - Delete events
 
-### User Management API
+### Users API
 
 - `GET /v1/users` - Get all users
 - `POST /v1/users` - Create new user
@@ -463,6 +463,6 @@ MIT
 
 ## Links
 
-- [ally Website](https://www.helloally.ai)
+- [Ally Website](https://www.helloally.ai)
 - [Terms of Service](https://www.helloally.ai/terms)
 - [Privacy Policy](https://www.helloally.ai/policy)

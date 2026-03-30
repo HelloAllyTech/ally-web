@@ -25,11 +25,18 @@ export enum Permissions {
   EDIT_CALL_INFO = "edit:call:info",
   EDIT_CALL_DETAILS = "edit:call:details",
   VIEW_SIMULATION_CREDITS = "view:simulation-credits",
-  VIEW_COMMUNITY = "view:community",
   VIEW_CHAT_DETAILS = "view:chat:details",
   VIEW_TRANSCRIPTION = "view:messages",
   VIEW_CHAT_TYPES = "view:settings:chat-types",
   VIEW_SUMMARY_FIELDS = "view:settings:summary-fields",
+  VIEW_LEADERBOARD = "view:community:leaderboard",
+  VIEW_SIMULATION_REVIEWS = "view:simulation-reviews",
+  VIEW_SCRIBE_REVIEWS = "view:scribe-reviews",
+  VIEW_SIMULATION_REVIEW = "view:simulation-review",
+  VIEW_SCRIBE_REVIEW = "view:scribe-review",
+  VIEW_BADGES = "view:user:badges",
+  ARCHIVE_CALL_LOG = "archive:call-log",
+  ARCHIVE_CHAT = "ARCHIVE_CHAT",
 }
 
 export const CALL_PERMISSIONS = [

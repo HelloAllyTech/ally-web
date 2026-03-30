@@ -3,7 +3,14 @@ import { useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { logger } from "@ally-ui-mono/ui-shared";
-import { useLazyGetUserQuery, useLazyGetPermissionsQuery, baseAPI } from "@api";
+import {
+  useLazyGetUserQuery,
+  useLazyGetPermissionsQuery,
+  baseAPI,
+  useGetProfileImageUrlMutation,
+  useDeleteProfileImageMutation,
+  useUploadProfileImageMutation,
+} from "@api";
 import { NavigationItem } from "@components/types";
 import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
@@ -16,22 +23,74 @@ export const useUser = () => {
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
+  const [getProfileUrl] = useGetProfileImageUrlMutation();
+  const [deleteProfile] = useDeleteProfileImageMutation();
+  const [uploadProfileImage] = useUploadProfileImageMutation();
+
+  /**
+   * Refetches user data and updates Redux store
+   * Used when profile is updated to reflect changes immediately
+   */
+  const refetchUser = async () => {
+    try {
+      const userData = await getUser();
+      if (userData?.data) {
+        store.dispatch(setUser(userData.data));
+      }
+      return userData?.data;
+    } catch (error) {
+      logger.info(`Error refetching user: ${error}`);
+      return null;
+    }
+  };
 
   const navigationItems: NavigationItem[] = [
     {
       id: SIDEBAR_ITEMS.SIMULATION_STUDIO,
-      label: en.simulation.simulationStudio,
+      label: en.simulation.rolePlays,
       path: ROUTES.SIMULATION_STUDIO,
     },
     {
-      id: SIDEBAR_ITEMS.EVENT_MANAGEMENT,
-      label: en.simulation.eventManagement,
+      id: SIDEBAR_ITEMS.EVENTS,
+      label: en.simulation.events,
       path: ROUTES.MANAGE_EVENTS,
     },
+
     {
-      id: SIDEBAR_ITEMS.USER_MANAGEMENT,
-      label: en.userManagement.userManagement,
+      id: SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+      label: "Characters",
+      path: ROUTES.CHARACTER_LIBRARY,
+    },
+
+    {
+      id: SIDEBAR_ITEMS.SCENARIO_VOICES,
+      label: en.simulation.voices,
+      path: ROUTES.MANAGE_SCENARIO_VOICES,
+    },
+    {
+      id: SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
+      label: en.simulation.languages,
+      path: ROUTES.MANAGE_SCENARIO_LANGUAGES,
+    },
+    {
+      id: SIDEBAR_ITEMS.PROMPTS,
+      label: en.simulation.prompts,
+      path: ROUTES.MANAGE_PROMPTS,
+    },
+    {
+      id: SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+      label: en.simulation.guardrails,
+      path: ROUTES.MANAGE_GUARDRAILS,
+    },
+    {
+      id: SIDEBAR_ITEMS.USERS,
+      label: en.userManagement.users,
       path: ROUTES.USER_MANAGEMENT,
+    },
+    {
+      id: SIDEBAR_ITEMS.USER_BADGES,
+      label: en.userManagement.badges,
+      path: ROUTES.USER_BADGES,
     },
   ];
 
@@ -102,10 +161,25 @@ export const useUser = () => {
       switch (item.id) {
         case SIDEBAR_ITEMS.SIMULATION_STUDIO:
           return permissions.includes(Permissions.EDIT_SCENARIO);
-        case SIDEBAR_ITEMS.EVENT_MANAGEMENT:
+        case SIDEBAR_ITEMS.EVENTS:
           return permissions.includes(Permissions.EDIT_EVENT);
-        case SIDEBAR_ITEMS.USER_MANAGEMENT:
-          return permissions.includes(Permissions.EDIT_USER);
+        case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
+          return permissions.includes(Permissions.EDIT_CHARACTER_LIBRARY);
+        case SIDEBAR_ITEMS.SCENARIO_VOICES:
+          return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
+        case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
+          return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
+        case SIDEBAR_ITEMS.PROMPTS:
+          return permissions.includes(Permissions.EDIT_PROMPT);
+        case SIDEBAR_ITEMS.USERS:
+          return (
+            permissions.includes(Permissions.EDIT_USER) ||
+            permissions.includes(Permissions.VIEW_USERS)
+          );
+        case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
+          return permissions.includes(Permissions.EDIT_GUARDRAIL);
+        case SIDEBAR_ITEMS.USER_BADGES:
+          return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
         default:
           return true;
       }
@@ -115,6 +189,7 @@ export const useUser = () => {
   return {
     availableChatTypes,
     checkAuth,
+    refetchUser,
     isAuthLoading: isUserLoading || isPermissionsLoading,
     isAuthenticated,
     logout,
@@ -123,5 +198,8 @@ export const useUser = () => {
     user,
     userStatus,
     filteredNavigationItems,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfileImage,
   };
 };

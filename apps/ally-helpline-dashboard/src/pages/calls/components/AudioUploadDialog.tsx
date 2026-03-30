@@ -7,16 +7,18 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import {
   useGetAudioUploadUrlMutation,
   useGetCounsellorsQuery,
   useCancelAudioUploadMutation,
+  useProcessAudioUploadMutation,
 } from "@api";
 import { Dropdown, DatePicker, TimePicker, Button, ButtonVariant } from "@components";
 import { addAudioUpload, updateUploadProgress, updateUploadError } from "@reducer";
-import { store } from "@src/store";
+import { store } from "@store";
 import { UploadStatus } from "@types";
 
 import AudioUploadInterface from "./AudioUploadInterface";
@@ -29,6 +31,7 @@ dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 
 const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState<AudioUploadFormData>(defaultAudioFormData);
   const [duration, setDuration] = useState<number>(0);
@@ -39,6 +42,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
     { isLoading: isGetAudioUploadUrlLoading, error: getAudioUploadUrlError },
   ] = useGetAudioUploadUrlMutation();
   const [cancelAudioUpload] = useCancelAudioUploadMutation();
+  const [processAudioUpload] = useProcessAudioUploadMutation();
   const { data: counsellors = [] } = counsellorsData || {};
 
   const isUploadButtonDisabled =
@@ -57,7 +61,10 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (getAudioUploadUrlError) {
-      toast.error((getAudioUploadUrlError as any)?.data?.message || "Audio Upload failed!");
+      toast.error(
+        (getAudioUploadUrlError as any)?.data?.message ||
+          t("calls.audioUpload.errors.uploadFailed"),
+      );
     }
   }, [getAudioUploadUrlError]);
 
@@ -94,11 +101,11 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
       platform: "WEB",
       duration,
     });
-    const { presignedUrl, chatId } = response.data;
+    const { presignedUrl, chatId, s3Key } = response.data;
 
     // upload audio file to s3
     try {
-      if (presignedUrl && chatId) {
+      if (presignedUrl && chatId && s3Key) {
         let uploadStarted = false;
         await axios.put(presignedUrl, audioFile, {
           headers: { "Content-Type": audioFile.type },
@@ -126,12 +133,15 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           },
           timeout: 1800000, // 30 Minutes
         });
+        await processAudioUpload({ s3Key });
       }
     } catch {
-      store.dispatch(updateUploadError({ chatId, error: "Failed to upload audio" }));
+      store.dispatch(
+        updateUploadError({ chatId, error: t("calls.audioUpload.errors.genericError") }),
+      );
       // store.dispatch(removeAudioUpload(chatId));
       cancelAudioUpload({ chatId });
-      toast.error("Failed to upload audio");
+      toast.error(t("calls.audioUpload.errors.genericError"));
     }
   };
 
@@ -172,7 +182,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
             className="text-2xl font-secondary text-typography-900"
             data-testid="audio-upload-dialog-title"
           >
-            Upload audio recording
+            {t("calls.audioUpload.title")}
           </span>
         </motion.div>
 
@@ -202,7 +212,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
         >
           {/* Counsellor */}
           <div className="flex flex-col gap-2" data-testid="audio-upload-counsellor-field">
-            <label>Counsellor name</label>
+            <label>{t("calls.audioUpload.fields.counsellor.label")}</label>
             <Dropdown
               data-testid="audio-upload-counsellor-dropdown"
               value={formData.counsellorId}
@@ -211,13 +221,13 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
                 value: id,
               }))}
               onChange={value => setFormData({ ...formData, counsellorId: value })}
-              placeholder="Select Counsellor"
+              placeholder={t("calls.audioUpload.fields.counsellor.placeholder")}
             />
           </div>
 
           {/* Date */}
           <div className="flex flex-col gap-2" data-testid="audio-upload-date-field">
-            <label>Session date</label>
+            <label>{t("calls.audioUpload.fields.sessionDate")}</label>
             <DatePicker
               data-testid="audio-upload-date-picker"
               value={formData.date}
@@ -228,19 +238,19 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
 
           {/* Time zone */}
           <div className="flex flex-col gap-2" data-testid="audio-upload-timezone-field">
-            <label>Time zone</label>
+            <label>{t("calls.audioUpload.fields.timeZone.label")}</label>
             <Dropdown
               data-testid="audio-upload-timezone-dropdown"
               value={formData.timeZone}
               options={timezoneOptions}
               onChange={value => setFormData({ ...formData, timeZone: value })}
-              placeholder="Select time zone"
+              placeholder={t("calls.audioUpload.fields.timeZone.placeholder")}
             />
           </div>
 
           {/* Time */}
           <div className="flex flex-col gap-2" data-testid="audio-upload-time-field">
-            <label>Session time</label>
+            <label>{t("calls.audioUpload.fields.sessionTime")}</label>
             <TimePicker
               data-testid="audio-upload-time-picker"
               value={formData.time}
@@ -265,7 +275,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
             onClick={handleCancel}
             data-testid="audio-upload-cancel-button"
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             fullWidth
@@ -273,7 +283,9 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
             disabled={isUploadButtonDisabled}
             data-testid="audio-upload-submit-button"
           >
-            {isGetAudioUploadUrlLoading ? "Uploading..." : "Upload"}
+            {isGetAudioUploadUrlLoading
+              ? t("common.uploading")
+              : t("calls.audioUpload.actions.upload")}
           </Button>
         </motion.div>
       </motion.div>

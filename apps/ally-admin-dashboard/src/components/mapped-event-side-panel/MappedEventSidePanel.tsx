@@ -1,15 +1,19 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
 
+import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled, DoubleArrowRight, Trash } from "@assets";
 import {
-  AutoExpandableTextarea,
   EmojiPickerComponent,
   NumberInput,
   ToggleSwitch,
+  OccurrenceControlSection,
+  ScoreWindowSection,
+  TimeWindowSection,
+  TextareaWithTriggerDropdown,
 } from "@components";
 import { en } from "@constants";
 import { useDebounce, useClickOutside } from "@hooks";
-import { UpdateScenarioEventDataParam, SessionEvent } from "@types";
+import { UpdateScenarioEventDataParam, SessionEvent, SessionEventDetectionType } from "@types";
 import { isObject, MAPPED_EVENT_FIELDS } from "@utils";
 
 // Constants
@@ -24,6 +28,15 @@ const FIELD_DEPENDENCIES: Record<string, readonly string[]> = {
     MAPPED_EVENT_FIELDS.MESSAGE,
   ],
   branchingStatus: [MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION],
+  detectionConfigStatus: [
+    MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
+    MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
+    MAPPED_EVENT_FIELDS.OCCURRENCE_INTERVAL,
+    MAPPED_EVENT_FIELDS.START_TIME,
+    MAPPED_EVENT_FIELDS.END_TIME,
+    MAPPED_EVENT_FIELDS.MIN_SCORE,
+    MAPPED_EVENT_FIELDS.MAX_SCORE,
+  ],
 };
 
 interface MappedEventSidePanelProps {
@@ -147,6 +160,7 @@ const EventDropdown: React.FC<{
           <ArrowDownFilled />
         </span>
       </button>
+
       {isOpen && (
         <div className="absolute z-10 bg-white border border-border-light min-w-[300px] max-h-[300px] overflow-y-auto rounded-[6px] left-0 top-[40px] shadow-lg custom-scrollbar">
           <div className="sticky top-0 bg-white p-2 border-b">
@@ -217,6 +231,11 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
   const selectedEventName = useMemo(
     () =>
       sessionEvents.find(event => event.id === selectedEvent?.id?.value)?.name || "Select an event",
+    [sessionEvents, selectedEvent?.id?.value],
+  );
+
+  const selectedEventDetectionType = useMemo(
+    () => sessionEvents.find(event => event.id === selectedEvent?.id?.value)?.detectionType,
     [sessionEvents, selectedEvent?.id?.value],
   );
 
@@ -393,11 +412,47 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
             <Field label="Session quality score">
               <NumberInput
                 value={Number(formData.score?.value || 0)}
-                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.SCORE, value)}
+                onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.SCORE, value || 0)}
                 disabled={formData.score?.disabled}
               />
             </Field>
 
+            <OccurrenceControlSection
+              eventType={selectedEventDetectionType as string}
+              maxOccurrences={formData?.maxOccurrences?.value}
+              minGapTime={formData?.minGapTime?.value as string}
+              occurrenceInterval={formData?.occurrenceInterval?.value}
+              onMaxOccurrencesChange={value =>
+                handleFieldChange(MAPPED_EVENT_FIELDS.MAX_OCCURRENCES, value)
+              }
+              onMinGapTimeChange={value =>
+                handleFieldChange(MAPPED_EVENT_FIELDS.MIN_GAP_TIME, value)
+              }
+              onOccurrenceIntervalChange={value =>
+                handleFieldChange(MAPPED_EVENT_FIELDS.OCCURRENCE_INTERVAL, value)
+              }
+            />
+
+            {selectedEventDetectionType !== SessionEventDetectionType.TIME && (
+              <TimeWindowSection
+                startTime={formData?.startTime?.value as string}
+                endTime={formData?.endTime?.value as string}
+                onStartTimeChange={value =>
+                  handleFieldChange(MAPPED_EVENT_FIELDS.START_TIME, value)
+                }
+                onEndTimeChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.END_TIME, value)}
+              />
+            )}
+
+            {selectedEventDetectionType !== SessionEventDetectionType.SCORE && (
+              <ScoreWindowSection
+                minScore={formData?.minScore?.value}
+                maxScore={formData?.maxScore?.value}
+                onMinScoreChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.MIN_SCORE, value)}
+                onMaxScoreChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.MAX_SCORE, value)}
+              />
+            )}
+            <div className="border-t" />
             <Field label="Branching status">
               <ToggleSwitch
                 enabled={formData.branchingStatus?.value || false}
@@ -407,13 +462,22 @@ export const MappedEventSidePanel: React.FC<MappedEventSidePanelProps> = ({
                 label="Branching status"
               />
             </Field>
-
             <Field label="Branch to state" multiline={true}>
-              <FormTextarea
+              <TextareaWithTriggerDropdown
                 value={formData.branchInstruction?.value || ""}
                 onChange={value => handleFieldChange(MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION, value)}
                 placeholder="Add branch to state"
                 disabled={formData.branchInstruction?.disabled}
+                alwaysOpen
+              />
+            </Field>
+            <Field label="Checklist visibility">
+              <ToggleSwitch
+                enabled={formData.checklistVisibilityStatus?.value || false}
+                onChange={enabled =>
+                  handleToggleChange(MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS, enabled)
+                }
+                label="Checklist visibility"
               />
             </Field>
           </div>

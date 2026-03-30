@@ -1,4 +1,12 @@
-import { SearchIcon, StatsIcon, CommunityIcon, ScribeIcon, LearnIcon } from "@assets/icons";
+import {
+  SearchIcon,
+  StatsIcon,
+  ScribeIcon,
+  LearnIcon,
+  Leaderboard,
+  ReviewNavIcon,
+  Badge,
+} from "@assets";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -8,6 +16,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   HEALTH: "/health",
+  MAGIC_VERIFY: "/auth/verify",
   SUSPENDED_USER: "/suspended-user",
 
   // Private Routes
@@ -24,9 +33,16 @@ export const ROUTES = {
   LEARN: "/learn",
   SCENARIO: "/scenario/:scenarioId",
   PATHWAY: "/pathway/:pathwayId",
+  CASE: "/case/:caseId",
   SIMULATION: "/simulation/:id",
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
+  COMMUNITY_LEADERBOARD: "/community",
+  REVIEW: "/review",
+  ACHIEVEMENTS_VIEW_ALL: "/achievements",
+  SIMULATION_REVIEW_DETAILS: "/simulation-review/:reviewId",
+  SCRIBE_REVIEW_DETAILS: "/scribe-review/:reviewId",
+  ARCHIVES: "/archives",
 } as const;
 
 export const excludeNavBar = [
@@ -41,14 +57,43 @@ export const navBarOptions = [
   {
     id: TabId.LEARN,
     title: "Learn",
+    key: "nav.tabs.learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
-    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY],
+    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY, ROUTES.CASE],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
+  },
+  {
+    id: TabId.REVIEW,
+    title: "Review",
+    key: "nav.tabs.review",
+    Icon: ReviewNavIcon,
+    path: ROUTES.REVIEW,
+    activePages: [ROUTES.REVIEW, ROUTES.SIMULATION_REVIEW_DETAILS, ROUTES.SCRIBE_REVIEW_DETAILS],
+    permissions: [Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS],
+  },
+  {
+    id: TabId.BADGES,
+    title: "Badges",
+    key: "nav.tabs.badges",
+    Icon: Badge,
+    path: ROUTES.ACHIEVEMENTS_VIEW_ALL,
+    activePages: [],
+    permissions: [Permissions.VIEW_BADGES],
+  },
+  {
+    id: TabId.LEADERBOARD,
+    title: "Community",
+    key: "nav.tabs.community",
+    Icon: Leaderboard,
+    path: ROUTES.COMMUNITY_LEADERBOARD,
+    activePages: [ROUTES.ACHIEVEMENTS_VIEW_ALL],
+    permissions: [Permissions.VIEW_LEADERBOARD],
   },
   {
     id: TabId.CALLS,
     title: "Sessions",
+    key: "nav.tabs.sessions",
     Icon: ScribeIcon,
     path: ROUTES.CALLS,
     activePages: [],
@@ -62,6 +107,7 @@ export const navBarOptions = [
   {
     id: TabId.ANALYTICS,
     title: "Statistics",
+    key: "nav.tabs.statistics",
     Icon: StatsIcon,
     path: ROUTES.ANALYTICS,
     activePages: [],
@@ -70,17 +116,10 @@ export const navBarOptions = [
   {
     id: TabId.SEARCH,
     title: "Search",
+    key: "nav.tabs.search",
     Icon: SearchIcon,
     path: ROUTES.SEARCH,
     activePages: [],
     permissions: [Permissions.VIEW_REFERNCE_DOCUMENT],
-  },
-  {
-    id: TabId.COMMUNITY,
-    title: "Community",
-    Icon: CommunityIcon,
-    path: "https://community.helloally.ai/",
-    activePages: [],
-    permissions: [Permissions.VIEW_COMMUNITY],
   },
 ];

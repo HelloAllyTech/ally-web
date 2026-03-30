@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import { CheckCircle } from "lucide-react";
 
-import { AllyLogo } from "@assets";
+import { LifelineLogo } from "@assets";
 
 export const Health = () => {
   const [lastChecked, setLastChecked] = useState(new Date());
@@ -19,7 +19,7 @@ export const Health = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
         <div className="flex items-center justify-center space-x-3 mb-6">
-          <AllyLogo className="h-10 w-10" />
+          <LifelineLogo className="h-10 w-10" />
           <h1 className="text-3xl font-bold text-typography-800 dark:text-white font-primary">
             Application Health Status
           </h1>

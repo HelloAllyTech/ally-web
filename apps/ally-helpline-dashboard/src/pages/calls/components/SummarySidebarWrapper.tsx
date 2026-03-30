@@ -1,13 +1,9 @@
 import { FC, useEffect, useState } from "react";
 
-import { Tabs, Tab } from "@mui/material";
-
-import { DataPolicy } from "@assets";
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import { Drawer } from "@components";
-import { ally_DATA_POLICY_URL } from "@constants";
-import { openLinkInNewTab } from "@utils";
+import { ShortSessionUI } from "@containers";
 
-import { tabStyles } from "../constants";
 import { SummarySidebarWrapperProps } from "./types";
 
 const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
@@ -15,6 +11,8 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
   extraHeaderList = [],
   tabList,
   title,
+  isShortSession = false,
+  summaryData,
   children,
 }) => {
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
@@ -23,11 +21,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
     if (tabList?.length) {
       setSelectedTab(tabList[0].id);
     }
-  }, [tabList]);
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue);
-  };
+  }, []);
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
@@ -36,36 +30,30 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
       open={true}
       onClose={onSidebarClose}
       className="font-primary"
+      drawerClassName="h-screen"
+      bodyClassName="h-[calc(100%-64px)]"
       title={title}
-      headerButtons={[
-        {
-          alt: "Data policy",
-          icon: <DataPolicy />,
-          onClick: () => openLinkInNewTab(ally_DATA_POLICY_URL),
-          show: true,
-          text: "Data policy",
-        },
-        ...extraHeaderList,
-      ]}
+      headerButtons={extraHeaderList?.length > 0 ? extraHeaderList : []}
     >
-      <div className="w-[55vw] h-full flex flex-col">
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          className="w-full normal-case border-b border-[#DBDBDB] mb-4"
-          sx={{
-            "& .MuiButtonBase-root": {
-              fontFamily: "IBM_Plex_Serif",
-            },
-          }}
-        >
-          {tabList?.map(tab => (
-            <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
-          ))}
-        </Tabs>
-        {getTabContent()}
-      </div>
-      {children}
+      {isShortSession ? (
+        <ShortSessionUI summaryData={summaryData} className="!min-w-[50vw]" />
+      ) : (
+        <>
+          <div className="w-[50vw] h-full flex flex-col">
+            <div className="w-full border-b border-[#DBDBDB] mb-4">
+              <Tabs
+                items={tabList?.map(tab => ({ id: String(tab.id), label: tab.label })) ?? []}
+                activeId={String(selectedTab)}
+                onChange={newId => setSelectedTab(Number(newId))}
+                className="border-none w-full normal-case text-base font-primary"
+                showCount={false}
+              />
+            </div>
+            {getTabContent()}
+          </div>
+          {children}
+        </>
+      )}
     </Drawer>
   );
 };

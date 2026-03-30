@@ -3,51 +3,63 @@
 exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
 <DocumentFragment>
   <div
-    data-testid="transcript-tab"
+    class="relative h-[calc(100vh-140px)] custom-scrollbar p-4 border border-gray-200 rounded-md overflow-y-auto undefined"
   >
+    <span
+      class="text-typography-900 font-primary text-base font-medium"
+    >
+      Annotated Transcript
+    </span>
+    <hr
+      class="mb-5 mt-2 border-border-light"
+    />
     <div
-      data-testid="transcript-list"
+      data-testid="transcript-tab"
     >
       <div
-        data-testid="transcript-item-0"
+        data-testid="transcript-list"
       >
         <div
-          data-testid="speaker-0"
+          data-testid="transcript-item-0"
         >
-          Client
+          <div
+            data-testid="sender-0"
+          >
+            Client
+          </div>
+          <div
+            data-testid="content-0"
+          >
+            Client message 1
+          </div>
         </div>
         <div
-          data-testid="content-0"
+          data-testid="transcript-item-1"
         >
-          Client message 1
-        </div>
-      </div>
-      <div
-        data-testid="transcript-item-1"
-      >
-        <div
-          data-testid="speaker-1"
-        >
-          Counsellor
-        </div>
-        <div
-          data-testid="content-1"
-        >
-          Counsellor message 1
-        </div>
-      </div>
-      <div
-        data-testid="transcript-item-2"
-      >
-        <div
-          data-testid="speaker-2"
-        >
-          Client
+          <div
+            data-testid="sender-1"
+          >
+            Counsellor
+          </div>
+          <div
+            data-testid="content-1"
+          >
+            Counsellor message 1
+          </div>
         </div>
         <div
-          data-testid="content-2"
+          data-testid="transcript-item-2"
         >
-          Client message 2
+          <div
+            data-testid="sender-2"
+          >
+            Client
+          </div>
+          <div
+            data-testid="content-2"
+          >
+            Client message 2
+          </div>
         </div>
       </div>
     </div>

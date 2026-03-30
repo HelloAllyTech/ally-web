@@ -25,6 +25,11 @@ export interface SimulationTimerProps {
   timeLimit?: number;
 }
 
+export interface SessionGoalTimerProps {
+  startTime: string;
+  maxTimeSeconds: number;
+}
+
 export interface RenderControlsParams {
   isMuted: boolean;
   isEndingSession: boolean;
@@ -51,6 +56,7 @@ export interface SimulationPageProps {
   isEndingSession: boolean;
   startTime: string;
   events: SimulationEventType[];
+  detectedEventIds?: string[];
   score?: number;
   roomStatus: RoomStatus;
   isPreview?: boolean;
@@ -82,6 +88,21 @@ export interface BottomSectionProps {
   isMuted: boolean;
   isEndingSession: boolean;
   startTime: string;
+  timeLimit?: number;
   isFocusMode: boolean;
   onFocusButtonClick: () => void;
+}
+
+export enum ChecklistMode {
+  GUIDED = "GUIDED",
+  UNGUIDED = "UNGUIDED",
+  OFF = "OFF",
+}
+
+export interface ChecklistItem {
+  id: string;
+  name?: string;
+  rank?: number;
+  score?: number;
+  message?: string;
 }

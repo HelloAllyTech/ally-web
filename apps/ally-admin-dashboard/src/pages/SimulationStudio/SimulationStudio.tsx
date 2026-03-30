@@ -2,7 +2,8 @@ import React, { useRef, useState } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
-import { Add, Close, Filter, Simulation as SimulationIcon, Pathway } from "@assets";
+import { Tabs } from "@ally-ui-mono/ui-shared";
+import { Add, Close, Filter, Simulation as SimulationIcon, Pathway, Case } from "@assets";
 import {
   ActionConfirmationPopup,
   DeletePopup,
@@ -11,7 +12,6 @@ import {
   SimulationPreview,
   FilterList,
   Button,
-  Tabs,
   OptionsPopup,
 } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -20,17 +20,20 @@ import {
   en,
   PATH_STATUS_OPTIONS,
   SimulationStatus,
+  UserRole,
 } from "@constants";
-import { useSimulations, useSimulationPathways } from "@hooks";
+import { useSimulations, useSimulationPathways, useSimulationCases, useUser } from "@hooks";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
   TRACKS: "tracks",
+  CASES: "cases",
 };
 
-const TABS = [
-  { id: "simulations", label: "Simulations" },
-  { id: "tracks", label: "Tracks" },
+const TABS_CONFIG = [
+  { id: TAB_KEYS.SIMULATIONS, label: "Simulations" },
+  { id: TAB_KEYS.TRACKS, label: "Tracks" },
+  { id: TAB_KEYS.CASES, label: "Cases" },
 ];
 
 export const SimulationStudio: React.FC = () => {
@@ -40,9 +43,25 @@ export const SimulationStudio: React.FC = () => {
 
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useUser();
+  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
 
   // Get active tab from URL params, default to SIMULATIONS
   const activeTab = searchParams.get("tab") || TAB_KEYS.SIMULATIONS;
+
+  // Effect to redirect unauthorized users from restricted tabs
+  React.useEffect(() => {
+    if (!isSuperAdmin && (activeTab === TAB_KEYS.TRACKS || activeTab === TAB_KEYS.CASES)) {
+      setSearchParams({ tab: TAB_KEYS.SIMULATIONS });
+    }
+  }, [isSuperAdmin, activeTab, setSearchParams]);
+
+  const filteredTabs = TABS_CONFIG.filter(tab => {
+    if (tab.id === TAB_KEYS.TRACKS || tab.id === TAB_KEYS.CASES) {
+      return isSuperAdmin;
+    }
+    return true;
+  });
 
   // Use the custom hook for simulations
   const {
@@ -106,7 +125,34 @@ export const SimulationStudio: React.FC = () => {
     isPathEditPopupOpen,
     setIsPathEditPopupOpen,
     handleEditPathway,
-  } = useSimulationPathways({ selectedFilters });
+  } = useSimulationPathways({ selectedFilters, enabled: isSuperAdmin });
+
+  // Use the custom hook for cases
+  const {
+    cases,
+    hasMore: hasMoreCases,
+    isCasesLoading,
+    isCasesFetching,
+    currentCase,
+    isDuplicateCasePopupOpen,
+    isUnpublishCasePopupOpen,
+    isDeleteCasePopupOpen,
+    setIsDuplicateCasePopupOpen,
+    setIsUnpublishCasePopupOpen,
+    setIsDeleteCasePopupOpen,
+    loadCases,
+    handleNewCase,
+    onEditCase,
+    handleDeleteCase,
+    onDeleteCase,
+    handleUnpublishCase,
+    handleChangeCaseStatus,
+    handleDuplicateCase,
+    onDuplicateCase,
+    isCaseEditPopupOpen,
+    setIsCaseEditPopupOpen,
+    handleEditCase,
+  } = useSimulationCases({ selectedFilters, enabled: isSuperAdmin });
 
   const handleFilterClick = () => {
     setIsFilterOpen(!isFilterOpen);
@@ -134,26 +180,57 @@ export const SimulationStudio: React.FC = () => {
     setSelectedFilters([]);
   };
 
-  const createOptions = [
-    {
-      id: en.simulation.newSimulation,
-      label: en.simulation.newSimulation,
-      icon: <SimulationIcon className="w-5 h-5" />,
-      onClick: handleNewSimulation,
-    },
-    {
-      id: en.simulation.newTrack,
-      label: en.simulation.newTrack,
-      icon: <Pathway className="w-5 h-5" />,
-      onClick: handleNewPathway,
-    },
-  ];
+  const createOptions = React.useMemo(
+    () => [
+      {
+        id: en.simulation.newSimulation,
+        label: en.simulation.newSimulation,
+        icon: <SimulationIcon className="w-5 h-5" />,
+        onClick: handleNewSimulation,
+      },
+      {
+        id: en.simulation.newTrack,
+        label: en.simulation.newTrack,
+        icon: <Pathway className="w-5 h-5" />,
+        onClick: handleNewPathway,
+      },
+
+      {
+        id: "New Case",
+        label: "New Case",
+        icon: <Case className="w-5 h-5" />,
+        onClick: handleNewCase,
+      },
+    ],
+    [handleNewSimulation, handleNewPathway, handleNewCase],
+  );
+
+  const filteredCreateOptions = React.useMemo(() => {
+    return createOptions.filter(option => {
+      if (option.id === en.simulation.newTrack || option.id === "New Case") {
+        return isSuperAdmin;
+      }
+      return true;
+    });
+  }, [createOptions, isSuperAdmin]);
 
   const renderFooter = () => {
+    const isCasesTab = activeTab === TAB_KEYS.CASES;
     const isPathwaysTab = activeTab === TAB_KEYS.TRACKS;
-    const hasMoreItems = isPathwaysTab ? hasMorePathways : hasMore;
-    const isFetching = isPathwaysTab ? isPathwaysFetching : isSimulationsFetching;
-    const loadMore = isPathwaysTab ? loadPathways : loadSimulations;
+
+    let hasMoreItems = hasMore;
+    let isFetching = isSimulationsFetching;
+    let loadMore = loadSimulations;
+
+    if (isCasesTab) {
+      hasMoreItems = hasMoreCases;
+      isFetching = isCasesFetching;
+      loadMore = loadCases;
+    } else if (isPathwaysTab) {
+      hasMoreItems = hasMorePathways;
+      isFetching = isPathwaysFetching;
+      loadMore = loadPathways;
+    }
 
     if (!hasMoreItems) return null;
     return (
@@ -172,9 +249,7 @@ export const SimulationStudio: React.FC = () => {
   const renderHeader = () => {
     return (
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl text-typography-900 font-secondary">
-          {en.simulation.simulationstudio}
-        </h1>
+        <h1 className="text-2xl text-typography-900 font-secondary">{en.simulation.rolePlays}</h1>
         <Button
           variant={ButtonVariant.PRIMARY}
           onClick={openCreatePopup}
@@ -222,40 +297,58 @@ export const SimulationStudio: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (activeTab === TAB_KEYS.TRACKS) {
-      // Pathways tab content
-      return (
-        <PathwayList
-          pathways={pathways}
-          isLoading={isPathwaysLoading}
-          hasFilters={selectedFilters.length > 0}
-          onEdit={onEditPathway}
-          onDelete={handleDeletePathway}
-          onDuplicate={handleDuplicatePathway}
-          onUnpublishPathway={handleUnpublishPathway}
-          onCreatePathway={handleNewPathway}
-          footer={renderFooter()}
-        />
-      );
+    switch (activeTab) {
+      case TAB_KEYS.CASES:
+        return (
+          <PathwayList
+            pathways={cases}
+            isLoading={isCasesLoading}
+            hasFilters={selectedFilters.length > 0}
+            onEdit={onEditCase}
+            onDelete={handleDeleteCase}
+            onDuplicate={handleDuplicateCase}
+            onUnpublishPathway={handleUnpublishCase}
+            onCreatePathway={handleNewCase}
+            footer={renderFooter()}
+            isCases
+          />
+        );
+      case TAB_KEYS.TRACKS:
+        return (
+          <PathwayList
+            pathways={pathways}
+            isLoading={isPathwaysLoading}
+            hasFilters={selectedFilters.length > 0}
+            onEdit={onEditPathway}
+            onDelete={handleDeletePathway}
+            onDuplicate={handleDuplicatePathway}
+            onUnpublishPathway={handleUnpublishPathway}
+            onCreatePathway={handleNewPathway}
+            footer={renderFooter()}
+          />
+        );
+      case TAB_KEYS.SIMULATIONS:
+        return (
+          <SimulationList
+            simulations={simulations}
+            isLoading={isSimulationsLoading}
+            hasFilters={selectedFilters.length > 0}
+            onEdit={onEditIconClick}
+            onDelete={handleDeleteSimulation}
+            onPreview={onPreviewSimulation}
+            onArchive={onArchiveSimulation}
+            onUnpublish={onUnpublishSimulation}
+            onUnarchive={onUnarchiveSimulation}
+            onCreateSimulation={handleCreateSimulation}
+            onDuplicate={onDuplicateSimulation}
+            footer={renderFooter()}
+            currentUser={user}
+            isSuperAdmin={isSuperAdmin}
+          />
+        );
+      default:
+        return null;
     }
-
-    // Simulations tab content
-    return (
-      <SimulationList
-        simulations={simulations}
-        isLoading={isSimulationsLoading}
-        hasFilters={selectedFilters.length > 0}
-        onEdit={onEditIconClick}
-        onDelete={handleDeleteSimulation}
-        onPreview={onPreviewSimulation}
-        onArchive={onArchiveSimulation}
-        onUnpublish={onUnpublishSimulation}
-        onUnarchive={onUnarchiveSimulation}
-        onCreateSimulation={handleCreateSimulation}
-        onDuplicate={onDuplicateSimulation}
-        footer={renderFooter()}
-      />
-    );
   };
 
   const renderDeletePathwayTitle = () => {
@@ -271,7 +364,7 @@ export const SimulationStudio: React.FC = () => {
     <div className="min-h-full font-secondary">
       {renderHeader()}
       <Tabs
-        items={TABS}
+        items={filteredTabs}
         className="mb-2 mt-6 border-b border-border-light font-primary"
         activeId={activeTab}
         showCount={false}
@@ -410,7 +503,7 @@ export const SimulationStudio: React.FC = () => {
       <OptionsPopup
         isOpen={isCreatePopupOpen}
         onClose={() => setIsCreatePopupOpen(false)}
-        options={createOptions}
+        options={filteredCreateOptions}
         anchorElement={createButtonRef.current}
         className="min-w-[220px]"
       />
@@ -451,6 +544,77 @@ export const SimulationStudio: React.FC = () => {
           variant: ButtonVariant.SECONDARY,
         }}
       />
+
+      {/* Cases Popups */}
+      <ActionConfirmationPopup
+        isOpen={isUnpublishCasePopupOpen}
+        onClose={() => setIsUnpublishCasePopupOpen(false)}
+        title={en.simulation.unpublish}
+        titleItalic="Case?"
+        description={en.simulation.unpublishDescription}
+        primaryButton={{
+          label: en.simulation.unpublish,
+          onClick: () => handleChangeCaseStatus(SimulationStatus.DRAFT),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsUnpublishCasePopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      />
+
+      <DeletePopup
+        isOpen={isDeleteCasePopupOpen}
+        onClose={() => setIsDeleteCasePopupOpen(false)}
+        cardData={currentCase}
+        onConfirmDelete={onDeleteCase}
+        title={
+          <h2 className="text-2xl font-medium font-primary">
+            {en.simulation.deleteDescription}
+            <span className="italic font-semibold ml-1">Case?</span>
+          </h2>
+        }
+        description={en.simulation.deletePathwayDescription}
+      />
+
+      <ActionConfirmationPopup
+        isOpen={isDuplicateCasePopupOpen}
+        onClose={() => setIsDuplicateCasePopupOpen(false)}
+        title={en.simulation.duplicate}
+        titleItalic="Case"
+        description={en.simulation.duplicatePathwayDescription}
+        primaryButton={{
+          label: en.simulation.duplicate,
+          onClick: () => onDuplicateCase(currentCase),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsDuplicateCasePopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      />
+
+      {currentCase && (
+        <ActionConfirmationPopup
+          isOpen={isCaseEditPopupOpen}
+          onClose={() => setIsCaseEditPopupOpen(false)}
+          title={en.simulation.edit}
+          titleItalic="Case"
+          description={en.simulation.editPathwayDescription}
+          primaryButton={{
+            label: en.simulation.edit,
+            onClick: () => handleEditCase(currentCase),
+            variant: ButtonVariant.PRIMARY,
+          }}
+          secondaryButton={{
+            label: en.simulation.cancel,
+            onClick: () => setIsCaseEditPopupOpen(false),
+            variant: ButtonVariant.SECONDARY,
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -19,10 +19,16 @@ export const LiveSimulationPreview: React.FC = () => {
 
   const endSessionButtonRef = useRef<boolean>(false);
 
-  const { room, roomData, roomStatus, events, score, startTime, handleEndSession } = useLiveKitRoom(
-    handleRoomDisconnected,
-    endSessionButtonRef,
-  );
+  const {
+    room,
+    roomData,
+    roomStatus,
+    events,
+    score,
+    startTime,
+    detectedEventIds,
+    handleEndSession,
+  } = useLiveKitRoom(handleRoomDisconnected, endSessionButtonRef);
 
   const renderWarningDialog = ({ isOpen, onClose, onContinue, onEnd }) => (
     <ActionConfirmationPopup
@@ -46,9 +52,12 @@ export const LiveSimulationPreview: React.FC = () => {
       roomData={roomData}
       roomStatus={roomStatus}
       sessionId={id}
-      isEndingSession={roomStatus !== RoomStatus.CONNECTED}
-      startTime={startTime.toISOString()}
+      isEndingSession={
+        roomStatus !== RoomStatus.CONNECTED && roomStatus !== RoomStatus.AGENT_JOINED
+      }
+      startTime={startTime?.toISOString()}
       events={getSimulationEvents(events)}
+      detectedEventIds={detectedEventIds}
       score={score}
       isPreview
       onEndSimulation={handleEndSession}

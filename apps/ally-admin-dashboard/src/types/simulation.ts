@@ -1,9 +1,12 @@
-import { SimulationStatus } from "./createSimulation";
+import { EventDetectionConfig } from "@types";
+
+import { SimulationStatus, ScenarioVoice } from "./createSimulation";
 
 export enum RoomStatus {
   CONNECTED = "connected",
   CONNECTING = "connecting",
   DISCONNECTED = "disconnected",
+  AGENT_JOINED = "agent_joined",
 }
 
 export interface LiveKitEvent {
@@ -12,6 +15,7 @@ export interface LiveKitEvent {
     score: number | null;
     emoji: string;
     message: string;
+    detected_event_ids: string[];
   };
   timestamp: string;
 }
@@ -26,6 +30,39 @@ export interface UseLiveKitRoomReturn {
   score: number;
   startTime: Date;
   roomData: any;
+  detectedEventIds: string[];
+}
+
+export interface stateInstruction {
+  stateId: number;
+  name?: string;
+  instruction: string;
+  dialogues: string[];
+}
+
+export interface knowledgeSource {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export type KnowledgeSourceInput = { id?: string; title: string; content: string };
+
+export enum enumBehaviourInstructionCategory {
+  HELPER_SHOULD_DO = "SHOULD_DO",
+  HELPER_SHOULD_NOT_DO = "SHOULD_NOT_DO",
+}
+export interface behaviourStateInstruction {
+  stateId: string;
+  instruction: string;
+}
+
+export interface behaviourInstruction {
+  id?: string;
+  category: enumBehaviourInstructionCategory;
+  behaviors: string[];
+  instructions: string[];
+  stateInstructions?: behaviourStateInstruction[];
 }
 
 export interface SimulationInput {
@@ -56,9 +93,21 @@ export interface SimulationInput {
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
   terminationMessage?: string;
+  terminationEvents?: terminationEvent[];
   isGlobal?: boolean;
+  isPublic?: boolean;
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
+  experienceMode?: string;
+  checklistType?: string;
+  timerMode?: boolean;
+  maxTimeValue?: string;
+  optGuardrails?: boolean;
+  currentState?: boolean;
+  stateInstructions?: stateInstruction[];
+  behaviorInstructions?: behaviourInstruction[];
+  knowledgeSources?: KnowledgeSourceInput[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -79,6 +128,13 @@ export interface CustomFieldType {
   id?: string;
   name?: string;
   value?: string;
+  useInDefaultPrompt?: boolean;
+}
+export interface terminationEvent {
+  eventId: string;
+  message: string;
+  autoTerminationStatus: boolean;
+  name: string;
 }
 
 export interface GetSimulationByIdResponse {
@@ -90,6 +146,7 @@ export interface GetSimulationByIdResponse {
   createdBy: string;
   lastModified: string;
   isGlobal: boolean;
+  isPublic?: boolean;
   status: SimulationStatus;
   prompt?: string;
   metadata: {
@@ -116,13 +173,26 @@ export interface GetSimulationByIdResponse {
     agentDialoguesArray?: string[];
     agentDialogues?: string[];
     customFields: CustomFieldType[];
+    experienceMode?: string;
+    checklistType?: string;
+    timerMode?: boolean;
+    showScoreMeter?: boolean;
+    maxTimeValue?: string;
+    optGuardrails?: boolean;
+    currentState?: boolean;
+    stateInstructions?: stateInstruction[];
+    characterProfileText?: string;
+    knowledgeSources?: knowledgeSource[];
   };
-  terminationEvent: {
+  competency?: Competency;
+  terminationEvents?: terminationEvent[];
+  terminationEvent?: {
     eventId: string;
     message: string;
     autoTerminationStatus: boolean;
     name: string;
   };
+  behaviorInstructions?: behaviourInstruction[];
   triggerWarnings: triggerWarning[];
   difficultyLevel: string;
 }
@@ -143,6 +213,7 @@ export interface CreateSimulationResponse {
 
 export interface StartSimulationResponse {
   accessToken: { token: string; serverUrl: string; roomName: string };
+  useDirectAgentDispatch?: boolean;
   scenario?: {
     id?: string;
     title?: string;
@@ -151,8 +222,14 @@ export interface StartSimulationResponse {
     triggerWarnings?: { id: number; name: string }[];
     metadata?: {
       name?: string;
+      maxTimeValue?: string;
+      timerMode?: boolean;
+      experienceMode?: string;
+      checklistType?: string;
+      showScoreMeter?: boolean;
     };
   };
+  checklistEvents?: any[];
 }
 
 export enum VisibilityType {
@@ -181,6 +258,11 @@ export enum SessionEventDetectionCondition {
 export interface SessionEventResponse {
   data: SessionEvent[];
   pagination: Pagination;
+}
+
+export interface ScenarioVoiceResponse {
+  data: ScenarioVoice[];
+  pagination?: Pagination;
 }
 
 export interface Pagination {
@@ -234,6 +316,10 @@ export interface SessionEvent {
   detectionType?: SessionEventDetectionType | string;
   visibilityType?: string;
   detectionData?: SessionEventDetectionData;
+  detectionConfig?: EventDetectionConfig;
+  isEditable?: boolean;
+  checklistVisibilityStatus?: boolean;
+  tags?: string[];
 }
 
 export interface GetSessionEventsQuery {
@@ -243,6 +329,16 @@ export interface GetSessionEventsQuery {
   offset?: number;
   sortBy?: string;
   order?: string; // e.g. "asc" | "desc"
+}
+
+export interface GetScenarioVoicesQuery {
+  searchName?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string; // e.g. "asc" | "desc"
+  providers?: string[];
+  languageIds?: number[];
 }
 
 export interface GetCoverImageUrlRequest {
@@ -300,4 +396,112 @@ export interface createTriggerResponse {
   name: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ScenarioVoiceFilters {
+  providers: string[];
+  languages: string[];
+}
+
+export interface CharacterData {
+  id?: string;
+  name: string;
+  age: number | string;
+  gender: string;
+  profession: string | null;
+  currentLocation: string;
+  genderIdentity: string;
+  sexualOrientation: string;
+  coverImageUrl?: string;
+  coverVideoUrl?: string;
+  characterProfileText?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: number;
+  updatedBy?: number;
+}
+
+export interface DeleteCharacterRequest {
+  scenarioCharacterIds: string[];
+}
+
+export interface CoverImageLibraryItem {
+  id: string;
+  imageUrl: string;
+  createdAt: string;
+}
+
+export interface GetImageLibraryQueryParams {
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  searchName?: string;
+}
+
+export interface GetImageLibraryResponse {
+  coverImages: CoverImageLibraryItem[];
+  count: number;
+}
+export interface GetHelperTagsQueryParams {
+  limit?: number;
+  offset?: number;
+  name?: string;
+}
+
+export interface HelperTagItem {
+  id: string;
+  name: string;
+}
+
+export interface HelperTagInput {
+  data: HelperTagItem[];
+  count: number;
+}
+
+export interface Competency {
+  id: string;
+  name: string;
+}
+
+export interface CompetenciesResponse {
+  data: Competency[];
+  count: number;
+}
+
+export interface CreateCompetencyRequest {
+  name: string;
+}
+
+export interface ScenarioContext {
+  title?: string;
+  name?: string;
+  age?: number;
+  gender?: string;
+  genderIdentity?: string;
+  sexualOrientation?: string;
+  profession?: string;
+  currentLocation?: string;
+  competency?: string;
+  characterProfileText?: string;
+  challengeDescription?: string;
+  languageId?: string;
+  languageCode?: string;
+  languageName?: string;
+}
+
+export interface AutofillModelOption {
+  value: string;
+  label: string;
+}
+
+export interface RegenerateFieldRequest {
+  fieldName: string;
+  scenarioContext: ScenarioContext;
+  model?: string;
+}
+
+export interface RegenerateFieldResponse {
+  fieldName: string;
+  content: Record<string, any>;
 }

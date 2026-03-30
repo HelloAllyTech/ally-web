@@ -26,6 +26,9 @@ vi.mock("socket.io-client", () => {
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: { info: vi.fn(), debug: vi.fn() },
+  FEATURE_FLAGS_MAP: {
+    PEER_REVIEW_FLAG: false,
+  },
 }));
 
 const TestHarness = ({ onReady }: { onReady: (api: ReturnType<typeof useSocket>) => void }) => {

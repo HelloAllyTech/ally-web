@@ -5,10 +5,12 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
-import { useEndScenarioPreviewMutation } from "@api";
+import { useDispatchPreviewAgentMutation, useEndScenarioPreviewMutation } from "@api";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus, UseLiveKitRoomReturn, LiveKitEvent } from "@types";
 import { decodeUint8ToJson } from "@utils";
+
+const RINGING_BELL_DELAY = 5000; // 5 seconds for ringing the bell
 
 export const useLiveKitRoom = (
   handleDisconnect: () => void,
@@ -17,19 +19,22 @@ export const useLiveKitRoom = (
   const navigate = useNavigate();
   const { id } = useParams();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
+  const [dispatchPreviewAgent] = useDispatchPreviewAgentMutation();
+
+  const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
+  const roomData = roomDataString ? JSON.parse(roomDataString) : null;
 
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<LiveKitEvent[]>([]);
+  const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
   const [score, setScore] = useState<number>(0);
+  const [startTime, setStartTime] = useState(null);
 
   const lastEventTimestampRef = useRef<number | null>(null);
   const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
 
-  const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
-  const roomData = roomDataString ? JSON.parse(roomDataString) : null;
-  const startTime = roomData?.createdAt ? new Date(roomData?.createdAt) : new Date();
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
@@ -49,6 +54,14 @@ export const useLiveKitRoom = (
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
     setEvents(prev => [...prev, eventObj]);
     setScore(prev => prev + (eventObj?.data?.score ?? 0));
+    setDetectedEventIds(prevIds => {
+      return [...new Set([...prevIds, ...(eventObj?.data?.detected_event_ids || [])])];
+    });
+  }, []);
+
+  const onRemoteParticipantConnected = useCallback(() => {
+    setStartTime(new Date());
+    setRoomStatus(RoomStatus.AGENT_JOINED);
   }, []);
 
   const onRoomDisconnect = useCallback(() => {
@@ -74,6 +87,7 @@ export const useLiveKitRoom = (
     // Remove room-level listeners to prevent duplication on reconnect
     room.off(RoomEvent.DataReceived, onDataReceived);
     room.off(RoomEvent.Disconnected, onRoomDisconnect);
+    room.off(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
     room.removeAllListeners();
 
     logger.info("Disconnecting from room");
@@ -82,7 +96,20 @@ export const useLiveKitRoom = (
 
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
-  }, [room, onDataReceived, onRoomDisconnect]);
+  }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected]);
+
+  useEffect(() => {
+    // Add a small delay before connecting to avoid race conditions in StrictMode
+    const connectionTimeout = setTimeout(() => {
+      connectToRoom();
+    }, RINGING_BELL_DELAY); // 10 seconds for ringing the bell
+
+    return () => {
+      clearTimeout(connectionTimeout);
+      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
+      cleanupRoom();
+    };
+  }, [id, cleanupRoom]);
 
   const connectToRoom = async () => {
     try {
@@ -104,13 +131,36 @@ export const useLiveKitRoom = (
 
         await room.connect(livekitUrl, token);
         setRoomStatus(RoomStatus.CONNECTED);
+
+        // Register listeners BEFORE dispatch so we don't miss ParticipantConnected if agent joins quickly
+        room.on(RoomEvent.DataReceived, onDataReceived);
+        room.on(RoomEvent.Disconnected, onRoomDisconnect);
+        room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
+
+        const checkAgentJoined = () => {
+          if (room.remoteParticipants.size > 0) {
+            onRemoteParticipantConnected();
+          }
+        };
+        checkAgentJoined();
+
         await room.localParticipant.setMicrophoneEnabled(true);
+
+        const shouldDispatch = id && typeof id === "string" && id.startsWith("preview-");
+        if (shouldDispatch) {
+          try {
+            logger.info(`[LiveKit] Dispatching agent to preview room: ${id}`);
+            await dispatchPreviewAgent({ roomName: id }).unwrap();
+            logger.info(`[LiveKit] Agent dispatch request sent successfully`);
+          } catch (dispatchError) {
+            logger.warn(
+              `Direct agent dispatch failed: ${dispatchError}. If running locally, ensure ally-be has ALLOW_DIRECT_AGENT_DISPATCH or NODE_ENV=development.`,
+            );
+          }
+        }
 
         // Reset last event timestamp on a fresh connection
         lastEventTimestampRef.current = null;
-
-        room.on(RoomEvent.DataReceived, onDataReceived);
-        room.on(RoomEvent.Disconnected, onRoomDisconnect);
       }
     } catch (error) {
       logger.error(`Failed to connect to LiveKit room: ${error}`);
@@ -134,23 +184,20 @@ export const useLiveKitRoom = (
   };
 
   useEffect(() => {
-    // Add a small delay before connecting to avoid race conditions in StrictMode
-    const connectionTimeout = setTimeout(() => {
-      connectToRoom();
-    }, 100);
-
-    return () => {
-      clearTimeout(connectionTimeout);
-      // Cleanup on route change to avoid duplicate listeners and ensure disconnect
-      cleanupRoom();
-    };
-  }, [id, cleanupRoom]);
-
-  useEffect(() => {
     return () => {
       cleanupRoom();
     };
   }, [cleanupRoom]);
+
+  useEffect(() => {
+    if (roomStatus !== RoomStatus.CONNECTED) return () => {};
+    const interval = setInterval(() => {
+      if (room.remoteParticipants.size > 0) {
+        onRemoteParticipantConnected();
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [roomStatus, room, onRemoteParticipantConnected]);
 
   return {
     error,
@@ -162,5 +209,6 @@ export const useLiveKitRoom = (
     score,
     startTime,
     roomData,
+    detectedEventIds,
   };
 };

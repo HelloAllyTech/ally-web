@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import clsx from "clsx";
 
 import { ArrowDownFilled } from "@assets";
-import { useClickOutside } from "@hooks";
+import { useClickOutside, useCreatePortal } from "@hooks";
 
 import { keyCodes } from "./utils";
 
@@ -17,7 +17,7 @@ interface TextDropdownProps {
   value: string;
   displayValue?: string;
   options: DropdownOption[];
-  onChange: (value: string) => void;
+  onChange: (value: string, label?: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
   isSearchable?: boolean;
@@ -43,6 +43,7 @@ export const TextDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -64,7 +65,7 @@ export const TextDropdown = ({
 
   // Handle option selection
   const selectOption = (option: DropdownOption) => {
-    onChange(option.value);
+    onChange(option.value, option.label);
     setIsOpen(false);
     setSearchTerm("");
     setHighlightedIndex(-1);
@@ -141,6 +142,11 @@ export const TextDropdown = ({
 
   useClickOutside(dropdownRef, handleClose);
 
+  const dropdownPosition = useCreatePortal(triggerRef, isOpen, {
+    dropdownHeight: 240,
+    matchTriggerWidth: true,
+  });
+
   // Get current option display value
   const currentOption = options?.find(option => option.value === value);
   const finalDisplayValue =
@@ -151,31 +157,44 @@ export const TextDropdown = ({
         : value || placeholder;
 
   return (
-    <div ref={dropdownRef} className={clsx("relative w-full", className)}>
+    <div className={clsx("relative w-full", className)}>
       {/* Dropdown Trigger */}
-      <button
-        type="button"
-        onClick={toggleDropdown}
-        onKeyDown={handleKeyDown}
-        disabled={disabled}
-        className={clsx(
-          "w-full bg-transparent py-2 text-left",
-          "flex items-center justify-between",
-          {
-            "bg-background-secondary cursor-not-allowed": disabled,
-            "cursor-pointer": !disabled,
-          },
-        )}
-      >
-        <span className={clsx("truncate mr-1", { "text-typography-800": !value })}>
-          {finalDisplayValue}
-        </span>
-        {!disabled && <ArrowDownFilled width={8} height={8} />}
-      </button>
+      <div ref={triggerRef}>
+        <button
+          type="button"
+          onMouseDown={e => {
+            e.stopPropagation();
+            toggleDropdown();
+          }}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+          className={clsx(
+            "w-full bg-transparent py-2 text-left",
+            "flex items-center justify-between",
+            {
+              "bg-background-secondary cursor-not-allowed": disabled,
+              "cursor-pointer": !disabled,
+            },
+          )}
+        >
+          <div className={clsx("truncate mr-1", { "text-typography-500": !value })}>
+            {finalDisplayValue}
+          </div>
+          {!disabled && <ArrowDownFilled width={8} height={8} />}
+        </button>
+      </div>
 
       {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute z-50 w-max min-w-[calc(100%+24px)] max-w-[400px] left-[-12px] mt-1 bg-background border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden">
+      {dropdownPosition && isOpen && (
+        <div
+          ref={dropdownRef}
+          className="fixed z-50 min-w-[120px] bg-background border border-border-light rounded-md shadow-lg max-h-60 overflow-hidden"
+          style={{
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: dropdownPosition.width,
+          }}
+        >
           {/* Search Input */}
           {isSearchable && (
             <div className="p-2 border-b border-border-light">

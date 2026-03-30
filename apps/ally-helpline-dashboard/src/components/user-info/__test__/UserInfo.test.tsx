@@ -133,7 +133,7 @@ describe("UserInfo", () => {
       renderComponent(mockUser, true);
       expect(screen.getByText("Jane Doe")).toBeInTheDocument();
       expect(screen.getByText("jane.doe@example.com")).toBeInTheDocument();
-      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar")).toBeInTheDocument();
       expect(screen.getByTestId("user-info-toggle-arrow")).toBeInTheDocument();
     });
 
@@ -141,7 +141,7 @@ describe("UserInfo", () => {
       renderComponent(mockUser, false);
       expect(screen.queryByText("Jane Doe")).not.toBeInTheDocument();
       expect(screen.queryByText("jane.doe@example.com")).not.toBeInTheDocument();
-      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar")).toBeInTheDocument();
     });
 
     it("should not render arrow icon when collapsed", () => {
@@ -172,20 +172,20 @@ describe("UserInfo", () => {
 
     it("should show account icon regardless of isExpanded state", () => {
       const { rerender } = renderComponent(mockUser, true);
-      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar")).toBeInTheDocument();
 
       rerender(
         <TestWrapper>
           <UserInfo user={mockUser} isExpanded={false} onLogout={mockOnLogout} />
         </TestWrapper>,
       );
-      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar")).toBeInTheDocument();
     });
 
     it("should allow menu toggle when collapsed", () => {
       renderComponent(mockUser, false);
 
-      const accountIcon = screen.getByTestId("user-info-avatar-icon");
+      const accountIcon = screen.getByTestId("user-info-avatar");
       fireEvent.click(accountIcon.parentElement?.parentElement?.parentElement || accountIcon);
 
       expect(screen.getByText("Logout")).toBeInTheDocument();
@@ -282,16 +282,6 @@ describe("UserInfo", () => {
       expect(screen.getByTestId("user-info-credits-icon")).toBeInTheDocument();
     });
 
-    it("should show blue progress bar when limit not reached", () => {
-      renderComponent();
-
-      fireEvent.click(screen.getByText("Jane Doe"));
-
-      const progressBar = document.querySelector(".bg-blue-600");
-      expect(progressBar).toBeInTheDocument();
-      expect(progressBar).toHaveStyle({ width: "50%" });
-    });
-
     it("should show red progress bar when limit is reached", () => {
       mockUseSimulationCredits.mockReturnValue({
         credits: {
@@ -357,7 +347,7 @@ describe("UserInfo", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar")).toBeInTheDocument();
     });
 
     it("should toggle menu multiple times", () => {
@@ -385,7 +375,7 @@ describe("UserInfo", () => {
 
       // Should behave as if collapsed when undefined
       expect(screen.queryByText("Jane Doe")).not.toBeInTheDocument();
-      expect(screen.getByTestId("user-info-avatar-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("user-info-avatar")).toBeInTheDocument();
     });
   });
 

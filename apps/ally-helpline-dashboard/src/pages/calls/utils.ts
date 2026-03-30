@@ -1,6 +1,8 @@
+import { TFunction } from "i18next";
+
 import { Permissions } from "@constants";
 
-import { sessionLogsMap, sessionLogViewList } from "./constants";
+import { getSessionLogsMap, sessionLogViewList } from "./constants";
 
 export const getPermittedSessionLogList = (permissions?: Permissions[]) => {
   if (!permissions) return [];
@@ -11,24 +13,30 @@ export const getPermittedSessionLogList = (permissions?: Permissions[]) => {
 
 export const getFormattedSupportedSessionUserGroups = (
   logViewList: { sessionUserGroup: string }[],
-) =>
-  logViewList
+  t: TFunction,
+) => {
+  const logsMap = getSessionLogsMap(t);
+  return logViewList
     .filter(
       (item, index, arr) =>
         arr.findIndex(x => x.sessionUserGroup === item.sessionUserGroup) === index,
     )
     ?.map(listItem => ({
       id: listItem.sessionUserGroup,
-      label: sessionLogsMap[listItem.sessionUserGroup].label,
+      label: logsMap[listItem.sessionUserGroup].label,
     }));
+};
 
 export const getSupportedSessionTypeListByUserGroup = (
   logViewList: { sessionUserGroup: string; sessionType: string }[],
   selectedUserGroup: string,
-) =>
-  logViewList
+  t: TFunction,
+) => {
+  const logsMap = getSessionLogsMap(t);
+  return logViewList
     ?.filter(listItem => listItem?.sessionUserGroup === selectedUserGroup)
     ?.map(item => ({
       value: item.sessionType,
-      label: sessionLogsMap[item.sessionType].label,
+      label: logsMap[item.sessionType].label,
     }));
+};

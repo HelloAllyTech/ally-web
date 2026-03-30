@@ -56,7 +56,8 @@ const Harness = ({
   onReady: (api: ReturnType<typeof useLiveKitRoom>) => void;
   handleDisconnect: () => void;
 }) => {
-  const api = useLiveKitRoom(handleDisconnect);
+  const endSessionRef = React.useRef(null);
+  const api = useLiveKitRoom(handleDisconnect, endSessionRef);
   React.useEffect(() => {
     onReady(api);
     return () => {};
@@ -66,8 +67,13 @@ const Harness = ({
 
 describe("useLiveKitRoom", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     localStorage.setItem("roomData", JSON.stringify({ accessToken: "t", serverUrl: "wss://x" }));
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("connects, sets status connected, wires events, and handles end session", async () => {
@@ -85,9 +91,9 @@ describe("useLiveKitRoom", () => {
       </MemoryRouter>,
     );
 
-    // wait past the 100ms delayed connect
+    // wait past the 5000ms delayed connect
     await act(async () => {
-      await new Promise(res => setTimeout(res, 120));
+      vi.advanceTimersByTime(5100);
     });
 
     expect(roomConnect).toHaveBeenCalled();

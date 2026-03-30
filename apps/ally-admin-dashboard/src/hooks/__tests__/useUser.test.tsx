@@ -11,14 +11,25 @@ import { UserAvailabilityStatus } from "@types";
 import { useUser } from "../useUser";
 
 // Hoist mocks to avoid initialization errors
-const { mockGetUser, mockGetPermissions, mockResetApiState, mockDispatch, mockGetState } =
-  vi.hoisted(() => ({
-    mockGetUser: vi.fn(),
-    mockGetPermissions: vi.fn(),
-    mockResetApiState: vi.fn(),
-    mockDispatch: vi.fn(),
-    mockGetState: vi.fn(),
-  }));
+const {
+  mockGetUser,
+  mockGetPermissions,
+  mockResetApiState,
+  mockDispatch,
+  mockGetState,
+  mockGetProfileUrl,
+  mockDeleteProfile,
+  mockUploadProfile,
+} = vi.hoisted(() => ({
+  mockGetUser: vi.fn(),
+  mockGetPermissions: vi.fn(),
+  mockResetApiState: vi.fn(),
+  mockDispatch: vi.fn(),
+  mockGetState: vi.fn(),
+  mockGetProfileUrl: vi.fn(),
+  mockDeleteProfile: vi.fn(),
+  mockUploadProfile: vi.fn(),
+}));
 
 // Mock the logger
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -48,6 +59,9 @@ vi.mock("@api/baseApi", () => ({
 vi.mock("@api", () => ({
   useLazyGetUserQuery: () => [mockGetUser, { isLoading: false }],
   useLazyGetPermissionsQuery: () => [mockGetPermissions, { isLoading: false }],
+  useGetProfileImageUrlMutation: () => [mockGetProfileUrl],
+  useDeleteProfileImageMutation: () => [mockDeleteProfile],
+  useUploadProfileImageMutation: () => [mockUploadProfile],
   baseAPI: {
     injectEndpoints: vi.fn(() => ({})),
     reducerPath: "api",
@@ -322,15 +336,21 @@ describe("useUser", () => {
 
     it("should filter navigation items based on EDIT_SCENARIO permission", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems).toHaveLength(3);
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
+      expect(result.current.filteredNavigationItems[1].id).toBe(SIDEBAR_ITEMS.SCENARIO_VOICES);
+      expect(result.current.filteredNavigationItems[2].id).toBe(SIDEBAR_ITEMS.MANAGE_GUARDRAILS);
     });
 
     it("should filter navigation items based on EDIT_EVENT permission", () => {
@@ -343,7 +363,7 @@ describe("useUser", () => {
       });
 
       expect(result.current.filteredNavigationItems).toHaveLength(1);
-      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.EVENT_MANAGEMENT);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.EVENTS);
     });
 
     it("should filter navigation items based on EDIT_USER permission", () => {
@@ -356,39 +376,85 @@ describe("useUser", () => {
       });
 
       expect(result.current.filteredNavigationItems).toHaveLength(1);
-      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.USER_MANAGEMENT);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.USERS);
     });
 
-    it("should show all navigation items when user has all permissions", () => {
+    it("should filter navigation items based on VIEW_USERS permission", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_EVENT, Permissions.EDIT_USER],
+        permissions: [Permissions.VIEW_USERS],
       });
 
       const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(3);
+      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.USERS);
+    });
+
+    it("should filter navigation items based on EDIT_PROMPT permission", () => {
+      store = createMockStore({
+        permissions: [Permissions.EDIT_PROMPT],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.PROMPTS);
+    });
+
+    it("should show all navigation items when user has all permissions", () => {
+      store = createMockStore({
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_EVENT,
+          Permissions.EDIT_USER,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_SCENARIO_LANGUAGE,
+          Permissions.EDIT_PROMPT,
+          Permissions.EDIT_GUARDRAIL,
+        ],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      expect(result.current.filteredNavigationItems).toHaveLength(7);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
-        SIDEBAR_ITEMS.EVENT_MANAGEMENT,
-        SIDEBAR_ITEMS.USER_MANAGEMENT,
+        SIDEBAR_ITEMS.EVENTS,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
+        SIDEBAR_ITEMS.PROMPTS,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+        SIDEBAR_ITEMS.USERS,
       ]);
     });
 
     it("should show multiple navigation items for multiple permissions", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_USER],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_USER,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_PROMPT,
+          Permissions.EDIT_GUARDRAIL,
+        ],
       });
 
       const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(2);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
-        SIDEBAR_ITEMS.USER_MANAGEMENT,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.PROMPTS,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+        SIDEBAR_ITEMS.USERS,
       ]);
     });
 
@@ -406,27 +472,44 @@ describe("useUser", () => {
 
     it("should update filtered items when permissions change", () => {
       store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO],
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
+        ],
       });
 
-      const { result, rerender } = renderHook(() => useUser(), {
+      const { result } = renderHook(() => useUser(), {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
+        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+      ]);
 
-      // Update store with new permissions
-      store = createMockStore({
-        permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_EVENT],
+      // Create new store with updated permissions and render new hook
+      const updatedStore = createMockStore({
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_EVENT,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
+        ],
       });
-
-      rerender();
 
       const { result: newResult } = renderHook(() => useUser(), {
-        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+        wrapper: ({ children }: any) => <Provider store={updatedStore}>{children}</Provider>,
       });
 
-      expect(newResult.current.filteredNavigationItems).toHaveLength(2);
+      expect(newResult.current.filteredNavigationItems).toHaveLength(4);
+      expect(newResult.current.filteredNavigationItems.map(item => item.id)).toEqual([
+        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+        SIDEBAR_ITEMS.EVENTS,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+      ]);
     });
   });
 
@@ -527,7 +610,7 @@ describe("useUser", () => {
       });
 
       const eventManagementItem = result.current.filteredNavigationItems.find(
-        item => item.id === SIDEBAR_ITEMS.EVENT_MANAGEMENT,
+        item => item.id === SIDEBAR_ITEMS.EVENTS,
       );
 
       expect(eventManagementItem).toBeDefined();
@@ -545,12 +628,31 @@ describe("useUser", () => {
       });
 
       const userManagementItem = result.current.filteredNavigationItems.find(
-        item => item.id === SIDEBAR_ITEMS.USER_MANAGEMENT,
+        item => item.id === SIDEBAR_ITEMS.USERS,
       );
 
       expect(userManagementItem).toBeDefined();
       expect(userManagementItem?.label).toBeDefined();
       expect(userManagementItem?.path).toBeDefined();
+    });
+
+    it("should have correct structure for prompts item", () => {
+      store = createMockStore({
+        permissions: [Permissions.EDIT_PROMPT],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      const promptsItem = result.current.filteredNavigationItems.find(
+        item => item.id === SIDEBAR_ITEMS.PROMPTS,
+      );
+
+      expect(promptsItem).toBeDefined();
+      expect(promptsItem?.label).toBeDefined();
+      expect(promptsItem?.path).toBeDefined();
+      expect(promptsItem?.id).toBe(SIDEBAR_ITEMS.PROMPTS);
     });
   });
 

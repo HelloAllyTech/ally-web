@@ -11,6 +11,13 @@ const mockUseUser = vi.fn();
 vi.mock("@hooks", () => ({
   useUser: () => mockUseUser(),
   useAutoActiveCallRedirect: vi.fn(),
+  useAchievementBadgeModal: () => ({
+    currentBadge: null,
+    closeModal: vi.fn(),
+    resetModal: vi.fn(),
+    BadgeModal: null,
+    isLoading: false,
+  }),
 }));
 
 // Mock the useGetChatTypesQuery hook
@@ -19,9 +26,26 @@ vi.mock("@api", () => ({
   useGetChatTypesQuery: () => mockUseGetChatTypesQuery(),
 }));
 
+// Mock assets
+vi.mock("@assets", () => ({
+  Carousel1: "Carousel1",
+  Carousel2: "Carousel2",
+  Carousel3: "Carousel3",
+  Carousel4: "Carousel4",
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
+}));
+
 // Mock the pages
 vi.mock("@pages", () => ({
   Calls: () => <div data-testid="calls-page">Calls Page</div>,
+  Archives: () => <div data-testid="archives-page">Archives Page</div>,
   Analytics: () => <div data-testid="analytics-page">Analytics Page</div>,
   AudioCall: () => <div data-testid="audio-call-page">Audio Call Page</div>,
   PostCallSummary: () => <div data-testid="post-call-summary-page">Post Call Summary Page</div>,
@@ -30,6 +54,11 @@ vi.mock("@pages", () => ({
   Simulation: () => <div data-testid="simulation-page">Simulation Page</div>,
   PostSimulationSummary: () => (
     <div data-testid="post-simulation-summary-page">Post Simulation Summary Page</div>
+  ),
+  Leaderboard: () => <div data-testid="leaderboard-page">Leaderboard Page</div>,
+  Review: () => <div data-testid="review-page">Review Page</div>,
+  AchievementsViewAll: () => (
+    <div data-testid="achievements-view-all-page">Achievements View All Page</div>
   ),
 }));
 
@@ -85,6 +114,10 @@ vi.mock("@constants", () => ({
     SEARCH: "/search",
     SIMULATION: "/simulation/:id",
     SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
+    REVIEW: "/review",
+  },
+  TAG_TYPES: {
+    REVIEW: "REVIEW",
   },
 }));
 
@@ -107,7 +140,7 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
-// Mock logger
+// Mock logger and feature flags
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
@@ -125,6 +158,9 @@ vi.mock("@utils", () => ({
     }
     return permissions.some(permission => permission === requiredPermission);
   },
+  isPathExcluded: vi.fn((currentPath: string, excludedPaths: string[]) => {
+    return excludedPaths.includes(currentPath);
+  }),
 }));
 
 const renderWithRouter = (component: React.ReactElement) => {

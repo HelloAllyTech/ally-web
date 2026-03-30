@@ -23,11 +23,13 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const {
   mockUseGetScenariosQuery,
   mockUseGetScenarioPathwaysQuery,
+  mockUseGetScenarioCasesQuery,
   mockUpdateUserPreferences,
   mockUseScenarioLanguages,
 } = vi.hoisted(() => ({
   mockUseGetScenariosQuery: vi.fn(),
   mockUseGetScenarioPathwaysQuery: vi.fn(),
+  mockUseGetScenarioCasesQuery: vi.fn(),
   mockUpdateUserPreferences: vi.fn(),
   mockUseScenarioLanguages: vi.fn(),
 }));
@@ -35,11 +37,12 @@ const {
 vi.mock("@api", () => ({
   useGetScenariosQuery: () => mockUseGetScenariosQuery(),
   useGetScenarioPathwaysQuery: () => mockUseGetScenarioPathwaysQuery(),
+  useGetScenarioCasesQuery: () => mockUseGetScenarioCasesQuery(),
   useUpdateUserPreferencesMutation: () => [mockUpdateUserPreferences, { isLoading: false }],
 }));
 
 // Mock useScenarioLanguages hook - path relative to the Learn component
-vi.mock("@src/hooks/useScenarioLanguages", () => ({
+vi.mock("@hooks/useScenarioLanguages", () => ({
   useScenarioLanguages: () => mockUseScenarioLanguages(),
 }));
 
@@ -78,6 +81,7 @@ vi.mock("@assets", () => ({
   Carousel5: "carousel-5.jpg",
   Carousel6: "carousel-6.jpg",
   SearchIcon: () => <svg data-testid="search-icon" />,
+  Badge: () => <svg data-testid="badge-icon" />,
   SortIcon: () => <svg data-testid="sort-icon" />,
   FilterIcon: () => <svg data-testid="filter-icon" />,
   CloseIcon: () => <svg data-testid="close-icon" />,
@@ -85,16 +89,24 @@ vi.mock("@assets", () => ({
   ArrowLeft: () => <svg data-testid="arrow-left" />,
   ChevronDown: () => <svg data-testid="chevron-down" />,
   Bolt: () => <div data-testid="bolt-icon">⚡</div>,
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
 
 // Mock the useSimulationCredits hook
 const mockUseSimulationCredits = vi.fn();
 const mockUseUser = vi.fn();
+const mockUseAchievementBadgeModal = vi.fn();
 vi.mock("@hooks", () => ({
   useSimulationCredits: () => mockUseSimulationCredits(),
   useUser: () => mockUseUser(),
   useDebounce: (val: any) => val,
   useScenarioLanguages: () => mockUseScenarioLanguages(),
+  useAchievementBadgeModal: () => mockUseAchievementBadgeModal(),
 }));
 
 // Import the mocked hook for use in component mock
@@ -201,14 +213,18 @@ vi.mock("../constants", () => ({
   learnPageItemVariants: {},
 }));
 
-// Mock types
-vi.mock("@types", () => ({
-  ScenarioStatus: {
-    ACTIVE: "ACTIVE",
-    COMING_SOON: "COMING_SOON",
-    INACTIVE: "INACTIVE",
-  },
-}));
+// Mock types - use importOriginal so SessionType and other exports remain available to transitive imports
+vi.mock("@types", async importOriginal => {
+  const actual = await importOriginal<typeof import("@types")>();
+  return {
+    ...actual,
+    ScenarioStatus: {
+      ACTIVE: "ACTIVE",
+      COMING_SOON: "COMING_SOON",
+      INACTIVE: "INACTIVE",
+    },
+  };
+});
 
 // Create a mock Redux store
 const createMockStore = (initialState = {}) => {
@@ -257,6 +273,11 @@ describe("Learn Component", () => {
       isLoading: false,
       refetch: vi.fn(),
     });
+    mockUseGetScenarioCasesQuery.mockReturnValue({
+      data: { data: [] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
     mockUseSimulationCredits.mockReturnValue({
       credits: {
         consumedCredits: 5,
@@ -275,6 +296,13 @@ describe("Learn Component", () => {
         { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
       ],
       defaultLanguage: { language_id: 1, value: "en-US", label: "English (US)" },
+      isLoading: false,
+    });
+    mockUseAchievementBadgeModal.mockReturnValue({
+      currentBadge: null,
+      closeModal: vi.fn(),
+      resetModal: vi.fn(),
+      BadgeModal: null,
       isLoading: false,
     });
   });
@@ -1030,7 +1058,7 @@ describe("Tab Navigation", () => {
         <Learn />
       </TestWrapper>,
     );
-    expect(screen.getByTestId("tab-group")).not.toBeNull();
+    expect(screen.getByTestId("tabs")).not.toBeNull();
   });
 
   it("should render Simulations tab", () => {

@@ -1,24 +1,17 @@
 import React, { useState } from "react";
 
+import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { StatusBadge, UserOptionDropdown } from "@components";
 import { UserRole, en } from "@constants";
 import { UserListProps, UserListUser } from "@types";
 import { formatCapitalizedEnum, isNumber } from "@utils";
-
-const Avatar: React.FC<{ name: string }> = ({ name }) => {
-  const initial = name?.[0]?.toUpperCase() ?? "?";
-  return (
-    <div className="min-w-[40px] min-h-[40px] rounded-full border border-border-light text-typography-800 flex items-center justify-center mr-3">
-      {initial}
-    </div>
-  );
-};
 
 export const UserList: React.FC<UserListProps> = ({
   users,
   formatDate,
   onOptionSelect,
   renderFooter,
+  canEditUser,
 }) => {
   const [openDropdownUserId, setOpenDropdownUserId] = useState<number | null>(null);
   const [anchorElement, setAnchorElement] = useState<HTMLButtonElement | null>(null);
@@ -68,7 +61,15 @@ export const UserList: React.FC<UserListProps> = ({
               className="grid [grid-template-columns:repeat(48,minmax(0,1fr))] items-center px-4 py-3 text-typography-900 border-b border-border-light hover:bg-background-secondary relative"
             >
               <div className="col-span-11 justify-start flex items-center min-w-0 overflow-hidden ">
-                <Avatar name={user.name} />
+                <div className="w-10 h-10 rounded-full mr-3">
+                  <CustomImage
+                    src={user.profileImageUrl}
+                    alt="user"
+                    className="rounded-full mr-3"
+                    fallbackClassName="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
+                    fallbackText={user.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+                  />
+                </div>
                 <div className="min-w-0">
                   <div className="truncate text-typography-900 pr-5">{user.name}</div>
                   <div className="text-typography-800 truncate pr-5 ">{user.email}</div>
@@ -96,12 +97,14 @@ export const UserList: React.FC<UserListProps> = ({
               <div className="col-span-6 pr-1">{formatDate(user.createdAt)}</div>
               <div className="col-span-5 pr-1  flex items-center justify-between w-full min-w-[100px]">
                 <StatusBadge status={user.status} />
-                <button
-                  className="text-typography-800 hover:text-typography-900"
-                  onClick={e => toggleDropdown(user.id, e)}
-                >
-                  ⋮
-                </button>
+                {canEditUser && (
+                  <button
+                    className="text-typography-800 hover:text-typography-900"
+                    onClick={e => toggleDropdown(user.id, e)}
+                  >
+                    ⋮
+                  </button>
+                )}
                 {openDropdownUserId === user.id && (
                   <UserOptionDropdown
                     isOpen

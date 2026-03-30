@@ -4,6 +4,8 @@ import storage from "redux-persist/lib/storage";
 
 import { baseAPI } from "@api/baseAPI";
 import callsSlice from "@reducer/callsReducer";
+import chatHistorySlice from "@reducer/chatHistoryReducer";
+import chatStreamSlice from "@reducer/chatStreamReducer";
 import userSlice from "@reducer/userReducer";
 
 // Redux Persist configuration for user slice
@@ -21,6 +23,8 @@ export const store = configureStore({
     [baseAPI.reducerPath]: baseAPI.reducer,
     user: persistedUserReducer,
     calls: callsSlice.reducer,
+    chatHistory: chatHistorySlice.reducer,
+    chatStream: chatStreamSlice.reducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({

@@ -1,6 +1,6 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme, alpha, type Theme } from "@mui/material/styles";
 
-export const theme = createTheme({
+const baseTheme = createTheme({
   typography: {
     // TODO: Update after review - can remove if not in use
     // fontFamily: ["IBM Plex Serif", "serif"].join(","),
@@ -22,3 +22,9 @@ export const theme = createTheme({
     // },
   },
 });
+
+// Add alpha function to theme for MUI X Date Pickers compatibility
+export const theme: Theme & { alpha: typeof alpha } = {
+  ...baseTheme,
+  alpha,
+};

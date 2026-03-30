@@ -70,9 +70,28 @@ vi.mock("@components", async importOriginal => {
     </button>
   );
 
+  const MockConfirmationDialog = ({
+    isOpen,
+    onButtonClick,
+    buttonText,
+    content,
+    title,
+    onClose,
+  }: any) =>
+    isOpen ? (
+      <div data-testid="notification-dialog">
+        <span>{title.normal}</span>
+        <p>{content}</p>
+        <button onClick={onButtonClick}>{buttonText}</button>
+        <button onClick={onClose}>Close</button>
+      </div>
+    ) : null;
+
   return {
     ...original,
     Button: MockButton,
+    ConfirmationDialog: MockConfirmationDialog,
+    ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" },
   };
 });
 
@@ -232,11 +251,26 @@ describe("ScenarioDetailsCard", () => {
 
   // --- Interaction Tests ---
 
-  it("should call onStart when Start simulation button is clicked", () => {
+  it("should show notification dialog when Start simulation button is clicked", () => {
     renderComponent();
     const button = screen.getByRole("button", { name: /Start Simulation/i });
 
     fireEvent.click(button);
+
+    expect(screen.getByTestId("notification-dialog")).toBeInTheDocument();
+    expect(screen.getByText("Before you get started")).toBeInTheDocument();
+    expect(mockOnStart).not.toHaveBeenCalled();
+  });
+
+  it("should call onStart when Start Session is clicked in notification dialog", () => {
+    renderComponent();
+    const button = screen.getByRole("button", { name: /Start Simulation/i });
+
+    fireEvent.click(button);
+
+    const startSessionButton = screen.getByRole("button", { name: /Start Session/i });
+    fireEvent.click(startSessionButton);
+
     expect(mockOnStart).toHaveBeenCalledTimes(1);
   });
 
@@ -251,7 +285,7 @@ describe("ScenarioDetailsCard", () => {
     const button = screen.getByRole("button", { name: /Start Simulation/i });
     fireEvent.click(button);
 
-    expect(mockOnStart).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("notification-dialog")).toBeInTheDocument();
     // Note: In a real scenario, event.stopPropagation would prevent parent handler
     // This test verifies the code calls stopPropagation
   });

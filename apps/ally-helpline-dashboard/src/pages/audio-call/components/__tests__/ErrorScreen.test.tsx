@@ -55,6 +55,14 @@ vi.mock("@assets", () => ({
   Flower: "Flower",
   LoginImage: "LoginImage",
   DefaultCallProfile: "DefaultCallProfile",
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
 
 // Mock the utils module with a simple implementation

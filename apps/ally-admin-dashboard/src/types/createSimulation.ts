@@ -1,44 +1,48 @@
 import { UseFormReturn } from "react-hook-form";
 
-import { SessionEventDetectionData, triggerWarning } from "./simulation";
+import { EventDetectionConfig } from "@types";
+
+import {
+  SessionEventDetectionData,
+  triggerWarning,
+  stateInstruction,
+  behaviourInstruction,
+  Competency,
+  CustomFieldType,
+  knowledgeSource,
+} from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
 
 export type FormData = {
+  title: string;
+  competency?: Competency;
+  difficultyLevel: string;
+  characterProfileSelector?: string;
+  characterProfileText: string;
   coverImageUrl: string;
   coverVideoUrl?: string;
-  title: string;
-  description: string;
-  name: string;
-  age: number;
-  gender: string;
-  genderIdentity: string;
-  sexualOrientation: string;
-  currentLocation: string;
-  profession: string;
-  context: string;
-  sessionBehaviorGuidelines: string;
-  roleInstruction: string;
-  responseLength: string;
-  openingDialogues: string;
-  lifeHistory: string;
-  coreMemories: string;
-  personality: string;
-  startingState: string;
-  emotionalNeeds: string;
-  tone: string;
-  openingStatements: string;
-  voiceId: string;
-  agentGoal: string;
-  autoTerminationStatus: boolean;
-  terminationEventId: string;
-  terminationName: string;
-  terminationMessage: string;
   isGlobal: boolean;
+  isPublic: boolean;
   languageVoices?: Record<string, string>;
+  linguisticStyleSamples?: Record<string, string[]>;
   triggerWarningIds: triggerWarning[];
+  description: string;
   prompt: string;
-  difficultyLevel: string;
-  agentDialoguesArray: string;
+  behaviorInstructions?: behaviourInstruction[];
+  stateInstructions?: stateInstruction[];
+  customFields?: CustomFieldType[];
+  openingStatements: string;
+  voiceId?: string;
+  tone: string;
+  autoTerminationStatus?: boolean;
+  experienceMode?: string;
+  checklistType?: string;
+  timerMode?: boolean;
+  maxTimeValue?: string;
+  showScoreMeter?: boolean;
+  optGuardrails?: boolean;
+  currentState?: boolean;
+  knowledgeSources?: knowledgeSource[];
 };
 
 export interface DemographicsSectionProps {
@@ -56,7 +60,12 @@ export interface FormFieldConfig {
   fullWidth?: boolean;
   maxLength?: number;
   multiline?: boolean;
+  defaultValue?: string;
   component?: React.ReactNode;
+  dependsOn?: keyof FormData;
+  note?: string;
+  regenerateType?: string;
+  visibleWhen?: (formValues: Partial<FormData>) => boolean;
 }
 
 export interface FieldGroupType {
@@ -93,6 +102,7 @@ export interface Simulation {
   isAssignedToTenant: boolean;
   usage: string;
   triggerWarnings?: triggerWarning[];
+  createdByUserId: number;
 }
 
 export interface GetSimulationsQueryParams {
@@ -151,6 +161,9 @@ export interface UpdateEventDataParam {
   visibilityType?: string;
   triggerCondition?: TriggerCondition;
   detectionData?: SessionEventDetectionData;
+  detectionConfig?: EventDetectionConfig;
+  isEditable?: boolean;
+  tags?: string[];
 }
 
 export interface UpdateScenarioEventDataParam {
@@ -162,25 +175,92 @@ export interface UpdateScenarioEventDataParam {
   feedbackStatus?: { value: boolean; disabled: boolean; rowId?: string };
   branchingStatus?: { value: boolean; disabled: boolean; rowId?: string };
   branchInstruction?: { value: string; disabled: boolean; rowId?: string };
+  // Detection config fields
+  maxOccurrences?: { value: number | null; disabled: boolean; rowId?: string };
+  minGapTime?: { value: string | null; disabled: boolean; rowId?: string };
+  startTime?: { value: string | null; disabled: boolean; rowId?: string };
+  endTime?: { value: string | null; disabled: boolean; rowId?: string };
+  minScore?: { value: number | null; disabled: boolean; rowId?: string };
+  maxScore?: { value: number | null; disabled: boolean; rowId?: string };
+  occurrenceInterval?: { value: number | null; disabled: boolean; rowId?: string };
+  // Checklist visibility field
+  checklistVisibilityStatus?: { value: boolean; disabled: boolean; rowId?: string };
+  // Tags field
+  tags?: { value: string[]; disabled: boolean; rowId?: string };
 }
 
 export interface ScenarioVoiceConfig {
-  model: string;
+  [key: string]: any;
 }
 
 export interface ScenarioVoice {
-  createdAt: string;
-  updatedAt: string;
-  id: string;
+  createdAt?: string;
+  updatedAt?: string;
+  id?: string;
   name: string;
   provider: string;
-  language?: string;
+  languageId?: number;
   config: ScenarioVoiceConfig;
+  active?: boolean;
 }
 
-export interface ScenarioLanguage {
+export interface ScenarioLanguageConfig {
+  [key: string]: any;
+}
+
+interface BaseLanguage {
   label: string;
   value: string;
-  language_id?: number;
   translationCode?: string;
+  active?: boolean;
+  llmProviderConfig?: ScenarioLanguageConfig;
+  sttProviderConfig?: ScenarioLanguageConfig;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ScenarioLanguage extends BaseLanguage {
+  id?: number;
+  language_id?: number;
+}
+
+export interface Language extends BaseLanguage {
+  id?: number;
+}
+
+export interface GetLanguagesQuery {
+  searchName?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
+  active?: boolean;
+}
+
+export interface Prompt {
+  id?: string;
+  name: string;
+  description: string;
+  promptCode: string;
+  prompt: string;
+  version?: number;
+  useDashboardOverride?: boolean;
+  defaultPrompt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  isObsolete?: boolean;
+  /** Variable placeholders (e.g. {var_name}) parsed from prompt template, from API or fallback */
+  availableVariables?: string[];
+  kind?: string;
+  usesBlocks?: string[];
+}
+
+export interface GetPromptsQuery {
+  searchName?: string;
+  limit?: number;
+  offset?: number;
+  sortBy?: string;
+  order?: string;
+  /** When false, excludes prompts with kind="block" */
+  includeBlocks?: boolean;
 }

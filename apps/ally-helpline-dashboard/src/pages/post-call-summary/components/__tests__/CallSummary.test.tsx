@@ -62,6 +62,14 @@ vi.mock("@assets", () => ({
   Carousel2: "Carousel2",
   Carousel3: "Carousel3",
   Carousel4: "Carousel4",
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
 vi.mock("@utils", () => ({
   getFormattedDateTime: (date: string, format: string) => `formatted-${date}`,
@@ -121,20 +129,29 @@ describe("CallSummary Component", () => {
   });
 
   it("renders loading spinner when summary is loading", () => {
-    // Override the mock for this specific test
-    vi.mocked(useGetCallSummaryQuery).mockReturnValue({
-      data: null,
-      refetch: vi.fn(),
-      isLoading: true,
-    } as any);
-
-    render(<CallSummary chatId={1} />);
+    render(<CallSummary chatId={1} isSummaryLoading={true} callSummary={undefined} />);
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 
   it("renders summary fields and notes", () => {
-    render(<CallSummary chatId={1} headerContent={<div>Header</div>} postProcess={postProcess} />);
-    // SummaryLoading component renders the generated state
+    const callSummaryWithSuccess = {
+      summaryStatus: ChatSummaryStatus.SUCCESS,
+      details: {
+        chatId: 1,
+        callDuration: 120,
+        callInfo: { notes: "Initial notes" },
+      },
+    };
+    render(
+      <CallSummary
+        chatId={1}
+        headerContent={<div>Header</div>}
+        postProcess={postProcess}
+        callSummary={callSummaryWithSuccess}
+        isSummaryLoading={false}
+      />,
+    );
+    // SummaryLoading component renders the generated state when summaryStatus is SUCCESS and details.summary is absent
     expect(screen.getByText("Summary is generated")).toBeInTheDocument();
     expect(screen.getByText("You can review the session now.")).toBeInTheDocument();
     // Notes section is rendered in the SummaryLoading component

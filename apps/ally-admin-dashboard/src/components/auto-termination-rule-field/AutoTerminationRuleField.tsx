@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { useGetSessionEventsQuery } from "@api";
-import { ToggleSwitch } from "@components";
+import { BlueAdd, TrashRed } from "@assets";
 import { en } from "@constants";
 
-import { DropdownField } from "../dropdown-field";
+import { CustomDropdownField } from "../custom-dropdown-field";
 import { InputField } from "../input-field";
 
 interface AutoTerminationRuleFieldProps {
@@ -12,24 +12,28 @@ interface AutoTerminationRuleFieldProps {
   formMethods: any;
 }
 
+const TERMINATION_RULES_FIELD = "terminationEvents";
+
 const TERMINATION_FIELDS_MAP = {
-  toggle: {
-    id: "autoTerminationStatus",
-    label: en.simulation.autoTermination,
-  },
   triggerEvent: {
-    id: "terminationEventId",
+    id: "id",
     label: en.simulation.triggerEvent,
   },
   triggerMessage: {
-    id: "terminationMessage",
+    id: "message",
     label: en.simulation.triggerMessage,
     placeholder: en.simulation.terminationMessagePlaceholder,
   },
 };
 
+const createEmptyRule = () => ({
+  id: "",
+  message: "",
+});
+
 const DEFAULT_LIMIT = 100;
 const DEFAULT_OFFSET = 0;
+const RULE_LIMIT = 10;
 
 export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> = ({
   label,
@@ -38,7 +42,8 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
   const [searchTerm, setSearchTerm] = useState("");
 
   const { setValue, watch } = formMethods;
-  const autoTerminationStatus = watch(TERMINATION_FIELDS_MAP.toggle.id);
+
+  const watchedRules = watch(TERMINATION_RULES_FIELD) || [];
 
   const { data: sessionEventsData } = useGetSessionEventsQuery({
     offset: DEFAULT_OFFSET,
@@ -52,57 +57,100 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
       label: event.name || "",
     })) || [];
 
-  const mandatoryIcon = <span className="text-destructive-500">*</span>;
+  const filteredEventOptions = useMemo(() => {
+    return eventOptions.filter(
+      (option: { value: string; label: string }) =>
+        !watchedRules.some((rule: any) => rule.id === option.value),
+    );
+  }, [eventOptions, watchedRules]);
 
   const handleSearchTextChange = (searchTerm: string) => {
     setSearchTerm(searchTerm);
   };
 
-  const handleToggle = () => {
-    setValue(TERMINATION_FIELDS_MAP.toggle.id, !autoTerminationStatus);
+  const handleAddTermination = () => {
+    setValue(TERMINATION_RULES_FIELD, [...watchedRules, createEmptyRule()]);
+  };
+
+  const handleRemoveTermination = (ruleId: number) => {
+    const updatedRules = watchedRules.filter((rule: any) => rule.id !== ruleId);
+    setValue(TERMINATION_RULES_FIELD, updatedRules);
+  };
+
+  const onHandleSelect = (option: { value: string; label: string }, itemIndex: number) => {
+    const updatedRules = watchedRules.map(
+      (rule: { id: string; message: string; name: string }, index: number) => {
+        if (index === itemIndex) {
+          return { id: option.value, message: rule.message, name: option.label };
+        }
+        return rule;
+      },
+    );
+    setValue(TERMINATION_RULES_FIELD, updatedRules);
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full border border-border-light rounded-md p-4 mi">
+    <div
+      className={`flex flex-col gap-6 w-full border border-border-light rounded-md p-4 bg-neutral-50 `}
+    >
       <div className="flex items-center justify-between">
         <span className="text-base text-typography-900">{label}</span>
-        <div className="flex items-center gap-2">
-          <ToggleSwitch enabled={autoTerminationStatus} onChange={handleToggle} />
-          <span className="text-base text-typography-900 min-w-[55px]">
-            {autoTerminationStatus ? en.common.enabled : en.common.disabled}
-          </span>
-        </div>
       </div>
 
-      {autoTerminationStatus && (
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <label className="text-base text-typography-900 flex items-center gap-1">
-              {TERMINATION_FIELDS_MAP.triggerEvent.label} {autoTerminationStatus && mandatoryIcon}
-            </label>
-            <DropdownField
-              id={TERMINATION_FIELDS_MAP.triggerEvent.id}
-              label={TERMINATION_FIELDS_MAP.triggerEvent.label}
+      <div className="flex flex-col gap-6">
+        {watchedRules.map((rule: any, index: number) => (
+          <div
+            key={rule.id}
+            className="flex flex-col gap-4 border border-border-light rounded-md p-4 bg-white relative"
+          >
+            <button
+              type="button"
+              onClick={() => handleRemoveTermination(rule.id)}
+              className="absolute top-2 right-2 disabled:opacity-40"
+            >
+              <TrashRed />
+            </button>
+            <div className="flex flex-col gap-2">
+              <label className="text-base text-typography-900 flex items-center gap-1">
+                {TERMINATION_FIELDS_MAP.triggerEvent.label}
+              </label>
+
+              <CustomDropdownField
+                options={filteredEventOptions}
+                isSearchable
+                handleSearchTextChange={handleSearchTextChange}
+                onHandleSelect={option => onHandleSelect(option, index)}
+                defaultOption={{ label: rule?.name, value: rule?.id }}
+              />
+            </div>
+            <InputField
+              label={TERMINATION_FIELDS_MAP.triggerMessage.label}
+              id={`${TERMINATION_RULES_FIELD}.${index}.${TERMINATION_FIELDS_MAP.triggerMessage.id}`}
               formMethods={formMethods}
-              options={eventOptions}
-              isSearchable
-              handleSearchTextChange={handleSearchTextChange}
-              isMandatory={autoTerminationStatus}
-              defaultOption={formMethods.getValues().terminationName}
+              multiline
+              isMandatory={Boolean(rule.id)}
+              defaultValue={rule?.message}
+              placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
+              maxLength={200}
+              minHeight="120"
+              disabled={!rule.id}
             />
           </div>
+        ))}
 
-          <InputField
-            label={TERMINATION_FIELDS_MAP.triggerMessage.label}
-            id={TERMINATION_FIELDS_MAP.triggerMessage.id}
-            formMethods={formMethods}
-            multiline
-            placeholder={TERMINATION_FIELDS_MAP.triggerMessage.placeholder}
-            maxLength={200}
-            minHeight="120"
-          />
-        </div>
-      )}
+        <button
+          type="button"
+          onClick={handleAddTermination}
+          className="text-primary-500 flex gap-3 items-center font-medium font-tertiary text-base disabled:opacity-40"
+          disabled={
+            watchedRules.length >= RULE_LIMIT ||
+            (watchedRules.length > 0 && !watchedRules[watchedRules.length - 1]?.id)
+          }
+        >
+          <BlueAdd />
+          {en.simulation.add}
+        </button>
+      </div>
     </div>
   );
 };

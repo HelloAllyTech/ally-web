@@ -7,7 +7,7 @@ interface TriggerConditionDropdownProps {
   value: string;
   displayValue?: string;
   options: Array<{ value: string; label: string }>;
-  onChange: (value: string) => void;
+  onChange: (value: string, label?: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
   isSearchable?: boolean;
@@ -37,7 +37,7 @@ export const TriggerConditionDropdown: React.FC<TriggerConditionDropdownProps> =
 }) => {
   return (
     <div
-      className={`px-2 rounded-sm [&_button>span]:mr-3 [&_button>span]:font-normal [&_button>span]:leading-none [&_button]:py-0 [&_button]:h-full [&_button]:flex [&_button]:items-center ${isInTable ? "bg-neutral-100 [&_button]:pointer-events-none" : "bg-neutral-50 border"} ${className} rounded-sm
+      className={`px-2 rounded-sm [&_button>span]:mr-3 [&_button>span]:font-normal [&_button>span]:leading-none [&_button]:py-0 [&_button]:h-full [&_button]:flex [&_button]:items-center ${isInTable ? "bg-neutral-100 [&_button]:pointer-events-none" : "border"} ${className} rounded-sm
       [&_button>span]:!text-[#4A4459]
       `}
     >

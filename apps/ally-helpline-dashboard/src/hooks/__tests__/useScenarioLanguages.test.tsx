@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { baseAPI } from "../../api/baseAPI";
+import userSlice from "../../reducer/userReducer";
 
 // Use vi.hoisted for mocks that need to be available in vi.mock factory
 const { mockUseGetAvailableLanguagesQuery, mockUseGetUserPreferencesQuery } = vi.hoisted(() => ({
@@ -22,13 +23,22 @@ vi.mock("../../api/user", () => ({
 
 import { useScenarioLanguages } from "../useScenarioLanguages";
 
-// Create a test store with the API middleware
+// Create a test store with the API middleware and user reducer
 const createTestStore = () =>
   configureStore({
     reducer: {
       [baseAPI.reducerPath]: baseAPI.reducer,
+      user: userSlice.reducer,
     },
     middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+    preloadedState: {
+      user: {
+        isAuthenticated: false,
+        user: null,
+        permissions: [],
+        availableChatTypes: [],
+      },
+    },
   });
 
 describe("useScenarioLanguages", () => {

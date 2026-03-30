@@ -87,6 +87,8 @@ export interface SentenceSimilarityTriggerCondition {
 export interface CombinationExpressionNode {
   type?: CombinationOperator | "NOT";
   id?: string; // Event ID (present when this is a leaf node)
+  name?: string;
+  eventCode?: string;
   left?: CombinationExpressionNode;
   right?: CombinationExpressionNode;
 }
@@ -101,11 +103,12 @@ export interface CombinationTriggerCondition {
   expression: CombinationExpressionNode;
 }
 
-export type TriggerCondition = TimeBasedTriggerCondition &
-  ScoreBasedTriggerCondition &
-  SentenceSimilarityTriggerCondition &
-  CombinationTriggerCondition &
-  BinaryClassificationTriggerCondition;
+export type TriggerCondition =
+  | TimeBasedTriggerCondition
+  | ScoreBasedTriggerCondition
+  | SentenceSimilarityTriggerCondition
+  | CombinationTriggerCondition
+  | BinaryClassificationTriggerCondition;
 
 /**
  * Type guard to check if a condition is a combination trigger condition

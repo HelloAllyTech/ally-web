@@ -9,43 +9,105 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
       class="h-[100vh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white"
     >
       <div
-        data-testid="tab-group"
+        class="w-full border-b border-[#E5E7EB]"
       >
         <div
-          data-testid="tab-value"
-        >
-          Box breathing
-        </div>
-        <div
-          data-testid="tab-tabs"
-        >
-          2
-        </div>
-        <button
-          data-testid="tab-change-btn"
-        >
-          Change Tab
-        </button>
-        <div
-          class="h-fit overflow-hidden w-full"
-          data-testid="motion-div"
-          layout="position"
-          layoutid="content-container"
-          transition="[object Object]"
+          class="flex items-center gap-2 font-secondary justify-between"
         >
           <div
-            class="flex flex-col gap-4"
-            data-testid="motion-div"
+            class="flex items-center gap-2"
           >
-            <div
-              data-testid="stress-buster-step"
-            >
-              <button
-                data-testid="proceed-btn"
+            <button>
+              <svg
+                fill="none"
+                height="48"
+                viewBox="0 0 48 48"
+                width="48"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                Proceed
-              </button>
-            </div>
+                <g
+                  clip-path="url(#clip0_2523_4287)"
+                >
+                  <rect
+                    fill="#F9F9F9"
+                    height="40"
+                    rx="20"
+                    width="40"
+                    x="4"
+                    y="4"
+                  />
+                  <path
+                    d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
+                    fill="#49454F"
+                  />
+                </g>
+                <defs>
+                  <clippath
+                    id="clip0_2523_4287"
+                  >
+                    <rect
+                      fill="white"
+                      height="40"
+                      rx="20"
+                      width="40"
+                      x="4"
+                      y="4"
+                    />
+                  </clippath>
+                </defs>
+              </svg>
+            </button>
+            <span
+              class="text-4xl"
+            >
+              Session
+            </span>
+            <span
+              class="text-4xl font-semibold italic"
+            >
+              Summary
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2"
+          />
+        </div>
+        <div
+          data-testid="tabs"
+        >
+          <button
+            class="active"
+            data-testid="tab-Box breathing"
+          >
+            Return to Self
+          </button>
+          <button
+            class=""
+            data-testid="tab-Session summary"
+          >
+            Session summary
+          </button>
+        </div>
+      </div>
+      <div
+        class="h-fit overflow-hidden w-full"
+        data-testid="motion-div"
+        layout="position"
+        layoutid="content-container"
+        transition="[object Object]"
+      >
+        <div
+          class="flex flex-col gap-4"
+          data-testid="motion-div"
+        >
+          <div
+            data-testid="stress-buster-step"
+          >
+            <button
+              data-testid="proceed-btn"
+            >
+              Proceed
+            </button>
           </div>
         </div>
       </div>
@@ -63,49 +125,111 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
       class="h-[100vh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white"
     >
       <div
-        data-testid="tab-group"
+        class="w-full border-b border-[#E5E7EB]"
       >
         <div
-          data-testid="tab-value"
-        >
-          Session summary
-        </div>
-        <div
-          data-testid="tab-tabs"
-        >
-          2
-        </div>
-        <button
-          data-testid="tab-change-btn"
-        >
-          Change Tab
-        </button>
-        <div
-          class="h-fit overflow-hidden w-full"
-          data-testid="motion-div"
-          layout="position"
-          layoutid="content-container"
-          transition="[object Object]"
+          class="flex items-center gap-2 font-secondary justify-between"
         >
           <div
-            class="flex flex-col gap-4"
-            data-testid="motion-div"
+            class="flex items-center gap-2"
+          >
+            <button>
+              <svg
+                fill="none"
+                height="48"
+                viewBox="0 0 48 48"
+                width="48"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g
+                  clip-path="url(#clip0_2523_4287)"
+                >
+                  <rect
+                    fill="#F9F9F9"
+                    height="40"
+                    rx="20"
+                    width="40"
+                    x="4"
+                    y="4"
+                  />
+                  <path
+                    d="M19.825 25L25.425 30.6L24 32L16 24L24 16L25.425 17.4L19.825 23H32V25H19.825Z"
+                    fill="#49454F"
+                  />
+                </g>
+                <defs>
+                  <clippath
+                    id="clip0_2523_4287"
+                  >
+                    <rect
+                      fill="white"
+                      height="40"
+                      rx="20"
+                      width="40"
+                      x="4"
+                      y="4"
+                    />
+                  </clippath>
+                </defs>
+              </svg>
+            </button>
+            <span
+              class="text-4xl"
+            >
+              Session
+            </span>
+            <span
+              class="text-4xl font-semibold italic"
+            >
+              Summary
+            </span>
+          </div>
+          <div
+            class="flex items-center gap-2"
+          />
+        </div>
+        <div
+          data-testid="tabs"
+        >
+          <button
+            class=""
+            data-testid="tab-Box breathing"
+          >
+            Return to Self
+          </button>
+          <button
+            class="active"
+            data-testid="tab-Session summary"
+          >
+            Session summary
+          </button>
+        </div>
+      </div>
+      <div
+        class="h-fit overflow-hidden w-full"
+        data-testid="motion-div"
+        layout="position"
+        layoutid="content-container"
+        transition="[object Object]"
+      >
+        <div
+          class="flex flex-col gap-4"
+          data-testid="motion-div"
+        >
+          <div
+            class="max-h-[calc(100vh-350px)]"
+            data-testid="call-summary"
           >
             <div
-              class="max-h-[calc(100vh-250px)]"
-              data-testid="call-summary"
+              data-testid="chat-id"
             >
-              <div
-                data-testid="chat-id"
-              >
-                123
-              </div>
-              <button
-                data-testid="post-process-btn"
-              >
-                Post Process
-              </button>
+              123
             </div>
+            <button
+              data-testid="post-process-btn"
+            >
+              Post Process
+            </button>
           </div>
         </div>
       </div>

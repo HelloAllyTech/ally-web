@@ -5,7 +5,7 @@
  * - User profile and permissions retrieval
  */
 
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   User,
   VerifyOTPRequest,
@@ -13,9 +13,22 @@ import {
   GenerateOTPRequest,
   GenerateOTPResponse,
   UserRole,
+  AppType,
+  GetProfileUrlRequest,
+  GetProfileUrlResponse,
+  profileUrlRequest,
+  logoUrlResponse,
 } from "@types";
 
-import { baseAPI } from "./baseAPI";
+import { baseAPI, baseQuery } from "./baseAPI";
+
+const ALLOWED_ROLES = [
+  UserRole.COUNSELLOR,
+  UserRole.ADMIN,
+  UserRole.LEARNER,
+  UserRole.SIMULATION_REVIEWER,
+  UserRole.SCRIBE_REVIEWER,
+];
 
 const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
@@ -51,6 +64,7 @@ const authAPI = baseAPI.injectEndpoints({
      */
     getUser: builder.query<User, void>({
       query: () => ApiEndpoints.AUTH.GET_USER,
+      providesTags: [TAG_TYPES.USER],
     }),
 
     /**
@@ -74,7 +88,8 @@ const authAPI = baseAPI.injectEndpoints({
         body: {
           phone,
           email,
-          allowedRoles: [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER],
+          allowedRoles: ALLOWED_ROLES,
+          appType: AppType.APP,
         },
       }),
     }),
@@ -92,9 +107,77 @@ const authAPI = baseAPI.injectEndpoints({
           phone,
           otp,
           email,
-          allowedRoles: [UserRole.COUNSELLOR, UserRole.ADMIN, UserRole.LEARNER],
+          allowedRoles: ALLOWED_ROLES,
         },
       }),
+    }),
+    googleSignIn: builder.mutation<VerifyOTPResponse, any>({
+      query: (data = {}) => ({
+        url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
+        method: HttpMethod.POST,
+        body: {
+          ...data,
+          allowedRoles: ALLOWED_ROLES,
+        },
+      }),
+    }),
+
+    getProfileImageUrl: builder.mutation<GetProfileUrlResponse, GetProfileUrlRequest>({
+      query: body => ({
+        url: ApiEndpoints.AUTH.PROFILE_IMAGE_URL,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
+    /**
+     * Delete cover image from S3
+     */
+    deleteProfileImage: builder.mutation<boolean, profileUrlRequest>({
+      query: body => ({
+        url: ApiEndpoints.AUTH.PROFILE_IMAGE,
+        method: HttpMethod.DELETE,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.USER],
+    }),
+
+    uploadProfileImage: builder.mutation<boolean, profileUrlRequest>({
+      query: body => ({
+        url: ApiEndpoints.AUTH.PROFILE_IMAGE,
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.USER],
+    }),
+
+    getLogoUrl: builder.query<logoUrlResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.AUTH.LOGO_URL,
+      }),
+    }),
+
+    /**
+     * Verifies magic link token and authenticates user.
+     * @param {string} token - Magic link token from URL
+     * @returns {Promise<VerifyOTPResponse>} Authentication response with tokens
+     */
+    verifyMagicLink: builder.mutation<VerifyOTPResponse, { token: string }>({
+      queryFn: async ({ token }, api, extraOptions) => {
+        const result = await baseQuery(
+          {
+            url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
+            method: HttpMethod.POST,
+            body: { token, allowedRoles: ALLOWED_ROLES },
+          },
+          api,
+          extraOptions,
+        );
+        if (result.error) {
+          return { error: result.error };
+        }
+        return { data: result.data as VerifyOTPResponse };
+      },
     }),
   }),
 });
@@ -106,4 +189,10 @@ export const {
   useLazyGetPermissionsQuery,
   useGenerateOTPMutation,
   useVerifyOTPMutation,
+  useGoogleSignInMutation,
+  useUploadProfileImageMutation,
+  useDeleteProfileImageMutation,
+  useGetProfileImageUrlMutation,
+  useGetLogoUrlQuery,
+  useVerifyMagicLinkMutation,
 } = authAPI;

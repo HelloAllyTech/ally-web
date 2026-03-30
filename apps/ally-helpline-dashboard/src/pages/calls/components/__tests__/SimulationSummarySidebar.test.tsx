@@ -9,6 +9,17 @@ import { UserRole } from "@types";
 import { SUMMARY_FEEDBACK_TIMEOUT } from "../constants";
 import SimulationSummarySidebar from "../SimulationSummarySidebar";
 
+// Mock feature flags
+vi.mock("@ally-ui-mono/ui-shared", async () => {
+  const actual = await vi.importActual("@ally-ui-mono/ui-shared");
+  return {
+    ...actual,
+    FEATURE_FLAGS_MAP: {
+      ...(actual as any).FEATURE_FLAGS_MAP,
+    },
+  };
+});
+
 // Mock containers
 vi.mock("@containers", () => ({
   FeedbackDialog: ({ open, onClose, id, sessionType }: any) => (
@@ -20,14 +31,14 @@ vi.mock("@containers", () => ({
       </button>
     </div>
   ),
-  SimulationSummary: ({ summaryId, onSummaryFetch }: any) => (
+  SimulationSummary: ({ sessionId, summaryData, retryMaxReached }: any) => (
     <div data-testid="simulation-summary">
-      <div data-testid="simulation-summary-id">{summaryId}</div>
-      <button onClick={() => onSummaryFetch({ hasFeedback: false })} data-testid="fetch-summary">
-        Fetch Summary
-      </button>
+      <div data-testid="simulation-summary-session-id">{sessionId}</div>
+      <div data-testid="simulation-summary-has-data">{String(!!summaryData)}</div>
+      <div data-testid="simulation-summary-retry-max">{String(retryMaxReached)}</div>
     </div>
   ),
+  useSimulationSummaryPolling: () => ({ summaryData: undefined, retryMaxReached: false }),
 }));
 
 // Mock hooks
@@ -35,6 +46,13 @@ vi.mock("@hooks", () => ({
   useUser: () => ({
     user: { role: UserRole.COUNSELLOR },
   }),
+  useDebounce: (callback: any) => callback,
+  useSendMessage: () => ({
+    messages: [],
+    isStreaming: false,
+    sendMessage: vi.fn(),
+  }),
+  useClickOutside: () => vi.fn(),
 }));
 
 // Mock child components
@@ -97,7 +115,6 @@ const renderComponent = (
         <BrowserRouter>
           <SimulationSummarySidebar
             summaryId={summaryId}
-            summaryName={summaryName}
             closeSummarySidebar={mockCloseSummarySidebar}
           />
         </BrowserRouter>
@@ -129,16 +146,24 @@ describe("SimulationSummarySidebar Component", () => {
       renderComponent();
 
       expect(screen.getByTestId("tab-1")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Summary");
+      expect(screen.getByTestId("tab-label-1")).toHaveTextContent("Session Review");
+      expect(screen.getByTestId("tab-3")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-3")).toHaveTextContent("Annotated Transcript");
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Transcription");
+      expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
+      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-5")).toHaveTextContent("Skills Demonstrated");
+      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-label-4")).toHaveTextContent("Reflection");
     });
 
     it("should render simulation summary component in summary tab", () => {
       renderComponent();
 
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(screen.getByTestId("simulation-summary-id")).toHaveTextContent("test-summary-id");
+      expect(screen.getByTestId("simulation-summary-session-id")).toHaveTextContent(
+        "test-summary-id",
+      );
     });
 
     it("should render simulation transcript tab", () => {
@@ -174,11 +199,9 @@ describe("SimulationSummarySidebar Component", () => {
     it.skip("should not show feedback dialog when feedback already added", async () => {
       const { mockCloseSummarySidebar } = renderComponent();
 
-      // Simulate summary fetch with feedback already added
-      const fetchButton = screen.getByTestId("fetch-summary");
-      fireEvent.click(fetchButton);
+      // When useSimulationSummaryPolling returns summaryData with hasFeedback, sidebar
+      // sets hasFeedback.current and closing should not show dialog.
 
-      // Fast forward time to exceed threshold
       act(() => {
         vi.advanceTimersByTime(SUMMARY_FEEDBACK_TIMEOUT + 1000);
       });
@@ -254,15 +277,14 @@ describe("SimulationSummarySidebar Component", () => {
     });
   });
 
-  describe("Summary Fetch", () => {
-    it("should handle summary fetch callback", () => {
+  describe("Summary Content", () => {
+    it("should render simulation summary with polling data from hook", () => {
       renderComponent();
 
-      const fetchButton = screen.getByTestId("fetch-summary");
-      fireEvent.click(fetchButton);
-
-      // Should not throw any errors
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("simulation-summary-session-id")).toHaveTextContent(
+        "test-summary-id",
+      );
     });
   });
 

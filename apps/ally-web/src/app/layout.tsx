@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "ally.ai - Mental Health Resource Library",
+  title: "Ally.ai - Mental Health Resource Library",
   description:
     "Search through comprehensive mental health resources, guidelines, and professional documents. Find evidence-based information to support your practice.",
   keywords:

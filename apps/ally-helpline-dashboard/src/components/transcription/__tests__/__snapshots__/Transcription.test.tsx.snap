@@ -1,0 +1,127 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Transcription Component > should match snapshot when rendered 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col pt-10 -mt-10 gap-4 font-primary font-lg undefined"
+  >
+    <div
+      data-testid="infinite-scroll"
+    >
+      <div
+        class="flex gap-4 pointer-events-none select-none"
+      >
+        <div
+          class="text-neutral-500"
+        >
+          00:00
+        </div>
+        <div>
+          <span
+            class="font-medium pr-1"
+          >
+            <span
+              class="text-typography-900"
+            >
+              AI Agent:
+            </span>
+          </span>
+          <span
+            class="text-typography-900 selected-text relative w-full cursor-default"
+          >
+            <span
+              data-comment-ids=""
+              data-segment-text="Hello, how can I help you today?"
+              data-testid="selectable-text-0"
+            >
+              Hello, how can I help you today?
+              <button
+                data-testid="comment-change-0"
+              >
+                Comment Change
+              </button>
+            </span>
+          </span>
+        </div>
+      </div>
+      <div
+        class="flex gap-4 pointer-events-none select-none"
+      >
+        <div
+          class="text-neutral-500"
+        >
+          01:05
+        </div>
+        <div>
+          <span
+            class="font-medium pr-1"
+          >
+            <span
+              class="text-primary-700"
+            >
+              You:
+            </span>
+          </span>
+          <span
+            class="text-typography-900 selected-text relative w-full cursor-default"
+          >
+            <span
+              data-comment-ids=""
+              data-segment-text="I need some assistance with my account."
+              data-testid="selectable-text-0"
+            >
+              I need some assistance with my account.
+              <button
+                data-testid="comment-change-0"
+              >
+                Comment Change
+              </button>
+            </span>
+          </span>
+        </div>
+      </div>
+      <div
+        class="flex gap-4 pointer-events-none select-none"
+      >
+        <div
+          class="text-neutral-500"
+        >
+          02:10
+        </div>
+        <div>
+          <span
+            class="font-medium pr-1"
+          >
+            <span
+              class="text-typography-900"
+            >
+              AI Agent:
+            </span>
+          </span>
+          <span
+            class="text-typography-900 selected-text relative w-full cursor-default"
+          >
+            <span
+              data-comment-ids=""
+              data-segment-text="Sure, I can help you with that."
+              data-testid="selectable-text-0"
+            >
+              Sure, I can help you with that.
+              <button
+                data-testid="comment-change-0"
+              >
+                Comment Change
+              </button>
+            </span>
+          </span>
+        </div>
+      </div>
+      <button
+        data-testid="load-more-trigger"
+      >
+        Load More
+      </button>
+    </div>
+  </div>
+</DocumentFragment>
+`;

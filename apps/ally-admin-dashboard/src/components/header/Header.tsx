@@ -17,6 +17,7 @@ interface HeaderProps {
   isPublishing?: boolean;
   title: string;
   showPreview?: boolean;
+  type?: "Simulation" | "Track" | "Case";
 }
 
 export const Header: FC<HeaderProps> = ({
@@ -28,11 +29,12 @@ export const Header: FC<HeaderProps> = ({
   isPublishing = false,
   title,
   showPreview = true,
+  type,
 }) => {
   const handleSaveDraft = async () => {
     const response = await onSaveDraft();
     if (response) {
-      toast.success("Simulation changes saved successfully!");
+      toast.success(`${type} changes saved successfully!`);
     }
   };
 
@@ -61,7 +63,7 @@ export const Header: FC<HeaderProps> = ({
     <>
       <div className="flex items-center px-2 py-4 gap-2">
         <span className="text-typography-800 cursor-pointer" onClick={onBack}>
-          {en.simulation.simulationstudio}
+          {en.simulation.rolePlays}
         </span>
         <span className="-rotate-90">
           <ArrowDown />
@@ -88,7 +90,7 @@ export const Header: FC<HeaderProps> = ({
                 arrow
                 slotProps={toolTipStyles}
               >
-                {previewButton}
+                <span>{previewButton}</span>
               </Tooltip>
             ))}
           {isValid ? (
@@ -100,7 +102,7 @@ export const Header: FC<HeaderProps> = ({
               arrow
               slotProps={toolTipStyles}
             >
-              {publishButton}
+              <span>{publishButton}</span>
             </Tooltip>
           )}
         </div>

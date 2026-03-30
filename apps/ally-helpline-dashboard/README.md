@@ -1,6 +1,6 @@
-# ally Helpline Dashboard
+# Ally Helpline Dashboard
 
-A modern web interface for mental health professionals built with React, TypeScript, and Vite. This application is part of the ally UI monorepo.
+A modern web interface for mental health professionals built with React, TypeScript, and Vite. This application is part of the Ally UI monorepo.
 
 ## Features
 

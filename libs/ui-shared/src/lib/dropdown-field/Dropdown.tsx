@@ -15,6 +15,7 @@ const Dropdown: FC<DropdownProps> = ({
   className,
   style,
   onHandleSearch,
+  searchPlaceholder,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -52,12 +53,16 @@ const Dropdown: FC<DropdownProps> = ({
         type="text"
         value={searchQuery}
         onChange={e => handleSearch(e.target.value)}
-        placeholder="Search"
+        placeholder={searchPlaceholder || "Search"}
         className="w-full mb-2 px-2 py-1 rounded-[4px] bg-[#F5F5F7] border border-[#DBDBDB]"
       />
-      <div className="flex flex-col gap-2 h-[140px] overflow-y-auto">
+      <div className="flex flex-col gap-2 max-h-[110px] overflow-y-auto">
         {getOptions().map(option => (
-          <span key={option} onClick={() => handleChange(option)} className="cursor-pointer">
+          <span
+            key={option}
+            onClick={() => handleChange(option)}
+            className="cursor-pointer font-primary"
+          >
             {option}
           </span>
         ))}

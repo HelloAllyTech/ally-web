@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { UpNextSimulationCard } from "../UpNextSimulationCard";
+import { UpNextSimulationCard } from "@components/up-next-simulation-card";
 
 // Define the types inline to avoid import issues
 interface UpcomingScenario {
@@ -19,14 +19,18 @@ interface UpcomingScenario {
 
 interface CurrentSession {
   scenarioId?: string;
-  isScenarioPathSessionCompleted?: string;
+  isScenarioPathSessionCompleted?: boolean;
+  isCaseSessionCompleted?: boolean;
   coverImageUrl?: string;
   title?: string;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
   scenarioPathSessionStatus?: boolean;
   scenarioPathSessionItemStatus?: string;
+  caseSessionItemStatus?: string;
+  sessionGlimpse?: string;
 }
 
 interface GetUpComingSimulationResponse {
@@ -75,6 +79,11 @@ vi.mock("@components", () => ({
   },
 }));
 
+// Mock assets
+vi.mock("@assets", () => ({
+  ArrowDownFilled: () => <svg data-testid="arrow-down-filled" />,
+}));
+
 // Mock constants
 vi.mock("@constants", () => ({
   ROUTES: {
@@ -121,8 +130,8 @@ describe("UpNextSimulationCard", () => {
     },
     currentSession: {
       scenarioId: "current-sim-123",
-      isScenarioPathSessionCompleted: "", // Must be falsy to show Up Next card
-      scenarioPathSessionItemStatus: "COMPLETED", // Must be COMPLETED to show "Great work!"
+      isScenarioPathSessionCompleted: false, // Must be falsy to show Up Next card
+      caseSessionItemStatus: "COMPLETED", // Must be COMPLETED to show "Great work!"
       transitionMessageTitle: "Great work!",
       transitionMessageContent: "You've completed the previous simulation.",
       title: "Current Simulation",
@@ -135,13 +144,13 @@ describe("UpNextSimulationCard", () => {
     it("should render the simulation card with all elements", () => {
       render(<UpNextSimulationCard data={getMockData()} />);
 
-      expect(screen.getByText("Up next - Simulation 2")).toBeInTheDocument();
+      expect(screen.getByText(/Simulation 2/)).toBeInTheDocument();
       expect(screen.getByText("Hopeless Male, 40")).toBeInTheDocument();
       expect(screen.getByText("Scenario:")).toBeInTheDocument();
       expect(
         screen.getByText(/A 40-year-old male is experiencing deep hopelessness/),
       ).toBeInTheDocument();
-      expect(screen.getByText("Great work!")).toBeInTheDocument();
+      expect(screen.getByText(/Great work!/)).toBeInTheDocument();
       expect(screen.getByText("You've completed the previous simulation.")).toBeInTheDocument();
     });
 
@@ -162,7 +171,7 @@ describe("UpNextSimulationCard", () => {
       }
       render(<UpNextSimulationCard data={customData} />);
 
-      expect(screen.getByText("Up next - Simulation 5")).toBeInTheDocument();
+      expect(screen.getByText(/Simulation 5/)).toBeInTheDocument();
     });
 
     it("should display custom title", () => {
@@ -234,7 +243,7 @@ describe("UpNextSimulationCard", () => {
       }
       render(<UpNextSimulationCard data={customData} />);
 
-      expect(screen.getByText("Up next - Simulation 0")).toBeInTheDocument();
+      expect(screen.getByText(/Simulation 0/)).toBeInTheDocument();
     });
 
     it("should handle long description text", () => {

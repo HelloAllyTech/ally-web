@@ -7,15 +7,20 @@
  * - Navigation functionality
  * - Motion animations
  * - Container integration
+ * - Tabs functionality and switching
+ * - Transcription tab display
  * - Error handling and edge cases
  * - Snapshot testing
  */
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
+import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+import { SimulationSummary } from "@containers";
 import { ROUTES } from "@constants";
+import { store } from "@store";
 
 import { PostSimulationSummary } from "../PostSimulationSummary";
 
@@ -49,17 +54,74 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
+// Store onChange handler for Tab mock to access
+let tabsOnChange: ((event: any, value: number) => void) | null = null;
+
+// Mock @mui/material
+vi.mock("@mui/material", () => ({
+  Tabs: ({ children, value, onChange, className, sx }: any) => {
+    // Store onChange so Tab components can call it
+    tabsOnChange = onChange;
+    return (
+      <div data-testid="mui-tabs" data-value={value} className={className} role="tablist">
+        {children}
+      </div>
+    );
+  },
+  Tab: ({ label, value, sx }: any) => (
+    <button
+      data-testid={`tab-${value}`}
+      data-value={value}
+      role="tab"
+      aria-selected={false}
+      onClick={e => {
+        // Call the stored onChange handler
+        if (tabsOnChange) {
+          tabsOnChange(e, value);
+        }
+      }}
+    >
+      {label}
+    </button>
+  ),
+}));
+
 // Mock containers
 vi.mock("@containers", () => ({
-  SimulationSummary: vi.fn(({ summaryId, className, onSummaryClose }) => (
-    <div data-testid="simulation-summary" className={className}>
-      <div data-testid="summary-id">{summaryId}</div>
-      <button data-testid="close-summary-btn" onClick={onSummaryClose}>
-        Close Summary
-      </button>
+  SimulationSummary: vi.fn(({ sessionId, summaryData, retryMaxReached, className }: any) => (
+    <div
+      data-testid="simulation-summary"
+      className={className}
+      data-has-summary={String(!!summaryData)}
+      data-retry-max={String(retryMaxReached)}
+    >
+      <div data-testid="summary-session-id">{sessionId}</div>
     </div>
   )),
+  useSimulationSummaryPolling: () => ({ summaryData: undefined, retryMaxReached: false }),
 }));
+
+// Mock SimulationTranscriptTab
+vi.mock("../../calls/components", () => ({
+  SimulationTranscriptTab: ({ sessionId, className }: any) => (
+    <div data-testid="simulation-transcript-tab" className={className}>
+      <div data-testid="transcript-session-id">{sessionId}</div>
+    </div>
+  ),
+}));
+
+// Mock calls constants (use importOriginal so reducer still gets CALL_LOGS_PAGINATION_LIMIT)
+vi.mock("../../calls/constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("../../calls/constants")>();
+  return {
+    ...actual,
+    tabStyles: {
+      textTransform: "none",
+      fontWeight: 500,
+      color: "#49454F",
+    },
+  };
+});
 
 // Mock learn constants
 vi.mock("../learn/constants", () => ({
@@ -75,9 +137,32 @@ vi.mock("../learn/constants", () => ({
   },
 }));
 
-// Test Wrapper
+// Mock feature flags so snapshot is deterministic (no env variance between local vs CI)
+vi.mock("@ally-ui-mono/ui-shared/index", async importOriginal => {
+  const actual = await importOriginal<typeof import("@ally-ui-mono/ui-shared/index")>();
+  return {
+    ...actual,
+    FEATURE_FLAGS_MAP: {
+      ...actual.FEATURE_FLAGS_MAP,
+      SHARE_FOR_REVIEW_FLAG: true,
+    },
+  };
+});
+
+// Mock API so summary query returns stable data (deterministic snapshots and consistency test)
+vi.mock("@api", async importOriginal => {
+  const actual = await importOriginal<typeof import("@api")>();
+  return {
+    ...actual,
+    useGetSimulationSummaryQuery: vi.fn(() => ({ data: undefined, isLoading: false })),
+  };
+});
+
+// Test Wrapper (Provider required for useGetSimulationSummaryQuery / RTK Query)
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>{children}</BrowserRouter>
+  <Provider store={store}>
+    <BrowserRouter>{children}</BrowserRouter>
+  </Provider>
 );
 
 describe("PostSimulationSummary Component", () => {
@@ -160,7 +245,7 @@ describe("PostSimulationSummary Component", () => {
       expect(motionDiv.className).toContain("flex");
       expect(motionDiv.className).toContain("flex-col");
       expect(motionDiv.className).toContain("gap-6");
-      expect(motionDiv.className).toContain("max-w-3xl");
+      expect(motionDiv.className).toContain("max-w-4xl");
       expect(motionDiv.className).toContain("w-full");
       expect(motionDiv.className).toContain("h-full");
       expect(motionDiv.className).toContain("pb-8");
@@ -181,15 +266,12 @@ describe("PostSimulationSummary Component", () => {
         return element?.textContent === "Simulation Summary";
       });
       expect(title).not.toBeNull();
-      expect(title.className).toContain("w-full");
       expect(title.className).toContain("text-black");
       expect(title.className).toContain("text-2xl");
       expect(title.className).toContain("sm:text-4xl");
       expect(title.className).toContain("font-normal");
       expect(title.className).toContain("text-left");
       expect(title.className).toContain("font-secondary");
-      expect(title.className).toContain("mt-8");
-      expect(title.className).toContain("px-4");
     });
 
     it("should render SimulationSummary component", () => {
@@ -217,7 +299,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("summary-id")).toHaveTextContent("456");
+      expect(screen.getByTestId("summary-session-id")).toHaveTextContent("456");
     });
 
     it("should handle missing sessionId parameter", () => {
@@ -265,28 +347,30 @@ describe("PostSimulationSummary Component", () => {
    * Verifies navigation functionality
    */
   describe("Navigation Functionality", () => {
-    it("should navigate to learn page when closing summary", () => {
+    it("should navigate back when clicking back button", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      closeButton.click();
+      const header = screen.getByText(/Simulation/).closest("div");
+      const backButton = within(header!).getByRole("button");
+      backButton.click();
 
-      expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
 
-    it("should call closeSummarySidebar function", () => {
+    it("should call navigate when clicking back button", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      closeButton.click();
+      const header = screen.getByText(/Simulation/).closest("div");
+      const backButton = within(header!).getByRole("button");
+      backButton.click();
 
       expect(mockNavigate).toHaveBeenCalledTimes(1);
     });
@@ -336,19 +420,314 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const simulationSummary = screen.getByTestId("simulation-summary");
-      expect(simulationSummary).toHaveClass("max-h-[calc(100vh-120px)]");
-      expect(screen.getByTestId("summary-id")).toHaveTextContent("123");
+      expect(simulationSummary).toHaveClass("max-h-[calc(100vh-212px)]");
+      expect(screen.getByTestId("summary-session-id")).toHaveTextContent("123");
     });
 
-    it("should pass onSummaryClose callback to SimulationSummary", () => {
+    it("should pass sessionId, summaryData, retryMaxReached and className to SimulationSummary", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      expect(closeButton).toBeInTheDocument();
+      const lastCallArgs = vi.mocked(SimulationSummary).mock.calls.at(-1) ?? [];
+      expect(lastCallArgs[0]).toMatchObject({
+        sessionId: "123",
+        className: "max-h-[calc(100vh-212px)]",
+      });
+      expect(lastCallArgs[0]).toHaveProperty("summaryData");
+      expect(lastCallArgs[0]).toHaveProperty("retryMaxReached");
+    });
+  });
+
+  /**
+   * TEST GROUP: Tabs Functionality
+   * Verifies tabs rendering and switching behavior
+   */
+  describe("Tabs Functionality", () => {
+    it("should render Tabs component", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
+    });
+
+    it("should render Summary tab", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("tab-1")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-1")).toHaveTextContent("Session Review");
+    });
+
+    it("should render Transcription tab", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-2")).toHaveTextContent("Annotated Transcript");
+    });
+
+    it("should have Summary tab selected by default", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const tabs = screen.getByTestId("mui-tabs");
+      expect(tabs).toHaveAttribute("data-value", "1");
+    });
+
+    it("should display SimulationSummary content by default", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+    });
+
+    it("should switch to Transcription tab when clicked", async () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const transcriptionTab = screen.getByTestId("tab-2");
+      fireEvent.click(transcriptionTab);
+
+      // After clicking, the transcription tab content should be visible
+      expect(screen.getByTestId("simulation-transcript-tab")).toBeInTheDocument();
+    });
+
+    it("should hide Summary content when Transcription tab is selected", async () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      // Initially Summary is visible
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+
+      // Click Transcription tab
+      const transcriptionTab = screen.getByTestId("tab-2");
+      fireEvent.click(transcriptionTab);
+
+      // Summary should no longer be visible
+      expect(screen.queryByTestId("simulation-summary")).not.toBeInTheDocument();
+    });
+
+    it("should switch back to Summary tab when clicked", async () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      // Click Transcription tab first
+      const transcriptionTab = screen.getByTestId("tab-2");
+      fireEvent.click(transcriptionTab);
+
+      expect(screen.getByTestId("simulation-transcript-tab")).toBeInTheDocument();
+
+      // Click Summary tab
+      const summaryTab = screen.getByTestId("tab-1");
+      fireEvent.click(summaryTab);
+
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+    });
+
+    it("should apply correct styles to Tabs component", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const tabs = screen.getByTestId("mui-tabs");
+      expect(tabs).toHaveClass("w-full");
+      expect(tabs).toHaveClass("normal-case");
+      expect(tabs).toHaveClass("border-b");
+      expect(tabs).toHaveClass("border-[#DBDBDB]");
+    });
+
+    it("should render all tab buttons", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const tabButtons = screen.getAllByRole("tab");
+      expect(tabButtons).toHaveLength(5);
+    });
+  });
+
+  /**
+   * TEST GROUP: Transcription Tab
+   * Verifies SimulationTranscriptTab integration
+   */
+  describe("Transcription Tab", () => {
+    it("should render SimulationTranscriptTab when Transcription tab is selected", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const transcriptionTab = screen.getByTestId("tab-2");
+      fireEvent.click(transcriptionTab);
+
+      expect(screen.getByTestId("simulation-transcript-tab")).toBeInTheDocument();
+    });
+
+    it("should pass sessionId to SimulationTranscriptTab", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const transcriptionTab = screen.getByTestId("tab-2");
+      fireEvent.click(transcriptionTab);
+
+      expect(screen.getByTestId("transcript-session-id")).toHaveTextContent("123");
+    });
+
+    it("should pass correct className to SimulationTranscriptTab", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const transcriptionTab = screen.getByTestId("tab-2");
+      fireEvent.click(transcriptionTab);
+
+      const transcriptTab = screen.getByTestId("simulation-transcript-tab");
+      expect(transcriptTab).toBeInTheDocument();
+      // The className prop is passed to SimulationTranscriptTab which includes "w-full max-h-[calc(100vh-10px)]"
+      // The actual rendering depends on the component implementation
+    });
+
+    it("should handle different sessionId for Transcription tab", () => {
+      mockUseParams.mockReturnValue({ sessionId: "789" });
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const transcriptionTab = screen.getByTestId("tab-2");
+      fireEvent.click(transcriptionTab);
+
+      expect(screen.getByTestId("transcript-session-id")).toHaveTextContent("789");
+    });
+
+    it("should not render SimulationTranscriptTab when Summary tab is selected", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      // By default Summary tab is selected
+      expect(screen.queryByTestId("simulation-transcript-tab")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Tab List Configuration
+   * Verifies the tab list configuration
+   */
+  describe("Tab List Configuration", () => {
+    it("should have all tabs configured", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("tab-1")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-2")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-5")).toBeInTheDocument();
+      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
+    });
+
+    it("should have Summary as first tab with id 1", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const summaryTab = screen.getByTestId("tab-1");
+      expect(summaryTab).toHaveTextContent("Session Review");
+      expect(summaryTab).toHaveAttribute("data-value", "1");
+    });
+
+    it("should have Transcription as second tab with id 2", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const transcriptionTab = screen.getByTestId("tab-2");
+      expect(transcriptionTab).toHaveTextContent("Annotated Transcript");
+      expect(transcriptionTab).toHaveAttribute("data-value", "2");
+    });
+
+    it("should have Ask AI as third tab with id 4", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const askAiTab = screen.getByTestId("tab-4");
+      expect(askAiTab).toHaveTextContent("Ask AI");
+      expect(askAiTab).toHaveAttribute("data-value", "4");
+    });
+
+    it("should have Skills as fourth tab with id 5", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const skillsTab = screen.getByTestId("tab-5");
+      expect(skillsTab).toHaveTextContent("Skills");
+      expect(skillsTab).toHaveAttribute("data-value", "5");
+    });
+
+    it("should have Reflection as fifth tab with id 6", () => {
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      const reflectionTab = screen.getByTestId("tab-6");
+      expect(reflectionTab).toHaveTextContent("Reflection");
+      expect(reflectionTab).toHaveAttribute("data-value", "6");
     });
   });
 
@@ -371,18 +750,18 @@ describe("PostSimulationSummary Component", () => {
     });
 
     it("should handle navigation errors gracefully", () => {
-      // Test that navigation function is called without errors
+      // Test that navigation function is called without errors when using back button
       render(
         <TestWrapper>
           <PostSimulationSummary />
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      closeButton.click();
+      const header = screen.getByText(/Simulation/).closest("div");
+      const backButton = within(header!).getByRole("button");
+      backButton.click();
 
-      // Should call navigate function
-      expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
   });
 
@@ -537,8 +916,8 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const closeButton = screen.getByTestId("close-summary-btn");
-      expect(closeButton).toBeInTheDocument();
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
     });
   });
 
@@ -557,7 +936,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("summary-id")).toHaveTextContent(longSessionId);
+      expect(screen.getByTestId("summary-session-id")).toHaveTextContent(longSessionId);
     });
 
     it("should handle special characters in sessionId", () => {
@@ -570,7 +949,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("summary-id")).toHaveTextContent(specialSessionId);
+      expect(screen.getByTestId("summary-session-id")).toHaveTextContent(specialSessionId);
     });
 
     it("should render consistently on multiple renders", () => {

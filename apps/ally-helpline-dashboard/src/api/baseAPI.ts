@@ -1,5 +1,5 @@
 /**
- * This module provides the foundational API setup for the ally Helpline Dashboard application.
+ * This module provides the foundational API setup for the Ally Helpline Dashboard application.
  * It includes automatic token refresh, authentication headers, and centralized error handling.
  *
  * Key Features:
@@ -43,7 +43,7 @@ const handleLogout = () => {
  * Automatically adds Bearer token to all API requests if available in localStorage.
  * The base URL is constructed from environment variables.
  */
-const baseQuery = fetchBaseQuery({
+export const baseQuery = fetchBaseQuery({
   baseUrl: API_URL + "/api",
   prepareHeaders: headers => {
     const token = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN);
@@ -139,6 +139,10 @@ export const baseAPI = createApi({
     TAG_TYPES.CALL_LOGS,
     TAG_TYPES.SIMULATION_LOGS,
     TAG_TYPES.SIMULATION_CREDITS,
+    TAG_TYPES.USER,
+    TAG_TYPES.SCENARIO_PATHWAY_DETAILS,
+    TAG_TYPES.SIMULATION_SUMMARY,
+    TAG_TYPES.REVIEW,
   ],
   endpoints: () => ({}),
 });

@@ -6,7 +6,7 @@
  * - Chat type definitions
  */
 
-import { CallType, ApiEndpoints, HttpMethod } from "@constants";
+import { CallType, ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   GetCallLogsInput,
   GetCallLogsResponse,
@@ -18,6 +18,8 @@ import {
   GetAudioUploadUrlResponse,
   CancelAudioUploadInput,
   CancelAudioUploadResponse,
+  ProcessAudioUploadInput,
+  ProcessAudioUploadResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -35,7 +37,7 @@ const callsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALLS.GET_CALL_LOGS,
         params,
       }),
-      providesTags: ["CallLogs"],
+      providesTags: ["CallLogs", TAG_TYPES.CALL_LOGS],
     }),
 
     /**
@@ -118,6 +120,19 @@ const callsAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Initiate processing of the uploaded audio file.
+     * @param {ProcessAudioUploadInput} params - Object with audio s3Key
+     * @returns {Promise<ProcessAudioUploadResponse>} Confirmation message
+     */
+    processAudioUpload: builder.mutation<ProcessAudioUploadResponse, ProcessAudioUploadInput>({
+      query: params => ({
+        url: ApiEndpoints.CALLS.PROCESS_AUDIO_UPLOAD,
+        method: HttpMethod.POST,
+        body: params,
+      }),
+    }),
+
+    /**
      * Permanently deletes a call log by id. This action is irreversible and
      * should typically be restricted to admin roles.
      * @param {number} chatId - The id of the call/chat to delete
@@ -128,6 +143,22 @@ const callsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.CALLS.DELETE_CALL_LOG(chatId),
         method: HttpMethod.DELETE,
       }),
+    }),
+
+    /**
+     * Archives or unarchives a call log by id.
+     * @param {Object} params - Archive parameters
+     * @param {number} params.chatId - The id of the call/chat to archive/unarchive
+     * @param {boolean} params.archive - true to archive, false to unarchive
+     * @returns {Promise<any>} Success response
+     */
+    archiveCallLog: builder.mutation<any, { chatId: number; archive: boolean }>({
+      query: ({ chatId, archive }) => ({
+        url: ApiEndpoints.CALLS.ARCHIVE_CALL_LOG(chatId),
+        method: HttpMethod.PATCH,
+        body: { archive: archive },
+      }),
+      invalidatesTags: ["CallLogs", "CallSummary"],
     }),
   }),
 });
@@ -141,4 +172,6 @@ export const {
   useGetAudioUploadUrlMutation,
   useCancelAudioUploadMutation,
   useDeleteCallLogMutation,
+  useProcessAudioUploadMutation,
+  useArchiveCallLogMutation,
 } = callsAPI;

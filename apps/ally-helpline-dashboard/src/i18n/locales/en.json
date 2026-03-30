@@ -1,0 +1,830 @@
+{
+  "common": {
+    "appName": "Ally",
+    "or": "OR",
+    "loading": "Loading…",
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
+    "minutes_one": "{{count}} minute",
+    "minutes_other": "{{count}} minutes",
+    "seconds_one": "{{count}} second",
+    "seconds_other": "{{count}} seconds",
+    "continue": "Continue",
+    "start": "Start",
+    "close": "Close",
+    "details": "Details",
+    "starting": "Starting...",
+    "next": "Next",
+    "viewSummary": "View summary",
+    "simulationIndex": "Simulation {{index}}",
+    "success": "Success",
+    "error": "Error",
+    "simulationEndedSuccess": "Simulation ended successfully",
+    "somethingWentWrong": "Something went wrong!",
+    "summary": "Summary",
+    "startSimulation": "Start Simulation",
+    "simulation": "Simulation",
+    "triggerWarnings": "Trigger warnings:",
+    "sessionId": "Session ID",
+    "duration": "Duration",
+    "tags": "Tags",
+    "cancel": "Cancel",
+    "save": "Save",
+    "add": "Add",
+    "share": "Share",
+    "viewMore": "View more",
+    "viewLess": "View less",
+    "scribe": "Scribe",
+    "scenario": "Scenario:",
+    "retry": "Retry",
+    "uploading": "Uploading...",
+    "maxActiveUsers": {
+      "title": "We're at capacity right now",
+      "description": "We're currently handling the maximum number of active users. Please wait a moment and try again access usually frees up shortly.",
+      "retry": "Retry",
+      "manualRetry": "You can retry in {{seconds}}s",
+      "autoRetry": "We'll automatically retry in {{seconds}}s"
+    },
+    "backToLearn": "Back to Learn",
+    "errors": {
+      "locked": "Upcoming simulation is locked"
+    },
+    "draggableArea": {
+      "text": "Drag & drop or <0>choose</0> a {{extensions}} file under {{size}}"
+    }
+  },
+  "carousel": {
+    "slides": {
+      "noRecording": "We do not save audio recordings",
+      "noTrainingData": "We do not use your client’s data to train our models",
+      "personalInfoRemoved": "Personal information of clients is automatically removed",
+      "encrypted": "Data is encrypted"
+    }
+  },
+  "nav": {
+    "sidebar": {
+      "expand": "Expand sidebar",
+      "collapse": "Collapse sidebar"
+    },
+    "language": {
+      "label": "App language"
+    },
+    "tabs": {
+      "learn": "Learn",
+      "review": "Review",
+      "badges": "Badges",
+      "community": "Community",
+      "sessions": "Sessions",
+      "statistics": "Statistics",
+      "search": "Search"
+    },
+    "logout": {
+      "title": {
+        "normal": "Safeguard your",
+        "italic": "account"
+      },
+      "content": "Are you sure you want to log out? You will need to enter secure OTP to login again.",
+      "button": "Logout & lock my Ally account"
+    }
+  },
+  "community": {
+    "title": "Community",
+    "you": "You",
+    "emptyLeaderboard": "No leaderboard data available",
+    "loadingMore": "Loading more...",
+    "filters": {
+      "last7days": "Last 7 days",
+      "last28days": "Last 28 days",
+      "last364days": "Last 364 days",
+      "allTime": "All time"
+    },
+    "table": {
+      "rank": "Rank",
+      "user": "User",
+      "totalDuration": "Total duration",
+      "badges": "Badges"
+    }
+  },
+  "achievements": {
+    "title": "Achievements",
+    "badges": "Badges",
+    "viewAll": "View all",
+    "viewAllBadges": "View all badges",
+    "emptyHome": "You don't have any badges yet",
+    "badgesCount": "{{count}} Badges",
+    "locked": "Locked",
+    "earned": "Earned",
+    "badgesTooltip": "Badges are earned based on your activity across simulations and community participation. Some badges may be removed if qualifying actions are undone.",
+    "filters": {
+      "all": "All",
+      "unlocked": "Unlocked"
+    },
+    "empty": "No badges found",
+    "backAria": "Go back",
+    "errors": {
+      "title": "Unable to Load Achievements",
+      "description": "Something went wrong while loading achievements. Please try again."
+    },
+    "badgeTypes": {
+      "suffix": "Badges",
+      "journey": "Journey",
+      "momentum": "Momentum",
+      "contribution": "Contribution",
+      "resonance": "Resonance",
+      "tooltip": {
+        "journey": "Earned by completing simulation minutes. Only completed simulation time is counted.",
+        "momentum": "Complete at least one simulation per day to build a streak. Missing a day resets your streak.",
+        "contribution": "Count comments and reactions you give on sessions owned by other users. Interactions on your own sessions are not counted.",
+        "resonance": "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded."
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "greetingLine1": "Hey,",
+      "greetingLine2": "Welcome to {{app}}",
+      "subtitle": "Enter your email address to continue",
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email address",
+        "error": "Please enter a valid email address"
+      },
+      "rememberMe": "Remember me",
+      "generatingOtp": "Generating OTP...",
+      "divider": "OR",
+      "proceedAgree": "By proceeding, i agree to Ally's",
+      "terms": "Terms & Conditions",
+      "and": "and acknowledge",
+      "privacy": "Privacy Policy.",
+      "imageAlt": "Login",
+      "helloAlly": "helloally.ai",
+      "otp": {
+        "title": "Verify your email address",
+        "enterCode": "Enter the security code sent to",
+        "expires": "This code will expire in {{minutes}}. Need a new code?",
+        "resend": "Resend",
+        "resendWithCountdown": "Resend ({{seconds}})",
+        "verify": "Verify",
+        "signingIn": "Signing in..."
+      },
+      "google": {
+        "button": "Continue with Google",
+        "error": "Failed to sign in with Google"
+      },
+      "errors": {
+        "generateOtp": "Failed to generate OTP. Please try again.",
+        "verifyOtp": "Failed to verify OTP. Please try again.",
+        "agreeTerms": "Failed to agree to terms and conditions"
+      }
+    }
+  },
+  "user": {
+    "creditUsage": "Credit usage",
+    "logout": "Logout",
+    "profileAlt": "Profile",
+    "dataPolicy": "Data policy"
+  },
+  "learn": {
+    "tabs": {
+      "simulations": "Simulations",
+      "tracks": "Tracks",
+      "cases": "Cases"
+    },
+    "header": {
+      "prefix": "Use",
+      "emphasis1": "AI-voice based",
+      "middle": "hyper realistic training",
+      "emphasis2": "role plays",
+      "suffix": "to build mental healthcare skills."
+    },
+    "credits": {
+      "used": "Credits used:"
+    },
+    "scenario": {
+      "pageTitlePrefix": "Start",
+      "pageTitleEmphasis": "Simulation",
+      "backAria": "Close scenario details",
+      "previewAltSuffix": "scenario preview",
+      "mediaUnavailable": "Media not available",
+      "share": "Share",
+      "shareAria": "Share scenario",
+      "shareTitle": "Share this scenario",
+      "shareCopied": "Scenario link copied to clipboard!",
+      "scenarioLabel": "Scenario:",
+      "startAria": "Start simulation",
+      "preStart": {
+        "titleNormal": "Before you get started",
+        "titleItalic": "",
+        "button": "Start Session",
+        "content": "At times, the bot may be unresponsive, or have unusual lag times. We are always working to improve the experience!"
+      },
+      "existing": {
+        "titleNormal": "Active Simulation ",
+        "titleItalic": "Detected",
+        "content": "You have a running simulation. End the existing session to start a new one.",
+        "primary": "End session"
+      },
+      "noCredits": {
+        "title": "No Credits Left",
+        "desc": "Looks like you have run out of simulation credits"
+      },
+      "notEnough": {
+        "title": "Not Enough Credits",
+        "desc": "You don't have enough simulation credits to start this session"
+      },
+      "notFound": {
+        "title": "Scenario not found",
+        "desc": "The scenario you are looking for does not exist."
+      }
+    },
+    "card": {
+      "imageAlt": "{{title}} {{type}} cover",
+      "imageUnavailable": "Image not available",
+      "comingSoon": "Coming Soon",
+      "simulationsCount": "{{count}} Simulation",
+      "simulationsCount_plural": "{{count}} Simulations",
+      "ariaLabel": "Select {{title}} scenario",
+      "type": {
+        "pathway": "pathway",
+        "scenario": "scenario"
+      }
+    },
+    "empty": {
+      "scenarios": "No scenarios available at the moment",
+      "pathways": "No pathways available at the moment",
+      "cases": "No cases available at the moment",
+      "refresh": "Refresh Page"
+    },
+    "aria": {
+      "availableCases": "Available cases",
+      "availablePathways": "Available pathways",
+      "availableScenarios": "Available scenarios"
+    },
+    "choose": {
+      "prefix": "Choose your",
+      "case": "Case",
+      "track": "Track",
+      "scenario": "Scenario"
+    },
+    "details": {
+      "progress": "{{completed}} of {{total}} completed",
+      "loadingDetailsError": "Failed to load simulation details",
+      "track": {
+        "breadcrumb": "Tracks",
+        "notFound": "Track not found"
+      },
+      "case": {
+        "breadcrumb": "Cases",
+        "notFound": "Case not found"
+      },
+      "modal": {
+        "headerTitle": "Simulation",
+        "headerSubtitle": "Details"
+      }
+    },
+    "backToLearn": "Back to Learn",
+    "notFound": {
+      "case": "Case not found",
+      "track": "Track not found"
+    }
+  },
+  "health": {
+    "title": "Application Health Status",
+    "status": {
+      "healthy": "Healthy"
+    },
+    "description": "All systems are operating normally. This page confirms that the frontend application is running and responsive.",
+    "lastChecked": "Last checked: {{time}}"
+  },
+  "reflection": {
+    "title": "Self-Reflection Prompts",
+    "clear": "Clear",
+    "save": "Save",
+    "prompts": {
+      "clientNeed": "What do you think the client needed most in the moment you shifted to problem-solving?"
+    }
+  },
+  "analytics": {
+    "title": "Session Analytics",
+    "dashboardTitle": "Metabase dashboard",
+    "types": {
+      "callLogs": "Real call logs",
+      "simulations": "Simulations",
+      "org": "Org Analytics"
+    },
+    "empty": {
+      "title": "Analytics not configured",
+      "description": "No dashboards are available yet. Please contact your administrator."
+    }
+  },
+  "suspended": {
+    "title": "Account Suspended",
+    "description": {
+      "line1": "Your account has been suspended. Contact your",
+      "line2": "administrator for assistance"
+    },
+    "goToLogin": "Go to login"
+  },
+  "terms": {
+    "title": "Terms and agreement",
+    "footerPrefix": "For complete details, please review our",
+    "footerLinkText": "Privacy Policy and User License Agreement",
+    "agreeLabel": "I have read and agreed to these Terms & Conditions, and consent.",
+    "agreeButton": "Agree",
+    "sections": [
+      {
+        "heading": "General Terms (All Users)",
+        "content": [
+          "You are 18+ and legally able to enter contracts",
+          "You are accessing Ally through a partner organization formally engaged with Ally or through direct invitation by Ally for demonstration, testing or research purposes.",
+          "You are using Ally’s platform in accordance with your affiliated organization’s rules, ethics and requirements.",
+          "You understand that Ally is NOT for real emergencies. Contact crisis services, if needed. More information: <a>https://findahelpline.com/</a>"
+        ]
+      },
+      {
+        "heading": "For Ally Skills Lab (Training Simulations)",
+        "content": [
+          "You understand that all the scenarios are fictional, and for training purposes only.",
+          "You understand that this doesn't replace human-supervised training, provide certification, or qualify you for independent practice.",
+          "You consent to audio and transcripts of role-play sessions being stored for quality improvement and being shared with your training organization/supervisor."
+        ]
+      },
+      {
+        "heading": "For Ally Assist (Session Notes)",
+        "content": [
+          "You will use this only for authorized sessions per your organization's rules",
+          "For this product, <b>audio recordings are NOT stored by Ally</b>. Transcripts of sessions are stored and deleted based on the user organization’s decision"
+        ]
+      }
+    ]
+  },
+  "settings": {
+    "comingSoon": {
+      "title": "Coming Soon",
+      "description": "We’re working on something exciting! This feature will be available soon."
+    }
+  },
+  "postSim": {
+    "titlePrefix": "Simulation",
+    "skills": {
+      "shownInSession": "Skills shown in this session",
+      "empty": "No skills data available for this session",
+      "loading": "Loading skills data...",
+      "failed": "Failed to load skills data",
+      "coverage": "Skill Coverage",
+      "distressAlleviation": "Client Distress Alleviation",
+      "emotionalMovement": "Client Emotional Movement",
+      "level": "Level (-5 to 5)",
+      "timeline": "Session Timeline",
+      "strengths": "Strengths & skills demonstrated",
+      "areasForGrowth": "Areas for growth",
+      "recommended": "RECOMMENDED"
+    },
+    "tabs": {
+      "transcription": "Transcription",
+      "annotatedTranscript": "Annotated Transcript",
+      "upNext": "Up next",
+      "askAi": "Ask AI",
+      "reflection": "Reflection",
+      "deeperReflection": "Deeper Reflection",
+      "skills": "Skills",
+      "skillsDemonstrated": "Skills  Demonstrated",
+      "sessionReview": "Session Review"
+    },
+    "simulationSummary": "Simulation Summary",
+    "shortSession": {
+      "title": "Session ended too soon",
+      "description": "We need more interaction data to provide meaningful feedback."
+    },
+    "feedback": {
+      "sessionFeedback": "Session Feedback",
+      "noData": "No data found"
+    },
+    "common": {
+      "tryAnother": "Try another simulation",
+      "details": "Details",
+      "scenario": "Scenario:",
+      "shareForReview": "Share for review"
+    }
+  },
+  "review": {
+    "title": "Review",
+    "filter": {
+      "all": "All",
+      "latest": "Latest",
+      "mostReviewed": "Most reviewed",
+      "undiscovered": "Undiscovered"
+    },
+    "empty": {
+      "title": "No shared sessions yet",
+      "description": "Shared user transcripts will be available here for review.",
+      "refresh": "Refresh Page"
+    },
+    "error": {
+      "title": "Unable to Load Reviews",
+      "description": "Something went wrong while loading reviews. Please try again.",
+      "retry": "Retry"
+    },
+    "privacy": {
+      "private": "Keep it private",
+      "share": "Share for review"
+    },
+    "details": {
+      "comments": "Comments",
+      "comment_one": "{{count}} Comment",
+      "comment_other": "{{count}} Comments",
+      "noCommentsYet": "No comments yet",
+      "you": "You",
+      "by": "By {{name}}",
+      "dateAndTime": "Date & time",
+      "addNote": "Add note",
+      "editNote": "Edit note",
+      "addNotePlaceholder": "Add a note...",
+      "shareModalHeader": "Share this for review"
+    },
+    "reactionsModal": {
+      "title": "Reactions",
+      "all": "All {{count}}",
+      "more": "More",
+      "noReactionsYet": "No reactions yet"
+    },
+    "feedCard": {
+      "sharedSimulation": "Shared simulation for review",
+      "dateTime": "Date & time",
+      "duration": "Duration",
+      "sec": "sec",
+      "min": "min",
+      "reviewTranscript": "Review transcript",
+      "reactions": "reaction",
+      "reactions_plural": "reactions",
+      "comments": "comment",
+      "comments_plural": "comments",
+      "relativeTime": {
+        "justNow": "Just now",
+        "year_one": "1 year",
+        "year_other": "{{count}} years",
+        "yearMonth": "1 year {{months}}",
+        "month_one": "{{count}} month",
+        "month_other": "{{count}} months",
+        "week_one": "{{count}} week",
+        "week_other": "{{count}} weeks",
+        "day_one": "{{count}} Day",
+        "day_other": "{{count}} Days",
+        "hour_one": "{{count}} hour",
+        "hour_other": "{{count}} hours",
+        "minute_one": "{{count}} minute",
+        "minute_other": "{{count}} minutes",
+        "second_one": "{{count}} second",
+        "second_other": "{{count}} seconds"
+      }
+    }
+  },
+  "callFeedback": {
+    "rateTitle": "Rate the AI-generated summary?",
+    "rateSubtitle": "Please rate the quality, let us know what worked well, and share areas for improvement.",
+    "moreSuggestions": "Any more suggestions?",
+    "suggestionPlaceholder": "Anything else that you'd like to share about the summary?",
+    "selectIssues": "Please select one or more issues",
+    "concernPlaceholder": "Describe your concern here.",
+    "submitting": "Submitting...",
+    "submit": "Submit",
+    "submitted": "Feedback submitted successfully",
+    "ratings": {
+      "1": "Poor quality - Needs significant improvement",
+      "2": "Below expectations - Could be much better",
+      "3": "Average quality - Meets basic expectations",
+      "4": "Good quality - Above expectations",
+      "5": "Excellent quality - Highly recommended"
+    },
+    "issues": {
+      "missingKeyInfo": "Missing key information",
+      "inaccurate": "Inaccurate",
+      "tooVague": "Too vague",
+      "difficultToUnderstand": "Difficult to understand",
+      "tooShort": "Too short",
+      "other": "Other"
+    }
+  },
+  "summaryLoading": {
+    "generated": "Summary is generated",
+    "generatedDesc": "You can review the session now.",
+    "failedTitle": "Failed to generate session summary",
+    "noAudioDetected": "No audio detected",
+    "transcriptionDeleted": "Transcription generated & audio deleted",
+    "processingDescSidebar": "An AI-generated summary will be available shortly on this screen. In the meantime, you can add notes below.",
+    "processingDescMain": "An AI-generated summary will be available shortly on this screen and in the session logs. In the meantime, you can add notes below.",
+    "estimatedTime": "Estimated time: ~ {{time}} min",
+    "settingUp": "Setting up your summary screen",
+    "checkLater": "I'll check later",
+    "seeIfReady": "See if its ready",
+    "backToSessionLogs": "Back to session logs",
+    "addNotes": "Add Notes(Optional)",
+    "autosaving": "Autosaving",
+    "saved": "Saved",
+    "notesTooltip": "Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated",
+    "notesPlaceholder": "Jot down your thoughts",
+    "processing": {
+      "generatingTranscription": "Generating transcription",
+      "deletingAudio": "Deleting audio",
+      "segregatingUtterances": "Segregating utterances",
+      "understandingConversation": "Understanding conversation",
+      "chartingFlow": "Charting flow",
+      "extractingKeyPoints": "Extracting key points",
+      "identifyingThemes": "Identifying themes",
+      "analysing": "Analysing",
+      "generatingSummary": "Generating summary",
+      "enrichingSummary": "Enriching summary",
+      "validatingSummary": "Validating summary"
+    }
+  },
+  "search": {
+    "placeholder": "Need guidance? Search here..",
+    "headerDescription": "Guidance, safety, and support — whenever you need it.",
+    "suggestionsTitle": "Try:",
+    "noResults": "No results found for \"{{query}}\"",
+    "allLabel": "All",
+    "error": "Error fetching search results",
+    "logoAlt": "Ally Logo",
+    "viewMore": "View more",
+    "viewLess": "View less",
+    "categories": {
+      "Techniques": "Techniques",
+      "Assessment": "Assessment",
+      "Intervention": "Intervention",
+      "Resources": "Resources",
+      "Guidelines": "Guidelines",
+      "Support": "Support",
+      "Crisis": "Crisis",
+      "Training": "Training",
+      "Research": "Research",
+      "Policy": "Policy"
+    }
+  },
+  "transcription": {
+    "title": "Annotated Transcript",
+    "empty": "No transcript available",
+    "agentLabel": "AI Agent:",
+    "scribeAgentLabel": "Client:",
+    "youLabel": "You",
+    "clientLabel": "Client",
+    "counsellorLabel": "Counsellor",
+    "aiAgentName": "AI Agent",
+    "youName": "You",
+    "aiClientSuffix": "AI client"
+  },
+  "summary": {
+    "disclaimer": "This summary has been generated by AI. Ally AI can make mistakes. Review and edit important info before saving the summary.",
+    "notFoundTitle": "Summary Not Found",
+    "notFoundDesc": "The summary you are looking for does not exist.",
+    "goHome": "Go to Home",
+    "additionalNotes": "Additional Notes",
+    "notesAlt": "Notes",
+    "save": "Save",
+    "saving": "Saving...",
+    "enhance": "Enhance",
+    "tabs": {
+      "returnToSelf": "Return to Self",
+      "sessionSummary": "Session summary",
+      "transcript": "Transcript"
+    },
+    "sections": {
+      "featuresAndDemographics": "Features and Demographics",
+      "sessionSummary": "Session Summary",
+      "flow": "Flow",
+      "keyConcerns": "Key concerns",
+      "objectiveObservations": "Objective Observations",
+      "subjectiveObservations": "Subjective Observations",
+      "assessment": "Assessment",
+      "dominantFeelings": "Dominant Feelings",
+      "issuesWorkedOn": "Issues Worked On",
+      "keyTherapeuticTechniques": "Key Therapeutic Techniques",
+      "referralsProvided": "Referrals Provided",
+      "homeworkRecommended": "Homework Recommended",
+      "plansForNextCall": "Plans for Next Call",
+      "tags": "Tags",
+      "metrics": "Metrics",
+      "intake": "Intake",
+      "ongoingRisks": "Ongoing Risks"
+    },
+    "feedback": {
+      "title": "Session Feedback",
+      "positives": "What went well",
+      "improvements": "Improvement tips",
+      "keyEvents": "Key Events",
+      "coverImageAlt": "Cover image",
+      "sessionId": "ID: {{id}}",
+      "columns": {
+        "time": "Time",
+        "event": "Event",
+        "score": "Score"
+      }
+    },
+    "placeholders": {
+      "sessionSummary": "Add a quick summary of the session's key themes and takeaways here.",
+      "flow": "Capture the flow of conversation, reflections, or shifts in the client’s mood here.",
+      "keyConcerns": "List any main concerns or stressors raised by the client in this session.",
+      "objectiveObservations": "Note factual observations or statements made by the client here.",
+      "subjectiveObservations": "Use this space for your impressions, intuitions, or emotional insights.",
+      "assessment": "Summarize your overall take or clinical impression from today’s session.",
+      "dominantFeelings": "Highlight any emotions that stood out strongly during the session.",
+      "issuesWorkedOn": "Mention what was explored or worked on during the session.",
+      "keyTherapeuticTechniques": "Note any tools, frameworks, or strategies applied in the session.",
+      "referralsProvided": "Note any internal or external referrals or resources shared with the client.",
+      "homework": "Add suggestions or tasks for the client to work on between sessions.",
+      "planForNextCall": "Mention goals or topics to revisit in the next session.",
+      "tags": "Add keywords to help organize or categorize this session.",
+      "select": "Select",
+      "addNote": "Add note"
+    },
+    "fields": {
+      "callId": "Call ID",
+      "callDuration": "Call Duration",
+      "callDate": "Call Date",
+      "callTime": "Call time",
+      "newCallFollowUp": "New Call Follow Up",
+      "counsellor": "Counsellor",
+      "callQuality": "Call Quality",
+      "callerId": "Caller ID",
+      "counsellorName": "Counsellor Name",
+      "callerType": "Caller type",
+      "age": "Age",
+      "gender": "Gender",
+      "profession": "Profession",
+      "relationshipStatus": "Relationship status",
+      "languages": "Languages",
+      "location": "Location",
+      "concernCode": "Concern code",
+      "sessionSummary": "Session Summary",
+      "flow": "Flow",
+      "keyConcerns": "Key concerns",
+      "objectiveObservations": "Objective Observations",
+      "subjectiveObservations": "Subjective Observations",
+      "assessment": "Assessment",
+      "dominantFeelings": "Dominant Feelings",
+      "issuesWorkedOn": "Issues Worked On",
+      "keyTherapeuticTechniques": "Key Therapeutic Techniques",
+      "referralsProvided": "Referrals Provided",
+      "homeworkRecommended": "Homework Recommended",
+      "plansForNextCall": "Plans for Next Call",
+      "tags": "Tags",
+      "listeningRatio": "Listening Ratio",
+      "reflectiveQuestions": "No of Reflective Questions asked",
+      "emotionsLift": "Emotions Lift",
+      "openEndedQuestions": "No of Open Ended Questions asked",
+      "intakeNotes": "Intake Notes",
+      "riskSelfHarm": "Risk, Self Harm",
+      "riskSelfHarmNotes": "Risk, Self Harm Notes",
+      "riskSuicidalThoughts": "Risk, Suicidal Thoughts",
+      "riskSuicidalThoughtsNotes": "Risk, Suicidal Thoughts Notes",
+      "riskSuicidalPlan": "Risk, Suicidal Plan",
+      "riskSuicidalAction": "Risk, Suicidal Action",
+      "riskRunningAway": "Risk, Running Away",
+      "riskRunningAwayNotes": "Risk, Running Away Notes",
+      "traumaPhysicalAbuse": "Trauma, Physical Abuse",
+      "traumaSexualAbuse": "Trauma, Sexual Abuse",
+      "traumaVerbalAbuse": "Trauma, Verbal Abuse",
+      "traumaNeglect": "Trauma, Neglect",
+      "traumaSeparation": "Trauma, Separation from Caregiver/Parent",
+      "traumaDomesticViolence": "Trauma, Witnessed Domestic Violence",
+      "traumaNotes": "Trauma Notes",
+      "assessmentPsychDiagnosis": "Assessment, Psychological Diagnosis",
+      "assessmentPsychDiagnosisNotes": "Assessment, Psychological Diagnosis Notes",
+      "assessmentPsychotropicMeds": "Assessment, Use of Psychotropic Medications",
+      "assessmentPsychotropicMedsNotes": "Assessment, Use of Psychotropic Medications Notes",
+      "assessmentHallucinations": "Assessment, Hallucinations",
+      "assessmentHallucinationsNotes": "Assessment, Hallucinations Notes",
+      "assessmentAffect": "Assessment, Affect",
+      "assessmentSpeech": "Assessment, Speech",
+      "ongoingRiskSelfHarm": "Ongoing Risk, Self Harm",
+      "ongoingRiskSelfHarmNotes": "Ongoing Risk, Self Harm Notes",
+      "ongoingRiskSuicidalThoughts": "Ongoing Risk, Suicidal Thoughts",
+      "ongoingRiskSuicidalPlan": "Ongoing Risk, Suicidal Plan",
+      "ongoingRiskSuicidalAction": "Ongoing Risk, Suicidal Action",
+      "ongoingRiskSuicidalThoughtsNotes": "Ongoing Risk, Suicidal Thoughts Notes"
+    }
+  },
+  "profile": {
+    "settings": {
+      "title": "Profile Settings",
+      "upload_image": "Upload Image",
+      "profile_image": "Profile image",
+      "name": "Name",
+      "email": "Email",
+      "cancel": "Cancel",
+      "done": "Done",
+      "error_image_size": "Image must be under 2MB and have the correct aspect ratio.",
+      "upload_hint": "PNG or JPG files only 1:1 ratio (max 2mb)"
+    }
+  },
+  "userMenu": {
+    "creditUsage": "Credit usage",
+    "logout": "Logout"
+  },
+  "calls": {
+    "title": "Session Logs",
+    "menu": {
+      "archives": "Archives"
+    },
+    "actions": {
+      "uploadAudio": "Upload audio",
+      "startSession": "Start Session"
+    },
+    "table": {
+      "counsellorName": "Counsellor",
+      "dateTime": "Date & Time",
+      "qualityScore": "Quality Score",
+      "summaryStatus": "Summary Status",
+      "source": "Source",
+      "actions": "Actions",
+      "scenario": "Scenario",
+      "sessionScore": "Session Score"
+    },
+    "userGroups": {
+      "my": "My Logs",
+      "org": "Org Logs"
+    },
+    "sessionTypes": {
+      "call": "Call",
+      "simulation": "Simulation"
+    },
+    "fallback": {
+      "callEmptyTitle": "No call logs found",
+      "callEmptyDesc": "Try adjusting filters or refresh the page.",
+      "simEmptyTitle": "No simulation logs found",
+      "simEmptyDesc": "Try adjusting filters or refresh the page."
+    },
+    "dialog": {
+      "startSession": {
+        "embedTitle": "Listen Live",
+        "embedDesc": "Ally will hear audio alongside you",
+        "titleNormal": "Start",
+        "titleItalic": "Session",
+        "button": "Start Session now",
+        "footer": "By starting, you confirm everyone being transcribed has given consent.",
+        "description1": "Ally’s mental health AI scribe safely listens, transcribes ",
+        "description2": "and writes session notes for you."
+      },
+      "delete": {
+        "titleNormal": "Delete",
+        "titleItalic": "session log?",
+        "content": "This action cannot be undone.",
+        "primary": "Delete",
+        "secondary": "Cancel"
+      }
+    },
+    "archives": {
+      "backAria": "Go back",
+      "title": "Archives",
+      "errorTitle": "Unable to load archives",
+      "errorDesc": "Something went wrong while loading archives. Please try again.",
+      "emptyTitle": "No archived logs found",
+      "emptyDesc": "There are no archived items yet."
+    },
+    "audioUpload": {
+      "title": "Upload audio recording",
+      "uploading": "Uploading your audio file",
+      "loadingWaveform": "Loading waveform...",
+      "fields": {
+        "counsellor": {
+          "label": "Counsellor name",
+          "placeholder": "Select counsellor"
+        },
+        "sessionDate": "Session date",
+        "timeZone": {
+          "label": "Time zone",
+          "placeholder": "Select time zone"
+        },
+        "sessionTime": "Session time"
+      },
+      "actions": {
+        "upload": "Upload"
+      },
+      "errors": {
+        "uploadFailed": "Audio Upload failed!",
+        "genericError": "Failed to upload audio",
+        "fillFields": "Please fill all the fields and upload a file.",
+        "unsupportedFile": "Selected file type is not supported."
+      }
+    },
+    "uploadProgress": {
+      "cancelled": "Upload cancelled",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "clearAll": "Clear all",
+      "noUploads": "No uploads",
+      "inProgress_one": "1 upload in progress",
+      "inProgress_other": "{{count}} uploads in progress",
+      "summaryCancelled_one": "1 upload cancelled",
+      "summaryCancelled_other": "{{count}} uploads cancelled",
+      "completed_one": "1 upload completed",
+      "completed_other": "{{count}} uploads completed",
+      "cancelDialog": {
+        "title": "Cancel",
+        "titleItalic": "upload",
+        "content": "Your upload is not complete. Would you like to cancel the upload?",
+        "primaryButton": "Cancel Upload",
+        "secondaryButton": "Continue Upload"
+      }
+    }
+  }
+}

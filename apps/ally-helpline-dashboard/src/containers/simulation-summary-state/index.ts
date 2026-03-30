@@ -1,3 +1,5 @@
 import { SimulationSummary } from "./SimulationSummary";
+import { useSimulationSummaryPolling } from "./useSimulationSummaryPolling";
 
-export { SimulationSummary };
+export { ShortSessionUI } from "./components";
+export { SimulationSummary, useSimulationSummaryPolling };

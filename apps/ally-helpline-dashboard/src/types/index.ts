@@ -11,3 +11,8 @@ export * from "./learn";
 export * from "./components";
 export * from "./simulation";
 export * from "./user";
+export * from "./leaderBoard";
+export * from "./reviews";
+export * from "./badge";
+export * from "./reviews";
+export * from "./chat";

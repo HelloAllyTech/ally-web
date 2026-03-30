@@ -10,9 +10,10 @@ vi.mock("@assets", () => ({
   ),
 }));
 
-// Mock useClickOutside hook
 vi.mock("@hooks", () => ({
   useClickOutside: vi.fn(),
+  useCreatePortal: (_ref: any, isOpen: boolean) =>
+    isOpen ? { top: 0, left: 0, width: 200 } : null,
 }));
 
 describe("TextDropdown", () => {
@@ -90,7 +91,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} disabled={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.queryByPlaceholderText("Search...")).not.toBeInTheDocument();
     });
@@ -108,7 +109,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const options = screen.getAllByText(/Option/);
       expect(options.length).toBeGreaterThanOrEqual(3);
@@ -118,8 +119,8 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
+      fireEvent.mouseDown(button);
 
       const dropdown = screen.queryByText("Option 2");
       expect(dropdown).not.toBeInTheDocument();
@@ -129,7 +130,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const options = screen.getAllByText(/Option/);
       // Button text + 3 dropdown options = 4 total
@@ -143,19 +144,19 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} onChange={mockOnChange} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const option2 = screen.getByText("Option 2");
       fireEvent.click(option2);
 
-      expect(mockOnChange).toHaveBeenCalledWith("opt2");
+      expect(mockOnChange).toHaveBeenCalledWith("opt2", "Option 2");
     });
 
     it("closes dropdown after selection", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const option2 = screen.getByText("Option 2");
       fireEvent.click(option2);
@@ -167,7 +168,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "Option 2" } });
@@ -175,7 +176,7 @@ describe("TextDropdown", () => {
       const option2 = screen.getByText("Option 2");
       fireEvent.click(option2);
 
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
       const newSearchInput = screen.getByPlaceholderText("Search...");
       expect(newSearchInput).toHaveValue("");
     });
@@ -185,7 +186,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} onChange={mockOnChange} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
 
@@ -207,7 +208,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.getByPlaceholderText("Search...")).toBeInTheDocument();
     });
@@ -216,7 +217,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={false} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.queryByPlaceholderText("Search...")).not.toBeInTheDocument();
     });
@@ -225,7 +226,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "Option 2" } });
@@ -239,7 +240,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "option 2" } });
@@ -251,7 +252,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "nonexistent" } });
@@ -263,7 +264,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       await waitFor(() => {
         const searchInput = screen.getByPlaceholderText("Search...");
@@ -275,7 +276,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
 
@@ -293,7 +294,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} searchPlaceholder="Type here" />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.getByPlaceholderText("Type here")).toBeInTheDocument();
     });
@@ -331,7 +332,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
 
@@ -344,7 +345,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
       fireEvent.keyDown(button, { key: "ArrowUp" });
@@ -359,7 +360,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} onChange={mockOnChange} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
       fireEvent.keyDown(button, { key: "Enter" });
@@ -371,7 +372,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "Escape" });
 
@@ -382,7 +383,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       // Navigate to last option and one more
       fireEvent.keyDown(button, { key: "ArrowDown" }); // 0
@@ -399,7 +400,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowUp" });
 
@@ -413,7 +414,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} value="opt2" />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       // Current value should be displayed
       const options = screen.getAllByText("Option 2");
@@ -427,7 +428,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
 
@@ -440,7 +441,7 @@ describe("TextDropdown", () => {
       const { container } = render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
 
@@ -452,7 +453,7 @@ describe("TextDropdown", () => {
       const { container } = render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
 
@@ -467,7 +468,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const colorIndicators = document.querySelectorAll(".rounded-full");
       expect(colorIndicators.length).toBeGreaterThan(0);
@@ -477,7 +478,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const colorIndicators = document.querySelectorAll(".rounded-full");
       expect(colorIndicators[0]).toHaveStyle({ backgroundColor: "#ff0000" });
@@ -492,7 +493,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} options={optionsWithoutBg} value="" />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.getByText("No BG 1")).toBeInTheDocument();
       expect(screen.getByText("No BG 2")).toBeInTheDocument();
@@ -520,7 +521,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} options={[]} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.getByText("No options found")).toBeInTheDocument();
     });
@@ -542,7 +543,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} options={longOptions} value="" />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.getByText("A".repeat(100))).toBeInTheDocument();
     });
@@ -563,7 +564,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} options={specialOptions} value="" />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.getByText("Option <>&\"'")).toBeInTheDocument();
     });
@@ -580,7 +581,7 @@ describe("TextDropdown", () => {
       );
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       // Should still render valid options
       const validOptions = container.querySelectorAll(".cursor-pointer");
@@ -593,9 +594,9 @@ describe("TextDropdown", () => {
       const { container } = render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
-      const dropdown = container.querySelector(".absolute.z-50");
+      const dropdown = container.querySelector(".fixed.z-50");
       expect(dropdown).toBeInTheDocument();
     });
 
@@ -603,19 +604,19 @@ describe("TextDropdown", () => {
       const { container } = render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
-      const dropdown = container.querySelector('[class*="w-[calc(100%+24px)]"]');
-      expect(dropdown).toBeInTheDocument();
+      const dropdown = container.querySelector(".fixed.z-50");
+      expect(dropdown).toHaveStyle({ width: "200px" });
     });
 
     it("applies border and shadow", () => {
       const { container } = render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
-      const dropdown = container.querySelector(".border.shadow-lg");
+      const dropdown = container.querySelector(".fixed.shadow-lg");
       expect(dropdown).toBeInTheDocument();
     });
 
@@ -623,7 +624,7 @@ describe("TextDropdown", () => {
       const { container } = render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const optionsList = container.querySelector(".max-h-48");
       expect(optionsList).toBeInTheDocument();
@@ -648,15 +649,16 @@ describe("TextDropdown", () => {
     });
 
     it("supports keyboard navigation when open", () => {
-      render(<TextDropdown {...defaultProps} />);
+      const { container } = render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       fireEvent.keyDown(button, { key: "ArrowDown" });
       fireEvent.keyDown(button, { key: "Enter" });
 
-      expect(screen.queryByText("Option 2")).not.toBeInTheDocument();
+      // Dropdown closes after selection
+      expect(container.querySelector(".fixed.z-50")).toBeNull();
     });
   });
 
@@ -666,7 +668,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} onLoadMore={mockOnLoadMore} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.getByText("Load More")).toBeInTheDocument();
     });
@@ -675,7 +677,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.queryByText("Load More")).not.toBeInTheDocument();
     });
@@ -685,7 +687,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} onLoadMore={mockOnLoadMore} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const loadMoreButton = screen.getByText("Load More");
       fireEvent.click(loadMoreButton);
@@ -698,7 +700,7 @@ describe("TextDropdown", () => {
       const { container } = render(<TextDropdown {...defaultProps} onLoadMore={mockOnLoadMore} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const loadMoreButton = screen.getByText("Load More");
       expect(loadMoreButton).toHaveClass("text-typography-500");
@@ -710,7 +712,7 @@ describe("TextDropdown", () => {
       const { container } = render(<TextDropdown {...defaultProps} onLoadMore={mockOnLoadMore} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const borderDiv = container.querySelector(".border-t");
       expect(borderDiv).toBeInTheDocument();
@@ -720,7 +722,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} onLoadMore={undefined} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       expect(screen.queryByText("Load More")).not.toBeInTheDocument();
     });
@@ -732,7 +734,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "test search" } });
@@ -745,7 +747,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "Option 2" } });
@@ -761,7 +763,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "Option 2" } });
@@ -781,7 +783,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "test" } });
@@ -795,7 +797,7 @@ describe("TextDropdown", () => {
       render(<TextDropdown {...defaultProps} isSearchable={true} onSearch={mockOnSearch} />);
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       const searchInput = screen.getByPlaceholderText("Search...");
       fireEvent.change(searchInput, { target: { value: "a" } });
@@ -821,7 +823,7 @@ describe("TextDropdown", () => {
       );
 
       const button = screen.getByRole("button");
-      fireEvent.click(button);
+      fireEvent.mouseDown(button);
 
       // Both search input and Load More should be present
       expect(screen.getByPlaceholderText("Search...")).toBeInTheDocument();

@@ -33,6 +33,9 @@ export const CustomVideo = ({
     }
   }, [src, autoPlay]);
 
+  const handleEnded = () => {
+    setIsPlaying(false);
+  };
   const handleToggleMute = () => {
     if (videoRef.current) {
       const newMutedState = !isMuted;
@@ -67,6 +70,7 @@ export const CustomVideo = ({
         loop={loop}
         playsInline
         poster={poster}
+        onEnded={handleEnded}
         aria-label={alt}
       />
 

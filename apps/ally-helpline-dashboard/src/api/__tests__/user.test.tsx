@@ -25,7 +25,7 @@ vi.mock("@constants", () => ({
 }));
 
 // Mock types
-vi.mock("@src/types", () => ({
+vi.mock("@types", () => ({
   UserPreferences: {},
 }));
 

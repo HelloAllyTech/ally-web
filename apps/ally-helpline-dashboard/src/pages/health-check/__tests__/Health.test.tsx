@@ -18,9 +18,9 @@ import { Health } from "../Health";
 
 // Mock the assets module
 vi.mock("@assets", () => ({
-  AllyLogo: ({ className }: { className: string }) => (
-    <div data-testid="ally-logo" className={className}>
-      AllyLogo
+  LifelineLogo: ({ className }: { className: string }) => (
+    <div data-testid="lifeline-logo" className={className}>
+      LifelineLogo
     </div>
   ),
 }));
@@ -92,7 +92,7 @@ describe("Health Component", () => {
 
     it("should render header section with logo and title", () => {
       render(<Health />);
-      const logo = screen.getByTestId("ally-logo");
+      const logo = screen.getByTestId("lifeline-logo");
       const title = screen.getByText("Application Health Status");
 
       expect(logo).not.toBeNull();
@@ -121,9 +121,9 @@ describe("Health Component", () => {
    * Verifies that logos and icons are properly rendered
    */
   describe("Logo and Icon Rendering", () => {
-    it("should render AllyLogo with correct classes", () => {
+    it("should render LifelineLogo with correct classes", () => {
       render(<Health />);
-      const logo = screen.getByTestId("ally-logo");
+      const logo = screen.getByTestId("lifeline-logo");
       expect(logo).not.toBeNull();
       expect(logo.className).toContain("h-10");
       expect(logo.className).toContain("w-10");
@@ -348,7 +348,7 @@ describe("Health Component", () => {
   describe("Component Integration", () => {
     it("should integrate correctly with mocked assets", () => {
       render(<Health />);
-      const logo = screen.getByTestId("ally-logo");
+      const logo = screen.getByTestId("lifeline-logo");
       expect(logo).not.toBeNull();
     });
 

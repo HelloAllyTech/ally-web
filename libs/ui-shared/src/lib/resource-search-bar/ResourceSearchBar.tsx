@@ -20,6 +20,7 @@ export interface SearchBarProps {
   initialValue?: string;
   suggestions?: string[];
   mode?: SearchVariant;
+  placeholder?: string;
 }
 
 const MAX_CHARACTER_LIMIT = 150;
@@ -34,6 +35,7 @@ const SearchBar: FC<SearchBarProps> = ({
   initialValue = "",
   suggestions = [],
   mode = SearchVariant.LIGHT,
+  placeholder,
 }) => {
   // Initialize with initialValue to match server render
   const [searchTerm, setSearchTerm] = useState(initialValue);
@@ -93,7 +95,7 @@ const SearchBar: FC<SearchBarProps> = ({
         {...params}
         data-testid="search-bar-input"
         variant="outlined"
-        placeholder="Need guidance? Search here.."
+        placeholder={placeholder || "Need guidance? Search here.."}
         value={searchTerm}
         maxLength={MAX_CHARACTER_LIMIT}
         onChange={e => setSearchTerm(e.target.value.slice(0, MAX_CHARACTER_LIMIT))}
@@ -101,7 +103,6 @@ const SearchBar: FC<SearchBarProps> = ({
         sx={{
           borderRadius: "8px",
           overflow: "hidden",
-          border: searchBarStyles[mode].border,
           "& .MuiOutlinedInput-root": {
             height: searchBarStyles[mode].rootHeight,
             fontFamily: "IBM_Plex_Serif",

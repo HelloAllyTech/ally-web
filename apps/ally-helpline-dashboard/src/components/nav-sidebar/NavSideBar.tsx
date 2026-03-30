@@ -1,65 +1,122 @@
 import { FC, useEffect, useState } from "react";
 
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { Tooltip } from "@mui/material";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import { ally, DockToRight, LogoutIllustration } from "@assets";
-import { Carousel, CarouselSize, CarouselVariant, ConfirmationDialog, UserInfo } from "@components";
-import { TabId, navBarOptions, CAROUSEL_SLIDES } from "@constants";
+import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
+import { DockToRight, LogoutIllustration } from "@assets";
+import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
+import { navBarOptions, TOOLTIP_LIGHT_PROPS, TabId, Permissions } from "@constants";
 import { useUser } from "@hooks";
-import { openLinkInNewTab } from "@utils";
 
-import { ButtonVariant } from "../button";
 import { NavSideBarProps, TabProps } from "./types";
+import { ButtonVariant } from "../button";
+import LanguageSelector from "../language-selector/LanguageSelector";
+import NotificationBadge from "../notification-badge/NotificationBadge";
 
 const EXPANDED_WIDTH = 1200;
 
-const Tab: FC<TabProps> = ({ id, Icon, title, activeTab, isExpanded, onClick }) => (
-  <div
-    data-testid={`nav-tab-${id}`}
-    className={`
+const defaultProfileUploadValues: {
+  profileImageUrl: string;
+} = {
+  profileImageUrl: "",
+};
+
+const Tab: FC<TabProps> = ({
+  id,
+  Icon,
+  title,
+  tKey,
+  activeTab,
+  isExpanded,
+  onClick,
+  badgeCount,
+}) => {
+  const { t } = useTranslation();
+  return (
+    <div
+      data-testid={`nav-tab-${id}`}
+      className={`
           w-full h-12 rounded-md p-4 flex items-center gap-3 my-1 cursor-pointer
           ${activeTab === id ? "bg-[#F3F3F3] rounded-[2px]" : "hover:bg-[#F5F5F5]"}
           transition-all duration-300 group
         `}
-    onClick={onClick}
-  >
-    <Icon
-      className={`flex-shrink-0 ${activeTab === id ? "" : "opacity-60"} `}
-      data-testid={`nav-tab-icon-${id}`}
-    />
-
-    {isExpanded && (
-      <div
-        data-testid={`nav-tab-title-${id}`}
-        className={`${
-          activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
-        } font-primary text-lg`}
-      >
-        {title}
+      onClick={onClick}
+    >
+      <div className="relative flex-shrink-0">
+        <Icon
+          className={`${activeTab === id ? "" : "opacity-60"} `}
+          data-testid={`nav-tab-icon-${id}`}
+        />
+        {!isExpanded && badgeCount !== undefined && badgeCount > 0 && (
+          <NotificationBadge count={badgeCount} />
+        )}
       </div>
-    )}
-    {id === TabId.COMMUNITY && (
-      <OpenInNewIcon
-        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        data-testid="nav-tab-external-icon"
-      />
-    )}
-  </div>
-);
+
+      {isExpanded && (
+        <div className="flex items-center justify-between flex-1">
+          <div
+            data-testid={`nav-tab-title-${id}`}
+            className={`${
+              activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
+            } font-primary text-lg`}
+          >
+            {tKey ? t(tKey) : title}
+          </div>
+          {badgeCount !== undefined && badgeCount > 0 && (
+            <NotificationBadge count={badgeCount} isExpanded />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
-  const { permissions, user, logout } = useUser();
+  const { t } = useTranslation();
+  const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
+    useUser();
 
-  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
-  const permittedTabs = navBarOptions.filter(
-    tab =>
-      !tab.permissions || permissions?.some(permission => tab.permissions.includes(permission)),
+  const { data: unreadData } = useGetUnreadReviewCountQuery(
+    { isScribe: false },
+    { skip: !permissions.includes(Permissions.VIEW_SIMULATION_REVIEWS) },
   );
 
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
+  const permittedTabs = navBarOptions.filter(tab => {
+    // Check if user has permission for this tab
+    const hasPermission =
+      !tab.permissions || permissions?.some(permission => tab.permissions.includes(permission));
+    if (!hasPermission) return false;
+
+    // If this is the Badges tab, check if Leaderboard is also permitted
+    if (tab.id === TabId.BADGES) {
+      const hasLeaderboardPermission = navBarOptions.some(
+        t =>
+          t.id === TabId.LEADERBOARD &&
+          (!t.permissions || permissions?.some(permission => t.permissions.includes(permission))),
+      );
+      return !hasLeaderboardPermission;
+    }
+
+    return true;
+  });
+
   const navigate = useNavigate();
+  const { data: tenantData } = useGetLogoUrlQuery();
 
   const [isExpanded, setIsExpanded] = useState(true);
+  const [openSettings, setOpenSettings] = useState(false);
+
+  const profileSettingsForm = useForm({
+    defaultValues: defaultProfileUploadValues,
+    mode: "onChange",
+  });
+
+  const profileUrl = profileSettingsForm.watch("profileImageUrl");
 
   useEffect(() => {
     const handleResize = () => {
@@ -74,12 +131,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const onTabClick = (id: TabId, path: string) => {
-    if (id === TabId.COMMUNITY) {
-      openLinkInNewTab(path);
-    } else {
-      onTabChange(path);
-    }
+  const onTabClick = (path: string) => {
+    onTabChange(path);
     onClose();
   };
 
@@ -100,25 +153,44 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     navigate("/login");
   };
 
+  const handleSettingsClose = () => {
+    setOpenSettings(false);
+  };
+
   const renderTabs = () => {
     return (
       <div
         className="flex-1 flex-col gap-1 m-2 border-t border-t-[#E5E7EB] pt-3"
         data-testid="nav-sidebar-tabs"
       >
-        {permittedTabs?.map(({ id, Icon, title, path }) => (
+        {permittedTabs?.map(({ id, Icon, title, path, key: translationKey }: any) => (
           <Tab
             key={id}
             id={id}
             Icon={Icon}
             title={title}
+            tKey={translationKey}
             activeTab={activeTab}
             isExpanded={isExpanded}
-            onClick={() => onTabClick(id, path)}
+            onClick={() => onTabClick(path)}
+            badgeCount={id === TabId.REVIEW ? unreadData?.count : undefined}
           />
         ))}
       </div>
     );
+  };
+
+  const handleSettingsClick = () => {
+    setOpenSettings(true);
+  };
+
+  const handleProfileUpload = async () => {
+    const existingProfileUrl = user.profileImageUrl;
+
+    await uploadProfile({ profileImageUrl: profileUrl });
+    if (existingProfileUrl) await deleteProfile({ profileImageUrl: existingProfileUrl });
+    await refetchUser();
+    setOpenSettings(false);
   };
 
   return (
@@ -129,40 +201,88 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           isExpanded ? "w-64" : "w-24"
         } p-[12px] font-primary`}
       >
-        <div className="flex justify-between" data-testid="nav-sidebar-header">
-          <ally className="m-3 flex-shrink-0" data-testid="nav-sidebar-logo" />
-          <button
-            data-testid="nav-sidebar-toggle"
-            onClick={handleToggleSidebar}
-            className={`${isExpanded ? "px-5 mx-2" : "absolute z-10 top-0 bg-white mx-2 px-[24px] py-[15px] opacity-0 hover:opacity-100"} hover:bg-gray-50 hover:rounded-md my-2 p-3`}
-            title={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
-          >
-            <DockToRight />
-          </button>
-        </div>
+        {/* Logo container */}
+        <div
+          className="relative flex items-center justify-between h-[72px]"
+          data-testid="nav-sidebar-header"
+        >
+          {/* Logo */}
 
+          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md box-border overflow-hidden flex items-center justify-center">
+            {/* Toggle button - covers logo when collapsed */}
+            <Tooltip
+              title={tenantData?.name}
+              placement="right"
+              arrow
+              slotProps={TOOLTIP_LIGHT_PROPS}
+            >
+              <div className="w-14 h-14  group rounded-md box-border overflow-hidden flex items-center justify-center">
+                <CustomImage
+                  src={tenantData?.logoUrl}
+                  alt="org-logo"
+                  className={`object-cover w-full h-full transition-opacity duration-200 rounded-md ${
+                    !isExpanded ? "group-hover:opacity-20" : ""
+                  }`}
+                  fallbackClassName="w-14 h-14  group rounded-md box-border overflow-hidden flex items-center justify-center bg-neutral-100"
+                  fallbackText={tenantData?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+                />
+              </div>
+            </Tooltip>
+            {!isExpanded && (
+              <button
+                data-testid="nav-sidebar-toggle"
+                onClick={handleToggleSidebar}
+                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
+                title={t("nav.sidebar.expand")}
+              >
+                <DockToRight />
+              </button>
+            )}
+          </div>
+
+          {isExpanded && (
+            <button
+              data-testid="nav-sidebar-toggle"
+              onClick={handleToggleSidebar}
+              className="p-3 transition-all duration-200 hover:bg-gray-50 hover:rounded-md"
+              title={t("nav.sidebar.collapse")}
+            >
+              <DockToRight />
+            </button>
+          )}
+        </div>
         {renderTabs()}
 
-        <div className="flex flex-col items-start gap-3 m-3" data-testid="nav-sidebar-footer">
-          {isExpanded && (
-            <Carousel
-              slides={CAROUSEL_SLIDES}
-              variant={CarouselVariant.DARK}
-              size={CarouselSize.SMALL}
-            />
-          )}
+        <div className="flex flex-col items-start gap-3 mx-4 my-3" data-testid="nav-sidebar-footer">
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
-          <UserInfo user={user} onLogout={handleLogout} isExpanded={isExpanded} />
+
+          {isExpanded && FEATURE_FLAGS_MAP.LANGUAGE_SELECTOR_FLAG && (
+            <div className="w-full" data-testid="nav-sidebar-language-selector">
+              <LanguageSelector label={t("nav.language.label")} />
+            </div>
+          )}
+
+          <UserInfo
+            user={user}
+            onLogout={handleLogout}
+            isExpanded={isExpanded}
+            onProfileSettings={handleSettingsClick}
+            profileUrl={user.profileImageUrl}
+            name={user.name}
+          />
         </div>
       </div>
       <ConfirmationDialog
-        title={{ normal: "Safeguard your ", italic: "account" }}
+        title={{
+          normal: t("nav.logout.title.normal"),
+          italic: t("nav.logout.title.italic"),
+        }}
         isOpen={isLogoutDialogOpen}
         onClose={closeLogoutDialog}
-        content="Are you sure you want to log out? You will need to enter secure OTP to login again."
+        content={t("nav.logout.content")}
         buttonVariant={ButtonVariant.DESTRUCTIVE}
         onButtonClick={handleConfirmLogout}
-        buttonText="Logout & lock my ally account"
+        buttonText={t("nav.logout.button")}
         icon={LogoutIllustration}
       />
       {isOpen && (
@@ -172,6 +292,14 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           data-testid="nav-sidebar-overlay"
         ></div>
       )}
+      <ProfileSettings
+        isOpen={openSettings}
+        onClose={handleSettingsClose}
+        userData={user}
+        formMethods={profileSettingsForm}
+        onButtonClick={handleProfileUpload}
+        getProfileUrl={getProfileUrl}
+      />
     </>
   );
 };

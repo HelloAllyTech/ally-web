@@ -1,7 +1,15 @@
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 
 import { ROUTES } from "@constants";
-import { Health, Login, Learn, Scenario, PathwayDetails, SuspendedUser } from "@pages";
+import {
+  Health,
+  Login,
+  Learn,
+  MagicLinkVerify,
+  Scenario,
+  CaseTrackDetails,
+  SuspendedUser,
+} from "@pages";
 
 import HybridRouteLayout from "./HybridRouteLayout";
 import PrivateRouteLayout from "./PrivateRouteLayout";
@@ -9,19 +17,26 @@ import PublicLayout from "./PublicRouteLayout";
 
 const RouteLayout = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Routes>
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
           <Route path={ROUTES.LOGIN} element={<Login />} />
           <Route path={ROUTES.HEALTH} element={<Health />} />
+          <Route path={ROUTES.MAGIC_VERIFY} element={<MagicLinkVerify />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}
         <Route element={<HybridRouteLayout />}>
           <Route path={ROUTES.LEARN} element={<Learn />} />
           <Route path={ROUTES.SCENARIO} element={<Scenario />} />
-          <Route path={ROUTES.PATHWAY} element={<PathwayDetails />} />
+          <Route path={ROUTES.PATHWAY} element={<CaseTrackDetails type="track" />} />
+          <Route path={ROUTES.CASE} element={<CaseTrackDetails type="case" />} />
         </Route>
 
         {/* Private Routes */}

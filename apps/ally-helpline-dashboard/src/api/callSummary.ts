@@ -8,7 +8,7 @@
  * - Export functionality
  */
 
-import { ApiEndpoints, HttpMethod } from "@constants";
+import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
   EnhanceContentRequest,
   EnhanceContentResponse,
@@ -45,7 +45,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
      */
     getCallSummary: builder.query({
       query: chatId => `${ApiEndpoints.CALL_SUMMARY.GET_CALL_SUMMARY}/${chatId}`,
-      providesTags: ["CallSummary"],
+      providesTags: [TAG_TYPES.CALL_SUMMARY],
     }),
 
     /**
@@ -62,7 +62,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PUT,
         body: data,
       }),
-      invalidatesTags: ["CallSummary", "CallLogs"],
+      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
     }),
 
     /**
@@ -105,6 +105,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
         method: HttpMethod.PATCH,
         body: callInfo,
       }),
+      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
     }),
 
     /**
@@ -148,7 +149,7 @@ const callSummaryAPI = baseAPI.injectEndpoints({
     getTranscript: builder.query<GetTranscriptResponse, GetTranscriptRequest>({
       query: ({ chatId, offset, limit, sortBy }) => ({
         url: ApiEndpoints.CALL_SUMMARY.GET_TRANSCRIPT(chatId),
-        params: { offset, limit, sortOrder: "ASC", sortBy },
+        params: { offset, limit, sortOrder: "ASC", sortBy, includeTags: true },
       }),
     }),
 

@@ -20,11 +20,12 @@ vi.mock("date-fns", () => ({
 
 describe("date utils", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.setSystemTime(new Date("2024-01-15T14:30:00Z"));
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await vi.runAllTimersAsync();
     vi.useRealTimers();
   });
 

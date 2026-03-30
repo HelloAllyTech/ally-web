@@ -1,44 +1,121 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import React from "react";
+import { Provider } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { useGetSimulationTranscriptQuery } from "@api";
-
+import {
+  useCreateReviewMutation,
+  useGetSimulationSummaryQuery,
+  useGetSimulationTranscriptQuery,
+  useUpdateReviewMutation,
+} from "@api";
+import { store } from "@store";
 import SimulationTranscriptTab from "../SimulationTranscriptTab";
 
 // Mock @api
 const mockTranscriptData = {
   messages: [
-    { senderId: -1, content: "Client message 1", createdAt: "2024-01-01T10:00:00Z" },
-    { senderId: 2, content: "Counsellor message 1", createdAt: "2024-01-01T10:00:05Z" },
-    { senderId: -1, content: "Client message 2", createdAt: "2024-01-01T10:00:10Z" },
+    {
+      senderId: -1,
+      content: "Client message 1",
+      createdAt: "2024-01-01T10:00:00Z",
+      startSeconds: 0,
+      id: 1,
+    },
+    {
+      senderId: 2,
+      content: "Counsellor message 1",
+      createdAt: "2024-01-01T10:00:05Z",
+      startSeconds: 5,
+      id: 2,
+    },
+    {
+      senderId: -1,
+      content: "Client message 2",
+      createdAt: "2024-01-01T10:00:10Z",
+      startSeconds: 10,
+      id: 3,
+    },
   ],
 };
 
 vi.mock("@api", () => ({
   useGetSimulationTranscriptQuery: vi.fn(),
+  useGetSimulationSummaryQuery: vi.fn(),
+  useCreateReviewMutation: vi.fn(),
+  useUpdateReviewMutation: vi.fn(),
 }));
 
-// Mock TranscriptTab component
-vi.mock("../TranscriptTab", () => ({
-  default: ({ transcriptList, handleLoadMore, isLoading }: any) => (
-    <div data-testid="transcript-tab">
-      {isLoading && <div data-testid="loading">Loading...</div>}
-      <div data-testid="transcript-list">
-        {transcriptList.map((item: any, index: number) => (
-          <div key={index} data-testid={`transcript-item-${index}`}>
-            <div data-testid={`speaker-${index}`}>{item.speaker}</div>
-            <div data-testid={`content-${index}`}>{item.content}</div>
-          </div>
-        ))}
+// Mock TranscriptListing component
+vi.mock("@components", async importOriginal => {
+  const actual = await importOriginal<typeof import("@components")>();
+  return {
+    ...actual,
+    TranscriptListing: ({ transcriptList, handleLoadMore, isLoading }: any) => (
+      <div data-testid="transcript-tab">
+        {isLoading && transcriptList.length === 0 && <div data-testid="loading">Loading...</div>}
+        <div data-testid="transcript-list">
+          {transcriptList.map((item: any, index: number) => (
+            <div key={index} data-testid={`transcript-item-${index}`}>
+              <div data-testid={`sender-${index}`}>
+                {item.senderId === -1 ? "Client" : "Counsellor"}
+              </div>
+              <div data-testid={`content-${index}`}>{item.content}</div>
+            </div>
+          ))}
+        </div>
+        {transcriptList.length > 0 &&
+          transcriptList.length < mockTranscriptData.messages.length && (
+            <button data-testid="load-more-button" onClick={handleLoadMore}>
+              Load More
+            </button>
+          )}
       </div>
-      {transcriptList.length < mockTranscriptData.messages.length && (
-        <button data-testid="load-more-button" onClick={handleLoadMore}>
-          Load More
+    ),
+  };
+});
+
+// Mock @ally-ui-mono/ui-shared
+vi.mock("@ally-ui-mono/ui-shared/index", () => ({
+  Toggle: ({ items, onChange }: any) => (
+    <div data-testid="toggle-component">
+      {items.map((item: any, index: number) => (
+        <button key={index} onClick={() => onChange(item.value)}>
+          {item.label}
         </button>
-      )}
+      ))}
+    </div>
+  ),
+  InfiniteScroll: ({ children, onInfiniteScroll }: any) => (
+    <div data-testid="infinite-scroll">
+      {children}
+      <button data-testid="infinite-scroll-trigger" onClick={onInfiniteScroll}>
+        Load More
+      </button>
     </div>
   ),
 }));
+
+// Mock constants - partially mock to keep other exports
+vi.mock("@src/constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("@src/constants")>();
+  return {
+    ...actual,
+    REVIEW_PRIVACY_OPTIONS: [
+      { label: "Keep it private", value: "HIDDEN" },
+      { label: "Share for review", value: "IN_REVIEW" },
+    ],
+  };
+});
+
+const renderWithProvider = (ui: React.ReactElement) => {
+  return render(
+    <BrowserRouter>
+      <Provider store={store}>{ui}</Provider>
+    </BrowserRouter>,
+  );
+};
 
 describe("SimulationTranscriptTab", () => {
   const mockSessionId = "session-123";
@@ -50,40 +127,48 @@ describe("SimulationTranscriptTab", () => {
       isLoading: false,
       refetch: vi.fn(),
     } as any);
+    vi.mocked(useGetSimulationSummaryQuery).mockReturnValue({
+      data: { reviewId: null },
+      isLoading: false,
+    } as any);
+    vi.mocked(useCreateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
+    vi.mocked(useUpdateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
   });
 
   // --- Snapshot Tests ---
 
   it("should match snapshot when rendered", () => {
-    const { asFragment } = render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    const { asFragment } = renderWithProvider(
+      <SimulationTranscriptTab sessionId={mockSessionId} />,
+    );
     expect(asFragment()).toMatchSnapshot();
   });
 
   // --- Rendering Tests ---
 
   it("should render TranscriptTab component", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
     expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
   });
 
   it("should map transcript data correctly", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       expect(screen.getByTestId("transcript-item-0")).toBeInTheDocument();
-      expect(screen.getByTestId("speaker-0")).toHaveTextContent("Client");
+      expect(screen.getByTestId("sender-0")).toHaveTextContent("Client");
       expect(screen.getByTestId("content-0")).toHaveTextContent("Client message 1");
     });
   });
 
   it("should map senderId to correct speaker name", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       // senderId === -1 should be "Client"
-      expect(screen.getByTestId("speaker-0")).toHaveTextContent("Client");
+      expect(screen.getByTestId("sender-0")).toHaveTextContent("Client");
       // senderId !== -1 should be "Counsellor"
-      expect(screen.getByTestId("speaker-1")).toHaveTextContent("Counsellor");
+      expect(screen.getByTestId("sender-1")).toHaveTextContent("Counsellor");
     });
   });
 
@@ -94,14 +179,14 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
     expect(screen.getByTestId("loading")).toBeInTheDocument();
   });
 
   // --- Pagination Tests ---
 
   it("should start with offset 0", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -112,9 +197,15 @@ describe("SimulationTranscriptTab", () => {
   });
 
   it("should reset transcript list when sessionId changes", () => {
-    const { rerender } = render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    const { rerender } = renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
-    rerender(<SimulationTranscriptTab sessionId="session-456" />);
+    rerender(
+      <BrowserRouter>
+        <Provider store={store}>
+          <SimulationTranscriptTab sessionId="session-456" />
+        </Provider>
+      </BrowserRouter>,
+    );
 
     expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -125,7 +216,7 @@ describe("SimulationTranscriptTab", () => {
   });
 
   it("should load more transcripts when load more button is clicked", () => {
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       const loadMoreButton = screen.getByTestId("load-more-button");
@@ -141,7 +232,15 @@ describe("SimulationTranscriptTab", () => {
 
   it("should not load more if offset exceeds transcript length", () => {
     const limitedData = {
-      messages: [{ senderId: -1, content: "Only message", createdAt: "2024-01-01T10:00:00Z" }],
+      messages: [
+        {
+          senderId: -1,
+          content: "Only message",
+          createdAt: "2024-01-01T10:00:00Z",
+          startSeconds: 0,
+          id: 1,
+        },
+      ],
     };
 
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
@@ -150,7 +249,7 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       // Should not show load more button if we've loaded all data
@@ -162,7 +261,15 @@ describe("SimulationTranscriptTab", () => {
 
   it("should append new transcripts to existing list", () => {
     const initialData = {
-      messages: [{ senderId: -1, content: "Message 1", createdAt: "2024-01-01T10:00:00Z" }],
+      messages: [
+        {
+          senderId: -1,
+          content: "Message 1",
+          createdAt: "2024-01-01T10:00:00Z",
+          startSeconds: 0,
+          id: 1,
+        },
+      ],
     };
 
     vi.mocked(useGetSimulationTranscriptQuery)
@@ -175,14 +282,20 @@ describe("SimulationTranscriptTab", () => {
         data: {
           messages: [
             ...initialData.messages,
-            { senderId: 2, content: "Message 2", createdAt: "2024-01-01T10:00:05Z" },
+            {
+              senderId: 2,
+              content: "Message 2",
+              createdAt: "2024-01-01T10:00:05Z",
+              startSeconds: 5,
+              id: 2,
+            },
           ],
         },
         isLoading: false,
         refetch: vi.fn(),
       } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
       expect(screen.getByText("Message 1")).toBeInTheDocument();
@@ -197,7 +310,7 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
     expect(screen.queryByTestId("transcript-item-0")).not.toBeInTheDocument();
@@ -212,16 +325,34 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
     expect(screen.getByTestId("transcript-tab")).toBeInTheDocument();
   });
 
   it("should handle different senderId values", () => {
     const variedData = {
       messages: [
-        { senderId: -1, content: "Client", createdAt: "2024-01-01T10:00:00Z" },
-        { senderId: 1, content: "Counsellor 1", createdAt: "2024-01-01T10:00:05Z" },
-        { senderId: 999, content: "Counsellor 999", createdAt: "2024-01-01T10:00:10Z" },
+        {
+          senderId: -1,
+          content: "Client",
+          createdAt: "2024-01-01T10:00:00Z",
+          startSeconds: 0,
+          id: 1,
+        },
+        {
+          senderId: 1,
+          content: "Counsellor 1",
+          createdAt: "2024-01-01T10:00:05Z",
+          startSeconds: 5,
+          id: 2,
+        },
+        {
+          senderId: 999,
+          content: "Counsellor 999",
+          createdAt: "2024-01-01T10:00:10Z",
+          startSeconds: 10,
+          id: 3,
+        },
       ],
     };
 
@@ -231,12 +362,12 @@ describe("SimulationTranscriptTab", () => {
       refetch: vi.fn(),
     } as any);
 
-    render(<SimulationTranscriptTab sessionId={mockSessionId} />);
+    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     waitFor(() => {
-      expect(screen.getByTestId("speaker-0")).toHaveTextContent("Client");
-      expect(screen.getByTestId("speaker-1")).toHaveTextContent("Counsellor");
-      expect(screen.getByTestId("speaker-2")).toHaveTextContent("Counsellor");
+      expect(screen.getByTestId("sender-0")).toHaveTextContent("Client");
+      expect(screen.getByTestId("sender-1")).toHaveTextContent("Counsellor");
+      expect(screen.getByTestId("sender-2")).toHaveTextContent("Counsellor");
     });
   });
 });

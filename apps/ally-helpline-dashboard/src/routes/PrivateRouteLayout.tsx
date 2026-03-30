@@ -14,6 +14,7 @@ import {
 import { useUser, useAutoActiveCallRedirect } from "@hooks";
 import {
   Calls,
+  Archives,
   Analytics,
   AudioCall,
   PostCallSummary,
@@ -21,7 +22,11 @@ import {
   StressBuster,
   Simulation,
   PostSimulationSummary,
+  Leaderboard,
+  Review,
+  AchievementsViewAll,
 } from "@pages";
+import { ReviewDetails } from "@pages/review-details/ReviewDetails";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
 import {
@@ -30,6 +35,7 @@ import {
   hasLearnPermission,
   hasPermissions,
   hasSessionLogsPermission,
+  hasReviewPermission,
 } from "@utils";
 
 import { NavbarWrapper, PermissionGuardedRoute } from "./components";
@@ -94,6 +100,7 @@ const PrivateRouteLayout: FC = () => {
     if (hasCallPermission(permissions) || hasSessionLogsPermission(permissions))
       return ROUTES.CALLS;
     if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
+    if (hasReviewPermission(permissions)) return ROUTES.REVIEW;
     return ROUTES.HOME;
   };
 
@@ -121,6 +128,20 @@ const PrivateRouteLayout: FC = () => {
           }
         />
         <Route
+          path={ROUTES.ARCHIVES}
+          element={
+            <PermissionGuardedRoute
+              permission={[
+                Permissions.VIEW_CALL_LOGS,
+                Permissions.VIEW_CONSOLIDATED_LOGS,
+                Permissions.VIEW_SCENARIO_SESSION,
+                Permissions.VIEW_ADMIN_SCENARIO_SESSION,
+              ]}
+              element={<Archives />}
+            />
+          }
+        />
+        <Route
           path={ROUTES.ANALYTICS}
           element={
             <PermissionGuardedRoute
@@ -133,6 +154,42 @@ const PrivateRouteLayout: FC = () => {
           path={ROUTES.STRESS_BUSTER}
           element={
             <PermissionGuardedRoute permission={CALL_PERMISSIONS} element={<StressBuster />} />
+          }
+        />
+
+        <Route
+          path={ROUTES.REVIEW}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS]}
+              element={<Review />}
+            />
+          }
+        />
+        <Route
+          path={ROUTES.SIMULATION_REVIEW_DETAILS}
+          element={
+            <PermissionGuardedRoute
+              permission={[
+                Permissions.VIEW_SIMULATION_REVIEWS,
+                Permissions.VIEW_SCRIBE_REVIEWS,
+                Permissions.VIEW_SIMULATION_REVIEW,
+              ]}
+              element={<ReviewDetails />}
+            />
+          }
+        />
+        <Route
+          path={ROUTES.SCRIBE_REVIEW_DETAILS}
+          element={
+            <PermissionGuardedRoute
+              permission={[
+                Permissions.VIEW_SCRIBE_REVIEWS,
+                Permissions.VIEW_SIMULATION_REVIEWS,
+                Permissions.VIEW_SCRIBE_REVIEW,
+              ]}
+              element={<ReviewDetails />}
+            />
           }
         />
         <Route
@@ -168,6 +225,33 @@ const PrivateRouteLayout: FC = () => {
             <PermissionGuardedRoute
               permission={[Permissions.VIEW_SCENARIO_SESSION_SUMMARY]}
               element={<PostSimulationSummary />}
+            />
+          }
+        />
+        <Route
+          path={ROUTES.COMMUNITY_LEADERBOARD}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_LEADERBOARD]}
+              element={<Leaderboard />}
+            />
+          }
+        />
+        <Route
+          path={ROUTES.REVIEW}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS]}
+              element={<Review />}
+            />
+          }
+        />
+        <Route
+          path={ROUTES.ACHIEVEMENTS_VIEW_ALL}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_BADGES]}
+              element={<AchievementsViewAll />}
             />
           }
         />

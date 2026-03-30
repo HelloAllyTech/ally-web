@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EditableTextPopup } from "../EditableTextPopup";
 
 // Mock AutoExpandableTextarea component
-vi.mock("@components", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   AutoExpandableTextarea: ({
     value,
     onChange,
@@ -94,16 +94,16 @@ describe("EditableTextPopup", () => {
   });
 
   describe("Disabled State", () => {
-    it("displays '--' when disabled", () => {
+    it("displays value when disabled", () => {
       render(<EditableTextPopup {...defaultProps} disabled={true} />);
 
-      expect(screen.getByText("--")).toBeInTheDocument();
+      expect(screen.getByText("Test value")).toBeInTheDocument();
     });
 
     it("does not open popup when clicking disabled field", () => {
       render(<EditableTextPopup {...defaultProps} disabled={true} />);
 
-      const displayText = screen.getByText("--");
+      const displayText = screen.getByText("Test value");
       fireEvent.click(displayText);
 
       expect(screen.queryByTestId("auto-expandable-textarea")).not.toBeInTheDocument();
@@ -144,7 +144,7 @@ describe("EditableTextPopup", () => {
     it("does not open popup when disabled and clicked", () => {
       render(<EditableTextPopup {...defaultProps} disabled={true} />);
 
-      const disabledText = screen.getByText("--");
+      const disabledText = screen.getByText("Test value");
       fireEvent.click(disabledText);
 
       expect(screen.queryByTestId("auto-expandable-textarea")).not.toBeInTheDocument();
@@ -395,12 +395,16 @@ describe("EditableTextPopup", () => {
     });
   });
 
-  describe("Max Height", () => {
-    it("applies max height to display text", () => {
-      const { container } = render(<EditableTextPopup {...defaultProps} />);
+  describe("Text Display", () => {
+    it("displays text with proper container styling", () => {
+      const { getByText } = render(<EditableTextPopup {...defaultProps} value="Test content" />);
 
-      const displayContainer = container.querySelector(".max-h-\\[36px\\]");
-      expect(displayContainer).toBeInTheDocument();
+      const displayText = getByText("Test content");
+      expect(displayText).toBeInTheDocument();
+
+      // Verify container has h-full class for proper height
+      const outerContainer = displayText.closest(".h-full");
+      expect(outerContainer).toBeInTheDocument();
     });
   });
 });

@@ -173,3 +173,31 @@ export const getElapsedTimeInMinutes = (startTime: string) => {
   const elapsedTime = now.getTime() - startTimeDate.getTime();
   return Math.max(0, Math.floor(elapsedTime / 60000));
 };
+
+export const getFormattedTimeFromDuration = (
+  duration: number,
+  format: "HH:mm:ss" | "HH:mm" | "mm:ss" | "ss" = "HH:mm:ss",
+): string => {
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const seconds = duration % 60;
+
+  switch (format) {
+    case "HH:mm:ss":
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+
+    case "HH:mm":
+      return `${pad(hours)}:${pad(minutes)}`;
+
+    case "mm:ss":
+      return `${pad(minutes)}:${pad(seconds)}`;
+
+    case "ss":
+      return `${pad(seconds)}`;
+
+    default:
+      return "--";
+  }
+};

@@ -244,6 +244,19 @@ describe("ActionConfirmationPopup", () => {
       expect(cancelButton).toHaveClass("w-full");
     });
 
+    it("primary button has w-1/3 width when secondary button is missing", () => {
+      const propsWithoutSecondary = {
+        ...defaultProps,
+        secondaryButton: undefined,
+      };
+      // @ts-ignore - bypassing strict type check for test case
+      render(<ActionConfirmationPopup {...propsWithoutSecondary} />);
+
+      const confirmButton = screen.getByText("Confirm");
+      expect(confirmButton).toHaveClass("w-1/3");
+      expect(screen.queryByText("Cancel")).not.toBeInTheDocument();
+    });
+
     it("buttons have rounded-full style", () => {
       render(<ActionConfirmationPopup {...defaultProps} />);
 

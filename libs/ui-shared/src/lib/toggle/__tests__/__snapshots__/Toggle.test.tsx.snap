@@ -1,0 +1,120 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Toggle Component > Snapshot Tests > should match snapshot with default props 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col gap-2 w-fit"
+  >
+    <div
+      class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+    >
+      <div
+        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
+        style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+      />
+      <div
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
+        style="color: rgb(0, 0, 0);"
+      >
+        Option A
+      </div>
+      <div
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
+        style="color: rgba(0, 0, 0, 0.376);"
+      >
+        Option B
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Toggle Component > Snapshot Tests > should match snapshot with different items 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col gap-2 w-fit"
+  >
+    <div
+      class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+    >
+      <div
+        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
+        style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+      />
+      <div
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
+        style="color: rgb(0, 0, 0);"
+      >
+        Public
+      </div>
+      <div
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
+        style="color: rgba(0, 0, 0, 0.376);"
+      >
+        Private
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Toggle Component > Snapshot Tests > should match snapshot with label 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col gap-2 w-fit"
+  >
+    <div>
+      Choose option
+    </div>
+    <div
+      class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+    >
+      <div
+        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
+        style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+      />
+      <div
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
+        style="color: rgb(0, 0, 0);"
+      >
+        Option A
+      </div>
+      <div
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
+        style="color: rgba(0, 0, 0, 0.376);"
+      >
+        Option B
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Toggle Component > Snapshot Tests > should match snapshot with second item selected 1`] = `
+<DocumentFragment>
+  <div
+    class="flex flex-col gap-2 w-fit"
+  >
+    <div
+      class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+    >
+      <div
+        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
+        style="left: 50%; box-shadow: -7px 0px 9px 0px #00000012;"
+      />
+      <div
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
+        style="color: rgba(0, 0, 0, 0.376);"
+      >
+        Option A
+      </div>
+      <div
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
+        style="color: rgb(0, 0, 0);"
+      >
+        Option B
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

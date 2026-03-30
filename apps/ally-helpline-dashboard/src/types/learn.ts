@@ -1,4 +1,5 @@
 import { triggerWarning } from "@ally-ui-mono/ui-shared/types";
+import { Citation, Thread } from "@types";
 
 export enum ScenarioStatus {
   ACTIVE = "ACTIVE",
@@ -28,8 +29,15 @@ export interface Scenario {
   status?: ScenarioStatus;
   metadata?: {
     name?: string;
+    experienceMode?: string;
   };
   triggerWarnings?: TriggerChipItemWarning[];
+  checklistEvents?: any[];
+  experienceMode?: string;
+  checklistType?: string;
+  maxTimeValue?: string;
+  timerMode?: boolean;
+  showScoreMeter?: boolean;
 }
 
 export interface ScenarioSession {
@@ -99,11 +107,13 @@ export interface AdminSimulationLog extends SimulationLog {
 
 export interface GetScenarioInput {
   scenarioId: number;
+  isPrivate: boolean;
 }
 
 export interface StartSimulationInput {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
 }
 
 export interface StartSimulationResponse {
@@ -147,7 +157,10 @@ export type GetAdminSimulationLogsResponse = {
   data: AdminSimulationLog[];
 };
 export interface SimulationSummary {
+  sessionId: string;
   id: string;
+  reviewId: string;
+  reviewStatus: string;
   createdAt: string;
   updatedAt: string;
   tenantId: string;
@@ -160,8 +173,12 @@ export interface SimulationSummary {
   score: number | null;
   metadata: {
     sessionName: string;
+    languageId?: number;
   };
   totalScore: number;
+  eventStatus?: string;
+  scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
   details: {
     id: string;
     createdAt: string;
@@ -171,13 +188,18 @@ export interface SimulationSummary {
     callDuration: number;
     summary: {
       feedback: {
-        improvements: string[];
+        improvements?: string[];
+        areasOfGrowth?: { improvement: string; recommendation: string }[];
         positives: string[];
       };
-    };
+      errorMessage?: string;
+    } | null;
   };
   events: KeyEvent[];
   hasFeedback: boolean;
+  scenario: Scenario;
+  reviewCreatedAt: string;
+  reviewNote: string | null;
 }
 
 export interface KeyEvent {
@@ -234,6 +256,7 @@ interface UpcomingScenario {
   scenarioPathSessionItemStatus?: string;
   order?: number;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
 }
 
 interface CurrentSession {
@@ -243,9 +266,13 @@ interface CurrentSession {
   coverImageUrl?: string;
   title?: string;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
   transitionMessageTitle?: string;
   transitionMessageContent?: string;
   isScenarioPathSessionCompleted?: boolean;
+  sessionGlimpse?: string;
+  isCaseSessionCompleted?: boolean;
+  caseSessionItemStatus?: string;
 }
 
 export interface GetUpComingSimulationResponse {
@@ -260,6 +287,12 @@ export interface SimulationTranscriptMessage {
   startSeconds?: number;
   endSeconds?: number | null;
   createdAt?: string;
+  threads?: Thread[];
+  tags?: {
+    tagId: string;
+    label: string;
+    category?: string;
+  }[];
 }
 
 export interface ScenarioPathway {
@@ -281,6 +314,10 @@ export interface GetScenarioPathwaysInput {
 
 export interface GetScenarioPathwaysResponse {
   data: ScenarioPathway[];
+}
+
+export interface GetScenarioCasesResponse {
+  data: ScenarioCaseDetails[];
 }
 
 export enum PathwayScenarioStatus {
@@ -314,4 +351,84 @@ export interface ScenarioPathwayDetails {
   totalScenarios: number;
   scenarioPathSessionId?: string;
   scenarios: PathwayScenario[];
+}
+
+export interface ScenarioCaseDetails {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl: string;
+  userId: number;
+  completedAt: string | null;
+  completedScenarios: number;
+  totalScenarios: number;
+  caseSessionId?: string;
+  scenarios: PathwayScenario[];
+}
+
+export interface GetReflectionPromptsResponse {
+  reflectionPrompts: Prompt[];
+}
+
+export interface Prompt {
+  id: string;
+  promptId: string;
+  prompt: string;
+  response?: string | null;
+}
+
+export interface ChecklistItem {
+  id: string;
+  name: string;
+  hasOccurred: boolean;
+}
+
+export interface GetSimulationChecklistResponse {
+  scorePercentage: number;
+  eventChecklist: ChecklistItem[];
+}
+export interface UpdateReflectionPromptRequest {
+  sessionId: string;
+  reflectionPromptId: string;
+  promptId: string;
+  response: string;
+}
+
+export interface ChatStreamRequest {
+  message: string;
+  sessionId: string;
+}
+
+export enum ChatStreamEventType {
+  TOKEN = "token",
+  DONE = "done",
+  ERROR = "error",
+}
+
+export interface SkillCoverageItem {
+  category: string;
+  percentage: number;
+  iconUrl?: string;
+}
+
+export interface EmotionalMovementItem {
+  messageId: string;
+  level: number;
+  startTime: number;
+}
+
+export interface GetSimulationSkillsResponse {
+  skillCoverage: SkillCoverageItem[];
+  emotionalMovement: EmotionalMovementItem[];
+}
+export interface GetChatHistoryResponse {
+  id: string;
+  sourceId: string;
+  sourceType: string;
+  userId: string;
+  role: string;
+  content: string;
+  citations: Citation[];
+  createdAt: string;
+  updatedAt: string;
 }

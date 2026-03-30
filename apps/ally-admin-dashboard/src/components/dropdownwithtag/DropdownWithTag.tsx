@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
+import { createPortal } from "react-dom";
+
 import { ArrowSolid, Close } from "@assets";
 import { en } from "@constants";
+import { useCreatePortal } from "@hooks";
 import { dropdownWithTagProps, Option, UserRoles } from "@types";
 import { formatCapitalizedEnum } from "@utils";
 
@@ -16,19 +19,25 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(initialValue);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
+
+  const dropdownPosition = useCreatePortal(triggerRef, open, {
+    matchTriggerWidth: true,
+    dropdownHeight: 180,
+  });
 
   //close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpen(false);
+      const target = event.target as Node;
+      if (dropdownRef.current?.contains(target) || portalRef.current?.contains(target)) {
+        return;
       }
+      setOpen(false);
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleRole = (role: UserRoles | Option) => {
@@ -70,7 +79,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
         <label className="block text-neutral-800 mb-2 font-primary text-base">
           {label} {required && <span className="text-destructive-500">*</span>}
         </label>
-        <div className="relative">
+        <div className="relative" ref={triggerRef}>
           <div
             className="border border-border-light rounded-md flex flex-wrap items-center gap-2 px-2 py-1 min-h-[40px] cursor-pointer"
             onClick={() => setOpen(!open)}
@@ -88,34 +97,45 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
                 </span>
               ))
             ) : (
-              <span className="text-typography-600 text-sm font-primary">{placeholder}</span>
+              <span className="text-typography-600 text-base font-primary">{placeholder}</span>
             )}
 
             <div className="ml-auto text-typography-800">
               <ArrowSolid />
             </div>
           </div>
-
-          {open && (
-            <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded-md shadow-lg max-h-[180px] overflow-auto z-50 custom-scrollbar">
-              {options.map(role => {
-                const roleName = role.name || role.value;
-                const isSelected = value.includes(roleName);
-
-                return (
-                  <div
-                    key={role.id || role.value}
-                    className={`px-3 py-2 text-sm cursor-pointer ${isSelected ? "bg-neutral-100" : ""}`}
-                    onClick={() => toggleRole(role)}
-                  >
-                    {formatCapitalizedEnum(roleName)}
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       </div>
+
+      {open &&
+        dropdownPosition &&
+        createPortal(
+          <div
+            ref={portalRef}
+            className="fixed bg-white border rounded-md shadow-lg max-h-[180px] overflow-auto z-[9999] custom-scrollbar"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+            }}
+          >
+            {options?.map(role => {
+              const roleName = role.name || role.value;
+              const isSelected = value.includes(roleName);
+
+              return (
+                <div
+                  key={role.id || role.value}
+                  className={`px-3 py-2 text-sm cursor-pointer font-primary ${isSelected ? "bg-neutral-100" : ""}`}
+                  onClick={() => toggleRole(role)}
+                >
+                  {formatCapitalizedEnum(roleName)}
+                </div>
+              );
+            })}
+          </div>,
+          document.body,
+        )}
     </>
   );
 };

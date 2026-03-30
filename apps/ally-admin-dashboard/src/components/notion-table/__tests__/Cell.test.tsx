@@ -15,6 +15,39 @@ vi.mock("@components", () => ({
       {buttonText || "Pick emoji"}
     </button>
   ),
+  TimeInput: ({ value, onBlur, disabled, className }: any) => (
+    <input
+      data-testid="time-input"
+      type="text"
+      value={value || ""}
+      onBlur={e => onBlur?.(e.target.value)}
+      disabled={disabled}
+      className={className}
+    />
+  ),
+  TagList: ({ tags, emptyText }: any) => (
+    <div data-testid="tag-list">
+      {Array.isArray(tags) && tags.length > 0 ? (
+        tags.map((tag: string, i: number) => <span key={i}>{tag}</span>)
+      ) : (
+        <span>{emptyText || "-"}</span>
+      )}
+    </div>
+  ),
+  // Export cellTypes to prevent other tests from failing
+  cellTypes: {
+    editableText: "editableText",
+    dropdown: "dropdown",
+    dropdownSearchable: "dropdownSearchable",
+    number: "number",
+    select: "select",
+    multiSelect: "multiSelect",
+    switch: "switch",
+    emoji: "emoji",
+    time: "time",
+    triggerConditions: "triggerConditions",
+    detectionConfig: "detectionConfig",
+  },
 }));
 
 vi.mock("@components/notion-table", () => ({
@@ -87,8 +120,44 @@ vi.mock("@components/notion-table", () => ({
   ),
 }));
 
+vi.mock("@constants", async () => {
+  const actual = await vi.importActual("@constants");
+  return {
+    ...actual,
+    DETECTION_CONFIG_FIELDS: {
+      MAX_OCCURRENCES: "maxOccurrences",
+      MIN_GAP_TIME: "minGapTime",
+      START_TIME: "startTime",
+      END_TIME: "endTime",
+      MIN_SCORE: "minScore",
+      MAX_SCORE: "maxScore",
+    },
+  };
+});
+
 vi.mock("@utils", () => ({
   formatCapitalizedEnum: (text: string) => text,
+  isInfinityValue: (value: any) => value === null || value === undefined,
+  normalizeDetectionConfigValue: (value: any, fieldId: string) => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "object" && value !== null && "value" in value) {
+      return value.value;
+    }
+    return value;
+  },
+  getInfinityDisplay: (fieldId: string) => {
+    if (fieldId === "minScore") return "-∞";
+    if (fieldId === "maxScore") return "+∞";
+    return "∞";
+  },
+  toggleInfinityValue: (currentValue: any, fieldId: string) => {
+    if (currentValue === null || currentValue === undefined) {
+      if (fieldId === "endTime") return "00:01:00";
+      if (fieldId === "minScore" || fieldId === "maxScore") return 0;
+      return "00:00:00";
+    }
+    return null;
+  },
 }));
 
 describe("Cell", () => {
@@ -96,6 +165,7 @@ describe("Cell", () => {
     dataType: cellTypes.normalText,
     id: "test-column",
     minWidth: 100,
+    width: 200,
     placeholder: "Enter text",
     options: [],
   };
@@ -460,6 +530,28 @@ describe("Cell", () => {
     });
   });
 
+  describe("wrapText Cell Type", () => {
+    it("renders text with line clamp", () => {
+      const wrapColumn = { ...defaultColumn, dataType: cellTypes.wrapText };
+      render(<Cell {...defaultProps} value="Short text" column={wrapColumn} />);
+
+      const span = screen.getByText("Short text");
+      expect(span).toBeInTheDocument();
+      expect(span).toHaveClass("line-clamp-2");
+    });
+
+    it("handles undefined value", () => {
+      const wrapColumn = { ...defaultColumn, dataType: cellTypes.wrapText };
+      const { container } = render(
+        <Cell {...defaultProps} value={undefined} column={wrapColumn} />,
+      );
+
+      const span = container.querySelector("span");
+      expect(span).toBeInTheDocument();
+      expect(span).toHaveTextContent("");
+    });
+  });
+
   describe("Default/Unknown Cell Type", () => {
     it("renders empty span for unknown cell type", () => {
       const unknownColumn = { ...defaultColumn, dataType: "unknown-type" };
@@ -545,7 +637,14 @@ describe("Cell", () => {
     });
 
     it("handles missing column properties", () => {
-      const minimalColumn = { dataType: cellTypes.normalText, id: "minimal" };
+      const minimalColumn = {
+        dataType: cellTypes.normalText,
+        id: "minimal",
+        options: [],
+        minWidth: 0,
+        width: 0,
+        placeholder: "",
+      };
       render(<Cell {...defaultProps} column={minimalColumn} />);
 
       expect(screen.getByText("Test value")).toBeInTheDocument();

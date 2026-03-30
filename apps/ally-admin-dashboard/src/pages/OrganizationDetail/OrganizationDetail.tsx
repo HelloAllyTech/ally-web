@@ -1,28 +1,49 @@
-import { useState, useEffect, FC } from "react";
+import { useState, useEffect, FC, useMemo } from "react";
 
+import { useSelector } from "react-redux";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useDisablePathMutation,
   useDisableSimulationMutation,
   useEnablePathMutation,
   useEnableSimulationMutation,
   useLazyGetTenantByIdQuery,
+  useEnableCaseMutation,
+  useDisableCaseMutation,
 } from "@api";
 import { ArrowDown, Dot } from "@assets";
-import { Tabs, OrganizationDetailLoader, SimulationsTab, PathTab } from "@components";
-import { en, ROUTES } from "@constants";
+import {
+  OrganizationDetailLoader,
+  SimulationsTab,
+  PathTab,
+  ScribeSettings,
+  SimulationsSettings,
+  CasesTab,
+  BadgesTab,
+} from "@components";
+import { en, ROUTES, UserRole } from "@constants";
+import { RootState } from "@store";
 import { Tenant } from "@types";
 
 enum TAB_IDS {
   SIMULATIONS = "simulations",
   PATH = "path",
+  CASES = "cases",
+  BADGES = "badges",
+  SCRIBE_SETTINGS = "scribeSettings",
+  SIMULATION_SETTINGS = "simulationSettings",
 }
 
-const tabs = [
+const defaultTabs = [
   { id: TAB_IDS.SIMULATIONS, label: en.userManagement.simulations },
   { id: TAB_IDS.PATH, label: en.userManagement.path },
+  { id: TAB_IDS.CASES, label: en.userManagement.cases },
+  { id: TAB_IDS.BADGES, label: en.userManagement.badges },
+  { id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings },
+  { id: TAB_IDS.SIMULATION_SETTINGS, label: en.userManagement.simulationSettings },
 ];
 
 export const OrganizationDetail: FC = () => {
@@ -31,10 +52,28 @@ export const OrganizationDetail: FC = () => {
 
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.user.user);
+  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
+
+  const filteredTabs = useMemo(() => {
+    return defaultTabs.filter(tab => {
+      if (tab.id === TAB_IDS.PATH || tab.id === TAB_IDS.CASES) {
+        return isSuperAdmin;
+      }
+      return true;
+    });
+  }, [isSuperAdmin]);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Get active tab from URL params, default to SIMULATIONS
-  const activeTab = searchParams.get("tab") || TAB_IDS.SIMULATIONS;
+  // Get active tab from URL params, default to first available tab
+  const tabFromUrl = searchParams.get("tab");
+  const activeTab = useMemo(() => {
+    if (tabFromUrl && filteredTabs.some(tab => tab.id === tabFromUrl)) {
+      return tabFromUrl;
+    }
+    return filteredTabs[0]?.id || TAB_IDS.SIMULATIONS;
+  }, [tabFromUrl, filteredTabs]);
 
   // Fetch organization data
   const [getTenantById, { data: tenantsResponse, isLoading: isTenantsLoading }] =
@@ -43,6 +82,8 @@ export const OrganizationDetail: FC = () => {
   const [disableSimulation] = useDisableSimulationMutation();
   const [enablePathAccess] = useEnablePathMutation();
   const [disablePathAccess] = useDisablePathMutation();
+  const [enableCaseAccess] = useEnableCaseMutation();
+  const [disableCaseAccess] = useDisableCaseMutation();
 
   useEffect(() => {
     if (id) {
@@ -53,6 +94,10 @@ export const OrganizationDetail: FC = () => {
   useEffect(() => {
     setOrganization(tenantsResponse);
   }, [tenantsResponse]);
+
+  const refetchTenant = () => {
+    getTenantById(id);
+  };
 
   const handleToggleAccess = async (simulationId: number, enabled: boolean) => {
     try {
@@ -92,6 +137,25 @@ export const OrganizationDetail: FC = () => {
     }
   };
 
+  const handleToggleCaseAccess = async (caseId: number, enabled: boolean) => {
+    try {
+      if (enabled) {
+        await enableCaseAccess({
+          tenantId: id,
+          caseIds: [caseId],
+        }).unwrap();
+      } else {
+        await disableCaseAccess({
+          tenantId: id,
+          caseIds: [caseId],
+        }).unwrap();
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.caseUpdateFailed);
+      throw error;
+    }
+  };
+
   // Show skeleton loader while fetching organization data
   if (isTenantsLoading || !organization) {
     if (isTenantsLoading) {
@@ -107,6 +171,53 @@ export const OrganizationDetail: FC = () => {
 
   const handleNavigate = () => {
     navigate(`${ROUTES.USER_MANAGEMENT}?tab=organizations`);
+  };
+
+  const getTabContent = (activeTab: string) => {
+    switch (activeTab) {
+      case TAB_IDS.SIMULATIONS:
+        return (
+          <SimulationsTab
+            organizationId={id}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onToggleAccess={handleToggleAccess}
+          />
+        );
+      // TODO: Create new Tab Component which will be used to manage the cases and path access together
+      case TAB_IDS.PATH:
+        return (
+          <PathTab
+            organizationId={id}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onToggleAccess={handleTogglePathAccess}
+          />
+        );
+      case TAB_IDS.CASES:
+        return (
+          <CasesTab
+            organizationId={id}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onToggleAccess={handleToggleCaseAccess}
+          />
+        );
+      case TAB_IDS.SCRIBE_SETTINGS:
+        return <ScribeSettings tenantId={id} onUpdateTenant={refetchTenant} />;
+      case TAB_IDS.BADGES:
+        return (
+          <BadgesTab
+            organizationId={id}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+          />
+        );
+      case TAB_IDS.SIMULATION_SETTINGS:
+        return <SimulationsSettings organizationId={id} onUpdateTenant={refetchTenant} />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -140,7 +251,10 @@ export const OrganizationDetail: FC = () => {
                 <Dot />
               </span>
               <span>
-                {organization.userCount} {en.userManagement.users.toLowerCase()}
+                {organization?.userCount || 0}{" "}
+                {Number(organization?.userCount) === 1
+                  ? en.userManagement.user.toLowerCase()
+                  : en.userManagement.users.toLowerCase()}
               </span>
             </div>
           </div>
@@ -148,31 +262,14 @@ export const OrganizationDetail: FC = () => {
 
         {/* Tabs */}
         <Tabs
-          items={tabs}
+          items={filteredTabs}
           activeId={activeTab}
           onChange={id => setSearchParams({ tab: id })}
           showCount={false}
         />
       </div>
 
-      {/* Tab Content */}
-      <div className="flex-1 overflow-hidden min-h-0 mt-4">
-        {activeTab === TAB_IDS.SIMULATIONS ? (
-          <SimulationsTab
-            organizationId={id}
-            searchValue={searchValue}
-            onSearchChange={setSearchValue}
-            onToggleAccess={handleToggleAccess}
-          />
-        ) : (
-          <PathTab
-            organizationId={id}
-            searchValue={searchValue}
-            onSearchChange={setSearchValue}
-            onToggleAccess={handleTogglePathAccess}
-          />
-        )}
-      </div>
+      <div className="flex-1 overflow-y-auto mt-4">{getTabContent(activeTab)}</div>
     </div>
   );
 };

@@ -91,3 +91,76 @@ export const isNonEmptyObject = (value: any): boolean => {
     Object.keys(value).length > 0
   );
 };
+
+const SECONDS_IN = {
+  year: 31536000,
+  month: 2592000,
+  week: 604800,
+  day: 86400,
+  hour: 3600,
+  minute: 60,
+  second: 1,
+} as const;
+
+const TIME_THRESHOLDS: [keyof typeof SECONDS_IN, number][] = [
+  ["month", SECONDS_IN.month],
+  ["week", SECONDS_IN.week],
+  ["day", SECONDS_IN.day],
+  ["hour", SECONDS_IN.hour],
+  ["minute", SECONDS_IN.minute],
+  ["second", SECONDS_IN.second],
+];
+
+const pluralize = (value: number, unit: string) => `${value} ${unit}${value === 1 ? "" : "s"}`;
+
+export const formatDateTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date
+    .toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(" at ", " ");
+};
+
+export const formatRelativeTime = (
+  dateString: string,
+  t?: (key: string, opts?: Record<string, unknown>) => string,
+): string => {
+  const diffSeconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+
+  const tr = (key: string, opts?: Record<string, unknown>) =>
+    t ? t(`review.feedCard.relativeTime.${key}`, opts) : undefined;
+
+  if (diffSeconds < 1) return tr("justNow") ?? "Just now";
+
+  const years = Math.floor(diffSeconds / SECONDS_IN.year);
+
+  if (years >= 2) return tr("year_other", { count: years }) ?? `${years} years`;
+
+  if (years === 1) {
+    const months = Math.floor((diffSeconds % SECONDS_IN.year) / SECONDS_IN.month);
+    if (months === 0) return tr("year_one") ?? "1 year";
+    const monthStr =
+      tr(months === 1 ? "month_one" : "month_other", { count: months }) ??
+      pluralize(months, "month");
+    return tr("yearMonth", { months: monthStr }) ?? `1 year ${monthStr}`;
+  }
+
+  for (const [unit, seconds] of TIME_THRESHOLDS) {
+    const value = Math.floor(diffSeconds / seconds);
+    if (value >= 1) {
+      const key = value === 1 ? `${unit}_one` : `${unit}_other`;
+      return (
+        tr(key, { count: value }) ??
+        (unit === "day" ? `${value} Day${value === 1 ? "" : "s"}` : pluralize(value, unit))
+      );
+    }
+  }
+
+  return tr("justNow") ?? "Just now";
+};

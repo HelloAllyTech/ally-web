@@ -26,6 +26,15 @@ import {
   ScenarioPathwayDetails,
   GetUpComingSimulationResponse,
   LanguageOption,
+  ScenarioCaseDetails,
+  GetScenarioCasesResponse,
+  pageType,
+  GetReflectionPromptsResponse,
+  GetSimulationChecklistResponse,
+  UpdateReflectionPromptRequest,
+  GetSimulationSkillsResponse,
+  GetChatHistoryResponse,
+  Prompt,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -52,10 +61,12 @@ const learnAPI = baseAPI.injectEndpoints({
      * @returns {Promise<GetScenarioResponse>} Scenario details
      */
     getScenario: builder.query<Scenario, GetScenarioInput>({
-      query: params => ({
-        url: ApiEndpoints.LEARN.GET_SCENARIO(params.scenarioId),
+      query: ({ scenarioId, isPrivate }) => ({
+        url: isPrivate
+          ? ApiEndpoints.LEARN.GET_SCENARIO(scenarioId)
+          : ApiEndpoints.LEARN.GET_SCENARIO_PUBLIC(scenarioId),
         method: HttpMethod.GET,
-        params,
+        params: { scenarioId },
       }),
     }),
 
@@ -108,9 +119,10 @@ const learnAPI = baseAPI.injectEndpoints({
      * @returns {Promise<EndSimulationResponse>} End simulation response
      */
     endSimulation: builder.mutation<EndSimulationResponse, EndSimulationInput>({
-      query: params => ({
-        url: ApiEndpoints.LEARN.END_SIMULATION(params.sessionId),
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.END_SIMULATION(sessionId),
         method: HttpMethod.POST,
+        body: { enableRecommendations: true },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_LOGS, TAG_TYPES.SIMULATION_CREDITS],
     }),
@@ -163,7 +175,9 @@ const learnAPI = baseAPI.injectEndpoints({
       query: sessionId => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_SUMMARY(sessionId),
         method: HttpMethod.GET,
+        params: { enableRecommendations: true },
       }),
+      providesTags: [TAG_TYPES.SIMULATION_SUMMARY],
     }),
 
     /**
@@ -193,12 +207,18 @@ const learnAPI = baseAPI.injectEndpoints({
     >({
       query: ({ sessionId, offset, limit, sortBy }) => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_TRANSCRIPT(sessionId),
-        params: { offset, limit, sortOrder: "ASC", sortBy },
+        params: { offset, limit, sortOrder: "ASC", sortBy, includeTags: true },
       }),
     }),
-    getUpComingSimulation: builder.query<GetUpComingSimulationResponse, string>({
-      query: sessionId => ({
-        url: ApiEndpoints.LEARN.GET_UP_COMING_SIMULATION(sessionId),
+    getUpComingSimulation: builder.query<
+      GetUpComingSimulationResponse,
+      { sessionId: string; type: string }
+    >({
+      query: ({ sessionId, type }) => ({
+        url:
+          type === pageType.CASE
+            ? ApiEndpoints.LEARN.GET_UP_COMING_CASE_SIMULATION(sessionId)
+            : ApiEndpoints.LEARN.GET_UP_COMING_SIMULATION(sessionId),
         method: HttpMethod.GET,
       }),
       keepUnusedDataFor: 60 * 60,
@@ -234,6 +254,100 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    /**
+     * Get all scenario cases.
+     * @param {Record<string, any>} [params] - Optional query parameters (e.g., { offset: number, limit: number })
+     * @returns {Promise<ScenarioCaseDetails[]>} List of scenario cases
+     */
+    getScenarioCases: builder.query<GetScenarioCasesResponse, Record<string, any>>({
+      query: (params = {}) => ({
+        url: ApiEndpoints.LEARN.GET_SCENARIO_CASES,
+        method: HttpMethod.GET,
+        params,
+      }),
+    }),
+    /**
+     * Get details for a specific case by id.
+     * @param {string} caseId - Case identifier
+     * @returns {Promise<ScenarioCaseDetails>} Case details
+     */
+    getScenarioCaseDetails: builder.query<ScenarioCaseDetails, string>({
+      query: caseId => ({
+        url: ApiEndpoints.LEARN.GET_SCENARIO_CASE_DETAILS(caseId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
+    }),
+    /**
+     * Get details for a specific case session by id.
+     * @param {string} caseSessionItemId - Case session identifier
+     * @returns {Promise<ScenarioCaseSessionDetails>} Case session details
+     */
+    getScenarioSessionByCaseItem: builder.query<
+      {
+        id: string;
+      },
+      { caseSessionItemId: string }
+    >({
+      query: ({ caseSessionItemId }) => ({
+        url: ApiEndpoints.LEARN.SCENARIO_SESSION_BY_CASE_ITEM(caseSessionItemId),
+        method: HttpMethod.GET,
+      }),
+    }),
+    /**
+     * Start a new case simulation.
+     * @param {string} caseId - Case identifier
+     * @returns {Promise<void>} Started case simulation info
+     */
+    startCaseSimulation: builder.mutation<void, { caseId: string }>({
+      query: ({ caseId }) => ({
+        url: ApiEndpoints.LEARN.START_CASE_SIMULATION(caseId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
+    }),
+    getReflectionPrompts: builder.query<GetReflectionPromptsResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.REFLECTION_PROMPTS(sessionId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.REFLECTION_PROMPTS],
+    }),
+    /**
+     * Get checklist for a scenario session.
+     * @param {string} sessionId - Session identifier
+     * @returns {Promise<GetSimulationChecklistResponse>} Checklist data with overall score and items
+     */
+    getSimulationChecklist: builder.query<GetSimulationChecklistResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.GET_SIMULATION_CHECKLIST(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
+    updateReflectionPrompt: builder.mutation<Prompt, UpdateReflectionPromptRequest>({
+      query: ({ sessionId, reflectionPromptId, promptId, response }) => ({
+        url: ApiEndpoints.LEARN.UPDATE_REFLECTION_PROMPT(sessionId, reflectionPromptId),
+        method: HttpMethod.PATCH,
+        body: { promptId, response },
+      }),
+      invalidatesTags: [TAG_TYPES.REFLECTION_PROMPTS],
+    }),
+    /**
+     * Get skills and emotional movements for a scenario session.
+     * @param {string} sessionId - Session identifier
+     * @returns {Promise<GetSimulationSkillsResponse>} Skills coverage and emotional movement data
+     */
+    getSimulationSkills: builder.query<GetSimulationSkillsResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.GET_SIMULATION_SKILLS(sessionId),
+      }),
+    }),
+    getChatHistory: builder.query<GetChatHistoryResponse[], { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.CHAT_HISTORY(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
@@ -243,14 +357,24 @@ export const {
   useGetScenarioQuery,
   useGetScenariosQuery,
   useGetScenarioPathwaysQuery,
+  useGetScenarioCasesQuery,
   useGetScenarioPathwayDetailsQuery,
   useStartSimulationMutation,
   useGetSimulationLogsQuery,
   useGetAdminSimulationLogsQuery,
+  useGetSimulationSummaryQuery,
   useLazyGetSimulationSummaryQuery,
   useSubmitSimulationFeedbackMutation,
   useGetSimulationTranscriptQuery,
   useStartPathwaySimulationMutation,
   useLazyGetScenarioSessionByPathItemQuery,
   useGetAvailableLanguagesQuery,
+  useGetScenarioCaseDetailsQuery,
+  useLazyGetScenarioSessionByCaseItemQuery,
+  useStartCaseSimulationMutation,
+  useGetReflectionPromptsQuery,
+  useGetSimulationChecklistQuery,
+  useUpdateReflectionPromptMutation,
+  useGetSimulationSkillsQuery,
+  useGetChatHistoryQuery,
 } = learnAPI;

@@ -31,6 +31,14 @@ vi.mock("@assets", () => ({
   Carousel2: (props: any) => <div {...props}>Carousel2</div>,
   Carousel3: (props: any) => <div {...props}>Carousel3</div>,
   Carousel4: (props: any) => <div {...props}>Carousel4</div>,
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
 vi.mock("@components", () => ({ TextField: (props: any) => <input {...props} /> }));
 

@@ -1,6 +1,7 @@
 export * from "./analytics";
 export * from "./audioCall";
 export * from "./auth";
+export * from "./badges";
 export * from "./calls";
 export * from "./callSummary";
 export * from "./search";
@@ -8,3 +9,5 @@ export * from "./learn";
 export * from "./simulationCredits";
 export * from "./termsAndAgreement";
 export * from "./user";
+export * from "./leaderBoard";
+export * from "./reviews";

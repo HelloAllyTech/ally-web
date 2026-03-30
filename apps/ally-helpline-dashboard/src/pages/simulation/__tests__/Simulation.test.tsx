@@ -22,6 +22,7 @@ let mockStartTime = new Date();
 let mockEvents: any[] = [];
 let mockScore = 0;
 let mockError: any = null;
+let mockdetectedEventIds: string[] = [];
 
 // Mock wake lock
 const mockWakeLockRelease = vi.fn().mockResolvedValue(undefined);
@@ -50,6 +51,7 @@ vi.mock("@hooks", () => ({
     handleRetryConnection: mockHandleRetryConnection,
     events: mockEvents,
     score: mockScore,
+    detectedEventIds: mockdetectedEventIds,
   }),
 }));
 
@@ -147,6 +149,7 @@ describe("Simulation", () => {
     mockStartTime = new Date();
     mockEvents = [];
     mockScore = 0;
+    mockdetectedEventIds = [];
     mockError = null;
     mockRoom = {
       localParticipant: {

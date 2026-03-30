@@ -2,14 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, vi, it } from "vitest";
 
-import { ally_DATA_POLICY_URL } from "@constants";
-import { openLinkInNewTab } from "@utils";
-
 import SummarySidebarWrapper from "../SummarySidebarWrapper";
-
-vi.mock("@utils", () => ({
-  openLinkInNewTab: vi.fn(),
-}));
 
 vi.mock("@components", () => ({
   Drawer: ({ title, children, headerButtons, onClose }: any) => (
@@ -52,6 +45,14 @@ vi.mock("@assets", () => ({
   ScenarioIcon: () => <div data-testid="scenario-icon">Scenario</div>,
   SessionScoreIcon: () => <div data-testid="session-score-icon">Score</div>,
   InDoubt: () => <div data-testid="in-doubt-icon">In Doubt</div>,
+  LearnIcon: () => <svg data-testid="learn-icon" />,
+  Leaderboard: () => <svg data-testid="leaderboard-icon" />,
+  ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  StatsIcon: () => <svg data-testid="stats-icon" />,
+  SearchIcon: () => <svg data-testid="search-icon" />,
+  NoBadges: () => <div data-testid="no-badges" />,
+  Badge: () => <svg data-testid="badge-icon" />,
+  ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
 
 describe("SummarySidebarWrapper", () => {
@@ -74,7 +75,7 @@ describe("SummarySidebarWrapper", () => {
     render(<SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList} />);
 
     expect(screen.getByText("Content One")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("tab", { name: /Tab Two/i }));
+    await userEvent.click(screen.getByRole("button", { name: /Tab Two/i }));
     expect(screen.getByText("Content Two")).toBeInTheDocument();
   });
 
@@ -86,13 +87,6 @@ describe("SummarySidebarWrapper", () => {
 
     await userEvent.click(screen.getByText("Close Drawer"));
     expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it("calls openLinkInNewTab when data policy button is clicked", async () => {
-    render(<SummarySidebarWrapper title="Test Sidebar" tabList={mockTabList} />);
-
-    await userEvent.click(screen.getByText("Data policy"));
-    expect(openLinkInNewTab).toHaveBeenCalledWith(ally_DATA_POLICY_URL);
   });
 
   it("renders children content", () => {

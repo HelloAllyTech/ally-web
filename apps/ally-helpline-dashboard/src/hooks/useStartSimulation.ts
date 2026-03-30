@@ -11,6 +11,7 @@ import { useUser } from "@hooks";
 interface StartSimulationParams {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
+  caseSessionItemId?: string;
   languageId?: number;
 }
 
@@ -60,10 +61,11 @@ export const useStartSimulation = (
     if (isStarting) return;
     setIsStarting(true);
     try {
-      const { scenarioId, scenarioPathSessionItemId, languageId } = params;
+      const { scenarioId, scenarioPathSessionItemId, caseSessionItemId, languageId } = params;
       const dataParams: {
         scenarioId: number;
         scenarioPathSessionItemId?: string;
+        caseSessionItemId?: string;
         languageId?: number;
       } = {
         scenarioId,
@@ -72,6 +74,10 @@ export const useStartSimulation = (
 
       if (scenarioPathSessionItemId?.length > 0) {
         dataParams.scenarioPathSessionItemId = scenarioPathSessionItemId;
+      }
+
+      if (caseSessionItemId?.length > 0) {
+        dataParams.caseSessionItemId = caseSessionItemId;
       }
 
       const { data, error } = await startSimulationMutation(dataParams);
@@ -89,6 +95,7 @@ export const useStartSimulation = (
             triggerWarnings: scenario?.triggerWarnings || [],
             localParticipant: {
               name: user?.name,
+              coverImageUrl: user?.profileImageUrl,
             },
             remoteParticipant: {
               name: scenario?.metadata?.name || metadata?.title,
@@ -97,6 +104,12 @@ export const useStartSimulation = (
             accessToken: accessToken.token,
             createdAt: scenarioSession.startedAt,
             serverUrl: accessToken.serverUrl,
+            checklistEvents: scenario?.checklistEvents || [],
+            experienceMode: scenario?.experienceMode,
+            checklistType: scenario?.checklistType,
+            maxTimeValue: scenario?.maxTimeValue,
+            timerMode: scenario?.timerMode,
+            showScoreMeter: scenario?.showScoreMeter,
           }),
         );
 

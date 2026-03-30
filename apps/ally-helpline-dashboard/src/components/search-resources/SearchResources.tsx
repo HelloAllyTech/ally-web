@@ -1,5 +1,6 @@
 import { FC, useEffect, useState, useRef } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
   showHeader = true,
   fullWidth = false,
 }) => {
+  const { t } = useTranslation();
   const [, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,7 +71,7 @@ const SearchResources: FC<SearchResourcesProps> = ({
           setCategoryCountList(response.data.categories);
         }
       } else {
-        toast.error("Error fetching search results");
+        toast.error(t("search.error"));
       }
     }
   };
@@ -144,6 +146,18 @@ const SearchResources: FC<SearchResourcesProps> = ({
       isSuggestionsRow={!isInSidebar}
       mode={isInSidebar ? SearchVariant.DARK : SearchVariant.LIGHT}
       categoryCountList={categoryCountList}
+      searchPlaceholder={t("search.placeholder", "Need guidance? Search here..")}
+      headerDescription={t(
+        "search.headerDescription",
+        "Guidance, safety, and support — whenever you need it.",
+      )}
+      suggestionsTitle={t("search.suggestionsTitle", "Try:")}
+      noResultsLabel={t("search.noResults", 'No results found for "{{query}}"')}
+      allLabel={t("search.allLabel", "All")}
+      logoAlt={t("search.logoAlt", "Ally Logo")}
+      translateCategory={category => t(`search.categories.${category}`, category as any) as string}
+      viewMoreLabel={t("search.viewMore", "View more")}
+      viewLessLabel={t("search.viewLess", "View less")}
     />
   );
 };

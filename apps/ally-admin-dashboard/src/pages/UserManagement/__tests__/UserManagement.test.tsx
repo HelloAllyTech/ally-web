@@ -1,5 +1,6 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { TabType } from "@types";
@@ -7,10 +8,15 @@ import { TabType } from "@types";
 import * as useOrganizationManagementHook from "../useOrganizationManagement";
 import { UserManagement } from "../UserManagement";
 import * as useUserManagementHook from "../useUserManagement";
+import { Permissions } from "@constants";
 
 // Mock hooks
 vi.mock("../useUserManagement");
 vi.mock("../useOrganizationManagement");
+vi.mock("react-redux", () => ({
+  useSelector: vi.fn(),
+  useDispatch: vi.fn(),
+}));
 
 // Mock components
 vi.mock("@components", () => ({
@@ -46,16 +52,30 @@ vi.mock("@components", () => ({
       {addFilterCta}
     </div>
   ),
-  FilterDropdown: ({ isOpen }: any) =>
-    isOpen ? <div data-testid="filter-dropdown">Filter Dropdown</div> : null,
-  UserList: ({ users, onOptionSelect, renderFooter }: any) => (
+  FilterDropdown: ({ isOpen, onApplyFilters }: any) =>
+    isOpen ? (
+      <div data-testid="filter-dropdown">
+        Filter Dropdown
+        <button
+          data-testid="apply-filters-test"
+          onClick={() => onApplyFilters({ roles: ["admin"], organizations: [], statuses: [] })}
+        >
+          Apply Filters
+        </button>
+      </div>
+    ) : null,
+  UserList: ({ users, onOptionSelect, renderFooter, canEditUser }: any) => (
     <div data-testid="user-list">
       {users.map((user: any) => (
         <div key={user.id} data-testid={`user-${user.id}`}>
           <span>{user.name}</span>
-          <button onClick={() => onOptionSelect(user, "EDIT_DETAILS")}>Edit</button>
-          <button onClick={() => onOptionSelect(user, "SUSPEND_USER")}>Suspend</button>
-          <button onClick={() => onOptionSelect(user, "REMOVE_USER")}>Remove</button>
+          {canEditUser && (
+            <>
+              <button onClick={() => onOptionSelect(user, "EDIT_DETAILS")}>Edit</button>
+              <button onClick={() => onOptionSelect(user, "SUSPEND_USER")}>Suspend</button>
+              <button onClick={() => onOptionSelect(user, "REMOVE_USER")}>Remove</button>
+            </>
+          )}
         </div>
       ))}
       {renderFooter()}
@@ -80,7 +100,7 @@ vi.mock("@components", () => ({
   ),
   UserListLoader: () => <div data-testid="user-loader">Loading users...</div>,
   OrganizationListLoader: () => <div data-testid="org-loader">Loading organizations...</div>,
-  UserModal: ({ isOpen, onClose, title, handleClick }: any) => {
+  UserModal: ({ isOpen, onClose, title, handleClick, extraContent }: any) => {
     // If isOpen is explicitly false, don't render
     if (isOpen === false) return null;
     // Otherwise render (when isOpen is true or undefined)
@@ -89,6 +109,7 @@ vi.mock("@components", () => ({
         <h2>{title}</h2>
         <button onClick={handleClick}>Submit</button>
         <button onClick={onClose}>Close</button>
+        {extraContent && <div data-testid="modal-extra-content">{extraContent}</div>}
       </div>
     );
   },
@@ -100,6 +121,10 @@ vi.mock("@components", () => ({
         <button onClick={secondaryButton.onClick}>{secondaryButton.label}</button>
       </div>
     ) : null,
+  AssignedOrganizations: () => (
+    <div data-testid="assigned-organizations">Assigned Organizations</div>
+  ),
+  StatusBadge: () => <div data-testid="status-badge">Status Badge</div>,
 }));
 
 describe("UserManagement", () => {
@@ -121,19 +146,30 @@ describe("UserManagement", () => {
     isFilterOpen: false,
     setIsFilterOpen: vi.fn(),
     addFilterBtnRef: { current: null },
-    filters: {},
+    filters: { organizations: [], roles: [], statuses: [] },
     handleApplyFilters: vi.fn(),
-    users: mockUsers,
+    users: mockUsers as any,
     loadUsers: vi.fn(),
     isUsersFetching: false,
     filterChips: null,
     getField: vi.fn(),
     addUsermodalOpen: false,
+    setAddUserModalOpen: vi.fn(),
     handleTabChange: vi.fn(),
     selectedUser: null,
+    setSelectedUser: vi.fn(),
     selectedOption: null,
+    setSelectedOption: vi.fn(),
     addFilterCtaMemo: null,
-    userMethods: {} as any,
+    userMethods: {
+      watch: vi.fn(),
+      register: vi.fn(),
+      handleSubmit: vi.fn(),
+      setValue: vi.fn(),
+      getValues: vi.fn(),
+      reset: vi.fn(),
+      formState: { errors: {} },
+    } as any,
     handleOptionSelect: vi.fn(),
     handleDropdownClose: vi.fn(),
     handleAddUser: vi.fn(),
@@ -145,6 +181,15 @@ describe("UserManagement", () => {
     handleAddUserClose: vi.fn(),
     handleUserAddClick: vi.fn(),
     handleAddCredit: vi.fn(),
+    roles: [],
+    setRoles: vi.fn(),
+    usersOffset: 0,
+    addUser: vi.fn(),
+    editUser: vi.fn(),
+    deleteUser: vi.fn(),
+    updateUserStatus: vi.fn(),
+    changeRole: vi.fn(),
+    addUserdata: vi.fn(),
   };
 
   const mockOrganizationManagementHook = {
@@ -152,23 +197,53 @@ describe("UserManagement", () => {
     orgSearch: "",
     setOrgSearch: vi.fn(),
     addOrganizationModalOpen: false,
+    setAddOrganizationModalOpen: vi.fn(),
     selectedTenant: null,
-    tenants: mockOrganizations,
+    setSelectedTenant: vi.fn(),
+    tenants: mockOrganizations as any,
     loadTenants: vi.fn(),
     isTenantsFetching: false,
-    tenantMethods: {} as any,
+    tenantsOffset: 0,
+    tenantMethods: {
+      watch: vi.fn().mockReturnValue(undefined),
+      register: vi.fn(),
+      handleSubmit: vi.fn(),
+      setValue: vi.fn(),
+      getValues: vi.fn(),
+      reset: vi.fn(),
+      formState: { errors: {} },
+    } as any,
     handleNewgroupClick: vi.fn(),
     onEditTenant: vi.fn(),
     handleTenantFormSubmit: vi.fn(),
     onCloseOrganizationEditModal: vi.fn(),
+    handleCreateTenant: vi.fn(),
+    handleEditTenant: vi.fn(),
+    createTenant: vi.fn(),
+    updateTenant: vi.fn(),
   };
 
   beforeEach(() => {
-    vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue(mockUserManagementHook);
+    vi.clearAllMocks();
+    vi.mocked(useSelector).mockReturnValue([]); // Default permissions
+
+    vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue(
+      mockUserManagementHook as any,
+    );
     vi.mocked(useOrganizationManagementHook.useOrganizationManagement).mockReturnValue(
-      mockOrganizationManagementHook,
+      mockOrganizationManagementHook as any,
     );
   });
+
+  const setPermissions = (permissions: Permissions[]) => {
+    vi.mocked(useSelector).mockImplementation((selector: any) => {
+      // Mock RootState
+      const state = {
+        user: { permissions },
+      };
+      return selector(state);
+    });
+  };
 
   const renderUserManagement = (initialEntries = ["/"]) => {
     return render(
@@ -182,15 +257,15 @@ describe("UserManagement", () => {
     it("should render user management page", () => {
       renderUserManagement();
 
-      expect(screen.getByText("User Management")).toBeInTheDocument();
+      expect(screen.getByText("Users")).toBeInTheDocument();
       expect(screen.getByTestId("tabs")).toBeInTheDocument();
     });
 
     it("should render tabs with counts", () => {
       renderUserManagement();
 
-      expect(screen.getByText(/Users \(2\)/)).toBeInTheDocument();
-      expect(screen.getByText(/Organizations \(2\)/)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Users\s+2/ })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Organizations\s+2/ })).toBeInTheDocument();
     });
 
     it("should render users tab by default", () => {
@@ -224,13 +299,22 @@ describe("UserManagement", () => {
       expect(mockUserManagementHook.setSearch).toHaveBeenCalledWith("John");
     });
 
-    it("should show add user button", () => {
+    it("should show add user button when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       expect(screen.getByText("Add user")).toBeInTheDocument();
     });
 
+    it("should NOT show add user button when user lacks EDIT_USER permission", () => {
+      setPermissions([]);
+      renderUserManagement();
+
+      expect(screen.queryByText("Add user")).not.toBeInTheDocument();
+    });
+
     it("should open add user modal when add user button is clicked", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       const addUserButton = screen.getByText("Add user");
@@ -244,7 +328,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         users: [],
         usersCount: 0,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -256,7 +340,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         users: [],
         isUsersFetching: true,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -265,7 +349,8 @@ describe("UserManagement", () => {
   });
 
   describe("User Actions", () => {
-    it("should handle edit user", () => {
+    it("should handle edit user when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       const editButtons = screen.getAllByText("Edit");
@@ -277,7 +362,17 @@ describe("UserManagement", () => {
       );
     });
 
-    it("should handle suspend user", () => {
+    it("should NOT show user action buttons when user lacks EDIT_USER permission", () => {
+      setPermissions([]);
+      renderUserManagement();
+
+      expect(screen.queryByText("Edit")).not.toBeInTheDocument();
+      expect(screen.queryByText("Suspend")).not.toBeInTheDocument();
+      expect(screen.queryByText("Remove")).not.toBeInTheDocument();
+    });
+
+    it("should handle suspend user when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       const suspendButtons = screen.getAllByText("Suspend");
@@ -289,7 +384,8 @@ describe("UserManagement", () => {
       );
     });
 
-    it("should handle remove user", () => {
+    it("should handle remove user when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement();
 
       const removeButtons = screen.getAllByText("Remove");
@@ -306,7 +402,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         selectedOption: "Edit details",
         selectedUser: mockUsers[0],
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -319,7 +415,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         selectedOption: "Suspend user",
         selectedUser: mockUsers[0],
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -332,7 +428,7 @@ describe("UserManagement", () => {
         ...mockUserManagementHook,
         selectedOption: "Remove user",
         selectedUser: mockUsers[0],
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -346,13 +442,13 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         activeTab: TabType.ORGANIZATIONS,
-      });
+      } as any);
     });
 
     it("should switch to organizations tab", () => {
       renderUserManagement();
 
-      const orgTab = screen.getByText(/Organizations \(2\)/);
+      const orgTab = screen.getByRole("button", { name: /Organizations\s+2/ });
       fireEvent.click(orgTab);
 
       // The component now uses setSearchParams instead of handleTabChange
@@ -368,13 +464,22 @@ describe("UserManagement", () => {
       expect(screen.getByText("Organization 2")).toBeInTheDocument();
     });
 
-    it("should show add organization button", () => {
+    it("should show add organization button when user has EDIT_USER permission", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement(["/?tab=organizations"]);
 
       expect(screen.getByText("Add organization")).toBeInTheDocument();
     });
 
-    it("should open add organization modal", () => {
+    it("should NOT show add organization button when user lacks EDIT_USER permission", () => {
+      setPermissions([]);
+      renderUserManagement(["/?tab=organizations"]);
+
+      expect(screen.queryByText("Add organization")).not.toBeInTheDocument();
+    });
+
+    it("should open add organization modal when add organization button is clicked", () => {
+      setPermissions([Permissions.EDIT_USER]);
       renderUserManagement(["/?tab=organizations"]);
 
       const addOrgButton = screen.getByText("Add organization");
@@ -399,7 +504,7 @@ describe("UserManagement", () => {
         ...mockOrganizationManagementHook,
         tenants: [],
         tenantsCount: 0,
-      });
+      } as any);
 
       renderUserManagement(["/?tab=organizations"]);
 
@@ -411,7 +516,7 @@ describe("UserManagement", () => {
         ...mockOrganizationManagementHook,
         tenants: [],
         isTenantsFetching: true,
-      });
+      } as any);
 
       renderUserManagement(["/?tab=organizations"]);
 
@@ -433,7 +538,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         isFilterOpen: true,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -441,10 +546,21 @@ describe("UserManagement", () => {
     });
 
     it("should apply filters", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        isFilterOpen: true,
+      } as any);
+
       renderUserManagement();
 
-      // Filter application would be tested through the hook
-      expect(mockUserManagementHook.handleApplyFilters).toBeDefined();
+      const applyButton = screen.getByTestId("apply-filters-test");
+      fireEvent.click(applyButton);
+
+      expect(mockUserManagementHook.handleApplyFilters).toHaveBeenCalledWith({
+        roles: ["admin"],
+        organizations: [],
+        statuses: [],
+      });
     });
   });
 
@@ -460,7 +576,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         activeTab: TabType.ORGANIZATIONS,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -473,7 +589,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         addUsermodalOpen: true,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -484,7 +600,7 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         addUsermodalOpen: true,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -498,12 +614,12 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         activeTab: TabType.ORGANIZATIONS,
-      });
+      } as any);
 
       vi.mocked(useOrganizationManagementHook.useOrganizationManagement).mockReturnValue({
         ...mockOrganizationManagementHook,
         addOrganizationModalOpen: true,
-      });
+      } as any);
 
       renderUserManagement(["/?tab=organizations"]);
 
@@ -514,12 +630,12 @@ describe("UserManagement", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         activeTab: TabType.ORGANIZATIONS,
-      });
+      } as any);
 
       vi.mocked(useOrganizationManagementHook.useOrganizationManagement).mockReturnValue({
         ...mockOrganizationManagementHook,
         addOrganizationModalOpen: true,
-      });
+      } as any);
 
       renderUserManagement(["/?tab=organizations"]);
 
@@ -537,7 +653,7 @@ describe("UserManagement", () => {
         selectedOption: "Change role",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -551,7 +667,7 @@ describe("UserManagement", () => {
         selectedOption: "Manage credits",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
-      });
+      } as any);
 
       renderUserManagement();
 
@@ -565,12 +681,85 @@ describe("UserManagement", () => {
         selectedOption: "Grant access",
         selectedUser: mockUsers[0],
         activeTab: TabType.USERS,
-      });
+      } as any);
 
       renderUserManagement();
 
       expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
       expect(screen.getAllByText("Grant Access").length).toBeGreaterThan(0);
+    });
+
+    it("should show AssignedOrganizations in modal for MULTI_TENANT_ADMIN user", () => {
+      vi.mocked(useSelector).mockReturnValue([Permissions.EDIT_MULTI_TENANT_ADMINS]);
+
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Edit details",
+        selectedUser: { ...mockUsers[0], roles: ["MULTI_TENANT_ADMIN"] },
+        activeTab: TabType.USERS,
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("user-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("modal-extra-content")).toBeInTheDocument();
+      expect(screen.getByTestId("assigned-organizations")).toBeInTheDocument();
+    });
+
+    it("should show AssignedOrganizations reactively when role is changed in Change Role modal", () => {
+      vi.mocked(useSelector).mockReturnValue([Permissions.EDIT_MULTI_TENANT_ADMINS]);
+
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Change role",
+        selectedUser: mockUsers[0],
+        userMethods: {
+          ...mockUserManagementHook.userMethods,
+          watch: vi.fn().mockReturnValue(["MULTI_TENANT_ADMIN"]),
+        },
+        activeTab: TabType.USERS,
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("user-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("modal-extra-content")).toBeInTheDocument();
+      expect(screen.getByTestId("assigned-organizations")).toBeInTheDocument();
+    });
+
+    it("should show assignment message for new MULTI_TENANT_ADMIN user", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        addUsermodalOpen: true,
+        userMethods: {
+          ...mockUserManagementHook.userMethods,
+          watch: vi.fn().mockReturnValue(["MULTI_TENANT_ADMIN"]),
+        },
+        activeTab: TabType.USERS,
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("user-modal")).toBeInTheDocument();
+      expect(screen.getByTestId("modal-extra-content")).toBeInTheDocument();
+      expect(
+        screen.getByText(/Organizations can be assigned after the user is created/i),
+      ).toBeInTheDocument();
+    });
+
+    it("should show AssignedOrganizations if user has MULTI_TENANT_ADMIN in role field", () => {
+      vi.mocked(useSelector).mockReturnValue([Permissions.EDIT_MULTI_TENANT_ADMINS]);
+
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Edit details",
+        selectedUser: { ...mockUsers[0], role: "MULTI_TENANT_ADMIN" },
+        activeTab: TabType.USERS,
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("assigned-organizations")).toBeInTheDocument();
     });
   });
 });

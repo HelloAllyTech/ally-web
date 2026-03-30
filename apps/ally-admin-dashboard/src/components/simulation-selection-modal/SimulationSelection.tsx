@@ -22,6 +22,7 @@ interface SimulationProps {
   selectedSimulations: GetScenarioType[];
   setSelectedSimulations: (simulations: GetScenarioType[]) => void;
   isDisabled?: boolean;
+  isCase?: boolean;
 }
 
 const SIMULATIONS_PAGE_SIZE = 20;
@@ -33,6 +34,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   selectedSimulations,
   setSelectedSimulations,
   isDisabled = false,
+  isCase = false,
 }) => {
   const [checkedSimulation, setCheckedSimulation] = useState<GetScenarioType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,7 +43,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const [allSimulations, setAllSimulations] = useState<Simulation[]>([]);
   const [hasMore, setHasMore] = useState(true);
 
-  const messageButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const messageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
@@ -200,16 +202,14 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
 
   const renderMessage = (messageTitle: string, messageContent: string, index: number) => (
     <div className="rounded-md flex flex-col justify-center border mx-auto my-3 w-[800px] group">
-      <div className="w-full bg-secondary-50 px-2 py-2 rounded-t-md flex justify-between items-center">
+      <div
+        ref={element => (messageRefs.current[index] = element)}
+        className="w-full bg-secondary-50 px-2 py-2 rounded-t-md flex justify-between items-center"
+      >
         <p className="text-base text-typography-900 font-medium">{en.simulation.message}</p>
-
         {!isDisabled && (
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex cursor-pointer gap-2">
-            <button
-              className="text-xs text-primary-500"
-              onClick={() => handleMessageClick(index)}
-              ref={element => (messageButtonRefs.current[index] = element)}
-            >
+            <button className="text-xs text-primary-500" onClick={() => handleMessageClick(index)}>
               {en.common.edit}
             </button>
 
@@ -259,7 +259,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
             setOpenMessageIndex={setOpenMessageIndex}
             handleMessageClick={handleMessageClick}
             renderMessage={renderMessage}
-            addButtonRef={messageButtonRefs}
+            addMessageRef={messageRefs}
             isDisabled={isDisabled}
           />
         ))}
@@ -275,7 +275,9 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           className="relative bg-white rounded-lg shadow-xl max-w-xl w-full animate-in fade-in-0 zoom-in-95 duration-200 px-6 py-4"
           onClick={event => event.stopPropagation()}
         >
-          <h1 className="text-lg">{en.simulation.addSimulationToPath}</h1>
+          <h1 className="text-lg">
+            {isCase ? en.simulation.addSimulationToCase : en.simulation.addSimulationToPath}
+          </h1>
 
           <div className="relative w-full mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />

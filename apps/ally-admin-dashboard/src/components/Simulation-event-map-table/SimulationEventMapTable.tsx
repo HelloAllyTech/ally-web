@@ -1,22 +1,24 @@
 // This component is used to display the event map table for the simulation
 
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useGetSessionEventsQuery,
   useMapScenarioEventsMutation,
   useDeleteScenarioEventsMutation,
   useGetMappedScenarioEventsQuery,
 } from "@api";
-import { Add, Trash } from "@assets";
+import { Add, Refresh, Trash } from "@assets";
 import {
   NotionTable,
   cellTypes,
   Button,
   MappedEventSidePanel,
   EventMapTableLoader,
+  BulkAddEventsSidePanel,
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER, en } from "@constants";
@@ -29,20 +31,25 @@ import {
   createSessionEventsMap,
   MAPPED_EVENT_FIELDS,
   isNonEmptyString,
+  addScoreColors,
 } from "@utils";
 
 interface SimulationEventMapTableProps {
   simulationId: string | undefined;
 }
 
+const DEBOUNCE_DELAY = 500;
+
 export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simulationId }) => {
   const [mappedEvents, setMappedEvents] = useState<UpdateScenarioEventDataParam[]>([
     createNewEvent(),
   ]);
+  const [eventOrderMapping, setEventOrderMapping] = useState<Record<string, number>>({});
   const [selectedEventRows, setSelectedEventRows] = useState<UpdateScenarioEventDataParam[]>([]);
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [selectedEventForEdit, setSelectedEventForEdit] =
     useState<UpdateScenarioEventDataParam | null>(null);
+  const [isBulkAddPanelOpen, setIsBulkAddPanelOpen] = useState(false);
 
   const { data: sessionEventsData, isLoading: isSessionEventsLoading } = useGetSessionEventsQuery({
     visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
@@ -62,8 +69,10 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const [mapScenarioEvents] = useMapScenarioEventsMutation();
   const [deleteScenarioEvents] = useDeleteScenarioEventsMutation();
 
-  const sessionEvents = sessionEventsData?.data || [];
+  const sessionEvents = useMemo(() => sessionEventsData?.data || [], [sessionEventsData]);
   const isLoading = isSessionEventsLoading || isMappedEventsLoading;
+
+  const tableRef = useRef<HTMLDivElement>(null);
 
   // Create a memoized map for quick event lookup
   const sessionEventsMap = useMemo(() => createSessionEventsMap(sessionEvents), [sessionEvents]);
@@ -84,11 +93,16 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   // Initialize mapped events from API response
   useEffect(() => {
     if (mappedScenarioEventsData?.data?.length > 0) {
-      setMappedEvents(mappedScenarioEventsData.data.map(formatApiResponseToMappedEvent));
+      const formattedEvents = mappedScenarioEventsData.data.map(event =>
+        formatApiResponseToMappedEvent(event, sessionEventsMap.get(event.eventId)?.detectionType),
+      );
+
+      if (mappedEvents.length <= 1) updateEventOrderMapping(formattedEvents);
+      setMappedEvents(formattedEvents);
     } else {
       setMappedEvents([createNewEvent()]);
     }
-  }, [mappedScenarioEventsData]);
+  }, [mappedScenarioEventsData, sessionEventsMap]);
 
   // Table columns configuration
   const tableColumns = useMemo(() => {
@@ -136,6 +150,67 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         options: [],
         minWidth: 120,
       },
+
+      {
+        id: MAPPED_EVENT_FIELDS.START_TIME,
+        label: "Applicable from",
+        accessor: MAPPED_EVENT_FIELDS.START_TIME,
+        dataType: cellTypes.timeInput,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.END_TIME,
+        label: "Applicable till",
+        accessor: MAPPED_EVENT_FIELDS.END_TIME,
+        dataType: cellTypes.timeInput,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
+        label: "Max occurrences",
+        accessor: MAPPED_EVENT_FIELDS.MAX_OCCURRENCES,
+        dataType: cellTypes.score,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
+        label: "Min gap time",
+        accessor: MAPPED_EVENT_FIELDS.MIN_GAP_TIME,
+        dataType: cellTypes.timeInput,
+        options: [],
+        minWidth: 120,
+      },
+      ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
+        ? [
+            {
+              id: MAPPED_EVENT_FIELDS.OCCURRENCE_INTERVAL,
+              label: "Occurrence Interval",
+              accessor: MAPPED_EVENT_FIELDS.OCCURRENCE_INTERVAL,
+              dataType: cellTypes.number,
+              options: [],
+              minWidth: 120,
+            },
+          ]
+        : []),
+      {
+        id: MAPPED_EVENT_FIELDS.MIN_SCORE,
+        label: "Min score",
+        accessor: MAPPED_EVENT_FIELDS.MIN_SCORE,
+        dataType: cellTypes.score,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.MAX_SCORE,
+        label: "Max score",
+        accessor: MAPPED_EVENT_FIELDS.MAX_SCORE,
+        dataType: cellTypes.score,
+        options: [],
+        minWidth: 120,
+      },
       {
         id: MAPPED_EVENT_FIELDS.BRANCHING_STATUS,
         label: "Branching status",
@@ -149,12 +224,62 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         label: "Branch to state",
         accessor: MAPPED_EVENT_FIELDS.BRANCH_INSTRUCTION,
         placeholder: "Add branch to state",
-        dataType: cellTypes.editableText,
+        dataType: cellTypes.textAreaWithDropdown,
         options: [],
         minWidth: 180,
       },
+      {
+        id: MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS,
+        label: "Checklist visibility",
+        accessor: MAPPED_EVENT_FIELDS.CHECKLIST_VISIBILITY_STATUS,
+        dataType: cellTypes.switch,
+        options: [],
+        minWidth: 120,
+      },
+      {
+        id: MAPPED_EVENT_FIELDS.TAGS,
+        label: "Tags",
+        accessor: MAPPED_EVENT_FIELDS.TAGS,
+        dataType: cellTypes.tags,
+        options: [],
+        minWidth: 150,
+      },
     ];
   }, [sessionEventsOptions]);
+
+  const updateEventOrderMapping = (events: UpdateScenarioEventDataParam[]) => {
+    const sortedEvents = [...events].sort((a, b) => (a.score?.value ?? 0) - (b.score?.value ?? 0));
+    const orderMapping = sortedEvents.reduce(
+      (acc, event, index) => {
+        acc[event.id?.value || ""] = index + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    setEventOrderMapping(orderMapping);
+  };
+
+  const onReloadMappedEvents = () => {
+    setTimeout(() => {
+      updateEventOrderMapping(mappedEvents);
+      // Target the NotionTable's scrollable container (has overflow-auto class)
+      const scrollableElement = tableRef.current?.querySelector(".overflow-auto");
+      scrollableElement?.scrollTo({ top: 0, behavior: "smooth" });
+    }, 100);
+  };
+
+  const sortMappedEvents = useMemo(() => {
+    return [...mappedEvents].sort((a, b) => {
+      const orderA = eventOrderMapping[a.id.value] ?? Number.MAX_SAFE_INTEGER;
+      const orderB = eventOrderMapping[b.id.value] ?? Number.MAX_SAFE_INTEGER;
+
+      return orderA - orderB;
+    });
+  }, [mappedEvents, eventOrderMapping]);
+
+  const tableData = useMemo(() => {
+    return addScoreColors(sortMappedEvents);
+  }, [sortMappedEvents]);
 
   // Helper function to save events to API
   const saveEventsToApi = useCallback(
@@ -176,19 +301,51 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     [simulationId, mapScenarioEvents],
   );
 
+  // Changed events accumulator for debounce
+  const changedEventsRef = useRef<Map<string, UpdateScenarioEventDataParam>>(new Map());
+
+  // Debounced save for cell updates (to prevent multiple saves when typing quickly in number input)
+  const debouncedSaveTimeoutRef = useRef<NodeJS.Timeout>();
+  const debouncedSaveEventsToApi = useCallback(
+    (event: UpdateScenarioEventDataParam) => {
+      if (event.id?.value) {
+        changedEventsRef.current.set(event.id.value as string, event);
+      }
+
+      if (debouncedSaveTimeoutRef.current) {
+        clearTimeout(debouncedSaveTimeoutRef.current);
+      }
+      debouncedSaveTimeoutRef.current = setTimeout(() => {
+        const eventsToSave = Array.from(changedEventsRef.current.values());
+        if (eventsToSave.length > 0) {
+          saveEventsToApi(eventsToSave);
+          changedEventsRef.current.clear();
+        }
+      }, DEBOUNCE_DELAY);
+    },
+    [saveEventsToApi],
+  );
+
   // Helper function to update an event by ID
   const updateEventById = useCallback(
     (
       eventId: string,
       updater: (event: UpdateScenarioEventDataParam) => UpdateScenarioEventDataParam,
     ) => {
-      const updatedEvents = mappedEvents.map(event =>
-        event.id?.value === eventId ? updater(event) : event,
-      );
+      let updatedEvent: UpdateScenarioEventDataParam | null = null;
+      const updatedEvents = mappedEvents.map(event => {
+        if (event.id?.value === eventId) {
+          updatedEvent = updater(event);
+          return updatedEvent;
+        }
+        return event;
+      });
       setMappedEvents(updatedEvents);
-      saveEventsToApi(updatedEvents);
+      if (updatedEvent) {
+        debouncedSaveEventsToApi(updatedEvent);
+      }
     },
-    [mappedEvents, saveEventsToApi],
+    [mappedEvents, debouncedSaveEventsToApi],
   );
 
   // Add a new event row
@@ -248,7 +405,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
             mappedEvent?.id?.value === rowId ? formattedEvent : mappedEvent,
           );
           setMappedEvents(updatedEvents);
-          saveEventsToApi(updatedEvents);
+          saveEventsToApi([formattedEvent]);
         }
       } else {
         // For other columns, just update that specific field using rowId
@@ -263,7 +420,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
 
   // Open side panel for event editing
   const handleOpenMappedEventSidePanel = (rowIndex: number) => {
-    const selectedEvent = mappedEvents[rowIndex];
+    const selectedEvent = tableData[rowIndex];
     if (selectedEvent && selectedEvent.id?.value) {
       setSelectedEventForEdit(selectedEvent);
     } else {
@@ -284,7 +441,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       event.id?.value === updatedEvent.id?.value ? updatedEvent : event,
     );
     setMappedEvents(updatedEvents);
-    saveEventsToApi(updatedEvents);
+    saveEventsToApi([updatedEvent]);
   };
 
   // Delete mapped event from side panel
@@ -318,11 +475,44 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
           event.id?.value === "" ? formattedEvent : event,
         );
         setMappedEvents(updatedEvents);
-        saveEventsToApi(updatedEvents);
+        saveEventsToApi([formattedEvent]);
       }
     },
     [sessionEventsMap, mappedEvents, saveEventsToApi],
   );
+
+  // Handle bulk add events
+  const handleBulkAddEvents = useCallback(
+    async (events: UpdateScenarioEventDataParam[]) => {
+      if (events.length === 0) {
+        setIsBulkAddPanelOpen(false);
+        return;
+      }
+
+      // Add events to the beginning of mappedEvents array
+      const updatedEvents = [...events, ...mappedEvents];
+      setMappedEvents(updatedEvents);
+
+      // Save to API
+      await saveEventsToApi(events);
+
+      // Close panel
+      setIsBulkAddPanelOpen(false);
+
+      // Show success message
+      toast.success(en.simulation.bulkAddSuccess(events.length));
+    },
+    [mappedEvents, saveEventsToApi],
+  );
+
+  const renderBulkAddButton = () => {
+    return (
+      <Button variant={ButtonVariant.PRIMARY} onClick={() => setIsBulkAddPanelOpen(true)}>
+        <Add />
+        {en.simulation.bulkAddEvents}
+      </Button>
+    );
+  };
 
   // Render action buttons (Add or Delete)
   const renderActionButtons = () => {
@@ -335,12 +525,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       );
     }
     return (
-      <Button
-        disabled={disabled}
-        className={`${disabled ? "bg-neutral-300 cursor-not-allowed" : "bg-primary-500 hover:bg-primary-500"}`}
-        variant={ButtonVariant.PRIMARY}
-        onClick={handleAddEventInternal}
-      >
+      <Button disabled={disabled} variant={ButtonVariant.PRIMARY} onClick={handleAddEventInternal}>
         <Add />
         {`${en.simulation.addEvent}`}
       </Button>
@@ -350,18 +535,32 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   return (
     <div className="flex flex-col h-full w-100%">
       <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-        <h2 className="text-lg font-semibold text-typography-900 font-primary">
-          {en.simulation.advancedSettings}
-        </h2>
-        {!isLoading && renderActionButtons()}
+        <div className="flex flex-row items-center gap-2 text-lg font-semibold text-typography-900 font-primary">
+          <span>{en.simulation.advancedSettings}</span>
+          <div className="w-[1px] h-[16px] bg-border-light" />
+          <div className="cursor-pointer" onClick={onReloadMappedEvents}>
+            <Refresh className="w-4 h-4" />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {!isLoading && (
+            <>
+              {renderBulkAddButton()}
+              {renderActionButtons()}
+            </>
+          )}
+        </div>
       </div>
-      <div className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full custom-scrollbar">
+      <div
+        ref={tableRef}
+        className="p-6 pt-4 pr-0 overflow-y-hidden overflow-x-scroll w-[calc(100vw-270px)] lg:w-[calc(100vw-320px)] max-w-full custom-scrollbar"
+      >
         {isLoading ? (
           <EventMapTableLoader />
         ) : (
           <NotionTable
             tableData={{
-              data: mappedEvents,
+              data: tableData,
               columns: tableColumns,
             }}
             onRowChange={handleUpdateEventTable}
@@ -380,6 +579,13 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         sessionEvents={sessionEvents}
         availableEventOptions={sessionEventsOptions}
         onEventSelect={handleEventSelect}
+      />
+      <BulkAddEventsSidePanel
+        isOpen={isBulkAddPanelOpen}
+        onClose={() => setIsBulkAddPanelOpen(false)}
+        sessionEvents={sessionEvents}
+        mappedEvents={mappedEvents}
+        onBulkAdd={handleBulkAddEvents}
       />
     </div>
   );

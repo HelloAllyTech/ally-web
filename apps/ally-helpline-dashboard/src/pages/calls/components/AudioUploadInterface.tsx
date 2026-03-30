@@ -1,6 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import WavesurferPlayer from "@wavesurfer/react";
+import { useTranslation } from "react-i18next";
 import WaveSurfer from "wavesurfer.js";
 
 import { Delete, FileUpload, PauseIcon, PlayIcon } from "@assets";
@@ -16,6 +17,7 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
   onDropSuccess,
   onDeleteClick,
 }) => {
+  const { t } = useTranslation();
   const [isDropping, setIsDropping] = useState<number | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
@@ -145,7 +147,9 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
           <div className="flex gap-5 w-full border-[0.5px] border-[#D2D2D2] rounded-[8px] p-6">
             <FileUpload />
             <div className="flex flex-col gap-2 flex-1 font-primary">
-              <span className="text-typography-900 text-sm">Uploading your audio file</span>
+              <span className="text-typography-900 text-sm">
+                {t("calls.audioUpload.uploading")}
+              </span>
               <div className="w-full h-2 bg-[#EDEDED] rounded">
                 <div
                   className="h-2 bg-typography-900 rounded"
@@ -189,7 +193,9 @@ const AudioUploadInterface: FC<AudioUploadInterfaceProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center bg-white/50 rounded">
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-6 h-6 border-2 border-[#D2D2D2] border-t-[#0957D0] rounded-full animate-spin" />
-                    <span className="text-xs text-typography-800">Loading waveform...</span>
+                    <span className="text-xs text-typography-800">
+                      {t("calls.audioUpload.loadingWaveform")}
+                    </span>
                   </div>
                 </div>
               )}

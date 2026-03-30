@@ -19,12 +19,20 @@ vi.mock("../PublicRoute", () => ({
 vi.mock("@pages", () => ({
   CreateSimulation: () => <div>CreateSimulationPage</div>,
   CreatePath: () => <div>CreatePathPage</div>,
+  CreateCase: () => <div>CreateCasePage</div>,
   Login: () => <div>LoginPage</div>,
+  MagicLinkVerify: () => <div>MagicLinkVerifyPage</div>,
   LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
-  SimulationStudio: () => <div>SimulationStudioPage</div>,
+  SimulationStudio: () => <div>RolePlaysPage</div>,
   UserManagement: () => <div>UserManagementPage</div>,
   OrganizationDetail: () => <div>OrganizationDetailPage</div>,
   EventManagement: () => <div>EventManagementPage</div>,
+  CharacterLibrary: () => <div>CharacterLibraryPage</div>,
+  ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
+  ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
+  PromptManagement: () => <div>PromptManagementPage</div>,
+  UserBadges: () => <div>UserBadgesPage</div>,
+  GuardrailsManagement: () => <div>GuardrailsManagementPage</div>,
 }));
 
 describe("RouteLayout", () => {
@@ -38,10 +46,16 @@ describe("RouteLayout", () => {
     expect(screen.getByText("LoginPage")).toBeInTheDocument();
   });
 
+  it("renders MagicLinkVerify route", () => {
+    window.history.pushState({}, "", ROUTES.MAGIC_VERIFY);
+    render(<RouteLayout />);
+    expect(screen.getByText("MagicLinkVerifyPage")).toBeInTheDocument();
+  });
+
   it("renders Simulation Studio route", () => {
     window.history.pushState({}, "", ROUTES.SIMULATION_STUDIO);
     render(<RouteLayout />);
-    expect(screen.getByText("SimulationStudioPage")).toBeInTheDocument();
+    expect(screen.getByText("RolePlaysPage")).toBeInTheDocument();
   });
 
   it("renders User Management route", () => {
@@ -77,9 +91,27 @@ describe("RouteLayout", () => {
     expect(screen.getByText("CreateSimulationPage")).toBeInTheDocument();
   });
 
+  it("renders Event Management route", () => {
+    window.history.pushState({}, "", ROUTES.MANAGE_EVENTS);
+    render(<RouteLayout />);
+    expect(screen.getByText("EventManagementPage")).toBeInTheDocument();
+  });
+
+  it("renders Scenario Voices route", () => {
+    window.history.pushState({}, "", ROUTES.MANAGE_SCENARIO_VOICES);
+    render(<RouteLayout />);
+    expect(screen.getByText("ScenarioVoicesPage")).toBeInTheDocument();
+  });
+
+  it("renders Manage Prompts route", () => {
+    window.history.pushState({}, "", ROUTES.MANAGE_PROMPTS);
+    render(<RouteLayout />);
+    expect(screen.getByText("PromptManagementPage")).toBeInTheDocument();
+  });
+
   it("redirects unknown route to Simulation Studio", () => {
     window.history.pushState({}, "", "/unknown-path");
     render(<RouteLayout />);
-    expect(screen.getByText("SimulationStudioPage")).toBeInTheDocument();
+    expect(screen.getByText("RolePlaysPage")).toBeInTheDocument();
   });
 });

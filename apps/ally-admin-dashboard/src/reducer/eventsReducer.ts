@@ -8,7 +8,7 @@ export interface AvailableEvent {
   eventCode?: string;
 }
 
-interface EventsState {
+export interface EventsState {
   availableEvents: AvailableEvent[];
 }
 

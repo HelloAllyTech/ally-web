@@ -15,6 +15,12 @@ vi.mock("@hooks", () => ({
   useUser: () => ({}),
 }));
 
+// Mock ui-shared to avoid fetching google-sign-in-button
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  GoogleSignInButton: () => <div data-testid="google-sign-in-button">Google Sign In</div>,
+  FEATURE_FLAGS_MAP: {},
+}));
+
 // Mock ConfirmationDialog and Session icon
 vi.mock("@components", () => ({
   ConfirmationDialog: ({ children, onButtonClick, buttonText }: any) => (
@@ -24,6 +30,17 @@ vi.mock("@components", () => ({
       {children}{" "}
     </div>
   ),
+  Carousel: ({ slides }: any) => (
+    <div data-testid="carousel">
+      {slides?.map((slide: any, index: number) => (
+        <div key={index} data-testid={`carousel-slide-${index}`}>
+          {slide.text}
+        </div>
+      ))}
+    </div>
+  ),
+  CarouselVariant: { LIGHT: "LIGHT", DARK: "DARK" },
+  CarouselSize: { SMALL: "SMALL", LARGE: "LARGE" },
   ButtonVariant: { PRIMARY: "primary" },
 }));
 vi.mock("@assets/icons", () => ({

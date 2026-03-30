@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+import { FilterSectionConfig } from "@components/types";
 import { FilterDropdown } from "../FilterDropdown";
 
 vi.mock("@assets", async importOriginal => {
@@ -15,8 +16,34 @@ vi.mock("@assets", async importOriginal => {
 
 // Use real utils to avoid breaking other exports
 
+interface TestFilters {
+  organizations: string[];
+  roles: string[];
+  statuses: string[];
+}
+
+const sections: FilterSectionConfig<TestFilters>[] = [
+  {
+    id: "organizations",
+    label: "Organization",
+    options: [
+      { label: "Org 1", value: "org1" },
+      { label: "Org 2", value: "org2" },
+    ],
+  },
+  {
+    id: "roles",
+    label: "Roles",
+    options: [
+      { label: "Admin", value: "admin" },
+      { label: "Viewer", value: "viewer" },
+    ],
+  },
+];
+
 describe("FilterDropdown", () => {
   const anchorRect = { top: 0, left: 10, bottom: 20, right: 200, height: 20, width: 190 } as any;
+  const defaultFilters: TestFilters = { organizations: [], roles: [], statuses: [] };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -27,10 +54,10 @@ describe("FilterDropdown", () => {
       <FilterDropdown
         isOpen={false}
         onClose={vi.fn()}
-        organizations={["org1", "org2"]}
+        sections={sections}
         onApplyFilters={vi.fn()}
         anchorRect={anchorRect}
-        currentFilters={{ organizations: [], roles: [], statuses: [] }}
+        currentFilters={defaultFilters}
       />,
     );
     expect(container.firstChild).toBeNull();
@@ -42,10 +69,10 @@ describe("FilterDropdown", () => {
       <FilterDropdown
         isOpen={true}
         onClose={onClose}
-        organizations={[]}
+        sections={sections}
         onApplyFilters={vi.fn()}
         anchorRect={anchorRect}
-        currentFilters={{ organizations: [], roles: [], statuses: [] }}
+        currentFilters={defaultFilters}
       />,
     );
 
@@ -65,15 +92,15 @@ describe("FilterDropdown", () => {
       <FilterDropdown
         isOpen={true}
         onClose={vi.fn()}
-        organizations={["org1", "org2"]}
+        sections={sections}
         onApplyFilters={onApply}
         anchorRect={anchorRect}
-        currentFilters={{ organizations: ["org1"], roles: ["viewer"], statuses: [] }}
+        currentFilters={{ ...defaultFilters, organizations: ["org1"] }}
       />,
     );
 
-    // Open organization sublist (text may vary like Organisation)
-    const orgButton = screen.getByText(/organ/i);
+    // Open organization sublist (using label from section)
+    const orgButton = screen.getByText("Organization");
     fireEvent.click(orgButton);
 
     // org1 is checked initially, toggle org2
@@ -87,30 +114,33 @@ describe("FilterDropdown", () => {
 
     expect(onApply).toHaveBeenCalledTimes(1);
     const args = (onApply as any).mock.calls[0][0];
+    // Check organizations has both
     expect(args.organizations).toEqual(["org1", "org2"]);
   });
 
   it("clears a filter section", () => {
+    const onApply = vi.fn();
     render(
       <FilterDropdown
         isOpen={true}
         onClose={vi.fn()}
-        organizations={["org1"]}
-        onApplyFilters={vi.fn()}
+        sections={sections}
+        onApplyFilters={onApply}
         anchorRect={anchorRect}
-        currentFilters={{ organizations: ["org1"], roles: [], statuses: [] }}
+        currentFilters={{ ...defaultFilters, organizations: ["org1"] }}
       />,
     );
 
     // Open organization sublist
-    const orgButton = screen.getByText(/organ/i);
+    const orgButton = screen.getByText("Organization");
     fireEvent.click(orgButton);
 
     // Click clear (trash)
     const clearBtn = screen.getByTestId("trash-icon").closest("button")!;
     fireEvent.click(clearBtn);
 
-    const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
-    expect(checkbox.checked).toBe(false);
+    const checkboxes = screen.getAllByRole("checkbox") as HTMLInputElement[];
+    // All should be unchecked
+    checkboxes.forEach(cb => expect(cb.checked).toBe(false));
   });
 });

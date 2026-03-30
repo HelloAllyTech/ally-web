@@ -1,4 +1,4 @@
-# ally Web - Mental Health Resource Library
+# Ally Web - Mental Health Resource Library
 
 A comprehensive document search platform for mental health professionals, built with Next.js. This application provides access to evidence-based resources, guidelines, and professional documents to support mental health practice.
 
@@ -75,7 +75,7 @@ npx nx lint ally-web        # Run ESLint
 
 ## API Integration
 
-The application integrates with the ally backend API to provide:
+The application integrates with the Ally backend API to provide:
 
 - **Document Search**: Search through mental health resources and documents
 - **Category Management**: Filter resources by categories and topics

@@ -1,0 +1,189 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CommentCard Component > should match snapshot when rendered with basic props 1`] = `
+<DocumentFragment>
+  <div
+    class="flex gap-2.5 "
+  >
+    <div
+      class="min-w-8 h-8 rounded-full overflow-hidden"
+    >
+      <img
+        alt="John Doe"
+        class="w-full h-full rounded-full"
+        data-testid="custom-image"
+        src="https://example.com/profile.jpg"
+      />
+    </div>
+    <div
+      class="flex flex-col gap-1 w-full"
+    >
+      <div
+        class="flex flex-row justify-between items-center gap-2 w-full"
+      >
+        <div
+          class="flex flex-row gap-1.5 items-center w-full"
+        >
+          <div
+            class="text-[14px] font-medium text-typography-900"
+          >
+            John Doe
+          </div>
+          <div
+            class="text-[12px] text-gray-500"
+          >
+            <div>
+              2 hours ago
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="text-typography-900 font-primary text-md whitespace-pre-wrap"
+      >
+        This is a test comment
+      </div>
+      <div
+        class="flex gap-2 items-center"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`CommentCard Component > should match snapshot with all props enabled 1`] = `
+<DocumentFragment>
+  <div
+    class="flex gap-2.5 "
+  >
+    <div
+      class="min-w-8 h-8 rounded-full overflow-hidden"
+    >
+      <img
+        alt="John Doe"
+        class="w-full h-full rounded-full"
+        data-testid="custom-image"
+        src="https://example.com/profile.jpg"
+      />
+    </div>
+    <div
+      class="flex flex-col gap-1 w-full"
+    >
+      <div
+        class="flex flex-row justify-between items-center gap-2 w-full"
+      >
+        <div
+          class="flex flex-row gap-1.5 items-center w-full"
+        >
+          <div
+            class="text-[14px] font-medium text-typography-900"
+          >
+            John Doe
+          </div>
+          <div
+            class="text-[12px] text-gray-500"
+          >
+            <div>
+              2 hours ago
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="text-typography-900 font-primary text-md whitespace-pre-wrap"
+      >
+        This is a test comment
+      </div>
+      <div
+        class="flex gap-2 items-center"
+      >
+        <div
+          class="relative"
+        >
+          <div
+            class="cursor-pointer"
+          >
+            <div
+              class="w-5 h-5 text-neutral-600 hover:text-[#0957D0]"
+              data-testid="smiley-icon"
+            />
+          </div>
+        </div>
+        <div
+          class="flex pr-1 items-center"
+        >
+          <div
+            class="w-4 overflow-visible relative"
+            style="z-index: 10;"
+          >
+            <div
+              class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
+            >
+              <span
+                aria-label="emoji-2764"
+                class=""
+                role="img"
+                style="font-size: 10px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;"
+              >
+                ❤
+              </span>
+            </div>
+          </div>
+          <div
+            class="w-4 overflow-visible relative"
+            style="z-index: 9;"
+          >
+            <div
+              class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
+            >
+              <span
+                aria-label="emoji-1f44d"
+                class=""
+                role="img"
+                style="font-size: 10px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;"
+              >
+                👍
+              </span>
+            </div>
+          </div>
+          <div
+            class="w-4 overflow-visible relative"
+            style="z-index: 8;"
+          >
+            <div
+              class="w-[20px] bg-white h-[20px] flex items-center justify-center rounded-full border-[0.5px]"
+            >
+              <span
+                aria-label="emoji-1f389"
+                class=""
+                role="img"
+                style="font-size: 10px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;"
+              >
+                🎉
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="text-typography-800 text-xs"
+        >
+          10
+        </div>
+        <div
+          class="w-1 h-1 bg-[#D9D9D9] rounded-full"
+        />
+        <div
+          class="text-typography-800 text-xs cursor-pointer font-medium flex items-center gap-2"
+        >
+          Reply
+        </div>
+        <div
+          class="text-typography-800 text-xs cursor-pointer underline decoration-neutral-300 underline-offset-4 decoration-1"
+        >
+          3 replies
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

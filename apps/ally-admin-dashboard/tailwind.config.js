@@ -129,12 +129,18 @@ module.exports = {
           secondary: "#F9FAFB",
           tertiary: "#F3F4F6",
         },
+        amber: {
+          50: "#FFF8E1",
+          200: "#FFE082",
+        },
         // Border Colors
         border: {
           DEFAULT: "#D2D2D2",
           light: "#E5E7EB",
           medium: "#D1D5DB",
           dark: "#9CA3AF",
+          blue: "#0957D0",
+          amber400: "#FFCA28",
         },
         // Text Colors
         typography: {
@@ -154,6 +160,7 @@ module.exports = {
       animation: {
         fadeIn: "fadeIn 0.2s ease-in-out",
         slideInFromRight: "slideInFromRight 0.2s ease-out",
+        fadeInOut: "fadeInOut 1.5s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -163,6 +170,10 @@ module.exports = {
         slideInFromRight: {
           "0%": { opacity: "0", transform: "translateX(10px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        fadeInOut: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.1" },
         },
       },
     },

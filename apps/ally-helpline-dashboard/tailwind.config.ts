@@ -183,12 +183,17 @@ export default {
           "0%": { "background-position": "100%" },
           "100%": { "background-position": "-100%" },
         },
+        "expand-in": {
+          "0%": { opacity: "0", maxHeight: "0", transform: "translateY(-8px)" },
+          "100%": { opacity: "1", maxHeight: "200px", transform: "translateY(0)" },
+        },
       },
       animation: {
         "message-in": "message-in 0.3s ease-out forwards",
         "fade-in": "fadeIn 0.5s ease-in-out",
         expand: "expand 0.5s ease-out forwards",
         shine: "shine 5s linear infinite",
+        "expand-in": "expand-in 0.25s ease-out forwards",
       },
       borderRadius: {
         lg: "var(--radius)",

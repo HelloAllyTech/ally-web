@@ -1,7 +1,7 @@
 import { useEffect, useState, FC } from "react";
 
 import { useGetSimulationsQuery } from "@api";
-import { ListToolbar, EmptyState, SimulationAndPathToggleCard } from "@components";
+import { ListToolbar, EmptyState, EntityToggleCard } from "@components";
 import { en, SORT_BY, SORT_ORDER } from "@constants";
 import { Simulation, SimulationStatus } from "@types";
 import { isNonEmptyArray } from "@utils";
@@ -122,9 +122,13 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
           </div>
           <div className="flex-1">
             {simulations?.map(simulation => (
-              <SimulationAndPathToggleCard
+              <EntityToggleCard
                 key={simulation.id}
-                simulation={simulation}
+                entity={{
+                  imageUrl: simulation.coverImageUrl,
+                  name: simulation.title,
+                  description: simulation.description,
+                }}
                 hasAccess={simulation.isAssignedToTenant ?? false}
                 onToggleAccess={enabled => handleToggleAccess(simulation.id, enabled)}
               />
