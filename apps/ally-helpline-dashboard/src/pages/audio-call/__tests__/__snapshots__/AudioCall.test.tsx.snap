@@ -1,0 +1,65 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AudioCall Component > Snapshot Testing > should match snapshot 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="h-screen flex items-center justify-center bg-gray-50"
+    >
+      <video
+        class="hidden"
+        preload="auto"
+      />
+      <div
+        data-testid="fallback-ui"
+      >
+        <h1>
+          No Active Call
+        </h1>
+        <p>
+          Your active call will be shown here.
+        </p>
+        <div
+          data-testid="no-results"
+        >
+          No Results
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`AudioCall Component > Snapshot Testing > should match snapshot with microphone mode 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="browser-router"
+  >
+    <div
+      class="h-screen flex items-center justify-center bg-gray-50"
+    >
+      <video
+        class="hidden"
+        preload="auto"
+      />
+      <div
+        data-testid="fallback-ui"
+      >
+        <h1>
+          No Active Call
+        </h1>
+        <p>
+          Your active call will be shown here.
+        </p>
+        <div
+          data-testid="no-results"
+        >
+          No Results
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

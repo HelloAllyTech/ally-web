@@ -1,0 +1,146 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`UploadProgressDialog > should match snapshot when fully rendered with uploads 1`] = `
+<DocumentFragment>
+  <div
+    class="fixed bottom-0 right-6 z-40 font-primary"
+  >
+    <div
+      class="w-[360px] bg-white shadow-[0_2px_10px_rgba(0,0,0,0.15)] rounded-t-[8px] border border-[#E5E7EB] overflow-hidden"
+    >
+      <div
+        class="flex items-center justify-between mx-4 py-2 border-b border-[#EFEFEF]"
+      >
+        <span
+          class="text-sm font-medium text-typography-900"
+        >
+          1 upload in progress
+        </span>
+        <div
+          class="flex items-center gap-2 text-typography-800"
+        >
+          <button
+            aria-label="Collapse"
+            data-testid="mock-button"
+            data-variant="ICON"
+          >
+            <svg
+              data-testid="chevron-down-icon"
+            />
+          </button>
+          <button
+            aria-label="Clear all"
+            data-testid="mock-button"
+            data-variant="ICON"
+          >
+            <svg
+              data-testid="close-icon"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="px-4 py-2 max-h-[140px] overflow-y-auto"
+      >
+        <div
+          class="flex items-center justify-between py-2"
+        >
+          <div
+            class="flex items-center gap-2 text-sm text-typography-900"
+          >
+            <svg
+              data-testid="audio-file-icon"
+            />
+            <span>
+              test2.mp3
+            </span>
+          </div>
+          <div
+            class="group flex items-center gap-2 w-5 h-5 justify-end"
+          >
+            <svg
+              data-testid="tick-green-background-icon"
+            />
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-between py-2"
+        >
+          <div
+            class="flex items-center gap-2 text-sm text-typography-900"
+          >
+            <svg
+              data-testid="audio-file-icon"
+            />
+            <span>
+              test3.mp3
+            </span>
+          </div>
+          <div
+            class="group flex items-center gap-2 w-5 h-5 justify-end"
+          >
+            <svg
+              class="w-4 h-4 text-destructive-500"
+              data-testid="x-circle-icon"
+            />
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-between py-2"
+        >
+          <div
+            class="flex items-center gap-2 text-sm text-typography-900"
+          >
+            <svg
+              data-testid="audio-file-icon"
+            />
+            <span>
+              test1.mp3
+            </span>
+          </div>
+          <div
+            class="group flex items-center gap-2 w-5 h-5 justify-end"
+          >
+            <span
+              class="group-hover:hidden"
+            >
+              <svg
+                aria-label="Progress 50%"
+                class="w-5 h-5"
+              >
+                <g
+                  transform="rotate(-90 10 10)"
+                >
+                  <circle
+                    cx="10"
+                    cy="10"
+                    fill="none"
+                    r="9"
+                    stroke="#E0E0E0"
+                    stroke-width="2"
+                  />
+                  <circle
+                    cx="10"
+                    cy="10"
+                    fill="none"
+                    r="9"
+                    stroke="#1976D2"
+                    stroke-dasharray="56.548667764616276"
+                    stroke-dashoffset="28.274333882308138"
+                    stroke-linecap="round"
+                    stroke-width="2"
+                  />
+                </g>
+              </svg>
+            </span>
+            <svg
+              class="hidden group-hover:block cursor-pointer"
+              data-testid="cross-red-background-icon"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

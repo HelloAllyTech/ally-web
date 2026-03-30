@@ -1,0 +1,25 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.helloally.app.dev",
+      "sha256_cert_fingerprints": [
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C",
+        "6E:D6:5B:EE:E3:46:60:1A:B1:03:EF:6F:75:B4:43:3F:94:DA:D4:A6:E0:4C:4C:1E:08:BE:F6:5D:A3:B6:66:E0"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.helloally.app",
+      "sha256_cert_fingerprints": [
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C",
+        "6E:D6:5B:EE:E3:46:60:1A:B1:03:EF:6F:75:B4:43:3F:94:DA:D4:A6:E0:4C:4C:1E:08:BE:F6:5D:A3:B6:66:E0",
+        "1F:A4:4C:E3:A5:41:D8:36:F2:68:D9:C5:A6:56:91:CE:2D:4C:27:1F:A5:61:42:0D:C3:09:09:B2:9F:C1:C5:1B"
+      ]
+    }
+  }
+]

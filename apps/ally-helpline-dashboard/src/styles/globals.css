@@ -1,0 +1,16 @@
+/* TODO: Phase 4 - Review for consolidation with index.css */
+/* TODO: Consider moving component-specific styles to CSS modules */
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
