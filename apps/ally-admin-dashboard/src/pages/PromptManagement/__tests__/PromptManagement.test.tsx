@@ -37,13 +37,16 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
-  ListToolbar: ({ onSearchChange, action }: any) => (
+  ListToolbar: ({ onSearchChange, action, addFilterCta }: any) => (
     <div data-testid="list-toolbar">
       <input
         data-testid="search-input"
         onChange={e => onSearchChange(e.target.value)}
         placeholder="Search..."
       />
+      <button data-testid="open-filter-btn" onClick={addFilterCta?.onClick}>
+        Open Filter
+      </button>
       {action && (
         <button data-testid="create-button" onClick={action.onClick}>
           {action.label}
@@ -51,6 +54,21 @@ vi.mock("@components", () => ({
       )}
     </div>
   ),
+  FilterDropdown: ({ isOpen, onApplyFilters, sections }: any) =>
+    isOpen ? (
+      <div data-testid="filter-dropdown">
+        <button
+          data-testid="apply-category-filter"
+          onClick={() =>
+            onApplyFilters({
+              categories: sections?.[0]?.options?.[0]?.value ? [sections[0].options[0].value] : [],
+            })
+          }
+        >
+          Apply Filter
+        </button>
+      </div>
+    ) : null,
   PromptSidePanel: ({ isOpen, selectedPrompt, onClose, onUpdate }: any) =>
     isOpen && (
       <div data-testid="prompt-side-panel">
@@ -106,6 +124,7 @@ const mockPrompts: Prompt[] = [
     id: "1",
     name: "Test Prompt 1",
     description: "Test Description 1",
+    category: "Simulation",
     promptCode: "test_prompt_1",
     prompt: "This is test prompt content",
     createdAt: "2024-01-01T00:00:00Z",
@@ -115,6 +134,7 @@ const mockPrompts: Prompt[] = [
     id: "2",
     name: "Test Prompt 2",
     description: "Test Description 2",
+    category: "Translation",
     promptCode: "test_prompt_2",
     prompt: "This is another test prompt",
     createdAt: "2024-01-02T00:00:00Z",
@@ -170,6 +190,26 @@ describe("PromptManagement Component", () => {
 
     expect(screen.getByTestId("list-toolbar")).toBeInTheDocument();
     expect(screen.getByTestId("search-input")).toBeInTheDocument();
+  });
+
+  it("should filter prompts by category", async () => {
+    const store = createMockStore();
+    render(
+      <Provider store={store}>
+        <PromptManagement />
+      </Provider>,
+    );
+
+    expect(screen.getByTestId("table-row-0")).toBeInTheDocument();
+    expect(screen.getByTestId("table-row-1")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("open-filter-btn"));
+    fireEvent.click(screen.getByTestId("apply-category-filter"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Prompt 1")).toBeInTheDocument();
+      expect(screen.queryByText("Test Prompt 2")).not.toBeInTheDocument();
+    });
   });
 
   it("should render the notion table with data", async () => {

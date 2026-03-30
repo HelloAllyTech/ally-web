@@ -3,8 +3,12 @@ import { FC, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { AudioTranscriptPlayer } from "@components/audio-transcript-player/AudioTranscriptPlayer";
 
 import { TranscriptTabProps } from "./types";
+
+const DUMMY_AUDIO_URL =
+  "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3";
 
 const formatTime = (startSeconds: number) => {
   const roundedSeconds = Math.round(startSeconds);
@@ -36,6 +40,7 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
             hasMore={hasMore}
             scrollContainerRef={scrollContainerRef}
           >
+            <AudioTranscriptPlayer audioUrl={DUMMY_AUDIO_URL} />
             {transcriptList.map(({ speaker, content, startSeconds }, index: number) => (
               <div key={`${speaker}-${index}`} className="flex">
                 <span className="mr-3">{startSeconds ? formatTime(startSeconds) : ""}</span>

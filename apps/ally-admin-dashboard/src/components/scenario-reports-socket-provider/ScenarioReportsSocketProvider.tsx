@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 
-import { useScenarioReportsSocket } from "@hooks/useScenarioReportsSocket";
 import { useDispatch } from "react-redux";
 
 import { ReportUpload } from "@components/report-upload-progress-dialog/types";
@@ -20,6 +19,7 @@ import {
   ReportGenerationStatus,
 } from "@constants/reportGeneration";
 import { REPORTS_LOOKBACK_MINUTES } from "@constants/socket";
+import { useScenarioReportsSocket } from "@hooks/useScenarioReportsSocket";
 import { setAllUploads } from "@reducer/reportUploadReducer";
 import { store } from "@store";
 import { ReportsUpdatedPayload } from "@types";

@@ -87,6 +87,10 @@ vi.mock("@constants", () => ({
       promptRequired: "Prompt name, description, prompt code and prompt text are required",
       unsavedChangesWarning: "You have unsaved changes. Do you want to close anyway?",
       availableVariables: "Available variables",
+      usedBlocks: "Used Blocks",
+      blocksHelpTitle: "What are blocks?",
+      blocksHelpText:
+        "Blocks are reusable prompt fragments referenced by this prompt. They are mainly used for optional or shared sections so the main prompt stays easier to read and maintain.",
       revertToDefault: "Revert to default",
       revertToDefaultConfirm: "Revert this prompt to the codebase default?",
       revertPromptSuccess: "Prompt reverted to codebase default",

@@ -10,6 +10,7 @@ import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
   useGetAvailableLanguageVoicesQuery,
+  useGetPromptsQuery,
   useLazyGetAdminSimulationByIdQuery,
   useUpdateSimulationByIdMutation,
 } from "@api";
@@ -34,6 +35,7 @@ import {
   SIMULATION_CREATOR_STEP_IDS,
   SESSION_TIMER_CONFIG,
   FORM_FIELD_IDS,
+  ROLE_INSTRUCTION_PROMPT_CODE,
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { selectUploadsInProgress } from "@reducer/reportUploadReducer";
@@ -105,11 +107,24 @@ export const CreateSimulation: FC = () => {
     active: true,
     voicesNeeded: true,
   }) as { data: Array<{ language_id: number; value: string; label: string }> };
+  const { data: roleInstructionPrompts = [] } = useGetPromptsQuery({
+    searchName: ROLE_INSTRUCTION_PROMPT_CODE,
+    limit: 20,
+    offset: 0,
+    includeBlocks: false,
+  });
 
   const formMethods = useForm({
     mode: "onChange",
     reValidateMode: "onChange",
   });
+
+  const managedRoleInstruction = useMemo(
+    () =>
+      roleInstructionPrompts.find(prompt => prompt.promptCode === ROLE_INSTRUCTION_PROMPT_CODE)
+        ?.prompt ?? "",
+    [roleInstructionPrompts],
+  );
 
   const uploadsInProgress = useSelector(selectUploadsInProgress);
   const isReportGenerationInProgress = uploadsInProgress.some(
@@ -137,6 +152,18 @@ export const CreateSimulation: FC = () => {
       formMethods.reset(formatSimulationResponseData(adminSimulationByIdData));
     }
   }, [adminSimulationByIdData, formMethods]);
+
+  useEffect(() => {
+    if (simulationId) return;
+    if (!isNonEmptyString(managedRoleInstruction)) return;
+    if (isNonEmptyString(formMethods.getValues("prompt"))) return;
+
+    formMethods.setValue("prompt", managedRoleInstruction, {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: false,
+    });
+  }, [simulationId, managedRoleInstruction, formMethods]);
 
   const {
     handleSubmit,
@@ -257,15 +284,11 @@ export const CreateSimulation: FC = () => {
       const missing: string[] = [];
       for (const langId of langIds) {
         const lang = availableLanguages.find(l => String(l.language_id) === langId);
-        const code = (lang?.value ?? "").toLowerCase();
-        if (code && !code.startsWith("en")) {
-          const samples = linguisticStyleSamples[langId];
-          const hasContent =
-            Array.isArray(samples) &&
-            samples.some(s => typeof s === "string" && s.trim().length > 0);
-          if (!hasContent) {
-            missing.push(lang?.label ?? langId);
-          }
+        const samples = linguisticStyleSamples[langId];
+        const hasContent =
+          Array.isArray(samples) && samples.some(s => typeof s === "string" && s.trim().length > 0);
+        if (!hasContent) {
+          missing.push(lang?.label ?? langId);
         }
       }
       if (missing.length > 0) {

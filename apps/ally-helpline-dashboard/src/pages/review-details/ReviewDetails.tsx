@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage, FEATURE_FLAGS_MAP, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
+import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import {
   useAddReactionMutation,
   useGetGeneralCommentsQuery,
@@ -537,7 +537,7 @@ export const ReviewDetails = () => {
           ref={transcriptScrollRef}
           className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
         >
-          {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showAddReviewNotesSection && (
+          {showAddReviewNotesSection && (
             <div className="pb-6">
               <AddReviewNote
                 isEditable={isNoteEditable}
@@ -575,29 +575,27 @@ export const ReviewDetails = () => {
             isScribeReview={isScribeReview}
           />
 
-          {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
-            <div className="w-full border-t-[0.5px] border-border-light font-primary">
-              <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4">
-                <div className="text-typography-800 font-medium text-lg">
-                  {t("review.details.comments")}
-                </div>
+          <div className="w-full border-t-[0.5px] border-border-light font-primary">
+            <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4">
+              <div className="text-typography-800 font-medium text-lg">
+                {t("review.details.comments")}
               </div>
-              <GeneralCommentsToShow
-                generalComments={generalComments}
-                handleLoadMore={handleGeneralCommentsLoadMore}
-                hasMoreComments={hasMoreGeneralComments}
-                isLoading={isGetGeneralCommentsLoading}
-                setComments={setGeneralComments}
-                deletedReplyId={deletedReplyId}
-                setDeletedReplyId={setDeletedReplyId}
-                changedReply={changedReply}
-                onReplyChange={handleReplyChange}
-                isFeedOwner={isFeedOwner}
-                show
-                isScribeReview={isScribeReview}
-              />
             </div>
-          )}
+            <GeneralCommentsToShow
+              generalComments={generalComments}
+              handleLoadMore={handleGeneralCommentsLoadMore}
+              hasMoreComments={hasMoreGeneralComments}
+              isLoading={isGetGeneralCommentsLoading}
+              setComments={setGeneralComments}
+              deletedReplyId={deletedReplyId}
+              setDeletedReplyId={setDeletedReplyId}
+              changedReply={changedReply}
+              onReplyChange={handleReplyChange}
+              isFeedOwner={isFeedOwner}
+              show
+              isScribeReview={isScribeReview}
+            />
+          </div>
         </div>
         <ReviewCommentsSidepanel
           isFeedOwner={isFeedOwner}
@@ -639,7 +637,7 @@ export const ReviewDetails = () => {
         onClickOutside={() => setShowSimulationDetailsModal(false)}
       />
       <ShareForReview
-        isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showShareForReviewModal}
+        isOpen={showShareForReviewModal}
         onClose={() => setShowShareForReviewModal(false)}
         summaryDetails={reviewDetails}
         onNoteChange={(note: string) =>

@@ -1,6 +1,6 @@
-# Production Release Guide - ally Web Services
+# Production Release Guide - Ally Web Services
 
-This guide explains how to create production releases for all ally Web services using automated release pipelines with semantic versioning and release drafts.
+This guide explains how to create production releases for all Ally Web services using automated release pipelines with semantic versioning and release drafts.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ This guide explains how to create production releases for all ally Web services 
 
 The ally-web repository contains three production services, each with its own release pipeline:
 
-1. **ally Web** - Main web application (ECS deployment)
+1. **Ally Web** - Main web application (ECS deployment)
 2. **Admin Dashboard** - Administration interface (CDN deployment)
 3. **Helpline Dashboard** - Helpline management interface (CDN deployment)
 
@@ -34,7 +34,7 @@ Each service has an independent release pipeline with:
 
 ## Services
 
-### 1. ally Web (ECS Service)
+### 1. Ally Web (ECS Service)
 
 - **Pipeline**: `production-release-web.yaml`
 - **Deployment**: ECS (Docker container)
@@ -74,7 +74,7 @@ Each service has an independent release pipeline with:
 1. **Go to GitHub Actions**
    - Navigate to: `https://github.com/your-org/ally-web/actions`
 2. **Select the Appropriate Workflow**
-   - **ally Web**: "Production Release - ally Web"
+   - **Ally Web**: "Production Release - Ally Web"
    - **Admin Dashboard**: "Production Release - Admin Dashboard"
    - **Helpline Dashboard**: "Production Release - Helpline Dashboard"
 
@@ -128,7 +128,7 @@ We follow [Semantic Versioning 2.0.0](https://semver.org/): `vMAJOR.MINOR.PATCH`
 
 **Each service has its own version number!**
 
-- ally Web can be at `v2.1.0`
+- Ally Web can be at `v2.1.0`
 - Admin Dashboard can be at `v1.5.2`
 - Helpline Dashboard can be at `v1.3.1`
 
@@ -182,7 +182,7 @@ The workflows run these jobs:
 
 **Service-Specific Jobs:**
 
-**ally Web (ECS):** 4. ✅ Build Docker image with multiple version tags 5. ✅ Deploy to ECS 6. ✅ Create release draft
+**Ally Web (ECS):** 4. ✅ Build Docker image with multiple version tags 5. ✅ Deploy to ECS 6. ✅ Create release draft
 
 **Dashboards (CDN):** 4. ✅ Build static assets 5. ✅ Upload to S3 6. ✅ Invalidate CloudFront cache 7. ✅ Create release draft
 
@@ -190,7 +190,7 @@ The workflows run these jobs:
 
 ## Service-Specific Details
 
-### ally Web (ECS Service)
+### Ally Web (ECS Service)
 
 **Build Process:**
 
@@ -326,7 +326,7 @@ git tag -l "v*" --sort=-v:refname | head -1
 1. Run tests locally:
 
    ```bash
-   # For ally Web
+   # For Ally Web
    npm run test:web
 
    # For Admin Dashboard
@@ -341,7 +341,7 @@ git tag -l "v*" --sort=-v:refname | head -1
 4. Delete tag if created: `git push origin :refs/tags/v1.2.3`
 5. Re-run workflow
 
-### ECS Deployment Fails (ally Web Only)
+### ECS Deployment Fails (Ally Web Only)
 
 **Error**: ECS deployment fails
 
@@ -369,7 +369,7 @@ git tag -l "v*" --sort=-v:refname | head -1
 
 **Common Issues:**
 
-**ally Web:**
+**Ally Web:**
 
 - Docker build errors
 - Missing dependencies
@@ -390,7 +390,7 @@ git tag -l "v*" --sort=-v:refname | head -1
 **Debug Locally:**
 
 ```bash
-# For ally Web (Docker)
+# For Ally Web (Docker)
 cd apps/ally-web
 docker build -t test .
 
@@ -450,7 +450,7 @@ PRD_AWS_ROLE          # AWS IAM role for production
 PRD_AWS_REGION        # AWS region
 ```
 
-**ally Web Only:**
+**Ally Web Only:**
 
 ```
 PRD_ECR_REPOSITORY    # ECR repository URL
@@ -478,7 +478,7 @@ PRD_DASHBOARD_S3_BUCKET
 
 | Service            | Workflow File                                | Deployment Type |
 | ------------------ | -------------------------------------------- | --------------- |
-| ally Web           | `production-release-web.yaml`                | ECS             |
+| Ally Web           | `production-release-web.yaml`                | ECS             |
 | Admin Dashboard    | `production-release-admin-dashboard.yaml`    | CDN             |
 | Helpline Dashboard | `production-release-helpline-dashboard.yaml` | CDN             |
 
@@ -486,7 +486,7 @@ PRD_DASHBOARD_S3_BUCKET
 
 | Service            | Command                             |
 | ------------------ | ----------------------------------- |
-| ally Web           | Docker build                        |
+| Ally Web           | Docker build                        |
 | Admin Dashboard    | `npx nx build ally-admin-dashboard` |
 | Helpline Dashboard | `npm run build` (in app dir)        |
 
@@ -494,7 +494,7 @@ PRD_DASHBOARD_S3_BUCKET
 
 | Service            | Command                            |
 | ------------------ | ---------------------------------- |
-| ally Web           | `npm run test:web`                 |
+| Ally Web           | `npm run test:web`                 |
 | Admin Dashboard    | `npx nx test ally-admin-dashboard` |
 | Helpline Dashboard | `npm run test:helpline`            |
 

@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useBatchDeleteBadgesMutation, useGetUserBadgesQuery } from "@src/api/userBadges";
-import { Badge } from "@src/components/create-badge-popup/CreateBadgePopup";
-import { ButtonVariant } from "@src/components/types";
-import TableSkeleton from "@src/pages/UserBadges/TableSkeleton";
 import { toast } from "sonner";
 
+import { useBatchDeleteBadgesMutation, useGetUserBadgesQuery } from "@src/api/userBadges";
 import { Trash } from "@src/assets";
 import {
   ActionConfirmationPopup,
@@ -16,8 +13,11 @@ import {
   ListToolbar,
   NotionTable,
 } from "@src/components";
+import { Badge } from "@src/components/create-badge-popup/CreateBadgePopup";
+import { ButtonVariant } from "@src/components/types";
 import { en, USER_BADGES_TABLE_COLUMNS } from "@src/constants";
 import { useDebounce } from "@src/hooks";
+import TableSkeleton from "@src/pages/UserBadges/TableSkeleton";
 import { BadgeCategory, UserBadge, UserBadgeFilters } from "@src/types";
 import { formatDate } from "@src/utils";
 

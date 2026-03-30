@@ -1,11 +1,11 @@
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
-import { ButtonVariant } from "@src/components/types";
 import { toast } from "sonner";
 
 import { Plus, Trash } from "@assets";
 import { Button, NotionTable } from "@components";
 import { BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS, BEHAVIOUR_STATES, en } from "@constants";
+import { ButtonVariant } from "@src/components/types";
 import { behaviourStateInstruction, HelperTagItem } from "@types";
 
 interface BehaviourRow {

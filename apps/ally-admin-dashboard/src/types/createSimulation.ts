@@ -32,7 +32,6 @@ export type FormData = {
   stateInstructions?: stateInstruction[];
   customFields?: CustomFieldType[];
   openingStatements: string;
-  voiceId?: string;
   tone: string;
   autoTerminationStatus?: boolean;
   experienceMode?: string;
@@ -241,6 +240,7 @@ export interface Prompt {
   id?: string;
   name: string;
   description: string;
+  category?: string;
   promptCode: string;
   prompt: string;
   version?: number;
@@ -249,7 +249,7 @@ export interface Prompt {
   createdAt?: string;
   updatedAt?: string;
   isObsolete?: boolean;
-  /** Variable placeholders (e.g. {var_name}) parsed from prompt template, from API or fallback */
+  /** Source-synced variable placeholders available for runtime substitution */
   availableVariables?: string[];
   kind?: string;
   usesBlocks?: string[];

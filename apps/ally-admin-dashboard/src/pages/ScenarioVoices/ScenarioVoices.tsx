@@ -7,12 +7,38 @@ import {
   useGetAvailableLanguageVoicesQuery,
   useCreateScenarioVoiceMutation,
   useUpdateScenarioVoiceMutation,
+  useLazyGetPreviewVoiceQuery,
 } from "@api";
 import { NotionTable, ListToolbar, ScenarioVoiceSidePanel } from "@components";
 import { FilterDropdown } from "@components/filters/FilterDropdown";
 import { ButtonVariant } from "@components/types";
 import { en, SCENARIO_VOICE_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import { ScenarioVoice, ScenarioLanguage, ScenarioVoiceFilters } from "@types";
+
+const getVoiceSaveErrorMessage = (error: unknown) => {
+  if (typeof error !== "object" || error === null) {
+    return en.errors.failedToSaveVoice;
+  }
+
+  const apiError = error as {
+    data?: { message?: string | string[] };
+    error?: string;
+  };
+
+  if (Array.isArray(apiError.data?.message)) {
+    return apiError.data.message.join(", ");
+  }
+
+  if (typeof apiError.data?.message === "string" && apiError.data.message.trim()) {
+    return apiError.data.message;
+  }
+
+  if (typeof apiError.error === "string" && apiError.error.trim()) {
+    return apiError.error;
+  }
+
+  return en.errors.failedToSaveVoice;
+};
 
 export const ScenarioVoices: React.FC = () => {
   const limit = 30;
@@ -24,7 +50,24 @@ export const ScenarioVoices: React.FC = () => {
   const [selectedVoice, setSelectedVoice] = useState<ScenarioVoice | null>(null);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
+  const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+  const [loadingVoiceId, setLoadingVoiceId] = useState<string | null>(null);
   const searchDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const previewUrlCacheRef = useRef<Record<string, string>>({});
+  const [getPreviewVoice] = useLazyGetPreviewVoiceQuery();
+
+  const resetAudioPlayback = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.onended = null;
+    audio.onerror = null;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = "";
+    audioRef.current = null;
+  };
 
   const [filters, setFilters] = useState<ScenarioVoiceFilters>({
     providers: [],
@@ -46,6 +89,14 @@ export const ScenarioVoices: React.FC = () => {
   useEffect(() => {
     setIsFetching(isQueryFetching);
   }, [isQueryFetching]);
+
+  useEffect(() => {
+    return () => {
+      resetAudioPlayback();
+      Object.values(previewUrlCacheRef.current).forEach(url => URL.revokeObjectURL(url));
+      previewUrlCacheRef.current = {};
+    };
+  }, []);
 
   const { data: languageOptions = [] } = useGetAvailableLanguageVoicesQuery({
     active: true,
@@ -194,7 +245,7 @@ export const ScenarioVoices: React.FC = () => {
           },
         });
         if (response.error) {
-          toast.error(en.errors.failedToCreateEvent);
+          toast.error(getVoiceSaveErrorMessage(response.error));
         } else {
           toast.success(en.simulation.voiceUpdatedSuccessfully);
           handleSidePanelClose();
@@ -205,20 +256,77 @@ export const ScenarioVoices: React.FC = () => {
           voices: [voiceData],
         });
         if (response.error) {
-          toast.error(en.errors.failedToCreateEvent);
+          toast.error(getVoiceSaveErrorMessage(response.error));
         } else {
           toast.success(en.simulation.voiceCreatedSuccessfully);
           handleSidePanelClose();
         }
       }
     } catch {
-      toast.error(en.errors.failedToCreateEvent);
+      toast.error(en.errors.failedToSaveVoice);
     }
   };
 
   const handleLoadMore = () => {
     if (isFetching || !hasMore) return;
     setOffset(prev => prev + limit);
+  };
+
+  const handlePausePreview = () => {
+    resetAudioPlayback();
+    setPlayingVoiceId(null);
+    setLoadingVoiceId(null);
+  };
+
+  const handlePlayPreview = async (voice: ScenarioVoice) => {
+    const voiceId = voice.id;
+    if (!voiceId) {
+      toast.error("Voice preview is unavailable for unsaved voices");
+      return;
+    }
+
+    if (playingVoiceId === voiceId) {
+      handlePausePreview();
+      return;
+    }
+
+    resetAudioPlayback();
+
+    setPlayingVoiceId(voiceId);
+
+    try {
+      let previewUrl = previewUrlCacheRef.current[voiceId];
+
+      if (!previewUrl) {
+        setLoadingVoiceId(voiceId);
+        const result = await getPreviewVoice({ voiceId }).unwrap();
+        previewUrl = URL.createObjectURL(new Blob([result]));
+        previewUrlCacheRef.current[voiceId] = previewUrl;
+      } else {
+        setLoadingVoiceId(null);
+      }
+
+      const audio = new Audio(previewUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setPlayingVoiceId(current => (current === voiceId ? null : current));
+        setLoadingVoiceId(current => (current === voiceId ? null : current));
+      };
+
+      audio.onerror = () => {
+        setPlayingVoiceId(current => (current === voiceId ? null : current));
+        setLoadingVoiceId(current => (current === voiceId ? null : current));
+        toast.error("Failed to load voice preview");
+      };
+
+      await audio.play();
+      setLoadingVoiceId(null);
+    } catch {
+      setPlayingVoiceId(current => (current === voiceId ? null : current));
+      setLoadingVoiceId(current => (current === voiceId ? null : current));
+      toast.error("Failed to load voice preview");
+    }
   };
 
   /**
@@ -286,7 +394,7 @@ export const ScenarioVoices: React.FC = () => {
       });
 
       if (response.error) {
-        toast.error(en.errors.failedToCreateEvent);
+        toast.error(getVoiceSaveErrorMessage(response.error));
         // Revert the local change on error
         setVoices(prev => {
           const updated = [...prev];
@@ -299,7 +407,7 @@ export const ScenarioVoices: React.FC = () => {
         toast.success(en.simulation.voiceUpdatedSuccessfully);
       }
     } catch {
-      toast.error(en.errors.failedToCreateEvent);
+      toast.error(en.errors.failedToSaveVoice);
       // Revert on error
       setVoices(prev => {
         const updated = [...prev];
@@ -340,6 +448,13 @@ export const ScenarioVoices: React.FC = () => {
   const formatTableData = voices.map(voice => {
     const formatted = {
       ...voice,
+      preview: {
+        isPlaying: playingVoiceId === voice.id,
+        isLoading: loadingVoiceId === voice.id,
+        disabled: !voice.id,
+        onPlay: () => handlePlayPreview(voice),
+        onPause: handlePausePreview,
+      },
       createdAt: new Date(voice.createdAt).toLocaleDateString(),
       config: JSON.stringify(voice.config, null, 2),
       languageId: voice.languageId,

@@ -22,6 +22,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   width = 100,
   minWidth = 100,
   className = "",
+  maxLength,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [editValue, setEditValue] = useState(() => valueToDisplayString(value));
@@ -29,8 +30,9 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setEditValue(valueToDisplayString(value));
-  }, [value]);
+    const displayValue = valueToDisplayString(value);
+    setEditValue(maxLength != null ? displayValue.slice(0, maxLength) : displayValue);
+  }, [value, maxLength]);
 
   const handleTextClick = () => {
     if (disabled) return;
@@ -112,6 +114,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
             onBlur={handleSave}
             placeholder={placeholder}
             disabled={disabled}
+            maxLength={maxLength}
             className="w-full py-1 px-2 border-[0.5px] border-primary-500 rounded-sm focus:outline-none disabled:bg-neutral-100 disabled:text-typography-800 resize-none overflow-y-auto custom-scrollbar"
           />
         </div>

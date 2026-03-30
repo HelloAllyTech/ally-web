@@ -1,4 +1,3 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { SessionEvent, SessionEventDetectionType, UpdateScenarioEventDataParam } from "@types";
 
 import { isNonEmptyString } from "./common";
@@ -69,9 +68,7 @@ export const createNewEvent = (): UpdateScenarioEventDataParam => {
     // Detection config fields
     maxOccurrences: createCell(DEFAULT_EVENT_VALUES.MAX_OCCURRENCES, true, eventId),
     minGapTime: createCell(DEFAULT_EVENT_VALUES.MIN_GAP_TIME, true, eventId),
-    ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG && {
-      occurrenceInterval: createCell(DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT, true, eventId),
-    }),
+    occurrenceInterval: createCell(DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT, true, eventId),
     startTime: createCell(DEFAULT_EVENT_VALUES.START_TIME, true, eventId),
     endTime: createCell(DEFAULT_EVENT_VALUES.END_TIME, true, eventId),
     minScore: createCell(DEFAULT_EVENT_VALUES.MIN_SCORE, true, eventId),
@@ -187,13 +184,11 @@ export const formatToMappedEvent = (event: SessionEvent): UpdateScenarioEventDat
       false,
       event.id,
     ),
-    ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG && {
-      occurrenceInterval: createCell(
-        event.detectionConfig?.occurrenceInterval ?? DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT,
-        !isBinaryClassifier,
-        event.id,
-      ),
-    }),
+    occurrenceInterval: createCell(
+      event.detectionConfig?.occurrenceInterval ?? DEFAULT_EVENT_VALUES.MIN_TRIGGER_COUNT,
+      !isBinaryClassifier,
+      event.id,
+    ),
     startTime: createCell(
       secondsToTimeString(event.detectionConfig?.startTime) ?? DEFAULT_EVENT_VALUES.START_TIME,
       timeBased,
@@ -239,9 +234,7 @@ export const convertToApiFormat = (events: UpdateScenarioEventDataParam[]) => {
       detectionConfig: {
         maxOccurrences: event.maxOccurrences?.value,
         minGapTime: timeStringToSeconds(event.minGapTime?.value),
-        ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
-          ? { occurrenceInterval: event.occurrenceInterval?.value }
-          : {}),
+        occurrenceInterval: event.occurrenceInterval?.value,
         startTime: timeStringToSeconds(event.startTime?.value),
         endTime: timeStringToSeconds(event.endTime?.value),
         minScore: event.minScore?.value,

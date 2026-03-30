@@ -414,8 +414,20 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
 
   const timeTicks = useMemo(() => calculateTimeTicks(emotionalData), [emotionalData]);
 
-  if (isLoading) return <LoadingState />;
-  if (isError || !data) return <ErrorState />;
+  if (isLoading) {
+    return (
+      <div className="flex h-full min-h-0 w-full flex-col overflow-y-auto">
+        <LoadingState />
+      </div>
+    );
+  }
+  if (isError || !data) {
+    return (
+      <div className="flex h-full min-h-0 w-full flex-col items-center justify-center overflow-y-auto">
+        <ErrorState />
+      </div>
+    );
+  }
 
   const hasSkillData = skillCoverages.length > 0;
   const hasEmotionalData = emotionalData.length > 0;
@@ -424,7 +436,7 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const isChecklistMode = simulationMode === "CHECKLIST";
 
   return (
-    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto min-h-[70vh]">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-y-auto rounded-lg border border-gray-200 p-4 custom-scrollbar">
       <h2 className="text-base font-medium font-primary text-typography-900">
         {t("postSim.tabs.skillsDemonstrated")}
       </h2>

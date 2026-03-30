@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
-import { Trash } from "@assets";
+import { PauseIcon, PlayIcon, Trash } from "@assets";
 import { EmojiPickerComponent, TimeInput, TagList, HelperTag } from "@components";
 import {
   EditableTextPopup,
@@ -28,7 +28,7 @@ import { cellTypes } from "./utils";
 export const Cell = ({
   value: initialValue,
   rowIndex: index,
-  column: { dataType, options, minWidth, width, id, placeholder },
+  column: { dataType, options, minWidth, width, id, placeholder, maxLength },
   onCellChange,
   row,
 }) => {
@@ -181,6 +181,7 @@ export const Cell = ({
           onChange={updateCellValue}
           placeholder={placeholder}
           disabled={isDisabled}
+          maxLength={maxLength}
         />
       );
       break;
@@ -319,6 +320,40 @@ export const Cell = ({
         <span />
       );
       break;
+    case cellTypes.previewAudio: {
+      const previewValue = initialValue ?? {};
+      const isPreviewLoading = Boolean(previewValue.isLoading);
+      const isPreviewPlaying = Boolean(previewValue.isPlaying);
+      const isPreviewDisabled = Boolean(previewValue.disabled);
+
+      element = (
+        <div className="flex items-center justify-center w-full">
+          <button
+            type="button"
+            aria-label={isPreviewPlaying ? "Pause voice preview" : "Play voice preview"}
+            className="flex items-center justify-center w-8 h-8 rounded-full border border-border-light hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isPreviewDisabled || (isPreviewLoading && !isPreviewPlaying)}
+            onClick={e => {
+              e.stopPropagation();
+              if (isPreviewPlaying) {
+                previewValue.onPause?.();
+                return;
+              }
+              previewValue.onPlay?.();
+            }}
+          >
+            {isPreviewLoading ? (
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-typography-800 rounded-full animate-spin" />
+            ) : isPreviewPlaying ? (
+              <PauseIcon className="w-4 h-4" />
+            ) : (
+              <PlayIcon className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      );
+      break;
+    }
     default:
       element = <span />;
       break;

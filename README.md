@@ -1,178 +1,354 @@
-# ally UI Monorepo
+# Ally Web
 
-This monorepo contains multiple applications for the ally platform:
+A multi-application frontend monorepo for the Ally mental health platform, built with React and Next.js. It provides the user-facing web application, a helpline dashboard for mental health professionals, and an admin dashboard for platform management.
 
-- ally Web: A modern landing page for our mental health AI assistance platform
-- ally Helpline Dashboard: Dashboard application for mental health professionals
-- ally Admin Dashboard: Dashboard application for super admin
+## Overview
+
+Ally Web is the frontend layer of the Ally platform that:
+
+- **Powers the landing page** (`ally-web`) with a Next.js application showcasing the platform
+- **Provides the Helpline Dashboard** (`ally-helpline-dashboard`) for mental health counselors — real-time chat, appointment scheduling, case management, analytics, and LiveKit voice integration
+- **Provides the Admin Dashboard** (`ally-admin-dashboard`) for super admins — simulation management, session event configuration, user and tenant management, permission-based access control, and simulation credit monitoring
+- **Shares UI components** across applications via the `libs/ui-shared` library
+- **Supports internationalisation** with i18next and multi-language configuration
+- **Integrates with the Ally Backend** (`ally-be`) REST API and LiveKit for real-time communication
+
+## Architecture
+
+The system is organised as an Nx monorepo with three applications and one shared library:
+
+### Key Components
+
+- **Ally Web** (`apps/ally-web/`) - Next.js 14 landing page with CSS Modules; mental health resource library with document search, category filtering, and infinite scroll
+- **Helpline Dashboard** (`apps/ally-helpline-dashboard/`) - Vite + React application for counselors; real-time chat, LiveKit voice sessions, calendar, case management, analytics reports, and PDF export
+- **Admin Dashboard** (`apps/ally-admin-dashboard/`) - Vite + React application for administrators; scenario and session-event management, user/tenant/permission management, LiveKit simulation preview, and credit monitoring
+- **Shared UI Library** (`libs/ui-shared/`) - Reusable React components, utilities, feature flags, and logger shared across all applications
+
+### Technology Stack
+
+| Component            | Tech Used                                         |
+| -------------------- | ------------------------------------------------- |
+| Landing Page         | Next.js 14 (React 18), CSS Modules                |
+| Helpline Dashboard   | Vite + React 18, Tailwind CSS, MUI, Redux Toolkit |
+| Admin Dashboard      | Vite + React 18, Tailwind CSS, RTK Query          |
+| State Management     | Redux Toolkit / RTK Query                         |
+| Real-time Comm       | LiveKit (voice/video)                             |
+| Authentication       | JWT via Ally Backend API                          |
+| Internationalisation | i18next, react-i18next                            |
+| Forms                | React Hook Form                                   |
+| Animations           | Framer Motion                                     |
+| Testing              | Vitest + Testing Library                          |
+| Monorepo Tooling     | Nx                                                |
+| Code Quality         | ESLint + Prettier                                 |
+
+## Codebase Directory Structure
+
+```
+ally-web/
+├── apps/
+│   ├── ally-web/                        # Landing page (Next.js 14, port 3000)
+│   │   ├── src/                         # Pages, components, and styles
+│   │   ├── public/                      # Static assets
+│   │   ├── next.config.js               # Next.js configuration
+│   │   └── Dockerfile.dev               # Development Docker image
+│   ├── ally-helpline-dashboard/         # Helpline app for counselors (Vite + React, port 8080)
+│   │   ├── src/
+│   │   │   ├── api/                     # API client and RTK Query endpoints
+│   │   │   ├── components/              # Reusable UI components
+│   │   │   ├── containers/              # Page-level container components
+│   │   │   ├── hooks/                   # Custom React hooks
+│   │   │   ├── i18n/                    # Internationalisation configuration
+│   │   │   ├── pages/                   # Route-level page components
+│   │   │   ├── reducer/                 # Redux slices
+│   │   │   ├── routes/                  # React Router route definitions
+│   │   │   ├── store/                   # Redux store configuration
+│   │   │   └── types/                   # TypeScript type definitions
+│   │   └── Dockerfile.dev               # Development Docker image
+│   └── ally-admin-dashboard/            # Admin app for super admins (Vite + React, port 8081)
+│       ├── src/
+│       │   ├── api/                     # API client and RTK Query endpoints
+│       │   ├── components/              # Reusable UI components
+│       │   ├── hooks/                   # Custom React hooks
+│       │   ├── pages/                   # Route-level page components
+│       │   ├── reducer/                 # Redux slices
+│       │   ├── routes/                  # React Router route definitions
+│       │   ├── store/                   # Redux store configuration
+│       │   └── types/                   # TypeScript type definitions
+│       └── Dockerfile.dev               # Development Docker image
+├── libs/
+│   └── ui-shared/                       # Shared components, utilities, feature flags, logger
+├── docs/
+│   ├── colima.md                        # Colima Docker alternative setup guide
+│   └── prompts-meta.md                  # Prompt display names via .meta.json
+├── scripts/
+│   ├── docker-switch.sh                 # Switch between Docker Desktop and Colima
+│   └── i18n-sync.mjs                    # Internationalisation sync script
+├── compose.yaml                         # Docker Compose configuration
+├── Dockerfile.deps                      # Shared base dependencies image
+├── nx.json                              # Nx workspace configuration
+├── tsconfig.base.json                   # Base TypeScript configuration
+└── package.json                         # Workspace dependencies and npm scripts
+```
 
 ## Prerequisites
 
-- Node.js (LTS version recommended)
-- npm or yarn
-- Git
+Before you begin, ensure you have the following installed:
 
-## Setup Instructions
+### Required Software
 
-1. Clone the repository:
+- **Node.js** (v22) - <a href="https://nodejs.org/">Download</a>
+- **npm** - Comes with Node.js
+- **Docker** (v20.10 or higher) - <a href="https://www.docker.com/get-started">Download</a>
+- **Docker Compose** (v2.0 or higher) - Usually included with Docker Desktop
+
+### Docker Environment
+
+We support two Docker environments:
+
+#### Option A: Docker Desktop (Recommended)
+
+- Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- No additional setup needed
+
+#### Option B: Colima (Lightweight alternative)
+
+- Free and open-source alternative to Docker Desktop
+- See [docs/colima.md](docs/colima.md) for setup instructions
+
+**Switching between environments:**
+
+```bash
+# Switch to Docker Desktop
+./scripts/docker-switch.sh desktop
+
+# Switch to Colima
+./scripts/docker-switch.sh colima
+```
+
+## Installation
+
+### 1. Clone the Repository
 
 ```bash
 git clone <repository-url>
-cd ally-UI-mono
+cd ally-web
 ```
 
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Start the development servers:
-
-For ally Web:
-
-```bash
-npm run start:web
-```
-
-For ally Helpline Dashboard:
-
-```bash
-npm run start:helpline
-```
-
-For ally Admin Dashboard:
-
-```bash
-npm run start:admin
-```
-
-## Project Structure
-
-```
-ally-UI-mono/
-├── apps/
-│   ├── ally-web/                  # Landing page application
-│   └── ally-helpline-dashboard/   # Main dashboard application
-│   └── ally-admin-dashboard/      # Main dashboard application
-├── libs/                          # Shared libraries
-├── nx.json                        # NX configuration
-├── package.json                   # Root dependencies
-└── tsconfig.base.json            # Base TypeScript configuration
-```
-
-## Applications
-
-### ally Web (apps/ally-web)
-
-A Next.js application showcasing our platform's features and mission:
-
-- Modern, responsive design
-- Gradient-based UI components
-- Interactive elements and smooth animations
-- Optimized for performance and accessibility
-
-### ally Helpline Dashboard (apps/ally-helpline-dashboard)
-
-The main dashboard application for mental health professionals.
-
-### ally Admin Dashboard (apps/ally-admin-dashboard)
-
-The main dashboard application for super admin for user managament and simulation management.
-
-## Available Commands
-
-```bash
-# ally Web Commands
-npm run start:web           # Start development server
-npm run build:web        # Build for production
-npm run test:web      # running test cases
-npx nx lint ally-web     # Lint code
-
-# ally Helpline Dashboard Commands
-npm run start:helpline           # Start development server
-npm run build:helpline        # Build for production
-npm run test:helpline      # running test cases
-npx nx lint ally-helpline-dashboard
-
-# ally Admin Dashboard Commands
-npm run start:admin           # Start development server
-npm run build:admin        # Build for production
-npm run test:admin      # running test cases
-npx nx lint ally-admin-dashboard
-```
-
-## Development Guidelines
-
-1. **Code Style**: Follow the project's ESLint and Prettier configurations
-2. **Styling**:
-   - ally Web: Uses CSS Modules with custom properties
-   - Helpline Dashboard: Uses Tailwind CSS
-   - Admin Dashboard: Uses Tailwind CSS
-3. **TypeScript**: Maintain strict type checking and follow the base TSConfig
-4. **Components**: Create reusable components in the appropriate application's components directory
-
-## Dockerized setup (shared deps image)
-
-Use Docker for a consistent local dev environment leveraging a shared base image for dependencies.
-
-- **Prerequisites**
-  - Docker Desktop
-  - Docker Compose
-- **Build the shared base image (once or when deps change)**
+### 2. Build the Base Dependencies Image
 
 ```bash
 docker build -f Dockerfile.deps -t ally-web/deps:dev .
 ```
 
-- **Rebuild app images (now FROM ally-web/deps:dev)**
+### 3. Start All Services
 
 ```bash
-docker compose build
+docker compose up
 ```
 
-- **Run specific services**
-  Web (Next.js):
+Or start individual services:
 
 ```bash
-docker compose up web
+docker compose up web        # Ally Web (port 3000)
+docker compose up helpline   # Helpline Dashboard (port 8080)
+docker compose up admin      # Admin Dashboard (port 8081)
 ```
 
-Helpline (Vite):
+### 4. Access the Applications
+
+- **Ally Web**: http://localhost:3000
+- **Helpline Dashboard**: http://localhost:8080
+- **Admin Dashboard**: http://localhost:8081
+
+## Running Locally (Without Docker)
+
+If you prefer to run without Docker:
+
+1. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+2. **Start development servers:**
+
+   ```bash
+   npm run start:web        # Ally Web (port 3000)
+   npm run start:helpline   # Helpline Dashboard (port 8080)
+   npm run start:admin      # Admin Dashboard (port 8081)
+   ```
+
+## 📦 Environment Configuration
+
+Each application reads environment variables from its own `.env` file. Refer to the `compose.yaml` for the variables required by each service:
+
+| Variable                   | Service  | Description                     |
+| -------------------------- | -------- | ------------------------------- |
+| `NEXT_PUBLIC_API_BASE_URL` | web      | Backend API base URL            |
+| `NEXT_PUBLIC_API_VERSION`  | web      | Backend API version (e.g. `v1`) |
+| `VITE_API_BASE_URL`        | helpline | Backend API base URL            |
+| `VITE_API_BASE_URL`        | admin    | Backend API base URL            |
+
+## 🏗️ Building for Production
 
 ```bash
+npm run build:web        # Build Ally Web
+npm run build:helpline   # Build Helpline Dashboard
+npm run build:admin      # Build Admin Dashboard
+
+# Or build everything at once
+npm run build:prod
+```
+
+## 🧪 Testing & Code Quality
+
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests for specific applications
+npm run test:web          # Ally Web tests
+npm run test:helpline     # Helpline Dashboard tests
+npm run test:admin        # Admin Dashboard tests
+npm run test:ui-shared    # Shared UI library tests
+```
+
+### Linting & Formatting
+
+```bash
+# Check for linting errors
+npm run lint
+
+# Auto-fix linting errors
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+
+# Check formatting without making changes
+npm run format:check
+```
+
+## ✨ Key Features
+
+### Helpline Dashboard
+
+- **Real-time Chat** - Live messaging with clients via WebSocket
+- **LiveKit Voice Sessions** - Integrated voice/video communication
+- **Appointment & Calendar Management** - Scheduling and calendar views
+- **Case Management** - Create, track, and document client cases
+- **Analytics & Reporting** - Session analytics with PDF export
+- **Dark/Light Theme** - Configurable UI theme
+- **Internationalisation** - Multi-language support via i18next
+
+### Admin Dashboard
+
+- **Simulation Management** - Create and configure voice-based simulation scenarios
+- **Session Event Configuration** - Map and manage session events
+- **User & Tenant Management** - Manage users, organisations, and permissions
+- **Permission-Based Access Control** - Role-based routing and feature access
+- **LiveKit Simulation Preview** - Test simulations in real time
+- **Credit Monitoring** - Track simulation credits and usage
+
+### Ally Web (Landing Page)
+
+- **Document Search** - Advanced search for mental health resources
+- **Category Filtering** - Browse by topic or resource category
+- **Infinite Scroll** - Seamless result loading
+- **Responsive Design** - Optimised for desktop and mobile
+
+### Shared Infrastructure
+
+- **Shared UI Library** (`libs/ui-shared`) - Common components, feature flags, and logger
+- **Nx Monorepo** - Unified build, test, and lint tooling across all applications
+- **Docker Compose** - Single command to start all three services
+
+## 🐛 Troubleshooting
+
+### Docker Issues
+
+**"docker-credential-desktop: executable file not found"**
+
+```bash
+./scripts/docker-switch.sh colima
+```
+
+**Port already in use**
+
+```bash
+# Find and kill the process using the port
+lsof -ti:3000 | xargs kill -9
+lsof -ti:8080 | xargs kill -9
+lsof -ti:8081 | xargs kill -9
+```
+
+### Build Issues
+
+**Dependencies out of sync**
+
+```bash
+# Local development
+npm install
+
+# Docker (rebuild base image)
+docker build -f Dockerfile.deps -t ally-web/deps:dev . --no-cache
+```
+
+**Stale node_modules**
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## Docker Commands Reference
+
+```bash
+# Build base dependencies image (run once or when package.json changes)
+docker build -f Dockerfile.deps -t ally-web/deps:dev .
+
+# Start all services
+docker compose up
+
+# Start in detached mode (background)
+docker compose up -d
+
+# Start specific service
 docker compose up helpline
-```
 
-Admin (Vite):
+# Rebuild services after code changes
+docker compose build
 
-```bash
-docker compose up admin
-```
-
-- **Detached mode**
-
-```bash
-docker compose up -d web
-```
-
-- **Stop everything**
-
-```bash
+# Stop all services
 docker compose down
+
+# View logs
+docker compose logs -f
+
+# Clean up everything (including volumes)
+docker compose down -v
 ```
 
-## Contributing
+## 👥 Contributing
 
-1. Create a new branch for your feature/fix
-2. Follow the project's code style and conventions
-3. Test your changes thoroughly
-4. Submit a pull request with a clear description of changes
+For contributing guidelines, refer to `CONTRIBUTING.md`.
 
-## Support
+## 📞 Support
 
-For issues and support:
+For issues, questions, or contributions:
 
-- Check the project documentation
-- Review existing issues
+- Open an issue on GitHub
 - Contact the development team
+- **Colima Setup**: See [docs/colima.md](docs/colima.md)
+- **Prompt display names (meta JSON)**: See [docs/prompts-meta.md](docs/prompts-meta.md)
+- **Scripts**: See [scripts/README.md](scripts/README.md)
+
+---

@@ -172,7 +172,7 @@ Use the centralized manual deployment workflow for any app:
 
 Use individual app workflows for specific deployments:
 
-1. Go to Actions → Select your app's workflow (e.g., "Deploy ally Helpline Dashboard")
+1. Go to Actions → Select your app's workflow (e.g., "Deploy Ally Helpline Dashboard")
 2. Click "Run workflow"
 3. Select the target environment
 4. Click "Run workflow"

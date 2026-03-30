@@ -27,6 +27,14 @@ export const en = {
     successfullyDeleted: "Successfully deleted",
     thisActionCannotBeUndone: "This action cannot be undone.",
     areYouSureYouWantToDelete: "Are you sure you want to delete",
+    maxActiveUsers: {
+      title: "We're at capacity right now",
+      description:
+        "We're currently handling the maximum number of active users. Please wait a moment and try again access usually frees up shortly.",
+      retry: "Retry",
+      manualRetry: "You can retry in {seconds}s",
+      autoRetry: "We'll automatically retry in {seconds}s",
+    },
   },
   errors: {
     maxRowsBehavioursInstruction: "You can only add up to 10 rows of behaviours instruction.",
@@ -71,7 +79,7 @@ export const en = {
     failedToCancelReportGeneration: "Failed to cancel report generation",
     failedToRegenerate: "Failed to regenerate",
     linguisticStyleSamplesRequired:
-      "Linguistic style samples are required for non-English languages. Please provide at least one sample for each configured non-English language.",
+      "Linguistic style samples are required. Please provide at least one sample for each selected language.",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -273,6 +281,10 @@ export const en = {
     useDashboardOverride: "Use dashboard version (when OFF, prompt is read from codebase folder)",
     useDashboardOverrideLabel: "Use dashboard version",
     availableVariables: "Available variables",
+    usedBlocks: "Used Blocks",
+    blocksHelpTitle: "What are blocks?",
+    blocksHelpText:
+      "Blocks are reusable prompt fragments referenced by this prompt. They are mainly used for optional or shared sections so the main prompt stays easier to read and maintain.",
     revertPromptSuccess: "Prompt restored to default successfully",
     revertPromptFailed: "Failed to restore prompt to default",
     restoreDefault: "Restore default",

@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
@@ -22,7 +21,7 @@ import {
   SkillsTab,
   ToggleSwitch,
 } from "@components";
-import { REVIEW_PRIVACY_OPTIONS, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
+import { REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { ShortSessionUI, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { pageType, ShareForReviewsInput } from "@types";
 
@@ -50,7 +49,7 @@ export const PostSimulationSummary: FC = () => {
           sessionId={sessionId ?? ""}
           summaryData={summaryData}
           retryMaxReached={retryMaxReached}
-          className="max-h-[calc(100vh-212px)]"
+          className="h-full min-h-0 flex flex-col overflow-hidden"
         />
       ),
     },
@@ -140,14 +139,14 @@ export const PostSimulationSummary: FC = () => {
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
   return (
-    <div className="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center ">
+    <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        className="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
       >
-        <div className="flex items-center justify-between w-full mt-8">
+        <div className="mt-8 flex w-full shrink-0 items-center justify-between">
           <div className="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
             <button onClick={() => navigate(-1)}>
               <BackCircle />
@@ -156,29 +155,21 @@ export const PostSimulationSummary: FC = () => {
           </div>
           {!isShortSession && (
             <div className="flex justify-center gap-2 items-center">
-              {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
-                <div className="flex items-center gap-2">
-                  <span className="font-primary font-normal text-sm">
-                    {t("postSim.common.shareForReview")}
-                  </span>
-                  <ToggleSwitch
-                    enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
-                    onChange={(value: boolean) => {
-                      handleToggleChange(
-                        value
-                          ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                          : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                      );
-                    }}
-                  />
-                </div>
-              ) : (
-                <Toggle
-                  items={REVIEW_PRIVACY_OPTIONS(t)}
-                  initialValue={summary?.reviewStatus}
-                  onChange={handleCreateReview}
+              <div className="flex items-center gap-2">
+                <span className="font-primary font-normal text-sm">
+                  {t("postSim.common.shareForReview")}
+                </span>
+                <ToggleSwitch
+                  enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
+                  onChange={(value: boolean) => {
+                    handleToggleChange(
+                      value
+                        ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                        : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                    );
+                  }}
                 />
-              )}
+              </div>
               {summary?.reviewId && (
                 <>
                   <div className="border-l border-border h-5" />
@@ -202,7 +193,7 @@ export const PostSimulationSummary: FC = () => {
         ) : (
           <>
             <ShareForReview
-              isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
+              isOpen={shareForReview}
               onClose={() => {
                 setShareForReview(false);
               }}
@@ -215,7 +206,7 @@ export const PostSimulationSummary: FC = () => {
             <Tabs
               value={selectedTab}
               onChange={handleTabChange}
-              className="w-full normal-case border-b border-[#DBDBDB]"
+              className="w-full shrink-0 normal-case border-b border-[#DBDBDB]"
               sx={{
                 "& .MuiButtonBase-root": {
                   fontFamily: "'IBM Plex Serif', serif",
@@ -227,9 +218,18 @@ export const PostSimulationSummary: FC = () => {
                 <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
               ))}
             </Tabs>
-            {getTabContent()}
+            <div
+              className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+              data-testid="post-sim-tab-panel"
+            >
+              {getTabContent()}
+            </div>
             {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
-              <Button onClick={() => navigate(-1)}>{t("postSim.common.tryAnother")}</Button>
+              <div className="flex justify-center items-center fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                <Button onClick={() => navigate(ROUTES.LEARN)}>
+                  {t("postSim.common.tryAnother")}
+                </Button>
+              </div>
             )}
           </>
         )}

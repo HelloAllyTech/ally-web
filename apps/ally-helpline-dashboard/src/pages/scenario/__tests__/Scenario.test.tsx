@@ -92,7 +92,7 @@ const mockUseEndSimulationMutation = vi.fn();
 const mockUseStartSimulationMutation = vi.fn();
 
 vi.mock("@api", () => ({
-  useGetScenarioQuery: () => mockUseGetScenarioQuery(),
+  useGetScenarioQuery: (args: any) => mockUseGetScenarioQuery(args),
   useEndSimulationMutation: () => mockUseEndSimulationMutation(),
   useStartSimulationMutation: () => mockUseStartSimulationMutation(),
 }));
@@ -455,14 +455,19 @@ describe("Scenario Component", () => {
    * Verifies API integration and data fetching
    */
   describe("API Integration", () => {
-    it("should call useGetScenarioQuery with correct parameters", () => {
+    it("should call useGetScenarioQuery with correct parameters including languageCode", () => {
       render(
         <TestWrapper>
           <Scenario />
         </TestWrapper>,
       );
 
-      expect(mockUseGetScenarioQuery).toHaveBeenCalled();
+      expect(mockUseGetScenarioQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scenarioId: 123,
+          languageCode: expect.any(String),
+        }),
+      );
     });
 
     it("should render scenario details when data is loaded", () => {

@@ -2,10 +2,9 @@
 import { FC, ReactNode } from "react";
 
 import { en, DEFAULT_STATE_INSTRUCTIONS, STATES_INSTRUCTION_TABLE_HEADERS } from "@constants";
+import type { stateInstruction } from "@types";
 
 import { EditableTable } from "./EditableTable";
-
-import type { stateInstruction } from "@types";
 
 interface StateInstructionProps {
   formMethods: any;

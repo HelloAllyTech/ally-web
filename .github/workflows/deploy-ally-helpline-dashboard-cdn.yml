@@ -1,4 +1,4 @@
-name: Deploy ally Helpline Dashboard to CDN
+name: Deploy Ally Helpline Dashboard to CDN
 
 on:
   workflow_dispatch:
@@ -17,14 +17,14 @@ on:
         default: false
   push:
     branches:
-      - dev
+      - master
     paths:
       - "apps/ally-helpline-dashboard/**"
       - "libs/**"
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   # Prepare environment variables
@@ -57,11 +57,8 @@ jobs:
             TARGET_ENV="$MANUAL_ENV"
           else
             case $BRANCH in
-              "dev")
+              "master")
                 TARGET_ENV="dev"
-                ;;
-              "prd")
-                TARGET_ENV="prd"
                 ;;
               *)
                 echo "No deployment configured for branch: $BRANCH"
@@ -124,11 +121,49 @@ jobs:
             echo "No valid trigger detected"
           fi
 
+  # Sync i18n translations before tests/build
+  i18n-sync:
+    needs:
+      - prepare-env
+      - changes
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Sync translations
+        run: npm run i18n:sync -- ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Commit updated locales
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add apps/ally-helpline-dashboard/src/i18n/locales/*.json apps/ally-helpline-dashboard/src/i18n/versions/*.json
+            git commit --no-verify -m "chore(i18n): auto-translate missing keys"
+            git push
+          else
+            echo "No translation updates to commit."
+          fi
+
   # Run tests before deployment
   test:
     needs:
       - prepare-env
       - changes
+      - i18n-sync
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
     timeout-minutes: 10
@@ -181,6 +216,7 @@ jobs:
       - prepare-env
       - changes
       - test
+      - i18n-sync
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
     env:

@@ -309,10 +309,12 @@ export const AskAiTab = ({
   }, [messages, streamingMessage]);
 
   return (
-    <div className="p-1 rounded-lg w-full h-[calc(100vh-250px)] bg-gradient-to-br from-primary-500 to-primary-100">
-      <div className="flex flex-col w-full h-full rounded-lg relative">
-        <div className="p-4 w-full text-white font-semibold text-lg font-primary">Ask AI</div>
-        <div className="flex-1 bg-white rounded-t-lg rounded-b-md custom-scrollbar overflow-y-auto p-3 pb-20 flex flex-col gap-3">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-gradient-to-br from-primary-500 to-primary-100 p-1">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col rounded-lg">
+        <div className="w-full shrink-0 p-4 font-primary text-lg font-semibold text-white">
+          Ask AI
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-t-lg rounded-b-md bg-white p-3 pb-20 custom-scrollbar">
           {isHistoryLoading ? (
             <ChatHistorySkeleton />
           ) : messages.length === 0 ? (
