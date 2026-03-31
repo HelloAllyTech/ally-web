@@ -66,7 +66,9 @@ const GeneralCommentsToShow = ({
   };
 
   useEffect(() => {
-    if (createCommentData?.thread?.id) {
+    if (generalComments?.length === 0) {
+      setCommentThreadId(null);
+    } else if (createCommentData?.thread?.id) {
       setCommentThreadId(createCommentData?.thread?.id);
     } else if (review?.generalCommentsThreadId) {
       setCommentThreadId(review?.generalCommentsThreadId);

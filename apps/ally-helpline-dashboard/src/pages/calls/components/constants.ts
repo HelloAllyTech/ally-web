@@ -3,6 +3,10 @@ import { Accept } from "react-dropzone";
 import { AudioUploadFormData } from "./types";
 
 export const TRANSCRIPT_PAGE_SIZE = 30;
+
+/** Placeholder until the API provides a real recording URL (shared by transcript UIs). */
+export const DUMMY_TRANSCRIPT_AUDIO_URL =
+  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 export const GENERAL_COMMENTS_PAGE_SIZE = 10;
 
 export const SUMMARY_FEEDBACK_TIMEOUT = 30000; // 30 seconds
