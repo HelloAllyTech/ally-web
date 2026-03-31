@@ -440,7 +440,9 @@
       "addNote": "Add note",
       "editNote": "Edit note",
       "addNotePlaceholder": "Add a note...",
-      "shareModalHeader": "Share this for review"
+      "shareModalHeader": "Share this for review",
+      "addCommentPlaceholder": "Add a comment",
+      "commentAction": "Comment"
     },
     "reactionsModal": {
       "title": "Reactions",

@@ -52,7 +52,7 @@ export const ReviewDetails = () => {
   const { user } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
   const isScribeReview = pathname.includes("scribe-review");
 
@@ -79,7 +79,7 @@ export const ReviewDetails = () => {
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
 
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
-    { id: reviewId || "", isScribe: isScribeReview },
+    { id: reviewId || "", isScribe: isScribeReview, languageCode: i18n.language },
     {
       skip: !reviewId,
     },
@@ -92,6 +92,7 @@ export const ReviewDetails = () => {
       limit: TRANSCRIPT_PAGE_SIZE,
       sortBy: "startSeconds",
       isScribe: isScribeReview,
+      languageCode: i18n.language,
     });
 
   const { data: generalCommentsList, isLoading: isGetGeneralCommentsLoading } =
@@ -121,7 +122,7 @@ export const ReviewDetails = () => {
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
-  }, [reviewId]);
+  }, [reviewId, i18n.language]);
 
   useEffect(() => {
     if (reviewDetails?.myReaction?.length > 0) {

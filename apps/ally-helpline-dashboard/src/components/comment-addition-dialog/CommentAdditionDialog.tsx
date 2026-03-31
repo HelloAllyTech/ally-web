@@ -1,5 +1,6 @@
 import { FC, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { AutoExpandableTextarea, CustomImage } from "@ally-ui-mono/ui-shared";
@@ -15,6 +16,7 @@ interface CommentAdditionDialogProps {
 const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel, onComment }) => {
   const [comment, setComment] = useState("");
   const user = useSelector((state: RootState) => state.user.user);
+  const { t } = useTranslation();
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-lg border w-[360px]">
@@ -34,16 +36,16 @@ const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel, onCom
         <AutoExpandableTextarea
           value={comment}
           onChange={setComment}
-          placeholder="Add Comment"
+          placeholder={t("review.details.addCommentPlaceholder", "Add a comment")}
           maxLength={COMMENT_MAX_LENGTH}
           className="w-full border rounded-sm text-sm !px-2 !py-2 min-h-20"
         />
         <div className="grid grid-cols-2 gap-2">
           <Button className="col-span-1" variant="secondary" onClick={onCancel}>
-            Cancel
+            {t("common.cancel", "Cancel")}
           </Button>
           <Button className="col-span-1" variant="primary" onClick={() => onComment(comment)}>
-            Comment
+            {t("review.details.commentAction", "Comment")}
           </Button>
         </div>
       </div>
