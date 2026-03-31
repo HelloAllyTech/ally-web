@@ -394,7 +394,7 @@ export const CreateSimulation: FC = () => {
       const ids = (Array.isArray(behaviors) ? behaviors : [])
         .map((behavior: any) => {
           const raw = behavior?.id ?? behavior;
-          return raw.length > 0 ? id : null;
+          return raw.length > 0 ? raw : null;
         })
         .filter((id): id is string => id !== null);
       return [...new Set(ids)];
