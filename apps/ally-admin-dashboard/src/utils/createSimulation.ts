@@ -1,4 +1,8 @@
-import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import {
+  FORM_FIELD_IDS,
+  isValidStateInstructionId,
+  SIMULATION_CREATOR_FIELD_GROUPS,
+} from "@constants";
 import { GetSimulationByIdResponse, knowledgeSource } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
@@ -59,8 +63,15 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
     currentState: data?.metadata?.currentState,
-    stateInstructions: data?.metadata?.stateInstructions,
-    behaviorInstructions: data?.behaviorInstructions ?? [],
+    stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
+      ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
+      : data?.metadata?.stateInstructions,
+    behaviorInstructions: (data?.behaviorInstructions ?? []).map(beh => ({
+      ...beh,
+      stateInstructions: (beh.stateInstructions ?? []).filter(si =>
+        isValidStateInstructionId(si?.stateId),
+      ),
+    })),
     showScoreMeter: data?.metadata?.showScoreMeter,
     characterProfileText: data?.metadata?.characterProfileText,
     competency: data?.competency,
