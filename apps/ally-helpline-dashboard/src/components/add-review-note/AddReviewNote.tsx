@@ -60,7 +60,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
         </div>
       )}
       {note && note.length > 0 && (
-        <div className="text-base text-black leading-4 font-primary">
+        <div className="text-base text-black leading-4 font-primary break-words">
           {note}{" "}
           {isEdited && <span className="text-xs text-typography-800 leading-5">{"[Edited]"}</span>}
         </div>

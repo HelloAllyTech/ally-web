@@ -3,9 +3,7 @@ import { FC, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
-import { AudioTranscriptPlayer } from "@components/audio-transcript-player/AudioTranscriptPlayer";
 
-import { DUMMY_TRANSCRIPT_AUDIO_URL } from "./constants";
 import { TranscriptTabProps } from "./types";
 
 const formatTime = (startSeconds: number) => {
@@ -38,7 +36,6 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
             hasMore={hasMore}
             scrollContainerRef={scrollContainerRef}
           >
-            <AudioTranscriptPlayer audioUrl={DUMMY_TRANSCRIPT_AUDIO_URL} />
             {transcriptList.map(({ speaker, content, startSeconds }, index: number) => (
               <div key={`${speaker}-${index}`} className="flex">
                 <span className="mr-3">{startSeconds ? formatTime(startSeconds) : ""}</span>

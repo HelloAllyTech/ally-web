@@ -8,7 +8,7 @@ import { TranscriptListing } from "@components";
 import { RootState } from "@store";
 import { SimulationTranscriptMessage } from "@types";
 
-import { DUMMY_TRANSCRIPT_AUDIO_URL, TRANSCRIPT_PAGE_SIZE } from "./constants";
+import { TRANSCRIPT_PAGE_SIZE } from "./constants";
 import { SimulationTranscriptTabProps } from "./types";
 
 const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
@@ -149,7 +149,6 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         scrollContainerRef={scrollContainerRef}
         counsellorName={councellorName}
         agentName={agentName}
-        audioUrl={DUMMY_TRANSCRIPT_AUDIO_URL}
       />
     </div>
   );
