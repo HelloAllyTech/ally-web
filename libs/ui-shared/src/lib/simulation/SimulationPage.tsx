@@ -74,6 +74,8 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   renderWarningDialog,
   renderFooter,
   endSessionButtonRef,
+  stateInstructions = [],
+  difficultyLevel = "",
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
@@ -248,6 +250,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           checklistItems={checklistItems}
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}
+          score={score}
+          stateInstructions={stateInstructions}
+          difficultyLevel={difficultyLevel}
+          startTime={startTime}
+          maxTimeSeconds={maxTimeSeconds}
         />
       </motion.div>
       {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}

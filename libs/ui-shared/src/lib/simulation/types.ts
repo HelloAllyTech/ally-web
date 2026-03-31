@@ -2,6 +2,19 @@ import type { MutableRefObject, ReactNode } from "react";
 
 import { RoomStatus } from "./SimulationInterface";
 
+export interface StateInstruction {
+  name: string;
+  stateId: string;
+}
+
+export interface SessionProgressProps {
+  stateInstructions: StateInstruction[];
+  difficultyLevel: string;
+  score: number;
+  startTime?: string;
+  maxTimeSeconds?: number;
+}
+
 export interface SimulationEventType {
   score: number | null;
   emoji: string;
@@ -64,6 +77,8 @@ export interface SimulationPageProps {
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;
   endSessionButtonRef: MutableRefObject<boolean>;
+  stateInstructions?: StateInstruction[];
+  difficultyLevel?: string;
 }
 
 export interface SimulationControlsProps {
@@ -105,4 +120,20 @@ export interface ChecklistItem {
   rank?: number;
   score?: number;
   message?: string;
+}
+
+export enum DifficultyLevel {
+  EASY = "EASY",
+  MEDIUM = "MEDIUM",
+  HARD = "HARD",
+}
+
+export interface ScoreRange {
+  min?: number;
+  max?: number;
+}
+
+export interface StateScoreConfig {
+  stateId: string;
+  scoreRange: ScoreRange;
 }
