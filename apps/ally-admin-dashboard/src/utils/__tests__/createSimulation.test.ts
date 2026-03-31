@@ -117,7 +117,6 @@ describe("createSimulation utils", () => {
           languageVoices: {
             1: "voice-123",
           },
-          voiceId: "voice-123",
           agentDialogues: ["Sample dialogues"],
           customFields: [],
           optGuardrails: false,

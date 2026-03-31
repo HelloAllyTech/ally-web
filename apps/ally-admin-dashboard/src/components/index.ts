@@ -65,6 +65,7 @@ export * from "./accordion";
 export * from "./behaviours-instruction";
 export * from "./behaviours-and-states-instruction";
 export * from "./helper-tag";
+export * from "./filler-tag-picker";
 export * from "./icon-uploader";
 export * from "./states-instruction";
 export * from "./editable-table";

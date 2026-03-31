@@ -21,7 +21,6 @@ import { StateInstruction } from "../states-instruction";
 import { TagSelector } from "../tag-selector";
 import { TimeInput } from "../time-input";
 import { ToggleSection } from "../toggle-section";
-import { VoiceDropdown } from "../voice-dropdown";
 
 export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   const {
@@ -125,15 +124,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           </div>
         );
 
-      case FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN:
-        return (
-          <VoiceDropdown
-            id={id}
-            isMandatory={isMandatory}
-            label={label}
-            formMethods={formMethods}
-          />
-        );
       case FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE:
         return <AutoTerminationRuleField label={label} formMethods={formMethods} />;
       case FORM_FIELD_TYPES.TOGGLE_BUTTON:
@@ -162,7 +152,14 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES:
-        return <LinguisticStyleSamples id={id} label={label} formMethods={formMethods} />;
+        return (
+          <LinguisticStyleSamples
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
+        );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:
