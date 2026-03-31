@@ -45,11 +45,12 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<Review>} Review data
      */
     getReviewById: builder.query({
-      query: ({ id, isScribe = false }) => ({
+      query: ({ id, isScribe = false, languageCode }) => ({
         url: isScribe
           ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_BY_ID(id)
           : ApiEndpoints.REVIEWS.GET_REVIEW_BY_ID(id),
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
       forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],
@@ -63,12 +64,12 @@ const reviewsAPI = baseAPI.injectEndpoints({
      * @returns {Promise<ReviewDetailsWithMessages>} Review details and messages data
      */
     getReviewDetailsWithMessages: builder.query({
-      query: ({ id, offset, limit, sortBy, isScribe = false }) => ({
+      query: ({ id, offset, limit, sortBy, isScribe = false, languageCode }) => ({
         url: isScribe
           ? ApiEndpoints.REVIEWS.GET_SCRIBE_REVIEW_DETAILS_AND_MESSAGES(id)
           : ApiEndpoints.REVIEWS.GET_REVIEW_DETAILS_AND_MESSAGES(id),
         method: HttpMethod.GET,
-        params: { offset, limit, sortOrder: "ASC", sortBy },
+        params: { offset, limit, sortOrder: "ASC", sortBy, languageCode },
       }),
       forceRefetch: () => true,
       providesTags: [TAG_TYPES.REVIEW],

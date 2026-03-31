@@ -28,7 +28,7 @@ const SkeletonList: FC = () => (
 
 const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [offset, setOffset] = useState(0);
   const [feedData, setFeedData] = useState<ReviewItem[]>([]);
@@ -43,12 +43,13 @@ const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
     limit: PAGE_SIZE,
     offset,
     sortBy: filter,
+    languageCode: i18n.language,
   });
 
   useEffect(() => {
     setOffset(0);
     setFeedData([]);
-  }, [filter]);
+  }, [filter, i18n.language]);
 
   useEffect(() => {
     if (!simulationReviewsData?.data) return;
@@ -132,7 +133,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
             dateTime={item.scenarioSession?.createdAt}
             badgeBgColor="#EDE7F6"
             badgeTextColor="#7E57C2"
-            badgeText="Simulation"
+            badgeText={t("common.simulation", "Simulation")}
             isEdited={item.isEdited}
             isViewMoreExpanded={expandedViewMoreIds.has(item.id)}
             onTapViewMore={() => handleTapViewMore(item.id)}

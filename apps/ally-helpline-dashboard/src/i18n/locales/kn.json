@@ -440,7 +440,9 @@
       "addNote": "ಟಿಪ್ಪಣಿಯನ್ನು ಸೇರಿಸಿ",
       "editNote": "ಟಿಪ್ಪಣಿಯನ್ನು ಸಂಪಾದಿಸಿ",
       "addNotePlaceholder": "ಟಿಪ್ಪಣಿಯನ್ನು ಸೇರಿಸಿ...",
-      "shareModalHeader": "ವಿಮರ್ಶೆಗಾಗಿ ಹಂಚಿಕೊಳ್ಳಿ"
+      "shareModalHeader": "ವಿಮರ್ಶೆಗಾಗಿ ಹಂಚಿಕೊಳ್ಳಿ",
+      "addCommentPlaceholder": "ಒಂದು ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಸೇರಿಸಿ",
+      "commentAction": "ಪ್ರತಿಕ್ರಿಯಿಸಿ"
     },
     "reactionsModal": {
       "title": "ಪ್ರತಿಕ್ರಿಯೆಗಳು",

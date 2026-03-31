@@ -87,7 +87,7 @@ describe("CommentAdditionDialog Component", () => {
       render(<CommentAdditionDialog {...defaultProps} />);
       const textarea = screen.getByTestId("comment-textarea");
       expect(textarea).toBeInTheDocument();
-      expect(textarea).toHaveAttribute("placeholder", "Add Comment");
+      expect(textarea).toHaveAttribute("placeholder", "Add a comment");
     });
 
     it("should render Cancel button", () => {

@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { AutoExpandableTextarea, CustomImage, InfiniteScroll } from "@ally-ui-mono/ui-shared";
@@ -47,6 +48,7 @@ const CommentThread = ({
   const [comment, setComment] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [showCommentBox, setShowCommentBox] = useState(false);
+  const { t } = useTranslation();
 
   const commentThreadScrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -109,16 +111,16 @@ const CommentThread = ({
               value={comment}
               onChange={setComment}
               autoFocus={true}
-              placeholder="Add Comment"
+              placeholder={t("review.details.addCommentPlaceholder", "Add a comment")}
               maxLength={COMMENT_MAX_LENGTH}
               className="w-full border rounded-sm text-sm font-medium !px-2 !py-2 mt-2 min-h-20"
             />
             <div className="flex gap-2 flex-row my-2 justify-end">
               <Button variant="secondary" className="py-0 w-full" onClick={handleCancel}>
-                Cancel
+                {t("common.cancel", "Cancel")}
               </Button>
               <Button variant="primary" className="py-0 w-full" onClick={handleCommentAddition}>
-                Comment
+                {t("review.details.commentAction", "Comment")}
               </Button>
             </div>
           </div>
@@ -140,7 +142,9 @@ const CommentThread = ({
           className="flex-1 w-full h-full justify-center min-h-[36px] cursor-pointer border-[1px] rounded-[8px] border-gray-200"
           onClick={() => setShowCommentBox(true)}
         >
-          <div className="text-sm font-medium px-2 mt-2 text-typography-600">Add Comment</div>
+          <div className="text-sm font-medium px-2 mt-2 text-typography-600">
+            {t("review.details.addCommentPlaceholder", "Add a comment")}
+          </div>
         </div>
       </div>
     );

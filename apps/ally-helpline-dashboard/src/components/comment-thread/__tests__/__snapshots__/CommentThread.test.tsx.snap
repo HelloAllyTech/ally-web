@@ -32,7 +32,7 @@ exports[`CommentThread Component > should match snapshot when rendered 1`] = `
           <div
             class="text-sm font-medium px-2 mt-2 text-typography-600"
           >
-            Add Comment
+            Add a comment
           </div>
         </div>
       </div>
@@ -186,7 +186,7 @@ exports[`CommentThread Component > should match snapshot with empty comments 1`]
           <div
             class="text-sm font-medium px-2 mt-2 text-typography-600"
           >
-            Add Comment
+            Add a comment
           </div>
         </div>
       </div>
