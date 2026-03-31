@@ -82,6 +82,7 @@ export const en = {
       "Could not create filler tag. It may already exist or the request failed.",
     linguisticStyleSamplesRequired:
       "Linguistic style samples are required. Please provide at least one sample for each selected language.",
+    invalidStateInstructionIds: "State instructions include an invalid state id.",
   },
   accessDenied: {
     title: "This page is not accessible",

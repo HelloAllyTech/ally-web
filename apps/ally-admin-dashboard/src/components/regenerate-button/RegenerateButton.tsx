@@ -5,7 +5,13 @@ import { toast } from "sonner";
 import { useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
-import { DEFAULT_AUTOFILL_MODEL, FORM_FIELD_IDS, REGENERATE_TYPE, en } from "@constants";
+import {
+  BEHAVIOUR_STATES,
+  DEFAULT_AUTOFILL_MODEL,
+  FORM_FIELD_IDS,
+  REGENERATE_TYPE,
+  en,
+} from "@constants";
 import { RegenerateFieldResponse } from "@types";
 import { isNonEmptyArray, isNonEmptyObject, isNonEmptyString } from "@utils";
 
@@ -47,8 +53,9 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
   };
 
   const transformStateInstructionsFromObject = (content: any): any[] => {
-    return Object.values(content).map((item: any, index: number) => ({
-      stateId: (index + 1).toString(),
+    const values = Object.values(content) as any[];
+    return values.slice(0, BEHAVIOUR_STATES.length).map((item: any, index: number) => ({
+      stateId: BEHAVIOUR_STATES[index].stateId,
       instruction: item.instruction,
       dialogues: item.dialogues,
     }));

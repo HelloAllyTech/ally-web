@@ -35,6 +35,7 @@ import {
   SIMULATION_CREATOR_STEP_IDS,
   SESSION_TIMER_CONFIG,
   FORM_FIELD_IDS,
+  isValidStateInstructionId,
   ROLE_INSTRUCTION_PROMPT_CODE,
 } from "@constants";
 import { useDebounce } from "@hooks";
@@ -297,6 +298,31 @@ export const CreateSimulation: FC = () => {
       }
     }
 
+    const rawStateInstructions = formMethods.getValues(FORM_FIELD_IDS.STATE_INSTRUCTIONS) as
+      | stateInstruction[]
+      | undefined;
+    const rawBehaviorInstructions = formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) as
+      | behaviourInstruction[]
+      | undefined;
+
+    if (!FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG) {
+      if (
+        isNonEmptyArray(rawStateInstructions) &&
+        rawStateInstructions.some(si => !isValidStateInstructionId(si?.stateId))
+      ) {
+        toast.error(en.errors.invalidStateInstructionIds);
+        return null;
+      }
+    } else if (isNonEmptyArray(rawBehaviorInstructions)) {
+      const hasInvalidStateId = rawBehaviorInstructions.some(instruction =>
+        (instruction.stateInstructions ?? []).some(si => !isValidStateInstructionId(si?.stateId)),
+      );
+      if (hasInvalidStateId) {
+        toast.error(en.errors.invalidStateInstructionIds);
+        return null;
+      }
+    }
+
     // Delete cover image from s3 if it is changed
     if (
       isNonEmptyString(adminSimulationByIdData?.coverImageUrl) &&
@@ -364,6 +390,16 @@ export const CreateSimulation: FC = () => {
             .map(text => text.trim())
             .filter(Boolean);
 
+    const uniqueBehaviorIds = (behaviors: unknown): string[] => {
+      const ids = (Array.isArray(behaviors) ? behaviors : [])
+        .map((behavior: any) => {
+          const raw = behavior?.id ?? behavior;
+          return raw.length > 0 ? id : null;
+        })
+        .filter((id): id is string => id !== null);
+      return [...new Set(ids)];
+    };
+
     const behaviourInstructionsArray = [];
 
     if (isNonEmptyArray(behaviorInstructions)) {
@@ -375,7 +411,7 @@ export const CreateSimulation: FC = () => {
         ) {
           const entry: any = {
             category: instruction.category,
-            behaviors: instruction.behaviors?.map((behavior: any) => behavior?.id ?? behavior),
+            behaviors: uniqueBehaviorIds(instruction.behaviors),
             instructions: normalizeInstructions(instruction.instructions),
           };
           // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed

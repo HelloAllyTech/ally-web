@@ -86,7 +86,7 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
       />
       {maxLength != null && (
         <div
-          className={`text-right text-xs mt-1 absolute bottom-0 right-1 ${currentLength === maxLength ? "text-red-500" : "text-typography-600"}`}
+          className={`text-right text-xs mt-1 ${currentLength === maxLength ? "text-red-500" : "text-typography-600"}`}
         >
           {currentLength} / {maxLength.toString()}
         </div>

@@ -872,6 +872,13 @@ export const BEHAVIOUR_STATES = [
   { stateId: "3", label: "State 3 Instructions" },
 ];
 
+export const VALID_STATE_INSTRUCTION_IDS = new Set(BEHAVIOUR_STATES.map(s => s.stateId));
+
+export function isValidStateInstructionId(stateId: unknown): boolean {
+  if (stateId === undefined || stateId === null) return false;
+  return VALID_STATE_INSTRUCTION_IDS.has(String(stateId));
+}
+
 export const BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH = 1000;
 
 export const BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS = [
@@ -924,9 +931,9 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
   },
 ];
 
-export const DEFAULT_STATE_INSTRUCTIONS = [
-  { stateId: "1", name: "", instruction: "", dialogues: [] },
-  { stateId: "2", name: "", instruction: "", dialogues: [] },
-  { stateId: "3", name: "", instruction: "", dialogues: [] },
-  { stateId: "4", name: "", instruction: "", dialogues: [] },
-];
+export const DEFAULT_STATE_INSTRUCTIONS = BEHAVIOUR_STATES.map(({ stateId }) => ({
+  stateId,
+  name: "",
+  instruction: "",
+  dialogues: [] as string[],
+}));
