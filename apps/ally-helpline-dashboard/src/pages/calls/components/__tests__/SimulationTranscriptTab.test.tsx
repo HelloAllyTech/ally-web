@@ -125,6 +125,7 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
       data: mockTranscriptData,
       isLoading: false,
+      isFetching: false,
       refetch: vi.fn(),
     } as any);
     vi.mocked(useGetSimulationSummaryQuery).mockReturnValue({
@@ -246,6 +247,7 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
       data: limitedData,
       isLoading: false,
+      isFetching: false,
       refetch: vi.fn(),
     } as any);
 
@@ -276,6 +278,7 @@ describe("SimulationTranscriptTab", () => {
       .mockReturnValueOnce({
         data: initialData,
         isLoading: false,
+        isFetching: false,
         refetch: vi.fn(),
       } as any)
       .mockReturnValueOnce({
@@ -292,6 +295,7 @@ describe("SimulationTranscriptTab", () => {
           ],
         },
         isLoading: false,
+        isFetching: false,
         refetch: vi.fn(),
       } as any);
 
@@ -307,6 +311,7 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
       data: { messages: [] },
       isLoading: false,
+      isFetching: false,
       refetch: vi.fn(),
     } as any);
 
@@ -359,6 +364,7 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
       data: variedData,
       isLoading: false,
+      isFetching: false,
       refetch: vi.fn(),
     } as any);
 

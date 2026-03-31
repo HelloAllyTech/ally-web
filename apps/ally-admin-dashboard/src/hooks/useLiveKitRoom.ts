@@ -146,7 +146,8 @@ export const useLiveKitRoom = (
 
         await room.localParticipant.setMicrophoneEnabled(true);
 
-        const shouldDispatch = id && typeof id === "string" && id.startsWith("preview-");
+        const isPreviewRoom = id && typeof id === "string" && id.startsWith("preview-");
+        const shouldDispatch = Boolean(roomData?.useDirectAgentDispatch) && isPreviewRoom;
         if (shouldDispatch) {
           try {
             logger.info(`[LiveKit] Dispatching agent to preview room: ${id}`);
@@ -157,6 +158,10 @@ export const useLiveKitRoom = (
               `Direct agent dispatch failed: ${dispatchError}. If running locally, ensure ally-be has ALLOW_DIRECT_AGENT_DISPATCH or NODE_ENV=development.`,
             );
           }
+        } else if (isPreviewRoom) {
+          logger.info(
+            `[LiveKit] Skipping direct agent dispatch for preview room: ${id}. Agent should join via webhook.`,
+          );
         }
 
         // Reset last event timestamp on a fresh connection

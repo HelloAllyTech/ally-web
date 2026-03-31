@@ -91,6 +91,7 @@ export const ApiEndpoints = {
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
     CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
     HELPER_TAGS: "/v1/learn/scenario-behaviors",
+    FILLER_TAGS: "/v1/learn/filler-tags",
     GET_AUTOFILL_MODELS: "/v1/learn/models",
     GENERATE_FIELD: "/v1/learn/scenarios/generate-field",
     COMPETENCIES: "/v1/learn/competencies",
@@ -221,6 +222,7 @@ export const TAG_TYPES = {
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
   USER_BADGES: "userBadges",
   HELPER_TAGS: "helperTags",
+  FILLER_TAGS: "fillerTags",
   COMPETENCIES: "competencies",
   ADMIN_TENANTS: "adminTenants",
 };
