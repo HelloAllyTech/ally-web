@@ -440,7 +440,9 @@
       "addNote": "नोट जोड़ें",
       "editNote": "नोट संपादित करें",
       "addNotePlaceholder": "एक नोट जोड़ें...",
-      "shareModalHeader": "समीक्षा के लिए साझा करें"
+      "shareModalHeader": "समीक्षा के लिए साझा करें",
+      "addCommentPlaceholder": "एक टिप्पणी जोड़ें",
+      "commentAction": "टिप्पणी करें"
     },
     "reactionsModal": {
       "title": "प्रतिक्रियाएं",

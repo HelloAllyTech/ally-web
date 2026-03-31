@@ -440,7 +440,9 @@
       "addNote": "குறிப்பைச் சேர்க்கவும்",
       "editNote": "குறிப்பைத் திருத்தவும்",
       "addNotePlaceholder": "ஒரு குறிப்பைச் சேர்க்கவும்...",
-      "shareModalHeader": "மதிப்பாய்விற்காகப் பகிரவும்"
+      "shareModalHeader": "மதிப்பாய்விற்காகப் பகிரவும்",
+      "addCommentPlaceholder": "ஒரு கருத்தைச் சேர்க்கவும்",
+      "commentAction": "கருத்து இடவும்"
     },
     "reactionsModal": {
       "title": "பதில்கள்",
