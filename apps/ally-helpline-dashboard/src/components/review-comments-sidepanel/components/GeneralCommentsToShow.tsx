@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -48,6 +49,7 @@ const GeneralCommentsToShow = ({
   const [showCommentBox, setShowCommentBox] = useState(false);
   const { reviewId } = useParams<{ reviewId: string }>();
   const user = useSelector((state: RootState) => state.user.user);
+  const { t } = useTranslation();
   const { data: review } = useGetReviewByIdQuery({ id: reviewId, isScribe: isScribeReview });
 
   const [
@@ -185,7 +187,7 @@ const GeneralCommentsToShow = ({
               onClick={() => setShowCommentBox(true)}
             >
               <div className="text-md font-medium px-2 mt-2 text-typography-600 font-normal">
-                Add a comment
+                {t("review.details.addCommentPlaceholder", "Add a comment")}
               </div>
             </div>
           ) : (
@@ -200,16 +202,16 @@ const GeneralCommentsToShow = ({
                 value={comment}
                 onChange={setComment}
                 autoFocus={true}
-                placeholder="Add a comment"
+                placeholder={t("review.details.addCommentPlaceholder", "Add a comment")}
                 maxLength={COMMENT_MAX_LENGTH}
                 className="w-full border rounded-sm text-sm font-medium !px-2 !py-2 mt-2 min-h-20"
               />
               <div className="flex gap-2 flex-row my-2 justify-end">
                 <Button variant="secondary" className="py-0" onClick={handleCancel}>
-                  Cancel
+                  {t("common.cancel", "Cancel")}
                 </Button>
                 <Button variant="primary" className="py-0" onClick={handleComment}>
-                  Comment
+                  {t("review.details.commentAction", "Comment")}
                 </Button>
               </div>
             </div>
