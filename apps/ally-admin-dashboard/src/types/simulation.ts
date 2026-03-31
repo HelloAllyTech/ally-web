@@ -88,7 +88,6 @@ export interface SimulationInput {
   emotionalNeeds?: string;
   tone?: string;
   openingStatements?: string[];
-  voiceId?: string;
   agentGoal?: string;
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
@@ -99,6 +98,7 @@ export interface SimulationInput {
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
+  allowedFillerWords?: Record<string, string[]>;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
@@ -183,6 +183,8 @@ export interface GetSimulationByIdResponse {
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
     knowledgeSources?: knowledgeSource[];
+    linguisticStyleSamples?: Record<string, string[]>;
+    allowedFillerWords?: Record<string, string[]>;
   };
   competency?: Competency;
   terminationEvents?: terminationEvent[];
@@ -457,6 +459,21 @@ export interface HelperTagItem {
 export interface HelperTagInput {
   data: HelperTagItem[];
   count: number;
+}
+
+export type GetFillerTagsQueryParams = GetHelperTagsQueryParams;
+
+export interface FillerTagListResponse {
+  data: HelperTagItem[];
+  count: number;
+}
+
+export interface CreateFillerTagResponse {
+  id: string;
+  name: string;
+  createdBy?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Competency {

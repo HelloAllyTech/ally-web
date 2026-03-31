@@ -34,6 +34,7 @@ const InfiniteScroll: FC<InfiniteScrollProps> = ({
   const lastTriggerTime = useRef<number>(0);
   const lastLengthRef = useRef<number>(0);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const isInitialIntersectionRef = useRef<boolean>(true);
 
   /**
    * Debounced callback to prevent multiple triggers in quick succession.
@@ -66,6 +67,12 @@ const InfiniteScroll: FC<InfiniteScrollProps> = ({
     const observer = new IntersectionObserver(
       entries => {
         const target = entries[0];
+        // Skip the first intersection event which fires immediately when observer is created
+        // This prevents triggering on mount when sentinel is already visible
+        if (isInitialIntersectionRef.current) {
+          isInitialIntersectionRef.current = false;
+          return;
+        }
         if (target.isIntersecting && !isLoading && hasMore && children.length > 0) {
           debouncedOnInfiniteScroll();
         }
@@ -83,6 +90,8 @@ const InfiniteScroll: FC<InfiniteScrollProps> = ({
     return () => {
       observerRef.current = null;
       observer.disconnect();
+      // Reset for next mount
+      isInitialIntersectionRef.current = true;
     };
   }, [debouncedOnInfiniteScroll, children.length, isLoading, hasMore, scrollContainerRef]);
 

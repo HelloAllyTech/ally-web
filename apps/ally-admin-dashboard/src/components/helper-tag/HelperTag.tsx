@@ -13,11 +13,13 @@ interface Tag {
 interface HelperTagProps {
   tags: Tag[];
   updateTags: (tags: Tag[]) => void;
+  /** Max selectable tags (helper behaviours table defaults to 5). */
+  maxTags?: number;
 }
 
 const DEFAULT_LIMIT = 20;
 
-export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
+export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags, maxTags = 5 }) => {
   const [openDropdown, setOpenDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [page, setPage] = useState(1);
@@ -197,7 +199,7 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
         </div>
       ))}
       <div className="relative">
-        {tags?.length < 5 && (
+        {tags?.length < maxTags && (
           <div
             ref={triggerRef}
             className={`flex items-center border border-border-light ${tags.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}

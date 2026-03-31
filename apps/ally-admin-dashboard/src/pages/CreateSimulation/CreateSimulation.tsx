@@ -284,15 +284,11 @@ export const CreateSimulation: FC = () => {
       const missing: string[] = [];
       for (const langId of langIds) {
         const lang = availableLanguages.find(l => String(l.language_id) === langId);
-        const code = (lang?.value ?? "").toLowerCase();
-        if (code && !code.startsWith("en")) {
-          const samples = linguisticStyleSamples[langId];
-          const hasContent =
-            Array.isArray(samples) &&
-            samples.some(s => typeof s === "string" && s.trim().length > 0);
-          if (!hasContent) {
-            missing.push(lang?.label ?? langId);
-          }
+        const samples = linguisticStyleSamples[langId];
+        const hasContent =
+          Array.isArray(samples) && samples.some(s => typeof s === "string" && s.trim().length > 0);
+        if (!hasContent) {
+          missing.push(lang?.label ?? langId);
         }
       }
       if (missing.length > 0) {
