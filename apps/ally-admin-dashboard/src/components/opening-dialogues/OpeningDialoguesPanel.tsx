@@ -163,6 +163,26 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
     [scenarioLanguageTabs],
   );
 
+  const hasAnyOpeningContent = useMemo(() => {
+    if (
+      String(openingStatementsStr ?? "")
+        .split("\n")
+        .some(line => line.trim().length > 0)
+    ) {
+      return true;
+    }
+    for (const lines of Object.values(translationOpeningStatements ?? {})) {
+      if (lines?.some(l => String(l ?? "").trim().length > 0)) return true;
+    }
+    return false;
+  }, [openingStatementsStr, translationOpeningStatements]);
+
+  const openingAutofillLabel = regenerating
+    ? en.simulation.generating
+    : hasAnyOpeningContent
+      ? en.simulation.regenerate
+      : en.simulation.generate;
+
   const handleGenerate = useCallback(async () => {
     if (tabsWithLocale.length === 0 || regenerating || catalogLoading) return;
     setRegenerating(true);
@@ -254,21 +274,16 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
             className="inline-flex items-center gap-1 text-sm border rounded-2xl px-3 py-1.5 transition-opacity border-primary-500 text-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {regenerating ? (
-              <>
-                <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-                {en.simulation.generating}
-              </>
+              <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <>
-                <WandStars />
-                {en.simulation.generate}
-              </>
-            )}
+              <WandStars />
+            )}{" "}
+            {openingAutofillLabel}
           </button>
         </div>
       </div>
       <p className="text-sm text-typography-600">
-        Generate fills every language you have mapped below. The primary tab syncs to scenario
+        Autofill runs for every language you have mapped below. The primary tab syncs to scenario
         metadata; others are stored as translations. Tabs match languages with a selected voice in
         Language-Voice.
       </p>
