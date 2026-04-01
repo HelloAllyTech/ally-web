@@ -434,3 +434,7 @@ export interface GetChatHistoryResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface PresignedUrlResponse {
+  presignedUrl: string;
+}

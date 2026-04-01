@@ -35,6 +35,7 @@ import {
   GetSimulationSkillsResponse,
   GetChatHistoryResponse,
   Prompt,
+  PresignedUrlResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -352,6 +353,12 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    getAudioUrl: builder.query<PresignedUrlResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.GET_AUDIO_URL(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
@@ -381,4 +388,6 @@ export const {
   useUpdateReflectionPromptMutation,
   useGetSimulationSkillsQuery,
   useGetChatHistoryQuery,
+  useGetAudioUrlQuery,
+  useLazyGetAudioUrlQuery,
 } = learnAPI;

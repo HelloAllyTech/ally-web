@@ -1,19 +1,27 @@
-import React, { useCallback, useEffect } from "react";
+import React, { FC, useCallback, useEffect } from "react";
 
 import { PlayerControls } from "./PlayerControls";
 import { useAudioPlayer } from "./useAudioPlayer";
 
+/** Parent bumps `requestId` each time so seeks to the same `seconds` still run. */
+export type AudioTranscriptSeekRequest = {
+  seconds: number;
+  requestId: number;
+};
+
 export interface AudioTranscriptPlayerProps {
   audioUrl: string;
   className?: string;
+  seekRequest?: AudioTranscriptSeekRequest | null;
   onSeekSeconds?: (seconds: number) => void;
   onTimeChange?: (seconds: number) => void;
   onPlayStateChange?: (isPlaying: boolean) => void;
 }
 
-export const AudioTranscriptPlayer: React.FC<AudioTranscriptPlayerProps> = ({
+export const AudioTranscriptPlayer: FC<AudioTranscriptPlayerProps> = ({
   audioUrl,
   className = "",
+  seekRequest,
   onSeekSeconds,
   onTimeChange,
   onPlayStateChange,
@@ -29,7 +37,15 @@ export const AudioTranscriptPlayer: React.FC<AudioTranscriptPlayerProps> = ({
     handleLoadedMetadata,
     handleEnded,
     seekToFraction,
+    seekTo,
   } = useAudioPlayer();
+
+  useEffect(() => {
+    if (!seekRequest) return;
+    if (!Number.isFinite(seekRequest.seconds)) return;
+    seekTo(seekRequest.seconds);
+    onSeekSeconds?.(seekRequest.seconds);
+  }, [seekRequest?.requestId, seekRequest?.seconds, seekTo, onSeekSeconds]);
 
   useEffect(() => {
     onTimeChange?.(currentTime);

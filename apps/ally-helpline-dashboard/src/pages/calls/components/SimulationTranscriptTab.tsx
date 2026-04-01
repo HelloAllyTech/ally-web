@@ -3,7 +3,7 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import { useGetSimulationTranscriptQuery } from "@api";
+import { useGetAudioUrlQuery, useGetSimulationTranscriptQuery } from "@api";
 import { TranscriptListing } from "@components";
 import { RootState } from "@store";
 import { SimulationTranscriptMessage } from "@types";
@@ -38,6 +38,8 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     limit: TRANSCRIPT_PAGE_SIZE,
     sortBy: "createdAt",
   });
+
+  const { data: audioUrlData } = useGetAudioUrlQuery({ sessionId });
 
   const transcriptQueryBusy = isTranscriptFetching || isTranscriptLoading;
 
@@ -149,6 +151,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         scrollContainerRef={scrollContainerRef}
         counsellorName={councellorName}
         agentName={agentName}
+        audioUrl={audioUrlData?.presignedUrl}
       />
     </div>
   );

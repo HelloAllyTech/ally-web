@@ -10,6 +10,7 @@ const mockHandleTimeUpdate = vi.fn();
 const mockHandleLoadedMetadata = vi.fn();
 const mockHandleEnded = vi.fn();
 const mockSeekToFraction = vi.fn();
+const mockSeekTo = vi.fn();
 
 vi.mock("../useAudioPlayer", () => ({
   useAudioPlayer: vi.fn(() => ({
@@ -19,7 +20,7 @@ vi.mock("../useAudioPlayer", () => ({
     duration: 120,
     progress: 0,
     togglePlay: mockTogglePlay,
-    seekTo: vi.fn(),
+    seekTo: mockSeekTo,
     handleTimeUpdate: mockHandleTimeUpdate,
     handleLoadedMetadata: mockHandleLoadedMetadata,
     handleEnded: mockHandleEnded,
@@ -55,7 +56,7 @@ describe("AudioTranscriptPlayer", () => {
       duration: 120,
       progress: 0,
       togglePlay: mockTogglePlay,
-      seekTo: vi.fn(),
+      seekTo: mockSeekTo,
       handleTimeUpdate: mockHandleTimeUpdate,
       handleLoadedMetadata: mockHandleLoadedMetadata,
       handleEnded: mockHandleEnded,
@@ -96,6 +97,37 @@ describe("AudioTranscriptPlayer", () => {
     fireEvent.click(screen.getByTestId("progress-bar"));
     expect(mockSeekToFraction).toHaveBeenCalledWith(0.5);
     expect(onSeekSeconds).toHaveBeenCalledWith(60);
+  });
+
+  it("seeks when seekRequest.requestId changes", () => {
+    const onSeekSeconds = vi.fn();
+    const { rerender } = render(
+      <AudioTranscriptPlayer
+        audioUrl="test.mp3"
+        seekRequest={null}
+        onSeekSeconds={onSeekSeconds}
+      />,
+    );
+    expect(mockSeekTo).not.toHaveBeenCalled();
+
+    rerender(
+      <AudioTranscriptPlayer
+        audioUrl="test.mp3"
+        seekRequest={{ seconds: 42, requestId: 1 }}
+        onSeekSeconds={onSeekSeconds}
+      />,
+    );
+    expect(mockSeekTo).toHaveBeenCalledWith(42);
+    expect(onSeekSeconds).toHaveBeenCalledWith(42);
+
+    rerender(
+      <AudioTranscriptPlayer
+        audioUrl="test.mp3"
+        seekRequest={{ seconds: 42, requestId: 2 }}
+        onSeekSeconds={onSeekSeconds}
+      />,
+    );
+    expect(mockSeekTo).toHaveBeenCalledTimes(2);
   });
 
   it("applies optional className", () => {
