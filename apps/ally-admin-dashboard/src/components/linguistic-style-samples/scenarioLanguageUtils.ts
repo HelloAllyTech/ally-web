@@ -1,3 +1,5 @@
+import type { ScenarioContext } from "../../types/simulation";
+
 export interface LanguageOption {
   language_id: number;
   value: string;
@@ -45,7 +47,7 @@ export function buildScenarioContext(
   languageId: string,
   languageCode: string,
   languageName: string,
-) {
+): ScenarioContext {
   const formValues = formMethods.getValues();
   return {
     title: formValues.title,
@@ -62,5 +64,5 @@ export function buildScenarioContext(
     languageId,
     languageCode,
     languageName,
-  };
+  } as ScenarioContext;
 }
