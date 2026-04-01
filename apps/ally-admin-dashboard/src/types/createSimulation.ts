@@ -33,6 +33,8 @@ export type FormData = {
   stateInstructions?: stateInstruction[];
   customFields?: CustomFieldType[];
   openingStatements: string;
+  translationOpeningStatements?: Record<string, string[]>;
+  openingDialoguePrimaryLanguageId?: number | null;
   tone: string;
   autoTerminationStatus?: boolean;
   experienceMode?: string;

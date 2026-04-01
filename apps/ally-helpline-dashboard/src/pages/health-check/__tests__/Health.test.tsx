@@ -187,7 +187,13 @@ describe("Health Component", () => {
 
       render(<Health />);
       const lastCheckedText = screen.getByText(/Last checked:/);
-      expect(lastCheckedText.textContent).toContain(mockDate.toLocaleTimeString());
+      const expectedTime = mockDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
+      expect(lastCheckedText.textContent).toContain(expectedTime);
     });
 
     it("should display time in correct format", () => {

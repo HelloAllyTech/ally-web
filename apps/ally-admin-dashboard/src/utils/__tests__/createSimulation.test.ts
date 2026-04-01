@@ -158,6 +158,8 @@ describe("createSimulation utils", () => {
         lifeHistory: "Test history",
         linguisticStyleSamples: undefined,
         openingStatements: "Hello, how are you?",
+        translationOpeningStatements: {},
+        openingDialoguePrimaryLanguageId: null,
         personality: "Friendly",
         profession: "Engineer",
         sessionBehaviorGuidelines: "Be supportive",

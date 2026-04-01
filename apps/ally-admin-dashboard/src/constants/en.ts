@@ -442,6 +442,10 @@ export const en = {
       "No linguistic style samples were saved. The model may have returned empty results—try again or edit manually.",
     bulkGenerateNoFillers:
       "No filler words were saved. The model may have returned empty results—try again or edit manually.",
+    generatedOpeningDialoguesAllCount: (n: number) =>
+      `Generated opening dialogues for ${n} language(s)`,
+    bulkGenerateNoOpeningDialogues:
+      "No opening dialogues were saved. The model may have returned empty results—try again or edit manually.",
     allowedFillersSectionTitle: "Allowed filler words",
     guardrails: "Guardrails",
     deleteCharacter: "Delete character",

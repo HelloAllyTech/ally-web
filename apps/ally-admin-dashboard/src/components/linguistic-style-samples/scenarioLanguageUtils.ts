@@ -2,6 +2,7 @@ export interface LanguageOption {
   language_id: number;
   value: string;
   label: string;
+  translationCode?: string;
 }
 
 export const SAMPLE_COUNT = 10;
