@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import {
   useCreateReviewMutation,
+  useGetAudioUrlQuery,
   useGetSimulationSummaryQuery,
   useGetSimulationTranscriptQuery,
   useUpdateReviewMutation,
@@ -42,6 +43,7 @@ const mockTranscriptData = {
 
 vi.mock("@api", () => ({
   useGetSimulationTranscriptQuery: vi.fn(),
+  useGetAudioUrlQuery: vi.fn(),
   useGetSimulationSummaryQuery: vi.fn(),
   useCreateReviewMutation: vi.fn(),
   useUpdateReviewMutation: vi.fn(),
@@ -131,6 +133,12 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationSummaryQuery).mockReturnValue({
       data: { reviewId: null },
       isLoading: false,
+    } as any);
+    vi.mocked(useGetAudioUrlQuery).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
     } as any);
     vi.mocked(useCreateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
     vi.mocked(useUpdateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);

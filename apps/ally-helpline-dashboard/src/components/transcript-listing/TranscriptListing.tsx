@@ -3,7 +3,7 @@ import { FC, RefObject, useCallback, useEffect, useMemo, useRef, useState } from
 import { useTranslation } from "react-i18next";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
-import { AudioTranscriptPlayer } from "@components";
+import { AudioTranscriptPlayer, type AudioTranscriptSeekRequest } from "@components";
 import { SimulationTranscriptMessage, TranscriptMessage } from "@types";
 
 const NEAR_END_THRESHOLD = 3;
@@ -81,6 +81,7 @@ const TranscriptItem = ({
   youLabel,
   isActive,
   itemRef,
+  onRowClick,
 }: {
   agentName: string;
   counsellorName: string;
@@ -89,7 +90,8 @@ const TranscriptItem = ({
   youLabel: string;
   transcript: SimulationTranscriptMessage | TranscriptMessage;
   isActive: boolean;
-  itemRef?: RefObject<HTMLDivElement | null>;
+  itemRef?: RefObject<HTMLDivElement | HTMLButtonElement | null>;
+  onRowClick?: () => void;
 }) => {
   const isAIClient = transcript.senderId === -1;
   const simId = "id" in transcript ? transcript.id : undefined;
@@ -99,13 +101,17 @@ const TranscriptItem = ({
       : (agentName ?? aiAgentName)
     : counsellorName || youLabel;
 
-  return (
-    <div
-      ref={itemRef}
-      className={`flex gap-4 p-4 rounded-md w-full min-w-0 box-border ${isActive ? "border-[3px]" : "border"} ${
-        isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"
-      }`}
-    >
+  const borderWidthClass = isActive
+    ? "border-[3px]"
+    : onRowClick
+      ? "border hover:border-2"
+      : "border";
+  const rowClassName = `flex gap-4 p-4 rounded-md w-full min-w-0 box-border text-left ${borderWidthClass} ${
+    isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"
+  }`;
+
+  const body = (
+    <>
       <div className="text-neutral-600 text-sm font-medium shrink-0 min-w-[36px] pt-[2px]">
         {convertSecondsToTime(transcript.startSeconds ?? 0)}
       </div>
@@ -130,6 +136,25 @@ const TranscriptItem = ({
         )}
         <div className="text-typography-900 text-base leading-relaxed">{transcript.content}</div>
       </div>
+    </>
+  );
+
+  if (onRowClick) {
+    return (
+      <button
+        type="button"
+        ref={itemRef as RefObject<HTMLButtonElement>}
+        onClick={onRowClick}
+        className={rowClassName}
+      >
+        {body}
+      </button>
+    );
+  }
+
+  return (
+    <div ref={itemRef as RefObject<HTMLDivElement>} className={rowClassName}>
+      {body}
     </div>
   );
 };
@@ -150,7 +175,8 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   const aiAgentName = t("transcription.aiAgentName");
   const youLabel = t("transcription.youLabel");
   const containerRef = useRef<HTMLDivElement>(null);
-  const activeItemRef = useRef<HTMLDivElement>(null);
+  const activeItemRef = useRef<HTMLDivElement | HTMLButtonElement | null>(null);
+  const seekRequestIdRef = useRef(0);
   const prevIsLoadingRef = useRef(false);
   /** Max transcript time when the in-flight fetch started (detect no-op pages). */
   const lastTimeOnPageAtFetchStartRef = useRef<number | null>(null);
@@ -159,6 +185,8 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   const [activeIndex, setActiveIndex] = useState(-1);
   const [audioIsPlaying, setAudioIsPlaying] = useState(false);
   const [seekTarget, setSeekTarget] = useState<number | null>(null);
+  const [transcriptSeekRequest, setTranscriptSeekRequest] =
+    useState<AudioTranscriptSeekRequest | null>(null);
 
   const lastTimeOnPage = useMemo(() => getLastTranscriptSecond(transcriptList), [transcriptList]);
 
@@ -320,6 +348,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
         <div className="sticky top-0 z-10 shrink-0">
           <AudioTranscriptPlayer
             audioUrl={audioUrl}
+            seekRequest={transcriptSeekRequest}
             onSeekSeconds={handleAudioSeek}
             onTimeChange={handleTimeChange}
             onPlayStateChange={handlePlayStateChange}
@@ -345,6 +374,17 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
               youLabel={youLabel}
               isActive={isItemActive}
               itemRef={isItemActive ? activeItemRef : undefined}
+              onRowClick={
+                audioUrl
+                  ? () => {
+                      seekRequestIdRef.current += 1;
+                      setTranscriptSeekRequest({
+                        seconds: transcript.startSeconds ?? 0,
+                        requestId: seekRequestIdRef.current,
+                      });
+                    }
+                  : undefined
+              }
             />
           );
         })}

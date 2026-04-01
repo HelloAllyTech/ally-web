@@ -5,7 +5,7 @@ import AchievementsCard from "./achievements-card";
 import ActionDialog from "./action-dialog";
 import { AddReviewNote } from "./add-review-note";
 import { AskAiTab } from "./ask-ai-tab";
-import { AudioTranscriptPlayer } from "./audio-transcript-player";
+import { AudioTranscriptPlayer, type AudioTranscriptSeekRequest } from "./audio-transcript-player";
 import BoxBreathing from "./box-breathing";
 import { Button, ButtonVariant, ButtonVariantType } from "./button";
 import ButtonGroup from "./button-group";
@@ -70,6 +70,7 @@ import { UpNextSimulationCard } from "./up-next-simulation-card";
 import UserInfo from "./user-info";
 
 export {
+  type AudioTranscriptSeekRequest,
   type CarouselSlideType,
   CarouselSize,
   CarouselVariant,
