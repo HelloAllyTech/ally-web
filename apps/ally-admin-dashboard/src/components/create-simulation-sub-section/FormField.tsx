@@ -15,6 +15,7 @@ import { InputField } from "../input-field";
 import { KnowledgeSource } from "../knowledge-source";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { LinguisticStyleSamples } from "../linguistic-style-samples";
+import { OpeningDialoguesPanel } from "../opening-dialogues";
 import { RadioButtonGroup } from "../radio-button-group";
 import { RegenerateButton } from "../regenerate-button";
 import { StateInstruction } from "../states-instruction";
@@ -160,6 +161,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             isMandatory={isMandatory}
           />
         );
+      case FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES:
+        return <OpeningDialoguesPanel formMethods={formMethods} isMandatory={isMandatory} />;
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:

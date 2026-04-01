@@ -160,6 +160,7 @@ function createFile(name: string, type: string, size: number) {
 // Mock URL.createObjectURL
 vi.stubGlobal("URL", {
   createObjectURL: vi.fn(() => "blob:mock"),
+  revokeObjectURL: vi.fn(),
 });
 
 // Mock Image to control onload and dimensions
@@ -302,6 +303,38 @@ describe("FileUpload", () => {
     await waitFor(() => {
       expect(putSpy).toHaveBeenCalled();
       expect(setValue).toHaveBeenCalledWith(id, "https://cdn/image.jpg", { shouldValidate: true });
+    });
+  });
+
+  it("sets cover URL without S3 PUT when API returns no presigned URL (mock / local dev)", async () => {
+    (MockImage as any).prototype.width = 1600;
+    (MockImage as any).prototype.height = 900;
+    (getCoverImageUrlMock as any).mockResolvedValue({
+      presignedUrl: "",
+      coverImageUrl: "https://example.com/mock-only.png",
+    });
+
+    render(
+      <FileUpload id={id} formMethods={makeFormMethods()} isMandatory={false} label="Cover" />,
+    );
+
+    const input = screen
+      .getByLabelText(/file/i)
+      .parentElement!.parentElement!.querySelector(`input#${id}[type="file"]`) as HTMLInputElement;
+
+    const goodFile = createFile("good.jpg", "image/jpeg", 1000);
+    fireEvent.change(input, { target: { files: [goodFile] } });
+
+    await waitFor(() => {
+      expect(putSpy).not.toHaveBeenCalled();
+      expect(setValue).toHaveBeenCalledWith(id, "https://example.com/mock-only.png", {
+        shouldValidate: true,
+      });
+    });
+
+    (getCoverImageUrlMock as any).mockResolvedValue({
+      presignedUrl: "https://s3/upload",
+      coverImageUrl: "https://cdn/image.jpg",
     });
   });
 

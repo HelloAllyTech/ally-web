@@ -26,6 +26,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     openingStatements: Array.isArray(data?.metadata?.openingStatements)
       ? data.metadata.openingStatements.join("\n")
       : (data?.metadata?.openingStatements ?? ""),
+    translationOpeningStatements: data.translationOpeningStatements ?? {},
+    openingDialoguePrimaryLanguageId: data.openingDialoguePrimaryLanguageId ?? null,
     personality: data?.metadata?.personality,
     profession: data?.metadata?.profession,
     sessionBehaviorGuidelines: data?.metadata?.sessionBehaviorGuidelines,

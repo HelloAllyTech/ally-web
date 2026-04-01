@@ -6,7 +6,7 @@ import { format } from "date-fns";
  * @returns Formatted time string in 12-hour format with AM/PM
  */
 export const timeStamp = (date?: string) =>
-  new Date(date ? date : new Date()).toLocaleTimeString([], {
+  new Date(date ? date : new Date()).toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
