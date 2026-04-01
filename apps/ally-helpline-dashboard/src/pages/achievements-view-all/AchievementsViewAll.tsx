@@ -44,7 +44,7 @@ const BadgeCardSkeleton: FC = () => {
 };
 
 export const AchievementsViewAll: FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -56,7 +56,7 @@ export const AchievementsViewAll: FC = () => {
     isLoading: isBadgesLoading,
     isError: isBadgesError,
     refetch: refetchBadges,
-  } = useGetAvailableBadgesQuery();
+  } = useGetAvailableBadgesQuery({ languageCode: i18n.language });
 
   // Filter badges based on active filter and group by category
   const getFilteredBadgesByCategory = (): Array<{
