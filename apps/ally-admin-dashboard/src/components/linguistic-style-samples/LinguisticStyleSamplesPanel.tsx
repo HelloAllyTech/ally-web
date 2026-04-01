@@ -50,6 +50,20 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
       : null;
   }, [languagesToShow, selectedLanguageId]);
 
+  const hasAnySamplesContent = useMemo(() => {
+    for (const lines of Object.values(linguisticStyleSamples ?? {})) {
+      if (!Array.isArray(lines)) continue;
+      if (lines.some(l => String(l ?? "").trim().length > 0)) return true;
+    }
+    return false;
+  }, [linguisticStyleSamples]);
+
+  const bulkAutofillLabel = regeneratingAll
+    ? en.simulation.generating
+    : hasAnySamplesContent
+      ? en.simulation.regenerate
+      : en.simulation.generate;
+
   const handleRegenerateAll = useCallback(async () => {
     if (languagesToShow.length === 0) return;
     setRegeneratingAll(true);
@@ -145,16 +159,11 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
             className="inline-flex items-center gap-1 text-sm border rounded-2xl px-3 py-1.5 cursor-pointer transition-opacity border-primary-500 text-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {regeneratingAll ? (
-              <>
-                <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-                {en.simulation.generating} all...
-              </>
+              <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <>
-                <WandStars />
-                Generate all
-              </>
-            )}
+              <WandStars />
+            )}{" "}
+            {bulkAutofillLabel}
           </button>
         </div>
       </div>

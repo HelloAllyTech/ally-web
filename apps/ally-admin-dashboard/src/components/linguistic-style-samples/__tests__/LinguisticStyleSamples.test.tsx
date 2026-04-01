@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { LinguisticStyleSamples } from "../LinguisticStyleSamples";
@@ -70,6 +70,8 @@ vi.mock("@constants", () => ({
   DEFAULT_AUTOFILL_MODEL: "gpt-4o-mini",
   en: {
     simulation: {
+      generate: "Generate",
+      regenerate: "Regenerate",
       generating: "Generating",
       generatedFillersAllCount: (n: number) => `Generated for ${n}`,
       bulkGenerateNoSamples: "No samples saved",
@@ -135,7 +137,7 @@ describe("LinguisticStyleSamples", () => {
     expect(screen.getAllByRole("button", { name: "Malayalam" })).toHaveLength(2);
   });
 
-  it("generates samples for all catalog languages on Generate all", async () => {
+  it("generates samples for all catalog languages via bulk Generate", async () => {
     const formMethods = {
       control: {},
       watch: vi.fn(),
@@ -157,7 +159,8 @@ describe("LinguisticStyleSamples", () => {
 
     render(<LinguisticStyleSamples formMethods={formMethods} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /^Generate all$/i }));
+    const samplesPanel = screen.getByTestId("linguistic-style-samples-panel");
+    fireEvent.click(within(samplesPanel).getByRole("button", { name: /^Generate$/i }));
 
     await waitFor(() => {
       expect(mockRegenerateField).toHaveBeenCalledTimes(3);
@@ -180,7 +183,7 @@ describe("LinguisticStyleSamples", () => {
     );
   });
 
-  it("generates allowed filler words via Generate all fillers", async () => {
+  it("generates allowed filler words via bulk Generate", async () => {
     const formMethods = {
       control: {},
       watch: vi.fn(),
@@ -202,7 +205,8 @@ describe("LinguisticStyleSamples", () => {
 
     render(<LinguisticStyleSamples formMethods={formMethods} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Generate all fillers/i }));
+    const fillersPanel = screen.getByTestId("allowed-filler-words-panel");
+    fireEvent.click(within(fillersPanel).getByRole("button", { name: /^Generate$/i }));
 
     await waitFor(() => {
       expect(mockRegenerateField).toHaveBeenCalledTimes(3);

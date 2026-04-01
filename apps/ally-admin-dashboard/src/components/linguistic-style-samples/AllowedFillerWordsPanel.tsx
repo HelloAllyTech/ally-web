@@ -83,6 +83,20 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
     return stringsToFillerTags(allowedFillerWords[activeLanguageId]);
   }, [activeLanguageId, allowedFillerWords]);
 
+  const hasAnyFillersContent = useMemo(() => {
+    for (const arr of Object.values(allowedFillerWords ?? {})) {
+      if (!Array.isArray(arr)) continue;
+      if (arr.some(n => String(n ?? "").trim().length > 0)) return true;
+    }
+    return false;
+  }, [allowedFillerWords]);
+
+  const bulkAutofillLabel = regeneratingFillersAll
+    ? en.simulation.generating
+    : hasAnyFillersContent
+      ? en.simulation.regenerate
+      : en.simulation.generate;
+
   const handleFillerTagsChange = useCallback(
     (tags: FillerTag[]) => {
       if (!activeLanguageId) return;
@@ -174,16 +188,11 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
             className="inline-flex items-center gap-1 text-sm border rounded-2xl px-3 py-1.5 cursor-pointer transition-opacity border-primary-500 text-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {regeneratingFillersAll ? (
-              <>
-                <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-                Fillers…
-              </>
+              <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <>
-                <WandStars />
-                Generate all fillers
-              </>
-            )}
+              <WandStars />
+            )}{" "}
+            {bulkAutofillLabel}
           </button>
         </div>
       </div>
