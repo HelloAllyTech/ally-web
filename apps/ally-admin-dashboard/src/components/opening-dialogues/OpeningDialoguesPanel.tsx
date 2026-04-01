@@ -17,7 +17,6 @@ import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguag
 /** Match prompt guidance (6–10 lines); UI offers 10 slots like linguistic samples. */
 export const OPENING_DIALOGUE_LINE_SLOTS = 10;
 
-const LANGUAGES_VOICES_FIELD = "languageVoices" as const;
 const TRANSLATION_OPENING_FIELD = "translationOpeningStatements" as const;
 const PRIMARY_LANGUAGE_FIELD = "openingDialoguePrimaryLanguageId" as const;
 
@@ -52,8 +51,6 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
       voicesNeeded: true,
     }) as { data: LanguageOption[]; isLoading: boolean };
 
-  const languageVoices =
-    useWatch({ control, name: LANGUAGES_VOICES_FIELD }) ?? ({} as Record<string, string>);
   const openingDialoguePrimaryLanguageId = useWatch({ control, name: PRIMARY_LANGUAGE_FIELD }) as
     | number
     | null
@@ -63,22 +60,22 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
       | Record<string, string[]>
       | undefined) ?? {};
 
+  /** Same catalog as Language–Voice (voicesNeeded). Tabs include languages even when no voice is chosen—runtime uses fallback voice. */
   const scenarioLanguageTabs = useMemo(() => {
-    const ids = Object.keys(languageVoices).filter(id => !!languageVoices[id]);
     const catalog = catalogLanguages as LanguageOption[];
-    return ids
-      .map(id => {
-        const lang = catalog.find(l => String(l.language_id) === id);
+    return [...catalog]
+      .map(lang => {
+        const id = String(lang.language_id);
         const code =
-          [lang?.value, lang?.translationCode].map(s => String(s ?? "").trim()).find(Boolean) ?? "";
+          [lang.value, lang.translationCode].map(s => String(s ?? "").trim()).find(Boolean) ?? "";
         return {
           languageId: id,
-          label: lang?.label ?? `Language ${id}`,
+          label: lang.label ?? `Language ${id}`,
           value: code,
         };
       })
       .sort((a, b) => Number(a.languageId) - Number(b.languageId));
-  }, [languageVoices, catalogLanguages]);
+  }, [catalogLanguages]);
 
   const resolvedPrimaryId = useMemo(() => {
     if (openingDialoguePrimaryLanguageId != null) {
@@ -239,7 +236,7 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
     tabsWithLocale,
   ]);
 
-  if (scenarioLanguageTabs.length > 0 && catalogLoading) {
+  if (catalogLoading) {
     return (
       <div className="w-full text-sm text-typography-600" data-testid="opening-dialogues-loading">
         Loading languages…
@@ -250,7 +247,8 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
   if (scenarioLanguageTabs.length === 0) {
     return (
       <div className="w-full text-sm text-typography-600">
-        Select at least one language–voice mapping to edit opening dialogues per language.
+        No languages with voices are available in the catalog yet. Add scenario voices in admin to
+        edit opening dialogues per language.
       </div>
     );
   }
@@ -283,9 +281,9 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
         </div>
       </div>
       <p className="text-sm text-typography-600">
-        Autofill runs for every language you have mapped below. The primary tab syncs to scenario
-        metadata; others are stored as translations. Tabs match languages with a selected voice in
-        Language-Voice.
+        One tab per catalog language (same list as Language–Voice). You can set opening lines even
+        before choosing a voice; sessions use a fallback voice when none is selected. The primary
+        tab syncs to scenario metadata; other languages are stored as translations.
       </p>
       <div className="border border-border-light rounded-md overflow-hidden bg-white">
         <div className="flex border-b border-border-light overflow-x-auto">
