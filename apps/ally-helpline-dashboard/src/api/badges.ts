@@ -5,6 +5,7 @@ import { baseAPI } from "./baseAPI";
 
 export interface GetMyBadgesParams {
   viewedStatus?: ViewedStatus;
+  languageCode?: string;
 }
 
 export interface GetBadgesCountResponse {
@@ -13,6 +14,7 @@ export interface GetBadgesCountResponse {
 
 export interface GetBadgesCountParams {
   viewedStatus?: ViewedStatus;
+  languageCode?: string;
 }
 
 const badgesAPI = baseAPI.injectEndpoints({
@@ -21,9 +23,10 @@ const badgesAPI = baseAPI.injectEndpoints({
      * Retrieves available badges grouped by category.
      * @returns {Promise<AchievementItemDataResponse[]>} Badges grouped by category
      */
-    getAvailableBadges: builder.query<AchievementItemDataResponse[], void>({
-      query: () => ({
+    getAvailableBadges: builder.query<AchievementItemDataResponse[], { languageCode?: string }>({
+      query: params => ({
         url: ApiEndpoints.BADGES.GET_AVAILABLE_BADGES,
+        params,
       }),
       providesTags: [
         {

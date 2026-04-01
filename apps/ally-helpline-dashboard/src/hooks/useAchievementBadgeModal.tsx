@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import confetti from "canvas-confetti";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -25,6 +26,7 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   const hasInitialized = useRef(false);
   const confettiTriggered = useRef(false);
   const { pathname } = useLocation();
+  const { i18n } = useTranslation();
 
   const isBadgesEnabled = permissions.includes(Permissions.VIEW_BADGES);
   const isSimulationPath = isPathExcluded(pathname, [ROUTES.SIMULATION_SUMMARY_FULL]);
@@ -36,6 +38,7 @@ export const useAchievementBadgeModal = (): UseAchievementBadgeModalReturn => {
   } = useGetMyBadgesQuery(
     {
       viewedStatus: ViewedStatus.UNVIEWED,
+      languageCode: i18n.language,
     },
     {
       skip: !isBadgesEnabled,

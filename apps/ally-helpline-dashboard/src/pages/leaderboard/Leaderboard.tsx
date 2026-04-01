@@ -30,7 +30,7 @@ const PATHS_PAGE_SIZE = 30;
 const INITIAL_WINDOW = "LAST_WEEK";
 
 export const Leaderboard = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [pathsOffset, setPathsOffset] = useState(0);
   const [window, setWindow] = useState(INITIAL_WINDOW);
@@ -79,6 +79,7 @@ export const Leaderboard = () => {
   const { data: badgesResponse, isLoading: isBadgesLoading } = useGetMyBadgesQuery(
     {
       viewedStatus: ViewedStatus.VIEWED,
+      languageCode: i18n.language,
     },
     {
       skip: !isBadgesEnabled,
