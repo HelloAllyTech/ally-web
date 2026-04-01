@@ -108,7 +108,7 @@ describe("LinguisticStyleSamples", () => {
     }));
   });
 
-  it("shows only languages with selected voices", () => {
+  it("shows all catalog languages in both panels regardless of language–voice mapping", () => {
     const formMethods = {
       control: {},
       watch: vi.fn(),
@@ -130,13 +130,12 @@ describe("LinguisticStyleSamples", () => {
 
     render(<LinguisticStyleSamples formMethods={formMethods} />);
 
-    const hindiTabs = screen.getAllByRole("button", { name: "Hindi" });
-    expect(hindiTabs).toHaveLength(2);
-    expect(screen.queryByRole("button", { name: "English" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Malayalam" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "English" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Hindi" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Malayalam" })).toHaveLength(2);
   });
 
-  it("generates samples only for selected languages", async () => {
+  it("generates samples for all catalog languages on Generate all", async () => {
     const formMethods = {
       control: {},
       watch: vi.fn(),
@@ -161,19 +160,24 @@ describe("LinguisticStyleSamples", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Generate all$/i }));
 
     await waitFor(() => {
-      expect(mockRegenerateField).toHaveBeenCalledTimes(1);
+      expect(mockRegenerateField).toHaveBeenCalledTimes(3);
     });
 
-    expect(mockRegenerateField).toHaveBeenCalledWith({
-      fieldName: "linguisticStyleSamples",
-      model: "gpt-4o-mini",
-      scenarioContext: expect.objectContaining({
-        languageId: "2",
-        languageCode: "hi-IN",
-        languageName: "Hindi",
+    const linguisticCalls = mockRegenerateField.mock.calls.filter(
+      c => c[0].fieldName === "linguisticStyleSamples",
+    );
+    expect(linguisticCalls).toHaveLength(3);
+    const languageIds = linguisticCalls.map(c => c[0].scenarioContext.languageId).sort();
+    expect(languageIds).toEqual(["1", "2", "3"]);
+
+    expect(mockSetValue).toHaveBeenCalledWith(
+      "linguisticStyleSamples",
+      expect.objectContaining({
+        "1": ["sample-1"],
+        "2": ["sample-2"],
+        "3": ["sample-3"],
       }),
-    });
-    expect(mockSetValue).toHaveBeenCalledWith("linguisticStyleSamples", { "2": ["sample-2"] });
+    );
   });
 
   it("generates allowed filler words via Generate all fillers", async () => {
@@ -201,19 +205,21 @@ describe("LinguisticStyleSamples", () => {
     fireEvent.click(screen.getByRole("button", { name: /Generate all fillers/i }));
 
     await waitFor(() => {
-      expect(mockRegenerateField).toHaveBeenCalled();
+      expect(mockRegenerateField).toHaveBeenCalledTimes(3);
     });
 
-    expect(mockRegenerateField).toHaveBeenCalledWith(
-      expect.objectContaining({
-        fieldName: "allowedFillerWords",
-        scenarioContext: expect.objectContaining({ languageId: "2" }),
-      }),
+    const fillerCalls = mockRegenerateField.mock.calls.filter(
+      c => c[0].fieldName === "allowedFillerWords",
     );
+    expect(fillerCalls).toHaveLength(3);
+    expect(fillerCalls.map(c => c[0].scenarioContext.languageId).sort()).toEqual(["1", "2", "3"]);
+
     expect(mockSetValue).toHaveBeenCalledWith(
       "allowedFillerWords",
       expect.objectContaining({
+        "1": expect.arrayContaining(["um", "like"]),
         "2": expect.arrayContaining(["um", "like"]),
+        "3": expect.arrayContaining(["um", "like"]),
       }),
     );
   });
