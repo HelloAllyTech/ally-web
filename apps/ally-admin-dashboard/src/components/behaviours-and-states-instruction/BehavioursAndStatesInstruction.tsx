@@ -138,7 +138,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   }, []);
 
   return (
-    <div className="w-full flex flex-col gap-2 w-[930px] overflow-x-auto">
+    <div className="flex flex-col gap-2 w-[930px] overflow-x-auto">
       <div className="text-base text-typography-900 font-primary flex gap-1 justify-between items-center min-h-10">
         <div className="flex gap-1 items-center">
           {en.simulation.behavioursInstruction}
