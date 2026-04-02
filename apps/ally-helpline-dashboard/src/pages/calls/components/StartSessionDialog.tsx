@@ -10,12 +10,21 @@ import { CAROUSEL_SLIDES, ROUTES } from "@constants";
 
 import { StartSessionDialogProps } from "./types";
 
-const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) => {
+const StartSessionDialog: FC<StartSessionDialogProps> = ({
+  isOpen,
+  onClose,
+  showDictationMode,
+  showScribeMode,
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const onStartSession = () => {
+  const onStartScribeMode = () => {
     navigate(`${ROUTES.AUDIO_CALL}?mode=microphone`);
+  };
+
+  const onStartDictationMode = () => {
+    navigate(`${ROUTES.AUDIO_CALL}?mode=dictation`);
   };
 
   const StartSessionEmbed = () => (
@@ -49,9 +58,18 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({ isOpen, onClose }) =>
       }}
       isOpen={isOpen}
       onClose={onClose}
-      buttonVariant={ButtonVariant.PRIMARY}
-      onButtonClick={onStartSession}
-      buttonText={t("calls.dialog.startSession.button")}
+      buttonVariant={showScribeMode ? ButtonVariant.PRIMARY : ButtonVariant.SECONDARY}
+      onButtonClick={showScribeMode ? onStartScribeMode : onStartDictationMode}
+      buttonText={
+        showScribeMode
+          ? t("calls.dialog.startSession.startScribeMode")
+          : t("calls.dialog.startSession.startDictationMode")
+      }
+      {...(showScribeMode && showDictationMode && {
+        secondaryButtonText: t("calls.dialog.startSession.startDictationMode"),
+        secondaryButtonVariant: ButtonVariant.SECONDARY,
+        onSecondaryButtonClick: onStartDictationMode,
+      })}
       footerText={t("calls.dialog.startSession.footer")}
     >
       <Carousel
