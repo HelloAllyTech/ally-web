@@ -978,7 +978,7 @@ describe("Learn Component", () => {
     });
   });
 
-  it("should call useGetScenariosQuery with i18n.language", () => {
+  it("should call list queries with languageCode", () => {
     // We already have a mock for useGetScenariosQuery at the top of the file
     // But since it's a mock implementation, we can check how it's called
     render(
@@ -988,6 +988,16 @@ describe("Learn Component", () => {
     );
 
     expect(mockUseGetScenariosQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        languageCode: expect.any(String), // i18n.language
+      }),
+    );
+    expect(mockUseGetScenarioPathwaysQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        languageCode: expect.any(String), // i18n.language
+      }),
+    );
+    expect(mockUseGetScenarioCasesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         languageCode: expect.any(String), // i18n.language
       }),
