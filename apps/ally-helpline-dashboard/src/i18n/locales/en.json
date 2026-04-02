@@ -762,6 +762,8 @@
         "titleNormal": "Start",
         "titleItalic": "Session",
         "button": "Start Session now",
+        "startScribeMode": "Start Scribe Mode",
+        "startDictationMode": "Start Dictation Mode",
         "footer": "By starting, you confirm everyone being transcribed has given consent.",
         "description1": "Ally’s mental health AI scribe safely listens, transcribes ",
         "description2": "and writes session notes for you."

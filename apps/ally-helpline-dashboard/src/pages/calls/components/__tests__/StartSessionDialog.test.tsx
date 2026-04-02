@@ -23,10 +23,13 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 // Mock ConfirmationDialog and Session icon
 vi.mock("@components", () => ({
-  ConfirmationDialog: ({ children, onButtonClick, buttonText }: any) => (
+  ConfirmationDialog: ({ children, onButtonClick, buttonText, onSecondaryButtonClick, secondaryButtonText }: any) => (
     <div>
       {" "}
       <button onClick={onButtonClick}>{buttonText}</button>
+      {secondaryButtonText && (
+        <button onClick={onSecondaryButtonClick}>{secondaryButtonText}</button>
+      )}
       {children}{" "}
     </div>
   ),
@@ -41,7 +44,7 @@ vi.mock("@components", () => ({
   ),
   CarouselVariant: { LIGHT: "LIGHT", DARK: "DARK" },
   CarouselSize: { SMALL: "SMALL", LARGE: "LARGE" },
-  ButtonVariant: { PRIMARY: "primary" },
+  ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" },
 }));
 vi.mock("@assets/icons", () => ({
   Session: () => <div>SessionIcon</div>,
@@ -59,15 +62,51 @@ describe("StartSessionDialog", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the dialog content when open", () => {
-    render(<StartSessionDialog isOpen={true} onClose={onClose} />);
-    expect(screen.getByText("Start Session now")).toBeInTheDocument();
-    expect(screen.getByText("Listen Live")).toBeInTheDocument();
+  it("shows both buttons when showScribeMode and showDictationMode are true", () => {
+    render(
+      <StartSessionDialog isOpen={true} onClose={onClose} showScribeMode={true} showDictationMode={true} />,
+    );
+    expect(screen.getByText("Start Scribe Mode")).toBeInTheDocument();
+    expect(screen.getByText("Start Dictation Mode")).toBeInTheDocument();
   });
 
-  it("navigates when start button is clicked", () => {
-    render(<StartSessionDialog isOpen={true} onClose={onClose} />);
-    fireEvent.click(screen.getByText("Start Session now"));
+  it("shows only scribe button when showScribeMode is true and showDictationMode is false", () => {
+    render(
+      <StartSessionDialog isOpen={true} onClose={onClose} showScribeMode={true} showDictationMode={false} />,
+    );
+    expect(screen.getByText("Start Scribe Mode")).toBeInTheDocument();
+    expect(screen.queryByText("Start Dictation Mode")).not.toBeInTheDocument();
+  });
+
+  it("shows only dictation button as primary when showScribeMode is false and showDictationMode is true", () => {
+    render(
+      <StartSessionDialog isOpen={true} onClose={onClose} showScribeMode={false} showDictationMode={true} />,
+    );
+    expect(screen.getByText("Start Dictation Mode")).toBeInTheDocument();
+    expect(screen.queryByText("Start Scribe Mode")).not.toBeInTheDocument();
+  });
+
+  it("navigates to microphone mode when Start Scribe Mode is clicked", () => {
+    render(
+      <StartSessionDialog isOpen={true} onClose={onClose} showScribeMode={true} showDictationMode={false} />,
+    );
+    fireEvent.click(screen.getByText("Start Scribe Mode"));
     expect(mockNavigate).toHaveBeenCalledWith(`${ROUTES.AUDIO_CALL}?mode=microphone`);
+  });
+
+  it("navigates to dictation mode when Start Dictation Mode is clicked (dictation only)", () => {
+    render(
+      <StartSessionDialog isOpen={true} onClose={onClose} showScribeMode={false} showDictationMode={true} />,
+    );
+    fireEvent.click(screen.getByText("Start Dictation Mode"));
+    expect(mockNavigate).toHaveBeenCalledWith(`${ROUTES.AUDIO_CALL}?mode=dictation`);
+  });
+
+  it("navigates to dictation mode when Start Dictation Mode secondary button is clicked", () => {
+    render(
+      <StartSessionDialog isOpen={true} onClose={onClose} showScribeMode={true} showDictationMode={true} />,
+    );
+    fireEvent.click(screen.getByText("Start Dictation Mode"));
+    expect(mockNavigate).toHaveBeenCalledWith(`${ROUTES.AUDIO_CALL}?mode=dictation`);
   });
 });
