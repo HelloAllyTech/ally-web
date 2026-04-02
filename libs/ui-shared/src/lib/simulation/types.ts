@@ -17,6 +17,15 @@ export interface SimulationTranslations {
   microphonePrompt: string;
   clickToAllow: string;
   closePreview: string;
+  points: string;
+  sessionTimer: string;
+  timeRemaining: string;
+  sessionChecklist: string;
+  progress: string;
+  completed: string;
+  of: string;
+  min: string;
+  sec: string;
 }
 
 export interface SimulationEventType {
@@ -32,6 +41,7 @@ export interface SimulationEventsProps {
 
 export interface SimulationScoreMeterProps {
   score?: number;
+  translations?: Pick<SimulationTranslations, 'points'>;
 }
 
 export interface SimulationTimerProps {
@@ -46,6 +56,7 @@ export interface SimulationTimerProps {
 export interface SessionGoalTimerProps {
   startTime: string;
   maxTimeSeconds: number;
+  translations?: Pick<SimulationTranslations, 'sessionTimer' | 'timeRemaining' | 'min' | 'sec'>;
 }
 
 export interface RenderControlsParams {

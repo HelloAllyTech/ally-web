@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { SimulationScoreMeterProps } from "./types";
 import { scoreLevels } from "./waveformConstants";
 
-export const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 0 }) => {
+export const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 0, translations }) => {
   const clamped = Math.max(-100, Math.min(100, score));
   const leftPercent = (clamped + 100) / 2;
 
@@ -20,7 +20,7 @@ export const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 0 
         data-testid="simulation-score-meter-label"
         className="text-[#9CA3AF] text-[12px] font-medium mr-1"
       >
-        Points
+        {translations?.points ?? "Points"}
       </div>
       <div
         data-testid="simulation-score-meter-bar"

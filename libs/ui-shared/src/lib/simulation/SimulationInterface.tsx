@@ -77,6 +77,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             mode={checklistMode}
             items={checklistItems}
             triggeredEvents={detectedEventIds || []}
+            translations={translations}
           />
         )}
         {!isFocusMode && checklistMode === ChecklistMode.OFF && events?.length > 0 && (

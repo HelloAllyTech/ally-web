@@ -234,7 +234,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       </div>
 
       {roomData?.timerMode && startTime && (
-        <SessionGoalTimer startTime={startTime} maxTimeSeconds={maxTimeSeconds} />
+        <SessionGoalTimer startTime={startTime} maxTimeSeconds={maxTimeSeconds} translations={translations} />
       )}
 
       <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
@@ -252,7 +252,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           translations={translations}
         />
       </motion.div>
-      {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}
+      {roomData?.showScoreMeter && <SimulationScoreMeter score={score} translations={translations} />}
 
       <BottomSection
         isWarning={isWarning}

@@ -33,6 +33,15 @@ export const Simulation = () => {
     microphonePrompt: t("simulationPage.microphonePrompt"),
     clickToAllow: t("simulationPage.clickToAllow"),
     closePreview: t("simulationPage.closePreview"),
+    points: t("simulationPage.points"),
+    sessionTimer: t("simulationPage.sessionTimer"),
+    timeRemaining: t("simulationPage.timeRemaining"),
+    sessionChecklist: t("simulationPage.sessionChecklist"),
+    progress: t("simulationPage.progress"),
+    completed: t("simulationPage.completed"),
+    of: t("simulationPage.of"),
+    min: t("simulationPage.min"),
+    sec: t("simulationPage.sec"),
   };
 
   const [endSimulation] = useEndSimulationMutation();
