@@ -3,15 +3,16 @@ import { FC, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ListChecks, Triangle } from "lucide-react";
 
-import { ChecklistItem, ChecklistMode } from "./types";
+import { ChecklistItem, ChecklistMode, SimulationTranslations } from "./types";
 
 export interface SessionChecklistProps {
   mode: ChecklistMode;
   items: ChecklistItem[];
   triggeredEvents: string[];
+  translations?: Pick<SimulationTranslations, 'sessionChecklist' | 'progress' | 'completed' | 'of'>;
 }
 
-export const SessionChecklist: FC<SessionChecklistProps> = ({ mode, items, triggeredEvents }) => {
+export const SessionChecklist: FC<SessionChecklistProps> = ({ mode, items, triggeredEvents, translations }) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   const sortedItems = useMemo(() => {
@@ -58,11 +59,11 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({ mode, items, trigg
         </div>
         <div className="flex flex-col">
           <span className="text-[18px] font-medium text-white leading-tight">
-            Session Checklist
+            {translations?.sessionChecklist ?? "Session Checklist"}
           </span>
           <span className="text-[14px] text-[#9CA3AF] mt-1 italic font-['IBM_Plex_Serif']">
-            Progress: <span className="text-[#57f646] font-bold">{completedCount}</span> of{" "}
-            <span className="text-white font-medium">{totalCount} completed</span>
+            {translations?.progress ?? "Progress"}: <span className="text-[#57f646] font-bold">{completedCount}</span> {translations?.of ?? "of"}{" "}
+            <span className="text-white font-medium">{totalCount} {translations?.completed ?? "completed"}</span>
           </span>
         </div>
       </div>
