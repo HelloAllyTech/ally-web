@@ -34,6 +34,7 @@ export type { Resource, SearchVariant, SimulationDetailsModalProps } from "./typ
 export type { ChipItem, ChipGroupProps } from "./lib/chip-group";
 export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";
 export type { MaxActiveUsersDialogProps } from "./lib/max-active-users-dialog";
+export type { SimulationTranslations } from "./lib/simulation";
 
 export {
   Badge,
