@@ -19,6 +19,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
   startTime,
   onFocusButtonClick,
   timeLimit,
+  translations,
 }) => {
   return (
     <div
@@ -31,6 +32,7 @@ export const BottomSection: FC<BottomSectionProps> = ({
         onTimeLimit={onEndSimulation}
         startTime={startTime?.toString()}
         timeLimit={timeLimit}
+        translations={translations ? { sessionDuration: translations.sessionDuration } : undefined}
       />
       <SimulationControls
         isMuted={isMuted}
@@ -39,10 +41,11 @@ export const BottomSection: FC<BottomSectionProps> = ({
         onEndSessionClick={onEndSimulation}
         onMuteClick={onMuteSimulation}
         onFocusButtonClick={onFocusButtonClick}
+        translations={translations}
       />
       <div data-testid="simulation-bottom-section-data-safe" className="flex items-center gap-2">
         <Warning />
-        <span className="text-[15px] text-[#fff] font-['Roboto']">Your data is safe</span>
+        <span className="text-[15px] text-[#fff] font-['Roboto']">{translations?.dataSafe ?? "Your data is safe"}</span>
       </div>
     </div>
   );

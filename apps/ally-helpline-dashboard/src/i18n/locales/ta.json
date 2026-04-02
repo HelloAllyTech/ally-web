@@ -461,6 +461,8 @@
       "reactions_plural": "பதில்கள்",
       "comments": "கருத்து",
       "comments_plural": "கருத்துகள்",
+      "edited": "திருத்தப்பட்டது",
+      "noComments": "இன்னும் கருத்துகள் இல்லை",
       "relativeTime": {
         "justNow": "இப்போது மட்டும்",
         "year_one": "1 ஆண்டு",
@@ -827,6 +829,36 @@
         "primaryButton": "பதிவேற்றத்தை ரத்து செய்",
         "secondaryButton": "பதிவேற்றத்தைத் தொடரவும்"
       }
+    }
+  },
+  "simulationPage": {
+    "mute": "ம்யூட்",
+    "unmute": "அன்ம்யூட்",
+    "focus": "ஃபோகஸ்",
+    "focused": "ஃபோகஸ்ட்",
+    "endSession": "அமர்வை முடி",
+    "sessionDuration": "அமர்வு காலம்:",
+    "dataSafe": "உங்கள் தரவு பாதுகாப்பாக உள்ளது",
+    "waitingForAgent": "முகவர் சேருவதற்கு காத்திருக்கிறோம்...",
+    "connectingToSession": "அமர்வுடன் இணைக்கிறோம்...",
+    "allowMicrophone": "மைக்ரோஃபோனுக்கு அனுமதி கொடுங்கள்",
+    "microphonePromptBrowser": "சிமுலேஷனைத் தொடங்க, தயவுசெய்து உங்கள் உலாவியிலிருந்து மைக்ரோஃபோனுக்கு அனுமதி கொடுங்கள்.",
+    "microphonePrompt": "சிமுலேஷனைத் தொடங்க, தயவுசெய்து உங்கள் மைக்ரோஃபோனை பயன்படுத்த அனுமதி கொடுங்கள்.",
+    "clickToAllow": "மைக்ரோஃபோனுக்கு அனுமதி நல்கி அமர்வில் சேர கிளிக் செய்யவும்.",
+    "closePreview": "முன்னோட்டத்தை மூடு",
+    "warningDialog": {
+      "titleNormal": "அமர்வு",
+      "titleItalic": "விரைவில் முடியும்",
+      "content": "உங்கள் அமர்வு 30 விநாடிகளில் முடியும்.",
+      "continueSession": "அமர்வைத் தொடருங்கள்",
+      "endSession": "அமர்வை முடி"
+    },
+    "endDialog": {
+      "titleNormal": "முடி ",
+      "titleItalic": "அமர்வு",
+      "content": "அமர்வை முடிக்க விரும்புகிறீர்களா?",
+      "endSession": "அமர்வை முடி",
+      "cancel": "ரத்து செய்"
     }
   }
 }

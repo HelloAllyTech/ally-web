@@ -74,6 +74,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   renderWarningDialog,
   renderFooter,
   endSessionButtonRef,
+  translations,
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
@@ -227,7 +228,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
             className="text-blue-300 font-['Roboto']"
             onClick={handleEndSimulation}
           >
-            Close Preview
+            {translations?.closePreview ?? "Close Preview"}
           </button>
         )}
       </div>
@@ -248,6 +249,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           checklistItems={checklistItems}
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}
+          translations={translations}
         />
       </motion.div>
       {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}
@@ -263,6 +265,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         timeLimit={maxTimeSeconds}
         isFocusMode={isFocusMode}
         onFocusButtonClick={onFocusButtonClick}
+        translations={translations}
       />
 
       {renderFooter?.()}

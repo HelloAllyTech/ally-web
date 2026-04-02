@@ -16,6 +16,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
   onEndSessionClick,
   onMuteClick,
   onFocusButtonClick,
+  translations,
 }) => {
   const buttonList = [
     {
@@ -24,7 +25,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       isDisabled: isEndingSession,
       leftIcon: isMuted ? <MicOff /> : <MicOn />,
       show: true,
-      text: isMuted ? "Unmute" : "Mute",
+      text: isMuted ? (translations?.unmute ?? "Unmute") : (translations?.mute ?? "Mute"),
       testId: "simulation-controls-mute-button",
     },
     {
@@ -33,7 +34,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       isDisabled: isEndingSession,
       leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
       show: true,
-      text: isFocusMode ? "Focused" : "Focus",
+      text: isFocusMode ? (translations?.focused ?? "Focused") : (translations?.focus ?? "Focus"),
       testId: "simulation-controls-focus-button",
     },
     {
@@ -43,7 +44,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       leftIcon: isEndingSession ? <CircularProgress size={16} /> : <Stop />,
       className: "hover:!bg-[#7e7e7e]",
       show: true,
-      text: "End session",
+      text: translations?.endSession ?? "End session",
       testId: "simulation-controls-end-session-button",
     },
   ];

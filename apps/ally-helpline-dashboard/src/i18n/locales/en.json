@@ -461,6 +461,8 @@
       "reactions_plural": "reactions",
       "comments": "comment",
       "comments_plural": "comments",
+      "edited": "Edited",
+      "noComments": "No comments yet",
       "relativeTime": {
         "justNow": "Just now",
         "year_one": "1 year",
@@ -827,6 +829,36 @@
         "primaryButton": "Cancel Upload",
         "secondaryButton": "Continue Upload"
       }
+    }
+  },
+  "simulationPage": {
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "focus": "Focus",
+    "focused": "Focused",
+    "endSession": "End session",
+    "sessionDuration": "Session Duration:",
+    "dataSafe": "Your data is safe",
+    "waitingForAgent": "Waiting for agent to join...",
+    "connectingToSession": "Connecting to session...",
+    "allowMicrophone": "Allow microphone permission",
+    "microphonePromptBrowser": "To start the simulation, please allow microphone permission from your browser.",
+    "microphonePrompt": "To start the simulation, please allow us to use your microphone.",
+    "clickToAllow": "Click to allow microphone and join the session.",
+    "closePreview": "Close Preview",
+    "warningDialog": {
+      "titleNormal": "Session",
+      "titleItalic": "Ending Soon",
+      "content": "Your session will end in 30 seconds.",
+      "continueSession": "Continue Session",
+      "endSession": "End Session"
+    },
+    "endDialog": {
+      "titleNormal": "End ",
+      "titleItalic": "Session",
+      "content": "Are you sure you want to end the session?",
+      "endSession": "End Session",
+      "cancel": "Cancel"
     }
   }
 }
