@@ -96,12 +96,22 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
         fieldId: FORM_FIELD_IDS.STATE_INSTRUCTIONS,
       },
       [REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS]: {
-        validate: content => isNonEmptyArray(content),
-        transform: content =>
-          content?.map((item: any, index: number) => ({
-            id: `temp-${index}`,
+        validate: content =>
+          isNonEmptyArray(content) ||
+          (isNonEmptyObject(content) && isNonEmptyArray(content.instructions)),
+        transform: content => {
+          const instructions = Array.isArray(content) ? content : content?.instructions;
+          const stateNames = !Array.isArray(content) ? content?.stateNames : null;
+
+          if (isNonEmptyArray(stateNames)) {
+            formMethods.setValue(FORM_FIELD_IDS.STATE_NAMES, stateNames, { shouldDirty: true });
+          }
+
+          return (instructions ?? []).map((item: any, index: number) => ({
+            id: `temp-${index}-${Date.now()}`,
             ...item,
-          })),
+          }));
+        },
         fieldId: FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS,
       },
     };

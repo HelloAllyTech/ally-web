@@ -449,6 +449,7 @@ export const en = {
     allowedFillersSectionTitle: "Allowed filler words",
     guardrails: "Guardrails",
     deleteCharacter: "Delete character",
+    addStateName: "Add State Name",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",

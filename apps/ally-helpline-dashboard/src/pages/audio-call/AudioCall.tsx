@@ -42,9 +42,7 @@ export const AudioCall: FunctionComponent = () => {
     ? microphoneHook.socketDisconnectionReason
     : undefined;
   const isEndCallDialogOpen = isAudioWebMode ? microphoneHook.isEndCallDialogOpen : false;
-  const setIsEndCallDialogOpen = isAudioWebMode
-    ? microphoneHook.setIsEndCallDialogOpen
-    : undefined;
+  const setIsEndCallDialogOpen = isAudioWebMode ? microphoneHook.setIsEndCallDialogOpen : undefined;
   const confirmEndSession = isAudioWebMode ? microphoneHook.confirmEndSession : undefined;
   const isEndSessionDisabled = isAudioWebMode ? microphoneHook.isEndSessionDisabled : false;
   const isPauseTranscriptionDisabled = isAudioWebMode

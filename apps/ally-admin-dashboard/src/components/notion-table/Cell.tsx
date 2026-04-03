@@ -35,6 +35,8 @@ export const Cell = ({
   // Extract value and disabled from the cell data structure
   const cellValue = initialValue?.value !== undefined ? initialValue.value : initialValue;
   const isDisabled = initialValue?.disabled !== undefined ? initialValue.disabled : false;
+  const cellPlaceholder =
+    initialValue?.placeholder !== undefined ? initialValue.placeholder : placeholder;
   const existingBehaviours = row?.behaviors?.value;
   const [value, setValue] = useState({ value: cellValue, update: false });
 
@@ -179,7 +181,7 @@ export const Cell = ({
           width={width}
           minWidth={minWidth}
           onChange={updateCellValue}
-          placeholder={placeholder}
+          placeholder={cellPlaceholder}
           disabled={isDisabled}
           maxLength={maxLength}
         />
@@ -268,7 +270,7 @@ export const Cell = ({
         <TextareaWithTriggerDropdown
           value={value.value}
           onChange={updateCellValue}
-          placeholder="Add Instruction"
+          placeholder={cellPlaceholder}
           disabled={isDisabled}
         />
       );
@@ -277,7 +279,13 @@ export const Cell = ({
       element = <TagList tags={value.value} />;
       break;
     case cellTypes.dropdownTags:
-      element = <HelperTag tags={existingBehaviours ?? []} updateTags={updateCellValue} />;
+      element = (
+        <HelperTag
+          tags={existingBehaviours ?? []}
+          updateTags={updateCellValue}
+          disabled={isDisabled}
+        />
+      );
       break;
     case cellTypes.status:
       element = (

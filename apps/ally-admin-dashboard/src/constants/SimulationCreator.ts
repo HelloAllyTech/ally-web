@@ -157,6 +157,7 @@ export const FORM_FIELD_IDS = {
   OPT_GUARDRAILS: "optGuardrails",
   CURRENT_STATE: "currentState",
   KNOWLEDGE_SOURCE: "knowledgeSources",
+  STATE_NAMES: "stateNames",
 };
 
 export const REGENERATE_TYPE = {
