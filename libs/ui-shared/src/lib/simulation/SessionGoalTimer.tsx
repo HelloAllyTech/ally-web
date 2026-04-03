@@ -4,7 +4,11 @@ import { FC, useEffect, useState } from "react";
 
 import { SessionGoalTimerProps } from "./types";
 
-export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({ startTime, maxTimeSeconds, translations }) => {
+export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({
+  startTime,
+  maxTimeSeconds,
+  translations,
+}) => {
   const [remainingTime, setRemainingTime] = useState<number>(0);
 
   // Convert maxTimeValue (HH:MM:SS) to seconds
@@ -82,7 +86,9 @@ export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({ startTime, maxTime
         </div>
 
         <div className="flex flex-col items-end gap-0.5">
-          <span className="text-slate-400 text-xs font-medium tracking-wide">{translations?.timeRemaining ?? "Time Remaining"}</span>
+          <span className="text-slate-400 text-xs font-medium tracking-wide">
+            {translations?.timeRemaining ?? "Time Remaining"}
+          </span>
           <span
             data-testid="session-goal-timer-remaining"
             className={`font-bold text-lg transition-colors duration-300 ${

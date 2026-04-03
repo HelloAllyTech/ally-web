@@ -7,7 +7,10 @@ import { motion } from "framer-motion";
 import { SimulationScoreMeterProps } from "./types";
 import { scoreLevels } from "./waveformConstants";
 
-export const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({ score = 0, translations }) => {
+export const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({
+  score = 0,
+  translations,
+}) => {
   const clamped = Math.max(-100, Math.min(100, score));
   const leftPercent = (clamped + 100) / 2;
 

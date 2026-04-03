@@ -41,7 +41,7 @@ export interface SimulationEventsProps {
 
 export interface SimulationScoreMeterProps {
   score?: number;
-  translations?: Pick<SimulationTranslations, 'points'>;
+  translations?: Pick<SimulationTranslations, "points">;
 }
 
 export interface SimulationTimerProps {
@@ -50,13 +50,13 @@ export interface SimulationTimerProps {
   onWarning: () => void;
   startTime: string;
   timeLimit?: number;
-  translations?: Pick<SimulationTranslations, 'sessionDuration'>;
+  translations?: Pick<SimulationTranslations, "sessionDuration">;
 }
 
 export interface SessionGoalTimerProps {
   startTime: string;
   maxTimeSeconds: number;
-  translations?: Pick<SimulationTranslations, 'sessionTimer' | 'timeRemaining' | 'min' | 'sec'>;
+  translations?: Pick<SimulationTranslations, "sessionTimer" | "timeRemaining" | "min" | "sec">;
 }
 
 export interface RenderControlsParams {
@@ -103,7 +103,10 @@ export interface SimulationControlsProps {
   onEndSessionClick: () => void;
   onMuteClick: () => void;
   onFocusButtonClick: () => void;
-  translations?: Pick<SimulationTranslations, 'mute' | 'unmute' | 'focus' | 'focused' | 'endSession'>;
+  translations?: Pick<
+    SimulationTranslations,
+    "mute" | "unmute" | "focus" | "focused" | "endSession"
+  >;
 }
 
 export interface CircleConfig {
@@ -138,4 +141,3 @@ export interface ChecklistItem {
   score?: number;
   message?: string;
 }
-

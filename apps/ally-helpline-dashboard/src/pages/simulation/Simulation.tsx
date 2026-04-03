@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { getSimulationEvents, logger, SimulationPage } from "@ally-ui-mono/ui-shared";
 import type { SimulationTranslations } from "@ally-ui-mono/ui-shared";
@@ -83,7 +83,10 @@ export const Simulation = () => {
     <ConfirmationDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={{ normal: t("simulationPage.warningDialog.titleNormal"), italic: t("simulationPage.warningDialog.titleItalic") }}
+      title={{
+        normal: t("simulationPage.warningDialog.titleNormal"),
+        italic: t("simulationPage.warningDialog.titleItalic"),
+      }}
       content={t("simulationPage.warningDialog.content")}
       buttonText={t("simulationPage.warningDialog.continueSession")}
       buttonVariant={ButtonVariant.PRIMARY}
@@ -116,7 +119,10 @@ export const Simulation = () => {
       <ConfirmationDialog
         isOpen={isBackConfirmOpen}
         onClose={() => setIsBackConfirmOpen(false)}
-        title={{ normal: t("simulationPage.endDialog.titleNormal"), italic: t("simulationPage.endDialog.titleItalic") }}
+        title={{
+          normal: t("simulationPage.endDialog.titleNormal"),
+          italic: t("simulationPage.endDialog.titleItalic"),
+        }}
         content={t("simulationPage.endDialog.content")}
         buttonText={t("simulationPage.endDialog.endSession")}
         buttonVariant={ButtonVariant.PRIMARY}

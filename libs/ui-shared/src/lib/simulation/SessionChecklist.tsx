@@ -9,10 +9,15 @@ export interface SessionChecklistProps {
   mode: ChecklistMode;
   items: ChecklistItem[];
   triggeredEvents: string[];
-  translations?: Pick<SimulationTranslations, 'sessionChecklist' | 'progress' | 'completed' | 'of'>;
+  translations?: Pick<SimulationTranslations, "sessionChecklist" | "progress" | "completed" | "of">;
 }
 
-export const SessionChecklist: FC<SessionChecklistProps> = ({ mode, items, triggeredEvents, translations }) => {
+export const SessionChecklist: FC<SessionChecklistProps> = ({
+  mode,
+  items,
+  triggeredEvents,
+  translations,
+}) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   const sortedItems = useMemo(() => {
@@ -62,8 +67,12 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({ mode, items, trigg
             {translations?.sessionChecklist ?? "Session Checklist"}
           </span>
           <span className="text-[14px] text-[#9CA3AF] mt-1 italic font-['IBM_Plex_Serif']">
-            {translations?.progress ?? "Progress"}: <span className="text-[#57f646] font-bold">{completedCount}</span> {translations?.of ?? "of"}{" "}
-            <span className="text-white font-medium">{totalCount} {translations?.completed ?? "completed"}</span>
+            {translations?.progress ?? "Progress"}:{" "}
+            <span className="text-[#57f646] font-bold">{completedCount}</span>{" "}
+            {translations?.of ?? "of"}{" "}
+            <span className="text-white font-medium">
+              {totalCount} {translations?.completed ?? "completed"}
+            </span>
           </span>
         </div>
       </div>
