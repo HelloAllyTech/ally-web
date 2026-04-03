@@ -403,6 +403,29 @@ describe("AudioCall Component", () => {
       expect(screen.getByTestId("browser-router")).toBeInTheDocument();
     });
 
+    it("should handle dictation mode without rendering sidebar", () => {
+      mockSearchParams.get.mockReturnValue("dictation");
+      const store = createMockStore({
+        user: {
+          user: mockUser,
+          availableChatTypes: [
+            CallType.WEBRTC_CHAT,
+            CallType.MICROPHONE_CHAT,
+            CallType.DICTATION_MODE,
+          ],
+        },
+      });
+
+      render(
+        <TestWrapper store={store}>
+          <AudioCall />
+        </TestWrapper>,
+      );
+
+      // Component should render without errors in dictation mode
+      expect(screen.getByTestId("browser-router")).toBeInTheDocument();
+    });
+
     it("should handle no mode parameter", () => {
       // No mode parameter set
       const store = createMockStore({

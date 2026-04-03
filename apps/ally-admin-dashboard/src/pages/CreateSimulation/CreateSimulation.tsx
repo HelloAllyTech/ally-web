@@ -477,6 +477,12 @@ export const CreateSimulation: FC = () => {
         : [],
     };
 
+    if (Array.isArray((simulationData as any).stateNames)) {
+      (simulationData as any).stateNames = ((simulationData as any).stateNames as any[]).filter(
+        sn => isValidStateInstructionId(sn.stateId),
+      );
+    }
+
     let response;
     if (simulationId) {
       response = await updateSimulationByIdQuery({

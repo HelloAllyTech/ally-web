@@ -81,7 +81,7 @@ const learnAPI = baseAPI.injectEndpoints({
      */
     getScenarioPathways: builder.query<
       GetScenarioPathwaysResponse,
-      { offset?: number; limit?: number }
+      { offset?: number; limit?: number; languageCode?: string }
     >({
       query: (params = {}) => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAYS,
@@ -95,10 +95,14 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {string} pathwayId - Pathway identifier
      * @returns {Promise<ScenarioPathwayDetails>} Pathway details with scenarios
      */
-    getScenarioPathwayDetails: builder.query<ScenarioPathwayDetails, string>({
-      query: pathwayId => ({
+    getScenarioPathwayDetails: builder.query<
+      ScenarioPathwayDetails,
+      { pathwayId: string; languageCode?: string }
+    >({
+      query: ({ pathwayId, languageCode }) => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAY_DETAILS(pathwayId),
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
       providesTags: [TAG_TYPES.SCENARIO_PATHWAY_DETAILS],
     }),
@@ -264,7 +268,10 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {Record<string, any>} [params] - Optional query parameters (e.g., { offset: number, limit: number })
      * @returns {Promise<ScenarioCaseDetails[]>} List of scenario cases
      */
-    getScenarioCases: builder.query<GetScenarioCasesResponse, Record<string, any>>({
+    getScenarioCases: builder.query<
+      GetScenarioCasesResponse,
+      { offset?: number; limit?: number; languageCode?: string }
+    >({
       query: (params = {}) => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO_CASES,
         method: HttpMethod.GET,
@@ -276,10 +283,14 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {string} caseId - Case identifier
      * @returns {Promise<ScenarioCaseDetails>} Case details
      */
-    getScenarioCaseDetails: builder.query<ScenarioCaseDetails, string>({
-      query: caseId => ({
+    getScenarioCaseDetails: builder.query<
+      ScenarioCaseDetails,
+      { caseId: string; languageCode?: string }
+    >({
+      query: ({ caseId, languageCode }) => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO_CASE_DETAILS(caseId),
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
       providesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
     }),
