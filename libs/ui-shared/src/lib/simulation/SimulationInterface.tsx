@@ -90,7 +90,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const connectingText = useMemo(() => {
     if (roomStatus === RoomStatus.CONNECTED || roomStatus === RoomStatus.CONNECTING)
       return translations?.waitingForAgent ?? "Waiting for agent to join...";
-    if (!isMicrophoneGranted) return translations?.clickToAllow ?? "Click to allow microphone and join the session.";
+    if (!isMicrophoneGranted)
+      return translations?.clickToAllow ?? "Click to allow microphone and join the session.";
     return translations?.connectingToSession ?? "Connecting to session...";
   }, [roomStatus, translations]);
 
@@ -103,7 +104,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
         <span className="font-medium italic">{connectingText}</span>
       </p>
       <p className="text-[12px] text-[#B6B5B9]">
-        {translations?.microphonePromptBrowser ?? "To start the simulation, please allow microphone permission from your browser."}
+        {translations?.microphonePromptBrowser ??
+          "To start the simulation, please allow microphone permission from your browser."}
       </p>
       <button
         type="button"
@@ -124,7 +126,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
         <span className="font-medium italic">{connectingText}</span>
       </p>
       <p className="text-[12px] text-[#B6B5B9]">
-        {translations?.microphonePrompt ?? "To start the simulation, please allow us to use your microphone."}
+        {translations?.microphonePrompt ??
+          "To start the simulation, please allow us to use your microphone."}
       </p>
     </div>
   );

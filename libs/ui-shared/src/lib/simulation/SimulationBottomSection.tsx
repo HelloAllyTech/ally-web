@@ -45,7 +45,9 @@ export const BottomSection: FC<BottomSectionProps> = ({
       />
       <div data-testid="simulation-bottom-section-data-safe" className="flex items-center gap-2">
         <Warning />
-        <span className="text-[15px] text-[#fff] font-['Roboto']">{translations?.dataSafe ?? "Your data is safe"}</span>
+        <span className="text-[15px] text-[#fff] font-['Roboto']">
+          {translations?.dataSafe ?? "Your data is safe"}
+        </span>
       </div>
     </div>
   );
