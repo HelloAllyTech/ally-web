@@ -147,7 +147,9 @@ describe("createSimulation utils", () => {
         coreMemories: "Test memories",
         isGlobal: false,
         isPublic: false,
+        knowledgeSources: undefined,
         agentGoal: "Test goal",
+        allowedFillerWords: undefined,
         behaviorInstructions: [],
         characterProfileText: undefined,
         competency: undefined,
@@ -193,6 +195,7 @@ describe("createSimulation utils", () => {
             dialogues: ["test dialogue"],
           },
         ],
+        stateNames: [],
       });
     });
 

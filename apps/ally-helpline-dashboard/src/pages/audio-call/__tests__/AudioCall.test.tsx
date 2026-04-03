@@ -408,7 +408,11 @@ describe("AudioCall Component", () => {
       const store = createMockStore({
         user: {
           user: mockUser,
-          availableChatTypes: [CallType.WEBRTC_CHAT, CallType.MICROPHONE_CHAT, CallType.DICTATION_MODE],
+          availableChatTypes: [
+            CallType.WEBRTC_CHAT,
+            CallType.MICROPHONE_CHAT,
+            CallType.DICTATION_MODE,
+          ],
         },
       });
 

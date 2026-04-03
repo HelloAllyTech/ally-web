@@ -157,6 +157,7 @@ vi.mock("@constants", () => ({
   FORM_FIELD_IDS: {
     LANGUAGES_VOICES: "languageVoices",
   },
+  isValidStateInstructionId: (id: any) => ["-1", "1", "2", "3"].includes(String(id)),
   ROLE_INSTRUCTION_PROMPT_CODE: "openai_simulation_role_instruction",
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
@@ -751,6 +752,41 @@ describe("CreateSimulation", () => {
                 expect.objectContaining({
                   experienceMode: ExperienceMode.CHECKLIST,
                   checklistType: ChecklistType.GUIDED,
+                }),
+              ]),
+            }),
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+  });
+
+  describe("State Names Filtering", () => {
+    it("should filter out stateNames with invalid stateIds during save", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test Title",
+        description: "Test Description",
+        stateNames: [
+          { stateId: "-1", name: "Valid state" },
+          { stateId: "99", name: "Invalid state" },
+        ],
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getByText("Save Draft");
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalledWith(
+            expect.objectContaining({
+              scenarios: expect.arrayContaining([
+                expect.objectContaining({
+                  stateNames: [{ stateId: "-1", name: "Valid state" }],
                 }),
               ]),
             }),

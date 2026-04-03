@@ -4,7 +4,12 @@ import { toast } from "sonner";
 
 import { Plus, Trash } from "@assets";
 import { Button, NotionTable } from "@components";
-import { BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS, BEHAVIOUR_STATES, en } from "@constants";
+import {
+  BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS,
+  BEHAVIOUR_STATES,
+  en,
+  FORM_FIELD_IDS,
+} from "@constants";
 import { ButtonVariant } from "@src/components/types";
 import { behaviourStateInstruction, HelperTagItem } from "@types";
 
@@ -22,6 +27,8 @@ interface BehavioursAndStatesInstructionProps {
   isMandatory: boolean;
   regenerateButton?: ReactNode;
 }
+
+const STATE_NAMES_ROW_ID = "state-names-row";
 
 const createEmptyFormValue = (): BehaviourRow => ({
   id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -41,6 +48,8 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   regenerateButton,
 }) => {
   const formData: BehaviourRow[] = formMethods.watch(id) ?? [];
+  const stateNames: { stateId: string; name: string }[] =
+    formMethods.watch(FORM_FIELD_IDS.STATE_NAMES) ?? [];
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   useEffect(() => {
@@ -48,6 +57,13 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
       formMethods.setValue(id, [createEmptyFormValue()], { shouldDirty: false });
     }
   }, [formData.length, formMethods, id]);
+
+  const stateNamesDict = useMemo(() => {
+    return stateNames.reduce(
+      (acc, curr) => ({ ...acc, [curr.stateId]: curr.name }),
+      {} as Record<string, string>,
+    );
+  }, [stateNames]);
 
   const createTableRowObject = useCallback((behavior: BehaviourRow) => {
     const row: Record<string, any> = {
@@ -68,12 +84,40 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     return row;
   }, []);
 
+  const createStateNamesRow = useCallback((names: Record<string, string>) => {
+    const row: Record<string, any> = {
+      id: { value: STATE_NAMES_ROW_ID, disabled: true, rowId: STATE_NAMES_ROW_ID },
+      category: { value: "State names", disabled: true, rowId: STATE_NAMES_ROW_ID },
+      behaviors: { value: [], disabled: true, rowId: STATE_NAMES_ROW_ID },
+      hideSelection: { value: true },
+    };
+
+    BEHAVIOUR_STATES.forEach(state => {
+      row[`stateInstruction_${state.stateId}`] = {
+        value: names[state.stateId] ?? "",
+        disabled: false,
+        rowId: STATE_NAMES_ROW_ID,
+        placeholder: en.simulation.addStateName,
+      };
+    });
+
+    return row;
+  }, []);
+
   const tableData = useMemo(
     () => ({
-      data: formData.map(behavior => createTableRowObject(behavior)),
-      columns: BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS,
+      data: [
+        createStateNamesRow(stateNamesDict),
+        ...formData.map(behavior => createTableRowObject(behavior)),
+      ],
+      columns: BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS.map(col => {
+        if (col.id.startsWith("stateInstruction_")) {
+          return { ...col, label: col.label };
+        }
+        return col;
+      }),
     }),
-    [formData, createTableRowObject],
+    [formData, stateNamesDict, createTableRowObject, createStateNamesRow],
   );
 
   const handleAddRow = useCallback(() => {
@@ -89,6 +133,21 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     (action: { columnId?: string; value?: string | HelperTagItem[]; rowId?: string }) => {
       const { columnId, value, rowId } = action;
       if (columnId == null || rowId == null || value === undefined) return;
+
+      if (rowId === STATE_NAMES_ROW_ID) {
+        if (columnId.startsWith("stateInstruction_")) {
+          const stateId = columnId.replace("stateInstruction_", "");
+          const updatedArray = [...stateNames];
+          const index = updatedArray.findIndex(s => s.stateId === stateId);
+          if (index >= 0) {
+            updatedArray[index] = { ...updatedArray[index], name: value as string };
+          } else {
+            updatedArray.push({ stateId, name: value as string });
+          }
+          formMethods.setValue(FORM_FIELD_IDS.STATE_NAMES, updatedArray, { shouldDirty: true });
+        }
+        return;
+      }
 
       if (columnId.startsWith("stateInstruction_")) {
         const stateId = columnId.replace("stateInstruction_", "");
@@ -111,7 +170,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
         formMethods.setValue(id, updatedFormData, { shouldDirty: true });
       }
     },
-    [formMethods, id, formData],
+    [formMethods, id, formData, stateNames],
   );
 
   const handleDeleteSelectedRows = useCallback(() => {

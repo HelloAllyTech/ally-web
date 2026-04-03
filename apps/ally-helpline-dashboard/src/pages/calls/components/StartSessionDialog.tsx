@@ -65,11 +65,12 @@ const StartSessionDialog: FC<StartSessionDialogProps> = ({
           ? t("calls.dialog.startSession.startScribeMode")
           : t("calls.dialog.startSession.startDictationMode")
       }
-      {...(showScribeMode && showDictationMode && {
-        secondaryButtonText: t("calls.dialog.startSession.startDictationMode"),
-        secondaryButtonVariant: ButtonVariant.SECONDARY,
-        onSecondaryButtonClick: onStartDictationMode,
-      })}
+      {...(showScribeMode &&
+        showDictationMode && {
+          secondaryButtonText: t("calls.dialog.startSession.startDictationMode"),
+          secondaryButtonVariant: ButtonVariant.SECONDARY,
+          onSecondaryButtonClick: onStartDictationMode,
+        })}
       footerText={t("calls.dialog.startSession.footer")}
     >
       <Carousel
