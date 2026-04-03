@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Search Component > Snapshot Testing > should have consistent HTML output 1`] = `"<div class=\\"h-full overflow-y-hidden h-[calc(100vh-30px)] flex justify-center items-center sm:px-[15%] px-[2%]\\"><div data-testid=\\"search-resources\\"><h1>Search Resources</h1><p>Search functionality will be implemented here</p></div></div>"`;
+exports[`Search Component > Snapshot Testing > should have consistent HTML output 1`] = `"<div class="h-full overflow-y-hidden h-[calc(100vh-30px)] flex justify-center items-center sm:px-[15%] px-[2%]"><div data-testid="search-resources"><h1>Search Resources</h1><p>Search functionality will be implemented here</p></div></div>"`;
 
 exports[`Search Component > Snapshot Testing > should match snapshot for basic render 1`] = `
 <div>
