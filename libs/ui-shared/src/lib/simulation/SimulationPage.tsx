@@ -74,6 +74,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   renderWarningDialog,
   renderFooter,
   endSessionButtonRef,
+  translations,
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
@@ -227,13 +228,17 @@ export const SimulationPage: FC<SimulationPageProps> = ({
             className="text-blue-300 font-['Roboto']"
             onClick={handleEndSimulation}
           >
-            Close Preview
+            {translations?.closePreview ?? "Close Preview"}
           </button>
         )}
       </div>
 
       {roomData?.timerMode && startTime && (
-        <SessionGoalTimer startTime={startTime} maxTimeSeconds={maxTimeSeconds} />
+        <SessionGoalTimer
+          startTime={startTime}
+          maxTimeSeconds={maxTimeSeconds}
+          translations={translations}
+        />
       )}
 
       <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
@@ -248,9 +253,12 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           checklistItems={checklistItems}
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}
+          translations={translations}
         />
       </motion.div>
-      {roomData?.showScoreMeter && <SimulationScoreMeter score={score} />}
+      {roomData?.showScoreMeter && (
+        <SimulationScoreMeter score={score} translations={translations} />
+      )}
 
       <BottomSection
         isWarning={isWarning}
@@ -263,6 +271,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         timeLimit={maxTimeSeconds}
         isFocusMode={isFocusMode}
         onFocusButtonClick={onFocusButtonClick}
+        translations={translations}
       />
 
       {renderFooter?.()}

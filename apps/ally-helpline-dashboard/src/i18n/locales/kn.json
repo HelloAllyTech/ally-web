@@ -461,6 +461,8 @@
       "reactions_plural": "ಪ್ರತಿಕ್ರಿಯೆಗಳು",
       "comments": "ಕಾಮೆಂಟ್",
       "comments_plural": "ಕಾಮೆಂಟ್‌ಗಳು",
+      "edited": "ಸಂಪಾದಿಸಲಾಗಿದೆ",
+      "noComments": "ಇನ್ನೂ ಯಾವುದೇ ಕಾಮೆಂಟ್‌ಗಳು ಇಲ್ಲ",
       "relativeTime": {
         "justNow": "ಈಗಲೇ",
         "year_one": "1 ವರ್ಷ",
@@ -829,6 +831,45 @@
         "primaryButton": "ಅಪ್ಲೋಡ್ ರದ್ದು ಮಾಡಿ",
         "secondaryButton": "ಅಪ್ಲೋಡ್ ಮುಂದುವರಿಸಿ"
       }
+    }
+  },
+  "simulationPage": {
+    "mute": "ಮ್ಯೂಟ್",
+    "unmute": "ಅನ್ಮ್ಯೂಟ್",
+    "focus": "ಫೋಕಸ್",
+    "focused": "ಫೋಕಸ್ಡ್",
+    "endSession": "ಅಧಿವೇಶನ ಮುಗಿಸಿ",
+    "sessionDuration": "ಅಧಿವೇಶನ ಅವಧಿ:",
+    "dataSafe": "ನಿಮ್ಮ ಡೇಟಾ ಸುರಕ್ಷಿತವಾಗಿದೆ",
+    "waitingForAgent": "ಏಜೆಂಟ್ ಸೇರಲು ಕಾಯುತ್ತಿದ್ದೇವೆ...",
+    "connectingToSession": "ಅಧಿವೇಶನಕ್ಕೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...",
+    "allowMicrophone": "ಮೈಕ್ರೋಫೋನ್ ಅನುಮತಿ ನೀಡಿ",
+    "microphonePromptBrowser": "ಸಿಮ್ಯುಲೇಷನ್ ಪ್ರಾರಂಭಿಸಲು, ದಯವಿಟ್ಟು ನಿಮ್ಮ ಬ್ರೌಸರ್ನಿಂದ ಮೈಕ್ರೋಫೋನ್ ಅನುಮತಿ ನೀಡಿ.",
+    "microphonePrompt": "ಸಿಮ್ಯುಲೇಷನ್ ಪ್ರಾರಂಭಿಸಲು, ದಯವಿಟ್ಟು ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಬಳಸಲು ಅನುಮತಿ ನೀಡಿ.",
+    "clickToAllow": "ಮೈಕ್ರೋಫೋನ್ ಅನುಮತಿ ನೀಡಿ ಅಧಿವೇಶನಕ್ಕೆ ಸೇರಲು ಕ್ಲಿಕ್ ಮಾಡಿ.",
+    "closePreview": "ಪೂರ್ವವಲೋಕನ ಮುಚ್ಚಿರಿ",
+    "points": "ಅಂಕಗಳು",
+    "sessionTimer": "ಅಧಿವೇಶನ ಟೈಮರ್",
+    "timeRemaining": "ಉಳಿದಿರುವ ಸಮಯ",
+    "sessionChecklist": "ಅಧಿವೇಶನ ಪರಿಶೀಲನಾಪಟ್ಟಿ",
+    "progress": "ಪ್ರಗತಿ",
+    "completed": "ಪೂರ್ಣಗೊಂಡಿದೆ",
+    "of": "ರಲ್ಲಿ",
+    "min": "ನಿಮಿಷ",
+    "sec": "ಸೆಕೆಂಡು",
+    "warningDialog": {
+      "titleNormal": "ಅಧಿವೇಶನ",
+      "titleItalic": "ಬೇಗ ಮುಗಿಯುತ್ತಿದೆ",
+      "content": "ನಿಮ್ಮ ಅಧಿವೇಶನ 30 ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮುಗಿಯುತ್ತದೆ.",
+      "continueSession": "ಅಧಿವೇಶನ ಮುಂದುವರಿಸಿ",
+      "endSession": "ಅಧಿವೇಶನ ಮುಗಿಸಿ"
+    },
+    "endDialog": {
+      "titleNormal": "ಮುಗಿಸಿ ",
+      "titleItalic": "ಅಧಿವೇಶನ",
+      "content": "ಅಧಿವೇಶನವನ್ನು ಮುಗಿಸಲು ನಿಮಗೆ ಖಚಿತವಾಗಿದೆಯೇ?",
+      "endSession": "ಅಧಿವೇಶನ ಮುಗಿಸಿ",
+      "cancel": "ರದ್ದು ಮಾಡಿ"
     }
   }
 }
