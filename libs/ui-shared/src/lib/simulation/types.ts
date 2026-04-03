@@ -2,6 +2,32 @@ import type { MutableRefObject, ReactNode } from "react";
 
 import { RoomStatus } from "./SimulationInterface";
 
+export interface SimulationTranslations {
+  mute: string;
+  unmute: string;
+  focus: string;
+  focused: string;
+  endSession: string;
+  sessionDuration: string;
+  dataSafe: string;
+  waitingForAgent: string;
+  connectingToSession: string;
+  allowMicrophone: string;
+  microphonePromptBrowser: string;
+  microphonePrompt: string;
+  clickToAllow: string;
+  closePreview: string;
+  points: string;
+  sessionTimer: string;
+  timeRemaining: string;
+  sessionChecklist: string;
+  progress: string;
+  completed: string;
+  of: string;
+  min: string;
+  sec: string;
+}
+
 export interface SimulationEventType {
   score: number | null;
   emoji: string;
@@ -15,6 +41,7 @@ export interface SimulationEventsProps {
 
 export interface SimulationScoreMeterProps {
   score?: number;
+  translations?: Pick<SimulationTranslations, "points">;
 }
 
 export interface SimulationTimerProps {
@@ -23,11 +50,13 @@ export interface SimulationTimerProps {
   onWarning: () => void;
   startTime: string;
   timeLimit?: number;
+  translations?: Pick<SimulationTranslations, "sessionDuration">;
 }
 
 export interface SessionGoalTimerProps {
   startTime: string;
   maxTimeSeconds: number;
+  translations?: Pick<SimulationTranslations, "sessionTimer" | "timeRemaining" | "min" | "sec">;
 }
 
 export interface RenderControlsParams {
@@ -64,6 +93,7 @@ export interface SimulationPageProps {
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;
   endSessionButtonRef: MutableRefObject<boolean>;
+  translations?: SimulationTranslations;
 }
 
 export interface SimulationControlsProps {
@@ -73,6 +103,10 @@ export interface SimulationControlsProps {
   onEndSessionClick: () => void;
   onMuteClick: () => void;
   onFocusButtonClick: () => void;
+  translations?: Pick<
+    SimulationTranslations,
+    "mute" | "unmute" | "focus" | "focused" | "endSession"
+  >;
 }
 
 export interface CircleConfig {
@@ -91,6 +125,7 @@ export interface BottomSectionProps {
   timeLimit?: number;
   isFocusMode: boolean;
   onFocusButtonClick: () => void;
+  translations?: SimulationTranslations;
 }
 
 export enum ChecklistMode {

@@ -461,6 +461,8 @@
       "reactions_plural": "प्रतिक्रिया",
       "comments": "टिप्पणी",
       "comments_plural": "टिप्पण्या",
+      "edited": "संपादित",
+      "noComments": "अजून कोणत्याही टिप्पण्या नाहीत",
       "relativeTime": {
         "justNow": "अतिशीघ्र",
         "year_one": "1 वर्ष",
@@ -829,6 +831,45 @@
         "primaryButton": "अपलोड रद्द करा",
         "secondaryButton": "अपलोड सुरू ठेवा"
       }
+    }
+  },
+  "simulationPage": {
+    "mute": "म्यूट",
+    "unmute": "अनम्यूट",
+    "focus": "फोकस",
+    "focused": "फोकस्ड",
+    "endSession": "सत्र संपवा",
+    "sessionDuration": "सत्र कालावधी:",
+    "dataSafe": "आपला डेटा सुरक्षित आहे",
+    "waitingForAgent": "एजंट जोडण्यासाठी प्रतीक्षा...",
+    "connectingToSession": "सत्राशी कनेक्ट होत आहे...",
+    "allowMicrophone": "मायक्रोफोनला अनुमती द्या",
+    "microphonePromptBrowser": "सिम्युलेशन सुरू करण्यासाठी, कृपया आपल्या ब्राउझरमधून मायक्रोफोनला अनुमती द्या.",
+    "microphonePrompt": "सिम्युलेशन सुरू करण्यासाठी, कृपया आम्हाला आपला मायक्रोफोन वापरण्याची अनुमती द्या.",
+    "clickToAllow": "मायक्रोफोनला अनुमती देउन सत्रात सामील होण्यासाठी क्लिक करा.",
+    "closePreview": "पूर्वावलोकन बंद करा",
+    "points": "गुण",
+    "sessionTimer": "सत्र टाइमर",
+    "timeRemaining": "उर्वरित वेळ",
+    "sessionChecklist": "सत्र चेकलिस्ट",
+    "progress": "प्रगती",
+    "completed": "पूर्ण",
+    "of": "पैकी",
+    "min": "मिनिटे",
+    "sec": "सेकंद",
+    "warningDialog": {
+      "titleNormal": "सत्र",
+      "titleItalic": "लवकरच संपत आहे",
+      "content": "आपले सत्र 30 सेकंदात संपेल.",
+      "continueSession": "सत्र सुरू ठेवा",
+      "endSession": "सत्र संपवा"
+    },
+    "endDialog": {
+      "titleNormal": "संपवा ",
+      "titleItalic": "सत्र",
+      "content": "तुम्हाला खात्री आहे का की सत्र संपवायचे आहे?",
+      "endSession": "सत्र संपवा",
+      "cancel": "रद्द करा"
     }
   }
 }
