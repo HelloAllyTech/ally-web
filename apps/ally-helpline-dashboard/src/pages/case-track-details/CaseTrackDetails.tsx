@@ -31,7 +31,7 @@ interface CaseTrackDetailsProps {
 }
 
 export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { pathwayId, caseId } = useParams<{ pathwayId?: string; caseId?: string }>();
   const id = type === pageType.CASE ? caseId : pathwayId;
   const navigate = useNavigate();
@@ -45,14 +45,17 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
 
-  const { data: caseData, isLoading: isCaseLoading } = useGetScenarioCaseDetailsQuery(id || "", {
-    skip: type !== pageType.CASE,
-  });
+  const { data: caseData, isLoading: isCaseLoading } = useGetScenarioCaseDetailsQuery(
+    { caseId: id || "", languageCode: i18n.language },
+    {
+      skip: type !== pageType.CASE,
+    },
+  );
   const [startCaseSimulation] = useStartCaseSimulationMutation();
   const [getScenarioSessionByCaseItem] = useLazyGetScenarioSessionByCaseItemQuery();
 
   const { data: pathwayData, isLoading: isPathwayLoading } = useGetScenarioPathwayDetailsQuery(
-    id || "",
+    { pathwayId: id || "", languageCode: i18n.language },
     { skip: type !== pageType.TRACK },
   );
   const [startSimulationMutation] = useStartPathwaySimulationMutation();

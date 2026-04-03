@@ -77,6 +77,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     showScoreMeter: data?.metadata?.showScoreMeter,
     characterProfileText: data?.metadata?.characterProfileText,
     competency: data?.competency,
+    stateNames: (data?.metadata as any)?.stateNames ?? [],
     knowledgeSources: data?.metadata?.knowledgeSources?.map((source: knowledgeSource) => ({
       id: source.id,
       title: source.title,

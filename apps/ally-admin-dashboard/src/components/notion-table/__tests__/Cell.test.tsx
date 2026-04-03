@@ -40,6 +40,16 @@ vi.mock("@components", () => ({
       )}
     </div>
   ),
+  HelperTag: ({ tags, updateTags, disabled }: any) => (
+    <div data-testid="helper-tag">
+      <input
+        data-testid="helper-tag-input"
+        type="checkbox"
+        disabled={disabled}
+        onChange={() => updateTags?.([...tags, { id: "new", name: "new" }])}
+      />
+    </div>
+  ),
   // Export cellTypes to prevent other tests from failing
   cellTypes: {
     editableText: "editableText",
@@ -122,6 +132,17 @@ vi.mock("@components/notion-table", () => ({
           </option>
         ))}
       </select>
+    </div>
+  ),
+  TextareaWithTriggerDropdown: ({ value, onChange, disabled, placeholder }: any) => (
+    <div data-testid="textarea-trigger-dropdown">
+      <textarea
+        data-testid="textarea-trigger-field"
+        value={value || ""}
+        onChange={event => onChange(event.target.value)}
+        disabled={disabled}
+        placeholder={placeholder}
+      />
     </div>
   ),
 }));
@@ -707,6 +728,38 @@ describe("Cell", () => {
       render(<Cell {...defaultProps} column={minimalColumn} />);
 
       expect(screen.getByText("Test value")).toBeInTheDocument();
+    });
+  });
+
+  describe("TextAreaWithDropdown and HelperTag", () => {
+    it("renders TextareaWithTriggerDropdown with correct placeholder and disabled state", () => {
+      const column = {
+        dataType: "textAreaWithDropdown",
+        id: "test-column",
+        placeholder: "Default Placeholder",
+      };
+      const value = {
+        value: "Test description",
+        disabled: true,
+        placeholder: "Custom Placeholder",
+      };
+
+      render(<Cell {...defaultProps} value={value} column={column as any} />);
+
+      const textarea = screen.getByTestId("textarea-trigger-field");
+      expect(textarea).toHaveValue("Test description");
+      expect(textarea).toBeDisabled();
+      expect(textarea).toHaveAttribute("placeholder", "Custom Placeholder");
+    });
+
+    it("renders HelperTag with correct disabled state", () => {
+      const column = { dataType: "dropdownTags", id: "test-column" };
+      const value = { value: [], disabled: true };
+
+      render(<Cell {...defaultProps} value={value} column={column as any} />);
+
+      const helperTagInput = screen.getByTestId("helper-tag-input");
+      expect(helperTagInput).toBeDisabled();
     });
   });
 });

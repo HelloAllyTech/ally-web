@@ -12,14 +12,15 @@ import { useMicrophoneMode, useCloudTelephonyMode } from "./hooks";
 export const AudioCall: FunctionComponent = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
-
   const isMicrophoneMode = mode === "microphone";
+  const isDictationMode = mode === "dictation";
+  const isAudioWebMode = isMicrophoneMode || isDictationMode;
 
   const microphoneHook = useMicrophoneMode();
   const cloudTelephonyHook = useCloudTelephonyMode();
 
   // Select the appropriate hook based on mode
-  const selectedHook = isMicrophoneMode ? microphoneHook : cloudTelephonyHook;
+  const selectedHook = isAudioWebMode ? microphoneHook : cloudTelephonyHook;
 
   const {
     activeChat,
@@ -34,35 +35,35 @@ export const AudioCall: FunctionComponent = () => {
   } = selectedHook;
 
   // Microphone-specific state (only available in microphone mode)
-  const mediaRecorder = isMicrophoneMode ? microphoneHook.mediaRecorder : null;
-  const isMuted = isMicrophoneMode ? microphoneHook.isMuted : false;
-  const setIsMuted = isMicrophoneMode ? microphoneHook.setIsMuted : undefined;
-  const socketDisconnectionReason = isMicrophoneMode
+  const mediaRecorder = isAudioWebMode ? microphoneHook.mediaRecorder : null;
+  const isMuted = isAudioWebMode ? microphoneHook.isMuted : false;
+  const setIsMuted = isAudioWebMode ? microphoneHook.setIsMuted : undefined;
+  const socketDisconnectionReason = isAudioWebMode
     ? microphoneHook.socketDisconnectionReason
     : undefined;
-  const isEndCallDialogOpen = isMicrophoneMode ? microphoneHook.isEndCallDialogOpen : false;
-  const setIsEndCallDialogOpen = isMicrophoneMode
-    ? microphoneHook.setIsEndCallDialogOpen
-    : undefined;
-  const confirmEndSession = isMicrophoneMode ? microphoneHook.confirmEndSession : undefined;
-  const isEndSessionDisabled = isMicrophoneMode ? microphoneHook.isEndSessionDisabled : false;
-  const isPauseTranscriptionDisabled = isMicrophoneMode
+  const isEndCallDialogOpen = isAudioWebMode ? microphoneHook.isEndCallDialogOpen : false;
+  const setIsEndCallDialogOpen = isAudioWebMode ? microphoneHook.setIsEndCallDialogOpen : undefined;
+  const confirmEndSession = isAudioWebMode ? microphoneHook.confirmEndSession : undefined;
+  const isEndSessionDisabled = isAudioWebMode ? microphoneHook.isEndSessionDisabled : false;
+  const isPauseTranscriptionDisabled = isAudioWebMode
     ? microphoneHook.isPauseTranscriptionDisabled
     : true;
-  const isSocketDisconnected = isMicrophoneMode ? microphoneHook.isSocketDisconnected : false;
-  const availableChatTypes = isMicrophoneMode ? microphoneHook.availableChatTypes : undefined;
-  const shouldShowCallInterface = isMicrophoneMode
+  const isSocketDisconnected = isAudioWebMode ? microphoneHook.isSocketDisconnected : false;
+  const availableChatTypes = isAudioWebMode ? microphoneHook.availableChatTypes : undefined;
+  const shouldShowCallInterface = isAudioWebMode
     ? (activeChat?.chatId && activeChat?.provider === CallProvider.MICROPHONE) ||
       (Array.isArray(activeChat) &&
         activeChat.length === 0 &&
-        availableChatTypes?.includes(CallType.MICROPHONE_CHAT))
+        (isDictationMode
+          ? availableChatTypes?.includes(CallType.DICTATION_MODE)
+          : availableChatTypes?.includes(CallType.MICROPHONE_CHAT)))
     : !isLoading &&
       activeChat?.chatId &&
       activeChat?.provider !== CallProvider.MICROPHONE &&
       !(Array.isArray(activeChat) && activeChat.length === 0);
 
   const getFallbackUI = () => {
-    if (isMicrophoneMode) {
+    if (isAudioWebMode) {
       // Fallback shown when user starts microphone mode but there is an ongoing call in other provider
       if (!isLoading && activeChat?.chatId && activeChat.provider !== CallProvider.MICROPHONE) {
         return (
@@ -75,16 +76,16 @@ export const AudioCall: FunctionComponent = () => {
         );
       }
 
-      if (
-        !isLoading &&
-        !activeChat?.chatId &&
-        !availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
-      ) {
+      const hasPermission = isDictationMode
+        ? availableChatTypes?.includes(CallType.DICTATION_MODE)
+        : availableChatTypes?.includes(CallType.MICROPHONE_CHAT);
+
+      if (!isLoading && !activeChat?.chatId && !hasPermission) {
         return (
           <FallbackUI
             icon={<NoResults />}
-            mainMessage="Microphone mode is not available"
-            description="You don't have permission to access microphone mode"
+            mainMessage={`${isDictationMode ? "Dictation" : "Microphone"} mode is not available`}
+            description={`You don't have permission to access ${isDictationMode ? "dictation" : "microphone"} mode`}
             theme="dark"
           />
         );
@@ -112,14 +113,18 @@ export const AudioCall: FunctionComponent = () => {
   };
 
   const onPauseTranscriptionClick = () => {
-    if (isMicrophoneMode) {
-      setIsMuted(previousMuted => !previousMuted);
+    if (isAudioWebMode) {
+      if (setIsMuted) {
+        setIsMuted(previousMuted => !previousMuted);
+      }
     }
   };
 
   const onEndSessionClick = () => {
-    if (isMicrophoneMode) {
-      setIsEndCallDialogOpen(true);
+    if (isAudioWebMode) {
+      if (setIsEndCallDialogOpen) {
+        setIsEndCallDialogOpen(true);
+      }
     }
   };
 
@@ -135,12 +140,12 @@ export const AudioCall: FunctionComponent = () => {
               isUserJoined={isUserJoined}
               socketDisconnectionReason={socketDisconnectionReason}
               mediaRecorder={mediaRecorder}
-              isMicrophoneMode={isMicrophoneMode}
-              isExotelMode={!isMicrophoneMode}
+              isMicrophoneMode={isAudioWebMode}
+              isExotelMode={!isAudioWebMode}
             />
 
             <CallControls
-              isFocusMode={isFocusMode}
+              isFocusMode={isDictationMode ? false : isFocusMode}
               isPaused={isMuted}
               isEndSessionDisabled={isEndSessionDisabled}
               isFocusButtonDisabled={isFocusButtonDisabled}
@@ -148,12 +153,12 @@ export const AudioCall: FunctionComponent = () => {
               onEndSessionClick={onEndSessionClick}
               onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
               onPauseTranscriptionClick={onPauseTranscriptionClick}
-              showEndSession={isMicrophoneMode}
-              showFocusButton={true}
-              showPauseTranscription={isMicrophoneMode}
+              showEndSession={isAudioWebMode}
+              showFocusButton={!isDictationMode}
+              showPauseTranscription={isAudioWebMode}
             />
           </div>
-          {isMicrophoneMode && (
+          {isAudioWebMode && setIsEndCallDialogOpen && confirmEndSession && (
             <ConfirmationDialog
               title={{ normal: "End ", italic: "Session" }}
               isOpen={isEndCallDialogOpen}
@@ -165,9 +170,9 @@ export const AudioCall: FunctionComponent = () => {
               icon={EndSessionIllustration}
             />
           )}
-          {nudgeStatus && (!isMicrophoneMode || !socketDisconnectionReason) && (
+          {nudgeStatus && (!isAudioWebMode || !socketDisconnectionReason) && !isDictationMode && (
             <CallSidebar
-              showSidebar={isMicrophoneMode ? isUserJoined && !isSocketDisconnected : isUserJoined}
+              showSidebar={isAudioWebMode ? isUserJoined && !isSocketDisconnected : isUserJoined}
               isFocusMode={isFocusMode}
               nudges={nudges}
               onClose={() => setIsFocusMode(true)}
