@@ -50,6 +50,7 @@ vi.mock("@api", () => ({
 vi.mock("@hooks", () => ({
   useLiveKitRoom: () => ({
     room: mockRoom,
+    roomData: {},
     roomStatus: mockRoomStatus,
     error: mockError,
     startTime: mockStartTime,

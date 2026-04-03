@@ -34,7 +34,7 @@ export const ROUTES = {
   SCENARIO: "/scenario/:scenarioId",
   PATHWAY: "/pathway/:pathwayId",
   CASE: "/case/:caseId",
-  SIMULATION: "/simulation/:id",
+  SIMULATION: "/simulation/:id/:scenarioTitle",
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
   COMMUNITY_LEADERBOARD: "/community",
