@@ -14,7 +14,7 @@ import { RoomStatus } from "@types";
 
 export const Simulation = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id, scenarioTitle } = useParams();
   const { t } = useTranslation();
   const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
 
@@ -56,6 +56,10 @@ export const Simulation = () => {
     handleRoomDisconnected,
     endSessionButtonRef,
   );
+
+  if (roomData) {
+    roomData["title"] = scenarioTitle;
+  }
 
   const onEndSimulation = async () => {
     try {
