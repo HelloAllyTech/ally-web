@@ -274,13 +274,13 @@ describe("SummaryLoading", () => {
   it("should render notes section", () => {
     renderComponent();
     expect(screen.getByTestId("notes-icon")).toBeInTheDocument();
-    expect(screen.getByText("Add Notes(Optional)")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Jot down your thoughts")).toBeInTheDocument();
+    expect(screen.getByText("Add Notes (optional)")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("write down your thoughts")).toBeInTheDocument();
   });
 
   it("should call onNotesChange when notes textarea value changes", () => {
     renderComponent({ onNotesChange: mockOnNotesChange });
-    const textarea = screen.getByPlaceholderText("Jot down your thoughts");
+    const textarea = screen.getByPlaceholderText("write down your thoughts");
     fireEvent.change(textarea, { target: { value: "Test notes" } });
     expect(mockOnNotesChange).toHaveBeenCalledWith("Test notes");
   });
@@ -290,7 +290,7 @@ describe("SummaryLoading", () => {
       permissions: [],
     });
     renderComponent();
-    const textarea = screen.getByPlaceholderText("Jot down your thoughts");
+    const textarea = screen.getByPlaceholderText("write down your thoughts");
     expect(textarea).toBeDisabled();
   });
 
@@ -308,7 +308,7 @@ describe("SummaryLoading", () => {
 
   it("should display saved notes value in textarea", () => {
     renderComponent({ notes: "Existing notes" });
-    const textarea = screen.getByPlaceholderText("Jot down your thoughts");
+    const textarea = screen.getByPlaceholderText("write down your thoughts");
     expect(textarea).toHaveValue("Existing notes");
   });
 
@@ -318,7 +318,7 @@ describe("SummaryLoading", () => {
     expect(tooltip).toBeInTheDocument();
     expect(tooltip).toHaveAttribute(
       "data-title",
-      "Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated",
+      "Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
     );
   });
 
