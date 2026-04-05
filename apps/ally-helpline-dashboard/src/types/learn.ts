@@ -108,12 +108,14 @@ export interface AdminSimulationLog extends SimulationLog {
 export interface GetScenarioInput {
   scenarioId: number;
   isPrivate: boolean;
+  languageCode?: string;
 }
 
 export interface StartSimulationInput {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
   caseSessionItemId?: string;
+  languageCode?: string;
 }
 
 export interface StartSimulationResponse {
@@ -188,7 +190,8 @@ export interface SimulationSummary {
     callDuration: number;
     summary: {
       feedback: {
-        improvements: string[];
+        improvements?: string[];
+        areasOfGrowth?: { improvement: string; recommendation: string }[];
         positives: string[];
       };
       errorMessage?: string;
@@ -430,4 +433,8 @@ export interface GetChatHistoryResponse {
   citations: Citation[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PresignedUrlResponse {
+  presignedUrl: string;
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared/index";
-import { Trash } from "@assets";
+import { PauseIcon, PlayIcon, Trash } from "@assets";
 import { EmojiPickerComponent, TimeInput, TagList, HelperTag } from "@components";
 import {
   EditableTextPopup,
@@ -28,13 +28,15 @@ import { cellTypes } from "./utils";
 export const Cell = ({
   value: initialValue,
   rowIndex: index,
-  column: { dataType, options, minWidth, width, id, placeholder },
+  column: { dataType, options, minWidth, width, id, placeholder, maxLength },
   onCellChange,
   row,
 }) => {
   // Extract value and disabled from the cell data structure
   const cellValue = initialValue?.value !== undefined ? initialValue.value : initialValue;
   const isDisabled = initialValue?.disabled !== undefined ? initialValue.disabled : false;
+  const cellPlaceholder =
+    initialValue?.placeholder !== undefined ? initialValue.placeholder : placeholder;
   const existingBehaviours = row?.behaviors?.value;
   const [value, setValue] = useState({ value: cellValue, update: false });
 
@@ -162,7 +164,15 @@ export const Cell = ({
       );
       break;
     case cellTypes.image:
-      element = <CustomImage src={value.value} alt="User badge" width={100} height={100} />;
+      element = (
+        <CustomImage
+          src={value.value}
+          alt="User badge"
+          width={100}
+          height={100}
+          className="rounded-lg"
+        />
+      );
       break;
     case cellTypes.editableText:
       element = (
@@ -171,8 +181,9 @@ export const Cell = ({
           width={width}
           minWidth={minWidth}
           onChange={updateCellValue}
-          placeholder={placeholder}
+          placeholder={cellPlaceholder}
           disabled={isDisabled}
+          maxLength={maxLength}
         />
       );
       break;
@@ -259,7 +270,7 @@ export const Cell = ({
         <TextareaWithTriggerDropdown
           value={value.value}
           onChange={updateCellValue}
-          placeholder="Add Instruction"
+          placeholder={cellPlaceholder}
           disabled={isDisabled}
         />
       );
@@ -268,7 +279,13 @@ export const Cell = ({
       element = <TagList tags={value.value} />;
       break;
     case cellTypes.dropdownTags:
-      element = <HelperTag tags={existingBehaviours ?? []} updateTags={updateCellValue} />;
+      element = (
+        <HelperTag
+          tags={existingBehaviours ?? []}
+          updateTags={updateCellValue}
+          disabled={isDisabled}
+        />
+      );
       break;
     case cellTypes.status:
       element = (
@@ -311,6 +328,40 @@ export const Cell = ({
         <span />
       );
       break;
+    case cellTypes.previewAudio: {
+      const previewValue = initialValue ?? {};
+      const isPreviewLoading = Boolean(previewValue.isLoading);
+      const isPreviewPlaying = Boolean(previewValue.isPlaying);
+      const isPreviewDisabled = Boolean(previewValue.disabled);
+
+      element = (
+        <div className="flex items-center justify-center w-full">
+          <button
+            type="button"
+            aria-label={isPreviewPlaying ? "Pause voice preview" : "Play voice preview"}
+            className="flex items-center justify-center w-8 h-8 rounded-full border border-border-light hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isPreviewDisabled || (isPreviewLoading && !isPreviewPlaying)}
+            onClick={e => {
+              e.stopPropagation();
+              if (isPreviewPlaying) {
+                previewValue.onPause?.();
+                return;
+              }
+              previewValue.onPlay?.();
+            }}
+          >
+            {isPreviewLoading ? (
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-typography-800 rounded-full animate-spin" />
+            ) : isPreviewPlaying ? (
+              <PauseIcon className="w-4 h-4" />
+            ) : (
+              <PlayIcon className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      );
+      break;
+    }
     default:
       element = <span />;
       break;

@@ -145,6 +145,21 @@ export const CharacterLibrary: React.FC = () => {
         disabled: true,
         rowId: character.id,
       },
+      coverImageUrl: {
+        value: character.coverImageUrl || "",
+        disabled: true,
+        rowId: character.id,
+      },
+      coverVideoUrl: {
+        value: character.coverVideoUrl || "",
+        disabled: true,
+        rowId: character.id,
+      },
+      characterProfileText: {
+        value: character.characterProfileText || "",
+        disabled: true,
+        rowId: character.id,
+      },
     };
   }, []);
 
@@ -179,6 +194,17 @@ export const CharacterLibrary: React.FC = () => {
     const selectedCharacter = characters.find(char => char.id === rowId);
 
     if (value !== undefined && selectedCharacter && columnId) {
+      // Prevent clearing mandatory fields
+      if (
+        ["name", "age", "gender", "profession", "currentLocation"].includes(columnId) &&
+        (value === "" || value === null || value === undefined)
+      ) {
+        toast.error(
+          `${columnId.charAt(0).toUpperCase() + columnId.slice(1).replace(/([A-Z])/g, " $1")} is required`,
+        );
+        return;
+      }
+
       try {
         // Update the character with the new value
         const updatedCharacterData = { ...selectedCharacter, [columnId]: value };

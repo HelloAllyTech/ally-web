@@ -272,6 +272,28 @@ describe("NotionTable", () => {
       expect(screen.getByText("john@example.com")).toBeInTheDocument();
       expect(screen.getByText("Admin")).toBeInTheDocument();
     });
+
+    it("hides selection checkbox for rows with hideSelection: true", () => {
+      const dataWithHideSelection = [
+        { name: "John Doe", email: "john@example.com", role: "Admin" },
+        { name: "Special Row", email: "-", role: "-", hideSelection: { value: true } },
+      ];
+
+      const propsWithHideSelection: NotionTableProps = {
+        tableData: {
+          columns: mockColumns,
+          data: dataWithHideSelection,
+        },
+      };
+
+      render(<NotionTable {...propsWithHideSelection} />);
+
+      const checkboxes = screen.getAllByRole("checkbox");
+      // Header checkbox (1) + John Doe row checkbox (1) = 2
+      // Special Row should not have a checkbox
+      expect(checkboxes.length).toBe(2);
+      expect(screen.getByText("Special Row")).toBeInTheDocument();
+    });
   });
 
   describe("Row Change Functionality", () => {

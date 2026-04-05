@@ -35,8 +35,11 @@ import {
   GenerateReportResponse,
   GetImageLibraryQueryParams,
   GetImageLibraryResponse,
+  GetFillerTagsQueryParams,
   GetHelperTagsQueryParams,
   HelperTagInput,
+  FillerTagListResponse,
+  CreateFillerTagResponse,
   CompetenciesResponse,
   Competency,
   CreateCompetencyRequest,
@@ -604,6 +607,24 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.HELPER_TAGS],
     }),
 
+    getFillerTags: builder.query<FillerTagListResponse, GetFillerTagsQueryParams>({
+      query: (params: GetFillerTagsQueryParams) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.FILLER_TAGS,
+        method: HttpMethod.GET,
+        params,
+      }),
+      providesTags: [TAG_TYPES.FILLER_TAGS],
+    }),
+
+    createFillerTag: builder.mutation<CreateFillerTagResponse, { name: string }>({
+      query: ({ name }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.FILLER_TAGS,
+        method: HttpMethod.POST,
+        body: { name },
+      }),
+      invalidatesTags: [TAG_TYPES.FILLER_TAGS],
+    }),
+
     getImageLibrary: builder.query<GetImageLibraryResponse, GetImageLibraryQueryParams>({
       query: (params: GetImageLibraryQueryParams) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_COVER_IMAGE_LIBRARY,
@@ -792,6 +813,8 @@ export const {
   useDeleteCharacterMutation,
   useGetHelperTagsQuery,
   useCreateHelperTagMutation,
+  useGetFillerTagsQuery,
+  useCreateFillerTagMutation,
   useGetImageLibraryQuery,
   useGetReportsQuery,
   useLazyGetReportsQuery,

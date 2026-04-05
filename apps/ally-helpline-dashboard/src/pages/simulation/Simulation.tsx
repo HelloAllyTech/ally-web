@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { getSimulationEvents, logger, SimulationPage } from "@ally-ui-mono/ui-shared";
+import type { SimulationTranslations } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation } from "@api";
 import { SimulationWarningIllustration } from "@assets";
 import { ButtonVariant, ConfirmationDialog } from "@components";
@@ -12,8 +14,35 @@ import { RoomStatus } from "@types";
 
 export const Simulation = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id, scenarioTitle } = useParams();
+  const { t } = useTranslation();
   const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
+
+  const simulationTranslations: SimulationTranslations = {
+    mute: t("simulationPage.mute"),
+    unmute: t("simulationPage.unmute"),
+    focus: t("simulationPage.focus"),
+    focused: t("simulationPage.focused"),
+    endSession: t("simulationPage.endSession"),
+    sessionDuration: t("simulationPage.sessionDuration"),
+    dataSafe: t("simulationPage.dataSafe"),
+    waitingForAgent: t("simulationPage.waitingForAgent"),
+    connectingToSession: t("simulationPage.connectingToSession"),
+    allowMicrophone: t("simulationPage.allowMicrophone"),
+    microphonePromptBrowser: t("simulationPage.microphonePromptBrowser"),
+    microphonePrompt: t("simulationPage.microphonePrompt"),
+    clickToAllow: t("simulationPage.clickToAllow"),
+    closePreview: t("simulationPage.closePreview"),
+    points: t("simulationPage.points"),
+    sessionTimer: t("simulationPage.sessionTimer"),
+    timeRemaining: t("simulationPage.timeRemaining"),
+    sessionChecklist: t("simulationPage.sessionChecklist"),
+    progress: t("simulationPage.progress"),
+    completed: t("simulationPage.completed"),
+    of: t("simulationPage.of"),
+    min: t("simulationPage.min"),
+    sec: t("simulationPage.sec"),
+  };
 
   const [endSimulation] = useEndSimulationMutation();
 
@@ -27,6 +56,10 @@ export const Simulation = () => {
     handleRoomDisconnected,
     endSessionButtonRef,
   );
+
+  if (roomData) {
+    roomData["title"] = scenarioTitle;
+  }
 
   const onEndSimulation = async () => {
     try {
@@ -54,13 +87,16 @@ export const Simulation = () => {
     <ConfirmationDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={{ normal: "Session", italic: "Ending Soon" }}
-      content="Your session will end in 30 seconds."
-      buttonText="Continue Session"
+      title={{
+        normal: t("simulationPage.warningDialog.titleNormal"),
+        italic: t("simulationPage.warningDialog.titleItalic"),
+      }}
+      content={t("simulationPage.warningDialog.content")}
+      buttonText={t("simulationPage.warningDialog.continueSession")}
       buttonVariant={ButtonVariant.PRIMARY}
       icon={SimulationWarningIllustration}
       onButtonClick={onContinue}
-      secondaryButtonText="End Session"
+      secondaryButtonText={t("simulationPage.warningDialog.endSession")}
       onSecondaryButtonClick={onEnd}
     />
   );
@@ -82,17 +118,21 @@ export const Simulation = () => {
         onEndSimulation={onEndSimulation}
         renderWarningDialog={renderWarningDialog}
         endSessionButtonRef={endSessionButtonRef}
+        translations={simulationTranslations}
       />
       <ConfirmationDialog
         isOpen={isBackConfirmOpen}
         onClose={() => setIsBackConfirmOpen(false)}
-        title={{ normal: "End ", italic: "Session" }}
-        content="Are you sure you want to end the session?"
-        buttonText="End Session"
+        title={{
+          normal: t("simulationPage.endDialog.titleNormal"),
+          italic: t("simulationPage.endDialog.titleItalic"),
+        }}
+        content={t("simulationPage.endDialog.content")}
+        buttonText={t("simulationPage.endDialog.endSession")}
         buttonVariant={ButtonVariant.PRIMARY}
         icon={SimulationWarningIllustration}
         onButtonClick={onEndSimulation}
-        secondaryButtonText="Cancel"
+        secondaryButtonText={t("simulationPage.endDialog.cancel")}
         onSecondaryButtonClick={() => setIsBackConfirmOpen(false)}
       />
     </>

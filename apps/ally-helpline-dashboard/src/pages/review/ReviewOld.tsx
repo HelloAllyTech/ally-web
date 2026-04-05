@@ -79,7 +79,7 @@ const EmptyState: FC<EmptyStateProps> = ({ onRefresh }) => {
 export const Review: FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const filterOptions = FILTER_OPTIONS(t);
 
@@ -105,6 +105,11 @@ export const Review: FC = () => {
     }
   }, [filterFromUrl, isValidFilter, activeFilter]);
 
+  useEffect(() => {
+    setFeedData([]);
+    setOffset(0);
+  }, [i18n.language]);
+
   const handleFilterChange = (newFilter: string) => {
     if (newFilter !== activeFilter) {
       setFeedData([]);
@@ -123,6 +128,7 @@ export const Review: FC = () => {
     limit: PAGE_SIZE,
     offset,
     sortBy: activeFilter,
+    languageCode: i18n.language,
   });
 
   // Append new data when API responds

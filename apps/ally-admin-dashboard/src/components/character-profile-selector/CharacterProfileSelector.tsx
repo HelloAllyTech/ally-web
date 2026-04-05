@@ -32,6 +32,9 @@ const formFieldIds = {
   CURRENT_LOCATION: "currentLocation",
   GENDER_IDENTITY: "genderIdentity",
   SEXUAL_ORIENTATION: "sexualOrientation",
+  COVER_IMAGE_URL: "coverImageUrl",
+  COVER_VIDEO_URL: "coverVideoUrl",
+  CHARACTER_PROFILE_TEXT: "characterProfileText",
 };
 
 const formFieldNames = {
@@ -42,6 +45,9 @@ const formFieldNames = {
   CURRENT_LOCATION: "Current location",
   GENDER_IDENTITY: "Gender identity",
   SEXUAL_ORIENTATION: "Sexual orientation",
+  COVER_IMAGE_URL: "Cover Image",
+  COVER_VIDEO_URL: "Cover Video",
+  CHARACTER_PROFILE_TEXT: "Character Backstory",
 };
 
 export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> = ({
@@ -86,6 +92,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     setSearchQuery("");
   });
 
+  // Media fields are intentionally excluded from character comparison:
+  // they can differ between the simulation and character (simulation-level overrides)
+  const mediaFieldIds = [formFieldIds.COVER_IMAGE_URL, formFieldIds.COVER_VIDEO_URL];
+  const comparableFieldIds = Object.values(formFieldIds).filter(
+    fieldId => !mediaFieldIds.includes(fieldId),
+  );
+
   // Handle character selection
   const handleCharacterSelect = useCallback(
     (characterId: string, characterData?: CharacterData) => {
@@ -102,6 +115,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
         // Prefill form fields using existing field IDs
         Object.values(formFieldIds).forEach(fieldId => {
           const value = characterData[fieldId as keyof CharacterData];
+
+          // For media fields, only update if the character has a non-empty value.
+          // Otherwise keep the simulation's existing media as a fallback.
+          if (mediaFieldIds.includes(fieldId) && !value) {
+            return;
+          }
+
           // Ensure we never set null or undefined - always use empty string as fallback
           setValue(fieldId, value ?? "", {
             shouldValidate: true,
@@ -128,12 +148,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
   const currentName = watch(formFieldIds.NAME);
   const previousNameRef = useRef(currentName);
 
-  // Watch fields and switch to custom if modified manually
+  // Watch fields and switch to custom if modified manually.
+  // Media fields are excluded because they may intentionally differ (simulation-level overrides).
   useEffect(() => {
     if (selectedCharacterId && selectedCharacterId !== CUSTOM_CHARACTER_ID && selectedCharacter) {
       const currentValues = getValues();
-      const hasChanged = Object.values(formFieldIds).some(fieldId => {
-        const formValue = currentValues[fieldId];
+      const hasChanged = comparableFieldIds.some(fieldId => {
+        const formValue = currentValues[fieldId] ?? "";
         const characterValue = selectedCharacter[fieldId as keyof CharacterData] ?? "";
         return String(formValue) !== String(characterValue);
       });
@@ -145,16 +166,17 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     }
   }, [watchedValuesString, selectedCharacterId, selectedCharacter, getValues, id, setValue]);
 
-  // Auto-select character if name perfectly matches, or if all fields perfectly match
+  // Auto-select character if name perfectly matches, or if all comparable fields perfectly match.
+  // Media fields are excluded from comparison since they may differ at the simulation level.
   useEffect(() => {
     if (selectedCharacterId === CUSTOM_CHARACTER_ID || !selectedCharacterId) {
       if (charactersData?.characters) {
         const currentValues = getValues();
 
-        // Strategy 1: All fields match an existing character perfectly -> revert to that character
+        // Strategy 1: All comparable (non-media) fields match an existing character -> revert to that character
         const perfectMatch = charactersData.characters.find(char => {
-          return Object.values(formFieldIds).every(fieldId => {
-            const formValue = currentValues[fieldId];
+          return comparableFieldIds.every(fieldId => {
+            const formValue = currentValues[fieldId] ?? "";
             const characterValue = char[fieldId as keyof CharacterData] ?? "";
             return String(formValue) === String(characterValue);
           });
@@ -164,6 +186,24 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
           handleCharacterSelect(perfectMatch.id, perfectMatch);
           previousNameRef.current = currentName; // Sync ref
           return;
+        }
+
+        // If there's no selected character (initial load or before user selection)
+        if (!selectedCharacterId) {
+          const hasAnyValue = comparableFieldIds.some(fieldId => {
+            const val = currentValues[fieldId];
+            return val !== "" && val !== null && val !== undefined;
+          });
+
+          if (hasAnyValue) {
+            // We have form data but it didn't perfectly match any character.
+            // This means an existing simulation with customized character data was loaded,
+            // or the user started typing manually. Set dropdown to Custom without erasing fields.
+            setSelectedCharacterId(CUSTOM_CHARACTER_ID);
+            setValue(id, CUSTOM_CHARACTER_ID);
+          }
+          previousNameRef.current = currentName;
+          return; // Skip Strategy 2 on initial programmatic load to avoid overwriting simulation data
         }
 
         // Strategy 2: If the name just changed and it matches an existing character's name
@@ -370,13 +410,14 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
               />
             </div>
             <div>
-              <label className="text-typography-900 text-base font-weight-400 mb-2 block">
-                {formFieldNames.PROFESSION}
+              <label className="text-typography-900 text-base font-weight-400 mb-2 flex items-center gap-1">
+                {formFieldNames.PROFESSION} <span className="text-destructive-500">*</span>
               </label>
               <Controller
                 name={formFieldIds.PROFESSION}
                 control={formMethods.control}
                 defaultValue=""
+                rules={{ required: "Profession is required" }}
                 render={({ field }) => (
                   <input
                     type="text"
@@ -390,6 +431,11 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                   />
                 )}
               />
+              {errors[formFieldIds.PROFESSION]?.message && (
+                <p className="text-destructive-500 text-sm mt-1">
+                  {String(errors[formFieldIds.PROFESSION].message)}
+                </p>
+              )}
             </div>
           </div>
 

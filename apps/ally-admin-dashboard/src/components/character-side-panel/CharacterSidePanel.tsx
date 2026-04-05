@@ -4,13 +4,14 @@ import { toast } from "sonner";
 
 import { useCreateCharacterMutation, useUpdateCharacterMutation } from "@api";
 import { DoubleArrowRight, Trash } from "@assets";
-import { ActionConfirmationPopup, Button, CustomDropdownField } from "@components";
+import { ActionConfirmationPopup, Button, CustomDropdownField, FileUpload } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   en,
   GENDER_OPTIONS,
   GENDER_IDENTITY_OPTIONS,
   SEXUAL_ORIENTATION_OPTIONS,
+  FILE_TYPE,
 } from "@constants";
 import { CharacterData } from "@types";
 
@@ -30,12 +31,12 @@ interface FieldProps {
 }
 
 const Field: React.FC<FieldProps> = ({ label, children, required = false }) => (
-  <div className="flex flex-row items-center gap-4 mb-6">
-    <label className="text-base font-regular text-typography-800 w-[40%] flex-shrink-0">
+  <div className="flex flex-row items-start gap-4 mb-6">
+    <label className="text-base font-regular text-typography-800 w-[40%] flex-shrink-0 mt-2">
       {label}
       {required && <span className="text-red-500 ml-1">*</span>}
     </label>
-    <div className="flex-1">{children}</div>
+    <div className="flex-1 w-full">{children}</div>
   </div>
 );
 
@@ -57,12 +58,11 @@ const PanelHeader: React.FC<{
       </span>
     </button>
     {hasCharacter && !isNewCharacter && onDelete && (
-      <button
-        onClick={() => onDelete(characterId)}
-        className="flex items-center gap-2 text-typography-900 hover:text-red-600"
-      >
+      <button onClick={() => onDelete(characterId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
-        <span className="text-base font-tertiary font-medium">{en.common.delete}</span>
+        <span className="text-base font-tertiary font-medium text-typography-900">
+          {en.simulation.deleteCharacter}
+        </span>
       </button>
     )}
   </div>
@@ -85,6 +85,9 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       currentLocation: "",
       genderIdentity: "",
       sexualOrientation: "",
+      coverImageUrl: "",
+      coverVideoUrl: "",
+      characterProfileText: "",
     },
   );
   const [initialData, setInitialData] = useState<CharacterData>(
@@ -96,6 +99,9 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       currentLocation: "",
       genderIdentity: "",
       sexualOrientation: "",
+      coverImageUrl: "",
+      coverVideoUrl: "",
+      characterProfileText: "",
     },
   );
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -119,6 +125,29 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       }));
     },
     [],
+  );
+
+  const [fileErrors, setFileErrors] = useState<Record<string, any>>({});
+  const formMethodsShim = React.useMemo(
+    () => ({
+      watch: (id: string) => formData[id as keyof CharacterData],
+      setValue: (id: string, value: any) => handleFieldChange(id as keyof CharacterData, value),
+      setError: (id: string, error: any) => setFileErrors(prev => ({ ...prev, [id]: error })),
+      clearErrors: (id: string) =>
+        setFileErrors(prev => {
+          const newE = { ...prev };
+          delete newE[id];
+          return newE;
+        }),
+      formState: { errors: fileErrors },
+      register: (id: string) => ({
+        name: id,
+        onChange: (e: any) => handleFieldChange(id as keyof CharacterData, e.target.value),
+        onBlur: () => {},
+        ref: () => {},
+      }),
+    }),
+    [formData, handleFieldChange, fileErrors],
   );
 
   const handleDelete = useCallback(() => {
@@ -176,6 +205,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       formData.name.trim() !== "" &&
       formData.age !== "" &&
       formData.gender !== "" &&
+      (formData.profession || "").trim() !== "" &&
       formData.currentLocation.trim() !== "" &&
       formData.genderIdentity !== "" &&
       formData.sexualOrientation !== ""
@@ -194,7 +224,10 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       (formData.profession || "") !== (initialData.profession || "") ||
       formData.currentLocation !== initialData.currentLocation ||
       formData.genderIdentity !== initialData.genderIdentity ||
-      formData.sexualOrientation !== initialData.sexualOrientation
+      formData.sexualOrientation !== initialData.sexualOrientation ||
+      (formData.coverImageUrl || "") !== (initialData.coverImageUrl || "") ||
+      (formData.coverVideoUrl || "") !== (initialData.coverVideoUrl || "") ||
+      (formData.characterProfileText || "") !== (initialData.characterProfileText || "")
     );
   };
 
@@ -215,7 +248,7 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
           isNewCharacter={isNewCharacter}
         />
 
-        <div className="flex px-10 pt-6 pb-6 overflow-y-auto h-full custom-scrollbar">
+        <div className="flex-1 px-10 pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
           <div className="space-y-4">
             <Field label="Name" required>
               <input
@@ -251,11 +284,11 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
               />
             </Field>
 
-            <Field label="Profession">
+            <Field label="Profession" required>
               <input
                 type="text"
                 value={formData.profession || ""}
-                onChange={e => handleFieldChange("profession", e.target.value || null)}
+                onChange={e => handleFieldChange("profession", e.target.value)}
                 placeholder="Enter profession"
                 className="w-full px-0 py-2 text-base border-none focus:outline-none"
               />
@@ -300,21 +333,53 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 onHandleSelect={option => handleFieldChange("sexualOrientation", option.value)}
               />
             </Field>
+
+            <Field label="Character Backstory">
+              <textarea
+                value={formData.characterProfileText || ""}
+                onChange={e => handleFieldChange("characterProfileText", e.target.value)}
+                maxLength={2500}
+                placeholder="Enter character backstory"
+                className="w-full px-3 py-2 text-base border border-border-light rounded-md focus:outline-none min-h-[100px] resize-y"
+              />
+            </Field>
+
+            <Field label="Cover Image">
+              <div className="w-full">
+                <FileUpload
+                  id="coverImageUrl"
+                  formMethods={formMethodsShim}
+                  isMandatory={false}
+                  label="Cover Image"
+                  hideHeader={true}
+                  fileType={FILE_TYPE.IMAGE}
+                />
+              </div>
+            </Field>
+
+            <Field label="Cover Video">
+              <div className="w-full">
+                <FileUpload
+                  id="coverVideoUrl"
+                  formMethods={formMethodsShim}
+                  isMandatory={false}
+                  label="Cover Video"
+                  hideHeader={true}
+                  fileType={FILE_TYPE.VIDEO}
+                />
+              </div>
+            </Field>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-4 p-6">
+        <div className="flex items-center justify-center gap-4 p-4 bg-white shrink-0 mt-auto relative z-10 w-full">
           <Button
             variant={ButtonVariant.PRIMARY}
             onClick={handleSave}
             disabled={!isFormValid() || !hasFormChanged() || isCreating || isUpdating}
             className="min-w-[120px]"
           >
-            {isCreating || isUpdating
-              ? "Saving..."
-              : isNewCharacter
-                ? en.common.create
-                : en.common.update}
+            {isCreating || isUpdating ? "Saving..." : en.common.save}
           </Button>
           <Button
             variant={ButtonVariant.SECONDARY}

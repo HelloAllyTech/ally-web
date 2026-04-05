@@ -14,6 +14,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
   isShortSession = false,
   summaryData,
   children,
+  onTabChange,
 }) => {
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
 
@@ -21,7 +22,11 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
     if (tabList?.length) {
       setSelectedTab(tabList[0].id);
     }
-  }, [tabList]);
+  }, []);
+
+  useEffect(() => {
+    onTabChange?.(selectedTab);
+  }, [selectedTab]);
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
@@ -39,8 +44,8 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
         <ShortSessionUI summaryData={summaryData} className="!min-w-[50vw]" />
       ) : (
         <>
-          <div className="w-[50vw] h-full flex flex-col">
-            <div className="w-full border-b border-[#DBDBDB] mb-4">
+          <div className="flex h-full min-h-0 w-[50vw] flex-col">
+            <div className="mb-4 w-full shrink-0 border-b border-[#DBDBDB]">
               <Tabs
                 items={tabList?.map(tab => ({ id: String(tab.id), label: tab.label })) ?? []}
                 activeId={String(selectedTab)}
@@ -49,7 +54,7 @@ const SummarySidebarWrapper: FC<SummarySidebarWrapperProps> = ({
                 showCount={false}
               />
             </div>
-            {getTabContent()}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{getTabContent()}</div>
           </div>
           {children}
         </>

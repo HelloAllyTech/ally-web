@@ -1,3 +1,4 @@
+// TODO: Remove this component once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";

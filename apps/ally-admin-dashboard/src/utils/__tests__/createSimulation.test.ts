@@ -117,10 +117,10 @@ describe("createSimulation utils", () => {
           languageVoices: {
             1: "voice-123",
           },
-          voiceId: "voice-123",
           agentDialogues: ["Sample dialogues"],
           customFields: [],
           optGuardrails: false,
+          currentState: false,
           checklistType: "GUIDED",
           experienceMode: "CHECKLIST",
           maxTimeValue: "00:10:00",
@@ -128,6 +128,7 @@ describe("createSimulation utils", () => {
           stateInstructions: [
             {
               stateId: 1,
+              name: "test name",
               instruction: "test instruction",
               dialogues: ["test dialogue"],
             },
@@ -146,7 +147,9 @@ describe("createSimulation utils", () => {
         coreMemories: "Test memories",
         isGlobal: false,
         isPublic: false,
+        knowledgeSources: undefined,
         agentGoal: "Test goal",
+        allowedFillerWords: undefined,
         behaviorInstructions: [],
         characterProfileText: undefined,
         competency: undefined,
@@ -157,6 +160,8 @@ describe("createSimulation utils", () => {
         lifeHistory: "Test history",
         linguisticStyleSamples: undefined,
         openingStatements: "Hello, how are you?",
+        translationOpeningStatements: {},
+        openingDialoguePrimaryLanguageId: null,
         personality: "Friendly",
         profession: "Engineer",
         sessionBehaviorGuidelines: "Be supportive",
@@ -170,7 +175,6 @@ describe("createSimulation utils", () => {
         languageVoices: {
           1: "voice-123",
         },
-        voiceId: "voice-123",
         difficultyLevel: "medium",
         responseLength: undefined,
         prompt: undefined,
@@ -178,6 +182,7 @@ describe("createSimulation utils", () => {
         agentDialogues: "Sample dialogues",
         customFields: [],
         optGuardrails: false,
+        currentState: false,
         checklistType: "GUIDED",
         experienceMode: "CHECKLIST",
         maxTimeValue: "00:10:00",
@@ -185,11 +190,96 @@ describe("createSimulation utils", () => {
         stateInstructions: [
           {
             stateId: 1,
+            name: "test name",
             instruction: "test instruction",
             dialogues: ["test dialogue"],
           },
         ],
+        stateNames: [],
       });
+    });
+
+    it("should drop state instructions with invalid state ids (e.g. legacy state 4)", () => {
+      const mockResponse: GetSimulationByIdResponse = {
+        id: "sim-legacy",
+        title: "Legacy",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: {
+          stateInstructions: [
+            { stateId: -1, name: "", instruction: "a", dialogues: ["d"] },
+            { stateId: 4, name: "", instruction: "legacy", dialogues: ["x"] },
+          ],
+        },
+        competency: undefined,
+        behaviorInstructions: [
+          {
+            category: "c",
+            behaviors: [],
+            instructions: [],
+            stateInstructions: [
+              { stateId: "1", instruction: "ok" },
+              { stateId: "99", instruction: "bad" },
+            ],
+          },
+        ],
+      } as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.stateInstructions).toEqual([
+        { stateId: -1, name: "", instruction: "a", dialogues: ["d"] },
+      ]);
+      expect(result.behaviorInstructions?.[0]?.stateInstructions).toEqual([
+        { stateId: "1", instruction: "ok" },
+      ]);
+    });
+
+    it("should strip legacy state 4 when backend sends string stateIds", () => {
+      const mockResponse: GetSimulationByIdResponse = {
+        id: "sim-api-shape",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: {},
+        competency: undefined,
+        behaviorInstructions: [
+          {
+            category: "SHOULD_DO" as any,
+            behaviors: [],
+            instructions: [],
+            stateInstructions: [
+              { stateId: "1", instruction: "Say your husband's name as Gautham" },
+              { stateId: "2", instruction: "More reflective but still hesitant" },
+              { stateId: "3", instruction: "Emotionally open and self-aware" },
+              { stateId: "4", instruction: "Emotionally open and constructive" },
+              { stateId: "-1", instruction: "Be rude" },
+            ],
+          },
+        ],
+      } as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+      expect(result.behaviorInstructions?.[0]?.stateInstructions).toEqual([
+        { stateId: "1", instruction: "Say your husband's name as Gautham" },
+        { stateId: "2", instruction: "More reflective but still hesitant" },
+        { stateId: "3", instruction: "Emotionally open and self-aware" },
+        { stateId: "-1", instruction: "Be rude" },
+      ]);
     });
 
     it("should handle missing metadata fields", () => {

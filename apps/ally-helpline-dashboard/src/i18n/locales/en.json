@@ -36,6 +36,12 @@
     "tags": "Tags",
     "cancel": "Cancel",
     "save": "Save",
+    "add": "Add",
+    "share": "Share",
+    "viewMore": "View more",
+    "viewLess": "View less",
+    "scribe": "Scribe",
+    "scenario": "Scenario:",
     "retry": "Retry",
     "uploading": "Uploading...",
     "maxActiveUsers": {
@@ -48,6 +54,9 @@
     "backToLearn": "Back to Learn",
     "errors": {
       "locked": "Upcoming simulation is locked"
+    },
+    "draggableArea": {
+      "text": "Drag & drop or <0>choose</0> a {{extensions}} file under {{size}}"
     }
   },
   "carousel": {
@@ -165,6 +174,7 @@
         "signingIn": "Signing in..."
       },
       "google": {
+        "button": "Continue with Google",
         "error": "Failed to sign in with Google"
       },
       "errors": {
@@ -368,9 +378,13 @@
       "loading": "Loading skills data...",
       "failed": "Failed to load skills data",
       "coverage": "Skill Coverage",
+      "distressAlleviation": "Client Distress Alleviation",
       "emotionalMovement": "Client Emotional Movement",
-      "level": "Level (1-10)",
-      "timeline": "Session Timeline"
+      "level": "Level (-5 to 5)",
+      "timeline": "Session Timeline",
+      "strengths": "Strengths & skills demonstrated",
+      "areasForGrowth": "Areas for growth",
+      "recommended": "RECOMMENDED"
     },
     "tabs": {
       "transcription": "Conversation details",
@@ -380,8 +394,23 @@
       "reflection": "Reflection",
       "deeperReflection": "Deeper Reflection",
       "skills": "Skills",
-      "skillsDemonstrated": "Skills Demonstrated",
+      "skillsDemonstrated": "Skills  Demonstrated",
       "sessionReview": "Session Review"
+    },
+    "simulationSummary": "Simulation Summary",
+    "shortSession": {
+      "title": "Session ended too soon",
+      "description": "We need more interaction data to provide meaningful feedback."
+    },
+    "feedback": {
+      "sessionFeedback": "Session Feedback",
+      "noData": "No data found"
+    },
+    "common": {
+      "tryAnother": "Try another simulation",
+      "details": "Details",
+      "scenario": "Scenario:",
+      "shareForReview": "Share for review"
     }
   },
   "review": {
@@ -413,7 +442,13 @@
       "noCommentsYet": "No comments yet",
       "you": "You",
       "by": "By {{name}}",
-      "dateAndTime": "Date & time"
+      "dateAndTime": "Date & time",
+      "addNote": "Add note",
+      "editNote": "Edit note",
+      "addNotePlaceholder": "Add a note...",
+      "shareModalHeader": "Share this for review",
+      "addCommentPlaceholder": "Add a comment",
+      "commentAction": "Comment"
     },
     "reactionsModal": {
       "title": "Reactions",
@@ -432,6 +467,8 @@
       "reactions_plural": "reactions",
       "comments": "comment",
       "comments_plural": "comments",
+      "edited": "Edited",
+      "noComments": "No comments yet",
       "relativeTime": {
         "justNow": "Just now",
         "year_one": "1 year",
@@ -534,9 +571,10 @@
     }
   },
   "transcription": {
-    "title": "Transcript",
+    "title": "Annotated Transcript",
     "empty": "No transcript available",
     "agentLabel": "AI Agent:",
+    "scribeAgentLabel": "Client:",
     "youLabel": "You",
     "clientLabel": "Client",
     "counsellorLabel": "Counsellor",
@@ -731,14 +769,16 @@
     },
     "dialog": {
       "startSession": {
-        "embedTitle": "Training session starting soon",
-        "embedDesc": "Please prepare your microphone and environment.",
-        "titleNormal": "Start a",
-        "titleItalic": "session",
-        "button": "Start Session",
-        "footer": "You can end the session anytime.",
-        "description1": "Your session will begin shortly.",
-        "description2": "Follow the on‑screen instructions."
+        "embedTitle": "Listen Live",
+        "embedDesc": "Ally will hear audio alongside you",
+        "titleNormal": "Start",
+        "titleItalic": "Session",
+        "button": "Start Session now",
+        "startScribeMode": "Start Scribe Mode",
+        "startDictationMode": "Start Dictation Mode",
+        "footer": "By starting, you confirm everyone being transcribed has given consent.",
+        "description1": "Ally’s mental health AI scribe safely listens, transcribes ",
+        "description2": "and writes session notes for you."
       },
       "delete": {
         "titleNormal": "Delete",
@@ -758,6 +798,8 @@
     },
     "audioUpload": {
       "title": "Upload audio recording",
+      "uploading": "Uploading your audio file",
+      "loadingWaveform": "Loading waveform...",
       "fields": {
         "counsellor": {
           "label": "Counsellor name",
@@ -774,8 +816,70 @@
         "upload": "Upload"
       },
       "errors": {
-        "uploadFailed": "Audio Upload failed!"
+        "uploadFailed": "Audio Upload failed!",
+        "genericError": "Failed to upload audio",
+        "fillFields": "Please fill all the fields and upload a file.",
+        "unsupportedFile": "Selected file type is not supported."
       }
+    },
+    "uploadProgress": {
+      "cancelled": "Upload cancelled",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "clearAll": "Clear all",
+      "noUploads": "No uploads",
+      "inProgress_one": "1 upload in progress",
+      "inProgress_other": "{{count}} uploads in progress",
+      "summaryCancelled_one": "1 upload cancelled",
+      "summaryCancelled_other": "{{count}} uploads cancelled",
+      "completed_one": "1 upload completed",
+      "completed_other": "{{count}} uploads completed",
+      "cancelDialog": {
+        "title": "Cancel",
+        "titleItalic": "upload",
+        "content": "Your upload is not complete. Would you like to cancel the upload?",
+        "primaryButton": "Cancel Upload",
+        "secondaryButton": "Continue Upload"
+      }
+    }
+  },
+  "simulationPage": {
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "focus": "Focus",
+    "focused": "Focused",
+    "endSession": "End session",
+    "sessionDuration": "Session Duration:",
+    "dataSafe": "Your data is safe",
+    "waitingForAgent": "Waiting for agent to join...",
+    "connectingToSession": "Connecting to session...",
+    "allowMicrophone": "Allow microphone permission",
+    "microphonePromptBrowser": "To start the simulation, please allow microphone permission from your browser.",
+    "microphonePrompt": "To start the simulation, please allow us to use your microphone.",
+    "clickToAllow": "Click to allow microphone and join the session.",
+    "closePreview": "Close Preview",
+    "points": "Points",
+    "sessionTimer": "Session Timer",
+    "timeRemaining": "Time Remaining",
+    "sessionChecklist": "Session Checklist",
+    "progress": "Progress",
+    "completed": "completed",
+    "of": "of",
+    "min": "min",
+    "sec": "sec",
+    "warningDialog": {
+      "titleNormal": "Session",
+      "titleItalic": "Ending Soon",
+      "content": "Your session will end in 30 seconds.",
+      "continueSession": "Continue Session",
+      "endSession": "End Session"
+    },
+    "endDialog": {
+      "titleNormal": "End ",
+      "titleItalic": "Session",
+      "content": "Are you sure you want to end the session?",
+      "endSession": "End Session",
+      "cancel": "Cancel"
     }
   }
 }

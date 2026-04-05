@@ -66,6 +66,7 @@ vi.mock("@api", () => ({
   useLazyGetAdminSimulationByIdQuery: () => [mockGetSimulationById, { data: null }],
   useDeleteCoverImageMutation: () => [mockDeleteCoverImage],
   useGetAvailableLanguageVoicesQuery: () => ({ data: [] }),
+  useGetPromptsQuery: () => ({ data: [] }),
 }));
 
 // Mock hooks
@@ -156,6 +157,8 @@ vi.mock("@constants", () => ({
   FORM_FIELD_IDS: {
     LANGUAGES_VOICES: "languageVoices",
   },
+  isValidStateInstructionId: (id: any) => ["-1", "1", "2", "3"].includes(String(id)),
+  ROLE_INSTRUCTION_PROMPT_CODE: "openai_simulation_role_instruction",
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
     EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
@@ -236,6 +239,7 @@ describe("CreateSimulation", () => {
       triggerWarningIds: [],
       languageVoices: { "1": "voice-1" },
     })) as any,
+    setValue: vi.fn(),
     reset: vi.fn(),
   };
 
@@ -274,6 +278,13 @@ describe("CreateSimulation", () => {
       expect(screen.getByTestId("header")).toBeInTheDocument();
       expect(screen.getByTestId("vertical-stepper")).toBeInTheDocument();
       expect(screen.getByTestId("footer")).toBeInTheDocument();
+    });
+
+    it("should not render the deprecated 'Voice' standalone field", () => {
+      renderCreateSimulation();
+
+      expect(screen.queryByText("Voice")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("voice-dropdown-voice")).not.toBeInTheDocument();
     });
   });
 
@@ -741,6 +752,41 @@ describe("CreateSimulation", () => {
                 expect.objectContaining({
                   experienceMode: ExperienceMode.CHECKLIST,
                   checklistType: ChecklistType.GUIDED,
+                }),
+              ]),
+            }),
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+  });
+
+  describe("State Names Filtering", () => {
+    it("should filter out stateNames with invalid stateIds during save", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test Title",
+        description: "Test Description",
+        stateNames: [
+          { stateId: "-1", name: "Valid state" },
+          { stateId: "99", name: "Invalid state" },
+        ],
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getByText("Save Draft");
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalledWith(
+            expect.objectContaining({
+              scenarios: expect.arrayContaining([
+                expect.objectContaining({
+                  stateNames: [{ stateId: "-1", name: "Valid state" }],
                 }),
               ]),
             }),

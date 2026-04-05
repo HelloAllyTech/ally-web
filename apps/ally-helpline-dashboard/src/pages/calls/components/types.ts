@@ -9,6 +9,8 @@ import { SessionUserGroup } from "../constants";
 export interface StartSessionDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  showDictationMode?: boolean;
+  showScribeMode?: boolean;
 }
 
 export interface SummarySideBarProps {
@@ -81,6 +83,7 @@ export interface SummarySidebarWrapperProps {
   }[];
   title: ReactNode;
   children?: ReactNode;
+  onTabChange?: (nextTabId: number) => void;
 }
 
 export interface SimulationSummarySidebarProps {

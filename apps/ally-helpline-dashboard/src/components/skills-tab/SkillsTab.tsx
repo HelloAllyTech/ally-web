@@ -1,5 +1,6 @@
 import { FC, useMemo } from "react";
 
+import { useTranslation } from "react-i18next";
 import {
   LineChart,
   Line,
@@ -139,62 +140,73 @@ const LoadingState: FC = () => (
   </div>
 );
 
-const ErrorState: FC = () => (
-  <div className="w-full flex items-center justify-center p-12">
-    <div className="text-typography-700 font-primary text-lg">Failed to load skills data</div>
-  </div>
-);
+const ErrorState: FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full flex items-center justify-center p-12">
+      <div className="text-typography-700 font-primary text-lg">{t("postSim.skills.failed")}</div>
+    </div>
+  );
+};
 
-const EmptyState: FC = () => (
-  <div className="w-full flex items-center justify-center p-12 text-typography-700 font-primary text-lg">
-    No skills data available for this session
-  </div>
-);
+const EmptyState: FC = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full flex items-center justify-center p-12 text-typography-700 font-primary text-lg">
+      {t("postSim.skills.empty")}
+    </div>
+  );
+};
 
 const getSkillOverallPercentage = (skills: SkillCoverage[]): number => {
   return skills.reduce((acc, skill) => acc + skill.percentage, 0) / skills.length;
 };
 
-const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => (
-  <div className="bg-white border border-[#B39DDB] rounded-sm mb-5">
-    <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
-      <h3 className="text-base font-primary font-medium text-typography-900">Skill Coverage</h3>
-    </div>
-    <div className="flex p-6 gap-6">
-      <div className="w-1/3 flex items-center justify-center">
-        <OverallScoreMeter percentage={getSkillOverallPercentage(skills)} />
+const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="bg-white border border-[#B39DDB] rounded-sm mb-5">
+      <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
+        <h3 className="text-base font-primary font-medium text-typography-900">
+          {t("postSim.skills.coverage")}
+        </h3>
       </div>
-      <div className="flex flex-col gap-3 w-2/3">
-        {skills.map(skill => (
-          <div key={skill.label} className="px-6 border rounded-sm py-5 flex w-full gap-2.5">
-            <div className="min-w-10 w-10 h-10 rounded-sm border flex items-center justify-center">
-              <img src={skill.icon} alt={skill.label} className="w-1/2 h-1/2 object-contain" />
-            </div>
-            <div className="flex flex-col gap-3 w-full">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-normal font-primary text-typography-700">
-                  {skill.label}
-                </span>
-                <span className="text-sm font-semibold font-primary text-typography-900">
-                  {skill.percentage}%
-                </span>
+      <div className="flex p-6 gap-6">
+        <div className="w-1/3 flex items-center justify-center">
+          <OverallScoreMeter percentage={getSkillOverallPercentage(skills)} />
+        </div>
+        <div className="flex flex-col gap-3 w-2/3">
+          {skills.map(skill => (
+            <div key={skill.label} className="px-6 border rounded-sm py-5 flex w-full gap-2.5">
+              <div className="min-w-10 w-10 h-10 rounded-sm border flex items-center justify-center">
+                <img src={skill.icon} alt={skill.label} className="w-1/2 h-1/2 object-contain" />
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${skill.percentage}%`,
-                    backgroundColor: skill.color,
-                  }}
-                />
+              <div className="flex flex-col gap-3 w-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-normal font-primary text-typography-700">
+                    {skill.label}
+                  </span>
+                  <span className="text-sm font-semibold font-primary text-typography-900">
+                    {skill.percentage}%
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{
+                      width: `${skill.percentage}%`,
+                      backgroundColor: skill.color,
+                    }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Helper to parse time string to seconds
 const parseTimeToSeconds = (time: string): number => {
@@ -206,6 +218,7 @@ const EmotionalMovementChart: FC<{
   data: EmotionalDataPoint[];
   timeTicks: string[] | undefined;
 }> = ({ data, timeTicks }) => {
+  const { t } = useTranslation();
   // Create chart data with numeric time values for equal spacing
   const chartData = useMemo(() => {
     if (data.length === 0) {
@@ -230,7 +243,7 @@ const EmotionalMovementChart: FC<{
     <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">
-          Client Distress Alleviation
+          {t("postSim.skills.distressAlleviation")}
         </h3>
       </div>
       <div className="px-6 py-6">
@@ -257,7 +270,7 @@ const EmotionalMovementChart: FC<{
                   : ["dataMin", "dataMax"]
               }
               label={{
-                value: "Session Timeline",
+                value: t("postSim.skills.timeline"),
                 position: "bottom",
                 offset: 10,
                 style: { fill: "#6B7280", fontSize: 12, fontFamily: "IBM_Plex_Serif" },
@@ -270,7 +283,7 @@ const EmotionalMovementChart: FC<{
               tickLine={false}
               tick={{ fill: "#6B7280", fontSize: 12 }}
               label={{
-                value: "Level (-5 to 5)",
+                value: t("postSim.skills.level"),
                 angle: -90,
                 position: "insideLeft",
                 style: {
@@ -303,13 +316,14 @@ const EmotionalMovementChart: FC<{
 };
 
 const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
+  const { t } = useTranslation();
   const strengths = summary?.details?.summary?.feedback?.positives || [];
 
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <h3 className="text-base font-medium font-primary text-typography-900">
-          Strengths & skills demonstrated
+          {t("postSim.skills.strengths")}
         </h3>
       </div>
       <div className="px-6 py-6">
@@ -325,27 +339,54 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
 };
 
 const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
-  const areasForGrowth = summary?.details?.summary?.feedback?.improvements || [];
+  const { t } = useTranslation();
+  const feedback = summary?.details?.summary?.feedback;
+  const hasValidAreasOfGrowth =
+    Array.isArray(feedback?.areasOfGrowth) &&
+    feedback.areasOfGrowth.length > 0 &&
+    feedback.areasOfGrowth.some(
+      (item: { improvement?: string; recommendation?: string }) =>
+        (item.improvement ?? "").trim() !== "" || (item.recommendation ?? "").trim() !== "",
+    );
+  const areasForGrowth =
+    (hasValidAreasOfGrowth ? feedback?.areasOfGrowth : feedback?.improvements) || [];
 
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md">
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
-        <h3 className="text-base font-medium font-primary text-typography-900">Areas for growth</h3>
+        <h3 className="text-base font-medium font-primary text-typography-900">
+          {t("postSim.skills.areasForGrowth")}
+        </h3>
       </div>
-      <div className="px-6 py-6">
+      <ul className="px-6 py-6 space-y-6 list-none">
         {areasForGrowth?.map((area, index) => (
-          <li key={index} className="flex items-start">
+          <li key={index} className="flex items-start gap-2">
             <span className="text-typography-900 mr-2">•</span>
-            <span className="text-typography-900 font-primary text-base">{area}</span>
+            <div className="flex flex-col gap-2 w-full">
+              <span className="text-typography-900 font-primary text-base">
+                {area.improvement || area}
+              </span>
+              {area.recommendation && (
+                <div className="text-typography-900 bg-[#FFF3E080] border-l-[1px] border-l-[#FFA726] flex flex-col gap-1 pl-2 py-2">
+                  <span className="text-[#E65100] tracking-[2px] text-xs font-medium font-tertiary">
+                    {t("postSim.skills.recommended")}
+                  </span>
+                  <span className="text-typography-900 text-base font-primary">
+                    {area.recommendation}
+                  </span>
+                </div>
+              )}
+            </div>
           </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 };
 
 // Main Component
 export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useGetSimulationSkillsQuery(
     { sessionId: sessionId || "" },
     { skip: !sessionId },
@@ -373,8 +414,20 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
 
   const timeTicks = useMemo(() => calculateTimeTicks(emotionalData), [emotionalData]);
 
-  if (isLoading) return <LoadingState />;
-  if (isError || !data) return <ErrorState />;
+  if (isLoading) {
+    return (
+      <div className="flex h-full min-h-0 w-full flex-col overflow-y-auto">
+        <LoadingState />
+      </div>
+    );
+  }
+  if (isError || !data) {
+    return (
+      <div className="flex h-full min-h-0 w-full flex-col items-center justify-center overflow-y-auto">
+        <ErrorState />
+      </div>
+    );
+  }
 
   const hasSkillData = skillCoverages.length > 0;
   const hasEmotionalData = emotionalData.length > 0;
@@ -383,9 +436,9 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
   const isChecklistMode = simulationMode === "CHECKLIST";
 
   return (
-    <div className="w-full flex flex-col p-4 border border-gray-200 rounded-lg custom-scrollbar overflow-y-auto min-h-[70vh]">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-y-auto rounded-lg border border-gray-200 p-4 custom-scrollbar">
       <h2 className="text-base font-medium font-primary text-typography-900">
-        Skills Demonstrated
+        {t("postSim.tabs.skillsDemonstrated")}
       </h2>
       <hr className="mb-5 mt-2 border-gray-200" />
 

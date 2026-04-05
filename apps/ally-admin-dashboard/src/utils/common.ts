@@ -212,7 +212,6 @@ export const extractValidData = (
       }
       switch (field?.type) {
         case FORM_FIELD_TYPES.SELECT:
-        case FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN: //handles dropdown case
           return [key, isNonEmptyString(value) ? value : null];
 
         case FORM_FIELD_TYPES.NUMBER: //convert string to number and empty val to null

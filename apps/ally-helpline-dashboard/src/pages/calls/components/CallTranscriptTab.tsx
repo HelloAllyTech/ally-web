@@ -13,12 +13,15 @@ const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<Transcript[]>([]);
 
-  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery({
-    chatId: callSummary?.id,
-    offset: transcriptOffset,
-    limit: TRANSCRIPT_PAGE_SIZE,
-    sortBy: "startSeconds",
-  });
+  const { data: transcriptData, isLoading: isGetTranscriptLoading } = useGetTranscriptQuery(
+    {
+      chatId: callSummary?.id,
+      offset: transcriptOffset,
+      limit: TRANSCRIPT_PAGE_SIZE,
+      sortBy: "startSeconds",
+    },
+    { skip: !callSummary?.id },
+  );
 
   const transcriptTotal = useMemo(() => transcriptData?.count || 0, [transcriptData]);
 

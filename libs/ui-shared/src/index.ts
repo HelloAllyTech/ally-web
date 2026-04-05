@@ -10,6 +10,7 @@ import GenericTable from "./lib/generic-table";
 import { GoogleSignInButton } from "./lib/google-sign-in-button";
 import { ImageUpload } from "./lib/image-upload";
 import InfiniteScroll from "./lib/infinite-scroll";
+import { MaxActiveUsersDialog } from "./lib/max-active-users-dialog";
 import Pagination from "./lib/pagination";
 import ResourceCard from "./lib/resource-card";
 import ResourceSearch from "./lib/resource-search";
@@ -32,6 +33,8 @@ import { logger } from "./logger";
 export type { Resource, SearchVariant, SimulationDetailsModalProps } from "./types";
 export type { ChipItem, ChipGroupProps } from "./lib/chip-group";
 export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";
+export type { MaxActiveUsersDialogProps } from "./lib/max-active-users-dialog";
+export type { SimulationTranslations } from "./lib/simulation";
 
 export {
   Badge,
@@ -44,6 +47,7 @@ export {
   GenericTable,
   GoogleSignInButton,
   InfiniteScroll,
+  MaxActiveUsersDialog,
   Pagination,
   ResourceCard,
   ResourceSearch,

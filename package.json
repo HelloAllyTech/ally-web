@@ -58,14 +58,14 @@
     "@remix-run/router": "^1.23.2",
     "@wavesurfer/react": "^1.0.12",
     "aria-hidden": "^1.2.6",
-    "axios": "^1.13.2",
+    "axios": "^1.13.6",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.19",
     "emoji-picker-react": "^4.16.1",
     "framer-motion": "^12.26.2",
-    "jspdf": "^4.0.0",
+    "jspdf": "^4.2.1",
     "livekit-client": "^2.17.0",
     "lucide-react": "^0.562.0",
     "next": "~15.2.6",
@@ -151,7 +151,10 @@
   },
   "overrides": {
     "assertion-error": "1.1.0",
-    "string-width": "4.2.3"
+    "qs": "^6.14.2",
+    "string-width": "4.2.3",
+    "serialize-javascript": "^7.0.3",
+    "koa": "3.1.2"
   },
   "workspaces": [
     "apps/*",

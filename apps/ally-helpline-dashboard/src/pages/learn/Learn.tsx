@@ -33,7 +33,7 @@ const LEARN_TABS = (t: any) => [
 type LearnTabId = TabId;
 
 export const Learn: FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { permissions, isAuthenticated } = useUser();
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
@@ -57,7 +57,10 @@ export const Learn: FC = () => {
     data: scenariosData,
     isLoading: isScenariosLoading,
     refetch: refetchScenarios,
-  } = useGetScenariosQuery({ isPrivate: isAuthenticated });
+  } = useGetScenariosQuery({
+    isPrivate: isAuthenticated,
+    languageCode: i18n.language,
+  });
 
   const scenarios = scenariosData?.data || [];
 
@@ -65,13 +68,13 @@ export const Learn: FC = () => {
     data: pathwaysData,
     isLoading: isPathwaysLoading,
     refetch: refetchPathways,
-  } = useGetScenarioPathwaysQuery({}, { skip: !hasPathPermissions });
+  } = useGetScenarioPathwaysQuery({ languageCode: i18n.language }, { skip: !hasPathPermissions });
 
   const {
     data: casesData,
     isLoading: isCasesLoading,
     refetch: refetchCases,
-  } = useGetScenarioCasesQuery({}, { skip: !hasCasePermissions });
+  } = useGetScenarioCasesQuery({ languageCode: i18n.language }, { skip: !hasCasePermissions });
 
   const handleTabChange = (newValue: LearnTabId) => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });

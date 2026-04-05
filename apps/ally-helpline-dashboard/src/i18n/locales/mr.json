@@ -29,8 +29,14 @@
     "duration": "कालावधी",
     "tags": "टॅग्स",
     "cancel": "रद्द करा",
-    "save": "साठवणे",
-    "retry": "पुनः प्रयत्न करा",
+    "save": "सेव्ह करा",
+    "add": "जोडा",
+    "share": "शेअर करा",
+    "viewMore": "अधिक पाहा",
+    "viewLess": "कमी पाहा",
+    "scribe": "स्क्राइब",
+    "scenario": "परिदृश्य:",
+    "retry": "पुन्हा प्रयत्न करा",
     "uploading": "अपलोड करत आहे...",
     "maxActiveUsers": {
       "title": "आम्ही सध्या क्षमतेवर आहोत.",
@@ -42,6 +48,9 @@
     "backToLearn": "शिक्षणाकडे परत",
     "errors": {
       "locked": "आगामी सिम्युलेशन लॉक केलेले आहे"
+    },
+    "draggableArea": {
+      "text": "ड्रॅग आणि ड्रॉप करा किंवा <0>निवडा</0> {{extensions}} फाइल ({{size}} पेक्षा कमी)"
     }
   },
   "carousel": {
@@ -159,6 +168,7 @@
         "signingIn": "साइन इन करत आहे..."
       },
       "google": {
+        "button": "Google सह पुढे चला",
         "error": "गूगलसह साइन इन करण्यात अयशस्वी"
       },
       "errors": {
@@ -357,14 +367,18 @@
   "postSim": {
     "titlePrefix": "सिम्युलेशन",
     "skills": {
-      "shownInSession": "या सत्रात दर्शविलेल्या कौशल्ये",
-      "empty": "या सत्रासाठी कोणतीही कौशल्ये डेटा उपलब्ध नाही.",
-      "loading": "कौशल्य डेटा लोड करत आहे...",
+      "shownInSession": "या सत्रात दर्शविलेली कौशल्ये",
+      "empty": "या सत्रासाठी कोणताही कौशल्य डेटा उपलब्ध नाही",
+      "loading": "कौशल्य डेटा लोड होत आहे...",
       "failed": "कौशल्य डेटा लोड करण्यात अयशस्वी",
       "coverage": "कौशल्य कव्हरेज",
-      "emotionalMovement": "क्लायंट भावनिक हालचाल",
-      "level": "पातळी (1-10)",
-      "timeline": "सत्र टाइमलाइन"
+      "distressAlleviation": "क्लाइंटच्या संकटाचे निवारण",
+      "emotionalMovement": "क्लाइंट भावनिक हालचाल",
+      "level": "पातळी (-5 to 5)",
+      "timeline": "सत्र टाइमलाइन",
+      "strengths": "दाखवलेली ताकद आणि कौशल्ये",
+      "areasForGrowth": "विकासासाठी क्षेत्रे",
+      "recommended": "शिफारस केलेले"
     },
     "tabs": {
       "transcription": "ट्रान्सक्रिप्शन",
@@ -376,6 +390,21 @@
       "skills": "कौशल्ये",
       "skillsDemonstrated": "कौशल्ये प्रदर्शित केली",
       "sessionReview": "सत्र पुनरावलोकन"
+    },
+    "simulationSummary": "सिम्युलेशन सारांश",
+    "shortSession": {
+      "title": "सत्र खूप लवकर संपले",
+      "description": "सार्थक प्रतिसाद देण्यासाठी आम्हाला अधिक संवाद डेटा हवा आहे."
+    },
+    "feedback": {
+      "sessionFeedback": "सत्र प्रतिसाद",
+      "noData": "डेटा आढळला नाही"
+    },
+    "common": {
+      "tryAnother": "दुसरे सिम्युलेशन वापरून पहा",
+      "details": "तपशील",
+      "scenario": "परिस्थिती:",
+      "shareForReview": "पुनरावलोकनासाठी सामायिक करा"
     }
   },
   "review": {
@@ -407,7 +436,13 @@
       "noCommentsYet": "काही टिप्पण्या नाहीत",
       "you": "तू",
       "by": "द्वारे {{name}}",
-      "dateAndTime": "तारीख आणि वेळ"
+      "dateAndTime": "तारीख आणि वेळ",
+      "addNote": "नोट जोडा",
+      "editNote": "नोट संपादित करा",
+      "addNotePlaceholder": "नोट जोडा...",
+      "shareModalHeader": "समीक्षेसाठी शेअर करा",
+      "addCommentPlaceholder": "एक टिप्पणी जोडा",
+      "commentAction": "टिप्पणी करा"
     },
     "reactionsModal": {
       "title": "प्रतिक्रिया",
@@ -426,6 +461,8 @@
       "reactions_plural": "प्रतिक्रिया",
       "comments": "टिप्पणी",
       "comments_plural": "टिप्पण्या",
+      "edited": "संपादित",
+      "noComments": "अजून कोणत्याही टिप्पण्या नाहीत",
       "relativeTime": {
         "justNow": "अतिशीघ्र",
         "year_one": "1 वर्ष",
@@ -531,6 +568,7 @@
     "title": "प्रतिलिपी",
     "empty": "कोणताही ट्रान्सक्रिप्ट उपलब्ध नाही",
     "agentLabel": "एआय एजंट:",
+    "scribeAgentLabel": "क्लायंट:",
     "youLabel": "तू",
     "clientLabel": "क्लायंट",
     "counsellorLabel": "सलाहकार",
@@ -721,14 +759,16 @@
     },
     "dialog": {
       "startSession": {
-        "embedTitle": "प्रशिक्षण सत्र लवकरच सुरू होणार आहे",
-        "embedDesc": "कृपया आपला मायक्रोफोन आणि वातावरण तयार करा.",
-        "titleNormal": "शुरू करा a",
-        "titleItalic": "सत्र",
-        "button": "सत्र प्रारंभ करा",
-        "footer": "तुम्ही कोणत्याही वेळी सत्र समाप्त करू शकता.",
-        "description1": "तुमचा सत्र लवकरच सुरू होईल.",
-        "description2": "स्क्रीनवरील सूचनांचे पालन करा."
+        "embedTitle": "थेट ऐका",
+        "embedDesc": "एली आपल्यासोबत ऑडिओ ऐकेल",
+        "titleNormal": "सत्र",
+        "titleItalic": "सुरू करा",
+        "button": "आताच सत्र सुरू करा",
+        "startScribeMode": "सक्रिय स्राइब मोड प्रारंभ करा",
+        "startDictationMode": "डिक्टेशन मोड सुरू करा",
+        "footer": "सुरू करून, आपण पुष्टी करता की ज्यांचे ट्रान्सक्रिप्शन केले जात आहे त्या प्रत्येकाने संमती दिली आहे.",
+        "description1": "एलीचा मानसिक आरोग्य एआय स्क्राइब सुरक्षितपणे ऐकतो, ट्रान्सक्राइब करतो ",
+        "description2": "आणि आपल्यासाठी सत्र नोट्स लिहितो."
       },
       "delete": {
         "titleNormal": "हटवा",
@@ -748,6 +788,8 @@
     },
     "audioUpload": {
       "title": "ऑडिओ रेकॉर्डिंग अपलोड करा",
+      "uploading": "आपली ऑडिओ फाइल अपलोड होत आहे",
+      "loadingWaveform": "वेव्हफॉर्म लोड होत आहे...",
       "fields": {
         "counsellor": {
           "label": "सलाहकाराचे नाव",
@@ -764,8 +806,70 @@
         "upload": "अपलोड करा"
       },
       "errors": {
-        "uploadFailed": "ऑडिओ अपलोड अयशस्वी झाला!"
+        "uploadFailed": "ऑडिओ अपलोड अयशस्वी झाला!",
+        "genericError": "ऑडिओ अपलोड करण्यात अयशस्वी",
+        "fillFields": "कृपया सर्व क्षेत्र भरा आणि एक फाइल अपलोड करा.",
+        "unsupportedFile": "चयनित फाइल प्रकार समर्थित नाही."
       }
+    },
+    "uploadProgress": {
+      "cancelled": "अपलोड रद्द करण्यात आले",
+      "collapse": "छोटा करा",
+      "expand": "मोठा करा",
+      "clearAll": "सर्व साफ करा",
+      "noUploads": "कोणतेही अपलोड नाहीत",
+      "inProgress_one": "1 अपलोड प्रगतीत आहे",
+      "inProgress_other": "{{count}} अपलोड प्रगतीत आहेत",
+      "summaryCancelled_one": "1 अपलोड रद्द केले",
+      "summaryCancelled_other": "{{count}} अपलोड रद्द केले",
+      "completed_one": "1 अपलोड पूर्ण झाले",
+      "completed_other": "{{count}} अपलोड पूर्ण झाले",
+      "cancelDialog": {
+        "title": "रद्द करा",
+        "titleItalic": "अपलोड",
+        "content": "आपले अपलोड पूर्ण झाले नाही. आपणास अपलोड रद्द करायचे आहे का?",
+        "primaryButton": "अपलोड रद्द करा",
+        "secondaryButton": "अपलोड सुरू ठेवा"
+      }
+    }
+  },
+  "simulationPage": {
+    "mute": "म्यूट",
+    "unmute": "अनम्यूट",
+    "focus": "फोकस",
+    "focused": "फोकस्ड",
+    "endSession": "सत्र संपवा",
+    "sessionDuration": "सत्र कालावधी:",
+    "dataSafe": "आपला डेटा सुरक्षित आहे",
+    "waitingForAgent": "एजंट जोडण्यासाठी प्रतीक्षा...",
+    "connectingToSession": "सत्राशी कनेक्ट होत आहे...",
+    "allowMicrophone": "मायक्रोफोनला अनुमती द्या",
+    "microphonePromptBrowser": "सिम्युलेशन सुरू करण्यासाठी, कृपया आपल्या ब्राउझरमधून मायक्रोफोनला अनुमती द्या.",
+    "microphonePrompt": "सिम्युलेशन सुरू करण्यासाठी, कृपया आम्हाला आपला मायक्रोफोन वापरण्याची अनुमती द्या.",
+    "clickToAllow": "मायक्रोफोनला अनुमती देउन सत्रात सामील होण्यासाठी क्लिक करा.",
+    "closePreview": "पूर्वावलोकन बंद करा",
+    "points": "गुण",
+    "sessionTimer": "सत्र टाइमर",
+    "timeRemaining": "उर्वरित वेळ",
+    "sessionChecklist": "सत्र चेकलिस्ट",
+    "progress": "प्रगती",
+    "completed": "पूर्ण",
+    "of": "पैकी",
+    "min": "मिनिटे",
+    "sec": "सेकंद",
+    "warningDialog": {
+      "titleNormal": "सत्र",
+      "titleItalic": "लवकरच संपत आहे",
+      "content": "आपले सत्र 30 सेकंदात संपेल.",
+      "continueSession": "सत्र सुरू ठेवा",
+      "endSession": "सत्र संपवा"
+    },
+    "endDialog": {
+      "titleNormal": "संपवा ",
+      "titleItalic": "सत्र",
+      "content": "तुम्हाला खात्री आहे का की सत्र संपवायचे आहे?",
+      "endSession": "सत्र संपवा",
+      "cancel": "रद्द करा"
     }
   }
 }

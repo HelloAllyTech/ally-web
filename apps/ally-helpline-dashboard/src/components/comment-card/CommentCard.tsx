@@ -177,13 +177,16 @@ const CommentCard = ({
 
   const onReplyClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (comment?.hidden) return;
+    if (comment?.hidden) {
+      return;
+    }
     if (!showReplies && replyCount > 0 && replies.length === 0) {
       try {
         const data = await getReplies({
           commentId: comment.id,
           limit: 10,
           offset: repliesOffset,
+          isScribe: isScribeReview,
         }).unwrap();
         setRepliesOffset(prev => prev + 10);
         setHasMoreReplies(repliesOffset + 10 < data?.count);
@@ -201,6 +204,7 @@ const CommentCard = ({
       commentId: comment.id,
       limit: 10,
       offset: repliesOffset,
+      isScribe: isScribeReview,
     }).unwrap();
     setRepliesOffset(prev => prev + 10);
     setHasMoreReplies(repliesOffset + 10 < data?.count);
@@ -209,7 +213,7 @@ const CommentCard = ({
       const newReplies = [
         ...(prev || []),
         ...(data?.data || []).filter(reply => !existingReplies.has(reply.id)),
-      ].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      ];
       return newReplies;
     });
   };
@@ -481,7 +485,7 @@ const CommentCard = ({
   const renderCommentContent = () => {
     return (
       <>
-        <div className="text-typography-900 font-primary text-md whitespace-pre-wrap">
+        <div className="break-words text-typography-900 font-primary text-md">
           {comment.content}
         </div>
         <div className="flex gap-2 items-center">
@@ -628,7 +632,7 @@ const CommentCard = ({
             className="w-full h-full rounded-full"
           />
         </div>
-        <div className="flex flex-col gap-1 w-full">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex flex-row justify-between items-center gap-2 w-full">
             <div className="flex flex-row gap-1.5 items-center w-full">
               <div className="text-[14px] font-medium text-typography-900">

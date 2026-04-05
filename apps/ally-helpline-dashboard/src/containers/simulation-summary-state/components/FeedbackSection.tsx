@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import { InfoIcon } from "@assets";
@@ -15,10 +16,12 @@ import { getFormattedFeedbackSection } from "./utils";
 const getFeedbackSectionByType = ({
   data,
   label,
+  t,
   type,
 }: {
   data: any;
   label: string;
+  t: any;
   type: FeedbackSectionType;
   columns: any[];
 }) => {
@@ -38,21 +41,59 @@ const getFeedbackSectionByType = ({
           <span className="w-full text-typography-900 bg-[#EDE7F680] px-2 py-2 text-base">
             {label}
           </span>
-          <ul className="p-4 space-y-2 text-base">
+          <ul className="p-4 space-y-6 text-base">
             {(!data || (Array.isArray(data) && data?.length === 0)) && (
-              <div className="text-typography-700 font-primary text-center mb-2">No data found</div>
+              <div className="text-typography-700 font-primary text-center mb-2">
+                {t("postSim.feedback.noData")}
+              </div>
             )}
             {Array.isArray(data)
               ? data.map((item, index) => (
-                  <li key={index} className="flex items-start">
+                  <li key={index} className="flex items-start gap-2">
                     <span className="text-typography-900 mr-2">•</span>
-                    <span className="text-typography-900">{item}</span>
+                    {typeof item === "object" ? (
+                      <div className="flex flex-col gap-2 w-full">
+                        <span className="text-typography-900 font-primary text-base">
+                          {item.improvement}
+                        </span>
+                        {item.recommendation && (
+                          <div className="text-typography-900 bg-[#FFF3E080] border-l-[1px] border-l-[#FFA726] flex flex-col gap-1 pl-2 py-2">
+                            <span className="text-[#E65100] tracking-[2px] text-xs font-medium font-tertiary">
+                              {t("postSim.skills.recommended")}
+                            </span>
+                            <span className="text-typography-900 text-base font-primary">
+                              {item.recommendation}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-typography-900">{item}</span>
+                    )}
                   </li>
                 ))
               : data && (
-                  <li className="flex items-start">
+                  <li className="flex items-start gap-2">
                     <span className="text-typography-900 mr-2">•</span>
-                    <span className="text-typography-900">{data}</span>
+                    {typeof data === "object" ? (
+                      <div className="flex flex-col gap-2 w-full">
+                        <span className="text-typography-900 font-primary text-base">
+                          {data.improvement}
+                        </span>
+                        {data.recommendation && (
+                          <div className="text-typography-900 bg-[#FFF3E080] border-l-[1px] border-l-[#FFA726] flex flex-col gap-1 pl-2 py-2">
+                            <span className="text-[#E65100] tracking-[2px] text-xs font-medium font-tertiary">
+                              {t("postSim.skills.recommended")}
+                            </span>
+                            <span className="text-typography-900 text-base font-primary">
+                              {data.recommendation}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-typography-900">{data}</span>
+                    )}
                   </li>
                 )}
           </ul>
@@ -64,6 +105,7 @@ const getFeedbackSectionByType = ({
   }
 };
 export const FeedbackSection: FC<FeedbackSectionProps> = props => {
+  const { t } = useTranslation();
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
 
   const formattedData = getFormattedFeedbackSection(props);
@@ -79,7 +121,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
     <motion.div className="flex flex-col gap-6 w-full">
       <div className="border p-4 rounded-md flex flex-col gap-4">
         <span className="text-typography-900 font-primary text-base font-medium border-b pb-3">
-          Session Feedback
+          {t("postSim.feedback.sessionFeedback")}
         </span>
         <div>
           <div className="flex items-center gap-5">
@@ -113,7 +155,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
         </div>
         <Checklist className="h-full" sessionId={props.sessionId} />
         {!isChecklistMode && (
-          <motion.div className="overflow-y-auto font-primary space-y-4">
+          <motion.div className="font-primary space-y-4">
             {feedbackSections.map(({ key, label, type, columns }, index) => {
               return (
                 <motion.div
@@ -128,7 +170,13 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
                   className="bg-white"
                 >
                   <div>
-                    {getFeedbackSectionByType({ data: formattedData[key], label, type, columns })}
+                    {getFeedbackSectionByType({
+                      data: formattedData[key],
+                      label,
+                      t,
+                      type,
+                      columns,
+                    })}
                   </div>
                 </motion.div>
               );
@@ -142,9 +190,9 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
         description={formattedData.description}
         coverImageUrl={formattedData.coverImage}
         coverVideoUrl={formattedData.coverVideo}
-        headerTitle="Simulation"
-        headerSubtitle="Details"
-        scenarioLabel="Scenario:"
+        headerTitle={t("postSim.titlePrefix")}
+        headerSubtitle={t("postSim.common.details")}
+        scenarioLabel={t("postSim.common.scenario")}
         showActionButtons={false}
         onClickOutside={() => setShowSimulationDetailsModal(false)}
       />

@@ -7,15 +7,21 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
 import { BackCircle, Comment } from "@assets";
-import { AskAiTab, ReflectionTab, ShareForReview, SkillsTab, ToggleSwitch } from "@components";
-import { REVIEW_PRIVACY_OPTIONS, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
+import {
+  AskAiTab,
+  Button,
+  ReflectionTab,
+  ShareForReview,
+  SkillsTab,
+  ToggleSwitch,
+} from "@components";
+import { REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { ShortSessionUI, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { pageType, ShareForReviewsInput } from "@types";
 
@@ -29,7 +35,7 @@ export const PostSimulationSummary: FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const { data: summary } = useGetSimulationSummaryQuery(sessionId);
+  const { data: summary, isLoading } = useGetSimulationSummaryQuery(sessionId);
   const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(sessionId);
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
@@ -37,24 +43,24 @@ export const PostSimulationSummary: FC = () => {
   const tabList = [
     {
       id: 1,
-      label: "Session Review",
+      label: t("postSim.tabs.sessionReview"),
       content: (
         <SimulationSummary
           sessionId={sessionId ?? ""}
           summaryData={summaryData}
           retryMaxReached={retryMaxReached}
-          className="max-h-[calc(100vh-212px)]"
+          className="h-full min-h-0 flex flex-col overflow-hidden"
         />
       ),
     },
     {
       id: 4,
-      label: "Ask AI",
+      label: t("postSim.tabs.askAi"),
       content: <AskAiTab sessionId={sessionId} agentName={summary?.scenario?.metadata?.name} />,
     },
     {
       id: 2,
-      label: "Annotated Transcript",
+      label: t("postSim.tabs.annotatedTranscript"),
       content: (
         <SimulationTranscriptTab
           sessionId={sessionId}
@@ -65,25 +71,29 @@ export const PostSimulationSummary: FC = () => {
     },
     {
       id: 5,
-      label: "Skills  Demonstrated",
+      label: t("postSim.tabs.skillsDemonstrated"),
       content: <SkillsTab sessionId={sessionId} />,
     },
     {
       id: 6,
-      label: "Deeper Reflection",
+      label: t("postSim.tabs.deeperReflection"),
       content: <ReflectionTab sessionId={sessionId} />,
     },
-    {
-      id: 3,
-      label: "Up Next",
-      content: (
-        <UpNextTab
-          sessionId={sessionId}
-          pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
-          metaData={summary?.metadata}
-        />
-      ),
-    },
+    ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
+      ? [
+          {
+            id: 3,
+            label: t("postSim.tabs.upNext"),
+            content: (
+              <UpNextTab
+                sessionId={sessionId}
+                pageType={summary?.scenarioPathSessionItemId ? pageType.TRACK : pageType.CASE}
+                metaData={summary?.metadata}
+              />
+            ),
+          },
+        ]
+      : []),
   ];
 
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
@@ -114,7 +124,7 @@ export const PostSimulationSummary: FC = () => {
         await createReview(params).unwrap();
       }
     } catch (err: any) {
-      toast.error(err?.data?.message ?? "Something went wrong. Please try again.");
+      toast.error(err?.data?.message ?? t("common.somethingWentWrong"));
     }
   };
 
@@ -129,43 +139,37 @@ export const PostSimulationSummary: FC = () => {
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
   return (
-    <div className="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center ">
+    <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        className="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
       >
-        <div className="flex items-center justify-between w-full mt-8">
+        <div className="mt-8 flex w-full shrink-0 items-center justify-between">
           <div className="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
             <button onClick={() => navigate(-1)}>
               <BackCircle />
             </button>
-            Simulation <em>Summary</em>
+            {t("postSim.titlePrefix")} <em>{t("common.summary")}</em>
           </div>
           {!isShortSession && (
             <div className="flex justify-center gap-2 items-center">
-              {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
-                <div className="flex items-center gap-2">
-                  <span className="font-primary font-normal text-sm">Share for review</span>
-                  <ToggleSwitch
-                    enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
-                    onChange={(value: boolean) => {
-                      handleToggleChange(
-                        value
-                          ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                          : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                      );
-                    }}
-                  />
-                </div>
-              ) : (
-                <Toggle
-                  items={REVIEW_PRIVACY_OPTIONS(t)}
-                  initialValue={summary?.reviewStatus}
-                  onChange={handleCreateReview}
+              <div className="flex items-center gap-2">
+                <span className="font-primary font-normal text-sm">
+                  {t("postSim.common.shareForReview")}
+                </span>
+                <ToggleSwitch
+                  enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
+                  onChange={(value: boolean) => {
+                    handleToggleChange(
+                      value
+                        ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                        : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                    );
+                  }}
                 />
-              )}
+              </div>
               {summary?.reviewId && (
                 <>
                   <div className="border-l border-border h-5" />
@@ -189,7 +193,7 @@ export const PostSimulationSummary: FC = () => {
         ) : (
           <>
             <ShareForReview
-              isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
+              isOpen={shareForReview}
               onClose={() => {
                 setShareForReview(false);
               }}
@@ -197,15 +201,16 @@ export const PostSimulationSummary: FC = () => {
               onNoteChange={(note: string) => {
                 handleCreateReview(REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW, note);
               }}
-              tag="Simulation"
+              tag={t("postSim.titlePrefix")}
             />
             <Tabs
               value={selectedTab}
               onChange={handleTabChange}
-              className="w-full normal-case border-b border-[#DBDBDB]"
+              className="w-full shrink-0 normal-case border-b border-[#DBDBDB]"
               sx={{
                 "& .MuiButtonBase-root": {
-                  fontFamily: "IBM_Plex_Serif",
+                  fontFamily: "'IBM Plex Serif', serif",
+                  fontWeight: 400,
                 },
               }}
             >
@@ -213,7 +218,19 @@ export const PostSimulationSummary: FC = () => {
                 <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
               ))}
             </Tabs>
-            {getTabContent()}
+            <div
+              className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+              data-testid="post-sim-tab-panel"
+            >
+              {getTabContent()}
+            </div>
+            {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
+              <div className="flex justify-center items-center fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                <Button onClick={() => navigate(ROUTES.LEARN)}>
+                  {t("postSim.common.tryAnother")}
+                </Button>
+              </div>
+            )}
           </>
         )}
       </motion.div>

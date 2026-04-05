@@ -6,17 +6,17 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
     data-testid="browser-router"
   >
     <div
-      class="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center "
+      class="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10"
     >
       <div
-        class="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        class="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
         data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
       >
         <div
-          class="flex items-center justify-between w-full mt-8"
+          class="mt-8 flex w-full shrink-0 items-center justify-between"
         >
           <div
             class="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary"
@@ -90,7 +90,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="w-full normal-case border-b border-[#DBDBDB]"
+          class="w-full shrink-0 normal-case border-b border-[#DBDBDB]"
           data-testid="mui-tabs"
           data-value="1"
           role="tablist"
@@ -135,26 +135,34 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             Deeper Reflection
           </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-3"
-            data-value="3"
-            role="tab"
-          >
-            Up Next
-          </button>
         </div>
         <div
-          class="max-h-[calc(100vh-212px)]"
-          data-has-summary="false"
-          data-retry-max="false"
-          data-testid="simulation-summary"
+          class="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+          data-testid="post-sim-tab-panel"
         >
           <div
-            data-testid="summary-session-id"
+            class="h-full min-h-0 flex flex-col overflow-hidden"
+            data-has-summary="false"
+            data-retry-max="false"
+            data-testid="simulation-summary"
           >
-            123
+            <div
+              data-testid="summary-session-id"
+            >
+              123
+            </div>
           </div>
+        </div>
+        <div
+          class="flex justify-center items-center fixed bottom-0 left-0 right-0 bg-white p-[20px]"
+        >
+          <button
+            class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px] 
+        transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
+        disabled:cursor-default disabled:opacity-50 text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary/50 font-tertiary  undefined"
+          >
+            Try another simulation
+          </button>
         </div>
       </div>
     </div>
@@ -168,17 +176,17 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
     data-testid="browser-router"
   >
     <div
-      class="bg-white w-full h-[100vh] overflow-y-auto flex flex-col items-center "
+      class="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10"
     >
       <div
-        class="flex flex-col gap-6 max-w-4xl w-full h-full pb-8 sm:pb-16 px-4 sm:px-6 items-center"
+        class="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
         data-testid="motion-div"
         data-variants="{\\"hidden\\":{\\"opacity\\":0},\\"visible\\":{\\"opacity\\":1,\\"transition\\":{\\"staggerChildren\\":0.2,\\"delayChildren\\":0.3}}}"
       >
         <div
-          class="flex items-center justify-between w-full mt-8"
+          class="mt-8 flex w-full shrink-0 items-center justify-between"
         >
           <div
             class="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary"
@@ -252,7 +260,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="w-full normal-case border-b border-[#DBDBDB]"
+          class="w-full shrink-0 normal-case border-b border-[#DBDBDB]"
           data-testid="mui-tabs"
           data-value="1"
           role="tablist"
@@ -297,26 +305,34 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           >
             Deeper Reflection
           </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-3"
-            data-value="3"
-            role="tab"
-          >
-            Up Next
-          </button>
         </div>
         <div
-          class="max-h-[calc(100vh-212px)]"
-          data-has-summary="false"
-          data-retry-max="false"
-          data-testid="simulation-summary"
+          class="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+          data-testid="post-sim-tab-panel"
         >
           <div
-            data-testid="summary-session-id"
+            class="h-full min-h-0 flex flex-col overflow-hidden"
+            data-has-summary="false"
+            data-retry-max="false"
+            data-testid="simulation-summary"
           >
-            789
+            <div
+              data-testid="summary-session-id"
+            >
+              789
+            </div>
           </div>
+        </div>
+        <div
+          class="flex justify-center items-center fixed bottom-0 left-0 right-0 bg-white p-[20px]"
+        >
+          <button
+            class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px] 
+        transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
+        disabled:cursor-default disabled:opacity-50 text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary/50 font-tertiary  undefined"
+          >
+            Try another simulation
+          </button>
         </div>
       </div>
     </div>

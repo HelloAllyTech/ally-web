@@ -13,11 +13,19 @@ interface Tag {
 interface HelperTagProps {
   tags: Tag[];
   updateTags: (tags: Tag[]) => void;
+  /** Max selectable tags (helper behaviours table defaults to 5). */
+  maxTags?: number;
+  disabled?: boolean;
 }
 
 const DEFAULT_LIMIT = 20;
 
-export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
+export const HelperTag: React.FC<HelperTagProps> = ({
+  tags,
+  updateTags,
+  maxTags = 5,
+  disabled = false,
+}) => {
   const [openDropdown, setOpenDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [page, setPage] = useState(1);
@@ -93,10 +101,12 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
   }, [handleObserver, openDropdown]);
 
   const removeTag = (tagToRemove: Tag) => {
+    if (disabled) return;
     updateTags(tags.filter(tag => tag !== tagToRemove));
   };
 
   const selectTag = (selectedTag: Tag) => {
+    if (disabled) return;
     if (selectedTag && !tags.some(t => t.id === selectedTag.id)) {
       updateTags([...tags, selectedTag]);
     }
@@ -104,6 +114,7 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
   };
 
   const addTagButton = () => {
+    if (disabled) return;
     setOpenDropdown(prev => !prev);
   };
 
@@ -117,13 +128,14 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
   useClickOutside(dropdownRef, () => closeDropdown());
 
   const createNewTag = async () => {
+    if (disabled) return;
     const newTag = searchQuery.trim();
     const existingTag = tags.map(tag => tag.name.toLowerCase());
     if (existingTag.includes(newTag.toLowerCase())) {
       closeDropdown();
       return;
     }
-    const createdNewTag = await createHelperTag({ name: newTag });
+    const createdNewTag = (await createHelperTag({ name: newTag })) as any;
     selectTag(createdNewTag?.data);
   };
 
@@ -180,36 +192,42 @@ export const HelperTag: React.FC<HelperTagProps> = ({ tags, updateTags }) => {
     );
 
   return (
-    <div className="flex flex-wrap gap-2 group items-center">
+    <div
+      className={`flex flex-wrap gap-2 group items-center ${disabled ? "cursor-not-allowed opacity-70" : ""}`}
+    >
       {tags?.map(tag => (
         <div
           key={tag?.id}
           className="group/tag flex items-center px-2 py-1 bg-white text-sm border border-border-light rounded-md text-typography-900"
         >
           <span>{tag?.name}</span>
-          <button
-            type="button"
-            className="cursor-pointer ml-2 opacity-0 group-hover/tag:opacity-100"
-            onClick={() => removeTag(tag)}
-          >
-            <Close />
-          </button>
+          {!disabled && (
+            <button
+              type="button"
+              className="cursor-pointer ml-2 opacity-0 group-hover/tag:opacity-100"
+              onClick={() => removeTag(tag)}
+            >
+              <Close />
+            </button>
+          )}
         </div>
       ))}
-      <div className="relative">
-        {tags?.length < 5 && (
-          <div
-            ref={triggerRef}
-            className={`flex items-center border border-border-light ${tags.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
-            onClick={addTagButton}
-          >
-            <button type="button" className="text-primary text-sm p-1">
-              <Plus />
-            </button>
-          </div>
-        )}
-        {openDropdown && renderDropdown()}
-      </div>
+      {!disabled && (
+        <div className="relative">
+          {tags?.length < maxTags && (
+            <div
+              ref={triggerRef}
+              className={`flex items-center border border-border-light ${tags.length > 0 ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+              onClick={addTagButton}
+            >
+              <button type="button" className="text-primary text-sm p-1">
+                <Plus />
+              </button>
+            </div>
+          )}
+          {openDropdown && renderDropdown()}
+        </div>
+      )}
     </div>
   );
 };

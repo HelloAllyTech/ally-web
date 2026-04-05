@@ -35,9 +35,9 @@ const {
 }));
 
 vi.mock("@api", () => ({
-  useGetScenariosQuery: () => mockUseGetScenariosQuery(),
-  useGetScenarioPathwaysQuery: () => mockUseGetScenarioPathwaysQuery(),
-  useGetScenarioCasesQuery: () => mockUseGetScenarioCasesQuery(),
+  useGetScenariosQuery: (args: any) => mockUseGetScenariosQuery(args),
+  useGetScenarioPathwaysQuery: (args: any) => mockUseGetScenarioPathwaysQuery(args),
+  useGetScenarioCasesQuery: (args: any) => mockUseGetScenarioCasesQuery(args),
   useUpdateUserPreferencesMutation: () => [mockUpdateUserPreferences, { isLoading: false }],
 }));
 
@@ -976,6 +976,32 @@ describe("Learn Component", () => {
       // Verify the component renders without errors when language capability flag is disabled
       expect(screen.getByTestId("browser-router")).toBeInTheDocument();
     });
+  });
+
+  it("should call list queries with languageCode", () => {
+    // We already have a mock for useGetScenariosQuery at the top of the file
+    // But since it's a mock implementation, we can check how it's called
+    render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+
+    expect(mockUseGetScenariosQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        languageCode: expect.any(String), // i18n.language
+      }),
+    );
+    expect(mockUseGetScenarioPathwaysQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        languageCode: expect.any(String), // i18n.language
+      }),
+    );
+    expect(mockUseGetScenarioCasesQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        languageCode: expect.any(String), // i18n.language
+      }),
+    );
   });
 
   it("should revert to previous language on update failure", async () => {

@@ -10,6 +10,7 @@ export const SimulationTimer: FC<SimulationTimerProps> = ({
   onWarning,
   startTime,
   timeLimit = MAX_SESSION_MINUTES,
+  translations,
 }) => {
   const [timer, setTimer] = useState<number>(0);
 
@@ -60,7 +61,7 @@ export const SimulationTimer: FC<SimulationTimerProps> = ({
       className="flex items-center gap-2 font-['IBM_Plex_Serif'] text-[#fff]"
     >
       <span data-testid="simulation-timer-label" className="text-[14px]">
-        Session Duration:
+        {translations?.sessionDuration ?? "Session Duration:"}
       </span>
       <span data-testid="simulation-timer-value">{formatTime(timer) || renderLoader()}</span>
     </div>

@@ -27,6 +27,14 @@ export const en = {
     successfullyDeleted: "Successfully deleted",
     thisActionCannotBeUndone: "This action cannot be undone.",
     areYouSureYouWantToDelete: "Are you sure you want to delete",
+    maxActiveUsers: {
+      title: "We're at capacity right now",
+      description:
+        "We're currently handling the maximum number of active users. Please wait a moment and try again access usually frees up shortly.",
+      retry: "Retry",
+      manualRetry: "You can retry in {seconds}s",
+      autoRetry: "We'll automatically retry in {seconds}s",
+    },
   },
   errors: {
     maxRowsBehavioursInstruction: "You can only add up to 10 rows of behaviours instruction.",
@@ -70,8 +78,11 @@ export const en = {
     failedToSaveVoice: "Failed to save voice",
     failedToCancelReportGeneration: "Failed to cancel report generation",
     failedToRegenerate: "Failed to regenerate",
+    failedToCreateFillerTag:
+      "Could not create filler tag. It may already exist or the request failed.",
     linguisticStyleSamplesRequired:
-      "Linguistic style samples are required for non-English languages. Please provide at least one sample for each configured non-English language.",
+      "Linguistic style samples are required. Please provide at least one sample for each selected language.",
+    invalidStateInstructionIds: "State instructions include an invalid state id.",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -266,12 +277,17 @@ export const en = {
     enterPrompt: "Enter prompt text",
     promptCreatedSuccessfully: "Prompt created successfully",
     promptUpdatedSuccessfully: "Prompt updated successfully",
+    failedToUpdatePrompt: "Failed to update prompt",
     noPromptsFound: "No prompts found",
     createFirstPrompt: "Create your first prompt to get started",
     promptRequired: "Prompt name, description, prompt code and prompt text are required",
     useDashboardOverride: "Use dashboard version (when OFF, prompt is read from codebase folder)",
     useDashboardOverrideLabel: "Use dashboard version",
     availableVariables: "Available variables",
+    usedBlocks: "Used Blocks",
+    blocksHelpTitle: "What are blocks?",
+    blocksHelpText:
+      "Blocks are reusable prompt fragments referenced by this prompt. They are mainly used for optional or shared sections so the main prompt stays easier to read and maintain.",
     revertPromptSuccess: "Prompt restored to default successfully",
     revertPromptFailed: "Failed to restore prompt to default",
     restoreDefault: "Restore default",
@@ -421,7 +437,19 @@ export const en = {
     regenerate: "Regenerate",
     generate: "Generate",
     generating: "Generating...",
+    generatedFillersAllCount: (n: number) => `Generated filler words for ${n} language(s)`,
+    bulkGenerateNoSamples:
+      "No linguistic style samples were saved. The model may have returned empty results—try again or edit manually.",
+    bulkGenerateNoFillers:
+      "No filler words were saved. The model may have returned empty results—try again or edit manually.",
+    generatedOpeningDialoguesAllCount: (n: number) =>
+      `Generated opening dialogues for ${n} language(s)`,
+    bulkGenerateNoOpeningDialogues:
+      "No opening dialogues were saved. The model may have returned empty results—try again or edit manually.",
+    allowedFillersSectionTitle: "Allowed filler words",
     guardrails: "Guardrails",
+    deleteCharacter: "Delete character",
+    addStateName: "Add State Name",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",
@@ -551,7 +579,7 @@ export const en = {
     title: "Title",
     content: "Content",
     untitled: "Untitled",
-    addNewTab: "Add new tab",
+    addNewTab: "Add document",
     remove: "Remove",
     deleteContent: "Delete content",
     selectTabToViewContent: "Select a tab to view content",
@@ -559,6 +587,7 @@ export const en = {
     createKnowledgeSource: "Create Knowledge Source",
     enterTitle: "Enter title",
     enterContent: "Enter content",
+    titleAndContentRequired: "Please enter a title and content",
   },
   badge: {
     badgeAddedToTenant: "Badge added to tenant successfully",

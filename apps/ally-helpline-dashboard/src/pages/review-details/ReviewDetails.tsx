@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { CustomImage, FEATURE_FLAGS_MAP, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
+import { CustomImage, SimulationDetailsModal } from "@ally-ui-mono/ui-shared";
 import {
   useAddReactionMutation,
   useGetGeneralCommentsQuery,
@@ -30,6 +30,7 @@ import {
   AddReviewNote,
   GeneralCommentsToShow,
 } from "@components";
+import { TagType } from "@components/share-for-review/ShareForReview";
 import { KeyboardKeys, REVIEW_PRIVACY_OPTIONS_VALUES, TAG_TYPES } from "@constants";
 import { RootState } from "@store";
 import {
@@ -51,7 +52,7 @@ export const ReviewDetails = () => {
   const { user } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
   const isScribeReview = pathname.includes("scribe-review");
 
@@ -78,7 +79,7 @@ export const ReviewDetails = () => {
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
 
   const { data: reviewDetails, isLoading: isGetReviewDetailsLoading } = useGetReviewByIdQuery(
-    { id: reviewId || "", isScribe: isScribeReview },
+    { id: reviewId || "", isScribe: isScribeReview, languageCode: i18n.language },
     {
       skip: !reviewId,
     },
@@ -91,6 +92,7 @@ export const ReviewDetails = () => {
       limit: TRANSCRIPT_PAGE_SIZE,
       sortBy: "startSeconds",
       isScribe: isScribeReview,
+      languageCode: i18n.language,
     });
 
   const { data: generalCommentsList, isLoading: isGetGeneralCommentsLoading } =
@@ -120,7 +122,7 @@ export const ReviewDetails = () => {
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
-  }, [reviewId]);
+  }, [reviewId, i18n.language]);
 
   useEffect(() => {
     if (reviewDetails?.myReaction?.length > 0) {
@@ -316,7 +318,7 @@ export const ReviewDetails = () => {
       setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
-      toast.error(error?.data?.message || "Reaction update failed");
+      toast.error(error?.data?.message || t("review.details.reactionFailed"));
     }
   };
 
@@ -391,7 +393,7 @@ export const ReviewDetails = () => {
               style={{ opacity: isUpdateReviewLoading ? 0.5 : 1 }}
             >
               <span className="ml-1 font-primary font-regular text-base leading-[1.3] text-[#1A1A1A]">
-                Share for review
+                {t("review.privacy.share")}
               </span>
               <ToggleSwitch
                 enabled={reviewDetails?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
@@ -406,6 +408,7 @@ export const ReviewDetails = () => {
                   )
                 }
               />
+              <div className="border-l border-border h-5" />
             </div>
           )}
           <div
@@ -477,7 +480,7 @@ export const ReviewDetails = () => {
               <div
                 className={`text-[10px] font-normal ${isScribeReview ? "bg-[#FFF3E0] text-[#E65100]" : "bg-[#EDE7F6] text-[#7E57C2]"} px-1 py-[1.5px] rounded-[2px] mr-1.5`}
               >
-                {isScribeReview ? "Scribe" : "Simulation"}
+                {isScribeReview ? t("common.scribe") : t("common.simulation")}
               </div>
               <span className="text-xl line-clamp-1">
                 {reviewDetails?.scenario?.title || reviewDetails?.scribeSession?.summaryName}
@@ -535,7 +538,7 @@ export const ReviewDetails = () => {
           ref={transcriptScrollRef}
           className="pt-5 mx-auto px-10 w-[calc(100%-384px)] h-[99%] pb-20 transition-all duration-400 custom-scrollbar"
         >
-          {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showAddReviewNotesSection && (
+          {showAddReviewNotesSection && (
             <div className="pb-6">
               <AddReviewNote
                 isEditable={isNoteEditable}
@@ -573,29 +576,27 @@ export const ReviewDetails = () => {
             isScribeReview={isScribeReview}
           />
 
-          {FEATURE_FLAGS_MAP.GENERAL_COMMENTS_FLAG && (
-            <div className="w-full border-t-[0.5px] border-border-light font-primary">
-              <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4">
-                <div className="text-typography-800 font-medium text-lg">
-                  {t("review.details.comments")}
-                </div>
+          <div className="w-full border-t-[0.5px] border-border-light font-primary">
+            <div className="w-full h-full overflow-hidden flex flex-col gap-4 pt-4">
+              <div className="text-typography-800 font-medium text-lg">
+                {t("review.details.comments")}
               </div>
-              <GeneralCommentsToShow
-                generalComments={generalComments}
-                handleLoadMore={handleGeneralCommentsLoadMore}
-                hasMoreComments={hasMoreGeneralComments}
-                isLoading={isGetGeneralCommentsLoading}
-                setComments={setGeneralComments}
-                deletedReplyId={deletedReplyId}
-                setDeletedReplyId={setDeletedReplyId}
-                changedReply={changedReply}
-                onReplyChange={handleReplyChange}
-                isFeedOwner={isFeedOwner}
-                show
-                isScribeReview={isScribeReview}
-              />
             </div>
-          )}
+            <GeneralCommentsToShow
+              generalComments={generalComments}
+              handleLoadMore={handleGeneralCommentsLoadMore}
+              hasMoreComments={hasMoreGeneralComments}
+              isLoading={isGetGeneralCommentsLoading}
+              setComments={setGeneralComments}
+              deletedReplyId={deletedReplyId}
+              setDeletedReplyId={setDeletedReplyId}
+              changedReply={changedReply}
+              onReplyChange={handleReplyChange}
+              isFeedOwner={isFeedOwner}
+              show
+              isScribeReview={isScribeReview}
+            />
+          </div>
         </div>
         <ReviewCommentsSidepanel
           isFeedOwner={isFeedOwner}
@@ -630,27 +631,33 @@ export const ReviewDetails = () => {
         description={reviewDetails?.scenario?.description}
         coverImageUrl={reviewDetails?.scenario?.coverImageUrl}
         coverVideoUrl={reviewDetails?.scenario?.coverVideoUrl}
-        headerTitle="Simulation"
-        headerSubtitle="Details"
-        scenarioLabel="Scenario:"
+        headerTitle={t("learn.details.modal.headerTitle")}
+        headerSubtitle={t("learn.details.modal.headerSubtitle")}
+        scenarioLabel={t("common.scenario")}
         showActionButtons={false}
         onClickOutside={() => setShowSimulationDetailsModal(false)}
       />
       <ShareForReview
-        isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && showShareForReviewModal}
+        isOpen={showShareForReviewModal}
         onClose={() => setShowShareForReviewModal(false)}
         summaryDetails={reviewDetails}
         onNoteChange={(note: string) =>
           handleCreateReview({ status: reviewDetails?.reviewStatus, note: note })
         }
-        shareLabel={reviewDetails?.note?.length > 0 ? "Save report" : "Add"}
-        modalHeader={reviewDetails?.note?.length > 0 ? "Edit note" : "Add note"}
+        
+        shareLabel={reviewDetails?.note?.length > 0 ? t("common.save") : t("common.add")}
+        modalHeader={
+          reviewDetails?.note?.length > 0
+            ? t("review.details.editNote")
+            : t("review.details.addNote")
+        }
+
         sessionCreatedAt={reviewDetails?.createdAt}
         sessionCallDuration={
           reviewDetails?.scenarioSession?.duration || reviewDetails?.scribeSession?.duration
         }
         sessionReviewCreatedAt={reviewDetails?.createdAt}
-        tag={isScribeReview ? "Scribe" : "Simulation"}
+        tag={isScribeReview ? TagType.SCRIBE : TagType.SIMULATION}
       />
     </div>
   );

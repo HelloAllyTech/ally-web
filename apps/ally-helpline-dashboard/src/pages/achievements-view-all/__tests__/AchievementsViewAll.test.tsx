@@ -43,18 +43,20 @@ const {
   mockUseUploadProfileImageMutation: vi.fn(),
   mockUseUser: vi.fn(),
   mockLocation: { state: null, pathname: "/achievements", search: "", hash: "" },
+  mockFeatureFlags: {},
 }));
 
 // Mock API
 vi.mock("@api", () => ({
-  useGetAvailableBadgesQuery: () => mockUseGetAvailableBadgesQuery(),
-  useGetMyBadgesQuery: () => mockUseGetMyBadgesQuery(),
-  useUpdateBadgeViewStatusMutation: () => mockUseUpdateBadgeViewStatusMutation(),
-  useLazyGetUserQuery: () => mockUseLazyGetUserQuery(),
-  useLazyGetPermissionsQuery: () => mockUseLazyGetPermissionsQuery(),
-  useGetProfileImageUrlMutation: () => mockUseGetProfileImageUrlMutation(),
-  useDeleteProfileImageMutation: () => mockUseDeleteProfileImageMutation(),
-  useUploadProfileImageMutation: () => mockUseUploadProfileImageMutation(),
+  useGetAvailableBadgesQuery: (...args: any[]) => mockUseGetAvailableBadgesQuery(...args),
+  useGetMyBadgesQuery: (...args: any[]) => mockUseGetMyBadgesQuery(...args),
+  useUpdateBadgeViewStatusMutation: (...args: any[]) =>
+    mockUseUpdateBadgeViewStatusMutation(...args),
+  useLazyGetUserQuery: (...args: any[]) => mockUseLazyGetUserQuery(...args),
+  useLazyGetPermissionsQuery: (...args: any[]) => mockUseLazyGetPermissionsQuery(...args),
+  useGetProfileImageUrlMutation: (...args: any[]) => mockUseGetProfileImageUrlMutation(...args),
+  useDeleteProfileImageMutation: (...args: any[]) => mockUseDeleteProfileImageMutation(...args),
+  useUploadProfileImageMutation: (...args: any[]) => mockUseUploadProfileImageMutation(...args),
 }));
 
 // Mock feature flags
@@ -818,6 +820,23 @@ describe("AchievementsViewAll Component", () => {
 
       const heading = screen.getByRole("heading", { level: 1 });
       expect(heading).toHaveTextContent("Achievements");
+    });
+  });
+
+  /**
+   * TEST GROUP: Localization
+   */
+  describe("Localization", () => {
+    it("passes current language code to badges query", () => {
+      render(
+        <TestWrapper>
+          <AchievementsViewAll />
+        </TestWrapper>,
+      );
+
+      expect(mockUseGetAvailableBadgesQuery).toHaveBeenCalledWith({
+        languageCode: expect.any(String),
+      });
     });
   });
 });

@@ -82,7 +82,7 @@ export const AutoExpandableTextarea: React.FC<AutoExpandableTextareaProps> = ({
         placeholder={placeholder}
         disabled={disabled}
         maxLength={maxLength}
-        className={`w-full mt-[-8px] !text-md px-0 py-0 text-typography-900 placeholder:text-typography-600 focus:outline-none disabled:bg-neutral-100 disabled:text-typography-800 resize-none overflow-y-auto custom-scrollbar placeholder:font-normal ${className}`}
+        className={`w-full mt-[-8px] !text-md px-0 py-0 text-typography-900 placeholder:text-typography-600 focus:outline-none disabled:bg-neutral-100 disabled:text-typography-800 resize-none overflow-y-auto custom-scrollbar placeholder:font-normal relative ${className}`}
       />
       {maxLength != null && (
         <div

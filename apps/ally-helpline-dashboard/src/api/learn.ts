@@ -35,6 +35,7 @@ import {
   GetSimulationSkillsResponse,
   GetChatHistoryResponse,
   Prompt,
+  PresignedUrlResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -45,12 +46,16 @@ const learnAPI = baseAPI.injectEndpoints({
      * Get all scenarios available in the Learn catalog.
      * @returns {Promise<GetScenariosResponse>} List of scenarios
      */
-    getScenarios: builder.query<{ data: Scenario[] }, { isPrivate: boolean }>({
-      query: ({ isPrivate }) => ({
+    getScenarios: builder.query<
+      { data: Scenario[] },
+      { isPrivate: boolean; languageCode?: string }
+    >({
+      query: ({ isPrivate, languageCode }) => ({
         url: isPrivate
           ? ApiEndpoints.LEARN.GET_SCENARIOS_PRIVATE
           : ApiEndpoints.LEARN.GET_SCENARIOS,
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
     }),
 
@@ -61,12 +66,12 @@ const learnAPI = baseAPI.injectEndpoints({
      * @returns {Promise<GetScenarioResponse>} Scenario details
      */
     getScenario: builder.query<Scenario, GetScenarioInput>({
-      query: ({ scenarioId, isPrivate }) => ({
+      query: ({ scenarioId, isPrivate, languageCode }) => ({
         url: isPrivate
           ? ApiEndpoints.LEARN.GET_SCENARIO(scenarioId)
           : ApiEndpoints.LEARN.GET_SCENARIO_PUBLIC(scenarioId),
         method: HttpMethod.GET,
-        params: { scenarioId },
+        params: { scenarioId, languageCode },
       }),
     }),
 
@@ -76,7 +81,7 @@ const learnAPI = baseAPI.injectEndpoints({
      */
     getScenarioPathways: builder.query<
       GetScenarioPathwaysResponse,
-      { offset?: number; limit?: number }
+      { offset?: number; limit?: number; languageCode?: string }
     >({
       query: (params = {}) => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAYS,
@@ -90,10 +95,14 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {string} pathwayId - Pathway identifier
      * @returns {Promise<ScenarioPathwayDetails>} Pathway details with scenarios
      */
-    getScenarioPathwayDetails: builder.query<ScenarioPathwayDetails, string>({
-      query: pathwayId => ({
+    getScenarioPathwayDetails: builder.query<
+      ScenarioPathwayDetails,
+      { pathwayId: string; languageCode?: string }
+    >({
+      query: ({ pathwayId, languageCode }) => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO_PATHWAY_DETAILS(pathwayId),
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
       providesTags: [TAG_TYPES.SCENARIO_PATHWAY_DETAILS],
     }),
@@ -119,9 +128,10 @@ const learnAPI = baseAPI.injectEndpoints({
      * @returns {Promise<EndSimulationResponse>} End simulation response
      */
     endSimulation: builder.mutation<EndSimulationResponse, EndSimulationInput>({
-      query: params => ({
-        url: ApiEndpoints.LEARN.END_SIMULATION(params.sessionId),
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.END_SIMULATION(sessionId),
         method: HttpMethod.POST,
+        body: { enableRecommendations: true },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION_LOGS, TAG_TYPES.SIMULATION_CREDITS],
     }),
@@ -174,6 +184,7 @@ const learnAPI = baseAPI.injectEndpoints({
       query: sessionId => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_SUMMARY(sessionId),
         method: HttpMethod.GET,
+        params: { enableRecommendations: true },
       }),
       providesTags: [TAG_TYPES.SIMULATION_SUMMARY],
     }),
@@ -257,7 +268,10 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {Record<string, any>} [params] - Optional query parameters (e.g., { offset: number, limit: number })
      * @returns {Promise<ScenarioCaseDetails[]>} List of scenario cases
      */
-    getScenarioCases: builder.query<GetScenarioCasesResponse, Record<string, any>>({
+    getScenarioCases: builder.query<
+      GetScenarioCasesResponse,
+      { offset?: number; limit?: number; languageCode?: string }
+    >({
       query: (params = {}) => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO_CASES,
         method: HttpMethod.GET,
@@ -269,10 +283,14 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {string} caseId - Case identifier
      * @returns {Promise<ScenarioCaseDetails>} Case details
      */
-    getScenarioCaseDetails: builder.query<ScenarioCaseDetails, string>({
-      query: caseId => ({
+    getScenarioCaseDetails: builder.query<
+      ScenarioCaseDetails,
+      { caseId: string; languageCode?: string }
+    >({
+      query: ({ caseId, languageCode }) => ({
         url: ApiEndpoints.LEARN.GET_SCENARIO_CASE_DETAILS(caseId),
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
       providesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
     }),
@@ -346,6 +364,12 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    getAudioUrl: builder.query<PresignedUrlResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.GET_AUDIO_URL(sessionId),
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
@@ -375,4 +399,6 @@ export const {
   useUpdateReflectionPromptMutation,
   useGetSimulationSkillsQuery,
   useGetChatHistoryQuery,
+  useGetAudioUrlQuery,
+  useLazyGetAudioUrlQuery,
 } = learnAPI;

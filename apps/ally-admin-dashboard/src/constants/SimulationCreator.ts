@@ -110,14 +110,15 @@ export const FORM_FIELD_TYPES = {
   IMAGE_UPLOAD: "image_upload",
   VIDEO_UPLOAD: "video_upload",
   CUSTOM: {
-    VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
     LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
+    OPENING_DIALOGUES: "opening_dialogues",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
     BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
     STATES_INSTRUCTION: "states_instruction",
+    BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -144,7 +145,6 @@ export const FORM_FIELD_IDS = {
   STATE_INSTRUCTIONS: "stateInstructions",
   CUSTOM_FIELDS: "customFields",
   OPENING_STATEMENTS: "openingStatements",
-  VOICE_ID: "voiceId",
   LANGUAGES_VOICES: "languageVoices",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   TONE: "tone",
@@ -155,7 +155,9 @@ export const FORM_FIELD_IDS = {
   MAX_TIME_VALUE: "maxTimeValue",
   SHOW_SCORE_METER: "showScoreMeter",
   OPT_GUARDRAILS: "optGuardrails",
+  CURRENT_STATE: "currentState",
   KNOWLEDGE_SOURCE: "knowledgeSources",
+  STATE_NAMES: "stateNames",
 };
 
 export const REGENERATE_TYPE = {
@@ -167,7 +169,23 @@ export const REGENERATE_TYPE = {
   BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
 };
 
-const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.\n\nImportant Instructions:\n - Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").\n - Allow the counselor to guide the conversation.\n - If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.\n - Maintain consistency with your life history but allow natural variation in tone and detail.\n - Respond naturally, as a real client would.\n - Keep answers concise (2–6 sentences), unless a longer response is natural.\n - Reveal information gradually, not all at once.\n - Start with few details and open up more as the counsellor asks questions.\n - Show authentic emotions and natural hesitations.\n - Do not give therapy advice or act as the counselor.\n - If sensitive topics arise, respond realistically but without graphic detail.\n - Keep each reply under ~120 words.`;
+export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
+
+export const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.
+
+Important Instructions:
+- Prefer first-person phrasing (e.g., "I feel…", "I've been struggling with…").
+- Allow the counselor to guide the conversation.
+- If the counselor is silent or open-ended, share one thought, feeling, or small story, then stop.
+- Maintain consistency with your life history but allow natural variation in tone and detail.
+- Respond naturally, as a real client would.
+- Keep answers concise (2–6 sentences), unless a longer response is natural.
+- Reveal information gradually, not all at once.
+- Start with few details and open up more as the counsellor asks questions.
+- Show authentic emotions and natural hesitations.
+- Do not give therapy advice or act as the counselor.
+- If sensitive topics arise, respond realistically but without graphic detail.
+- Keep each reply under ~120 words.`;
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
   //TODO: uncomment these fields once the fields are added to the API
@@ -208,7 +226,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       },
       {
         id: "characterProfileText",
-        label: "Character profile text",
+        label: "Character Backstory",
         type: FORM_FIELD_TYPES.TEXT,
         multiline: true,
         fullWidth: true,
@@ -276,29 +294,36 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: true,
       },
-      {
-        id: "knowledgeSources",
-        label: "Knowledge Sources",
-        type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
-        fullWidth: true,
-        visibleWhen: () => FEATURE_FLAGS_MAP.KNOWLEDGE_SOURCE_FLAG,
-      },
-      {
-        id: "behaviorInstructions",
-        label: "Behaviour Instructions",
-        type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
-        fullWidth: true,
-        isMandatory: true,
-        regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
-      },
-      {
-        id: "stateInstructions",
-        label: "State Instructions & Dialogues",
-        type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
-        fullWidth: true,
-        isMandatory: true,
-        regenerateType: REGENERATE_TYPE.STATE_INSTRUCTIONS,
-      },
+      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
+      ...(FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG
+        ? [
+            {
+              id: "behaviorInstructions",
+              label: "Behaviour Instructions",
+              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_STATES_INSTRUCTION,
+              fullWidth: true,
+              isMandatory: true,
+              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+            },
+          ]
+        : [
+            {
+              id: "behaviorInstructions",
+              label: "Behaviour Instructions",
+              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
+              fullWidth: true,
+              isMandatory: true,
+              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+            },
+            {
+              id: "stateInstructions",
+              label: "State Instructions & Dialogues",
+              type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
+              fullWidth: true,
+              isMandatory: true,
+              regenerateType: REGENERATE_TYPE.STATE_INSTRUCTIONS,
+            },
+          ]),
 
       {
         id: "customFields",
@@ -308,21 +333,11 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isDashedLineAbove: true,
       },
       {
-        id: "openingStatements",
-        label: "Opening Dialogues",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
+        id: "knowledgeSources",
+        label: "Knowledge Sources",
+        type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
         fullWidth: true,
-        maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.OPENING_STATEMENTS,
-        isMandatory: true,
-      },
-      {
-        id: "voiceId",
-        label: "Voice",
-        type: FORM_FIELD_TYPES.CUSTOM.VOICE_DROPDOWN,
-        isMandatory: true,
-        fullWidth: true,
+        visibleWhen: () => FEATURE_FLAGS_MAP.KNOWLEDGE_SOURCE_FLAG,
       },
       {
         id: "languageVoices",
@@ -332,9 +347,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
+        id: "openingStatements",
+        label: "Opening Dialogues",
+        type: FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES,
+        fullWidth: true,
+        isMandatory: true,
+      },
+      {
         id: "linguisticStyleSamples",
         label: "Linguistic Style Samples",
         type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
+        isMandatory: true,
         fullWidth: true,
       },
       {
@@ -400,6 +423,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         disabled: true,
+      },
+      {
+        id: "currentState",
+        label: "Current State",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
       },
     ] as FormFieldConfig[],
   },
@@ -469,18 +498,14 @@ export const EVENT_MANAGEMENT_TABLE_COLUMNS = [
     options: [],
     minWidth: 120,
   },
-  ...(FEATURE_FLAGS_MAP.MIN_TRIGGER_COUNT_FLAG
-    ? [
-        {
-          id: "occurrenceInterval",
-          label: "Occurrence Interval",
-          accessor: "occurrenceInterval",
-          dataType: cellTypes.number,
-          options: [],
-          minWidth: 120,
-        },
-      ]
-    : []),
+  {
+    id: "occurrenceInterval",
+    label: "Occurrence Interval",
+    accessor: "occurrenceInterval",
+    dataType: cellTypes.number,
+    options: [],
+    minWidth: 120,
+  },
   {
     id: "maxOccurrences",
     label: "Max occurrences",
@@ -551,6 +576,13 @@ export const SCENARIO_VOICE_COLUMNS = [
     accessor: "name",
     dataType: cellTypes.editableText,
     minWidth: 200,
+  },
+  {
+    id: "preview",
+    label: "Preview",
+    accessor: "preview",
+    dataType: cellTypes.previewAudio,
+    minWidth: 120,
   },
   {
     id: "provider",
@@ -649,7 +681,7 @@ export const PROMPT_COLUMNS = [
     label: "Prompt Name",
     accessor: "name",
     dataType: cellTypes.wrapText,
-    minWidth: 280,
+    minWidth: 500,
     editable: false,
   },
   {
@@ -657,7 +689,7 @@ export const PROMPT_COLUMNS = [
     label: "Description",
     accessor: "description",
     dataType: cellTypes.wrapText,
-    minWidth: 400,
+    minWidth: 1000,
     editable: false,
   },
   {
@@ -665,12 +697,19 @@ export const PROMPT_COLUMNS = [
     label: "Created Date",
     accessor: "createdAt",
     dataType: cellTypes.normalText,
-    minWidth: 150,
+    minWidth: 250,
     editable: false,
   },
 ];
 
 export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
+  {
+    id: "coverImageUrl",
+    label: "Cover Image",
+    accessor: "coverImageUrl",
+    dataType: cellTypes.image,
+    minWidth: 180,
+  },
   {
     id: "name",
     label: "Name",
@@ -726,6 +765,13 @@ export const CHARACTER_LIBRARY_TABLE_COLUMNS = [
     dataType: cellTypes.dropdown,
     options: SEXUAL_ORIENTATION_OPTIONS,
     minWidth: 180,
+  },
+  {
+    id: "characterProfileText",
+    label: "Character Backstory",
+    accessor: "characterProfileText",
+    dataType: cellTypes.wrapText,
+    minWidth: 300,
   },
 ];
 export const USER_BADGES_TABLE_COLUMNS = [
@@ -818,6 +864,54 @@ export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
   },
 ];
 
+export const BEHAVIOUR_STATES = [
+  { stateId: "-1", label: "State -1 Instructions" },
+  { stateId: "1", label: "State 1 Instructions" },
+  { stateId: "2", label: "State 2 Instructions" },
+  { stateId: "3", label: "State 3 Instructions" },
+];
+
+export const VALID_STATE_INSTRUCTION_IDS = new Set(BEHAVIOUR_STATES.map(s => s.stateId));
+
+export function isValidStateInstructionId(stateId: unknown): boolean {
+  if (stateId === undefined || stateId === null) return false;
+  return VALID_STATE_INSTRUCTION_IDS.has(String(stateId));
+}
+
+export const BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH = 1000;
+
+export const BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS = [
+  {
+    id: "category",
+    label: "Category",
+    accessor: "category",
+    placeholder: "Select category",
+    dataType: cellTypes.dropdown,
+    options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
+    minWidth: 180,
+    width: "14%",
+  },
+  {
+    id: "behaviors",
+    label: "Helper behaviour classes",
+    accessor: "behaviors",
+    placeholder: "Add behaviour",
+    dataType: cellTypes.dropdownTags,
+    minWidth: 220,
+    width: "18%",
+  },
+  ...BEHAVIOUR_STATES.map(state => ({
+    id: `stateInstruction_${state.stateId}`,
+    label: state.label,
+    accessor: `stateInstruction_${state.stateId}`,
+    placeholder: "Add instruction",
+    dataType: cellTypes.editableText,
+    minWidth: 190,
+    width: "17%",
+    maxLength: BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH,
+  })),
+];
+
 export const STATES_INSTRUCTION_TABLE_HEADERS = [
   {
     key: "stateId",
@@ -825,6 +919,7 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
     editable: false,
     format: (value: any) => `State ${value}`,
   },
+  { key: "name", header: "Name", editable: true },
   { key: "instruction", header: "Instruction", editable: true },
   {
     key: "dialogues",
@@ -835,9 +930,9 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
   },
 ];
 
-export const DEFAULT_STATE_INSTRUCTIONS = [
-  { stateId: "1", instruction: "", dialogues: [] },
-  { stateId: "2", instruction: "", dialogues: [] },
-  { stateId: "3", instruction: "", dialogues: [] },
-  { stateId: "4", instruction: "", dialogues: [] },
-];
+export const DEFAULT_STATE_INSTRUCTIONS = BEHAVIOUR_STATES.map(({ stateId }) => ({
+  stateId,
+  name: "",
+  instruction: "",
+  dialogues: [] as string[],
+}));

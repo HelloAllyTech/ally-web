@@ -54,7 +54,7 @@ const createTestStore = () =>
     preloadedState: {
       user: {
         isAuthenticated: true,
-        user: { name: "Test User", id: "user-123" },
+        user: { name: "Test User", id: 123, userId: 123 },
         permissions: [],
         availableChatTypes: [],
       },
@@ -121,7 +121,9 @@ describe("useStartSimulation", () => {
       languageId: 1,
     });
     expect(mockOnSuccess).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith("/simulation/session-123", { replace: false });
+    expect(mockNavigate).toHaveBeenCalledWith("/simulation/session-123/Test Scenario", {
+      replace: false,
+    });
     expect(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA)).toBeTruthy();
   });
 

@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { DropdownField, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
+import { DropdownField, FEATURE_FLAGS_MAP, MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
@@ -17,12 +17,12 @@ import {
   FallbackUI,
   CreditInfo,
   CreditsDisplay,
-  MaxActiveUsersDialog,
 } from "@components";
 import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits, useStartSimulation } from "@hooks";
 import { LanguageOption } from "@types";
 
+import i18n from "../../i18n";
 import { learnPageExpandedVariants } from "../learn/constants";
 
 export const Scenario: FC = () => {
@@ -61,6 +61,7 @@ export const Scenario: FC = () => {
   } = useGetScenarioQuery({
     scenarioId: id,
     isPrivate: isAuthenticated(),
+    languageCode: i18n.language,
   });
   const [endSimulation] = useEndSimulationMutation();
 
@@ -74,6 +75,8 @@ export const Scenario: FC = () => {
       const errorData = error as { data?: { statusCode?: number; entityId?: string } };
       if (errorData.data?.statusCode === 400 && errorData?.data?.entityId) {
         setIsExistingSimulationConfirmOpen(true);
+      } else if (errorData.data?.statusCode === 429) {
+        setIsMaxActiveUsersPopupOpen(true);
       }
     },
   });
@@ -159,6 +162,11 @@ export const Scenario: FC = () => {
       setNoEnoughCredits(false);
     }
     setButtonDisable(true);
+  };
+
+  const handleMaxActiveUsersRetry = () => {
+    setIsMaxActiveUsersPopupOpen(false);
+    handleStartSimulation();
   };
   // TODO: Add loading fallback UI for scenario
 
@@ -260,7 +268,14 @@ export const Scenario: FC = () => {
               <MaxActiveUsersDialog
                 open={isMaxActiveUsersPopupOpen}
                 onClose={() => setIsMaxActiveUsersPopupOpen(false)}
-                onRetry={() => {}}
+                onRetry={handleMaxActiveUsersRetry}
+                translations={{
+                  title: t("common.maxActiveUsers.title"),
+                  description: t("common.maxActiveUsers.description"),
+                  retry: t("common.maxActiveUsers.retry"),
+                  manualRetry: t("common.maxActiveUsers.manualRetry"),
+                  autoRetry: t("common.maxActiveUsers.autoRetry"),
+                }}
               />
             )}
           </motion.div>

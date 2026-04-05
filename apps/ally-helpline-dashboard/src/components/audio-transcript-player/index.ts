@@ -1,1 +1,1 @@
-export { AudioTranscriptPlayer } from "./AudioTranscriptPlayer";
+export { AudioTranscriptPlayer, type AudioTranscriptSeekRequest } from "./AudioTranscriptPlayer";

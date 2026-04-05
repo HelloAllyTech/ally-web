@@ -7,7 +7,6 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, Toggle } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
@@ -15,12 +14,7 @@ import {
 } from "@api";
 import { Comment } from "@assets";
 import { AskAiTab, ReflectionTab, SkillsTab, ToggleSwitch, ShareForReview } from "@components";
-import {
-  Permissions,
-  REVIEW_PRIVACY_OPTIONS,
-  REVIEW_PRIVACY_OPTIONS_VALUES,
-  ROUTES,
-} from "@constants";
+import { Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { FeedbackDialog, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { RootState } from "@store";
 import { SessionType, ShareForReviewsInput } from "@types";
@@ -124,27 +118,19 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
             opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
           }}
         >
-          {FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG ? (
-            <div className="flex items-center gap-2">
-              <span className="font-primary font-normal text-sm">Share for review</span>
-              <ToggleSwitch
-                enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
-                onChange={(value: boolean) => {
-                  handleToggleChange(
-                    value
-                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                  );
-                }}
-              />
-            </div>
-          ) : (
-            <Toggle
-              items={REVIEW_PRIVACY_OPTIONS(t)}
-              initialValue={summary?.reviewStatus}
-              onChange={() => {}}
+          <div className="flex items-center gap-2">
+            <span className="font-primary font-normal text-sm">Share for review</span>
+            <ToggleSwitch
+              enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
+              onChange={(value: boolean) => {
+                handleToggleChange(
+                  value
+                    ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                    : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                );
+              }}
             />
-          )}
+          </div>
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
@@ -166,7 +152,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         </div>
       )}
       <ShareForReview
-        isOpen={FEATURE_FLAGS_MAP.SHARE_FOR_REVIEW_FLAG && shareForReview}
+        isOpen={shareForReview}
         onClose={() => {
           setShareForReview(false);
         }}
@@ -192,7 +178,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           sessionId={summaryId}
           summaryData={summaryData}
           retryMaxReached={retryMaxReached}
-          className="max-h-[calc(100vh-150px)]"
+          className="h-full min-h-0 flex flex-col overflow-hidden"
         />
       ),
     },

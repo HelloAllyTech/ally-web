@@ -1,4 +1,8 @@
-import { FORM_FIELD_IDS, SIMULATION_CREATOR_FIELD_GROUPS } from "@constants";
+import {
+  FORM_FIELD_IDS,
+  isValidStateInstructionId,
+  SIMULATION_CREATOR_FIELD_GROUPS,
+} from "@constants";
 import { GetSimulationByIdResponse, knowledgeSource } from "@types";
 
 export const getCreateSimulationSubSectionById = (id: string) => {
@@ -22,15 +26,17 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     openingStatements: Array.isArray(data?.metadata?.openingStatements)
       ? data.metadata.openingStatements.join("\n")
       : (data?.metadata?.openingStatements ?? ""),
+    translationOpeningStatements: data.translationOpeningStatements ?? {},
+    openingDialoguePrimaryLanguageId: data.openingDialoguePrimaryLanguageId ?? null,
     personality: data?.metadata?.personality,
     profession: data?.metadata?.profession,
     sessionBehaviorGuidelines: data?.metadata?.sessionBehaviorGuidelines,
     sexualOrientation: data?.metadata?.sexualOrientation,
     startingState: data?.metadata?.startingState,
     tone: data?.metadata?.tone,
-    voiceId: data?.metadata?.voiceId,
     languageVoices: (data?.metadata as any)?.languageVoices,
     linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
+    allowedFillerWords: (data?.metadata as any)?.allowedFillerWords,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
     difficultyLevel: data?.difficultyLevel,
@@ -58,11 +64,20 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     timerMode: data?.metadata?.timerMode,
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
-    stateInstructions: data?.metadata?.stateInstructions,
-    behaviorInstructions: data?.behaviorInstructions ?? [],
+    currentState: data?.metadata?.currentState,
+    stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
+      ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
+      : data?.metadata?.stateInstructions,
+    behaviorInstructions: (data?.behaviorInstructions ?? []).map(beh => ({
+      ...beh,
+      stateInstructions: (beh.stateInstructions ?? []).filter(si =>
+        isValidStateInstructionId(si?.stateId),
+      ),
+    })),
     showScoreMeter: data?.metadata?.showScoreMeter,
     characterProfileText: data?.metadata?.characterProfileText,
     competency: data?.competency,
+    stateNames: (data?.metadata as any)?.stateNames ?? [],
     knowledgeSources: data?.metadata?.knowledgeSources?.map((source: knowledgeSource) => ({
       id: source.id,
       title: source.title,

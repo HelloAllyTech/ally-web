@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { Tooltip } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
@@ -15,10 +15,17 @@ import {
   useCreateScribeReviewMutation,
   useUpdateScribeReviewMutation,
   useGetCallSummaryQuery,
+  useGetTranscriptQuery,
 } from "@api";
 
 import { Archive, Comment, Delete, Download, Unarchive } from "@assets";
-import { Button, ButtonVariant, ShareForReview, ToggleSwitch } from "@components";
+import {
+  Button,
+  ButtonVariant,
+  ShareForReview,
+  ToggleSwitch,
+  TranscriptListing,
+} from "@components";
 import { CallProvider, Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
@@ -26,15 +33,15 @@ import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import { toolTipStyles } from "@src/constants";
 import ArchiveDialog from "@src/pages/calls/components/ArchiveDialog";
 import { RootState } from "@store";
-import { ChatSummaryStatus, SessionType, ShareForReviewsScribeInput } from "@types";
-
 import {
-  SummaryHeader,
-  CallTranscriptTab,
-  SummarySidebarWrapper,
-  DeleteCallLogConfirmationDialog,
-} from ".";
-import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
+  ChatSummaryStatus,
+  SessionType,
+  ShareForReviewsScribeInput,
+  TranscriptMessage,
+} from "@types";
+
+import { SummaryHeader, SummarySidebarWrapper, DeleteCallLogConfirmationDialog } from ".";
+import { SUMMARY_FEEDBACK_TIMEOUT, TRANSCRIPT_PAGE_SIZE } from "./constants";
 import { CallSummarySidebarProps } from "./types";
 
 const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
@@ -46,7 +53,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   showArchiveButton = true,
 }) => {
   const { t } = useTranslation();
-  const { permissions } = useSelector((state: RootState) => state.user);
+  const { permissions, user } = useSelector((state: RootState) => state.user);
 
   const [selectedComment] = useState<string>("");
   const [deleteDialogChatId, setDeleteDialogChatId] = useState<number | null>(null);
@@ -68,8 +75,56 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     isLoading: isSummaryLoading,
     error: summaryLoadingError,
   } = useGetCallSummaryQuery(callSummary?.id, { skip: !callSummary?.id });
-  const [createScribeReview] = useCreateScribeReviewMutation();
-  const [updateScribeReview] = useUpdateScribeReviewMutation();
+  const [createScribeReview, { isLoading: isCreateReviewLoading }] =
+    useCreateScribeReviewMutation();
+  const [updateScribeReview, { isLoading: isUpdateReviewLoading }] =
+    useUpdateScribeReviewMutation();
+
+  const [transcriptOffset, setTranscriptOffset] = useState(0);
+  const [transcriptList, setTranscriptList] = useState<TranscriptMessage[]>([]);
+
+  const {
+    data: transcriptData,
+    isLoading: isGetTranscriptLoading,
+    refetch: refetchTranscript,
+  } = useGetTranscriptQuery(
+    {
+      chatId: individualCallSummary?.id,
+      offset: transcriptOffset,
+      limit: TRANSCRIPT_PAGE_SIZE,
+      sortBy: "startSeconds",
+    },
+    { skip: !individualCallSummary?.id },
+  );
+
+  useEffect(() => {
+    if (!individualCallSummary?.id) return;
+    setTranscriptOffset(0);
+    setTranscriptList([]);
+  }, [individualCallSummary?.id]);
+
+  useEffect(() => {
+    if (!transcriptData?.data?.length) return;
+    if (transcriptOffset === 0) {
+      setTranscriptList(transcriptData.data);
+    } else {
+      setTranscriptList(prev => {
+        const existingKeys = new Set(
+          prev.map(msg => `${msg.senderId}-${msg.startSeconds}-${msg.content}`),
+        );
+        const newMessages = transcriptData.data.filter(
+          msg => !existingKeys.has(`${msg.senderId}-${msg.startSeconds}-${msg.content}`),
+        );
+        return [...prev, ...newMessages];
+      });
+    }
+  }, [transcriptData, transcriptOffset]);
+
+  const handleTranscriptLoadMore = () => {
+    const total = transcriptData?.count ?? 0;
+    if (transcriptOffset + TRANSCRIPT_PAGE_SIZE >= total) return;
+    setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
+  };
 
   const { exportTxtFromText } = useFileExport();
 
@@ -214,11 +269,34 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     );
   };
 
-  const TranscriptionSubTab = () => (
-    <div className="flex flex-1 overflow-y-hidden h-[calc(100vh-75px)]">
-      <CallTranscriptTab callSummary={callSummary} />
-      {renderComments()}
-    </div>
+  const transcriptionContent = useMemo(
+    () => (
+      <div className="flex flex-col overflow-y-hidden border rounded-md p-3 gap-3 h-full">
+        <TranscriptListing
+          transcriptList={transcriptList}
+          handleLoadMore={handleTranscriptLoadMore}
+          isLoading={isGetTranscriptLoading}
+          hasMore={transcriptList.length < (transcriptData?.count ?? 0)}
+          agentName={t("transcription.clientLabel")}
+          counsellorName={
+            individualCallSummary?.counselorId === user?.id
+              ? t("transcription.youLabel")
+              : t("transcription.counsellorLabel")
+          }
+          className="max-h-[calc(100vh-100px)] overflow-y-auto w-full"
+        />
+        {transcriptList.length > 0 && renderComments()}
+      </div>
+    ),
+    [
+      transcriptList,
+      handleTranscriptLoadMore,
+      isGetTranscriptLoading,
+      transcriptData?.count,
+      t,
+      callSummary?.details?.comments,
+      selectedComment,
+    ],
   );
 
   const hasAdequatePermission = (permission: Permissions) => permissions?.includes(permission);
@@ -261,46 +339,6 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         {t("common.summary", "Summary")}
       </span>
       <div className="flex items-center gap-3">
-        {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
-          individualCallSummary?.details?.transcript?.length > 0 &&
-          !callSummary?.archivedAt && (
-            <div className="flex items-center gap-2">
-              <span className="font-primary font-normal text-sm">Share for review</span>{" "}
-              <ToggleSwitch
-                enabled={
-                  individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                }
-                onChange={(value: boolean) => {
-                  handleToggleChange(
-                    value
-                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                  );
-                }}
-              />
-            </div>
-          )}
-        {individualCallSummary?.reviewId && (
-          <>
-            <div className="border-l border-border h-5" />
-            <Tooltip title="Comments" arrow>
-              <button
-                onClick={() =>
-                  navigate(
-                    ROUTES.SCRIBE_REVIEW_DETAILS?.replace(
-                      ":reviewId",
-                      individualCallSummary.reviewId,
-                    ),
-                  )
-                }
-                className="flex items-center justify-center h-[40px] w-[40px]"
-              >
-                <Comment className="w-6 h-6 shrink-0" />
-                {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
-              </button>
-            </Tooltip>
-          </>
-        )}
         {extraHeaderList
           .filter(button => button.show)
           .map(button => (
@@ -323,6 +361,52 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               </span>
             </Tooltip>
           ))}
+        {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
+          individualCallSummary?.details?.transcript?.length > 0 &&
+          !callSummary?.archivedAt &&
+          callSummary?.counselorId === user?.id && (
+            <div
+              className="flex items-center gap-2 font-primary font-medium"
+              style={{
+                opacity: isCreateReviewLoading || isUpdateReviewLoading ? 0.5 : 1,
+              }}
+            >
+              <div className="border-l border-border h-5" />
+              <div className="flex items-center gap-2">
+                <span className="font-primary font-normal text-sm">Share for review</span>
+                <ToggleSwitch
+                  enabled={
+                    individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                  }
+                  onChange={(value: boolean) => {
+                    handleToggleChange(
+                      value
+                        ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                        : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                    );
+                  }}
+                />
+              </div>
+              {individualCallSummary?.reviewId && (
+                <Tooltip title="Comments" arrow slotProps={toolTipStyles}>
+                  <button
+                    onClick={() =>
+                      navigate(
+                        ROUTES.SCRIBE_REVIEW_DETAILS?.replace(
+                          ":reviewId",
+                          individualCallSummary.reviewId,
+                        ),
+                      )
+                    }
+                    className="flex items-center justify-center"
+                  >
+                    <Comment className="w-6 h-6 shrink-0" />
+                    {/* <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{TODO: Add count of unread messages}</div> */}
+                  </button>
+                </Tooltip>
+              )}
+            </div>
+          )}
       </div>
       <ShareForReview
         isOpen={shareForReview}
@@ -342,41 +426,56 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     </div>
   );
 
-  const tabList = [
-    {
-      id: 1,
-      label: t("common.summary", "Summary"),
-      permissions: [Permissions.VIEW_CHAT_DETAILS],
-      content: (
-        <CallSummary
-          headerContent={
-            <SummaryHeader
-              summaryName={summaryName}
-              setSummaryName={setSummaryName}
-              chatId={callSummary.id}
-              canEditSummary={canEditSummary}
-              counsellorId={callSummary.counselorId}
-            />
-          }
-          className="max-h-[calc(100vh-320px)]"
-          chatId={callSummary.id}
-          callSummary={individualCallSummary}
-          onRefetchSummary={refetchCallSummary}
-          postProcess={refetchCallLogs}
-          isInSidebar={true}
-          canEditSummary={canEditSummary}
-          isSummaryLoading={isSummaryLoading}
-          summaryLoadingError={summaryLoadingError}
-        />
-      ),
-    },
-    {
-      id: 2,
-      label: t("postSim.tabs.transcription", "Transcription"),
-      permissions: [Permissions.VIEW_TRANSCRIPTION],
-      content: <TranscriptionSubTab />,
-    },
-  ];
+  const tabList = useMemo(
+    () => [
+      {
+        id: 1,
+        label: t("common.summary", "Summary"),
+        permissions: [Permissions.VIEW_CHAT_DETAILS],
+        content: (
+          <CallSummary
+            headerContent={
+              <SummaryHeader
+                summaryName={summaryName}
+                setSummaryName={setSummaryName}
+                chatId={callSummary.id}
+                canEditSummary={canEditSummary}
+                counsellorId={callSummary.counselorId}
+              />
+            }
+            className="max-h-[calc(100vh-320px)]"
+            chatId={callSummary.id}
+            callSummary={individualCallSummary}
+            onRefetchSummary={refetchCallSummary}
+            postProcess={refetchCallLogs}
+            isInSidebar={true}
+            canEditSummary={canEditSummary}
+            isSummaryLoading={isSummaryLoading}
+            summaryLoadingError={summaryLoadingError}
+          />
+        ),
+      },
+      {
+        id: 2,
+        label: t("summary.tabs.transcript", "Annotated Transcript"),
+        permissions: [Permissions.VIEW_TRANSCRIPTION],
+        content: transcriptionContent,
+      },
+    ],
+    [
+      t,
+      summaryName,
+      callSummary.id,
+      callSummary.counselorId,
+      canEditSummary,
+      individualCallSummary,
+      refetchCallSummary,
+      refetchCallLogs,
+      isSummaryLoading,
+      summaryLoadingError,
+      transcriptionContent,
+    ],
+  );
 
   const permittedTabList = tabList.filter(tab =>
     tab.permissions?.some(item => hasAdequatePermission(item)),
@@ -448,11 +547,20 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
     }
   };
 
+  const onTabChange = (nextTabId: number) => {
+    if (nextTabId === 2 && transcriptList.length === 0) {
+      // 2 is the id of the Annotated Transcript tab
+      setTranscriptOffset(0);
+      refetchTranscript();
+    }
+  };
+
   return (
     <SummarySidebarWrapper
       onSidebarClose={onSidebarClose}
       tabList={permittedTabList}
       title={SidebarTitle}
+      onTabChange={onTabChange}
     >
       <FeedbackDialog
         open={showFeedbackDialog}

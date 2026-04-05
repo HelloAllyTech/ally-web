@@ -29,7 +29,7 @@ import { getChipValue } from "@utils";
 
 export const USERS_PAGE_SIZE = 20;
 
-export function useUserManagement(tenants: Tenant[], canEditUser?: boolean) {
+export function useUserManagement(tenants: Tenant[]) {
   const [search, setSearch] = useState<string>("");
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [addUsermodalOpen, setAddUserModalOpen] = useState<boolean>(false);
@@ -73,7 +73,7 @@ export function useUserManagement(tenants: Tenant[], canEditUser?: boolean) {
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [changeRole] = useChangeRoleMutation();
   const [addSimulationCreditLimit] = useAddSimulationCreditLimitMutation();
-  const { data: userRoles } = useGetRoleQuery(undefined, { skip: !canEditUser });
+  const { data: userRoles } = useGetRoleQuery();
 
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -206,7 +206,7 @@ export function useUserManagement(tenants: Tenant[], canEditUser?: boolean) {
       email: user.email,
       externalId: user.externalId,
       tenantId: user.tenantId,
-      roles: user.roles || [],
+      roles: user.roles?.length ? user.roles : user.role ? [user.role] : [],
     });
   };
 

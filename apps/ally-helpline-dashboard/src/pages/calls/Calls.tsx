@@ -139,7 +139,8 @@ export const Calls: FC = () => {
               )}
             </PermissionGuard>
             <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
-              {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
+              {(availableChatTypes?.includes(CallType.MICROPHONE_CHAT) ||
+                availableChatTypes?.includes(CallType.DICTATION_MODE)) && (
                 <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
                   <StartSession data-testid="calls-start-session-icon" />
                   {t("calls.actions.startSession")}
@@ -190,6 +191,8 @@ export const Calls: FC = () => {
         data-testid="calls-start-session-dialog"
         isOpen={isStartSessionDialogOpen}
         onClose={() => setIsStartSessionDialogOpen(false)}
+        showScribeMode={availableChatTypes?.includes(CallType.MICROPHONE_CHAT)}
+        showDictationMode={availableChatTypes?.includes(CallType.DICTATION_MODE)}
       />
       <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
         <AudioUploadDialog

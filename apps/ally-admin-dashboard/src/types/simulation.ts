@@ -35,6 +35,7 @@ export interface UseLiveKitRoomReturn {
 
 export interface stateInstruction {
   stateId: number;
+  name?: string;
   instruction: string;
   dialogues: string[];
 }
@@ -51,11 +52,17 @@ export enum enumBehaviourInstructionCategory {
   HELPER_SHOULD_DO = "SHOULD_DO",
   HELPER_SHOULD_NOT_DO = "SHOULD_NOT_DO",
 }
+export interface behaviourStateInstruction {
+  stateId: string;
+  instruction: string;
+}
+
 export interface behaviourInstruction {
   id?: string;
   category: enumBehaviourInstructionCategory;
   behaviors: string[];
   instructions: string[];
+  stateInstructions?: behaviourStateInstruction[];
 }
 
 export interface SimulationInput {
@@ -81,7 +88,6 @@ export interface SimulationInput {
   emotionalNeeds?: string;
   tone?: string;
   openingStatements?: string[];
-  voiceId?: string;
   agentGoal?: string;
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
@@ -92,14 +98,17 @@ export interface SimulationInput {
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
+  allowedFillerWords?: Record<string, string[]>;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
   maxTimeValue?: string;
   optGuardrails?: boolean;
+  currentState?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
   knowledgeSources?: KnowledgeSourceInput[];
+  translationOpeningStatements?: Record<string, string[]>;
 }
 
 export interface UpdateSimulationByIdInput {
@@ -171,10 +180,15 @@ export interface GetSimulationByIdResponse {
     showScoreMeter?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
+    currentState?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
     knowledgeSources?: knowledgeSource[];
+    linguisticStyleSamples?: Record<string, string[]>;
+    allowedFillerWords?: Record<string, string[]>;
   };
+  translationOpeningStatements?: Record<string, string[]>;
+  openingDialoguePrimaryLanguageId?: number | null;
   competency?: Competency;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
@@ -403,6 +417,9 @@ export interface CharacterData {
   currentLocation: string;
   genderIdentity: string;
   sexualOrientation: string;
+  coverImageUrl?: string;
+  coverVideoUrl?: string;
+  characterProfileText?: string;
   createdAt?: string;
   updatedAt?: string;
   createdBy?: number;
@@ -445,6 +462,21 @@ export interface HelperTagItem {
 export interface HelperTagInput {
   data: HelperTagItem[];
   count: number;
+}
+
+export type GetFillerTagsQueryParams = GetHelperTagsQueryParams;
+
+export interface FillerTagListResponse {
+  data: HelperTagItem[];
+  count: number;
+}
+
+export interface CreateFillerTagResponse {
+  id: string;
+  name: string;
+  createdBy?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Competency {

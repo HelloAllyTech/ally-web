@@ -25,6 +25,7 @@ export type FormData = {
   isPublic: boolean;
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
+  allowedFillerWords?: Record<string, string[]>;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;
@@ -32,7 +33,8 @@ export type FormData = {
   stateInstructions?: stateInstruction[];
   customFields?: CustomFieldType[];
   openingStatements: string;
-  voiceId: string;
+  translationOpeningStatements?: Record<string, string[]>;
+  openingDialoguePrimaryLanguageId?: number | null;
   tone: string;
   autoTerminationStatus?: boolean;
   experienceMode?: string;
@@ -41,6 +43,7 @@ export type FormData = {
   maxTimeValue?: string;
   showScoreMeter?: boolean;
   optGuardrails?: boolean;
+  currentState?: boolean;
   knowledgeSources?: knowledgeSource[];
 };
 
@@ -101,6 +104,7 @@ export interface Simulation {
   isAssignedToTenant: boolean;
   usage: string;
   triggerWarnings?: triggerWarning[];
+  createdByUserId: number;
 }
 
 export interface GetSimulationsQueryParams {
@@ -239,6 +243,7 @@ export interface Prompt {
   id?: string;
   name: string;
   description: string;
+  category?: string;
   promptCode: string;
   prompt: string;
   version?: number;
@@ -247,8 +252,10 @@ export interface Prompt {
   createdAt?: string;
   updatedAt?: string;
   isObsolete?: boolean;
-  /** Variable placeholders (e.g. {var_name}) parsed from prompt template, from API or fallback */
+  /** Source-synced variable placeholders available for runtime substitution */
   availableVariables?: string[];
+  kind?: string;
+  usesBlocks?: string[];
 }
 
 export interface GetPromptsQuery {
@@ -257,4 +264,6 @@ export interface GetPromptsQuery {
   offset?: number;
   sortBy?: string;
   order?: string;
+  /** When false, excludes prompts with kind="block" */
+  includeBlocks?: boolean;
 }

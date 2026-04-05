@@ -10,13 +10,13 @@ import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateScribeReviewMutation,
   useGetCallSummaryQuery,
+  useGetTranscriptQuery,
   useUpdateScribeReviewMutation,
 } from "@api";
 import { BackCircle, Comment } from "@assets";
 import { REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
-import { CallTranscriptTab } from "@pages/calls/components";
-import { ShareForReview, ToggleSwitch } from "@src/components";
-import { ShareForReviewsScribeInput } from "@types";
+import { ShareForReview, ToggleSwitch, TranscriptListing } from "@src/components";
+import { ShareForReviewsScribeInput, TranscriptMessage } from "@types";
 import { updateQueryParamListWithoutReload } from "@utils";
 
 import { CallSummary, StressBusterStep } from "./components";
@@ -28,7 +28,7 @@ import {
   getSelectedSection,
   isSourceDeeplink,
 } from "./utils";
-
+const TRANSCRIPT_PAGE_SIZE = 30;
 export const PostCallSummary = () => {
   const { chatId } = useParams();
   const { t } = useTranslation();
@@ -37,6 +37,7 @@ export const PostCallSummary = () => {
 
   const [selectedTab, setSelectedTab] = useState<SectionType>(SectionType.SessionSummary);
   const [shareForReview, setShareForReview] = useState<boolean>(false);
+  const [transcriptOffset, setTranscriptOffset] = useState(0);
 
   const {
     data: individualCallSummary,
@@ -46,6 +47,49 @@ export const PostCallSummary = () => {
   } = useGetCallSummaryQuery(Number(chatId));
   const [createScribeReview] = useCreateScribeReviewMutation();
   const [updateScribeReview] = useUpdateScribeReviewMutation();
+  const {
+    data: transcriptData,
+    isLoading: isGetTranscriptLoading,
+    refetch: refetchTranscript,
+  } = useGetTranscriptQuery(
+    {
+      chatId: individualCallSummary?.id,
+      offset: transcriptOffset,
+      limit: TRANSCRIPT_PAGE_SIZE,
+      sortBy: "startSeconds",
+    },
+    { skip: !individualCallSummary?.id },
+  );
+
+  const [transcriptList, setTranscriptList] = useState<TranscriptMessage[]>([]);
+
+  useEffect(() => {
+    if (!individualCallSummary?.id) return;
+    setTranscriptOffset(0);
+    setTranscriptList([]);
+  }, [individualCallSummary?.id]);
+
+  useEffect(() => {
+    if (!transcriptData?.data?.length) return;
+
+    if (transcriptOffset === 0) {
+      setTranscriptList(transcriptData.data);
+    } else {
+      const existingIds = new Set(
+        transcriptList.map(item => `${item.senderId}-${item.startSeconds}-${item.content}`),
+      );
+      const newMessages = transcriptData.data.filter(
+        msg => !existingIds.has(`${msg.senderId}-${msg.startSeconds}-${msg.content}`),
+      );
+      setTranscriptList(prev => [...prev, ...newMessages]);
+    }
+  }, [transcriptData, transcriptOffset, selectedTab]);
+
+  const handleTranscriptLoadMore = () => {
+    const total = transcriptData?.count ?? 0;
+    if (transcriptOffset + TRANSCRIPT_PAGE_SIZE >= total) return;
+    setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
+  };
 
   useEffect(() => {
     const sectionNumber = Number(getSelectedSection(searchParams));
@@ -177,7 +221,7 @@ export const PostCallSummary = () => {
       case SectionType.SessionSummary:
         return (
           <CallSummary
-            className="max-h-[calc(100vh-300px)]"
+            className="max-h-[calc(100vh-350px)]"
             chatId={Number(chatId)}
             callSummary={individualCallSummary}
             onRefetchSummary={refetchCallSummary}
@@ -186,7 +230,22 @@ export const PostCallSummary = () => {
           />
         );
       case SectionType.Transcript:
-        return <CallTranscriptTab callSummary={individualCallSummary} />;
+        return (
+          <div className="relative h-[calc(100vh-240px)] custom-scrollbar p-4 border border-gray-200 rounded-md overflow-y-auto">
+            <span className="text-typography-900 font-primary text-base font-medium">
+              {t("summary.tabs.transcript")}
+            </span>
+            <hr className="mb-5 mt-2 border-border-light" />
+            <TranscriptListing
+              transcriptList={transcriptList}
+              handleLoadMore={handleTranscriptLoadMore}
+              isLoading={isGetTranscriptLoading}
+              hasMore={transcriptList.length < (transcriptData?.count ?? 0)}
+              agentName={t("transcription.clientLabel")}
+              className="max-h-[calc(100vh-300px)] overflow-y-auto"
+            />
+          </div>
+        );
       default:
         return null;
     }
@@ -195,6 +254,10 @@ export const PostCallSummary = () => {
   const onTabChange = (_event: React.SyntheticEvent, newValue: SectionType) => {
     setSelectedTab(newValue);
 
+    if (newValue === SectionType.Transcript && transcriptList?.length === 0) {
+      setTranscriptOffset(0);
+      refetchTranscript();
+    }
     const queryParamList = [
       { key: SectionQueryKey, value: getNumberForSectionKey(newValue)?.toString() },
     ];

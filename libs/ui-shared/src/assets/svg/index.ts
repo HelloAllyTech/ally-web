@@ -1,6 +1,7 @@
 import AddComment from "./addComment.svg?react";
 import Focus from "./focus.svg?react";
 import Google from "./google.svg?react";
+import MaxActiveUsers from "./maxActiveUsers.svg?react";
 import MicOff from "./micOff.svg?react";
 import MicOffWhite from "./micOffWhite.svg?react";
 import MicOn from "./micOn.svg?react";
@@ -17,6 +18,7 @@ import Warning from "./warning.svg?react";
 
 export {
   Focus,
+  MaxActiveUsers,
   MicOff,
   MicOffWhite,
   MicOn,
