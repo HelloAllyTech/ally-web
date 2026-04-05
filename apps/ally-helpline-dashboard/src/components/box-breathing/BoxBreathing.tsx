@@ -14,8 +14,9 @@ import {
 } from "@assets";
 import { Button, ButtonVariant } from "@components";
 import { getKeyFromIndex } from "@utils";
-
-import { BOX_BREATHING_STEPS } from "./constants";
+import { useTranslation } from "react-i18next";
+import { getBoxBreathingSteps } from "./constants";
+// import { BOX_BREATHING_STEPS } from "./constants";
 import { BoxBreathingProps } from "./types";
 
 const BoxBreathing: FC<BoxBreathingProps> = ({
@@ -26,6 +27,8 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
   playOnMount = false,
   showViewSummaryButton = false,
 }) => {
+  const { t } = useTranslation();
+  const BOX_BREATHING_STEPS = getBoxBreathingSteps(t);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isMaximized, setIsMaximized] = useState(isFullScreenMode);

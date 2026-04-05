@@ -16,6 +16,7 @@ import {
   useUpdateScribeReviewMutation,
   useGetCallSummaryQuery,
 } from "@api";
+
 import { Archive, Comment, Delete, Download, Unarchive } from "@assets";
 import { Button, ButtonVariant, ShareForReview, ToggleSwitch } from "@components";
 import { CallProvider, Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
@@ -241,7 +242,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       show:
         hasAdequatePermission(Permissions.EXPORT_SUMMARY) &&
         callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
-      text: "Export summary",
+      text: t("exportSummary"),
     },
     {
       alt: "Archive",

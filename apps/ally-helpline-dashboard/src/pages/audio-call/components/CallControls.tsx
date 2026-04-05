@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 
 import { Focus, PauseIcon, ResumeIcon, StopIcon, Warning } from "@assets";
 import { ButtonGroup } from "@components";
-
+import { useTranslation } from "react-i18next";
 import { CallControlsProps } from "../types";
 
 const CallControls: FC<CallControlsProps> = ({
@@ -20,6 +20,7 @@ const CallControls: FC<CallControlsProps> = ({
   showFocusButton,
   showPauseTranscription,
 }) => {
+  const { t } = useTranslation();
   const [isMuteTooltipOpen, setIsMuteTooltipOpen] = useState(true);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const CallControls: FC<CallControlsProps> = ({
       isDisabled: isPauseTranscriptionDisabled,
       leftIcon: isPaused ? <ResumeIcon /> : <PauseIcon />,
       show: showPauseTranscription,
-      text: isPaused ? "Resume Transcription" : "Pause Transcription",
+      text: isPaused ? t("resumeNoteTaking") : t("pauseNoteTaking"),
     },
     {
       action: () => onFocusButtonClick(!isFocusMode),
@@ -41,7 +42,7 @@ const CallControls: FC<CallControlsProps> = ({
       isDisabled: isFocusButtonDisabled,
       leftIcon: <Focus className={isFocusMode ? "" : "[&_path]:fill-[#FFFFFF]"} />,
       show: showFocusButton,
-      text: isFocusMode ? "Focused" : "Focus",
+      text: isFocusMode ? t("turnFocusModeOff") : t("turnFocusModeOn"),
     },
     {
       action: onEndSessionClick,

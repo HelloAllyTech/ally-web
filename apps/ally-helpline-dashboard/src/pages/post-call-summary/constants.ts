@@ -889,7 +889,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.ObjectiveObservations,
     label: "Objective Observations",
-    placeholder: "Note factual observations or statements made by the client here.",
+    placeholder: "Document objective statements or observations shared by the clients.",
     sectionKey: SummarySectionKey.ObjectiveObservations,
     type: FieldType.Multiline,
   },

@@ -67,6 +67,21 @@ vi.mock("@components", () => ({
   ),
 }));
 
+
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        "resumeNoteTaking": "Resume note taking",
+        "pauseNoteTaking": "Pause note taking",
+        "turnFocusModeOn": "Turn focus mode on",
+       "turnFocusModeOff": "Turn focus mode off",
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe("CallControls Component", () => {
   const defaultProps: CallControlsProps = {
     isFocusMode: false,
@@ -260,25 +275,25 @@ describe("CallControls Component", () => {
     it("should show 'Pause Transcription' text when not paused", () => {
       render(<CallControls {...defaultProps} isPaused={false} />);
 
-      expect(screen.getByTestId("button-text-0")).toHaveTextContent("Pause Transcription");
+      expect(screen.getByTestId("button-text-0")).toHaveTextContent("Pause note taking");
     });
 
-    it("should show 'Resume Transcription' text when paused", () => {
+    it("should show 'Resume note taking' text when paused", () => {
       render(<CallControls {...defaultProps} isPaused={true} />);
 
-      expect(screen.getByTestId("button-text-0")).toHaveTextContent("Resume Transcription");
+      expect(screen.getByTestId("button-text-0")).toHaveTextContent("Resume note taking");
     });
 
-    it("should show 'Focus' text when not in focus mode", () => {
+    it("should show 'Turn focus mode on' text when not in focus mode", () => {
       render(<CallControls {...defaultProps} isFocusMode={false} />);
 
-      expect(screen.getByTestId("button-text-1")).toHaveTextContent("Focus");
+      expect(screen.getByTestId("button-text-1")).toHaveTextContent("Turn focus mode on");
     });
 
-    it("should show 'Focused' text when in focus mode", () => {
+    it("should show 'Turn focus mode off' text when in focus mode", () => {
       render(<CallControls {...defaultProps} isFocusMode={true} />);
 
-      expect(screen.getByTestId("button-text-1")).toHaveTextContent("Focused");
+      expect(screen.getByTestId("button-text-1")).toHaveTextContent("Turn focus mode off");
     });
 
     it("should show 'End session' text", () => {
@@ -723,8 +738,8 @@ describe("CallControls Component", () => {
       render(<CallControls {...defaultProps} />);
 
       expect(screen.getByText("Your data is safe")).toBeInTheDocument();
-      expect(screen.getByText("Pause Transcription")).toBeInTheDocument();
-      expect(screen.getByText("Focus")).toBeInTheDocument();
+      expect(screen.getByText("Pause note taking")).toBeInTheDocument();
+      expect(screen.getByText("Turn focus mode on")).toBeInTheDocument();
       expect(screen.getByText("End session")).toBeInTheDocument();
     });
 
