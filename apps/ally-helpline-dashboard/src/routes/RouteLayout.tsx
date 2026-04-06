@@ -11,6 +11,7 @@ import {
   SuspendedUser,
 } from "@pages";
 
+import { PageviewTracker } from "../analytics";
 import HybridRouteLayout from "./HybridRouteLayout";
 import PrivateRouteLayout from "./PrivateRouteLayout";
 import PublicLayout from "./PublicRouteLayout";
@@ -23,6 +24,8 @@ const RouteLayout = () => {
         v7_relativeSplatPath: true,
       }}
     >
+      {/* Fires $pageview to PostHog on every route transition */}
+      <PageviewTracker />
       <Routes>
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
