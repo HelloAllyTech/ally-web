@@ -103,7 +103,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
                   difficultyLevel={difficultyLevel}
                   score={score}
                   startTime={startTime}
-                  maxTimeSeconds={maxTimeSeconds}
+                  maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
                 />
               )}
               {checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (

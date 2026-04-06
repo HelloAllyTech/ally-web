@@ -6,7 +6,6 @@ import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { SessionGoalTimer } from "./SessionGoalTimer";
 import { BottomSection } from "./SimulationBottomSection";
 import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
@@ -234,14 +233,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           </button>
         )}
       </div>
-
-      {roomData?.timerMode && startTime && (
-        <SessionGoalTimer
-          startTime={startTime}
-          maxTimeSeconds={maxTimeSeconds}
-          translations={translations}
-        />
-      )}
 
       <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
         <SimulationInterface
