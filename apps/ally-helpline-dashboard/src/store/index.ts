@@ -1,12 +1,30 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, isRejectedWithValue } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
 import { baseAPI } from "@api/baseAPI";
+import { ANALYTICS_EVENTS, ANALYTICS_PROPS } from "@constants/analyticsEvents";
 import callsSlice from "@reducer/callsReducer";
 import chatHistorySlice from "@reducer/chatHistoryReducer";
 import chatStreamSlice from "@reducer/chatStreamReducer";
 import userSlice from "@reducer/userReducer";
+import { captureEvent } from "@utils/analytics";
+
+// Centralises API error tracking — fires once per failed RTK Query request
+const analyticsMiddleware = () => (next: (action: unknown) => unknown) => (action: unknown) => {
+  if (isRejectedWithValue(action)) {
+    const rejected = action as {
+      payload?: { status?: number; data?: { message?: string } };
+      meta?: { arg?: { endpointName?: string } };
+    };
+    captureEvent(ANALYTICS_EVENTS.API_ERROR_OCCURRED, {
+      [ANALYTICS_PROPS.ERROR_CODE]: rejected.payload?.status,
+      [ANALYTICS_PROPS.ERROR_MESSAGE]: rejected.payload?.data?.message ?? "Unknown error",
+      [ANALYTICS_PROPS.ENDPOINT]: rejected.meta?.arg?.endpointName,
+    });
+  }
+  return next(action);
+};
 
 // Redux Persist configuration for user slice
 const userPersistConfig = {
@@ -31,7 +49,9 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
-    }).concat(baseAPI.middleware),
+    })
+      .concat(baseAPI.middleware)
+      .concat(analyticsMiddleware),
 });
 
 // Create persistor
