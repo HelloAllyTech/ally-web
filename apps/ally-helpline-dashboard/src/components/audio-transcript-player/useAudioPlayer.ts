@@ -7,12 +7,12 @@ interface UseAudioPlayerReturn {
   duration: number;
   progress: number;
   togglePlay: () => void;
-  skip: (seconds: number) => void;
   seekTo: (time: number) => void;
   handleTimeUpdate: () => void;
   handleLoadedMetadata: () => void;
   handleEnded: () => void;
   handleProgressClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  seekToFraction: (fraction: number) => void;
 }
 
 export const useAudioPlayer = (): UseAudioPlayerReturn => {
@@ -39,7 +39,8 @@ export const useAudioPlayer = (): UseAudioPlayerReturn => {
 
   const handleLoadedMetadata = useCallback(() => {
     if (audioRef.current) {
-      setDuration(audioRef.current.duration);
+      const duration = audioRef.current.duration;
+      setDuration(Number.isFinite(duration) ? duration : 0);
     }
   }, []);
 
@@ -51,38 +52,43 @@ export const useAudioPlayer = (): UseAudioPlayerReturn => {
     setIsPlaying(prev => !prev);
   }, []);
 
-  const skip = useCallback(
-    (seconds: number) => {
-      if (audioRef.current) {
-        audioRef.current.currentTime = Math.max(
-          0,
-          Math.min(audioRef.current.currentTime + seconds, duration),
-        );
-      }
+  const seekTo = useCallback(
+    (time: number) => {
+      if (!audioRef.current) return;
+      const maxT = Number.isFinite(duration) && duration > 0 ? duration : undefined;
+      const clamped = maxT !== undefined ? Math.max(0, Math.min(time, maxT)) : Math.max(0, time);
+      audioRef.current.currentTime = clamped;
+      setCurrentTime(clamped);
     },
     [duration],
   );
 
-  const seekTo = useCallback((time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
-      setIsPlaying(true);
-    }
-  }, []);
+  const seekToFraction = useCallback(
+    (fraction: number) => {
+      if (!audioRef.current || !Number.isFinite(duration) || duration <= 0) return;
+      const clamped = Math.max(0, Math.min(1, fraction));
+      const newTime = clamped * duration;
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    },
+    [duration],
+  );
 
   const handleProgressClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const rect = e.currentTarget.getBoundingClientRect();
+      const w = rect.width;
+      if (w <= 0) return;
       const x = e.clientX - rect.left;
-      const percentage = x / rect.width;
-      const newTime = percentage * duration;
-      seekTo(newTime);
+      seekToFraction(x / w);
     },
-    [duration, seekTo],
+    [seekToFraction],
   );
 
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progress =
+    Number.isFinite(duration) && duration > 0 && Number.isFinite(currentTime)
+      ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
+      : 0;
 
   return {
     audioRef,
@@ -91,11 +97,11 @@ export const useAudioPlayer = (): UseAudioPlayerReturn => {
     duration,
     progress,
     togglePlay,
-    skip,
     seekTo,
     handleTimeUpdate,
     handleLoadedMetadata,
     handleEnded,
     handleProgressClick,
+    seekToFraction,
   };
 };

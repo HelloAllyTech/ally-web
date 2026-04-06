@@ -57,10 +57,6 @@ vi.mock("../../input-field", () => ({
   ),
 }));
 
-vi.mock("../../voice-dropdown", () => ({
-  VoiceDropdown: ({ id, label }: any) => <div data-testid={`voice-dropdown-${id}`}>{label}</div>,
-}));
-
 vi.mock("../../radio-button-group", () => ({
   RadioButtonGroup: ({ id, label, options, isMandatory }: any) => (
     <div data-testid={`radio-button-group-${id}`}>
@@ -96,7 +92,6 @@ vi.mock("@constants", () => ({
     TEXT: "text",
     IMAGE_UPLOAD: "image_upload",
     CUSTOM: {
-      VOICE_DROPDOWN: "voice_dropdown",
       RADIO_BUTTONS: "radio_buttons",
     },
     TIME_INPUT: "time_input",
@@ -309,39 +304,6 @@ describe("FormField", () => {
     });
   });
 
-  describe("VOICE_DROPDOWN Field Type", () => {
-    const voiceDropdownConfig: FormFieldConfig = {
-      id: "voice",
-      label: "Voice",
-      type: "voice_dropdown",
-      isMandatory: true,
-    };
-
-    it("renders VoiceDropdown for voice_dropdown type", () => {
-      render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <FormField config={voiceDropdownConfig} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByTestId("voice-dropdown-voice")).toBeInTheDocument();
-    });
-
-    it("renders label for voice dropdown", () => {
-      render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <FormField config={voiceDropdownConfig} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByText("Voice")).toBeInTheDocument();
-    });
-  });
-
   describe("RADIO_BUTTONS Field Type", () => {
     const radioButtonsConfig: FormFieldConfig = {
       id: "experienceMode",
@@ -544,23 +506,6 @@ describe("FormField", () => {
       );
 
       expect(screen.getByTestId("file-upload-file")).toBeInTheDocument();
-    });
-
-    it("passes all relevant props to VoiceDropdown", () => {
-      const config: FormFieldConfig = {
-        id: "voice",
-        label: "Voice",
-        type: "voice_dropdown",
-        isMandatory: true,
-      };
-
-      render(
-        <TestWrapper>
-          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
-        </TestWrapper>,
-      );
-
-      expect(screen.getByTestId("voice-dropdown-voice")).toBeInTheDocument();
     });
   });
 

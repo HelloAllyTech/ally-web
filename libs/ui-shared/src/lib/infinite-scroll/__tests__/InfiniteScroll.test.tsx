@@ -34,7 +34,12 @@ describe("InfiniteScroll", () => {
       </InfiniteScroll>,
     );
 
-    // Simulate intersection by invoking the captured callback
+    // First intersection (initial mount) - should be ignored
+    act(() => {
+      lastObserverCallback([{ isIntersecting: true }]);
+    });
+
+    // Second intersection (actual scroll) - should trigger callback
     act(() => {
       lastObserverCallback([{ isIntersecting: true }]);
     });
@@ -69,6 +74,36 @@ describe("InfiniteScroll", () => {
       ioInstance.trigger([{ isIntersecting: true }]);
     });
 
+    expect(onInfiniteScroll).not.toHaveBeenCalled();
+  });
+
+  it("does not call onInfiniteScroll on initial mount when sentinel is already visible", () => {
+    const onInfiniteScroll = vi.fn();
+    let lastObserverCallback: any;
+
+    (global as any).IntersectionObserver = class {
+      callback: any;
+      constructor(cb: any) {
+        this.callback = cb;
+        lastObserverCallback = cb;
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as any;
+
+    render(
+      <InfiniteScroll onInfiniteScroll={onInfiniteScroll} isLoading={false}>
+        {[<div key="1">item</div>]}
+      </InfiniteScroll>,
+    );
+
+    // Simulate initial intersection on mount (sentinel already visible)
+    act(() => {
+      lastObserverCallback([{ isIntersecting: true }]);
+    });
+
+    // Should not trigger on first intersection
     expect(onInfiniteScroll).not.toHaveBeenCalled();
   });
 });

@@ -4,7 +4,11 @@ import { FC, useEffect, useState } from "react";
 
 import { SessionGoalTimerProps } from "./types";
 
-export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({ startTime, maxTimeSeconds }) => {
+export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({
+  startTime,
+  maxTimeSeconds,
+  translations,
+}) => {
   const [remainingTime, setRemainingTime] = useState<number>(0);
 
   // Convert maxTimeValue (HH:MM:SS) to seconds
@@ -36,7 +40,7 @@ export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({ startTime, maxTime
   // Format max time as MM:SS for display
   const remainingMinutes = Math.floor(remainingTime / 60);
   const remainingSeconds = remainingTime % 60;
-  const remainingMinutesText = `${remainingMinutes} min ${remainingSeconds} sec`;
+  const remainingMinutesText = `${remainingMinutes} ${translations?.min ?? "min"} ${remainingSeconds} ${translations?.sec ?? "sec"}`;
 
   // Calculate progress percentage (0 to 100)
   const progressPercentage =
@@ -70,7 +74,7 @@ export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({ startTime, maxTime
               data-testid="session-goal-timer-label"
               className="text-slate-400 text-xs font-medium tracking-wide"
             >
-              Session Timer
+              {translations?.sessionTimer ?? "Session Timer"}
             </span>
             <span
               data-testid="session-goal-timer-max-time"
@@ -82,7 +86,9 @@ export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({ startTime, maxTime
         </div>
 
         <div className="flex flex-col items-end gap-0.5">
-          <span className="text-slate-400 text-xs font-medium tracking-wide">Time Remaining</span>
+          <span className="text-slate-400 text-xs font-medium tracking-wide">
+            {translations?.timeRemaining ?? "Time Remaining"}
+          </span>
           <span
             data-testid="session-goal-timer-remaining"
             className={`font-bold text-lg transition-colors duration-300 ${

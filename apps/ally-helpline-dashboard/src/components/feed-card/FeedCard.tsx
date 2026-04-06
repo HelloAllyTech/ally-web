@@ -161,7 +161,7 @@ const FeedCard: FC<FeedCardProps> = ({
                     •
                   </span>
                   <span className="font-primary text-xs sm:text-[13px] leading-[1.5] text-gray-500">
-                    Edited
+                    {t("review.feedCard.edited")}
                   </span>
                 </>
               )}
@@ -212,7 +212,9 @@ const FeedCard: FC<FeedCardProps> = ({
   const scenarioSection = () => {
     return FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG ? (
       <div className="flex flex-col gap-2 cursor-default">
-        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">{note}</div>
+        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A] line-clamp-3">
+          {note}
+        </div>
         {!isScribeReview && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
             <span className="font-primary text-xs sm:text-[13px] leading-[1.38] text-black/60">
@@ -287,7 +289,9 @@ const FeedCard: FC<FeedCardProps> = ({
       </div>
     ) : (
       <div className="flex flex-col gap-2 cursor-default">
-        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A]">{note}</div>
+        <div className="font-primary text-sm sm:text-base leading-5 text-[#1A1A1A] line-clamp-3">
+          {note}
+        </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
           <span className="font-primary text-xs sm:text-[13px] leading-[1.38] text-black/60">
@@ -317,7 +321,7 @@ const FeedCard: FC<FeedCardProps> = ({
 
             <div className="flex flex-col justify-start gap-1 sm:gap-2 flex-1 min-w-0">
               <div className="text-xs bg-[#EDE7F6] text-[#7E57C2] px-2 w-fit font-normal rounded-[3px]">
-                Simulation
+                {t("common.simulation")}
               </div>
               <h4 className="font-primary text-sm sm:text-base leading-[1.3] text-[#1A1A1A]">
                 {scenario?.title}
@@ -352,11 +356,11 @@ const FeedCard: FC<FeedCardProps> = ({
           >
             {isViewMoreExpanded ? (
               <div className="flex items-center" data-testid="resource-card-view-less">
-                {"View less"}
+                {t("common.viewLess")}
               </div>
             ) : (
               <div className="flex items-center" data-testid="resource-card-view-more">
-                {"View more"}
+                {t("common.viewMore")}
               </div>
             )}
           </button>
@@ -429,7 +433,7 @@ const FeedCard: FC<FeedCardProps> = ({
     return (
       <div className="flex items-center justify-center py-4">
         <span className="font-primary text-xs sm:text-sm leading-[1.5] text-typography-800">
-          No comments yet
+          {t("review.feedCard.noComments")}
         </span>
       </div>
     );

@@ -246,7 +246,7 @@ describe("CommentThread Component", () => {
 
     it("should render add comment button initially", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      expect(screen.getByText("Add Comment")).toBeInTheDocument();
+      expect(screen.getByText("Add a comment")).toBeInTheDocument();
     });
 
     it("should render empty state when no comments", () => {
@@ -273,7 +273,7 @@ describe("CommentThread Component", () => {
   describe("Comment Input", () => {
     it("should show comment box when Add Comment is clicked", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      const addButton = screen.getByText("Add Comment");
+      const addButton = screen.getByText("Add a comment");
 
       fireEvent.click(addButton);
 
@@ -282,7 +282,7 @@ describe("CommentThread Component", () => {
 
     it("should update textarea value when typing", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
       fireEvent.change(textarea, { target: { value: "New comment" } });
@@ -292,7 +292,7 @@ describe("CommentThread Component", () => {
 
     it("should call onCommentAddition when Comment button is clicked", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
       fireEvent.change(textarea, { target: { value: "New comment" } });
@@ -307,7 +307,7 @@ describe("CommentThread Component", () => {
 
     it("should clear textarea after submitting comment", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
       fireEvent.change(textarea, { target: { value: "New comment" } });
@@ -323,7 +323,7 @@ describe("CommentThread Component", () => {
 
     it("should hide comment box when Cancel is clicked", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
       fireEvent.change(textarea, { target: { value: "New comment" } });
@@ -389,7 +389,7 @@ describe("CommentThread Component", () => {
   describe("Edge Cases", () => {
     it("should handle special characters in textarea", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
       fireEvent.change(textarea, { target: { value: "<script>alert('xss')</script>" } });
@@ -404,7 +404,7 @@ describe("CommentThread Component", () => {
 
     it("should handle emoji in textarea", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
       fireEvent.change(textarea, { target: { value: "Hello 👋 World 🌍" } });
@@ -419,7 +419,7 @@ describe("CommentThread Component", () => {
 
     it("should handle whitespace-only textarea", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
       fireEvent.change(textarea, { target: { value: "   " } });
@@ -437,7 +437,7 @@ describe("CommentThread Component", () => {
   describe("Textarea State", () => {
     it("should have empty initial value when opened", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
       expect(textarea).toHaveValue("");
@@ -445,7 +445,7 @@ describe("CommentThread Component", () => {
 
     it("should maintain value during typing", () => {
       renderWithProvider(<CommentThread {...defaultProps} />);
-      fireEvent.click(screen.getByText("Add Comment"));
+      fireEvent.click(screen.getByText("Add a comment"));
 
       const textarea = screen.getByTestId("comment-textarea");
 

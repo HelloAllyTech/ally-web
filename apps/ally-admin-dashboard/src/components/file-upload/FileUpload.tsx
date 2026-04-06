@@ -25,6 +25,9 @@ import {
 } from "@constants";
 import { isNonEmptyString } from "@utils";
 
+/** Local/dev only: set `VITE_BYPASS_COVER_IMAGE_VALIDATION=true` in `.env` to skip 16:9 checks. */
+const bypassCoverImageAspectCheck = import.meta.env.VITE_BYPASS_COVER_IMAGE_VALIDATION === "true";
+
 interface FileUploadProps {
   id: string;
   formMethods: any;
@@ -127,7 +130,7 @@ export const FileUpload = ({
         headers: { "Content-Type": file.type },
       });
 
-      if (response.status !== 200) {
+      if (response.status < 200 || response.status >= 300) {
         throw new Error(en.errors.fileUploadFailed);
       }
 
@@ -182,7 +185,9 @@ export const FileUpload = ({
           contentType: file.type,
         }).unwrap();
 
-        await uploadToS3(file, response.presignedUrl);
+        if (response.presignedUrl) {
+          await uploadToS3(file, response.presignedUrl);
+        }
 
         setUploadedFile(file);
         setValue(id, response.coverImageUrl, { shouldValidate: true });
@@ -197,26 +202,29 @@ export const FileUpload = ({
   const validateImageAspectRatio = (file: File): Promise<boolean> => {
     return new Promise(resolve => {
       const img = new Image();
-      img.src = URL.createObjectURL(file);
       img.onload = () => {
         const aspectRatio = img.width / img.height;
         const isValidRatio = Math.abs(aspectRatio - ASPECT_RATIO) <= ASPECT_RATIO_TOLERANCE;
-
         if (!isValidRatio) {
           const errorMessage = en.errors.imageMustHave169AspectRatio;
           setError(id, { type: "manual", message: errorMessage });
           toast.error(errorMessage);
+          resolve(false);
+        } else {
+          resolve(true);
         }
-
-        resolve(isValidRatio);
       };
-      img.onerror = () => resolve(false);
+      img.onerror = () => {
+        toast.error(en.errors.fileUploadFailed);
+        resolve(false);
+      };
+      img.src = URL.createObjectURL(file);
     });
   };
 
   const processFile = useCallback(
     async (file: File) => {
-      if (fileType === FILE_TYPE.IMAGE) {
+      if (fileType === FILE_TYPE.IMAGE && !bypassCoverImageAspectCheck) {
         const isValidAspectRatio = await validateImageAspectRatio(file);
         if (!isValidAspectRatio) return;
       }
@@ -418,8 +426,10 @@ export const FileUpload = ({
 
         {renderFileInfo()}
 
-        {formState.errors.upload && (
-          <p className="text-destructive-500 text-sm mt-1">{formState.errors.upload.message}</p>
+        {formState.errors[id]?.message && (
+          <p className="text-destructive-500 text-sm mt-1">
+            {String(formState.errors[id]?.message)}
+          </p>
         )}
       </div>
 

@@ -485,7 +485,7 @@ const CommentCard = ({
   const renderCommentContent = () => {
     return (
       <>
-        <div className="text-typography-900 font-primary text-md whitespace-pre-wrap">
+        <div className="break-words text-typography-900 font-primary text-md">
           {comment.content}
         </div>
         <div className="flex gap-2 items-center">
@@ -632,7 +632,7 @@ const CommentCard = ({
             className="w-full h-full rounded-full"
           />
         </div>
-        <div className="flex flex-col gap-1 w-full">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex flex-row justify-between items-center gap-2 w-full">
             <div className="flex flex-row gap-1.5 items-center w-full">
               <div className="text-[14px] font-medium text-typography-900">

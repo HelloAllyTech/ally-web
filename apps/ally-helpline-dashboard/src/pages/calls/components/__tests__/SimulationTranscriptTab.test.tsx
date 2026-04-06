@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import {
   useCreateReviewMutation,
+  useGetAudioUrlQuery,
   useGetSimulationSummaryQuery,
   useGetSimulationTranscriptQuery,
   useUpdateReviewMutation,
@@ -42,6 +43,7 @@ const mockTranscriptData = {
 
 vi.mock("@api", () => ({
   useGetSimulationTranscriptQuery: vi.fn(),
+  useGetAudioUrlQuery: vi.fn(),
   useGetSimulationSummaryQuery: vi.fn(),
   useCreateReviewMutation: vi.fn(),
   useUpdateReviewMutation: vi.fn(),
@@ -125,11 +127,18 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
       data: mockTranscriptData,
       isLoading: false,
+      isFetching: false,
       refetch: vi.fn(),
     } as any);
     vi.mocked(useGetSimulationSummaryQuery).mockReturnValue({
       data: { reviewId: null },
       isLoading: false,
+    } as any);
+    vi.mocked(useGetAudioUrlQuery).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
     } as any);
     vi.mocked(useCreateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
     vi.mocked(useUpdateReviewMutation).mockReturnValue([vi.fn(), { isLoading: false }] as any);
@@ -246,6 +255,7 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
       data: limitedData,
       isLoading: false,
+      isFetching: false,
       refetch: vi.fn(),
     } as any);
 
@@ -276,6 +286,7 @@ describe("SimulationTranscriptTab", () => {
       .mockReturnValueOnce({
         data: initialData,
         isLoading: false,
+        isFetching: false,
         refetch: vi.fn(),
       } as any)
       .mockReturnValueOnce({
@@ -292,6 +303,7 @@ describe("SimulationTranscriptTab", () => {
           ],
         },
         isLoading: false,
+        isFetching: false,
         refetch: vi.fn(),
       } as any);
 
@@ -307,6 +319,7 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
       data: { messages: [] },
       isLoading: false,
+      isFetching: false,
       refetch: vi.fn(),
     } as any);
 
@@ -359,6 +372,7 @@ describe("SimulationTranscriptTab", () => {
     vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
       data: variedData,
       isLoading: false,
+      isFetching: false,
       refetch: vi.fn(),
     } as any);
 

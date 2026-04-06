@@ -440,7 +440,9 @@
       "addNote": "Add note",
       "editNote": "Edit note",
       "addNotePlaceholder": "Add a note...",
-      "shareModalHeader": "Share this for review"
+      "shareModalHeader": "Share this for review",
+      "addCommentPlaceholder": "Add a comment",
+      "commentAction": "Comment"
     },
     "reactionsModal": {
       "title": "Reactions",
@@ -459,6 +461,8 @@
       "reactions_plural": "reactions",
       "comments": "comment",
       "comments_plural": "comments",
+      "edited": "Edited",
+      "noComments": "No comments yet",
       "relativeTime": {
         "justNow": "Just now",
         "year_one": "1 year",
@@ -760,6 +764,8 @@
         "titleNormal": "Start",
         "titleItalic": "Session",
         "button": "Start Session now",
+        "startScribeMode": "Start Scribe Mode",
+        "startDictationMode": "Start Dictation Mode",
         "footer": "By starting, you confirm everyone being transcribed has given consent.",
         "description1": "Ally’s mental health AI scribe safely listens, transcribes ",
         "description2": "and writes session notes for you."
@@ -825,6 +831,45 @@
         "primaryButton": "Cancel Upload",
         "secondaryButton": "Continue Upload"
       }
+    }
+  },
+  "simulationPage": {
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "focus": "Focus",
+    "focused": "Focused",
+    "endSession": "End session",
+    "sessionDuration": "Session Duration:",
+    "dataSafe": "Your data is safe",
+    "waitingForAgent": "Waiting for agent to join...",
+    "connectingToSession": "Connecting to session...",
+    "allowMicrophone": "Allow microphone permission",
+    "microphonePromptBrowser": "To start the simulation, please allow microphone permission from your browser.",
+    "microphonePrompt": "To start the simulation, please allow us to use your microphone.",
+    "clickToAllow": "Click to allow microphone and join the session.",
+    "closePreview": "Close Preview",
+    "points": "Points",
+    "sessionTimer": "Session Timer",
+    "timeRemaining": "Time Remaining",
+    "sessionChecklist": "Session Checklist",
+    "progress": "Progress",
+    "completed": "completed",
+    "of": "of",
+    "min": "min",
+    "sec": "sec",
+    "warningDialog": {
+      "titleNormal": "Session",
+      "titleItalic": "Ending Soon",
+      "content": "Your session will end in 30 seconds.",
+      "continueSession": "Continue Session",
+      "endSession": "End Session"
+    },
+    "endDialog": {
+      "titleNormal": "End ",
+      "titleItalic": "Session",
+      "content": "Are you sure you want to end the session?",
+      "endSession": "End Session",
+      "cancel": "Cancel"
     }
   }
 }

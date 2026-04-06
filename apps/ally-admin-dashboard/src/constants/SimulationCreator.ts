@@ -110,10 +110,10 @@ export const FORM_FIELD_TYPES = {
   IMAGE_UPLOAD: "image_upload",
   VIDEO_UPLOAD: "video_upload",
   CUSTOM: {
-    VOICE_DROPDOWN: "voice_dropdown",
     AUTO_TERMINATION_RULE: "auto_termination_rule",
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
     LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
+    OPENING_DIALOGUES: "opening_dialogues",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
     BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
@@ -145,7 +145,6 @@ export const FORM_FIELD_IDS = {
   STATE_INSTRUCTIONS: "stateInstructions",
   CUSTOM_FIELDS: "customFields",
   OPENING_STATEMENTS: "openingStatements",
-  VOICE_ID: "voiceId",
   LANGUAGES_VOICES: "languageVoices",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   TONE: "tone",
@@ -158,6 +157,7 @@ export const FORM_FIELD_IDS = {
   OPT_GUARDRAILS: "optGuardrails",
   CURRENT_STATE: "currentState",
   KNOWLEDGE_SOURCE: "knowledgeSources",
+  STATE_NAMES: "stateNames",
 };
 
 export const REGENERATE_TYPE = {
@@ -340,16 +340,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         visibleWhen: () => FEATURE_FLAGS_MAP.KNOWLEDGE_SOURCE_FLAG,
       },
       {
-        id: "openingStatements",
-        label: "Opening Dialogues",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.OPENING_STATEMENTS,
-        isMandatory: true,
-      },
-      {
         id: "languageVoices",
         label: "Language-Voice",
         type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
@@ -357,9 +347,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
+        id: "openingStatements",
+        label: "Opening Dialogues",
+        type: FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES,
+        fullWidth: true,
+        isMandatory: true,
+      },
+      {
         id: "linguisticStyleSamples",
         label: "Linguistic Style Samples",
         type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
+        isMandatory: true,
         fullWidth: true,
       },
       {
@@ -873,6 +871,13 @@ export const BEHAVIOUR_STATES = [
   { stateId: "3", label: "State 3 Instructions" },
 ];
 
+export const VALID_STATE_INSTRUCTION_IDS = new Set(BEHAVIOUR_STATES.map(s => s.stateId));
+
+export function isValidStateInstructionId(stateId: unknown): boolean {
+  if (stateId === undefined || stateId === null) return false;
+  return VALID_STATE_INSTRUCTION_IDS.has(String(stateId));
+}
+
 export const BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH = 1000;
 
 export const BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS = [
@@ -925,9 +930,9 @@ export const STATES_INSTRUCTION_TABLE_HEADERS = [
   },
 ];
 
-export const DEFAULT_STATE_INSTRUCTIONS = [
-  { stateId: "1", name: "", instruction: "", dialogues: [] },
-  { stateId: "2", name: "", instruction: "", dialogues: [] },
-  { stateId: "3", name: "", instruction: "", dialogues: [] },
-  { stateId: "4", name: "", instruction: "", dialogues: [] },
-];
+export const DEFAULT_STATE_INSTRUCTIONS = BEHAVIOUR_STATES.map(({ stateId }) => ({
+  stateId,
+  name: "",
+  instruction: "",
+  dialogues: [] as string[],
+}));

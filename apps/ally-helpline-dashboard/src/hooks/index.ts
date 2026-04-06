@@ -1,3 +1,4 @@
+export * from "./useAnalytics";
 export * from "./useClickOutside";
 export * from "./useSocket";
 export * from "./useUser";

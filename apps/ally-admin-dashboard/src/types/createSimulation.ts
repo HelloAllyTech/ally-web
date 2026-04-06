@@ -25,6 +25,7 @@ export type FormData = {
   isPublic: boolean;
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
+  allowedFillerWords?: Record<string, string[]>;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;
@@ -32,7 +33,8 @@ export type FormData = {
   stateInstructions?: stateInstruction[];
   customFields?: CustomFieldType[];
   openingStatements: string;
-  voiceId?: string;
+  translationOpeningStatements?: Record<string, string[]>;
+  openingDialoguePrimaryLanguageId?: number | null;
   tone: string;
   autoTerminationStatus?: boolean;
   experienceMode?: string;

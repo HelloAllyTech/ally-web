@@ -1,4 +1,4 @@
-import { render, screen, waitFor, act } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, test, expect, beforeEach, vi, afterEach } from "vitest";
 
 import { RoomStatus } from "@types";
@@ -32,6 +32,12 @@ const mockWakeLockRequest = vi.fn().mockResolvedValue({
 
 // --- MODULE MOCKS ---
 
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
   useParams: () => ({ id: "test-session-123" }),
@@ -44,6 +50,7 @@ vi.mock("@api", () => ({
 vi.mock("@hooks", () => ({
   useLiveKitRoom: () => ({
     room: mockRoom,
+    roomData: {},
     roomStatus: mockRoomStatus,
     error: mockError,
     startTime: mockStartTime,
@@ -71,7 +78,23 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-vi.mock("@ally-ui-mono/ui-shared/logger", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  SimulationPage: ({ children, ...props }: any) => (
+    <div data-testid="simulation-page">
+      <div data-testid="translations">{JSON.stringify(props.translations)}</div>
+      <button data-testid="end-simulation-btn" onClick={props.onEndSimulation}>
+        End Session
+      </button>
+      {props.renderWarningDialog({
+        isOpen: true,
+        onClose: vi.fn(),
+        onContinue: vi.fn(),
+        onEnd: vi.fn(),
+      })}
+      Simulation Page
+    </div>
+  ),
+  getSimulationEvents: (events: any[]) => events,
   logger: {
     info: vi.fn(),
     error: vi.fn(),
@@ -86,19 +109,23 @@ vi.mock("@components", () => ({
     onSecondaryButtonClick,
     title,
     content,
+    buttonText,
+    secondaryButtonText,
   }: any) =>
     isOpen ? (
       <div data-testid="confirmation-dialog">
-        <h2>
-          {title.normal} {title.italic}
+        <h2 data-testid="dialog-title">
+          {title?.normal} {title?.italic}
         </h2>
-        <p>{content}</p>
+        <p data-testid="dialog-content">{content}</p>
         <button data-testid="dialog-primary-button" onClick={onButtonClick}>
-          Continue
+          {buttonText}
         </button>
-        <button data-testid="dialog-secondary-button" onClick={onSecondaryButtonClick}>
-          End
-        </button>
+        {secondaryButtonText && (
+          <button data-testid="dialog-secondary-button" onClick={onSecondaryButtonClick}>
+            {secondaryButtonText}
+          </button>
+        )}
         <button data-testid="dialog-close-button" onClick={onClose}>
           Close
         </button>
@@ -109,10 +136,6 @@ vi.mock("@components", () => ({
   },
 }));
 
-vi.mock("../utils", () => ({
-  getSimulationEvents: (events: any[]) => events,
-}));
-
 vi.mock("@assets", () => ({
   SimulationWarningIllustration: "simulation-warning-illustration",
   Warning: ({ className }: any) => <svg data-testid="warning-icon" className={className} />,
@@ -121,19 +144,6 @@ vi.mock("@assets", () => ({
 vi.mock("@constants", () => ({
   ROUTES: {
     SIMULATION_SUMMARY: "/simulation-summary",
-  },
-}));
-
-vi.mock("@ally-ui-mono/ui-shared", () => ({
-  SimulationPage: ({ children, ...props }: any) => (
-    <div data-testid="simulation-page" {...props}>
-      Simulation Page
-    </div>
-  ),
-  getSimulationEvents: (events: any[]) => events,
-  logger: {
-    info: vi.fn(),
-    error: vi.fn(),
   },
 }));
 
@@ -177,9 +187,55 @@ describe("Simulation", () => {
     vi.useRealTimers();
   });
 
-  test("should render simulation page", () => {
+  test("should render simulation page and pass translations", () => {
     render(<Simulation />);
     expect(screen.getByTestId("simulation-page")).toBeInTheDocument();
-    expect(screen.getByText("Simulation Page")).toBeInTheDocument();
+
+    const translationsDiv = screen.getByTestId("translations");
+    const translations = JSON.parse(translationsDiv.textContent || "{}");
+
+    expect(translations.mute).toBe("simulationPage.mute");
+    expect(translations.endSession).toBe("simulationPage.endSession");
+    expect(translations.sessionChecklist).toBe("simulationPage.sessionChecklist");
+  });
+
+  test("should handle end simulation correctly", async () => {
+    render(<Simulation />);
+    const endBtn = screen.getByTestId("end-simulation-btn");
+
+    await fireEvent.click(endBtn);
+
+    expect(mockEndSimulation).toHaveBeenCalledWith({ sessionId: "test-session-123" });
+  });
+
+  test("should render warning dialog with correct translations", () => {
+    render(<Simulation />);
+
+    expect(screen.getByTestId("confirmation-dialog")).toBeInTheDocument();
+    expect(screen.getByTestId("dialog-title")).toHaveTextContent(
+      "simulationPage.warningDialog.titleNormal simulationPage.warningDialog.titleItalic",
+    );
+    expect(screen.getByTestId("dialog-content")).toHaveTextContent(
+      "simulationPage.warningDialog.content",
+    );
+    expect(screen.getByTestId("dialog-primary-button")).toHaveTextContent(
+      "simulationPage.warningDialog.continueSession",
+    );
+    expect(screen.getByTestId("dialog-secondary-button")).toHaveTextContent(
+      "simulationPage.warningDialog.endSession",
+    );
+  });
+
+  test("should add beforeunload event listener on mount and remove on unmount", () => {
+    const addEventListenerSpy = vi.spyOn(window, "addEventListener");
+    const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+
+    const { unmount } = render(<Simulation />);
+
+    expect(addEventListenerSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function));
+
+    unmount();
+
+    expect(removeEventListenerSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function));
   });
 });

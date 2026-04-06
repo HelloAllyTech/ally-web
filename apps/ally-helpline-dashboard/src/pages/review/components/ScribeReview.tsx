@@ -27,7 +27,7 @@ const SkeletonList: FC = () => (
 
 const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [offset, setOffset] = useState(0);
   const [feedData, setFeedData] = useState<ReviewItem[]>([]);
@@ -43,6 +43,7 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
       limit: PAGE_SIZE,
       offset,
       sortBy: filter,
+      languageCode: i18n.language,
     },
     { skip: !FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG },
   );
@@ -50,7 +51,7 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
   useEffect(() => {
     setOffset(0);
     setFeedData([]);
-  }, [filter]);
+  }, [filter, i18n.language]);
 
   useEffect(() => {
     if (!scribeReviewsData?.data) return;
@@ -131,7 +132,7 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
             dateTime={item.scribeSession?.createdAt}
             badgeBgColor="#FFF3E0"
             badgeTextColor="#E65100"
-            badgeText="Scribe"
+            badgeText={t("common.scribe", "Scribe")}
             isViewMoreExpanded={expandedViewMoreIds.has(item.id)}
             onTapViewMore={() => handleTapViewMore(item.id)}
             note={item.note}

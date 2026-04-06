@@ -9,6 +9,8 @@ import { SessionUserGroup } from "../constants";
 export interface StartSessionDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  showDictationMode?: boolean;
+  showScribeMode?: boolean;
 }
 
 export interface SummarySideBarProps {

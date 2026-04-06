@@ -3,7 +3,7 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import { useGetSimulationTranscriptQuery } from "@api";
+import { useGetAudioUrlQuery, useGetSimulationTranscriptQuery } from "@api";
 import { TranscriptListing } from "@components";
 import { RootState } from "@store";
 import { SimulationTranscriptMessage } from "@types";
@@ -22,16 +22,26 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  /** Blocks stacking multiple load-more calls before the in-flight fetch finishes (prevents batched offset 0→40). */
+  const pagingLockRef = useRef(false);
+  const wasTranscriptFetchingRef = useRef(false);
 
   const { user } = useSelector((state: RootState) => state.user);
 
-  const { data: transcriptData, isLoading: isGetTranscriptLoading } =
-    useGetSimulationTranscriptQuery({
-      sessionId,
-      offset: transcriptOffset,
-      limit: TRANSCRIPT_PAGE_SIZE,
-      sortBy: "createdAt",
-    });
+  const {
+    data: transcriptData,
+    isFetching: isTranscriptFetching,
+    isLoading: isTranscriptLoading,
+  } = useGetSimulationTranscriptQuery({
+    sessionId,
+    offset: transcriptOffset,
+    limit: TRANSCRIPT_PAGE_SIZE,
+    sortBy: "createdAt",
+  });
+
+  const { data: audioUrlData } = useGetAudioUrlQuery({ sessionId });
+
+  const transcriptQueryBusy = isTranscriptFetching || isTranscriptLoading;
 
   const transcript = useMemo(() => {
     return transcriptData?.messages?.map(item => ({
@@ -50,7 +60,16 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     setTranscriptList([]);
     setTranscriptOffset(0);
     setHasMoreTranscripts(true);
+    pagingLockRef.current = false;
+    wasTranscriptFetchingRef.current = false;
   }, [sessionId]);
+
+  useEffect(() => {
+    if (wasTranscriptFetchingRef.current && !transcriptQueryBusy) {
+      pagingLockRef.current = false;
+    }
+    wasTranscriptFetchingRef.current = transcriptQueryBusy;
+  }, [transcriptQueryBusy]);
 
   // Append new results when transcriptData changes
   useEffect(() => {
@@ -73,42 +92,52 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         tags: item.tags,
       }));
 
-      // Update hasMoreTranscripts based on the number of items returned
-      setHasMoreTranscripts(transcript.length >= TRANSCRIPT_PAGE_SIZE);
-
+      let appendHadNoNewRows = false;
       setTranscriptList(prev => {
-        // If offset is 0, replace the list (fresh fetch)
         if (transcriptOffset === 0) {
           return mappedTranscript;
         }
 
-        // Check for duplicates before appending
         const existingIds = new Set(prev.map(item => `${item.id}-${item.startSeconds}`));
         const newItems = mappedTranscript.filter(
           item => !existingIds.has(`${item.id}-${item.startSeconds}`),
         );
 
-        // Only append if there are new items
         if (newItems.length > 0) {
           return [...prev, ...newItems];
         }
+
+        appendHadNoNewRows = mappedTranscript.length > 0;
         return prev;
       });
+
+      if (transcriptOffset === 0) {
+        setHasMoreTranscripts(transcript.length >= TRANSCRIPT_PAGE_SIZE);
+      } else if (appendHadNoNewRows) {
+        setHasMoreTranscripts(false);
+      } else {
+        setHasMoreTranscripts(transcript.length >= TRANSCRIPT_PAGE_SIZE);
+      }
     } else if (transcript?.length === 0) {
       // No more transcripts available
       setHasMoreTranscripts(false);
     }
-  }, [transcript, user?.id]);
+
+    if (transcriptOffset > 0 && transcript && transcript.length > 0) {
+      pagingLockRef.current = false;
+    }
+  }, [transcript, transcriptOffset, user?.id, t]);
 
   const handleLoadMore = () => {
-    // Don't load more if we're already loading or if there are no more transcripts
-    if (isGetTranscriptLoading || !hasMoreTranscripts) return;
+    if (!hasMoreTranscripts || transcriptQueryBusy || pagingLockRef.current) return;
+    pagingLockRef.current = true;
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
 
   return (
     <div
-      className={`relative flex h-full min-h-0 flex-col overflow-y-auto border border-gray-200 rounded-md p-4 custom-scrollbar ${className}`}
+      ref={scrollContainerRef}
+      className={`relative flex h-full min-h-0 flex-col border border-gray-200 rounded-md p-2 custom-scrollbar ${className}`}
     >
       <span className="text-typography-900 font-primary text-base font-medium">
         {t("postSim.tabs.annotatedTranscript")}
@@ -117,11 +146,12 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
       <TranscriptListing
         transcriptList={transcriptList}
         handleLoadMore={handleLoadMore}
-        isLoading={isGetTranscriptLoading}
+        isLoading={transcriptQueryBusy}
         hasMore={hasMoreTranscripts}
         scrollContainerRef={scrollContainerRef}
         counsellorName={councellorName}
         agentName={agentName}
+        audioUrl={audioUrlData?.presignedUrl}
       />
     </div>
   );

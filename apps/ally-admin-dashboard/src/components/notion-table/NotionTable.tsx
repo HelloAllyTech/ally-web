@@ -54,6 +54,12 @@ const SelectionHeaderCell = ({ getToggleAllRowsSelectedProps }) => (
 
 const SelectionRowCell = ({ row }) => {
   const isEditable = row.original?.isEditable?.value ?? true;
+  const hideSelection = row.original?.hideSelection?.value ?? false;
+
+  if (hideSelection) {
+    return <div className="w-[30px]" />;
+  }
+
   return (
     <div className="flex items-center justify-center w-[30px]">
       <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} disabled={!isEditable} />

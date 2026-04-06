@@ -36,6 +36,7 @@ export interface Tenant {
   userCount: string;
   enabledDashboardIds: string[];
   enableMicrophoneMode: boolean;
+  enableDictationMode: boolean;
   enableAudioUpload: boolean;
   hideRankInCommunity: boolean;
 }
@@ -122,6 +123,7 @@ export interface CreateTenantBody {
   logoUrl?: string;
   enabledDashboardIds?: string[];
   enableMicrophoneMode?: boolean;
+  enableDictationMode?: boolean;
   enableAudioUpload?: boolean;
   hideRankInCommunity?: boolean;
 }

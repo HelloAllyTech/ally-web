@@ -91,7 +91,7 @@ export const useStartSimulation = (
           LOCAL_STORAGE_KEYS.ROOM_DATA,
           JSON.stringify({
             roomId: scenario?.id,
-            title: scenario?.title || metadata?.title,
+            title: metadata?.title || scenario?.title,
             triggerWarnings: scenario?.triggerWarnings || [],
             localParticipant: {
               name: user?.name,
@@ -119,7 +119,11 @@ export const useStartSimulation = (
         onSuccess?.();
 
         // Navigate to simulation room
-        navigate(`/simulation/${scenarioSession.id}`, { replace: isReplaceScreen });
+        const scenarioTitle = metadata?.title || scenario?.title;
+        navigate(`/simulation/${scenarioSession.id}/${scenarioTitle}`, {
+          replace: isReplaceScreen,
+        });
+
         setIsStarting(false);
         return;
       }

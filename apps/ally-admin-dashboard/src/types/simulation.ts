@@ -88,7 +88,6 @@ export interface SimulationInput {
   emotionalNeeds?: string;
   tone?: string;
   openingStatements?: string[];
-  voiceId?: string;
   agentGoal?: string;
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
@@ -99,6 +98,7 @@ export interface SimulationInput {
   triggerWarningIds?: string[];
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
+  allowedFillerWords?: Record<string, string[]>;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
@@ -108,6 +108,7 @@ export interface SimulationInput {
   stateNames?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
   knowledgeSources?: KnowledgeSourceInput[];
+  translationOpeningStatements?: Record<string, string[]>;
 }
 
 export interface UpdateSimulationByIdInput {
@@ -183,7 +184,11 @@ export interface GetSimulationByIdResponse {
     stateNames?: stateInstruction[];
     characterProfileText?: string;
     knowledgeSources?: knowledgeSource[];
+    linguisticStyleSamples?: Record<string, string[]>;
+    allowedFillerWords?: Record<string, string[]>;
   };
+  translationOpeningStatements?: Record<string, string[]>;
+  openingDialoguePrimaryLanguageId?: number | null;
   competency?: Competency;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
@@ -457,6 +462,21 @@ export interface HelperTagItem {
 export interface HelperTagInput {
   data: HelperTagItem[];
   count: number;
+}
+
+export type GetFillerTagsQueryParams = GetHelperTagsQueryParams;
+
+export interface FillerTagListResponse {
+  data: HelperTagItem[];
+  count: number;
+}
+
+export interface CreateFillerTagResponse {
+  id: string;
+  name: string;
+  createdBy?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Competency {

@@ -14,6 +14,7 @@ const SIMULATION_SETTINGS_ITEMS = [
 
 const SCRIBE_SETTINGS_ITEMS = [
   { id: "enableMicrophoneMode", label: "Microphone Mode" },
+  { id: "enableDictationMode", label: "Dictation Mode" },
   { id: "enableAudioUpload", label: "Upload Call Recording" },
   {
     id: "",

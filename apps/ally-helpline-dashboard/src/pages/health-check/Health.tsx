@@ -36,7 +36,13 @@ export const Health = () => {
             running and responsive.
           </p>
           <p className="text-xs text-typography-600 dark:text-typography-700 mt-2">
-            Last checked: {lastChecked.toLocaleTimeString()}
+            Last checked:{" "}
+            {lastChecked.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: true,
+            })}
           </p>
         </div>
       </div>

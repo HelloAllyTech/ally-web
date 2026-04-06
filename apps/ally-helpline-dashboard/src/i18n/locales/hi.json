@@ -440,7 +440,9 @@
       "addNote": "नोट जोड़ें",
       "editNote": "नोट संपादित करें",
       "addNotePlaceholder": "एक नोट जोड़ें...",
-      "shareModalHeader": "समीक्षा के लिए साझा करें"
+      "shareModalHeader": "समीक्षा के लिए साझा करें",
+      "addCommentPlaceholder": "एक टिप्पणी जोड़ें",
+      "commentAction": "टिप्पणी करें"
     },
     "reactionsModal": {
       "title": "प्रतिक्रियाएं",
@@ -459,6 +461,8 @@
       "reactions_plural": "प्रतिक्रियाएं",
       "comments": "टिप्पणी",
       "comments_plural": "टिप्पणियाँ",
+      "edited": "संपादित",
+      "noComments": "अभी तक कोई टिप्पणी नहीं",
       "relativeTime": {
         "justNow": "अभी",
         "year_one": "1 वर्ष",
@@ -760,6 +764,8 @@
         "titleNormal": "शुरू करें",
         "titleItalic": "सत्र",
         "button": "अभी सत्र शुरू करें",
+        "startScribeMode": "सक्रिय करें स्क्राइब मोड",
+        "startDictationMode": "डिक्टेशन मोड शुरू करें",
         "footer": "शुरू करके, आप पुष्टि करते हैं कि हर किसी को ट्रांसक्रिप्ट किया जा रहा है उसने सहमति दी है।",
         "description1": "एली का मानसिक स्वास्थ्य एआई स्क्राइब सुरक्षित रूप से सुनता है, ट्रांसक्राइब करता है ",
         "description2": "और आपके लिए सत्र नोट्स लिखता है।"
@@ -825,6 +831,45 @@
         "primaryButton": "अपलोड रद्द करें",
         "secondaryButton": "अपलोड जारी रखें"
       }
+    }
+  },
+  "simulationPage": {
+    "mute": "म्यूट",
+    "unmute": "अनम्यूट",
+    "focus": "फोकस",
+    "focused": "फोकस्ड",
+    "endSession": "सत्र समाप्त करें",
+    "sessionDuration": "सत्र अवधि:",
+    "dataSafe": "आपका डेटा सुरक्षित है",
+    "waitingForAgent": "एजेंट के जुड़ने की प्रतीक्षा...",
+    "connectingToSession": "सत्र से कनेक्ट हो रहा है...",
+    "allowMicrophone": "माइक्रोफ़ोन की अनुमति दें",
+    "microphonePromptBrowser": "सिमुलेशन शुरू करने के लिए, कृपया अपने ब्राउज़र से माइक्रोफ़ोन की अनुमति दें।",
+    "microphonePrompt": "सिमुलेशन शुरू करने के लिए, कृपया हमें अपना माइक्रोफ़ोन उपयोग करने की अनुमति दें।",
+    "clickToAllow": "माइक्रोफ़ोन की अनुमति देकर सत्र में शामिल होने के लिए क्लिक करें।",
+    "closePreview": "पूर्वावलोकन बंद करें",
+    "points": "अंक",
+    "sessionTimer": "सत्र टाइमर",
+    "timeRemaining": "शेष समय",
+    "sessionChecklist": "सत्र चेकलिस्ट",
+    "progress": "प्रगति",
+    "completed": "पूर्ण",
+    "of": "में से",
+    "min": "मिनट",
+    "sec": "सेकंड",
+    "warningDialog": {
+      "titleNormal": "सत्र",
+      "titleItalic": "जल्द समाप्त हो रहा है",
+      "content": "आपका सत्र 30 सेकंड में समाप्त हो जाएगा।",
+      "continueSession": "सत्र जारी रखें",
+      "endSession": "सत्र समाप्त करें"
+    },
+    "endDialog": {
+      "titleNormal": "समाप्त करें ",
+      "titleItalic": "सत्र",
+      "content": "क्या आप वाकई सत्र समाप्त करना चाहते हैं?",
+      "endSession": "सत्र समाप्त करें",
+      "cancel": "रद्द करें"
     }
   }
 }

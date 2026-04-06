@@ -78,8 +78,11 @@ export const en = {
     failedToSaveVoice: "Failed to save voice",
     failedToCancelReportGeneration: "Failed to cancel report generation",
     failedToRegenerate: "Failed to regenerate",
+    failedToCreateFillerTag:
+      "Could not create filler tag. It may already exist or the request failed.",
     linguisticStyleSamplesRequired:
-      "Linguistic style samples are required for non-English languages. Please provide at least one sample for each configured non-English language.",
+      "Linguistic style samples are required. Please provide at least one sample for each selected language.",
+    invalidStateInstructionIds: "State instructions include an invalid state id.",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -434,8 +437,19 @@ export const en = {
     regenerate: "Regenerate",
     generate: "Generate",
     generating: "Generating...",
+    generatedFillersAllCount: (n: number) => `Generated filler words for ${n} language(s)`,
+    bulkGenerateNoSamples:
+      "No linguistic style samples were saved. The model may have returned empty results—try again or edit manually.",
+    bulkGenerateNoFillers:
+      "No filler words were saved. The model may have returned empty results—try again or edit manually.",
+    generatedOpeningDialoguesAllCount: (n: number) =>
+      `Generated opening dialogues for ${n} language(s)`,
+    bulkGenerateNoOpeningDialogues:
+      "No opening dialogues were saved. The model may have returned empty results—try again or edit manually.",
+    allowedFillersSectionTitle: "Allowed filler words",
     guardrails: "Guardrails",
     deleteCharacter: "Delete character",
+    addStateName: "Add State Name",
   },
   notification: {
     beforeYouGetStarted: "Before you get started",
