@@ -84,6 +84,11 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   const languages: LanguageOption[] = availableLanguages ?? [];
 
   const [showAll, setShowAll] = useState(false);
+  const [voiceSearchTerms, setVoiceSearchTerms] = useState<Record<string, string>>({});
+
+  const handleVoiceSearch = useCallback((languageId: string, searchTerm: string) => {
+    setVoiceSearchTerms(prev => ({ ...prev, [languageId]: searchTerm }));
+  }, []);
 
   const playAudio = useCallback(async (audioData: ArrayBuffer) => {
     // Stop the currently playing audio if any
@@ -113,24 +118,34 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   }, [languages, showAll]);
 
   const getOptionsForLanguage = useCallback(
-    (languageId: string) => {
+    (languageId: string, searchTerm?: string) => {
       const language = languages.find(lang => String(lang.language_id) === languageId);
       if (!language) return [];
 
-      return language.voices.map(voice => ({
+      const allOptions = language.voices.map(voice => ({
         value: voice.id,
         label: voice.provider ? `${voice.name}  (${voice.provider})` : voice.name,
         provider: voice.provider,
         config: voice.config,
         text: voice.text,
       }));
+
+      if (!searchTerm?.trim()) return allOptions;
+
+      const lowerSearch = searchTerm.toLowerCase();
+      return allOptions.filter(
+        opt =>
+          opt.label.toLowerCase().includes(lowerSearch) ||
+          (opt.provider ?? "").toLowerCase().includes(lowerSearch),
+      );
     },
     [languages],
   );
   const renderDropdownFields = useCallback(() => {
     return visibleLanguages.map(language => {
       const languageId = String(language.language_id);
-      const options = getOptionsForLanguage(languageId);
+      const searchTerm = voiceSearchTerms[languageId] ?? "";
+      const options = getOptionsForLanguage(languageId, searchTerm);
       const selectedVoiceId = languageVoices?.[languageId] ?? "";
 
       const handlePlay = async (voiceId: string) => {
@@ -233,11 +248,17 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
               options={options}
               defaultOption={
                 selectedVoiceId
-                  ? options.find(opt => opt.value === selectedVoiceId)?.label
+                  ? getOptionsForLanguage(languageId).find(opt => opt.value === selectedVoiceId)
+                      ?.label
                   : en.simulation.selectVoice
               }
+              isSearchable={true}
+              handleSearchTextChange={(term: string) => handleVoiceSearch(languageId, term)}
               optionsRenderer={renderOption}
-              onClose={() => handlePause()}
+              onClose={() => {
+                handlePause();
+                handleVoiceSearch(languageId, "");
+              }}
               allowDeselect={true}
             />
           </div>
@@ -255,6 +276,8 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     getPreviewVoice,
     voicePreviewCache,
     playAudio,
+    voiceSearchTerms,
+    handleVoiceSearch,
   ]);
 
   // Create a stable string representation of languageVoices for dependency tracking
