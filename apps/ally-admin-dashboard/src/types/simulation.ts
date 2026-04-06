@@ -105,7 +105,7 @@ export interface SimulationInput {
   maxTimeValue?: string;
   optGuardrails?: boolean;
   currentState?: boolean;
-  stateNames?: stateInstruction[];
+  stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
   knowledgeSources?: KnowledgeSourceInput[];
   translationOpeningStatements?: Record<string, string[]>;
@@ -181,7 +181,7 @@ export interface GetSimulationByIdResponse {
     maxTimeValue?: string;
     optGuardrails?: boolean;
     currentState?: boolean;
-    stateNames?: stateInstruction[];
+    stateInstructions?: stateInstruction[];
     characterProfileText?: string;
     knowledgeSources?: knowledgeSource[];
     linguisticStyleSamples?: Record<string, string[]>;

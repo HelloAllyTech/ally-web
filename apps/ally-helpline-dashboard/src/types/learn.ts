@@ -39,7 +39,7 @@ export interface Scenario {
   timerMode?: boolean;
   showScoreMeter?: boolean;
   difficultyLevel?: string;
-  stateNames?: { name: string; stateId: string }[];
+  stateInstructions?: { name: string; stateId: string }[];
 }
 
 export interface ScenarioSession {
