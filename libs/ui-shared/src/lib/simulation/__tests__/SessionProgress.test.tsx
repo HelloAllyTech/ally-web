@@ -77,7 +77,7 @@ describe("SessionProgress", () => {
       expect(screen.getByTestId("session-progress-state-4")).toBeInTheDocument();
     });
 
-    it("should render progress bar", () => {
+    it("should render progress dots for each state", () => {
       render(
         <SessionProgress
           stateInstructions={mockStateInstructions}
@@ -85,7 +85,10 @@ describe("SessionProgress", () => {
           score={0}
         />,
       );
-      expect(screen.getByTestId("session-progress-bar")).toBeInTheDocument();
+      expect(screen.getByTestId("session-progress-dot-1")).toBeInTheDocument();
+      expect(screen.getByTestId("session-progress-dot-2")).toBeInTheDocument();
+      expect(screen.getByTestId("session-progress-dot-3")).toBeInTheDocument();
+      expect(screen.getByTestId("session-progress-dot-4")).toBeInTheDocument();
     });
   });
 
@@ -151,7 +154,7 @@ describe("SessionProgress", () => {
         />,
       );
       const state2 = screen.getByText("Hopeless");
-      expect(state2).toHaveStyle({ fontWeight: 700 });
+      expect(state2).toHaveStyle({ fontWeight: 600 });
     });
 
     it("should highlight state 1 for EASY difficulty with score -100", () => {
@@ -163,7 +166,7 @@ describe("SessionProgress", () => {
         />,
       );
       const state1 = screen.getByText("Resistive");
-      expect(state1).toHaveStyle({ fontWeight: 700 });
+      expect(state1).toHaveStyle({ fontWeight: 600 });
     });
 
     it("should highlight state 4 for EASY difficulty with score 100", () => {
@@ -175,7 +178,7 @@ describe("SessionProgress", () => {
         />,
       );
       const state4 = screen.getByText("Hopeful");
-      expect(state4).toHaveStyle({ fontWeight: 700 });
+      expect(state4).toHaveStyle({ fontWeight: 600 });
     });
 
     it("should highlight state 3 for MEDIUM difficulty with score 75", () => {
@@ -187,7 +190,7 @@ describe("SessionProgress", () => {
         />,
       );
       const state3 = screen.getByText("Open");
-      expect(state3).toHaveStyle({ fontWeight: 700 });
+      expect(state3).toHaveStyle({ fontWeight: 600 });
     });
 
     it("should highlight state 2 for HARD difficulty with score 50", () => {
@@ -199,7 +202,7 @@ describe("SessionProgress", () => {
         />,
       );
       const state2 = screen.getByText("Hopeless");
-      expect(state2).toHaveStyle({ fontWeight: 700 });
+      expect(state2).toHaveStyle({ fontWeight: 600 });
     });
   });
 
@@ -229,7 +232,7 @@ describe("SessionProgress", () => {
         />,
       );
       const state1 = screen.getByText("Resistive");
-      expect(state1).toHaveStyle({ fontWeight: 700 });
+      expect(state1).toHaveStyle({ fontWeight: 600 });
     });
   });
 });

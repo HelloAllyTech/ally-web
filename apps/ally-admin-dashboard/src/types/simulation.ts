@@ -232,7 +232,10 @@ export interface StartSimulationResponse {
       experienceMode?: string;
       checklistType?: string;
       showScoreMeter?: boolean;
+      currentState?: boolean;
+      stateInstructions?: stateInstruction[];
     };
+    difficultyLevel?: string;
   };
   checklistEvents?: any[];
 }
