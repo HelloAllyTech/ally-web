@@ -51,18 +51,15 @@ const getLastTranscriptSecond = (
 };
 
 /**
- * Index of the segment that should be highlighted: largest startSeconds still <= playback time.
- * List order does not need to match timeline (API may sort by createdAt).
+ * Index of the segment that should be highlighted: largest effective start still <= playback time.
+ * `effectiveStarts` holds the derived real start for each segment (previous item's endSeconds).
  */
-const getActiveTranscriptIndex = (
-  list: SimulationTranscriptMessage[] | TranscriptMessage[],
-  seconds: number,
-): number => {
-  if (!Number.isFinite(seconds) || list.length === 0) return -1;
+const getActiveTranscriptIndex = (effectiveStarts: number[], seconds: number): number => {
+  if (!Number.isFinite(seconds) || effectiveStarts.length === 0) return -1;
   let bestIdx = -1;
   let bestStart = -Infinity;
-  for (let i = 0; i < list.length; i++) {
-    const start = list[i].startSeconds ?? 0;
+  for (let i = 0; i < effectiveStarts.length; i++) {
+    const start = effectiveStarts[i];
     if (!Number.isFinite(start)) continue;
     if (seconds >= start && start >= bestStart) {
       bestStart = start;
@@ -81,6 +78,7 @@ const TranscriptItem = ({
   youLabel,
   isActive,
   itemRef,
+  displayStartSeconds,
   onRowClick,
 }: {
   agentName: string;
@@ -91,6 +89,7 @@ const TranscriptItem = ({
   transcript: SimulationTranscriptMessage | TranscriptMessage;
   isActive: boolean;
   itemRef?: RefObject<HTMLDivElement | HTMLButtonElement | null>;
+  displayStartSeconds?: number;
   onRowClick?: () => void;
 }) => {
   const isAIClient = transcript.senderId === -1;
@@ -101,19 +100,16 @@ const TranscriptItem = ({
       : (agentName ?? aiAgentName)
     : counsellorName || youLabel;
 
-  const borderWidthClass = isActive
-    ? "border-[3px]"
-    : onRowClick
-      ? "border hover:border-2"
-      : "border";
-  const rowClassName = `flex gap-4 p-4 rounded-md w-full min-w-0 box-border text-left ${borderWidthClass} ${
+  const borderWidthClass = isActive ? "border-[3px]" : "border";
+  const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-[#EDE7F6]" : "hover:bg-[#e8f2ff]") : "";
+  const rowClassName = `flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-colors ${borderWidthClass} ${
     isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"
-  }`;
+  } ${hoverBgClass}`;
 
   const body = (
     <>
       <div className="text-neutral-600 text-sm font-medium shrink-0 min-w-[36px] pt-[2px]">
-        {convertSecondsToTime(transcript.startSeconds ?? 0)}
+        {convertSecondsToTime(displayStartSeconds ?? transcript.startSeconds ?? 0)}
       </div>
 
       <div className="flex-1">
@@ -187,6 +183,8 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   const [seekTarget, setSeekTarget] = useState<number | null>(null);
   const [transcriptSeekRequest, setTranscriptSeekRequest] =
     useState<AudioTranscriptSeekRequest | null>(null);
+  const hasInteractedRef = useRef(false);
+  const clickSuppressUntilRef = useRef(0);
 
   const lastTimeOnPage = useMemo(() => getLastTranscriptSecond(transcriptList), [transcriptList]);
 
@@ -199,18 +197,27 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     [transcriptList],
   );
 
-  // ── Highlight: latest segment with start <= playback (order-independent index scan) ──
+  // Backend `startSeconds` is actually the segment's end time.
+  // Derive real start: item 0 starts at 0, item N starts at item N-1's `startSeconds`.
+  const effectiveStartSeconds = useMemo(
+    () => transcriptList.map((_, i) => (i === 0 ? 0 : (transcriptList[i - 1].startSeconds ?? 0))),
+    [transcriptList],
+  );
+
+  // ── Highlight: latest segment with effective start <= playback ──
   const handleTimeChange = useCallback(
     (seconds: number) => {
-      if (!hasTranscriptTimestamps) return;
-      const newIndex = getActiveTranscriptIndex(transcriptList, seconds);
+      if (!hasTranscriptTimestamps || !hasInteractedRef.current) return;
+      if (Date.now() < clickSuppressUntilRef.current) return;
+      const newIndex = getActiveTranscriptIndex(effectiveStartSeconds, seconds);
       setActiveIndex(prev => (prev !== newIndex ? newIndex : prev));
     },
-    [transcriptList, hasTranscriptTimestamps],
+    [effectiveStartSeconds, hasTranscriptTimestamps],
   );
 
   const handlePlayStateChange = useCallback((playing: boolean) => {
     setAudioIsPlaying(playing);
+    if (playing) hasInteractedRef.current = true;
   }, []);
 
   // ── On seek beyond loaded timeline, set target and kick first page fetch ──
@@ -286,9 +293,8 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     ) {
       return;
     }
-    const activeStart = transcriptList[activeIndex]?.startSeconds;
+    const activeStart = effectiveStartSeconds[activeIndex];
     if (typeof activeStart !== "number" || !Number.isFinite(activeStart)) return;
-    // Only prefetch when playback is actually in the tail of the *timeline*, not just last rows in array order.
     if (lastTimeOnPage - activeStart > 45) return;
     if (activeIndex < transcriptList.length - NEAR_END_THRESHOLD) return;
 
@@ -304,6 +310,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     handleLoadMore,
     lastTimeOnPage,
     transcriptList.length,
+    effectiveStartSeconds,
   ]);
 
   const TranscriptSkeleton = () => (
@@ -340,12 +347,9 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   }
 
   return (
-    <div
-      ref={scrollContainerRef ? undefined : containerRef}
-      className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}
-    >
+    <>
       {audioUrl && (
-        <div className="sticky top-0 z-10 shrink-0">
+        <div>
           <AudioTranscriptPlayer
             audioUrl={audioUrl}
             seekRequest={transcriptSeekRequest}
@@ -355,41 +359,51 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
           />
         </div>
       )}
-      <InfiniteScroll
-        onInfiniteScroll={handleLoadMore}
-        isLoading={isLoading}
-        hasMore={hasMore}
-        scrollContainerRef={scrollContainerRef ?? containerRef}
+      <div
+        ref={scrollContainerRef ? undefined : containerRef}
+        className={`flex flex-col gap-3 font-primary overflow-y-auto custom-scrollbar ${className}`}
       >
-        {transcriptList.map((transcript, index) => {
-          const isItemActive = index === activeIndex;
-          return (
-            <TranscriptItem
-              key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
-              transcript={transcript}
-              agentName={agentName}
-              counsellorName={counsellorName}
-              aiClientSuffix={aiClientSuffix}
-              aiAgentName={aiAgentName}
-              youLabel={youLabel}
-              isActive={isItemActive}
-              itemRef={isItemActive ? activeItemRef : undefined}
-              onRowClick={
-                audioUrl
-                  ? () => {
-                      seekRequestIdRef.current += 1;
-                      setTranscriptSeekRequest({
-                        seconds: transcript.startSeconds ?? 0,
-                        requestId: seekRequestIdRef.current,
-                      });
-                    }
-                  : undefined
-              }
-            />
-          );
-        })}
-      </InfiniteScroll>
-    </div>
+        <InfiniteScroll
+          onInfiniteScroll={handleLoadMore}
+          isLoading={isLoading}
+          hasMore={hasMore}
+          scrollContainerRef={scrollContainerRef ?? containerRef}
+        >
+          {transcriptList.map((transcript, index) => {
+            const isItemActive = index === activeIndex;
+            const effectiveStart = effectiveStartSeconds[index];
+            return (
+              <TranscriptItem
+                key={`${transcript.senderId}-${effectiveStart}-${index}`}
+                transcript={transcript}
+                agentName={agentName}
+                counsellorName={counsellorName}
+                aiClientSuffix={aiClientSuffix}
+                aiAgentName={aiAgentName}
+                youLabel={youLabel}
+                isActive={isItemActive}
+                itemRef={isItemActive ? activeItemRef : undefined}
+                displayStartSeconds={effectiveStart}
+                onRowClick={
+                  audioUrl
+                    ? () => {
+                        hasInteractedRef.current = true;
+                        clickSuppressUntilRef.current = Date.now() + 500;
+                        seekRequestIdRef.current += 1;
+                        setTranscriptSeekRequest({
+                          seconds: effectiveStart,
+                          requestId: seekRequestIdRef.current,
+                        });
+                        setActiveIndex(index);
+                      }
+                    : undefined
+                }
+              />
+            );
+          })}
+        </InfiniteScroll>
+      </div>
+    </>
   );
 };
 
