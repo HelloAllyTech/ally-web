@@ -282,7 +282,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               ? t("transcription.youLabel")
               : t("transcription.counsellorLabel")
           }
-          className="max-h-[calc(100vh-100px)] overflow-y-auto w-full"
+          className="max-h-[calc(100vh-100px)] overflow-y-auto w-full ph-no-capture"
         />
         {transcriptList.length > 0 && renderComments()}
       </div>
