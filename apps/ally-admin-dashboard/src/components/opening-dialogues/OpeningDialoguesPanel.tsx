@@ -280,11 +280,6 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
           </button>
         </div>
       </div>
-      <p className="text-sm text-typography-600">
-        One tab per catalog language (same list as Language–Voice). You can set opening lines even
-        before choosing a voice; sessions use a fallback voice when none is selected. The primary
-        tab syncs to scenario metadata; other languages are stored as translations.
-      </p>
       <div className="border border-border-light rounded-md overflow-hidden bg-white">
         <div className="flex border-b border-border-light overflow-x-auto">
           {scenarioLanguageTabs.map(tab => {
@@ -301,7 +296,6 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
                 }`}
               >
                 {tab.label}
-                {effectivePrimaryId === tab.languageId ? " · primary" : ""}
               </button>
             );
           })}
