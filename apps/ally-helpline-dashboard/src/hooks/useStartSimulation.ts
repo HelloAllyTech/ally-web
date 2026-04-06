@@ -110,6 +110,8 @@ export const useStartSimulation = (
             maxTimeValue: scenario?.maxTimeValue,
             timerMode: scenario?.timerMode,
             showScoreMeter: scenario?.showScoreMeter,
+            stateNames: scenario?.stateNames || [],
+            difficultyLevel: scenario?.difficultyLevel,
           }),
         );
 

@@ -58,7 +58,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
     currentState: data?.metadata?.currentState,
-    stateInstructions: data?.metadata?.stateInstructions,
+    stateInstructions: data?.metadata?.stateNames,
     behaviorInstructions: data?.behaviorInstructions ?? [],
     showScoreMeter: data?.metadata?.showScoreMeter,
     characterProfileText: data?.metadata?.characterProfileText,

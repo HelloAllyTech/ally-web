@@ -405,7 +405,9 @@ export const CreateSimulation: FC = () => {
       triggerWarningIds: triggerWarning,
       status,
       // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
-      ...(!FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG && { stateInstructions }),
+      ...(!FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG && {
+        stateNames: stateInstructions,
+      }),
       behaviorInstructions: behaviourInstructionsArray,
       competencyId: restForm.competency?.id,
       maxTimeValue: timerMode ? maxTimeValue : null,

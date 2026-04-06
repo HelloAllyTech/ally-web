@@ -1,8 +1,8 @@
 import { DifficultyLevel, StateScoreConfig } from "./types";
 
 export const STATE_COLORS = {
-  active: "#3B82F6",
-  completed: "#22C55E",
+  active: "#10B981",
+  completed: "#10B981",
   inactive: "#4B5563",
 };
 
