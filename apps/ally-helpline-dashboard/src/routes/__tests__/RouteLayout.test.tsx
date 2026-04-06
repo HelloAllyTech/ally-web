@@ -15,6 +15,15 @@ vi.mock("@pages", () => ({
   SuspendedUser: () => <div data-testid="suspended-user-page">Suspended User Page</div>,
 }));
 
+// Mock useAnalytics to avoid context error in PageviewTracker
+vi.mock("@hooks/useAnalytics", () => ({
+  useAnalytics: () => ({
+    capturePageview: vi.fn(),
+    capture: vi.fn(),
+    isFeatureEnabled: vi.fn(),
+  }),
+}));
+
 // Mock the route layouts
 vi.mock("../HybridRouteLayout", () => ({
   default: ({ children }: { children: React.ReactNode }) => (
