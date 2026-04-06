@@ -201,6 +201,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           sessionId={summaryId}
           councellorName={councellorName}
           agentName={summary?.scenario?.metadata?.name}
+          className=" px-4 pt-[10px]"
         />
       ),
     },

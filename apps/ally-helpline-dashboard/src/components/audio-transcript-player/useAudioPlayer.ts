@@ -59,7 +59,6 @@ export const useAudioPlayer = (): UseAudioPlayerReturn => {
       const clamped = maxT !== undefined ? Math.max(0, Math.min(time, maxT)) : Math.max(0, time);
       audioRef.current.currentTime = clamped;
       setCurrentTime(clamped);
-      setIsPlaying(true);
     },
     [duration],
   );
@@ -71,7 +70,6 @@ export const useAudioPlayer = (): UseAudioPlayerReturn => {
       const newTime = clamped * duration;
       audioRef.current.currentTime = newTime;
       setCurrentTime(newTime);
-      setIsPlaying(true);
     },
     [duration],
   );
