@@ -4,10 +4,10 @@ import { DIFFICULTY_STATE_SCORE_MAP } from "../constants";
 import {
   getCurrentStateIndex,
   getProgressPercentage,
-} from "../sessionProgressUtils";
+} from "../utils";
 import { DifficultyLevel } from "../types";
 
-describe("sessionProgressUtils", () => {
+describe("simulation utils", () => {
   describe("DIFFICULTY_STATE_SCORE_MAP", () => {
     it("should have configs for all difficulty levels", () => {
       expect(DIFFICULTY_STATE_SCORE_MAP[DifficultyLevel.EASY]).toBeDefined();
