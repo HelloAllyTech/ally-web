@@ -102,17 +102,17 @@ const TranscriptItem = ({
 
   const borderWidthClass = isActive ? "border-[3px]" : "border";
   const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-[#EDE7F6]" : "hover:bg-[#e8f2ff]") : "";
-  const rowClassName = `flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-colors ${borderWidthClass} ${
+  const rowClassName = ` flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-colors ${borderWidthClass} ${
     isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"
   } ${hoverBgClass}`;
 
   const body = (
     <>
-      <div className="text-neutral-600 text-sm font-medium shrink-0 min-w-[36px] pt-[2px]">
+      <div className="text-neutral-600 text-sm font-medium shrink-0 min-w-[36px] pt-[2px] ph-mask">
         {convertSecondsToTime(displayStartSeconds ?? transcript.startSeconds ?? 0)}
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 ph-mask">
         <div
           className={`font-semibold text-base ${isAIClient ? "text-[#7E57C2]" : "text-[#0957D0]"}`}
         >
