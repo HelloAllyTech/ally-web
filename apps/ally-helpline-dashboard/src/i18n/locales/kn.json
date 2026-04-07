@@ -705,6 +705,31 @@
       "ongoingRiskSuicidalPlan": "ನಿರಂತರ ಅಪಾಯ, ಆತ್ಮಹತ್ಯಾ ಯೋಜನೆ",
       "ongoingRiskSuicidalAction": "ನಿರಂತರ ಅಪಾಯ, ಆತ್ಮಹತ್ಯಾ ಕ್ರಿಯೆ",
       "ongoingRiskSuicidalThoughtsNotes": "ನಿರಂತರ ಅಪಾಯ, ಆತ್ಮಹತ್ಯೆ ಯೋಚನೆಗಳ ಟಿಪ್ಪಣಿಗಳು"
+    },
+    "options": {
+      "gender": {
+        "male": "ಪುರುಷ",
+        "female": "ಮಹಿಳಾ",
+        "nonBinary": "ನಾನ್-ಬೈನರಿ",
+        "preferNotToSay": "ಗ್ರಾಹಕ ಹೇಳಲು ಇಚ್ಛಿಸುವುದಿಲ್ಲ"
+      },
+      "risk": {
+        "yes": "ಹೌದು",
+        "no": "ಇಲ್ಲ"
+      },
+      "affect": {
+        "congruent": "ಸಮಾನಾಂತರ",
+        "incongruent": "ಅಸಂಗತ",
+        "flat": "ಫ್ಲಾಟ್",
+        "blunted": "ಬ್ಲಂಟೆಡ್"
+      },
+      "speech": {
+        "clearCoherent": "ಸ್ಪಷ್ಟ ಮತ್ತು ಸಮಂಜಸ",
+        "sluttering": "ಸ್ಲಟರಿಂಗ್",
+        "fast": "ತ್ವರಿತ",
+        "slow": "ಮಂದವಾಗಿ",
+        "difficultToUnderstand": "ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ಕಷ್ಟ"
+      }
     }
   },
   "profile": {
@@ -756,6 +781,17 @@
       "callEmptyDesc": "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಹೊಂದಿಸಲು ಅಥವಾ ಪುಟವನ್ನು ಪುನಃ ಲೋಡ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.",
       "simEmptyTitle": "ಯಾವುದೇ ಸಿಮ್ಯುಲೇಶನ್ ಲಾಗ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
       "simEmptyDesc": "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಹೊಂದಿಸಲು ಅಥವಾ ಪುಟವನ್ನು ಪುನಃ ಲೋಡ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ."
+    },
+    "status": {
+      "processing": "ಪ್ರಕ್ರಿಯೆಗೊಳ್ಳುತ್ತಿದೆ",
+      "generated": "ಉತ್ಪನ್ನವಾಗಿದೆ",
+      "error": "ದೋಷ",
+      "noAudio": "ಆಡಿಯೋ ಪತ್ತೆ ಮಾಡಲಾಗಿಲ್ಲ",
+      "unknown": "ಅಜ್ಞಾತ"
+    },
+    "source": {
+      "uploaded": "ಅಪ್ಲೋಡ್ ಮಾಡಲಾಗಿದೆ",
+      "liveSession": "ಜೀವಿತ ಅಧಿವೇಶನ"
     },
     "dialog": {
       "startSession": {
