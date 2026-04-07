@@ -144,6 +144,7 @@ export interface GetSimulationLogsInput {
   offset?: number;
   sortBy?: string;
   order?: "ASC" | "DESC";
+  languageCode?: string;
 }
 
 export type GetSimulationLogsResponse = {
@@ -155,6 +156,7 @@ export interface GetAdminSimulationLogsInput {
   offset?: number;
   sortBy?: string;
   order?: "ASC" | "DESC";
+  languageCode?: string;
 }
 
 export type GetAdminSimulationLogsResponse = {

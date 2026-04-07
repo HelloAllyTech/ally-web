@@ -50,7 +50,7 @@ import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 
 const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [logs, setLogs] = useState<any[]>([]);
   const [summary, setSummary] = useState<CallLog | SimulationLog | null>(null);
@@ -81,7 +81,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     isLoading: isSimulationLogsLoading,
     refetch: refetchSimulationLogs,
   } = useGetAdminSimulationLogsQuery(
-    { ...filters, sortBy: "createdAt", order: "DESC" },
+    { ...filters, sortBy: "createdAt", order: "DESC", languageCode: i18n.language },
     { skip: !isSimulation },
   );
 
