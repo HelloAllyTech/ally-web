@@ -30,7 +30,7 @@ describe("SessionProgress", () => {
     it("should render with correct test id", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
         />,
@@ -41,9 +41,11 @@ describe("SessionProgress", () => {
     it("should render the title", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
+          startTime={new Date().toISOString()}
+          maxTimeSeconds={600}
         />,
       );
       expect(screen.getByTestId("session-progress-title")).toHaveTextContent("Session Progress");
@@ -52,7 +54,7 @@ describe("SessionProgress", () => {
     it("should render all state names", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
         />,
@@ -66,7 +68,7 @@ describe("SessionProgress", () => {
     it("should render state test ids for each state", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
         />,
@@ -80,7 +82,7 @@ describe("SessionProgress", () => {
     it("should render progress dots for each state", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
         />,
@@ -96,7 +98,7 @@ describe("SessionProgress", () => {
     it("should render timer when startTime and maxTimeSeconds are provided", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
           startTime={new Date().toISOString()}
@@ -109,7 +111,7 @@ describe("SessionProgress", () => {
     it("should not render timer when startTime is missing", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
           maxTimeSeconds={600}
@@ -121,7 +123,7 @@ describe("SessionProgress", () => {
     it("should not render timer when maxTimeSeconds is missing", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
           startTime={new Date().toISOString()}
@@ -133,7 +135,7 @@ describe("SessionProgress", () => {
     it("should display formatted max time", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
           startTime={new Date().toISOString()}
@@ -148,7 +150,7 @@ describe("SessionProgress", () => {
     it("should highlight state 2 for EASY difficulty with score 0", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={0}
         />,
@@ -160,7 +162,7 @@ describe("SessionProgress", () => {
     it("should highlight state 1 for EASY difficulty with score -100", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={-100}
         />,
@@ -172,7 +174,7 @@ describe("SessionProgress", () => {
     it("should highlight state 4 for EASY difficulty with score 100", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="EASY"
           score={100}
         />,
@@ -184,7 +186,7 @@ describe("SessionProgress", () => {
     it("should highlight state 3 for MEDIUM difficulty with score 75", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="MEDIUM"
           score={75}
         />,
@@ -196,7 +198,7 @@ describe("SessionProgress", () => {
     it("should highlight state 2 for HARD difficulty with score 50", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="HARD"
           score={50}
         />,
@@ -214,7 +216,7 @@ describe("SessionProgress", () => {
       ];
       render(
         <SessionProgress
-          stateInstructions={twoStates}
+          stateNames={twoStates}
           difficultyLevel="EASY"
           score={0}
         />,
@@ -226,7 +228,7 @@ describe("SessionProgress", () => {
     it("should handle unknown difficulty by defaulting to state 0", () => {
       render(
         <SessionProgress
-          stateInstructions={mockStateInstructions}
+          stateNames={mockStateInstructions}
           difficultyLevel="UNKNOWN"
           score={50}
         />,

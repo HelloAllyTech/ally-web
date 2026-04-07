@@ -118,7 +118,7 @@ export const Simulation = () => {
         onEndSimulation={onEndSimulation}
         renderWarningDialog={renderWarningDialog}
         endSessionButtonRef={endSessionButtonRef}
-        stateInstructions={roomData?.stateNames ?? []}
+        stateNames={roomData?.stateNames ?? []}
         difficultyLevel={roomData?.difficultyLevel ?? ""}
         translations={simulationTranslations}
       />

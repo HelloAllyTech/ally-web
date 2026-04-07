@@ -9,7 +9,7 @@ import { getCurrentStateIndex } from "./utils";
 import { SessionProgressProps } from "./types";
 
 export const SessionProgress: FC<SessionProgressProps> = ({
-  stateInstructions,
+  stateNames,
   difficultyLevel,
   score,
   startTime,
@@ -61,27 +61,27 @@ export const SessionProgress: FC<SessionProgressProps> = ({
       className="bg-[#1d2020] rounded-lg p-4 pb-5 font-sans w-full"
     >
       {/* Title row */}
-      <div className="flex items-center justify-between mb-3">
-        <span
-          data-testid="session-progress-title"
-          className="text-[14px] font-semibold text-white tracking-wide uppercase"
-        >
-          Session Progress
-        </span>
-        {startTime && maxTimeSeconds && (
+      {startTime && maxTimeSeconds && (
+        <div className="flex items-center justify-between mb-3">
+          <span
+            data-testid="session-progress-title"
+            className="text-[14px] font-semibold text-white tracking-wide uppercase"
+          >
+            Session Progress
+          </span>
           <span
             data-testid="session-progress-timer"
             className="text-[13px] font-medium text-[#3B82F6]"
           >
             {formatTime(elapsedSeconds)} / {formatTime(maxTimeSeconds)}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Time progress bar (blue) */}
       {startTime && maxTimeSeconds && (
         <div
-          className={`w-full h-[6px] bg-[#374151] rounded-full overflow-hidden ${stateInstructions.length > 0 ? "mb-6" : ""}`}
+          className={`w-full h-[6px] bg-[#374151] rounded-full overflow-hidden ${stateNames.length > 0 ? "mb-6" : ""}`}
         >
           <motion.div
             data-testid="session-progress-time-bar"
@@ -92,7 +92,7 @@ export const SessionProgress: FC<SessionProgressProps> = ({
         </div>
       )}
 
-      {stateInstructions.length > 0 && (
+      {stateNames.length > 0 && (
         <div className="relative" style={{ paddingBottom: "28px" }}>
           <div className="relative flex items-center w-full" style={{ height: "16px" }}>
             <div
@@ -108,17 +108,17 @@ export const SessionProgress: FC<SessionProgressProps> = ({
               }}
               animate={{
                 width:
-                  stateInstructions.length > 1
-                    ? `${8 + (currentStateIndex / (stateInstructions.length - 1)) * 84}%`
+                  stateNames.length > 1
+                    ? `${8 + (currentStateIndex / (stateNames.length - 1)) * 84}%`
                     : "0%",
               }}
               transition={{ type: "spring", stiffness: 80, damping: 20 }}
             />
 
-            {stateInstructions.map((state, index) => {
+            {stateNames.map((state, index) => {
               const leftPercent =
-                stateInstructions.length > 1
-                  ? 8 + (index / (stateInstructions.length - 1)) * 84
+                stateNames.length > 1
+                  ? 8 + (index / (stateNames.length - 1)) * 84
                   : 50;
               const isActive = index === currentStateIndex;
               const isCompleted = index < currentStateIndex;
@@ -148,9 +148,9 @@ export const SessionProgress: FC<SessionProgressProps> = ({
           </div>
 
           {/* State labels — absolutely positioned below each dot */}
-          {stateInstructions.map((state, index) => {
+          {stateNames.map((state, index) => {
             const leftPercent =
-              stateInstructions.length > 1 ? 8 + (index / (stateInstructions.length - 1)) * 84 : 50;
+              stateNames.length > 1 ? 8 + (index / (stateNames.length - 1)) * 84 : 50;
             const isActive = index === currentStateIndex;
             const isCompleted = index < currentStateIndex;
 

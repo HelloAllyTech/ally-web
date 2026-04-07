@@ -97,7 +97,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         experienceMode: scenario?.metadata?.experienceMode,
         checklistType: scenario?.metadata?.checklistType,
         showScoreMeter: scenario?.metadata?.showScoreMeter,
-        stateInstructions: scenario?.metadata?.stateInstructions || [],
+        stateNames: scenario?.metadata?.stateNames || [],
         difficultyLevel: scenario?.difficultyLevel || "",
         useDirectAgentDispatch: useDirectAgentDispatch ?? false,
       }),

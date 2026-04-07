@@ -65,9 +65,9 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
     currentState: data?.metadata?.currentState,
-    stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
-      ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
-      : data?.metadata?.stateInstructions,
+    stateInstructions: Array.isArray(data?.metadata?.stateNames)
+      ? data.metadata.stateNames.filter(si => isValidStateInstructionId(si?.stateId))
+      : data?.metadata?.stateNames,
     behaviorInstructions: (data?.behaviorInstructions ?? []).map(beh => ({
       ...beh,
       stateInstructions: (beh.stateInstructions ?? []).filter(si =>

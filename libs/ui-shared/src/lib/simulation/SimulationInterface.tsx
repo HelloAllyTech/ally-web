@@ -41,7 +41,7 @@ export interface SimulationInterfaceProps {
   isMicrophoneGranted: boolean;
   onEnableMicrophone: () => void;
   score?: number;
-  stateInstructions?: StateInstruction[];
+  stateNames?: StateInstruction[];
   difficultyLevel?: string;
   startTime?: string;
   maxTimeSeconds?: number;
@@ -60,7 +60,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   isMicrophoneGranted,
   onEnableMicrophone,
   score = 0,
-  stateInstructions = [],
+  stateNames = [],
   difficultyLevel = "",
   startTime,
   maxTimeSeconds,
@@ -70,8 +70,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const remoteParticipants = useRemoteParticipants();
   const remoteParticipant = remoteParticipants?.[0];
 
-  const hasStateInstructions = stateInstructions.length > 0;
-  const showSessionProgress = hasStateInstructions || !!(roomData?.timerMode && startTime);
+  const hasStateNames = stateNames.length > 0;
+  const showSessionProgress = hasStateNames || !!(roomData?.timerMode && startTime);
 
   const renderConnectedContent = () => (
     <>
@@ -99,7 +99,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             <div className="flex flex-col gap-4 w-full h-full overflow-y-auto">
               {showSessionProgress && (
                 <SessionProgress
-                  stateInstructions={stateInstructions}
+                  stateNames={stateNames}
                   difficultyLevel={difficultyLevel}
                   score={score}
                   startTime={startTime}

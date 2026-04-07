@@ -8,7 +8,7 @@ export interface StateInstruction {
 }
 
 export interface SessionProgressProps {
-  stateInstructions: StateInstruction[];
+  stateNames: StateInstruction[];
   difficultyLevel: string;
   score: number;
   startTime?: string;
@@ -106,7 +106,7 @@ export interface SimulationPageProps {
   renderWarningDialog: (params: RenderWarningDialogParams) => ReactNode;
   renderFooter?: () => ReactNode;
   endSessionButtonRef: MutableRefObject<boolean>;
-  stateInstructions?: StateInstruction[];
+  stateNames?: StateInstruction[];
   difficultyLevel?: string;
   translations?: SimulationTranslations;
 }

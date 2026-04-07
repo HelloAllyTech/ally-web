@@ -73,7 +73,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   renderWarningDialog,
   renderFooter,
   endSessionButtonRef,
-  stateInstructions = [],
+  stateNames = [],
   difficultyLevel = "",
   translations,
 }) => {
@@ -247,7 +247,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}
           score={score}
-          stateInstructions={stateInstructions}
+          stateNames={stateNames}
           difficultyLevel={difficultyLevel}
           startTime={startTime}
           maxTimeSeconds={maxTimeSeconds}
