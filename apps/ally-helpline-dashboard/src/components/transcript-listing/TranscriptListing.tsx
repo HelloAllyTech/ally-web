@@ -331,14 +331,6 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     );
   }
 
-  if (transcriptList.length === 0) {
-    return (
-      <div className="flex flex-col justify-center items-center h-full w-full">
-        <div className="text-xxl font-primary text-typography-700">{t("transcription.empty")}</div>
-      </div>
-    );
-  }
-
   return (
     <>
       {audioUrl && (
@@ -352,48 +344,56 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
           />
         </div>
       )}
-      <div
-        ref={scrollContainerRef ? undefined : containerRef}
-        className={`flex flex-col gap-3 font-primary overflow-y-auto custom-scrollbar ${className}`}
-      >
-        <InfiniteScroll
-          onInfiniteScroll={handleLoadMore}
-          isLoading={isLoading}
-          hasMore={hasMore}
-          scrollContainerRef={scrollContainerRef ?? containerRef}
+      {transcriptList.length === 0 ? (
+        <div className="flex flex-col justify-center items-center h-full w-full">
+          <div className="text-xxl font-primary text-typography-700">
+            {t("transcription.empty")}
+          </div>
+        </div>
+      ) : (
+        <div
+          ref={scrollContainerRef ? undefined : containerRef}
+          className={`flex flex-col gap-3 font-primary overflow-y-auto custom-scrollbar ${className}`}
         >
-          {transcriptList.map((transcript, index) => {
-            const isItemActive = index === activeIndex;
-            return (
-              <TranscriptItem
-                key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
-                transcript={transcript}
-                agentName={agentName}
-                counsellorName={counsellorName}
-                aiClientSuffix={aiClientSuffix}
-                aiAgentName={aiAgentName}
-                youLabel={youLabel}
-                isActive={isItemActive}
-                itemRef={isItemActive ? activeItemRef : undefined}
-                onRowClick={
-                  audioUrl
-                    ? () => {
-                        hasInteractedRef.current = true;
-                        clickSuppressUntilRef.current = Date.now() + 500;
-                        seekRequestIdRef.current += 1;
-                        setTranscriptSeekRequest({
-                          seconds: transcript.startSeconds ?? 0,
-                          requestId: seekRequestIdRef.current,
-                        });
-                        setActiveIndex(index);
-                      }
-                    : undefined
-                }
-              />
-            );
-          })}
-        </InfiniteScroll>
-      </div>
+          <InfiniteScroll
+            onInfiniteScroll={handleLoadMore}
+            isLoading={isLoading}
+            hasMore={hasMore}
+            scrollContainerRef={scrollContainerRef ?? containerRef}
+          >
+            {transcriptList.map((transcript, index) => {
+              const isItemActive = index === activeIndex;
+              return (
+                <TranscriptItem
+                  key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
+                  transcript={transcript}
+                  agentName={agentName}
+                  counsellorName={counsellorName}
+                  aiClientSuffix={aiClientSuffix}
+                  aiAgentName={aiAgentName}
+                  youLabel={youLabel}
+                  isActive={isItemActive}
+                  itemRef={isItemActive ? activeItemRef : undefined}
+                  onRowClick={
+                    audioUrl
+                      ? () => {
+                          hasInteractedRef.current = true;
+                          clickSuppressUntilRef.current = Date.now() + 500;
+                          seekRequestIdRef.current += 1;
+                          setTranscriptSeekRequest({
+                            seconds: transcript.startSeconds ?? 0,
+                            requestId: seekRequestIdRef.current,
+                          });
+                          setActiveIndex(index);
+                        }
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </InfiniteScroll>
+        </div>
+      )}
     </>
   );
 };
