@@ -24,6 +24,8 @@ export function initAnalytics(): void {
     autocapture: false, // Opt-in only — reduces noise, prevents accidental PII capture
     session_recording: {
       maskAllInputs: true, // PII protection — masks all inputs in session recordings
+      blockClass: "ph-no-capture", // This class blocks entire section
+      maskTextClass: "ph-mask", // This class block text
     },
     persistence: "localStorage",
     respect_dnt: true, // Honour browser "Do Not Track" header
