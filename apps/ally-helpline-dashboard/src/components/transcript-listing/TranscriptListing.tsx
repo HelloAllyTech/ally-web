@@ -51,15 +51,18 @@ const getLastTranscriptSecond = (
 };
 
 /**
- * Index of the segment that should be highlighted: largest effective start still <= playback time.
- * `effectiveStarts` holds the derived real start for each segment (previous item's endSeconds).
+ * Index of the segment that should be highlighted: largest startSeconds still <= playback time.
+ * List order does not need to match timeline (API may sort by createdAt).
  */
-const getActiveTranscriptIndex = (effectiveStarts: number[], seconds: number): number => {
-  if (!Number.isFinite(seconds) || effectiveStarts.length === 0) return -1;
+const getActiveTranscriptIndex = (
+  list: SimulationTranscriptMessage[] | TranscriptMessage[],
+  seconds: number,
+): number => {
+  if (!Number.isFinite(seconds) || list.length === 0) return -1;
   let bestIdx = -1;
   let bestStart = -Infinity;
-  for (let i = 0; i < effectiveStarts.length; i++) {
-    const start = effectiveStarts[i];
+  for (let i = 0; i < list.length; i++) {
+    const start = list[i].startSeconds ?? 0;
     if (!Number.isFinite(start)) continue;
     if (seconds >= start && start >= bestStart) {
       bestStart = start;
@@ -78,7 +81,6 @@ const TranscriptItem = ({
   youLabel,
   isActive,
   itemRef,
-  displayStartSeconds,
   onRowClick,
 }: {
   agentName: string;
@@ -89,7 +91,6 @@ const TranscriptItem = ({
   transcript: SimulationTranscriptMessage | TranscriptMessage;
   isActive: boolean;
   itemRef?: RefObject<HTMLDivElement | HTMLButtonElement | null>;
-  displayStartSeconds?: number;
   onRowClick?: () => void;
 }) => {
   const isAIClient = transcript.senderId === -1;
@@ -108,8 +109,8 @@ const TranscriptItem = ({
 
   const body = (
     <>
-      <div className="text-neutral-600 text-sm font-medium shrink-0 min-w-[36px] pt-[2px] ph-mask">
-        {convertSecondsToTime(displayStartSeconds ?? transcript.startSeconds ?? 0)}
+      <div className="text-neutral-600 text-sm font-medium shrink-0 min-w-[36px] pt-[2px]">
+        {convertSecondsToTime(transcript.startSeconds ?? 0)}
       </div>
 
       <div className="flex-1 ph-mask">
@@ -197,22 +198,15 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     [transcriptList],
   );
 
-  // Backend `startSeconds` is actually the segment's end time.
-  // Derive real start: item 0 starts at 0, item N starts at item N-1's `startSeconds`.
-  const effectiveStartSeconds = useMemo(
-    () => transcriptList.map((_, i) => (i === 0 ? 0 : (transcriptList[i - 1].startSeconds ?? 0))),
-    [transcriptList],
-  );
-
-  // ── Highlight: latest segment with effective start <= playback ──
+  // ── Highlight: latest segment with startSeconds <= playback ──
   const handleTimeChange = useCallback(
     (seconds: number) => {
       if (!hasTranscriptTimestamps || !hasInteractedRef.current) return;
       if (Date.now() < clickSuppressUntilRef.current) return;
-      const newIndex = getActiveTranscriptIndex(effectiveStartSeconds, seconds);
+      const newIndex = getActiveTranscriptIndex(transcriptList, seconds);
       setActiveIndex(prev => (prev !== newIndex ? newIndex : prev));
     },
-    [effectiveStartSeconds, hasTranscriptTimestamps],
+    [transcriptList, hasTranscriptTimestamps],
   );
 
   const handlePlayStateChange = useCallback((playing: boolean) => {
@@ -293,7 +287,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     ) {
       return;
     }
-    const activeStart = effectiveStartSeconds[activeIndex];
+    const activeStart = transcriptList[activeIndex]?.startSeconds;
     if (typeof activeStart !== "number" || !Number.isFinite(activeStart)) return;
     if (lastTimeOnPage - activeStart > 45) return;
     if (activeIndex < transcriptList.length - NEAR_END_THRESHOLD) return;
@@ -309,8 +303,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     hasMore,
     handleLoadMore,
     lastTimeOnPage,
-    transcriptList.length,
-    effectiveStartSeconds,
+    transcriptList,
   ]);
 
   const TranscriptSkeleton = () => (
@@ -371,10 +364,9 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
         >
           {transcriptList.map((transcript, index) => {
             const isItemActive = index === activeIndex;
-            const effectiveStart = effectiveStartSeconds[index];
             return (
               <TranscriptItem
-                key={`${transcript.senderId}-${effectiveStart}-${index}`}
+                key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
                 transcript={transcript}
                 agentName={agentName}
                 counsellorName={counsellorName}
@@ -383,7 +375,6 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
                 youLabel={youLabel}
                 isActive={isItemActive}
                 itemRef={isItemActive ? activeItemRef : undefined}
-                displayStartSeconds={effectiveStart}
                 onRowClick={
                   audioUrl
                     ? () => {
@@ -391,7 +382,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
                         clickSuppressUntilRef.current = Date.now() + 500;
                         seekRequestIdRef.current += 1;
                         setTranscriptSeekRequest({
-                          seconds: effectiveStart,
+                          seconds: transcript.startSeconds ?? 0,
                           requestId: seekRequestIdRef.current,
                         });
                         setActiveIndex(index);
