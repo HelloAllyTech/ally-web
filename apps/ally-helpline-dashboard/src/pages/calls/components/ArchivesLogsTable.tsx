@@ -241,14 +241,14 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
       key: "summaryStatus",
       header: t("calls.table.summaryStatus"),
       style: { width: isOrgLogs ? "8%" : "10%" },
-      render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
+      render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus, t)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
       header: t("calls.table.source"),
       style: { width: isOrgLogs ? "8%" : "10%" },
-      render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
+      render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
     },
     {

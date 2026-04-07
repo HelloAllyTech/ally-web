@@ -1,58 +1,59 @@
 import dayjs, { Dayjs } from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+import { TFunction } from "i18next";
 
 import { ErrorIcon } from "@assets";
 import { ChipConfig } from "@components";
 import { CallProvider } from "@constants";
 import { ChatSummaryStatus } from "@types";
 
-export const getStatusChipConfig = (status: ChatSummaryStatus): ChipConfig => {
+export const getStatusChipConfig = (status: ChatSummaryStatus, t: TFunction): ChipConfig => {
   switch (status) {
     case ChatSummaryStatus.PENDING:
     case ChatSummaryStatus.IN_PROGRESS:
       return {
-        label: "Processing",
+        label: t("calls.status.processing"),
         outerDivClassName: "bg-[#F8E6BA]", // Light yellow
         dotClassName: "bg-[#FFAD0D]", // Yellow
       };
     case ChatSummaryStatus.SUCCESS:
       return {
-        label: "Generated",
+        label: t("calls.status.generated"),
         dotClassName: "bg-[#47B881]", // Green
         outerDivClassName: "bg-[#DCEBDD]", // Light green
       };
     case ChatSummaryStatus.FAILED:
       return {
-        label: "Error",
+        label: t("calls.status.error"),
         dotClassName: "bg-[#E5675A]", // Red
         outerDivClassName: "bg-[#FBDED9]", // Light red
       };
     case ChatSummaryStatus.NO_AUDIO:
       return {
-        label: "No audio detected",
+        label: t("calls.status.noAudio"),
         icon: ErrorIcon,
       };
     default:
       return {
-        label: "Unknown",
+        label: t("calls.status.unknown"),
         dotClassName: "bg-[#6B7280]", // Gray
         outerDivClassName: "bg-[#F3F4F6]", // Light gray
       };
   }
 };
 
-export const getSourceChipConfig = (provider: CallProvider): ChipConfig => {
+export const getSourceChipConfig = (provider: CallProvider, t: TFunction): ChipConfig => {
   switch (provider) {
     case CallProvider.AUDIO_UPLOAD:
       return {
-        label: "Uploaded",
+        label: t("calls.source.uploaded"),
         dotClassName: "hidden",
         outerDivClassName: "bg-[#E2F2FF] text-primary-500", // Blue
       };
     default:
       return {
-        label: "Live Session",
+        label: t("calls.source.liveSession"),
         dotClassName: "hidden",
         outerDivClassName: "bg-[#EDE7F6] text-[#673AB7]", // Purple
       };

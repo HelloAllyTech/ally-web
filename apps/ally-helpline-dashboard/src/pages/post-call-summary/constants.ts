@@ -203,7 +203,12 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     isEditable: true,
     key: SummaryFieldKey.Gender,
     label: t("summary.fields.gender"),
-    options: ["Male", "Female", "Non-binary", "Client Prefers Not to Say"],
+    options: [
+      t("summary.options.gender.male"),
+      t("summary.options.gender.female"),
+      t("summary.options.gender.nonBinary"),
+      t("summary.options.gender.preferNotToSay"),
+    ],
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: FieldType.Dropdown,
   },
@@ -405,7 +410,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.riskSelfHarm"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -422,7 +427,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.riskSuicidalThoughts"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -439,7 +444,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.riskSuicidalPlan"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -448,7 +453,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.riskSuicidalAction"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -457,7 +462,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.riskRunningAway"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -474,7 +479,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.traumaPhysicalAbuse"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -483,7 +488,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.traumaSexualAbuse"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -492,7 +497,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.traumaVerbalAbuse"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -501,7 +506,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.traumaNeglect"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -510,7 +515,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.traumaSeparation"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -519,7 +524,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.traumaDomesticViolence"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -536,7 +541,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.assessmentPsychDiagnosis"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -553,7 +558,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.assessmentPsychotropicMeds"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -570,7 +575,7 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.assessmentHallucinations"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Yes", "No"],
+    options: [t("summary.options.risk.yes"), t("summary.options.risk.no")],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -587,7 +592,12 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.assessmentAffect"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Congruent", "Incongruent", "Flat", "Blunted"],
+    options: [
+      t("summary.options.affect.congruent"),
+      t("summary.options.affect.incongruent"),
+      t("summary.options.affect.flat"),
+      t("summary.options.affect.blunted"),
+    ],
     placeholder: t("summary.placeholders.select"),
   },
   {
@@ -596,7 +606,13 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     label: t("summary.fields.assessmentSpeech"),
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Clear & Coherent", "Sluttering", "Fast", "Slow", "Difficult to Understand"],
+    options: [
+      t("summary.options.speech.clearCoherent"),
+      t("summary.options.speech.sluttering"),
+      t("summary.options.speech.fast"),
+      t("summary.options.speech.slow"),
+      t("summary.options.speech.difficultToUnderstand"),
+    ],
     placeholder: t("summary.placeholders.select"),
   },
   // Ongoing Risks
