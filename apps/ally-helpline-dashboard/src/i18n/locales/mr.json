@@ -705,6 +705,31 @@
       "ongoingRiskSuicidalPlan": "सतत धोका, आत्महत्येची योजना",
       "ongoingRiskSuicidalAction": "सतत धोका, आत्महत्येची क्रिया",
       "ongoingRiskSuicidalThoughtsNotes": "सतत धोका, आत्महत्येच्या विचारांची नोट्स"
+    },
+    "options": {
+      "gender": {
+        "male": "पुरुष",
+        "female": "महिला",
+        "nonBinary": "गैर-बाइनरी",
+        "preferNotToSay": "ग्राहक म्हणतो की ते सांगू इच्छित नाहीत"
+      },
+      "risk": {
+        "yes": "होय",
+        "no": "नाही"
+      },
+      "affect": {
+        "congruent": "सुसंगत",
+        "incongruent": "असंगत",
+        "flat": "फ्लॅट",
+        "blunted": "बंदूकबंद"
+      },
+      "speech": {
+        "clearCoherent": "स्पष्ट आणि सुसंगत",
+        "sluttering": "स्लटरिंग",
+        "fast": "जल्दी",
+        "slow": "मंद",
+        "difficultToUnderstand": "समजायला कठीण"
+      }
     }
   },
   "profile": {
@@ -756,6 +781,17 @@
       "callEmptyDesc": "फिल्टर समायोजित करण्याचा प्रयत्न करा किंवा पृष्ठ ताजे करा.",
       "simEmptyTitle": "कोणतीही सिम्युलेशन लॉग्स सापडली नाहीत",
       "simEmptyDesc": "फिल्टर समायोजित करण्याचा प्रयत्न करा किंवा पृष्ठ ताजे करा."
+    },
+    "status": {
+      "processing": "प्रक्रिया करत आहे",
+      "generated": "उत्पन्न केलेले",
+      "error": "त्रुटी",
+      "noAudio": "ऑडिओ शोधला गेला नाही",
+      "unknown": "अज्ञात"
+    },
+    "source": {
+      "uploaded": "अपलोड केलेले",
+      "liveSession": "लाइव्ह सत्र"
     },
     "dialog": {
       "startSession": {

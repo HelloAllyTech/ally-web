@@ -705,6 +705,31 @@
       "ongoingRiskSuicidalPlan": "தொடரும் ஆபத்து, தற்கொலை திட்டம்",
       "ongoingRiskSuicidalAction": "தொடரும் ஆபத்து, தற்கொலைச் செயல்",
       "ongoingRiskSuicidalThoughtsNotes": "தொடரும் ஆபத்து, தற்கொலை எண்ணங்கள் குறிப்புகள்"
+    },
+    "options": {
+      "gender": {
+        "male": "ஆண்",
+        "female": "பெண்",
+        "nonBinary": "அணுக்கருவி (Non-binary)",
+        "preferNotToSay": "வாடிக்கையாளர் கூற விரும்பவில்லை"
+      },
+      "risk": {
+        "yes": "ஆம்",
+        "no": "இல்லை"
+      },
+      "affect": {
+        "congruent": "ஒத்ததாக",
+        "incongruent": "அசங்கதமான",
+        "flat": "சரிவு",
+        "blunted": "மென்மையான"
+      },
+      "speech": {
+        "clearCoherent": "명확하고 일관된",
+        "sluttering": "சலசலப்பு",
+        "fast": "விரைவான",
+        "slow": "மந்தம்",
+        "difficultToUnderstand": "புரிய கடினம்"
+      }
     }
   },
   "profile": {
@@ -756,6 +781,17 @@
       "callEmptyDesc": "ஃபில்டர்களை சரிசெய்ய முயற்சிக்கவும் அல்லது பக்கம் புதுப்பிக்கவும்.",
       "simEmptyTitle": "சிமுலேஷன் பதிவுகள் எதுவும் காணப்படவில்லை",
       "simEmptyDesc": "ஊதியங்களை சரிசெய்ய முயற்சிக்கவும் அல்லது பக்கம் புதுப்பிக்கவும்."
+    },
+    "status": {
+      "processing": "செயலாக்கம்",
+      "generated": "உற்பத்தி செய்யப்பட்டு",
+      "error": "பிழை",
+      "noAudio": "ஒலி கண்டறியப்படவில்லை",
+      "unknown": "அறியப்படாதது"
+    },
+    "source": {
+      "uploaded": "பதிவேற்றப்பட்டது",
+      "liveSession": "நேரடி அமர்வு"
     },
     "dialog": {
       "startSession": {
