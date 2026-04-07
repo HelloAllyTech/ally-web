@@ -1,4 +1,4 @@
-import { TFunction } from "i18next";
+import { TFunction  } from "i18next";
 
 import {
   CallDetails,
@@ -793,7 +793,7 @@ export const summaryFields: SummaryField[] = [
   {
     isEditable: false,
     key: SummaryFieldKey.CounsellorName,
-    label: "User Name",
+    label: "Counsellor Name",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: FieldType.Text,
   },
