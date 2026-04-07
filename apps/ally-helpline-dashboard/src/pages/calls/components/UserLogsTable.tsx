@@ -35,7 +35,7 @@ import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { filters } = useSelector((state: RootState) => state.calls);
 
@@ -73,6 +73,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       offset: offset,
       sortBy: "createdAt",
       order: "DESC",
+      languageCode: i18n.language,
     },
     { skip: !isSimulation },
   );

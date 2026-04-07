@@ -527,4 +527,24 @@ describe("AdminLogsTable Component", () => {
       }
     });
   });
+
+  describe("Language Code", () => {
+    it("should pass languageCode to useGetAdminSimulationLogsQuery", () => {
+      renderComponent(SessionType.SIMULATION);
+
+      expect(mockUseGetAdminSimulationLogsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ languageCode: expect.any(String) }),
+        expect.any(Object),
+      );
+    });
+
+    it("should NOT include languageCode in admin call logs query", () => {
+      renderComponent(SessionType.CALL);
+
+      expect(mockUseGetAdminCallLogsQuery).toHaveBeenCalledWith(
+        expect.not.objectContaining({ languageCode: expect.any(String) }),
+        expect.any(Object),
+      );
+    });
+  });
 });

@@ -208,7 +208,7 @@ const createMockStore = (callsState: any = { filters: { offset: 0 } }, userState
   });
 };
 
-const mockCallLog: CallLog = {
+const mockCallLog = {
   id: 1,
   createdAt: "2024-01-01T10:00:00Z",
   updatedAt: "2024-01-01T10:00:00Z",
@@ -776,6 +776,27 @@ describe("CallLogsTable Component", () => {
         const summaryButton = screen.getByTestId("review-icon").closest("button");
         expect(summaryButton).toBeInTheDocument();
       });
+    });
+  });
+
+  describe("Language Code", () => {
+    it("should pass languageCode to useGetSimulationLogsQuery", () => {
+      renderComponent(SessionType.SIMULATION);
+
+      expect(mockUseGetSimulationLogsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ languageCode: expect.any(String) }),
+        expect.any(Object),
+      );
+    });
+
+    it("should NOT pass languageCode when rendering call logs", () => {
+      renderComponent(SessionType.CALL);
+
+      // The simulation query is skipped, but its args still passed — verify call query does NOT include languageCode
+      expect(mockUseGetCallLogsQuery).toHaveBeenCalledWith(
+        expect.not.objectContaining({ languageCode: expect.any(String) }),
+        expect.any(Object),
+      );
     });
   });
 });
