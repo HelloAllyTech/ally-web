@@ -208,14 +208,14 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       key: "summaryStatus",
       header: t("calls.table.summaryStatus"),
       style: { width: "10%" },
-      render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
+      render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus, t)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
       header: t("calls.table.source"),
       style: { width: "10%" },
-      render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
+      render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
     },
     {

@@ -705,6 +705,31 @@
       "ongoingRiskSuicidalPlan": "चल रहा जोखिम, आत्मघाती योजना",
       "ongoingRiskSuicidalAction": "चल रहा जोखिम, आत्मघाती कार्य",
       "ongoingRiskSuicidalThoughtsNotes": "चल रहा जोखिम, आत्मघाती विचार नोट्स"
+    },
+    "options": {
+      "gender": {
+        "male": "पुरुष",
+        "female": "महिला",
+        "nonBinary": "नॉन-बाइनरी",
+        "preferNotToSay": "क्लाइंट बताना नहीं चाहता"
+      },
+      "risk": {
+        "yes": "हाँ",
+        "no": "नहीं"
+      },
+      "affect": {
+        "congruent": "संगत",
+        "incongruent": "असंगत",
+        "flat": "समतल",
+        "blunted": "कुंद"
+      },
+      "speech": {
+        "clearCoherent": "स्पष्ट और सुसंगत",
+        "sluttering": "हकलाना",
+        "fast": "तेज़",
+        "slow": "धीमा",
+        "difficultToUnderstand": "समझने में कठिन"
+      }
     }
   },
   "profile": {
@@ -746,6 +771,17 @@
     "userGroups": {
       "my": "मेरे लॉग्स",
       "org": "संगठन लॉग्स"
+    },
+    "status": {
+      "processing": "प्रसंस्करण",
+      "generated": "निर्मित",
+      "error": "त्रुटि",
+      "noAudio": "कोई ऑडियो नहीं मिला",
+      "unknown": "अज्ञात"
+    },
+    "source": {
+      "uploaded": "अपलोड किया गया",
+      "liveSession": "लाइव सत्र"
     },
     "sessionTypes": {
       "call": "कॉल",

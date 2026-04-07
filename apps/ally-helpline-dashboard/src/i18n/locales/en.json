@@ -705,6 +705,31 @@
       "ongoingRiskSuicidalPlan": "Ongoing Risk, Suicidal Plan",
       "ongoingRiskSuicidalAction": "Ongoing Risk, Suicidal Action",
       "ongoingRiskSuicidalThoughtsNotes": "Ongoing Risk, Suicidal Thoughts Notes"
+    },
+    "options": {
+      "gender": {
+        "male": "Male",
+        "female": "Female",
+        "nonBinary": "Non-binary",
+        "preferNotToSay": "Client Prefers Not to Say"
+      },
+      "risk": {
+        "yes": "Yes",
+        "no": "No"
+      },
+      "affect": {
+        "congruent": "Congruent",
+        "incongruent": "Incongruent",
+        "flat": "Flat",
+        "blunted": "Blunted"
+      },
+      "speech": {
+        "clearCoherent": "Clear & Coherent",
+        "sluttering": "Sluttering",
+        "fast": "Fast",
+        "slow": "Slow",
+        "difficultToUnderstand": "Difficult to Understand"
+      }
     }
   },
   "profile": {
@@ -756,6 +781,17 @@
       "callEmptyDesc": "Try adjusting filters or refresh the page.",
       "simEmptyTitle": "No simulation logs found",
       "simEmptyDesc": "Try adjusting filters or refresh the page."
+    },
+    "status": {
+      "processing": "Processing",
+      "generated": "Generated",
+      "error": "Error",
+      "noAudio": "No audio detected",
+      "unknown": "Unknown"
+    },
+    "source": {
+      "uploaded": "Uploaded",
+      "liveSession": "Live Session"
     },
     "dialog": {
       "startSession": {
