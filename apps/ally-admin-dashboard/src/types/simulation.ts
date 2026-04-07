@@ -108,6 +108,7 @@ export interface SimulationInput {
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
   knowledgeSources?: KnowledgeSourceInput[];
+  stateNames?: stateInstruction[];
   translationOpeningStatements?: Record<string, string[]>;
 }
 
@@ -184,6 +185,7 @@ export interface GetSimulationByIdResponse {
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
     knowledgeSources?: knowledgeSource[];
+    stateNames?: stateInstruction[];
     linguisticStyleSamples?: Record<string, string[]>;
     allowedFillerWords?: Record<string, string[]>;
   };
@@ -232,7 +234,10 @@ export interface StartSimulationResponse {
       experienceMode?: string;
       checklistType?: string;
       showScoreMeter?: boolean;
+      currentState?: boolean;
+      stateNames?: stateInstruction[];
     };
+    difficultyLevel?: string;
   };
   checklistEvents?: any[];
 }

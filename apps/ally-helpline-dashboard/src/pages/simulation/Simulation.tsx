@@ -118,6 +118,8 @@ export const Simulation = () => {
         onEndSimulation={onEndSimulation}
         renderWarningDialog={renderWarningDialog}
         endSessionButtonRef={endSessionButtonRef}
+        stateNames={roomData?.stateNames ?? []}
+        difficultyLevel={roomData?.difficultyLevel ?? ""}
         translations={simulationTranslations}
       />
       <ConfirmationDialog

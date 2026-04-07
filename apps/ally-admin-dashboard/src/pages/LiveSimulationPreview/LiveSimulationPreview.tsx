@@ -63,6 +63,8 @@ export const LiveSimulationPreview: React.FC = () => {
       onEndSimulation={handleEndSession}
       renderWarningDialog={renderWarningDialog}
       endSessionButtonRef={endSessionButtonRef}
+      stateNames={roomData?.stateNames ?? []}
+      difficultyLevel={roomData?.difficultyLevel ?? ""}
     />
   );
 };

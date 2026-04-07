@@ -38,6 +38,8 @@ export interface Scenario {
   maxTimeValue?: string;
   timerMode?: boolean;
   showScoreMeter?: boolean;
+  difficultyLevel?: string;
+  stateNames?: { name: string; stateId: string }[];
 }
 
 export interface ScenarioSession {

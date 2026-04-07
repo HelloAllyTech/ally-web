@@ -10,8 +10,15 @@ import {
 import { motion } from "framer-motion";
 
 import { SessionChecklist } from "./SessionChecklist";
+import { SessionProgress } from "./SessionProgress";
 import { SimulationEvents } from "./SimulationEvents";
-import { SimulationEventType, ChecklistItem, ChecklistMode, SimulationTranslations } from "./types";
+import {
+  SimulationEventType,
+  ChecklistItem,
+  ChecklistMode,
+  StateInstruction,
+  SimulationTranslations,
+} from "./types";
 import { UserCallCard } from "./UserCallCard";
 
 export enum RoomStatus {
@@ -33,6 +40,11 @@ export interface SimulationInterfaceProps {
   checklistItems?: ChecklistItem[];
   isMicrophoneGranted: boolean;
   onEnableMicrophone: () => void;
+  score?: number;
+  stateNames?: StateInstruction[];
+  difficultyLevel?: string;
+  startTime?: string;
+  maxTimeSeconds?: number;
   translations?: SimulationTranslations;
 }
 
@@ -47,11 +59,19 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   checklistItems = [],
   isMicrophoneGranted,
   onEnableMicrophone,
+  score = 0,
+  stateNames = [],
+  difficultyLevel = "",
+  startTime,
+  maxTimeSeconds,
   translations,
 }) => {
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
   const remoteParticipant = remoteParticipants?.[0];
+
+  const hasStateNames = stateNames.length > 0;
+  const showSessionProgress = hasStateNames || !!(roomData?.timerMode && startTime);
 
   const renderConnectedContent = () => (
     <>
@@ -72,17 +92,33 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           isSpeaking={localParticipant.isSpeaking}
           isMuted={isMuted}
         />
-        {!isFocusMode && checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
-          <SessionChecklist
-            mode={checklistMode}
-            items={checklistItems}
-            triggeredEvents={detectedEventIds || []}
-            translations={translations}
-          />
-        )}
-        {!isFocusMode && checklistMode === ChecklistMode.OFF && events?.length > 0 && (
-          <SimulationEvents events={events} />
-        )}
+        {!isFocusMode &&
+          (showSessionProgress ||
+            (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
+            (checklistMode === ChecklistMode.OFF && events?.length > 0)) && (
+            <div className="flex flex-col gap-4 w-full h-full overflow-y-auto">
+              {showSessionProgress && (
+                <SessionProgress
+                  stateNames={stateNames}
+                  difficultyLevel={difficultyLevel}
+                  score={score}
+                  startTime={startTime}
+                  maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
+                />
+              )}
+              {checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
+                <SessionChecklist
+                  mode={checklistMode}
+                  items={checklistItems}
+                  triggeredEvents={detectedEventIds || []}
+                  translations={translations}
+                />
+              )}
+              {checklistMode === ChecklistMode.OFF && events?.length > 0 && (
+                <SimulationEvents events={events} />
+              )}
+            </div>
+          )}
       </div>
     </>
   );
