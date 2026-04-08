@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { CustomImage, CustomVideo } from "@ally-ui-mono/ui-shared/index";
 import { ArrowDownBlue, CloseIcon, ScribeImage } from "@assets";
 import { Button, EmojiPickerTrigger } from "@components";
-import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
+import { getFormattedDate, getFormattedTimeFromDuration } from "@utils";
 
 export interface ShareForReviewProps {
   isOpen: boolean;
@@ -33,14 +33,17 @@ export enum TagType {
   SCRIBE = "Scribe",
 }
 
-const ModalHeader = ({ title, onClose }: { title: string; onClose: () => void }) => (
-  <div className="flex items-center justify-between border-b border-border pb-3 text-lg">
-    {title}
-    <button type="button" onClick={onClose} aria-label="Close">
-      <CloseIcon />
-    </button>
-  </div>
-);
+const ModalHeader = ({ title, onClose }: { title: string; onClose: () => void }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-between border-b border-border pb-3 text-lg">
+      {title}
+      <button type="button" onClick={onClose} aria-label={t("common.close")}>
+        <CloseIcon />
+      </button>
+    </div>
+  );
+};
 
 const NOTE_MAX_LENGTH = 250;
 
@@ -94,7 +97,7 @@ const SubSection = ({
   callDuration: number | undefined;
 }) => {
   const { t } = useTranslation();
-  const formattedDate = getFormattedDateTime(createdAt, "MMM dd, yyyy hh:mm a");
+  const formattedDate = createdAt ? getFormattedDate(createdAt, i18n.language) : "--";
   const formattedCallDuration =
     callDuration < 60
       ? `${callDuration} ${t("review.feedCard.sec")}`
@@ -117,7 +120,7 @@ const ScenarioMedia = ({ scenario }: { scenario: ScenarioDetailsScenario }) => {
     return (
       <CustomVideo
         src={scenario.coverVideoUrl}
-        alt="Scenario Cover Video"
+        alt={scenario.title ?? ""}
         className="w-full h-[110px] object-cover"
       />
     );
@@ -125,7 +128,7 @@ const ScenarioMedia = ({ scenario }: { scenario: ScenarioDetailsScenario }) => {
   return (
     <CustomImage
       src={scenario.coverImageUrl}
-      alt="Scenario Cover Image"
+      alt={scenario.title ?? ""}
       className="w-full h-[110px] object-cover"
     />
   );
@@ -233,7 +236,7 @@ const ScenarioDetails = ({
 };
 
 const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagType }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const formattedCallDuration =
     scribeSession?.details?.callDuration < 60
       ? `${scribeSession?.details?.callDuration} ${t("review.feedCard.sec")}`
@@ -267,9 +270,9 @@ const ScribeDetails = ({ scribeSession, tag }: { scribeSession: any; tag: TagTyp
         <div className="flex flex-col gap-1 font-normal">
           <p className="text-typography-800 leading-relaxed text-sm">
             {t("review.details.dateAndTime")}:{" "}
-            {getFormattedDateTime(
+            {getFormattedDate(
               scribeSession?.details?.createdAt || scribeSession?.scribeSession?.createdAt,
-              "MMM dd, yyyy hh:mm a",
+              i18n.language,
             )}
           </p>
           <p className="text-typography-800 leading-relaxed text-sm">

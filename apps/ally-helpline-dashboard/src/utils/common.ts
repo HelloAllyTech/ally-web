@@ -113,18 +113,19 @@ const TIME_THRESHOLDS: [keyof typeof SECONDS_IN, number][] = [
 
 const pluralize = (value: number, unit: string) => `${value} ${unit}${value === 1 ? "" : "s"}`;
 
-export const formatDateTime = (dateString: string): string => {
+export const formatDateTime = (dateString: string, locale = "en-US"): string => {
   const date = new Date(dateString);
-  return date
-    .toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
-    .replace(" at ", " ");
+  const formattedDate = date.toLocaleDateString(locale, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+  const formattedTime = date.toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${formattedDate} ${formattedTime}`;
 };
 
 export const formatRelativeTime = (

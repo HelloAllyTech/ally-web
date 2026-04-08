@@ -12,6 +12,7 @@
     "continue": "Continue",
     "start": "Start",
     "close": "Close",
+    "profile": "Profile",
     "details": "Details",
     "starting": "Starting...",
     "next": "Next",
@@ -98,6 +99,12 @@
       "last364days": "Last 364 days",
       "allTime": "All time"
     },
+    "duration": {
+      "hour": "hr",
+      "hours": "hrs",
+      "minute": "min",
+      "minutes": "mins"
+    },
     "table": {
       "rank": "Rank",
       "user": "User",
@@ -124,6 +131,9 @@
     "errors": {
       "title": "Unable to Load Achievements",
       "description": "Something went wrong while loading achievements. Please try again."
+    },
+    "modal": {
+      "newBadge": "You earned a new badge"
     },
     "badgeTypes": {
       "suffix": "Badges",
@@ -461,6 +471,8 @@
       "reactions_plural": "reactions",
       "comments": "comment",
       "comments_plural": "comments",
+      "reply": "reply",
+      "replies": "replies",
       "edited": "Edited",
       "noComments": "No comments yet",
       "relativeTime": {
@@ -821,6 +833,16 @@
         "content": "This action cannot be undone.",
         "primary": "Delete",
         "secondary": "Cancel"
+      },
+      "archive": {
+        "confirm": "Confirm",
+        "title": "Archive this",
+        "unarchiveItalic": "Unarchive?",
+        "sessionItalic": "Session?",
+        "unarchiveContent": "Are you sure you want to unarchive this session?",
+        "archiveContent": "Are you sure you want to archive this session? This will hide it from session logs, but you can restore it later.",
+        "unarchive": "Unarchive",
+        "archive": "Archive"
       }
     },
     "archives": {
