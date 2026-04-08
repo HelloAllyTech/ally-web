@@ -386,13 +386,16 @@ const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
 
 // Main Component
 export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, isLoading, isError } = useGetSimulationSkillsQuery(
     { sessionId: sessionId || "" },
     { skip: !sessionId },
   );
 
-  const { data: summary } = useGetSimulationSummaryQuery(sessionId);
+  const { data: summary } = useGetSimulationSummaryQuery(
+    { sessionId: sessionId || "", languageCode: i18n.language },
+    { skip: !sessionId },
+  );
 
   const skillCoverages = useMemo<SkillCoverage[]>(() => {
     if (!data?.skillCoverage) return [];
