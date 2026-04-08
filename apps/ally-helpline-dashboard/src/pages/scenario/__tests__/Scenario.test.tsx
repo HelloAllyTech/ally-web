@@ -162,6 +162,18 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       </select>
     );
   },
+  MaxActiveUsersDialog: vi.fn(({ open, onClose, onRetry, translations }: any) => (
+    <div data-testid="max-active-users-dialog" style={{ display: open ? "block" : "none" }}>
+      <div data-testid="max-active-users-title">{translations?.title}</div>
+      <div data-testid="max-active-users-description">{translations?.description}</div>
+      <button data-testid="max-active-users-retry" onClick={onRetry}>
+        {translations?.retry}
+      </button>
+      <button data-testid="max-active-users-close" onClick={onClose}>
+        Close
+      </button>
+    </div>
+  )),
   FEATURE_FLAGS_MAP: {
     LANGUAGE_CAPABILITY_FLAG: true,
   },

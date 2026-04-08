@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import { ToggleButtonGroup } from "@components";
 import { useUser } from "@hooks";
 import { hasPermissions } from "@utils";
@@ -12,12 +12,8 @@ import { hasPermissions } from "@utils";
 import ScribeReview from "./components/ScribeReview";
 import SimulationReview from "./components/SimulationReview";
 import { FILTER_OPTIONS, ReviewTab, TABS, containerVariants } from "./constants";
-import { Review as ReviewLegacy } from "./ReviewOld";
 
 export const Review: FC = () => {
-  if (!FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG) {
-    return <ReviewLegacy />;
-  }
   return <ReviewWithTabs />;
 };
 

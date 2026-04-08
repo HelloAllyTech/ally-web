@@ -78,9 +78,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       ))}
     </div>
   ),
-  FEATURE_FLAGS_MAP: {
-    SCRIBE_REVIEW_FLAG: false,
-  },
 }));
 
 const mockUseUser = vi.fn(() => ({

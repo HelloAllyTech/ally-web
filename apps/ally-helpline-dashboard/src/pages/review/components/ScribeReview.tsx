@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import { FEATURE_FLAGS_MAP, InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { useGetScribeReviewsQuery } from "@api";
 import { NoResults } from "@assets";
 import { FallbackUI, FeedCard } from "@components";
@@ -38,15 +38,12 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
     isFetching: isScribeReviewsFetching,
     refetch: refetchScribeReviews,
     error: scribeReviewsError,
-  } = useGetScribeReviewsQuery(
-    {
-      limit: PAGE_SIZE,
-      offset,
-      sortBy: filter,
-      languageCode: i18n.language,
-    },
-    { skip: !FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG },
-  );
+  } = useGetScribeReviewsQuery({
+    limit: PAGE_SIZE,
+    offset,
+    sortBy: filter,
+    languageCode: i18n.language,
+  });
 
   useEffect(() => {
     setOffset(0);

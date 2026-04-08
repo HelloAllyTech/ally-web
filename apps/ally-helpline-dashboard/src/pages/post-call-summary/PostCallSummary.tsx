@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateScribeReviewMutation,
   useGetCallSummaryQuery,
@@ -156,24 +156,23 @@ export const PostCallSummary = () => {
         <span className="text-4xl font-semibold italic">Summary</span>
       </div>
       <div className="flex items-center gap-2">
-        {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
-          individualCallSummary?.details?.transcript?.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="font-primary font-normal text-sm">Share for review</span>{" "}
-              <ToggleSwitch
-                enabled={
-                  individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                }
-                onChange={(value: boolean) => {
-                  handleToggleChange(
-                    value
-                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                  );
-                }}
-              />
-            </div>
-          )}
+        {individualCallSummary?.details?.transcript?.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="font-primary font-normal text-sm">Share for review</span>{" "}
+            <ToggleSwitch
+              enabled={
+                individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+              }
+              onChange={(value: boolean) => {
+                handleToggleChange(
+                  value
+                    ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                    : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                );
+              }}
+            />
+          </div>
+        )}
         {individualCallSummary?.reviewId && (
           <>
             <div className="border-l border-border h-5" />
