@@ -35,7 +35,16 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   sessionUserGroup,
 }) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const durationLabels = {
+    lessThanOneMinute: t("calls.duration.lessThanOneMinute", "Less than 1 min"),
+    hour: t("calls.duration.hour", "hr"),
+    hours: t("calls.duration.hours", "hrs"),
+    minute: t("calls.duration.minute", "min"),
+    minutes: t("calls.duration.minutes", "mins"),
+    second: t("calls.duration.second", "sec"),
+    seconds: t("calls.duration.seconds", "secs"),
+  };
 
   const { filters } = useSelector((state: RootState) => state.calls);
   const { user: currentUser } = useSelector((state: RootState) => state.user);
@@ -174,8 +183,8 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
         transcript,
         callName: callInfo?.summaryName ?? "--",
         counsellorName: isOrgLogs ? counselor?.name : undefined,
-        dateAndTime: startedAt && getFormattedDate(startedAt),
-        duration: convertSecondsToDuration(callDuration),
+        dateAndTime: startedAt && getFormattedDate(startedAt, i18n.language),
+        duration: convertSecondsToDuration(callDuration, { labels: durationLabels }),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
           return {

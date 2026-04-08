@@ -768,6 +768,15 @@
       "scenario": "Scenario",
       "sessionScore": "Session Score"
     },
+    "duration": {
+      "lessThanOneMinute": "Less than 1 min",
+      "hour": "hr",
+      "hours": "hrs",
+      "minute": "min",
+      "minutes": "mins",
+      "second": "sec",
+      "seconds": "secs"
+    },
     "userGroups": {
       "my": "My Logs",
       "org": "Org Logs"

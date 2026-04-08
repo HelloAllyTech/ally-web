@@ -768,6 +768,15 @@
       "scenario": "परिदृश्य",
       "sessionScore": "सत्र स्कोर"
     },
+    "duration": {
+      "lessThanOneMinute": "1 मिनट से कम",
+      "hour": "घंटा",
+      "hours": "घंटे",
+      "minute": "मिनट",
+      "minutes": "मिनट",
+      "second": "सेकंड",
+      "seconds": "सेकंड"
+    },
     "userGroups": {
       "my": "मेरे लॉग्स",
       "org": "संगठन लॉग्स"

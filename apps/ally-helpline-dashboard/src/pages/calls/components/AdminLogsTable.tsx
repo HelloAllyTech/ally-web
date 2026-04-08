@@ -64,6 +64,15 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
 
   const isCall = sessionType === SessionType.CALL;
   const isSimulation = sessionType === SessionType.SIMULATION;
+  const durationLabels = {
+    lessThanOneMinute: t("calls.duration.lessThanOneMinute", "Less than 1 min"),
+    hour: t("calls.duration.hour", "hr"),
+    hours: t("calls.duration.hours", "hrs"),
+    minute: t("calls.duration.minute", "min"),
+    minutes: t("calls.duration.minutes", "mins"),
+    second: t("calls.duration.second", "sec"),
+    seconds: t("calls.duration.seconds", "secs"),
+  };
   const { user: currentUser } = useSelector((state: RootState) => state.user);
 
   const {
@@ -188,8 +197,8 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
         icon: <CallIdIcon />,
         callName: callInfo?.summaryName ?? "--",
         counsellorName: counselor?.name,
-        dateAndTime: startedAt && getFormattedDate(startedAt),
-        callDuration: convertSecondsToDuration(callDuration),
+        dateAndTime: startedAt && getFormattedDate(startedAt, i18n.language),
+        callDuration: convertSecondsToDuration(callDuration, { labels: durationLabels }),
         qualityScore: summary?.callQuality ?? 0,
         provider: callInfo?.provider,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
@@ -316,8 +325,8 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       sessionId: metadata?.sessionName ?? "--",
       scenarioTitle: scenario?.title ?? "--",
       counsellorName: counselor?.name,
-      dateAndTime: startedAt && getFormattedDate(startedAt),
-      duration: convertSecondsToDuration(durationSec),
+      dateAndTime: startedAt && getFormattedDate(startedAt, i18n.language),
+      duration: convertSecondsToDuration(durationSec, { labels: durationLabels }),
       sessionScore: getSimulationScoreDisplay(score),
       raw: row,
     };

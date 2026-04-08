@@ -1,5 +1,29 @@
 import { format } from "date-fns";
 
+interface DurationLabels {
+  lessThanOneMinute: string;
+  hour: string;
+  hours: string;
+  minute: string;
+  minutes: string;
+  second: string;
+  seconds: string;
+}
+
+interface DurationFormatOptions {
+  labels?: Partial<DurationLabels>;
+}
+
+const DEFAULT_DURATION_LABELS: DurationLabels = {
+  lessThanOneMinute: "Less than 1 min",
+  hour: "hr",
+  hours: "hrs",
+  minute: "min",
+  minutes: "mins",
+  second: "sec",
+  seconds: "secs",
+};
+
 /**
  * Converts a date to a formatted time string (e.g., "2:30 PM")
  * @param date - Optional date string or Date object. If not provided, uses current date
@@ -47,16 +71,16 @@ export const formatMessageDate = (dateStr: string) => {
  * @param date - Date object or date string to format
  * @returns Formatted string like "January 15, 2024 2:30 PM"
  */
-export const getFormattedDate = (date: Date | string): string => {
+export const getFormattedDate = (date: Date | string, locale = "en-US"): string => {
   const d = new Date(date);
 
-  const formattedDate = d.toLocaleDateString("en-US", {
+  const formattedDate = d.toLocaleDateString(locale, {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
 
-  const formattedTime = d.toLocaleTimeString("en-US", {
+  const formattedTime = d.toLocaleTimeString(locale, {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
@@ -112,17 +136,33 @@ export const getDateRange = (date: Date, type: DateRangeType): Date[] => {
  * @param totalSeconds - Number of seconds to convert
  * @returns Formatted duration string (e.g., "2 hrs 30 mins 45 secs") or "--" if no seconds provided
  */
-export const convertSecondsToDuration = (totalSeconds?: number): string => {
+export const convertSecondsToDuration = (
+  totalSeconds?: number,
+  options?: DurationFormatOptions,
+): string => {
   if (!totalSeconds) return "--";
-  if (totalSeconds < 60) return "Less than 1 min";
+  const labels = { ...DEFAULT_DURATION_LABELS, ...options?.labels };
+  if (totalSeconds < 60) return labels.lessThanOneMinute;
 
   const hours = Math.floor(totalSeconds / (60 * 60)); // Calculate total hours
   const minutes = Math.floor((totalSeconds % (60 * 60)) / 60); // Calculate remaining minutes
   const seconds = totalSeconds % 60; // Calculate remaining seconds
 
-  return `${hours ? `${hours} hr` : ""}${hours > 1 ? "s" : ""} ${
-    minutes ? `${minutes} min` : ""
-  }${minutes > 1 ? "s" : ""} ${seconds ? `${seconds} sec` : ""}${seconds > 1 ? "s" : ""}`;
+  const parts: string[] = [];
+
+  if (hours) {
+    parts.push(`${hours} ${hours > 1 ? labels.hours : labels.hour}`);
+  }
+
+  if (minutes) {
+    parts.push(`${minutes} ${minutes > 1 ? labels.minutes : labels.minute}`);
+  }
+
+  if (seconds) {
+    parts.push(`${seconds} ${seconds > 1 ? labels.seconds : labels.second}`);
+  }
+
+  return parts.join(" ");
 };
 
 /**
