@@ -371,7 +371,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     },
     {
       key: "summary",
-      header: "Summary",
+      header: t("common.summary"),
       style: { width: "10%" },
       render: (_value, row) => (
         <Button

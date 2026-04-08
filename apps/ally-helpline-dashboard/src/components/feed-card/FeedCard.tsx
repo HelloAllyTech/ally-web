@@ -35,7 +35,7 @@ const FeedCard: FC<FeedCardProps> = ({
   scribeSummaryName,
 }) => {
   const { user: currentDetails } = useUser();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [isReactionsModalOpen, setIsReactionsModalOpen] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
@@ -69,7 +69,7 @@ const FeedCard: FC<FeedCardProps> = ({
     setShouldShowViewMoreButton(el.scrollHeight > el.clientHeight);
   }, [scenario?.description, descriptionMaxLines]);
 
-  const formattedDateTime = formatDateTime(dateTime);
+  const formattedDateTime = formatDateTime(dateTime, i18n.language);
   const relativeTime = formatRelativeTime(createdAt, t);
 
   const entries = Object.entries(reactions ?? {});
@@ -119,7 +119,7 @@ const FeedCard: FC<FeedCardProps> = ({
     if (user?.name?.length === 1) {
       return user?.name?.toUpperCase();
     }
-    return "NA";
+    return "--";
   };
 
   const divider = () => {

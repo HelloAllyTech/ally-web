@@ -42,7 +42,7 @@ import {
   SimulationTranscriptMessage,
   Thread,
 } from "@types";
-import { getFormattedDateTime, getFormattedTimeFromDuration } from "@utils";
+import { getFormattedDate, getFormattedTimeFromDuration } from "@utils";
 
 import Loader from "./Loader";
 import { GENERAL_COMMENTS_PAGE_SIZE, TRANSCRIPT_PAGE_SIZE } from "../calls/components/constants";
@@ -498,10 +498,10 @@ export const ReviewDetails = () => {
               <div className="w-[28px] h-[28px] rounded-full">
                 <CustomImage
                   src={reviewDetails?.createdBy?.profileImage}
-                  alt="Profile"
+                  alt={reviewDetails?.createdBy?.name ?? t("common.profile")}
                   className="w-full h-full rounded-full"
                   fallbackClassName="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-800"
-                  fallbackText={reviewDetails?.createdBy?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+                  fallbackText={reviewDetails?.createdBy?.name?.slice(0, 1)?.toUpperCase() ?? "--"}
                 />
               </div>
               {isFeedOwner ? (
@@ -512,10 +512,10 @@ export const ReviewDetails = () => {
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
               <div>
                 {t("review.details.dateAndTime")}:{" "}
-                {getFormattedDateTime(
+                {getFormattedDate(
                   reviewDetails?.scenarioSession?.createdAt ||
                     reviewDetails?.scribeSession?.createdAt,
-                  "MMM dd, yyyy hh:mm a",
+                  i18n.language,
                 )}
               </div>
               <div className="w-1 h-1 bg-neutral-500 rounded-full mx-1" />
