@@ -33,10 +33,16 @@ import { containerVariants } from "../learn/constants";
 export const PostSimulationSummary: FC = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const { data: summary, isLoading } = useGetSimulationSummaryQuery(sessionId);
-  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(sessionId);
+  const { data: summary, isLoading } = useGetSimulationSummaryQuery(
+    { sessionId: sessionId ?? "", languageCode: i18n.language },
+    { skip: !sessionId },
+  );
+  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(
+    sessionId,
+    i18n.language,
+  );
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
 

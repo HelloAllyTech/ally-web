@@ -29,7 +29,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   canShowFeedback = true,
   councellorName,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
   const [shareForReview, setShareForReview] = useState<boolean>(false);
 
@@ -39,8 +39,14 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const navigate = useNavigate();
 
   const { user, permissions } = useSelector((state: RootState) => state.user);
-  const { data: summary } = useGetSimulationSummaryQuery(summaryId);
-  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(summaryId);
+  const { data: summary } = useGetSimulationSummaryQuery(
+    { sessionId: summaryId, languageCode: i18n.language },
+    { skip: !summaryId },
+  );
+  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(
+    summaryId,
+    i18n.language,
+  );
   const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
 

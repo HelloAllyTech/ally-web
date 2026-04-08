@@ -14,6 +14,7 @@ import {
   GetScenarioInput,
   GetSimulationLogsInput,
   GetSimulationLogsResponse,
+  GetSimulationSummaryInput,
   StartSimulationInput,
   StartSimulationResponse,
   Scenario,
@@ -180,11 +181,11 @@ const learnAPI = baseAPI.injectEndpoints({
      * Get aggregated summary for a single scenario session.
      * @returns {Promise<void>} Summary payload
      */
-    getSimulationSummary: builder.query<GetSimulationSummaryResponse, string>({
-      query: sessionId => ({
+    getSimulationSummary: builder.query<GetSimulationSummaryResponse, GetSimulationSummaryInput>({
+      query: ({ sessionId, languageCode }) => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_SUMMARY(sessionId),
         method: HttpMethod.GET,
-        params: { enableRecommendations: true },
+        params: { enableRecommendations: true, languageCode },
       }),
       providesTags: [TAG_TYPES.SIMULATION_SUMMARY],
     }),

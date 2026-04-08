@@ -151,6 +151,11 @@ export type GetSimulationLogsResponse = {
   data: SimulationLog[];
 };
 
+export interface GetSimulationSummaryInput {
+  sessionId: string;
+  languageCode?: string;
+}
+
 export interface GetAdminSimulationLogsInput {
   limit?: number;
   offset?: number;
