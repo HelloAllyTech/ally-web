@@ -28,10 +28,12 @@ const categoryColoeMap = {
   NEUTRAL: "bg-[#E0E0E0] text-[#333333]",
 };
 
-const convertSecondsToTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toFixed(0).toString().padStart(2, "0")}`;
+const convertSecondsToTime = (sec: number) => {
+  const totalSeconds = Math.floor(sec);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
 /** Latest second covered by the loaded transcript page (uses end when present). */
