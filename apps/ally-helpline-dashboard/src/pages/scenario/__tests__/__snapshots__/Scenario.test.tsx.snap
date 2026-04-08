@@ -156,6 +156,31 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
               Close Dialog
             </button>
           </div>
+          <div
+            data-testid="max-active-users-dialog"
+            style="display: none;"
+          >
+            <div
+              data-testid="max-active-users-title"
+            >
+              We're at capacity right now
+            </div>
+            <div
+              data-testid="max-active-users-description"
+            >
+              We're currently handling the maximum number of active users. Please wait a moment and try again access usually frees up shortly.
+            </div>
+            <button
+              data-testid="max-active-users-retry"
+            >
+              Retry
+            </button>
+            <button
+              data-testid="max-active-users-close"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>

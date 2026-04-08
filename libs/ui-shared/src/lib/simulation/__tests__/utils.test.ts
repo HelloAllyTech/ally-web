@@ -1,10 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { DIFFICULTY_STATE_SCORE_MAP } from "../constants";
-import {
-  getCurrentStateIndex,
-  getProgressPercentage,
-} from "../utils";
+import { getCurrentStateIndex, getProgressPercentage } from "../utils";
 import { DifficultyLevel } from "../types";
 
 describe("simulation utils", () => {

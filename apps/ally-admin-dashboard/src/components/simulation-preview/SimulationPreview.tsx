@@ -7,7 +7,6 @@ import {
   CustomImage,
   DropdownField,
   MaxActiveUsersDialog,
-  FEATURE_FLAGS_MAP,
 } from "@ally-ui-mono/ui-shared";
 import {
   useEndScenarioPreviewMutation,
@@ -209,20 +208,19 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
           onClick: onPreview,
         }}
       />
-      {FEATURE_FLAGS_MAP.MAX_ACTIVE_USERS_POPUP_FLAG && (
-        <MaxActiveUsersDialog
-          open={isMaxActiveUsersPopupOpen}
-          onClose={() => setIsMaxActiveUsersPopupOpen(false)}
-          onRetry={handleMaxActiveUsersRetry}
-          translations={{
-            title: en.common.maxActiveUsers.title,
-            description: en.common.maxActiveUsers.description,
-            retry: en.common.maxActiveUsers.retry,
-            manualRetry: en.common.maxActiveUsers.manualRetry,
-            autoRetry: en.common.maxActiveUsers.autoRetry,
-          }}
-        />
-      )}
+
+      <MaxActiveUsersDialog
+        open={isMaxActiveUsersPopupOpen}
+        onClose={() => setIsMaxActiveUsersPopupOpen(false)}
+        onRetry={handleMaxActiveUsersRetry}
+        translations={{
+          title: en.common.maxActiveUsers.title,
+          description: en.common.maxActiveUsers.description,
+          retry: en.common.maxActiveUsers.retry,
+          manualRetry: en.common.maxActiveUsers.manualRetry,
+          autoRetry: en.common.maxActiveUsers.autoRetry,
+        }}
+      />
     </>
   );
 };

@@ -5,8 +5,8 @@ import { FC, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 import { STATE_COLORS } from "./constants";
-import { getCurrentStateIndex } from "./utils";
 import { SessionProgressProps } from "./types";
+import { getCurrentStateIndex } from "./utils";
 
 export const SessionProgress: FC<SessionProgressProps> = ({
   stateNames,
@@ -117,9 +117,7 @@ export const SessionProgress: FC<SessionProgressProps> = ({
 
             {stateNames.map((state, index) => {
               const leftPercent =
-                stateNames.length > 1
-                  ? 8 + (index / (stateNames.length - 1)) * 84
-                  : 50;
+                stateNames.length > 1 ? 8 + (index / (stateNames.length - 1)) * 84 : 50;
               const isActive = index === currentStateIndex;
               const isCompleted = index < currentStateIndex;
               const dotColor = getStateColor(index);

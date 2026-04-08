@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, logger } from "@ally-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import {
   useLazyExportCallSummaryQuery,
   useArchiveCallLogMutation,
@@ -360,8 +360,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               </span>
             </Tooltip>
           ))}
-        {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
-          individualCallSummary?.details?.transcript?.length > 0 &&
+        {individualCallSummary?.details?.transcript?.length > 0 &&
           !callSummary?.archivedAt &&
           callSummary?.counselorId === user?.id && (
             <div
