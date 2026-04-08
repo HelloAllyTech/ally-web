@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Badge, CloseIcon } from "@assets";
 import { cn } from "@utils";
@@ -21,6 +23,7 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
   badgeImageUrl,
   className,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const renderBadgeImage = () => {
@@ -61,7 +64,7 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
         <button
           onClick={onClose}
           className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center text-[#424242] hover:text-gray-600 transition-colors z-10"
-          aria-label="Close modal"
+          aria-label={t("common.close")}
         >
           <CloseIcon className="text-neutral" />
         </button>
@@ -70,7 +73,7 @@ export const AchievementBadgeModal: FC<AchievementBadgeModalProps> = ({
           {renderBadgeImage()}
 
           <div className="px-1.5 text-typography-900 text-[10px] sm:text-xs font-normal font-primary">
-            You earned a new badge
+            {t("achievements.modal.newBadge")}
           </div>
 
           <div className="flex flex-col items-center gap-0.5 sm:gap-1 w-full">

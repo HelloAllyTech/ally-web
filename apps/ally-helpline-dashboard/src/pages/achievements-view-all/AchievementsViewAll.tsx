@@ -96,7 +96,7 @@ export const AchievementsViewAll: FC = () => {
           mainMessage={t("achievements.errors.title")}
           description={t("achievements.errors.description")}
           button={{
-            text: "Retry",
+            text: t("common.retry"),
             onClick: () => refetchBadges(),
           }}
         />
@@ -116,7 +116,7 @@ export const AchievementsViewAll: FC = () => {
             <button
               onClick={() => navigate(-1)}
               className="p-2 -m-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="Go back"
+              aria-label={t("achievements.backAria")}
             >
               <ArrowLeft className="w-[5px] h-2.5" />
             </button>
