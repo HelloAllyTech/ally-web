@@ -99,6 +99,11 @@ describe("date utils", () => {
       const result = getFormattedDate("2024-01-15T14:30:00Z");
       expect(result).toMatch(/^[A-Za-z]+ \d{1,2}, \d{4} \d{1,2}:\d{2} (AM|PM)$/);
     });
+
+    it("should support locale-aware formatting", () => {
+      const result = getFormattedDate("2024-01-15T14:30:00Z", "fr-FR");
+      expect(result).not.toBe("--");
+    });
   });
 
   describe("getDateRange", () => {
@@ -171,13 +176,29 @@ describe("date utils", () => {
     it("should format hours, minutes, and seconds correctly", () => {
       expect(convertSecondsToDuration(3661)).toBe("1 hr 1 min 1 sec");
       expect(convertSecondsToDuration(7322)).toBe("2 hrs 2 mins 2 secs");
-      expect(convertSecondsToDuration(3600)).toBe("1 hr  ");
-      expect(convertSecondsToDuration(60)).toBe(" 1 min ");
+      expect(convertSecondsToDuration(3600)).toBe("1 hr");
+      expect(convertSecondsToDuration(60)).toBe("1 min");
     });
 
     it("should handle edge cases", () => {
       expect(convertSecondsToDuration(0)).toBe("--");
       expect(convertSecondsToDuration(1)).toBe("Less than 1 min");
+    });
+
+    it("should support translated duration labels", () => {
+      expect(
+        convertSecondsToDuration(3661, {
+          labels: {
+            lessThanOneMinute: "Moins d'une minute",
+            hour: "heure",
+            hours: "heures",
+            minute: "minute",
+            minutes: "minutes",
+            second: "seconde",
+            seconds: "secondes",
+          },
+        }),
+      ).toBe("1 heure 1 minute 1 seconde");
     });
   });
 

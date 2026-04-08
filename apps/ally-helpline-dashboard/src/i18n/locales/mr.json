@@ -768,6 +768,15 @@
       "scenario": "दृश्यपट",
       "sessionScore": "सत्र स्कोर"
     },
+    "duration": {
+      "lessThanOneMinute": "1 मिनिटापेक्षा कमी",
+      "hour": "तास",
+      "hours": "तास",
+      "minute": "मिनिट",
+      "minutes": "मिनिटे",
+      "second": "सेकंद",
+      "seconds": "सेकंद"
+    },
     "userGroups": {
       "my": "माझे लॉग",
       "org": "संस्थान लॉग"

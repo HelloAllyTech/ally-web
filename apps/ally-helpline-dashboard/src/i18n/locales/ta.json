@@ -768,6 +768,15 @@
       "scenario": "காட்சி",
       "sessionScore": "அமைப்பு மதிப்பெண்"
     },
+    "duration": {
+      "lessThanOneMinute": "1 நிமிடத்திற்கும் குறைவு",
+      "hour": "மணி",
+      "hours": "மணிநேரம்",
+      "minute": "நிமிடம்",
+      "minutes": "நிமிடங்கள்",
+      "second": "வினாடி",
+      "seconds": "வினாடிகள்"
+    },
     "userGroups": {
       "my": "என் பதிவுகள்",
       "org": "அமைப்பு பதிவுகள்"

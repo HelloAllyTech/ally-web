@@ -768,6 +768,15 @@
       "scenario": "ದೃಶ್ಯಪಟ",
       "sessionScore": "ಸೆಷನ್ ಅಂಕಗಳು"
     },
+    "duration": {
+      "lessThanOneMinute": "1 ನಿಮಿಷಕ್ಕಿಂತ ಕಡಿಮೆ",
+      "hour": "ಗಂಟೆ",
+      "hours": "ಗಂಟೆಗಳು",
+      "minute": "ನಿಮಿಷ",
+      "minutes": "ನಿಮಿಷಗಳು",
+      "second": "ಸೆಕೆಂಡ್",
+      "seconds": "ಸೆಕೆಂಡುಗಳು"
+    },
     "userGroups": {
       "my": "ನನ್ನ ಲಾಗ್‌ಗಳು",
       "org": "ಆರ್ಗ್ ಲಾಗ್ಸ್"
