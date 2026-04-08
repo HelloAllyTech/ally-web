@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { ConfirmationDialog } from "@src/components";
 
 interface ArchiveDialogProps {
@@ -17,23 +19,28 @@ const ArchiveDialog: FC<ArchiveDialogProps> = ({
   onUnarchiveConfirm,
   onArchiveConfirm,
 }) => {
+  const { t } = useTranslation();
   return (
     <ConfirmationDialog
       isOpen={isOpen}
       onClose={onClose}
       title={{
-        normal: isArchived ? "Confirm" : "Archive this",
-        italic: isArchived ? "Unarchive?" : "Session?",
+        normal: isArchived ? t("calls.dialog.archive.confirm") : t("calls.dialog.archive.title"),
+        italic: isArchived
+          ? t("calls.dialog.archive.unarchiveItalic")
+          : t("calls.dialog.archive.sessionItalic"),
       }}
       content={
         isArchived
-          ? "Are you sure you want to unarchive this session ?"
-          : "Are you sure you want to archive this session ? This will hide it from session logs but you can restore it later"
+          ? t("calls.dialog.archive.unarchiveContent")
+          : t("calls.dialog.archive.archiveContent")
       }
-      buttonText={isArchived ? "Unarchive" : "Archive"}
+      buttonText={
+        isArchived ? t("calls.dialog.archive.unarchive") : t("calls.dialog.archive.archive")
+      }
       buttonVariant={isArchived ? "primary" : "destructive"}
       onButtonClick={isArchived ? onUnarchiveConfirm : onArchiveConfirm}
-      secondaryButtonText="Cancel"
+      secondaryButtonText={t("common.cancel")}
       onSecondaryButtonClick={onClose}
     />
   );
