@@ -2,6 +2,7 @@ import { FC, useState, useRef, useEffect } from "react";
 
 import { Modal } from "@mui/material";
 import { X, Minimize, Maximize } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import {
   BoxBreathingBottomGradient,
@@ -18,6 +19,12 @@ import { getKeyFromIndex } from "@utils";
 import { BOX_BREATHING_STEPS } from "./constants";
 import { BoxBreathingProps } from "./types";
 
+const BREATHING_LABEL_KEYS: Record<string, string> = {
+  Inhale: "stressBuster.breathing.inhale",
+  Hold: "stressBuster.breathing.hold",
+  Exhale: "stressBuster.breathing.exhale",
+};
+
 const BoxBreathing: FC<BoxBreathingProps> = ({
   closeIcon,
   isFullScreenMode,
@@ -26,6 +33,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
   playOnMount = false,
   showViewSummaryButton = false,
 }) => {
+  const { t } = useTranslation();
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [isMaximized, setIsMaximized] = useState(isFullScreenMode);
@@ -128,7 +136,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
         {getSizingIcon()}
       </div>
 
-      <span className="text-2xl z-10">Return to self</span>
+      <span className="text-2xl z-10">{t("stressBuster.returnToSelf")}</span>
       {/* Box breathing video */}
       {renderVideo()}
 
@@ -138,7 +146,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
       <div className="flex gap-6 z-10">
         {BOX_BREATHING_STEPS.map((step, index) => (
           <div key={getKeyFromIndex(index, "step")} className="flex flex-col items-center">
-            <span>{step.label}</span>
+            <span>{BREATHING_LABEL_KEYS[step.label] ? t(BREATHING_LABEL_KEYS[step.label]) : step.label}</span>
             <span>{step.duration}</span>
           </div>
         ))}
@@ -164,7 +172,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
 
       {showViewSummaryButton && isMaximized && (
         <Button className="z-10" onClick={onViewSummary}>
-          View Call Summary
+          {t("stressBuster.viewCallSummary")}
         </Button>
       )}
     </div>
