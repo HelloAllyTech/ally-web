@@ -36,7 +36,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     sessionId,
     offset: transcriptOffset,
     limit: TRANSCRIPT_PAGE_SIZE,
-    sortBy: "createdAt",
+    sortBy: "startSeconds",
   });
 
   const { data: audioUrlData } = useGetAudioUrlQuery({ sessionId });
