@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { Calendar, Contribution, Compress, Timer } from "@assets";
 import { OptionSelectionPopover } from "@components";
@@ -12,6 +12,9 @@ export type Badge =
   | "COMMENTS_REACTIONS_GIVEN"
   | "COMMENTS_REACTIONS_RECEIVED";
 
+
+
+
 export interface BadgeOption {
   value: Badge;
   label: string;
@@ -20,20 +23,10 @@ export interface BadgeOption {
   role: string;
 }
 
-
-
-interface CreateBadgePopupProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSelect: (Badge: string) => void;
-}
-
-export const CreateBadgePopup: FC<CreateBadgePopupProps> = ({ isOpen, onClose, onSelect }) => {
-   const { t } = useTranslation();
     const BADGE_POPUP_OPTIONS: BadgeOption[] = [
   {
     value: "SIMULATION_MINUTES",
-    label: `${t("achievements.badgeTypes.journey")} ${t("achievements.badgeTypes.suffix")}`,
+    label: "App Journey Badges",
     description: "Earned when completing simulation minutes.",
     icon: Timer,
     role: "LEARNER",
@@ -60,6 +53,15 @@ export const CreateBadgePopup: FC<CreateBadgePopupProps> = ({ isOpen, onClose, o
     role: "LEARNER",
   },
 ];
+
+interface CreateBadgePopupProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelect: (Badge: string) => void;
+}
+
+export const CreateBadgePopup: FC<CreateBadgePopupProps> = ({ isOpen, onClose, onSelect }) => {
+
   return (
     <OptionSelectionPopover
       isOpen={isOpen}
