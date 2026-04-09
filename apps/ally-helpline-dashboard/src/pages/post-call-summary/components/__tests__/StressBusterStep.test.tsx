@@ -14,6 +14,13 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
+// Mock react-i18next
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
 // Mock @components
 vi.mock("@components", () => ({
   Button: ({ children, onClick, className, ...props }: any) => (
@@ -65,16 +72,16 @@ describe("StressBusterStep", () => {
     expect(screen.getByTestId("box-breathing-view-summary")).toBeInTheDocument();
   });
 
-  it("should render View Call summary button", () => {
+  it("should render View Call Summary button", () => {
     render(<StressBusterStep onProceed={mockOnProceed} />);
-    expect(screen.getByText("View Call summary")).toBeInTheDocument();
+    expect(screen.getByText("stressBuster.viewCallSummary")).toBeInTheDocument();
   });
 
   // --- Interaction Tests ---
 
-  it("should call onProceed when View Call summary button is clicked", () => {
+  it("should call onProceed when View Call Summary button is clicked", () => {
     render(<StressBusterStep onProceed={mockOnProceed} />);
-    const button = screen.getByText("View Call summary");
+    const button = screen.getByText("stressBuster.viewCallSummary");
     fireEvent.click(button);
     expect(mockOnProceed).toHaveBeenCalledTimes(1);
   });

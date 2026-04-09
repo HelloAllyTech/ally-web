@@ -60,12 +60,12 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
             <span
               class="text-4xl"
             >
-              Session
+              postCallSummary.header.session
             </span>
             <span
               class="text-4xl font-semibold italic"
             >
-              Summary
+              postCallSummary.header.summary
             </span>
           </div>
           <div
@@ -176,12 +176,12 @@ exports[`PostCallSummary Component > Snapshot Testing > should match snapshot fo
             <span
               class="text-4xl"
             >
-              Session
+              postCallSummary.header.session
             </span>
             <span
               class="text-4xl font-semibold italic"
             >
-              Summary
+              postCallSummary.header.summary
             </span>
           </div>
           <div

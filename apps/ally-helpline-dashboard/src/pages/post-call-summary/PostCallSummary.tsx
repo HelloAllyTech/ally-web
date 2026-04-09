@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { Tabs } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateScribeReviewMutation,
   useGetCallSummaryQuery,
@@ -133,7 +133,7 @@ export const PostCallSummary = () => {
       }
     } catch (err: any) {
       const message =
-        err?.data?.message ?? err?.message ?? "Something went wrong. Please try again.";
+        err?.data?.message ?? err?.message ?? t("postCallSummary.somethingWentWrongRetry");
       toast.error(message);
     }
   };
@@ -152,31 +152,32 @@ export const PostCallSummary = () => {
         <button onClick={() => navigate(ROUTES.CALLS)}>
           <BackCircle />
         </button>
-        <span className="text-4xl">Session</span>
-        <span className="text-4xl font-semibold italic">Summary</span>
+        <span className="text-4xl">{t("postCallSummary.header.session")}</span>
+        <span className="text-4xl font-semibold italic">{t("postCallSummary.header.summary")}</span>
       </div>
       <div className="flex items-center gap-2">
-        {individualCallSummary?.details?.transcript?.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="font-primary font-normal text-sm">Share for review</span>{" "}
-            <ToggleSwitch
-              enabled={
-                individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-              }
-              onChange={(value: boolean) => {
-                handleToggleChange(
-                  value
-                    ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
-                    : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
-                );
-              }}
-            />
-          </div>
-        )}
+        {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
+          individualCallSummary?.details?.transcript?.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="font-primary font-normal text-sm">{t("postCallSummary.header.shareForReview")}</span>{" "}
+              <ToggleSwitch
+                enabled={
+                  individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                }
+                onChange={(value: boolean) => {
+                  handleToggleChange(
+                    value
+                      ? REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
+                      : REVIEW_PRIVACY_OPTIONS_VALUES.HIDDEN,
+                  );
+                }}
+              />
+            </div>
+          )}
         {individualCallSummary?.reviewId && (
           <>
             <div className="border-l border-border h-5" />
-            <Tooltip title="Comments" arrow>
+            <Tooltip title={t("postCallSummary.header.comments")} arrow>
               <button
                 onClick={() =>
                   navigate(
