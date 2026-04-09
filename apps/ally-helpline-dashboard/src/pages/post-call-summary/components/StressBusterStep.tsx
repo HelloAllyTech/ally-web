@@ -2,11 +2,15 @@ import { FC } from "react";
 
 import { motion } from "framer-motion";
 
+import { useTranslation } from "react-i18next";
+
 import { Button, BoxBreathing } from "@components";
 
 import { StressBusterProps } from "../types";
 
 const StressBusterStep: FC<StressBusterProps> = ({ onProceed }) => {
+  const { t } = useTranslation();
+
   return (
     <motion.div
       layout="position"
@@ -19,7 +23,7 @@ const StressBusterStep: FC<StressBusterProps> = ({ onProceed }) => {
         <BoxBreathing showViewSummaryButton onViewSummary={onProceed} />
       </div>
       <Button className="self-center" onClick={onProceed}>
-        View Call summary
+        {t("stressBuster.viewCallSummary")}
       </Button>
     </motion.div>
   );

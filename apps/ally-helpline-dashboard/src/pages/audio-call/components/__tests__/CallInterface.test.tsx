@@ -16,6 +16,13 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
+// Mock react-i18next
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
 // Mock react-audio-visualize
 vi.mock("react-audio-visualize", () => ({
   LiveAudioVisualizer: ({ mediaRecorder, width, height, barWidth, barColor }: any) => (
@@ -156,7 +163,7 @@ describe("CallInterface Component", () => {
   describe("Basic Rendering", () => {
     it("should render successfully", () => {
       render(<CallInterface {...defaultProps} />);
-      expect(screen.getByText("Taking notes")).toBeInTheDocument();
+      expect(screen.getByText("audioCall.status.takingNotes")).toBeInTheDocument();
     });
 
     it("should render without throwing errors", () => {
@@ -177,7 +184,7 @@ describe("CallInterface Component", () => {
     it("should render main interface when user is joined", () => {
       render(<CallInterface {...defaultProps} />);
 
-      expect(screen.getByText("Taking notes")).toBeInTheDocument();
+      expect(screen.getByText("audioCall.status.takingNotes")).toBeInTheDocument();
       expect(
         screen.getAllByText(
           (content, element) => element?.textContent?.includes("00 : 00 :") || false,
@@ -200,13 +207,13 @@ describe("CallInterface Component", () => {
 
       const tooltipContent = screen.getByTestId("tooltip-content");
       expect(tooltipContent).toBeInTheDocument();
-      expect(tooltipContent).toHaveTextContent("We do not save audio recordings");
-      expect(tooltipContent).toHaveTextContent("Data is encrypted");
+      expect(tooltipContent).toHaveTextContent("audioCall.privacy.noRecording");
+      expect(tooltipContent).toHaveTextContent("audioCall.privacy.encrypted");
       expect(tooltipContent.textContent).toContain(
-        "We do not save audio recordingsData is encryptedWe do not use your client’s data to train our modelsPersonal information of clients is automatically removed",
+        "audioCall.privacy.noRecordingaudioCall.privacy.encryptedaudioCall.privacy.noTrainingDataaudioCall.privacy.personalInfoRemoved",
       );
       expect(tooltipContent).toHaveTextContent(
-        "Personal information of clients is automatically removed",
+        "audioCall.privacy.personalInfoRemoved",
       );
     });
 
@@ -327,7 +334,7 @@ describe("CallInterface Component", () => {
 
       expect(
         screen.getByText(
-          "Note: Refreshing, closing the active tab, or network interruptions will end the call.",
+          "audioCall.notes.refreshWarning",
         ),
       ).toBeInTheDocument();
     });
@@ -339,7 +346,7 @@ describe("CallInterface Component", () => {
 
       expect(
         screen.getByText(
-          "Note: This call was initiated from a different platform. You can listen but cannot control the call (mute/unmute).",
+          "audioCall.notes.differentPlatform",
         ),
       ).toBeInTheDocument();
     });
@@ -355,7 +362,7 @@ describe("CallInterface Component", () => {
 
       expect(
         screen.getByText(
-          "Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).",
+          "audioCall.notes.activeInOtherTab",
         ),
       ).toBeInTheDocument();
     });
@@ -370,7 +377,7 @@ describe("CallInterface Component", () => {
       render(<CallInterface {...defaultProps} isExotelMode={true} />);
 
       expect(
-        screen.getByText("The scribe will stop taking notes once you end the call."),
+        screen.getByText("audioCall.notes.scribeStopWarning"),
       ).toBeInTheDocument();
       expect(screen.getByTestId("warning-triangle-icon")).toBeInTheDocument();
     });
@@ -386,7 +393,7 @@ describe("CallInterface Component", () => {
       });
 
       expect(
-        screen.queryByText("The scribe will stop taking notes once you end the call."),
+        screen.queryByText("audioCall.notes.scribeStopWarning"),
       ).not.toBeInTheDocument();
     });
 
@@ -394,7 +401,7 @@ describe("CallInterface Component", () => {
       render(<CallInterface {...defaultProps} isExotelMode={false} />);
 
       expect(
-        screen.queryByText("The scribe will stop taking notes once you end the call."),
+        screen.queryByText("audioCall.notes.scribeStopWarning"),
       ).not.toBeInTheDocument();
     });
   });
@@ -420,7 +427,7 @@ describe("CallInterface Component", () => {
     it("should show connecting message when user not joined in microphone mode", () => {
       render(<CallInterface {...defaultProps} isUserJoined={false} isMicrophoneMode={true} />);
 
-      expect(screen.getByText("Connecting to your session...")).toBeInTheDocument();
+      expect(screen.getByText("audioCall.status.connecting")).toBeInTheDocument();
     });
   });
 
@@ -432,13 +439,13 @@ describe("CallInterface Component", () => {
     it("should handle missing activeChat gracefully", () => {
       render(<CallInterface {...defaultProps} activeChat={null as any} />);
 
-      expect(screen.getByText("Taking notes")).toBeInTheDocument();
+      expect(screen.getByText("audioCall.status.takingNotes")).toBeInTheDocument();
     });
 
     it("should handle undefined isUserJoined", () => {
       render(<CallInterface {...defaultProps} isUserJoined={undefined} />);
 
-      expect(screen.getByText("Session is starting now..")).toBeInTheDocument();
+      expect(screen.getByText("audioCall.status.starting")).toBeInTheDocument();
     });
 
     it("should handle timer cleanup on unmount", () => {

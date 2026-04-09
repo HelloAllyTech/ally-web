@@ -4,6 +4,7 @@ import { Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { LiveAudioVisualizer } from "react-audio-visualize";
+import { useTranslation } from "react-i18next";
 
 import { Lock, WarningTriangle } from "@assets";
 import { CallProvider, TOOLTIP_LIGHT_PROPS } from "@constants";
@@ -12,14 +13,17 @@ import { ErrorScreen } from ".";
 import { CallInterfaceProps } from "../types";
 import { formatTime } from "../utils";
 
-const PrivacyTooltip = () => (
-  <ul className="list-disc list-inside">
-    <li>We do not save audio recordings</li>
-    <li>Data is encrypted</li>
-    <li>We do not use your client’s data to train our models</li>
-    <li>Personal information of clients is automatically removed</li>
-  </ul>
-);
+const PrivacyTooltip = () => {
+  const { t } = useTranslation();
+  return (
+    <ul className="list-disc list-inside">
+      <li>{t("audioCall.privacy.noRecording")}</li>
+      <li>{t("audioCall.privacy.encrypted")}</li>
+      <li>{t("audioCall.privacy.noTrainingData")}</li>
+      <li>{t("audioCall.privacy.personalInfoRemoved")}</li>
+    </ul>
+  );
+};
 
 const CallInterface: FC<CallInterfaceProps> = ({
   activeChat,
@@ -29,6 +33,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
   isExotelMode,
   socketDisconnectionReason,
 }) => {
+  const { t } = useTranslation();
   const [seconds, setSeconds] = useState(0);
   const [showExotelBanner, setShowExotelBanner] = useState(true);
 
@@ -66,9 +71,9 @@ const CallInterface: FC<CallInterfaceProps> = ({
       return <ErrorScreen socketDisconnectionReason={socketDisconnectionReason} />;
     }
     if (!isUserJoined && isMicrophoneMode) {
-      message = "Connecting to your session...";
+      message = t("audioCall.status.connecting");
     } else if (!isUserJoined) {
-      message = "Session is starting now..";
+      message = t("audioCall.status.starting");
     }
     return (
       <motion.div
@@ -81,7 +86,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
         <div className="text-white text-4xl font-normal">{message}</div>
         {isUserJoined === false && !isMicrophoneMode && (
           <div className="text-white text-sm text-center mt-1">
-            You can wait for them to rejoin or end the call.
+            {t("audioCall.notes.waitOrEnd")}
           </div>
         )}
       </motion.div>
@@ -89,11 +94,11 @@ const CallInterface: FC<CallInterfaceProps> = ({
   };
   const getDescriptionText = () => {
     if (activeChat?.platform && activeChat?.platform !== "WEB") {
-      return "Note: This call was initiated from a different platform. You can listen but cannot control the call (mute/unmute).";
+      return t("audioCall.notes.differentPlatform");
     } else if (isSharedMicrophoneMode) {
-      return "Note: This call is already active in another tab/window. You can listen but cannot control the call (mute/unmute).";
+      return t("audioCall.notes.activeInOtherTab");
     } else {
-      return "Note: Refreshing, closing the active tab, or network interruptions will end the call.";
+      return t("audioCall.notes.refreshWarning");
     }
   };
 
@@ -106,7 +111,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
               <div className="flex items-center gap-[2px] ">
                 <WarningTriangle />
                 <span className="text-typography-900 text-sm whitespace-nowrap">
-                  The scribe will stop taking notes once you end the call.
+                  {t("audioCall.notes.scribeStopWarning")}
                 </span>
               </div>
               <X className="w-4 h-4 cursor-pointer" onClick={() => setShowExotelBanner(false)} />
@@ -124,7 +129,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
                   <Lock />
                 </span>
               </Tooltip>
-              Taking notes
+              {t("audioCall.status.takingNotes")}
             </div>
             <div className="text-base font-semibold font-tertiary">{formatTime(seconds)}</div>
             <div className="text-xs text-secondary-500 text-center max-w-xs mt-1">

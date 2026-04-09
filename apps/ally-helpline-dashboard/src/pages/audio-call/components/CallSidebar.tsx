@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState } from "react";
 
 import { Divider } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { useAddFeedbackMutation, useUpdateFeedbackMutation } from "@api";
 import { Close, ThumbDown, ThumbDownFilled, ThumbUp, ThumbUpFilled } from "@assets/icons";
@@ -17,6 +18,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
   onClose,
   nudges,
 }) => {
+  const { t } = useTranslation();
   const nudgesContainerRef = useRef<HTMLDivElement>(null);
 
   const [feedbacks, setFeedbacks] = useState<{ [key: number]: FeedbackResponse }>({});
@@ -69,7 +71,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
         <CustomMarkdown content={nudge.content} className="font-primary" />
         <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.12)" }} />
         <div className="flex text-sm items-center gap-2">
-          <span>Is this helpful?</span>
+          <span>{t("audioCall.sidebar.isHelpful")}</span>
           <button
             className="rounded-lg transition-colors"
             onClick={() => handleFeedback(nudge, 0)}
@@ -114,7 +116,7 @@ const CallSidebar: FC<CallSidebarProps> = ({
           {stage && (
             <div className="px-6 py-4 mx-4 mb-4 border border-[#0473F2]  font-primary rounded-lg bg-[#8CD3FF26]">
               <div className="text-base font-medium text-primary-500 ">
-                Current Stage:
+                {t("audioCall.sidebar.currentStage")}
                 <span className="text-white text-base">{` ${stage}`}</span>
               </div>
             </div>

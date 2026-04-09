@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
 import { Minimize } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -14,6 +15,7 @@ import { getKeyFromIndex } from "@utils";
 export const StressBuster = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [messageIndex, setMessageIndex] = useState<number>(0);
   const [isEnding, setIsEnding] = useState<boolean>(true);
@@ -24,12 +26,12 @@ export const StressBuster = () => {
 
   const endMessages = [
     {
-      text: "You gave your best in that session",
-      highlight: "best",
+      text: t("stressBuster.messages.gaveBest"),
+      highlight: t("stressBuster.messages.gaveBestHighlight"),
     },
     {
-      text: "Now, take a moment for yourself",
-      highlight: "yourself",
+      text: t("stressBuster.messages.momentForYourself"),
+      highlight: t("stressBuster.messages.momentHighlight"),
     },
   ];
 
