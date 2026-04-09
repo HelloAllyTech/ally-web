@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useSearchParams, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { Tabs } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateScribeReviewMutation,
   useGetCallSummaryQuery,
