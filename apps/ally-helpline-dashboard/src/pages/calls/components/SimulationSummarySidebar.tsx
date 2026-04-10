@@ -125,7 +125,9 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           }}
         >
           <div className="flex items-center gap-2">
-            <span className="font-primary font-normal text-sm">Share for review</span>
+            <span className="font-primary font-normal text-sm">
+              {t("postSim.common.shareForReview")}
+            </span>
             <ToggleSwitch
               enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
               onChange={(value: boolean) => {
