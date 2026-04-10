@@ -240,6 +240,7 @@ export interface StartSimulationResponse {
     difficultyLevel?: string;
   };
   checklistEvents?: any[];
+  stateNames: { name: string; stateId: string }[];
 }
 
 export enum VisibilityType {
