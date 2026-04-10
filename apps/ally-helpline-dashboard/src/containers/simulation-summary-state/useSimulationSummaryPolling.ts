@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -9,7 +10,10 @@ import { SimulationSummary as SimulationSummaryType } from "@types";
 const POLL_INTERVAL_MS = 3500;
 const MAX_POLLS = 5;
 
-export function useSimulationSummaryPolling(summaryId: string | undefined): {
+export function useSimulationSummaryPolling(
+  summaryId: string | undefined,
+  languageCode?: string,
+): {
   summaryData: SimulationSummaryType | undefined;
   retryMaxReached: boolean;
   isShortSession: boolean;
@@ -19,6 +23,8 @@ export function useSimulationSummaryPolling(summaryId: string | undefined): {
   const [isShortSession, setIsShortSession] = useState(false);
 
   const [getSimulationSummary] = useLazyGetSimulationSummaryQuery();
+  const { i18n } = useTranslation();
+  const activeLanguageCode = languageCode ?? i18n.language;
 
   useEffect(() => {
     if (!summaryId) {
@@ -32,7 +38,10 @@ export function useSimulationSummaryPolling(summaryId: string | undefined): {
 
     const pollSimulationSummary = async () => {
       try {
-        const { data } = await getSimulationSummary(summaryId);
+        const { data } = await getSimulationSummary({
+          sessionId: summaryId ?? "",
+          languageCode: activeLanguageCode,
+        });
 
         if (data) {
           if (isMounted) setSummaryData(data);
@@ -72,7 +81,7 @@ export function useSimulationSummaryPolling(summaryId: string | undefined): {
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [summaryId]);
+  }, [summaryId, activeLanguageCode, getSimulationSummary]);
 
   return { summaryData, retryMaxReached, isShortSession };
 }

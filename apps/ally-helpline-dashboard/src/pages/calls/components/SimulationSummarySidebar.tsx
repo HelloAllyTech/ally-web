@@ -29,7 +29,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   canShowFeedback = true,
   councellorName,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
   const [shareForReview, setShareForReview] = useState<boolean>(false);
 
@@ -39,8 +39,14 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const navigate = useNavigate();
 
   const { user, permissions } = useSelector((state: RootState) => state.user);
-  const { data: summary } = useGetSimulationSummaryQuery(summaryId);
-  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(summaryId);
+  const { data: summary } = useGetSimulationSummaryQuery(
+    { sessionId: summaryId, languageCode: i18n.language },
+    { skip: !summaryId },
+  );
+  const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(
+    summaryId,
+    i18n.language,
+  );
   const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
 
@@ -119,7 +125,9 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           }}
         >
           <div className="flex items-center gap-2">
-            <span className="font-primary font-normal text-sm">Share for review</span>
+            <span className="font-primary font-normal text-sm">
+              {t("postSim.common.shareForReview")}
+            </span>
             <ToggleSwitch
               enabled={summary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW}
               onChange={(value: boolean) => {
@@ -201,6 +209,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           sessionId={summaryId}
           councellorName={councellorName}
           agentName={summary?.scenario?.metadata?.name}
+          className=" px-4 pt-[10px]"
         />
       ),
     },

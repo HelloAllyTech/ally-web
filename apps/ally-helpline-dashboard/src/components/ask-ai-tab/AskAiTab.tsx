@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetChatHistoryQuery } from "@api";
 import { AskAiIcon, Refresh, SendArrow, UpArrow } from "@assets";
 import { Button, CharacterCount } from "@components";
@@ -86,32 +85,34 @@ const InitialScreen = ({
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col justify-center h-full gap-5 px-10">
-      <div className="font-base font-secondary text-4xl">
-        <span className="text-typography-600">What would you like</span>
-        <span className="text-typography-800"> feedback on?</span>
-      </div>
-      <div className="text-sm font-primary text-typography-700">
-        Select a prompt or ask your own.
-      </div>
-      <div className="flex gap-5">
-        {chatCards.map(card => (
-          <div
-            key={card}
-            className="text-sm font-primary mb-2 border rounded-md p-5 shadow-sm w-40 h-40 flex flex-col relative hover:scale-105 hover:shadow-lg transition-all duration-300"
-            onMouseEnter={() => setHoveredCard(card)}
-            onMouseLeave={() => setHoveredCard(null)}
-          >
-            <span className="flex-1">{card}</span>
-            <button
-              className={`absolute bottom-3 right-3 !rounded-full !p-1 !h-8 !w-8 flex items-center justify-center disabled:opacity-60 disabled:bg-typography-500 ${hoveredCard === card ? "bg-primary-500" : "bg-typography-500"}`}
-              onClick={() => handleSend(card)}
-              disabled={disabled}
+    <div className="flex flex-col justify-center items-center h-full">
+      <div className="flex flex-col items-start gap-5">
+        <div className="font-base font-secondary text-4xl">
+          <span className="text-typography-600">What would you like</span>
+          <span className="text-typography-800"> feedback on?</span>
+        </div>
+        <div className="text-sm font-primary text-typography-700">
+          Select a prompt or ask your own.
+        </div>
+        <div className="flex gap-5">
+          {chatCards.map(card => (
+            <div
+              key={card}
+              className="text-sm font-primary mb-2 border rounded-md p-5 shadow-sm w-[163px] h-[162px] flex flex-col relative hover:scale-105 hover:shadow-lg transition-all duration-300"
+              onMouseEnter={() => setHoveredCard(card)}
+              onMouseLeave={() => setHoveredCard(null)}
             >
-              <SendArrow className="w-5 h-5 shrink-0" />
-            </button>
-          </div>
-        ))}
+              <span className="flex-1">{card}</span>
+              <button
+                className={`absolute bottom-3 right-3 !rounded-full !p-1 !h-8 !w-8 flex items-center justify-center disabled:opacity-60 disabled:bg-typography-500 ${hoveredCard === card ? "bg-primary-500" : "bg-typography-500"}`}
+                onClick={() => handleSend(card)}
+                disabled={disabled}
+              >
+                <SendArrow className="w-5 h-5 shrink-0" />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -193,7 +194,7 @@ const ChatBubble = ({
                 </span>
               );
             })}
-            {citations.length > 0 && FEATURE_FLAGS_MAP.CITATION_FLAG && (
+            {citations.length > 0 && (
               <CitationsTable
                 citations={citations}
                 councellorName={councellorName || "You"}

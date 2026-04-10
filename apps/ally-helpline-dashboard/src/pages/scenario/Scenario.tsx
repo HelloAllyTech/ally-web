@@ -264,20 +264,18 @@ export const Scenario: FC = () => {
               description={t("learn.scenario.notEnough.desc")}
               autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
             />
-            {FEATURE_FLAGS_MAP.MAX_ACTIVE_USERS_POPUP_FLAG && (
-              <MaxActiveUsersDialog
-                open={isMaxActiveUsersPopupOpen}
-                onClose={() => setIsMaxActiveUsersPopupOpen(false)}
-                onRetry={handleMaxActiveUsersRetry}
-                translations={{
-                  title: t("common.maxActiveUsers.title"),
-                  description: t("common.maxActiveUsers.description"),
-                  retry: t("common.maxActiveUsers.retry"),
-                  manualRetry: t("common.maxActiveUsers.manualRetry"),
-                  autoRetry: t("common.maxActiveUsers.autoRetry"),
-                }}
-              />
-            )}
+            <MaxActiveUsersDialog
+              open={isMaxActiveUsersPopupOpen}
+              onClose={() => setIsMaxActiveUsersPopupOpen(false)}
+              onRetry={handleMaxActiveUsersRetry}
+              translations={{
+                title: t("common.maxActiveUsers.title"),
+                description: t("common.maxActiveUsers.description"),
+                retry: t("common.maxActiveUsers.retry"),
+                manualRetry: t("common.maxActiveUsers.manualRetry"),
+                autoRetry: t("common.maxActiveUsers.autoRetry"),
+              }}
+            />
           </motion.div>
         ) : (
           <FallbackUI

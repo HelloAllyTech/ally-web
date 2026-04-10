@@ -1,6 +1,7 @@
 import { FunctionComponent } from "react";
 
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { NoResults, MindfullnessVideo, EndSessionIllustration } from "@assets";
 import { FallbackUI, ButtonVariant, ConfirmationDialog } from "@components";
@@ -10,6 +11,7 @@ import { CallSidebar, CallControls, CallInterface } from "./components";
 import { useMicrophoneMode, useCloudTelephonyMode } from "./hooks";
 
 export const AudioCall: FunctionComponent = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
   const isMicrophoneMode = mode === "microphone";
@@ -69,8 +71,8 @@ export const AudioCall: FunctionComponent = () => {
         return (
           <FallbackUI
             icon={<NoResults />}
-            mainMessage="There is an ongoing call"
-            description="You have an active call happening now"
+            mainMessage={t("audioCall.fallback.ongoingCall")}
+            description={t("audioCall.fallback.ongoingCallDesc")}
             theme="dark"
           />
         );
@@ -84,8 +86,8 @@ export const AudioCall: FunctionComponent = () => {
         return (
           <FallbackUI
             icon={<NoResults />}
-            mainMessage={`${isDictationMode ? "Dictation" : "Microphone"} mode is not available`}
-            description={`You don't have permission to access ${isDictationMode ? "dictation" : "microphone"} mode`}
+            mainMessage={t("audioCall.fallback.modeNotAvailable", { mode: isDictationMode ? t("audioCall.fallback.modeDictation") : t("audioCall.fallback.modeMicrophone") })}
+            description={t("audioCall.fallback.noPermission", { mode: isDictationMode ? t("audioCall.fallback.modeDictation").toLowerCase() : t("audioCall.fallback.modeMicrophone").toLowerCase() })}
             theme="dark"
           />
         );
@@ -101,8 +103,8 @@ export const AudioCall: FunctionComponent = () => {
         return (
           <FallbackUI
             icon={<NoResults />}
-            mainMessage="No Active Call"
-            description="Your active call will be shown here."
+            mainMessage={t("audioCall.fallback.noActiveCall")}
+            description={t("audioCall.fallback.noActiveCallDesc")}
             theme="dark"
           />
         );
@@ -160,13 +162,13 @@ export const AudioCall: FunctionComponent = () => {
           </div>
           {isAudioWebMode && setIsEndCallDialogOpen && confirmEndSession && (
             <ConfirmationDialog
-              title={{ normal: "End ", italic: "Session" }}
+              title={{ normal: t("audioCall.endDialog.titleNormal"), italic: t("audioCall.endDialog.titleItalic") }}
               isOpen={isEndCallDialogOpen}
               onClose={() => setIsEndCallDialogOpen(false)}
-              content="Are you sure you want to end this Session"
+              content={t("audioCall.endDialog.content")}
               buttonVariant={ButtonVariant.DESTRUCTIVE}
               onButtonClick={() => confirmEndSession(true)}
-              buttonText="End Session"
+              buttonText={t("audioCall.endDialog.endSession")}
               icon={EndSessionIllustration}
             />
           )}

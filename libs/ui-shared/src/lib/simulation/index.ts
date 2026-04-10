@@ -6,6 +6,8 @@ export { SimulationScoreMeter } from "./SimulationScoreMeter";
 export { SimulationInterface } from "./SimulationInterface";
 export { SimulationControls } from "./SimulationControls";
 export { BottomSection } from "./SimulationBottomSection";
+export { SessionProgress } from "./SessionProgress";
 export * from "./utils";
 export * from "./types";
+export * from "./constants";
 export * from "./waveformConstants";

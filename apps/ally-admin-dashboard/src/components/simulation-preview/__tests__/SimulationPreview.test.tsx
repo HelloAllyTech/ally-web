@@ -121,7 +121,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       </div>
     ) : null,
   FEATURE_FLAGS_MAP: {
-    MAX_ACTIVE_USERS_POPUP_FLAG: true,
     LANGUAGE_CAPABILITY_FLAG: true,
   },
 }));

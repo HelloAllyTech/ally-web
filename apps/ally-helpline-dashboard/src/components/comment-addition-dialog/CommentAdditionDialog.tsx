@@ -28,7 +28,7 @@ const CommentAdditionDialog: FC<CommentAdditionDialogProps> = ({ onCancel, onCom
               alt="user"
               className="w-full h-full rounded-full"
               fallbackClassName="w-full h-full rounded-full bg-neutral-100 flex items-center justify-center text-typography-600"
-              fallbackText={user?.name?.slice(0, 1)?.toUpperCase() ?? "NA"}
+              fallbackText={user?.name?.slice(0, 1)?.toUpperCase() ?? "--"}
             />
           </div>
           <div className=" text-sm font-medium">{user?.name}</div>

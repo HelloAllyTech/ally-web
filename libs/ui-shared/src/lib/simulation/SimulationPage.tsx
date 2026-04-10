@@ -6,7 +6,6 @@ import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-import { SessionGoalTimer } from "./SessionGoalTimer";
 import { BottomSection } from "./SimulationBottomSection";
 import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
@@ -74,6 +73,8 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   renderWarningDialog,
   renderFooter,
   endSessionButtonRef,
+  stateNames = [],
+  difficultyLevel = "",
   translations,
 }) => {
   const [isMuted, setIsMuted] = useState(false);
@@ -233,14 +234,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         )}
       </div>
 
-      {roomData?.timerMode && startTime && (
-        <SessionGoalTimer
-          startTime={startTime}
-          maxTimeSeconds={maxTimeSeconds}
-          translations={translations}
-        />
-      )}
-
       <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
         <SimulationInterface
           roomStatus={roomStatus}
@@ -253,6 +246,11 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           checklistItems={checklistItems}
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}
+          score={score}
+          stateNames={stateNames}
+          difficultyLevel={difficultyLevel}
+          startTime={startTime}
+          maxTimeSeconds={maxTimeSeconds}
           translations={translations}
         />
       </motion.div>

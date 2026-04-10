@@ -12,6 +12,7 @@
     "continue": "जारी रखें",
     "start": "शुरू करें",
     "close": "बंद करें",
+    "profile": "प्रोफ़ाइल",
     "details": "विवरण",
     "starting": "शुरू हो रहा है...",
     "next": "अगला",
@@ -98,6 +99,12 @@
       "last364days": "पिछले 364 दिन",
       "allTime": "सभी समय"
     },
+    "duration": {
+      "hour": "घंटा",
+      "hours": "घंटे",
+      "minute": "मिनट",
+      "minutes": "मिनट"
+    },
     "table": {
       "rank": "रैंक",
       "user": "उपयोगकर्ता",
@@ -124,6 +131,9 @@
     "errors": {
       "title": "उपलब्धियाँ लोड नहीं हो पाईं",
       "description": "लोड करते समय कुछ गलत हो गया। कृपया पुनः प्रयास करें।"
+    },
+    "modal": {
+      "newBadge": "आपने एक नया बैज अर्जित किया"
     },
     "badgeTypes": {
       "suffix": "बैज",
@@ -461,6 +471,8 @@
       "reactions_plural": "प्रतिक्रियाएं",
       "comments": "टिप्पणी",
       "comments_plural": "टिप्पणियाँ",
+      "reply": "जवाब",
+      "replies": "जवाब",
       "edited": "संपादित",
       "noComments": "अभी तक कोई टिप्पणी नहीं",
       "relativeTime": {
@@ -705,6 +717,31 @@
       "ongoingRiskSuicidalPlan": "चल रहा जोखिम, आत्मघाती योजना",
       "ongoingRiskSuicidalAction": "चल रहा जोखिम, आत्मघाती कार्य",
       "ongoingRiskSuicidalThoughtsNotes": "चल रहा जोखिम, आत्मघाती विचार नोट्स"
+    },
+    "options": {
+      "gender": {
+        "male": "पुरुष",
+        "female": "महिला",
+        "nonBinary": "नॉन-बाइनरी",
+        "preferNotToSay": "क्लाइंट बताना नहीं चाहता"
+      },
+      "risk": {
+        "yes": "हाँ",
+        "no": "नहीं"
+      },
+      "affect": {
+        "congruent": "संगत",
+        "incongruent": "असंगत",
+        "flat": "समतल",
+        "blunted": "कुंद"
+      },
+      "speech": {
+        "clearCoherent": "स्पष्ट और सुसंगत",
+        "sluttering": "हकलाना",
+        "fast": "तेज़",
+        "slow": "धीमा",
+        "difficultToUnderstand": "समझने में कठिन"
+      }
     }
   },
   "profile": {
@@ -743,9 +780,29 @@
       "scenario": "परिदृश्य",
       "sessionScore": "सत्र स्कोर"
     },
+    "duration": {
+      "lessThanOneMinute": "1 मिनट से कम",
+      "hour": "घंटा",
+      "hours": "घंटे",
+      "minute": "मिनट",
+      "minutes": "मिनट",
+      "second": "सेकंड",
+      "seconds": "सेकंड"
+    },
     "userGroups": {
       "my": "मेरे लॉग्स",
       "org": "संगठन लॉग्स"
+    },
+    "status": {
+      "processing": "प्रसंस्करण",
+      "generated": "निर्मित",
+      "error": "त्रुटि",
+      "noAudio": "कोई ऑडियो नहीं मिला",
+      "unknown": "अज्ञात"
+    },
+    "source": {
+      "uploaded": "अपलोड किया गया",
+      "liveSession": "लाइव सत्र"
     },
     "sessionTypes": {
       "call": "कॉल",
@@ -776,6 +833,16 @@
         "content": "यह क्रिया वापस नहीं की जा सकती।",
         "primary": "हटाएँ",
         "secondary": "रद्द करें"
+      },
+      "archive": {
+        "confirm": "पुष्टि करें",
+        "title": "इस सत्र को आर्काइव करें",
+        "unarchiveItalic": "अनआर्काइव करें?",
+        "sessionItalic": "सत्र?",
+        "unarchiveContent": "क्या आप वाकई इस सत्र को अनआर्काइव करना चाहते हैं?",
+        "archiveContent": "क्या आप वाकई इस सत्र को आर्काइव करना चाहते हैं? यह सत्र लॉग्स से छिप जाएगा, लेकिन आप इसे बाद में पुनर्स्थापित कर सकते हैं।",
+        "unarchive": "अनआर्काइव करें",
+        "archive": "आर्काइव करें"
       }
     },
     "archives": {
@@ -871,5 +938,87 @@
       "endSession": "सत्र समाप्त करें",
       "cancel": "रद्द करें"
     }
+  },
+  "audioCall": {
+    "fallback": {
+      "ongoingCall": "एक चल रही कॉल है",
+      "ongoingCallDesc": "आपकी एक सक्रिय कॉल अभी चल रही है",
+      "modeNotAvailable": "{{mode}} मोड उपलब्ध नहीं है",
+      "noPermission": "आपके पास {{mode}} मोड तक पहुँचने की अनुमति नहीं है",
+      "noActiveCall": "कोई सक्रिय कॉल नहीं",
+      "noActiveCallDesc": "आपकी सक्रिय कॉल यहाँ दिखाई जाएगी।",
+      "modeDictation": "डिक्टेशन",
+      "modeMicrophone": "माइक्रोफ़ोन"
+    },
+    "endDialog": {
+      "titleNormal": "समाप्त करें ",
+      "titleItalic": "सत्र",
+      "content": "क्या आप वाकई इस सत्र को समाप्त करना चाहते हैं",
+      "endSession": "सत्र समाप्त करें"
+    },
+    "controls": {
+      "resumeTranscription": "ट्रांसक्रिप्शन फिर शुरू करें",
+      "pauseTranscription": "ट्रांसक्रिप्शन रोकें",
+      "focused": "केंद्रित",
+      "focus": "केंद्रित करें",
+      "endSession": "सत्र समाप्त करें",
+      "muteTooltip": "नोट्स चाहिए? AI अभी आपको सुन नहीं सकता। सुनने के लिए फिर से शुरू करें।",
+      "dataSafe": "आपका डेटा सुरक्षित है"
+    },
+    "privacy": {
+      "noRecording": "हम ऑडियो रिकॉर्डिंग सहेजते नहीं हैं",
+      "encrypted": "डेटा एन्क्रिप्टेड है",
+      "noTrainingData": "हम आपके क्लाइंट के डेटा का उपयोग अपने मॉडल प्रशिक्षित करने के लिए नहीं करते",
+      "personalInfoRemoved": "क्लाइंट की व्यक्तिगत जानकारी स्वतः हटाई जाती है"
+    },
+    "status": {
+      "connecting": "आपके सत्र से कनेक्ट हो रहा है...",
+      "starting": "सत्र अभी शुरू हो रहा है..",
+      "takingNotes": "नोट्स ले रहा है"
+    },
+    "notes": {
+      "waitOrEnd": "आप उनके फिर से जुड़ने की प्रतीक्षा कर सकते हैं या कॉल समाप्त कर सकते हैं।",
+      "differentPlatform": "नोट: यह कॉल किसी अन्य प्लेटफ़ॉर्म से शुरू की गई थी। आप सुन सकते हैं लेकिन कॉल नियंत्रित नहीं कर सकते (म्यूट/अनम्यूट)।",
+      "activeInOtherTab": "नोट: यह कॉल पहले से किसी अन्य टैब/विंडो में सक्रिय है। आप सुन सकते हैं लेकिन कॉल नियंत्रित नहीं कर सकते (म्यूट/अनम्यूट)।",
+      "refreshWarning": "नोट: रीफ़्रेश करने, सक्रिय टैब बंद करने, या नेटवर्क बाधा से कॉल समाप्त हो जाएगी।",
+      "scribeStopWarning": "कॉल समाप्त करने पर स्क्राइब नोट्स लेना बंद कर देगा।"
+    },
+    "sidebar": {
+      "isHelpful": "क्या यह सहायक है?",
+      "currentStage": "वर्तमान चरण:"
+    },
+    "error": {
+      "goBack": "वापस जाएँ",
+      "tryAgain": "पुनः प्रयास करें",
+      "noNetwork": "इंटरनेट कनेक्शन नहीं है",
+      "noNetworkDesc": "नेटवर्क बाधा के कारण कॉल समाप्त हो गई, कृपया अपना कनेक्शन जाँचें और पुनः प्रयास करें।",
+      "noNetworkSharedDesc": "कृपया अपना कनेक्शन जाँचें और पुनः प्रयास करें।",
+      "somethingWrong": "कुछ गलत हो गया",
+      "somethingWrongDesc": "अज्ञात कारण से कॉल समाप्त हो गई, कृपया पुनः प्रयास करें.."
+    }
+  },
+  "stressBuster": {
+    "messages": {
+      "gaveBest": "आपने उस सत्र में अपना सर्वश्रेष्ठ दिया",
+      "gaveBestHighlight": "सर्वश्रेष्ठ",
+      "momentForYourself": "अब, अपने लिए एक पल लें",
+      "momentHighlight": "अपने"
+    },
+    "returnToSelf": "खुद की ओर लौटें",
+    "viewCallSummary": "कॉल सारांश देखें",
+    "breathing": {
+      "inhale": "साँस लें",
+      "hold": "रोकें",
+      "exhale": "साँस छोड़ें"
+    }
+  },
+  "postCallSummary": {
+    "header": {
+      "session": "सत्र",
+      "summary": "सारांश",
+      "shareForReview": "समीक्षा के लिए साझा करें",
+      "comments": "टिप्पणियाँ"
+    },
+    "somethingWentWrongRetry": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।"
   }
 }

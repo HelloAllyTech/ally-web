@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import Timer from "@src/components/timer";
 
@@ -11,6 +13,7 @@ interface CommentItemProps {
 }
 
 const CommentItem: FC<CommentItemProps> = ({ comment }) => {
+  const { t } = useTranslation();
   const { createdBy, createdAt, content, replyCount } = comment;
 
   const entries = comment.reactions ? Object.entries(comment.reactions) : [];
@@ -25,7 +28,7 @@ const CommentItem: FC<CommentItemProps> = ({ comment }) => {
     if (createdBy?.name?.length === 1) {
       return createdBy?.name?.toUpperCase();
     }
-    return "NA";
+    return "--";
   };
 
   const userAvatar = () => {
@@ -87,7 +90,8 @@ const CommentItem: FC<CommentItemProps> = ({ comment }) => {
               <>
                 <div className="w-[3px] h-[3px] bg-[#D2D2D2] rounded-full"></div>
                 <div className="font-primary text-xs sm:text-sm text-typography-800">
-                  {replyCount} {replyCount !== 1 ? "replies" : "reply"}
+                  {replyCount}{" "}
+                  {replyCount !== 1 ? t("review.feedCard.replies") : t("review.feedCard.reply")}
                 </div>
               </>
             )}

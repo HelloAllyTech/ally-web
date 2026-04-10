@@ -35,7 +35,7 @@ import { getSourceChipConfig, getStatusChipConfig } from "./utils";
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { filters } = useSelector((state: RootState) => state.calls);
 
@@ -49,6 +49,15 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
 
   const isCall = sessionType === SessionType.CALL;
   const isSimulation = sessionType === SessionType.SIMULATION;
+  const durationLabels = {
+    lessThanOneMinute: t("calls.duration.lessThanOneMinute", "Less than 1 min"),
+    hour: t("calls.duration.hour", "hr"),
+    hours: t("calls.duration.hours", "hrs"),
+    minute: t("calls.duration.minute", "min"),
+    minutes: t("calls.duration.minutes", "mins"),
+    second: t("calls.duration.second", "sec"),
+    seconds: t("calls.duration.seconds", "secs"),
+  };
 
   const {
     data: callLogsData,
@@ -73,6 +82,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       offset: offset,
       sortBy: "createdAt",
       order: "DESC",
+      languageCode: i18n.language,
     },
     { skip: !isSimulation },
   );
@@ -152,8 +162,8 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
         id,
         transcript,
         callName: callInfo?.summaryName ?? "--",
-        dateAndTime: startedAt && getFormattedDate(startedAt),
-        duration: convertSecondsToDuration(callDuration),
+        dateAndTime: startedAt && getFormattedDate(startedAt, i18n.language),
+        duration: convertSecondsToDuration(callDuration, { labels: durationLabels }),
         qualityScore: summary?.callQuality ?? 0,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
           return {
@@ -208,14 +218,14 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       key: "summaryStatus",
       header: t("calls.table.summaryStatus"),
       style: { width: "10%" },
-      render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus)} />,
+      render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus, t)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
       header: t("calls.table.source"),
       style: { width: "10%" },
-      render: (_value, row) => <Chip config={getSourceChipConfig(row.provider)} />,
+      render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
     },
     {
@@ -248,8 +258,8 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       id,
       sessionId: metadata?.sessionName ?? "--",
       scenarioTitle: scenario?.title ?? "--",
-      dateAndTime: startedAt && getFormattedDate(startedAt),
-      duration: convertSecondsToDuration(durationSec),
+      dateAndTime: startedAt && getFormattedDate(startedAt, i18n.language),
+      duration: convertSecondsToDuration(durationSec, { labels: durationLabels }),
       sessionScore: getSimulationScoreDisplay(score),
       raw: row,
     };

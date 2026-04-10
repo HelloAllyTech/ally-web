@@ -28,10 +28,12 @@ const categoryColoeMap = {
   NEUTRAL: "bg-[#E0E0E0] text-[#333333]",
 };
 
-const convertSecondsToTime = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toFixed(0).toString().padStart(2, "0")}`;
+const convertSecondsToTime = (sec: number) => {
+  const totalSeconds = Math.floor(sec);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 };
 
 /** Latest second covered by the loaded transcript page (uses end when present). */
@@ -101,14 +103,11 @@ const TranscriptItem = ({
       : (agentName ?? aiAgentName)
     : counsellorName || youLabel;
 
-  const borderWidthClass = isActive
-    ? "border-[3px]"
-    : onRowClick
-      ? "border hover:border-2"
-      : "border";
-  const rowClassName = `flex gap-4 p-4 rounded-md w-full min-w-0 box-border text-left ${borderWidthClass} ${
+  const borderWidthClass = isActive ? "border-[3px]" : "border";
+  const hoverBgClass = onRowClick ? (isAIClient ? "hover:bg-[#EDE7F6]" : "hover:bg-[#e8f2ff]") : "";
+  const rowClassName = ` flex gap-2 p-4 rounded-md w-full min-w-0 box-border text-left transition-colors ${borderWidthClass} ${
     isAIClient ? "border-[#7E57C2] bg-[#F5F3FA]" : "border-[#6188C9] bg-[#f7fcff]"
-  }`;
+  } ${hoverBgClass}`;
 
   const body = (
     <>
@@ -116,7 +115,7 @@ const TranscriptItem = ({
         {convertSecondsToTime(transcript.startSeconds ?? 0)}
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 ph-mask">
         <div
           className={`font-semibold text-base ${isAIClient ? "text-[#7E57C2]" : "text-[#0957D0]"}`}
         >
@@ -187,6 +186,8 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   const [seekTarget, setSeekTarget] = useState<number | null>(null);
   const [transcriptSeekRequest, setTranscriptSeekRequest] =
     useState<AudioTranscriptSeekRequest | null>(null);
+  const hasInteractedRef = useRef(false);
+  const clickSuppressUntilRef = useRef(0);
 
   const lastTimeOnPage = useMemo(() => getLastTranscriptSecond(transcriptList), [transcriptList]);
 
@@ -199,10 +200,11 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     [transcriptList],
   );
 
-  // ── Highlight: latest segment with start <= playback (order-independent index scan) ──
+  // ── Highlight: latest segment with startSeconds <= playback ──
   const handleTimeChange = useCallback(
     (seconds: number) => {
-      if (!hasTranscriptTimestamps) return;
+      if (!hasTranscriptTimestamps || !hasInteractedRef.current) return;
+      if (Date.now() < clickSuppressUntilRef.current) return;
       const newIndex = getActiveTranscriptIndex(transcriptList, seconds);
       setActiveIndex(prev => (prev !== newIndex ? newIndex : prev));
     },
@@ -211,6 +213,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
 
   const handlePlayStateChange = useCallback((playing: boolean) => {
     setAudioIsPlaying(playing);
+    if (playing) hasInteractedRef.current = true;
   }, []);
 
   // ── On seek beyond loaded timeline, set target and kick first page fetch ──
@@ -288,7 +291,6 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     }
     const activeStart = transcriptList[activeIndex]?.startSeconds;
     if (typeof activeStart !== "number" || !Number.isFinite(activeStart)) return;
-    // Only prefetch when playback is actually in the tail of the *timeline*, not just last rows in array order.
     if (lastTimeOnPage - activeStart > 45) return;
     if (activeIndex < transcriptList.length - NEAR_END_THRESHOLD) return;
 
@@ -303,7 +305,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     hasMore,
     handleLoadMore,
     lastTimeOnPage,
-    transcriptList.length,
+    transcriptList,
   ]);
 
   const TranscriptSkeleton = () => (
@@ -331,21 +333,10 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
     );
   }
 
-  if (transcriptList.length === 0) {
-    return (
-      <div className="flex flex-col justify-center items-center h-full w-full">
-        <div className="text-xxl font-primary text-typography-700">{t("transcription.empty")}</div>
-      </div>
-    );
-  }
-
   return (
-    <div
-      ref={scrollContainerRef ? undefined : containerRef}
-      className={`flex flex-col pt-10 -mt-10 gap-4 font-primary ${className}`}
-    >
+    <>
       {audioUrl && (
-        <div className="sticky top-0 z-10 shrink-0">
+        <div>
           <AudioTranscriptPlayer
             audioUrl={audioUrl}
             seekRequest={transcriptSeekRequest}
@@ -355,41 +346,57 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
           />
         </div>
       )}
-      <InfiniteScroll
-        onInfiniteScroll={handleLoadMore}
-        isLoading={isLoading}
-        hasMore={hasMore}
-        scrollContainerRef={scrollContainerRef ?? containerRef}
-      >
-        {transcriptList.map((transcript, index) => {
-          const isItemActive = index === activeIndex;
-          return (
-            <TranscriptItem
-              key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
-              transcript={transcript}
-              agentName={agentName}
-              counsellorName={counsellorName}
-              aiClientSuffix={aiClientSuffix}
-              aiAgentName={aiAgentName}
-              youLabel={youLabel}
-              isActive={isItemActive}
-              itemRef={isItemActive ? activeItemRef : undefined}
-              onRowClick={
-                audioUrl
-                  ? () => {
-                      seekRequestIdRef.current += 1;
-                      setTranscriptSeekRequest({
-                        seconds: transcript.startSeconds ?? 0,
-                        requestId: seekRequestIdRef.current,
-                      });
-                    }
-                  : undefined
-              }
-            />
-          );
-        })}
-      </InfiniteScroll>
-    </div>
+      {transcriptList.length === 0 ? (
+        <div className="flex flex-col justify-center items-center h-full w-full">
+          <div className="text-xxl font-primary text-typography-700">
+            {t("transcription.empty")}
+          </div>
+        </div>
+      ) : (
+        <div
+          ref={scrollContainerRef ? undefined : containerRef}
+          className={`flex flex-col gap-3 font-primary overflow-y-auto custom-scrollbar ${className}`}
+        >
+          <InfiniteScroll
+            onInfiniteScroll={handleLoadMore}
+            isLoading={isLoading}
+            hasMore={hasMore}
+            scrollContainerRef={scrollContainerRef ?? containerRef}
+          >
+            {transcriptList.map((transcript, index) => {
+              const isItemActive = index === activeIndex;
+              return (
+                <TranscriptItem
+                  key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
+                  transcript={transcript}
+                  agentName={agentName}
+                  counsellorName={counsellorName}
+                  aiClientSuffix={aiClientSuffix}
+                  aiAgentName={aiAgentName}
+                  youLabel={youLabel}
+                  isActive={isItemActive}
+                  itemRef={isItemActive ? activeItemRef : undefined}
+                  onRowClick={
+                    audioUrl
+                      ? () => {
+                          hasInteractedRef.current = true;
+                          clickSuppressUntilRef.current = Date.now() + 500;
+                          seekRequestIdRef.current += 1;
+                          setTranscriptSeekRequest({
+                            seconds: transcript.startSeconds ?? 0,
+                            requestId: seekRequestIdRef.current,
+                          });
+                          setActiveIndex(index);
+                        }
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </InfiniteScroll>
+        </div>
+      )}
+    </>
   );
 };
 

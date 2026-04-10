@@ -4,19 +4,18 @@ import { SocketDisconnectionReasons } from "@constants";
 export const socketDisconnectionReasonContentMap = {
   [SocketDisconnectionReasons.NO_NETWORK]: {
     icon: NoNetwork,
-    title: "No internet connection",
-    description:
-      "Call ended due to network interruption, please check your connection and try again.",
+    titleKey: "audioCall.error.noNetwork",
+    descriptionKey: "audioCall.error.noNetworkDesc",
   },
   [SocketDisconnectionReasons.NO_NETWORK_IN_SHARED_SESSION]: {
     icon: NoNetwork,
-    title: "No internet connection",
-    description: "Please check your connection and try again.",
+    titleKey: "audioCall.error.noNetwork",
+    descriptionKey: "audioCall.error.noNetworkSharedDesc",
   },
   [SocketDisconnectionReasons.SOMETHING_WENT_WRONG]: {
     icon: InDoubt,
-    title: "Something went wrong",
-    description: "Call ended due to unknown reason, please try again..",
+    titleKey: "audioCall.error.somethingWrong",
+    descriptionKey: "audioCall.error.somethingWrongDesc",
   },
 };
 

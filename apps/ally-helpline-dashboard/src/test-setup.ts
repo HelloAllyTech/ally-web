@@ -1,5 +1,19 @@
 import "@testing-library/jest-dom";
 import { beforeAll, expect, vi } from "vitest";
+
+// Mock posthog-js globally — no network calls in tests, all methods are spies
+vi.mock("posthog-js", () => ({
+  default: {
+    init: vi.fn(),
+    capture: vi.fn(),
+    identify: vi.fn(),
+    reset: vi.fn(),
+    group: vi.fn(),
+    isFeatureEnabled: vi.fn(() => false),
+    people: { set: vi.fn() },
+    debug: vi.fn(),
+  },
+}));
 import path from "path";
 import i18n from "./i18n";
 

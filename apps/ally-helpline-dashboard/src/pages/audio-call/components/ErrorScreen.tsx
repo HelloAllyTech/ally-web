@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { Button, ButtonVariant } from "@components";
 import { SocketDisconnectionReasons } from "@constants";
@@ -10,12 +11,13 @@ const ErrorScreen = ({
 }: {
   socketDisconnectionReason: SocketDisconnectionReasons;
 }) => {
+  const { t } = useTranslation();
   if (!socketDisconnectionReason) return null;
 
   const {
     icon: Icon,
-    title,
-    description,
+    titleKey,
+    descriptionKey,
   } = getContentByDisconnectionReason(socketDisconnectionReason);
 
   return (
@@ -45,7 +47,7 @@ const ErrorScreen = ({
         transition={{ duration: 0.4, delay: 0.2 }}
         className="text-white text-2xl text-center mt-1 font-secondary"
       >
-        {title}
+        {t(titleKey)}
       </motion.div>
 
       <motion.div
@@ -54,7 +56,7 @@ const ErrorScreen = ({
         transition={{ duration: 0.4, delay: 0.3 }}
         className="text-white text-sm text-center mt-1 font-primary"
       >
-        {description}
+        {t(descriptionKey)}
       </motion.div>
 
       <motion.div
@@ -69,10 +71,10 @@ const ErrorScreen = ({
           fullWidth
           onClick={() => window.history.back()}
         >
-          Go back
+          {t("audioCall.error.goBack")}
         </Button>
         <Button fullWidth onClick={() => window.location.reload()}>
-          Try again
+          {t("audioCall.error.tryAgain")}
         </Button>
       </motion.div>
     </motion.div>

@@ -38,6 +38,8 @@ export interface Scenario {
   maxTimeValue?: string;
   timerMode?: boolean;
   showScoreMeter?: boolean;
+  difficultyLevel?: string;
+  stateNames?: { name: string; stateId: string }[];
 }
 
 export interface ScenarioSession {
@@ -142,17 +144,24 @@ export interface GetSimulationLogsInput {
   offset?: number;
   sortBy?: string;
   order?: "ASC" | "DESC";
+  languageCode?: string;
 }
 
 export type GetSimulationLogsResponse = {
   data: SimulationLog[];
 };
 
+export interface GetSimulationSummaryInput {
+  sessionId: string;
+  languageCode?: string;
+}
+
 export interface GetAdminSimulationLogsInput {
   limit?: number;
   offset?: number;
   sortBy?: string;
   order?: "ASC" | "DESC";
+  languageCode?: string;
 }
 
 export type GetAdminSimulationLogsResponse = {

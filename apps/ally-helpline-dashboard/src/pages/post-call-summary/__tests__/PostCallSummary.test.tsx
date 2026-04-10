@@ -62,8 +62,16 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
+// Mock react-i18next
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
 // Mock Tabs and FEATURE_FLAGS_MAP from ui-shared (PostCallSummary uses Tabs and FEATURE_FLAGS_MAP in Header)
 vi.mock("@ally-ui-mono/ui-shared", () => ({
+  FEATURE_FLAGS_MAP: { SCRIBE_REVIEW_FLAG: false },
   Tabs: ({ items, activeId, onChange }: any) => (
     <div data-testid="tabs">
       {items?.map((item: any) => (
@@ -78,9 +86,6 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       ))}
     </div>
   ),
-  FEATURE_FLAGS_MAP: {
-    SCRIBE_REVIEW_FLAG: false,
-  },
 }));
 
 const mockUseUser = vi.fn(() => ({

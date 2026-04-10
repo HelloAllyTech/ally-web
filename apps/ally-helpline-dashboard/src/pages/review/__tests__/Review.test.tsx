@@ -35,7 +35,6 @@ const {
   mockUseGetReviewThreadsQuery: vi.fn(),
   mockUseGetScribeReviewsQuery: vi.fn(),
   mockNavigate: vi.fn(),
-  mockFeatureFlags: { SCRIBE_REVIEW_FLAG: true },
 }));
 
 // --------------------- Mock hooks and modules --------------------- //
