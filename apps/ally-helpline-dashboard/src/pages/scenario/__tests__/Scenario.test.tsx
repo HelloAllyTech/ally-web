@@ -784,7 +784,7 @@ describe("Scenario Component", () => {
       );
 
       const title = screen.getByText("Start");
-      const subtitle = screen.getByText("Simulation");
+      const subtitle = screen.getByText(/role play/i);
       expect(title).toBeInTheDocument();
       expect(subtitle).toBeInTheDocument();
     });

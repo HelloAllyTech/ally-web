@@ -15,9 +15,8 @@ import {
 } from "@assets";
 import { Button, ButtonVariant } from "@components";
 import { getKeyFromIndex } from "@utils";
-import { useTranslation } from "react-i18next";
+
 import { getBoxBreathingSteps } from "./constants";
-// import { BOX_BREATHING_STEPS } from "./constants";
 import { BoxBreathingProps } from "./types";
 
 const BREATHING_LABEL_KEYS: Record<string, string> = {
@@ -148,7 +147,9 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
       <div className="flex gap-6 z-10">
         {BOX_BREATHING_STEPS.map((step, index) => (
           <div key={getKeyFromIndex(index, "step")} className="flex flex-col items-center">
-            <span>{BREATHING_LABEL_KEYS[step.label] ? t(BREATHING_LABEL_KEYS[step.label]) : step.label}</span>
+            <span>
+              {BREATHING_LABEL_KEYS[step.label] ? t(BREATHING_LABEL_KEYS[step.label]) : step.label}
+            </span>
             <span>{step.duration}</span>
           </div>
         ))}

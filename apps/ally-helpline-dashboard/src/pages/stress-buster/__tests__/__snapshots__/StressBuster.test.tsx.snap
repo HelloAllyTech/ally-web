@@ -9,11 +9,11 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot after
   >
     <div
       class="z-50 flex items-center justify-center"
-      data-animate="{"opacity":1}"
-      data-exit="{"opacity":0}"
-      data-initial="{"opacity":0}"
+      data-animate="{\\"opacity\\":1}"
+      data-exit="{\\"opacity\\":0}"
+      data-initial="{\\"opacity\\":0}"
       data-testid="motion-div"
-      data-transition="{"duration":2}"
+      data-transition="{\\"duration\\":2}"
     >
       <span
         class="text-white text-5xl font-secondary"
@@ -70,11 +70,11 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot in in
   >
     <div
       class="z-50 flex items-center justify-center"
-      data-animate="{"opacity":1}"
-      data-exit="{"opacity":0}"
-      data-initial="{"opacity":0}"
+      data-animate="{\\"opacity\\":1}"
+      data-exit="{\\"opacity\\":0}"
+      data-initial="{\\"opacity\\":0}"
       data-testid="motion-div"
-      data-transition="{"duration":2}"
+      data-transition="{\\"duration\\":2}"
     >
       <span
         class="text-white text-5xl font-secondary"

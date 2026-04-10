@@ -164,6 +164,9 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </Provider>
 );
 
+const hasNormalizedText = (element: Element | null, expectedText: string) =>
+  element?.textContent?.replace(/\s+/g, " ").trim() === expectedText;
+
 describe("PostSimulationSummary Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -261,9 +264,9 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
-      });
+      const title = screen.getByText((_content, element) =>
+        hasNormalizedText(element, "role play Summary"),
+      );
       expect(title).not.toBeNull();
       expect(title.className).toContain("text-black");
       expect(title.className).toContain("text-2xl");
@@ -353,7 +356,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const header = screen.getByText(/Simulation/).closest("div");
+      const header = screen.getByText(/role play/i).closest("div");
       const backButton = within(header!).getByRole("button");
       backButton.click();
 
@@ -367,7 +370,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const header = screen.getByText(/Simulation/).closest("div");
+      const header = screen.getByText(/role play/i).closest("div");
       const backButton = within(header!).getByRole("button");
       backButton.click();
 
@@ -757,7 +760,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const header = screen.getByText(/Simulation/).closest("div");
+      const header = screen.getByText(/role play/i).closest("div");
       const backButton = within(header!).getByRole("button");
       backButton.click();
 
@@ -777,11 +780,11 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
-      });
+      const title = screen.getByText((_content, element) =>
+        hasNormalizedText(element, "role play Summary"),
+      );
       expect(title).not.toBeNull();
-      expect(title.innerHTML).toContain("Simulation");
+      expect(title.innerHTML).toContain("role play");
       expect(title.innerHTML).toContain("<em>Summary</em>");
     });
 
@@ -792,9 +795,9 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
-      });
+      const title = screen.getByText((_content, element) =>
+        hasNormalizedText(element, "role play Summary"),
+      );
       expect(title.tagName.toLowerCase()).toBe("div");
     });
   });
@@ -825,9 +828,9 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
-      });
+      const title = screen.getByText((_content, element) =>
+        hasNormalizedText(element, "role play Summary"),
+      );
       expect(title.className).toContain("text-2xl");
       expect(title.className).toContain("sm:text-4xl");
     });
@@ -903,9 +906,9 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const title = screen.getByText((content, element) => {
-        return element?.textContent === "Simulation Summary";
-      });
+      const title = screen.getByText((_content, element) =>
+        hasNormalizedText(element, "role play Summary"),
+      );
       expect(title).not.toBeNull();
     });
 
