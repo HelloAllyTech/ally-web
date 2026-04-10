@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { Focus, PauseIcon, ResumeIcon, StopIcon, Warning } from "@assets";
 import { ButtonGroup } from "@components";
-import { useTranslation } from "react-i18next";
+
 import { CallControlsProps } from "../types";
 
 const CallControls: FC<CallControlsProps> = ({
@@ -35,7 +35,9 @@ const CallControls: FC<CallControlsProps> = ({
       isDisabled: isPauseTranscriptionDisabled,
       leftIcon: isPaused ? <ResumeIcon /> : <PauseIcon />,
       show: showPauseTranscription,
-      text: isPaused ? t("audioCall.controls.resumeTranscription") : t("audioCall.controls.pauseTranscription"),
+      text: isPaused
+        ? t("audioCall.controls.resumeTranscription")
+        : t("audioCall.controls.pauseTranscription"),
     },
     {
       action: () => onFocusButtonClick(!isFocusMode),

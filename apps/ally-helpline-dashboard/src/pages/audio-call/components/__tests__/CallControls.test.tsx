@@ -67,15 +67,17 @@ vi.mock("@components", () => ({
   ),
 }));
 
-
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
-        "resumeNoteTaking": "Resume note taking",
-        "pauseNoteTaking": "Pause note taking",
-        "turnFocusModeOn": "Turn focus mode on",
-       "turnFocusModeOff": "Turn focus mode off",
+        "audioCall.controls.resumeTranscription": "Resume note taking",
+        "audioCall.controls.pauseTranscription": "Pause note taking",
+        "audioCall.controls.focus": "Turn focus mode on",
+        "audioCall.controls.focused": "Turn focus mode off",
+        "audioCall.controls.endSession": "End session",
+        "audioCall.controls.muteTooltip": "Need notes captured",
+        "audioCall.controls.dataSafe": "Your data is safe",
       };
       return translations[key] || key;
     },
