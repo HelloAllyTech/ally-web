@@ -23,11 +23,17 @@
     "simulationEndedSuccess": "ಸಿಮ್ಯುಲೇಶನ್ ಯಶಸ್ವಿಯಾಗಿ ಮುಗಿಯಿತು",
     "somethingWentWrong": "ಊಹೆ ತಪ್ಪಾಗಿದೆ!",
     "summary": "ಸಾರಾಂಶ",
+    "exportSummary": "ಡೌನ್‌ಲೋಡ್ ಸಾರಾಂಶ",
     "startSimulation": "ಸಿಮ್ಯುಲೇಶನ್ ಪ್ರಾರಂಭಿಸಿ",
     "simulation": "ಸಿಮ್ಯುಲೇಶನ್",
     "triggerWarnings": "ಟ್ರಿಗರ್ ಎಚ್ಚರಿಕೆಗಳು:",
     "sessionId": "ಸೆಷನ್ ಐಡಿ",
     "duration": "ಕಾಲಾವಧಿ",
+    "boxBreathing": {
+      "inhale": "ಈಗ ಉಸಿರಾಡಿ",
+      "hold": "ಶ್ವಾಸವನ್ನು ಹಿಡಿದಿಡಿ",
+      "exhale": "ಉಸಿರಾಡಿ"
+    },
     "tags": "ಟ್ಯಾಗ್‌ಗಳು",
     "cancel": "ರದ್ದು ಮಾಡಿ",
     "save": "ಉಳಿಸಿ",
@@ -763,6 +769,10 @@
   },
   "calls": {
     "title": "ಸೆಷನ್ ಲಾಗ್‌ಗಳು",
+    "resumeNoteTaking": "ನೋಟ್ ತೆಗೆದುಕೊಳ್ಳುವನ್ನು ಪುನಾರಂಭಿಸಿ",
+    "pauseNoteTaking": "ನೋಟ್ ತೆಗೆದುಕೊಳ್ಳುವನ್ನು ನಿಲ್ಲಿಸಿ",
+    "turnFocusModeOn": "ಫೋಕಸ್ ಮೋಡ್ ಆನ್ ಮಾಡಿ",
+    "turnFocusModeOff": "ಫೋಕಸ್ ಮೋಡ್ ಅನ್ನು ಆಫ್ ಮಾಡಿ",
     "menu": {
       "archives": "ಆರ್ಕೈವ್ಸ್"
     },
