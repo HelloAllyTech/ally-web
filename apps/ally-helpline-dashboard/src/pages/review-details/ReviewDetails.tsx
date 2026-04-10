@@ -644,12 +644,10 @@ export const ReviewDetails = () => {
         onNoteChange={(note: string) =>
           handleCreateReview({ status: reviewDetails?.reviewStatus, note: note })
         }
-        shareLabel={reviewDetails?.note?.length > 0 ? t("common.save") : t("common.add")}
-        modalHeader={
-          reviewDetails?.note?.length > 0
-            ? t("review.details.editNote")
-            : t("review.details.addNote")
-        }
+
+        shareLabel={reviewDetails?.note?.length > 0 ? "Save report" : "Add"}
+        modalHeader={reviewDetails?.note?.length > 0 ? "Edit note" : "Add note"}
+
         sessionCreatedAt={reviewDetails?.createdAt}
         sessionCallDuration={
           reviewDetails?.scenarioSession?.duration || reviewDetails?.scribeSession?.duration

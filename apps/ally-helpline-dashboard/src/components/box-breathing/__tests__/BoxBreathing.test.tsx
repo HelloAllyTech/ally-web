@@ -33,14 +33,25 @@ vi.mock("@utils", () => ({
   getKeyFromIndex: (i: number, p: string) => `${p}-${i}`,
 }));
 
+// vi.mock("../constants", () => ({
+//   BOX_BREATHING_STEPS: [
+//     { label: "Inhale", duration: 4 },
+//     { label: "Hold", duration: 4 },
+//     { label: "Exhale", duration: 4 },
+//     { label: "Hold", duration: 4 },
+//   ],
+// }));
+
+
 vi.mock("../constants", () => ({
-  BOX_BREATHING_STEPS: [
-    { label: "Inhale", duration: 4 },
-    { label: "Hold", duration: 4 },
+  getBoxBreathingSteps: () => [
+    { label: "Inhale now", duration: 4 },
+    { label: "Hold breathe", duration: 4 },
     { label: "Exhale", duration: 4 },
-    { label: "Hold", duration: 4 },
+    { label: "Hold breathe", duration: 4 },
   ],
 }));
+
 
 // Stub HTMLMediaElement methods used
 beforeEach(() => {

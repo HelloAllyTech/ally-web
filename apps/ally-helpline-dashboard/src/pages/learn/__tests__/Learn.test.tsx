@@ -365,7 +365,7 @@ describe("Learn Component", () => {
           <Learn />
         </TestWrapper>,
       );
-      const description = screen.getByText(/hyper realistic training/);
+      const description = screen.getByText(/real-world practice situation/);
       expect(description).not.toBeNull();
     });
 
@@ -392,8 +392,8 @@ describe("Learn Component", () => {
         </TestWrapper>,
       );
       expect(screen.getByText(/AI-voice based/)).not.toBeNull();
-      expect(screen.getByText(/hyper realistic training/)).not.toBeNull();
-      expect(screen.getByText(/role plays/)).not.toBeNull();
+      expect(screen.getByText(/real-world practice situation/)).not.toBeNull();
+      expect(screen.getByText(/to build/)).not.toBeNull();
     });
 
     // Font-related styling tests are skipped as they change frequently during development
@@ -747,7 +747,7 @@ describe("Learn Component", () => {
       const heading = screen.getByRole("heading", { level: 1 });
       expect(heading).not.toBeNull();
       expect(heading.textContent).toContain("Choose your");
-      expect(heading.textContent).toContain("Scenario");
+      expect(heading.textContent).toContain("situation");
     });
 
     it("should have proper list structure for scenarios", () => {

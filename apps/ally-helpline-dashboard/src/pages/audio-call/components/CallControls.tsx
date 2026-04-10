@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { Focus, PauseIcon, ResumeIcon, StopIcon, Warning } from "@assets";
 import { ButtonGroup } from "@components";
-
+import { useTranslation } from "react-i18next";
 import { CallControlsProps } from "../types";
 
 const CallControls: FC<CallControlsProps> = ({

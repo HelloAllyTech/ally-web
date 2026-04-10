@@ -1,4 +1,4 @@
-import { TFunction } from "i18next";
+import { TFunction  } from "i18next";
 
 import {
   CallDetails,
@@ -877,7 +877,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.SessionSummary,
     label: "Session Summary",
-    placeholder: "Add a quick summary of the session's key themes and takeaways here.",
+    placeholder: "Add a short summary of the session’s main points here.",
     sectionKey: SummarySectionKey.SessionSummary,
     type: FieldType.Multiline,
   },
@@ -905,7 +905,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.ObjectiveObservations,
     label: "Objective Observations",
-    placeholder: "Note factual observations or statements made by the client here.",
+    placeholder: "Document objective statements or observations shared by the clients.",
     sectionKey: SummarySectionKey.ObjectiveObservations,
     type: FieldType.Multiline,
   },
@@ -923,7 +923,7 @@ export const summaryFields: SummaryField[] = [
     isEnhanceable: true,
     key: SummaryFieldKey.Assessment,
     label: "Assessment",
-    placeholder: "Summarize your overall take or clinical impression from today's session.",
+    placeholder: "Summarize your take or therapeutic impression from today's session",
     sectionKey: SummarySectionKey.Assessment,
     type: FieldType.Multiline,
   },

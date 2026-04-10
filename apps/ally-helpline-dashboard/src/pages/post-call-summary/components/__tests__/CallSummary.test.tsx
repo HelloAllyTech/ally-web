@@ -155,7 +155,7 @@ describe("CallSummary Component", () => {
     expect(screen.getByText("Summary is generated")).toBeInTheDocument();
     expect(screen.getByText("You can review the session now.")).toBeInTheDocument();
     // Notes section is rendered in the SummaryLoading component
-    expect(screen.getByText("Add Notes(Optional)")).toBeInTheDocument();
+    expect(screen.getByText("Add Notes (optional)")).toBeInTheDocument();
   });
 
   // Note: Save functionality test removed as SummaryLoading component doesn't have a save button
