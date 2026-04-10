@@ -14,6 +14,7 @@ export interface DropdownProps {
   handleChange: (value: string) => void;
   className?: string;
   style?: React.CSSProperties;
+  optionsMaxHeight?: number;
   onHandleSearch?: (query: string) => void;
   searchPlaceholder?: string;
 }

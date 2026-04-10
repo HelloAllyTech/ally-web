@@ -22,6 +22,8 @@ const DropdownField: FC<DropdownFieldProps> = ({
   searchPlaceholder,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [openUpward, setOpenUpward] = useState<boolean>(false);
+  const [optionsMaxHeight, setOptionsMaxHeight] = useState<number>(240);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -48,6 +50,25 @@ const DropdownField: FC<DropdownFieldProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (!isOpen || !dropdownRef.current) return;
+
+    const rect = dropdownRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const estimatedDropdownHeight = 296;
+    const gap = 8;
+    const minOptionsHeight = 120;
+    const reservedInputHeight = 56;
+
+    const spaceBelow = viewportHeight - rect.bottom - gap;
+    const spaceAbove = rect.top - gap;
+    const shouldOpenUpward = spaceBelow < estimatedDropdownHeight && spaceAbove > spaceBelow;
+
+    setOpenUpward(shouldOpenUpward);
+    const availableSpace = Math.max(shouldOpenUpward ? spaceAbove : spaceBelow, minOptionsHeight);
+    setOptionsMaxHeight(Math.max(availableSpace - reservedInputHeight, minOptionsHeight));
+  }, [isOpen]);
+
   return (
     <div className="w-full relative" ref={dropdownRef}>
       <div className="w-full flex gap-2 items-center">
@@ -66,7 +87,10 @@ const DropdownField: FC<DropdownFieldProps> = ({
           handleChange={handleChange}
           onHandleSearch={onHandleSearch}
           searchPlaceholder={searchPlaceholder}
-          className="top-5 left-0 font-secondary"
+          optionsMaxHeight={optionsMaxHeight}
+          className={`left-0 min-w-full font-secondary ${
+            openUpward ? "bottom-full mb-2" : "top-full mt-2"
+          }`}
         />
       )}
     </div>
