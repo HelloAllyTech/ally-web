@@ -71,7 +71,8 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   );
 
   const onStartSimulationSuccess = (response: StartSimulationResponse) => {
-    const { accessToken, scenario, checklistEvents, useDirectAgentDispatch } = response;
+    const { accessToken, scenario, checklistEvents, useDirectAgentDispatch, stateNames } = response;
+
     localStorage.setItem(
       LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
       JSON.stringify({
@@ -96,7 +97,7 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
         experienceMode: scenario?.metadata?.experienceMode,
         checklistType: scenario?.metadata?.checklistType,
         showScoreMeter: scenario?.metadata?.showScoreMeter,
-        stateNames: scenario?.metadata?.stateNames || [],
+        stateNames: stateNames || [],
         difficultyLevel: scenario?.difficultyLevel || "",
         useDirectAgentDispatch: useDirectAgentDispatch ?? false,
       }),
