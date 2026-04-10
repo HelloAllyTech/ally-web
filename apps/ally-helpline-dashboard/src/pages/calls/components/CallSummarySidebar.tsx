@@ -371,7 +371,9 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
             >
               <div className="border-l border-border h-5" />
               <div className="flex items-center gap-2">
-                <span className="font-primary font-normal text-sm">Share for review</span>
+                <span className="font-primary font-normal text-sm">
+                  {t("postCallSummary.header.shareForReview")}
+                </span>
                 <ToggleSwitch
                   enabled={
                     individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW
