@@ -14,6 +14,7 @@ const Dropdown: FC<DropdownProps> = ({
   handleChange,
   className,
   style,
+  optionsMaxHeight,
   onHandleSearch,
   searchPlaceholder,
 }) => {
@@ -45,7 +46,7 @@ const Dropdown: FC<DropdownProps> = ({
 
   return (
     <div
-      className={`p-2 absolute bg-white border border-[#DBDBDB] rounded-[8px] z-50 ${className}`}
+      className={`p-2 absolute bg-white border border-[#DBDBDB] rounded-[8px] z-50 shadow-lg ${className}`}
       style={style}
       onClick={e => e.stopPropagation()}
     >
@@ -56,7 +57,10 @@ const Dropdown: FC<DropdownProps> = ({
         placeholder={searchPlaceholder || "Search"}
         className="w-full mb-2 px-2 py-1 rounded-[4px] bg-[#F5F5F7] border border-[#DBDBDB]"
       />
-      <div className="flex flex-col gap-2 max-h-[110px] overflow-y-auto">
+      <div
+        className="flex flex-col gap-2 overflow-y-auto pr-1"
+        style={{ maxHeight: optionsMaxHeight ?? 240 }}
+      >
         {getOptions().map(option => (
           <span
             key={option}
