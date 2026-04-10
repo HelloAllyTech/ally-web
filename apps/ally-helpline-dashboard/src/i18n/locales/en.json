@@ -23,11 +23,17 @@
     "simulationEndedSuccess": "Simulation ended successfully",
     "somethingWentWrong": "Something went wrong!",
     "summary": "Summary",
-    "startSimulation": "Start Simulation",
-    "simulation": "Simulation",
+    "exportSummary": "Download Summary",
+    "startSimulation": "Start role play",
+    "simulation": "role play",
     "triggerWarnings": "Trigger warnings:",
     "sessionId": "Session ID",
     "duration": "Duration",
+    "boxBreathing": {
+  "inhale": "Inhale now",
+  "hold": "Hold breathe",
+  "exhale": "Exhale"
+},
     "tags": "Tags",
     "cancel": "Cancel",
     "save": "Save",
@@ -137,14 +143,14 @@
     },
     "badgeTypes": {
       "suffix": "Badges",
-      "journey": "Journey",
+      "journey": "App Journey",
       "momentum": "Momentum",
       "contribution": "Contribution",
       "resonance": "Resonance",
       "tooltip": {
         "journey": "Earned by completing simulation minutes. Only completed simulation time is counted.",
-        "momentum": "Complete at least one simulation per day to build a streak. Missing a day resets your streak.",
-        "contribution": "Count comments and reactions you give on sessions owned by other users. Interactions on your own sessions are not counted.",
+        "momentum": "Complete at least one role play per day to build a streak. Missing a day resets your streak.",
+        "contribution": "Number of comments and reactions you add to sessions by others. Activity on your own sessions is not included.",
         "resonance": "Earned when other reviewers comment or react on your sessions. Your own actions on your sessions are excluded."
       }
     }
@@ -197,22 +203,22 @@
   "learn": {
     "tabs": {
       "simulations": "Simulations",
-      "tracks": "Tracks",
+      "tracks": "Learning Pathways",
       "cases": "Cases"
     },
     "header": {
       "prefix": "Use",
       "emphasis1": "AI-voice based",
-      "middle": "hyper realistic training",
-      "emphasis2": "role plays",
-      "suffix": "to build mental healthcare skills."
+      "middle": "real-world practice situation",
+      "emphasis2": "to build",
+      "suffix": "mental health skills."
     },
     "credits": {
       "used": "Credits used:"
     },
     "scenario": {
       "pageTitlePrefix": "Start",
-      "pageTitleEmphasis": "Simulation",
+      "pageTitleEmphasis": "role play",
       "backAria": "Close scenario details",
       "previewAltSuffix": "scenario preview",
       "mediaUnavailable": "Media not available",
@@ -220,8 +226,8 @@
       "shareAria": "Share scenario",
       "shareTitle": "Share this scenario",
       "shareCopied": "Scenario link copied to clipboard!",
-      "scenarioLabel": "Scenario:",
-      "startAria": "Start simulation",
+      "scenarioLabel": "Situation",
+      "startAria": "Start role play",
       "preStart": {
         "titleNormal": "Before you get started",
         "titleItalic": "",
@@ -274,13 +280,13 @@
       "prefix": "Choose your",
       "case": "Case",
       "track": "Track",
-      "scenario": "Scenario"
+      "scenario": "situation"
     },
     "details": {
       "progress": "{{completed}} of {{total}} completed",
       "loadingDetailsError": "Failed to load simulation details",
       "track": {
-        "breadcrumb": "Tracks",
+        "breadcrumb": "Learning Pathways",
         "notFound": "Track not found"
       },
       "case": {
@@ -288,7 +294,7 @@
         "notFound": "Case not found"
       },
       "modal": {
-        "headerTitle": "Simulation",
+        "headerTitle": "role play",
         "headerSubtitle": "Details"
       }
     },
@@ -315,12 +321,12 @@
     }
   },
   "analytics": {
-    "title": "Session Analytics",
+    "title": "Session Metrics",
     "dashboardTitle": "Metabase dashboard",
     "types": {
       "callLogs": "Real call logs",
       "simulations": "Simulations",
-      "org": "Org Analytics"
+      "org": "Organization Metrics"
     },
     "empty": {
       "title": "Analytics not configured",
@@ -375,7 +381,7 @@
     }
   },
   "postSim": {
-    "titlePrefix": "Simulation",
+    "titlePrefix": "role play",
     "skills": {
       "shownInSession": "Skills shown in this session",
       "empty": "No skills data available for this session",
@@ -391,7 +397,7 @@
       "recommended": "RECOMMENDED"
     },
     "tabs": {
-      "transcription": "Transcription",
+      "transcription": "Conversation details",
       "annotatedTranscript": "Annotated Transcript",
       "upNext": "Up next",
       "askAi": "Ask AI",
@@ -423,7 +429,7 @@
       "all": "All",
       "latest": "Latest",
       "mostReviewed": "Most reviewed",
-      "undiscovered": "Undiscovered"
+      "undiscovered": "Yet to view"
     },
     "empty": {
       "title": "No shared sessions yet",
@@ -461,12 +467,12 @@
       "noReactionsYet": "No reactions yet"
     },
     "feedCard": {
-      "sharedSimulation": "Shared simulation for review",
+      "sharedSimulation": "Role play session shared for feedback",
       "dateTime": "Date & time",
       "duration": "Duration",
       "sec": "sec",
       "min": "min",
-      "reviewTranscript": "Review transcript",
+      "reviewTranscript": "Review Conversation",
       "reactions": "reaction",
       "reactions_plural": "reactions",
       "comments": "comment",
@@ -534,11 +540,11 @@
     "checkLater": "I'll check later",
     "seeIfReady": "See if its ready",
     "backToSessionLogs": "Back to session logs",
-    "addNotes": "Add Notes(Optional)",
+    "addNotes": "Add Notes (optional)",
     "autosaving": "Autosaving",
     "saved": "Saved",
-    "notesTooltip": "Your notes are auto-saved and will appear under 'Additional Notes' after the summary and highlights are generated",
-    "notesPlaceholder": "Jot down your thoughts",
+    "notesTooltip": "Your notes are saved automatically and will appear under “Additional Notes” after the summary is created.",
+    "notesPlaceholder": "write down your thoughts",
     "processing": {
       "generatingTranscription": "Generating transcription",
       "deletingAudio": "Deleting audio",
@@ -556,7 +562,7 @@
   "search": {
     "placeholder": "Need guidance? Search here..",
     "headerDescription": "Guidance, safety, and support — whenever you need it.",
-    "suggestionsTitle": "Try:",
+    "suggestionsTitle": "Try now:",
     "noResults": "No results found for \"{{query}}\"",
     "allLabel": "All",
     "error": "Error fetching search results",
@@ -589,13 +595,13 @@
     "aiClientSuffix": "AI client"
   },
   "summary": {
-    "disclaimer": "This summary has been generated by AI. Ally AI can make mistakes. Review and edit important info before saving the summary.",
+    "disclaimer": "This summary has been generated by AI. Ally AI can make mistakes. Check and edit key details before saving",
     "notFoundTitle": "Summary Not Found",
     "notFoundDesc": "The summary you are looking for does not exist.",
     "goHome": "Go to Home",
     "additionalNotes": "Additional Notes",
     "notesAlt": "Notes",
-    "save": "Save",
+    "save": "Save report",
     "saving": "Saving...",
     "enhance": "Enhance",
     "tabs": {
@@ -636,12 +642,12 @@
       }
     },
     "placeholders": {
-      "sessionSummary": "Add a quick summary of the session's key themes and takeaways here.",
-      "flow": "Capture the flow of conversation, reflections, or shifts in the client’s mood here.",
+      "sessionSummary": "Add a short summary of the session’s main points here.",
+      "flow": "Capture how the conversation unfolded and any shifts in the client’s mood.",
       "keyConcerns": "List any main concerns or stressors raised by the client in this session.",
-      "objectiveObservations": "Note factual observations or statements made by the client here.",
+      "objectiveObservations": "Document objective statements or observations shared by the clients.",
       "subjectiveObservations": "Use this space for your impressions, intuitions, or emotional insights.",
-      "assessment": "Summarize your overall take or clinical impression from today’s session.",
+      "assessment": "Summarize your take or therapeutic impression from today's session",
       "dominantFeelings": "Highlight any emotions that stood out strongly during the session.",
       "issuesWorkedOn": "Mention what was explored or worked on during the session.",
       "keyTherapeuticTechniques": "Note any tools, frameworks, or strategies applied in the session.",
@@ -661,7 +667,7 @@
       "counsellor": "Counsellor",
       "callQuality": "Call Quality",
       "callerId": "Caller ID",
-      "counsellorName": "Counsellor Name",
+      "counsellorName": "User Name",
       "callerType": "Caller type",
       "age": "Age",
       "gender": "Gender",
@@ -763,6 +769,10 @@
   },
   "calls": {
     "title": "Session Logs",
+    "resumeNoteTaking": "Resume note taking",
+    "pauseNoteTaking": "Pause note taking",
+    "turnFocusModeOn": "Turn focus mode on",
+    "turnFocusModeOff": "Turn focus mode off",
     "menu": {
       "archives": "Archives"
     },
@@ -774,11 +784,11 @@
       "counsellorName": "Counsellor",
       "dateTime": "Date & Time",
       "qualityScore": "Quality Score",
-      "summaryStatus": "Summary Status",
-      "source": "Source",
+      "summaryStatus": "Status",
+      "source": "Channel",
       "actions": "Actions",
-      "scenario": "Scenario",
-      "sessionScore": "Session Score"
+      "scenario": "Role Play",
+      "sessionScore": "Session points"
     },
     "duration": {
       "lessThanOneMinute": "Less than 1 min",
@@ -795,7 +805,7 @@
     },
     "sessionTypes": {
       "call": "Call",
-      "simulation": "Simulation"
+      "simulation": "role play"
     },
     "fallback": {
       "callEmptyTitle": "No call logs found",

@@ -82,7 +82,7 @@ describe("Analytics Component", () => {
   describe("Basic Rendering", () => {
     it("should render successfully", () => {
       render(<Analytics />);
-      expect(screen.getByText("Session Analytics")).toBeInTheDocument();
+      expect(screen.getByText("Session Metrics")).toBeInTheDocument();
     });
 
     it("should render without throwing errors", () => {
@@ -112,7 +112,7 @@ describe("Analytics Component", () => {
 
     it("should render title with correct styling", () => {
       render(<Analytics />);
-      const title = screen.getByText("Session Analytics");
+      const title = screen.getByText("Session Metrics");
       expect(title).toBeInTheDocument();
       // Font color and size tests removed: They change frequently during development
       expect(title.className).toContain("font-secondary");

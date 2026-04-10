@@ -501,7 +501,7 @@ describe("AchievementsViewAll Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByText("Journey")).toBeInTheDocument();
+      expect(screen.getByText("App Journey")).toBeInTheDocument();
       expect(screen.getByText("Momentum")).toBeInTheDocument();
       expect(screen.getByText("Contribution")).toBeInTheDocument();
     });
@@ -637,7 +637,7 @@ describe("AchievementsViewAll Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.queryByText("Journey")).not.toBeInTheDocument();
+      expect(screen.queryByText("App Journey")).not.toBeInTheDocument();
       expect(screen.queryByText("Momentum")).not.toBeInTheDocument();
     });
 
@@ -672,7 +672,7 @@ describe("AchievementsViewAll Component", () => {
       );
 
       // Check that each category section exists
-      const journeySection = screen.getByText("Journey");
+      const journeySection = screen.getByText("App Journey");
       const momentumSection = screen.getByText("Momentum");
       const contributionSection = screen.getByText("Contribution");
 
@@ -710,7 +710,7 @@ describe("AchievementsViewAll Component", () => {
       fireEvent.click(screen.getByTestId("filter-UNLOCKED"));
 
       // Category should not be visible since all badges are locked
-      expect(screen.queryByText("Journey")).not.toBeInTheDocument();
+      expect(screen.queryByText("App Journey")).not.toBeInTheDocument();
     });
   });
 
