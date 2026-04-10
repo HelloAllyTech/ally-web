@@ -23,11 +23,17 @@
     "simulationEndedSuccess": "சிமுலேஷன் வெற்றிகரமாக முடிந்தது",
     "somethingWentWrong": "எதோ தவறு நடந்தது!",
     "summary": "சுருக்கம்",
+    "exportSummary": "பதிவிறக்கம் சுருக்கம்",
     "startSimulation": "சிமுலேஷன் தொடங்கு",
     "simulation": "சிமுலேஷன்",
     "triggerWarnings": "உருப்படியைத் தூண்டும் எச்சரிக்கைகள்:",
     "sessionId": "அமைப்பு அடையாளம்",
     "duration": "கால அளவு",
+    "boxBreathing": {
+      "inhale": "இப்போது மூச்சு இழுக்கவும்",
+      "hold": "உடலை நிறுத்துங்கள்",
+      "exhale": "வெளியே எடுக்கவும்"
+    },
     "tags": "டேக்கள்",
     "cancel": "ரத்து செய்",
     "save": "சேமி",
@@ -763,6 +769,10 @@
   },
   "calls": {
     "title": "அமைப்பு பதிவுகள்",
+    "resumeNoteTaking": "மறுபடியும் குறிப்புகள் எடுக்கவும்",
+    "pauseNoteTaking": "நோட்டுகள் எடுக்குவதை நிறுத்தவும்",
+    "turnFocusModeOn": "கேள்வி முறை இயக்கவும்",
+    "turnFocusModeOff": "மையம் முறை அணைக்கவும்",
     "menu": {
       "archives": "ஆர்கைவுகள்"
     },

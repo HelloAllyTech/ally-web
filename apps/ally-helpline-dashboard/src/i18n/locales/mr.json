@@ -23,11 +23,17 @@
     "simulationEndedSuccess": "सिमुलेशन यशस्वीपणे संपला",
     "somethingWentWrong": "काहीतरी चुकले!",
     "summary": "सारांश",
+    "exportSummary": "डाउनलोड सारांश",
     "startSimulation": "सिम्युलेशन सुरू करा",
     "simulation": "सिम्युलेशन",
     "triggerWarnings": "ट्रिगर चेतावण्या:",
     "sessionId": "सत्र आयडी",
     "duration": "कालावधी",
+    "boxBreathing": {
+      "inhale": "आता श्वास घ्या",
+      "hold": "श्वास रोखा",
+      "exhale": "श्वास सोडा"
+    },
     "tags": "टॅग्स",
     "cancel": "रद्द करा",
     "save": "सेव्ह करा",
@@ -763,6 +769,10 @@
   },
   "calls": {
     "title": "सत्र लॉग",
+    "resumeNoteTaking": "नोट घेणे पुन्हा सुरू करा",
+    "pauseNoteTaking": "नोट घेणे थांबवा",
+    "turnFocusModeOn": "फोकस मोड चालू करा",
+    "turnFocusModeOff": "फोकस मोड बंद करा",
     "menu": {
       "archives": "आर्काइव्ह्स"
     },

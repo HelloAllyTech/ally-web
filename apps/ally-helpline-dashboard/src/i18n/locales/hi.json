@@ -23,11 +23,17 @@
     "simulationEndedSuccess": "सिमुलेशन सफलतापूर्वक समाप्त हुआ",
     "somethingWentWrong": "कुछ गलत हो गया!",
     "summary": "सारांश",
+    "exportSummary": "डाउनलोड सारांश",
     "startSimulation": "सिमुलेशन शुरू करें",
     "simulation": "सिमुलेशन",
     "triggerWarnings": "ट्रिगर चेतावनियाँ:",
     "sessionId": "सत्र आईडी",
     "duration": "अवधि",
+    "boxBreathing": {
+      "inhale": "अब श्वास लें",
+      "hold": "साँस रोकें",
+      "exhale": "श्वास छोड़ें"
+    },
     "tags": "टैग्स",
     "cancel": "रद्द करें",
     "save": "सहेजें",
@@ -763,6 +769,10 @@
   },
   "calls": {
     "title": "सत्र लॉग्स",
+    "resumeNoteTaking": "नोट्स लेना फिर से शुरू करें",
+    "pauseNoteTaking": "नोट्स लेना रोकें",
+    "turnFocusModeOn": "फोकस मोड चालू करें",
+    "turnFocusModeOff": "फोकस मोड बंद करें",
     "menu": {
       "archives": "आर्काइव्स"
     },
@@ -793,6 +803,16 @@
       "my": "मेरे लॉग्स",
       "org": "संगठन लॉग्स"
     },
+    "sessionTypes": {
+      "call": "कॉल",
+      "simulation": "सिमुलेशन"
+    },
+    "fallback": {
+      "callEmptyTitle": "कोई कॉल लॉग्स नहीं मिले",
+      "callEmptyDesc": "फ़िल्टर समायोजित करने का प्रयास करें या पृष्ठ रीफ़्रेश करें।",
+      "simEmptyTitle": "कोई सिमुलेशन लॉग्स नहीं मिले",
+      "simEmptyDesc": "फ़िल्टर समायोजित करने का प्रयास करें या पृष्ठ रीफ़्रेश करें।"
+    },
     "status": {
       "processing": "प्रसंस्करण",
       "generated": "निर्मित",
@@ -803,16 +823,6 @@
     "source": {
       "uploaded": "अपलोड किया गया",
       "liveSession": "लाइव सत्र"
-    },
-    "sessionTypes": {
-      "call": "कॉल",
-      "simulation": "सिमुलेशन"
-    },
-    "fallback": {
-      "callEmptyTitle": "कोई कॉल लॉग्स नहीं मिले",
-      "callEmptyDesc": "फ़िल्टर समायोजित करने का प्रयास करें या पृष्ठ रीफ़्रेश करें।",
-      "simEmptyTitle": "कोई सिमुलेशन लॉग्स नहीं मिले",
-      "simEmptyDesc": "फ़िल्टर समायोजित करने का प्रयास करें या पृष्ठ रीफ़्रेश करें।"
     },
     "dialog": {
       "startSession": {
