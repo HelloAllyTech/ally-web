@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-import { Room, RoomEvent } from "livekit-client";
+import { Room, RoomEvent, Participant } from "livekit-client";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -9,7 +9,7 @@ import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { RoomStatus } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
-import { LiveKitEvent, UseLiveKitRoomReturn } from "./types";
+import { AgentTurnStatus, LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
 const RINGING_BELL_DELAY = 5000; // 5 seconds for ringing the bell
 
@@ -18,7 +18,6 @@ export const useLiveKitRoom = (
   endSessionButtonRef: any,
 ): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
-
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +25,9 @@ export const useLiveKitRoom = (
   const [score, setScore] = useState<number>(0);
   const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
   const [startTime, setStartTime] = useState(null);
+  const [agentTurnStatus, setAgentTurnStatus] = useState<AgentTurnStatus>("user_turn");
+
+  const agentTurnStatusRef = useRef<AgentTurnStatus>("user_turn");
 
   const lastEventTimestampRef = useRef<number | null>(null);
   const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
@@ -37,6 +39,11 @@ export const useLiveKitRoom = (
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
+  const updateAgentTurnStatus = useCallback((status: AgentTurnStatus) => {
+    agentTurnStatusRef.current = status;
+    setAgentTurnStatus(status);
+  }, []);
+
   const getLiveKitUrl = (): string => {
     const url = roomData?.serverUrl || import.meta.env.VITE_LIVEKIT_URL;
     if (!url) {
@@ -47,6 +54,20 @@ export const useLiveKitRoom = (
 
   const onDataReceived = useCallback((payload: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
+    // Handle agent state signals — do not treat as score/event data
+    if (eventObj?.type === "AGENT_STATE") {
+      if (eventObj.state === "thinking") {
+        updateAgentTurnStatus("thinking");
+      } else if (eventObj.state === "done_thinking") {
+        // Only move to user_turn if agent is not currently speaking
+        // If speaking, let ActiveSpeakersChanged handle the transition
+        if (agentTurnStatusRef.current !== "speaking") {
+          updateAgentTurnStatus("user_turn");
+        }
+      }
+      return;
+    }
+
     setEvents(prev => [...prev, eventObj]);
     setScore(prev => prev + (eventObj?.data?.score ?? 0));
     setDetectedEventIds(prevIds => {
@@ -66,6 +87,8 @@ export const useLiveKitRoom = (
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
+    // Reset turn status on disconnect
+    updateAgentTurnStatus("user_turn");
     setRoomStatus(RoomStatus.DISCONNECTED);
     setTimeout(
       () => {
@@ -92,12 +115,13 @@ export const useLiveKitRoom = (
     room.removeAllListeners();
 
     logger.info("Disconnecting from room");
+    updateAgentTurnStatus("user_turn");
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
 
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
-  }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected]);
+  }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected, updateAgentTurnStatus]);
 
   const connectToRoom = async () => {
     try {
@@ -133,6 +157,21 @@ export const useLiveKitRoom = (
         room.on(RoomEvent.DataReceived, onDataReceived);
         room.on(RoomEvent.Disconnected, onRoomDisconnect);
         room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
+
+        // Speaking detection — determines SPEAKING vs USER_TURN states
+        room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
+          const agentSpeaking = speakers.some(s => s.identity !== room.localParticipant.identity);
+          if (agentSpeaking) {
+            updateAgentTurnStatus("speaking");
+          } else {
+            // Agent stopped speaking — only move to user_turn
+            // if we are not in thinking state
+            // (thinking → speaking → user_turn is the normal flow)
+            if (agentTurnStatusRef.current !== "thinking") {
+              updateAgentTurnStatus("user_turn");
+            }
+          }
+        });
       }
     } catch (error) {
       logger.error(`Failed to connect to LiveKit room: ${error}`);
@@ -193,5 +232,6 @@ export const useLiveKitRoom = (
     startTime,
     roomData,
     detectedEventIds,
+    agentTurnStatus,
   };
 };

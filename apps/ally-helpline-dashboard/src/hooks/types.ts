@@ -2,6 +2,8 @@ import { Room } from "livekit-client";
 
 import { RoomStatus } from "@types";
 
+export type AgentTurnStatus = "thinking" | "speaking" | "user_turn";
+
 export interface LiveKitEvent {
   version: string;
   data: {
@@ -23,4 +25,5 @@ export interface UseLiveKitRoomReturn {
   startTime: Date;
   roomData: any;
   detectedEventIds: string[];
+  agentTurnStatus: AgentTurnStatus;
 }
