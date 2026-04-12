@@ -6,12 +6,13 @@ import { RoomContext } from "@livekit/components-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
+import { SessionGoalTimer } from "./SessionGoalTimer";
 import { BottomSection } from "./SimulationBottomSection";
 import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
+import { TurnIndicator } from "./TurnIndicator";
 import { SimulationPageProps, TriggerWarning, ChecklistMode } from "./types";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
-
 const MICROPHONE_STATE = {
   GRANTED: "granted",
   DENIED: "denied",
@@ -76,6 +77,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   stateNames = [],
   difficultyLevel = "",
   translations,
+  agentTurnStatus,
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
@@ -205,6 +207,14 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           >
             {title}
           </div>
+          {/* Turn indicator — only show when agent has joined */}
+          {agentTurnStatus && roomStatus === RoomStatus.AGENT_JOINED && (
+            <TurnIndicator
+              status={agentTurnStatus}
+              agentName={roomData?.remoteParticipant?.name || "AI Client"}
+            />
+          )}
+
           {triggerWarnings?.length > 0 && (
             <div
               data-testid="simulation-page-trigger-warnings"
@@ -233,7 +243,9 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           </button>
         )}
       </div>
-
+      {roomData?.timerMode && startTime && (
+        <SessionGoalTimer startTime={startTime} maxTimeSeconds={maxTimeSeconds} />
+      )}
       <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">
         <SimulationInterface
           roomStatus={roomStatus}
