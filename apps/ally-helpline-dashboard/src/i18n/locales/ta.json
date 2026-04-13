@@ -722,7 +722,8 @@
       "ongoingRiskSuicidalThoughts": "தொடரும் ஆபத்து, தற்கொலை எண்ணங்கள்",
       "ongoingRiskSuicidalPlan": "தொடரும் ஆபத்து, தற்கொலை திட்டம்",
       "ongoingRiskSuicidalAction": "தொடரும் ஆபத்து, தற்கொலைச் செயல்",
-      "ongoingRiskSuicidalThoughtsNotes": "தொடரும் ஆபத்து, தற்கொலை எண்ணங்கள் குறிப்புகள்"
+      "ongoingRiskSuicidalThoughtsNotes": "தொடரும் ஆபத்து, தற்கொலை எண்ணங்கள் குறிப்புகள்",
+      "mode": "முறை"
     },
     "options": {
       "gender": {
@@ -788,7 +789,8 @@
       "source": "மூல",
       "actions": "செயல்கள்",
       "scenario": "காட்சி",
-      "sessionScore": "அமைப்பு மதிப்பெண்"
+      "sessionScore": "அமைப்பு மதிப்பெண்",
+      "mode": "முறை"
     },
     "duration": {
       "lessThanOneMinute": "1 நிமிடத்திற்கும் குறைவு",
