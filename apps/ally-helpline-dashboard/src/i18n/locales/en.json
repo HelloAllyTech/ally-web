@@ -1036,5 +1036,10 @@
       "comments": "Comments"
     },
     "somethingWentWrongRetry": "Something went wrong. Please try again."
+  },
+  "boxBreathing": {
+    "inhale": "Inhale now",
+    "hold": "Hold breathe",
+    "exhale": "Exhale"
   }
 }
