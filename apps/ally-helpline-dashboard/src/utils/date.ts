@@ -74,13 +74,17 @@ export const formatMessageDate = (dateStr: string) => {
 export const getFormattedDate = (date: Date | string, locale = "en-US"): string => {
   const d = new Date(date);
 
-  const formattedDate = d.toLocaleDateString(locale, {
+  // Append -u-nu-latn to force Latin (English) numerals regardless of locale.
+  // e.g. "mr" → "mr-u-nu-latn" so Marathi month names render but digits stay 0-9.
+  const localeWithLatinNumerals = `${locale}-u-nu-latn`;
+
+  const formattedDate = d.toLocaleDateString(localeWithLatinNumerals, {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
 
-  const formattedTime = d.toLocaleTimeString(locale, {
+  const formattedTime = d.toLocaleTimeString(localeWithLatinNumerals, {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
