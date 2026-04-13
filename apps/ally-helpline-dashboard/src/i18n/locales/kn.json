@@ -722,7 +722,8 @@
       "ongoingRiskSuicidalThoughts": "ನಿರಂತರ ಅಪಾಯ, ಆತ್ಮಹತ್ಯೆಯ ಚಿಂತೆಗಳು",
       "ongoingRiskSuicidalPlan": "ನಿರಂತರ ಅಪಾಯ, ಆತ್ಮಹತ್ಯಾ ಯೋಜನೆ",
       "ongoingRiskSuicidalAction": "ನಿರಂತರ ಅಪಾಯ, ಆತ್ಮಹತ್ಯಾ ಕ್ರಿಯೆ",
-      "ongoingRiskSuicidalThoughtsNotes": "ನಿರಂತರ ಅಪಾಯ, ಆತ್ಮಹತ್ಯೆ ಯೋಚನೆಗಳ ಟಿಪ್ಪಣಿಗಳು"
+      "ongoingRiskSuicidalThoughtsNotes": "ನಿರಂತರ ಅಪಾಯ, ಆತ್ಮಹತ್ಯೆ ಯೋಚನೆಗಳ ಟಿಪ್ಪಣಿಗಳು",
+      "mode": "ಮೋಡ್"
     },
     "options": {
       "gender": {
@@ -788,7 +789,8 @@
       "source": "ಮೂಲ",
       "actions": "ಕ್ರಿಯೆಗಳು",
       "scenario": "ದೃಶ್ಯಪಟ",
-      "sessionScore": "ಸೆಷನ್ ಅಂಕಗಳು"
+      "sessionScore": "ಸೆಷನ್ ಅಂಕಗಳು",
+      "mode": "ಮೋಡ್"
     },
     "duration": {
       "lessThanOneMinute": "1 ನಿಮಿಷಕ್ಕಿಂತ ಕಡಿಮೆ",

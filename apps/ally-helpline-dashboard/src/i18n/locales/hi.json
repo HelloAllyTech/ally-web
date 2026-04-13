@@ -722,7 +722,8 @@
       "ongoingRiskSuicidalThoughts": "चल रहा जोखिम, आत्मघाती विचार",
       "ongoingRiskSuicidalPlan": "चल रहा जोखिम, आत्मघाती योजना",
       "ongoingRiskSuicidalAction": "चल रहा जोखिम, आत्मघाती कार्य",
-      "ongoingRiskSuicidalThoughtsNotes": "चल रहा जोखिम, आत्मघाती विचार नोट्स"
+      "ongoingRiskSuicidalThoughtsNotes": "चल रहा जोखिम, आत्मघाती विचार नोट्स",
+      "mode": "मोड"
     },
     "options": {
       "gender": {
@@ -788,7 +789,8 @@
       "source": "स्रोत",
       "actions": "क्रियाएँ",
       "scenario": "परिदृश्य",
-      "sessionScore": "सत्र स्कोर"
+      "sessionScore": "सत्र स्कोर",
+      "mode": "मोड"
     },
     "duration": {
       "lessThanOneMinute": "1 मिनट से कम",
