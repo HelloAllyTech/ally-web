@@ -42,7 +42,6 @@ vi.mock("@utils", () => ({
 //   ],
 // }));
 
-
 vi.mock("../constants", () => ({
   getBoxBreathingSteps: () => [
     { label: "Inhale now", duration: 4 },
@@ -51,7 +50,6 @@ vi.mock("../constants", () => ({
     { label: "Hold breathe", duration: 4 },
   ],
 }));
-
 
 // Stub HTMLMediaElement methods used
 beforeEach(() => {

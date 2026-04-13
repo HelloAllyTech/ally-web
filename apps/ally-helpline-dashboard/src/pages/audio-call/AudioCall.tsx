@@ -1,7 +1,7 @@
 import { FunctionComponent } from "react";
 
-import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 
 import { NoResults, MindfullnessVideo, EndSessionIllustration } from "@assets";
 import { FallbackUI, ButtonVariant, ConfirmationDialog } from "@components";
@@ -18,7 +18,7 @@ export const AudioCall: FunctionComponent = () => {
   const isDictationMode = mode === "dictation";
   const isAudioWebMode = isMicrophoneMode || isDictationMode;
 
-  const microphoneHook = useMicrophoneMode();
+  const microphoneHook = useMicrophoneMode(mode);
   const cloudTelephonyHook = useCloudTelephonyMode();
 
   // Select the appropriate hook based on mode
@@ -86,8 +86,16 @@ export const AudioCall: FunctionComponent = () => {
         return (
           <FallbackUI
             icon={<NoResults />}
-            mainMessage={t("audioCall.fallback.modeNotAvailable", { mode: isDictationMode ? t("audioCall.fallback.modeDictation") : t("audioCall.fallback.modeMicrophone") })}
-            description={t("audioCall.fallback.noPermission", { mode: isDictationMode ? t("audioCall.fallback.modeDictation").toLowerCase() : t("audioCall.fallback.modeMicrophone").toLowerCase() })}
+            mainMessage={t("audioCall.fallback.modeNotAvailable", {
+              mode: isDictationMode
+                ? t("audioCall.fallback.modeDictation")
+                : t("audioCall.fallback.modeMicrophone"),
+            })}
+            description={t("audioCall.fallback.noPermission", {
+              mode: isDictationMode
+                ? t("audioCall.fallback.modeDictation").toLowerCase()
+                : t("audioCall.fallback.modeMicrophone").toLowerCase(),
+            })}
             theme="dark"
           />
         );
@@ -162,7 +170,10 @@ export const AudioCall: FunctionComponent = () => {
           </div>
           {isAudioWebMode && setIsEndCallDialogOpen && confirmEndSession && (
             <ConfirmationDialog
-              title={{ normal: t("audioCall.endDialog.titleNormal"), italic: t("audioCall.endDialog.titleItalic") }}
+              title={{
+                normal: t("audioCall.endDialog.titleNormal"),
+                italic: t("audioCall.endDialog.titleItalic"),
+              }}
               isOpen={isEndCallDialogOpen}
               onClose={() => setIsEndCallDialogOpen(false)}
               content={t("audioCall.endDialog.content")}

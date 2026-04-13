@@ -30,10 +30,10 @@
     "sessionId": "Session ID",
     "duration": "Duration",
     "boxBreathing": {
-  "inhale": "Inhale now",
-  "hold": "Hold breathe",
-  "exhale": "Exhale"
-},
+      "inhale": "Inhale now",
+      "hold": "Hold breathe",
+      "exhale": "Exhale"
+    },
     "tags": "Tags",
     "cancel": "Cancel",
     "save": "Save",
@@ -722,7 +722,8 @@
       "ongoingRiskSuicidalThoughts": "Ongoing Risk, Suicidal Thoughts",
       "ongoingRiskSuicidalPlan": "Ongoing Risk, Suicidal Plan",
       "ongoingRiskSuicidalAction": "Ongoing Risk, Suicidal Action",
-      "ongoingRiskSuicidalThoughtsNotes": "Ongoing Risk, Suicidal Thoughts Notes"
+      "ongoingRiskSuicidalThoughtsNotes": "Ongoing Risk, Suicidal Thoughts Notes",
+      "mode": "Mode"
     },
     "options": {
       "gender": {
@@ -788,7 +789,8 @@
       "source": "Channel",
       "actions": "Actions",
       "scenario": "Role Play",
-      "sessionScore": "Session points"
+      "sessionScore": "Session points",
+      "mode": "Mode"
     },
     "duration": {
       "lessThanOneMinute": "Less than 1 min",

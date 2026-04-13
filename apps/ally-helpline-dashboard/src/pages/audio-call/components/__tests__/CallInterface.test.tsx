@@ -212,9 +212,7 @@ describe("CallInterface Component", () => {
       expect(tooltipContent.textContent).toContain(
         "audioCall.privacy.noRecordingaudioCall.privacy.encryptedaudioCall.privacy.noTrainingDataaudioCall.privacy.personalInfoRemoved",
       );
-      expect(tooltipContent).toHaveTextContent(
-        "audioCall.privacy.personalInfoRemoved",
-      );
+      expect(tooltipContent).toHaveTextContent("audioCall.privacy.personalInfoRemoved");
     });
 
     it("should render audio visualizer when mediaRecorder is provided", () => {
@@ -332,11 +330,7 @@ describe("CallInterface Component", () => {
         <CallInterface {...defaultProps} activeChat={{ ...mockActiveChat, platform: "WEB" }} />,
       );
 
-      expect(
-        screen.getByText(
-          "audioCall.notes.refreshWarning",
-        ),
-      ).toBeInTheDocument();
+      expect(screen.getByText("audioCall.notes.refreshWarning")).toBeInTheDocument();
     });
 
     it("should show non-WEB platform description for non-WEB platform", () => {
@@ -344,11 +338,7 @@ describe("CallInterface Component", () => {
         <CallInterface {...defaultProps} activeChat={{ ...mockActiveChat, platform: "MOBILE" }} />,
       );
 
-      expect(
-        screen.getByText(
-          "audioCall.notes.differentPlatform",
-        ),
-      ).toBeInTheDocument();
+      expect(screen.getByText("audioCall.notes.differentPlatform")).toBeInTheDocument();
     });
 
     it("should show shared microphone mode description", () => {
@@ -360,11 +350,7 @@ describe("CallInterface Component", () => {
         />,
       );
 
-      expect(
-        screen.getByText(
-          "audioCall.notes.activeInOtherTab",
-        ),
-      ).toBeInTheDocument();
+      expect(screen.getByText("audioCall.notes.activeInOtherTab")).toBeInTheDocument();
     });
   });
 
@@ -376,9 +362,7 @@ describe("CallInterface Component", () => {
     it("should show Exotel banner when in Exotel mode", () => {
       render(<CallInterface {...defaultProps} isExotelMode={true} />);
 
-      expect(
-        screen.getByText("audioCall.notes.scribeStopWarning"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("audioCall.notes.scribeStopWarning")).toBeInTheDocument();
       expect(screen.getByTestId("warning-triangle-icon")).toBeInTheDocument();
     });
 
@@ -392,17 +376,13 @@ describe("CallInterface Component", () => {
         xButton.click();
       });
 
-      expect(
-        screen.queryByText("audioCall.notes.scribeStopWarning"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("audioCall.notes.scribeStopWarning")).not.toBeInTheDocument();
     });
 
     it("should not show Exotel banner when not in Exotel mode", () => {
       render(<CallInterface {...defaultProps} isExotelMode={false} />);
 
-      expect(
-        screen.queryByText("audioCall.notes.scribeStopWarning"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("audioCall.notes.scribeStopWarning")).not.toBeInTheDocument();
     });
   });
 

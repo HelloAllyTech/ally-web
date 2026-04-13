@@ -1,19 +1,14 @@
 import { FC } from "react";
 
-
 import { Calendar, Contribution, Compress, Timer } from "@assets";
 import { OptionSelectionPopover } from "@components";
 import { en } from "@constants";
-
 
 export type Badge =
   | "SIMULATION_MINUTES"
   | "ACTIVE_DAY_STREAK"
   | "COMMENTS_REACTIONS_GIVEN"
   | "COMMENTS_REACTIONS_RECEIVED";
-
-
-
 
 export interface BadgeOption {
   value: Badge;
@@ -23,7 +18,7 @@ export interface BadgeOption {
   role: string;
 }
 
-    const BADGE_POPUP_OPTIONS: BadgeOption[] = [
+const BADGE_POPUP_OPTIONS: BadgeOption[] = [
   {
     value: "SIMULATION_MINUTES",
     label: "App Journey Badges",
@@ -61,7 +56,6 @@ interface CreateBadgePopupProps {
 }
 
 export const CreateBadgePopup: FC<CreateBadgePopupProps> = ({ isOpen, onClose, onSelect }) => {
-
   return (
     <OptionSelectionPopover
       isOpen={isOpen}

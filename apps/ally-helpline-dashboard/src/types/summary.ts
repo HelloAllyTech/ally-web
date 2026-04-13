@@ -72,6 +72,7 @@ export enum SummaryFieldKey {
   OngoingRiskSuicidalPlan = "ongoingRiskSuicidalPlan",
   OngoingRiskSuicidalAction = "ongoingRiskSuicidalAction",
   OngoingRiskSuicidalThoughtsNotes = "ongoingRiskSuicidalThoughtsNotes",
+  Mode = "mode",
 }
 
 export interface EnhanceContentRequest {

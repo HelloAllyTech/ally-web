@@ -173,6 +173,10 @@ const CallSummary: FC<CallSummaryProps> = ({
         );
       case SummaryFieldKey.ListeningShare:
         return `${(callSummary?.details?.callInfo?.clientTalkingPercentage ?? 0) * 100}%`;
+      case SummaryFieldKey.Mode: {
+        const mode = callSummary?.details?.callInfo?.mode || summaryData?.mode;
+        return mode === "DICTATION" ? "Dictation" : "Scribe";
+      }
       default:
         return summaryData[key];
     }
