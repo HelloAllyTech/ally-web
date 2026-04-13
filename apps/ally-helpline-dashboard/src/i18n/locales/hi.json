@@ -1032,5 +1032,10 @@
       "comments": "टिप्पणियाँ"
     },
     "somethingWentWrongRetry": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।"
+  },
+  "boxBreathing": {
+    "inhale": "अब श्वास लें",
+    "hold": "साँस रोकें",
+    "exhale": "श्वास छोड़ें"
   }
 }
