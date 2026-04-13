@@ -30,9 +30,9 @@
     "sessionId": "सत्र आईडी",
     "duration": "अवधि",
     "boxBreathing": {
-      "inhale": "अब श्वास लें",
+      "inhale": "अब साँस लें",
       "hold": "साँस रोकें",
-      "exhale": "श्वास छोड़ें"
+      "exhale": "साँस छोड़ें"
     },
     "tags": "टैग्स",
     "cancel": "रद्द करें",
