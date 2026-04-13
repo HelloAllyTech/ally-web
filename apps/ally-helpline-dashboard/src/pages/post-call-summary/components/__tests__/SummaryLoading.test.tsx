@@ -318,7 +318,7 @@ describe("SummaryLoading", () => {
     expect(tooltip).toBeInTheDocument();
     expect(tooltip).toHaveAttribute(
       "data-title",
-      "Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
+      "Your notes are saved automatically and will appear under “Additional Notes” after the summary is created.",
     );
   });
 

@@ -159,7 +159,9 @@ export const PostCallSummary = () => {
         {FEATURE_FLAGS_MAP.SCRIBE_REVIEW_FLAG &&
           individualCallSummary?.details?.transcript?.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="font-primary font-normal text-sm">{t("postCallSummary.header.shareForReview")}</span>{" "}
+              <span className="font-primary font-normal text-sm">
+                {t("postCallSummary.header.shareForReview")}
+              </span>{" "}
               <ToggleSwitch
                 enabled={
                   individualCallSummary?.reviewStatus === REVIEW_PRIVACY_OPTIONS_VALUES.IN_REVIEW

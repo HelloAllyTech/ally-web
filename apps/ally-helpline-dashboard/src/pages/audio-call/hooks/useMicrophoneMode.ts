@@ -14,6 +14,7 @@ import {
   ROUTES,
   SESSION_STORAGE_KEYS,
   CallType,
+  ScribeSessionMode,
 } from "@constants";
 import { useSocket } from "@hooks";
 import { RootState } from "@store";
@@ -62,7 +63,7 @@ interface UseMicrophoneModeReturn {
   availableChatTypes: CallType[];
 }
 
-export const useMicrophoneMode = (): UseMicrophoneModeReturn => {
+export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn => {
   const navigate = useNavigate();
   const { availableChatTypes, user } = useSelector((state: RootState) => state.user);
 
@@ -441,10 +442,12 @@ export const useMicrophoneMode = (): UseMicrophoneModeReturn => {
         );
         return;
       }
-      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, {
+      const socketData = {
         platform: "WEB",
         sampleRate: 48000,
-      });
+        mode: mode === "dictation" ? ScribeSessionMode.DICTATION : ScribeSessionMode.SCRIBE,
+      };
+      emitSocketEvent(SocketEvent.START_AUDIO_CHAT, socketData);
       setIsStartAudioChatEmitted(true);
     }
   }, [microphoneChatId, isSessionCreated, isStartAudioChatEmitted, emitSocketEvent]);

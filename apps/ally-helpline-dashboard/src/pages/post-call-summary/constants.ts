@@ -1,4 +1,4 @@
-import { TFunction  } from "i18next";
+import { TFunction } from "i18next";
 
 import {
   CallDetails,
@@ -188,6 +188,13 @@ export const getSummaryFields = (t: TFunction): SummaryField[] => [
     isEditable: false,
     key: SummaryFieldKey.CallType,
     label: t("summary.fields.callerType"),
+    sectionKey: SummarySectionKey.FeaturesAndDemographics,
+    type: FieldType.Text,
+  },
+  {
+    isEditable: false,
+    key: SummaryFieldKey.Mode,
+    label: t("summary.fields.mode"),
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: FieldType.Text,
   },
@@ -817,6 +824,13 @@ export const summaryFields: SummaryField[] = [
     isEditable: false,
     key: SummaryFieldKey.CallType,
     label: "Caller type",
+    sectionKey: SummarySectionKey.FeaturesAndDemographics,
+    type: FieldType.Text,
+  },
+  {
+    isEditable: false,
+    key: SummaryFieldKey.Mode,
+    label: "Mode",
     sectionKey: SummarySectionKey.FeaturesAndDemographics,
     type: FieldType.Text,
   },

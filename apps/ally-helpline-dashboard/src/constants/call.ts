@@ -4,6 +4,11 @@ export enum CallType {
   AUDIO_UPLOAD = "AUDIO_UPLOAD",
 }
 
+export enum ScribeSessionMode {
+  SCRIBE = "SCRIBE",
+  DICTATION = "DICTATION",
+}
+
 export enum CallProvider {
   MICROPHONE = "MICROPHONE",
   OZONETEL = "OZONETEL",
