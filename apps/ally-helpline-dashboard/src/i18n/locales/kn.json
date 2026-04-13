@@ -1036,5 +1036,10 @@
       "comments": "ಕಾಮೆಂಟ್‌ಗಳು"
     },
     "somethingWentWrongRetry": "ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ."
+  },
+  "boxBreathing": {
+    "inhale": "ಈಗ ಉಸಿರಾಡಿ",
+    "hold": "ಶ್ವಾಸ ಹಿಡಿ",
+    "exhale": "ಉಸಿರಾಡಿ"
   }
 }

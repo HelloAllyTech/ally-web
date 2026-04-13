@@ -1036,5 +1036,10 @@
       "comments": "टिप्पण्या"
     },
     "somethingWentWrongRetry": "काहीतरी चुकले. कृपया पुन्हा प्रयत्न करा."
+  },
+  "boxBreathing": {
+    "inhale": "आता श्वास घ्या",
+    "hold": "श्वास रोखा",
+    "exhale": "श्वास सोडा"
   }
 }
