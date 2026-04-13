@@ -74,8 +74,7 @@
       "collapse": "साइडबार संकुचित करें"
     },
     "language": {
-      "label": "ऐप भाषा",
-      "selectorAria": "भाषा चयनकर्ता"
+      "label": "ऐप भाषा"
     },
     "tabs": {
       "learn": "सीखें",
@@ -126,6 +125,8 @@
     "viewAllBadges": "सभी बैज देखें",
     "emptyHome": "आपके पास अभी तक कोई बैज नहीं है",
     "badgesCount": "{{count}} बैज",
+    "locked": "लॉक किया गया",
+    "earned": "कमाया",
     "badgesTooltip": "बैज आपकी सिमुलेशन गतिविधि और समुदाय में भागीदारी के आधार पर दिए जाते हैं। यदि योग्य क्रियाएँ वापस ली जाती हैं, तो कुछ बैज हटाए जा सकते हैं।",
     "filters": {
       "all": "सभी",
@@ -219,6 +220,7 @@
       "pageTitlePrefix": "प्रारंभ करें",
       "pageTitleEmphasis": "सिमुलेशन",
       "backAria": "परिदृश्य विवरण बंद करें",
+      "previewAltSuffix": "परिदृश्य पूर्वावलोकन",
       "mediaUnavailable": "मीडिया उपलब्ध नहीं",
       "share": "साझा करें",
       "shareAria": "परिदृश्य साझा करें",
@@ -296,7 +298,27 @@
         "headerSubtitle": "विवरण"
       }
     },
-    "evaluationChecklist": "मूल्यांकन चेकलिस्ट"
+    "backToLearn": "सीखने के लिए वापस",
+    "notFound": {
+      "case": "केस नहीं मिला",
+      "track": "ट्रैक नहीं मिला"
+    }
+  },
+  "health": {
+    "title": "एप्लिकेशन स्वास्थ्य स्थिति",
+    "status": {
+      "healthy": "स्वस्थ"
+    },
+    "description": "सभी सिस्टम सामान्य रूप से कार्य कर रहे हैं। यह पेज पुष्टि करता है कि फ्रंटएंड एप्लिकेशन चल रहा है और प्रतिक्रियाशील है।",
+    "lastChecked": "अंतिम जाँच: {{time}}"
+  },
+  "reflection": {
+    "title": "स्व-प्रतिबिंब प्रेरणाएँ",
+    "clear": "साफ़ करें",
+    "save": "सहेजें",
+    "prompts": {
+      "clientNeed": "आपको क्या लगता है कि ग्राहक को उस क्षण में सबसे ज्यादा क्या चाहिए था जब आप समस्या समाधान की ओर बढ़े?"
+    }
   },
   "analytics": {
     "title": "सत्र विश्लेषण",
@@ -307,6 +329,7 @@
       "org": "संगठन विश्लेषण"
     },
     "empty": {
+      "title": "एनालिटिक्स कॉन्फ़िगर नहीं है",
       "description": "अभी कोई डैशबोर्ड उपलब्ध नहीं है। कृपया अपने व्यवस्थापक से संपर्क करें।"
     }
   },
@@ -351,13 +374,22 @@
       }
     ]
   },
+  "settings": {
+    "comingSoon": {
+      "title": "जल्द आ रहा है",
+      "description": "हम कुछ रोमांचक पर काम कर रहे हैं! यह सुविधा जल्द उपलब्ध होगी।"
+    }
+  },
   "postSim": {
     "titlePrefix": "सिमुलेशन",
     "skills": {
+      "shownInSession": "इस सत्र में दिखाए गए कौशल",
       "empty": "इस सत्र के लिए कोई कौशल डेटा उपलब्ध नहीं है",
+      "loading": "कौशल डेटा लोड हो रहा है...",
       "failed": "कौशल डेटा लोड करने में विफल",
       "coverage": "कौशल कवरेज",
       "distressAlleviation": "क्लाइंट के संकट का निवारण",
+      "emotionalMovement": "क्लाइंट भावनात्मक गतिविधि",
       "level": "स्तर (-5 to 5)",
       "timeline": "सत्र समयरेखा",
       "strengths": "दिखाई गई खूबियाँ और कौशल",
@@ -365,13 +397,17 @@
       "recommended": "सुझाव"
     },
     "tabs": {
+      "transcription": "ट्रांसक्रिप्शन",
       "annotatedTranscript": "एनोटेटेड ट्रांसक्रिप्ट",
       "upNext": "अगला",
       "askAi": "AI से पूछें",
+      "reflection": "चिंतन",
       "deeperReflection": "गहरा चिंतन",
+      "skills": "कौशल",
       "skillsDemonstrated": "प्रदर्शित कौशल",
       "sessionReview": "सत्र समीक्षा"
     },
+    "simulationSummary": "सिमुलेशन सारांश",
     "shortSession": {
       "title": "सत्र बहुत जल्द समाप्त हो गया",
       "description": "सार्थक प्रतिक्रिया प्रदान करने के लिए हमें और अधिक इंटरैक्शन डेटा की आवश्यकता है।"
@@ -422,45 +458,7 @@
       "addNotePlaceholder": "एक नोट जोड़ें...",
       "shareModalHeader": "समीक्षा के लिए साझा करें",
       "addCommentPlaceholder": "एक टिप्पणी जोड़ें",
-      "commentAction": "टिप्पणी करें",
-      "noteLabel": "नोट",
-      "editedLabel": "[संपादित]",
-      "replyAction": "जवाब दें",
-      "replyPlaceholder": "जवाब जोड़ें",
-      "editCommentPlaceholder": "टिप्पणी संपादित करें",
-      "done": "हो गया",
-      "replyLabel": "जवाब",
-      "repliesLabel": "जवाब",
-      "commentLabel": "टिप्पणी",
-      "hideReply": "जवाब छिपाएँ",
-      "hideReplies": "जवाब छिपाएँ",
-      "hide": "छिपाएँ",
-      "unhide": "दिखाएँ",
-      "edit": "संपादित करें",
-      "delete": "हटाएँ",
-      "insertEmoji": "इमोजी डालें",
-      "commentOptions": "टिप्पणी विकल्प",
-      "unknownUser": "अज्ञात",
-      "loadRepliesFailed": "जवाब लोड नहीं किए जा सके।",
-      "reactionUpdateFailed": "रिएक्शन अपडेट नहीं हो सका",
-      "commentHiddenSuccessfully": "टिप्पणी सफलतापूर्वक छिपाई गई",
-      "commentUnhiddenSuccessfully": "टिप्पणी सफलतापूर्वक दिखाई गई",
-      "replyHiddenSuccessfully": "जवाब सफलतापूर्वक छिपाया गया",
-      "replyUnhiddenSuccessfully": "जवाब सफलतापूर्वक दिखाया गया",
-      "commentHideFailed": "टिप्पणी छिपाने में विफल",
-      "commentUnhideFailed": "टिप्पणी दिखाने में विफल",
-      "replyHideFailed": "जवाब छिपाने में विफल",
-      "replyUnhideFailed": "जवाब दिखाने में विफल",
-      "commentDeletedSuccessfully": "टिप्पणी सफलतापूर्वक हटाई गई",
-      "replyDeletedSuccessfully": "जवाब सफलतापूर्वक हटाया गया",
-      "commentDeleteFailed": "टिप्पणी हटाने में विफल",
-      "replyDeleteFailed": "जवाब हटाने में विफल",
-      "commentUpdatedSuccessfully": "टिप्पणी सफलतापूर्वक अपडेट की गई",
-      "replyUpdatedSuccessfully": "जवाब सफलतापूर्वक अपडेट किया गया",
-      "commentUpdateFailed": "टिप्पणी अपडेट करने में विफल",
-      "replyUpdateFailed": "जवाब अपडेट करने में विफल",
-      "replyCreatedSuccessfully": "जवाब सफलतापूर्वक बनाया गया",
-      "replyCreateFailed": "जवाब बनाने में विफल"
+      "commentAction": "टिप्पणी करें"
     },
     "reactionsModal": {
       "title": "प्रतिक्रियाएं",
@@ -469,6 +467,7 @@
       "noReactionsYet": "अभी तक कोई प्रतिक्रिया नहीं"
     },
     "feedCard": {
+      "sharedSimulation": "समीक्षा के लिए साझा सिमुलेशन",
       "dateTime": "तिथि और समय",
       "duration": "अवधि",
       "sec": "सेकंड",
@@ -592,6 +591,7 @@
     "clientLabel": "क्लाइंट",
     "counsellorLabel": "काउंसलर",
     "aiAgentName": "एआई एजेंट",
+    "youName": "आप",
     "aiClientSuffix": "एआई क्लाइंट"
   },
   "summary": {
@@ -600,6 +600,7 @@
     "notFoundDesc": "जिस सारांश की आप तलाश कर रहे हैं, वह मौजूद नहीं है।",
     "goHome": "होम पर जाएँ",
     "additionalNotes": "अतिरिक्त नोट्स",
+    "notesAlt": "नोट्स",
     "save": "सहेजें",
     "saving": "सहेजा जा रहा है...",
     "enhance": "बेहतर बनाएँ",
@@ -626,6 +627,19 @@
       "metrics": "मेट्रिक्स",
       "intake": "सेवन",
       "ongoingRisks": "चल रहे जोखिम"
+    },
+    "feedback": {
+      "title": "सत्र प्रतिक्रिया",
+      "positives": "क्या अच्छा रहा",
+      "improvements": "सुधार के सुझाव",
+      "keyEvents": "मुख्य घटनाएँ",
+      "coverImageAlt": "कवर इमेज",
+      "sessionId": "आईडी: {{id}}",
+      "columns": {
+        "time": "समय",
+        "event": "घटना",
+        "score": "स्कोर"
+      }
     },
     "placeholders": {
       "sessionSummary": "सत्र के मुख्य विषयों और निष्कर्षों का संक्षिप्त सार यहाँ लिखें।",
@@ -735,8 +749,7 @@
         "slow": "धीमा",
         "difficultToUnderstand": "समझने में कठिन"
       }
-    },
-    "overallScore": "कुल स्कोर"
+    }
   },
   "profile": {
     "settings": {
@@ -751,8 +764,16 @@
       "upload_hint": "PNG या JPG फ़ाइलें केवल 1:1 अनुपात (अधिकतम 2MB)"
     }
   },
+  "userMenu": {
+    "creditUsage": "क्रेडिट उपयोग",
+    "logout": "लॉग आउट"
+  },
   "calls": {
     "title": "सत्र लॉग्स",
+    "resumeNoteTaking": "नोट्स लेना फिर से शुरू करें",
+    "pauseNoteTaking": "नोट्स लेना रोकें",
+    "turnFocusModeOn": "फोकस मोड चालू करें",
+    "turnFocusModeOff": "फोकस मोड बंद करें",
     "menu": {
       "archives": "आर्काइव्स"
     },
@@ -763,6 +784,7 @@
     "table": {
       "counsellorName": "परामर्शदाता",
       "dateTime": "तिथि और समय",
+      "qualityScore": "गुणवत्ता स्कोर",
       "summaryStatus": "सारांश स्थिति",
       "source": "स्रोत",
       "actions": "क्रियाएँ",
@@ -782,6 +804,10 @@
     "userGroups": {
       "my": "मेरे लॉग्स",
       "org": "संगठन लॉग्स"
+    },
+    "sessionTypes": {
+      "call": "कॉल",
+      "simulation": "सिमुलेशन"
     },
     "fallback": {
       "callEmptyTitle": "कोई कॉल लॉग्स नहीं मिले",
@@ -810,6 +836,7 @@
         "embedDesc": "एली आपके साथ ऑडियो सुनेगा",
         "titleNormal": "शुरू करें",
         "titleItalic": "सत्र",
+        "button": "अभी सत्र शुरू करें",
         "startScribeMode": "सक्रिय करें स्क्राइब मोड",
         "startDictationMode": "डिक्टेशन मोड शुरू करें",
         "footer": "शुरू करके, आप पुष्टि करते हैं कि हर किसी को ट्रांसक्रिप्ट किया जा रहा है उसने सहमति दी है।",
@@ -863,7 +890,9 @@
       },
       "errors": {
         "uploadFailed": "ऑडियो अपलोड विफल हुआ!",
-        "genericError": "ऑडियो अपलोड करने में विफल"
+        "genericError": "ऑडियो अपलोड करने में विफल",
+        "fillFields": "कृपया सभी फ़ील्ड भरें और एक फ़ाइल अपलोड करें।",
+        "unsupportedFile": "चुना गया फ़ाइल प्रकार समर्थित नहीं है।"
       }
     },
     "uploadProgress": {
@@ -1012,28 +1041,5 @@
     "inhale": "अब श्वास लें",
     "hold": "साँस रोकें",
     "exhale": "श्वास छोड़ें"
-  },
-  "askAi": {
-    "initial": {
-      "titlePrefix": "आप किस चीज़ पर",
-      "titleSuffix": " फ़ीडबैक चाहते हैं?",
-      "subtitle": "एक प्रॉम्प्ट चुनें या अपना सवाल पूछें।"
-    },
-    "cards": {
-      "responseEffectiveness": "इस सत्र में मैंने सबसे प्रभावी प्रतिक्रिया कहाँ दी?",
-      "pacingPresence": "मेरी गति और उपस्थिति कुल मिलाकर कैसी रही?",
-      "missedClientCues": "मैंने क्लाइंट को कहाँ शायद गलत समझा या कुछ मिस किया?",
-      "therapeuticTechniques": "कौन-सी थेरेप्यूटिक तकनीकें/तरीके सबसे अधिक सहायक रहे?"
-    },
-    "transcriptReferences": "ट्रांसक्रिप्ट संदर्भ",
-    "inputPlaceholder": "सत्र के बारे में एक प्रश्न पूछें.... (0/{{max}})"
-  },
-  "reflection": {
-    "autosaving": "अपने आप सहेजा जा रहा है",
-    "saveFailed": "सहेजना विफल हुआ",
-    "saved": "सहेजा गया",
-    "autoSaveFailed": "उत्तर अपने आप सहेजा नहीं जा सका",
-    "writeThoughts": "अपने विचार यहाँ लिखें...",
-    "noPrompts": "कोई प्रॉम्प्ट उपलब्ध नहीं है"
   }
 }
