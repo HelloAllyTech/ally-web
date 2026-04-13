@@ -826,6 +826,10 @@
       "uploaded": "अपलोड किया गया",
       "liveSession": "लाइव सत्र"
     },
+    "mode": {
+      "scribe": "स्क्राइब",
+      "dictation": "डिक्टेशन"
+    },
     "dialog": {
       "startSession": {
         "embedTitle": "लाइव सुनें",

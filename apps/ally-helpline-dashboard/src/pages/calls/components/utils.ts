@@ -5,7 +5,7 @@ import { TFunction } from "i18next";
 
 import { ErrorIcon } from "@assets";
 import { ChipConfig } from "@components";
-import { CallProvider } from "@constants";
+import { CallProvider, ScribeSessionMode } from "@constants";
 import { ChatSummaryStatus } from "@types";
 
 export const getStatusChipConfig = (status: ChatSummaryStatus, t: TFunction): ChipConfig => {
@@ -56,6 +56,24 @@ export const getSourceChipConfig = (provider: CallProvider, t: TFunction): ChipC
         label: t("calls.source.liveSession"),
         dotClassName: "hidden",
         outerDivClassName: "bg-[#EDE7F6] text-[#673AB7]", // Purple
+      };
+  }
+};
+
+export const getModeChipConfig = (mode: string | undefined | null, t: TFunction): ChipConfig => {
+  switch (mode) {
+    case ScribeSessionMode.DICTATION:
+      return {
+        label: t("calls.mode.dictation"),
+        dotClassName: "hidden",
+        outerDivClassName: "bg-[#FFF3E0] text-[#E65100]", // Orange tint
+      };
+    case ScribeSessionMode.SCRIBE:
+    default:
+      return {
+        label: t("calls.mode.scribe"),
+        dotClassName: "hidden",
+        outerDivClassName: "bg-[#E8EAF6] text-[#3949AB]", // Indigo tint
       };
   }
 };

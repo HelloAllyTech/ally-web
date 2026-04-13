@@ -826,6 +826,10 @@
       "uploaded": "பதிவேற்றப்பட்டது",
       "liveSession": "நேரடி அமர்வு"
     },
+    "mode": {
+      "scribe": "ஸ்கிரைப்",
+      "dictation": "டிக்டேஷன்"
+    },
     "dialog": {
       "startSession": {
         "embedTitle": "நேரலையில் கேளுங்கள்",

@@ -27,6 +27,7 @@ import {
   SourceIcon,
   Delete,
   ActionsIcon,
+  ScribeIcon,
 } from "@assets";
 import { Button, Chip, FallbackUI, PermissionGuard, TagGroup } from "@components";
 import { CallProvider, Permissions } from "@constants";
@@ -46,7 +47,7 @@ import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay }
 import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { LogsTableProps } from "./types";
-import { getSourceChipConfig, getStatusChipConfig } from "./utils";
+import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
 
 const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
@@ -201,6 +202,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
         callDuration: convertSecondsToDuration(callDuration, { labels: durationLabels }),
         qualityScore: summary?.callQuality ?? 0,
         provider: callInfo?.provider,
+        mode: callInfo?.mode,
         tags: summary?.tags?.map((tag: { tag: string; positivity_rating: number }) => {
           return {
             label: tag?.tag,
@@ -210,21 +212,21 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
         raw: row,
       };
     }
-    return { id, callName: "", dateAndTime: "", provider: "--", raw: row };
+    return { id, callName: "", dateAndTime: "", provider: "--", mode: undefined, raw: row };
   };
 
   const callColumns: Column<any>[] = [
     {
       key: "callName",
       header: t("summary.fields.callId"),
-      style: { width: "15%" },
+      style: { width: "13%" },
       icon: <CallIdIcon />,
     },
     {
       key: "counsellorName",
       header: t("calls.table.counsellorName"),
       filterType: FilterType.MULTISELECT,
-      style: { width: "15%" },
+      style: { width: "12%" },
       icon: <UserIcon />,
       sortable: true,
       filterable: true,
@@ -238,7 +240,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       key: "dateAndTime",
       header: t("calls.table.dateTime"),
       filterType: FilterType.DATE,
-      style: { width: "15%" },
+      style: { width: "13%" },
       sortable: true,
       filterable: true,
       filterOptions: [],
@@ -249,12 +251,19 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       header: t("common.duration"),
       sortable: true,
       icon: <TimerIcon />,
-      style: { width: "15%" },
+      style: { width: "10%" },
+    },
+    {
+      key: "mode",
+      header: t("calls.table.mode", "Mode"),
+      style: { width: "10%" },
+      render: (_value, row) => <Chip config={getModeChipConfig(row.mode, t)} />,
+      icon: <ScribeIcon />,
     },
     {
       key: "tags",
       header: t("common.tags"),
-      style: { width: "30%", overflow: "hidden" },
+      style: { width: "20%", overflow: "hidden" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
       filterType: FilterType.MULTISELECT,
@@ -268,14 +277,14 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     {
       key: "summaryStatus",
       header: t("calls.table.summaryStatus"),
-      style: { width: "16%" },
+      style: { width: "12%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus, t)} />,
       icon: <SummaryGenerationIcon />,
     },
     {
       key: "source",
       header: t("calls.table.source"),
-      style: { width: "16%" },
+      style: { width: "12%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
     },

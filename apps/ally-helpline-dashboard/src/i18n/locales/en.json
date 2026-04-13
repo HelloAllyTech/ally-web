@@ -826,6 +826,10 @@
       "uploaded": "Uploaded",
       "liveSession": "Live Session"
     },
+    "mode": {
+      "scribe": "Scribe",
+      "dictation": "Dictation"
+    },
     "dialog": {
       "startSession": {
         "embedTitle": "Listen Live",
