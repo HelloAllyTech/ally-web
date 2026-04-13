@@ -826,6 +826,10 @@
       "uploaded": "ಅಪ್ಲೋಡ್ ಮಾಡಲಾಗಿದೆ",
       "liveSession": "ಜೀವಿತ ಅಧಿವೇಶನ"
     },
+    "mode": {
+      "scribe": "ಸ್ಕ್ರೈಬ್",
+      "dictation": "ಡಿಕ್ಟೇಶನ್"
+    },
     "dialog": {
       "startSession": {
         "embedTitle": "ನೇರವಾಗಿ ಕೇಳಿ",

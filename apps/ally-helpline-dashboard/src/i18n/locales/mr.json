@@ -826,6 +826,10 @@
       "uploaded": "अपलोड केलेले",
       "liveSession": "लाइव्ह सत्र"
     },
+    "mode": {
+      "scribe": "स्क्राइब",
+      "dictation": "डिक्टेशन"
+    },
     "dialog": {
       "startSession": {
         "embedTitle": "थेट ऐका",

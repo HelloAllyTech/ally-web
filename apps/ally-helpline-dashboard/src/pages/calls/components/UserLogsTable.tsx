@@ -19,6 +19,7 @@ import {
   ScenarioIcon,
   SessionScoreIcon,
   SourceIcon,
+  ScribeIcon,
 } from "@assets";
 import { Button, Chip, TagGroup, FallbackUI } from "@components";
 import { updateFilters } from "@reducer";
@@ -30,7 +31,7 @@ import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
-import { getSourceChipConfig, getStatusChipConfig } from "./utils";
+import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
 
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
@@ -172,6 +173,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           };
         }),
         provider: callInfo?.provider,
+        mode: callInfo?.mode,
         raw: row, // keep original row for summary action
       };
     }
@@ -184,6 +186,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       source: "--",
       tags: [],
       transcript: "",
+      mode: undefined,
       raw: row,
     };
   };
@@ -198,19 +201,26 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     {
       key: "dateAndTime",
       header: t("calls.table.dateTime"),
-      style: { width: "20%" },
+      style: { width: "18%" },
       icon: <DateIcon />,
     },
     {
       key: "duration",
       header: t("common.duration"),
-      style: { width: "12%" },
+      style: { width: "10%" },
       icon: <TimerIcon />,
+    },
+    {
+      key: "mode",
+      header: t("calls.table.mode", "Mode"),
+      style: { width: "10%" },
+      render: (_value, row) => <Chip config={getModeChipConfig(row.mode, t)} />,
+      icon: <ScribeIcon />,
     },
     {
       key: "tags",
       header: t("common.tags"),
-      style: { width: "25%" },
+      style: { width: "22%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
     },
