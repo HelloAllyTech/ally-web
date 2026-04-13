@@ -96,7 +96,7 @@ const SubSection = ({
   createdAt: string | undefined;
   callDuration: number | undefined;
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const formattedDate = createdAt ? getFormattedDate(createdAt, i18n.language) : "--";
   const formattedCallDuration =
     callDuration < 60
