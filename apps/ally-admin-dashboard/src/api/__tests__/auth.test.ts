@@ -54,6 +54,10 @@ describe("auth API", () => {
     it("should have correct authorization permissions endpoint", () => {
       expect(ApiEndpoints.AUTHORIZATION.GET_PERMISSIONS).toBe("/v1/authorization/permissions");
     });
+
+    it("should have correct get user impersonated tokens endpoint", () => {
+      expect(ApiEndpoints.AUTH.GET_USER_IMPERSONATED_TOKENS).toBe("/v1/auth/impersonate");
+    });
   });
 
   describe("HTTP Methods", () => {
@@ -324,6 +328,18 @@ describe("auth API", () => {
       expect(tokenResponse.refreshToken).toBeDefined();
       expect(typeof tokenResponse.accessToken).toBe("string");
       expect(typeof tokenResponse.refreshToken).toBe("string");
+    });
+
+    it("should handle impersonate response correctly", () => {
+      const impersonateResponse = {
+        accessToken: "imp-access-token-123",
+        refreshToken: "imp-refresh-token-456",
+      };
+
+      expect(impersonateResponse.accessToken).toBeDefined();
+      expect(impersonateResponse.refreshToken).toBeDefined();
+      expect(typeof impersonateResponse.accessToken).toBe("string");
+      expect(typeof impersonateResponse.refreshToken).toBe("string");
     });
 
     it("should handle missing tokens in response", () => {

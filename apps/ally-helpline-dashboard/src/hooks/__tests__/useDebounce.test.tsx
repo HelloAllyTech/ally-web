@@ -13,14 +13,25 @@ const TestComponent = ({ cb, delay }: { cb: (...args: any[]) => void; delay: num
 };
 
 describe("useDebounce", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("calls after the specified delay", () => {
-    vi.useFakeTimers();
     const spy = vi.fn();
 
     const { getByText } = render(<TestComponent cb={spy} delay={200} />);
-    getByText("trigger").click();
+
+    act(() => {
+      getByText("trigger").click();
+    });
 
     expect(spy).not.toHaveBeenCalled();
+
     act(() => {
       vi.advanceTimersByTime(199);
     });
@@ -30,19 +41,18 @@ describe("useDebounce", () => {
       vi.advanceTimersByTime(1);
     });
     expect(spy).toHaveBeenCalledTimes(1);
-
-    vi.useRealTimers();
   });
 
   it("collapses multiple rapid calls into one", () => {
-    vi.useFakeTimers();
     const spy = vi.fn();
 
     const { getByText } = render(<TestComponent cb={spy} delay={100} />);
 
-    getByText("trigger").click();
-    getByText("trigger").click();
-    getByText("trigger").click();
+    act(() => {
+      getByText("trigger").click();
+      getByText("trigger").click();
+      getByText("trigger").click();
+    });
 
     act(() => {
       vi.advanceTimersByTime(100);
@@ -50,17 +60,16 @@ describe("useDebounce", () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith("ping");
-
-    vi.useRealTimers();
   });
 
   it("cleans up timer on unmount", () => {
-    vi.useFakeTimers();
     const spy = vi.fn();
 
     const { getByText, unmount } = render(<TestComponent cb={spy} delay={300} />);
 
-    getByText("trigger").click();
+    act(() => {
+      getByText("trigger").click();
+    });
     unmount();
 
     act(() => {
@@ -68,7 +77,5 @@ describe("useDebounce", () => {
     });
 
     expect(spy).not.toHaveBeenCalled();
-
-    vi.useRealTimers();
   });
 });

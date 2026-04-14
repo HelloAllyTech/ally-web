@@ -24,6 +24,7 @@ export const ApiEndpoints = {
     REFRESH: "/v1/auth/refresh",
     PROFILE_IMAGE_URL: "/v1/users/profile-image-url",
     PROFILE_IMAGE: "/v1/users/profile-image",
+    GET_USER_IMPERSONATED_TOKENS: "/v1/auth/impersonate",
   },
   AI: {
     GET_PREVIEW_VOICE: (voiceId: string) => `/v1/voice-preview/generate/${voiceId}`,

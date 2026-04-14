@@ -91,7 +91,7 @@ vi.mock("@constants", () => ({
   },
   AUTH_RETRY_CONFIG: {
     MAX_ATTEMPTS: 3,
-    RETRY_DELAY_MS: 1000,
+    RETRY_DELAY_MS: 0,
   },
   Permissions: {
     VIEW_SCENARIO_SESSION: "view:scenario-session",
@@ -170,7 +170,12 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe("PrivateRouteLayout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
+    vi.stubGlobal("localStorage", {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    });
   });
 
   it("renders without crashing", () => {

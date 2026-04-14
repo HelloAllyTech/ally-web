@@ -79,6 +79,11 @@ export const UserOptionDropdown: React.FC<UserOptionDropdownProps> = ({
             user?.roles?.some(role => role === UserRole.LEARNER) &&
             user?.status === userStatus.ACTIVE
           );
+        case UserMenuOptions.IMPERSONATE_USER:
+          return (
+            user?.roles?.some(role => role !== UserRole.MULTI_TENANT_ADMIN) &&
+            user?.status === userStatus.ACTIVE
+          );
         case UserMenuOptions.GRANT_ACCESS:
           return user?.status !== userStatus.ACTIVE;
         case UserMenuOptions.SUSPEND_USER:

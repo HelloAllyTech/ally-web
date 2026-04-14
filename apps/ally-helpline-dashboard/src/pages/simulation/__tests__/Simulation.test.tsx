@@ -152,7 +152,7 @@ vi.mock("@constants", () => ({
 describe("Simulation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
 
     // Reset mock state
     mockRoomStatus = RoomStatus.CONNECTED;

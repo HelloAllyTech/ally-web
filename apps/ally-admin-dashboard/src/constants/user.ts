@@ -23,6 +23,7 @@ export enum UserMenuOptions {
   SUSPEND_USER = "Suspend user",
   GRANT_ACCESS = "Grant access",
   REMOVE_USER = "Remove user",
+  IMPERSONATE_USER = "Impersonate user",
 }
 
 export const USER_MODAL_FIELDS_IDS = {
@@ -45,6 +46,7 @@ export const userEditMenu = [
   UserMenuOptions.MANAGE_CREDITS,
   UserMenuOptions.SUSPEND_USER,
   UserMenuOptions.GRANT_ACCESS,
+  UserMenuOptions.IMPERSONATE_USER,
   // UserMenuOptions.REMOVE_USER, // TODO: Add this after backend change for delete user is implemented
 ];
 
