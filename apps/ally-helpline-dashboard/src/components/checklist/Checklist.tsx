@@ -41,7 +41,7 @@ export const Checklist: FC<ChecklistProps> = ({
   sessionId,
   className = "max-h-[calc(100vh-400px)]",
 }) => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const { data, isLoading, isError } = useGetSimulationChecklistQuery(
     { sessionId: sessionId || "", languageCode: i18n.language },
     { skip: !sessionId },
@@ -85,7 +85,7 @@ export const Checklist: FC<ChecklistProps> = ({
 
   return (
     <div className="flex flex-col gap-3 w-full bg-white font-primary">
-      <div className="text-md text-typography-800">Evaluation Checklist</div>
+      <div className="text-md text-typography-800">{t("learn.evaluationChecklist")}</div>
       {renderChecklistItems()}
     </div>
   );

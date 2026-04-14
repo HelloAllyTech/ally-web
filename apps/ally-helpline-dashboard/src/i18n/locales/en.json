@@ -302,7 +302,8 @@
     "notFound": {
       "case": "Case not found",
       "track": "Track not found"
-    }
+    },
+    "evaluationChecklist": "Evaluation Checklist"
   },
   "health": {
     "title": "Application Health Status",
