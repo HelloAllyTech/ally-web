@@ -5,6 +5,7 @@ import "./styles.css";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { SelectableText } from "@components";
+import { ScribeSessionMode } from "@constants";
 import { CommentItem, CommentChangeParams, SimulationTranscriptMessage, Thread } from "@types";
 
 import { getFreshUserRange, splitByCommentRanges } from "./utils";
@@ -37,6 +38,7 @@ interface TranscriptionProps {
   onDeleteComment?: (val?: number) => void;
   onAddComment?: () => void;
   isScribeReview?: boolean;
+  mode?: string;
 }
 
 const Transcription: FC<TranscriptionProps> = ({
@@ -61,12 +63,15 @@ const Transcription: FC<TranscriptionProps> = ({
   onCommentChange = () => {},
   onDeleteComment = () => {},
   isScribeReview,
+  mode,
 }) => {
   const { t } = useTranslation();
   const contentRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const selectedCommentRef = useRef<HTMLSpanElement | null>(null);
   const [transcriptions, setTranscriptions] = useState<SimulationTranscriptMessage[]>([]);
   const [addCommentDialogOpen, setAddCommentDialogOpen] = useState<string | null>(null);
+
+  const isDictationMode = mode === ScribeSessionMode.DICTATION;
 
   const [newCommentSelection, setNewCommentSelection] = useState<{
     startIndex: number;
@@ -256,79 +261,137 @@ const Transcription: FC<TranscriptionProps> = ({
         hasMore={hasMore}
         scrollContainerRef={scrollContainerRef}
       >
-        {transcriptions?.map((transcript, index) => (
-          <div
-            key={transcript.startSeconds}
-            className={`flex gap-4 ${!canSelect ? "pointer-events-none select-none" : ""}`}
-          >
-            <div className="text-neutral-500">
-              {convertSecondsToTime(transcript.startSeconds ?? 0)}
-            </div>
-            <div>
-              <span className="font-medium pr-1">
-                {transcript.senderId === -1 ? (
-                  <span className="text-typography-900">
-                    {agentName
-                      ? `${agentName} (${t("transcription.aiClientSuffix")}) :`
-                      : isScribeReview
-                        ? t("transcription.scribeAgentLabel")
-                        : t("transcription.agentLabel")}
-                  </span>
-                ) : (
-                  <span className="text-primary-700">
-                    {councellorName ? councellorName : t("transcription.youLabel")}:
-                  </span>
-                )}
-              </span>
-              <span
-                ref={el => (contentRefs.current[index] = el)}
-                className={`text-typography-900 selected-text relative w-full ${canSelect ? "cursor-text" : "cursor-default"}`}
+        {isDictationMode
+          ? transcriptions?.map((transcript, index) => (
+              <div
+                key={transcript.startSeconds}
+                className={`${!canSelect ? "pointer-events-none select-none" : ""}`}
               >
-                {splitByCommentRanges(
-                  transcript.content,
-                  (transcript.threads ?? []).map(thread => ({
-                    id: thread.id,
-                    start: thread.selection.startIndex,
-                    end: thread.selection.endIndex,
-                  })),
-                ).map((segment, segIdx) => {
-                  const isSelectedComment =
-                    selectedMessageId &&
-                    transcript.id === parseInt(selectedMessageId) &&
-                    segment.commentIds.length > 0;
+                <span
+                  ref={el => (contentRefs.current[index] = el)}
+                  className={`text-typography-900 selected-text relative w-full ph-mask ${
+                    canSelect ? "cursor-text" : "cursor-default"
+                  }`}
+                >
+                  {splitByCommentRanges(
+                    transcript.content,
+                    (transcript.threads ?? []).map(thread => ({
+                      id: thread.id,
+                      start: thread.selection.startIndex,
+                      end: thread.selection.endIndex,
+                    })),
+                  ).map((segment, segIdx) => {
+                    const isSelectedComment =
+                      selectedMessageId &&
+                      transcript.id === parseInt(selectedMessageId) &&
+                      segment.commentIds.length > 0;
 
-                  return (
-                    <SelectableText
-                      onDeleteComment={onDeleteComment}
-                      key={segIdx}
-                      onCommentChange={onCommentChange}
-                      setAddCommentDialogOpen={setAddCommentDialogOpen}
-                      addCommentDialogOpen={addCommentDialogOpen}
-                      onCloseSelectedComment={onCloseSelectedComment}
-                      segment={segment}
-                      segIdx={segIdx}
-                      isFeedOwner={isFeedOwner}
-                      newCommentSelection={newCommentSelection}
-                      isSelectedComment={isSelectedComment}
-                      selectedCommentRef={selectedCommentRef}
-                      selectedMessageId={selectedMessageId}
-                      transcript={transcript}
-                      selectedEndIndex={selectedEndIndex}
-                      handleCommentClick={handleCommentClick}
-                      selectedThreadId={selectedThreadId}
-                      index={index}
-                      commentsList={commentsList}
-                      setNewCommentSelection={setNewCommentSelection}
-                      onCancelComment={onCancelComment}
-                      onAddComment={onAddComment}
-                      isScribeReview={isScribeReview}
-                    />
-                  );
-                })}
-              </span>
-            </div>
-          </div>
-        ))}
+                    return (
+                      <SelectableText
+                        onDeleteComment={onDeleteComment}
+                        key={segIdx}
+                        onCommentChange={onCommentChange}
+                        setAddCommentDialogOpen={setAddCommentDialogOpen}
+                        addCommentDialogOpen={addCommentDialogOpen}
+                        onCloseSelectedComment={onCloseSelectedComment}
+                        segment={segment}
+                        segIdx={segIdx}
+                        isFeedOwner={isFeedOwner}
+                        newCommentSelection={newCommentSelection}
+                        isSelectedComment={isSelectedComment}
+                        selectedCommentRef={selectedCommentRef}
+                        selectedMessageId={selectedMessageId}
+                        transcript={transcript}
+                        selectedEndIndex={selectedEndIndex}
+                        handleCommentClick={handleCommentClick}
+                        selectedThreadId={selectedThreadId}
+                        index={index}
+                        commentsList={commentsList}
+                        setNewCommentSelection={setNewCommentSelection}
+                        onCancelComment={onCancelComment}
+                        onAddComment={onAddComment}
+                        isScribeReview={isScribeReview}
+                      />
+                    );
+                  })}
+                </span>
+              </div>
+            ))
+          : transcriptions?.map((transcript, index) => (
+              <div
+                key={transcript.startSeconds}
+                className={`flex gap-4 ${!canSelect ? "pointer-events-none select-none" : ""}`}
+              >
+                <div className="text-neutral-500">
+                  {convertSecondsToTime(transcript.startSeconds ?? 0)}
+                </div>
+                <div>
+                  <span className="font-medium pr-1">
+                    {transcript.senderId === -1 ? (
+                      <span className="text-typography-900">
+                        {agentName
+                          ? `${agentName} (${t("transcription.aiClientSuffix")}) :`
+                          : isScribeReview
+                            ? t("transcription.scribeAgentLabel")
+                            : t("transcription.agentLabel")}
+                      </span>
+                    ) : (
+                      <span className="text-primary-700">
+                        {councellorName ? councellorName : t("transcription.youLabel")}:
+                      </span>
+                    )}
+                  </span>
+                  <span
+                    ref={el => (contentRefs.current[index] = el)}
+                    className={`text-typography-900 selected-text relative w-full ph-mask ${
+                      canSelect ? "cursor-text" : "cursor-default"
+                    }`}
+                  >
+                    {splitByCommentRanges(
+                      transcript.content,
+                      (transcript.threads ?? []).map(thread => ({
+                        id: thread.id,
+                        start: thread.selection.startIndex,
+                        end: thread.selection.endIndex,
+                      })),
+                    ).map((segment, segIdx) => {
+                      const isSelectedComment =
+                        selectedMessageId &&
+                        transcript.id === parseInt(selectedMessageId) &&
+                        segment.commentIds.length > 0;
+
+                      return (
+                        <SelectableText
+                          onDeleteComment={onDeleteComment}
+                          key={segIdx}
+                          onCommentChange={onCommentChange}
+                          setAddCommentDialogOpen={setAddCommentDialogOpen}
+                          addCommentDialogOpen={addCommentDialogOpen}
+                          onCloseSelectedComment={onCloseSelectedComment}
+                          segment={segment}
+                          segIdx={segIdx}
+                          isFeedOwner={isFeedOwner}
+                          newCommentSelection={newCommentSelection}
+                          isSelectedComment={isSelectedComment}
+                          selectedCommentRef={selectedCommentRef}
+                          selectedMessageId={selectedMessageId}
+                          transcript={transcript}
+                          selectedEndIndex={selectedEndIndex}
+                          handleCommentClick={handleCommentClick}
+                          selectedThreadId={selectedThreadId}
+                          index={index}
+                          commentsList={commentsList}
+                          setNewCommentSelection={setNewCommentSelection}
+                          onCancelComment={onCancelComment}
+                          onAddComment={onAddComment}
+                          isScribeReview={isScribeReview}
+                        />
+                      );
+                    })}
+                  </span>
+                </div>
+              </div>
+            ))}
       </InfiniteScroll>
     </div>
   );

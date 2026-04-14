@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
 import { AudioTranscriptPlayer, type AudioTranscriptSeekRequest } from "@components";
+import { ScribeSessionMode } from "@constants";
 import { SimulationTranscriptMessage, TranscriptMessage } from "@types";
 
 const NEAR_END_THRESHOLD = 3;
@@ -20,6 +21,7 @@ interface TranscriptListingProps {
   agentName?: string;
   className?: string;
   audioUrl?: string;
+  mode?: string;
 }
 
 const categoryColoeMap = {
@@ -168,6 +170,7 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
   agentName,
   className = "",
   audioUrl,
+  mode,
 }) => {
   const { t } = useTranslation();
   const aiClientSuffix = t("transcription.aiClientSuffix");
@@ -199,6 +202,8 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
       ),
     [transcriptList],
   );
+
+  const isDictationMode = mode === ScribeSessionMode.DICTATION;
 
   // ── Highlight: latest segment with startSeconds <= playback ──
   const handleTimeChange = useCallback(
@@ -363,36 +368,45 @@ const TranscriptListing: FC<TranscriptListingProps> = ({
             hasMore={hasMore}
             scrollContainerRef={scrollContainerRef ?? containerRef}
           >
-            {transcriptList.map((transcript, index) => {
-              const isItemActive = index === activeIndex;
-              return (
-                <TranscriptItem
-                  key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
-                  transcript={transcript}
-                  agentName={agentName}
-                  counsellorName={counsellorName}
-                  aiClientSuffix={aiClientSuffix}
-                  aiAgentName={aiAgentName}
-                  youLabel={youLabel}
-                  isActive={isItemActive}
-                  itemRef={isItemActive ? activeItemRef : undefined}
-                  onRowClick={
-                    audioUrl
-                      ? () => {
-                          hasInteractedRef.current = true;
-                          clickSuppressUntilRef.current = Date.now() + 500;
-                          seekRequestIdRef.current += 1;
-                          setTranscriptSeekRequest({
-                            seconds: transcript.startSeconds ?? 0,
-                            requestId: seekRequestIdRef.current,
-                          });
-                          setActiveIndex(index);
-                        }
-                      : undefined
-                  }
-                />
-              );
-            })}
+            {isDictationMode
+              ? transcriptList.map((item, index) => (
+                  <div
+                    key={`dictation-${index}`}
+                    className="text-base font-primary leading-relaxed text-typography-900 ph-mask p-4 border border-[#cfd3d8] rounded-md bg-white"
+                  >
+                    {item.content}
+                  </div>
+                ))
+              : transcriptList.map((transcript, index) => {
+                  const isItemActive = index === activeIndex;
+                  return (
+                    <TranscriptItem
+                      key={`${transcript.senderId}-${transcript.startSeconds}-${index}`}
+                      transcript={transcript}
+                      agentName={agentName}
+                      counsellorName={counsellorName}
+                      aiClientSuffix={aiClientSuffix}
+                      aiAgentName={aiAgentName}
+                      youLabel={youLabel}
+                      isActive={isItemActive}
+                      itemRef={isItemActive ? activeItemRef : undefined}
+                      onRowClick={
+                        audioUrl
+                          ? () => {
+                              hasInteractedRef.current = true;
+                              clickSuppressUntilRef.current = Date.now() + 500;
+                              seekRequestIdRef.current += 1;
+                              setTranscriptSeekRequest({
+                                seconds: transcript.startSeconds ?? 0,
+                                requestId: seekRequestIdRef.current,
+                              });
+                              setActiveIndex(index);
+                            }
+                          : undefined
+                      }
+                    />
+                  );
+                })}
           </InfiniteScroll>
         </div>
       )}

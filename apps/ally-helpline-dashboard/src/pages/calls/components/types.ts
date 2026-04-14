@@ -112,6 +112,7 @@ export interface TranscriptTabProps {
   handleLoadMore: () => void;
   isLoading: boolean;
   hasMore?: boolean;
+  mode?: string;
 }
 
 export interface SimulationTranscriptTabProps {

@@ -52,11 +52,14 @@ const CallTranscriptTab: FC<CallTranscriptTabProps> = ({ callSummary }) => {
     setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
   };
 
+  const mode = callSummary.details?.callInfo?.mode || (transcriptData as any)?.mode;
+
   return (
     <TranscriptTab
       transcriptList={transcriptList}
       handleLoadMore={handleLoadMore}
       isLoading={isGetTranscriptLoading}
+      mode={mode}
     />
   );
 };

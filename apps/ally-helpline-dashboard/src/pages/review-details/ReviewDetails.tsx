@@ -574,6 +574,7 @@ export const ReviewDetails = () => {
             onCloseSelectedComment={handleCloseSelectedComment}
             onCommentChange={handleCommentChange}
             isScribeReview={isScribeReview}
+            mode={reviewDetails?.scribeSession?.details?.callInfo?.mode}
           />
 
           <div className="w-full border-t-[0.5px] border-border-light font-primary">
