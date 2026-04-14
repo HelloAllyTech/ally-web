@@ -6,6 +6,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { logger } from "@ally-ui-mono/ui-shared";
 import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import {
+  AGENT_STATE_EVENT_TYPE,
+  AGENT_STATE_THINKING,
+  AGENT_STATE_DONE_THINKING,
+  AGENT_STATE_SPEAKING,
+} from "@constants";
 import { RoomStatus } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
@@ -55,13 +61,11 @@ export const useLiveKitRoom = (
   const onDataReceived = useCallback((payload: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
     // Handle agent state signals — do not treat as score/event data
-    if (eventObj?.type === "AGENT_STATE") {
-      if (eventObj.state === "thinking") {
-        updateAgentTurnStatus("thinking");
-      } else if (eventObj.state === "done_thinking") {
-        // Only move to user_turn if agent is not currently speaking
-        // If speaking, let ActiveSpeakersChanged handle the transition
-        if (agentTurnStatusRef.current !== "speaking") {
+    if (eventObj?.type === AGENT_STATE_EVENT_TYPE) {
+      if (eventObj.state === AGENT_STATE_THINKING) {
+        updateAgentTurnStatus(AGENT_STATE_THINKING);
+      } else if (eventObj.state === AGENT_STATE_DONE_THINKING) {
+        if (agentTurnStatusRef.current !== AGENT_STATE_SPEAKING) {
           updateAgentTurnStatus("user_turn");
         }
       }
@@ -162,12 +166,9 @@ export const useLiveKitRoom = (
         room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
           const agentSpeaking = speakers.some(s => s.identity !== room.localParticipant.identity);
           if (agentSpeaking) {
-            updateAgentTurnStatus("speaking");
+            updateAgentTurnStatus(AGENT_STATE_SPEAKING);
           } else {
-            // Agent stopped speaking — only move to user_turn
-            // if we are not in thinking state
-            // (thinking → speaking → user_turn is the normal flow)
-            if (agentTurnStatusRef.current !== "thinking") {
+            if (agentTurnStatusRef.current !== AGENT_STATE_THINKING) {
               updateAgentTurnStatus("user_turn");
             }
           }
