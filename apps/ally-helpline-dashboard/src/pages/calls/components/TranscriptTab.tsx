@@ -3,6 +3,7 @@ import { FC, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { ScribeSessionMode } from "@constants";
 
 import { TranscriptTabProps } from "./types";
 
@@ -18,9 +19,12 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
   handleLoadMore,
   isLoading,
   hasMore = true,
+  mode,
 }) => {
   const { t } = useTranslation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const isDictationMode = mode === ScribeSessionMode.DICTATION;
 
   return (
     <div className="flex-1 p-4 font-primary">
@@ -36,15 +40,26 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
             hasMore={hasMore}
             scrollContainerRef={scrollContainerRef}
           >
-            {transcriptList.map(({ speaker, content, startSeconds }, index: number) => (
-              <div key={`${speaker}-${index}`} className="flex">
-                <span className="mr-3">{startSeconds ? formatTime(startSeconds) : ""}</span>
-                <div className="flex-1 text-base">
-                  <span className="font-semibold">{speaker}: </span>
-                  <span className="font-primary">{content}</span>
-                </div>
-              </div>
-            ))}
+            {isDictationMode
+              ? transcriptList.map((item, index) => (
+                  <div
+                    key={`dictation-${index}`}
+                    className="text-base font-primary leading-relaxed text-typography-900 ph-mask"
+                  >
+                    {item.content}
+                  </div>
+                ))
+              : transcriptList.map(({ speaker, content, startSeconds }, index: number) => (
+                  <div key={`${speaker}-${index}`} className="flex">
+                    <span className="mr-3">
+                      {typeof startSeconds === "number" ? formatTime(startSeconds) : ""}
+                    </span>
+                    <div className="flex-1 text-base">
+                      <span className="font-semibold">{speaker}: </span>
+                      <span className="font-primary ph-mask">{content}</span>
+                    </div>
+                  </div>
+                ))}
           </InfiniteScroll>
         </div>
       ) : (
