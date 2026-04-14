@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { useGetSimulationChecklistQuery } from "@api";
 import { CrossRedBackground, TickGreenBackground } from "@assets";
 import { ChecklistItem } from "@types";
@@ -39,8 +41,9 @@ export const Checklist: FC<ChecklistProps> = ({
   sessionId,
   className = "max-h-[calc(100vh-400px)]",
 }) => {
+  const { i18n } = useTranslation();
   const { data, isLoading, isError } = useGetSimulationChecklistQuery(
-    { sessionId: sessionId || "" },
+    { sessionId: sessionId || "", languageCode: i18n.language },
     { skip: !sessionId },
   );
 

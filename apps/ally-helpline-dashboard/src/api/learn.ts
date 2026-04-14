@@ -335,10 +335,14 @@ const learnAPI = baseAPI.injectEndpoints({
      * @param {string} sessionId - Session identifier
      * @returns {Promise<GetSimulationChecklistResponse>} Checklist data with overall score and items
      */
-    getSimulationChecklist: builder.query<GetSimulationChecklistResponse, { sessionId: string }>({
-      query: ({ sessionId }) => ({
+    getSimulationChecklist: builder.query<
+      GetSimulationChecklistResponse,
+      { sessionId: string; languageCode?: string }
+    >({
+      query: ({ sessionId, languageCode }) => ({
         url: ApiEndpoints.LEARN.GET_SIMULATION_CHECKLIST(sessionId),
         method: HttpMethod.GET,
+        params: { languageCode },
       }),
     }),
     updateReflectionPrompt: builder.mutation<Prompt, UpdateReflectionPromptRequest>({
