@@ -18,6 +18,7 @@ export const ROUTES = {
   HEALTH: "/health",
   MAGIC_VERIFY: "/auth/verify",
   SUSPENDED_USER: "/suspended-user",
+  IMPERSONATE: "/impersonate",
 
   // Private Routes
   HOME: "/",

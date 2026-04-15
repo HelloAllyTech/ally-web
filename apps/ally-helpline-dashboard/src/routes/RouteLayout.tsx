@@ -9,6 +9,7 @@ import {
   Scenario,
   CaseTrackDetails,
   SuspendedUser,
+  ImpersonateHandler,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -30,6 +31,7 @@ const RouteLayout = () => {
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
           <Route path={ROUTES.LOGIN} element={<Login />} />
+          <Route path={ROUTES.IMPERSONATE} element={<ImpersonateHandler />} />
           <Route path={ROUTES.HEALTH} element={<Health />} />
           <Route path={ROUTES.MAGIC_VERIFY} element={<MagicLinkVerify />} />
         </Route>

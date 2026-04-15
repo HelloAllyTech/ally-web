@@ -20,6 +20,16 @@ vi.mock("@api", () => ({
   useGetTranscriptQuery: vi.fn(),
 }));
 
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      if (key === "transcription.clientLabel") return "Client";
+      if (key === "transcription.counsellorLabel") return "Counsellor";
+      return key;
+    },
+  }),
+}));
+
 // Mock TranscriptTab component
 vi.mock("../TranscriptTab", () => ({
   default: ({ transcriptList, handleLoadMore, isLoading, hasMore = true }: any) => (

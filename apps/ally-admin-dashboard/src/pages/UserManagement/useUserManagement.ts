@@ -12,6 +12,7 @@ import {
   useChangeRoleMutation,
   useGetRoleQuery,
   useAddSimulationCreditLimitMutation,
+  useGetUserImpersonatedTokenMutation,
 } from "@api";
 import { FilterValues } from "@components/types";
 import {
@@ -73,10 +74,10 @@ export function useUserManagement(tenants: Tenant[]) {
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [changeRole] = useChangeRoleMutation();
   const [addSimulationCreditLimit] = useAddSimulationCreditLimitMutation();
+  const [impersonateUser] = useGetUserImpersonatedTokenMutation();
   const { data: userRoles } = useGetRoleQuery();
 
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
-
   const userParams = {
     limit: USERS_PAGE_SIZE,
     offset: usersOffset,
@@ -329,6 +330,24 @@ export function useUserManagement(tenants: Tenant[]) {
     }
   };
 
+  const handleImpersonateUser = async (userData: any) => {
+    try {
+      const payload = {
+        email: userData.email,
+      };
+      const response: any = await impersonateUser(payload).unwrap();
+      const params = new URLSearchParams({
+        accessToken: response?.data.accessToken,
+        refreshToken: response?.data.refreshToken,
+        impersonatedByAccessToken: localStorage.getItem("adminAccessToken"),
+      });
+
+      window.open(`http://localhost:8080/impersonate?${params.toString()}`, "_blank");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to impersonate user");
+    }
+  };
+
   const handleAddCredit = async (data: any) => {
     if (!selectedUser) return;
     try {
@@ -389,6 +408,7 @@ export function useUserManagement(tenants: Tenant[]) {
     handleEditUser,
     handleSuspendUser,
     handleChangeRole,
+    handleImpersonateUser,
     handleActivateUser,
     handleAddUserClose,
     handleUserAddClick,

@@ -497,10 +497,13 @@ export const en = {
     cancel: "Cancel",
     editDetails: "Edit Details",
     changeRole: "Change User Role",
+    impersonateUser: "Impersonate User",
     suspendUserConfirmation: (name: string) =>
       `Are you sure you want to suspend "**${name}**"? They won't be able to log in until reactivated.`,
     removeUserConfirmation: (name: string) =>
       `Are you sure you want to remove "${name}"? This action cannot be undone.`,
+    impersonateUserConfirmation: (name: string) =>
+      `Are you sure you want to impersonate "${name}"? This will open a new window where you will be logged in as this user. Make sure to log out and close the window when you're done impersonating.`,
     suspendUser: "Suspend User",
     removeUser: "Remove User",
     manageCredit: "Manage Simulation Credits",
@@ -510,6 +513,7 @@ export const en = {
     select: "Select",
     editOrganization: "Edit Organization",
     confirm: "Confirm",
+    impersonate: "Impersonate",
     selectOrg: "Select Organization",
     grantAccess: "Grant Access",
     grantAccessConfirmation: (name: string) =>

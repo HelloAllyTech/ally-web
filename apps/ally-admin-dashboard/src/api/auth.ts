@@ -16,6 +16,7 @@ import {
   GetProfileUrlResponse,
   GetProfileUrlRequest,
   profileUrlRequest,
+  ImpersonateResponse,
 } from "@types";
 
 const authAPI = baseAPI.injectEndpoints({
@@ -161,6 +162,14 @@ const authAPI = baseAPI.injectEndpoints({
         return { data: result.data as VerifyOTPResponse };
       },
     }),
+
+    getUserImpersonatedToken: builder.mutation<ImpersonateResponse, { email: string }>({
+      query: data => ({
+        url: ApiEndpoints.AUTH.GET_USER_IMPERSONATED_TOKENS,
+        method: HttpMethod.POST,
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -178,4 +187,5 @@ export const {
   useDeleteProfileImageMutation,
   useGetProfileImageUrlMutation,
   useVerifyMagicLinkMutation,
+  useGetUserImpersonatedTokenMutation,
 } = authAPI;

@@ -105,6 +105,7 @@ export const UserManagement: FC = () => {
     handleEditUser,
     handleSuspendUser,
     handleChangeRole,
+    handleImpersonateUser,
     handleActivateUser,
     handleAddUserClose,
     handleUserAddClick,
@@ -300,6 +301,28 @@ export const UserManagement: FC = () => {
               label: en.userManagement.removeUser,
               onClick: () => handleRemoveUser(selectedUser?.id),
               variant: ButtonVariant.DESTRUCTIVE,
+            }}
+          />
+        );
+      case UserMenuOptions.IMPERSONATE_USER:
+        return (
+          <ActionConfirmationPopup
+            isOpen={true}
+            onClose={handleDropdownClose}
+            title={en.userManagement.impersonateUser}
+            description={en.userManagement.impersonateUserConfirmation(selectedUser?.name ?? "")}
+            secondaryButton={{
+              label: en.userManagement.cancel,
+              onClick: handleDropdownClose,
+              variant: ButtonVariant.SECONDARY,
+            }}
+            primaryButton={{
+              label: en.userManagement.impersonate,
+              onClick: () => {
+                handleImpersonateUser(selectedUser);
+                handleDropdownClose();
+              },
+              variant: ButtonVariant.PRIMARY,
             }}
           />
         );

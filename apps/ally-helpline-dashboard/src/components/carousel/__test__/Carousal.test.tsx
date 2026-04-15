@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import Carousel from "../Carousel";
 import { CarouselVariant, CarouselSize } from "../types";
@@ -13,6 +13,15 @@ const mockSlides = [
 ];
 
 describe("Carousel Component", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.clearAllMocks();
+  });
+
   it("renders correctly with slides", () => {
     render(<Carousel slides={mockSlides} />);
     const carousel = screen.getByRole("group", { name: /carousel/i });
