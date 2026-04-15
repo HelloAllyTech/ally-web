@@ -1,5 +1,6 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useGetReflectionPromptsQuery, useUpdateReflectionPromptMutation } from "@api";
@@ -31,6 +32,7 @@ const PROMPTS: Prompt[] = [
 ];
 
 export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "flex-row" }) => {
+  const { t } = useTranslation();
   const { data: reflectionPrompts } = useGetReflectionPromptsQuery({ sessionId });
 
   const [responses, setResponses] = useState<string[]>([]);
@@ -53,7 +55,9 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
       return (
         <div className="flex flex-row items-center gap-1">
           <Cloud />
-          <span className="text-sm font-primary text-neutral-500">Autosaving</span>
+          <span className="text-sm font-primary text-neutral-500">
+            {t("reflection.autosaving")}
+          </span>
         </div>
       );
     }
@@ -62,7 +66,9 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
       return (
         <div className="flex flex-row items-center gap-1">
           <CrossRedBackground className="w-4 h-4" />
-          <span className="text-sm font-primary text-destructive-500 ml-[2px]">Failed to save</span>
+          <span className="text-sm font-primary text-destructive-500 ml-[2px]">
+            {t("reflection.saveFailed")}
+          </span>
         </div>
       );
     }
@@ -70,7 +76,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
     return (
       <div className="flex flex-row items-center gap-1">
         <RoundCheckmark color="#9CA3AF" />
-        <span className="text-sm font-primary text-neutral-500">Saved</span>
+        <span className="text-sm font-primary text-neutral-500">{t("reflection.saved")}</span>
       </div>
     );
   };
@@ -89,7 +95,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
         }).unwrap();
         setSaveFailed(false);
       } catch {
-        toast.error("Failed to auto-save the response");
+        toast.error(t("reflection.autoSaveFailed"));
         setSaveFailed(true);
       }
       setSaving(false);
@@ -136,7 +142,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
           <textarea
             value={responses[index] ?? ""}
             onChange={e => updateResponse(index, e.target.value)}
-            placeholder="Write your thoughts here..."
+            placeholder={t("reflection.writeThoughts")}
             className="absolute inset-0 box-border w-full resize-none overflow-y-auto bg-transparent px-0 py-2 pb-3 font-sans text-base leading-normal text-typography-900 outline-none custom-scrollbar"
           />
         </div>
@@ -148,7 +154,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
     <div className="flex h-full min-h-0 w-full flex-col gap-4 overflow-hidden rounded-lg border border-gray-200 bg-white p-4 font-primary">
       <div className="flex flex-shrink-0 flex-row justify-between gap-4 border-b border-gray-200 pb-2">
         <span className="text-typography-900 font-primary text-base font-medium">
-          Deeper Reflection
+          {t("postSim.tabs.deeperReflection")}
         </span>
         {renderAutosave()}
       </div>
@@ -157,7 +163,9 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
         {prompts?.map((text, index) => renderJournalCard(index, text))}
         {prompts?.length === 0 && (
           <div className="flex flex-col gap-4 h-full w-full min-w-[300px] p-10 items-center">
-            <span className="text-typography-700 font-primary text-lg">No prompts available</span>
+            <span className="text-typography-700 font-primary text-lg">
+              {t("reflection.noPrompts")}
+            </span>
           </div>
         )}
       </div>

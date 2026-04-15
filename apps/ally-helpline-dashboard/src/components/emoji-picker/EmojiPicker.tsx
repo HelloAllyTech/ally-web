@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 import { Emoji } from "@assets";
 
@@ -21,6 +22,7 @@ export const EmojiPickerTrigger = ({
   buttonClassName = "",
   isExpired = false,
 }: EmojiPickerTriggerProps) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -82,7 +84,7 @@ export const EmojiPickerTrigger = ({
         ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        aria-label="Insert emoji"
+        aria-label={t("review.details.insertEmoji")}
         className={`w-9 h-9 flex items-center justify-center hover:bg-neutral-50 text-xl transition-colors ${buttonClassName} ${isExpired ? "opacity-50 cursor-not-allowed" : ""}`}
         disabled={isExpired}
       >
