@@ -115,9 +115,6 @@ const getMissingOverviewMandatoryLabels = (values: Record<string, unknown>): str
   return missing;
 };
 
-const getBehaviorInstructionArrayLength = (value: unknown): number =>
-  Array.isArray(value) ? value.length : 0;
-
 export const CreateSimulation: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -243,8 +240,8 @@ export const CreateSimulation: FC = () => {
           if (
             behaviorInstructions.some(
               instruction =>
-                getBehaviorInstructionArrayLength(instruction?.behaviors) === 0 ||
-                String(instruction?.category ?? "").length === 0 ||
+                instruction.behaviors.length === 0 ||
+                instruction.category.length === 0 ||
                 !instruction.stateInstructions ||
                 instruction.stateInstructions.filter(si => si.instruction.trim().length > 0)
                   .length === 0,
@@ -255,9 +252,9 @@ export const CreateSimulation: FC = () => {
           if (
             behaviorInstructions.some(
               instruction =>
-                getBehaviorInstructionArrayLength(instruction?.behaviors) === 0 ||
-                String(instruction?.category ?? "").length === 0 ||
-                getBehaviorInstructionArrayLength(instruction?.instructions) === 0,
+                instruction.behaviors.length === 0 ||
+                instruction.category.length === 0 ||
+                instruction.instructions.length === 0,
             )
           )
             return false;

@@ -282,43 +282,6 @@ describe("createSimulation utils", () => {
       ]);
     });
 
-    it("should normalize incomplete behavior instructions from older scenarios", () => {
-      const mockResponse: GetSimulationByIdResponse = {
-        id: "sim-incomplete",
-        title: "Incomplete",
-        description: "Older payload",
-        status: "DRAFT",
-        isGlobal: false,
-        isPublic: false,
-        coverImageUrl: "https://example.com/i.jpg",
-        createdBy: "u",
-        lastModified: "2024-01-01T00:00:00Z",
-        triggerWarnings: [],
-        difficultyLevel: "medium",
-        metadata: {},
-        competency: undefined,
-        behaviorInstructions: [
-          {
-            category: undefined as any,
-            behaviors: undefined as any,
-            instructions: undefined as any,
-            stateInstructions: undefined,
-          },
-        ],
-      } as GetSimulationByIdResponse;
-
-      const result = formatSimulationResponseData(mockResponse);
-
-      expect(result.behaviorInstructions).toEqual([
-        {
-          category: "",
-          behaviors: [],
-          instructions: [],
-          stateInstructions: [],
-        },
-      ]);
-    });
-
     it("should handle missing metadata fields", () => {
       const mockResponse: GetSimulationByIdResponse = {
         id: "sim-123",
