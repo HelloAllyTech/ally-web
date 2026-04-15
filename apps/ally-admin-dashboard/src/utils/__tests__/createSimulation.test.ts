@@ -71,6 +71,17 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(true);
       });
 
+      it("should have challenge description field in overview section", () => {
+        const section = getOverviewSection();
+        const field = section?.fields.find(f => f.id === "description");
+
+        expect(field).toBeDefined();
+        expect(field?.label).toBe("Challenge Description");
+        expect(field?.placeholder).toBe("What is the primary learning goal?");
+        expect(field?.type).toBe("text");
+        expect(field?.isMandatory).toBe(true);
+      });
+
       it("should have coverImageUrl field correctly configured in overview section", () => {
         const section = getOverviewSection();
         const field = section?.fields.find(f => f.id === "coverImageUrl");
@@ -78,6 +89,15 @@ describe("createSimulation utils", () => {
         expect(field?.label).toBe("Cover Image");
         expect(field?.type).toBe("image_upload");
         expect(field?.isMandatory).toBe(true);
+      });
+    });
+
+    describe("basic settings section fields", () => {
+      it("should not have challenge description field in basic settings section", () => {
+        const section = getCreateSimulationSubSectionById("basic-settings");
+        const field = section?.fields.find(f => f.id === "description");
+
+        expect(field).toBeUndefined();
       });
     });
   });
