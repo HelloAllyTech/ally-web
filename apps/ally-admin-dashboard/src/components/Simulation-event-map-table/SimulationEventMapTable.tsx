@@ -18,6 +18,7 @@ import {
   MappedEventSidePanel,
   EventMapTableLoader,
   BulkAddEventsSidePanel,
+  SegmentedToggle,
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import { SESSION_EVENT_STATUS_OPTIONS, SORT_BY, SORT_ORDER, en } from "@constants";
@@ -38,6 +39,19 @@ interface SimulationEventMapTableProps {
 }
 
 const DEBOUNCE_DELAY = 500;
+const CHECKLIST_VIEW_COLUMN_IDS = new Set([
+  "name",
+  "message",
+  "score",
+  "checklistVisibilityStatus",
+  "tags",
+]);
+
+type EventMapViewMode = "full" | "checklist";
+const VIEW_MODE_OPTIONS = [
+  { label: "Full View", value: "full" },
+  { label: "Checklist View", value: "checklist" },
+] as const;
 
 export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simulationId }) => {
   const [mappedEvents, setMappedEvents] = useState<UpdateScenarioEventDataParam[]>([
@@ -49,6 +63,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const [selectedEventForEdit, setSelectedEventForEdit] =
     useState<UpdateScenarioEventDataParam | null>(null);
   const [isBulkAddPanelOpen, setIsBulkAddPanelOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<EventMapViewMode>("full");
 
   const { data: sessionEventsData, isLoading: isSessionEventsLoading } = useGetSessionEventsQuery({
     visibilityType: SESSION_EVENT_STATUS_OPTIONS.ACTIVE,
@@ -241,6 +256,14 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       },
     ];
   }, [sessionEventsOptions]);
+
+  const visibleColumns = useMemo(() => {
+    if (viewMode === "full") {
+      return tableColumns;
+    }
+
+    return tableColumns.filter(column => CHECKLIST_VIEW_COLUMN_IDS.has(column.id));
+  }, [tableColumns, viewMode]);
 
   const updateEventOrderMapping = (events: UpdateScenarioEventDataParam[]) => {
     const sortedEvents = [...events].sort((a, b) => (a.score?.value ?? 0) - (b.score?.value ?? 0));
@@ -536,6 +559,12 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
           <div className="cursor-pointer" onClick={onReloadMappedEvents}>
             <Refresh className="w-4 h-4" />
           </div>
+          <SegmentedToggle
+            label="Advanced settings view"
+            value={viewMode}
+            options={VIEW_MODE_OPTIONS}
+            onChange={setViewMode}
+          />
         </div>
         <div className="flex gap-2">
           {!isLoading && (
@@ -556,7 +585,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
           <NotionTable
             tableData={{
               data: tableData,
-              columns: tableColumns,
+              columns: visibleColumns,
             }}
             onRowChange={handleUpdateEventTable}
             onRowClick={handleOpenMappedEventSidePanel}

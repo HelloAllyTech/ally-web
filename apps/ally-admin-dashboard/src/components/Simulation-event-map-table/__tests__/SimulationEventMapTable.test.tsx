@@ -27,7 +27,11 @@ vi.mock("@components", () => ({
     tableData = { columns: [] },
   }: any) => (
     <div>
-      <div data-testid="notion-table" data-columns={tableData.columns?.length ?? 0} />
+      <div
+        data-testid="notion-table"
+        data-columns={tableData.columns?.length ?? 0}
+        data-column-labels={(tableData.columns ?? []).map((column: any) => column.label).join("|")}
+      />
       <button
         onClick={() => onSelectionChange([{ id: { value: "evt-1" } }])}
         data-testid="select-rows"
@@ -46,6 +50,21 @@ vi.mock("@components", () => ({
     </div>
   ),
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  SegmentedToggle: ({ options, value, onChange, label }: any) => (
+    <div role="tablist" aria-label={label}>
+      {options.map((option: any) => (
+        <button
+          key={option.value}
+          type="button"
+          role="tab"
+          aria-selected={value === option.value}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  ),
   MappedEventSidePanel: ({ isOpen }: any) =>
     isOpen ? <div data-testid="side-panel-open" /> : null,
   BulkAddEventsSidePanel: ({ isOpen }: any) =>
@@ -57,6 +76,10 @@ vi.mock("@components", () => ({
     emoji_select: "emoji_select",
     editableText: "editableText",
     number: "number",
+    timeInput: "timeInput",
+    score: "score",
+    textAreaWithDropdown: "textAreaWithDropdown",
+    tags: "tags",
   },
 }));
 
@@ -161,9 +184,17 @@ vi.mock("@utils", () => ({
     EMOJI: "emoji",
     MESSAGE: "message",
     SCORE: "score",
+    START_TIME: "startTime",
+    END_TIME: "endTime",
+    MAX_OCCURRENCES: "maxOccurrences",
+    MIN_GAP_TIME: "minGapTime",
+    OCCURRENCE_INTERVAL: "occurrenceInterval",
+    MIN_SCORE: "minScore",
+    MAX_SCORE: "maxScore",
     BRANCHING_STATUS: "branchingStatus",
     BRANCH_INSTRUCTION: "branchInstruction",
     CHECKLIST_VISIBILITY_STATUS: "checklistVisibilityStatus",
+    TAGS: "tags",
   },
   isObject: vi.fn((v: any) => typeof v === "object" && v !== null),
   isNonEmptyString: vi.fn((v: any) => typeof v === "string" && v.trim().length > 0),
@@ -216,6 +247,34 @@ describe("SimulationEventMapTable", () => {
     expect(screen.getByTestId("notion-table")).toBeInTheDocument();
     const addBtn = screen.getByText("Add Event").closest("button") as HTMLButtonElement;
     expect(addBtn).toBeDisabled();
+  });
+
+  it("defaults to full view and switches to checklist view columns", () => {
+    vi.mocked(api.useGetSessionEventsQuery).mockReturnValueOnce({
+      data: { data: [{ id: "e1", name: "Event 1" }] },
+      isLoading: false,
+    } as any);
+    vi.mocked(api.useGetMappedScenarioEventsQuery).mockReturnValueOnce({
+      data: { data: [] },
+      isLoading: false,
+    } as any);
+
+    render(<SimulationEventMapTable simulationId={"123"} />);
+
+    const table = screen.getByTestId("notion-table");
+    expect(table).toHaveAttribute("data-columns", "16");
+    expect(table).toHaveAttribute(
+      "data-column-labels",
+      expect.stringContaining("Real time feedback emoji"),
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: "Checklist View" }));
+
+    expect(table).toHaveAttribute("data-columns", "5");
+    expect(table).toHaveAttribute(
+      "data-column-labels",
+      "Event name|Real time feedback message|Session quality score|Checklist visibility|Tags",
+    );
   });
 
   it("enables add and opens side panel when API returns existing mapped events", async () => {
