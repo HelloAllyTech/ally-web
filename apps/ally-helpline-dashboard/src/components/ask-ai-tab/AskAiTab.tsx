@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useGetChatHistoryQuery } from "@api";
 import { AskAiIcon, Refresh, SendArrow, UpArrow } from "@assets";
 import { Button, CharacterCount } from "@components";
-import { chatCards } from "@constants";
 import { useSendMessage } from "@hooks";
 import { initSession } from "@reducer";
 import { RootState } from "@store";
@@ -82,20 +81,27 @@ const InitialScreen = ({
   handleSend: (card: string) => void;
   disabled: boolean;
 }) => {
+  const { t } = useTranslation();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const promptCards = [
+    t("askAi.cards.responseEffectiveness"),
+    t("askAi.cards.pacingPresence"),
+    t("askAi.cards.missedClientCues"),
+    t("askAi.cards.therapeuticTechniques"),
+  ];
 
   return (
     <div className="flex flex-col justify-center items-center h-full">
       <div className="flex flex-col items-start gap-5">
         <div className="font-base font-secondary text-4xl">
-          <span className="text-typography-600">What would you like</span>
-          <span className="text-typography-800"> feedback on?</span>
+          <span className="text-typography-600">{t("askAi.initial.titlePrefix")}</span>
+          <span className="text-typography-800">{t("askAi.initial.titleSuffix")}</span>
         </div>
         <div className="text-sm font-primary text-typography-700">
-          Select a prompt or ask your own.
+          {t("askAi.initial.subtitle")}
         </div>
         <div className="flex gap-5">
-          {chatCards.map(card => (
+          {promptCards.map(card => (
             <div
               key={card}
               className="text-sm font-primary mb-2 border rounded-md p-5 shadow-sm w-[163px] h-[162px] flex flex-col relative hover:scale-105 hover:shadow-lg transition-all duration-300"
@@ -130,7 +136,7 @@ const CitationsTable = ({
   return (
     <div className="mt-3 border border-gray-200 rounded-md overflow-hidden border-primary-100">
       <div className="text-base font-primary px-3 py-2 bg-[#E2F2FF80] w-full">
-        Transcript References
+        {t("askAi.transcriptReferences")}
       </div>
       <table className="w-full text-xs font-primary">
         <tbody className="text-base">
@@ -165,6 +171,7 @@ const ChatBubble = ({
   councellorName: string;
   agentName: string;
 }) => {
+  const { t } = useTranslation();
   const isUser = message.role === "user";
   const citations = message.citations ?? [];
 
@@ -197,7 +204,7 @@ const ChatBubble = ({
             {citations.length > 0 && (
               <CitationsTable
                 citations={citations}
-                councellorName={councellorName || "You"}
+                councellorName={councellorName || t("transcription.youLabel")}
                 agentName={agentName}
               />
             )}
@@ -215,6 +222,7 @@ const AskAiInput = ({
   onSend: (text: string) => void;
   disabled?: boolean;
 }) => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const wasDisabledRef = useRef(disabled);
   const [messageLength, setMessageLength] = useState(0);
@@ -259,7 +267,7 @@ const AskAiInput = ({
         onChange={handleChange}
         className="flex-1 w-full p-2 px-3 outline-none resize-none disabled:opacity-60 font-primary text-sm custom-scrollbar max-h-[120px] overflow-y-auto"
         onKeyDown={handleKeyDown}
-        placeholder="Ask a question about the session.... (0/2000)"
+        placeholder={t("askAi.inputPlaceholder", { max: MAX_MESSAGE_LENGTH })}
         disabled={disabled}
         maxLength={MAX_MESSAGE_LENGTH}
         rows={1}
@@ -286,6 +294,7 @@ export const AskAiTab = ({
   councellorName?: string;
   agentName?: string;
 }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sessionExists = useSelector((state: RootState) => state.chatHistory.sessions[sessionId]);
@@ -313,7 +322,7 @@ export const AskAiTab = ({
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-lg bg-gradient-to-br from-primary-500 to-primary-100 p-1">
       <div className="relative flex min-h-0 w-full flex-1 flex-col rounded-lg">
         <div className="w-full shrink-0 p-4 font-primary text-lg font-semibold text-white">
-          Ask AI
+          {t("postSim.tabs.askAi")}
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-t-lg rounded-b-md bg-white p-3 pb-20 custom-scrollbar">
           {isHistoryLoading ? (
@@ -344,7 +353,7 @@ export const AskAiTab = ({
                 className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-red-200 bg-red-50 text-red-600 text-sm font-primary hover:bg-red-100 transition-colors"
               >
                 <Refresh className="w-4 h-4" />
-                Something went wrong. Tap to retry.
+                {t("common.somethingWentWrong")} {t("common.retry")}
               </button>
             </div>
           )}

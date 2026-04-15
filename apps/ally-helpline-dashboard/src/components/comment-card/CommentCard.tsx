@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -79,6 +80,7 @@ const CommentCard = ({
   changedReply,
   isScribeReview,
 }: CommentCardProps) => {
+  const { t } = useTranslation();
   const user = useSelector((state: RootState) => state.user.user);
   const [createComment, { data: createCommentData }] = useCreateCommentMutation();
   const { reviewId } = useParams<{ reviewId: string }>();
@@ -269,7 +271,7 @@ const CommentCard = ({
       setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
-      toast.error(error?.data?.message || "Reaction update failed");
+      toast.error(error?.data?.message || t("review.details.reactionUpdateFailed"));
     }
   };
 
@@ -304,14 +306,30 @@ const CommentCard = ({
       }
       toast.success(
         hidden
-          ? `${isReply ? "Reply" : "Comment"} hidden successfully`
-          : `${isReply ? "Reply" : "Comment"} unhidden successfully`,
+          ? t(
+              isReply
+                ? "review.details.replyHiddenSuccessfully"
+                : "review.details.commentHiddenSuccessfully",
+            )
+          : t(
+              isReply
+                ? "review.details.replyUnhiddenSuccessfully"
+                : "review.details.commentUnhiddenSuccessfully",
+            ),
       );
       handleMenuClose();
     } catch (error) {
       toast.error(
         error?.data?.message ||
-          `Failed to ${hidden ? "hide" : "unhide"} ${isReply ? "reply" : "comment"}`,
+          t(
+            hidden
+              ? isReply
+                ? "review.details.replyHideFailed"
+                : "review.details.commentHideFailed"
+              : isReply
+                ? "review.details.replyUnhideFailed"
+                : "review.details.commentUnhideFailed",
+          ),
       );
     }
   };
@@ -337,14 +355,23 @@ const CommentCard = ({
       setIsDeleting(true);
       await deleteComment({ commentId: comment.id, isScribe: isScribeReview }).unwrap();
       onDelete?.(comment.id);
-      toast.success(`${isReply ? "Reply" : "Comment"} deleted successfully`);
+      toast.success(
+        t(
+          isReply
+            ? "review.details.replyDeletedSuccessfully"
+            : "review.details.commentDeletedSuccessfully",
+        ),
+      );
       if (isReply) {
         onDeleteReply?.();
       }
       setShowDeleteConfirmation(false);
       setDeleteAnchorEl(null);
     } catch (error) {
-      toast.error(error?.data?.message || `Failed to delete ${isReply ? "reply" : "comment"}`);
+      toast.error(
+        error?.data?.message ||
+          t(isReply ? "review.details.replyDeleteFailed" : "review.details.commentDeleteFailed"),
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -357,12 +384,21 @@ const CommentCard = ({
         content: commentContent?.trim(),
         isScribe: isScribeReview,
       }).unwrap();
-      toast.success(`${isReply ? "Reply" : "Comment"} updated successfully`);
+      toast.success(
+        t(
+          isReply
+            ? "review.details.replyUpdatedSuccessfully"
+            : "review.details.commentUpdatedSuccessfully",
+        ),
+      );
       onUpdateComment?.(commentContent, comment.id);
       handleMenuClose();
       setShowCommentEditView(false);
     } catch (error) {
-      toast.error(error?.data?.message || `Failed to update ${isReply ? "reply" : "comment"}`);
+      toast.error(
+        error?.data?.message ||
+          t(isReply ? "review.details.replyUpdateFailed" : "review.details.commentUpdateFailed"),
+      );
     }
   };
   const handleUpdateReply = (content: string, id: string) => {
@@ -385,10 +421,10 @@ const CommentCard = ({
         body: body,
         isScribe: isScribeReview,
       });
-      toast.success(`Reply created successfully`);
+      toast.success(t("review.details.replyCreatedSuccessfully"));
       onAddComment?.();
     } catch (error) {
-      toast.error(error?.data?.message || `Failed to create reply`);
+      toast.error(error?.data?.message || t("review.details.replyCreateFailed"));
     }
   };
   const handleToggleHide = (hidden: boolean, id: string) => {
@@ -417,16 +453,16 @@ const CommentCard = ({
               autoFocus={true}
               value={replyText}
               onChange={setReplyText}
-              placeholder="Add reply"
+              placeholder={t("review.details.replyPlaceholder")}
               maxLength={COMMENT_MAX_LENGTH}
               className="w-full border rounded-sm text-sm !px-2 !py-2 mt-2 min-h-20"
             />
             <div className="flex gap-2 flex-row mt-1 justify-end">
               <Button variant="secondary" className="py-0 h-8" onClick={handleCancelReply}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button variant="primary" className="py-0 h-8" onClick={handleReplySubmit}>
-                Reply
+                {t("review.details.replyAction")}
               </Button>
             </div>
           </div>
@@ -461,16 +497,16 @@ const CommentCard = ({
             value={commentContent}
             autoFocus={true}
             onChange={(content: string) => setCommentContent(content)}
-            placeholder="Edit comment"
+            placeholder={t("review.details.editCommentPlaceholder")}
             maxLength={COMMENT_MAX_LENGTH}
           />
         </div>
         <div className="flex gap-2 flex-row my-2 justify-end">
           <Button variant="secondary" className="py-0 h-8  z-50" onClick={handleCancelCommentEdit}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button variant="primary" className="py-0 h-8 z-50" onClick={handleEditComment}>
-            Done
+            {t("review.details.done")}
           </Button>
         </div>
       </div>
@@ -548,7 +584,7 @@ const CommentCard = ({
                 className="text-typography-800 text-xs cursor-pointer font-medium flex items-center gap-2"
                 onClick={handleReplyClick}
               >
-                Reply
+                {t("review.details.replyAction")}
               </div>
             </>
           )}
@@ -557,7 +593,8 @@ const CommentCard = ({
               className={`text-typography-800 text-xs cursor-pointer underline decoration-neutral-300 underline-offset-4 decoration-1`}
               onClick={onReplyClick}
             >
-              {replyCount} repl{replyCount > 1 ? "ies" : "y"}
+              {replyCount}{" "}
+              {replyCount > 1 ? t("review.feedCard.replies") : t("review.feedCard.reply")}
             </div>
           )}
         </div>
@@ -569,7 +606,7 @@ const CommentCard = ({
     const items: MenuItem[] = [];
     if (isFeedOwner) {
       items.push({
-        label: comment?.hidden ? "Unhide" : "Hide",
+        label: comment?.hidden ? t("review.details.unhide") : t("review.details.hide"),
         className: "text-typography-800",
         icon: comment?.hidden ? <Eye width={16} height={16} /> : <Hide width={16} height={16} />,
         onClick: () => handleToggleVisibility(!comment?.hidden),
@@ -580,7 +617,7 @@ const CommentCard = ({
 
     if (isMyComment && !isUpdateExpired) {
       items.push({
-        label: "Edit",
+        label: t("review.details.edit"),
         className: "text-typography-800",
         icon: <Edit width={16} height={16} />,
         onClick: () => {
@@ -592,7 +629,7 @@ const CommentCard = ({
 
     if (isMyComment) {
       items.push({
-        label: "Delete",
+        label: t("review.details.delete"),
         className: "text-red-500",
         icon: <Delete width={16} height={16} />,
         onClick: handleShowDeleteConfirmation,
@@ -636,7 +673,7 @@ const CommentCard = ({
           <div className="flex flex-row justify-between items-center gap-2 w-full">
             <div className="flex flex-row gap-1.5 items-center w-full">
               <div className="text-[14px] font-medium text-typography-900">
-                {comment?.createdBy?.name || "Unknown"}
+                {comment?.createdBy?.name || t("review.details.unknownUser")}
               </div>
               <div className="text-[12px] text-gray-500">
                 <Timer startTime={comment.createdAt} />
@@ -647,7 +684,7 @@ const CommentCard = ({
                 <button
                   onClick={handleMenuOpen}
                   className="p-1 hover:bg-gray-100 rounded-full transition-colors tr"
-                  aria-label="Comment options"
+                  aria-label={t("review.details.commentOptions")}
                 >
                   <MoreVertIcon className="w-5 h-5 text-gray-600" />
                 </button>
@@ -695,7 +732,9 @@ const CommentCard = ({
                       className="text-xs font-primary flex items-center gap-2 text-primary-600"
                       onClick={hideReplies}
                     >
-                      Hide Repl{comment.replyCount > 1 ? "ies" : "y"}
+                      {comment.replyCount > 1
+                        ? t("review.details.hideReplies")
+                        : t("review.details.hideReply")}
                       <ArrowUp />
                     </div>
                   )}
@@ -712,7 +751,11 @@ const CommentCard = ({
         anchorElement={deleteAnchorEl}
         title={
           <div className="font-medium font-secondary text-2xl text-typography-900 text-center">
-            Delete <span className="italic font-bold">{isReply ? "Reply" : "Comment"}?</span>
+            {t("review.details.delete")}{" "}
+            <span className="italic font-bold">
+              {isReply ? t("review.details.replyLabel") : t("review.details.commentLabel")}
+            </span>
+            ?
           </div>
         }
         message={
@@ -720,8 +763,8 @@ const CommentCard = ({
             ? COMMENT_DELETE_CONFIRMATION.REPLY_DELETE_MESSAGE
             : COMMENT_DELETE_CONFIRMATION.COMMENT_DELETE_MESSAGE
         }
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmText={t("review.details.delete")}
+        cancelText={t("common.cancel")}
         confirmVariant="danger"
         isLoading={isDeleting}
       />

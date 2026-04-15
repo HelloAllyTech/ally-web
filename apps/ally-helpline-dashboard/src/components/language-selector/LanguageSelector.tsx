@@ -52,7 +52,7 @@ const LanguageSelector = ({ label }: { label?: string }) => {
 
   return (
     <div
-      aria-label="Language selector"
+      aria-label={i18n.t("nav.language.selectorAria", "Language selector")}
       className="w-full max-w-[220px] min-w-[160px] flex flex-col gap-1"
     >
       {label && <span className="text-xs text-typography-600">{label}</span>}

@@ -320,7 +320,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
       show:
         hasAdequatePermission(Permissions.EXPORT_SUMMARY) &&
         callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS,
-      text: t("exportSummary"),
+      text: t("common.exportSummary"),
     },
     {
       alt: "Archive",
