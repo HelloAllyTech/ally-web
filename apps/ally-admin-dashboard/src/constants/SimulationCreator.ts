@@ -203,6 +203,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 100,
       },
       {
+        id: "description",
+        label: "Challenge Description",
+        placeholder: "What is the primary learning goal?",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+        regenerateType: REGENERATE_TYPE.DESCRIPTION,
+      },
+      {
         id: "competency",
         label: "Pick Competency",
         type: FORM_FIELD_TYPES.COMPETENCY,
@@ -273,17 +284,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
     label: "Basic Settings",
     fields: [
-      {
-        id: "description",
-        label: "Challenge Description",
-        placeholder: "What is the primary learning goal?",
-        type: FORM_FIELD_TYPES.TEXT,
-        isMandatory: true,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.DESCRIPTION,
-      },
       {
         id: "prompt",
         label: "Role instruction",
