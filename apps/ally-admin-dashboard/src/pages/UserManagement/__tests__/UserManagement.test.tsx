@@ -177,6 +177,7 @@ describe("UserManagement", () => {
     handleEditUser: vi.fn(),
     handleSuspendUser: vi.fn(),
     handleChangeRole: vi.fn(),
+    handleImpersonateUser: vi.fn(),
     handleActivateUser: vi.fn(),
     handleAddUserClose: vi.fn(),
     handleUserAddClick: vi.fn(),
@@ -434,6 +435,35 @@ describe("UserManagement", () => {
 
       expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
       expect(screen.getAllByText("Remove User").length).toBeGreaterThan(0);
+    });
+
+    it("should show confirmation popup when impersonating user", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Impersonate user",
+        selectedUser: mockUsers[0],
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
+      expect(screen.getAllByText("Impersonate User").length).toBeGreaterThan(0);
+    });
+
+    it("should fire handleImpersonateUser when confirmation primary button is clicked for impersonate", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Impersonate user",
+        selectedUser: mockUsers[0],
+      } as any);
+
+      renderUserManagement();
+
+      const impersonateButton = screen.getByText("Impersonate");
+      fireEvent.click(impersonateButton);
+
+      expect(mockUserManagementHook.handleImpersonateUser).toHaveBeenCalledWith(mockUsers[0]);
+      expect(mockUserManagementHook.handleDropdownClose).toHaveBeenCalled();
     });
   });
 

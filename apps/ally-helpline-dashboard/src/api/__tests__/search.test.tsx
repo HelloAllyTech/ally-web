@@ -3,7 +3,7 @@ import React from "react";
 import { configureStore } from "@reduxjs/toolkit";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { baseAPI } from "../baseAPI";
 import { useGetSearchResultsMutation, useGetCategoriesQuery } from "../search";
@@ -59,6 +59,20 @@ describe("search API", () => {
   it("should have correct hook configurations", () => {
     expect(typeof useGetSearchResultsMutation).toBe("function");
     expect(typeof useGetCategoriesQuery).toBe("function");
+  });
+
+  beforeEach(() => {
+    // Mock global fetch to prevent actual network calls during tests
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      } as any),
+    );
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   it("should render search results mutation hook without errors", () => {

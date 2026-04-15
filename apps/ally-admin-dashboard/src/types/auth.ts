@@ -22,6 +22,11 @@ export interface VerifyOTPResponse {
   refreshToken: string;
 }
 
+export interface ImpersonateResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface RefreshResponse {
   accessToken: string;
   refreshToken: string;

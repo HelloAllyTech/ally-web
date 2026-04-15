@@ -13,6 +13,7 @@ vi.mock("@pages", () => ({
   Scenario: () => <div data-testid="scenario-page">Scenario Page</div>,
   CaseTrackDetails: () => <div data-testid="case-track-details-page">Case Track Details Page</div>,
   SuspendedUser: () => <div data-testid="suspended-user-page">Suspended User Page</div>,
+  ImpersonateHandler: () => <div data-testid="impersonate-page">Impersonate Page</div>,
 }));
 
 // Mock useAnalytics to avoid context error in PageviewTracker
@@ -54,6 +55,7 @@ vi.mock("@constants", () => ({
     PATHWAY: "/pathway/:pathwayId",
     CASE: "/case/:caseId",
     SUSPENDED_USER: "/suspended-user",
+    IMPERSONATE: "/impersonate",
   },
 }));
 

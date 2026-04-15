@@ -36,12 +36,21 @@ describe("UserOptionDropdown", () => {
     creditLimit: 100,
     consumedCredits: 50,
     secondsAllowedPerCredit: 60,
+    profileImageUrl: "http://example.com/profile.png",
   };
 
   const mockActiveUserWithoutLearnerRole: UserListUser = {
     ...mockActiveUserWithLearnerRole,
     roles: [UserRole.ADMIN],
     role: "ADMIN",
+    creditLimit: null,
+    consumedCredits: null,
+  };
+
+  const mockActiveMultiTenantAdminUser: UserListUser = {
+    ...mockActiveUserWithLearnerRole,
+    roles: [UserRole.MULTI_TENANT_ADMIN],
+    role: "MULTI_TENANT_ADMIN",
     creditLimit: null,
     consumedCredits: null,
   };
@@ -141,6 +150,7 @@ describe("UserOptionDropdown", () => {
         expect(screen.getByText(UserMenuOptions.CHANGE_ROLE)).toBeInTheDocument();
         expect(screen.getByText(UserMenuOptions.MANAGE_CREDITS)).toBeInTheDocument();
         expect(screen.getByText(UserMenuOptions.SUSPEND_USER)).toBeInTheDocument();
+        expect(screen.getByText(UserMenuOptions.IMPERSONATE_USER)).toBeInTheDocument();
       });
     });
 
@@ -193,6 +203,23 @@ describe("UserOptionDropdown", () => {
         expect(screen.getByText(UserMenuOptions.EDIT_DETAILS)).toBeInTheDocument();
         expect(screen.getByText(UserMenuOptions.CHANGE_ROLE)).toBeInTheDocument();
         expect(screen.getByText(UserMenuOptions.SUSPEND_USER)).toBeInTheDocument();
+        expect(screen.getByText(UserMenuOptions.IMPERSONATE_USER)).toBeInTheDocument();
+      });
+    });
+
+    it("does not show IMPERSONATE_USER for MULTI_TENANT_ADMIN user", async () => {
+      render(
+        <UserOptionDropdown
+          isOpen={true}
+          onClose={mockOnClose}
+          onOptionSelect={mockOnOptionSelect}
+          user={mockActiveMultiTenantAdminUser}
+          anchorElement={mockAnchorElement}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByText(UserMenuOptions.IMPERSONATE_USER)).not.toBeInTheDocument();
       });
     });
   });
@@ -227,6 +254,22 @@ describe("UserOptionDropdown", () => {
 
       await waitFor(() => {
         expect(screen.queryByText(UserMenuOptions.SUSPEND_USER)).not.toBeInTheDocument();
+      });
+    });
+
+    it("does not show IMPERSONATE_USER for suspended user", async () => {
+      render(
+        <UserOptionDropdown
+          isOpen={true}
+          onClose={mockOnClose}
+          onOptionSelect={mockOnOptionSelect}
+          user={mockSuspendedUser}
+          anchorElement={mockAnchorElement}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByText(UserMenuOptions.IMPERSONATE_USER)).not.toBeInTheDocument();
       });
     });
 
@@ -363,6 +406,26 @@ describe("UserOptionDropdown", () => {
 
       expect(mockOnOptionSelect).toHaveBeenCalledWith(UserMenuOptions.SUSPEND_USER);
     });
+
+    it("calls onOptionSelect with correct option when IMPERSONATE_USER is clicked", async () => {
+      render(
+        <UserOptionDropdown
+          isOpen={true}
+          onClose={mockOnClose}
+          onOptionSelect={mockOnOptionSelect}
+          user={mockActiveUserWithLearnerRole}
+          anchorElement={mockAnchorElement}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(UserMenuOptions.IMPERSONATE_USER)).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText(UserMenuOptions.IMPERSONATE_USER));
+
+      expect(mockOnOptionSelect).toHaveBeenCalledWith(UserMenuOptions.IMPERSONATE_USER);
+    });
   });
 
   describe("Dropdown positioning", () => {
@@ -473,7 +536,9 @@ describe("UserOptionDropdown", () => {
       );
 
       await waitFor(() => {
-        const options = screen.getAllByText(/Edit details|Change role|Manage credits|Suspend user/);
+        const options = screen.getAllByText(
+          /Edit details|Change role|Manage credits|Suspend user|Impersonate user/,
+        );
 
         // All except last should have border-b
         const optionsWithBorder = options.slice(0, -1);
