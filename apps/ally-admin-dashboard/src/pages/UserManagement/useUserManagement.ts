@@ -29,6 +29,7 @@ import { AddUserFormData, FieldProps, Tenant, UserListUser, UserRoles } from "@t
 import { getChipValue } from "@utils";
 
 export const USERS_PAGE_SIZE = 20;
+const IMPERSONATION_APP_URL = import.meta.env.VITE_IMPERSONATION_APP_URL;
 
 export function useUserManagement(tenants: Tenant[]) {
   const [search, setSearch] = useState<string>("");
@@ -342,7 +343,7 @@ export function useUserManagement(tenants: Tenant[]) {
         impersonatedByAccessToken: localStorage.getItem("adminAccessToken"),
       });
 
-      window.open(`http://localhost:8080/impersonate?${params.toString()}`, "_blank");
+      window.open(`${IMPERSONATION_APP_URL}/impersonate?${params.toString()}`, "_blank");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to impersonate user");
     }
