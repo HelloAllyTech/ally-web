@@ -25,7 +25,7 @@
     "summary": "Summary",
     "exportSummary": "Download Summary",
     "startSimulation": "Start role play",
-    "simulation": "role play",
+    "simulation": "Role play",
     "triggerWarnings": "Trigger warnings:",
     "sessionId": "Session ID",
     "duration": "Duration",
@@ -217,7 +217,7 @@
     },
     "scenario": {
       "pageTitlePrefix": "Start",
-      "pageTitleEmphasis": "role play",
+      "pageTitleEmphasis": "Role play",
       "backAria": "Close scenario details",
       "mediaUnavailable": "Media not available",
       "share": "Share",
@@ -292,7 +292,7 @@
         "notFound": "Case not found"
       },
       "modal": {
-        "headerTitle": "role play",
+        "headerTitle": "Role play",
         "headerSubtitle": "Details"
       }
     },
@@ -375,7 +375,7 @@
     "noPrompts": "No prompts available"
   },
   "postSim": {
-    "titlePrefix": "role play",
+    "titlePrefix": "Role play",
     "skills": {
       "empty": "No skills data available for this session",
       "failed": "Failed to load skills data",
