@@ -337,7 +337,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Knowledge Sources",
         type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
         fullWidth: true,
-        visibleWhen: () => FEATURE_FLAGS_MAP.KNOWLEDGE_SOURCE_FLAG,
       },
       {
         id: "languageVoices",
