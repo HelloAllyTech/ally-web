@@ -11,5 +11,4 @@ export * from "./utils";
 export * from "./types";
 export * from "./constants";
 export * from "./waveformConstants";
-export { TurnIndicator } from "./TurnIndicator";
-export type { AgentTurnStatus } from "./TurnIndicator";
+export { TurnTakingIndicator, TurnState } from "./TurnIndicator";
