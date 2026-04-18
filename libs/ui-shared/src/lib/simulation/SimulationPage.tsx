@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { BottomSection } from "./SimulationBottomSection";
 import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
-import { TurnIndicator } from "./TurnIndicator";
 import { SimulationPageProps, TriggerWarning, ChecklistMode } from "./types";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
 const MICROPHONE_STATE = {
@@ -206,14 +205,6 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           >
             {title}
           </div>
-          {/* Turn indicator — only show when agent has joined */}
-          {agentTurnStatus && roomStatus === RoomStatus.AGENT_JOINED && (
-            <TurnIndicator
-              status={agentTurnStatus}
-              agentName={roomData?.remoteParticipant?.name || "AI Client"}
-            />
-          )}
-
           {triggerWarnings?.length > 0 && (
             <div
               data-testid="simulation-page-trigger-warnings"
@@ -252,6 +243,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           isMuted={isMuted}
           isFocusMode={isFocusMode}
           checklistMode={checklistMode}
+          agentTurnStatus={agentTurnStatus} // ← add this
           checklistItems={checklistItems}
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}

@@ -152,12 +152,8 @@ export const useLiveKitRoom = (
 
         setRoomStatus(RoomStatus.CONNECTED);
 
-        await room.localParticipant.setMicrophoneEnabled(true);
-        logger.info("Microphone enabled");
-
-        // Reset last event timestamp on a fresh connection
-        lastEventTimestampRef.current = null;
-
+        // Register listeners BEFORE enabling mic so we don't miss ParticipantConnected
+        // if the agent joins while the browser is showing the mic permission dialog.
         room.on(RoomEvent.DataReceived, onDataReceived);
         room.on(RoomEvent.Disconnected, onRoomDisconnect);
         room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
@@ -173,6 +169,18 @@ export const useLiveKitRoom = (
             }
           }
         });
+
+        // Handle agent already present in the room (e.g. fast re-join or cache hit)
+        if (room.remoteParticipants.size > 0) {
+          logger.info("Agent already in room at connect time, marking as joined");
+          onRemoteParticipantConnected();
+        }
+
+        await room.localParticipant.setMicrophoneEnabled(true);
+        logger.info("Microphone enabled");
+
+        // Reset last event timestamp on a fresh connection
+        lastEventTimestampRef.current = null;
       }
     } catch (error) {
       logger.error(`Failed to connect to LiveKit room: ${error}`);
