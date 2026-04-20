@@ -9,6 +9,7 @@ import {
 } from "@livekit/components-react";
 import { motion } from "framer-motion";
 
+import { FEATURE_FLAGS_MAP } from "../../featureFlag";
 import { SessionChecklist } from "./SessionChecklist";
 import { SimulationEvents } from "./SimulationEvents";
 import { TurnState } from "./TurnIndicator";
@@ -122,7 +123,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
           }}
           isSpeaking={remoteParticipant?.isSpeaking}
-          turnState={remoteTurnState}
+          turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
         />
         <UserCallCard
           userData={{
@@ -131,7 +132,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           }}
           isSpeaking={localParticipant.isSpeaking}
           isMuted={isMuted}
-          turnState={localTurnState}
+          turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
         />
         {!isFocusMode && checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
           <SessionChecklist
