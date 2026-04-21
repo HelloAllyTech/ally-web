@@ -20,35 +20,17 @@ import { BrowserRouter } from "react-router-dom";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
-const {
-  mockUseGetScenariosQuery,
-  mockUseGetScenarioPathwaysQuery,
-  mockUseGetScenarioCasesQuery,
-  mockUpdateUserPreferences,
-  mockUseScenarioLanguages,
-} = vi.hoisted(() => ({
-  mockUseGetScenariosQuery: vi.fn(),
-  mockUseGetScenarioPathwaysQuery: vi.fn(),
-  mockUseGetScenarioCasesQuery: vi.fn(),
-  mockUpdateUserPreferences: vi.fn(),
-  mockUseScenarioLanguages: vi.fn(),
-}));
+const { mockUseGetScenariosQuery, mockUseGetScenarioPathwaysQuery, mockUseGetScenarioCasesQuery } =
+  vi.hoisted(() => ({
+    mockUseGetScenariosQuery: vi.fn(),
+    mockUseGetScenarioPathwaysQuery: vi.fn(),
+    mockUseGetScenarioCasesQuery: vi.fn(),
+  }));
 
 vi.mock("@api", () => ({
   useGetScenariosQuery: (args: any) => mockUseGetScenariosQuery(args),
   useGetScenarioPathwaysQuery: (args: any) => mockUseGetScenarioPathwaysQuery(args),
   useGetScenarioCasesQuery: (args: any) => mockUseGetScenarioCasesQuery(args),
-  useUpdateUserPreferencesMutation: () => [mockUpdateUserPreferences, { isLoading: false }],
-}));
-
-// Mock useScenarioLanguages hook - path relative to the Learn component
-vi.mock("@hooks/useScenarioLanguages", () => ({
-  useScenarioLanguages: () => mockUseScenarioLanguages(),
-}));
-
-// Also mock with relative path as fallback
-vi.mock("../../hooks/useScenarioLanguages", () => ({
-  useScenarioLanguages: () => mockUseScenarioLanguages(),
 }));
 
 import { Learn } from "../Learn";
@@ -105,7 +87,6 @@ vi.mock("@hooks", () => ({
   useSimulationCredits: () => mockUseSimulationCredits(),
   useUser: () => mockUseUser(),
   useDebounce: (val: any) => val,
-  useScenarioLanguages: () => mockUseScenarioLanguages(),
   useAchievementBadgeModal: () => mockUseAchievementBadgeModal(),
 }));
 
@@ -289,14 +270,6 @@ describe("Learn Component", () => {
       permissions: ["view:scenario-paths"],
       user: { id: "1", name: "Test User" },
       isAuthenticated: true,
-    });
-    mockUseScenarioLanguages.mockReturnValue({
-      languages: [
-        { language_id: 1, value: "en-US", label: "English (US)" },
-        { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
-      ],
-      defaultLanguage: { language_id: 1, value: "en-US", label: "English (US)" },
-      isLoading: false,
     });
     mockUseAchievementBadgeModal.mockReturnValue({
       currentBadge: null,
@@ -704,14 +677,7 @@ describe("Learn Component", () => {
       const scenarioCard = screen.getByTestId("scenario-card");
       fireEvent.click(scenarioCard);
 
-      expect(mockNavigate).toHaveBeenCalledWith(
-        "/scenario/1",
-        expect.objectContaining({
-          state: expect.objectContaining({
-            languages: expect.any(Array),
-          }),
-        }),
-      );
+      expect(mockNavigate).toHaveBeenCalledWith("/scenario/1");
     });
   });
 
@@ -925,56 +891,33 @@ describe("Learn Component", () => {
    * Verifies component is properly exported and typed
    */
   describe("Language Selection", () => {
-    const mockLanguages = [
-      { language_id: 1, value: "en-US", label: "English (US)" },
-      { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
-    ];
-
-    beforeEach(() => {
-      // Reset mocks and localStorage before each test
-      vi.clearAllMocks();
-      localStorage.clear();
-      mockUseScenarioLanguages.mockReturnValue({
-        languages: mockLanguages,
-        defaultLanguage: mockLanguages[0],
-        isLoading: false,
-      });
-    });
-
     it("should initialize with language from localStorage", () => {
-      const savedLanguage = { language_id: 2, value: "hi-IN", label: "Hindi (India)" };
-      localStorage.setItem("selectedLanguage", JSON.stringify(savedLanguage));
-
       render(
         <TestWrapper>
           <Learn />
         </TestWrapper>,
       );
-
-      // Verify the component renders without errors when localStorage has a saved language
+      // Verify the component renders without errors
       expect(screen.getByTestId("browser-router")).toBeInTheDocument();
     });
 
-    it("should use default language when localStorage is empty", () => {
+    it("should use default rendering when localStorage is empty", () => {
       render(
         <TestWrapper>
           <Learn />
         </TestWrapper>,
       );
-
-      // Verify the component renders without errors when localStorage is empty
       expect(screen.getByTestId("browser-router")).toBeInTheDocument();
     });
 
-    it("should not render language selection when language capability flag is disabled", () => {
+    it("should render without language selection UI", () => {
       render(
         <TestWrapper>
           <Learn />
         </TestWrapper>,
       );
-
-      // Verify the component renders without errors when language capability flag is disabled
-      expect(screen.getByTestId("browser-router")).toBeInTheDocument();
+      // Language dropdown no longer exists
+      expect(screen.queryByTestId("language-dropdown")).not.toBeInTheDocument();
     });
   });
 
@@ -1001,21 +944,6 @@ describe("Learn Component", () => {
       expect.objectContaining({
         languageCode: expect.any(String), // i18n.language
       }),
-    );
-  });
-
-  it("should revert to previous language on update failure", async () => {
-    const error = new Error("Update failed");
-    mockUpdateUserPreferences.mockRejectedValue(error);
-
-    // Mock console.error to avoid test noise
-    const originalError = console.error;
-    console.error = vi.fn();
-
-    render(
-      <TestWrapper>
-        <Learn />
-      </TestWrapper>,
     );
   });
 

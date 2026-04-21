@@ -1,20 +1,15 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { DropdownField, FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
-import {
-  useGetScenariosQuery,
-  useGetScenarioPathwaysQuery,
-  useGetScenarioCasesQuery,
-  useUpdateUserPreferencesMutation,
-} from "@api";
+import { Tabs } from "@ally-ui-mono/ui-shared";
+import { useGetScenariosQuery, useGetScenarioPathwaysQuery, useGetScenarioCasesQuery } from "@api";
 import { CreditsDisplay, ScenarioCard } from "@components";
 import { Permissions } from "@constants";
-import { useUser, useScenarioLanguages } from "@hooks";
-import { LanguageOption, ScenarioStatus } from "@types";
+import { useUser } from "@hooks";
+import { ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
 
 import { learnPageContainerVariants, learnPageItemVariants } from "./constants";
@@ -80,85 +75,10 @@ export const Learn: FC = () => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
   };
 
-  const shouldLoadLanguages = FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG;
-  const {
-    languages: LANGUAGE_OPTIONS,
-    defaultLanguage,
-    isLoading: isLanguagesLoading,
-  } = shouldLoadLanguages
-    ? useScenarioLanguages()
-    : { languages: [], defaultLanguage: null, isLoading: false };
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
-  const [updateUserPreferences, { isLoading: isUpdatingPreferences }] =
-    useUpdateUserPreferencesMutation();
-
-  // Set initial language when defaultLanguage is loaded
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem("selectedLanguage");
-
-    if (!shouldLoadLanguages) {
-      if (savedLanguage) {
-        localStorage.removeItem("selectedLanguage");
-      }
-      setSelectedLanguage(null);
-      return;
-    }
-
-    if (savedLanguage) {
-      const parsedLanguage = JSON.parse(savedLanguage);
-      setSelectedLanguage(parsedLanguage);
-    } else if (defaultLanguage) {
-      setSelectedLanguage(defaultLanguage);
-    }
-  }, [defaultLanguage, shouldLoadLanguages]);
-
-  const handleLanguageChange = useCallback(
-    async (value: string) => {
-      const selectedOption = LANGUAGE_OPTIONS.find(option => option.value === value) || null;
-      if (!selectedOption?.language_id) return;
-
-      const previousLanguage = selectedLanguage;
-      setSelectedLanguage(selectedOption);
-
-      // Save to localStorage
-      localStorage.setItem("selectedLanguage", JSON.stringify(selectedOption));
-
-      try {
-        await updateUserPreferences({
-          default_language_id: Number(selectedOption.language_id),
-        }).unwrap();
-      } catch {
-        setSelectedLanguage(previousLanguage);
-        // Remove from localStorage if update fails
-        localStorage.removeItem("selectedLanguage");
-      }
-    },
-    [LANGUAGE_OPTIONS, selectedLanguage, updateUserPreferences],
-  );
-
-  const handleLanguageDropdownChange = useCallback(
-    async (label: string) => {
-      const option = LANGUAGE_OPTIONS.find(opt => opt.label === label);
-      if (option) {
-        await handleLanguageChange(option.value);
-      }
-    },
-    [LANGUAGE_OPTIONS, handleLanguageChange],
-  );
-
   const onScenarioCardClick = (itemId: number) => {
     const isPathway = activeTab === TabId.TRACKS;
     const isCase = activeTab === TabId.CASES;
-    navigate(
-      isPathway ? `/pathway/${itemId}` : isCase ? `/case/${itemId}` : `/scenario/${itemId}`,
-      {
-        state: {
-          languages: LANGUAGE_OPTIONS,
-          defaultLanguage: defaultLanguage,
-          selectedLanguage: selectedLanguage,
-        },
-      },
-    );
+    navigate(isPathway ? `/pathway/${itemId}` : isCase ? `/case/${itemId}` : `/scenario/${itemId}`);
   };
 
   const renderPageHeader = () => {
@@ -183,28 +103,10 @@ export const Learn: FC = () => {
               items={tabs.map(tab => ({ id: tab.id, label: tab.label }))}
               activeId={activeTab}
               onChange={id => handleTabChange(id as LearnTabId)}
-              className="border-none max-w-[330px] font-primary"
+              className="border-none font-primary"
               showCount={false}
-              tabStyles={{ minWidth: "100px" }}
             />
 
-            <div className="w-full flex justify-end">
-              <div className="flex flex-col">
-                {LANGUAGE_OPTIONS.length > 0 && FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG && (
-                  <div className="relative w-48">
-                    <DropdownField
-                      options={LANGUAGE_OPTIONS.map(option => option.label)}
-                      value={selectedLanguage?.label || ""}
-                      onChange={handleLanguageDropdownChange}
-                      disabled={isUpdatingPreferences || isLanguagesLoading}
-                      label=""
-                      searchPlaceholder={t("nav.tabs.search", "Search")}
-                      valueClassName="font-primary text-base text-typography-700"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
             <CreditsDisplay />
           </div>
         )}
