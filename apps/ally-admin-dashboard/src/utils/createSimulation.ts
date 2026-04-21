@@ -5,6 +5,9 @@ import {
 } from "@constants";
 import { GetSimulationByIdResponse, knowledgeSource } from "@types";
 
+const normalizeStringArray = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+
 export const getCreateSimulationSubSectionById = (id: string) => {
   return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
 };
@@ -70,6 +73,9 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       : data?.metadata?.stateInstructions,
     behaviorInstructions: (data?.behaviorInstructions ?? []).map(beh => ({
       ...beh,
+      category: beh?.category ?? "",
+      behaviors: normalizeStringArray(beh?.behaviors),
+      instructions: normalizeStringArray(beh?.instructions),
       stateInstructions: (beh.stateInstructions ?? []).filter(si =>
         isValidStateInstructionId(si?.stateId),
       ),

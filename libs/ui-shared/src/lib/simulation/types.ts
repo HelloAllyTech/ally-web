@@ -2,6 +2,8 @@ import type { MutableRefObject, ReactNode } from "react";
 
 import { RoomStatus } from "./SimulationInterface";
 
+export type AgentTurnStatus = "thinking" | "speaking" | "user_turn";
+
 export interface StateInstruction {
   name: string;
   stateId: string;
@@ -109,6 +111,7 @@ export interface SimulationPageProps {
   stateNames?: StateInstruction[];
   difficultyLevel?: string;
   translations?: SimulationTranslations;
+  agentTurnStatus?: AgentTurnStatus;
 }
 
 export interface SimulationControlsProps {

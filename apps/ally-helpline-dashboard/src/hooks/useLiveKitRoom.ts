@@ -1,15 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-import { Room, RoomEvent } from "livekit-client";
+import { Room, RoomEvent, Participant } from "livekit-client";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import { AutoTermination } from "@ally-ui-mono/ui-shared/assets";
 import { LIVEKIT_CONFIG, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import {
+  AGENT_STATE_EVENT_TYPE,
+  AGENT_STATE_THINKING,
+  AGENT_STATE_DONE_THINKING,
+  AGENT_STATE_SPEAKING,
+} from "@constants";
 import { RoomStatus } from "@types";
 import { decodeUint8ToJson } from "@utils";
 
-import { LiveKitEvent, UseLiveKitRoomReturn } from "./types";
+import { AgentTurnStatus, LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
 const RINGING_BELL_DELAY = 5000; // 5 seconds for ringing the bell
 
@@ -18,7 +24,6 @@ export const useLiveKitRoom = (
   endSessionButtonRef: any,
 ): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
-
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(RoomStatus.DISCONNECTED);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +31,9 @@ export const useLiveKitRoom = (
   const [score, setScore] = useState<number>(0);
   const [detectedEventIds, setDetectedEventIds] = useState<string[]>([]);
   const [startTime, setStartTime] = useState(null);
+  const [agentTurnStatus, setAgentTurnStatus] = useState<AgentTurnStatus>("user_turn");
+
+  const agentTurnStatusRef = useRef<AgentTurnStatus>("user_turn");
 
   const lastEventTimestampRef = useRef<number | null>(null);
   const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
@@ -37,6 +45,11 @@ export const useLiveKitRoom = (
   const isConnected = roomStatus === RoomStatus.CONNECTED;
   const isConnecting = roomStatus === RoomStatus.CONNECTING;
 
+  const updateAgentTurnStatus = useCallback((status: AgentTurnStatus) => {
+    agentTurnStatusRef.current = status;
+    setAgentTurnStatus(status);
+  }, []);
+
   const getLiveKitUrl = (): string => {
     const url = roomData?.serverUrl || import.meta.env.VITE_LIVEKIT_URL;
     if (!url) {
@@ -47,6 +60,18 @@ export const useLiveKitRoom = (
 
   const onDataReceived = useCallback((payload: any) => {
     const eventObj = decodeUint8ToJson(payload) as LiveKitEvent;
+    // Handle agent state signals — do not treat as score/event data
+    if (eventObj?.type === AGENT_STATE_EVENT_TYPE) {
+      if (eventObj.state === AGENT_STATE_THINKING) {
+        updateAgentTurnStatus(AGENT_STATE_THINKING);
+      } else if (eventObj.state === AGENT_STATE_DONE_THINKING) {
+        if (agentTurnStatusRef.current !== AGENT_STATE_SPEAKING) {
+          updateAgentTurnStatus("user_turn");
+        }
+      }
+      return;
+    }
+
     setEvents(prev => [...prev, eventObj]);
     setScore(prev => prev + (eventObj?.data?.score ?? 0));
     setDetectedEventIds(prevIds => {
@@ -66,6 +91,8 @@ export const useLiveKitRoom = (
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
+    // Reset turn status on disconnect
+    updateAgentTurnStatus("user_turn");
     setRoomStatus(RoomStatus.DISCONNECTED);
     setTimeout(
       () => {
@@ -92,12 +119,13 @@ export const useLiveKitRoom = (
     room.removeAllListeners();
 
     logger.info("Disconnecting from room");
+    updateAgentTurnStatus("user_turn");
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
 
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
-  }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected]);
+  }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected, updateAgentTurnStatus]);
 
   const connectToRoom = async () => {
     try {
@@ -124,15 +152,35 @@ export const useLiveKitRoom = (
 
         setRoomStatus(RoomStatus.CONNECTED);
 
+        // Register listeners BEFORE enabling mic so we don't miss ParticipantConnected
+        // if the agent joins while the browser is showing the mic permission dialog.
+        room.on(RoomEvent.DataReceived, onDataReceived);
+        room.on(RoomEvent.Disconnected, onRoomDisconnect);
+        room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
+
+        // Speaking detection — determines SPEAKING vs USER_TURN states
+        room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
+          const agentSpeaking = speakers.some(s => s.identity !== room.localParticipant.identity);
+          if (agentSpeaking) {
+            updateAgentTurnStatus(AGENT_STATE_SPEAKING);
+          } else {
+            if (agentTurnStatusRef.current !== AGENT_STATE_THINKING) {
+              updateAgentTurnStatus("user_turn");
+            }
+          }
+        });
+
+        // Handle agent already present in the room (e.g. fast re-join or cache hit)
+        if (room.remoteParticipants.size > 0) {
+          logger.info("Agent already in room at connect time, marking as joined");
+          onRemoteParticipantConnected();
+        }
+
         await room.localParticipant.setMicrophoneEnabled(true);
         logger.info("Microphone enabled");
 
         // Reset last event timestamp on a fresh connection
         lastEventTimestampRef.current = null;
-
-        room.on(RoomEvent.DataReceived, onDataReceived);
-        room.on(RoomEvent.Disconnected, onRoomDisconnect);
-        room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
       }
     } catch (error) {
       logger.error(`Failed to connect to LiveKit room: ${error}`);
@@ -193,5 +241,6 @@ export const useLiveKitRoom = (
     startTime,
     roomData,
     detectedEventIds,
+    agentTurnStatus,
   };
 };

@@ -52,10 +52,16 @@ export const Simulation = () => {
 
   const endSessionButtonRef = useRef<boolean>(false);
 
-  const { room, roomData, roomStatus, startTime, events, score, detectedEventIds } = useLiveKitRoom(
-    handleRoomDisconnected,
-    endSessionButtonRef,
-  );
+  const {
+    room,
+    roomData,
+    roomStatus,
+    startTime,
+    events,
+    score,
+    detectedEventIds,
+    agentTurnStatus,
+  } = useLiveKitRoom(handleRoomDisconnected, endSessionButtonRef);
 
   if (roomData) {
     roomData["title"] = scenarioTitle;
@@ -121,6 +127,7 @@ export const Simulation = () => {
         stateNames={roomData?.stateNames ?? []}
         difficultyLevel={roomData?.difficultyLevel ?? ""}
         translations={simulationTranslations}
+        agentTurnStatus={agentTurnStatus}
       />
       <ConfirmationDialog
         isOpen={isBackConfirmOpen}
