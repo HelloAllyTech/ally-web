@@ -82,6 +82,16 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(true);
       });
 
+      it("should place challenge description after character backstory in overview section", () => {
+        const section = getOverviewSection();
+        const fieldIds = section?.fields.map(field => field.id) ?? [];
+
+        expect(fieldIds.indexOf("characterProfileText")).toBeGreaterThan(-1);
+        expect(fieldIds.indexOf("description")).toBeGreaterThan(
+          fieldIds.indexOf("characterProfileText"),
+        );
+      });
+
       it("should have coverImageUrl field correctly configured in overview section", () => {
         const section = getOverviewSection();
         const field = section?.fields.find(f => f.id === "coverImageUrl");
