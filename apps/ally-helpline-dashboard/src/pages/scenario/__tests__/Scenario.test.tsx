@@ -73,11 +73,20 @@ vi.mock("sonner", () => ({
 const mockUseGetScenarioQuery = vi.fn();
 const mockUseEndSimulationMutation = vi.fn();
 const mockUseStartSimulationMutation = vi.fn();
+const mockUseGetScenariosQuery = vi.fn();
 
 vi.mock("@api", () => ({
   useGetScenarioQuery: (args: any) => mockUseGetScenarioQuery(args),
   useEndSimulationMutation: () => mockUseEndSimulationMutation(),
   useStartSimulationMutation: () => mockUseStartSimulationMutation(),
+  useGetScenariosQuery: (args: any, opts: any) => {
+    const result = mockUseGetScenariosQuery(args);
+    // Support selectFromResult option
+    if (opts?.selectFromResult) {
+      return opts.selectFromResult(result);
+    }
+    return result;
+  },
 }));
 
 // Mock assets
@@ -95,7 +104,7 @@ vi.mock("@assets", () => ({
   Carousel8: "carousel8.jpg",
   Carousel9: "carousel9.jpg",
   Carousel10: "carousel10.jpg",
-  Bolt: Bolt,
+  Bolt: () => <div data-testid="bolt-icon">⚡</div>,
   LearnIcon: () => <svg data-testid="learn-icon" />,
   Leaderboard: () => <svg data-testid="leaderboard-icon" />,
   ScribeIcon: () => <svg data-testid="scribe-icon" />,
@@ -277,6 +286,12 @@ describe("Scenario Component", () => {
     // Default API mocks
     mockUseGetScenarioQuery.mockReturnValue({
       data: mockScenario,
+      isSuccess: true,
+      isLoading: false,
+    });
+
+    mockUseGetScenariosQuery.mockReturnValue({
+      data: { data: [] },
       isSuccess: true,
       isLoading: false,
     });
@@ -565,7 +580,7 @@ describe("Scenario Component", () => {
 
       await waitFor(() => {
         expect(mockStartSimulation).toHaveBeenCalledWith({
-          params: { scenarioId: 123 },
+          params: { scenarioId: 123, languageId: undefined },
           metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
@@ -594,7 +609,7 @@ describe("Scenario Component", () => {
 
       await waitFor(() => {
         expect(mockStartSimulation).toHaveBeenCalledWith({
-          params: { scenarioId: 123 },
+          params: { scenarioId: 123, languageId: undefined },
           metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
@@ -617,7 +632,7 @@ describe("Scenario Component", () => {
 
       await waitFor(() => {
         expect(mockStartSimulation).toHaveBeenCalledWith({
-          params: { scenarioId: 123 },
+          params: { scenarioId: 123, languageId: undefined },
           metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
@@ -640,7 +655,7 @@ describe("Scenario Component", () => {
 
       await waitFor(() => {
         expect(mockStartSimulation).toHaveBeenCalledWith({
-          params: { scenarioId: 123 },
+          params: { scenarioId: 123, languageId: undefined },
           metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
@@ -669,7 +684,7 @@ describe("Scenario Component", () => {
 
       await waitFor(() => {
         expect(mockStartSimulation).toHaveBeenCalledWith({
-          params: { scenarioId: 123 },
+          params: { scenarioId: 123, languageId: undefined },
           metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,
@@ -692,7 +707,7 @@ describe("Scenario Component", () => {
 
       await waitFor(() => {
         expect(mockStartSimulation).toHaveBeenCalledWith({
-          params: { scenarioId: 123 },
+          params: { scenarioId: 123, languageId: undefined },
           metadata: {
             title: mockScenario.title,
             coverImageUrl: mockScenario.coverImageUrl,

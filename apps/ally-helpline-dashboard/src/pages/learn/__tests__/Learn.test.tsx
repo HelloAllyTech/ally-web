@@ -275,14 +275,6 @@ describe("Learn Component", () => {
       user: { id: "1", name: "Test User" },
       isAuthenticated: true,
     });
-    mockUseScenarioLanguages.mockReturnValue({
-      languages: [
-        { language_id: 1, value: "en-US", label: "English (US)" },
-        { language_id: 2, value: "hi-IN", label: "Hindi (India)" },
-      ],
-      defaultLanguage: { language_id: 1, value: "en-US", label: "English (US)" },
-      isLoading: false,
-    });
     mockUseAchievementBadgeModal.mockReturnValue({
       currentBadge: null,
       closeModal: vi.fn(),

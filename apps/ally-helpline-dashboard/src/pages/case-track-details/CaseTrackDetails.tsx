@@ -1,4 +1,4 @@
-import { FC, useState, useCallback } from "react";
+import { FC, useState, useCallback, useEffect } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -37,10 +37,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  // Use languages from location state or fallback to empty array
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(
-    state?.selectedLanguage || null,
-  );
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
   const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
@@ -64,12 +61,21 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   const data = type === pageType.CASE ? caseData : pathwayData;
   const isLoading = type === pageType.CASE ? isCaseLoading : isPathwayLoading;
 
+  // Auto-select first language when a scenario is selected
+  useEffect(() => {
+    if (selectedScenario?.availableLanguages?.length) {
+      setSelectedLanguage(selectedScenario.availableLanguages[0]);
+    } else {
+      setSelectedLanguage(null);
+    }
+  }, [selectedScenario]);
+
   const handleLanguageChange = useCallback(
     (value: string) => {
-      const selected = state?.languages?.find(lang => lang.label === value) || null;
+      const selected = selectedScenario?.availableLanguages?.find(lang => lang.label === value) || null;
       setSelectedLanguage(selected);
     },
-    [state?.languages],
+    [selectedScenario?.availableLanguages],
   );
 
   const handleCloseModal = useCallback(() => {
@@ -162,8 +168,8 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
         ...(type === pageType.CASE
           ? { caseSessionItemId: sessionId }
           : { scenarioPathSessionItemId: sessionId }),
-        ...(state?.languages?.length > 0 && {
-          languageId: selectedLanguage?.language_id || state?.defaultLanguage,
+        ...(updatedSelectedScenario.availableLanguages?.length && {
+          languageId: selectedLanguage?.language_id,
         }),
       },
       metadata: {
@@ -174,15 +180,16 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   };
 
   const renderLanguageDropdown = useCallback(() => {
-    if (!state?.languages?.length) return null;
+    const languages = selectedScenario?.availableLanguages;
+    if (!languages?.length) return null;
 
     return (
       <div className="w-full flex justify-start">
         <div className="flex flex-col">
           <div className="relative w-48">
             <DropdownField
-              options={state.languages.map(option => option.label)}
-              value={selectedLanguage?.label || state.languages[0]?.label || ""}
+              options={languages.map(option => option.label)}
+              value={selectedLanguage?.label || languages[0]?.label || ""}
               onChange={handleLanguageChange}
               label=""
               valueClassName="font-primary text-base text-typography-700"
@@ -191,7 +198,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
         </div>
       </div>
     );
-  }, [handleLanguageChange, selectedLanguage, state?.languages]);
+  }, [handleLanguageChange, selectedLanguage, selectedScenario?.availableLanguages]);
 
   // Calculate progress metrics
   const totalScenarios = data?.totalScenarios || data?.scenarios?.length || 0;

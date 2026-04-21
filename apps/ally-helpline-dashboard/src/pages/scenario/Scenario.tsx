@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
-import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
+import { DropdownField, MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
+import { useEndSimulationMutation, useGetScenarioQuery, useGetScenariosQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
   LoginDialog,
@@ -19,6 +19,7 @@ import {
 } from "@components";
 import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useSimulationCredits, useStartSimulation } from "@hooks";
+import { LanguageOption } from "@types";
 
 import i18n from "../../i18n";
 import { learnPageExpandedVariants } from "../learn/constants";
@@ -40,6 +41,7 @@ export const Scenario: FC = () => {
   const [notEnoughCredits, setNoEnoughCredits] = useState<boolean>(false);
   const [buttonDisable, setButtonDisable] = useState<boolean>(false);
   const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
 
   const {
     data: scenario,
@@ -50,6 +52,17 @@ export const Scenario: FC = () => {
     isPrivate: isAuthenticated(),
     languageCode: i18n.language,
   });
+
+  // Read availableLanguages from the already-cached scenarios list (v2 endpoint returns it)
+  const { availableLanguages } = useGetScenariosQuery(
+    { isPrivate: isAuthenticated(), languageCode: i18n.language },
+    {
+      selectFromResult: ({ data }) => ({
+        availableLanguages:
+          data?.data?.find(s => s.id === id)?.availableLanguages ?? [],
+      }),
+    },
+  );
   const [endSimulation] = useEndSimulationMutation();
 
   const [startSimulationError, setStartSimulationError] = useState<unknown>(null);
@@ -78,6 +91,18 @@ export const Scenario: FC = () => {
     if (limitReached) setNoEnoughCredits(true);
   }, [credits]);
 
+  // Set default language from the scenarios list availableLanguages
+  useEffect(() => {
+    if (availableLanguages?.length) {
+      setSelectedLanguage(availableLanguages[0]);
+    }
+  }, [availableLanguages]);
+
+  const handleLanguageChange = (label: string) => {
+    const selected = availableLanguages?.find(lang => lang.label === label) || null;
+    setSelectedLanguage(selected);
+  };
+
   const renderBackButton = () => {
     return (
       <motion.button
@@ -99,6 +124,7 @@ export const Scenario: FC = () => {
     await startSimulation({
       params: {
         scenarioId: id,
+        languageId: selectedLanguage?.language_id,
       },
       metadata: {
         title: scenario?.title,
@@ -185,6 +211,20 @@ export const Scenario: FC = () => {
                   <span className="font-bold italic"> {t("learn.scenario.pageTitleEmphasis")}</span>
                 </div>
                 <CreditsDisplay />
+              </div>
+            )}
+            {/* Language dropdown — shown when scenario has languages from the API */}
+            {(availableLanguages?.length ?? 0) > 0 && (
+              <div className="w-full sm:w-48 self-start">
+                <div className="relative w-48">
+                  <DropdownField
+                    data-testid="language-dropdown"
+                    options={availableLanguages.map(lang => lang.label)}
+                    value={selectedLanguage?.label || ""}
+                    onChange={handleLanguageChange}
+                    valueClassName="text-typography-900 font-primary"
+                  />
+                </div>
               </div>
             )}
             <ScenarioDetailsCard
