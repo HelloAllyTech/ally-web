@@ -58,8 +58,7 @@ export const Scenario: FC = () => {
     { isPrivate: isAuthenticated(), languageCode: i18n.language },
     {
       selectFromResult: ({ data }) => ({
-        availableLanguages:
-          data?.data?.find(s => s.id === id)?.availableLanguages ?? [],
+        availableLanguages: data?.data?.find(s => s.id === id)?.availableLanguages ?? [],
       }),
     },
   );

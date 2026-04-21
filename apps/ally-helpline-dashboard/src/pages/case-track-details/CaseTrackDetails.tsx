@@ -1,7 +1,7 @@
 import { FC, useState, useCallback, useEffect } from "react";
 
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { SimulationDetailsModal, CustomImage, DropdownField } from "@ally-ui-mono/ui-shared";
@@ -35,7 +35,6 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   const { pathwayId, caseId } = useParams<{ pathwayId?: string; caseId?: string }>();
   const id = type === pageType.CASE ? caseId : pathwayId;
   const navigate = useNavigate();
-  const { state } = useLocation();
 
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
   const [selectedScenario, setSelectedScenario] = useState<PathwayScenario | null>(null);
@@ -72,7 +71,8 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   const handleLanguageChange = useCallback(
     (value: string) => {
-      const selected = selectedScenario?.availableLanguages?.find(lang => lang.label === value) || null;
+      const selected =
+        selectedScenario?.availableLanguages?.find(lang => lang.label === value) || null;
       setSelectedLanguage(selected);
     },
     [selectedScenario?.availableLanguages],

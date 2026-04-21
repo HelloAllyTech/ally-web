@@ -20,22 +20,18 @@ import { BrowserRouter } from "react-router-dom";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
-const {
-  mockUseGetScenariosQuery,
-  mockUseGetScenarioPathwaysQuery,
-  mockUseGetScenarioCasesQuery,
-} = vi.hoisted(() => ({
-  mockUseGetScenariosQuery: vi.fn(),
-  mockUseGetScenarioPathwaysQuery: vi.fn(),
-  mockUseGetScenarioCasesQuery: vi.fn(),
-}));
+const { mockUseGetScenariosQuery, mockUseGetScenarioPathwaysQuery, mockUseGetScenarioCasesQuery } =
+  vi.hoisted(() => ({
+    mockUseGetScenariosQuery: vi.fn(),
+    mockUseGetScenarioPathwaysQuery: vi.fn(),
+    mockUseGetScenarioCasesQuery: vi.fn(),
+  }));
 
 vi.mock("@api", () => ({
   useGetScenariosQuery: (args: any) => mockUseGetScenariosQuery(args),
   useGetScenarioPathwaysQuery: (args: any) => mockUseGetScenarioPathwaysQuery(args),
   useGetScenarioCasesQuery: (args: any) => mockUseGetScenarioCasesQuery(args),
 }));
-
 
 import { Learn } from "../Learn";
 
@@ -950,7 +946,6 @@ describe("Learn Component", () => {
       }),
     );
   });
-
 
   it("should return a valid React element", () => {
     const result = render(

@@ -903,6 +903,4 @@ describe("Scenario Component", () => {
       expect(container1.innerHTML).toBe(container2.innerHTML);
     });
   });
-
 });
-

@@ -5,11 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-import {
-  useGetScenariosQuery,
-  useGetScenarioPathwaysQuery,
-  useGetScenarioCasesQuery,
-} from "@api";
+import { useGetScenariosQuery, useGetScenarioPathwaysQuery, useGetScenarioCasesQuery } from "@api";
 import { CreditsDisplay, ScenarioCard } from "@components";
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
@@ -79,13 +75,10 @@ export const Learn: FC = () => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
   };
 
-
   const onScenarioCardClick = (itemId: number) => {
     const isPathway = activeTab === TabId.TRACKS;
     const isCase = activeTab === TabId.CASES;
-    navigate(
-      isPathway ? `/pathway/${itemId}` : isCase ? `/case/${itemId}` : `/scenario/${itemId}`,
-    );
+    navigate(isPathway ? `/pathway/${itemId}` : isCase ? `/case/${itemId}` : `/scenario/${itemId}`);
   };
 
   const renderPageHeader = () => {
@@ -110,11 +103,9 @@ export const Learn: FC = () => {
               items={tabs.map(tab => ({ id: tab.id, label: tab.label }))}
               activeId={activeTab}
               onChange={id => handleTabChange(id as LearnTabId)}
-              className="border-none max-w-[330px] font-primary"
+              className="border-none font-primary"
               showCount={false}
-              tabStyles={{ minWidth: "100px" }}
             />
-
 
             <CreditsDisplay />
           </div>
