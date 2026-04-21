@@ -11,7 +11,6 @@ import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
 import { SimulationPageProps, TriggerWarning, ChecklistMode } from "./types";
 import { StartSimulation, EndSimulation } from "../../assets/audios";
-
 const MICROPHONE_STATE = {
   GRANTED: "granted",
   DENIED: "denied",
@@ -76,6 +75,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   stateNames = [],
   difficultyLevel = "",
   translations,
+  agentTurnStatus,
 }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
@@ -243,6 +243,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           isMuted={isMuted}
           isFocusMode={isFocusMode}
           checklistMode={checklistMode}
+          agentTurnStatus={agentTurnStatus} // ← add this
           checklistItems={checklistItems}
           isMicrophoneGranted={microphonePermission === MICROPHONE_STATE.GRANTED}
           onEnableMicrophone={onEnableMicrophone}

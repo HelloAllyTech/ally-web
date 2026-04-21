@@ -19,3 +19,8 @@ export const audioLevelConfig = {
 export const SIMULATON_BENCHMARK_SCORE = 50;
 
 export const AUTO_CLOSE_DIALOG_DURATION = 5000;
+
+export const AGENT_STATE_EVENT_TYPE = "AGENT_STATE" as const;
+export const AGENT_STATE_THINKING = "thinking" as const;
+export const AGENT_STATE_DONE_THINKING = "done_thinking" as const;
+export const AGENT_STATE_SPEAKING = "speaking" as const;
