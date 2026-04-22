@@ -158,6 +158,7 @@ export interface BottomSectionProps {
 export enum ChecklistMode {
   GUIDED = "GUIDED",
   UNGUIDED = "UNGUIDED",
+  LIST = "LIST",
   OFF = "OFF",
 }
 

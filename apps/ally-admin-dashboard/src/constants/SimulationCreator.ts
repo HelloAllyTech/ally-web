@@ -82,6 +82,7 @@ export const EXPERIENCE_MODE_OPTIONS = [
 export const CHECKLIST_TYPE_OPTIONS = [
   { value: "GUIDED", label: "Guided" },
   { value: "UNGUIDED", label: "Unguided" },
+  { value: "LIST", label: "List" },
 ];
 
 export const SIMULATION_CREATOR_STEP_IDS = {
