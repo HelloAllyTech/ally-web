@@ -105,6 +105,7 @@ export interface Simulation {
   usage: string;
   triggerWarnings?: triggerWarning[];
   createdByUserId: number;
+  availableLanguages?: ScenarioLanguage[] | null;
 }
 
 export interface GetSimulationsQueryParams {
@@ -139,15 +140,13 @@ export type SimulationPreviewType = {
   description: string;
   triggerWarnings?: triggerWarning[];
   status: SimulationStatus;
+  availableLanguages?: ScenarioLanguage[] | null;
 };
 
 export interface SimulationPreviewProps {
   simulation: SimulationPreviewType;
   isOpen: boolean;
   onClose: () => void;
-  languages?: ScenarioLanguage[];
-  selectedLanguageId?: number;
-  onLanguageChange?: (languageId: number | null) => void;
 }
 
 export interface UpdateEventDataParam {
