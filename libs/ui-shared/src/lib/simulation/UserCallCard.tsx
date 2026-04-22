@@ -6,6 +6,7 @@ import { MicOffWhite, UserIcon } from "../../assets";
 import { CustomImage } from "../custom-image";
 import { SpeakingIndicator } from "./SpeakingIndicator";
 import { TurnTakingIndicator, TurnState } from "./TurnIndicator";
+import { TurnIndicatorTranslations } from "./types";
 
 interface UserCallCardProps {
   userData: {
@@ -15,6 +16,7 @@ interface UserCallCardProps {
   isSpeaking?: boolean;
   isMuted?: boolean;
   turnState?: TurnState;
+  turnIndicatorTranslations?: TurnIndicatorTranslations;
 }
 
 export const UserCallCard: React.FC<UserCallCardProps> = ({
@@ -22,6 +24,7 @@ export const UserCallCard: React.FC<UserCallCardProps> = ({
   isSpeaking = false,
   isMuted = false,
   turnState,
+  turnIndicatorTranslations,
 }) => {
   const { name, coverImageUrl = "" } = userData;
 
@@ -58,7 +61,9 @@ export const UserCallCard: React.FC<UserCallCardProps> = ({
           )}
           <span className="text-white text-[14px] font-medium leading-[22px]">{name}</span>
         </div>
-        {turnState && turnState !== TurnState.IDLE && <TurnTakingIndicator turnState={turnState} />}
+        {turnState && turnState !== TurnState.IDLE && (
+          <TurnTakingIndicator turnState={turnState} translations={turnIndicatorTranslations} />
+        )}
       </div>
     </div>
   );

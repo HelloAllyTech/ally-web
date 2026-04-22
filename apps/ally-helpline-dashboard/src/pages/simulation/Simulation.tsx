@@ -42,6 +42,13 @@ export const Simulation = () => {
     of: t("simulationPage.of"),
     min: t("simulationPage.min"),
     sec: t("simulationPage.sec"),
+    turnIndicator: {
+      speaking: t("simulationPage.turnIndicator.speaking"),
+      listening: t("simulationPage.turnIndicator.listening"),
+      yourTurnToSpeak: t("simulationPage.turnIndicator.yourTurnToSpeak"),
+      yourTurnToListen: t("simulationPage.turnIndicator.yourTurnToListen"),
+      thinking: t("simulationPage.turnIndicator.thinking"),
+    },
   };
 
   const [endSimulation] = useEndSimulationMutation();
