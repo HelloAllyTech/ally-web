@@ -1237,7 +1237,7 @@ export const summaryFields: SummaryField[] = [
     label: "Assessment, Speech",
     sectionKey: SummarySectionKey.Intake,
     type: FieldType.Dropdown,
-    options: ["Clear & Coherent", "Sluttering", "Fast", "Slow", "Difficult to Understand"],
+    options: ["Clear & Coherent", "Stuttering", "Fast", "Slow", "Difficult to Understand"],
     placeholder: "Select",
   },
   {
