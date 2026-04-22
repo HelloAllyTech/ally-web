@@ -4,6 +4,8 @@ import { memo } from "react";
 
 import { motion } from "framer-motion";
 
+import { TurnIndicatorTranslations } from "./types";
+
 export enum TurnState {
   AI_SPEAKING = "ai_speaking",
   AI_LISTENING = "ai_listening",
@@ -15,20 +17,29 @@ export enum TurnState {
 
 interface TurnTakingIndicatorProps {
   turnState: TurnState;
+  translations?: TurnIndicatorTranslations;
 }
 
-const getTurnMessage = (turnState: TurnState): string => {
+const DEFAULT_TRANSLATIONS: TurnIndicatorTranslations = {
+  speaking: "Speaking...",
+  listening: "Listening...",
+  yourTurnToSpeak: "Your turn to speak",
+  yourTurnToListen: "Your turn to listen",
+  thinking: "Thinking...",
+};
+
+const getTurnMessage = (turnState: TurnState, t: TurnIndicatorTranslations): string => {
   switch (turnState) {
     case TurnState.AI_SPEAKING:
-      return "Speaking...";
+      return t.speaking;
     case TurnState.AI_LISTENING:
-      return "Listening...";
+      return t.listening;
     case TurnState.USER_TURN_TO_SPEAK:
-      return "Your turn to speak";
+      return t.yourTurnToSpeak;
     case TurnState.USER_TURN_TO_LISTEN:
-      return "Your turn to listen";
+      return t.yourTurnToListen;
     case TurnState.THINKING:
-      return "Thinking...";
+      return t.thinking;
     case TurnState.IDLE:
     default:
       return "";
@@ -50,8 +61,8 @@ const getBackgroundColor = (turnState: TurnState): string => {
   }
 };
 
-export const TurnTakingIndicator = memo<TurnTakingIndicatorProps>(({ turnState }) => {
-  const message = getTurnMessage(turnState);
+export const TurnTakingIndicator = memo<TurnTakingIndicatorProps>(({ turnState, translations }) => {
+  const message = getTurnMessage(turnState, translations ?? DEFAULT_TRANSLATIONS);
 
   if (!message) return null;
 

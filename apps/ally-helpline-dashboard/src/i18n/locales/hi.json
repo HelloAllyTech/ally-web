@@ -934,6 +934,13 @@
     "of": "में से",
     "min": "मिनट",
     "sec": "सेकंड",
+    "turnIndicator": {
+      "speaking": "बोल रहा है...",
+      "listening": "सुन रहा है...",
+      "yourTurnToSpeak": "अब आपकी बोलने की बारी",
+      "yourTurnToListen": "अब आपकी सुनने की बारी",
+      "thinking": "सोच रहा है..."
+    },
     "warningDialog": {
       "titleNormal": "सत्र",
       "titleItalic": "जल्द समाप्त हो रहा है",

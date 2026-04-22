@@ -140,6 +140,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           }}
           isSpeaking={remoteParticipant?.isSpeaking}
           turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
+          turnIndicatorTranslations={translations?.turnIndicator}
         />
         <UserCallCard
           userData={{
@@ -149,6 +150,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           isSpeaking={localParticipant.isSpeaking}
           isMuted={isMuted}
           turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
+          turnIndicatorTranslations={translations?.turnIndicator}
         />
         {!isFocusMode &&
           (showSessionProgress ||

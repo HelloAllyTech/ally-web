@@ -17,6 +17,14 @@ export interface SessionProgressProps {
   maxTimeSeconds?: number;
 }
 
+export interface TurnIndicatorTranslations {
+  speaking: string;
+  listening: string;
+  yourTurnToSpeak: string;
+  yourTurnToListen: string;
+  thinking: string;
+}
+
 export interface SimulationTranslations {
   mute: string;
   unmute: string;
@@ -41,6 +49,7 @@ export interface SimulationTranslations {
   of: string;
   min: string;
   sec: string;
+  turnIndicator: TurnIndicatorTranslations;
 }
 
 export interface SimulationEventType {
