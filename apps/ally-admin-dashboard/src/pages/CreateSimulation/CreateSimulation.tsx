@@ -669,6 +669,13 @@ export const CreateSimulation: FC = () => {
     const id = simulationId || (response && response?.data?.[0]?.id);
     if (id) {
       const formData = formMethods.getValues();
+      const selectedLangIds = Object.keys(formData.languageVoices ?? {}).filter(
+        k => (formData.languageVoices ?? {})[k],
+      );
+      const scenarioAvailableLanguages = selectedLangIds
+        .map(langId => availableLanguages.find(l => String(l.language_id) === langId))
+        .filter((l): l is (typeof availableLanguages)[number] => Boolean(l));
+
       const simulation = {
         id: String(id),
         title: formData.title,
@@ -676,6 +683,7 @@ export const CreateSimulation: FC = () => {
         coverImageUrl: formData.coverImageUrl,
         triggerWarnings: formData.triggerWarningIds,
         status: adminSimulationByIdData?.status || SimulationStatus.DRAFT,
+        availableLanguages: scenarioAvailableLanguages,
       };
 
       setPreviewSimulation(simulation);
