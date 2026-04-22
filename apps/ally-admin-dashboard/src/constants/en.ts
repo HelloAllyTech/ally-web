@@ -437,6 +437,7 @@ export const en = {
     regenerate: "Regenerate",
     generate: "Generate",
     generating: "Generating...",
+    regeneratedSuccessfully: "generated successfully",
     generatedFillersAllCount: (n: number) => `Generated filler words for ${n} language(s)`,
     bulkGenerateNoSamples:
       "No linguistic style samples were saved. The model may have returned empty results—try again or edit manually.",
