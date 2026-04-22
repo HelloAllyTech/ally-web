@@ -131,7 +131,8 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
 
     if (processor.validate(content)) {
       const value = processor.transform ? processor.transform(content) : (content ?? "");
-      formMethods.setValue(processor.fieldId, value);
+      formMethods.setValue(processor.fieldId, value, { shouldDirty: true });
+      toast.success(`${label || "Field"} ${en.simulation.regeneratedSuccessfully}`);
     } else {
       showError();
     }
