@@ -3,10 +3,20 @@ import { FC, useCallback, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import { useGetAvailableLanguageVoicesQuery, useRegenerateFieldMutation } from "@api";
+import {
+  useGetAutofillModelsQuery,
+  useGetAvailableLanguageVoicesQuery,
+  useRegenerateFieldMutation,
+} from "@api";
 import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
-import { DEFAULT_AUTOFILL_MODEL, en, FORM_FIELD_IDS, REGENERATE_TYPE } from "@constants";
+import {
+  DEFAULT_AUTOFILL_MODEL,
+  FALLBACK_AUTOFILL_MODEL_OPTIONS,
+  en,
+  FORM_FIELD_IDS,
+  REGENERATE_TYPE,
+} from "@constants";
 import { RegenerateFieldResponse } from "@types";
 import { isNonEmptyArray } from "@utils";
 
@@ -38,8 +48,12 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
   isMandatory = false,
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
+  const { data: apiModels } = useGetAutofillModelsQuery();
+  const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
   const [regenerating, setRegenerating] = useState(false);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
+  const selectedProvider =
+    allModelOptions.find(m => m.value === selectedModel)?.provider ?? "openai";
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
 
   const { setValue, control, getValues } = formMethods;
@@ -195,6 +209,7 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
               tab.label,
             ),
             model: selectedModel,
+            provider: selectedProvider,
           }).unwrap(),
         ),
       );
@@ -233,6 +248,7 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
     regenerateField,
     regenerating,
     selectedModel,
+    selectedProvider,
     tabsWithLocale,
   ]);
 

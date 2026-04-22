@@ -3,11 +3,11 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import { useRegenerateFieldMutation } from "@api";
+import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
 import { FillerTagPicker } from "@components/filler-tag-picker";
-import { en } from "@constants";
+import { FALLBACK_AUTOFILL_MODEL_OPTIONS, en } from "@constants";
 import { isNonEmptyArray } from "@utils";
 
 import {
@@ -33,6 +33,10 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
   onSelectedModelChange,
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
+  const { data: apiModels } = useGetAutofillModelsQuery();
+  const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
+  const selectedProvider =
+    allModelOptions.find(m => m.value === selectedModel)?.provider ?? "openai";
   const [regeneratingFillersAll, setRegeneratingFillersAll] = useState(false);
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
   /** Accumulated filler names per language (AI + user) so removed items stay searchable in the picker. */
@@ -126,6 +130,7 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
           fieldName: ALLOWED_FILLER_WORDS_FIELD,
           scenarioContext,
           model: selectedModel,
+          provider: selectedProvider,
         })
           .unwrap()
           .then(response => ({
@@ -163,7 +168,15 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
       }
     }
     setRegeneratingFillersAll(false);
-  }, [allowedFillerWords, formMethods, languagesToShow, regenerateField, selectedModel, setValue]);
+  }, [
+    allowedFillerWords,
+    formMethods,
+    languagesToShow,
+    regenerateField,
+    selectedModel,
+    selectedProvider,
+    setValue,
+  ]);
 
   if (isLoading || languagesToShow.length === 0) {
     return null;
