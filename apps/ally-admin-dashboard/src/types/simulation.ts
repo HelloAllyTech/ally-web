@@ -519,12 +519,14 @@ export interface ScenarioContext {
 export interface AutofillModelOption {
   value: string;
   label: string;
+  provider: "openai" | "anthropic";
 }
 
 export interface RegenerateFieldRequest {
   fieldName: string;
   scenarioContext: ScenarioContext;
   model?: string;
+  provider?: "openai" | "anthropic";
 }
 
 export interface RegenerateFieldResponse {
