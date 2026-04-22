@@ -9,12 +9,19 @@ import {
 } from "@livekit/components-react";
 import { motion } from "framer-motion";
 
-import { FEATURE_FLAGS_MAP } from "../../featureFlag";
 import { SessionChecklist } from "./SessionChecklist";
+import { SessionProgress } from "./SessionProgress";
 import { SimulationEvents } from "./SimulationEvents";
 import { TurnState } from "./TurnIndicator";
-import { SimulationEventType, ChecklistItem, ChecklistMode } from "./types";
+import {
+  SimulationEventType,
+  ChecklistItem,
+  ChecklistMode,
+  StateInstruction,
+  SimulationTranslations,
+} from "./types";
 import { UserCallCard } from "./UserCallCard";
+import { FEATURE_FLAGS_MAP } from "../../featureFlag";
 
 export enum RoomStatus {
   CONNECTED = "connected",
@@ -39,11 +46,11 @@ export interface SimulationInterfaceProps {
   onEnableMicrophone: () => void;
   agentTurnStatus?: AgentTurnStatus;
   score?: number;
-  stateNames?: any[];
+  stateNames?: StateInstruction[];
   difficultyLevel?: string;
   startTime?: string;
   maxTimeSeconds?: number;
-  translations?: any;
+  translations?: SimulationTranslations;
 }
 
 export const SimulationInterface: FC<SimulationInterfaceProps> = ({
@@ -58,6 +65,12 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   isMicrophoneGranted,
   onEnableMicrophone,
   agentTurnStatus,
+  score = 0,
+  stateNames = [],
+  difficultyLevel = "",
+  startTime,
+  maxTimeSeconds,
+  translations,
 }) => {
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
@@ -113,6 +126,9 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     return { remoteTurnState, localTurnState };
   }, [agentTurnStatus, debouncedRemoteSpeaking, localParticipant?.isSpeaking]);
 
+  const hasStateNames = stateNames.length > 0;
+  const showSessionProgress = hasStateNames || !!(roomData?.timerMode && startTime);
+
   const renderConnectedContent = () => (
     <>
       <RoomAudioRenderer />
@@ -134,19 +150,44 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           isMuted={isMuted}
           turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
         />
-        {!isFocusMode && checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
-          <SessionChecklist
-            mode={checklistMode}
-            items={checklistItems}
-            triggeredEvents={detectedEventIds || []}
-          />
-        )}
-        {!isFocusMode && checklistMode === ChecklistMode.OFF && events?.length > 0 && (
-          <SimulationEvents events={events} />
-        )}
+        {!isFocusMode &&
+          (showSessionProgress ||
+            (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
+            (checklistMode === ChecklistMode.OFF && events?.length > 0)) && (
+            <div className="flex flex-col gap-4 w-full h-full overflow-y-auto">
+              {showSessionProgress && (
+                <SessionProgress
+                  stateNames={stateNames}
+                  difficultyLevel={difficultyLevel}
+                  score={score}
+                  startTime={startTime}
+                  maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
+                />
+              )}
+              {checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
+                <SessionChecklist
+                  mode={checklistMode}
+                  items={checklistItems}
+                  triggeredEvents={detectedEventIds || []}
+                  translations={translations}
+                />
+              )}
+              {checklistMode === ChecklistMode.OFF && events?.length > 0 && (
+                <SimulationEvents events={events} />
+              )}
+            </div>
+          )}
       </div>
     </>
   );
+
+  const connectingText = useMemo(() => {
+    if (roomStatus === RoomStatus.CONNECTED || roomStatus === RoomStatus.CONNECTING)
+      return translations?.waitingForAgent ?? "Waiting for agent to join...";
+    if (!isMicrophoneGranted)
+      return translations?.clickToAllow ?? "Click to allow microphone and join the session.";
+    return translations?.connectingToSession ?? "Connecting to session...";
+  }, [roomStatus, translations]);
 
   const renderPendingStartContent = () => (
     <div
@@ -154,28 +195,33 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
       className="flex flex-col items-center text-center font-['IBM_Plex_Serif'] gap-4"
     >
       <p className="text-[20px] text-white">
-        <span className="font-medium italic">Click to allow microphone and join the session.</span>
+        <span className="font-medium italic">{connectingText}</span>
+      </p>
+      <p className="text-[12px] text-[#B6B5B9]">
+        {translations?.microphonePromptBrowser ??
+          "To start the simulation, please allow microphone permission from your browser."}
       </p>
       <button
         type="button"
         onClick={onEnableMicrophone}
         className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
       >
-        Allow microphone permission
+        {translations?.allowMicrophone ?? "Allow microphone permission"}
       </button>
     </div>
   );
 
   const renderLoadingContent = () => (
     <div
-      data-testid="simulation-interface-connecting"
+      data-testid="simulation-interface-connecting bg-[#1D2020] rounded-lg"
       className="flex flex-col items-center text-center font-['IBM_Plex_Serif']"
     >
       <p className="text-[20px] text-white">
-        <span className="font-medium italic">Waiting for agent to join...</span>
+        <span className="font-medium italic">{connectingText}</span>
       </p>
       <p className="text-[12px] text-[#B6B5B9]">
-        To start the simulation, please allow us to use your microphone.
+        {translations?.microphonePrompt ??
+          "To start the simulation, please allow us to use your microphone."}
       </p>
     </div>
   );
