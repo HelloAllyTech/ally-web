@@ -81,6 +81,7 @@ export const useLiveKitRoom = (
 
   const onRemoteParticipantConnected = useCallback(() => {
     setStartTime(prev => prev || new Date());
+    updateAgentTurnStatus("thinking");
     setRoomStatus(RoomStatus.AGENT_JOINED);
   }, []);
 

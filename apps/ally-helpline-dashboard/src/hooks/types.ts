@@ -6,6 +6,8 @@ export type AgentTurnStatus = "thinking" | "speaking" | "user_turn";
 
 export interface LiveKitEvent {
   version: string;
+  type?: string;
+  state?: string;
   data: {
     score: number | null;
     emoji: string;
