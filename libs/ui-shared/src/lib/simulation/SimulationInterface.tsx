@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useMemo } from "react";
+import { FC, useEffect, useRef, useState, useMemo } from "react";
 
 import {
   RoomAudioRenderer,
@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { SessionChecklist } from "./SessionChecklist";
 import { SessionProgress } from "./SessionProgress";
 import { SimulationEvents } from "./SimulationEvents";
+import { TurnState } from "./TurnIndicator";
 import {
   SimulationEventType,
   ChecklistItem,
@@ -20,6 +21,7 @@ import {
   SimulationTranslations,
 } from "./types";
 import { UserCallCard } from "./UserCallCard";
+import { FEATURE_FLAGS_MAP } from "../../featureFlag";
 
 export enum RoomStatus {
   CONNECTED = "connected",
@@ -28,6 +30,8 @@ export enum RoomStatus {
   DISCONNECTING = "disconnecting",
   AGENT_JOINED = "agent_joined",
 }
+
+export type AgentTurnStatus = "thinking" | "speaking" | "user_turn";
 
 export interface SimulationInterfaceProps {
   roomStatus: RoomStatus;
@@ -40,6 +44,7 @@ export interface SimulationInterfaceProps {
   checklistItems?: ChecklistItem[];
   isMicrophoneGranted: boolean;
   onEnableMicrophone: () => void;
+  agentTurnStatus?: AgentTurnStatus;
   score?: number;
   stateNames?: StateInstruction[];
   difficultyLevel?: string;
@@ -59,6 +64,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   checklistItems = [],
   isMicrophoneGranted,
   onEnableMicrophone,
+  agentTurnStatus,
   score = 0,
   stateNames = [],
   difficultyLevel = "",
@@ -69,6 +75,56 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
   const remoteParticipant = remoteParticipants?.[0];
+
+  // Debounce remote speaking to avoid flickering on natural pauses
+  const [debouncedRemoteSpeaking, setDebouncedRemoteSpeaking] = useState(false);
+  const remoteSpeakingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const isRemoteSpeaking = remoteParticipant?.isSpeaking || false;
+
+    if (isRemoteSpeaking) {
+      setDebouncedRemoteSpeaking(true);
+      if (remoteSpeakingTimeoutRef.current) {
+        clearTimeout(remoteSpeakingTimeoutRef.current);
+        remoteSpeakingTimeoutRef.current = null;
+      }
+    } else {
+      remoteSpeakingTimeoutRef.current = setTimeout(() => {
+        setDebouncedRemoteSpeaking(false);
+      }, 1500);
+    }
+
+    return () => {
+      if (remoteSpeakingTimeoutRef.current) {
+        clearTimeout(remoteSpeakingTimeoutRef.current);
+      }
+    };
+  }, [remoteParticipant?.isSpeaking]);
+
+  // Map agentTurnStatus from hook + LiveKit speaking into TurnState for each card
+  const { remoteTurnState, localTurnState } = useMemo(() => {
+    const isLocalSpeaking = localParticipant?.isSpeaking || false;
+    const isThinking = agentTurnStatus === "thinking";
+
+    let remoteTurnState: TurnState = TurnState.IDLE;
+    let localTurnState: TurnState = TurnState.IDLE;
+
+    if (isThinking) {
+      remoteTurnState = TurnState.THINKING;
+    } else if (debouncedRemoteSpeaking) {
+      remoteTurnState = TurnState.AI_SPEAKING;
+      localTurnState = TurnState.USER_TURN_TO_LISTEN;
+    } else if (isLocalSpeaking) {
+      remoteTurnState = TurnState.AI_LISTENING;
+      localTurnState = TurnState.IDLE;
+    } else {
+      remoteTurnState = TurnState.AI_LISTENING;
+      localTurnState = TurnState.USER_TURN_TO_SPEAK;
+    }
+
+    return { remoteTurnState, localTurnState };
+  }, [agentTurnStatus, debouncedRemoteSpeaking, localParticipant?.isSpeaking]);
 
   const hasStateNames = stateNames.length > 0;
   const showSessionProgress = hasStateNames || !!(roomData?.timerMode && startTime);
@@ -83,6 +139,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
           }}
           isSpeaking={remoteParticipant?.isSpeaking}
+          turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
+          turnIndicatorTranslations={translations?.turnIndicator}
         />
         <UserCallCard
           userData={{
@@ -91,6 +149,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           }}
           isSpeaking={localParticipant.isSpeaking}
           isMuted={isMuted}
+          turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
+          turnIndicatorTranslations={translations?.turnIndicator}
         />
         {!isFocusMode &&
           (showSessionProgress ||

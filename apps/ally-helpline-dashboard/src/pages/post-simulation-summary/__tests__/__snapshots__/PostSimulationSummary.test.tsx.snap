@@ -61,7 +61,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 </defs>
               </svg>
             </button>
-            role play 
+            Role play 
             <em>
               Summary
             </em>
@@ -231,7 +231,7 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
                 </defs>
               </svg>
             </button>
-            role play 
+            Role play 
             <em>
               Summary
             </em>

@@ -1,10 +1,13 @@
 import { FC, useEffect, useState } from "react";
 
+import { useTranslation } from "react-i18next";
+
 interface OverallScoreMeterProps {
   percentage: number;
 }
 
 export const OverallScoreMeter: FC<OverallScoreMeterProps> = ({ percentage }) => {
+  const { t } = useTranslation();
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
   const size = 180;
   const strokeWidth = 12;
@@ -65,7 +68,9 @@ export const OverallScoreMeter: FC<OverallScoreMeterProps> = ({ percentage }) =>
         <span className="text-4xl font-semibold text-typography-800 font-primary">
           {animatedPercentage}%
         </span>
-        <span className="text-sm text-typography-500 mt-1 font-primary">Overall Score</span>
+        <span className="text-sm text-typography-500 mt-1 font-primary">
+          {t("summary.overallScore")}
+        </span>
       </div>
     </div>
   );

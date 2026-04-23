@@ -2,12 +2,11 @@ import { FC, useEffect, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { DropdownField, FEATURE_FLAGS_MAP, MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
-import { useEndSimulationMutation, useGetScenarioQuery } from "@api";
+import { DropdownField, MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
+import { useEndSimulationMutation, useGetScenarioQuery, useGetScenariosQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
   LoginDialog,
@@ -29,17 +28,6 @@ export const Scenario: FC = () => {
   const { t } = useTranslation();
   const { scenarioId } = useParams();
   const navigate = useNavigate();
-  const { state } = useLocation();
-  // Use languages from location state or fallback to empty array
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(
-    state?.selectedLanguage || null,
-  );
-
-  const handleLanguageChange = (value: string) => {
-    const selected = state?.languages?.find(lang => lang.label === value) || null;
-    setSelectedLanguage(selected);
-  };
-
   const { credits, limitReached, refetchCredits } = useSimulationCredits();
 
   const id = Number(scenarioId);
@@ -53,6 +41,7 @@ export const Scenario: FC = () => {
   const [notEnoughCredits, setNoEnoughCredits] = useState<boolean>(false);
   const [buttonDisable, setButtonDisable] = useState<boolean>(false);
   const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
 
   const {
     data: scenario,
@@ -63,6 +52,16 @@ export const Scenario: FC = () => {
     isPrivate: isAuthenticated(),
     languageCode: i18n.language,
   });
+
+  // Read availableLanguages from the already-cached scenarios list (v2 endpoint returns it)
+  const { availableLanguages } = useGetScenariosQuery(
+    { isPrivate: isAuthenticated(), languageCode: i18n.language },
+    {
+      selectFromResult: ({ data }) => ({
+        availableLanguages: data?.data?.find(s => s.id === id)?.availableLanguages ?? [],
+      }),
+    },
+  );
   const [endSimulation] = useEndSimulationMutation();
 
   const [startSimulationError, setStartSimulationError] = useState<unknown>(null);
@@ -90,6 +89,18 @@ export const Scenario: FC = () => {
     }
     if (limitReached) setNoEnoughCredits(true);
   }, [credits]);
+
+  // Set default language from the scenarios list availableLanguages
+  useEffect(() => {
+    if (availableLanguages?.length) {
+      setSelectedLanguage(availableLanguages[0]);
+    }
+  }, [availableLanguages]);
+
+  const handleLanguageChange = (label: string) => {
+    const selected = availableLanguages?.find(lang => lang.label === label) || null;
+    setSelectedLanguage(selected);
+  };
 
   const renderBackButton = () => {
     return (
@@ -201,13 +212,13 @@ export const Scenario: FC = () => {
                 <CreditsDisplay />
               </div>
             )}
-            {/* Only show this DropdownField when state.languages has languages and language capability flag is enabled */}
-            {state?.languages?.length > 0 && FEATURE_FLAGS_MAP.LANGUAGE_CAPABILITY_FLAG && (
+            {/* Language dropdown — shown when scenario has languages from the API */}
+            {(availableLanguages?.length ?? 0) > 0 && (
               <div className="w-full sm:w-48 self-start">
                 <div className="relative w-48">
                   <DropdownField
                     data-testid="language-dropdown"
-                    options={state?.languages?.map(option => option.label) || []}
+                    options={availableLanguages.map(lang => lang.label)}
                     value={selectedLanguage?.label || ""}
                     onChange={handleLanguageChange}
                     valueClassName="text-typography-900 font-primary"

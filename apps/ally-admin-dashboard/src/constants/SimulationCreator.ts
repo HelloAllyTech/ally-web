@@ -82,6 +82,7 @@ export const EXPERIENCE_MODE_OPTIONS = [
 export const CHECKLIST_TYPE_OPTIONS = [
   { value: "GUIDED", label: "Guided" },
   { value: "UNGUIDED", label: "Unguided" },
+  { value: "LIST", label: "List" },
 ];
 
 export const SIMULATION_CREATOR_STEP_IDS = {
@@ -236,6 +237,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isDashedLineAbove: true,
       },
       {
+        id: "description",
+        label: "Challenge Description",
+        placeholder: "What is the primary learning goal?",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: true,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1000,
+        regenerateType: REGENERATE_TYPE.DESCRIPTION,
+      },
+      {
         id: "coverImageUrl",
         label: "Cover Image",
         type: FORM_FIELD_TYPES.IMAGE_UPLOAD,
@@ -273,17 +285,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
     label: "Basic Settings",
     fields: [
-      {
-        id: "description",
-        label: "Challenge Description",
-        placeholder: "What is the primary learning goal?",
-        type: FORM_FIELD_TYPES.TEXT,
-        isMandatory: true,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.DESCRIPTION,
-      },
       {
         id: "prompt",
         label: "Role instruction",
@@ -337,7 +338,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Knowledge Sources",
         type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
         fullWidth: true,
-        visibleWhen: () => FEATURE_FLAGS_MAP.KNOWLEDGE_SOURCE_FLAG,
       },
       {
         id: "languageVoices",

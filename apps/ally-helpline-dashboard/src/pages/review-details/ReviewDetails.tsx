@@ -318,7 +318,9 @@ export const ReviewDetails = () => {
       setSelectedEmoji(nextEmoji);
       setShowEmojiPicker(false);
     } catch (error) {
-      toast.error(error?.data?.message || t("review.details.reactionFailed"));
+      toast.error(
+        error?.data?.message || t("review.details.reactionFailed", "Failed to add reaction"),
+      );
     }
   };
 

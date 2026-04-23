@@ -73,6 +73,12 @@ export const Login: FunctionComponent = () => {
   const [putCheckTermsAndAgreement] = usePutTermsAndAgreementMutation();
 
   const isLoading = isGeneratingOTP || isVerifyingOTP;
+  const otpExpiryMinutes = generateOTPData?.expiresIn
+    ? generateOTPData.expiresIn / 60
+    : DEFAULT_EXPIRES_IN;
+  const otpExpiryText = t(otpExpiryMinutes === 1 ? "common.minutes_one" : "common.minutes_other", {
+    count: otpExpiryMinutes,
+  });
 
   useEffect(() => {
     const rememberedEmail = localStorage.getItem("rememberedEmail");
@@ -335,11 +341,7 @@ export const Login: FunctionComponent = () => {
           <OTP value={otp} onChange={setOtp} />
           <div className="text-xs text-typography-900">
             {t("auth.login.otp.expires", {
-              minutes: t("common.minutes", {
-                count: generateOTPData?.expiresIn
-                  ? generateOTPData.expiresIn / 60
-                  : DEFAULT_EXPIRES_IN,
-              }),
+              minutes: otpExpiryText,
             })}
             <span
               className={`${countdown > 0 ? "text-typography-800" : "text-primary-500"} pl-2 cursor-pointer`}

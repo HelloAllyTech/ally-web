@@ -44,9 +44,9 @@ export const userEditMenu = [
   UserMenuOptions.EDIT_DETAILS,
   UserMenuOptions.CHANGE_ROLE,
   UserMenuOptions.MANAGE_CREDITS,
-  UserMenuOptions.SUSPEND_USER,
   UserMenuOptions.GRANT_ACCESS,
   UserMenuOptions.IMPERSONATE_USER,
+  UserMenuOptions.SUSPEND_USER,
   // UserMenuOptions.REMOVE_USER, // TODO: Add this after backend change for delete user is implemented
 ];
 

@@ -11,3 +11,4 @@ export * from "./utils";
 export * from "./types";
 export * from "./constants";
 export * from "./waveformConstants";
+export { TurnTakingIndicator, TurnState } from "./TurnIndicator";

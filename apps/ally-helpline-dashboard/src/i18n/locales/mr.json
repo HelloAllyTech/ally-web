@@ -74,7 +74,8 @@
       "collapse": "साइडबार कमी करा"
     },
     "language": {
-      "label": "ॲपची भाषा"
+      "label": "ॲपची भाषा",
+      "selectorAria": "भाषा निवडक"
     },
     "tabs": {
       "learn": "शिका",
@@ -125,8 +126,6 @@
     "viewAllBadges": "सर्व बॅजेस पहा",
     "emptyHome": "तुमच्याकडे अद्याप कोणतेही बॅज नाहीत.",
     "badgesCount": "{{count}} बॅजेस",
-    "locked": "लॉक केलेले",
-    "earned": "कमावलेले",
     "badgesTooltip": "बॅजेस तुमच्या सिम्युलेशन्स आणि समुदायाच्या सहभागावर आधारित कमावले जातात. काही बॅजेस काढले जाऊ शकतात जर पात्र क्रिया रद्द केल्या गेल्या.",
     "filters": {
       "all": "सर्व",
@@ -220,7 +219,6 @@
       "pageTitlePrefix": "सुरू करा",
       "pageTitleEmphasis": "सिम्युलेशन",
       "backAria": "संदर्भ तपशील बंद करा",
-      "previewAltSuffix": "दृश्य पूर्वावलोकन",
       "mediaUnavailable": "मीडिया उपलब्ध नाही",
       "share": "शेअर",
       "shareAria": "सामान्य परिस्थिती सामायिक करा",
@@ -298,28 +296,7 @@
         "headerSubtitle": "तपशील"
       }
     },
-    "backToLearn": "शिक्षणाकडे परत",
-    "notFound": {
-      "case": "केस सापडला नाही",
-      "track": "ट्रॅक सापडला नाही"
-    },
-    "evaluationChecklist": "मूल्यांकन चेकलिस्ट"
-  },
-  "health": {
-    "title": "अर्ज आरोग्य स्थिती",
-    "status": {
-      "healthy": "आरोग्यदायी"
-    },
-    "description": "सर्व प्रणाली सामान्यपणे कार्यरत आहेत. ही पृष्ठ फ्रंटएंड अनुप्रयोग चालू आणि प्रतिसाद देत असल्याची पुष्टी करते.",
-    "lastChecked": "शेवटचा तपास: {{time}}"
-  },
-  "reflection": {
-    "title": "स्व-परिचय प्रेरणाएँ",
-    "clear": "स्पष्ट",
-    "save": "साठवणे",
-    "prompts": {
-      "clientNeed": "तुम्हाला काय वाटते की ग्राहकाला त्या क्षणी सर्वात जास्त काय आवश्यक होते जेव्हा तुम्ही समस्येचे समाधान करण्यास वळलात?"
-    }
+    "evaluationChecklist": "मूल्यांकन तपासणी यादी"
   },
   "analytics": {
     "title": "सत्र विश्लेषण",
@@ -330,7 +307,6 @@
       "org": "संस्थान विश्लेषण"
     },
     "empty": {
-      "title": "विश्लेषण कॉन्फिगर केलेले नाही",
       "description": "कुठेही डॅशबोर्ड उपलब्ध नाहीत. कृपया आपल्या प्रशासकाशी संपर्क साधा."
     }
   },
@@ -375,22 +351,36 @@
       }
     ]
   },
-  "settings": {
-    "comingSoon": {
-      "title": "लवकरच येत आहे",
-      "description": "आम्ही काही रोमांचक काम करत आहोत! ही वैशिष्ट्य लवकरच उपलब्ध होईल."
-    }
+  "askAi": {
+    "initial": {
+      "titlePrefix": "तुम्हाला काय हवे आहे?",
+      "titleSuffix": "फीडबॅक कशावर?",
+      "subtitle": "एक प्रॉम्प्ट निवडा किंवा आपला स्वतःचा प्रश्न विचारा."
+    },
+    "cards": {
+      "responseEffectiveness": "या सत्रात मी कुठे सर्वात प्रभावीपणे प्रतिसाद दिला?",
+      "pacingPresence": "माझा गती आणि उपस्थिती एकूण कशी होती?",
+      "missedClientCues": "मी क्लायंटला कुठे चुकले किंवा चुकीच्या वाचनात गेला असेन?",
+      "therapeuticTechniques": "कौनती उपचारात्मक तंत्रे/चालना सर्वाधिक उपयुक्त होती?"
+    },
+    "transcriptReferences": "ट्रांस्क्रिप्ट संदर्भ",
+    "inputPlaceholder": "सत्राबद्दल एक प्रश्न विचारा.... (0/{{max}})"
+  },
+  "reflection": {
+    "autosaving": "स्वयंचलित जतन",
+    "saveFailed": "साठवण्यात अयशस्वी",
+    "saved": "सुरक्षित केलेले",
+    "autoSaveFailed": "प्रतिक्रिया स्वयंचलितपणे जतन करण्यात अयशस्वी",
+    "writeThoughts": "येथे तुमचे विचार लिहा...",
+    "noPrompts": "कोणतेही संकेत उपलब्ध नाहीत"
   },
   "postSim": {
     "titlePrefix": "सिम्युलेशन",
     "skills": {
-      "shownInSession": "या सत्रात दर्शविलेली कौशल्ये",
       "empty": "या सत्रासाठी कोणताही कौशल्य डेटा उपलब्ध नाही",
-      "loading": "कौशल्य डेटा लोड होत आहे...",
       "failed": "कौशल्य डेटा लोड करण्यात अयशस्वी",
       "coverage": "कौशल्य कव्हरेज",
       "distressAlleviation": "क्लाइंटच्या संकटाचे निवारण",
-      "emotionalMovement": "क्लाइंट भावनिक हालचाल",
       "level": "पातळी (-5 to 5)",
       "timeline": "सत्र टाइमलाइन",
       "strengths": "दाखवलेली ताकद आणि कौशल्ये",
@@ -398,17 +388,13 @@
       "recommended": "शिफारस केलेले"
     },
     "tabs": {
-      "transcription": "ट्रान्सक्रिप्शन",
       "annotatedTranscript": "अंकित प्रतिलिपी",
       "upNext": "आगामी",
       "askAi": "AI ला विचारा",
-      "reflection": "परावर्तन",
       "deeperReflection": "गहन विचार",
-      "skills": "कौशल्ये",
       "skillsDemonstrated": "कौशल्ये प्रदर्शित केली",
       "sessionReview": "सत्र पुनरावलोकन"
     },
-    "simulationSummary": "सिम्युलेशन सारांश",
     "shortSession": {
       "title": "सत्र खूप लवकर संपले",
       "description": "सार्थक प्रतिसाद देण्यासाठी आम्हाला अधिक संवाद डेटा हवा आहे."
@@ -456,10 +442,48 @@
       "dateAndTime": "तारीख आणि वेळ",
       "addNote": "नोट जोडा",
       "editNote": "नोट संपादित करा",
+      "noteLabel": "सूचना",
+      "editedLabel": "[संपादित]",
       "addNotePlaceholder": "नोट जोडा...",
       "shareModalHeader": "समीक्षेसाठी शेअर करा",
       "addCommentPlaceholder": "एक टिप्पणी जोडा",
-      "commentAction": "टिप्पणी करा"
+      "commentAction": "टिप्पणी करा",
+      "replyAction": "उत्तर द्या",
+      "replyPlaceholder": "उत्तर जोडा",
+      "editCommentPlaceholder": "टिप्पणी संपादित करा",
+      "done": "पूर्ण झाले",
+      "replyLabel": "उत्तर द्या",
+      "repliesLabel": "उत्तर",
+      "commentLabel": "टिप्पणी",
+      "hideReply": "उत्तर लपवा",
+      "hideReplies": "उत्तर लपवा",
+      "hide": "लपवा",
+      "unhide": "अदृश्य करा",
+      "edit": "संपादित करा",
+      "delete": "हटवा",
+      "insertEmoji": "इमोजी समाविष्ट करा",
+      "commentOptions": "टिप्पणी पर्याय",
+      "unknownUser": "अज्ञात",
+      "loadRepliesFailed": "उत्तर लोड करण्यात अयशस्वी.",
+      "reactionUpdateFailed": "प्रतिक्रिया अद्यतन अयशस्वी झाला",
+      "commentHiddenSuccessfully": "टिप्पणी यशस्वीपणे लपवली",
+      "commentUnhiddenSuccessfully": "टिप्पणी यशस्वीपणे अनलॉक केली गेली",
+      "replyHiddenSuccessfully": "उत्तर यशस्वीपणे लपवले गेले",
+      "replyUnhiddenSuccessfully": "उत्तर यशस्वीपणे अनलॉक केला",
+      "commentHideFailed": "टिप्पणी लपविण्यात अयशस्वी",
+      "commentUnhideFailed": "टिप्पणी अनलपण्यास अयशस्वी",
+      "replyHideFailed": "उत्तर लपविण्यात अयशस्वी",
+      "replyUnhideFailed": "उत्तर उघडण्यात अयशस्वी",
+      "commentDeletedSuccessfully": "टिप्पणी यशस्वीपणे हटवली गेली",
+      "replyDeletedSuccessfully": "उत्तर यशस्वीपणे हटविला गेला",
+      "commentDeleteFailed": "टिप्पणी हटवण्यात अयशस्वी",
+      "replyDeleteFailed": "उत्तर हटवण्यात अयशस्वी",
+      "commentUpdatedSuccessfully": "टिप्पणी यशस्वीपणे अद्यतनित केली",
+      "replyUpdatedSuccessfully": "उत्तर यशस्वीपणे अद्यतनित केला गया",
+      "commentUpdateFailed": "टिप्पणी अद्यतन करण्यात अयशस्वी",
+      "replyUpdateFailed": "उत्तर अद्यतन करण्यात अयशस्वी",
+      "replyCreatedSuccessfully": "उत्तर यशस्वीपणे तयार झाला",
+      "replyCreateFailed": "उत्तर तयार करण्यात अयशस्वी"
     },
     "reactionsModal": {
       "title": "प्रतिक्रिया",
@@ -468,7 +492,6 @@
       "noReactionsYet": "काही प्रतिक्रिया नाहीत"
     },
     "feedCard": {
-      "sharedSimulation": "समीक्षेसाठी सामायिक केलेली सिम्युलेशन",
       "dateTime": "तारीख आणि वेळ",
       "duration": "कालावधी",
       "sec": "सेकंद",
@@ -592,7 +615,6 @@
     "clientLabel": "क्लायंट",
     "counsellorLabel": "सलाहकार",
     "aiAgentName": "एआय एजंट",
-    "youName": "तू",
     "aiClientSuffix": "एआय क्लायंट"
   },
   "summary": {
@@ -601,7 +623,7 @@
     "notFoundDesc": "आपण शोधत असलेला सारांश अस्तित्वात नाही.",
     "goHome": "मुख्यपृष्ठावर जा",
     "additionalNotes": "अतिरिक्त नोट्स",
-    "notesAlt": "नोट्स",
+    "overallScore": "एकूण गुण",
     "save": "साठवणे",
     "saving": "साठवित आहे...",
     "enhance": "वाढवा",
@@ -628,19 +650,6 @@
       "metrics": "मेट्रिक्स",
       "intake": "इनटेक",
       "ongoingRisks": "सतत धोके"
-    },
-    "feedback": {
-      "title": "सत्र फीडबॅक",
-      "positives": "काय चांगले झाले",
-      "improvements": "सुधार टिप्स",
-      "keyEvents": "की घटना",
-      "coverImageAlt": "कव्हर इमेज",
-      "sessionId": "ID: {{id}}",
-      "columns": {
-        "time": "वेळ",
-        "event": "कार्यक्रम",
-        "score": "स्कोअर"
-      }
     },
     "placeholders": {
       "sessionSummary": "येथे सत्राच्या मुख्य थीम आणि महत्त्वाच्या गोष्टींचा जलद सारांश जोडा.",
@@ -765,16 +774,8 @@
       "upload_hint": "फक्त PNG किंवा JPG फाइल्स 1:1 गुणोत्तर (कमाल 2MB)"
     }
   },
-  "userMenu": {
-    "creditUsage": "क्रेडिट वापर",
-    "logout": "लॉगआउट"
-  },
   "calls": {
     "title": "सत्र लॉग",
-    "resumeNoteTaking": "नोट घेणे पुन्हा सुरू करा",
-    "pauseNoteTaking": "नोट घेणे थांबवा",
-    "turnFocusModeOn": "फोकस मोड चालू करा",
-    "turnFocusModeOff": "फोकस मोड बंद करा",
     "menu": {
       "archives": "आर्काइव्ह्स"
     },
@@ -785,7 +786,6 @@
     "table": {
       "counsellorName": "सलाहकार",
       "dateTime": "तारीख आणि वेळ",
-      "qualityScore": "गुणवत्ता स्कोर",
       "summaryStatus": "सारांश स्थिती",
       "source": "स्रोत",
       "actions": "क्रियाकलाप",
@@ -805,10 +805,6 @@
     "userGroups": {
       "my": "माझे लॉग",
       "org": "संस्थान लॉग"
-    },
-    "sessionTypes": {
-      "call": "कॉल",
-      "simulation": "सिम्युलेशन"
     },
     "fallback": {
       "callEmptyTitle": "कोणतेही कॉल लॉग सापडले नाहीत",
@@ -837,7 +833,6 @@
         "embedDesc": "एली आपल्यासोबत ऑडिओ ऐकेल",
         "titleNormal": "सत्र",
         "titleItalic": "सुरू करा",
-        "button": "आताच सत्र सुरू करा",
         "startScribeMode": "सक्रिय स्राइब मोड प्रारंभ करा",
         "startDictationMode": "डिक्टेशन मोड सुरू करा",
         "footer": "सुरू करून, आपण पुष्टी करता की ज्यांचे ट्रान्सक्रिप्शन केले जात आहे त्या प्रत्येकाने संमती दिली आहे.",
@@ -891,9 +886,7 @@
       },
       "errors": {
         "uploadFailed": "ऑडिओ अपलोड अयशस्वी झाला!",
-        "genericError": "ऑडिओ अपलोड करण्यात अयशस्वी",
-        "fillFields": "कृपया सर्व क्षेत्र भरा आणि एक फाइल अपलोड करा.",
-        "unsupportedFile": "चयनित फाइल प्रकार समर्थित नाही."
+        "genericError": "ऑडिओ अपलोड करण्यात अयशस्वी"
       }
     },
     "uploadProgress": {
@@ -941,6 +934,13 @@
     "of": "पैकी",
     "min": "मिनिटे",
     "sec": "सेकंद",
+    "turnIndicator": {
+      "speaking": "बोलत आहे...",
+      "listening": "ऐकत आहे...",
+      "yourTurnToSpeak": "आता बोलण्याची तुमची पाळी",
+      "yourTurnToListen": "आता ऐकण्याची तुमची पाळी",
+      "thinking": "विचार करत आहे..."
+    },
     "warningDialog": {
       "titleNormal": "सत्र",
       "titleItalic": "लवकरच संपत आहे",

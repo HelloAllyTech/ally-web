@@ -25,7 +25,7 @@
     "summary": "Summary",
     "exportSummary": "Download Summary",
     "startSimulation": "Start role play",
-    "simulation": "role play",
+    "simulation": "Role play",
     "triggerWarnings": "Trigger warnings:",
     "sessionId": "Session ID",
     "duration": "Duration",
@@ -74,7 +74,8 @@
       "collapse": "Collapse sidebar"
     },
     "language": {
-      "label": "App language"
+      "label": "App language",
+      "selectorAria": "Language selector"
     },
     "tabs": {
       "learn": "Learn",
@@ -125,8 +126,6 @@
     "viewAllBadges": "View all badges",
     "emptyHome": "You don't have any badges yet",
     "badgesCount": "{{count}} Badges",
-    "locked": "Locked",
-    "earned": "Earned",
     "badgesTooltip": "Badges are earned based on your activity across simulations and community participation. Some badges may be removed if qualifying actions are undone.",
     "filters": {
       "all": "All",
@@ -218,9 +217,8 @@
     },
     "scenario": {
       "pageTitlePrefix": "Start",
-      "pageTitleEmphasis": "role play",
+      "pageTitleEmphasis": "Role play",
       "backAria": "Close scenario details",
-      "previewAltSuffix": "scenario preview",
       "mediaUnavailable": "Media not available",
       "share": "Share",
       "shareAria": "Share scenario",
@@ -294,32 +292,11 @@
         "notFound": "Case not found"
       },
       "modal": {
-        "headerTitle": "role play",
+        "headerTitle": "Role play",
         "headerSubtitle": "Details"
       }
     },
-    "backToLearn": "Back to Learn",
-    "notFound": {
-      "case": "Case not found",
-      "track": "Track not found"
-    },
     "evaluationChecklist": "Evaluation Checklist"
-  },
-  "health": {
-    "title": "Application Health Status",
-    "status": {
-      "healthy": "Healthy"
-    },
-    "description": "All systems are operating normally. This page confirms that the frontend application is running and responsive.",
-    "lastChecked": "Last checked: {{time}}"
-  },
-  "reflection": {
-    "title": "Self-Reflection Prompts",
-    "clear": "Clear",
-    "save": "Save",
-    "prompts": {
-      "clientNeed": "What do you think the client needed most in the moment you shifted to problem-solving?"
-    }
   },
   "analytics": {
     "title": "Session Metrics",
@@ -330,7 +307,6 @@
       "org": "Organization Metrics"
     },
     "empty": {
-      "title": "Analytics not configured",
       "description": "No dashboards are available yet. Please contact your administrator."
     }
   },
@@ -375,22 +351,36 @@
       }
     ]
   },
-  "settings": {
-    "comingSoon": {
-      "title": "Coming Soon",
-      "description": "We’re working on something exciting! This feature will be available soon."
-    }
+  "askAi": {
+    "initial": {
+      "titlePrefix": "What would you like",
+      "titleSuffix": " feedback on?",
+      "subtitle": "Select a prompt or ask your own."
+    },
+    "cards": {
+      "responseEffectiveness": "Where did I respond most effectively in this session?",
+      "pacingPresence": "How was my pacing and presence overall?",
+      "missedClientCues": "Where might I have missed or misread the client?",
+      "therapeuticTechniques": "What therapeutic techniques/moves were most helpful?"
+    },
+    "transcriptReferences": "Transcript References",
+    "inputPlaceholder": "Ask a question about the session.... (0/{{max}})"
+  },
+  "reflection": {
+    "autosaving": "Autosaving",
+    "saveFailed": "Failed to save",
+    "saved": "Saved",
+    "autoSaveFailed": "Failed to auto-save the response",
+    "writeThoughts": "Write your thoughts here...",
+    "noPrompts": "No prompts available"
   },
   "postSim": {
-    "titlePrefix": "role play",
+    "titlePrefix": "Role play",
     "skills": {
-      "shownInSession": "Skills shown in this session",
       "empty": "No skills data available for this session",
-      "loading": "Loading skills data...",
       "failed": "Failed to load skills data",
       "coverage": "Skill Coverage",
       "distressAlleviation": "Client Distress Alleviation",
-      "emotionalMovement": "Client Emotional Movement",
       "level": "Level (-5 to 5)",
       "timeline": "Session Timeline",
       "strengths": "Strengths & skills demonstrated",
@@ -398,17 +388,13 @@
       "recommended": "RECOMMENDED"
     },
     "tabs": {
-      "transcription": "Conversation details",
       "annotatedTranscript": "Annotated Transcript",
       "upNext": "Up next",
       "askAi": "Ask AI",
-      "reflection": "Reflection",
       "deeperReflection": "Deeper Reflection",
-      "skills": "Skills",
       "skillsDemonstrated": "Skills  Demonstrated",
       "sessionReview": "Session Review"
     },
-    "simulationSummary": "Simulation Summary",
     "shortSession": {
       "title": "Session ended too soon",
       "description": "We need more interaction data to provide meaningful feedback."
@@ -456,10 +442,48 @@
       "dateAndTime": "Date & time",
       "addNote": "Add note",
       "editNote": "Edit note",
+      "noteLabel": "NOTE",
+      "editedLabel": "[Edited]",
       "addNotePlaceholder": "Add a note...",
       "shareModalHeader": "Share this for review",
       "addCommentPlaceholder": "Add a comment",
-      "commentAction": "Comment"
+      "commentAction": "Comment",
+      "replyAction": "Reply",
+      "replyPlaceholder": "Add reply",
+      "editCommentPlaceholder": "Edit comment",
+      "done": "Done",
+      "replyLabel": "Reply",
+      "repliesLabel": "Replies",
+      "commentLabel": "Comment",
+      "hideReply": "Hide Reply",
+      "hideReplies": "Hide Replies",
+      "hide": "Hide",
+      "unhide": "Unhide",
+      "edit": "Edit",
+      "delete": "Delete",
+      "insertEmoji": "Insert emoji",
+      "commentOptions": "Comment options",
+      "unknownUser": "Unknown",
+      "loadRepliesFailed": "Failed to load replies.",
+      "reactionUpdateFailed": "Reaction update failed",
+      "commentHiddenSuccessfully": "Comment hidden successfully",
+      "commentUnhiddenSuccessfully": "Comment unhidden successfully",
+      "replyHiddenSuccessfully": "Reply hidden successfully",
+      "replyUnhiddenSuccessfully": "Reply unhidden successfully",
+      "commentHideFailed": "Failed to hide comment",
+      "commentUnhideFailed": "Failed to unhide comment",
+      "replyHideFailed": "Failed to hide reply",
+      "replyUnhideFailed": "Failed to unhide reply",
+      "commentDeletedSuccessfully": "Comment deleted successfully",
+      "replyDeletedSuccessfully": "Reply deleted successfully",
+      "commentDeleteFailed": "Failed to delete comment",
+      "replyDeleteFailed": "Failed to delete reply",
+      "commentUpdatedSuccessfully": "Comment updated successfully",
+      "replyUpdatedSuccessfully": "Reply updated successfully",
+      "commentUpdateFailed": "Failed to update comment",
+      "replyUpdateFailed": "Failed to update reply",
+      "replyCreatedSuccessfully": "Reply created successfully",
+      "replyCreateFailed": "Failed to create reply"
     },
     "reactionsModal": {
       "title": "Reactions",
@@ -468,7 +492,6 @@
       "noReactionsYet": "No reactions yet"
     },
     "feedCard": {
-      "sharedSimulation": "Role play session shared for feedback",
       "dateTime": "Date & time",
       "duration": "Duration",
       "sec": "sec",
@@ -592,7 +615,6 @@
     "clientLabel": "Client",
     "counsellorLabel": "Counsellor",
     "aiAgentName": "AI Agent",
-    "youName": "You",
     "aiClientSuffix": "AI client"
   },
   "summary": {
@@ -601,7 +623,7 @@
     "notFoundDesc": "The summary you are looking for does not exist.",
     "goHome": "Go to Home",
     "additionalNotes": "Additional Notes",
-    "notesAlt": "Notes",
+    "overallScore": "Overall Score",
     "save": "Save report",
     "saving": "Saving...",
     "enhance": "Enhance",
@@ -628,19 +650,6 @@
       "metrics": "Metrics",
       "intake": "Intake",
       "ongoingRisks": "Ongoing Risks"
-    },
-    "feedback": {
-      "title": "Session Feedback",
-      "positives": "What went well",
-      "improvements": "Improvement tips",
-      "keyEvents": "Key Events",
-      "coverImageAlt": "Cover image",
-      "sessionId": "ID: {{id}}",
-      "columns": {
-        "time": "Time",
-        "event": "Event",
-        "score": "Score"
-      }
     },
     "placeholders": {
       "sessionSummary": "Add a short summary of the session’s main points here.",
@@ -745,7 +754,7 @@
       },
       "speech": {
         "clearCoherent": "Clear & Coherent",
-        "sluttering": "Sluttering",
+        "sluttering": "Stuttering",
         "fast": "Fast",
         "slow": "Slow",
         "difficultToUnderstand": "Difficult to Understand"
@@ -765,16 +774,8 @@
       "upload_hint": "PNG or JPG files only 1:1 ratio (max 2mb)"
     }
   },
-  "userMenu": {
-    "creditUsage": "Credit usage",
-    "logout": "Logout"
-  },
   "calls": {
     "title": "Session Logs",
-    "resumeNoteTaking": "Resume note taking",
-    "pauseNoteTaking": "Pause note taking",
-    "turnFocusModeOn": "Turn focus mode on",
-    "turnFocusModeOff": "Turn focus mode off",
     "menu": {
       "archives": "Archives"
     },
@@ -785,7 +786,6 @@
     "table": {
       "counsellorName": "Counsellor",
       "dateTime": "Date & Time",
-      "qualityScore": "Quality Score",
       "summaryStatus": "Status",
       "source": "Channel",
       "actions": "Actions",
@@ -805,10 +805,6 @@
     "userGroups": {
       "my": "My Logs",
       "org": "Org Logs"
-    },
-    "sessionTypes": {
-      "call": "Call",
-      "simulation": "role play"
     },
     "fallback": {
       "callEmptyTitle": "No call logs found",
@@ -837,7 +833,6 @@
         "embedDesc": "Ally will hear audio alongside you",
         "titleNormal": "Start",
         "titleItalic": "Session",
-        "button": "Start Session now",
         "startScribeMode": "Start Scribe Mode",
         "startDictationMode": "Start Dictation Mode",
         "footer": "By starting, you confirm everyone being transcribed has given consent.",
@@ -891,9 +886,7 @@
       },
       "errors": {
         "uploadFailed": "Audio Upload failed!",
-        "genericError": "Failed to upload audio",
-        "fillFields": "Please fill all the fields and upload a file.",
-        "unsupportedFile": "Selected file type is not supported."
+        "genericError": "Failed to upload audio"
       }
     },
     "uploadProgress": {
@@ -941,6 +934,13 @@
     "of": "of",
     "min": "min",
     "sec": "sec",
+    "turnIndicator": {
+      "speaking": "Speaking...",
+      "listening": "Listening...",
+      "yourTurnToSpeak": "Your turn to speak",
+      "yourTurnToListen": "Your turn to listen",
+      "thinking": "Thinking..."
+    },
     "warningDialog": {
       "titleNormal": "Session",
       "titleItalic": "Ending Soon",

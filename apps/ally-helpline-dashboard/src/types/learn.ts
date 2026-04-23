@@ -1,5 +1,5 @@
 import { triggerWarning } from "@ally-ui-mono/ui-shared/types";
-import { Citation, Thread } from "@types";
+import { Citation, Thread, LanguageOption } from "@types";
 
 export enum ScenarioStatus {
   ACTIVE = "ACTIVE",
@@ -40,6 +40,7 @@ export interface Scenario {
   showScoreMeter?: boolean;
   difficultyLevel?: string;
   stateNames?: { name: string; stateId: string }[];
+  availableLanguages?: LanguageOption[];
 }
 
 export interface ScenarioSession {
@@ -349,6 +350,7 @@ export interface PathwayScenario {
   order: number;
   triggerWarnings?: triggerWarning[];
   status: PathwayScenarioStatus;
+  availableLanguages?: LanguageOption[];
 }
 
 export interface ScenarioPathwayDetails {

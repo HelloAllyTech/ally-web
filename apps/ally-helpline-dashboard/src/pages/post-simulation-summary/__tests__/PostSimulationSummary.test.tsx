@@ -265,7 +265,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((_content, element) =>
-        hasNormalizedText(element, "role play Summary"),
+        hasNormalizedText(element, "Role play Summary"),
       );
       expect(title).not.toBeNull();
       expect(title.className).toContain("text-black");
@@ -781,10 +781,10 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((_content, element) =>
-        hasNormalizedText(element, "role play Summary"),
+        hasNormalizedText(element, "Role play Summary"),
       );
       expect(title).not.toBeNull();
-      expect(title.innerHTML).toContain("role play");
+      expect(title.innerHTML).toContain("Role play");
       expect(title.innerHTML).toContain("<em>Summary</em>");
     });
 
@@ -796,7 +796,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((_content, element) =>
-        hasNormalizedText(element, "role play Summary"),
+        hasNormalizedText(element, "Role play Summary"),
       );
       expect(title.tagName.toLowerCase()).toBe("div");
     });
@@ -829,7 +829,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((_content, element) =>
-        hasNormalizedText(element, "role play Summary"),
+        hasNormalizedText(element, "Role play Summary"),
       );
       expect(title.className).toContain("text-2xl");
       expect(title.className).toContain("sm:text-4xl");
@@ -907,7 +907,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       const title = screen.getByText((_content, element) =>
-        hasNormalizedText(element, "role play Summary"),
+        hasNormalizedText(element, "Role play Summary"),
       );
       expect(title).not.toBeNull();
     });

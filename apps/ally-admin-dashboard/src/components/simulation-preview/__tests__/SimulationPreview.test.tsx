@@ -31,16 +31,6 @@ vi.mock("react-router-dom", async () => {
 vi.mock("@api", () => ({
   useScenarioPreviewMutation: () => [scenarioPreviewTrigger],
   useEndScenarioPreviewMutation: () => [endScenarioPreviewTrigger],
-  useGetScenarioLanguagesQuery: () => ({
-    data: [
-      {
-        language_id: 1,
-        label: "English (India)",
-        value: "English",
-        translationCode: "en",
-      },
-    ],
-  }),
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -245,6 +235,14 @@ const simulation = {
   description: "Test description",
   coverImageUrl: "https://example.com/cover.jpg",
   status: SimulationStatus.ACTIVE,
+  availableLanguages: [
+    {
+      language_id: 1,
+      label: "English (India)",
+      value: "English",
+      translationCode: "en",
+    },
+  ],
 } as any;
 
 describe("SimulationPreview", () => {

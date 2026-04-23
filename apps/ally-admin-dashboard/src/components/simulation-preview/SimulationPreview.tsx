@@ -8,20 +8,11 @@ import {
   DropdownField,
   MaxActiveUsersDialog,
 } from "@ally-ui-mono/ui-shared";
-import {
-  useEndScenarioPreviewMutation,
-  useScenarioPreviewMutation,
-  useGetScenarioLanguagesQuery,
-} from "@api";
+import { useEndScenarioPreviewMutation, useScenarioPreviewMutation } from "@api";
 import { ActionConfirmationPopup } from "@components";
 import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { useUser } from "@hooks";
-import {
-  ScenarioLanguage,
-  SimulationPreviewProps,
-  StartSimulationResponse,
-  SimulationStatus,
-} from "@types";
+import { SimulationPreviewProps, StartSimulationResponse, SimulationStatus } from "@types";
 
 export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -32,15 +23,10 @@ export const SimulationPreview: FC<SimulationPreviewProps> = ({ simulation, isOp
   const [showNotification, setShowNotification] = useState<boolean>(false);
   const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
   const shouldLoadLanguages = simulation.status === SimulationStatus.ACTIVE;
-  const { data: languageOptions = [] } = useGetScenarioLanguagesQuery(
-    {
-      active: true,
-      hasVoices: true,
-    },
-    { skip: !shouldLoadLanguages },
-  ) as {
-    data: ScenarioLanguage[];
-  };
+  const languageOptions = useMemo(
+    () => (shouldLoadLanguages ? (simulation.availableLanguages ?? []) : []),
+    [shouldLoadLanguages, simulation.availableLanguages],
+  );
 
   const [selectedLanguageLabel, setSelectedLanguageLabel] = useState<string>("");
 

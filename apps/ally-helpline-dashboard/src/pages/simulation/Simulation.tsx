@@ -42,6 +42,13 @@ export const Simulation = () => {
     of: t("simulationPage.of"),
     min: t("simulationPage.min"),
     sec: t("simulationPage.sec"),
+    turnIndicator: {
+      speaking: t("simulationPage.turnIndicator.speaking"),
+      listening: t("simulationPage.turnIndicator.listening"),
+      yourTurnToSpeak: t("simulationPage.turnIndicator.yourTurnToSpeak"),
+      yourTurnToListen: t("simulationPage.turnIndicator.yourTurnToListen"),
+      thinking: t("simulationPage.turnIndicator.thinking"),
+    },
   };
 
   const [endSimulation] = useEndSimulationMutation();
@@ -52,10 +59,16 @@ export const Simulation = () => {
 
   const endSessionButtonRef = useRef<boolean>(false);
 
-  const { room, roomData, roomStatus, startTime, events, score, detectedEventIds } = useLiveKitRoom(
-    handleRoomDisconnected,
-    endSessionButtonRef,
-  );
+  const {
+    room,
+    roomData,
+    roomStatus,
+    startTime,
+    events,
+    score,
+    detectedEventIds,
+    agentTurnStatus,
+  } = useLiveKitRoom(handleRoomDisconnected, endSessionButtonRef);
 
   if (roomData) {
     roomData["title"] = scenarioTitle;
@@ -121,6 +134,7 @@ export const Simulation = () => {
         stateNames={roomData?.stateNames ?? []}
         difficultyLevel={roomData?.difficultyLevel ?? ""}
         translations={simulationTranslations}
+        agentTurnStatus={agentTurnStatus}
       />
       <ConfirmationDialog
         isOpen={isBackConfirmOpen}

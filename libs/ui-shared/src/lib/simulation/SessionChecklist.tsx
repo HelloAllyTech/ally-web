@@ -58,22 +58,28 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
       className="overflow-hidden bg-[#1d2020] flex flex-col h-full w-full rounded-lg p-4 font-sans"
     >
       {/* Header */}
-      <div className="flex items-start gap-4 mb-6 pt-2 pl-1">
-        <div className="mt-1">
+      <div
+        className={`flex gap-4 mb-6 pt-2 pl-1 ${
+          mode === ChecklistMode.LIST ? "items-center" : "items-start"
+        }`}
+      >
+        <div className={mode === ChecklistMode.LIST ? "" : "mt-1"}>
           <ListChecks className="w-10 h-10 text-white" />
         </div>
         <div className="flex flex-col">
           <span className="text-[18px] font-medium text-white leading-tight">
             {translations?.sessionChecklist ?? "Session Checklist"}
           </span>
-          <span className="text-[14px] text-[#9CA3AF] mt-1 italic font-['IBM_Plex_Serif']">
-            {translations?.progress ?? "Progress"}:{" "}
-            <span className="text-[#57f646] font-bold">{completedCount}</span>{" "}
-            {translations?.of ?? "of"}{" "}
-            <span className="text-white font-medium">
-              {totalCount} {translations?.completed ?? "completed"}
+          {mode !== ChecklistMode.LIST && (
+            <span className="text-[14px] text-[#9CA3AF] mt-1 italic font-['IBM_Plex_Serif']">
+              {translations?.progress ?? "Progress"}:{" "}
+              <span className="text-[#57f646] font-bold">{completedCount}</span>{" "}
+              {translations?.of ?? "of"}{" "}
+              <span className="text-white font-medium">
+                {totalCount} {translations?.completed ?? "completed"}
+              </span>
             </span>
-          </span>
+          )}
         </div>
       </div>
 
@@ -83,9 +89,13 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
           const itemId = item.id || `item-${index}`;
           const isTriggered = item.id ? triggeredEvents.includes(item.id) : true;
           const isExpanded = !!expandedItems[itemId];
-          // Guided mode: Show Name. Unguided mode: Show Name if triggered, otherwise show blank.
+          // Guided/List mode: Show Name. Unguided mode: Show Name if triggered, otherwise show blank.
           const displayText =
-            mode === ChecklistMode.GUIDED ? item.name : isTriggered ? item.name : (item.rank ?? ``);
+            mode === ChecklistMode.GUIDED || mode === ChecklistMode.LIST
+              ? item.name
+              : isTriggered
+                ? item.name
+                : (item.rank ?? ``);
 
           return (
             <div
@@ -98,16 +108,18 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
               >
                 <div className="flex items-center gap-4">
                   {/* Status Circle */}
-                  <div
-                    className={`flex items-center justify-center w-6 h-6 rounded-full shrink-0 transition-colors duration-300 ${
-                      isTriggered ? "bg-[#57f646]" : "bg-[#3D4045]"
-                    }`}
-                  >
-                    <Check
-                      className={`w-3.5 h-3.5 ${isTriggered ? "text-black" : "text-[#25272a]"}`}
-                      strokeWidth={3}
-                    />
-                  </div>
+                  {mode !== ChecklistMode.LIST && (
+                    <div
+                      className={`flex items-center justify-center w-6 h-6 rounded-full shrink-0 transition-colors duration-300 ${
+                        isTriggered ? "bg-[#57f646]" : "bg-[#3D4045]"
+                      }`}
+                    >
+                      <Check
+                        className={`w-3.5 h-3.5 ${isTriggered ? "text-black" : "text-[#25272a]"}`}
+                        strokeWidth={3}
+                      />
+                    </div>
+                  )}
                   {/* Title */}
                   <span className="text-[15px] font-medium text-white select-none">
                     {displayText}
@@ -115,7 +127,7 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
                 </div>
 
                 {/* Chevron */}
-                {mode === ChecklistMode.GUIDED && item.message && (
+                {(mode === ChecklistMode.GUIDED || mode === ChecklistMode.LIST) && item.message && (
                   <div className="text-white shrink-0 opacity-70">
                     {isExpanded ? (
                       <Triangle className="w-3 h-3" fill="white" />
@@ -126,8 +138,8 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
                 )}
               </div>
 
-              {/* Description (Guided Only) */}
-              {mode === ChecklistMode.GUIDED && (
+              {/* Description (Guided / List) */}
+              {(mode === ChecklistMode.GUIDED || mode === ChecklistMode.LIST) && (
                 <AnimatePresence>
                   {isExpanded && item.message && (
                     <motion.div

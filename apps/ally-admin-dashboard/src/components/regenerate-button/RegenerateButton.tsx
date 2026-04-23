@@ -2,12 +2,13 @@ import { FC, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useRegenerateFieldMutation } from "@api";
+import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
 import {
   BEHAVIOUR_STATES,
   DEFAULT_AUTOFILL_MODEL,
+  FALLBACK_AUTOFILL_MODEL_OPTIONS,
   FORM_FIELD_IDS,
   REGENERATE_TYPE,
   en,
@@ -29,8 +30,13 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
   disabled = false,
 }) => {
   const [regenerateField] = useRegenerateFieldMutation();
+  const { data: apiModels } = useGetAutofillModelsQuery();
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
+
+  const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
+  const selectedProvider =
+    allModelOptions.find(m => m.value === selectedModel)?.provider ?? "openai";
 
   const buildScenarioContext = () => {
     if (!formMethods) return {};
@@ -125,7 +131,8 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
 
     if (processor.validate(content)) {
       const value = processor.transform ? processor.transform(content) : (content ?? "");
-      formMethods.setValue(processor.fieldId, value);
+      formMethods.setValue(processor.fieldId, value, { shouldDirty: true });
+      toast.success(`${label || "Field"} ${en.simulation.regeneratedSuccessfully}`);
     } else {
       showError();
     }
@@ -181,6 +188,7 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
         fieldName: regenerateType,
         scenarioContext,
         model: selectedModel,
+        provider: selectedProvider,
       }).unwrap();
 
       processRegenerateResponse(response);

@@ -28,6 +28,7 @@ import {
 import { AddUserFormData, FieldProps, Tenant, UserListUser, UserRoles } from "@types";
 import { getChipValue } from "@utils";
 export const USERS_PAGE_SIZE = 20;
+const IMPERSONATION_APP_URL = import.meta.env.VITE_IMPERSONATION_APP_URL;
 
 export function useUserManagement(tenants: Tenant[]) {
   const [search, setSearch] = useState<string>("");
@@ -338,7 +339,7 @@ export function useUserManagement(tenants: Tenant[]) {
       const params = new URLSearchParams({
         code: response?.data,
       });
-      window.open(`http://localhost:8080/auth/impersonate/callback?${params.toString()}`, "_blank");
+      window.open(`${IMPERSONATION_APP_URL}/impersonate/callback?${params.toString()}`, "_blank");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to impersonate user");
     }

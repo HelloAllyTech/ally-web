@@ -19,6 +19,17 @@ vi.mock("react-router-dom", () => ({
   useSearchParams: () => [mockSearchParams, mockSetSearchParams],
 }));
 
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string, defaultValue?: string) => {
+      if (key === "search.error") {
+        return "Error fetching search results";
+      }
+      return defaultValue ?? key;
+    },
+  }),
+}));
+
 vi.mock("@api", () => ({
   useGetSearchResultsMutation: () => [mockGetSearchResults, { isLoading: false }],
 }));
@@ -78,6 +89,8 @@ const mockWindowLocation = (search: string) => {
 // --- TESTS ---
 
 describe("SearchResources", () => {
+  const user = userEvent.setup();
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockWindowLocation("");
@@ -171,7 +184,7 @@ describe("SearchResources", () => {
     const mockNewData = mockApiResponse(5, [mockResource("A")]);
     mockGetSearchResults.mockResolvedValueOnce(mockNewData);
 
-    userEvent.click(screen.getByTestId("handler-search"));
+    await user.click(screen.getByTestId("handler-search"));
 
     await waitFor(() => {
       expect(mockSetSearchParams).toHaveBeenCalledWith({ q: "new query" });
@@ -204,7 +217,7 @@ describe("SearchResources", () => {
     const mockFilteredData = mockApiResponse(5, [mockResource("2"), mockResource("3")]);
     mockGetSearchResults.mockResolvedValueOnce(mockFilteredData);
 
-    userEvent.click(screen.getByTestId("handler-category-change"));
+    await user.click(screen.getByTestId("handler-category-change"));
 
     await waitFor(() => {
       expect(mockSetSearchParams).toHaveBeenCalledWith({ q: "widgets", category: "NewCategory" });
@@ -273,7 +286,7 @@ describe("SearchResources", () => {
     const nextPageData = mockApiResponse(20, newResources);
     mockGetSearchResults.mockResolvedValueOnce(nextPageData);
 
-    userEvent.click(screen.getByTestId("handler-infinite-scroll"));
+    await user.click(screen.getByTestId("handler-infinite-scroll"));
 
     await waitFor(() => {
       expect(mockGetSearchResults).toHaveBeenCalledTimes(2);

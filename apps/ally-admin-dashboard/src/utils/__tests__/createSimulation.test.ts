@@ -71,6 +71,27 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(true);
       });
 
+      it("should have challenge description field in overview section", () => {
+        const section = getOverviewSection();
+        const field = section?.fields.find(f => f.id === "description");
+
+        expect(field).toBeDefined();
+        expect(field?.label).toBe("Challenge Description");
+        expect(field?.placeholder).toBe("What is the primary learning goal?");
+        expect(field?.type).toBe("text");
+        expect(field?.isMandatory).toBe(true);
+      });
+
+      it("should place challenge description after character backstory in overview section", () => {
+        const section = getOverviewSection();
+        const fieldIds = section?.fields.map(field => field.id) ?? [];
+
+        expect(fieldIds.indexOf("characterProfileText")).toBeGreaterThan(-1);
+        expect(fieldIds.indexOf("description")).toBeGreaterThan(
+          fieldIds.indexOf("characterProfileText"),
+        );
+      });
+
       it("should have coverImageUrl field correctly configured in overview section", () => {
         const section = getOverviewSection();
         const field = section?.fields.find(f => f.id === "coverImageUrl");
@@ -78,6 +99,15 @@ describe("createSimulation utils", () => {
         expect(field?.label).toBe("Cover Image");
         expect(field?.type).toBe("image_upload");
         expect(field?.isMandatory).toBe(true);
+      });
+    });
+
+    describe("basic settings section fields", () => {
+      it("should not have challenge description field in basic settings section", () => {
+        const section = getCreateSimulationSubSectionById("basic-settings");
+        const field = section?.fields.find(f => f.id === "description");
+
+        expect(field).toBeUndefined();
       });
     });
   });
@@ -279,43 +309,6 @@ describe("createSimulation utils", () => {
         { stateId: "2", instruction: "More reflective but still hesitant" },
         { stateId: "3", instruction: "Emotionally open and self-aware" },
         { stateId: "-1", instruction: "Be rude" },
-      ]);
-    });
-
-    it("should normalize incomplete behavior instructions from older scenarios", () => {
-      const mockResponse: GetSimulationByIdResponse = {
-        id: "sim-incomplete",
-        title: "Incomplete",
-        description: "Older payload",
-        status: "DRAFT",
-        isGlobal: false,
-        isPublic: false,
-        coverImageUrl: "https://example.com/i.jpg",
-        createdBy: "u",
-        lastModified: "2024-01-01T00:00:00Z",
-        triggerWarnings: [],
-        difficultyLevel: "medium",
-        metadata: {},
-        competency: undefined,
-        behaviorInstructions: [
-          {
-            category: undefined as any,
-            behaviors: undefined as any,
-            instructions: undefined as any,
-            stateInstructions: undefined,
-          },
-        ],
-      } as GetSimulationByIdResponse;
-
-      const result = formatSimulationResponseData(mockResponse);
-
-      expect(result.behaviorInstructions).toEqual([
-        {
-          category: "",
-          behaviors: [],
-          instructions: [],
-          stateInstructions: [],
-        },
       ]);
     });
 

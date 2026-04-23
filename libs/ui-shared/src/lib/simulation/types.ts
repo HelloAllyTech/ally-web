@@ -2,6 +2,8 @@ import type { MutableRefObject, ReactNode } from "react";
 
 import { RoomStatus } from "./SimulationInterface";
 
+export type AgentTurnStatus = "thinking" | "speaking" | "user_turn";
+
 export interface StateInstruction {
   name: string;
   stateId: string;
@@ -13,6 +15,14 @@ export interface SessionProgressProps {
   score: number;
   startTime?: string;
   maxTimeSeconds?: number;
+}
+
+export interface TurnIndicatorTranslations {
+  speaking: string;
+  listening: string;
+  yourTurnToSpeak: string;
+  yourTurnToListen: string;
+  thinking: string;
 }
 
 export interface SimulationTranslations {
@@ -39,6 +49,7 @@ export interface SimulationTranslations {
   of: string;
   min: string;
   sec: string;
+  turnIndicator: TurnIndicatorTranslations;
 }
 
 export interface SimulationEventType {
@@ -109,6 +120,7 @@ export interface SimulationPageProps {
   stateNames?: StateInstruction[];
   difficultyLevel?: string;
   translations?: SimulationTranslations;
+  agentTurnStatus?: AgentTurnStatus;
 }
 
 export interface SimulationControlsProps {
@@ -146,6 +158,7 @@ export interface BottomSectionProps {
 export enum ChecklistMode {
   GUIDED = "GUIDED",
   UNGUIDED = "UNGUIDED",
+  LIST = "LIST",
   OFF = "OFF",
 }
 

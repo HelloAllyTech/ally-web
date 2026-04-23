@@ -38,6 +38,10 @@ vi.mock("@components/filler-tag-picker", () => ({
 }));
 
 vi.mock("@api", () => ({
+  useGetAutofillModelsQuery: () => ({
+    data: ["gpt-4o-mini"],
+    isLoading: false,
+  }),
   useGetAvailableLanguageVoicesQuery: () => ({
     data: [
       { language_id: 1, value: "en-IN", label: "English" },

@@ -2,6 +2,7 @@ import { FC, useMemo } from "react";
 
 import { Tooltip } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 import { AddIcon, PencilIcon } from "@src/assets";
 import { AddReviewNoteProps } from "@src/components/add-review-note/types";
@@ -15,6 +16,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
   isEdited = false,
   reviewCreatedAt,
 }) => {
+  const { t } = useTranslation();
   const timeDiff = useMemo(() => {
     return differenceInMinutes(new Date(), new Date(reviewCreatedAt));
   }, [reviewCreatedAt]);
@@ -22,7 +24,12 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
   const getActionComponent = () => {
     if (!note || note.length === 0) {
       return (
-        <Tooltip title="Add note" placement="top" arrow slotProps={toolTipStyles}>
+        <Tooltip
+          title={t("review.details.addNote")}
+          placement="top"
+          arrow
+          slotProps={toolTipStyles}
+        >
           <div
             onClick={onAddNote}
             className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#D2D2D2] text-center items-center justify-center flex cursor-pointer"
@@ -34,7 +41,12 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
     }
     if (isEditable) {
       return (
-        <Tooltip title="Edit note" placement="top" arrow slotProps={toolTipStyles}>
+        <Tooltip
+          title={t("review.details.editNote")}
+          placement="top"
+          arrow
+          slotProps={toolTipStyles}
+        >
           <div
             onClick={onEditNote}
             className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#D2D2D2] text-center items-center justify-center flex cursor-pointer"
@@ -54,7 +66,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
       {(timeDiff < 10 || (note && note.length > 0)) && (
         <div className="flex items-center gap-2.5">
           <div className="text-base text-[#E65100] leading-5 font-tertiary tracking-[2px]">
-            NOTE
+            {t("review.details.noteLabel")}
           </div>
           {getActionComponent()}
         </div>
@@ -62,7 +74,11 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
       {note && note.length > 0 && (
         <div className="text-base text-black leading-4 font-primary break-words">
           {note}{" "}
-          {isEdited && <span className="text-xs text-typography-800 leading-5">{"[Edited]"}</span>}
+          {isEdited && (
+            <span className="text-xs text-typography-800 leading-5">
+              {t("review.details.editedLabel")}
+            </span>
+          )}
         </div>
       )}
     </div>
