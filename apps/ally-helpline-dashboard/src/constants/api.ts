@@ -12,6 +12,7 @@ export const ApiEndpoints = {
     PROFILE_IMAGE_URL: "/v1/users/profile-image-url",
     PROFILE_IMAGE: "/v1/users/profile-image",
     LOGO_URL: "/v1/users/tenant",
+    IMPERSONATE_EXCHANGE: "/v1/auth/impersonate/exchange",
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",

@@ -18,6 +18,7 @@ import {
   GetProfileUrlResponse,
   profileUrlRequest,
   logoUrlResponse,
+  VerifyImpersonateResponse,
 } from "@types";
 
 import { baseAPI, baseQuery } from "./baseAPI";
@@ -122,6 +123,20 @@ const authAPI = baseAPI.injectEndpoints({
       }),
     }),
 
+    /**
+     * Exchanges impersonation code for access tokens.
+     */
+    exchangeImpersonateCode: builder.mutation<
+      VerifyImpersonateResponse,
+      { authCode: string; adminUserId?: string }
+    >({
+      query: body => ({
+        url: ApiEndpoints.AUTH.IMPERSONATE_EXCHANGE,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
     getProfileImageUrl: builder.mutation<GetProfileUrlResponse, GetProfileUrlRequest>({
       query: body => ({
         url: ApiEndpoints.AUTH.PROFILE_IMAGE_URL,
@@ -195,4 +210,5 @@ export const {
   useGetProfileImageUrlMutation,
   useGetLogoUrlQuery,
   useVerifyMagicLinkMutation,
+  useExchangeImpersonateCodeMutation,
 } = authAPI;

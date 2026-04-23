@@ -1,4 +1,4 @@
-import { AppType } from "./user";
+import { AppType, User } from "./user";
 
 export interface GenerateOTPRequest {
   phone?: string;
@@ -20,6 +20,11 @@ export interface GenerateOTPResponse {
 export interface VerifyOTPResponse {
   accessToken: string;
   refreshToken: string;
+}
+export interface VerifyImpersonateResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
 }
 
 export interface RefreshResponse {

@@ -13,6 +13,7 @@ import {
   useGenerateOTPMutation,
   useVerifyOTPMutation,
   useVerifyMagicLinkMutation,
+  useExchangeImpersonateCodeMutation,
 } from "../auth";
 import { baseAPI } from "../baseAPI";
 
@@ -84,6 +85,7 @@ describe("auth API", () => {
     expect(useGenerateOTPMutation).toBeDefined();
     expect(useVerifyOTPMutation).toBeDefined();
     expect(useVerifyMagicLinkMutation).toBeDefined();
+    expect(useExchangeImpersonateCodeMutation).toBeDefined();
   });
 
   it("should have correct hook configurations", () => {
@@ -94,6 +96,7 @@ describe("auth API", () => {
     expect(typeof useGenerateOTPMutation).toBe("function");
     expect(typeof useVerifyOTPMutation).toBe("function");
     expect(typeof useVerifyMagicLinkMutation).toBe("function");
+    expect(typeof useExchangeImpersonateCodeMutation).toBe("function");
   });
 
   it("should render login mutation hook without errors", () => {
@@ -241,5 +244,23 @@ describe("auth API", () => {
     const [trigger] = result.current;
     expect(typeof trigger).toBe("function");
     expect(() => trigger({ token: "test-magic-link-token" })).not.toThrow();
+  });
+
+  it("should render verify impersonate code mutation hook without errors", () => {
+    const { result } = renderHook(() => useExchangeImpersonateCodeMutation(), {
+      wrapper: TestWrapper,
+    });
+
+    expect(result.current).toHaveLength(2); // [trigger, result]
+  });
+
+  it("should handle verify impersonate code trigger", () => {
+    const { result } = renderHook(() => useExchangeImpersonateCodeMutation(), {
+      wrapper: TestWrapper,
+    });
+
+    const [trigger] = result.current;
+    expect(typeof trigger).toBe("function");
+    expect(() => trigger({ authCode: "some-code" })).not.toThrow();
   });
 });

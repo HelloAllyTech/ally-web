@@ -27,7 +27,6 @@ import {
 } from "@constants";
 import { AddUserFormData, FieldProps, Tenant, UserListUser, UserRoles } from "@types";
 import { getChipValue } from "@utils";
-
 export const USERS_PAGE_SIZE = 20;
 
 export function useUserManagement(tenants: Tenant[]) {
@@ -337,12 +336,9 @@ export function useUserManagement(tenants: Tenant[]) {
       };
       const response: any = await impersonateUser(payload).unwrap();
       const params = new URLSearchParams({
-        accessToken: response?.data.accessToken,
-        refreshToken: response?.data.refreshToken,
-        impersonatedByAccessToken: localStorage.getItem("adminAccessToken"),
+        code: response?.data,
       });
-
-      window.open(`http://localhost:8080/impersonate?${params.toString()}`, "_blank");
+      window.open(`http://localhost:8080/auth/impersonate/callback?${params.toString()}`, "_blank");
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to impersonate user");
     }
