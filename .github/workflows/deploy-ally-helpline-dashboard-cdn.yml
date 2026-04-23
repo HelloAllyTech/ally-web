@@ -15,9 +15,9 @@ on:
         type: boolean
         description: Force deployment regardless of file changes
         default: false
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
     paths:
       - "apps/ally-helpline-dashboard/**"
       - "libs/**"
