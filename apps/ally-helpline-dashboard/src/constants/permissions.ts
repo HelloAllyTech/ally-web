@@ -37,6 +37,11 @@ export enum Permissions {
   VIEW_BADGES = "view:user:badges",
   ARCHIVE_CALL_LOG = "archive:call-log",
   ARCHIVE_CHAT = "ARCHIVE_CHAT",
+
+  // Custom Fields
+  VIEW_CUSTOM_FIELD_DEFINITIONS = "view:custom-field:definitions",
+  MANAGE_CUSTOM_FIELD_DEFINITIONS = "manage:custom-field:definitions",
+  EDIT_CUSTOM_FIELD_VALUES = "edit:custom-field:values",
 }
 
 export const CALL_PERMISSIONS = [

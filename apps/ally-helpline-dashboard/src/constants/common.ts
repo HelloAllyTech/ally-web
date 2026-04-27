@@ -128,6 +128,8 @@ export const TAG_TYPES = {
   BADGES: "Badges",
   REFLECTION_PROMPTS: "ReflectionPrompts",
   GENERAL_COMMENTS: "GeneralComments",
+  CUSTOM_FIELD_DEFINITIONS: "CustomFieldDefinitions",
+  CUSTOM_FIELD_VALUES: "CustomFieldValues",
 };
 
 export const SORT_ORDER = {

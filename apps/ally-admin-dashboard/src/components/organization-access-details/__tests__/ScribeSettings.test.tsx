@@ -91,6 +91,9 @@ vi.mock("@constants", async importOriginal => {
         scribeSettingsNotEnabled: "Scribe settings is not enabled",
         failedToUpdateScribeSettings: "Failed to update scribe settings",
         configureSimulationSettings: "Configure scribe fields",
+        customFieldTypes: "Custom field types",
+        singleSelectFieldType: "Single select",
+        dateFieldType: "Date",
       },
       errors: {
         failedUpdateAccess: "Failed to update access",
@@ -100,13 +103,21 @@ vi.mock("@constants", async importOriginal => {
 });
 
 // Mock API - use vi.hoisted to make mocks available before vi.mock hoisting
-const { mockUpdateSummarySections, mockUpdateSummaryFields, mockSummarySectionsData, mockTenant } =
-  vi.hoisted(() => ({
+const {
+  mockUpdateSummarySections,
+  mockUpdateSummaryFields,
+  mockSummarySectionsData,
+  mockTenant,
+  mockUpdateCustomFieldTypes,
+} = vi.hoisted(() => ({
     mockUpdateSummarySections: vi.fn().mockReturnValue({
       unwrap: vi.fn().mockResolvedValue({ data: {} }),
     }),
     mockUpdateSummaryFields: vi.fn().mockReturnValue({
       unwrap: vi.fn().mockResolvedValue({ data: {} }),
+    }),
+    mockUpdateCustomFieldTypes: vi.fn().mockReturnValue({
+      unwrap: vi.fn().mockResolvedValue({ success: true }),
     }),
     mockSummarySectionsData: {
       sections: [
@@ -162,6 +173,13 @@ vi.mock("@api", () => {
       isLoading: false,
     }),
     useUpdateTenantMutation: () => [mockMutation, { isLoading: false }],
+    useGetCustomFieldTypesQuery: () => ({
+      data: ["SINGLE_SELECT", "DATE"],
+      isLoading: false,
+    }),
+    useUpdateCustomFieldTypesMutation: () => [mockUpdateCustomFieldTypes, { isLoading: false }],
+    useGetCustomFieldsEnabledQuery: () => ({ data: false, isLoading: false }),
+    useUpdateCustomFieldsEnabledMutation: () => [vi.fn().mockResolvedValue({}), { isLoading: false }],
   };
 });
 
@@ -325,10 +343,10 @@ describe("ScribeSettings", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     // Enabled/Disabled text appears for:
     // 1. Summary sections (Intake = Enabled, Ongoing Risks = Disabled)
-    // 2. SCRIBE_SETTINGS_ITEMS (5 items: Microphone Mode, Dictation Mode, Upload Call Recording,
-    //    Scribe Analytics, Org Session Analytics - all Disabled by default in mock)
-    // Total: 1 Enabled (Intake), 6 Disabled (Ongoing Risks + 5 settings items)
-    expect(screen.getAllByText("Enabled")).toHaveLength(1);
+    // 2. SCRIBE_SETTINGS_ITEMS (5 items: all Disabled by default in mock)
+    // 3. Custom field types (SINGLE_SELECT = Enabled, DATE = Enabled — both on by default)
+    // Total: 3 Enabled, 6 Disabled
+    expect(screen.getAllByText("Enabled")).toHaveLength(3);
     expect(screen.getAllByText("Disabled")).toHaveLength(6);
   });
 
@@ -446,5 +464,55 @@ describe("ScribeSettings", () => {
 
     // Change should be reverted
     expect(checkboxes[1]).not.toBeChecked();
+  });
+
+  describe("custom field types section", () => {
+    it("renders the custom field types heading", () => {
+      render(<ScribeSettings tenantId={mockTenantId} />);
+      expect(screen.getByText("Custom field types")).toBeInTheDocument();
+    });
+
+    it("renders Single select and Date toggles", () => {
+      render(<ScribeSettings tenantId={mockTenantId} />);
+      expect(screen.getAllByText("Single select").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Date").length).toBeGreaterThan(0);
+    });
+
+    it("shows both toggles as enabled when both types are returned by API", () => {
+      render(<ScribeSettings tenantId={mockTenantId} />);
+      const singleSelectToggle = screen.getByTestId("toggle-Single select");
+      const dateToggle = screen.getByTestId("toggle-Date");
+      expect(singleSelectToggle).toHaveAttribute("data-enabled", "true");
+      expect(dateToggle).toHaveAttribute("data-enabled", "true");
+    });
+
+    it("calls updateCustomFieldTypes with type removed when a toggle is turned off", async () => {
+      render(<ScribeSettings tenantId={mockTenantId} />);
+      const singleSelectToggle = screen.getByTestId("toggle-Single select");
+
+      fireEvent.click(singleSelectToggle);
+
+      await waitFor(() => {
+        expect(mockUpdateCustomFieldTypes).toHaveBeenCalledWith(
+          expect.objectContaining({
+            tenantId: mockTenantId,
+            enabledTypes: expect.not.arrayContaining(["SINGLE_SELECT"]),
+          }),
+        );
+      });
+    });
+
+    it("calls updateCustomFieldTypes when a toggle is clicked", async () => {
+      render(<ScribeSettings tenantId={mockTenantId} />);
+      const dateToggle = screen.getByTestId("toggle-Date");
+
+      fireEvent.click(dateToggle);
+
+      await waitFor(() => {
+        expect(mockUpdateCustomFieldTypes).toHaveBeenCalledWith(
+          expect.objectContaining({ tenantId: mockTenantId }),
+        );
+      });
+    });
   });
 });

@@ -6,8 +6,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
 import { GenericTable } from "@ally-ui-mono/ui-shared";
-import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
-import { useGetCallLogsQuery, useGetSimulationLogsQuery } from "@api";
+import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
+import {
+  useGetCallLogsQuery,
+  useGetSimulationLogsQuery,
+  useGetCustomFieldDefinitionsQuery,
+  useGetCustomFieldsEnabledQuery,
+} from "@api";
 import {
   NoResults,
   CallIdIcon,
@@ -24,11 +29,18 @@ import {
 import { Button, Chip, TagGroup, FallbackUI } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } from "@types";
+import {
+  CallLog,
+  ChatSummaryStatus,
+  SimulationLog,
+  TagDisplay,
+  SessionType,
+} from "@types";
 import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
+import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
@@ -50,6 +62,14 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
 
   const isCall = sessionType === SessionType.CALL;
   const isSimulation = sessionType === SessionType.SIMULATION;
+
+  const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
+  const customFieldsActive = customFieldsEnabled !== false;
+
+  const { data: customFieldDefs = [] } = useGetCustomFieldDefinitionsQuery(undefined, {
+    skip: !isCall || !customFieldsActive,
+  });
+
   const durationLabels = {
     lessThanOneMinute: t("calls.duration.lessThanOneMinute", "Less than 1 min"),
     hour: t("calls.duration.hour", "hr"),
@@ -191,12 +211,22 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     };
   };
 
+  const customFieldColumns: Column<any>[] = customFieldDefs.filter(def => def.showInTable !== false).map(def => ({
+    key: `cf_${def.id}`,
+    header: def.name,
+    style: { width: "10%", minWidth: 100 },
+    render: (_value: any, row: any) =>
+      renderCustomFieldCell(def, row.raw?.__customFieldValues ?? []),
+  }));
+
   const callColumns: Column<any>[] = [
     {
       key: "callName",
       header: t("summary.fields.callId"),
       style: { width: "17%" },
       icon: <CallIdIcon />,
+      filterable: true,
+      filterType: FilterType.TEXT,
     },
     {
       key: "dateAndTime",
@@ -238,6 +268,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
     },
+    ...customFieldColumns,
     {
       key: "summary",
       header: t("common.summary"),
