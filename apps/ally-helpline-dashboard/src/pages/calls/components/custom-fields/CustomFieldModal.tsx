@@ -178,7 +178,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
     onClose();
   };
 
-  const sections = (sectionsData?.sections ?? []).filter(s => s.enabled);
+  const sections = sectionsData?.sections ?? [];
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>

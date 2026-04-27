@@ -5,24 +5,21 @@ import {
   MenuItem,
   CircularProgress,
   FormControl,
-  InputLabel,
-  TextField,
   Autocomplete,
   Checkbox,
-  Switch,
-  FormControlLabel,
+  TextField as MuiTextField,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { toast } from "sonner";
 import { useSelector } from "react-redux";
 
 import {
   useGetCustomFieldValuesQuery,
-  useUpsertCustomFieldValuesMutation,
   useGetCustomFieldsEnabledQuery,
 } from "@api";
+import { DropdownField } from "@ally-ui-mono/ui-shared";
+import TextField from "@components/text-field";
 import { Permissions } from "@constants";
 import { RootState } from "@store";
 import { CustomFieldEditPermission, CustomFieldType, CustomFieldValue, SingleSelectOption } from "@types";
@@ -31,36 +28,44 @@ interface CustomFieldValuesPanelProps {
   chatId: number;
   canEdit?: boolean;
   filterSectionKey?: string;
+  // Controlled mode — when provided, skip internal fetch and use parent state
+  externalFieldValues?: CustomFieldValue[];
+  externalLocalValues?: Record<string, string | null>;
+  onValueChange?: (fieldDefinitionId: string, value: string | null) => void;
 }
 
 const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   chatId,
   canEdit = true,
   filterSectionKey,
+  externalFieldValues,
+  externalLocalValues,
+  onValueChange,
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
   const isAdmin = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
 
-  const { data: customFieldsEnabled, isLoading: isFeatureLoading } = useGetCustomFieldsEnabledQuery();
-  const customFieldsActive = customFieldsEnabled !== false;
-  const { data: fieldValues, isLoading } = useGetCustomFieldValuesQuery(chatId, {
-    skip: !chatId || !customFieldsActive,
-  });
-  const [upsertValues] = useUpsertCustomFieldValuesMutation();
+  const isControlled = externalFieldValues !== undefined && externalLocalValues !== undefined && onValueChange !== undefined;
 
+  // Standalone mode: fetch internally
+  const { data: customFieldsEnabled, isLoading: isFeatureLoading } = useGetCustomFieldsEnabledQuery(undefined, { skip: isControlled });
+  const customFieldsActive = isControlled ? true : customFieldsEnabled !== false;
+  const { data: fetchedFieldValues, isLoading } = useGetCustomFieldValuesQuery(chatId, {
+    skip: isControlled || !chatId || !customFieldsActive,
+  });
+
+  // Standalone internal state
   const [localValues, setLocalValues] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
-    if (fieldValues) {
+    if (!isControlled && fetchedFieldValues) {
       const initial: Record<string, string | null> = {};
-      fieldValues.forEach(f => {
-        initial[f.fieldDefinitionId] = f.value;
-      });
+      fetchedFieldValues.forEach(f => { initial[f.fieldDefinitionId] = f.value ?? null; });
       setLocalValues(initial);
     }
-  }, [fieldValues]);
+  }, [fetchedFieldValues, isControlled]);
 
-  if (isFeatureLoading || isLoading) {
+  if (!isControlled && (isFeatureLoading || isLoading)) {
     if (filterSectionKey) return null;
     return (
       <div className="flex justify-center py-4">
@@ -69,13 +74,19 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     );
   }
 
-  if (!customFieldsActive) return null;
+  if (!isControlled && !customFieldsActive) return null;
 
-  if (!fieldValues || fieldValues.length === 0) return null;
+  const allFieldValues = isControlled ? externalFieldValues : (fetchedFieldValues ?? []);
+  const currentLocalValues = isControlled ? externalLocalValues : localValues;
+  const handleChange = isControlled
+    ? onValueChange
+    : (id: string, val: string | null) => setLocalValues(prev => ({ ...prev, [id]: val }));
+
+  if (!allFieldValues || allFieldValues.length === 0) return null;
 
   const visibleFieldValues = filterSectionKey
-    ? fieldValues.filter(f => f.sectionKey === filterSectionKey)
-    : fieldValues;
+    ? allFieldValues.filter(f => f.sectionKey === filterSectionKey)
+    : allFieldValues;
 
   if (visibleFieldValues.length === 0) return null;
 
@@ -87,76 +98,46 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     return false;
   };
 
-  const saveField = async (fieldDefinitionId: string, value: string | null) => {
-    try {
-      await upsertValues({
-        chatId,
-        values: [{ fieldDefinitionId, value: value ?? undefined }],
-      }).unwrap();
-    } catch {
-      toast.error("Failed to save field value");
-    }
-  };
-
   const renderField = (field: CustomFieldValue, isEditable: boolean, value: string | null) => {
-    if (field.fieldType === CustomFieldType.DATE) {
+    if (field.fieldType === CustomFieldType.TEXT || field.fieldType === CustomFieldType.NUMBER) {
       return (
         <div key={field.fieldDefinitionId}>
-          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-          {isEditable ? (
-            <DatePicker
-              value={value ? new Date(value) : null}
-              onChange={date => {
-                const iso = date ? date.toISOString() : null;
-                setLocalValues(prev => ({ ...prev, [field.fieldDefinitionId]: iso }));
-              }}
-              onClose={() =>
-                saveField(field.fieldDefinitionId, localValues[field.fieldDefinitionId] ?? null)
-              }
-              slotProps={{ textField: { size: "small", fullWidth: true } }}
-            />
-          ) : (
-            <p className="text-sm text-typography-800">
-              {value ? new Date(value).toLocaleDateString() : "—"}
-            </p>
-          )}
+          <div className="flex items-center">
+            <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+              {`${field.name}: `}
+            </span>
+            <div className="flex-1">
+              <TextField
+                value={value ?? ""}
+                onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+                type={field.fieldType === CustomFieldType.NUMBER ? "number" : "text"}
+                inputStyles={{ color: isEditable ? "#1A1A1A" : "#9CA3AF", fontSize: "16px", fontFamily: "IBM_Plex_Serif" }}
+                InputProps={{ readOnly: !isEditable }}
+                showBorder={false}
+              />
+            </div>
+          </div>
         </div>
       );
     }
 
     if (field.fieldType === CustomFieldType.SINGLE_SELECT) {
+      const selectedLabel = field.options?.find(o => o.id === value)?.label ?? "--";
       return (
-        <div key={field.fieldDefinitionId}>
-          {isEditable ? (
-            <FormControl fullWidth size="small">
-              <InputLabel>{field.name}</InputLabel>
-              <Select
-                value={value ?? ""}
-                label={field.name}
-                onChange={async e => {
-                  const newVal = e.target.value || null;
-                  setLocalValues(prev => ({ ...prev, [field.fieldDefinitionId]: newVal }));
-                  await saveField(field.fieldDefinitionId, newVal);
-                }}
-              >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                {(field.options ?? []).map(opt => (
-                  <MenuItem key={opt.id} value={opt.id}>
-                    {opt.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          ) : (
-            <div>
-              <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-              <p className="text-sm text-typography-800">
-                {field.options?.find(o => o.id === value)?.label ?? "—"}
-              </p>
-            </div>
-          )}
+        <div key={field.fieldDefinitionId} className="flex gap-1 items-center">
+          <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+            {`${field.name}: `}
+          </span>
+          <DropdownField
+            disabled={!isEditable}
+            value={selectedLabel}
+            valueClassName={`${isEditable ? "text-typography-900" : "text-typography-800"} text-lg font-primary`}
+            onChange={label => {
+              const opt = field.options?.find(o => o.label === label);
+              handleChange(field.fieldDefinitionId, opt?.id ?? null);
+            }}
+            options={(field.options ?? []).map(o => o.label)}
+          />
         </div>
       );
     }
@@ -166,115 +147,96 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       const selectedOptions = (field.options ?? []).filter(o => selectedIds.includes(o.id));
       return (
         <div key={field.fieldDefinitionId}>
-          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-          {isEditable ? (
-            <Autocomplete
-              multiple
-              size="small"
-              options={field.options ?? []}
-              getOptionLabel={(opt: SingleSelectOption) => opt.label}
-              isOptionEqualToValue={(opt, val) => opt.id === val.id}
-              value={selectedOptions}
-              onChange={async (_e, newSelection) => {
-                const ids = newSelection.map((o: SingleSelectOption) => o.id);
-                const encoded = JSON.stringify(ids);
-                const stored = ids.length === 0 ? null : encoded;
-                setLocalValues(prev => ({ ...prev, [field.fieldDefinitionId]: stored }));
-                await saveField(field.fieldDefinitionId, stored);
-              }}
-              renderOption={(props, option, { selected }) => (
-                <li {...props}>
-                  <Checkbox checked={selected} size="small" sx={{ mr: 1 }} />
-                  {option.label}
-                </li>
-              )}
-              renderInput={params => <TextField {...params} label={field.name} size="small" />}
-            />
-          ) : (
-            <p className="text-sm text-typography-800">
-              {selectedOptions.length > 0 ? selectedOptions.map(o => o.label).join(", ") : "—"}
-            </p>
-          )}
+          <div className="flex items-center">
+            <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+              {`${field.name}: `}
+            </span>
+            {isEditable ? (
+              <div className="flex-1">
+                <Autocomplete
+                  multiple
+                  size="small"
+                  options={field.options ?? []}
+                  getOptionLabel={(opt: SingleSelectOption) => opt.label}
+                  isOptionEqualToValue={(opt, val) => opt.id === val.id}
+                  value={selectedOptions}
+                  onChange={(_e, newSelection) => {
+                    const ids = newSelection.map((o: SingleSelectOption) => o.id);
+                    const stored = ids.length === 0 ? null : JSON.stringify(ids);
+                    handleChange(field.fieldDefinitionId, stored);
+                  }}
+                  renderOption={(props, option, { selected }) => (
+                    <li {...props}>
+                      <Checkbox checked={selected} size="small" sx={{ mr: 1 }} />
+                      {option.label}
+                    </li>
+                  )}
+                  renderInput={params => (
+                    <MuiTextField {...params} variant="standard" size="small"
+                      sx={{ "& .MuiInput-root::before": { borderBottom: "none" }, "& .MuiInput-root::after": { borderBottom: "none" }, fontSize: "16px", fontFamily: "IBM_Plex_Serif" }}
+                    />
+                  )}
+                />
+              </div>
+            ) : (
+              <span className="text-lg font-primary text-typography-800">
+                {selectedOptions.length > 0 ? selectedOptions.map(o => o.label).join(", ") : "—"}
+              </span>
+            )}
+          </div>
         </div>
       );
     }
 
-    if (field.fieldType === CustomFieldType.TEXT) {
+    if (field.fieldType === CustomFieldType.DATE) {
       return (
-        <div key={field.fieldDefinitionId}>
-          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
+        <div key={field.fieldDefinitionId} className="flex items-center gap-1">
+          <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+            {`${field.name}: `}
+          </span>
           {isEditable ? (
-            <TextField
-              size="small"
-              fullWidth
-              value={value ?? ""}
-              onChange={e =>
-                setLocalValues(prev => ({
-                  ...prev,
-                  [field.fieldDefinitionId]: e.target.value || null,
-                }))
-              }
-              onBlur={() =>
-                saveField(field.fieldDefinitionId, localValues[field.fieldDefinitionId] ?? null)
-              }
-            />
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                value={value ? new Date(value) : null}
+                onChange={date => {
+                  handleChange(field.fieldDefinitionId, date ? date.toISOString() : null);
+                }}
+                slotProps={{
+                  textField: {
+                    variant: "standard",
+                    size: "small",
+                    sx: {
+                      "& .MuiInput-root::before": { borderBottom: "none" },
+                      "& .MuiInput-root::after": { borderBottom: "none" },
+                      "& input": { fontSize: "16px", fontFamily: "IBM_Plex_Serif" },
+                    },
+                  },
+                }}
+              />
+            </LocalizationProvider>
           ) : (
-            <p className="text-sm text-typography-800">{value ?? "—"}</p>
-          )}
-        </div>
-      );
-    }
-
-    if (field.fieldType === CustomFieldType.NUMBER) {
-      return (
-        <div key={field.fieldDefinitionId}>
-          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-          {isEditable ? (
-            <TextField
-              size="small"
-              fullWidth
-              type="number"
-              value={value ?? ""}
-              onChange={e =>
-                setLocalValues(prev => ({
-                  ...prev,
-                  [field.fieldDefinitionId]: e.target.value || null,
-                }))
-              }
-              onBlur={() =>
-                saveField(field.fieldDefinitionId, localValues[field.fieldDefinitionId] ?? null)
-              }
-            />
-          ) : (
-            <p className="text-sm text-typography-800">{value ?? "—"}</p>
+            <span className="text-lg font-primary text-typography-800">
+              {value ? new Date(value).toLocaleDateString() : "—"}
+            </span>
           )}
         </div>
       );
     }
 
     if (field.fieldType === CustomFieldType.BOOLEAN) {
-      const boolValue = value === "true";
+      const boolLabel = value === "true" ? "Yes" : "No";
       return (
-        <div key={field.fieldDefinitionId}>
-          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-          {isEditable ? (
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={boolValue}
-                  size="small"
-                  onChange={async e => {
-                    const newVal = e.target.checked ? "true" : "false";
-                    setLocalValues(prev => ({ ...prev, [field.fieldDefinitionId]: newVal }));
-                    await saveField(field.fieldDefinitionId, newVal);
-                  }}
-                />
-              }
-              label={boolValue ? "Yes" : "No"}
-            />
-          ) : (
-            <p className="text-sm text-typography-800">{boolValue ? "Yes" : "No"}</p>
-          )}
+        <div key={field.fieldDefinitionId} className="flex gap-1 items-center">
+          <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
+            {`${field.name}: `}
+          </span>
+          <DropdownField
+            disabled={!isEditable}
+            value={boolLabel}
+            valueClassName={`${isEditable ? "text-typography-900" : "text-typography-800"} text-lg font-primary`}
+            onChange={v => handleChange(field.fieldDefinitionId, v === "Yes" ? "true" : "false")}
+            options={["Yes", "No"]}
+          />
         </div>
       );
     }
@@ -284,16 +246,15 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
 
   if (filterSectionKey) {
     return (
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <div className="flex flex-col gap-3 mt-3">
-          {visibleFieldValues.map(field =>
-            renderField(field, canEditField(field), localValues[field.fieldDefinitionId] ?? null),
-          )}
-        </div>
-      </LocalizationProvider>
+      <>
+        {visibleFieldValues.map(field =>
+          renderField(field, canEditField(field), currentLocalValues[field.fieldDefinitionId] ?? null),
+        )}
+      </>
     );
   }
 
+  // Standalone mode: group by section
   type SectionGroup = { label: string; fields: CustomFieldValue[] };
   const groupedBySection = visibleFieldValues.reduce<Record<string, SectionGroup>>((acc, field) => {
     const key = field.sectionKey;
@@ -303,23 +264,21 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   }, {});
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <div className="mt-4 border-t border-gray-100 pt-4">
-        <p className="text-xs font-semibold text-typography-500 uppercase tracking-wide mb-3">
-          Custom Fields
-        </p>
-        {Object.entries(groupedBySection).map(([sectionKey, { label, fields }]) => (
-          <div key={sectionKey} className="mb-4">
-            <p className="text-xs text-typography-400 mb-2">{label}</p>
-            <div className="flex flex-col gap-3">
-              {fields.map(field =>
-                renderField(field, canEditField(field), localValues[field.fieldDefinitionId] ?? null),
-              )}
-            </div>
+    <div className="mt-4 border-t border-gray-100 pt-4">
+      <p className="text-xs font-semibold text-typography-500 uppercase tracking-wide mb-3">
+        Custom Fields
+      </p>
+      {Object.entries(groupedBySection).map(([sectionKey, { label, fields }]) => (
+        <div key={sectionKey} className="mb-4">
+          <p className="text-xs text-typography-400 mb-2">{label}</p>
+          <div className="flex flex-col gap-3">
+            {fields.map(field =>
+              renderField(field, canEditField(field), currentLocalValues[field.fieldDefinitionId] ?? null),
+            )}
           </div>
-        ))}
-      </div>
-    </LocalizationProvider>
+        </div>
+      ))}
+    </div>
   );
 };
 

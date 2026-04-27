@@ -216,7 +216,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     header: def.name,
     style: { width: "10%", minWidth: 100 },
     render: (_value: any, row: any) =>
-      renderCustomFieldCell(def, row.raw?.__customFieldValues ?? []),
+      renderCustomFieldCell(def, row.raw?.customFieldValues ?? []),
   }));
 
   const callColumns: Column<any>[] = [
