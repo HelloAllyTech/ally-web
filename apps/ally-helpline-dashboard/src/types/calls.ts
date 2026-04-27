@@ -35,6 +35,7 @@ export interface CallLog {
   reviewStatus: string | null;
   reviewId: string | null;
   reviewCreatedAt: string | null;
+  customFieldValues?: { fieldDefinitionId: string; value?: string | null }[];
 }
 
 export interface GetCallLogsResponse {

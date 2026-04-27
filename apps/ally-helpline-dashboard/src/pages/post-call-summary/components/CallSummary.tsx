@@ -15,7 +15,11 @@ import {
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
   useUpdateCallSummaryNotesMutation,
+  useGetCustomFieldValuesQuery,
+  useUpsertCustomFieldValuesMutation,
+  useGetCustomFieldsEnabledQuery,
 } from "@api";
+import { CustomFieldValue } from "@types";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
 import { LanguageMap, Permissions, ROUTES, toolTipStyles } from "@constants";
@@ -76,6 +80,34 @@ const CallSummary: FC<CallSummaryProps> = ({
     useUpdateCallSummaryNotesMutation();
 
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
+
+  // Custom field state
+  const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
+  const customFieldsActive = customFieldsEnabled !== false;
+  const { data: customFieldValues } = useGetCustomFieldValuesQuery(chatId, {
+    skip: !chatId || !customFieldsActive,
+  });
+  const [upsertCustomFieldValues] = useUpsertCustomFieldValuesMutation();
+  const [customLocalValues, setCustomLocalValues] = useState<Record<string, string | null>>({});
+
+  useEffect(() => {
+    if (customFieldValues) {
+      const initial: Record<string, string | null> = {};
+      customFieldValues.forEach((f: CustomFieldValue) => { initial[f.fieldDefinitionId] = f.value ?? null; });
+      setCustomLocalValues(initial);
+    }
+  }, [customFieldValues]);
+
+  const handleCustomFieldChange = (fieldDefinitionId: string, value: string | null) => {
+    setCustomLocalValues(prev => ({ ...prev, [fieldDefinitionId]: value }));
+  };
+
+  const hasCustomFieldsChanged = () => {
+    if (!customFieldValues?.length) return false;
+    return customFieldValues.some(
+      (f: CustomFieldValue) => customLocalValues[f.fieldDefinitionId] !== (f.value ?? null),
+    );
+  };
 
   // Determine if editing should be allowed
   // If canEditSummary is explicitly false (from ConsolidatedLogs), respect that
@@ -350,6 +382,21 @@ const CallSummary: FC<CallSummaryProps> = ({
         logger.info(`Error updating call summary:, ${error}`);
       }
     }
+    if (hasCustomFieldsChanged() && customFieldValues?.length) {
+      const changedFields = customFieldValues
+        .filter((f: CustomFieldValue) => customLocalValues[f.fieldDefinitionId] !== (f.value ?? null))
+        .map((f: CustomFieldValue) => ({
+          fieldDefinitionId: f.fieldDefinitionId,
+          value: customLocalValues[f.fieldDefinitionId] ?? undefined,
+        }));
+      if (changedFields.length > 0) {
+        try {
+          await upsertCustomFieldValues({ chatId, values: changedFields }).unwrap();
+        } catch (error) {
+          logger.info(`Error saving custom field values: ${error}`);
+        }
+      }
+    }
     postProcess?.();
     if (!isInSidebar && shouldAllowEdit) {
       if (callSummary?.details?.callInfo?.isSummaryFeedbackAdded) {
@@ -439,11 +486,14 @@ const CallSummary: FC<CallSummaryProps> = ({
                   ]?.includes(key)}
                 >
                   {sectionFields.map(field => getFieldDisplay(field))}
-                  {chatId && (
+                  {chatId && customFieldsActive && (
                     <CustomFieldValuesPanel
                       chatId={chatId}
                       canEdit={canEditCustomFields}
                       filterSectionKey={key}
+                      externalFieldValues={customFieldValues ?? []}
+                      externalLocalValues={customLocalValues}
+                      onValueChange={handleCustomFieldChange}
                     />
                   )}
                 </Accordion>
@@ -477,7 +527,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
         {shouldAllowEdit && (
           <div className="flex justify-center">
-            <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged())}>
+            <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged() && !hasCustomFieldsChanged())}>
               {isUpdateLoading || isGetTagsLoading ? t("summary.saving") : t("summary.save")}
             </Button>
           </div>
