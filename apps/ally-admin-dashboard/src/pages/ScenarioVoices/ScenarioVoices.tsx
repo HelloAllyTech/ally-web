@@ -422,15 +422,27 @@ export const ScenarioVoices: React.FC = () => {
   // Extract unique providers from voices
   const uniqueProviders = Array.from(new Set(voices.map(voice => voice.provider).filter(Boolean)));
 
+  // Build a combined language options list for the table — includes active languages
+  // plus any inactive languages already assigned to a voice (resolved via languageLabel
+  // from the backend), so disabled languages show their name instead of a raw ID.
+  const allLanguageOptionsForTable = React.useMemo(() => {
+    const optionsMap = new Map(
+      languageOptions.map((l: any) => [l.language_id, l.label]),
+    );
+    voices.forEach(voice => {
+      if (voice.languageId && voice.languageLabel && !optionsMap.has(voice.languageId)) {
+        optionsMap.set(voice.languageId, voice.languageLabel);
+      }
+    });
+    return Array.from(optionsMap.entries()).map(([value, label]) => ({ value, label }));
+  }, [languageOptions, voices]);
+
   // Create dynamic columns with language and provider options
   const tableColumns = SCENARIO_VOICE_COLUMNS.map(column => {
     if (column.id === "language") {
       return {
         ...column,
-        options: languageOptions.map((lang: any) => ({
-          value: lang.language_id,
-          label: lang.label, // Same as side panel
-        })),
+        options: allLanguageOptionsForTable,
       };
     }
     if (column.id === "provider") {
