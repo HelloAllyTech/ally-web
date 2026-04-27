@@ -122,7 +122,7 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
     { key: "BOOLEAN", label: en.userManagement.booleanFieldType },
   ];
 
-  const [localCustomFieldsEnabled, setLocalCustomFieldsEnabled] = useState<boolean>(true);
+  const [localCustomFieldsEnabled, setLocalCustomFieldsEnabled] = useState<boolean>(false);
   const [localEnabledTypes, setLocalEnabledTypes] = useState<string[]>(
     allCustomFieldTypes.map(t => t.key),
   );
