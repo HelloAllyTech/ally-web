@@ -218,17 +218,23 @@ const TableHeader = <T extends Record<string, any>>({
             className={`text-left font-[500] text-[#000] min-w-[100px] ${col.className || ""}`}
             style={col.style}
           >
-            <div
-              className={`px-4 py-[14px] flex flex-row items-center justify-between ${
-                (col.filterable || col.sortable) && "cursor-pointer"
-              }`}
-              onClick={e => handleHeaderClick(e, col)}
-            >
-              <div className="flex flex-row items-center">
-                {col?.icon && <div className="pr-[8px]">{col?.icon}</div>}
-                <div className="font-[500] text-[#6B7280]">{col.header}</div>
+            {col.headerNode ? (
+              <div className="px-4 py-[14px] flex items-center justify-center">
+                {col.headerNode}
               </div>
-            </div>
+            ) : (
+              <div
+                className={`px-4 py-[14px] flex flex-row items-center justify-between ${
+                  (col.filterable || col.sortable) && "cursor-pointer"
+                }`}
+                onClick={e => handleHeaderClick(e, col)}
+              >
+                <div className="flex flex-row items-center">
+                  {col?.icon && <div className="pr-[8px]">{col?.icon}</div>}
+                  <div className="font-[500] text-[#6B7280]">{col.header}</div>
+                </div>
+              </div>
+            )}
             {renderMainPopover(col)}
             {renderSortPopover()}
             {col.filterable && renderFilterPopover()}

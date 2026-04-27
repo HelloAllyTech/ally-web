@@ -114,6 +114,8 @@ export const baseAPI = createApi({
     TAG_TYPES.FILLER_TAGS,
     TAG_TYPES.COMPETENCIES,
     TAG_TYPES.ADMIN_TENANTS,
+    TAG_TYPES.CUSTOM_FIELD_TYPES,
+    TAG_TYPES.CUSTOM_FIELDS_ENABLED,
   ],
   endpoints: () => ({}),
 });
