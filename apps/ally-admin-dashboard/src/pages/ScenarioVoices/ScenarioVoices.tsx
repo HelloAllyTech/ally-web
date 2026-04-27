@@ -426,9 +426,7 @@ export const ScenarioVoices: React.FC = () => {
   // plus any inactive languages already assigned to a voice (resolved via languageLabel
   // from the backend), so disabled languages show their name instead of a raw ID.
   const allLanguageOptionsForTable = React.useMemo(() => {
-    const optionsMap = new Map(
-      languageOptions.map((l: any) => [l.language_id, l.label]),
-    );
+    const optionsMap = new Map(languageOptions.map((l: any) => [l.language_id, l.label]));
     voices.forEach(voice => {
       if (voice.languageId && voice.languageLabel && !optionsMap.has(voice.languageId)) {
         optionsMap.set(voice.languageId, voice.languageLabel);
