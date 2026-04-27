@@ -66,6 +66,7 @@ const customFieldsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { chatId }) => [
         { type: TAG_TYPES.CUSTOM_FIELD_VALUES, id: chatId },
+        TAG_TYPES.CALL_LOGS,
       ],
     }),
 
