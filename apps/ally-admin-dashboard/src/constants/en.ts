@@ -82,6 +82,8 @@ export const en = {
       "Could not create filler tag. It may already exist or the request failed.",
     linguisticStyleSamplesRequired:
       "Linguistic style samples are required. Please provide at least one sample for each selected language.",
+    linguisticStyleSamplesMissingFor: (languages: string) =>
+      `Linguistic style samples are required. Missing samples for: ${languages}.`,
     invalidStateInstructionIds: "State instructions include an invalid state id.",
   },
   accessDenied: {

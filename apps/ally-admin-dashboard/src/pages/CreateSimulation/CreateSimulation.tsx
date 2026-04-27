@@ -308,7 +308,12 @@ export const CreateSimulation: FC = () => {
         string,
         string[]
       >;
-      const langIds = Object.keys(languageVoices).filter(k => languageVoices[k]);
+      // Only validate languages that are in the current available list — skip stale IDs
+      // that may no longer map to a valid language (e.g. voices reassigned after a migration).
+      const langIds = Object.keys(languageVoices).filter(k => {
+        if (!languageVoices[k]) return false;
+        return availableLanguages.some(l => String(l.language_id) === k);
+      });
       const missing: string[] = [];
       for (const langId of langIds) {
         const lang = availableLanguages.find(l => String(l.language_id) === langId);
@@ -320,7 +325,7 @@ export const CreateSimulation: FC = () => {
         }
       }
       if (missing.length > 0) {
-        toast.error(en.errors.linguisticStyleSamplesRequired);
+        toast.error(en.errors.linguisticStyleSamplesMissingFor(missing.join(", ")));
         return null;
       }
     }
