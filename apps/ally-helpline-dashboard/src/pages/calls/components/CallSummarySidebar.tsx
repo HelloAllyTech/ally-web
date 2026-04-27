@@ -29,7 +29,6 @@ import { CallProvider, Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
-import CustomFieldValuesPanel from "./custom-fields/CustomFieldValuesPanel";
 import { toolTipStyles } from "@src/constants";
 import ArchiveDialog from "@src/pages/calls/components/ArchiveDialog";
 import { RootState } from "@store";
@@ -453,10 +452,10 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               postProcess={refetchCallLogs}
               isInSidebar={true}
               canEditSummary={canEditSummary}
+              canEditCustomFields={canEditSummary}
               isSummaryLoading={isSummaryLoading}
               summaryLoadingError={summaryLoadingError}
             />
-            <CustomFieldValuesPanel chatId={callSummary.id} canEdit={canEditSummary} />
           </>
         ),
       },
