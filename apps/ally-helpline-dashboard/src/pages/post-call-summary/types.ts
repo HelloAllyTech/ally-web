@@ -66,6 +66,7 @@ export interface CallSummaryProps {
   isInSidebar?: boolean;
   headerContent?: React.ReactNode;
   canEditSummary?: boolean;
+  canEditCustomFields?: boolean;
   isSummaryLoading?: boolean;
   summaryLoadingError?: any;
 }

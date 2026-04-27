@@ -26,6 +26,7 @@ import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag } from "@types";
 import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions } from "@utils";
 
 import { SummaryLoading } from ".";
+import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import { getSummaryFields, getSummarySections, labelShownSections } from "../constants";
 import { CallSummaryProps, FieldType, SummaryField, SummarySectionKey } from "../types";
 import { getSectionFields } from "../utils";
@@ -39,6 +40,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   headerContent,
   postProcess,
   canEditSummary = true,
+  canEditCustomFields,
   callSummary,
   onRefetchSummary,
   isSummaryLoading,
@@ -437,6 +439,13 @@ const CallSummary: FC<CallSummaryProps> = ({
                   ]?.includes(key)}
                 >
                   {sectionFields.map(field => getFieldDisplay(field))}
+                  {chatId && (
+                    <CustomFieldValuesPanel
+                      chatId={chatId}
+                      canEdit={canEditCustomFields}
+                      filterSectionKey={key}
+                    />
+                  )}
                 </Accordion>
               </motion.div>
             );

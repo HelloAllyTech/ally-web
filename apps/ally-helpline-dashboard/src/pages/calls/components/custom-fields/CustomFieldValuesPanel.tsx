@@ -30,9 +30,14 @@ import { CustomFieldEditPermission, CustomFieldType, CustomFieldValue, SingleSel
 interface CustomFieldValuesPanelProps {
   chatId: number;
   canEdit?: boolean;
+  filterSectionKey?: string;
 }
 
-const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({ chatId, canEdit = true }) => {
+const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
+  chatId,
+  canEdit = true,
+  filterSectionKey,
+}) => {
   const { permissions } = useSelector((state: RootState) => state.user);
   const isAdmin = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
 
@@ -56,6 +61,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({ chatId, canEd
   }, [fieldValues]);
 
   if (isFeatureLoading || isLoading) {
+    if (filterSectionKey) return null;
     return (
       <div className="flex justify-center py-4">
         <CircularProgress size={20} />
@@ -66,6 +72,12 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({ chatId, canEd
   if (!customFieldsActive) return null;
 
   if (!fieldValues || fieldValues.length === 0) return null;
+
+  const visibleFieldValues = filterSectionKey
+    ? fieldValues.filter(f => f.sectionKey === filterSectionKey)
+    : fieldValues;
+
+  if (visibleFieldValues.length === 0) return null;
 
   const canEditField = (field: CustomFieldValue): boolean => {
     if (!canEdit) return false;
@@ -86,8 +98,204 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({ chatId, canEd
     }
   };
 
+  const renderField = (field: CustomFieldValue, isEditable: boolean, value: string | null) => {
+    if (field.fieldType === CustomFieldType.DATE) {
+      return (
+        <div key={field.fieldDefinitionId}>
+          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
+          {isEditable ? (
+            <DatePicker
+              value={value ? new Date(value) : null}
+              onChange={date => {
+                const iso = date ? date.toISOString() : null;
+                setLocalValues(prev => ({ ...prev, [field.fieldDefinitionId]: iso }));
+              }}
+              onClose={() =>
+                saveField(field.fieldDefinitionId, localValues[field.fieldDefinitionId] ?? null)
+              }
+              slotProps={{ textField: { size: "small", fullWidth: true } }}
+            />
+          ) : (
+            <p className="text-sm text-typography-800">
+              {value ? new Date(value).toLocaleDateString() : "—"}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.SINGLE_SELECT) {
+      return (
+        <div key={field.fieldDefinitionId}>
+          {isEditable ? (
+            <FormControl fullWidth size="small">
+              <InputLabel>{field.name}</InputLabel>
+              <Select
+                value={value ?? ""}
+                label={field.name}
+                onChange={async e => {
+                  const newVal = e.target.value || null;
+                  setLocalValues(prev => ({ ...prev, [field.fieldDefinitionId]: newVal }));
+                  await saveField(field.fieldDefinitionId, newVal);
+                }}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {(field.options ?? []).map(opt => (
+                  <MenuItem key={opt.id} value={opt.id}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <div>
+              <p className="text-xs text-typography-600 mb-1">{field.name}</p>
+              <p className="text-sm text-typography-800">
+                {field.options?.find(o => o.id === value)?.label ?? "—"}
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.MULTI_SELECT) {
+      const selectedIds: string[] = value ? JSON.parse(value) : [];
+      const selectedOptions = (field.options ?? []).filter(o => selectedIds.includes(o.id));
+      return (
+        <div key={field.fieldDefinitionId}>
+          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
+          {isEditable ? (
+            <Autocomplete
+              multiple
+              size="small"
+              options={field.options ?? []}
+              getOptionLabel={(opt: SingleSelectOption) => opt.label}
+              isOptionEqualToValue={(opt, val) => opt.id === val.id}
+              value={selectedOptions}
+              onChange={async (_e, newSelection) => {
+                const ids = newSelection.map((o: SingleSelectOption) => o.id);
+                const encoded = JSON.stringify(ids);
+                const stored = ids.length === 0 ? null : encoded;
+                setLocalValues(prev => ({ ...prev, [field.fieldDefinitionId]: stored }));
+                await saveField(field.fieldDefinitionId, stored);
+              }}
+              renderOption={(props, option, { selected }) => (
+                <li {...props}>
+                  <Checkbox checked={selected} size="small" sx={{ mr: 1 }} />
+                  {option.label}
+                </li>
+              )}
+              renderInput={params => <TextField {...params} label={field.name} size="small" />}
+            />
+          ) : (
+            <p className="text-sm text-typography-800">
+              {selectedOptions.length > 0 ? selectedOptions.map(o => o.label).join(", ") : "—"}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.TEXT) {
+      return (
+        <div key={field.fieldDefinitionId}>
+          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
+          {isEditable ? (
+            <TextField
+              size="small"
+              fullWidth
+              value={value ?? ""}
+              onChange={e =>
+                setLocalValues(prev => ({
+                  ...prev,
+                  [field.fieldDefinitionId]: e.target.value || null,
+                }))
+              }
+              onBlur={() =>
+                saveField(field.fieldDefinitionId, localValues[field.fieldDefinitionId] ?? null)
+              }
+            />
+          ) : (
+            <p className="text-sm text-typography-800">{value ?? "—"}</p>
+          )}
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.NUMBER) {
+      return (
+        <div key={field.fieldDefinitionId}>
+          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
+          {isEditable ? (
+            <TextField
+              size="small"
+              fullWidth
+              type="number"
+              value={value ?? ""}
+              onChange={e =>
+                setLocalValues(prev => ({
+                  ...prev,
+                  [field.fieldDefinitionId]: e.target.value || null,
+                }))
+              }
+              onBlur={() =>
+                saveField(field.fieldDefinitionId, localValues[field.fieldDefinitionId] ?? null)
+              }
+            />
+          ) : (
+            <p className="text-sm text-typography-800">{value ?? "—"}</p>
+          )}
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.BOOLEAN) {
+      const boolValue = value === "true";
+      return (
+        <div key={field.fieldDefinitionId}>
+          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
+          {isEditable ? (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={boolValue}
+                  size="small"
+                  onChange={async e => {
+                    const newVal = e.target.checked ? "true" : "false";
+                    setLocalValues(prev => ({ ...prev, [field.fieldDefinitionId]: newVal }));
+                    await saveField(field.fieldDefinitionId, newVal);
+                  }}
+                />
+              }
+              label={boolValue ? "Yes" : "No"}
+            />
+          ) : (
+            <p className="text-sm text-typography-800">{boolValue ? "Yes" : "No"}</p>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  if (filterSectionKey) {
+    return (
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <div className="flex flex-col gap-3 mt-3">
+          {visibleFieldValues.map(field =>
+            renderField(field, canEditField(field), localValues[field.fieldDefinitionId] ?? null),
+          )}
+        </div>
+      </LocalizationProvider>
+    );
+  }
+
   type SectionGroup = { label: string; fields: CustomFieldValue[] };
-  const groupedBySection = fieldValues.reduce<Record<string, SectionGroup>>((acc, field) => {
+  const groupedBySection = visibleFieldValues.reduce<Record<string, SectionGroup>>((acc, field) => {
     const key = field.sectionKey;
     if (!acc[key]) acc[key] = { label: field.sectionLabel, fields: [] };
     acc[key].fields.push(field);
@@ -104,216 +312,9 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({ chatId, canEd
           <div key={sectionKey} className="mb-4">
             <p className="text-xs text-typography-400 mb-2">{label}</p>
             <div className="flex flex-col gap-3">
-              {fields.map((field: CustomFieldValue) => {
-                const isEditable = canEditField(field);
-                const value = localValues[field.fieldDefinitionId] ?? null;
-
-                if (field.fieldType === CustomFieldType.DATE) {
-                  return (
-                    <div key={field.fieldDefinitionId}>
-                      <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-                      {isEditable ? (
-                        <DatePicker
-                          value={value ? new Date(value) : null}
-                          onChange={date => {
-                            const iso = date ? date.toISOString() : null;
-                            setLocalValues(prev => ({
-                              ...prev,
-                              [field.fieldDefinitionId]: iso,
-                            }));
-                          }}
-                          onClose={() =>
-                            saveField(
-                              field.fieldDefinitionId,
-                              localValues[field.fieldDefinitionId] ?? null,
-                            )
-                          }
-                          slotProps={{
-                            textField: { size: "small", fullWidth: true },
-                          }}
-                        />
-                      ) : (
-                        <p className="text-sm text-typography-800">
-                          {value ? new Date(value).toLocaleDateString() : "—"}
-                        </p>
-                      )}
-                    </div>
-                  );
-                }
-
-                if (field.fieldType === CustomFieldType.SINGLE_SELECT) {
-                  return (
-                    <div key={field.fieldDefinitionId}>
-                      {isEditable ? (
-                        <FormControl fullWidth size="small">
-                          <InputLabel>{field.name}</InputLabel>
-                          <Select
-                            value={value ?? ""}
-                            label={field.name}
-                            onChange={async e => {
-                              const newVal = e.target.value || null;
-                              setLocalValues(prev => ({
-                                ...prev,
-                                [field.fieldDefinitionId]: newVal,
-                              }));
-                              await saveField(field.fieldDefinitionId, newVal);
-                            }}
-                          >
-                            <MenuItem value="">
-                              <em>None</em>
-                            </MenuItem>
-                            {(field.options ?? []).map(opt => (
-                              <MenuItem key={opt.id} value={opt.id}>
-                                {opt.label}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      ) : (
-                        <div>
-                          <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-                          <p className="text-sm text-typography-800">
-                            {field.options?.find(o => o.id === value)?.label ?? "—"}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-
-                if (field.fieldType === CustomFieldType.MULTI_SELECT) {
-                  const selectedIds: string[] = value ? JSON.parse(value) : [];
-                  const selectedOptions = (field.options ?? []).filter(o =>
-                    selectedIds.includes(o.id),
-                  );
-
-                  return (
-                    <div key={field.fieldDefinitionId}>
-                      <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-                      {isEditable ? (
-                        <Autocomplete
-                          multiple
-                          size="small"
-                          options={field.options ?? []}
-                          getOptionLabel={(opt: SingleSelectOption) => opt.label}
-                          isOptionEqualToValue={(opt, val) => opt.id === val.id}
-                          value={selectedOptions}
-                          onChange={async (_e, newSelection) => {
-                            const ids = newSelection.map((o: SingleSelectOption) => o.id);
-                            const encoded = JSON.stringify(ids);
-                            const stored = ids.length === 0 ? null : encoded;
-                            setLocalValues(prev => ({
-                              ...prev,
-                              [field.fieldDefinitionId]: stored,
-                            }));
-                            await saveField(field.fieldDefinitionId, stored);
-                          }}
-                          renderOption={(props, option, { selected }) => (
-                            <li {...props}>
-                              <Checkbox checked={selected} size="small" sx={{ mr: 1 }} />
-                              {option.label}
-                            </li>
-                          )}
-                          renderInput={params => (
-                            <TextField {...params} label={field.name} size="small" />
-                          )}
-                        />
-                      ) : (
-                        <p className="text-sm text-typography-800">
-                          {selectedOptions.length > 0
-                            ? selectedOptions.map(o => o.label).join(", ")
-                            : "—"}
-                        </p>
-                      )}
-                    </div>
-                  );
-                }
-
-                if (field.fieldType === CustomFieldType.TEXT) {
-                  return (
-                    <div key={field.fieldDefinitionId}>
-                      <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-                      {isEditable ? (
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={value ?? ""}
-                          onChange={e =>
-                            setLocalValues(prev => ({
-                              ...prev,
-                              [field.fieldDefinitionId]: e.target.value || null,
-                            }))
-                          }
-                          onBlur={() =>
-                            saveField(field.fieldDefinitionId, localValues[field.fieldDefinitionId] ?? null)
-                          }
-                        />
-                      ) : (
-                        <p className="text-sm text-typography-800">{value ?? "—"}</p>
-                      )}
-                    </div>
-                  );
-                }
-
-                if (field.fieldType === CustomFieldType.NUMBER) {
-                  return (
-                    <div key={field.fieldDefinitionId}>
-                      <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-                      {isEditable ? (
-                        <TextField
-                          size="small"
-                          fullWidth
-                          type="number"
-                          value={value ?? ""}
-                          onChange={e =>
-                            setLocalValues(prev => ({
-                              ...prev,
-                              [field.fieldDefinitionId]: e.target.value || null,
-                            }))
-                          }
-                          onBlur={() =>
-                            saveField(field.fieldDefinitionId, localValues[field.fieldDefinitionId] ?? null)
-                          }
-                        />
-                      ) : (
-                        <p className="text-sm text-typography-800">{value ?? "—"}</p>
-                      )}
-                    </div>
-                  );
-                }
-
-                if (field.fieldType === CustomFieldType.BOOLEAN) {
-                  const boolValue = value === "true";
-                  return (
-                    <div key={field.fieldDefinitionId}>
-                      <p className="text-xs text-typography-600 mb-1">{field.name}</p>
-                      {isEditable ? (
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={boolValue}
-                              size="small"
-                              onChange={async e => {
-                                const newVal = e.target.checked ? "true" : "false";
-                                setLocalValues(prev => ({
-                                  ...prev,
-                                  [field.fieldDefinitionId]: newVal,
-                                }));
-                                await saveField(field.fieldDefinitionId, newVal);
-                              }}
-                            />
-                          }
-                          label={boolValue ? "Yes" : "No"}
-                        />
-                      ) : (
-                        <p className="text-sm text-typography-800">{boolValue ? "Yes" : "No"}</p>
-                      )}
-                    </div>
-                  );
-                }
-
-                return null;
-              })}
+              {fields.map(field =>
+                renderField(field, canEditField(field), localValues[field.fieldDefinitionId] ?? null),
+              )}
             </div>
           </div>
         ))}

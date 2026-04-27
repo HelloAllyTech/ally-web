@@ -70,7 +70,14 @@ const customFieldsAPI = baseAPI.injectEndpoints({
     }),
 
     getSummarySections: builder.query<
-      { sections: { id: string; label: string; fields: { id: string; label: string }[] }[] },
+      {
+        sections: {
+          id: string;
+          label: string;
+          enabled: boolean;
+          fields: { id: string; label: string }[];
+        }[];
+      },
       void
     >({
       query: () => ApiEndpoints.SETTINGS.GET_SUMMARY_SECTIONS,
