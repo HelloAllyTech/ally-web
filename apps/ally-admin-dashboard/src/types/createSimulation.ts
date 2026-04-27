@@ -201,6 +201,7 @@ export interface ScenarioVoice {
   name: string;
   provider: string;
   languageId?: number;
+  languageLabel?: string | null;
   config: ScenarioVoiceConfig;
   active?: boolean;
 }
