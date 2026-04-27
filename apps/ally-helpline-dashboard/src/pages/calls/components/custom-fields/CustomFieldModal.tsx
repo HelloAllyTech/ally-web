@@ -1,4 +1,5 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   Dialog,
@@ -27,9 +28,9 @@ import { v4 as uuidv4 } from "uuid";
 import {
   useCreateCustomFieldDefinitionMutation,
   useUpdateCustomFieldDefinitionMutation,
-  useGetSummarySectionsQuery,
   useGetEnabledCustomFieldTypesQuery,
 } from "@api";
+import { getSummarySections } from "@pages/post-call-summary/constants";
 import { Button } from "@components";
 import {
   CustomFieldDefinition,
@@ -81,7 +82,8 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
     editingField?.showInTable ?? true,
   );
 
-  const { data: sectionsData, isLoading: isSectionsLoading } = useGetSummarySectionsQuery();
+  const { t } = useTranslation();
+  const sections = useMemo(() => getSummarySections(t), [t]);
   const { data: enabledTypes } = useGetEnabledCustomFieldTypesQuery();
 
   useEffect(() => {
@@ -178,8 +180,6 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
     onClose();
   };
 
-  const sections = sectionsData?.sections ?? [];
-
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>{isEditing ? "Edit custom field" : "Add custom field"}</DialogTitle>
@@ -274,11 +274,10 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                 value={sectionKey}
                 label="Section"
                 onChange={e => setSectionKey(e.target.value)}
-                disabled={isSectionsLoading}
               >
                 {sections.map(section => (
-                  <MenuItem key={section.id} value={section.id}>
-                    {section.label}
+                  <MenuItem key={section.key} value={section.key}>
+                    {section.title}
                   </MenuItem>
                 ))}
               </Select>
