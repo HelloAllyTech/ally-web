@@ -23,6 +23,8 @@ export interface Column<T> {
   icon?: React.ReactNode;
   /** Header label for the column */
   header: string;
+  /** Replaces the entire header cell content with custom JSX (e.g. a + button) */
+  headerNode?: React.ReactNode;
   /** Whether the column is sortable */
   sortable?: boolean;
   /** Whether the column is filterable */

@@ -258,6 +258,46 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SUMMARY_SECTIONS],
     }),
 
+    getCustomFieldTypes: builder.query<string[], string>({
+      query: tenantId => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELD_TYPES,
+        params: { tenantId },
+      }),
+      providesTags: [TAG_TYPES.CUSTOM_FIELD_TYPES],
+    }),
+
+    updateCustomFieldTypes: builder.mutation<
+      { success: boolean },
+      { tenantId: string; enabledTypes: string[] }
+    >({
+      query: ({ tenantId, enabledTypes }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELD_TYPES,
+        method: HttpMethod.PUT,
+        body: { tenantId, enabledTypes },
+      }),
+      invalidatesTags: [TAG_TYPES.CUSTOM_FIELD_TYPES],
+    }),
+
+    getCustomFieldsEnabled: builder.query<boolean, string>({
+      query: tenantId => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELDS_ENABLED,
+        params: { tenantId },
+      }),
+      providesTags: [TAG_TYPES.CUSTOM_FIELDS_ENABLED],
+    }),
+
+    updateCustomFieldsEnabled: builder.mutation<
+      { success: boolean },
+      { tenantId: string; enabled: boolean }
+    >({
+      query: ({ tenantId, enabled }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELDS_ENABLED,
+        method: HttpMethod.PUT,
+        body: { tenantId, enabled },
+      }),
+      invalidatesTags: [TAG_TYPES.CUSTOM_FIELDS_ENABLED],
+    }),
+
     getAdminTenants: builder.query<GetAdminTenantsResponse, number>({
       query: userId => ({
         url: ApiEndpoints.USER_MANAGEMENT.USER_ADMIN_TENANTS(userId),
@@ -318,4 +358,8 @@ export const {
   useLazyGetAdminTenantsQuery,
   useAssignAdminTenantsMutation,
   useRemoveAdminTenantsMutation,
+  useGetCustomFieldTypesQuery,
+  useUpdateCustomFieldTypesMutation,
+  useGetCustomFieldsEnabledQuery,
+  useUpdateCustomFieldsEnabledMutation,
 } = userManagementAPI;

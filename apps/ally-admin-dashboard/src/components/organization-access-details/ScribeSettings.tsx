@@ -9,6 +9,10 @@ import {
   useGetDashboardSettingsAllQuery,
   useGetTenantByIdQuery,
   useUpdateTenantMutation,
+  useGetCustomFieldTypesQuery,
+  useUpdateCustomFieldTypesMutation,
+  useGetCustomFieldsEnabledQuery,
+  useUpdateCustomFieldsEnabledMutation,
 } from "@api";
 import { ArrowSolid } from "@assets";
 import { ToggleSwitch, Accordion, Button } from "@components";
@@ -104,6 +108,60 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
 
   const { data: dashboardSettingsAll } = useGetDashboardSettingsAllQuery();
   const { data: tenant } = useGetTenantByIdQuery(tenantId);
+  const { data: enabledCustomFieldTypes } = useGetCustomFieldTypesQuery(tenantId);
+  const [updateCustomFieldTypes] = useUpdateCustomFieldTypesMutation();
+  const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery(tenantId);
+  const [updateCustomFieldsEnabled] = useUpdateCustomFieldsEnabledMutation();
+
+  const allCustomFieldTypes = [
+    { key: "SINGLE_SELECT", label: en.userManagement.singleSelectFieldType },
+    { key: "MULTI_SELECT", label: en.userManagement.multiSelectFieldType },
+    { key: "DATE", label: en.userManagement.dateFieldType },
+    { key: "TEXT", label: en.userManagement.textFieldType },
+    { key: "NUMBER", label: en.userManagement.numberFieldType },
+    { key: "BOOLEAN", label: en.userManagement.booleanFieldType },
+  ];
+
+  const [localCustomFieldsEnabled, setLocalCustomFieldsEnabled] = useState<boolean>(true);
+  const [localEnabledTypes, setLocalEnabledTypes] = useState<string[]>(
+    allCustomFieldTypes.map(t => t.key),
+  );
+
+  useEffect(() => {
+    if (customFieldsEnabled !== undefined) {
+      setLocalCustomFieldsEnabled(customFieldsEnabled);
+    }
+  }, [customFieldsEnabled]);
+
+  useEffect(() => {
+    if (enabledCustomFieldTypes !== undefined) {
+      setLocalEnabledTypes(enabledCustomFieldTypes);
+    }
+  }, [enabledCustomFieldTypes]);
+
+  const handleCustomFieldsEnabledToggle = async (enabled: boolean) => {
+    setLocalCustomFieldsEnabled(enabled);
+    try {
+      await updateCustomFieldsEnabled({ tenantId, enabled }).unwrap();
+    } catch (error: any) {
+      setLocalCustomFieldsEnabled(!enabled);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
+
+  const handleCustomFieldTypeToggle = async (fieldType: string, enabled: boolean) => {
+    const updated = enabled
+      ? [...localEnabledTypes, fieldType]
+      : localEnabledTypes.filter(t => t !== fieldType);
+    setLocalEnabledTypes(updated);
+    try {
+      await updateCustomFieldTypes({ tenantId, enabledTypes: updated }).unwrap();
+    } catch (error: any) {
+      setLocalEnabledTypes(localEnabledTypes);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
+
   const { data: summarySectionsData, isLoading: isSummarySectionsLoading } =
     useGetSummarySectionsQuery(tenantId);
   const [updateSummarySections, { isLoading: isUpdatingSections }] =
@@ -517,29 +575,70 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
   }
 
   return (
-    <div className="overflow-y-auto w-full mb-4">
-      <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 w-[60%] mb-4 pb-2">
-        <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary">
-          {optionValues.map(item => (
-            <div key={item.id} className="flex h-9 flex-row justify-between items-center">
-              <div className="text-sm text-typography-700 font-normal">{item.label}</div>
-              <div className="flex flex-row items-center gap-3">
-                <ToggleSwitch
-                  enabled={enabledItems.includes(item.id)}
-                  onChange={() => handleToggle(item)}
-                />
-                <span className="text-sm text-typography-900 font-normal">
-                  {enabledItems.includes(item.id) ? en.common.enabled : en.common.disabled}
-                </span>
-              </div>
+    <div className="w-[60%] flex flex-col gap-4 mb-4 pb-2">
+      <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary">
+        {optionValues.map(item => (
+          <div key={item.id} className="flex h-9 flex-row justify-between items-center">
+            <div className="text-sm text-typography-700 font-normal">{item.label}</div>
+            <div className="flex flex-row items-center gap-3">
+              <ToggleSwitch
+                enabled={enabledItems.includes(item.id)}
+                onChange={() => handleToggle(item)}
+              />
+              <span className="text-sm text-typography-900 font-normal">
+                {enabledItems.includes(item.id) ? en.common.enabled : en.common.disabled}
+              </span>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
 
-        <div className="text-base font-medium text-typography-900">
-          {en.userManagement.configureSimulationSettings}
+      <div className="text-base font-medium text-typography-900">
+        {en.userManagement.configureSimulationSettings}
+      </div>
+      {data.map(item => renderScribeSettingsListItem(item))}
+
+      <div className="text-base font-medium text-typography-900 mt-2">
+        {en.userManagement.customFields}
+      </div>
+      <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary">
+        <div className="flex h-9 flex-row justify-between items-center">
+          <div className="text-sm text-typography-700 font-normal">
+            {en.userManagement.customFieldsEnabled}
+          </div>
+          <div className="flex flex-row items-center gap-3">
+            <ToggleSwitch
+              enabled={localCustomFieldsEnabled}
+              onChange={handleCustomFieldsEnabledToggle}
+              label={en.userManagement.customFieldsEnabled}
+            />
+            <span className="text-sm text-typography-900 font-normal">
+              {localCustomFieldsEnabled ? en.common.enabled : en.common.disabled}
+            </span>
+          </div>
         </div>
-        {data.map(item => renderScribeSettingsListItem(item))}
+        {localCustomFieldsEnabled && (
+          <div className="flex flex-col gap-2 pl-4 border-l-2 border-border-light ml-1">
+            {allCustomFieldTypes.map(({ key, label }) => {
+              const isEnabled = localEnabledTypes.includes(key);
+              return (
+                <div key={key} className="flex h-9 flex-row justify-between items-center">
+                  <div className="text-sm text-typography-700 font-normal">{label}</div>
+                  <div className="flex flex-row items-center gap-3">
+                    <ToggleSwitch
+                      enabled={isEnabled}
+                      onChange={enabled => handleCustomFieldTypeToggle(key, enabled)}
+                      label={label}
+                    />
+                    <span className="text-sm text-typography-900 font-normal">
+                      {isEnabled ? en.common.enabled : en.common.disabled}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
