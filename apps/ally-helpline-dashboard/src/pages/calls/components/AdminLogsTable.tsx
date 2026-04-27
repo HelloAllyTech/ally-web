@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, FC } from "react";
 
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ import {
   useGetCounsellorsQuery,
   useGetCallTagsQuery,
   useGetAdminSimulationLogsQuery,
+  useGetCustomFieldDefinitionsQuery,
+  useGetCustomFieldsEnabledQuery,
 } from "@api";
 import {
   NoResults,
@@ -45,6 +47,8 @@ import {
 import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
+import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
+import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
@@ -59,6 +63,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   const [hasMore, setHasMore] = useState<boolean>(true);
 
   const [deleteLogChatId, setDeleteLogChatId] = useState<number | null>(null);
+  const [isManageFieldsOpen, setIsManageFieldsOpen] = useState(false);
 
   const { filters } = useSelector((state: RootState) => state.calls);
   const { offset } = filters;
@@ -74,7 +79,14 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     second: t("calls.duration.second", "sec"),
     seconds: t("calls.duration.seconds", "secs"),
   };
-  const { user: currentUser } = useSelector((state: RootState) => state.user);
+  const { user: currentUser, permissions } = useSelector((state: RootState) => state.user);
+  const canManageCustomFields = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
+  const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
+  const customFieldsActive = customFieldsEnabled !== false;
+
+  const { data: customFieldDefs = [] } = useGetCustomFieldDefinitionsQuery(undefined, {
+    skip: !isCall || !customFieldsActive,
+  });
 
   const {
     data: callLogsData,
@@ -215,12 +227,22 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     return { id, callName: "", dateAndTime: "", provider: "--", mode: undefined, raw: row };
   };
 
+  const customFieldColumns: Column<any>[] = customFieldDefs.filter(def => def.showInTable !== false).map(def => ({
+    key: `cf_${def.id}`,
+    header: def.name,
+    style: { width: "10%", minWidth: 100 },
+    render: (_value: any, row: any) =>
+      renderCustomFieldCell(def, row.raw?.__customFieldValues ?? []),
+  }));
+
   const callColumns: Column<any>[] = [
     {
       key: "callName",
       header: t("summary.fields.callId"),
       style: { width: "13%" },
       icon: <CallIdIcon />,
+      filterable: true,
+      filterType: FilterType.TEXT,
     },
     {
       key: "counsellorName",
@@ -288,6 +310,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
     },
+    ...customFieldColumns,
     {
       key: "actions",
       header: t("calls.table.actions"),
@@ -320,6 +343,28 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       ),
       icon: <ActionsIcon />,
     },
+    ...(isCall && customFieldsActive && canManageCustomFields
+      ? [
+          {
+            key: "addCustomField",
+            header: "",
+            headerNode: (
+              <Tooltip title="Add custom field" placement="top" arrow>
+                <button
+                  type="button"
+                  onClick={() => setIsManageFieldsOpen(true)}
+                  className="flex items-center justify-center w-6 h-6 rounded-full border border-dashed border-gray-400 text-gray-400 hover:border-gray-600 hover:text-gray-600 transition-colors"
+                  data-testid="admin-logs-add-field-button"
+                >
+                  <span className="text-base leading-none">+</span>
+                </button>
+              </Tooltip>
+            ),
+            style: { width: "48px", minWidth: "48px" },
+            render: () => null,
+          },
+        ]
+      : []),
   ];
 
   const getAdminSimulationDisplayData = (row: AdminSimulationLog) => {
@@ -450,6 +495,12 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       updatedFilters.tags = tags.value.join(",");
     }
 
+    // Call Name text filter
+    const callName = filter.find((f: { key: string }) => f.key === "callName");
+    if (callName && typeof callName.value === "string" && callName.value.trim()) {
+      updatedFilters.callName = callName.value.trim();
+    }
+
     dispatch(updateFilters(updatedFilters));
   };
 
@@ -540,6 +591,10 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
         chatId={deleteLogChatId}
         closeDialog={onDeleteCallConfirm}
         data-testid="admin-logs-delete-dialog"
+      />
+      <ManageCustomFieldsDialog
+        open={isManageFieldsOpen}
+        onClose={() => setIsManageFieldsOpen(false)}
       />
     </>
   );

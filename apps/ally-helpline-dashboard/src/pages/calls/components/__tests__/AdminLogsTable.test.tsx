@@ -11,6 +11,8 @@ import {
   useGetCounsellorsQuery,
   useGetCallTagsQuery,
   useGetAdminSimulationLogsQuery,
+  useGetCustomFieldDefinitionsQuery,
+  useGetCustomFieldsEnabledQuery,
 } from "@api";
 import { SessionType, CallLog, SimulationLog, ChatSummaryStatus } from "@types";
 
@@ -22,6 +24,7 @@ import AdminLogsTable from "../AdminLogsTable";
 
 vi.mock("@mui/material", () => ({
   CircularProgress: () => <div data-testid="circular-progress">Loading...</div>,
+  Tooltip: ({ children }: any) => <>{children}</>,
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -30,6 +33,13 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       <div ref={ref} className={className} data-testid="generic-table">
         {isLoading && <div data-testid="table-loading">Loading...</div>}
         {fallbackUI}
+        <div data-testid="table-header">
+          {columns.map((col: any) => (
+            <div key={col.key} data-testid={`header-${col.key}`}>
+              {col.headerNode ?? col.header}
+            </div>
+          ))}
+        </div>
         {data?.map((item: any, index: number) => (
           <div key={item.id || index} data-testid={`table-row-${index}`}>
             {columns.map((col: any) => (
@@ -54,6 +64,13 @@ vi.mock("@api", () => ({
   useGetAdminSimulationLogsQuery: vi.fn(),
   useGetCounsellorsQuery: vi.fn(),
   useGetCallTagsQuery: vi.fn(),
+  useGetCustomFieldDefinitionsQuery: vi.fn(),
+  useGetCustomFieldsEnabledQuery: vi.fn(),
+}));
+
+vi.mock("../custom-fields/ManageCustomFieldsDialog", () => ({
+  default: ({ open, onClose }: any) =>
+    open ? <div data-testid="manage-fields-dialog"><button onClick={onClose}>Close</button></div> : null,
 }));
 
 vi.mock("@assets", async importOriginal => {
@@ -336,6 +353,16 @@ describe("AdminLogsTable", () => {
           { id: 2, name: "Jane Smith" },
         ],
       },
+      isLoading: false,
+    } as any);
+
+    vi.mocked(useGetCustomFieldsEnabledQuery).mockReturnValue({
+      data: false,
+      isLoading: false,
+    } as any);
+
+    vi.mocked(useGetCustomFieldDefinitionsQuery).mockReturnValue({
+      data: [],
       isLoading: false,
     } as any);
 
@@ -1078,6 +1105,143 @@ describe("AdminLogsTable", () => {
         expect.any(Object),
         expect.objectContaining({ skip: true }),
       );
+    });
+  });
+
+  describe("Custom fields", () => {
+    const mockCustomFieldDef = {
+      id: "cf-uuid-1",
+      name: "Priority",
+      fieldType: "SINGLE_SELECT",
+      options: [{ id: "opt-1", label: "High", order: 0 }],
+      sectionKey: "intake",
+      editPermission: "BOTH",
+      fillMode: "MANUAL",
+      displayOrder: 0,
+      showInTable: true,
+      isActive: true,
+    };
+
+    it("skips definitions query when custom fields feature is disabled", () => {
+      vi.mocked(useGetCustomFieldsEnabledQuery).mockReturnValue({ data: false } as any);
+      renderComponent(SessionType.CALL);
+      expect(vi.mocked(useGetCustomFieldDefinitionsQuery)).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({ skip: true }),
+      );
+    });
+
+    it("fetches definitions when custom fields feature is enabled", () => {
+      vi.mocked(useGetCustomFieldsEnabledQuery).mockReturnValue({ data: true } as any);
+      renderComponent(SessionType.CALL);
+      expect(vi.mocked(useGetCustomFieldDefinitionsQuery)).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({ skip: false }),
+      );
+    });
+
+    it("renders custom field column for showInTable=true definition", async () => {
+      vi.mocked(useGetCustomFieldsEnabledQuery).mockReturnValue({ data: true } as any);
+      vi.mocked(useGetCustomFieldDefinitionsQuery).mockReturnValue({
+        data: [mockCustomFieldDef],
+      } as any);
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        refetch: vi.fn(),
+        error: null,
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("cell-cf_cf-uuid-1-0")).toBeInTheDocument();
+      });
+    });
+
+    it("does not render custom field column for showInTable=false definition", async () => {
+      vi.mocked(useGetCustomFieldsEnabledQuery).mockReturnValue({ data: true } as any);
+      vi.mocked(useGetCustomFieldDefinitionsQuery).mockReturnValue({
+        data: [{ ...mockCustomFieldDef, showInTable: false }],
+      } as any);
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        refetch: vi.fn(),
+        error: null,
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId("cell-cf_cf-uuid-1-0")).not.toBeInTheDocument();
+      });
+    });
+
+    it("shows '+' add-field button for admin with manage permission", async () => {
+      vi.mocked(useGetCustomFieldsEnabledQuery).mockReturnValue({ data: true } as any);
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        refetch: vi.fn(),
+        error: null,
+      });
+
+      renderComponent(
+        SessionType.CALL,
+        undefined,
+        { filters: { offset: 0 } },
+        { user: { id: 1 }, permissions: ["manage:custom-field:definitions"] },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("admin-logs-add-field-button")).toBeInTheDocument();
+      });
+    });
+
+    it("hides '+' add-field button when custom fields feature is disabled", async () => {
+      vi.mocked(useGetCustomFieldsEnabledQuery).mockReturnValue({ data: false } as any);
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        refetch: vi.fn(),
+        error: null,
+      });
+
+      renderComponent(
+        SessionType.CALL,
+        undefined,
+        { filters: { offset: 0 } },
+        { user: { id: 1 }, permissions: ["manage:custom-field:definitions"] },
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByTestId("admin-logs-add-field-button")).not.toBeInTheDocument();
+      });
+    });
+
+    it("opens ManageCustomFieldsDialog when '+' button is clicked", async () => {
+      vi.mocked(useGetCustomFieldsEnabledQuery).mockReturnValue({ data: true } as any);
+      mockUseGetAdminCallLogsQuery.mockReturnValue({
+        data: { data: [SCRIBE_CALL_LOG] },
+        isLoading: false,
+        refetch: vi.fn(),
+        error: null,
+      });
+
+      renderComponent(
+        SessionType.CALL,
+        undefined,
+        { filters: { offset: 0 } },
+        { user: { id: 1 }, permissions: ["manage:custom-field:definitions"] },
+      );
+
+      await waitFor(() => screen.getByTestId("admin-logs-add-field-button"));
+      fireEvent.click(screen.getByTestId("admin-logs-add-field-button"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("manage-fields-dialog")).toBeInTheDocument();
+      });
     });
   });
 });

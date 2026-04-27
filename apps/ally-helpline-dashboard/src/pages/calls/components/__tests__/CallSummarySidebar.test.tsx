@@ -51,6 +51,9 @@ vi.mock("@api", () => ({
   useGetTranscriptQuery: (...args: unknown[]) => mockUseGetTranscriptQuery(...args),
   useCreateScribeReviewMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
   useUpdateScribeReviewMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
+  useGetCustomFieldsEnabledQuery: vi.fn(() => ({ data: false, isLoading: false })),
+  useGetCustomFieldValuesQuery: vi.fn(() => ({ data: [], isLoading: false })),
+  useUpsertCustomFieldValuesMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
 }));
 
 // Mock assets

@@ -182,4 +182,17 @@ export const ApiEndpoints = {
     GET_BADGES_COUNT: "/v1/badges/me/count",
     UPDATE_BADGE_VIEW_STATUS: (badgeId: string) => `/v1/badges/me/${badgeId}/viewed`,
   },
+  CUSTOM_FIELDS: {
+    GET_DEFINITIONS: "/v1/custom-fields/definitions",
+    CREATE_DEFINITION: "/v1/custom-fields/definitions",
+    UPDATE_DEFINITION: (id: string) => `/v1/custom-fields/definitions/${id}`,
+    DELETE_DEFINITION: (id: string) => `/v1/custom-fields/definitions/${id}`,
+    GET_VALUES: (chatId: number) => `/v1/custom-fields/values/${chatId}`,
+    UPSERT_VALUES: (chatId: number) => `/v1/custom-fields/values/${chatId}`,
+  },
+  SETTINGS: {
+    GET_SUMMARY_SECTIONS: "/v1/settings/summary-sections",
+    GET_CUSTOM_FIELD_TYPES: "/v1/settings/custom-field-types",
+    GET_CUSTOM_FIELDS_ENABLED: "/v1/settings/custom-fields-enabled",
+  },
 };

@@ -6,7 +6,12 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { useGetCallLogsQuery, useGetSimulationLogsQuery } from "@api";
+import {
+  useGetCallLogsQuery,
+  useGetSimulationLogsQuery,
+  useGetCustomFieldsEnabledQuery,
+  useGetCustomFieldDefinitionsQuery,
+} from "@api";
 import { SessionType, CallLog, SimulationLog, ChatSummaryStatus } from "@types";
 
 import UserLogsTable from "../UserLogsTable";
@@ -17,6 +22,7 @@ import UserLogsTable from "../UserLogsTable";
 
 vi.mock("@mui/material", () => ({
   CircularProgress: () => <div data-testid="circular-progress">Loading...</div>,
+  Tooltip: ({ children }: any) => <>{children}</>,
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -47,6 +53,8 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 vi.mock("@api", () => ({
   useGetCallLogsQuery: vi.fn(),
   useGetSimulationLogsQuery: vi.fn(),
+  useGetCustomFieldsEnabledQuery: vi.fn(),
+  useGetCustomFieldDefinitionsQuery: vi.fn(),
 }));
 
 vi.mock("@assets", async importOriginal => {
@@ -284,6 +292,12 @@ const renderComponent = (
 describe("UserLogsTable", () => {
   const mockUseGetCallLogsQuery = useGetCallLogsQuery as ReturnType<typeof vi.fn>;
   const mockUseGetSimulationLogsQuery = useGetSimulationLogsQuery as ReturnType<typeof vi.fn>;
+  const mockUseGetCustomFieldsEnabledQuery = useGetCustomFieldsEnabledQuery as ReturnType<
+    typeof vi.fn
+  >;
+  const mockUseGetCustomFieldDefinitionsQuery = useGetCustomFieldDefinitionsQuery as ReturnType<
+    typeof vi.fn
+  >;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -298,6 +312,16 @@ describe("UserLogsTable", () => {
       data: { data: [] },
       isLoading: false,
       refetch: vi.fn(),
+    });
+
+    mockUseGetCustomFieldsEnabledQuery.mockReturnValue({
+      data: false,
+      isLoading: false,
+    });
+
+    mockUseGetCustomFieldDefinitionsQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
     });
   });
 
