@@ -180,7 +180,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running component tests (group 1)..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 \
+          npx vitest run --pool=forks --max-workers=1 \
             src/components/Simulation-event-map-table \
             src/components/access-denied \
             src/components/accordion \
@@ -261,7 +261,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running component tests (group 2)..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 \
+          npx vitest run --pool=forks --max-workers=1 \
             src/components/language-voice-mapping \
             src/components/linguistic-style-samples \
             src/components/log-viewer \
