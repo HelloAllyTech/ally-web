@@ -145,7 +145,7 @@ jobs:
       - name: Run Tests with Coverage
         run: |
           echo ":test_tube: Running tests with coverage..." >> $GITHUB_STEP_SUMMARY
-          npx nx test ally-admin-dashboard --coverage
+          NODE_OPTIONS="--max-old-space-size=4096" npx nx test ally-admin-dashboard --coverage
           echo ":white_check_mark: Tests completed successfully" >> $GITHUB_STEP_SUMMARY
 
   # Build and deploy to CDN
