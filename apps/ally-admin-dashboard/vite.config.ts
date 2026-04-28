@@ -62,6 +62,7 @@ export default defineConfig(() => ({
     setupFiles: ["./src/test-setup.ts"],
     include: ["{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     reporters: ["default"],
+    fileParallelism: false,
     coverage: {
       reportsDirectory: "../../coverage/apps/ally-admin-dashboard",
       provider: "v8" as const,
@@ -77,12 +78,6 @@ export default defineConfig(() => ({
       ],
     },
     passWithNoTests: true,
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        maxForks: 2,
-      },
-    },
     env: {
       VITE_API_BASE_URL: "http://localhost:3000",
     },
