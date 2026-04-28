@@ -150,7 +150,7 @@ jobs:
           npx vitest run --max-workers=1 src/api src/utils src/hooks src/routes src/store src/reducer src/__tests__
           echo ":white_check_mark: Group 1 tests passed" >> $GITHUB_STEP_SUMMARY
 
-  test-components:
+  test-components-1:
     needs:
       - prepare-env
       - changes
@@ -176,12 +176,139 @@ jobs:
           cache: "npm"
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
-      - name: Run Tests (Components)
+      - name: Run Tests (Components Group 1)
         working-directory: apps/ally-admin-dashboard
         run: |
-          echo ":test_tube: Running component tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 src/components
-          echo ":white_check_mark: Group 2 tests passed" >> $GITHUB_STEP_SUMMARY
+          echo ":test_tube: Running component tests (group 1)..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run --max-workers=1 \
+            src/components/Simulation-event-map-table \
+            src/components/access-denied \
+            src/components/accordion \
+            src/components/action-confirmation-popup \
+            src/components/assigned-organizations \
+            src/components/auto-termination-rule-field \
+            src/components/autofill-model-select \
+            src/components/badges-tab \
+            src/components/behaviours-and-states-instruction \
+            src/components/behaviours-instruction \
+            src/components/bulk-add-events-side-panel \
+            src/components/button \
+            src/components/character-profile-selector \
+            src/components/character-side-panel \
+            src/components/competency \
+            src/components/create-badge-popup \
+            src/components/create-badge-side-panel \
+            src/components/create-simulation-sub-section \
+            src/components/credit-field \
+            src/components/custom-dropdown \
+            src/components/custom-dropdown-field \
+            src/components/custom-field-group \
+            src/components/data-list \
+            src/components/delete-popup \
+            src/components/dropdown-field \
+            src/components/dropdownwithtag \
+            src/components/editable-table \
+            src/components/emoji-picker \
+            src/components/empty-state \
+            src/components/entity-toggle-card \
+            src/components/event-map-table-loader \
+            src/components/event-settings-section \
+            src/components/event-side-panel \
+            src/components/event-type-selection-dialog \
+            src/components/file-upload \
+            src/components/filler-tag-picker \
+            src/components/filter-list \
+            src/components/filters \
+            src/components/footer \
+            src/components/guardrail-side-panel \
+            src/components/header \
+            src/components/helper-tag \
+            src/components/icon-uploader \
+            src/components/image-library \
+            src/components/input \
+            src/components/input-field \
+            src/components/knowledge-source \
+            src/components/language-side-panel
+          echo ":white_check_mark: Component group 1 tests passed" >> $GITHUB_STEP_SUMMARY
+
+  test-components-2:
+    needs:
+      - prepare-env
+      - changes
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      NX_DAEMON: false
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Run Tests (Components Group 2)
+        working-directory: apps/ally-admin-dashboard
+        run: |
+          echo ":test_tube: Running component tests (group 2)..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run --max-workers=1 \
+            src/components/language-voice-mapping \
+            src/components/linguistic-style-samples \
+            src/components/log-viewer \
+            src/components/mapped-event-side-panel \
+            src/components/narrative-context \
+            src/components/notion-table \
+            src/components/opening-dialogues \
+            src/components/option-selection-popover \
+            src/components/options-popup \
+            src/components/organization-access-details \
+            src/components/otp \
+            src/components/pathway-list \
+            src/components/popup-wrapper \
+            src/components/profile-card \
+            src/components/prompt-configuration \
+            src/components/prompt-side-panel \
+            src/components/radio-button-group \
+            src/components/regenerate-button \
+            src/components/report-content \
+            src/components/report-section \
+            src/components/report-upload-progress-dialog \
+            src/components/scenario-reports-socket-provider \
+            src/components/scenario-voice-side-panel \
+            src/components/sidebar \
+            src/components/simulation-list \
+            src/components/simulation-preview \
+            src/components/simulation-selection-modal \
+            src/components/simulation-skeleton \
+            src/components/skeleton-loader \
+            src/components/states-instruction \
+            src/components/status-badge \
+            src/components/tab-button \
+            src/components/tag-list \
+            src/components/tag-selector \
+            src/components/text-field \
+            src/components/textarea-with-dropdown \
+            src/components/time-input \
+            src/components/toggle-section \
+            src/components/toggle-switch \
+            src/components/toolbar \
+            src/components/trigger-conditions \
+            src/components/user-management \
+            src/components/user-modal \
+            src/components/user-option-dropdown \
+            src/components/vertical-stepper \
+            src/components/voice-dropdown
+          echo ":white_check_mark: Component group 2 tests passed" >> $GITHUB_STEP_SUMMARY
 
   test-pages:
     needs:
@@ -221,7 +348,8 @@ jobs:
       - prepare-env
       - changes
       - test-api-utils
-      - test-components
+      - test-components-1
+      - test-components-2
       - test-pages
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04

@@ -187,7 +187,7 @@ jobs:
           npx vitest run --max-workers=1 src/api src/utils src/hooks src/store src/routes src/__tests__
           echo ":white_check_mark: Group 1 tests passed" >> $GITHUB_STEP_SUMMARY
 
-  test-components:
+  test-components-1:
     needs:
       - prepare-env
       - changes
@@ -214,12 +214,118 @@ jobs:
           cache: "npm"
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
-      - name: Run Tests (Components / Containers)
+      - name: Run Tests (Components Group 1)
         working-directory: apps/ally-helpline-dashboard
         run: |
-          echo ":test_tube: Running component and container tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 src/components src/containers
-          echo ":white_check_mark: Group 2 tests passed" >> $GITHUB_STEP_SUMMARY
+          echo ":test_tube: Running component tests (group 1)..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run --max-workers=1 \
+            src/components/accordion \
+            src/components/achievement-badge-modal \
+            src/components/achievement-item \
+            src/components/achievements-card \
+            src/components/action-dialog \
+            src/components/add-review-note \
+            src/components/ask-ai-tab \
+            src/components/audio-transcript-player \
+            src/components/avatar \
+            src/components/box-breathing \
+            src/components/button \
+            src/components/button-group \
+            src/components/carousel \
+            src/components/character-count \
+            src/components/checklist \
+            src/components/chip \
+            src/components/circular-progress \
+            src/components/comment-addition-dialog \
+            src/components/comment-card \
+            src/components/comment-thread \
+            src/components/confirmation-dialog \
+            src/components/confirmation-popover \
+            src/components/credit-info-dialog \
+            src/components/credits-display \
+            src/components/custom-circular-progress \
+            src/components/custom-markdown \
+            src/components/custom-menu \
+            src/components/date-time-pickers \
+            src/components/draggable-area \
+            src/components/drawer \
+            src/components/dropdown \
+            src/components/emoji-picker \
+            src/components/fallback-ui \
+            src/components/feed-card \
+            src/components/info-banner \
+            src/components/input
+          echo ":white_check_mark: Component group 1 tests passed" >> $GITHUB_STEP_SUMMARY
+
+  test-components-2:
+    needs:
+      - prepare-env
+      - changes
+      - i18n-sync
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      NX_DAEMON: false
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Run Tests (Components Group 2 + Containers)
+        working-directory: apps/ally-helpline-dashboard
+        run: |
+          echo ":test_tube: Running component tests (group 2) and container tests..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run --max-workers=1 \
+            src/components/language-selector \
+            src/components/leaderboard-list \
+            src/components/login-dialog \
+            src/components/native-emoji \
+            src/components/nav-sidebar \
+            src/components/notification-badge \
+            src/components/otp \
+            src/components/overall-score-meter \
+            src/components/pathway-scenario-card \
+            src/components/permission-guard \
+            src/components/profile-settings \
+            src/components/reaction-modal \
+            src/components/reaction-selector \
+            src/components/reflection-tab \
+            src/components/review-comments-sidepanel \
+            src/components/scenario-card \
+            src/components/scenario-details-card \
+            src/components/search-resources \
+            src/components/selectable-text \
+            src/components/share-for-review \
+            src/components/shiny-text \
+            src/components/skills-tab \
+            src/components/star-rating \
+            src/components/tag-group \
+            src/components/terms-and-agreement \
+            src/components/text-field \
+            src/components/thread-card \
+            src/components/timer \
+            src/components/toggle-button-group \
+            src/components/toggle-switch \
+            src/components/transcript-listing \
+            src/components/transcription \
+            src/components/up-next-simulation-card \
+            src/components/user-info \
+            src/containers/feedback-dialog \
+            src/containers/simulation-summary-state
+          echo ":white_check_mark: Component group 2 and container tests passed" >> $GITHUB_STEP_SUMMARY
 
   test-pages:
     needs:
@@ -294,7 +400,8 @@ jobs:
       - changes
       - i18n-sync
       - test-api-utils
-      - test-components
+      - test-components-1
+      - test-components-2
       - test-pages
       - test-ui-shared
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
