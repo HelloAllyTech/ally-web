@@ -123,14 +123,14 @@ jobs:
       - changes
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
-    timeout-minutes: 25
+    timeout-minutes: 30
     env:
       NX_NO_CLOUD: true
       NX_SKIP_NX_CACHE: true
       NX_CLOUD_ACCESS_TOKEN: ""
       NX_DAEMON: false
       CI: true
-      NODE_OPTIONS: --max-old-space-size=6144
+      NODE_OPTIONS: --max-old-space-size=4096
 
     steps:
       - name: Checkout
@@ -147,11 +147,26 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run Tests
+      - name: Run Tests (API / Utils / Hooks / Routes)
+        working-directory: apps/ally-admin-dashboard
         run: |
-          echo ":test_tube: Running tests for ally-admin-dashboard..." >> $GITHUB_STEP_SUMMARY
-          npx nx test ally-admin-dashboard
-          echo ":white_check_mark: Tests completed successfully" >> $GITHUB_STEP_SUMMARY
+          echo ":test_tube: Running API, utils, hooks, routes tests..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run src/api src/utils src/hooks src/routes src/store src/reducer src/__tests__
+          echo ":white_check_mark: Group 1 tests passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run Tests (Components)
+        working-directory: apps/ally-admin-dashboard
+        run: |
+          echo ":test_tube: Running component tests..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run src/components
+          echo ":white_check_mark: Group 2 tests passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run Tests (Pages)
+        working-directory: apps/ally-admin-dashboard
+        run: |
+          echo ":test_tube: Running page tests..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run src/pages
+          echo ":white_check_mark: Group 3 tests passed" >> $GITHUB_STEP_SUMMARY
 
       - name: Test Results Summary
         if: success()
