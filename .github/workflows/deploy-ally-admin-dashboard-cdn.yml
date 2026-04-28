@@ -15,9 +15,9 @@ on:
         type: boolean
         description: Force deployment regardless of file changes
         default: false
-  # push:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - master
     paths:
       - "apps/ally-admin-dashboard/**"
       - "libs/**"
@@ -27,7 +27,6 @@ permissions:
   contents: read
 
 jobs:
-  # Prepare environment variables
   prepare-env:
     name: Prepare Environment
     runs-on: ubuntu-22.04
@@ -52,7 +51,6 @@ jobs:
           BRANCH="${GITHUB_REF#refs/heads/}"
           MANUAL_ENV="${{ github.event.inputs.environment }}"
 
-          # Determine target environment
           if [ -n "$MANUAL_ENV" ]; then
             TARGET_ENV="$MANUAL_ENV"
           else
@@ -96,7 +94,6 @@ jobs:
           project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
           project_region: ${{ steps.env-vars.outputs.project_region }}
 
-  # Check if there are changes in the app directory
   changes:
     needs: prepare-env
     runs-on: ubuntu-22.04
@@ -106,7 +103,6 @@ jobs:
       - name: Determine if should proceed
         id: determine
         run: |
-          # Simplified logic - no redundant path checking
           if [ "${{ github.event.inputs.force_deploy }}" == "true" ]; then
             echo "should_proceed=true" >> $GITHUB_OUTPUT
             echo "Force deploy requested - proceeding without change check"
@@ -121,7 +117,6 @@ jobs:
             echo "No valid trigger detected"
           fi
 
-  # Run tests
   test:
     needs:
       - prepare-env
@@ -129,11 +124,11 @@ jobs:
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
     timeout-minutes: 25
-
     env:
       NX_NO_CLOUD: true
       NX_SKIP_NX_CACHE: true
       NX_CLOUD_ACCESS_TOKEN: ""
+      NX_DAEMON: false
       CI: true
       NODE_OPTIONS: --max-old-space-size=6144
 
@@ -152,17 +147,24 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run Tests with Coverage
+      - name: Run Tests
         run: |
-          echo ":test_tube: Running tests..." >> $GITHUB_STEP_SUMMARY
-
-          npx nx test ally-admin-dashboard \
-            --runInBand \
-            --maxWorkers=1
-
+          echo ":test_tube: Running tests for ally-admin-dashboard..." >> $GITHUB_STEP_SUMMARY
+          npx nx test ally-admin-dashboard
           echo ":white_check_mark: Tests completed successfully" >> $GITHUB_STEP_SUMMARY
 
-  # Build and deploy to CDN
+      - name: Test Results Summary
+        if: success()
+        run: |
+          echo ":white_check_mark: **Test Status**: All tests passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ally-admin-dashboard tests: ✅" >> $GITHUB_STEP_SUMMARY
+
+      - name: Test Failure Summary
+        if: failure()
+        run: |
+          echo ":x: **Test Status**: Tests failed" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment will be blocked until all tests pass." >> $GITHUB_STEP_SUMMARY
+
   deploy:
     needs:
       - prepare-env
@@ -181,6 +183,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -197,8 +205,6 @@ jobs:
             echo ":white_check_mark: Environment variables downloaded successfully" >> $GITHUB_STEP_SUMMARY
             echo "- S3 Path: s3://${{ needs.prepare-env.outputs.s3_env_bucket }}/${{ needs.prepare-env.outputs.service_path }}/.env" >> $GITHUB_STEP_SUMMARY
             echo "- Local Path: apps/ally-admin-dashboard/.env" >> $GITHUB_STEP_SUMMARY
-            
-            # Copy .env file to workspace root so Nx can find it during build
             cp apps/ally-admin-dashboard/.env .env
             echo "- Copied .env to workspace root for Nx build" >> $GITHUB_STEP_SUMMARY
           else
@@ -219,7 +225,6 @@ jobs:
       - name: Set CDN Configuration
         id: cdn-config
         run: |
-          # Set CDN configuration based on environment
           TARGET_ENV="${{ needs.prepare-env.outputs.target_env }}"
 
           if [ "$TARGET_ENV" == "dev" ]; then
@@ -245,30 +250,16 @@ jobs:
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
 
-          # Sync all files first with default settings
-          aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ \
-            --delete \
-            --cache-control "public, max-age=86400" \
-            --metadata-directive REPLACE
+          aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/             --delete             --cache-control "public, max-age=86400"             --metadata-directive REPLACE
 
-          # Fix Content-Type for .well-known files (Apple App Site Association)
           if [ -f "dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association" ]; then
             echo ":gear: Setting correct Content-Type for apple-app-site-association..." >> $GITHUB_STEP_SUMMARY
-            aws s3 cp dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association \
-              s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/apple-app-site-association \
-              --content-type "application/json" \
-              --cache-control "public, max-age=86400" \
-              --metadata-directive REPLACE
+            aws s3 cp dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association               s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/apple-app-site-association               --content-type "application/json"               --cache-control "public, max-age=86400"               --metadata-directive REPLACE
           fi
 
-          # Fix Content-Type for assetlinks.json (Android App Links)
           if [ -f "dist/apps/ally-admin-dashboard/.well-known/assetlinks.json" ]; then
             echo ":gear: Setting correct Content-Type for assetlinks.json..." >> $GITHUB_STEP_SUMMARY
-            aws s3 cp dist/apps/ally-admin-dashboard/.well-known/assetlinks.json \
-              s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/assetlinks.json \
-              --content-type "application/json" \
-              --cache-control "public, max-age=86400" \
-              --metadata-directive REPLACE
+            aws s3 cp dist/apps/ally-admin-dashboard/.well-known/assetlinks.json               s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/assetlinks.json               --content-type "application/json"               --cache-control "public, max-age=86400"               --metadata-directive REPLACE
           fi
 
           echo ":white_check_mark: Files synced to S3 successfully" >> $GITHUB_STEP_SUMMARY
@@ -278,11 +269,7 @@ jobs:
       - name: Invalidate CloudFront
         run: |
           echo ":arrows_counterclockwise: Creating CloudFront invalidation..." >> $GITHUB_STEP_SUMMARY
-          INVALIDATION_ID=$(aws cloudfront create-invalidation \
-            --distribution-id ${{ steps.cdn-config.outputs.cdn_distribution_id }} \
-            --paths "/*" \
-            --query 'Invalidation.Id' \
-            --output text)
+          INVALIDATION_ID=$(aws cloudfront create-invalidation             --distribution-id ${{ steps.cdn-config.outputs.cdn_distribution_id }}             --paths "/*"             --query 'Invalidation.Id'             --output text)
           echo ":white_check_mark: CloudFront invalidation created" >> $GITHUB_STEP_SUMMARY
           echo "- Distribution ID: ${{ steps.cdn-config.outputs.cdn_distribution_id }}" >> $GITHUB_STEP_SUMMARY
           echo "- Invalidation ID: $INVALIDATION_ID" >> $GITHUB_STEP_SUMMARY
