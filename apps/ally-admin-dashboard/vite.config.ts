@@ -80,7 +80,7 @@ export default defineConfig(() => ({
     pool: 'forks',
     poolOptions: {
       forks: {
-        maxForks: 2,
+        maxForks: 1,
       },
     },
     env: {
