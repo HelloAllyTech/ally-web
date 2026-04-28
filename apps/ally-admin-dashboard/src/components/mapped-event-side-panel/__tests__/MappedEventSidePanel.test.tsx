@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock constants early to avoid importing heavy module chain
 vi.mock("@constants", () => ({
@@ -118,6 +118,10 @@ import { TextareaWithTriggerDropdown } from "@components/notion-table";
 
 describe("MappedEventSidePanel", () => {
   beforeEach(() => {
+    vi.useRealTimers();
+  });
+
+  afterEach(() => {
     vi.useRealTimers();
   });
 

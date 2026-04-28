@@ -115,6 +115,15 @@ const mockGetReportTranscriptQuery = vi.fn();
 const mockRefetchReportsHistory = vi.fn();
 
 vi.mock("@api", () => ({
+  // src/store/index.ts imports baseAPI from "@api" (not "@api/baseApi"), so the barrel
+  // mock must include it or store loading throws on baseAPI.reducerPath.
+  baseAPI: {
+    reducerPath: "baseAPI",
+    reducer: (state: unknown = {}) => state,
+    middleware: () => (next: (a: unknown) => unknown) => (action: unknown) => next(action),
+    util: { resetApiState: vi.fn() },
+    injectEndpoints: vi.fn(() => ({})),
+  },
   useGenerateReportMutation: () => [
     (params: any) => ({
       unwrap: async () => mockGenerateReportMutation(params),
