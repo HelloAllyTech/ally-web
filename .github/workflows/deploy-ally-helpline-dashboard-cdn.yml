@@ -166,7 +166,7 @@ jobs:
       - i18n-sync
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     env:
       NX_NO_CLOUD: true
       NX_SKIP_NX_CACHE: true

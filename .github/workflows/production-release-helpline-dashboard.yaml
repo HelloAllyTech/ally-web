@@ -151,7 +151,7 @@ jobs:
       - validate-and-tag
       - prepare-env
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     env:
       NX_NO_CLOUD: true
       NX_SKIP_NX_CACHE: true
