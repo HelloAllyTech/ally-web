@@ -73,7 +73,7 @@ vi.mock("@components", () => ({
     </span>
   ),
   Timer: ({ startTime }: { startTime: string }) => (
-    <div data-testid="timer">{startTime}</div>
+    <div data-testid="timer">{formatRelativeTime(startTime)}</div>
   ),
   MenuItem: ({ children, onClick }: any) => (
     <button onClick={onClick}>{children}</button>
