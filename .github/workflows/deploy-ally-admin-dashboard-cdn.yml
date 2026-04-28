@@ -130,7 +130,7 @@ jobs:
       NX_CLOUD_ACCESS_TOKEN: ""
       NX_DAEMON: false
       CI: true
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -163,7 +163,7 @@ jobs:
       NX_CLOUD_ACCESS_TOKEN: ""
       NX_DAEMON: false
       CI: true
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -196,7 +196,7 @@ jobs:
       NX_CLOUD_ACCESS_TOKEN: ""
       NX_DAEMON: false
       CI: true
-      NODE_OPTIONS: --max-old-space-size=4096
+      NODE_OPTIONS: --max-old-space-size=6144
     steps:
       - name: Checkout
         uses: actions/checkout@v4
