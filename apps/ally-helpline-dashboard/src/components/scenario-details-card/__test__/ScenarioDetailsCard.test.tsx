@@ -14,15 +14,11 @@ vi.mock("framer-motion", () => ({
 }));
 
 // Mock @mui/material CircularProgress
-vi.mock("@mui/material", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    CircularProgress: ({ size, ...props }: any) => (
-      <div data-testid="circular-progress" data-size={size} {...props} />
-    ),
-  };
-});
+vi.mock("@mui/material", () => ({
+  CircularProgress: ({ size, ...props }: any) => (
+    <div data-testid="circular-progress" data-size={size} {...props} />
+  ),
+}));
 
 // Mock sonner toast
 const mockToastSuccess = vi.fn();
@@ -32,32 +28,12 @@ vi.mock("sonner", () => ({
   },
 }));
 
-// Mock @assets/icons with importOriginal to preserve other exports (like ScribeIcon used in constants)
-// This must be before @components mock since @components might trigger @constants which needs these icons
-vi.mock("@assets/icons", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    ShareIcon: (props: any) => <svg data-testid="share-icon" {...props} />,
-    // Ensure ScribeIcon and other icons are available if they exist in original
-    // The spread operator should handle this, but being explicit can help
-  };
-});
+vi.mock("@assets", () => ({
+  ShareIcon: (props: any) => <svg data-testid="share-icon" {...props} />,
+}));
 
-// Mock @constants to prevent it from importing real icons during test setup
-// This ensures @assets/icons mock is used when constants are loaded
-vi.mock("@constants", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    // Keep all original exports, but this ensures the module loads with mocked icons
-  };
-});
-
-// Mock @components to handle Button import (component imports from ".." which resolves to components/index)
-vi.mock("@components", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  const MockButton = ({ children, onClick, disabled, variant, className, ...props }: any) => (
+vi.mock("@components", () => ({
+  Button: ({ children, onClick, disabled, variant, className, ...props }: any) => (
     <button
       data-testid="mock-button"
       onClick={onClick}
@@ -68,16 +44,8 @@ vi.mock("@components", async importOriginal => {
     >
       {children}
     </button>
-  );
-
-  const MockConfirmationDialog = ({
-    isOpen,
-    onButtonClick,
-    buttonText,
-    content,
-    title,
-    onClose,
-  }: any) =>
+  ),
+  ConfirmationDialog: ({ isOpen, onButtonClick, buttonText, content, title, onClose }: any) =>
     isOpen ? (
       <div data-testid="notification-dialog">
         <span>{title.normal}</span>
@@ -85,15 +53,9 @@ vi.mock("@components", async importOriginal => {
         <button onClick={onButtonClick}>{buttonText}</button>
         <button onClick={onClose}>Close</button>
       </div>
-    ) : null;
-
-  return {
-    ...original,
-    Button: MockButton,
-    ConfirmationDialog: MockConfirmationDialog,
-    ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" },
-  };
-});
+    ) : null,
+  ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" },
+}));
 
 // Mock CustomVideo and FEATURE_FLAGS_MAP from ui-shared
 vi.mock("@ally-ui-mono/ui-shared", () => ({

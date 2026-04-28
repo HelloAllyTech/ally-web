@@ -22,15 +22,10 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// Mock assets while preserving other exports used by constants (e.g., Carousel images)
-vi.mock("@assets", async importOriginal => {
-  const actual = await importOriginal<any>();
-  return {
-    ...actual,
-    BackCircle: (props: any) => <button data-testid="back" {...props} />,
-    CloseIcon: (props: any) => <button data-testid="close" {...props} />,
-  };
-});
+vi.mock("@assets", () => ({
+  BackCircle: (props: any) => <button data-testid="back" {...props} />,
+  CloseIcon: (props: any) => <button data-testid="close" {...props} />,
+}));
 
 // Mock API hooks
 const mockGenerate = vi.fn();
