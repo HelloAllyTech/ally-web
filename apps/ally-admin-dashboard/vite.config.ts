@@ -77,12 +77,6 @@ export default defineConfig(() => ({
       ],
     },
     passWithNoTests: true,
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        maxForks: 1,
-      },
-    },
     env: {
       VITE_API_BASE_URL: "http://localhost:3000",
     },
