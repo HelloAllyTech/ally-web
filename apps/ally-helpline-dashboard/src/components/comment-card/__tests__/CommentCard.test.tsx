@@ -8,22 +8,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import CommentCard from "../CommentCard";
 import { formatRelativeTime } from "@src/utils";
 
-// Mock NativeEmoji component
-vi.mock("@components", async () => {
-  const actual = await vi.importActual("@components");
-  return {
-    ...actual,
-    NativeEmoji: ({ unified }: { unified: string }) => (
-      <span data-testid={`emoji-${unified}`} role="img" aria-label={`emoji-${unified}`}>
-        {unified}
-      </span>
-    ),
-    Timer: ({ startTime }: { startTime: string }) => (
-      <div data-testid="timer">{formatRelativeTime(startTime)}</div>
-    ),
-  };
-});
-
 // Mock ui-shared
 vi.mock("@ally-ui-mono/ui-shared/index", () => ({
   CustomImage: ({ src, alt, className }: any) => (
@@ -48,114 +32,119 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
   ),
 }));
 
-// Mock AccountCircle - partially mock to keep other exports
-vi.mock("@src/assets", async importOriginal => {
-  const actual = await importOriginal<typeof import("@src/assets")>();
-  return {
-    ...actual,
-    AccountCircle: ({ className }: any) => (
-      <div data-testid="account-circle" className={className} />
-    ),
-    Smiley: ({ className }: any) => <div data-testid="smiley-icon" className={className} />,
-    MoreVertIcon: ({ className }: any) => (
-      <div data-testid="more-vert-icon" className={className} />
-    ),
-    ArrowUp: ({ className }: any) => <div data-testid="arrow-up-icon" className={className} />,
-  };
-});
+vi.mock("@assets", () => ({
+  AccountCircle: ({ className }: any) => (
+    <div data-testid="account-circle" className={className} />
+  ),
+  Smiley: ({ className }: any) => <div data-testid="smiley-icon" className={className} />,
+  MoreVertIcon: ({ className }: any) => (
+    <div data-testid="more-vert-icon" className={className} />
+  ),
+  ArrowUp: ({ className }: any) => <div data-testid="arrow-up-icon" className={className} />,
+  Delete: ({ className }: any) => <div data-testid="delete-icon" className={className} />,
+  Edit: ({ className }: any) => <div data-testid="edit-icon" className={className} />,
+  Hide: ({ className }: any) => <div data-testid="hide-icon" className={className} />,
+  Eye: ({ className }: any) => <div data-testid="eye-icon" className={className} />,
+}));
+
+vi.mock("@constants", () => ({
+  COMMENT_MAX_LENGTH: 1250,
+  COMMENT_DELETE_CONFIRMATION: {
+    COMMENT_DELETE_MESSAGE:
+      "Are you sure you want to permanently remove this comment from the conversation?",
+    REPLY_DELETE_MESSAGE: "Deleting the reply will remove it from the conversation",
+  },
+}));
 
 // Mock formatRelativeTime
 vi.mock("@utils", () => ({
   formatRelativeTime: (date: string) => "2 hours ago",
 }));
 
-// Mock Button component
 vi.mock("@components", () => ({
   Button: ({ children, onClick, className, variant }: any) => (
     <button onClick={onClick} className={className} data-testid={`button-${variant}`}>
       {children}
     </button>
   ),
-  ReactionSelector: () => <div data-testid="reaction-selector" />,
-  CustomMenu: () => null,
-}));
-vi.mock("@components", async importOriginal => {
-  const actual = await importOriginal<typeof import("@components")>();
-  return {
-    ...actual,
-    Button: ({ children, onClick, className, variant }: any) => (
-      <button onClick={onClick} className={className} data-testid={`button-${variant}`}>
-        {children}
+  NativeEmoji: ({ unified }: { unified: string }) => (
+    <span data-testid={`emoji-${unified}`} role="img" aria-label={`emoji-${unified}`}>
+      {unified}
+    </span>
+  ),
+  Timer: ({ startTime }: { startTime: string }) => (
+    <div data-testid="timer">{startTime}</div>
+  ),
+  MenuItem: ({ children, onClick }: any) => (
+    <button onClick={onClick}>{children}</button>
+  ),
+  ReactionSelector: ({ handleEmojiClick }: { handleEmojiClick: (emoji: string) => void }) => (
+    <div data-testid="reaction-selector">
+      <button data-testid="emoji-thumb-up" onClick={() => handleEmojiClick("1f44d")}>
+        👍
       </button>
-    ),
-    ReactionSelector: ({ handleEmojiClick }: { handleEmojiClick: (emoji: string) => void }) => (
-      <div data-testid="reaction-selector">
-        <button data-testid="emoji-thumb-up" onClick={() => handleEmojiClick("1f44d")}>
-          👍
+    </div>
+  ),
+  CustomMenu: ({
+    anchorElement,
+    items,
+    onClose,
+  }: {
+    anchorElement: any;
+    items: any[];
+    onClose: () => void;
+  }) => {
+    if (!anchorElement) return null;
+    return (
+      <div data-testid="custom-menu">
+        {items.map((item: any) => (
+          <button
+            key={item.label}
+            onClick={() => {
+              item.onClick();
+              onClose();
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+    );
+  },
+  ConfirmationPopover: ({
+    isOpen,
+    onClose,
+    onConfirm,
+    title,
+    message,
+    confirmText,
+    cancelText,
+    isLoading,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title?: React.ReactNode;
+    message?: React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
+    isLoading?: boolean;
+  }) => {
+    if (!isOpen) return null;
+    return (
+      <div data-testid="confirmation-popover">
+        <div data-testid="confirmation-title">{title}</div>
+        <div data-testid="confirmation-message">{message}</div>
+        <button data-testid="confirmation-cancel" onClick={onClose} disabled={isLoading}>
+          {cancelText || "Cancel"}
+        </button>
+        <button data-testid="confirmation-confirm" onClick={onConfirm} disabled={isLoading}>
+          {isLoading ? "..." : confirmText || "Confirm"}
         </button>
       </div>
-    ),
-    CustomMenu: ({
-      anchorElement,
-      items,
-      onClose,
-    }: {
-      anchorElement: any;
-      items: any[];
-      onClose: () => void;
-    }) => {
-      if (!anchorElement) return null;
-      return (
-        <div data-testid="custom-menu">
-          {items.map((item: any) => (
-            <button
-              key={item.label}
-              onClick={() => {
-                item.onClick();
-                onClose();
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      );
-    },
-    ConfirmationPopover: ({
-      isOpen,
-      onClose,
-      onConfirm,
-      title,
-      message,
-      confirmText,
-      cancelText,
-      isLoading,
-    }: {
-      isOpen: boolean;
-      onClose: () => void;
-      onConfirm: () => void;
-      title?: React.ReactNode;
-      message?: React.ReactNode;
-      confirmText?: string;
-      cancelText?: string;
-      isLoading?: boolean;
-    }) => {
-      if (!isOpen) return null;
-      return (
-        <div data-testid="confirmation-popover">
-          <div data-testid="confirmation-title">{title}</div>
-          <div data-testid="confirmation-message">{message}</div>
-          <button data-testid="confirmation-cancel" onClick={onClose} disabled={isLoading}>
-            {cancelText || "Cancel"}
-          </button>
-          <button data-testid="confirmation-confirm" onClick={onConfirm} disabled={isLoading}>
-            {isLoading ? "..." : confirmText || "Confirm"}
-          </button>
-        </div>
-      );
-    },
-  };
-});
+    );
+  },
+}));
 
 // Mock API
 const addCommentReactionUnwrap = vi.fn();

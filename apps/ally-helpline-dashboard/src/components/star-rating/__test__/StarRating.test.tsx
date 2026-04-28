@@ -5,31 +5,14 @@ import StarRating from "../StarRating";
 
 // --- Mocks Setup ---
 
-// Mock @assets with importOriginal to preserve other exports (like Carousel1-4 used in constants)
-// This must be before @constants mock since @constants needs these assets
-vi.mock("@assets", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    StarYellowIcon: ({ fill, ...props }: any) => (
-      <svg data-testid="star-yellow-icon" data-fill={fill} {...props} />
-    ),
-  };
-});
+vi.mock("@assets", () => ({
+  StarYellowIcon: ({ fill, ...props }: any) => (
+    <svg data-testid="star-yellow-icon" data-fill={fill} {...props} />
+  ),
+}));
 
-// Mock @constants to ensure it uses mocked assets when loading
-vi.mock("@constants", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    // Keep all original exports, but this ensures the module loads with mocked assets
-  };
-});
-
-// Mock @components to handle Button import
-vi.mock("@components", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  const MockButton = ({ children, onClick, variant, className, ...props }: any) => (
+vi.mock("@components", () => ({
+  Button: ({ children, onClick, variant, className, ...props }: any) => (
     <button
       data-testid="mock-button"
       onClick={onClick}
@@ -39,13 +22,15 @@ vi.mock("@components", async importOriginal => {
     >
       {children}
     </button>
-  );
-
-  return {
-    ...original,
-    Button: MockButton,
-  };
-});
+  ),
+  ButtonVariant: {
+    PRIMARY: "primary",
+    DESTRUCTIVE: "destructive",
+    SECONDARY: "secondary",
+    ICON: "icon",
+    TEXT: "text",
+  },
+}));
 
 // --- Test Setup ---
 

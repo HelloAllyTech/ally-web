@@ -15,35 +15,24 @@ import UserInfo from "../UserInfo";
 const mockUseSimulationCredits = vi.fn();
 const mockUseUser = vi.fn();
 
-vi.mock("@hooks", async importOriginal => {
-  const actual = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...actual,
-    useSimulationCredits: () => mockUseSimulationCredits(),
-    useUser: () => mockUseUser(),
-  };
-});
+vi.mock("@hooks", () => ({
+  useSimulationCredits: () => mockUseSimulationCredits(),
+  useUser: () => mockUseUser(),
+}));
 
-// Mock PermissionGuard to render children without permission checks
-vi.mock("@components", async importOriginal => {
-  const actual = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...actual,
-    PermissionGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  };
-});
+vi.mock("@components", () => ({
+  PermissionGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 
-// Mock external dependencies using importOriginal to preserve other exports
-vi.mock("@assets", async importOriginal => {
-  const actual = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...actual,
-    AccountCircle: (props: any) => <div {...props}></div>,
-    Arrow: (props: any) => <div className={props.className} {...props}></div>,
-    Logout: (props: any) => <div {...props}></div>,
-    Bolt: (props: any) => <div {...props}></div>,
-  };
-});
+vi.mock("@assets", () => ({
+  AccountCircle: (props: any) => <div {...props}></div>,
+  Arrow: (props: any) => <div className={props.className} {...props}></div>,
+  Logout: (props: any) => <div {...props}></div>,
+  Bolt: (props: any) => <div {...props}></div>,
+  Ally: (props: any) => <svg data-testid="ally-logo" {...props} />,
+  DataPolicy: (props: any) => <svg data-testid="data-policy" {...props} />,
+  ManageAccount: (props: any) => <svg data-testid="manage-account" {...props} />,
+}));
 
 // Mock constants
 vi.mock("@constants", () => ({

@@ -55,18 +55,13 @@ vi.mock("@api", () => ({
   useGetUnreadReviewCountQuery: vi.fn(() => ({ data: { count: 0 } })),
 }));
 
-// Mock @assets
-vi.mock("@assets", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    Ally: ({ className, ...props }: any) => (
-      <svg className={className} {...props} data-testid="ally-logo" />
-    ),
-    DockToRight: (props: any) => <svg {...props} data-testid="dock-to-right" />,
-    LogoutIllustration: (props: any) => <svg data-testid="logout-illustration" {...props} />,
-  };
-});
+vi.mock("@assets", () => ({
+  Ally: ({ className, ...props }: any) => (
+    <svg className={className} {...props} data-testid="ally-logo" />
+  ),
+  DockToRight: (props: any) => <svg {...props} data-testid="dock-to-right" />,
+  LogoutIllustration: (props: any) => <svg data-testid="logout-illustration" {...props} />,
+}));
 
 // Mock @mui/icons-material/OpenInNew
 vi.mock("@mui/icons-material/OpenInNew", () => ({
@@ -76,11 +71,8 @@ vi.mock("@mui/icons-material/OpenInNew", () => ({
   ),
 }));
 
-// Mock @components
-vi.mock("@components", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-
-  const MockConfirmationDialog = vi.fn(
+vi.mock("@components", () => ({
+  ConfirmationDialog: vi.fn(
     ({ isOpen, onClose, onButtonClick, title, content, buttonText, icon, ...props }: any) => {
       if (!isOpen) return null;
       return (
@@ -88,55 +80,27 @@ vi.mock("@components", async importOriginal => {
           <div data-testid="dialog-title-normal">{title?.normal}</div>
           <div data-testid="dialog-title-italic">{title?.italic}</div>
           <div data-testid="dialog-content">{content}</div>
-          <button data-testid="dialog-close-button" onClick={onClose}>
-            Close
-          </button>
-          <button data-testid="dialog-confirm-button" onClick={onButtonClick}>
-            {buttonText}
-          </button>
+          <button data-testid="dialog-close-button" onClick={onClose}>Close</button>
+          <button data-testid="dialog-confirm-button" onClick={onButtonClick}>{buttonText}</button>
           {icon && <div data-testid="dialog-icon">{icon}</div>}
         </div>
       );
     },
-  );
+  ),
+  UserInfo: vi.fn(({ user, onLogout, isExpanded }: any) => (
+    <div data-testid="mock-user-info" data-expanded={isExpanded}>
+      <div data-testid="user-name">{user?.name}</div>
+      <button data-testid="logout-button" onClick={onLogout}>Logout</button>
+    </div>
+  )),
+  ProfileSettings: vi.fn(({ isOpen }: any) =>
+    isOpen ? <div data-testid="mock-profile-settings">Profile Settings</div> : null,
+  ),
+  CarouselVariant: { LIGHT: "LIGHT", DARK: "DARK" },
+  CarouselSize: { SMALL: "SMALL", LARGE: "LARGE" },
+}));
 
-  const MockUserInfo = vi.fn(
-    ({ user, onLogout, isExpanded, onProfileSettings, profileUrl }: any) => (
-      <div data-testid="mock-user-info" data-expanded={isExpanded}>
-        <div data-testid="user-name">{user?.name}</div>
-        <button data-testid="logout-button" onClick={onLogout}>
-          Logout
-        </button>
-      </div>
-    ),
-  );
-
-  const MockProfileSettings = vi.fn(
-    ({ isOpen, onClose, userData, formMethods, onButtonClick }: any) => {
-      if (!isOpen) return null;
-      return <div data-testid="mock-profile-settings">Profile Settings</div>;
-    },
-  );
-
-  return {
-    ...original,
-    ConfirmationDialog: MockConfirmationDialog,
-    UserInfo: MockUserInfo,
-    ProfileSettings: MockProfileSettings,
-    CarouselVariant: {
-      LIGHT: "LIGHT",
-      DARK: "DARK",
-    },
-    CarouselSize: {
-      SMALL: "SMALL",
-      LARGE: "LARGE",
-    },
-  };
-});
-
-// Mock @constants (use importOriginal so Permissions and other exports exist for dependent modules)
-vi.mock("@constants", async importOriginal => {
-  const actual = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@constants", () => {
   const TabId = {
     LEARN: "LEARN",
     LEADERBOARD: "LEADERBOARD",
@@ -144,44 +108,73 @@ vi.mock("@constants", async importOriginal => {
     ANALYTICS: "ANALYTICS",
     SEARCH: "SEARCH",
   };
-  const TOOLTIP_LIGHT_PROPS = { test: "light-props" };
-
-  const mockNavBarOptions = [
-    {
-      id: TabId.CALLS,
-      title: "Sessions",
-      key: "nav.tabs.sessions",
-      Icon: ({ className, ...props }: any) => (
-        <svg className={className} {...props} data-testid="calls-icon" />
-      ),
-      path: "/calls",
-      activePages: [],
-      permissions: ["VIEW_CALL_LOGS"],
-    },
-    {
-      id: TabId.ANALYTICS,
-      title: "Statistics",
-      key: "nav.tabs.statistics",
-      Icon: ({ className, ...props }: any) => (
-        <svg className={className} {...props} data-testid="analytics-icon" />
-      ),
-      path: "/analytics",
-      activePages: [],
-      permissions: ["VIEW_ANALYTICS_DASHBOARD"],
-    },
-  ];
-
-  const mockCarouselSlides = [
-    { id: 1, content: "Slide 1" },
-    { id: 2, content: "Slide 2" },
-  ];
-
   return {
-    ...actual,
     TabId,
-    navBarOptions: mockNavBarOptions,
-    CAROUSEL_SLIDES: mockCarouselSlides,
-    TOOLTIP_LIGHT_PROPS,
+    TOOLTIP_LIGHT_PROPS: { test: "light-props" },
+    navBarOptions: [
+      {
+        id: TabId.CALLS,
+        title: "Sessions",
+        key: "nav.tabs.sessions",
+        Icon: ({ className, ...props }: any) => (
+          <svg className={className} {...props} data-testid="calls-icon" />
+        ),
+        path: "/calls",
+        activePages: [],
+        permissions: ["VIEW_CALL_LOGS"],
+      },
+      {
+        id: TabId.ANALYTICS,
+        title: "Statistics",
+        key: "nav.tabs.statistics",
+        Icon: ({ className, ...props }: any) => (
+          <svg className={className} {...props} data-testid="analytics-icon" />
+        ),
+        path: "/analytics",
+        activePages: [],
+        permissions: ["VIEW_ANALYTICS_DASHBOARD"],
+      },
+    ],
+    CAROUSEL_SLIDES: [
+      { id: 1, content: "Slide 1" },
+      { id: 2, content: "Slide 2" },
+    ],
+    Permissions: {
+      VIEW_ANALYTICS_DASHBOARD: "view:analytics:dashboard",
+      START_MICROPHONE_CHAT: "start:microphone-chat",
+      START_CLOUD_TELEPHONY_CHAT: "start:cloud-telephony-chat",
+      VIEW_REFERNCE_DOCUMENT: "view:reference-document",
+      EDIT_SCENARIO_SESSION: "edit:scenario-session",
+      VIEW_SCENARIO_PATHS: "view:scenario-paths",
+      VIEW_SCENARIO_PATH: "view:scenario-path",
+      EDIT_SCENARIO_PATH: "edit:scenario-path",
+      VIEW_CALL_LOGS: "view:call:logs",
+      VIEW_CONSOLIDATED_LOGS: "view:call:logs-summary",
+      VIEW_SCENARIO_SESSION: "view:scenario-session",
+      VIEW_ADMIN_SCENARIO_SESSION: "view:admin:scenario-session",
+      VIEW_SCENARIO_SESSION_SUMMARY: "view:scenario-session:summary",
+      VIEW_AUDIO_UPLOAD: "view:audio-upload-url",
+      DELETE_CHAT: "delete:chat",
+      EXPORT_SUMMARY: "export:summary",
+      EDIT_CALL_INFO: "edit:call:info",
+      EDIT_CALL_DETAILS: "edit:call:details",
+      VIEW_SIMULATION_CREDITS: "view:simulation-credits",
+      VIEW_CHAT_DETAILS: "view:chat:details",
+      VIEW_TRANSCRIPTION: "view:messages",
+      VIEW_CHAT_TYPES: "view:settings:chat-types",
+      VIEW_SUMMARY_FIELDS: "view:settings:summary-fields",
+      VIEW_LEADERBOARD: "view:community:leaderboard",
+      VIEW_SIMULATION_REVIEWS: "view:simulation-reviews",
+      VIEW_SCRIBE_REVIEWS: "view:scribe-reviews",
+      VIEW_SIMULATION_REVIEW: "view:simulation-review",
+      VIEW_SCRIBE_REVIEW: "view:scribe-review",
+      VIEW_BADGES: "view:user:badges",
+      ARCHIVE_CALL_LOG: "archive:call-log",
+      ARCHIVE_CHAT: "ARCHIVE_CHAT",
+      VIEW_CUSTOM_FIELD_DEFINITIONS: "view:custom-field:definitions",
+      MANAGE_CUSTOM_FIELD_DEFINITIONS: "manage:custom-field:definitions",
+      EDIT_CUSTOM_FIELD_VALUES: "edit:custom-field:values",
+    },
   };
 });
 

@@ -5,14 +5,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import ThreadCard from "../ThreadCard";
 
-// Mock Arrow asset - partially mock to keep other exports
-vi.mock("@assets", async importOriginal => {
-  const actual = await importOriginal<typeof import("@assets")>();
-  return {
-    ...actual,
-    Arrow: ({ className }: any) => <div data-testid="arrow-icon" className={className} />,
-  };
-});
+vi.mock("@assets", () => ({
+  Arrow: ({ className }: any) => <div data-testid="arrow-icon" className={className} />,
+}));
 
 // Mock CommentCard
 vi.mock("../../comment-card/CommentCard", () => ({
