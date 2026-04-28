@@ -47,15 +47,21 @@ vi.mock("@utils", () => ({
   validateEmail: (email: string) => /.+@.+\..+/.test(email),
 }));
 
-// Mock constants to stable URLs
-vi.mock("@constants", async actual => {
-  const real = await actual<typeof import("@constants")>();
-  return {
-    ...real,
-    ALLY_TERMS_URL: "https://example.com/terms",
-    ALLY_PRIVACY_POLICY_URL: "https://example.com/privacy",
-  };
-});
+// Mock constants to stable URLs — direct mock to avoid loading the real barrel
+// (common.ts imports Carousel1 from @assets which is mocked without it)
+vi.mock("@constants", () => ({
+  ALLY_TERMS_URL: "https://example.com/terms",
+  ALLY_PRIVACY_POLICY_URL: "https://example.com/privacy",
+  LOCAL_STORAGE_KEYS: {
+    ACCESS_TOKEN: "accessToken",
+    REFRESH_TOKEN: "refreshToken",
+    ROOM_DATA: "roomData",
+  },
+  LoginSection: {
+    EMAIL: "Email",
+    OTP: "OTP",
+  },
+}));
 
 // Mock child components used by LoginDialog
 vi.mock("../../button", () => ({

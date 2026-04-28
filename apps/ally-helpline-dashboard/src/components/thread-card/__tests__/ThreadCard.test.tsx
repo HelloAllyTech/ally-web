@@ -9,6 +9,10 @@ vi.mock("@assets", () => ({
   Arrow: ({ className }: any) => <div data-testid="arrow-icon" className={className} />,
 }));
 
+// Prevent the real @constants barrel from loading — common.ts imports Carousel1 from @assets
+// which is mocked without it, causing a module evaluation error
+vi.mock("@constants", () => ({}));
+
 // Mock CommentCard
 vi.mock("../../comment-card/CommentCard", () => ({
   default: ({ comment }: any) => (
