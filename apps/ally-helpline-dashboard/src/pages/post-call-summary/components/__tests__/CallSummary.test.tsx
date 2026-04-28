@@ -95,6 +95,10 @@ vi.mock("../constants", () => ({
   summarySections: [{ title: "Section", icon: null, key: "section" }],
   labelShownSections: ["section"],
 }));
+// Prevent loading @mui/x-date-pickers and date-fns (36 MB) into the test worker heap
+vi.mock("@pages/calls/components/custom-fields/CustomFieldValuesPanel", () => ({
+  default: () => null,
+}));
 
 // --------------------- Tests --------------------- //
 describe("CallSummary Component", () => {
