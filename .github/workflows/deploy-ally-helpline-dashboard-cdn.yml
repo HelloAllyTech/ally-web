@@ -188,13 +188,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Add swap
-        run: |
-          sudo fallocate -l 4G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-
       - name: Run Helpline Tests
         run: |
           echo ":test_tube: Running helpline dashboard tests..." >> $GITHUB_STEP_SUMMARY
