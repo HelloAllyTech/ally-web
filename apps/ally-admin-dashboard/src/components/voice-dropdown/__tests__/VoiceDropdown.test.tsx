@@ -31,7 +31,9 @@ vi.mock("@constants", () => ({
       selectVoice: "Select voice",
     },
     common: {
-      selectOption: "Select option",
+      select: "Select",
+      search: "Search",
+      noOptionsAvailable: "No options available",
     },
   },
 }));

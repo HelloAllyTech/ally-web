@@ -57,6 +57,10 @@ vi.mock("@hooks", () => ({
   }),
 }));
 
+vi.mock("@components", () => ({
+  UserModal: () => null,
+}));
+
 vi.mock("@constants", () => ({
   ReportGenerationStatus: {
     STARTED: "STARTED",
