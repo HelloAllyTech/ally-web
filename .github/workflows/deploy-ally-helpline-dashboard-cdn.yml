@@ -190,10 +190,10 @@ jobs:
           echo ":test_tube: Running tests for ally-helpline-dashboard and dependencies..." >> $GITHUB_STEP_SUMMARY
 
           # Run tests for the helpline dashboard
-          NODE_OPTIONS="--max-old-space-size=4096" npm run test:helpline
+          NODE_OPTIONS="--max-old-space-size=5120" npm run test:helpline
 
           # Run tests for ui-shared library (dependency)
-          NODE_OPTIONS="--max-old-space-size=4096" npm run test:ui-shared
+          NODE_OPTIONS="--max-old-space-size=5120" npm run test:ui-shared
 
           echo ":white_check_mark: All tests passed successfully" >> $GITHUB_STEP_SUMMARY
 
