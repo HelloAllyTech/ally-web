@@ -16,6 +16,28 @@ vi.mock("@components", () => ({
     TIME_BASED: "TIME_BASED",
     COMBINATION: "COMBINATION",
   },
+  cellTypes: {
+    editableText: "editableText",
+    dropdown: "dropdown",
+    dropdownSearchable: "dropdownSearchable",
+    number: "number",
+    image: "image",
+    select: "select",
+    switch: "switch",
+    emoji_select: "emoji_select",
+    normalText: "normalText",
+    wrapText: "wrapText",
+    triggerConditions: "triggerConditions",
+    timeInput: "timeInput",
+    score: "score",
+    textAreaWithDropdown: "textAreaWithDropdown",
+    tags: "tags",
+    dropdownTags: "dropdownTags",
+    status: "status",
+    roles: "roles",
+    actionItem: "actionItem",
+    previewAudio: "previewAudio",
+  },
 }));
 
 import { TriggerConditions } from "../TriggerConditions";
