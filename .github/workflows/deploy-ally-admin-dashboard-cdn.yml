@@ -180,7 +180,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running component tests (group 1)..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --pool=forks --max-workers=1 \
+          npx vitest run --max-workers=1 \
             src/components/Simulation-event-map-table \
             src/components/access-denied \
             src/components/accordion \
@@ -261,7 +261,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running component tests (group 2)..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --pool=forks --max-workers=1 \
+          npx vitest run --max-workers=1 \
             src/components/language-voice-mapping \
             src/components/linguistic-style-samples \
             src/components/log-viewer \
@@ -284,7 +284,40 @@ jobs:
             src/components/report-section \
             src/components/report-upload-progress-dialog \
             src/components/scenario-reports-socket-provider \
-            src/components/scenario-voice-side-panel \
+            src/components/scenario-voice-side-panel
+          echo ":white_check_mark: Component group 2 tests passed" >> $GITHUB_STEP_SUMMARY
+
+  test-components-3:
+    needs:
+      - prepare-env
+      - changes
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      NX_DAEMON: false
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Run Tests (Components Group 3)
+        working-directory: apps/ally-admin-dashboard
+        run: |
+          echo ":test_tube: Running component tests (group 3)..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run --max-workers=1 \
             src/components/sidebar \
             src/components/simulation-list \
             src/components/simulation-preview \
@@ -308,7 +341,7 @@ jobs:
             src/components/user-option-dropdown \
             src/components/vertical-stepper \
             src/components/voice-dropdown
-          echo ":white_check_mark: Component group 2 tests passed" >> $GITHUB_STEP_SUMMARY
+          echo ":white_check_mark: Component group 3 tests passed" >> $GITHUB_STEP_SUMMARY
 
   test-pages:
     needs:
@@ -350,6 +383,7 @@ jobs:
       - test-api-utils
       - test-components-1
       - test-components-2
+      - test-components-3
       - test-pages
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
