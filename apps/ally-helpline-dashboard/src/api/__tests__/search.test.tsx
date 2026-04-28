@@ -34,21 +34,16 @@ vi.mock("@types", () => ({
   SearchCategory: {},
 }));
 
-// Create a test store
-const createTestStore = () => {
-  return configureStore({
-    reducer: {
-      [baseAPI.reducerPath]: baseAPI.reducer,
-    },
-    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
-  });
-};
+const testStore = configureStore({
+  reducer: {
+    [baseAPI.reducerPath]: baseAPI.reducer,
+  },
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+});
 
-// Test wrapper component
-const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  const store = createTestStore();
-  return <Provider store={store}>{children}</Provider>;
-};
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Provider store={testStore}>{children}</Provider>
+);
 
 describe("search API", () => {
   it("should export correct hooks", () => {
@@ -73,6 +68,7 @@ describe("search API", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    testStore.dispatch(baseAPI.util.resetApiState());
   });
 
   it("should render search results mutation hook without errors", () => {

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 
 import { configureStore } from "@reduxjs/toolkit";
 import { baseAPI } from "@api";
@@ -268,6 +268,20 @@ vi.mock("@utils/eventNameGenerator", () => ({
 
 import { EventManagement } from "../EventManagement";
 
+const testStore = configureStore({
+  reducer: {
+    [baseAPI.reducerPath]: baseAPI.reducer,
+    user: userSlice.reducer,
+    events: eventsSlice.reducer,
+  },
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+      },
+    }).concat(baseAPI.middleware),
+});
+
 describe("EventManagement", () => {
   const mockEvents = [
     {
@@ -329,26 +343,13 @@ describe("EventManagement", () => {
     });
   });
 
-  const createTestStore = () => {
-    return configureStore({
-      reducer: {
-        [baseAPI.reducerPath]: baseAPI.reducer,
-        user: userSlice.reducer,
-        events: eventsSlice.reducer,
-      },
-      middleware: getDefaultMiddleware =>
-        getDefaultMiddleware({
-          serializableCheck: {
-            ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
-          },
-        }).concat(baseAPI.middleware),
-    });
-  };
+  afterEach(() => {
+    testStore.dispatch(baseAPI.util.resetApiState());
+  });
 
   const renderComponent = () => {
-    const store = createTestStore();
     return render(
-      <Provider store={store}>
+      <Provider store={testStore}>
         <EventManagement />
       </Provider>,
     );
@@ -910,7 +911,6 @@ describe("EventManagement", () => {
       });
 
       const { rerender } = renderComponent();
-      const store = createTestStore();
 
       await waitFor(() => {
         expect(screen.getByTestId("event-name-0")).toBeInTheDocument();
@@ -923,7 +923,7 @@ describe("EventManagement", () => {
       });
 
       rerender(
-        <Provider store={store}>
+        <Provider store={testStore}>
           <EventManagement />
         </Provider>,
       );

@@ -2,7 +2,7 @@ import React from "react";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { baseAPI } from "../../api/baseAPI";
 import userSlice from "../../reducer/userReducer";
 
@@ -23,23 +23,25 @@ vi.mock("../../api/user", () => ({
 
 import { useScenarioLanguages } from "../useScenarioLanguages";
 
-// Create a test store with the API middleware and user reducer
-const createTestStore = () =>
-  configureStore({
-    reducer: {
-      [baseAPI.reducerPath]: baseAPI.reducer,
-      user: userSlice.reducer,
+const testStore = configureStore({
+  reducer: {
+    [baseAPI.reducerPath]: baseAPI.reducer,
+    user: userSlice.reducer,
+  },
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+  preloadedState: {
+    user: {
+      isAuthenticated: false,
+      user: null,
+      permissions: [],
+      availableChatTypes: [],
     },
-    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
-    preloadedState: {
-      user: {
-        isAuthenticated: false,
-        user: null,
-        permissions: [],
-        availableChatTypes: [],
-      },
-    },
-  });
+  },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <Provider store={testStore}>{children}</Provider>
+);
 
 describe("useScenarioLanguages", () => {
   const mockAvailableLanguages = [
@@ -53,12 +55,12 @@ describe("useScenarioLanguages", () => {
     },
   };
 
-  const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <Provider store={createTestStore()}>{children}</Provider>
-  );
-
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    testStore.dispatch(baseAPI.util.resetApiState());
   });
 
   it("should handle loading state", () => {

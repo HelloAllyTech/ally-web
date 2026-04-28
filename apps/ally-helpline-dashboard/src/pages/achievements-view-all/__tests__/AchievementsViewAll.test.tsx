@@ -227,27 +227,24 @@ const defaultQueryReturn = {
   refetch: vi.fn(),
 };
 
-// Create a test store with the API middleware and user reducer
-const createTestStore = () =>
-  configureStore({
-    reducer: {
-      [baseAPI.reducerPath]: baseAPI.reducer,
-      user: userSlice.reducer,
+const testStore = configureStore({
+  reducer: {
+    [baseAPI.reducerPath]: baseAPI.reducer,
+    user: userSlice.reducer,
+  },
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+  preloadedState: {
+    user: {
+      isAuthenticated: false,
+      user: null,
+      permissions: [],
+      availableChatTypes: [],
     },
-    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
-    preloadedState: {
-      user: {
-        isAuthenticated: false,
-        user: null,
-        permissions: [],
-        availableChatTypes: [],
-      },
-    },
-  });
+  },
+});
 
-// Test wrapper component
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <Provider store={createTestStore()}>
+  <Provider store={testStore}>
     <BrowserRouter>{children}</BrowserRouter>
   </Provider>
 );
@@ -279,6 +276,7 @@ describe("AchievementsViewAll Component", () => {
 
   afterEach(() => {
     vi.resetAllMocks();
+    testStore.dispatch(baseAPI.util.resetApiState());
   });
 
   /**

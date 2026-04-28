@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
@@ -32,25 +32,24 @@ vi.mock("@types", () => ({
 // Import hooks after mocks
 import { useGetUserPreferencesQuery, useUpdateUserPreferencesMutation } from "../user";
 
+const testStore = configureStore({
+  reducer: {
+    [baseAPI.reducerPath]: baseAPI.reducer,
+  },
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+});
+
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Provider store={testStore}>{children}</Provider>
+);
+
 describe("User API", () => {
-  // Create a test store with RTK Query middleware
-  const createTestStore = () => {
-    return configureStore({
-      reducer: {
-        [baseAPI.reducerPath]: baseAPI.reducer,
-      },
-      middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
-    });
-  };
-
-  // Test wrapper component
-  const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-    const store = createTestStore();
-    return <Provider store={store}>{children}</Provider>;
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    testStore.dispatch(baseAPI.util.resetApiState());
   });
 
   describe("exports", () => {
