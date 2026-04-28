@@ -31,6 +31,9 @@ vi.mock("@api", () => ({
   useGetLocationsQuery: () => ({ data: { data: [] }, isLoading: false }),
   useLazySearchLocationsQuery: () => [mockSearchLocations, { isLoading: false }],
   useUpdateCallSummaryNotesMutation: () => [mockUpdateCallSummaryNotes, { isLoading: false }],
+  useGetCustomFieldsEnabledQuery: vi.fn(() => ({ data: false })),
+  useGetCustomFieldValuesQuery: vi.fn(() => ({ data: [] })),
+  useUpsertCustomFieldValuesMutation: vi.fn(() => [vi.fn()]),
 }));
 
 vi.mock("@hooks", () => ({
