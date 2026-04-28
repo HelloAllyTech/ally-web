@@ -160,7 +160,7 @@ jobs:
       - i18n-sync
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
-    timeout-minutes: 25
+    timeout-minutes: 40
     env:
       NX_NO_CLOUD: true
       NX_SKIP_NX_CACHE: true
@@ -188,21 +188,21 @@ jobs:
         working-directory: apps/ally-helpline-dashboard
         run: |
           echo ":test_tube: Running API, utils, hooks, routes tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run src/api src/utils src/hooks src/store src/routes src/__tests__
+          npx vitest run --max-workers=1 src/api src/utils src/hooks src/store src/routes src/__tests__
           echo ":white_check_mark: Group 1 tests passed" >> $GITHUB_STEP_SUMMARY
 
       - name: Run Tests (Components / Containers)
         working-directory: apps/ally-helpline-dashboard
         run: |
           echo ":test_tube: Running component and container tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run src/components src/containers
+          npx vitest run --max-workers=1 src/components src/containers
           echo ":white_check_mark: Group 2 tests passed" >> $GITHUB_STEP_SUMMARY
 
       - name: Run Tests (Pages)
         working-directory: apps/ally-helpline-dashboard
         run: |
           echo ":test_tube: Running page tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run src/pages
+          npx vitest run --max-workers=1 src/pages
           echo ":white_check_mark: Group 3 tests passed" >> $GITHUB_STEP_SUMMARY
 
       - name: Run UI Shared Tests
