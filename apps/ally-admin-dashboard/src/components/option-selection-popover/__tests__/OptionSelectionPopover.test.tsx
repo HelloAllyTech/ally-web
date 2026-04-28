@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import React from "react";
 
 // Mock @components
@@ -282,6 +282,10 @@ describe("OptionSelectionPopover", () => {
   });
 
   describe("State Management", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it("resets selection when dialog closes and reopens", async () => {
       vi.useFakeTimers();
       const { rerender } = render(<OptionSelectionPopover {...defaultProps} />);
@@ -300,8 +304,6 @@ describe("OptionSelectionPopover", () => {
 
       const confirmButton = screen.getByText("Confirm");
       expect(confirmButton).toBeDisabled();
-
-      vi.useRealTimers();
     });
 
     it("maintains selection while popover is open", () => {
