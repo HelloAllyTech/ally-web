@@ -13,9 +13,10 @@ vi.mock("@assets", () => ({
 // which is mocked without it, causing a module evaluation error
 vi.mock("@constants", () => ({}));
 
-// Mock CommentCard
-vi.mock("../../comment-card/CommentCard", () => ({
-  default: ({ comment }: any) => (
+// Mock @components barrel — ThreadCard imports CommentCard from the barrel.
+// Without this mock, the barrel loads CommentCard → @api → baseAPI → @constants (TAG_TYPES) cascade.
+vi.mock("@components", () => ({
+  CommentCard: ({ comment }: any) => (
     <div data-testid={`comment-card-${comment.id}`}>
       <span data-testid="comment-content">{comment.content}</span>
       <span data-testid="comment-author">{comment.createdBy.name}</span>

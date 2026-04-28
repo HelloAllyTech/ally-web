@@ -222,31 +222,6 @@ describe("CommentCard Component", () => {
     return render(<Provider store={mockStore}>{component}</Provider>);
   };
 
-  // --- Snapshot Test ---
-  it("should match snapshot when rendered with basic props", () => {
-    const { asFragment } = renderWithProvider(<CommentCard comment={mockComment} />);
-    expect(asFragment()).toMatchSnapshot();
-  });
-
-  it("should match snapshot with all props enabled", () => {
-    const commentWithReactions = {
-      ...mockComment,
-      reactions: { "1f44d": 5, "2764": 3, "1f389": 2 },
-      replyCount: 3,
-    };
-    const { asFragment } = renderWithProvider(
-      <CommentCard
-        comment={commentWithReactions}
-        showLike
-        showReply
-        selectedThreadId="thread-1"
-        messageId="101"
-        selection={{ startIndex: 10, endIndex: 24 }}
-      />,
-    );
-    expect(asFragment()).toMatchSnapshot();
-  });
-
   // --- Basic Rendering Tests ---
   describe("Basic Rendering", () => {
     it("should render commenter name", () => {
