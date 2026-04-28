@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { SimpleTagSelector } from "../SimpleTagSelector";
 
@@ -22,6 +22,10 @@ vi.mock("@api", () => ({
 
 describe("SimpleTagSelector", () => {
   const mockUpdateTags = vi.fn();
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -301,8 +305,6 @@ describe("SimpleTagSelector", () => {
     // Fast-forward the remaining time to complete debounce
     vi.advanceTimersByTime(1);
     vi.runAllTimers();
-
-    vi.useRealTimers();
   });
 
   it("does not show create option for existing API tags", () => {

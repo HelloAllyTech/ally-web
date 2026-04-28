@@ -49,6 +49,7 @@ vi.mock("@utils", () => ({
 // Mock hooks
 vi.mock("@hooks", () => ({
   useClickOutside: vi.fn(),
+  useDebounce: (fn: (...args: any[]) => void) => fn,
 }));
 
 // Wrapper component to provide form context
