@@ -62,7 +62,6 @@ export default defineConfig(() => ({
     setupFiles: ["./src/test-setup.ts"],
     include: ["{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     reporters: ["default"],
-    fileParallelism: false,
     coverage: {
       reportsDirectory: "../../coverage/apps/ally-admin-dashboard",
       provider: "v8" as const,
