@@ -184,7 +184,7 @@ jobs:
         working-directory: apps/ally-helpline-dashboard
         run: |
           echo ":test_tube: Running API, utils, hooks, routes tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 src/api src/utils src/hooks src/store src/routes src/__tests__
+          npx vitest run src/api src/utils src/hooks src/store src/routes src/__tests__
           echo ":white_check_mark: Group 1 tests passed" >> $GITHUB_STEP_SUMMARY
 
   test-components-1:
@@ -218,7 +218,7 @@ jobs:
         working-directory: apps/ally-helpline-dashboard
         run: |
           echo ":test_tube: Running component tests (group 1)..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 \
+          npx vitest run \
             src/components/accordion \
             src/components/achievement-badge-modal \
             src/components/achievement-item \
@@ -288,7 +288,7 @@ jobs:
         working-directory: apps/ally-helpline-dashboard
         run: |
           echo ":test_tube: Running component tests (group 2) and container tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 \
+          npx vitest run \
             src/components/language-selector \
             src/components/leaderboard-list \
             src/components/login-dialog \
@@ -358,7 +358,7 @@ jobs:
         working-directory: apps/ally-helpline-dashboard
         run: |
           echo ":test_tube: Running page tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 src/pages
+          npx vitest run src/pages
           echo ":white_check_mark: Group 3 tests passed" >> $GITHUB_STEP_SUMMARY
 
   test-ui-shared:
