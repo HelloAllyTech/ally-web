@@ -69,38 +69,34 @@ vi.mock("@assets", () => ({
 }));
 
 // Mock constants
-vi.mock("@constants", async importOriginal => {
-  const actual = await importOriginal<typeof import("@constants")>();
-  return {
-    ...actual,
-    en: {
-      common: {
-        cancel: "Cancel",
-        save: "Save",
-        enabled: "Enabled",
-        disabled: "Disabled",
-      },
-      userManagement: {
-        enabled: "Enabled",
-        disabled: "Disabled",
-        additionalFields: "Additional Fields",
-        selectedCount: (selected: number, total: number) => `${selected} of ${total} selected`,
-        clearAll: "Clear all",
-        selectAll: "Select all",
-        saving: "Saving...",
-        scribeSettingsNotEnabled: "Scribe settings is not enabled",
-        failedToUpdateScribeSettings: "Failed to update scribe settings",
-        configureSimulationSettings: "Configure scribe fields",
-        customFieldTypes: "Custom field types",
-        singleSelectFieldType: "Single select",
-        dateFieldType: "Date",
-      },
-      errors: {
-        failedUpdateAccess: "Failed to update access",
-      },
+vi.mock("@constants", () => ({
+  en: {
+    common: {
+      cancel: "Cancel",
+      save: "Save",
+      enabled: "Enabled",
+      disabled: "Disabled",
     },
-  };
-});
+    userManagement: {
+      enabled: "Enabled",
+      disabled: "Disabled",
+      additionalFields: "Additional Fields",
+      selectedCount: (selected: number, total: number) => `${selected} of ${total} selected`,
+      clearAll: "Clear all",
+      selectAll: "Select all",
+      saving: "Saving...",
+      scribeSettingsNotEnabled: "Scribe settings is not enabled",
+      failedToUpdateScribeSettings: "Failed to update scribe settings",
+      configureSimulationSettings: "Configure scribe fields",
+      customFieldTypes: "Custom field types",
+      singleSelectFieldType: "Single select",
+      dateFieldType: "Date",
+    },
+    errors: {
+      failedUpdateAccess: "Failed to update access",
+    },
+  },
+}));
 
 // Mock API - use vi.hoisted to make mocks available before vi.mock hoisting
 const {

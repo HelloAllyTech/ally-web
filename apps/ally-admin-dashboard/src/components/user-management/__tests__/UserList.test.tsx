@@ -53,15 +53,12 @@ vi.mock("@constants", () => ({
   },
 }));
 
-// Mock only formatCapitalizedEnum while preserving the rest of the real utils (e.g., isNumber)
-vi.mock("@utils", async importOriginal => {
-  const actual = await importOriginal<any>();
-  return {
-    ...actual,
-    formatCapitalizedEnum: (value: string) =>
-      value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : "",
-  };
-});
+vi.mock("@utils", () => ({
+  formatCapitalizedEnum: (value: string) =>
+    value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : "",
+  isNumber: (value: unknown): value is number =>
+    typeof value === "number" && !isNaN(value) && isFinite(value),
+}));
 
 describe("UserList", () => {
   const mockUsers: UserListUser[] = [

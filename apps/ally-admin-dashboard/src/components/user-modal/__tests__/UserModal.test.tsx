@@ -7,32 +7,28 @@ import { FieldProps, UserListUser } from "@types";
 
 import { UserModal } from "../UserModal";
 
-// Mock ImageUpload component
-vi.mock("@ally-ui-mono/ui-shared", async importOriginal => {
-  const actual = await importOriginal<typeof import("@ally-ui-mono/ui-shared")>();
-  return {
-    ...actual,
-    ImageUpload: ({ formMethods, uploadId, uploadButtonName, uploadTitle }: any) => (
-      <div data-testid="image-upload">
-        <span>{uploadTitle}</span>
-        <button>{uploadButtonName}</button>
-      </div>
-    ),
-    FEATURE_FLAGS_MAP: {
-      ...actual.FEATURE_FLAGS_MAP,
-    },
-  };
-});
-
-// Mock API hooks
-vi.mock("@api", async importOriginal => {
-  const actual = await importOriginal<typeof import("@api")>();
-  return {
-    ...actual,
-    useDeleteLogoMutation: vi.fn(() => [vi.fn()]),
-    usePostLogoUrlMutation: vi.fn(() => [vi.fn()]),
-  };
-});
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  ImageUpload: ({ uploadButtonName, uploadTitle }: any) => (
+    <div data-testid="image-upload">
+      <span>{uploadTitle}</span>
+      <button>{uploadButtonName}</button>
+    </div>
+  ),
+  Tabs: ({ items, activeId, onChange }: any) => (
+    <div data-testid="tabs">
+      {items?.map((item: any) => (
+        <button
+          key={item.id}
+          data-testid={`tab-${item.id}`}
+          data-active={activeId === item.id}
+          onClick={() => onChange(item.id)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  ),
+}));
 
 // Mock @components barrel import
 vi.mock("@components", () => ({
@@ -161,34 +157,59 @@ vi.mock("@constants/SimulationCreator", () => ({
   },
 }));
 
-// Mock constants
-vi.mock("@constants", async importOriginal => {
-  const actual = await importOriginal<typeof import("@constants")>();
-  return {
-    ...actual,
-    KeyboardKeys: {
-      ESCAPE: "Escape",
-      KEYDOWN: "keydown",
+vi.mock("@constants", () => ({
+  FieldOptions: {
+    INPUT: "input",
+    DROPDOWN: "dropdown",
+    DROPDOWN_WITH_TAG: "dropdownWithTag",
+    TEXTAREA: "textarea",
+    CREDITS: "credits",
+    DISABLED_FIELD: "disabledField",
+  },
+  USER_MODAL_FIELDS_IDS: {
+    NAME: "name",
+    EMAIL: "email",
+    TENANTID: "tenantId",
+    EXTERNALID: "externalId",
+    ROLES: "roles",
+    CREDITS: "simulationCreditLimit",
+    ORGNAME: "orgname",
+    ORGCODE: "orgcode",
+    DESCRIPTION: "description",
+    ORGLOGO: "orglogo",
+    PROFILE: "profileImageUrl",
+  },
+  UserRole: {
+    COUNSELLOR: "COUNSELOR",
+    ADMIN: "ADMIN",
+    LEARNER: "LEARNER",
+    SUPER_ADMIN: "SUPER_ADMIN",
+    CLIENT: "CLIENT",
+    SIMULATION_REVIEWER: "SIMULATION_REVIEWER",
+    SCRIBE_REVIEWER: "SCRIBE_REVIEWER",
+    MULTI_TENANT_ADMIN: "MULTI_TENANT_ADMIN",
+  },
+  KeyboardKeys: {
+    ESCAPE: "Escape",
+    KEYDOWN: "keydown",
+  },
+  en: {
+    common: {
+      enabled: "Enabled",
+      disabled: "Disabled",
     },
-    en: {
-      ...(actual.en || {}),
-      common: {
-        enabled: "Enabled",
-        disabled: "Disabled",
-      },
-      userManagement: {
-        cancel: "Cancel",
-        selectOrg: "Select Organization",
-        changeRoleErrorMessage: "Please select at least one role",
-        maxCharError: (max: number) => `Maximum ${max} characters allowed`,
-        textAreaUpperLimit: "Maximum character limit exceeded",
-        creditRequiredError: "Credit is required",
-        creditNotNegativeError: "Credit cannot be negative",
-        creditLimitError: "Credit limit exceeded",
-      },
+    userManagement: {
+      cancel: "Cancel",
+      selectOrg: "Select Organization",
+      changeRoleErrorMessage: "Please select at least one role",
+      maxCharError: (max: number) => `Maximum ${max} characters allowed`,
+      textAreaUpperLimit: "Maximum character limit exceeded",
+      creditRequiredError: "Credit is required",
+      creditNotNegativeError: "Credit cannot be negative",
+      creditLimitError: "Credit limit exceeded",
     },
-  };
-});
+  },
+}));
 
 // Mock button types
 vi.mock("../types", () => ({

@@ -11,16 +11,12 @@ vi.mock("@api", () => ({
   },
 }));
 
-vi.mock("@components", async importOriginal => {
-  const actual = await importOriginal<typeof import("@components")>();
-  return {
-    ...actual,
-    EventType: {
-      TIME_BASED: "TIME_BASED",
-      COMBINATION: "COMBINATION",
-    },
-  };
-});
+vi.mock("@components", () => ({
+  EventType: {
+    TIME_BASED: "TIME_BASED",
+    COMBINATION: "COMBINATION",
+  },
+}));
 
 import { TriggerConditions } from "../TriggerConditions";
 import eventsSlice from "@reducer/eventsReducer";

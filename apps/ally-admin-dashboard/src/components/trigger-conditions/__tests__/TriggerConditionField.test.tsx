@@ -69,8 +69,7 @@ vi.mock("../TriggerConditionDropdown", () => ({
   ),
 }));
 
-vi.mock(import("@ally-ui-mono/ui-shared"), async importOriginal => ({
-  ...(await importOriginal()),
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   AutoExpandableTextarea: ({ value, onChange, placeholder, disabled, className }: any) => (
     <textarea
       data-testid="auto-expandable-textarea"

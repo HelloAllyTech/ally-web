@@ -114,42 +114,38 @@ const mockGetReportByIdQuery = vi.fn();
 const mockGetReportTranscriptQuery = vi.fn();
 const mockRefetchReportsHistory = vi.fn();
 
-vi.mock("@api", async importOriginal => {
-  const actual = await importOriginal<typeof import("@api")>();
-  return {
-    ...actual,
-    useGenerateReportMutation: () => [
-      (params: any) => ({
-        unwrap: async () => mockGenerateReportMutation(params),
-      }),
-      { isLoading: false },
-    ],
-    useCancelReportGenerationMutation: () => [
-      (params: any) => ({
-        unwrap: async () => mockCancelReportGenerationMutation(params),
-      }),
-      { isLoading: false },
-    ],
-    useGetReportsQuery: () => ({
-      data: mockGetReportsQuery(),
-      refetch: mockRefetchReportsHistory,
+vi.mock("@api", () => ({
+  useGenerateReportMutation: () => [
+    (params: any) => ({
+      unwrap: async () => mockGenerateReportMutation(params),
     }),
-    useLazyGetReportsQuery: () => [
-      vi.fn(() => ({ unwrap: async () => ({ data: [] }) })),
-      { data: undefined, isLoading: false },
-    ],
-    useGetReportByIdQuery: () => ({
-      data: mockGetReportByIdQuery(),
+    { isLoading: false },
+  ],
+  useCancelReportGenerationMutation: () => [
+    (params: any) => ({
+      unwrap: async () => mockCancelReportGenerationMutation(params),
     }),
-    useGetReportTranscriptQuery: () => ({
-      data: mockGetReportTranscriptQuery(),
-    }),
-    useLazyGetReportTranscriptQuery: () => [
-      vi.fn(),
-      { data: mockGetReportTranscriptQuery(), isLoading: false },
-    ],
-  };
-});
+    { isLoading: false },
+  ],
+  useGetReportsQuery: () => ({
+    data: mockGetReportsQuery(),
+    refetch: mockRefetchReportsHistory,
+  }),
+  useLazyGetReportsQuery: () => [
+    vi.fn(() => ({ unwrap: async () => ({ data: [] }) })),
+    { data: undefined, isLoading: false },
+  ],
+  useGetReportByIdQuery: () => ({
+    data: mockGetReportByIdQuery(),
+  }),
+  useGetReportTranscriptQuery: () => ({
+    data: mockGetReportTranscriptQuery(),
+  }),
+  useLazyGetReportTranscriptQuery: () => [
+    vi.fn(),
+    { data: mockGetReportTranscriptQuery(), isLoading: false },
+  ],
+}));
 
 // Create test store
 const createTestStore = (initialState = {}) => {

@@ -91,14 +91,32 @@ vi.mock("@components", () => ({
   ),
 }));
 
-vi.mock("@constants", async importOriginal => {
-  const actual = await importOriginal<typeof import("@constants")>();
-  return {
-    ...actual,
-    INITIAL_EVENTS_LIMIT: 5,
-    getTriggerConditionConfig: mockGetTriggerConditionConfig,
-  };
-});
+vi.mock("@constants", () => ({
+  INITIAL_EVENTS_LIMIT: 5,
+  getTriggerConditionConfig: mockGetTriggerConditionConfig,
+  SESSION_EVENT_STATUS_OPTIONS: { ACTIVE: "ACTIVE" },
+  SORT_BY: { CREATED_AT: "createdAt", UPDATED_AT: "updatedAt" },
+  SORT_ORDER: { ASC: "ASC", DESC: "DESC" },
+  EVENT_DETECTION_TYPES: {
+    SENTENCE_SIMILARITY: "SENTENCE_SIMILARITY",
+    TIME_BASED: "TIME_BASED",
+    SCORE_BASED: "SCORE_BASED",
+    COMBINATION: "COMBINATION",
+    SEMANTIC_SIMILARITY: "SEMANTIC_SIMILARITY",
+    BINARY_CLASSIFIER: "BINARY_CLASSIFIER",
+  },
+  en: {
+    eventConfiguration: {
+      selectEvent: "Select an event",
+      searchEvents: "Search events...",
+      occurred: "Occurred",
+      if: "if",
+      has: "has",
+      more: "+more",
+      addBase: "Add Branch",
+    },
+  },
+}));
 
 vi.mock("@api", () => ({
   baseAPI: {
