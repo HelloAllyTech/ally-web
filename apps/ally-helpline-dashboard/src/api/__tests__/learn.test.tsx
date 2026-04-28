@@ -2,7 +2,7 @@ import React from "react";
 import { configureStore } from "@reduxjs/toolkit";
 import { renderHook, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock node-fetch
 const fetchMock = vi.fn();
@@ -65,24 +65,21 @@ vi.mock("@types", () => ({
   SimulationTranscript: {},
 }));
 
-// Create a test store with RTK Query middleware
-const createTestStore = () => {
-  const store = configureStore({
-    reducer: {
-      [baseAPI.reducerPath]: baseAPI.reducer,
-    },
-    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
-  });
-  return store;
-};
+const testStore = configureStore({
+  reducer: {
+    [baseAPI.reducerPath]: baseAPI.reducer,
+  },
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+});
 
-// Test wrapper component
-const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  const store = createTestStore();
-  return <Provider store={store}>{children}</Provider>;
-};
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Provider store={testStore}>{children}</Provider>
+);
 
 describe("learn API", () => {
+  afterEach(() => {
+    testStore.dispatch(baseAPI.util.resetApiState());
+  });
   it("should export correct hooks", () => {
     expect(useEndSimulationMutation).toBeDefined();
     expect(useGetScenarioQuery).toBeDefined();

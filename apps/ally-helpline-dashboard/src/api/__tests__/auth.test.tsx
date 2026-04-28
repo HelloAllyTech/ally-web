@@ -3,7 +3,7 @@ import React from "react";
 import { configureStore } from "@reduxjs/toolkit";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "react-redux";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 
 import {
   useLoginMutation,
@@ -59,23 +59,21 @@ vi.mock("@types", () => ({
   },
 }));
 
-// Create a test store
-const createTestStore = () => {
-  return configureStore({
-    reducer: {
-      [baseAPI.reducerPath]: baseAPI.reducer,
-    },
-    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
-  });
-};
+const testStore = configureStore({
+  reducer: {
+    [baseAPI.reducerPath]: baseAPI.reducer,
+  },
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(baseAPI.middleware),
+});
 
-// Test wrapper component
-const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  const store = createTestStore();
-  return <Provider store={store}>{children}</Provider>;
-};
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Provider store={testStore}>{children}</Provider>
+);
 
 describe("auth API", () => {
+  afterEach(() => {
+    testStore.dispatch(baseAPI.util.resetApiState());
+  });
   it("should export correct hooks", () => {
     expect(useLoginMutation).toBeDefined();
     expect(useSignupMutation).toBeDefined();
