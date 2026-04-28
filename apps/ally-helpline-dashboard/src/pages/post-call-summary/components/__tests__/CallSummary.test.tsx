@@ -23,28 +23,43 @@ const mockGetTags = vi.fn();
 const mockUpdateCallSummaryNotes = vi.fn();
 const mockSearchLocations = vi.fn();
 
+// Stable references — RTK Query memoizes its return; mocks must too,
+// or any hook result used as a useEffect/useMemo dep triggers infinite re-renders.
+const summaryFieldsResult = { data: [], isLoading: false };
+const updateCallSummaryResult = [mockUpdateCallSummary, { isLoading: false }];
+const getTagsResult = [mockGetTags, { isLoading: false }];
+const locationsResult = { data: { data: [] }, isLoading: false };
+const lazySearchLocationsResult = [mockSearchLocations, { isLoading: false }];
+const updateCallSummaryNotesResult = [mockUpdateCallSummaryNotes, { isLoading: false }];
+const customFieldsEnabledResult = { data: false };
+const customFieldValuesResult = { data: [] };
+const upsertCustomFieldValuesResult = [vi.fn()];
+
 vi.mock("@api", () => ({
   useGetCallSummaryQuery: vi.fn(),
-  useGetSummaryFieldsQuery: () => ({ data: [], isLoading: false }),
-  useUpdateCallSummaryMutation: () => [mockUpdateCallSummary, { isLoading: false }],
-  useGetTagsMutation: () => [mockGetTags, { isLoading: false }],
-  useGetLocationsQuery: () => ({ data: { data: [] }, isLoading: false }),
-  useLazySearchLocationsQuery: () => [mockSearchLocations, { isLoading: false }],
-  useUpdateCallSummaryNotesMutation: () => [mockUpdateCallSummaryNotes, { isLoading: false }],
-  useGetCustomFieldsEnabledQuery: vi.fn(() => ({ data: false })),
-  useGetCustomFieldValuesQuery: vi.fn(() => ({ data: [] })),
-  useUpsertCustomFieldValuesMutation: vi.fn(() => [vi.fn()]),
+  useGetSummaryFieldsQuery: () => summaryFieldsResult,
+  useUpdateCallSummaryMutation: () => updateCallSummaryResult,
+  useGetTagsMutation: () => getTagsResult,
+  useGetLocationsQuery: () => locationsResult,
+  useLazySearchLocationsQuery: () => lazySearchLocationsResult,
+  useUpdateCallSummaryNotesMutation: () => updateCallSummaryNotesResult,
+  useGetCustomFieldsEnabledQuery: () => customFieldsEnabledResult,
+  useGetCustomFieldValuesQuery: () => customFieldValuesResult,
+  useUpsertCustomFieldValuesMutation: () => upsertCustomFieldValuesResult,
 }));
 
+const enhanceResult = {
+  enhancing: null,
+  EnhanceButton: () => <button>Enhance</button>,
+  EnhancementLoadingSkeleton: null,
+  isEnhanceLoading: false,
+};
+const userResult = { user: { role: UserRole.COUNSELLOR } };
+
 vi.mock("@hooks", () => ({
-  useEnhance: () => ({
-    enhancing: null,
-    EnhanceButton: () => <button>Enhance</button>,
-    EnhancementLoadingSkeleton: null,
-    isEnhanceLoading: false,
-  }),
+  useEnhance: () => enhanceResult,
   useDebounce: (fn: any) => fn,
-  useUser: () => ({ user: { role: UserRole.COUNSELLOR } }),
+  useUser: () => userResult,
 }));
 
 vi.mock("@components", () => ({
@@ -98,6 +113,36 @@ vi.mock("../constants", () => ({
 // Prevent loading @mui/x-date-pickers and date-fns (36 MB) into the test worker heap
 vi.mock("@pages/calls/components/custom-fields/CustomFieldValuesPanel", () => ({
   default: () => null,
+}));
+
+// Mock heavy unmocked deps that previously caused 4GB OOM in this file:
+// - framer-motion / @mui/material / @ally-ui-mono/ui-shared cascade into large module graphs
+// - The sibling barrel `from "."` (in CallSummary.tsx) creates a circular load path
+// - With useFakeTimers active, an unstable hook return + missing mocks can trigger
+//   an infinite render loop until heap exhaustion.
+vi.mock("framer-motion", () => ({
+  motion: new Proxy(
+    {},
+    {
+      get: () => (props: any) => <div {...props}>{props.children}</div>,
+    },
+  ),
+  AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
+
+vi.mock("sonner", () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}));
+
+vi.mock("@mui/material", () => ({
+  CircularProgress: () => <div role="progressbar" />,
+  Divider: () => <hr />,
+  Tooltip: ({ children }: any) => <>{children}</>,
+}));
+
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+  DropdownField: (props: any) => <select {...props} />,
 }));
 
 // --------------------- Tests --------------------- //
