@@ -24,47 +24,32 @@ vi.mock("@api/simulationStudio", () => ({
 }));
 
 // Mock constants
-vi.mock("@constants", async () => {
-  const actual = await vi.importActual<typeof import("@constants")>("@constants");
-  return {
-    ...actual,
-    en: {
-      ...actual.en,
-      simulation: {
-        ...actual.en.simulation,
-        voice: "Voice",
-        selectVoice: "Select voice",
-      },
-      common: {
-        ...actual.en.common,
-        selectOption: "Select option",
-      },
+vi.mock("@constants", () => ({
+  en: {
+    simulation: {
+      voice: "Voice",
+      selectVoice: "Select voice",
     },
-  };
-});
+    common: {
+      selectOption: "Select option",
+    },
+  },
+}));
 
 // Mock utils
-vi.mock("@utils", async () => {
-  const actual = await vi.importActual<typeof import("@utils")>("@utils");
-  return {
-    ...actual,
-    getSimulationVoiceOptions: vi.fn((voices = []) =>
-      voices.map((voice: any) => ({
-        value: voice.id,
-        label: voice.name,
-      })),
-    ),
-  };
-});
+vi.mock("@utils", () => ({
+  getSimulationVoiceOptions: vi.fn((voices = []) =>
+    voices.map((voice: any) => ({
+      value: voice.id,
+      label: voice.name,
+    })),
+  ),
+}));
 
 // Mock hooks
-vi.mock("@hooks", async () => {
-  const actual = await vi.importActual<typeof import("@hooks")>("@hooks");
-  return {
-    ...actual,
-    useClickOutside: vi.fn(),
-  };
-});
+vi.mock("@hooks", () => ({
+  useClickOutside: vi.fn(),
+}));
 
 // Wrapper component to provide form context
 const TestWrapper = ({ children, defaultValues = {} }: any) => {

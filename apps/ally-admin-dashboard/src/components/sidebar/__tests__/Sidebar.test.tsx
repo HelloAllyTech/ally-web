@@ -6,12 +6,14 @@ const navigateMock = vi.fn();
 const logoutMock = vi.fn();
 
 // Mock API first to prevent store initialization errors
-vi.mock("@api", async importOriginal => {
-  const actual = await importOriginal<typeof import("@api")>();
-  return {
-    ...actual,
-  };
-});
+vi.mock("@api", () => ({
+  baseAPI: {
+    injectEndpoints: vi.fn(() => ({})),
+    reducerPath: "baseAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+  },
+}));
 
 import { store } from "../../../store";
 import { Sidebar } from "../Sidebar";
@@ -21,20 +23,23 @@ vi.mock("react-router-dom", () => ({
   useNavigate: vi.fn(() => navigateMock),
 }));
 
-vi.mock("@assets", async importOriginal => {
-  const actual = await importOriginal<typeof import("@assets")>();
-  return {
-    ...actual,
-    ArrowDown: () => <svg data-testid="arrow-down" />,
-    Book: () => <svg data-testid="icon-book" />,
-    User: () => <svg data-testid="icon-user" />,
-    Users: () => <svg data-testid="icon-users" />,
-    Ally: () => <svg data-testid="logo-ally" />,
-    DockToRight: () => <svg data-testid="dock" />,
-    Logout: () => <svg data-testid="logout" />,
-    HappyEmoji: () => <svg data-testid="happy" />,
-  };
-});
+vi.mock("@assets", () => ({
+  ArrowDown: () => <svg data-testid="arrow-down" />,
+  Book: () => <svg data-testid="icon-book" />,
+  User: () => <svg data-testid="icon-user" />,
+  Users: () => <svg data-testid="icon-users" />,
+  Ally: () => <svg data-testid="logo-ally" />,
+  DockToRight: () => <svg data-testid="dock" />,
+  Logout: () => <svg data-testid="logout" />,
+  HappyEmoji: () => <svg data-testid="happy" />,
+  ManageAccounts: () => <svg data-testid="manage-accounts" />,
+  Globe: () => <svg data-testid="globe" />,
+  Mic: () => <svg data-testid="mic" />,
+  CharacterLibrary: () => <svg data-testid="character-library" />,
+  FrameSource: () => <svg data-testid="frame-source" />,
+  Guardrails: () => <svg data-testid="guardrails" />,
+  Badge: () => <svg data-testid="badge" />,
+}));
 
 vi.mock("@hooks", () => ({
   useClickOutside: (_ref: any, _handler: any) => {},

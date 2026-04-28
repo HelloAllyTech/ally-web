@@ -147,20 +147,16 @@ vi.mock("@components/notion-table", () => ({
   ),
 }));
 
-vi.mock("@constants", async () => {
-  const actual = await vi.importActual("@constants");
-  return {
-    ...actual,
-    DETECTION_CONFIG_FIELDS: {
-      MAX_OCCURRENCES: "maxOccurrences",
-      MIN_GAP_TIME: "minGapTime",
-      START_TIME: "startTime",
-      END_TIME: "endTime",
-      MIN_SCORE: "minScore",
-      MAX_SCORE: "maxScore",
-    },
-  };
-});
+vi.mock("@constants", () => ({
+  DETECTION_CONFIG_FIELDS: {
+    MAX_OCCURRENCES: "maxOccurrences",
+    MIN_GAP_TIME: "minGapTime",
+    START_TIME: "startTime",
+    END_TIME: "endTime",
+    MIN_SCORE: "minScore",
+    MAX_SCORE: "maxScore",
+  },
+}));
 
 vi.mock("@utils", () => ({
   formatCapitalizedEnum: (text: string) => text,
