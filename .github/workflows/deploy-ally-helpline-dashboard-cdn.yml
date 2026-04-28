@@ -153,14 +153,14 @@ jobs:
             echo "No translation updates to commit."
           fi
 
-  test:
+  test-api-utils:
     needs:
       - prepare-env
       - changes
       - i18n-sync
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
-    timeout-minutes: 40
+    timeout-minutes: 20
     env:
       NX_NO_CLOUD: true
       NX_SKIP_NX_CACHE: true
@@ -168,22 +168,18 @@ jobs:
       NX_DAEMON: false
       CI: true
       NODE_OPTIONS: --max-old-space-size=4096
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
-
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
-
       - name: Run Tests (API / Utils / Hooks / Routes)
         working-directory: apps/ally-helpline-dashboard
         run: |
@@ -191,6 +187,33 @@ jobs:
           npx vitest run --max-workers=1 src/api src/utils src/hooks src/store src/routes src/__tests__
           echo ":white_check_mark: Group 1 tests passed" >> $GITHUB_STEP_SUMMARY
 
+  test-components:
+    needs:
+      - prepare-env
+      - changes
+      - i18n-sync
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      NX_DAEMON: false
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
       - name: Run Tests (Components / Containers)
         working-directory: apps/ally-helpline-dashboard
         run: |
@@ -198,6 +221,33 @@ jobs:
           npx vitest run --max-workers=1 src/components src/containers
           echo ":white_check_mark: Group 2 tests passed" >> $GITHUB_STEP_SUMMARY
 
+  test-pages:
+    needs:
+      - prepare-env
+      - changes
+      - i18n-sync
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      NX_DAEMON: false
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
       - name: Run Tests (Pages)
         working-directory: apps/ally-helpline-dashboard
         run: |
@@ -205,31 +255,48 @@ jobs:
           npx vitest run --max-workers=1 src/pages
           echo ":white_check_mark: Group 3 tests passed" >> $GITHUB_STEP_SUMMARY
 
+  test-ui-shared:
+    needs:
+      - prepare-env
+      - changes
+      - i18n-sync
+    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      NX_NO_CLOUD: true
+      NX_SKIP_NX_CACHE: true
+      NX_CLOUD_ACCESS_TOKEN: ""
+      NX_DAEMON: false
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
       - name: Run UI Shared Tests
         run: |
           echo ":test_tube: Running ui-shared tests..." >> $GITHUB_STEP_SUMMARY
           npx nx test ui-shared
-          echo ":white_check_mark: ui-shared tests completed successfully" >> $GITHUB_STEP_SUMMARY
-
-      - name: Test Results Summary
-        if: success()
-        run: |
-          echo ":white_check_mark: **Test Status**: All tests passed" >> $GITHUB_STEP_SUMMARY
-          echo "- ally-helpline-dashboard tests: ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- ui-shared library tests: ✅" >> $GITHUB_STEP_SUMMARY
-
-      - name: Test Failure Summary
-        if: failure()
-        run: |
-          echo ":x: **Test Status**: Tests failed" >> $GITHUB_STEP_SUMMARY
-          echo "Deployment will be blocked until all tests pass." >> $GITHUB_STEP_SUMMARY
+          echo ":white_check_mark: ui-shared tests passed" >> $GITHUB_STEP_SUMMARY
 
   deploy:
     needs:
       - prepare-env
       - changes
-      - test
       - i18n-sync
+      - test-api-utils
+      - test-components
+      - test-pages
+      - test-ui-shared
     if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
     runs-on: ubuntu-22.04
     env:
