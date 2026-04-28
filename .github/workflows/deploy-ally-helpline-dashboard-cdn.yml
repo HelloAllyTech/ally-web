@@ -167,7 +167,7 @@ jobs:
       NX_CLOUD_ACCESS_TOKEN: ""
       NX_DAEMON: false
       CI: true
-      NODE_OPTIONS: --max-old-space-size=6144
+      NODE_OPTIONS: --max-old-space-size=4096
 
     steps:
       - name: Checkout
@@ -184,11 +184,26 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run Helpline Tests
+      - name: Run Tests (API / Utils / Hooks / Routes)
+        working-directory: apps/ally-helpline-dashboard
         run: |
-          echo ":test_tube: Running helpline dashboard tests..." >> $GITHUB_STEP_SUMMARY
-          npx nx test ally-helpline-dashboard
-          echo ":white_check_mark: Helpline tests completed successfully" >> $GITHUB_STEP_SUMMARY
+          echo ":test_tube: Running API, utils, hooks, routes tests..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run src/api src/utils src/hooks src/store src/routes src/__tests__
+          echo ":white_check_mark: Group 1 tests passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run Tests (Components / Containers)
+        working-directory: apps/ally-helpline-dashboard
+        run: |
+          echo ":test_tube: Running component and container tests..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run src/components src/containers
+          echo ":white_check_mark: Group 2 tests passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Run Tests (Pages)
+        working-directory: apps/ally-helpline-dashboard
+        run: |
+          echo ":test_tube: Running page tests..." >> $GITHUB_STEP_SUMMARY
+          npx vitest run src/pages
+          echo ":white_check_mark: Group 3 tests passed" >> $GITHUB_STEP_SUMMARY
 
       - name: Run UI Shared Tests
         run: |
