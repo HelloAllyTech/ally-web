@@ -121,7 +121,7 @@ jobs:
             echo "No valid trigger detected"
           fi
 
-  # Run tests with coverage
+  # Run tests
   test:
     needs:
       - prepare-env
@@ -144,8 +144,8 @@ jobs:
 
       - name: Run Tests with Coverage
         run: |
-          echo ":test_tube: Running tests with coverage..." >> $GITHUB_STEP_SUMMARY
-          NODE_OPTIONS="--max-old-space-size=4096" npx nx test ally-admin-dashboard --coverage
+          echo ":test_tube: Running tests..." >> $GITHUB_STEP_SUMMARY
+          NODE_OPTIONS="--max-old-space-size=4096" npx nx test ally-admin-dashboard
           echo ":white_check_mark: Tests completed successfully" >> $GITHUB_STEP_SUMMARY
 
   # Build and deploy to CDN
