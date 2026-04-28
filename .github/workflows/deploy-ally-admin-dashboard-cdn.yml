@@ -147,7 +147,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running API, utils, hooks, routes tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 src/api src/utils src/hooks src/routes src/store src/reducer src/__tests__
+          npx vitest run src/api src/utils src/hooks src/routes src/store src/reducer src/__tests__
           echo ":white_check_mark: Group 1 tests passed" >> $GITHUB_STEP_SUMMARY
 
   test-components-1:
@@ -180,7 +180,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running component tests (group 1)..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 \
+          npx vitest run \
             src/components/Simulation-event-map-table \
             src/components/access-denied \
             src/components/accordion \
@@ -261,7 +261,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running component tests (group 2)..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 \
+          npx vitest run \
             src/components/language-voice-mapping \
             src/components/linguistic-style-samples \
             src/components/log-viewer \
@@ -317,7 +317,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running component tests (group 3)..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 \
+          npx vitest run \
             src/components/sidebar \
             src/components/simulation-list \
             src/components/simulation-preview \
@@ -373,7 +373,7 @@ jobs:
         working-directory: apps/ally-admin-dashboard
         run: |
           echo ":test_tube: Running page tests..." >> $GITHUB_STEP_SUMMARY
-          npx vitest run --max-workers=1 src/pages
+          npx vitest run src/pages
           echo ":white_check_mark: Group 3 tests passed" >> $GITHUB_STEP_SUMMARY
 
   deploy:
