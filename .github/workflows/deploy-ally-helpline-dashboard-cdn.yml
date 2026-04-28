@@ -160,55 +160,63 @@ jobs:
 
   # Run tests before deployment
   test:
-    needs:
-      - prepare-env
-      - changes
-      - i18n-sync
-    if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
-    runs-on: ubuntu-22.04
-    timeout-minutes: 20
-    env:
-      NX_NO_CLOUD: true
-      NX_SKIP_NX_CACHE: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  needs:
+    - prepare-env
+    - changes
+    - i18n-sync
+  if: needs.prepare-env.outputs.should_deploy == 'true' && needs.changes.outputs.dashboard == 'true'
+  runs-on: ubuntu-22.04
+  timeout-minutes: 25
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
+  env:
+    NX_NO_CLOUD: true
+    NX_SKIP_NX_CACHE: true
+    NODE_OPTIONS: --max-old-space-size=6144
 
-      - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Run Tests
-        run: |
-          echo ":test_tube: Running tests for ally-helpline-dashboard and dependencies..." >> $GITHUB_STEP_SUMMARY
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+        cache: "npm"
 
-          # Run tests for the helpline dashboard
-          NODE_OPTIONS="--max-old-space-size=5120" npm run test:helpline
+    - name: Install Dependencies
+      run: npm ci --legacy-peer-deps
 
-          # Run tests for ui-shared library (dependency)
-          NODE_OPTIONS="--max-old-space-size=5120" npm run test:ui-shared
+    - name: Add swap
+      run: |
+        sudo fallocate -l 4G /swapfile
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
 
-          echo ":white_check_mark: All tests passed successfully" >> $GITHUB_STEP_SUMMARY
+    - name: Run Helpline Tests
+      run: |
+        echo ":test_tube: Running helpline dashboard tests..." >> $GITHUB_STEP_SUMMARY
+        npm run test:helpline -- --threads=false --maxConcurrency=1
 
-      - name: Test Results Summary
-        if: always()
-        run: |
-          if [ $? -eq 0 ]; then
-            echo ":white_check_mark: **Test Status**: All tests passed" >> $GITHUB_STEP_SUMMARY
-            echo "- ally-helpline-dashboard tests: ✅" >> $GITHUB_STEP_SUMMARY
-            echo "- ui-shared library tests: ✅" >> $GITHUB_STEP_SUMMARY
-          else
-            echo ":x: **Test Status**: Tests failed" >> $GITHUB_STEP_SUMMARY
-            echo "Deployment will be blocked until all tests pass." >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+    - name: Run UI Shared Tests
+      run: |
+        echo ":test_tube: Running ui-shared tests..." >> $GITHUB_STEP_SUMMARY
+        npm run test:ui-shared -- --threads=false --maxConcurrency=1
+
+    - name: Test Results Summary
+      if: always()
+      run: |
+        if [ $? -eq 0 ]; then
+          echo ":white_check_mark: **Test Status**: All tests passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ally-helpline-dashboard tests: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- ui-shared library tests: ✅" >> $GITHUB_STEP_SUMMARY
+        else
+          echo ":x: **Test Status**: Tests failed" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment will be blocked until all tests pass." >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
 
   # Build and deploy to CDN
   deploy:
