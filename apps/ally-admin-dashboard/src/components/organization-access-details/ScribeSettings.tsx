@@ -20,6 +20,8 @@ import { en } from "@constants";
 import { SCRIBE_SETTINGS_ITEMS } from "@src/components/organization-access-details/constants";
 import { CreateTenantBody, ScribeSettingsItem, ScribeSettingsList } from "@types";
 
+import CustomFieldDefinitionsSection from "./CustomFieldDefinitionsSection";
+
 interface ScribeSettingsProps {
   tenantId: string;
   onUpdateTenant: () => void;
@@ -640,6 +642,10 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
           </div>
         )}
       </div>
+
+      {localCustomFieldsEnabled && (
+        <CustomFieldDefinitionsSection tenantId={tenantId} enabledTypes={localEnabledTypes} />
+      )}
     </div>
   );
 };
