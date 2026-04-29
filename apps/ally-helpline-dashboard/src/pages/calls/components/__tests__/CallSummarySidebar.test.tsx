@@ -161,10 +161,20 @@ vi.mock("@hooks", () => ({
 
 // Mock child components
 vi.mock("@pages/post-call-summary/components/CallSummary", () => ({
-  default: ({ headerContent, className, chatId, postProcess, isInSidebar }: any) => (
+  default: ({
+    headerContent,
+    className,
+    chatId,
+    postProcess,
+    isInSidebar,
+    canEditCustomFields,
+  }: any) => (
     <div data-testid="call-summary" className={className}>
       <div data-testid="call-summary-chat-id">{chatId}</div>
       <div data-testid="call-summary-in-sidebar">{isInSidebar ? "true" : "false"}</div>
+      <div data-testid="call-summary-can-edit-custom-fields">
+        {String(canEditCustomFields ?? false)}
+      </div>
       {headerContent}
       <button onClick={postProcess} data-testid="post-process">
         Post Process
@@ -797,6 +807,58 @@ describe("CallSummarySidebar Component", () => {
       renderComponent(callSummaryWithoutId);
 
       expect(screen.getByTestId("summary-sidebar-wrapper")).toBeInTheDocument();
+    });
+  });
+
+  describe("Custom field canEditCustomFields prop", () => {
+    const createStoreWithPermissions = (permissions: string[]) =>
+      configureStore({
+        reducer: {
+          user: (state = { user: { userId: 42, role: UserRole.ADMIN }, permissions }, _action) =>
+            state,
+        },
+        preloadedState: {
+          user: { user: { userId: 42, role: UserRole.ADMIN }, permissions },
+        },
+      });
+
+    const renderWithCanEditSummary = (canEditSummary: boolean, store = createMockStore()) =>
+      render(
+        <Provider store={store}>
+          <BrowserRouter>
+            <CallSummarySidebar
+              callSummary={mockCallSummary}
+              refetchCallLogs={vi.fn()}
+              setCallSummary={vi.fn()}
+              sessionType={SessionType.CALL}
+              canEditSummary={canEditSummary}
+            />
+          </BrowserRouter>
+        </Provider>,
+      );
+
+    it("passes canEditCustomFields=true to CallSummary for admin even when canEditSummary is false", () => {
+      // view:chat:details is required for the Summary tab to pass the permittedTabList filter
+      const adminStore = createStoreWithPermissions([
+        "view:chat:details",
+        "manage:custom-field:definitions",
+      ]);
+      renderWithCanEditSummary(false, adminStore);
+
+      expect(screen.getByTestId("call-summary-can-edit-custom-fields")).toHaveTextContent("true");
+    });
+
+    it("passes canEditCustomFields=false to CallSummary for non-admin when canEditSummary is false", () => {
+      const nonAdminStore = createStoreWithPermissions(["view:chat:details"]);
+      renderWithCanEditSummary(false, nonAdminStore);
+
+      expect(screen.getByTestId("call-summary-can-edit-custom-fields")).toHaveTextContent("false");
+    });
+
+    it("passes canEditCustomFields=true to CallSummary when canEditSummary is true (default)", () => {
+      renderWithCanEditSummary(true, createMockStore());
+
+      expect(screen.getByTestId("call-summary-can-edit-custom-fields")).toHaveTextContent("true");
     });
   });
 
