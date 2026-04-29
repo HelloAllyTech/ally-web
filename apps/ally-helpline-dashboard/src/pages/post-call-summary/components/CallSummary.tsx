@@ -131,7 +131,6 @@ const CallSummary: FC<CallSummaryProps> = ({
     ) ??
       false);
   const hasCounsellorEditableCustomFields =
-    !isAdmin &&
     isCounsellorForCall &&
     customFieldsActive &&
     (customFieldValues?.some(
@@ -518,6 +517,7 @@ const CallSummary: FC<CallSummaryProps> = ({
                     <CustomFieldValuesPanel
                       chatId={chatId}
                       canEdit={canEditCustomFields}
+                      isCounsellor={isCounsellorForCall}
                       filterSectionKey={key}
                       externalFieldValues={customFieldValues ?? []}
                       externalLocalValues={customLocalValues}

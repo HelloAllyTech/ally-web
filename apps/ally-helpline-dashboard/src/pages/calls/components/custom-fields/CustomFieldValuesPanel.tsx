@@ -27,6 +27,7 @@ import { CustomFieldEditPermission, CustomFieldType, CustomFieldValue, SingleSel
 interface CustomFieldValuesPanelProps {
   chatId: number;
   canEdit?: boolean;
+  isCounsellor?: boolean;
   filterSectionKey?: string;
   // Controlled mode — when provided, skip internal fetch and use parent state
   externalFieldValues?: CustomFieldValue[];
@@ -37,6 +38,7 @@ interface CustomFieldValuesPanelProps {
 const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   chatId,
   canEdit = true,
+  isCounsellor,
   filterSectionKey,
   externalFieldValues,
   externalLocalValues,
@@ -44,6 +46,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
   const isAdmin = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
+  const effectiveIsCounsellor = isCounsellor ?? !isAdmin;
 
   const isControlled = externalFieldValues !== undefined && externalLocalValues !== undefined && onValueChange !== undefined;
 
@@ -94,7 +97,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     if (!canEdit) return false;
     if (field.editPermission === CustomFieldEditPermission.BOTH) return true;
     if (field.editPermission === CustomFieldEditPermission.ADMIN_ONLY) return isAdmin;
-    if (field.editPermission === CustomFieldEditPermission.COUNSELLOR_ONLY) return !isAdmin;
+    if (field.editPermission === CustomFieldEditPermission.COUNSELLOR_ONLY) return effectiveIsCounsellor;
     return false;
   };
 
