@@ -77,9 +77,13 @@ const newOptionRow = (order: number): OptionRow => ({
 
 interface CustomFieldDefinitionsSectionProps {
   tenantId: string;
+  enabledTypes: string[];
 }
 
-const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({ tenantId }) => {
+const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
+  tenantId,
+  enabledTypes,
+}) => {
   const formId = useId();
 
   const user = useSelector((state: RootState) => state.user.user);
@@ -106,7 +110,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
   const [options, setOptions] = useState<OptionRow[]>([newOptionRow(0)]);
 
   const resetForm = () => {
-    setSelectedType(CustomFieldType.TEXT);
+    setSelectedType((enabledTypes[0] as CustomFieldType) ?? CustomFieldType.TEXT);
     setName("");
     setSectionKey(SCRIBE_SECTIONS[0].key);
     setEditPermission(CustomFieldEditPermission.BOTH);
@@ -293,26 +297,28 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
               <div className="flex flex-col gap-3">
                 <p className="text-sm text-typography-600">Select field type</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {(Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[]).map(type => (
-                    <label
-                      key={type}
-                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer text-sm ${
-                        selectedType === type
-                          ? "border-primary-500 bg-primary-50 text-primary-700"
-                          : "border-border-light text-typography-700"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name={`${formId}-type`}
-                        value={type}
-                        checked={selectedType === type}
-                        onChange={() => setSelectedType(type)}
-                        className="accent-primary-500"
-                      />
-                      {FIELD_TYPE_LABELS[type]}
-                    </label>
-                  ))}
+                  {(Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[])
+                    .filter(type => enabledTypes.includes(type))
+                    .map(type => (
+                      <label
+                        key={type}
+                        className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer text-sm ${
+                          selectedType === type
+                            ? "border-primary-500 bg-primary-50 text-primary-700"
+                            : "border-border-light text-typography-700"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name={`${formId}-type`}
+                          value={type}
+                          checked={selectedType === type}
+                          onChange={() => setSelectedType(type)}
+                          className="accent-primary-500"
+                        />
+                        {FIELD_TYPE_LABELS[type]}
+                      </label>
+                    ))}
                 </div>
                 <div className="flex justify-end mt-2">
                   <Button onClick={() => setModal(m => ({ ...m, step: 2 }))}>Next</Button>
