@@ -8,7 +8,6 @@ import {
   useCreateCustomFieldDefinitionMutation,
   useUpdateCustomFieldDefinitionMutation,
   useDeleteCustomFieldDefinitionMutation,
-  useGetSummarySectionsQuery,
 } from "@api";
 import { Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -37,6 +36,26 @@ const EDIT_PERMISSION_LABELS: Record<CustomFieldEditPermission, string> = {
 };
 
 const TYPES_WITH_OPTIONS = [CustomFieldType.SINGLE_SELECT, CustomFieldType.MULTI_SELECT];
+
+const SCRIBE_SECTIONS = [
+  { key: "featuresAndDemographics", label: "Features and Demographics" },
+  { key: "sessionSummary", label: "Session Summary" },
+  { key: "flow", label: "Flow" },
+  { key: "keyConcerns", label: "Key Concerns" },
+  { key: "objectiveObservations", label: "Objective Observations" },
+  { key: "subjectiveObservations", label: "Subjective Observations" },
+  { key: "assessment", label: "Assessment" },
+  { key: "dominantFeelings", label: "Dominant Feelings" },
+  { key: "issuesWorkedOn", label: "Issues Worked On" },
+  { key: "keyTherapeuticTechniques", label: "Key Therapeutic Techniques" },
+  { key: "referralsProvided", label: "Referrals Provided" },
+  { key: "homeworkRecommended", label: "Homework Recommended" },
+  { key: "plansForNextCall", label: "Plans for Next Call" },
+  { key: "tags", label: "Tags" },
+  { key: "metrics", label: "Metrics" },
+  { key: "intake", label: "Intake" },
+  { key: "ongoingRisks", label: "Ongoing Risks" },
+];
 
 interface ModalState {
   open: boolean;
@@ -67,12 +86,9 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
   const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
 
   const { data: definitions = [], isLoading } = useGetCustomFieldDefinitionsQuery(tenantId);
-  const { data: sectionsData } = useGetSummarySectionsQuery(tenantId);
   const [createDefinition, { isLoading: isCreating }] = useCreateCustomFieldDefinitionMutation();
   const [updateDefinition, { isLoading: isUpdating }] = useUpdateCustomFieldDefinitionMutation();
   const [deleteDefinition, { isLoading: isDeleting }] = useDeleteCustomFieldDefinitionMutation();
-
-  const sections = sectionsData?.sections ?? [];
 
   const [modal, setModal] = useState<ModalState>({ open: false, editing: null, step: 1 });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -92,7 +108,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
   const resetForm = () => {
     setSelectedType(CustomFieldType.TEXT);
     setName("");
-    setSectionKey(sections[0]?.id ?? "");
+    setSectionKey(SCRIBE_SECTIONS[0].key);
     setEditPermission(CustomFieldEditPermission.BOTH);
     setShowInTable(true);
     setFillMode(CustomFieldFillMode.MANUAL);
@@ -372,8 +388,8 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                     <option value="" disabled>
                       Select section
                     </option>
-                    {sections.map(s => (
-                      <option key={s.id} value={s.id}>
+                    {SCRIBE_SECTIONS.map(s => (
+                      <option key={s.key} value={s.key}>
                         {s.label}
                       </option>
                     ))}
