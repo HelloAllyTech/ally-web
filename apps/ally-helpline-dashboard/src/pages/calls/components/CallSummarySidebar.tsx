@@ -32,11 +32,7 @@ import CallSummary from "@pages/post-call-summary/components/CallSummary";
 import { toolTipStyles } from "@src/constants";
 import ArchiveDialog from "@src/pages/calls/components/ArchiveDialog";
 import { RootState } from "@store";
-import {
-  ChatSummaryStatus,
-  ShareForReviewsScribeInput,
-  TranscriptMessage,
-} from "@types";
+import { ChatSummaryStatus, ShareForReviewsScribeInput, TranscriptMessage } from "@types";
 
 import { SummaryHeader, SummarySidebarWrapper, DeleteCallLogConfirmationDialog } from ".";
 import { SUMMARY_FEEDBACK_TIMEOUT, TRANSCRIPT_PAGE_SIZE } from "./constants";
@@ -452,7 +448,9 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               postProcess={refetchCallLogs}
               isInSidebar={true}
               canEditSummary={canEditSummary}
-              canEditCustomFields={canEditSummary}
+              canEditCustomFields={
+                canEditSummary || permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS)
+              }
               isSummaryLoading={isSummaryLoading}
               summaryLoadingError={summaryLoadingError}
             />

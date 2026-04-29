@@ -19,18 +19,18 @@ import {
   useUpsertCustomFieldValuesMutation,
   useGetCustomFieldsEnabledQuery,
 } from "@api";
-import { CustomFieldValue } from "@types";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
 import { LanguageMap, Permissions, ROUTES, toolTipStyles } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce } from "@hooks";
+import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import { RootState } from "@store";
 import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag } from "@types";
+import { CustomFieldEditPermission, CustomFieldValue } from "@types";
 import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions } from "@utils";
 
 import { SummaryLoading } from ".";
-import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import { getSummaryFields, getSummarySections, labelShownSections } from "../constants";
 import { CallSummaryProps, FieldType, SummaryField, SummarySectionKey } from "../types";
 import { getSectionFields } from "../utils";
@@ -93,7 +93,9 @@ const CallSummary: FC<CallSummaryProps> = ({
   useEffect(() => {
     if (customFieldValues) {
       const initial: Record<string, string | null> = {};
-      customFieldValues.forEach((f: CustomFieldValue) => { initial[f.fieldDefinitionId] = f.value ?? null; });
+      customFieldValues.forEach((f: CustomFieldValue) => {
+        initial[f.fieldDefinitionId] = f.value ?? null;
+      });
       setCustomLocalValues(initial);
     }
   }, [customFieldValues]);
@@ -113,11 +115,35 @@ const CallSummary: FC<CallSummaryProps> = ({
   // If canEditSummary is explicitly false (from ConsolidatedLogs), respect that
   // Otherwise (true/undefined/default), check permissions and counselor match
   const hasEditSummaryPermission = permissions?.includes(Permissions.EDIT_CALL_DETAILS);
+  const isAdmin = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
   const isCounsellorForCall = Boolean(
     user?.userId && callSummary?.counselorId && callSummary.counselorId === user.userId,
   );
   const shouldAllowEdit =
     canEditSummary !== false && hasEditSummaryPermission && isCounsellorForCall;
+  const hasAdminEditableCustomFields =
+    isAdmin &&
+    customFieldsActive &&
+    (customFieldValues?.some(
+      (f: CustomFieldValue) =>
+        f.editPermission === CustomFieldEditPermission.ADMIN_ONLY ||
+        f.editPermission === CustomFieldEditPermission.BOTH,
+    ) ??
+      false);
+  const hasCounsellorEditableCustomFields =
+    !isAdmin &&
+    isCounsellorForCall &&
+    customFieldsActive &&
+    (customFieldValues?.some(
+      (f: CustomFieldValue) =>
+        f.editPermission === CustomFieldEditPermission.COUNSELLOR_ONLY ||
+        f.editPermission === CustomFieldEditPermission.BOTH,
+    ) ??
+      false);
+  const canSave =
+    shouldAllowEdit ||
+    (canEditCustomFields !== false &&
+      (hasAdminEditableCustomFields || hasCounsellorEditableCustomFields));
 
   const isLoading =
     isGetSummaryFieldsLoading ||
@@ -384,7 +410,9 @@ const CallSummary: FC<CallSummaryProps> = ({
     }
     if (hasCustomFieldsChanged() && customFieldValues?.length) {
       const changedFields = customFieldValues
-        .filter((f: CustomFieldValue) => customLocalValues[f.fieldDefinitionId] !== (f.value ?? null))
+        .filter(
+          (f: CustomFieldValue) => customLocalValues[f.fieldDefinitionId] !== (f.value ?? null),
+        )
         .map((f: CustomFieldValue) => ({
           fieldDefinitionId: f.fieldDefinitionId,
           value: customLocalValues[f.fieldDefinitionId] ?? undefined,
@@ -525,9 +553,14 @@ const CallSummary: FC<CallSummaryProps> = ({
           </motion.div>
         </div>
 
-        {shouldAllowEdit && (
+        {canSave && (
           <div className="flex justify-center">
-            <Button onClick={handleSave} disabled={isLoading || (isInSidebar && !hasDataChanged() && !hasCustomFieldsChanged())}>
+            <Button
+              onClick={handleSave}
+              disabled={
+                isLoading || (isInSidebar && !hasDataChanged() && !hasCustomFieldsChanged())
+              }
+            >
               {isUpdateLoading || isGetTagsLoading ? t("summary.saving") : t("summary.save")}
             </Button>
           </div>

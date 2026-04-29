@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useGetCallSummaryQuery } from "@api";
 import { ROUTES } from "@constants";
-import { ChatSummaryStatus, UserRole } from "@types";
+import { ChatSummaryStatus, CustomFieldEditPermission, CustomFieldType, UserRole } from "@types";
 
 import CallSummary from "../CallSummary";
 
@@ -35,6 +35,34 @@ const customFieldsEnabledResult = { data: false };
 const customFieldValuesResult = { data: [] };
 const upsertCustomFieldValuesResult = [vi.fn()];
 
+// Configurable wrappers — use mockReturnValue(stableConst) in tests to avoid fresh objects per render
+const mockGetCustomFieldsEnabled = vi.fn(() => customFieldsEnabledResult);
+const mockGetCustomFieldValues = vi.fn(() => customFieldValuesResult);
+
+// Stable result objects for custom field save-button tests
+const customFieldsActiveResult = { data: true };
+const adminFieldResult = {
+  fieldDefinitionId: "cf-admin-1",
+  name: "Stage",
+  fieldType: CustomFieldType.SINGLE_SELECT,
+  sectionKey: "section",
+  sectionLabel: "Section",
+  editPermission: CustomFieldEditPermission.BOTH,
+  options: [],
+  value: null,
+};
+const adminFieldsResult = { data: [adminFieldResult] };
+const counsellorFieldResult = {
+  fieldDefinitionId: "cf-counsellor-1",
+  name: "Follow-up Date",
+  fieldType: CustomFieldType.DATE,
+  sectionKey: "section",
+  sectionLabel: "Section",
+  editPermission: CustomFieldEditPermission.BOTH,
+  value: null,
+};
+const counsellorFieldsResult = { data: [counsellorFieldResult] };
+
 vi.mock("@api", () => ({
   useGetCallSummaryQuery: vi.fn(),
   useGetSummaryFieldsQuery: () => summaryFieldsResult,
@@ -43,8 +71,8 @@ vi.mock("@api", () => ({
   useGetLocationsQuery: () => locationsResult,
   useLazySearchLocationsQuery: () => lazySearchLocationsResult,
   useUpdateCallSummaryNotesMutation: () => updateCallSummaryNotesResult,
-  useGetCustomFieldsEnabledQuery: () => customFieldsEnabledResult,
-  useGetCustomFieldValuesQuery: () => customFieldValuesResult,
+  useGetCustomFieldsEnabledQuery: () => mockGetCustomFieldsEnabled(),
+  useGetCustomFieldValuesQuery: (...args: any[]) => mockGetCustomFieldValues(...args),
   useUpsertCustomFieldValuesMutation: () => upsertCustomFieldValuesResult,
 }));
 
@@ -107,8 +135,10 @@ vi.mock("../utils", () => ({
   getSectionFields: () => [{ key: "callId", type: "text", label: "Call ID", isEditable: true }],
 }));
 vi.mock("../constants", () => ({
-  summarySections: [{ title: "Section", icon: null, key: "section" }],
+  getSummarySections: () => [{ title: "Section", icon: null, key: "section" }],
+  getSummaryFields: () => [],
   labelShownSections: ["section"],
+  summarySections: [{ title: "Section", icon: null, key: "section" }],
 }));
 // Prevent loading @mui/x-date-pickers and date-fns (36 MB) into the test worker heap
 vi.mock("@pages/calls/components/custom-fields/CustomFieldValuesPanel", () => ({
@@ -156,6 +186,9 @@ describe("CallSummary Component", () => {
       user: { role: UserRole.COUNSELLOR },
       permissions: ["view:settings:summary-fields"],
     });
+    // Reset custom field mocks to disabled defaults so existing tests are unaffected
+    mockGetCustomFieldsEnabled.mockImplementation(() => customFieldsEnabledResult);
+    mockGetCustomFieldValues.mockImplementation(() => customFieldValuesResult);
     // Set up default mock behavior for useGetCallSummaryQuery
     vi.mocked(useGetCallSummaryQuery).mockReturnValue({
       data: {
@@ -215,4 +248,101 @@ describe("CallSummary Component", () => {
 
   // Note: Feedback dialog tests removed as SummaryLoading component doesn't have a Save button
   // The feedback functionality is handled in the actual summary content, not in the loading component
+});
+
+describe("CallSummary — custom field save button visibility", () => {
+  // callSummary objects with details.summary truthy so the full summary content renders.
+  // counselorId: 999 ensures isCounsellorForCall=false for any admin userId.
+  // counselorId: 1   ensures isCounsellorForCall=true  for userId: 1.
+  const summaryCallAdminEdits = {
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 999,
+    details: { callInfo: { notes: "" }, summary: { callQuality: 85, tags: [] } },
+  };
+  const summaryCallCounsellorEdits = {
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 1,
+    details: { callInfo: { notes: "" }, summary: { callQuality: 85, tags: [] } },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    // Reset custom field mocks to disabled defaults
+    mockGetCustomFieldsEnabled.mockImplementation(() => customFieldsEnabledResult);
+    mockGetCustomFieldValues.mockImplementation(() => customFieldValuesResult);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("shows Save button for admin with admin-editable custom fields", () => {
+    mockGetCustomFieldsEnabled.mockReturnValue(customFieldsActiveResult);
+    mockGetCustomFieldValues.mockReturnValue(adminFieldsResult);
+    mockUseSelector.mockReturnValue({
+      user: { userId: 42 },
+      permissions: ["manage:custom-field:definitions"],
+    });
+
+    render(
+      <CallSummary chatId={1} callSummary={summaryCallAdminEdits} canEditCustomFields={true} />,
+    );
+
+    expect(screen.getByRole("button", { name: "Save report" })).toBeInTheDocument();
+  });
+
+  it("does not show Save button for admin when canEditCustomFields is explicitly false", () => {
+    mockGetCustomFieldsEnabled.mockReturnValue(customFieldsActiveResult);
+    mockGetCustomFieldValues.mockReturnValue(adminFieldsResult);
+    mockUseSelector.mockReturnValue({
+      user: { userId: 42 },
+      permissions: ["manage:custom-field:definitions"],
+    });
+
+    render(
+      <CallSummary chatId={1} callSummary={summaryCallAdminEdits} canEditCustomFields={false} />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Save report" })).not.toBeInTheDocument();
+  });
+
+  it("shows Save button for counsellor on own call with counsellor-editable custom fields", () => {
+    mockGetCustomFieldsEnabled.mockReturnValue(customFieldsActiveResult);
+    mockGetCustomFieldValues.mockReturnValue(counsellorFieldsResult);
+    // No EDIT_CALL_DETAILS — shouldAllowEdit is false, so the button must come from hasCounsellorEditableCustomFields
+    mockUseSelector.mockReturnValue({
+      user: { userId: 1 },
+      permissions: [],
+    });
+
+    render(
+      <CallSummary
+        chatId={1}
+        callSummary={summaryCallCounsellorEdits}
+        canEditCustomFields={true}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Save report" })).toBeInTheDocument();
+  });
+
+  it("does not show Save button for counsellor viewing another counsellor's call", () => {
+    mockGetCustomFieldsEnabled.mockReturnValue(customFieldsActiveResult);
+    mockGetCustomFieldValues.mockReturnValue(counsellorFieldsResult);
+    mockUseSelector.mockReturnValue({
+      user: { userId: 2 }, // does not match counselorId: 1
+      permissions: [],
+    });
+
+    render(
+      <CallSummary
+        chatId={1}
+        callSummary={summaryCallCounsellorEdits}
+        canEditCustomFields={true}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Save report" })).not.toBeInTheDocument();
+  });
 });
