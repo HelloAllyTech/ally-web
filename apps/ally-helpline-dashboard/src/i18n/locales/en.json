@@ -670,6 +670,7 @@
     },
     "fields": {
       "callId": "Call ID",
+      "callName": "Call Name",
       "callDuration": "Call Duration",
       "callDate": "Call Date",
       "callTime": "Call time",

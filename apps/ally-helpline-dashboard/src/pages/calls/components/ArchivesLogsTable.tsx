@@ -213,7 +213,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   const callColumns: Column<any>[] = [
     {
       key: "callName",
-      header: t("summary.fields.callId"),
+      header: t("summary.fields.callName"),
       style: { width: isOrgLogs ? "14%" : "17%" },
       icon: <CallIdIcon />,
     },

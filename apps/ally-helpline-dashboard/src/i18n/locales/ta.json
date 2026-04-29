@@ -670,6 +670,7 @@
     },
     "fields": {
       "callId": "கால் ஐடி",
+      "callName": "அழைப்பு பெயர்",
       "callDuration": "கால் காலம்",
       "callDate": "அழைப்பு தேதி",
       "callTime": "அழைப்பு நேரம்",
