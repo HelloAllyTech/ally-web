@@ -670,6 +670,7 @@
     },
     "fields": {
       "callId": "कॉल आयडी",
+      "callName": "कॉल नाव",
       "callDuration": "कॉल कालावधी",
       "callDate": "कॉल तारीख",
       "callTime": "कॉल वेळ",

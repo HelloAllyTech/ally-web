@@ -195,7 +195,7 @@ const TableHeader = <T extends Record<string, any>>({
               <div>Sort</div>
             </div>
           )}
-          {col.filterable && col.filterOptions && (
+          {col.filterable && (
             <div
               className="text-[#6B7280] flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
               onClick={handleFilterClick}

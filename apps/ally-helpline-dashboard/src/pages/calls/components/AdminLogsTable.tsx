@@ -47,9 +47,9 @@ import {
 import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
+import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
 import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
-import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
 import { LogsTableProps } from "./types";
 import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
 
@@ -227,18 +227,20 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     return { id, callName: "", dateAndTime: "", provider: "--", mode: undefined, raw: row };
   };
 
-  const customFieldColumns: Column<any>[] = customFieldDefs.filter(def => def.showInTable !== false).map(def => ({
-    key: `cf_${def.id}`,
-    header: def.name,
-    style: { width: "10%", minWidth: 100 },
-    render: (_value: any, row: any) =>
-      renderCustomFieldCell(def, row.raw?.customFieldValues ?? []),
-  }));
+  const customFieldColumns: Column<any>[] = customFieldDefs
+    .filter(def => def.showInTable !== false)
+    .map(def => ({
+      key: `cf_${def.id}`,
+      header: def.name,
+      style: { width: "10%", minWidth: 100 },
+      render: (_value: any, row: any) =>
+        renderCustomFieldCell(def, row.raw?.customFieldValues ?? []),
+    }));
 
   const callColumns: Column<any>[] = [
     {
       key: "callName",
-      header: t("summary.fields.callId"),
+      header: t("summary.fields.callName"),
       style: { width: "13%" },
       icon: <CallIdIcon />,
       filterable: true,

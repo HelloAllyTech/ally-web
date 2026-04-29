@@ -29,13 +29,7 @@ import {
 import { Button, Chip, TagGroup, FallbackUI } from "@components";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
-import {
-  CallLog,
-  ChatSummaryStatus,
-  SimulationLog,
-  TagDisplay,
-  SessionType,
-} from "@types";
+import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } from "@types";
 import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
@@ -57,6 +51,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const [callNameFilter, setCallNameFilter] = useState<string | undefined>(undefined);
   const tableRef = useRef<HTMLDivElement>(null);
   const [summary, setSummary] = useState<CallLog | SimulationLog>();
 
@@ -89,6 +84,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       limit: CALL_LOGS_PAGINATION_LIMIT,
       offset: offset,
       archive: false,
+      ...(callNameFilter ? { callName: callNameFilter } : {}),
     },
     { skip: !isCall },
   );
@@ -166,6 +162,19 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     }
   };
 
+  const handleFilterChange = (data: any) => {
+    const { filter = [] } = data;
+    const callName = filter.find((f: { key: string }) => f.key === "callName");
+    const newCallName =
+      callName && typeof callName.value === "string" && callName.value.trim()
+        ? callName.value.trim()
+        : undefined;
+    setCallNameFilter(newCallName);
+    setLogs([]);
+    setHasMore(true);
+    dispatch(updateFilters({ ...filters, offset: 0 }));
+  };
+
   if (isLoading && offset === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
@@ -211,18 +220,20 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     };
   };
 
-  const customFieldColumns: Column<any>[] = customFieldDefs.filter(def => def.showInTable !== false).map(def => ({
-    key: `cf_${def.id}`,
-    header: def.name,
-    style: { width: "10%", minWidth: 100 },
-    render: (_value: any, row: any) =>
-      renderCustomFieldCell(def, row.raw?.customFieldValues ?? []),
-  }));
+  const customFieldColumns: Column<any>[] = customFieldDefs
+    .filter(def => def.showInTable !== false)
+    .map(def => ({
+      key: `cf_${def.id}`,
+      header: def.name,
+      style: { width: "10%", minWidth: 100 },
+      render: (_value: any, row: any) =>
+        renderCustomFieldCell(def, row.raw?.customFieldValues ?? []),
+    }));
 
   const callColumns: Column<any>[] = [
     {
       key: "callName",
-      header: t("summary.fields.callId"),
+      header: t("summary.fields.callName"),
       style: { width: "17%" },
       icon: <CallIdIcon />,
       filterable: true,
@@ -424,6 +435,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           fallbackUI={renderFallbackUI()}
           className={`min-w-full font-primary overflow-y-scroll text-sm text-typography-800 ${className}`}
           data-testid="user-logs-table"
+          onFilterChange={isCall ? handleFilterChange : undefined}
         />
       </div>
       {summary && summary.id && getSummarySideBar()}
