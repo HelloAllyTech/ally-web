@@ -22,6 +22,7 @@ import {
   useGetCustomFieldDefinitionsQuery,
   useGetCustomFieldsEnabledQuery,
   useDeleteCustomFieldDefinitionMutation,
+  useReorderCustomFieldDefinitionsMutation,
   useUpdateCustomFieldDefinitionMutation,
 } from "@api";
 import { Button } from "@components";
@@ -89,6 +90,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
   });
   const [deleteDefinition, { isLoading: isDeleting }] = useDeleteCustomFieldDefinitionMutation();
   const [updateDefinition] = useUpdateCustomFieldDefinitionMutation();
+  const [reorderDefinitions] = useReorderCustomFieldDefinitionsMutation();
 
   const [fieldToDelete, setFieldToDelete] = useState<CustomFieldDefinition | null>(null);
   const [fieldToEdit, setFieldToEdit] = useState<CustomFieldDefinition | null>(null);
@@ -120,14 +122,11 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
     const swapIndex = direction === "up" ? index - 1 : index + 1;
     if (swapIndex < 0 || swapIndex >= definitions.length) return;
 
-    const a = definitions[index];
-    const b = definitions[swapIndex];
+    const reordered = [...definitions];
+    [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
 
     try {
-      await Promise.all([
-        updateDefinition({ id: a.id, displayOrder: b.displayOrder }).unwrap(),
-        updateDefinition({ id: b.id, displayOrder: a.displayOrder }).unwrap(),
-      ]);
+      await reorderDefinitions({ ids: reordered.map(f => f.id) }).unwrap();
     } catch {
       toast.error("Failed to reorder fields");
     }
