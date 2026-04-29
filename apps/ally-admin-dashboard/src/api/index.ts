@@ -7,3 +7,4 @@ export * from "./scenarioPath";
 export * from "./previewVoice";
 export * from "./guardrails";
 export * from "./userBadges";
+export * from "./tooltips";

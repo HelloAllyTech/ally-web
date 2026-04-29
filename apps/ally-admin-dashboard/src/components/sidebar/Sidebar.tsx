@@ -20,6 +20,7 @@ import {
   FrameSource,
   Guardrails,
   Badge,
+  InfoIcon,
 } from "@assets";
 import { UserModal } from "@components";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
@@ -134,6 +135,8 @@ export const Sidebar: React.FC = () => {
         return <FrameSource />;
       case SIDEBAR_ITEMS.USER_BADGES:
         return <Badge />;
+      case SIDEBAR_ITEMS.TOOLTIPS:
+        return <InfoIcon />;
       default:
         return null;
     }
@@ -162,13 +165,15 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_GUARDRAILS);
       case ROUTES.USER_BADGES:
         return location.pathname.includes(ROUTES.USER_BADGES);
+      case ROUTES.TOOLTIPS:
+        return location.pathname.includes(ROUTES.TOOLTIPS);
       default:
         return false;
     }
   };
 
   const sidebarItems = (
-    <nav className="flex-1 px-2 py-4">
+    <nav className="flex-1 px-2 py-4 overflow-y-auto custom-scrollbar min-h-0">
       <ul className="space-y-1">
         {filteredNavigationItems.map(item => {
           const isActive = isTabItemActive(item.path);

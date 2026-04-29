@@ -56,7 +56,7 @@ export const EmojiPickerComponent: React.FC<EmojiPickerProps> = ({
 
       let top;
       if (shouldShowAbove) {
-        top = buttonRect.top + window.scrollY - pickerHeight - 8;
+        top = Math.max(10, buttonRect.top + window.scrollY - pickerHeight - 8);
       } else {
         top = buttonRect.bottom + window.scrollY + 8;
       }

@@ -82,3 +82,4 @@ export * from "./guardrail-side-panel";
 export * from "./badges-tab";
 export * from "./entity-toggle-card";
 export * from "./assigned-organizations";
+export * from "./tooltip-side-panel";

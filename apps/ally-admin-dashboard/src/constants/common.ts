@@ -138,6 +138,11 @@ export const ApiEndpoints = {
     GET_ROLES: "/v1/authorization/roles",
     CHANGE_USER_ROLES: "/v1/authorization/change-roles",
   },
+  TOOLTIPS: {
+    GET_TOOLTIPS: "/v1/tooltips",
+    CREATE_TOOLTIP: "/v1/tooltips",
+    UPDATE_TOOLTIP: (id: string) => `/v1/tooltips/${id}`,
+  },
 };
 
 export const ROUTES = {
@@ -159,6 +164,7 @@ export const ROUTES = {
   CREATE_CASE: "/create-case",
   USER_BADGES: "/user-badges",
   MANAGE_GUARDRAILS: "/manage-guardrails",
+  TOOLTIPS: "/tooltips",
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
 };
 
@@ -226,6 +232,7 @@ export const TAG_TYPES = {
   PROMPTS: "prompts",
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
   USER_BADGES: "userBadges",
+  TOOLTIPS: "tooltips",
   HELPER_TAGS: "helperTags",
   FILLER_TAGS: "fillerTags",
   COMPETENCIES: "competencies",

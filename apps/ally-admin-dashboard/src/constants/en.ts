@@ -85,6 +85,8 @@ export const en = {
     linguisticStyleSamplesMissingFor: (languages: string) =>
       `Linguistic style samples are required. Missing samples for: ${languages}.`,
     invalidStateInstructionIds: "State instructions include an invalid state id.",
+    failedToCreateTooltip: "Failed to create tooltip",
+    failedToUpdateTooltip: "Failed to update tooltip",
   },
   accessDenied: {
     title: "This page is not accessible",
@@ -665,5 +667,23 @@ export const en = {
     publishBadgeConfirmationTitleItalic: " Badge?",
     publishBadgeConfirmationDescription:
       "Are you sure you want to publish this badge? Once published, this badge will be awarded to users who meet the defined criteria. ",
+  },
+  tooltip: {
+    title: "Tooltips",
+    scenarioTooltips: "Tooltip Management",
+    createTooltip: "Create Tooltip",
+    editTooltip: "Edit Tooltip",
+    searchTooltips: "Search tooltips...",
+    location: "Location",
+    tipText: "Tip Text",
+    icon: "Icon",
+    status: "Status",
+    tooltipCreated: "Tooltip created successfully",
+    tooltipUpdated: "Tooltip updated successfully",
+    locationRequired: "Location is required",
+    tipTextRequired: "Tip text is required",
+    tipTextMaxLength: "Tip text cannot exceed 200 characters",
+    locationAlreadyExists: "A tooltip for this location already exists",
+    unsavedChangesWarning: "You have unsaved changes. Are you sure you want to close?",
   },
 };

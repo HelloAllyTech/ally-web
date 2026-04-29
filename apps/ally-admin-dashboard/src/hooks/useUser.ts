@@ -92,6 +92,11 @@ export const useUser = () => {
       label: en.userManagement.badges,
       path: ROUTES.USER_BADGES,
     },
+    {
+      id: SIDEBAR_ITEMS.TOOLTIPS,
+      label: en.tooltip.title,
+      path: ROUTES.TOOLTIPS,
+    },
   ];
 
   /**
@@ -180,6 +185,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_GUARDRAIL);
         case SIDEBAR_ITEMS.USER_BADGES:
           return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
+        case SIDEBAR_ITEMS.TOOLTIPS:
+          return permissions.includes(Permissions.VIEW_ADMIN_TOOLTIP);
         default:
           return true;
       }

@@ -833,6 +833,44 @@ export const USER_BADGES_TABLE_COLUMNS = [
   },
 ];
 
+export const TOOLTIPS_TABLE_COLUMNS = [
+  {
+    id: "location",
+    label: "Location",
+    accessor: "location",
+    dataType: cellTypes.normalText,
+    minWidth: 250,
+  },
+  {
+    id: "tipText",
+    label: "Tip Text",
+    accessor: "tipText",
+    dataType: cellTypes.wrapText,
+    minWidth: 550,
+  },
+  {
+    id: "icon",
+    label: "Icon",
+    accessor: "icon",
+    dataType: cellTypes.emoji_select,
+    minWidth: 100,
+  },
+  {
+    id: "active",
+    label: "Status",
+    accessor: "active",
+    dataType: cellTypes.switch,
+    minWidth: 150,
+  },
+  {
+    id: "createdAt",
+    label: "Created Date",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 150,
+  },
+];
+
 export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
   {
     id: "category",

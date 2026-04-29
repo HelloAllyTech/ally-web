@@ -20,6 +20,7 @@ import {
   GuardrailsManagement,
   PromptManagement,
   UserBadges,
+  TooltipManagement,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -183,6 +184,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
               <GuardrailsManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.TOOLTIPS}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_TOOLTIP]}>
+              <TooltipManagement />
             </PrivateLayout>
           }
         />
