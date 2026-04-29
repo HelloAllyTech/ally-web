@@ -68,8 +68,18 @@ vi.mock("@assets", () => ({
   ArrowSolid: () => <svg data-testid="arrow-solid" />,
 }));
 
+// Mock react-redux to avoid needing a Provider
+vi.mock("react-redux", () => ({
+  useSelector: (selector: (state: any) => any) =>
+    selector({ user: { user: { role: "SUPER_ADMIN" } } }),
+}));
+
+// Mock @store (imported by CustomFieldDefinitionsSection)
+vi.mock("@store", () => ({}));
+
 // Mock constants
 vi.mock("@constants", () => ({
+  UserRole: { SUPER_ADMIN: "SUPER_ADMIN" },
   en: {
     common: {
       cancel: "Cancel",
@@ -182,6 +192,10 @@ vi.mock("@api", () => {
     useUpdateCustomFieldTypesMutation: () => updateCustomFieldTypesResult,
     useGetCustomFieldsEnabledQuery: () => customFieldsEnabledResult,
     useUpdateCustomFieldsEnabledMutation: () => updateCustomFieldsEnabledResult,
+    useGetCustomFieldDefinitionsQuery: () => ({ data: [], isLoading: false }),
+    useCreateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
+    useUpdateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
+    useDeleteCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
   };
 });
 

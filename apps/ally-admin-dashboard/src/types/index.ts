@@ -10,3 +10,4 @@ export * from "./reportGeneration";
 export * from "./socket";
 export * from "./userBages";
 export * from "./guardrails";
+export * from "./customFields";
