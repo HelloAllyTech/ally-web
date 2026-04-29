@@ -313,7 +313,13 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                           name={`${formId}-type`}
                           value={type}
                           checked={selectedType === type}
-                          onChange={() => setSelectedType(type)}
+                          onChange={() => {
+                            setSelectedType(type);
+                            if (type !== CustomFieldType.TEXT) {
+                              setFillMode(CustomFieldFillMode.MANUAL);
+                              setAiInstruction("");
+                            }
+                          }}
                           className="accent-primary-500"
                         />
                         {FIELD_TYPE_LABELS[type]}
@@ -433,25 +439,27 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                   />
                 </div>
 
-                {/* AI fill mode */}
-                <div className="flex items-center justify-between rounded-lg border border-border-light px-3 py-2">
-                  <div>
-                    <p className="text-sm font-medium text-typography-700">AI fill mode</p>
-                    <p className="text-xs text-typography-400">
-                      Field value will be automatically filled by AI after each call
-                    </p>
+                {/* AI fill mode — TEXT only */}
+                {selectedType === CustomFieldType.TEXT && (
+                  <div className="flex items-center justify-between rounded-lg border border-border-light px-3 py-2">
+                    <div>
+                      <p className="text-sm font-medium text-typography-700">AI fill mode</p>
+                      <p className="text-xs text-typography-400">
+                        Field value will be automatically filled by AI after each call
+                      </p>
+                    </div>
+                    <ToggleSwitch
+                      enabled={fillMode === CustomFieldFillMode.AI}
+                      onChange={on =>
+                        setFillMode(on ? CustomFieldFillMode.AI : CustomFieldFillMode.MANUAL)
+                      }
+                      label="AI fill mode"
+                    />
                   </div>
-                  <ToggleSwitch
-                    enabled={fillMode === CustomFieldFillMode.AI}
-                    onChange={on =>
-                      setFillMode(on ? CustomFieldFillMode.AI : CustomFieldFillMode.MANUAL)
-                    }
-                    label="AI fill mode"
-                  />
-                </div>
+                )}
 
                 {/* AI instruction */}
-                {fillMode === CustomFieldFillMode.AI && (
+                {selectedType === CustomFieldType.TEXT && fillMode === CustomFieldFillMode.AI && (
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-medium text-typography-700">
                       AI instruction{" "}
