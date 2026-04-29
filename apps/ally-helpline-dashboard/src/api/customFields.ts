@@ -28,6 +28,15 @@ const customFieldsAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CUSTOM_FIELD_DEFINITIONS],
     }),
 
+    reorderCustomFieldDefinitions: builder.mutation<{ success: boolean }, { ids: string[] }>({
+      query: (body) => ({
+        url: ApiEndpoints.CUSTOM_FIELDS.REORDER_DEFINITIONS,
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.CUSTOM_FIELD_DEFINITIONS],
+    }),
+
     updateCustomFieldDefinition: builder.mutation<
       CustomFieldDefinition,
       { id: string } & UpdateCustomFieldDefinitionInput
@@ -97,6 +106,7 @@ const customFieldsAPI = baseAPI.injectEndpoints({
 export const {
   useGetCustomFieldDefinitionsQuery,
   useCreateCustomFieldDefinitionMutation,
+  useReorderCustomFieldDefinitionsMutation,
   useUpdateCustomFieldDefinitionMutation,
   useDeleteCustomFieldDefinitionMutation,
   useGetCustomFieldValuesQuery,

@@ -185,6 +185,7 @@ export const ApiEndpoints = {
   CUSTOM_FIELDS: {
     GET_DEFINITIONS: "/v1/custom-fields/definitions",
     CREATE_DEFINITION: "/v1/custom-fields/definitions",
+    REORDER_DEFINITIONS: "/v1/custom-fields/definitions/reorder",
     UPDATE_DEFINITION: (id: string) => `/v1/custom-fields/definitions/${id}`,
     DELETE_DEFINITION: (id: string) => `/v1/custom-fields/definitions/${id}`,
     GET_VALUES: (chatId: number) => `/v1/custom-fields/values/${chatId}`,
