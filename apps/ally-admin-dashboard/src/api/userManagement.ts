@@ -22,6 +22,9 @@ import {
   GetAdminTenantsResponse,
   AssignAdminTenantsBody,
   RemoveAdminTenantsBody,
+  CustomFieldDefinition,
+  CreateCustomFieldDefinitionInput,
+  UpdateCustomFieldDefinitionInput,
 } from "@types";
 
 const userManagementAPI = baseAPI.injectEndpoints({
@@ -298,6 +301,50 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CUSTOM_FIELDS_ENABLED],
     }),
 
+    getCustomFieldDefinitions: builder.query<CustomFieldDefinition[], string>({
+      query: tenantId => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELD_DEFINITIONS,
+        params: { tenantId },
+      }),
+      providesTags: [TAG_TYPES.CUSTOM_FIELD_DEFINITIONS],
+    }),
+
+    createCustomFieldDefinition: builder.mutation<
+      CustomFieldDefinition,
+      CreateCustomFieldDefinitionInput
+    >({
+      query: body => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELD_DEFINITIONS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.CUSTOM_FIELD_DEFINITIONS],
+    }),
+
+    updateCustomFieldDefinition: builder.mutation<
+      CustomFieldDefinition,
+      UpdateCustomFieldDefinitionInput
+    >({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELD_DEFINITION_BY_ID(id),
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.CUSTOM_FIELD_DEFINITIONS],
+    }),
+
+    deleteCustomFieldDefinition: builder.mutation<
+      { success: boolean },
+      { id: string; tenantId: string }
+    >({
+      query: ({ id, tenantId }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELD_DEFINITION_BY_ID(id),
+        method: HttpMethod.DELETE,
+        params: { tenantId },
+      }),
+      invalidatesTags: [TAG_TYPES.CUSTOM_FIELD_DEFINITIONS],
+    }),
+
     getAdminTenants: builder.query<GetAdminTenantsResponse, number>({
       query: userId => ({
         url: ApiEndpoints.USER_MANAGEMENT.USER_ADMIN_TENANTS(userId),
@@ -362,4 +409,8 @@ export const {
   useUpdateCustomFieldTypesMutation,
   useGetCustomFieldsEnabledQuery,
   useUpdateCustomFieldsEnabledMutation,
+  useGetCustomFieldDefinitionsQuery,
+  useCreateCustomFieldDefinitionMutation,
+  useUpdateCustomFieldDefinitionMutation,
+  useDeleteCustomFieldDefinitionMutation,
 } = userManagementAPI;
