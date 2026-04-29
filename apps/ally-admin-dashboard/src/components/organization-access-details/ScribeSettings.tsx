@@ -643,7 +643,9 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
         )}
       </div>
 
-      {localCustomFieldsEnabled && <CustomFieldDefinitionsSection tenantId={tenantId} />}
+      {localCustomFieldsEnabled && (
+        <CustomFieldDefinitionsSection tenantId={tenantId} enabledTypes={localEnabledTypes} />
+      )}
     </div>
   );
 };
