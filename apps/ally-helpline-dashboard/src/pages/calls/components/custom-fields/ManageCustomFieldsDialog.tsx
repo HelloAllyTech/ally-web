@@ -28,7 +28,7 @@ import {
 import { Button } from "@components";
 import { Permissions } from "@constants";
 import { RootState } from "@store";
-import { CustomFieldDefinition, CustomFieldType } from "@types";
+import { CustomFieldDefinition, CustomFieldScope, CustomFieldType } from "@types";
 
 import CustomFieldModal from "./CustomFieldModal";
 
@@ -85,9 +85,13 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
   const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
   const customFieldsActive = customFieldsEnabled !== false;
 
-  const { data: definitions = [], isLoading } = useGetCustomFieldDefinitionsQuery(undefined, {
+  const { data: rawDefinitions = [], isLoading } = useGetCustomFieldDefinitionsQuery(undefined, {
     skip: !customFieldsActive || !canManage,
   });
+  // SUPER_ADMIN-scoped fields are managed only from scribe settings; the
+  // calls table and call-detail page still display their values, but this
+  // dialog must not list or expose them for in-app edit.
+  const definitions = rawDefinitions.filter(d => d.scope !== CustomFieldScope.SUPER_ADMIN);
   const [deleteDefinition, { isLoading: isDeleting }] = useDeleteCustomFieldDefinitionMutation();
   const [updateDefinition] = useUpdateCustomFieldDefinitionMutation();
   const [reorderDefinitions] = useReorderCustomFieldDefinitionsMutation();
