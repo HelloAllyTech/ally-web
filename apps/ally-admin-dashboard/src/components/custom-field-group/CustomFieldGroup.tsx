@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { Plus, TrashRed } from "@assets";
 import { en, FORM_FIELD_IDS } from "@constants";
-import { CustomFieldType } from "@types";
+import { SimulationCustomField } from "@types";
 
 import { ToggleSwitch } from "../toggle-switch/ToggleSwitch";
 
@@ -10,7 +10,7 @@ interface CustomFieldGroupProps {
   formMethods: any;
 }
 
-interface CustomFieldWithValue extends CustomFieldType {
+interface CustomFieldWithValue extends SimulationCustomField {
   value?: string;
   useInDefaultPrompt?: boolean;
 }
