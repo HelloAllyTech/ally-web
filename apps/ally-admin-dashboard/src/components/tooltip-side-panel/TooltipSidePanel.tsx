@@ -5,6 +5,7 @@ import { ActionConfirmationPopup, Button, EmojiPickerComponent, ToggleSwitch } f
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { Tooltip } from "@types";
+import { fromLocationSlug } from "@utils";
 
 interface TooltipSidePanelProps {
   selectedTooltip: Tooltip | null;
@@ -68,7 +69,7 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
   useEffect(() => {
     if (selectedTooltip) {
       setFormData({
-        location: selectedTooltip.location,
+        location: fromLocationSlug(selectedTooltip.location),
         tipText: selectedTooltip.tipText,
         icon: selectedTooltip.icon || "",
         active: selectedTooltip.active,
@@ -98,7 +99,7 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
   const handleClose = useCallback(() => {
     const original = selectedTooltip
       ? {
-          location: selectedTooltip.location,
+          location: fromLocationSlug(selectedTooltip.location),
           tipText: selectedTooltip.tipText,
           icon: selectedTooltip.icon || "",
           active: selectedTooltip.active,

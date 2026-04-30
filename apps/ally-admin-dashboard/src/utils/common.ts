@@ -363,3 +363,12 @@ export const convertKeysToSnakeCase = <T extends Record<string, unknown>>(
     {} as Record<string, unknown>,
   );
 };
+
+export const toLocationSlug = (text: string): string =>
+  text.trim().toLowerCase().replace(/\s+/g, "_");
+
+export const fromLocationSlug = (slug: string): string =>
+  slug
+    .split("_")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");

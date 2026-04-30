@@ -61,12 +61,14 @@ vi.mock("@components", () => ({
   TooltipSidePanel: ({ selectedTooltip, isOpen, onClose, onSave }: any) =>
     isOpen ? (
       <div data-testid="tooltip-side-panel">
-        <span data-testid="panel-location">{selectedTooltip?.location ?? ""}</span>
+        <span data-testid="panel-location">
+          {selectedTooltip?.location ? fromLocationSlug(selectedTooltip.location) : ""}
+        </span>
         <button data-testid="close-panel" onClick={onClose}>Close</button>
         {selectedTooltip?.id ? (
           <button
             data-testid="update-from-panel"
-            onClick={() => onSave({ ...selectedTooltip, tipText: "Updated tip" })}
+            onClick={() => onSave({ ...selectedTooltip, location: fromLocationSlug(selectedTooltip.location), tipText: "Updated tip" })}
           >
             Update
           </button>
@@ -122,6 +124,8 @@ vi.mock("@constants", () => ({
   },
 }));
 
+import { fromLocationSlug } from "@utils";
+
 import { TooltipManagement } from "../Tooltips";
 
 const testStore = configureStore({
@@ -136,9 +140,9 @@ const testStore = configureStore({
 
 describe("TooltipManagement", () => {
   const mockTooltips = [
-    { id: "t-1", location: "Login Button", tipText: "Click to log in", icon: "😀", active: true, createdAt: "2026-01-01T00:00:00Z" },
-    { id: "t-2", location: "Profile Icon", tipText: "View your profile", icon: "", active: false, createdAt: "2026-01-02T00:00:00Z" },
-    { id: "t-3", location: "Logout Button", tipText: "Click to log out", icon: "", active: true, createdAt: "2026-01-03T00:00:00Z" },
+    { id: "t-1", location: "login_button", tipText: "Click to log in", icon: "😀", active: true, createdAt: "2026-01-01T00:00:00Z" },
+    { id: "t-2", location: "profile_icon", tipText: "View your profile", icon: "", active: false, createdAt: "2026-01-02T00:00:00Z" },
+    { id: "t-3", location: "logout_button", tipText: "Click to log out", icon: "", active: true, createdAt: "2026-01-03T00:00:00Z" },
   ];
 
   beforeEach(() => {
@@ -251,7 +255,19 @@ describe("TooltipManagement", () => {
       fireEvent.click(screen.getByTestId("create-from-panel"));
       await waitFor(() =>
         expect(mockCreateTooltip).toHaveBeenCalledWith(
-          expect.objectContaining({ location: "New Location", tipText: "New tip text" }),
+          expect.objectContaining({ location: "new_location", tipText: "New tip text" }),
+        ),
+      );
+    });
+
+    it("slugifies display location to snake_case before sending to API", async () => {
+      renderComponent();
+      fireEvent.click(screen.getByTestId("create-button"));
+      await waitFor(() => screen.getByTestId("create-from-panel"));
+      fireEvent.click(screen.getByTestId("create-from-panel"));
+      await waitFor(() =>
+        expect(mockCreateTooltip).toHaveBeenCalledWith(
+          expect.objectContaining({ location: "new_location" }),
         ),
       );
     });
@@ -374,6 +390,36 @@ describe("TooltipManagement", () => {
       await waitFor(() => fireEvent.click(screen.getByTestId("toggle-active-0")));
       await waitFor(() =>
         expect(mockToast.error).toHaveBeenCalledWith("Failed to update tooltip"),
+      );
+    });
+  });
+
+  describe("Location slug transformation", () => {
+    it("displays db slug location as human-readable text in the table", async () => {
+      renderComponent();
+      await waitFor(() => {
+        expect(screen.getByTestId("location-0")).toHaveTextContent("Login Button");
+        expect(screen.getByTestId("location-1")).toHaveTextContent("Profile Icon");
+        expect(screen.getByTestId("location-2")).toHaveTextContent("Logout Button");
+      });
+    });
+
+    it("displays slug location in human-readable format in side panel", async () => {
+      renderComponent();
+      await waitFor(() => fireEvent.click(screen.getByTestId("table-row-0")));
+      expect(screen.getByTestId("panel-location")).toHaveTextContent("Login Button");
+    });
+
+    it("slugifies display location before sending update to API", async () => {
+      renderComponent();
+      await waitFor(() => fireEvent.click(screen.getByTestId("table-row-0")));
+      fireEvent.click(screen.getByTestId("update-from-panel"));
+      await waitFor(() =>
+        expect(mockUpdateTooltip).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({ location: "login_button" }),
+          }),
+        ),
       );
     });
   });

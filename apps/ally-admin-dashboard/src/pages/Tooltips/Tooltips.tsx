@@ -7,6 +7,7 @@ import { NotionTable, ListToolbar, TooltipSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en, TOOLTIPS_TABLE_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import { Tooltip } from "@types";
+import { fromLocationSlug, toLocationSlug } from "@utils";
 
 export const TooltipManagement: React.FC = () => {
   const limit = 30;
@@ -101,7 +102,7 @@ export const TooltipManagement: React.FC = () => {
         const response = await updateTooltip({
           id: selectedTooltip.id,
           data: {
-            location: tooltipData.location,
+            location: tooltipData.location ? toLocationSlug(tooltipData.location) : undefined,
             tipText: tooltipData.tipText,
             icon: tooltipData.icon,
             active: tooltipData.active,
@@ -116,7 +117,7 @@ export const TooltipManagement: React.FC = () => {
         }
       } else {
         const response = await createTooltip({
-          location: tooltipData.location!,
+          location: toLocationSlug(tooltipData.location!),
           tipText: tooltipData.tipText!,
           icon: tooltipData.icon,
           active: tooltipData.active,
@@ -159,7 +160,7 @@ export const TooltipManagement: React.FC = () => {
       const response = await updateTooltip({
         id: originalTooltip.id,
         data: {
-          location: columnId === "location" ? value : originalTooltip.location,
+          location: columnId === "location" ? toLocationSlug(value) : originalTooltip.location,
           tipText: columnId === "tipText" ? value : originalTooltip.tipText,
           icon: columnId === "icon" ? value : originalTooltip.icon,
           active: columnId === "active" ? value : originalTooltip.active,
@@ -188,6 +189,7 @@ export const TooltipManagement: React.FC = () => {
 
   const formatTableData = tooltips.map(tooltip => ({
     ...tooltip,
+    location: fromLocationSlug(tooltip.location),
     createdAt: tooltip.createdAt ? new Date(tooltip.createdAt).toLocaleDateString() : "",
   }));
 

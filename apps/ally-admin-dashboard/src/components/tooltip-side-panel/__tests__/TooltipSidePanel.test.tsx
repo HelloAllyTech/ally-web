@@ -71,7 +71,7 @@ import { TooltipSidePanel } from "../TooltipSidePanel";
 describe("TooltipSidePanel", () => {
   const mockTooltip = {
     id: "tooltip-1",
-    location: "Login Button",
+    location: "login_button",
     tipText: "Click here to log in",
     icon: "😀",
     active: true,

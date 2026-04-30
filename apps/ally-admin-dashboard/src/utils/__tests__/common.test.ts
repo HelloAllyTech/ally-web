@@ -21,6 +21,8 @@ import {
   isNonEmptyString,
   isArray,
   validateTimeRange,
+  toLocationSlug,
+  fromLocationSlug,
 } from "../common";
 
 describe("common utils", () => {
@@ -545,6 +547,67 @@ describe("common utils", () => {
 
       const result2 = validateTimeRange("01:15:10", "01:15:20", "01:15:40");
       expect(result2.isValid).toBe(false);
+    });
+  });
+
+  describe("toLocationSlug", () => {
+    it("should convert space-separated words to snake_case", () => {
+      expect(toLocationSlug("Profile Page")).toBe("profile_page");
+      expect(toLocationSlug("Login Button")).toBe("login_button");
+      expect(toLocationSlug("My Custom Page")).toBe("my_custom_page");
+    });
+
+    it("should lowercase all characters", () => {
+      expect(toLocationSlug("PROFILE PAGE")).toBe("profile_page");
+      expect(toLocationSlug("Profile Page")).toBe("profile_page");
+    });
+
+    it("should trim leading and trailing whitespace", () => {
+      expect(toLocationSlug("  Profile Page  ")).toBe("profile_page");
+      expect(toLocationSlug("  Login Button")).toBe("login_button");
+    });
+
+    it("should collapse multiple spaces into a single underscore", () => {
+      expect(toLocationSlug("Profile  Page")).toBe("profile_page");
+      expect(toLocationSlug("My   Custom   Page")).toBe("my_custom_page");
+    });
+
+    it("should handle single word input", () => {
+      expect(toLocationSlug("Dashboard")).toBe("dashboard");
+      expect(toLocationSlug("home")).toBe("home");
+    });
+
+    it("should return empty string for empty input", () => {
+      expect(toLocationSlug("")).toBe("");
+      expect(toLocationSlug("   ")).toBe("");
+    });
+  });
+
+  describe("fromLocationSlug", () => {
+    it("should convert snake_case to title case display string", () => {
+      expect(fromLocationSlug("profile_page")).toBe("Profile Page");
+      expect(fromLocationSlug("login_button")).toBe("Login Button");
+      expect(fromLocationSlug("my_custom_page")).toBe("My Custom Page");
+    });
+
+    it("should capitalise the first letter of each word", () => {
+      expect(fromLocationSlug("logout_button")).toBe("Logout Button");
+      expect(fromLocationSlug("profile_icon")).toBe("Profile Icon");
+    });
+
+    it("should handle single word slug", () => {
+      expect(fromLocationSlug("dashboard")).toBe("Dashboard");
+      expect(fromLocationSlug("home")).toBe("Home");
+    });
+
+    it("should return empty string for empty input", () => {
+      expect(fromLocationSlug("")).toBe("");
+    });
+
+    it("should round-trip correctly with toLocationSlug", () => {
+      expect(fromLocationSlug(toLocationSlug("Profile Page"))).toBe("Profile Page");
+      expect(fromLocationSlug(toLocationSlug("Login Button"))).toBe("Login Button");
+      expect(fromLocationSlug(toLocationSlug("My Custom Page"))).toBe("My Custom Page");
     });
   });
 });
