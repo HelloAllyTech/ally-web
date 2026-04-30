@@ -52,6 +52,7 @@ vi.mock("@hooks", () => ({
       { id: "SCENARIO_LANGUAGES", label: "Scenario Languages", path: "/manage-scenario-languages" },
       { id: "SCENARIO_VOICES", label: "Scenario Voices", path: "/manage-scenario-voices" },
       { id: "PROMPTS", label: "Prompts", path: "/manage-prompts" },
+      { id: "TRANSLATIONS", label: "Translations", path: "/manage-translations" },
       { id: "USERS", label: "Users", path: "/users" },
     ],
   }),
@@ -76,6 +77,7 @@ vi.mock("@constants", () => ({
     SCENARIO_VOICES: "SCENARIO_VOICES",
     SCENARIO_LANGUAGES: "SCENARIO_LANGUAGES",
     PROMPTS: "PROMPTS",
+    TRANSLATIONS: "TRANSLATIONS",
   },
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
@@ -86,6 +88,7 @@ vi.mock("@constants", () => ({
     MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
     MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
     MANAGE_PROMPTS: "/manage-prompts",
+    MANAGE_TRANSLATIONS: "/manage-translations",
     LOGIN: "/login",
   },
   en: {
@@ -198,6 +201,15 @@ describe("Sidebar", () => {
     expect(navigateMock).toHaveBeenCalledWith("/manage-scenario-voices");
   });
 
+  it("navigates to Translations when clicked", () => {
+    renderWithProvider(<Sidebar />);
+
+    const translationsItem = screen.getByText("Translations");
+    fireEvent.click(translationsItem);
+
+    expect(navigateMock).toHaveBeenCalledWith("/manage-translations");
+  });
+
   it("displays Scenario Voices with correct title when collapsed", () => {
     Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 800 });
     renderWithProvider(<Sidebar />);
@@ -213,6 +225,7 @@ describe("Sidebar", () => {
     expect(screen.getByText("Events")).toBeInTheDocument();
     expect(screen.getByText("Scenario Voices")).toBeInTheDocument();
     expect(screen.getByText("Scenario Languages")).toBeInTheDocument();
+    expect(screen.getByText("Translations")).toBeInTheDocument();
     expect(screen.getByText("Users")).toBeInTheDocument();
   });
 });

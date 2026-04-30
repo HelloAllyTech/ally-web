@@ -1,28 +1,22 @@
 import { FC, useState, useEffect } from "react";
 
-import {
-  Select,
-  MenuItem,
-  CircularProgress,
-  FormControl,
-  Autocomplete,
-  Checkbox,
-  TextField as MuiTextField,
-} from "@mui/material";
+import { CircularProgress, Autocomplete, Checkbox, TextField as MuiTextField } from "@mui/material";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useSelector } from "react-redux";
 
-import {
-  useGetCustomFieldValuesQuery,
-  useGetCustomFieldsEnabledQuery,
-} from "@api";
 import { DropdownField } from "@ally-ui-mono/ui-shared";
+import { useGetCustomFieldValuesQuery, useGetCustomFieldsEnabledQuery } from "@api";
 import TextField from "@components/text-field";
 import { Permissions } from "@constants";
 import { RootState } from "@store";
-import { CustomFieldEditPermission, CustomFieldType, CustomFieldValue, SingleSelectOption } from "@types";
+import {
+  CustomFieldEditPermission,
+  CustomFieldType,
+  CustomFieldValue,
+  SingleSelectOption,
+} from "@types";
 
 interface CustomFieldValuesPanelProps {
   chatId: number;
@@ -48,10 +42,16 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   const isAdmin = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
   const effectiveIsCounsellor = isCounsellor ?? !isAdmin;
 
-  const isControlled = externalFieldValues !== undefined && externalLocalValues !== undefined && onValueChange !== undefined;
+  const isControlled =
+    externalFieldValues !== undefined &&
+    externalLocalValues !== undefined &&
+    onValueChange !== undefined;
 
   // Standalone mode: fetch internally
-  const { data: customFieldsEnabled, isLoading: isFeatureLoading } = useGetCustomFieldsEnabledQuery(undefined, { skip: isControlled });
+  const { data: customFieldsEnabled, isLoading: isFeatureLoading } = useGetCustomFieldsEnabledQuery(
+    undefined,
+    { skip: isControlled },
+  );
   const customFieldsActive = isControlled ? true : customFieldsEnabled !== false;
   const { data: fetchedFieldValues, isLoading } = useGetCustomFieldValuesQuery(chatId, {
     skip: isControlled || !chatId || !customFieldsActive,
@@ -63,7 +63,9 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   useEffect(() => {
     if (!isControlled && fetchedFieldValues) {
       const initial: Record<string, string | null> = {};
-      fetchedFieldValues.forEach(f => { initial[f.fieldDefinitionId] = f.value ?? null; });
+      fetchedFieldValues.forEach(f => {
+        initial[f.fieldDefinitionId] = f.value ?? null;
+      });
       setLocalValues(initial);
     }
   }, [fetchedFieldValues, isControlled]);
@@ -97,7 +99,8 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     if (!canEdit) return false;
     if (field.editPermission === CustomFieldEditPermission.BOTH) return true;
     if (field.editPermission === CustomFieldEditPermission.ADMIN_ONLY) return isAdmin;
-    if (field.editPermission === CustomFieldEditPermission.COUNSELLOR_ONLY) return effectiveIsCounsellor;
+    if (field.editPermission === CustomFieldEditPermission.COUNSELLOR_ONLY)
+      return effectiveIsCounsellor;
     return false;
   };
 
@@ -114,7 +117,11 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
                 value={value ?? ""}
                 onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
                 type={field.fieldType === CustomFieldType.NUMBER ? "number" : "text"}
-                inputStyles={{ color: isEditable ? "#1A1A1A" : "#9CA3AF", fontSize: "16px", fontFamily: "IBM_Plex_Serif" }}
+                inputStyles={{
+                  color: isEditable ? "#1A1A1A" : "#9CA3AF",
+                  fontSize: "16px",
+                  fontFamily: "IBM_Plex_Serif",
+                }}
                 InputProps={{ readOnly: !isEditable }}
                 showBorder={false}
               />
@@ -175,8 +182,16 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
                     </li>
                   )}
                   renderInput={params => (
-                    <MuiTextField {...params} variant="standard" size="small"
-                      sx={{ "& .MuiInput-root::before": { borderBottom: "none" }, "& .MuiInput-root::after": { borderBottom: "none" }, fontSize: "16px", fontFamily: "IBM_Plex_Serif" }}
+                    <MuiTextField
+                      {...params}
+                      variant="standard"
+                      size="small"
+                      sx={{
+                        "& .MuiInput-root::before": { borderBottom: "none" },
+                        "& .MuiInput-root::after": { borderBottom: "none" },
+                        fontSize: "16px",
+                        fontFamily: "IBM_Plex_Serif",
+                      }}
                     />
                   )}
                 />
@@ -251,7 +266,11 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     return (
       <>
         {visibleFieldValues.map(field =>
-          renderField(field, canEditField(field), currentLocalValues[field.fieldDefinitionId] ?? null),
+          renderField(
+            field,
+            canEditField(field),
+            currentLocalValues[field.fieldDefinitionId] ?? null,
+          ),
         )}
       </>
     );
@@ -276,7 +295,11 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
           <p className="text-xs text-typography-400 mb-2">{label}</p>
           <div className="flex flex-col gap-3">
             {fields.map(field =>
-              renderField(field, canEditField(field), currentLocalValues[field.fieldDefinitionId] ?? null),
+              renderField(
+                field,
+                canEditField(field),
+                currentLocalValues[field.fieldDefinitionId] ?? null,
+              ),
             )}
           </div>
         </div>

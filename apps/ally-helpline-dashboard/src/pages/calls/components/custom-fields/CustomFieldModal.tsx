@@ -1,6 +1,9 @@
 import { FC, useState, useEffect, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 
+import AddIcon from "@mui/icons-material/Add";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Dialog,
   DialogTitle,
@@ -18,10 +21,7 @@ import {
   CircularProgress,
   Switch,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 
@@ -30,8 +30,8 @@ import {
   useUpdateCustomFieldDefinitionMutation,
   useGetEnabledCustomFieldTypesQuery,
 } from "@api";
-import { getSummarySections } from "@pages/post-call-summary/constants";
 import { Button } from "@components";
+import { getSummarySections } from "@pages/post-call-summary/constants";
 import {
   CustomFieldDefinition,
   CustomFieldEditPermission,
@@ -78,9 +78,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
   const [options, setOptions] = useState<SingleSelectOption[]>(
     editingField?.options ?? [{ id: uuidv4(), label: "", order: 0 }],
   );
-  const [showInTable, setShowInTable] = useState<boolean>(
-    editingField?.showInTable ?? true,
-  );
+  const [showInTable, setShowInTable] = useState<boolean>(editingField?.showInTable ?? true);
 
   const { t } = useTranslation();
   const sections = useMemo(() => getSummarySections(t), [t]);
@@ -129,7 +127,8 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
     if (TYPES_WITH_OPTIONS.includes(selectedType)) {
       if (options.length === 0) return "At least one option is required";
       if (options.some(o => !o.label.trim())) return "All options must have a label";
-      if (options.some(o => o.label.length > 100)) return "Option labels must be under 100 characters";
+      if (options.some(o => o.label.length > 100))
+        return "Option labels must be under 100 characters";
     }
     return null;
   };
@@ -301,7 +300,9 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
             <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
               <div>
                 <p className="text-sm font-medium text-typography-700">Show as table column</p>
-                <p className="text-xs text-typography-400">Field will appear as a column in session logs</p>
+                <p className="text-xs text-typography-400">
+                  Field will appear as a column in session logs
+                </p>
               </div>
               <Switch
                 checked={showInTable}
@@ -317,9 +318,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
         <Button variant="secondary" onClick={handleClose}>
           Cancel
         </Button>
-        {step === 1 && !isEditing && (
-          <Button onClick={() => setStep(2)}>Next</Button>
-        )}
+        {step === 1 && !isEditing && <Button onClick={() => setStep(2)}>Next</Button>}
         {step === 2 && (
           <Button onClick={handleSave} disabled={isSaving}>
             {isSaving ? <CircularProgress size={16} /> : "Save"}

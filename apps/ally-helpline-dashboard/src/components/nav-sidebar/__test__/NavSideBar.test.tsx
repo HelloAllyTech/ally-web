@@ -80,8 +80,12 @@ vi.mock("@components", () => ({
           <div data-testid="dialog-title-normal">{title?.normal}</div>
           <div data-testid="dialog-title-italic">{title?.italic}</div>
           <div data-testid="dialog-content">{content}</div>
-          <button data-testid="dialog-close-button" onClick={onClose}>Close</button>
-          <button data-testid="dialog-confirm-button" onClick={onButtonClick}>{buttonText}</button>
+          <button data-testid="dialog-close-button" onClick={onClose}>
+            Close
+          </button>
+          <button data-testid="dialog-confirm-button" onClick={onButtonClick}>
+            {buttonText}
+          </button>
           {icon && <div data-testid="dialog-icon">{icon}</div>}
         </div>
       );
@@ -90,7 +94,9 @@ vi.mock("@components", () => ({
   UserInfo: vi.fn(({ user, onLogout, isExpanded }: any) => (
     <div data-testid="mock-user-info" data-expanded={isExpanded}>
       <div data-testid="user-name">{user?.name}</div>
-      <button data-testid="logout-button" onClick={onLogout}>Logout</button>
+      <button data-testid="logout-button" onClick={onLogout}>
+        Logout
+      </button>
     </div>
   )),
   ProfileSettings: vi.fn(({ isOpen }: any) =>
