@@ -8,7 +8,7 @@ import {
   stateInstruction,
   behaviourInstruction,
   Competency,
-  CustomFieldType,
+  SimulationCustomField,
   knowledgeSource,
 } from "./simulation";
 import { TriggerCondition } from "./triggerConditions";
@@ -31,7 +31,7 @@ export type FormData = {
   prompt: string;
   behaviorInstructions?: behaviourInstruction[];
   stateInstructions?: stateInstruction[];
-  customFields?: CustomFieldType[];
+  customFields?: SimulationCustomField[];
   openingStatements: string;
   translationOpeningStatements?: Record<string, string[]>;
   openingDialoguePrimaryLanguageId?: number | null;
