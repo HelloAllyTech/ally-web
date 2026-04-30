@@ -31,6 +31,18 @@ export enum CustomFieldFillMode {
   AI = "AI",
 }
 
+/**
+ * Mirror of CustomFieldScope enum in ally-be.
+ * Source of truth: src/custom-fields/entity/custom-field-definition.entity.ts
+ *
+ * SUPER_ADMIN definitions are managed only from scribe settings; the in-app
+ * "Manage custom fields" dialog filters them out.
+ */
+export enum CustomFieldScope {
+  SUPER_ADMIN = "SUPER_ADMIN",
+  ORG_ADMIN = "ORG_ADMIN",
+}
+
 export interface SingleSelectOption {
   id: string;
   label: string;
@@ -46,6 +58,7 @@ export interface CustomFieldDefinition {
   sectionLabel?: string;
   editPermission: CustomFieldEditPermission;
   fillMode: CustomFieldFillMode;
+  scope: CustomFieldScope;
   displayOrder: number;
   showInTable: boolean;
   isActive: boolean;
