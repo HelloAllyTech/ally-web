@@ -126,7 +126,7 @@ export interface UpdateSimulationByIdResponse {
   lastModified: string;
 }
 
-export interface CustomFieldType {
+export interface SimulationCustomField {
   id?: string;
   name?: string;
   value?: string;
@@ -174,7 +174,7 @@ export interface GetSimulationByIdResponse {
     languageVoices?: Record<string, string>;
     agentDialoguesArray?: string[];
     agentDialogues?: string[];
-    customFields: CustomFieldType[];
+    customFields: SimulationCustomField[];
     experienceMode?: string;
     checklistType?: string;
     timerMode?: boolean;
