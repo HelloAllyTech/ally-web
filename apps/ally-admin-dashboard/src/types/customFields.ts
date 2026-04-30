@@ -18,6 +18,11 @@ export enum CustomFieldFillMode {
   AI = "AI",
 }
 
+export enum CustomFieldScope {
+  SUPER_ADMIN = "SUPER_ADMIN",
+  ORG_ADMIN = "ORG_ADMIN",
+}
+
 export interface SingleSelectOption {
   id: string;
   label: string;
@@ -32,6 +37,7 @@ export interface CustomFieldDefinition {
   sectionKey: string;
   editPermission: CustomFieldEditPermission;
   fillMode: CustomFieldFillMode;
+  scope: CustomFieldScope;
   aiInstruction?: string;
   displayOrder: number;
   showInTable: boolean;

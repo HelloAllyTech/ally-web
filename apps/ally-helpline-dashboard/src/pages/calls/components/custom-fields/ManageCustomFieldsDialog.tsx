@@ -1,5 +1,11 @@
 import { FC, useState } from "react";
 
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 import {
   Dialog,
   DialogTitle,
@@ -9,14 +15,8 @@ import {
   CircularProgress,
   Tooltip,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
-import TableChartIcon from "@mui/icons-material/TableChart";
-import { toast } from "sonner";
 import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
 import {
   useGetCustomFieldDefinitionsQuery,
@@ -28,7 +28,7 @@ import {
 import { Button } from "@components";
 import { Permissions } from "@constants";
 import { RootState } from "@store";
-import { CustomFieldDefinition, CustomFieldType } from "@types";
+import { CustomFieldDefinition, CustomFieldScope, CustomFieldType } from "@types";
 
 import CustomFieldModal from "./CustomFieldModal";
 
@@ -85,9 +85,13 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
   const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
   const customFieldsActive = customFieldsEnabled !== false;
 
-  const { data: definitions = [], isLoading } = useGetCustomFieldDefinitionsQuery(undefined, {
+  const { data: rawDefinitions = [], isLoading } = useGetCustomFieldDefinitionsQuery(undefined, {
     skip: !customFieldsActive || !canManage,
   });
+  // SUPER_ADMIN-scoped fields are managed only from scribe settings; the
+  // calls table and call-detail page still display their values, but this
+  // dialog must not list or expose them for in-app edit.
+  const definitions = rawDefinitions.filter(d => d.scope !== CustomFieldScope.SUPER_ADMIN);
   const [deleteDefinition, { isLoading: isDeleting }] = useDeleteCustomFieldDefinitionMutation();
   const [updateDefinition] = useUpdateCustomFieldDefinitionMutation();
   const [reorderDefinitions] = useReorderCustomFieldDefinitionsMutation();
@@ -142,16 +146,11 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
               <CircularProgress />
             </div>
           ) : definitions.length === 0 ? (
-            <p className="text-sm text-typography-500 text-center py-6">
-              No custom fields yet.
-            </p>
+            <p className="text-sm text-typography-500 text-center py-6">No custom fields yet.</p>
           ) : (
             <div className="flex flex-col divide-y divide-gray-100">
               {definitions.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="flex items-center justify-between py-3 px-1"
-                >
+                <div key={field.id} className="flex items-center justify-between py-3 px-1">
                   <div>
                     <p className="text-sm font-medium text-typography-800">{field.name}</p>
                     <p className="text-xs text-typography-400">
@@ -195,11 +194,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
                     <IconButton size="small" onClick={() => setFieldToEdit(field)}>
                       <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => setFieldToDelete(field)}
-                    >
+                    <IconButton size="small" color="error" onClick={() => setFieldToDelete(field)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </div>
@@ -209,9 +204,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
           )}
         </DialogContent>
         <DialogActions className="px-6 py-3 flex justify-between w-full">
-          <Button onClick={() => setIsAddOpen(true)}>
-            + Add field
-          </Button>
+          <Button onClick={() => setIsAddOpen(true)}>+ Add field</Button>
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
@@ -233,10 +226,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
         />
       )}
 
-      <CustomFieldModal
-        open={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-      />
+      <CustomFieldModal open={isAddOpen} onClose={() => setIsAddOpen(false)} />
     </>
   );
 };
