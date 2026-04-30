@@ -352,43 +352,38 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                   </div>
                 </div>
 
-                {/* Field type — full list for Manual, TEXT only for AI fill */}
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm text-typography-600">Select field type</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[])
-                      .filter(type => enabledTypes.includes(type))
-                      .filter(
-                        type =>
-                          fillMode !== CustomFieldFillMode.AI || type === CustomFieldType.TEXT,
-                      )
-                      .map(type => (
-                        <label
-                          key={type}
-                          className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer text-sm ${
-                            selectedType === type
-                              ? "border-primary-500 bg-primary-50 text-primary-700"
-                              : "border-border-light text-typography-700"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name={`${formId}-type`}
-                            value={type}
-                            checked={selectedType === type}
-                            onChange={() => setSelectedType(type)}
-                            className="accent-primary-500"
-                          />
-                          {FIELD_TYPE_LABELS[type]}
-                        </label>
-                      ))}
+                {/* Field type — only shown for Manual. AI fill always uses
+                    TEXT (already set on the fill-mode radio onChange) so the
+                    type picker is skipped to keep the flow short. */}
+                {fillMode !== CustomFieldFillMode.AI && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-typography-600">Select field type</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[])
+                        .filter(type => enabledTypes.includes(type))
+                        .map(type => (
+                          <label
+                            key={type}
+                            className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer text-sm ${
+                              selectedType === type
+                                ? "border-primary-500 bg-primary-50 text-primary-700"
+                                : "border-border-light text-typography-700"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name={`${formId}-type`}
+                              value={type}
+                              checked={selectedType === type}
+                              onChange={() => setSelectedType(type)}
+                              className="accent-primary-500"
+                            />
+                            {FIELD_TYPE_LABELS[type]}
+                          </label>
+                        ))}
+                    </div>
                   </div>
-                  {fillMode === CustomFieldFillMode.AI && (
-                    <p className="text-xs text-typography-400">
-                      AI fill currently supports text fields only.
-                    </p>
-                  )}
-                </div>
+                )}
 
                 <div className="flex justify-end mt-2">
                   <Button onClick={() => setModal(m => ({ ...m, step: 2 }))}>Next</Button>
