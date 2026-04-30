@@ -37,6 +37,7 @@ import {
   FORM_FIELD_IDS,
   isValidStateInstructionId,
   ROLE_INSTRUCTION_PROMPT_CODE,
+  BEHAVIOUR_STATES,
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { selectUploadsInProgress } from "@reducer/reportUploadReducer";
@@ -483,9 +484,13 @@ export const CreateSimulation: FC = () => {
     };
 
     if (Array.isArray((simulationData as any).stateNames)) {
-      (simulationData as any).stateNames = ((simulationData as any).stateNames as any[]).filter(
-        sn => isValidStateInstructionId(sn.stateId),
+      const filtered = ((simulationData as any).stateNames as any[]).filter(sn =>
+        isValidStateInstructionId(sn.stateId),
       );
+      (simulationData as any).stateNames =
+        filtered.length > 0
+          ? filtered
+          : BEHAVIOUR_STATES.map(s => ({ stateId: s.stateId, name: `State ${s.stateId}` }));
     }
 
     let response;
