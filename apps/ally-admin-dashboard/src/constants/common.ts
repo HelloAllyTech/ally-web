@@ -135,6 +135,14 @@ export const ApiEndpoints = {
     ADD_BADGES_TO_TENANT: "/v1/badges/tenants",
     REMOVE_BADGES_FROM_TENANT: "/v1/badges/tenants",
   },
+  I18N: {
+    STATUS: "/v1/i18n/status",
+    TRANSLATIONS: "/v1/i18n/translations",
+    DIFF: "/v1/i18n/diff",
+    PUBLISH: "/v1/i18n/publish",
+    ROLLBACK: "/v1/i18n/rollback",
+    AUDIT_LOG: "/v1/i18n/audit-log",
+  },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
     GET_ROLES: "/v1/authorization/roles",
@@ -162,6 +170,7 @@ export const ROUTES = {
   USER_BADGES: "/user-badges",
   MANAGE_GUARDRAILS: "/manage-guardrails",
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
+  MANAGE_TRANSLATIONS: "/manage-translations",
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -229,6 +238,7 @@ export const TAG_TYPES = {
   PROMPTS: "prompts",
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
   USER_BADGES: "userBadges",
+  I18N_TRANSLATIONS: "i18nTranslations",
   HELPER_TAGS: "helperTags",
   FILLER_TAGS: "fillerTags",
   COMPETENCIES: "competencies",

@@ -405,16 +405,32 @@ describe("useUser", () => {
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.PROMPTS);
     });
 
+    it("should filter navigation items based on VIEW_I18N_TRANSLATIONS permission", () => {
+      store = createMockStore({
+        permissions: [Permissions.VIEW_I18N_TRANSLATIONS],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      expect(result.current.filteredNavigationItems).toHaveLength(1);
+      expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.TRANSLATIONS);
+    });
+
     it("should show all navigation items when user has all permissions", () => {
       store = createMockStore({
         permissions: [
           Permissions.EDIT_SCENARIO,
           Permissions.EDIT_EVENT,
           Permissions.EDIT_USER,
+          Permissions.EDIT_CHARACTER_LIBRARY,
           Permissions.EDIT_SCENARIO_VOICE,
           Permissions.EDIT_SCENARIO_LANGUAGE,
           Permissions.EDIT_PROMPT,
           Permissions.EDIT_GUARDRAIL,
+          Permissions.VIEW_I18N_TRANSLATIONS,
+          Permissions.VIEW_ADMIN_BADGE,
         ],
       });
 
@@ -422,15 +438,18 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(7);
+      expect(result.current.filteredNavigationItems).toHaveLength(10);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENTS,
+        SIDEBAR_ITEMS.CHARACTER_LIBRARY,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.PROMPTS,
         SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+        SIDEBAR_ITEMS.TRANSLATIONS,
         SIDEBAR_ITEMS.USERS,
+        SIDEBAR_ITEMS.USER_BADGES,
       ]);
     });
 

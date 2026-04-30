@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import { Languages } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -134,6 +135,8 @@ export const Sidebar: React.FC = () => {
         return <FrameSource />;
       case SIDEBAR_ITEMS.USER_BADGES:
         return <Badge />;
+      case SIDEBAR_ITEMS.TRANSLATIONS:
+        return <Languages size={20} strokeWidth={1.8} />;
       default:
         return null;
     }
@@ -162,6 +165,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_GUARDRAILS);
       case ROUTES.USER_BADGES:
         return location.pathname.includes(ROUTES.USER_BADGES);
+      case ROUTES.MANAGE_TRANSLATIONS:
+        return location.pathname.includes(ROUTES.MANAGE_TRANSLATIONS);
       default:
         return false;
     }

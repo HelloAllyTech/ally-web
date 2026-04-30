@@ -70,7 +70,11 @@ vi.mock("@api", () => ({
 
 vi.mock("../custom-fields/ManageCustomFieldsDialog", () => ({
   default: ({ open, onClose }: any) =>
-    open ? <div data-testid="manage-fields-dialog"><button onClick={onClose}>Close</button></div> : null,
+    open ? (
+      <div data-testid="manage-fields-dialog">
+        <button onClick={onClose}>Close</button>
+      </div>
+    ) : null,
 }));
 
 vi.mock("@assets", async importOriginal => {

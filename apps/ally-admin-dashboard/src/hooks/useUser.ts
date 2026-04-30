@@ -83,6 +83,11 @@ export const useUser = () => {
       path: ROUTES.MANAGE_GUARDRAILS,
     },
     {
+      id: SIDEBAR_ITEMS.TRANSLATIONS,
+      label: "Translations",
+      path: ROUTES.MANAGE_TRANSLATIONS,
+    },
+    {
       id: SIDEBAR_ITEMS.USERS,
       label: en.userManagement.users,
       path: ROUTES.USER_MANAGEMENT,
@@ -178,6 +183,8 @@ export const useUser = () => {
           );
         case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
           return permissions.includes(Permissions.EDIT_GUARDRAIL);
+        case SIDEBAR_ITEMS.TRANSLATIONS:
+          return permissions.includes(Permissions.VIEW_I18N_TRANSLATIONS);
         case SIDEBAR_ITEMS.USER_BADGES:
           return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
         default:

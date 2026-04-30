@@ -116,6 +116,7 @@ export const baseAPI = createApi({
     TAG_TYPES.ADMIN_TENANTS,
     TAG_TYPES.CUSTOM_FIELD_TYPES,
     TAG_TYPES.CUSTOM_FIELDS_ENABLED,
+    TAG_TYPES.I18N_TRANSLATIONS,
   ],
   endpoints: () => ({}),
 });

@@ -4,6 +4,7 @@ import { initReactI18next } from "react-i18next";
 
 // Import JSON resources (one file per language)
 // Using bundler module resolution: Vite + TS supports JSON imports
+import { startDynamicI18n } from "./dynamic";
 import { en, hi, mr, ta, kn } from "./locales";
 
 // Keys
@@ -11,7 +12,7 @@ export const DEFAULT_FALLBACK_LNG = "en" as const;
 // Expanded language support including regional/script variants where relevant
 export const SUPPORTED_LANGUAGES = ["en", "hi", "mr", "ta", "kn"] as const;
 
-void i18n
+const i18nInit = i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
@@ -36,5 +37,9 @@ void i18n
     // Allow regional/script variants (e.g., pt-BR, zh-Hant)
     load: "all",
   });
+
+void i18nInit.then(() => {
+  startDynamicI18n(i18n);
+});
 
 export default i18n;

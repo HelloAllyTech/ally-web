@@ -33,13 +33,9 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
 }));
 
 vi.mock("@assets", () => ({
-  AccountCircle: ({ className }: any) => (
-    <div data-testid="account-circle" className={className} />
-  ),
+  AccountCircle: ({ className }: any) => <div data-testid="account-circle" className={className} />,
   Smiley: ({ className }: any) => <div data-testid="smiley-icon" className={className} />,
-  MoreVertIcon: ({ className }: any) => (
-    <div data-testid="more-vert-icon" className={className} />
-  ),
+  MoreVertIcon: ({ className }: any) => <div data-testid="more-vert-icon" className={className} />,
   ArrowUp: ({ className }: any) => <div data-testid="arrow-up-icon" className={className} />,
   Delete: ({ className }: any) => <div data-testid="delete-icon" className={className} />,
   Edit: ({ className }: any) => <div data-testid="edit-icon" className={className} />,
@@ -75,9 +71,7 @@ vi.mock("@components", () => ({
   Timer: ({ startTime }: { startTime: string }) => (
     <div data-testid="timer">{formatRelativeTime(startTime)}</div>
   ),
-  MenuItem: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
-  ),
+  MenuItem: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
   ReactionSelector: ({ handleEmojiClick }: { handleEmojiClick: (emoji: string) => void }) => (
     <div data-testid="reaction-selector">
       <button data-testid="emoji-thumb-up" onClick={() => handleEmojiClick("1f44d")}>

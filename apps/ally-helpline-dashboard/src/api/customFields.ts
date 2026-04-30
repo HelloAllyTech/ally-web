@@ -29,7 +29,7 @@ const customFieldsAPI = baseAPI.injectEndpoints({
     }),
 
     reorderCustomFieldDefinitions: builder.mutation<{ success: boolean }, { ids: string[] }>({
-      query: (body) => ({
+      query: body => ({
         url: ApiEndpoints.CUSTOM_FIELDS.REORDER_DEFINITIONS,
         method: HttpMethod.PATCH,
         body,

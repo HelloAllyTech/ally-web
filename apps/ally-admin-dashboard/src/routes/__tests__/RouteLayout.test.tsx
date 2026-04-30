@@ -33,6 +33,7 @@ vi.mock("@pages", () => ({
   PromptManagement: () => <div>PromptManagementPage</div>,
   UserBadges: () => <div>UserBadgesPage</div>,
   GuardrailsManagement: () => <div>GuardrailsManagementPage</div>,
+  TranslationManagement: () => <div>TranslationManagementPage</div>,
 }));
 
 describe("RouteLayout", () => {

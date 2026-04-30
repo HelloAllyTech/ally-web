@@ -20,6 +20,7 @@ import {
   GuardrailsManagement,
   PromptManagement,
   UserBadges,
+  TranslationManagement,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -183,6 +184,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
               <GuardrailsManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_TRANSLATIONS}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_I18N_TRANSLATIONS]}>
+              <TranslationManagement />
             </PrivateLayout>
           }
         />
