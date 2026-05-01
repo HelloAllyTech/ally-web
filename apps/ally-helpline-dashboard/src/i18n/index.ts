@@ -2,8 +2,8 @@ import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
-// Import JSON resources (one file per language)
-// Using bundler module resolution: Vite + TS supports JSON imports
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
+
 import { startDynamicI18n } from "./dynamic";
 import { en, hi, mr, ta, kn } from "./locales";
 
@@ -39,7 +39,9 @@ const i18nInit = i18n
   });
 
 void i18nInit.then(() => {
-  startDynamicI18n(i18n);
+  if (FEATURE_FLAGS_MAP.LANGUAGE_SELECTOR_FLAG) {
+    startDynamicI18n(i18n);
+  }
 });
 
 export default i18n;
