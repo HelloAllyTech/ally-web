@@ -51,7 +51,19 @@ next-env.d.ts
 
 # OS
 .DS_Store
+
+# Secrets / certs / dumps (never commit)
 *.pem
+*.key
+*.pfx
+*.p12
+*.jks
+*.keystore
+*.dump
+*.sql
+*.swp
+scan_report.*
+.secrets/
 
 # Logs
 logs
