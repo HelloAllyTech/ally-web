@@ -80,9 +80,9 @@ jobs:
         uses: ./.github/actions/aws/set-environment-vars
         with:
           environment: ${{ steps.determine-env.outputs.target_env }}
-          dev_aws_role: ${{ vars.DEV_AWS_ROLE }}
+          dev_aws_role: ${{ secrets.DEV_AWS_ROLE }}
           dev_aws_region: ${{ vars.DEV_AWS_REGION }}
-          prd_aws_role: ${{ vars.PRD_AWS_ROLE }}
+          prd_aws_role: ${{ secrets.PRD_AWS_ROLE }}
           prd_aws_region: ${{ vars.PRD_AWS_REGION }}
 
       - name: Set CDN Variables
@@ -281,11 +281,11 @@ jobs:
           TARGET_ENV="${{ needs.prepare-env.outputs.target_env }}"
 
           if [ "$TARGET_ENV" == "dev" ]; then
-            CDN_DISTRIBUTION_ID="${{ vars.DEV_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
-            S3_WEBSITE_BUCKET="${{ vars.DEV_ADMIN_DASHBOARD_S3_BUCKET }}"
+            CDN_DISTRIBUTION_ID="${{ secrets.DEV_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
+            S3_WEBSITE_BUCKET="${{ secrets.DEV_ADMIN_DASHBOARD_S3_BUCKET }}"
           elif [ "$TARGET_ENV" == "prd" ]; then
-            CDN_DISTRIBUTION_ID="${{ vars.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
-            S3_WEBSITE_BUCKET="${{ vars.PRD_ADMIN_DASHBOARD_S3_BUCKET }}"
+            CDN_DISTRIBUTION_ID="${{ secrets.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
+            S3_WEBSITE_BUCKET="${{ secrets.PRD_ADMIN_DASHBOARD_S3_BUCKET }}"
           else
             echo "Error: Unknown environment $TARGET_ENV"
             exit 1

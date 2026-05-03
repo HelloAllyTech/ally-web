@@ -134,7 +134,7 @@ jobs:
         uses: ./.github/actions/aws/set-environment-vars
         with:
           environment: prd
-          prd_aws_role: ${{ vars.PRD_AWS_ROLE }}
+          prd_aws_role: ${{ secrets.PRD_AWS_ROLE }}
           prd_aws_region: ${{ vars.PRD_AWS_REGION }}
 
       - name: Set CDN Variables
@@ -232,8 +232,8 @@ jobs:
       - name: Set CDN Configuration
         id: cdn-config
         run: |
-          CDN_DISTRIBUTION_ID="${{ vars.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
-          S3_WEBSITE_BUCKET="${{ vars.PRD_ADMIN_DASHBOARD_S3_BUCKET }}"
+          CDN_DISTRIBUTION_ID="${{ secrets.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
+          S3_WEBSITE_BUCKET="${{ secrets.PRD_ADMIN_DASHBOARD_S3_BUCKET }}"
           
           echo "cdn_distribution_id=$CDN_DISTRIBUTION_ID" >> $GITHUB_OUTPUT
           echo "s3_website_bucket=$S3_WEBSITE_BUCKET" >> $GITHUB_OUTPUT
