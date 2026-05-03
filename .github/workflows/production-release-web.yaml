@@ -150,9 +150,9 @@ jobs:
         uses: ./.github/actions/aws/set-environment-vars
         with:
           environment: prd
-          prd_aws_role: ${{ vars.PRD_AWS_ROLE }}
+          prd_aws_role: ${{ secrets.PRD_AWS_ROLE }}
           prd_aws_region: ${{ vars.PRD_AWS_REGION }}
-          prd_ecr_repository: ${{ vars.PRD_ECR_REPOSITORY }}
+          prd_ecr_repository: ${{ secrets.PRD_ECR_REPOSITORY }}
 
       - name: Set Service Variables
         id: service-vars
