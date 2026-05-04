@@ -27,8 +27,7 @@ const getResourceCacheKey = (version: string, language: string) =>
   `ally:i18n:${version}:${language}`;
 
 const getBaseUrl = () => {
-  const configured = import.meta.env.VITE_I18N_BASE_URL?.trim();
-  console.log(configured, "configured");
+  const configured = import.meta.env.VITE_I18N_BASE_URL?.trim().split(/\s|VITE_/)[0];
   return (configured || DEFAULT_I18N_BASE_URL).replace(/\/+$/, "");
 };
 
