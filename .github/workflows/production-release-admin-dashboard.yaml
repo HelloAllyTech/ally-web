@@ -116,7 +116,6 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 2
     outputs:
-      aws_role: ${{ steps.env-vars.outputs.aws_role }}
       aws_region: ${{ steps.env-vars.outputs.aws_region }}
       project_prefix: ${{ steps.env-vars.outputs.project_prefix }}
       project_region: ${{ steps.env-vars.outputs.project_region }}
@@ -191,9 +190,6 @@ jobs:
       NX_SKIP_NX_CACHE: true
       NX_CLOUD_ACCESS_TOKEN: ""
       CI: true
-    outputs:
-      s3_bucket: ${{ steps.cdn-config.outputs.s3_website_bucket }}
-      distribution_id: ${{ steps.cdn-config.outputs.cdn_distribution_id }}
 
     steps:
       - name: Checkout
@@ -205,7 +201,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ needs.prepare-env.outputs.aws_role }}
+          role-to-assume: ${{ secrets.PRD_AWS_ROLE }}
           aws-region: ${{ needs.prepare-env.outputs.aws_region }}
 
       - name: Install Dependencies
@@ -230,30 +226,21 @@ jobs:
           echo ":white_check_mark: Build completed successfully" >> $GITHUB_STEP_SUMMARY
 
       - name: Set CDN Configuration
-        id: cdn-config
         run: |
-          CDN_DISTRIBUTION_ID="${{ secrets.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }}"
-          S3_WEBSITE_BUCKET="${{ secrets.PRD_ADMIN_DASHBOARD_S3_BUCKET }}"
-          
-          echo "cdn_distribution_id=$CDN_DISTRIBUTION_ID" >> $GITHUB_OUTPUT
-          echo "s3_website_bucket=$S3_WEBSITE_BUCKET" >> $GITHUB_OUTPUT
-          
-          echo ":gear: CDN Configuration" >> $GITHUB_STEP_SUMMARY
-          echo "- Distribution ID: $CDN_DISTRIBUTION_ID" >> $GITHUB_STEP_SUMMARY
-          echo "- S3 Bucket: $S3_WEBSITE_BUCKET" >> $GITHUB_STEP_SUMMARY
+          echo ":gear: CDN Configuration logged (values redacted)" >> $GITHUB_STEP_SUMMARY
 
       - name: Sync to S3
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
           
-          aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ \
+          aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ secrets.PRD_ADMIN_DASHBOARD_S3_BUCKET }}/ \
             --delete \
             --cache-control "public, max-age=86400" \
             --metadata-directive REPLACE
           
           if [ -f "dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association" ]; then
             aws s3 cp dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association \
-              s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/apple-app-site-association \
+              s3://${{ secrets.PRD_ADMIN_DASHBOARD_S3_BUCKET }}/.well-known/apple-app-site-association \
               --content-type "application/json" \
               --cache-control "public, max-age=86400" \
               --metadata-directive REPLACE
@@ -261,7 +248,7 @@ jobs:
           
           if [ -f "dist/apps/ally-admin-dashboard/.well-known/assetlinks.json" ]; then
             aws s3 cp dist/apps/ally-admin-dashboard/.well-known/assetlinks.json \
-              s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/.well-known/assetlinks.json \
+              s3://${{ secrets.PRD_ADMIN_DASHBOARD_S3_BUCKET }}/.well-known/assetlinks.json \
               --content-type "application/json" \
               --cache-control "public, max-age=86400" \
               --metadata-directive REPLACE
@@ -273,7 +260,7 @@ jobs:
         run: |
           echo ":arrows_counterclockwise: Creating CloudFront invalidation..." >> $GITHUB_STEP_SUMMARY
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
-            --distribution-id ${{ steps.cdn-config.outputs.cdn_distribution_id }} \
+            --distribution-id ${{ secrets.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }} \
             --paths "/*" \
             --query 'Invalidation.Id' \
             --output text)
@@ -347,8 +334,8 @@ jobs:
             - **Environment**: Production
             - **Branch**: master
             - **Deployment Type**: CloudFront CDN
-            - **S3 Bucket**: ${{ needs.build-and-deploy.outputs.s3_bucket }}
-            - **CloudFront Distribution**: ${{ needs.build-and-deploy.outputs.distribution_id }}
+            - **S3 Bucket**: ${{ secrets.PRD_ADMIN_DASHBOARD_S3_BUCKET }}
+            - **CloudFront Distribution**: ${{ secrets.PRD_ADMIN_DASHBOARD_DISTRIBUTION_ID }}
             
             ${{ steps.changelog.outputs.CHANGELOG }}
             
