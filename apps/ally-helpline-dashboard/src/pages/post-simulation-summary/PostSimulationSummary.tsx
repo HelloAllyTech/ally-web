@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useRef, useState } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
@@ -17,13 +17,19 @@ import {
   AskAiTab,
   Button,
   ReflectionTab,
+  SessionRatingTrigger,
   ShareForReview,
   SkillsTab,
   ToggleSwitch,
 } from "@components";
 import { REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
-import { ShortSessionUI, SimulationSummary, useSimulationSummaryPolling } from "@containers";
-import { pageType, ShareForReviewsInput } from "@types";
+import {
+  FeedbackDialog,
+  ShortSessionUI,
+  SimulationSummary,
+  useSimulationSummaryPolling,
+} from "@containers";
+import { pageType, SessionType, ShareForReviewsInput } from "@types";
 
 import { UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
@@ -45,6 +51,12 @@ export const PostSimulationSummary: FC = () => {
   );
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
+
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [pendingRating, setPendingRating] = useState<number | null>(null);
+  const [submittedRating, setSubmittedRating] = useState<number | null>(null);
+  const [pendingExit, setPendingExit] = useState<(() => void) | null>(null);
+  const exitPromptShown = useRef(false);
 
   const tabList = [
     {
@@ -144,6 +156,39 @@ export const PostSimulationSummary: FC = () => {
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
+  const handleStarSelect = (rating: number) => {
+    setPendingRating(rating);
+    setFeedbackOpen(true);
+  };
+
+  const handleFeedbackClose = () => {
+    setFeedbackOpen(false);
+    setPendingRating(null);
+    if (pendingExit) {
+      const exit = pendingExit;
+      setPendingExit(null);
+      exit();
+    }
+  };
+
+  const handleFeedbackSubmitted = () => {
+    if (pendingRating !== null) setSubmittedRating(pendingRating);
+    handleFeedbackClose();
+  };
+
+  const guardExit = (navigate: () => void) => {
+    if (!summary?.hasFeedback && !exitPromptShown.current) {
+      exitPromptShown.current = true;
+      setPendingExit(() => navigate);
+      setFeedbackOpen(true);
+    } else {
+      navigate();
+    }
+  };
+
+  const displayRating = submittedRating ?? summaryData?.sessionFeedback?.rating ?? 0;
+  const isReadOnly = !!summary?.hasFeedback;
+
   return (
     <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10">
       <motion.div
@@ -154,10 +199,18 @@ export const PostSimulationSummary: FC = () => {
       >
         <div className="mt-8 flex w-full shrink-0 items-center justify-between">
           <div className="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
-            <button onClick={() => navigate(-1)}>
+            <button onClick={() => guardExit(() => navigate(-1))}>
               <BackCircle />
             </button>
             {t("postSim.titlePrefix")} <em>{t("common.summary")}</em>
+            {!isShortSession && (
+              <SessionRatingTrigger
+                value={displayRating}
+                onSelect={handleStarSelect}
+                readOnly={isReadOnly}
+                size="sm"
+              />
+            )}
           </div>
           {!isShortSession && (
             <div className="flex justify-center gap-2 items-center">
@@ -232,7 +285,7 @@ export const PostSimulationSummary: FC = () => {
             </div>
             {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
               <div className="flex justify-center items-center fixed bottom-0 left-0 right-0 bg-white p-[20px]">
-                <Button onClick={() => navigate(ROUTES.LEARN)}>
+                <Button onClick={() => guardExit(() => navigate(ROUTES.LEARN))}>
                   {t("postSim.common.tryAnother")}
                 </Button>
               </div>
@@ -240,6 +293,14 @@ export const PostSimulationSummary: FC = () => {
           </>
         )}
       </motion.div>
+      <FeedbackDialog
+        open={feedbackOpen}
+        onClose={handleFeedbackClose}
+        onSubmitComplete={handleFeedbackSubmitted}
+        id={sessionId ?? ""}
+        sessionType={SessionType.SIMULATION}
+        initialRating={pendingRating ?? undefined}
+      />
     </div>
   );
 };

@@ -209,6 +209,7 @@ export interface SimulationSummary {
   };
   events: KeyEvent[];
   hasFeedback: boolean;
+  sessionFeedback?: { rating: number; feedback?: string; issues?: string[] };
   scenario: Scenario;
   reviewCreatedAt: string;
   reviewNote: string | null;
@@ -235,6 +236,7 @@ export type GetSimulationSummaryResponse = SimulationSummary;
 
 export interface SubmitSimulationFeedbackRequest {
   sessionId: string;
+  // TODO: add issues: SimulationIssueOptions[] to sessionFeedback once backend contract is extended
   sessionFeedback: { rating: number; feedback?: string };
 }
 
@@ -449,3 +451,10 @@ export interface GetChatHistoryResponse {
 export interface PresignedUrlResponse {
   presignedUrl: string;
 }
+
+export interface RatingMetadataItem {
+  ratingText: string;
+  tags: string[];
+}
+
+export type RatingMetadataResponse = Record<string, RatingMetadataItem>;

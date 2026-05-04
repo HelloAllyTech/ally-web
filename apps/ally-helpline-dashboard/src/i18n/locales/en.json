@@ -525,6 +525,35 @@
       }
     }
   },
+  "simulationFeedback": {
+    "rateTitle": "How was your role play experience?",
+    "rateSubtitle": "Rate the simulation and let us know how we can improve.",
+    "thanksTooltip": "Thanks for your feedback",
+    "starLabel": "Rate {{star}} out of {{total}}",
+    "ratings": {
+      "1": "Needs major improvements.",
+      "2": "Could be better.",
+      "3": "Decent, but room to grow.",
+      "4": "Nice experience!",
+      "5": "Excellent and highly effective!"
+    },
+    "selectIssues": "What could be improved?",
+    "moreSuggestions": "Any more suggestions?",
+    "suggestionPlaceholder": "Tell us what made it excellent...",
+    "concernPlaceholder": "Describe your concern here.",
+    "issues": {
+      "scenarioUnrealistic": "Unrealistic scenario",
+      "poorAiResponse": "Poor AI responses",
+      "instructionsUnclear": "Instructions unclear",
+      "tooEasy": "Too easy",
+      "tooDifficult": "Too difficult",
+      "technicalIssues": "Technical issues",
+      "other": "Other"
+    },
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "submitted": "Feedback submitted successfully"
+  },
   "callFeedback": {
     "rateTitle": "Rate the AI-generated summary?",
     "rateSubtitle": "Please rate the quality, let us know what worked well, and share areas for improvement.",

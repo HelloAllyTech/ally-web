@@ -102,6 +102,7 @@ export const ApiEndpoints = {
     CHAT_STREAM: (sessionId: string) => `/v1/learn/scenario-sessions/${sessionId}/chat/stream`,
     CHAT_HISTORY: (sessionId: string) => `/v1/learn/scenario-sessions/${sessionId}/chat/history`,
     GET_AUDIO_URL: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/recording`,
+    GET_RATING_METADATA: "/v1/learn/rating-metadata",
   },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",

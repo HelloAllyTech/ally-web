@@ -10,6 +10,9 @@ import { SimulationSummary as SimulationSummaryType } from "@types";
 const POLL_INTERVAL_MS = 3500;
 const MAX_POLLS = 5;
 
+// TODO: remove when backend returns sessionFeedback on GetSimulationSummaryResponse
+const MOCK_SESSION_FEEDBACK = { rating: 5 };
+
 export function useSimulationSummaryPolling(
   summaryId: string | undefined,
   languageCode?: string,
@@ -42,9 +45,14 @@ export function useSimulationSummaryPolling(
           sessionId: summaryId ?? "",
           languageCode: activeLanguageCode,
         });
-
         if (data) {
-          if (isMounted) setSummaryData(data);
+          const enriched = {
+            ...data,
+            // TODO: remove MOCK_SESSION_FEEDBACK injection when backend returns sessionFeedback
+            sessionFeedback:
+              data.sessionFeedback ?? (data.hasFeedback ? MOCK_SESSION_FEEDBACK : undefined),
+          };
+          if (isMounted) setSummaryData(enriched);
           setIsShortSession(data?.details?.callDuration <= 30); // 30 seconds
         }
 

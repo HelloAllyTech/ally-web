@@ -37,6 +37,7 @@ import {
   GetChatHistoryResponse,
   Prompt,
   PresignedUrlResponse,
+  RatingMetadataResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -375,6 +376,12 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    getRatingMetadata: builder.query<RatingMetadataResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.LEARN.GET_RATING_METADATA,
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
@@ -406,4 +413,5 @@ export const {
   useGetChatHistoryQuery,
   useGetAudioUrlQuery,
   useLazyGetAudioUrlQuery,
+  useGetRatingMetadataQuery,
 } = learnAPI;
