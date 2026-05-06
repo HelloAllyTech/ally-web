@@ -255,7 +255,7 @@ describe("TranslationManagement", () => {
 
     const rollbackSelect = screen
       .getAllByRole("combobox")
-      .find(el => el.querySelector('option[value=""]')?.textContent === "Rollback version");
+      .find(el => el.querySelector('option[value=""]')?.textContent === "Versions");
     expect(rollbackSelect).toBeDefined();
     fireEvent.change(rollbackSelect!, { target: { value: "1" } });
     fireEvent.click(screen.getByRole("button", { name: /Rollback/i }));

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 
-import { History, RefreshCw, RotateCcw, UploadCloud } from "lucide-react";
+import { Info, RefreshCw, RotateCcw, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -84,6 +84,13 @@ export const TranslationManagement: React.FC = () => {
   const rows = aggregated?.rows ?? [];
 
   const sections = useMemo(() => [...new Set(rows.map(row => row.namespace))].sort(), [rows]);
+
+  const isLiveSelected = useMemo(() => {
+    if (rollbackVersion === "") return false;
+    return (
+      status?.versions?.find(v => v.version === Number(rollbackVersion))?.current ?? false
+    );
+  }, [rollbackVersion, status?.versions]);
 
   const filteredRows = useMemo(() => {
     const sectionSelected = filters[SECTION_FILTER_KEY] ?? "";
@@ -200,6 +207,32 @@ export const TranslationManagement: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <div className="group relative">
+              <button
+                type="button"
+                aria-label="Recent audit"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 bg-white text-typography-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-200"
+              >
+                <Info size={16} />
+              </button>
+              <div className="invisible absolute right-0 top-full z-40 mt-2 w-80 origin-top-right rounded-md border border-neutral-200 bg-white p-3 opacity-0 shadow-lg transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                <h3 className="font-secondary text-sm">Recent audit</h3>
+                <div className="mt-2 max-h-72 divide-y divide-neutral-100 overflow-auto">
+                  {auditLogs.length === 0 && (
+                    <div className="py-2 text-sm text-typography-600">No audit entries</div>
+                  )}
+                  {auditLogs.map((log, index) => (
+                    <div key={`${log.date}-${index}`} className="py-2 text-sm">
+                      <div className="font-medium">{log.event}</div>
+                      <div className="mt-0.5 text-xs text-typography-600">
+                        {formatDate(log.date)}
+                      </div>
+                      <div className="text-xs text-typography-600">{log.userName}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
             <Button
               variant={ButtonVariant.TEXT}
               onClick={refreshAll}
@@ -218,19 +251,18 @@ export const TranslationManagement: React.FC = () => {
               className="h-9 rounded-md border border-neutral-300 bg-white px-3 text-sm"
               disabled={!canEdit || isRollingBack}
             >
-              <option value="">Rollback version</option>
-              {status?.versions
-                ?.filter(version => !version.current)
-                .map(version => (
-                  <option key={version.name} value={version.version}>
-                    {version.name}
-                  </option>
-                ))}
+              <option value="">Versions</option>
+              {status?.versions?.map(version => (
+                <option key={version.name} value={version.version}>
+                  {version.name}
+                  {version.current ? " (live)" : ""}
+                </option>
+              ))}
             </select>
             <Button
               variant={ButtonVariant.SECONDARY}
               onClick={rollback}
-              disabled={!canEdit || !rollbackVersion || isRollingBack}
+              disabled={!canEdit || !rollbackVersion || isLiveSelected || isRollingBack}
               className="h-9 rounded-md px-3"
             >
               <RotateCcw size={16} />
@@ -248,8 +280,8 @@ export const TranslationManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid min-h-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <section className="flex min-h-0 flex-col overflow-hidden rounded-md border border-neutral-200 bg-white">
+        <div className="flex min-h-0 flex-1 flex-col">
+          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-white">
             <div className="min-h-0 flex-1 overflow-auto">
               <table className="w-full min-w-[1800px] border-separate border-spacing-0 text-left text-sm">
                 <thead className="sticky top-0 z-20 bg-neutral-50 text-xs uppercase text-typography-600">
@@ -384,53 +416,6 @@ export const TranslationManagement: React.FC = () => {
               <span>Tip: tab between cells. Edits save when you click out of a cell.</span>
             </div>
           </section>
-
-          <aside className="flex min-h-0 flex-col gap-4 overflow-auto">
-            <section className="rounded-md border border-neutral-200 bg-white">
-              <div className="flex items-center gap-2 border-b border-neutral-200 px-3 py-3">
-                <History size={16} />
-                <h2 className="font-secondary text-base">Versions</h2>
-              </div>
-              <div className="divide-y divide-neutral-100">
-                {status?.versions.map(version => (
-                  <div key={version.name} className="px-3 py-3 text-sm">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">{version.name}</span>
-                      {version.current && (
-                        <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700">
-                          live
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-1 text-xs text-typography-600">
-                      {formatDate(version.updatedAt)}
-                    </div>
-                  </div>
-                ))}
-                {status?.versions.length === 0 && (
-                  <div className="px-3 py-4 text-sm text-typography-600">No versions yet</div>
-                )}
-              </div>
-            </section>
-
-            <section className="rounded-md border border-neutral-200 bg-white">
-              <div className="border-b border-neutral-200 px-3 py-3">
-                <h2 className="font-secondary text-base">Recent audit</h2>
-              </div>
-              <div className="divide-y divide-neutral-100">
-                {auditLogs.map((log, index) => (
-                  <div key={`${log.date}-${index}`} className="px-3 py-3 text-sm">
-                    <div className="font-medium">{log.event}</div>
-                    <div className="mt-1 text-xs text-typography-600">{formatDate(log.date)}</div>
-                    <div className="mt-1 text-xs text-typography-600">{log.userName}</div>
-                  </div>
-                ))}
-                {auditLogs.length === 0 && (
-                  <div className="px-3 py-4 text-sm text-typography-600">No audit entries</div>
-                )}
-              </div>
-            </section>
-          </aside>
         </div>
       </div>
     </div>
