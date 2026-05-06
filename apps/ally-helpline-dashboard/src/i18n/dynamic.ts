@@ -125,7 +125,6 @@ export const startDynamicI18n = (i18n: I18nInstance, options: StartDynamicI18nOp
   globalWindow[STARTED_MARKER] = true;
 
   const baseUrl = getBaseUrl();
-  console.log(baseUrl, "baseUrl");
   let refreshInFlight: Promise<void> | null = null;
   let applyingResource = false;
 

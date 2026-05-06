@@ -54,3 +54,23 @@ export type DynamicI18nAuditLog = {
   date: string;
   userName: string;
 };
+
+export type DynamicI18nAggregatedRow = {
+  /** Full dotted path including namespace, e.g. "common.boxBreathing.inhale" */
+  fullKey: string;
+  /** Top-level namespace, e.g. "common" */
+  namespace: string;
+  /** Key within the namespace, e.g. "boxBreathing.inhale" — used for backend update */
+  innerKey: string;
+  /** Placeholders found in the canonical (English) value */
+  placeholders: string[];
+  /** Current draft value per language code */
+  values: Record<string, string>;
+  /** Last published live value per language code (empty string if not published yet) */
+  liveValues: Record<string, string>;
+};
+
+export type DynamicI18nAggregatedResponse = {
+  languages: string[];
+  rows: DynamicI18nAggregatedRow[];
+};
