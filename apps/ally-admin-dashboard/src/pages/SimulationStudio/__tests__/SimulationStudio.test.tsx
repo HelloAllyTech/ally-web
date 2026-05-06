@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
@@ -703,10 +703,82 @@ describe("SimulationStudio", () => {
 
       fireEvent.click(screen.getByTestId("apply-filter"));
 
-      // The hook should be called with selectedFilters
+      // The hook should be called with selectedFilters and an initial empty search
       expect(mockUseSimulations).toHaveBeenCalledWith({
         selectedFilters: [{ id: "ACTIVE", label: "Active" }],
+        search: "",
       });
+    });
+  });
+
+  describe("Search functionality", () => {
+    it("renders the search input on the Simulations tab", () => {
+      renderComponent();
+      expect(screen.getByPlaceholderText("Search")).toBeInTheDocument();
+    });
+
+    it("does not render the search input on the Tracks tab", () => {
+      renderComponent();
+      fireEvent.click(screen.getByTestId("tab-tracks"));
+      expect(screen.queryByPlaceholderText("Search")).not.toBeInTheDocument();
+    });
+
+    it("does not render the search input on the Cases tab", () => {
+      renderComponent();
+      fireEvent.click(screen.getByTestId("tab-cases"));
+      expect(screen.queryByPlaceholderText("Search")).not.toBeInTheDocument();
+    });
+
+    it("passes the debounced search value to useSimulations", () => {
+      vi.useFakeTimers();
+      try {
+        renderComponent();
+
+        fireEvent.change(screen.getByPlaceholderText("Search"), {
+          target: { value: "  alpha  " },
+        });
+
+        // Before the debounce window elapses, the trimmed value has not propagated
+        expect(mockUseSimulations).not.toHaveBeenCalledWith(
+          expect.objectContaining({ search: "alpha" }),
+        );
+
+        act(() => {
+          vi.advanceTimersByTime(300);
+        });
+
+        expect(mockUseSimulations).toHaveBeenCalledWith(
+          expect.objectContaining({ search: "alpha" }),
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("clears the search value when the clear button is clicked", () => {
+      renderComponent();
+
+      const input = screen.getByPlaceholderText("Search") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "abc" } });
+      expect(input.value).toBe("abc");
+
+      const clearButton = input.parentElement?.querySelector("button");
+      if (clearButton) fireEvent.click(clearButton);
+
+      expect(input.value).toBe("");
+    });
+
+    it("clears the search value when switching tabs", () => {
+      renderComponent();
+
+      const input = screen.getByPlaceholderText("Search") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "abc" } });
+      expect(input.value).toBe("abc");
+
+      fireEvent.click(screen.getByTestId("tab-tracks"));
+      fireEvent.click(screen.getByTestId("tab-simulations"));
+
+      expect((screen.getByPlaceholderText("Search") as HTMLInputElement).value).toBe("");
     });
   });
 

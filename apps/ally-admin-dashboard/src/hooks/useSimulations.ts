@@ -16,9 +16,10 @@ const SIMULATIONS_PAGE_SIZE = 30;
 
 interface UseSimulationsProps {
   selectedFilters?: Array<{ id: string; label: string }>;
+  search?: string;
 }
 
-export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
+export const useSimulations = ({ selectedFilters, search }: UseSimulationsProps) => {
   const navigate = useNavigate();
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -43,6 +44,7 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
       selectedFilters?.length > 0
         ? selectedFilters?.map(filter => filter.id)?.join(",")
         : undefined,
+    search: search || undefined,
   };
 
   const {
@@ -57,7 +59,7 @@ export const useSimulations = ({ selectedFilters }: UseSimulationsProps) => {
 
   useEffect(() => {
     setSimulationsOffset(0);
-  }, [selectedFilters]);
+  }, [selectedFilters, search]);
 
   useEffect(() => {
     if (!simulationsResponse) return;

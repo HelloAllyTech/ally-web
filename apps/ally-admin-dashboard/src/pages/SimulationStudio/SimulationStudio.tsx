@@ -1,9 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-import { Add, Close, Filter, Simulation as SimulationIcon, Pathway, Case } from "@assets";
+import { Add, Close, Filter, Search, Simulation as SimulationIcon, Pathway, Case } from "@assets";
 import {
   ActionConfirmationPopup,
   DeletePopup,
@@ -40,6 +40,15 @@ export const SimulationStudio: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<Array<{ id: string; label: string }>>([]);
   const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchValue.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchValue]);
 
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -98,7 +107,7 @@ export const SimulationStudio: React.FC = () => {
     onUnpublishSimulation,
     onDuplicateSimulation,
     handleDuplicateSimulation,
-  } = useSimulations({ selectedFilters });
+  } = useSimulations({ selectedFilters, search: debouncedSearch });
 
   // Use the custom hook for pathways
   const {
@@ -178,6 +187,7 @@ export const SimulationStudio: React.FC = () => {
   const handleTabChange = (tabId: string) => {
     setSearchParams({ tab: tabId });
     setSelectedFilters([]);
+    setSearchValue("");
   };
 
   const createOptions = React.useMemo(
@@ -265,24 +275,44 @@ export const SimulationStudio: React.FC = () => {
 
   const renderFilterSection = () => {
     return (
-      <div className="flex flex-row items-center border-b border-border-light pt-[2px] pb-[10px] pl-5 relative">
-        <button onClick={handleFilterClick}>
-          <Filter />
-        </button>
-        <div className="flex flex-row items-center gap-2 ml-3 h-[18px]">
-          {selectedFilters?.map(filter => (
-            <div
-              key={filter.id}
-              className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
-            >
-              <span className="text-xs text-typography-800 font-regular">{filter.label}</span>
+      <div className="flex flex-row items-center justify-between border-b border-border-light pt-[2px] pb-[10px] pl-5 relative">
+        <div className="flex flex-row items-center">
+          <button onClick={handleFilterClick}>
+            <Filter />
+          </button>
+          <div className="flex flex-row items-center gap-2 ml-3 h-[18px]">
+            {selectedFilters?.map(filter => (
+              <div
+                key={filter.id}
+                className="flex flex-row items-center gap-1 border border-border-light rounded-full px-2 py-1"
+              >
+                <span className="text-xs text-typography-800 font-regular">{filter.label}</span>
 
-              <button onClick={() => handleFilterItemClose(filter)}>
+                <button onClick={() => handleFilterItemClose(filter)}>
+                  <Close />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        {activeTab === TAB_KEYS.SIMULATIONS && (
+          <div className="flex relative items-center w-full max-w-xs ml-4">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-typography-600">
+              <Search />
+            </span>
+            <input
+              value={searchValue}
+              onChange={e => setSearchValue(e.target.value)}
+              placeholder={en.common.search}
+              className="block w-full rounded-md border border-border bg-transparent pl-10 pr-8 py-2 placeholder-text-tertiary outline-none font-primary text-sm"
+            />
+            {searchValue.length > 0 && (
+              <button className="absolute right-2" onClick={() => setSearchValue("")}>
                 <Close />
               </button>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
         <FilterList
           isOpen={isFilterOpen}
           onClose={handleFilterClose}
@@ -332,7 +362,7 @@ export const SimulationStudio: React.FC = () => {
           <SimulationList
             simulations={simulations}
             isLoading={isSimulationsLoading}
-            hasFilters={selectedFilters.length > 0}
+            hasFilters={selectedFilters.length > 0 || debouncedSearch.length > 0}
             onEdit={onEditIconClick}
             onDelete={handleDeleteSimulation}
             onPreview={onPreviewSimulation}
