@@ -19,9 +19,10 @@ export function initAnalytics(): void {
 
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
+    ui_host: POSTHOG_HOST,
     capture_pageview: false, // Tracked manually via PageviewTracker (React Router)
     capture_pageleave: true,
-    autocapture: false, // Opt-in only — reduces noise, prevents accidental PII capture
+    autocapture: true, // Opt-in only — reduces noise, prevents accidental PII capture
     session_recording: {
       maskAllInputs: true, // PII protection — masks all inputs in session recordings
       blockClass: "ph-no-capture", // This class blocks entire section
