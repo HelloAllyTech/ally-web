@@ -35,6 +35,8 @@ export type FormData = {
   openingStatements: string;
   translationOpeningStatements?: Record<string, string[]>;
   openingDialoguePrimaryLanguageId?: number | null;
+  translationDescription?: Record<string, string>;
+  challengeDescriptionPrimaryLanguageId?: number | null;
   tone: string;
   autoTerminationStatus?: boolean;
   experienceMode?: string;

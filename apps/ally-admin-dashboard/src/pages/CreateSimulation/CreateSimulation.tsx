@@ -371,6 +371,7 @@ export const CreateSimulation: FC = () => {
     const {
       openingStatements,
       translationOpeningStatements,
+      translationDescription,
       triggerWarningIds,
       customFields,
       agentDialogues,
@@ -464,6 +465,7 @@ export const CreateSimulation: FC = () => {
       ...extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, restForm),
       openingStatements: openingStatementsArray,
       translationOpeningStatements: translationOpeningStatements ?? {},
+      translationDescription: translationDescription ?? {},
       agentDialogues: agentDialoguesArray,
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,

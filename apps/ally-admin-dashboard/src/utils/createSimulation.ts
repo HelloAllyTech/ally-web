@@ -28,6 +28,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       : (data?.metadata?.openingStatements ?? ""),
     translationOpeningStatements: data.translationOpeningStatements ?? {},
     openingDialoguePrimaryLanguageId: data.openingDialoguePrimaryLanguageId ?? null,
+    translationDescription: data.translationDescription ?? {},
+    challengeDescriptionPrimaryLanguageId: data.challengeDescriptionPrimaryLanguageId ?? null,
     personality: data?.metadata?.personality,
     profession: data?.metadata?.profession,
     sessionBehaviorGuidelines: data?.metadata?.sessionBehaviorGuidelines,

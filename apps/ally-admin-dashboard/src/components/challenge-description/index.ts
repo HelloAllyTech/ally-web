@@ -1,0 +1,1 @@
+export { ChallengeDescriptionPanel } from "./ChallengeDescriptionPanel";

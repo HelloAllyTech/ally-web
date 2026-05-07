@@ -110,6 +110,7 @@ export interface SimulationInput {
   knowledgeSources?: KnowledgeSourceInput[];
   stateNames?: stateInstruction[];
   translationOpeningStatements?: Record<string, string[]>;
+  translationDescription?: Record<string, string>;
 }
 
 export interface UpdateSimulationByIdInput {
@@ -191,6 +192,8 @@ export interface GetSimulationByIdResponse {
   };
   translationOpeningStatements?: Record<string, string[]>;
   openingDialoguePrimaryLanguageId?: number | null;
+  translationDescription?: Record<string, string>;
+  challengeDescriptionPrimaryLanguageId?: number | null;
   competency?: Competency;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {

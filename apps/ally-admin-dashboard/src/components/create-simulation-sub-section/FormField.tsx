@@ -6,6 +6,7 @@ import { FormFieldProps } from "@types";
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { BehavioursAndStatesInstruction } from "../behaviours-and-states-instruction";
 import { BehavioursInstruction } from "../behaviours-instruction";
+import { ChallengeDescriptionPanel } from "../challenge-description";
 import { CharacterProfileSelector } from "../character-profile-selector";
 import { Competency } from "../competency";
 import { CustomFieldGroup } from "../custom-field-group";
@@ -163,6 +164,16 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES:
         return <OpeningDialoguesPanel formMethods={formMethods} isMandatory={isMandatory} />;
+      case FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION:
+        return (
+          <ChallengeDescriptionPanel
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+            label={label}
+            placeholder={placeholder}
+            maxLength={maxLength}
+          />
+        );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:

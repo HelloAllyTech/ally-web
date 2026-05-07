@@ -78,7 +78,7 @@ describe("createSimulation utils", () => {
         expect(field).toBeDefined();
         expect(field?.label).toBe("Challenge Description");
         expect(field?.placeholder).toBe("What is the primary learning goal?");
-        expect(field?.type).toBe("text");
+        expect(field?.type).toBe("challenge_description");
         expect(field?.isMandatory).toBe(true);
       });
 
@@ -192,6 +192,8 @@ describe("createSimulation utils", () => {
         openingStatements: "Hello, how are you?",
         translationOpeningStatements: {},
         openingDialoguePrimaryLanguageId: null,
+        translationDescription: {},
+        challengeDescriptionPrimaryLanguageId: null,
         personality: "Friendly",
         profession: "Engineer",
         sessionBehaviorGuidelines: "Be supportive",
@@ -227,6 +229,55 @@ describe("createSimulation utils", () => {
         ],
         stateNames: [],
       });
+    });
+
+    it("should map translationDescription and challengeDescriptionPrimaryLanguageId when backend provides them", () => {
+      const mockResponse = {
+        id: "sim-translated",
+        title: "T",
+        description: "Primary description",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: { customFields: [] },
+        translationDescription: { "7": "Descripción en español" },
+        challengeDescriptionPrimaryLanguageId: 1,
+      } as unknown as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.description).toBe("Primary description");
+      expect(result.translationDescription).toEqual({
+        "7": "Descripción en español",
+      });
+      expect(result.challengeDescriptionPrimaryLanguageId).toBe(1);
+    });
+
+    it("should default translationDescription to {} and challengeDescriptionPrimaryLanguageId to null when backend omits them", () => {
+      const mockResponse = {
+        id: "sim-no-translation",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: { customFields: [] },
+      } as unknown as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.translationDescription).toEqual({});
+      expect(result.challengeDescriptionPrimaryLanguageId).toBeNull();
     });
 
     it("should drop state instructions with invalid state ids (e.g. legacy state 4)", () => {
