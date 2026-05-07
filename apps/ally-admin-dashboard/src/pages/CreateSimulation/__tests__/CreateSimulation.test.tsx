@@ -583,6 +583,24 @@ describe("CreateSimulation", () => {
       const publishButton = screen.getByText("Publish");
       expect(publishButton).not.toBeDisabled();
     });
+
+    it("should enable publish button when optional fields (prompt, characterProfileText, behaviorInstructions, linguisticStyleSamples) are empty", () => {
+      mockFormMethods.watch.mockReturnValue({
+        title: "Test",
+        description: "Test Description",
+        triggerWarningIds: [],
+        languageVoices: { "1": "voice-1" },
+        prompt: "",
+        characterProfileText: "",
+        behaviorInstructions: [],
+        linguisticStyleSamples: {},
+        allowedFillerWords: {},
+      });
+      renderCreateSimulation();
+
+      const publishButton = screen.getByText("Publish");
+      expect(publishButton).not.toBeDisabled();
+    });
   });
 
   describe("Edit Mode", () => {

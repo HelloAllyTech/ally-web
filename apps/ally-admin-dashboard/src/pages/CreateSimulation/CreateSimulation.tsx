@@ -303,34 +303,6 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    if (status === SimulationStatus.ACTIVE) {
-      const languageVoices = (formData.languageVoices ?? {}) as Record<string, string>;
-      const linguisticStyleSamples = (formData.linguisticStyleSamples ?? {}) as Record<
-        string,
-        string[]
-      >;
-      // Only validate languages that are in the current available list — skip stale IDs
-      // that may no longer map to a valid language (e.g. voices reassigned after a migration).
-      const langIds = Object.keys(languageVoices).filter(k => {
-        if (!languageVoices[k]) return false;
-        return availableLanguages.some(l => String(l.language_id) === k);
-      });
-      const missing: string[] = [];
-      for (const langId of langIds) {
-        const lang = availableLanguages.find(l => String(l.language_id) === langId);
-        const samples = linguisticStyleSamples[langId];
-        const hasContent =
-          Array.isArray(samples) && samples.some(s => typeof s === "string" && s.trim().length > 0);
-        if (!hasContent) {
-          missing.push(lang?.label ?? langId);
-        }
-      }
-      if (missing.length > 0) {
-        toast.error(en.errors.linguisticStyleSamplesMissingFor(missing.join(", ")));
-        return null;
-      }
-    }
-
     const rawStateInstructions = formMethods.getValues(FORM_FIELD_IDS.STATE_INSTRUCTIONS) as
       | stateInstruction[]
       | undefined;
@@ -472,7 +444,8 @@ export const CreateSimulation: FC = () => {
       status,
       // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
       ...(!FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG && { stateInstructions }),
-      behaviorInstructions: behaviourInstructionsArray,
+      behaviorInstructions:
+        behaviourInstructionsArray.length > 0 ? behaviourInstructionsArray : undefined,
       competencyId: restForm.competency?.id,
       maxTimeValue: timerMode ? maxTimeValue : null,
       timerMode: timerMode,

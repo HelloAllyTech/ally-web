@@ -82,6 +82,13 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(true);
       });
 
+      it("should have characterProfileText (Character Backstory) as optional", () => {
+        const section = getOverviewSection();
+        const field = section?.fields.find(f => f.id === "characterProfileText");
+        expect(field).toBeDefined();
+        expect(field?.isMandatory).toBe(false);
+      });
+
       it("should place challenge description after character backstory in overview section", () => {
         const section = getOverviewSection();
         const fieldIds = section?.fields.map(field => field.id) ?? [];
@@ -108,6 +115,27 @@ describe("createSimulation utils", () => {
         const field = section?.fields.find(f => f.id === "description");
 
         expect(field).toBeUndefined();
+      });
+
+      it("should have prompt (Role instruction) as optional", () => {
+        const section = getCreateSimulationSubSectionById("basic-settings");
+        const field = section?.fields.find(f => f.id === "prompt");
+        expect(field).toBeDefined();
+        expect(field?.isMandatory).toBe(false);
+      });
+
+      it("should have behaviorInstructions (Behaviour Instructions) as optional", () => {
+        const section = getCreateSimulationSubSectionById("basic-settings");
+        const field = section?.fields.find(f => f.id === "behaviorInstructions");
+        expect(field).toBeDefined();
+        expect(field?.isMandatory).toBe(false);
+      });
+
+      it("should have linguisticStyleSamples (Linguistic Style Samples) as optional", () => {
+        const section = getCreateSimulationSubSectionById("basic-settings");
+        const field = section?.fields.find(f => f.id === "linguisticStyleSamples");
+        expect(field).toBeDefined();
+        expect(field?.isMandatory).toBe(false);
       });
     });
   });

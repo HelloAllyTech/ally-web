@@ -234,7 +234,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 2500,
-        isMandatory: true,
+        isMandatory: false,
         regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
         isDashedLineAbove: true,
       },
@@ -295,7 +295,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1500,
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
-        isMandatory: true,
+        isMandatory: false,
       },
       // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
       ...(FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG
@@ -305,7 +305,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
               label: "Behaviour Instructions",
               type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_STATES_INSTRUCTION,
               fullWidth: true,
-              isMandatory: true,
+              isMandatory: false,
               regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
             },
           ]
@@ -315,7 +315,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
               label: "Behaviour Instructions",
               type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
               fullWidth: true,
-              isMandatory: true,
+              isMandatory: false,
               regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
             },
             {
@@ -359,7 +359,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "linguisticStyleSamples",
         label: "Linguistic Style Samples",
         type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
-        isMandatory: true,
+        isMandatory: false,
         fullWidth: true,
       },
       {
