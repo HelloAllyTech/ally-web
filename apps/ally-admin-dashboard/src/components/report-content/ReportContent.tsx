@@ -3,7 +3,7 @@ import { FC, useMemo } from "react";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { REPORT_GENERATION_MESSAGES } from "@constants";
+import { REPORT_GENERATION_MESSAGES, REPORT_METRIC_CONFIG, ReportGenerationMetrics } from "@constants";
 import { TabItem } from "@src/components/types";
 
 import TranscriptSection from "./TranscriptSection";
@@ -90,6 +90,14 @@ const ReportContent: FC<ReportContentProps> = ({
     return Math.round(sum / values.length);
   }, [reportData.metrics]);
 
+  const getColorFromRange = (value: number) => {
+    if (value < 33) return "#FE6F64";
+    if (value < 66) return "#FFB74D";
+    return "#81C784";
+  };
+
+  const hasMetrics = reportData.metrics && Object.keys(reportData.metrics).length > 0;
+
   return (
     <>
       {showTabs && (
@@ -119,6 +127,38 @@ const ReportContent: FC<ReportContentProps> = ({
               <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
                 {reportData.reportMarkdown}
               </ReactMarkdown>
+            </div>
+          ) : hasMetrics ? (
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-base font-medium text-typography-900 mb-6">
+                {REPORT_GENERATION_MESSAGES.METRICS}
+              </h3>
+              <div className="space-y-6">
+                {Object.values(ReportGenerationMetrics)
+                  .filter(
+                    (metricKey): metricKey is ReportGenerationMetrics =>
+                      metricKey in (reportData.metrics ?? {}),
+                  )
+                  .map(metricKey => {
+                    const value = reportData.metrics![metricKey];
+                    const label = REPORT_METRIC_CONFIG[metricKey];
+                    const color = getColorFromRange(value);
+                    return (
+                      <div key={metricKey} className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-700">{label}</span>
+                          <span className="text-sm font-medium text-gray-900">{value}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${value}%`, backgroundColor: color }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           ) : (
             <div className="border border-gray-200 rounded-lg p-6">
