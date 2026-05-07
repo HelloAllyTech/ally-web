@@ -171,7 +171,6 @@ describe("createSimulation utils", () => {
           sessionBehaviorGuidelines: "Be supportive",
           sexualOrientation: "Heterosexual",
           startingState: "Calm",
-          tone: "Casual",
           languageVoices: {
             1: "voice-123",
           },
@@ -228,7 +227,6 @@ describe("createSimulation utils", () => {
         sexualOrientation: "Heterosexual",
         showScoreMeter: undefined,
         startingState: "Calm",
-        tone: "Casual",
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         terminationEvents: undefined,

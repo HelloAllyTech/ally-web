@@ -35,7 +35,6 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     sessionBehaviorGuidelines: data?.metadata?.sessionBehaviorGuidelines,
     sexualOrientation: data?.metadata?.sexualOrientation,
     startingState: data?.metadata?.startingState,
-    tone: data?.metadata?.tone,
     languageVoices: (data?.metadata as any)?.languageVoices,
     linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
     allowedFillerWords: (data?.metadata as any)?.allowedFillerWords,

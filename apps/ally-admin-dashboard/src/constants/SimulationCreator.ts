@@ -150,7 +150,6 @@ export const FORM_FIELD_IDS = {
   OPENING_STATEMENTS: "openingStatements",
   LANGUAGES_VOICES: "languageVoices",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
-  TONE: "tone",
   AUTO_TERMINATION_STATUS: "autoTerminationStatus",
   EXPERIENCE_MODE: "experienceMode",
   CHECKLIST_TYPE: "checklistType",
@@ -361,13 +360,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
         isMandatory: false,
         fullWidth: true,
-      },
-      {
-        id: "tone",
-        label: "Voice instruction",
-        type: FORM_FIELD_TYPES.TEXT,
-        placeholder: "e.g. Casual",
-        maxLength: 100,
       },
       {
         id: "autoTerminationStatus",
