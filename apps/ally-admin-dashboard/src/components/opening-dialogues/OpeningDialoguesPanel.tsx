@@ -24,8 +24,7 @@ import { buildScenarioContext } from "../linguistic-style-samples/scenarioLangua
 
 import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
 
-/** Match prompt guidance (6–10 lines); UI offers 10 slots like linguistic samples. */
-export const OPENING_DIALOGUE_LINE_SLOTS = 10;
+export const OPENING_DIALOGUE_LINE_SLOTS = 5;
 
 const TRANSLATION_OPENING_FIELD = "translationOpeningStatements" as const;
 const PRIMARY_LANGUAGE_FIELD = "openingDialoguePrimaryLanguageId" as const;
