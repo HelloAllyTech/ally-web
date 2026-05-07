@@ -9,6 +9,7 @@ export type ReportData = {
     label?: string;
   };
   metrics: ReportMetric;
+  reportMarkdown?: string;
   createdAt: string;
   updatedAt: string;
   status: string;

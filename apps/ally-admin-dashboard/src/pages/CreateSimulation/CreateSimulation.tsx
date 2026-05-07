@@ -617,8 +617,8 @@ export const CreateSimulation: FC = () => {
             ref={reportStepRef}
             scenarioId={simulationId}
             areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
-            onPrimaryTabChange={setReportPrimaryTab}
             hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
+            onPrimaryTabChange={setReportPrimaryTab}
           />
         );
       default:

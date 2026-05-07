@@ -13,8 +13,7 @@ import {
   useLazyGetReportTranscriptQuery,
 } from "@api";
 import { ArrowDown, Plus } from "@assets";
-import { Button, PromptConfiguration, ReportContent, TabButton, Accordion } from "@components";
-import { ButtonVariant } from "@components/types";
+import { PromptConfiguration, ReportContent, TabButton, Accordion } from "@components";
 import {
   DEFAULT_HELPER_PROMPT,
   DEFAULT_LANGUAGE,
@@ -352,8 +351,6 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       () => (reportId ? uploads.find(u => u.reportId === reportId) : null),
       [reportId, uploads],
     );
-    const progress = currentUpload?.progress ?? 0;
-
     // When socket restores in-progress reports on refresh, focus on the in-progress report for this scenario
     const inProgressUploadForScenario = useMemo(
       () =>
@@ -542,34 +539,16 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       return undefined;
     };
 
-    const renderLoadingState = () => (
-      <div className="flex flex-col items-center justify-center w-full h-[400px] gap-8">
-        <div className="text-xl font-normal text-typography-900 font-primary">
+    const renderGeneratingPlaceholder = () => (
+      <div className="flex items-center gap-3 border border-gray-200 rounded-lg px-4 py-3">
+        <CircularProgress size={16} />
+        <span className="font-medium text-base text-typography-900">
           {REPORT_GENERATION_MESSAGES.GENERATING_REPORT}
-        </div>
-        <div className="w-full max-w-[400px]">
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary-500 transition-all duration-300 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-        <Button
-          variant={ButtonVariant.SECONDARY}
-          onClick={handleCancelReportGeneration}
-          className="px-8 py-2.5 min-w-[120px]"
-        >
-          {REPORT_GENERATION_MESSAGES.CANCEL}
-        </Button>
+        </span>
       </div>
     );
 
     const renderContent = () => {
-      if (showReportGenerationLoader) {
-        return renderLoadingState();
-      }
-
       if (reportsHistory?.data?.length > 0) {
         const latestReport = reportsHistory?.data[0];
         if (!latestReport) return null;
@@ -600,6 +579,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
               </div>
             </details>
 
+            {showReportGenerationLoader && renderGeneratingPlaceholder()}
             <ReportContent
               reportData={latestReport}
               transcriptData={transcriptMessages}
@@ -672,6 +652,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
             }
             buttonTooltip={getButtonTooltipText()}
           />
+          {showReportGenerationLoader && renderGeneratingPlaceholder()}
         </div>
       );
     };

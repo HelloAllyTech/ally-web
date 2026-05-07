@@ -1,15 +1,71 @@
 import { FC, useMemo } from "react";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-import {
-  REPORT_GENERATION_MESSAGES,
-  REPORT_METRIC_CONFIG,
-  ReportGenerationMetrics,
-} from "@constants";
+import ReactMarkdown, { Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { REPORT_GENERATION_MESSAGES } from "@constants";
 import { TabItem } from "@src/components/types";
 
 import TranscriptSection from "./TranscriptSection";
 import ReportContentProps from "./types";
+
+const markdownComponents: Components = {
+  h1: ({ children }) => (
+    <h1 className="text-xl font-semibold text-typography-900 mt-6 mb-3">{children}</h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="text-lg font-semibold text-typography-900 mt-6 mb-3 pb-2 border-b border-gray-200">{children}</h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-base font-semibold text-typography-900 mt-5 mb-2">{children}</h3>
+  ),
+  h4: ({ children }) => (
+    <h4 className="text-sm font-semibold text-typography-900 mt-4 mb-1">{children}</h4>
+  ),
+  p: ({ children }) => (
+    <p className="text-base text-typography-900 leading-relaxed mb-3">{children}</p>
+  ),
+  ul: ({ children }) => (
+    <ul className="list-disc list-inside space-y-1 mb-3 pl-2">{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="list-decimal list-inside space-y-1 mb-3 pl-2">{children}</ol>
+  ),
+  li: ({ children }) => (
+    <li className="text-base text-typography-900 leading-relaxed">{children}</li>
+  ),
+  hr: () => <hr className="border-gray-200 my-5" />,
+  strong: ({ children }) => (
+    <strong className="font-semibold text-typography-900">{children}</strong>
+  ),
+  em: ({ children }) => <em className="italic">{children}</em>,
+  table: ({ children }) => (
+    <div className="overflow-x-auto mb-4">
+      <table className="w-full border-collapse text-base">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="bg-gray-50">{children}</thead>,
+  tbody: ({ children }) => <tbody className="divide-y divide-gray-100">{children}</tbody>,
+  tr: ({ children }) => <tr>{children}</tr>,
+  th: ({ children }) => (
+    <th className="text-left text-sm font-medium text-gray-500 uppercase tracking-wider px-4 py-2 border-b border-gray-200">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="px-4 py-2 text-base text-typography-900">{children}</td>
+  ),
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-primary-200 pl-4 italic text-typography-900 my-3">
+      {children}
+    </blockquote>
+  ),
+  code: ({ children }) => (
+    <code className="bg-gray-100 rounded px-1 py-0.5 text-xs font-mono text-typography-900">
+      {children}
+    </code>
+  ),
+};
 
 const ReportContent: FC<ReportContentProps> = ({
   transcriptData,
@@ -23,14 +79,8 @@ const ReportContent: FC<ReportContentProps> = ({
   onLoadMoreTranscript,
 }) => {
   const items: TabItem[] = [
-    {
-      id: "report",
-      label: REPORT_GENERATION_MESSAGES.REPORT,
-    },
-    {
-      id: "transcription",
-      label: REPORT_GENERATION_MESSAGES.TRANSCRIPTION,
-    },
+    { id: "report", label: REPORT_GENERATION_MESSAGES.REPORT },
+    { id: "transcription", label: REPORT_GENERATION_MESSAGES.TRANSCRIPTION },
   ];
 
   const metricsAverage = useMemo(() => {
@@ -39,12 +89,6 @@ const ReportContent: FC<ReportContentProps> = ({
     const sum = values.reduce((a, b) => a + b, 0);
     return Math.round(sum / values.length);
   }, [reportData.metrics]);
-
-  const getColorFromRange = (value: number) => {
-    if (value < 33) return "#FE6F64";
-    if (value < 66) return "#FFB74D";
-    return "#81C784";
-  };
 
   return (
     <>
@@ -70,44 +114,17 @@ const ReportContent: FC<ReportContentProps> = ({
             </div>
           </div>
 
-          <div className="border border-gray-200 rounded-lg p-6">
-            <h3 className="text-base font-medium text-typography-900 mb-6">
-              {REPORT_GENERATION_MESSAGES.METRICS}
-            </h3>
-            <div className="space-y-6">
-              {reportData.metrics && Object.keys(reportData.metrics).length > 0 ? (
-                Object.values(ReportGenerationMetrics)
-                  .filter(
-                    (metricKey): metricKey is ReportGenerationMetrics =>
-                      metricKey in (reportData.metrics ?? {}),
-                  )
-                  .map(metricKey => {
-                    const value = reportData.metrics![metricKey];
-                    const label = REPORT_METRIC_CONFIG[metricKey];
-                    const color = getColorFromRange(value);
-                    return (
-                      <div key={metricKey} className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-700">{label}</span>
-                          <span className="text-sm font-medium text-gray-900">{value}%</span>
-                        </div>
-                        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${value}%`,
-                              backgroundColor: color,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })
-              ) : (
-                <p className="text-gray-500 text-sm">No metrics available yet</p>
-              )}
+          {reportData.reportMarkdown ? (
+            <div className="border border-gray-200 rounded-lg p-6">
+              <ReactMarkdown components={markdownComponents} remarkPlugins={[remarkGfm]}>
+                {reportData.reportMarkdown}
+              </ReactMarkdown>
             </div>
-          </div>
+          ) : (
+            <div className="border border-gray-200 rounded-lg p-6">
+              <p className="text-gray-500 text-sm">No report available yet</p>
+            </div>
+          )}
         </div>
       ) : (
         <TranscriptSection
