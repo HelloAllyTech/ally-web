@@ -127,6 +127,7 @@ export interface SimulationControlsProps {
   isEndingSession: boolean;
   isFocusMode: boolean;
   isMuted: boolean;
+  showFocusButton: boolean;
   onEndSessionClick: () => void;
   onMuteClick: () => void;
   onFocusButtonClick: () => void;
@@ -151,6 +152,7 @@ export interface BottomSectionProps {
   startTime: string;
   timeLimit?: number;
   isFocusMode: boolean;
+  showFocusButton: boolean;
   onFocusButtonClick: () => void;
   translations?: SimulationTranslations;
 }

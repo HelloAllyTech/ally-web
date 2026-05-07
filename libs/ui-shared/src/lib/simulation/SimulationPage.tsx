@@ -269,6 +269,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         startTime={startTime}
         timeLimit={maxTimeSeconds}
         isFocusMode={isFocusMode}
+        showFocusButton={experienceMode !== "NONE"}
         onFocusButtonClick={onFocusButtonClick}
         translations={translations}
       />
