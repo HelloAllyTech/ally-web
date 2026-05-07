@@ -122,6 +122,11 @@ describe("FeedbackSection", () => {
     metadata: {
       sessionName: "Test Session",
     },
+    scenario: {
+      metadata: {
+        experienceMode: "FEEDBACK",
+      },
+    },
     totalScore: 85,
     details: {
       id: "details-123",
@@ -286,6 +291,41 @@ describe("FeedbackSection", () => {
 
       expect(screen.getByText("What Went Well")).toBeInTheDocument();
       expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
+    });
+  });
+
+  describe("Experience Mode Gating", () => {
+    it("renders feedback sections and hides checklist in FEEDBACK mode", () => {
+      render(<FeedbackSection {...mockSummary} />);
+
+      expect(screen.getByText("What Went Well")).toBeInTheDocument();
+      expect(screen.getByText("Improvement Tips")).toBeInTheDocument();
+      expect(screen.queryByTestId("checklist")).not.toBeInTheDocument();
+    });
+
+    it("renders checklist and hides feedback sections in CHECKLIST mode", () => {
+      const checklistSummary = {
+        ...mockSummary,
+        scenario: { metadata: { experienceMode: "CHECKLIST" } },
+      };
+      render(<FeedbackSection {...checklistSummary} />);
+
+      expect(screen.getByTestId("checklist")).toBeInTheDocument();
+      expect(screen.queryByText("What Went Well")).not.toBeInTheDocument();
+      expect(screen.queryByText("Improvement Tips")).not.toBeInTheDocument();
+    });
+
+    it("hides both checklist and feedback sections in NONE mode", () => {
+      const noneSummary = {
+        ...mockSummary,
+        scenario: { metadata: { experienceMode: "NONE" } },
+      };
+      render(<FeedbackSection {...noneSummary} />);
+
+      expect(screen.queryByTestId("checklist")).not.toBeInTheDocument();
+      expect(screen.queryByText("What Went Well")).not.toBeInTheDocument();
+      expect(screen.queryByText("Improvement Tips")).not.toBeInTheDocument();
+      expect(screen.getByText("Session Feedback")).toBeInTheDocument();
     });
   });
 

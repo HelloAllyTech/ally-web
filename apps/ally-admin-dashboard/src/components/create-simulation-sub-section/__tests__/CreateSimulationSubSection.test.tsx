@@ -482,6 +482,7 @@ describe("CreateSimulationSubSection", () => {
         options: [
           { value: ExperienceMode.FEEDBACK, label: "Feedback Mode" },
           { value: ExperienceMode.CHECKLIST, label: "Checklist Mode" },
+          { value: ExperienceMode.NONE, label: "None" },
         ],
       };
 

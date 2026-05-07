@@ -77,6 +77,7 @@ export const RESPONSE_LENGTH_OPTIONS = [
 export const EXPERIENCE_MODE_OPTIONS = [
   { value: "FEEDBACK", label: "Feedback Mode" },
   { value: "CHECKLIST", label: "Checklist Mode" },
+  { value: "NONE", label: "None" },
 ];
 
 export const CHECKLIST_TYPE_OPTIONS = [

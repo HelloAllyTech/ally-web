@@ -117,6 +117,7 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
 
   const simulationMode = props?.scenario?.metadata?.experienceMode;
   const isChecklistMode = simulationMode === "CHECKLIST";
+  const isFeedbackMode = simulationMode === "FEEDBACK";
   return (
     <motion.div className="flex flex-col gap-6 w-full">
       <div className="border p-4 rounded-md flex flex-col gap-4">
@@ -153,8 +154,8 @@ export const FeedbackSection: FC<FeedbackSectionProps> = props => {
             </div>
           </div>
         </div>
-        <Checklist className="h-full" sessionId={props.sessionId} />
-        {!isChecklistMode && (
+        {isChecklistMode && <Checklist className="h-full" sessionId={props.sessionId} />}
+        {isFeedbackMode && (
           <motion.div className="font-primary space-y-4">
             {feedbackSections.map(({ key, label, type, columns }, index) => {
               return (
