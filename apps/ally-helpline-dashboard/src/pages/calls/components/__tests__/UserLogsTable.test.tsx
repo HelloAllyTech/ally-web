@@ -27,26 +27,39 @@ vi.mock("@mui/material", () => ({
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   GenericTable: React.forwardRef(
-    ({ columns, data, isLoading, handleLoadMore, fallbackUI, className }: any, ref: any) => (
-      <div ref={ref} className={className} data-testid="generic-table">
-        {isLoading && <div data-testid="table-loading">Loading...</div>}
-        {fallbackUI}
-        {data?.map((item: any, index: number) => (
-          <div key={item.id || index} data-testid={`table-row-${index}`}>
-            {columns.map((col: any) => (
-              <div key={col.key} data-testid={`cell-${col.key}-${index}`}>
-                {col.render ? col.render(item[col.key], item) : item[col.key]}
-              </div>
-            ))}
-          </div>
-        ))}
-        {handleLoadMore && (
-          <button onClick={handleLoadMore} data-testid="load-more-button">
-            Load More
-          </button>
-        )}
-      </div>
-    ),
+    (
+      { columns, data, isLoading, handleLoadMore, fallbackUI, className, onFilterChange }: any,
+      ref: any,
+    ) => {
+      // Mirror real GenericTable's mount-time onFilterChange fire (its
+      // useEffect with [filter, sort] deps runs once on mount with the
+      // empty initial filter). Consumers must not wipe state on this call.
+      React.useEffect(() => {
+        onFilterChange?.({ filter: [], sort: { key: "", value: null } });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
+
+      return (
+        <div ref={ref} className={className} data-testid="generic-table">
+          {isLoading && <div data-testid="table-loading">Loading...</div>}
+          {fallbackUI}
+          {data?.map((item: any, index: number) => (
+            <div key={item.id || index} data-testid={`table-row-${index}`}>
+              {columns.map((col: any) => (
+                <div key={col.key} data-testid={`cell-${col.key}-${index}`}>
+                  {col.render ? col.render(item[col.key], item) : item[col.key]}
+                </div>
+              ))}
+            </div>
+          ))}
+          {handleLoadMore && (
+            <button onClick={handleLoadMore} data-testid="load-more-button">
+              Load More
+            </button>
+          )}
+        </div>
+      );
+    },
   ),
 }));
 
@@ -777,6 +790,29 @@ describe("UserLogsTable", () => {
       await waitFor(() => {
         expect(updateFilters).toHaveBeenCalledWith(expect.objectContaining({ offset: 25 }));
       });
+    });
+
+    it("keeps Load More and rows visible after GenericTable's mount-time onFilterChange", async () => {
+      // Regression: GenericTable fires onFilterChange({filter:[], sort:...})
+      // on mount. UserLogsTable's handler used to unconditionally setLogs([])
+      // on every call, which wiped the loaded first page so Load More went
+      // missing and earlier rows were unreachable until a search was applied.
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: {
+          data: Array(25)
+            .fill(SCRIBE_CALL_LOG)
+            .map((l, i) => ({ ...l, id: i + 1 })),
+        },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      renderComponent(SessionType.CALL);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("load-more-button")).toBeInTheDocument();
+      });
+      expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(25);
     });
 
     it("resets logs when session type switches", async () => {

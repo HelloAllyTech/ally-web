@@ -169,6 +169,9 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       callName && typeof callName.value === "string" && callName.value.trim()
         ? callName.value.trim()
         : undefined;
+    // GenericTable fires onFilterChange on mount with an empty filter; bail
+    // out when nothing actually changed so we don't wipe the loaded page.
+    if (newCallName === callNameFilter) return;
     setCallNameFilter(newCallName);
     setLogs([]);
     setHasMore(true);
