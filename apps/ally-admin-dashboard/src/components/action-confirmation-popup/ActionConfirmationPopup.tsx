@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef } from "react";
+import { FC, ReactNode, useEffect, useRef } from "react";
 
 import { Close } from "@assets";
 import { Button } from "@components";
@@ -10,6 +10,7 @@ interface ActionConfirmationPopupProps {
   title: string;
   titleItalic?: string;
   description: string;
+  children?: ReactNode;
   primaryButton: PopupButtonProps;
   secondaryButton?: PopupButtonProps;
 }
@@ -19,6 +20,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
   onClose,
   title,
   description,
+  children,
   primaryButton,
   secondaryButton,
   titleItalic,
@@ -72,6 +74,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
       <p className="text-typography-800 font-primary text-base my-2 text-center ">
         {renderBoldFromString(description)}
       </p>
+      {children}
     </div>
   );
 

@@ -122,6 +122,8 @@ export const CreateSimulation: FC = () => {
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
   const [currentStep, setCurrentStep] = useState(stepIds.overview);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
+  const [showOptionalFieldsWarning, setShowOptionalFieldsWarning] = useState(false);
+  const pendingActionRef = useRef<(() => Promise<void>) | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
 
@@ -271,6 +273,22 @@ export const CreateSimulation: FC = () => {
   );
 
   const areAllMandatoryFieldsFilledInOverview = overviewMissingMandatoryLabels.length === 0;
+
+  const emptyOptionalFields = useMemo(() => {
+    const fields: { id: string; label: string }[] = [
+      { id: FORM_FIELD_IDS.CHARACTER_PROFILE_TEXT, label: "Character Backstory" },
+      { id: FORM_FIELD_IDS.PROMPT, label: "Role Instructions" },
+      { id: FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS, label: "Behaviour Instructions" },
+      { id: FORM_FIELD_IDS.LINGUISTIC_STYLE_SAMPLES, label: "Linguistic Style Samples" },
+    ];
+    return fields.filter(({ id }) => {
+      const value = formValues[id];
+      if (!value) return true;
+      if (Array.isArray(value) && value.length === 0) return true;
+      if (typeof value === "string" && value.trim() === "") return true;
+      return false;
+    });
+  }, [formValues]);
 
   const handlePageBack = () => {
     if (Object.keys(dirtyFields).length > 0) {
@@ -511,7 +529,7 @@ export const CreateSimulation: FC = () => {
     }
   };
 
-  const handlePublish = async () => {
+  const doPublish = async () => {
     try {
       const response = await saveSimulationChanges(SimulationStatus.ACTIVE);
 
@@ -522,6 +540,15 @@ export const CreateSimulation: FC = () => {
       }
     } catch {
       toast.error(en.errors.failedSimulationCreation);
+    }
+  };
+
+  const handlePublish = () => {
+    if (emptyOptionalFields.length > 0) {
+      pendingActionRef.current = doPublish;
+      setShowOptionalFieldsWarning(true);
+    } else {
+      doPublish();
     }
   };
 
@@ -647,7 +674,7 @@ export const CreateSimulation: FC = () => {
     }
   };
 
-  const handlePreview = async () => {
+  const doPreview = async () => {
     const response = await saveSimulationChanges(
       adminSimulationByIdData?.status || SimulationStatus.DRAFT,
     );
@@ -673,6 +700,15 @@ export const CreateSimulation: FC = () => {
 
       setPreviewSimulation(simulation);
       setIsPreviewOpen(true);
+    }
+  };
+
+  const handlePreview = () => {
+    if (emptyOptionalFields.length > 0) {
+      pendingActionRef.current = doPreview;
+      setShowOptionalFieldsWarning(true);
+    } else {
+      doPreview();
     }
   };
 
@@ -731,6 +767,33 @@ export const CreateSimulation: FC = () => {
           variant: ButtonVariant.SECONDARY,
         }}
       />
+
+      <ActionConfirmationPopup
+        isOpen={showOptionalFieldsWarning}
+        onClose={() => setShowOptionalFieldsWarning(false)}
+        title="Before you continue..."
+        description="The following fields are empty, which may affect simulation performance:"
+        primaryButton={{
+          label: "Continue anyway",
+          onClick: () => {
+            setShowOptionalFieldsWarning(false);
+            pendingActionRef.current?.();
+            pendingActionRef.current = null;
+          },
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: "Go back and fill in",
+          onClick: () => setShowOptionalFieldsWarning(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      >
+        <ul className="text-left text-typography-800 font-primary text-sm mb-2 list-disc pl-5">
+          {emptyOptionalFields.map(field => (
+            <li key={field.id}>{field.label}</li>
+          ))}
+        </ul>
+      </ActionConfirmationPopup>
 
       {previewSimulation && (
         <SimulationPreview

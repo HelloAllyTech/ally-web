@@ -156,6 +156,10 @@ vi.mock("@constants", () => ({
   // Provide FORM_FIELD_IDS to satisfy CreateSimulation import
   FORM_FIELD_IDS: {
     LANGUAGES_VOICES: "languageVoices",
+    CHARACTER_PROFILE_TEXT: "characterProfileText",
+    PROMPT: "prompt",
+    BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
+    LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   },
   isValidStateInstructionId: (id: any) => ["-1", "1", "2", "3"].includes(String(id)),
   ROLE_INSTRUCTION_PROMPT_CODE: "openai_simulation_role_instruction",
@@ -232,6 +236,11 @@ describe("CreateSimulation", () => {
       triggerWarningIds: [],
       // Provide at least one language->voice mapping by default so header is enabled
       languageVoices: { "1": "voice-1" },
+      // Populate optional fields so tests bypass the optional-fields warning modal
+      characterProfileText: "Test backstory",
+      prompt: "Test prompt",
+      behaviorInstructions: [{ category: "test" }],
+      linguisticStyleSamples: ["sample"],
     })),
     getValues: vi.fn(() => ({
       title: "Test Title",
