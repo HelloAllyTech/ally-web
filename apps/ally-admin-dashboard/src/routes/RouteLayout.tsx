@@ -21,6 +21,7 @@ import {
   PromptManagement,
   UserBadges,
   TranslationManagement,
+  TooltipManagement,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -192,6 +193,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.VIEW_I18N_TRANSLATIONS]}>
               <TranslationManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_TOOLTIPS}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_TOOLTIPS]}>
+              <TooltipManagement />
             </PrivateLayout>
           }
         />

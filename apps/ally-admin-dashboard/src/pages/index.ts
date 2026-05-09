@@ -15,3 +15,4 @@ export * from "./PromptManagement/PromptManagement";
 export * from "./UserBadges/UserBadges";
 export * from "./GuardrailsManagement/GuardrailsManagement";
 export * from "./TranslationManagement/TranslationManagement";
+export * from "./Tooltips/Tooltips";

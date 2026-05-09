@@ -21,6 +21,8 @@ import {
   isNonEmptyString,
   isArray,
   validateTimeRange,
+  toLocationSlug,
+  fromLocationSlug,
 } from "../common";
 
 describe("common utils", () => {
@@ -545,6 +547,59 @@ describe("common utils", () => {
 
       const result2 = validateTimeRange("01:15:10", "01:15:20", "01:15:40");
       expect(result2.isValid).toBe(false);
+    });
+  });
+
+  describe("toLocationSlug", () => {
+    it("should convert display text to lowercase underscore slug", () => {
+      expect(toLocationSlug("Login Button")).toBe("login_button");
+      expect(toLocationSlug("Profile Icon")).toBe("profile_icon");
+      expect(toLocationSlug("Logout Button")).toBe("logout_button");
+    });
+
+    it("should trim leading and trailing whitespace", () => {
+      expect(toLocationSlug("  Login Button  ")).toBe("login_button");
+    });
+
+    it("should collapse multiple spaces into a single underscore", () => {
+      expect(toLocationSlug("Profile   Page")).toBe("profile_page");
+    });
+
+    it("should handle single word", () => {
+      expect(toLocationSlug("Dashboard")).toBe("dashboard");
+    });
+
+    it("should handle already lowercase text", () => {
+      expect(toLocationSlug("login button")).toBe("login_button");
+    });
+
+    it("should handle empty string", () => {
+      expect(toLocationSlug("")).toBe("");
+    });
+  });
+
+  describe("fromLocationSlug", () => {
+    it("should convert slug to title-case display text", () => {
+      expect(fromLocationSlug("login_button")).toBe("Login Button");
+      expect(fromLocationSlug("profile_icon")).toBe("Profile Icon");
+      expect(fromLocationSlug("logout_button")).toBe("Logout Button");
+    });
+
+    it("should handle single word slug", () => {
+      expect(fromLocationSlug("dashboard")).toBe("Dashboard");
+    });
+
+    it("should handle three-word slug", () => {
+      expect(fromLocationSlug("create_new_account")).toBe("Create New Account");
+    });
+
+    it("should handle empty string", () => {
+      expect(fromLocationSlug("")).toBe("");
+    });
+
+    it("round-trip: toLocationSlug then fromLocationSlug restores title-case", () => {
+      expect(fromLocationSlug(toLocationSlug("Login Button"))).toBe("Login Button");
+      expect(fromLocationSlug(toLocationSlug("Profile Icon"))).toBe("Profile Icon");
     });
   });
 });

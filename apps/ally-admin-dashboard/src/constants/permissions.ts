@@ -15,6 +15,8 @@ export enum Permissions {
   EDIT_MULTI_TENANT_ADMINS = "edit:multi-tenant-admins",
   VIEW_I18N_TRANSLATIONS = "view:admin:i18n-translations",
   EDIT_I18N_TRANSLATIONS = "edit:admin:i18n-translations",
+  VIEW_TOOLTIPS = "view:admin:tooltips",
+  EDIT_TOOLTIPS = "edit:admin:tooltips",
 }
 
 export const SIDEBAR_ITEMS = {
@@ -28,4 +30,5 @@ export const SIDEBAR_ITEMS = {
   USER_BADGES: "user-badges",
   MANAGE_GUARDRAILS: "manage-guardrails",
   TRANSLATIONS: "translations",
+  TOOLTIPS: "tooltips",
 };

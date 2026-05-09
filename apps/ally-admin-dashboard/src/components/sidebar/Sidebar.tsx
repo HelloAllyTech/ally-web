@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { Languages } from "lucide-react";
+import { Info, Languages } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -137,6 +137,8 @@ export const Sidebar: React.FC = () => {
         return <Badge />;
       case SIDEBAR_ITEMS.TRANSLATIONS:
         return <Languages size={20} strokeWidth={1.8} />;
+      case SIDEBAR_ITEMS.TOOLTIPS:
+        return <Info size={20} strokeWidth={1.8} />;
       default:
         return null;
     }
@@ -167,13 +169,15 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.USER_BADGES);
       case ROUTES.MANAGE_TRANSLATIONS:
         return location.pathname.includes(ROUTES.MANAGE_TRANSLATIONS);
+      case ROUTES.MANAGE_TOOLTIPS:
+        return location.pathname.includes(ROUTES.MANAGE_TOOLTIPS);
       default:
         return false;
     }
   };
 
   const sidebarItems = (
-    <nav className="flex-1 px-2 py-4">
+    <nav className="flex-1 min-h-0 overflow-y-auto px-2 py-4">
       <ul className="space-y-1">
         {filteredNavigationItems.map(item => {
           const isActive = isTabItemActive(item.path);
@@ -208,7 +212,7 @@ export const Sidebar: React.FC = () => {
 
   const profileSection = (
     <>
-      <div ref={containerRef} className="border-t border-border-light py-4">
+      <div ref={containerRef} className="flex-shrink-0 border-t border-border-light py-4">
         <div
           onClick={handleUserMenuToggle}
           className="flex flex-row justify-between items-center h-8 py-0 cursor-pointer"

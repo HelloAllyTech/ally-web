@@ -8,3 +8,4 @@ export * from "./previewVoice";
 export * from "./guardrails";
 export * from "./userBadges";
 export * from "./dynamicI18n";
+export * from "./tooltips";
