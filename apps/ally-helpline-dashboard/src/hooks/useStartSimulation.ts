@@ -67,9 +67,11 @@ export const useStartSimulation = (
         scenarioPathSessionItemId?: string;
         caseSessionItemId?: string;
         languageId?: number;
+        platform: "web" | "mobile-ios" | "mobile-android";
       } = {
         scenarioId,
         languageId,
+        platform: "web",
       };
 
       if (scenarioPathSessionItemId?.length > 0) {

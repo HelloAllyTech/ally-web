@@ -119,6 +119,7 @@ describe("useStartSimulation", () => {
       scenarioId: 1,
       scenarioPathSessionItemId: "path-123",
       languageId: 1,
+      platform: "web",
     });
     expect(mockOnSuccess).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/simulation/session-123/Test Scenario", {
@@ -290,6 +291,7 @@ describe("useStartSimulation", () => {
       scenarioId: 1,
       scenarioPathSessionItemId: "path-123",
       languageId: 1,
+      platform: "web",
     });
   });
 

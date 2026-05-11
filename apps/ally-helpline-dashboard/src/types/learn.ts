@@ -114,11 +114,14 @@ export interface GetScenarioInput {
   languageCode?: string;
 }
 
+export type SessionPlatform = "web" | "mobile-ios" | "mobile-android";
+
 export interface StartSimulationInput {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
   caseSessionItemId?: string;
   languageCode?: string;
+  platform?: SessionPlatform;
 }
 
 export interface StartSimulationResponse {

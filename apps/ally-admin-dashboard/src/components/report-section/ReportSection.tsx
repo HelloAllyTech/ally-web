@@ -491,6 +491,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleCancelReportGeneration = useDebounce(handleCancel, 500);
 
     const handleLoadMoreHistory = async () => {
