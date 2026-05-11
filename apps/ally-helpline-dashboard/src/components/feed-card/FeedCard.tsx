@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useLazyGetGeneralCommentsOverviewQuery } from "@api";
 import { ReviewTranscript, ScribeImage } from "@assets";
-import { ReactionsModal } from "@components";
+import { AudioTranscriptPlayer, ReactionsModal } from "@components";
 import { useUser } from "@hooks";
 import { getFormattedTimeFromDuration, formatDateTime, formatRelativeTime } from "@utils";
 
@@ -33,6 +33,7 @@ const FeedCard: FC<FeedCardProps> = ({
   isScribeReview,
   onTapViewMore,
   scribeSummaryName,
+  audioUrl,
 }) => {
   const { user: currentDetails } = useUser();
   const { t, i18n } = useTranslation();
@@ -379,6 +380,15 @@ const FeedCard: FC<FeedCardProps> = ({
           {divider()}
 
           {scenarioSection()}
+
+          {!isScribeReview && audioUrl && (
+            <div
+              className="rounded-[12px] border-[0.5px] px-3 py-2"
+              onClick={e => e.stopPropagation()}
+            >
+              <AudioTranscriptPlayer audioUrl={audioUrl} />
+            </div>
+          )}
 
           {reviewTranscriptSection()}
 

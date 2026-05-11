@@ -20,6 +20,7 @@ import { baseAPI } from "@api/baseAPI";
 import { ChatBubble, LeftArrow, Smiley, InfoIcon } from "@assets";
 import {
   ReactionSelector,
+  AudioTranscriptPlayer,
   EmojiStack,
   ReactionsModal,
   ReviewCommentsSidepanel,
@@ -550,6 +551,11 @@ export const ReviewDetails = () => {
                 onEditNote={onTapAddNote}
                 reviewCreatedAt={reviewDetails?.createdAt}
               />
+            </div>
+          )}
+          {!isScribeReview && reviewDetails?.scenarioSession?.audioUrl && (
+            <div className="pb-6 rounded-[12px] border-[0.5px] px-4 py-3">
+              <AudioTranscriptPlayer audioUrl={reviewDetails.scenarioSession.audioUrl} />
             </div>
           )}
           <Transcription
