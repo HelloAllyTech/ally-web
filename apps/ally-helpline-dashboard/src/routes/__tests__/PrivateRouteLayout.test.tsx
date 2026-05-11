@@ -193,10 +193,10 @@ describe("PrivateRouteLayout", () => {
     expect(screen.getByTestId("navbar-wrapper")).toBeInTheDocument();
   });
 
-  it("returns empty fragment when user is not present", () => {
+  it("returns empty fragment when user is not present", async () => {
     mockUseUser.mockReturnValue({
       user: null,
-      checkAuth: vi.fn(),
+      checkAuth: vi.fn().mockResolvedValue(null),
       permissions: [],
     });
 
@@ -206,6 +206,12 @@ describe("PrivateRouteLayout", () => {
 
     const { container } = renderWithRouter(<PrivateRouteLayout />);
     expect(container.firstChild).toBeNull();
+
+    // Wait for verifyAuth's retry chain to settle before teardown, otherwise
+    // it touches localStorage after jsdom is gone.
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/login");
+    });
   });
 
   it("handles chat types when available", async () => {
@@ -242,6 +248,10 @@ describe("PrivateRouteLayout", () => {
 
     // Should render without crashing even on auth failure
     expect(screen.getByTestId("navbar-wrapper")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/login");
+    });
   });
 
   it("renders for ADMIN role", () => {
@@ -350,5 +360,9 @@ describe("PrivateRouteLayout", () => {
 
     // Should render without crashing even on auth errors
     expect(screen.getByTestId("navbar-wrapper")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/login");
+    });
   });
 });
