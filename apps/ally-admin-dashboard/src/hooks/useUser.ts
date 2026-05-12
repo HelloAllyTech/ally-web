@@ -88,6 +88,11 @@ export const useUser = () => {
       path: ROUTES.MANAGE_TRANSLATIONS,
     },
     {
+      id: SIDEBAR_ITEMS.TOOLTIPS,
+      label: "Tooltips",
+      path: ROUTES.MANAGE_TOOLTIPS,
+    },
+    {
       id: SIDEBAR_ITEMS.USERS,
       label: en.userManagement.users,
       path: ROUTES.USER_MANAGEMENT,
@@ -185,6 +190,8 @@ export const useUser = () => {
           return permissions.includes(Permissions.EDIT_GUARDRAIL);
         case SIDEBAR_ITEMS.TRANSLATIONS:
           return permissions.includes(Permissions.VIEW_I18N_TRANSLATIONS);
+        case SIDEBAR_ITEMS.TOOLTIPS:
+          return permissions.includes(Permissions.VIEW_TOOLTIPS);
         case SIDEBAR_ITEMS.USER_BADGES:
           return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
         default:

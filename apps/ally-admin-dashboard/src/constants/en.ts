@@ -37,6 +37,8 @@ export const en = {
     },
   },
   errors: {
+    failedToCreateTooltip: "Failed to create tooltip",
+    failedToUpdateTooltip: "Failed to update tooltip",
     maxRowsBehavioursInstruction: "You can only add up to 10 rows of behaviours instruction.",
     overviewMandatoryFieldsNotFilled:
       "Please fill all mandatory fields in the Overview step to proceed.",
@@ -665,5 +667,19 @@ export const en = {
     publishBadgeConfirmationTitleItalic: " Badge?",
     publishBadgeConfirmationDescription:
       "Are you sure you want to publish this badge? Once published, this badge will be awarded to users who meet the defined criteria. ",
+  },
+  tooltip: {
+    scenarioTooltips: "Tooltips",
+    createTooltip: "Create Tooltip",
+    editTooltip: "Edit Tooltip",
+    searchTooltips: "Search tooltips...",
+    tipText: "Tip Text",
+    icon: "Icon",
+    status: "Status",
+    locationRequired: "Location and tip text are required",
+    unsavedChangesWarning: "You have unsaved changes. Are you sure you want to close?",
+    tooltipCreated: "Tooltip created successfully",
+    tooltipUpdated: "Tooltip updated successfully",
+    locationAlreadyExists: "A tooltip for this location already exists",
   },
 };

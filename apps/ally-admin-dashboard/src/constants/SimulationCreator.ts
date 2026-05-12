@@ -930,3 +930,42 @@ export const DEFAULT_STATE_INSTRUCTIONS = BEHAVIOUR_STATES.map(({ stateId }) => 
   instruction: "",
   dialogues: [] as string[],
 }));
+
+export const TOOLTIPS_TABLE_COLUMNS = [
+  {
+    id: "location",
+    label: "Location",
+    accessor: "location",
+    dataType: cellTypes.normalText,
+    minWidth: 300,
+  },
+  {
+    id: "tipText",
+    label: "Tip Text",
+    accessor: "tipText",
+    dataType: cellTypes.wrapText,
+    minWidth: 560,
+  },
+  {
+    id: "icon",
+    label: "Icon",
+    accessor: "icon",
+    dataType: cellTypes.emoji_select,
+    options: [],
+    minWidth: 80,
+  },
+  {
+    id: "active",
+    label: "Active",
+    accessor: "active",
+    dataType: cellTypes.switch,
+    minWidth: 130,
+  },
+  {
+    id: "createdAt",
+    label: "Created",
+    accessor: "createdAt",
+    dataType: cellTypes.normalText,
+    minWidth: 160,
+  },
+];

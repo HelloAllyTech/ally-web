@@ -143,6 +143,11 @@ export const ApiEndpoints = {
     ROLLBACK: "/v1/i18n/rollback",
     AUDIT_LOG: "/v1/i18n/audit-log",
   },
+  TOOLTIPS: {
+    GET_TOOLTIPS: "/v1/tooltips",
+    CREATE_TOOLTIP: "/v1/tooltips",
+    UPDATE_TOOLTIP: (id: string) => `/v1/tooltips/${id}`,
+  },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
     GET_ROLES: "/v1/authorization/roles",
@@ -171,6 +176,7 @@ export const ROUTES = {
   MANAGE_GUARDRAILS: "/manage-guardrails",
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
   MANAGE_TRANSLATIONS: "/manage-translations",
+  MANAGE_TOOLTIPS: "/manage-tooltips",
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -239,6 +245,7 @@ export const TAG_TYPES = {
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
   USER_BADGES: "userBadges",
   I18N_TRANSLATIONS: "i18nTranslations",
+  TOOLTIPS: "tooltips",
   HELPER_TAGS: "helperTags",
   FILLER_TAGS: "fillerTags",
   COMPETENCIES: "competencies",

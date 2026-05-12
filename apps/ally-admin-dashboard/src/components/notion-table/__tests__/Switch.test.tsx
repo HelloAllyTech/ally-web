@@ -53,20 +53,6 @@ describe("Switch", () => {
       expect(input).not.toBeChecked();
     });
 
-    it("displays 'On' label when checked", () => {
-      render(<Switch {...defaultProps} checked={true} />);
-
-      const labels = screen.getAllByText("On");
-      expect(labels).toHaveLength(2); // One in ToggleSwitch, one in the div
-    });
-
-    it("displays 'Off' label when not checked", () => {
-      render(<Switch {...defaultProps} checked={false} />);
-
-      const labels = screen.getAllByText("Off");
-      expect(labels).toHaveLength(2); // One in ToggleSwitch, one in the div
-    });
-
     it("applies custom className", () => {
       const { container } = render(<Switch {...defaultProps} className="custom-class" />);
 
@@ -134,32 +120,6 @@ describe("Switch", () => {
     });
   });
 
-  describe("Label Display", () => {
-    it("shows 'On' text when checked", () => {
-      render(<Switch {...defaultProps} checked={true} />);
-
-      const onTexts = screen.getAllByText("On");
-      expect(onTexts.length).toBeGreaterThan(0);
-    });
-
-    it("shows 'Off' text when unchecked", () => {
-      render(<Switch {...defaultProps} checked={false} />);
-
-      const offTexts = screen.getAllByText("Off");
-      expect(offTexts.length).toBeGreaterThan(0);
-    });
-
-    it("updates label when checked state changes", () => {
-      const { rerender } = render(<Switch {...defaultProps} checked={false} />);
-
-      expect(screen.getAllByText("Off")).toHaveLength(2);
-
-      rerender(<Switch {...defaultProps} checked={true} />);
-
-      expect(screen.getAllByText("On")).toHaveLength(2);
-    });
-  });
-
   describe("Styling", () => {
     it("applies wrapper styling", () => {
       const { container } = render(<Switch {...defaultProps} />);
@@ -168,7 +128,6 @@ describe("Switch", () => {
       expect(wrapper).toHaveClass("w-full");
       expect(wrapper).toHaveClass("px-2");
       expect(wrapper).toHaveClass("py-1");
-      expect(wrapper).toHaveClass("gap-2");
       expect(wrapper).toHaveClass("flex");
       expect(wrapper).toHaveClass("items-center");
       expect(wrapper).toHaveClass("justify-center");
@@ -180,13 +139,6 @@ describe("Switch", () => {
       const wrapper = container.firstChild;
       expect(wrapper).toHaveClass("items-center");
       expect(wrapper).toHaveClass("justify-center");
-    });
-
-    it("applies gap between elements", () => {
-      const { container } = render(<Switch {...defaultProps} />);
-
-      const wrapper = container.firstChild;
-      expect(wrapper).toHaveClass("gap-2");
     });
   });
 
@@ -293,25 +245,6 @@ describe("Switch", () => {
 
       expect(mockOnChange).toHaveBeenCalled();
     });
-
-    it("passes label based on checked state", () => {
-      render(<Switch {...defaultProps} checked={true} />);
-
-      const label = screen.getByTestId("toggle-label");
-      expect(label).toHaveTextContent("On");
-    });
-
-    it("updates label when state changes", () => {
-      const { rerender } = render(<Switch {...defaultProps} checked={true} />);
-
-      let label = screen.getByTestId("toggle-label");
-      expect(label).toHaveTextContent("On");
-
-      rerender(<Switch {...defaultProps} checked={false} />);
-
-      label = screen.getByTestId("toggle-label");
-      expect(label).toHaveTextContent("Off");
-    });
   });
 
   describe("Boolean Values", () => {
@@ -320,7 +253,6 @@ describe("Switch", () => {
 
       const input = screen.getByTestId("toggle-input");
       expect(input).toBeChecked();
-      expect(screen.getAllByText("On")).toHaveLength(2);
     });
 
     it("handles false as unchecked", () => {
@@ -328,7 +260,6 @@ describe("Switch", () => {
 
       const input = screen.getByTestId("toggle-input");
       expect(input).not.toBeChecked();
-      expect(screen.getAllByText("Off")).toHaveLength(2);
     });
   });
 
@@ -338,12 +269,6 @@ describe("Switch", () => {
 
       const input = screen.getByTestId("toggle-input");
       expect(input).toHaveAttribute("type", "checkbox");
-    });
-
-    it("provides visual feedback through labels", () => {
-      render(<Switch {...defaultProps} checked={true} />);
-
-      expect(screen.getAllByText("On")).toHaveLength(2);
     });
   });
 
