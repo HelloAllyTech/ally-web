@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { ChipGroup, CustomVideo } from "@ally-ui-mono/ui-shared";
+import { ChipGroup, CustomVideo, RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { ShareIcon } from "@assets";
 import { Button, ConfirmationDialog, ButtonVariant } from "@components";
 
@@ -130,7 +130,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
               <div className="text-base font-semibold text-typography-900">
                 {t("learn.scenario.scenarioLabel")}
               </div>
-              <p className="text-base text-typography-800">{longDescription}</p>
+              <RichTextRenderer content={longDescription} />
             </div>
           )}
 

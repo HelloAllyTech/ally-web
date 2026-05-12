@@ -24,6 +24,7 @@ import {
   getSimulationEvents,
 } from "./lib/simulation";
 import { SimulationDetailsModal } from "./lib/simulation-details-modal";
+import { RichTextRenderer } from "./lib/rich-text-renderer";
 import SkeletonLoader from "./lib/skeleton-loader";
 import SuggestionsContainer from "./lib/suggestions-container";
 import { Tabs } from "./lib/tabs";
@@ -67,4 +68,5 @@ export {
   Toggle,
   AutoExpandableTextarea,
   Tabs,
+  RichTextRenderer,
 };
