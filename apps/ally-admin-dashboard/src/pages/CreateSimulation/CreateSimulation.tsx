@@ -462,8 +462,7 @@ export const CreateSimulation: FC = () => {
       status,
       // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
       ...(!FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG && { stateInstructions }),
-      behaviorInstructions:
-        behaviourInstructionsArray.length > 0 ? behaviourInstructionsArray : undefined,
+      behaviorInstructions: behaviourInstructionsArray,
       competencyId: restForm.competency?.id,
       maxTimeValue: timerMode ? maxTimeValue : null,
       timerMode: timerMode,
