@@ -70,4 +70,5 @@ export interface FeedCardProps {
   note?: string;
   isScribeReview?: boolean;
   scribeSummaryName?: string;
+  audioUrl?: string | null;
 }

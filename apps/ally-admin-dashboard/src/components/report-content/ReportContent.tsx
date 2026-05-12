@@ -1,9 +1,14 @@
 import { FC, useMemo } from "react";
 
-import { Tabs } from "@ally-ui-mono/ui-shared";
 import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { REPORT_GENERATION_MESSAGES, REPORT_METRIC_CONFIG, ReportGenerationMetrics } from "@constants";
+
+import { Tabs } from "@ally-ui-mono/ui-shared";
+import {
+  REPORT_GENERATION_MESSAGES,
+  REPORT_METRIC_CONFIG,
+  ReportGenerationMetrics,
+} from "@constants";
 import { TabItem } from "@src/components/types";
 
 import TranscriptSection from "./TranscriptSection";
@@ -14,7 +19,9 @@ const markdownComponents: Components = {
     <h1 className="text-xl font-semibold text-typography-900 mt-6 mb-3">{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-lg font-semibold text-typography-900 mt-6 mb-3 pb-2 border-b border-gray-200">{children}</h2>
+    <h2 className="text-lg font-semibold text-typography-900 mt-6 mb-3 pb-2 border-b border-gray-200">
+      {children}
+    </h2>
   ),
   h3: ({ children }) => (
     <h3 className="text-base font-semibold text-typography-900 mt-5 mb-2">{children}</h3>
@@ -25,9 +32,7 @@ const markdownComponents: Components = {
   p: ({ children }) => (
     <p className="text-base text-typography-900 leading-relaxed mb-3">{children}</p>
   ),
-  ul: ({ children }) => (
-    <ul className="list-disc list-inside space-y-1 mb-3 pl-2">{children}</ul>
-  ),
+  ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mb-3 pl-2">{children}</ul>,
   ol: ({ children }) => (
     <ol className="list-decimal list-inside space-y-1 mb-3 pl-2">{children}</ol>
   ),
@@ -52,9 +57,7 @@ const markdownComponents: Components = {
       {children}
     </th>
   ),
-  td: ({ children }) => (
-    <td className="px-4 py-2 text-base text-typography-900">{children}</td>
-  ),
+  td: ({ children }) => <td className="px-4 py-2 text-base text-typography-900">{children}</td>,
   blockquote: ({ children }) => (
     <blockquote className="border-l-4 border-primary-200 pl-4 italic text-typography-900 my-3">
       {children}

@@ -33,6 +33,7 @@ export interface ReviewItem {
   scenarioSession?: {
     duration?: number;
     createdAt?: string;
+    audioUrl?: string | null;
   };
   scribeSession?: {
     duration?: number;

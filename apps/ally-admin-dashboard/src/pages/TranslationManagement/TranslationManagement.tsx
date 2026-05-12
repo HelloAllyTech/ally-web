@@ -87,9 +87,7 @@ export const TranslationManagement: React.FC = () => {
 
   const isLiveSelected = useMemo(() => {
     if (rollbackVersion === "") return false;
-    return (
-      status?.versions?.find(v => v.version === Number(rollbackVersion))?.current ?? false
-    );
+    return status?.versions?.find(v => v.version === Number(rollbackVersion))?.current ?? false;
   }, [rollbackVersion, status?.versions]);
 
   const filteredRows = useMemo(() => {

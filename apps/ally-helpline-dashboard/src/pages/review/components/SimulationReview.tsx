@@ -138,6 +138,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
             isViewMoreExpanded={expandedViewMoreIds.has(item.id)}
             onTapViewMore={() => handleTapViewMore(item.id)}
             note={item.note}
+            audioUrl={item.scenarioSession?.audioUrl}
           />
         </motion.div>
       ))}
