@@ -87,7 +87,8 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
   }, []);
 
   const isFormValid = useMemo(
-    () => !!(formData.location?.trim() && formData.tipText?.trim() && formData.tipText.length <= 200),
+    () =>
+      !!(formData.location?.trim() && formData.tipText?.trim() && formData.tipText.length <= 200),
     [formData.location, formData.tipText],
   );
 

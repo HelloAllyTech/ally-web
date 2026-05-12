@@ -43,10 +43,7 @@ export const tooltipsAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.TOOLTIPS],
     }),
-    updateTooltip: builder.mutation<
-      boolean,
-      { id: string; data: UpdateTooltipRequest }
-    >({
+    updateTooltip: builder.mutation<boolean, { id: string; data: UpdateTooltipRequest }>({
       query: ({ id, data }) => ({
         url: ApiEndpoints.TOOLTIPS.UPDATE_TOOLTIP(id),
         method: HttpMethod.PATCH,
@@ -57,8 +54,5 @@ export const tooltipsAPI = baseAPI.injectEndpoints({
   }),
 });
 
-export const {
-  useGetTooltipsQuery,
-  useCreateTooltipMutation,
-  useUpdateTooltipMutation,
-} = tooltipsAPI;
+export const { useGetTooltipsQuery, useCreateTooltipMutation, useUpdateTooltipMutation } =
+  tooltipsAPI;

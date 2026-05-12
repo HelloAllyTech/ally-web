@@ -7,17 +7,14 @@ import { baseAPI } from "@api";
 import userSlice from "@reducer/userReducer";
 import { fromLocationSlug } from "@utils";
 
-const {
-  mockToast,
-  mockUseGetTooltipsQuery,
-  mockCreateTooltip,
-  mockUpdateTooltip,
-} = vi.hoisted(() => ({
-  mockToast: { success: vi.fn(), error: vi.fn() },
-  mockUseGetTooltipsQuery: vi.fn(),
-  mockCreateTooltip: vi.fn(),
-  mockUpdateTooltip: vi.fn(),
-}));
+const { mockToast, mockUseGetTooltipsQuery, mockCreateTooltip, mockUpdateTooltip } = vi.hoisted(
+  () => ({
+    mockToast: { success: vi.fn(), error: vi.fn() },
+    mockUseGetTooltipsQuery: vi.fn(),
+    mockCreateTooltip: vi.fn(),
+    mockUpdateTooltip: vi.fn(),
+  }),
+);
 
 vi.mock("sonner", () => ({ toast: mockToast }));
 
@@ -42,7 +39,11 @@ vi.mock("@components", () => ({
   NotionTable: ({ tableData, onRowClick, onRowChange, tableFooter }: any) => (
     <div data-testid="notion-table">
       {tableData.data.map((row: any, index: number) => (
-        <div key={row.id || index} data-testid={`table-row-${index}`} onClick={() => onRowClick(index)}>
+        <div
+          key={row.id || index}
+          data-testid={`table-row-${index}`}
+          onClick={() => onRowClick(index)}
+        >
           <span data-testid={`location-${index}`}>{row.location}</span>
           <span data-testid={`tip-text-${index}`}>{row.tipText}</span>
           <button
@@ -65,18 +66,28 @@ vi.mock("@components", () => ({
         <span data-testid="panel-location">
           {selectedTooltip?.location ? fromLocationSlug(selectedTooltip.location) : ""}
         </span>
-        <button data-testid="close-panel" onClick={onClose}>Close</button>
+        <button data-testid="close-panel" onClick={onClose}>
+          Close
+        </button>
         {selectedTooltip?.id ? (
           <button
             data-testid="update-from-panel"
-            onClick={() => onSave({ ...selectedTooltip, location: fromLocationSlug(selectedTooltip.location), tipText: "Updated tip" })}
+            onClick={() =>
+              onSave({
+                ...selectedTooltip,
+                location: fromLocationSlug(selectedTooltip.location),
+                tipText: "Updated tip",
+              })
+            }
           >
             Update
           </button>
         ) : (
           <button
             data-testid="create-from-panel"
-            onClick={() => onSave({ location: "New Location", tipText: "New tip text", active: false })}
+            onClick={() =>
+              onSave({ location: "New Location", tipText: "New tip text", active: false })
+            }
           >
             Create
           </button>
@@ -140,9 +151,30 @@ const testStore = configureStore({
 
 describe("TooltipManagement", () => {
   const mockTooltips = [
-    { id: "t-1", location: "login_button", tipText: "Click to log in", icon: "😀", active: true, createdAt: "2026-01-01T00:00:00Z" },
-    { id: "t-2", location: "profile_icon", tipText: "View your profile", icon: "", active: false, createdAt: "2026-01-02T00:00:00Z" },
-    { id: "t-3", location: "logout_button", tipText: "Click to log out", icon: "", active: true, createdAt: "2026-01-03T00:00:00Z" },
+    {
+      id: "t-1",
+      location: "login_button",
+      tipText: "Click to log in",
+      icon: "😀",
+      active: true,
+      createdAt: "2026-01-01T00:00:00Z",
+    },
+    {
+      id: "t-2",
+      location: "profile_icon",
+      tipText: "View your profile",
+      icon: "",
+      active: false,
+      createdAt: "2026-01-02T00:00:00Z",
+    },
+    {
+      id: "t-3",
+      location: "logout_button",
+      tipText: "Click to log out",
+      icon: "",
+      active: true,
+      createdAt: "2026-01-03T00:00:00Z",
+    },
   ];
 
   beforeEach(() => {
@@ -277,9 +309,7 @@ describe("TooltipManagement", () => {
       fireEvent.click(screen.getByTestId("create-button"));
       await waitFor(() => screen.getByTestId("create-from-panel"));
       fireEvent.click(screen.getByTestId("create-from-panel"));
-      await waitFor(() =>
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to create tooltip"),
-      );
+      await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("Failed to create tooltip"));
     });
 
     it("shows location already exists toast on 409 conflict", async () => {
@@ -340,9 +370,7 @@ describe("TooltipManagement", () => {
       renderComponent();
       await waitFor(() => fireEvent.click(screen.getByTestId("table-row-0")));
       fireEvent.click(screen.getByTestId("update-from-panel"));
-      await waitFor(() =>
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to update tooltip"),
-      );
+      await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("Failed to update tooltip"));
     });
 
     it("shows location already exists toast on 409 conflict during update", async () => {
@@ -379,9 +407,7 @@ describe("TooltipManagement", () => {
       mockUpdateTooltip.mockResolvedValue({ error: { status: 500 } });
       renderComponent();
       await waitFor(() => fireEvent.click(screen.getByTestId("toggle-active-0")));
-      await waitFor(() =>
-        expect(mockToast.error).toHaveBeenCalledWith("Failed to update tooltip"),
-      );
+      await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("Failed to update tooltip"));
     });
   });
 });

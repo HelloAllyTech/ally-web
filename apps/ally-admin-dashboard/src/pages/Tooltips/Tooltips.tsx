@@ -95,15 +95,7 @@ export const TooltipManagement: React.FC = () => {
   );
 
   const handleTableRowChange = useCallback(
-    async ({
-      columnId,
-      rowIndex,
-      value,
-    }: {
-      columnId: string;
-      rowIndex: number;
-      value: any;
-    }) => {
+    async ({ columnId, rowIndex, value }: { columnId: string; rowIndex: number; value: any }) => {
       const originalTooltip = tooltips[rowIndex];
       if (!originalTooltip) return;
 
@@ -128,18 +120,18 @@ export const TooltipManagement: React.FC = () => {
 
   const tableFooter = (
     <div className="flex justify-center py-4 text-sm text-typography-600">
-      {isFetching
-        ? en.common.loading
-        : tooltips.length >= LIMIT
-          ? (
-            <button
-              onClick={() => setOffset(prev => prev + LIMIT)}
-              className="text-primary-600 hover:underline"
-            >
-              {en.common.loadMore}
-            </button>
-          )
-          : en.common.noMoreData}
+      {isFetching ? (
+        en.common.loading
+      ) : tooltips.length >= LIMIT ? (
+        <button
+          onClick={() => setOffset(prev => prev + LIMIT)}
+          className="text-primary-600 hover:underline"
+        >
+          {en.common.loadMore}
+        </button>
+      ) : (
+        en.common.noMoreData
+      )}
     </div>
   );
 
