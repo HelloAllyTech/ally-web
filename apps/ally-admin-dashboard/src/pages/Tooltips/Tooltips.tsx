@@ -31,6 +31,7 @@ export const TooltipManagement: React.FC = () => {
   const formatTableData = tooltips.map(tooltip => ({
     ...tooltip,
     location: fromLocationSlug(tooltip.location),
+    locationSlug: tooltip.location,
     createdAt: tooltip.createdAt ? new Date(tooltip.createdAt).toLocaleDateString() : "",
   }));
 

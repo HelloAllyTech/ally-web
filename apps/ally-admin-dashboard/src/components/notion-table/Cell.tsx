@@ -148,13 +148,26 @@ export const Cell = ({
 
   switch (dataType) {
     case cellTypes.normalText:
-      element = (
-        <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-          {id === "eventCode" || id === "promptCode"
-            ? value.value
-            : formatCapitalizedEnum(value.value)}
-        </span>
-      );
+      if (id === "location" && row?.locationSlug) {
+        element = (
+          <div className="flex flex-col overflow-hidden">
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+              {formatCapitalizedEnum(value.value)}
+            </span>
+            <span className="text-xs text-typography-500 overflow-hidden text-ellipsis whitespace-nowrap">
+              {row.locationSlug}
+            </span>
+          </div>
+        );
+      } else {
+        element = (
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+            {id === "eventCode" || id === "promptCode"
+              ? value.value
+              : formatCapitalizedEnum(value.value)}
+          </span>
+        );
+      }
       break;
     case cellTypes.wrapText:
       element = (
