@@ -26,6 +26,7 @@ export type FormData = {
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
   allowedFillerWords?: Record<string, string[]>;
+  languageCharacteristics?: Record<string, string>;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;

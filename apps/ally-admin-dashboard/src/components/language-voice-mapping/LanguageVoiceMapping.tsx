@@ -71,12 +71,27 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   const {
     setError,
     clearErrors,
+    setValue,
     watch,
     formState: { errors },
   } = formMethods;
 
   // Watch the form value to get real-time updates when selection changes
   const languageVoices = watch(id) ?? {};
+  // Per-language free-text label override; co-located with the voice picker
+  // because both are "per-language config for this scenario".
+  const languageCharacteristics =
+    (watch("languageCharacteristics") as Record<string, string> | undefined) ?? {};
+
+  const handleLanguageLabelChange = useCallback(
+    (languageId: string, text: string) => {
+      setValue("languageCharacteristics", {
+        ...languageCharacteristics,
+        [languageId]: text,
+      });
+    },
+    [languageCharacteristics, setValue],
+  );
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [voicePreviewCache, setVoicePreviewCache] = useState<Record<string, ArrayBuffer>>({});
@@ -237,10 +252,10 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       return (
         <div
           key={languageId}
-          className="flex flex-row items-center gap-4 border border-border-light rounded-md px-3 py-2 bg-white"
+          className="flex flex-row items-start gap-4 border border-border-light rounded-md px-3 py-2 bg-white"
         >
-          <div className="w-1/3 text-sm text-typography-800 font-medium">{language.label}</div>
-          <div className="w-2/3">
+          <div className="w-1/4 pt-2 text-sm text-typography-800 font-medium">{language.label}</div>
+          <div className="w-1/3">
             <DropdownField
               id={`${id}.${languageId}`}
               label=""
@@ -262,6 +277,15 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
               allowDeselect={true}
             />
           </div>
+          <div className="flex-1">
+            <textarea
+              value={languageCharacteristics[languageId] ?? ""}
+              onChange={e => handleLanguageLabelChange(languageId, e.target.value)}
+              rows={2}
+              className="w-full text-sm text-typography-900 border border-border-light rounded-md p-2 focus:outline-none focus:border-primary-500 resize-y"
+              data-testid={`language-label-input-${languageId}`}
+            />
+          </div>
         </div>
       );
     });
@@ -270,6 +294,8 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     getOptionsForLanguage,
     id,
     languageVoices,
+    languageCharacteristics,
+    handleLanguageLabelChange,
     visibleLanguages,
     playingVoice,
     isAudioLoading,
@@ -329,6 +355,14 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
         <SkeletonLoader />
       ) : (
         <>
+          <div
+            className="flex flex-row items-center gap-4 px-3 text-xs font-medium uppercase tracking-wide text-typography-600"
+            data-testid="language-voice-mapping-header"
+          >
+            <div className="w-1/4">Language</div>
+            <div className="w-1/3">Voice</div>
+            <div className="flex-1">Label</div>
+          </div>
           <div className="flex flex-col gap-3">{renderDropdownFields()}</div>
           {languages.length > visibleLanguages.length && (
             <button
