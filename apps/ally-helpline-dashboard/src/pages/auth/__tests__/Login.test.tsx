@@ -17,7 +17,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, vi, beforeAll, beforeEach, afterAll, afterEach } from "vitest";
 
 import { Login } from "../Login";
 
@@ -190,15 +190,28 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: any) => children,
 }));
 
-// Mock localStorage
+// Mock localStorage — install in beforeAll / restore in afterAll so the
+// override does not leak into other test files in the same worker.
 const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-Object.defineProperty(window, "localStorage", {
-  value: localStorageMock,
+const ORIGINAL_LOCAL_STORAGE_DESCRIPTOR = Object.getOwnPropertyDescriptor(window, "localStorage");
+beforeAll(() => {
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    writable: true,
+    value: localStorageMock,
+  });
+});
+afterAll(() => {
+  if (ORIGINAL_LOCAL_STORAGE_DESCRIPTOR) {
+    Object.defineProperty(window, "localStorage", ORIGINAL_LOCAL_STORAGE_DESCRIPTOR);
+  } else {
+    delete (window as unknown as Record<string, unknown>).localStorage;
+  }
 });
 
 // Create a mock store

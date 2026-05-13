@@ -45,7 +45,7 @@ const ModalHeader = ({ title, onClose }: { title: string; onClose: () => void })
   );
 };
 
-const NOTE_MAX_LENGTH = 250;
+const NOTE_MAX_LENGTH = 1000;
 
 const NoteTextarea = ({
   note,

@@ -13,7 +13,7 @@
 
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, vi, beforeAll, beforeEach, afterAll, afterEach } from "vitest";
 
 import { MagicLinkVerify } from "../MagicLinkVerify";
 
@@ -98,15 +98,28 @@ vi.mock("sonner", () => ({
   },
 }));
 
-// Mock localStorage
+// Mock localStorage — install in beforeAll / restore in afterAll so the
+// override does not leak into other test files in the same worker.
 const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-Object.defineProperty(window, "localStorage", {
-  value: localStorageMock,
+const ORIGINAL_LOCAL_STORAGE_DESCRIPTOR = Object.getOwnPropertyDescriptor(window, "localStorage");
+beforeAll(() => {
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    writable: true,
+    value: localStorageMock,
+  });
+});
+afterAll(() => {
+  if (ORIGINAL_LOCAL_STORAGE_DESCRIPTOR) {
+    Object.defineProperty(window, "localStorage", ORIGINAL_LOCAL_STORAGE_DESCRIPTOR);
+  } else {
+    delete (window as unknown as Record<string, unknown>).localStorage;
+  }
 });
 
 // Helper to render with a specific URL
