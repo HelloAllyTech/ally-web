@@ -45,9 +45,7 @@ const ToolbarButton: FC<ToolbarButtonProps> = ({
   </button>
 );
 
-const ToolbarDivider: FC = () => (
-  <div className="w-px h-5 bg-border-light mx-1 self-center" />
-);
+const ToolbarDivider: FC = () => <div className="w-px h-5 bg-border-light mx-1 self-center" />;
 
 interface RichTextToolbarProps {
   editor: Editor | null;

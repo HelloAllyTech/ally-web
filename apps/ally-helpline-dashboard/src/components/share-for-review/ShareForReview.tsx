@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 
-import { CustomImage, CustomVideo } from "@ally-ui-mono/ui-shared/index";
+import { CustomImage, CustomVideo, htmlToPlainText } from "@ally-ui-mono/ui-shared/index";
 import { ArrowDownBlue, CloseIcon, ScribeImage } from "@assets";
 import { Button, EmojiPickerTrigger } from "@components";
 import { getFormattedDate, getFormattedTimeFromDuration } from "@utils";
@@ -220,7 +220,7 @@ const ScenarioDetails = ({
               isDescriptionExpanded ? "" : "line-clamp-2"
             }`}
           >
-            {scenario.description}
+            {htmlToPlainText(scenario.description)}
           </p>
           {isClamped && (
             <DescriptionToggle

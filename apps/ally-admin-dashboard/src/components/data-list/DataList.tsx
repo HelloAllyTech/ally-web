@@ -2,7 +2,7 @@ import React from "react";
 
 import { Tooltip } from "@mui/material";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage, htmlToPlainText } from "@ally-ui-mono/ui-shared";
 import { toolTipStyles } from "@constants";
 import { Simulation, ScenarioPath } from "@types";
 
@@ -151,7 +151,9 @@ export function DataList<T extends DataListItem>({
             className={`flex flex-col justify-center max-w-[300px] min-w-0 ${titleConfig?.onClick ? "cursor-pointer" : ""}`}
           >
             <h3 className="text-sm font-regular text-typography-900 truncate">{item.title}</h3>
-            <div className="text-xs text-typography-800 line-clamp-2 mt-1">{item.description}</div>
+            <div className="text-xs text-typography-800 line-clamp-2 mt-1">
+              {htmlToPlainText(item.description)}
+            </div>
           </div>
         </div>
 

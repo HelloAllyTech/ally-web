@@ -57,10 +57,20 @@ vi.mock("@components", () => ({
   ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" },
 }));
 
-// Mock CustomVideo and FEATURE_FLAGS_MAP from ui-shared
+// Mock CustomVideo, ChipGroup, RichTextRenderer, and FEATURE_FLAGS_MAP from ui-shared
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   CustomVideo: ({ src, alt, className }: any) => (
     <video data-testid="custom-video" src={src} aria-label={alt} className={className} />
+  ),
+  ChipGroup: ({ items }: { items?: Array<{ label?: string } | string> }) => (
+    <div data-testid="chip-group">
+      {(items ?? []).map((item, idx) => (
+        <span key={idx}>{typeof item === "string" ? item : (item?.label ?? "")}</span>
+      ))}
+    </div>
+  ),
+  RichTextRenderer: ({ content }: { content?: string | null }) => (
+    <div data-testid="rich-text-renderer">{content ?? ""}</div>
   ),
   FEATURE_FLAGS_MAP: {},
 }));

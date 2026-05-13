@@ -1,7 +1,5 @@
 import { FC, useCallback, useMemo, useState } from "react";
 
-import { RichTextEditor } from "../rich-text-editor";
-
 import { useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -23,6 +21,7 @@ import { RegenerateFieldResponse } from "@types";
 import { isNonEmptyString } from "@utils";
 
 import { buildScenarioContext } from "../linguistic-style-samples/scenarioLanguageUtils";
+import { RichTextEditor } from "../rich-text-editor";
 
 import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
 

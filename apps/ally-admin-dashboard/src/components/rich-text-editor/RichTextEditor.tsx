@@ -1,4 +1,4 @@
-import { FC, useEffect, useCallback } from "react";
+import { FC, useEffect } from "react";
 
 import CharacterCount from "@tiptap/extension-character-count";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -6,8 +6,8 @@ import Underline from "@tiptap/extension-underline";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
-import { RichTextToolbar } from "./RichTextToolbar";
 import { sanitizeHtml } from "./richTextSanitizer";
+import { RichTextToolbar } from "./RichTextToolbar";
 
 interface RichTextEditorProps {
   value: string;

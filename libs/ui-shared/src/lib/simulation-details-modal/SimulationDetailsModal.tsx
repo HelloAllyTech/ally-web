@@ -102,10 +102,7 @@ export const SimulationDetailsModal: FC<SimulationDetailsModalProps> = ({
               <h3 className="text-lg text-typography-900">{title}</h3>
               <div>
                 <h4 className="text-base font-semibold text-typography-800">{scenarioLabel}</h4>
-                <RichTextRenderer
-                  content={description}
-                  className="max-h-[300px] overflow-y-auto"
-                />
+                <RichTextRenderer content={description} className="max-h-[300px] overflow-y-auto" />
                 {triggerWarnings?.length > 0 && (
                   <div className="flex flex-col pt-2">
                     <div className="text-base font-semibold text-typography-800 mb-1">

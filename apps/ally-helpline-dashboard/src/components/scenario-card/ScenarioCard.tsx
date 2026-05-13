@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
-import { ChipGroup } from "@ally-ui-mono/ui-shared";
+import { ChipGroup, htmlToPlainText } from "@ally-ui-mono/ui-shared";
 import { CircularProgress } from "@components";
 
 import { scenarioDescriptionStyle } from "./constants";
@@ -94,7 +94,7 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
             ) : (
               description?.length > 0 && (
                 <div className="text-sm text-typography-800  leading-tight pt-[6px]">
-                  <p style={scenarioDescriptionStyle}>{description}</p>
+                  <p style={scenarioDescriptionStyle}>{htmlToPlainText(description)}</p>
                 </div>
               )
             )}

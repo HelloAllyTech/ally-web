@@ -41,6 +41,13 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   CustomImage: ({ src, alt }: { src?: string; alt?: string }) => (
     <img data-testid="custom-image" src={src} alt={alt ?? ""} />
   ),
+  htmlToPlainText: (value?: string | null) =>
+    typeof value === "string"
+      ? value
+          .replace(/<[^>]*>/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+      : "",
 }));
 
 vi.mock("@components", () => ({

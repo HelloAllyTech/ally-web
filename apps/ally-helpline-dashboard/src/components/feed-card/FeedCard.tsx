@@ -3,7 +3,7 @@ import { FC, useMemo, useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage, htmlToPlainText } from "@ally-ui-mono/ui-shared";
 import { useLazyGetGeneralCommentsOverviewQuery } from "@api";
 import { ReviewTranscript, ScribeImage } from "@assets";
 import { AudioTranscriptPlayer, ReactionsModal } from "@components";
@@ -51,6 +51,11 @@ const FeedCard: FC<FeedCardProps> = ({
     : isTitleTwoLines
       ? "line-clamp-1"
       : "line-clamp-2";
+
+  const descriptionPlainText = useMemo(
+    () => htmlToPlainText(scenario?.description),
+    [scenario?.description],
+  );
 
   useEffect(() => {
     const el = titleMeasureRef.current;
@@ -246,7 +251,7 @@ const FeedCard: FC<FeedCardProps> = ({
                 aria-hidden
                 className={`font-primary text-xs sm:text-sm text-black/60 sm:leading-[1.3] absolute left-0 right-0 top-0 opacity-0 pointer-events-none select-none ${descriptionMaxLines === 1 ? "line-clamp-1" : "line-clamp-2"}`}
               >
-                {scenario?.description}
+                {descriptionPlainText}
               </div>
               <div
                 className={`font-primary text-xs sm:text-sm text-black/60 sm:leading-[1.3] ${descriptionLineClampClass} ${isScribeReview ? "whitespace-pre-wrap" : ""}`}
@@ -257,7 +262,7 @@ const FeedCard: FC<FeedCardProps> = ({
                         ? `${getFormattedTimeFromDuration(duration, "ss")} ${t("review.feedCard.sec")}`
                         : `${getFormattedTimeFromDuration(duration, "mm:ss")} ${t("review.feedCard.min")}`
                     }`
-                  : scenario?.description}
+                  : descriptionPlainText}
               </div>
 
               {shouldShowViewMoreButton && renderShowMoreLess()}
