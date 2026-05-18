@@ -412,6 +412,10 @@
   },
   "review": {
     "title": "Review",
+    "tabs": {
+      "scribe": "Scribe",
+      "simulation": "Simulation"
+    },
     "filter": {
       "all": "All",
       "latest": "Latest",

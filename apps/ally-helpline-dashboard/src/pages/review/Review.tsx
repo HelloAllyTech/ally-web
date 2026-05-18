@@ -102,7 +102,7 @@ const ReviewWithTabs: FC = () => {
           <div className="w-full max-w-4xl px-4 sm:px-6 lg:px-8 pt-3">
             <div className="flex flex-row items-center justify-between gap-2 border-b border-typography-300">
               <Tabs
-                items={visibleTabs.map(tab => ({ id: tab.value, label: tab.label }))}
+                items={visibleTabs.map(tab => ({ id: tab.value, label: t(tab.labelKey) }))}
                 activeId={activeTab}
                 onChange={handleTabSwitch}
                 className="border-none max-w-[330px] text-base font-primary"

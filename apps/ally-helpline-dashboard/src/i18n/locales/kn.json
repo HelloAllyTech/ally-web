@@ -412,6 +412,10 @@
   },
   "review": {
     "title": "ಪರಿಶೀಲನೆ",
+    "tabs": {
+      "scribe": "ಸ್ರೈಬ್",
+      "simulation": "ಸಿಮ್ಯುಲೇಶನ್"
+    },
     "filter": {
       "all": "ಎಲ್ಲಾ",
       "latest": "ಇತ್ತೀಚಿನ",

@@ -412,6 +412,10 @@
   },
   "review": {
     "title": "मूल्यांकन करा",
+    "tabs": {
+      "scribe": "स्क्राइब",
+      "simulation": "सिम्युलेशन"
+    },
     "filter": {
       "all": "सर्व",
       "latest": "नवीनतम",
