@@ -924,7 +924,7 @@
     "endSession": "End session",
     "sessionDuration": "Session Duration:",
     "dataSafe": "Your data is safe",
-    "waitingForAgent": "Waiting for agent to join...",
+    "waitingForAgent": "Waiting for the agent to join, this could take up to 15 seconds…",
     "connectingToSession": "Connecting to session...",
     "allowMicrophone": "Allow microphone permission",
     "microphonePromptBrowser": "To start the simulation, please allow microphone permission from your browser.",
