@@ -17,3 +17,4 @@ export * from "./badge";
 export * from "./reviews";
 export * from "./chat";
 export * from "./customFields";
+export * from "./tooltip";
