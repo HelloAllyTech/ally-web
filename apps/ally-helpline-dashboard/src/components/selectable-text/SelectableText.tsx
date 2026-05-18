@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -82,6 +83,7 @@ const SelectableText = ({
   onDeleteComment,
   isScribeReview,
 }: SelectableTextProps) => {
+  const { t } = useTranslation();
   const { reviewId } = useParams<{ reviewId: string }>();
   const [
     createComment,
@@ -375,7 +377,9 @@ const SelectableText = ({
           className="absolute hover:bg-[#F3F3F3] z-10 flex gap-2 cursor-pointer items-center top-full left-0 mt-1 px-4 py-2 w-[160px] shadow-lg border h-[40px] rounded-[100px] bg-white"
         >
           <AddComment className="w-6 h-6 pt-1" />
-          <span className="text-sm font-medium whitespace-nowrap">Add Comment</span>
+          <span className="text-sm font-medium whitespace-nowrap">
+            {t("review.details.addComment")}
+          </span>
         </div>
       )}
       {addCommentDialogOpen === `${index}-${segIdx}` && newCommentSelection && (
