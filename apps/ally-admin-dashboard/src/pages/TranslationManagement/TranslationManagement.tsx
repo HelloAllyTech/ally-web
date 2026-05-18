@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from "react";
 
-import { Info, RefreshCw, RotateCcw, UploadCloud } from "lucide-react";
+import { Info, Plus, RefreshCw, RotateCcw, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 
 import {
+  useAutoTranslateI18nMutation,
   useGetAllI18nTranslationsQuery,
   useGetI18nAuditLogQuery,
   useGetI18nStatusQuery,
@@ -62,6 +63,8 @@ const LANGUAGE_LABELS: Record<string, string> = {
   kn: "Kannada",
 };
 
+const FALLBACK_LANGUAGES = ["en", "hi", "mr", "ta", "kn"];
+
 const labelForLanguage = (code: string) => LANGUAGE_LABELS[code] ?? code.toUpperCase();
 
 export const TranslationManagement: React.FC = () => {
@@ -73,12 +76,19 @@ export const TranslationManagement: React.FC = () => {
   const { data: auditLogs = [] } = useGetI18nAuditLogQuery({ limit: 20, offset: 0 });
 
   const [updateTranslation, { isLoading: isUpdating }] = useUpdateI18nTranslationsMutation();
+  const [autoTranslate] = useAutoTranslateI18nMutation();
   const [publishI18n, { isLoading: isPublishing }] = usePublishI18nMutation();
   const [rollbackI18n, { isLoading: isRollingBack }] = useRollbackI18nMutation();
 
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [rollbackVersion, setRollbackVersion] = useState<number | "">("");
+  const [showAddKey, setShowAddKey] = useState(false);
+  const [addKeyNamespace, setAddKeyNamespace] = useState("");
+  const [addKeyKey, setAddKeyKey] = useState("");
+  const [addKeyValues, setAddKeyValues] = useState<Record<string, string>>({});
+  const [addingKey, setAddingKey] = useState(false);
+  const [addKeyAutoTranslate, setAddKeyAutoTranslate] = useState(true);
 
   const languages = aggregated?.languages ?? [];
   const rows = aggregated?.rows ?? [];
@@ -155,6 +165,105 @@ export const TranslationManagement: React.FC = () => {
       toast.success(`Saved ${labelForLanguage(language)}`);
     } catch (error) {
       toast.error(getErrorMessage(error));
+    }
+  };
+
+  const openAddKey = () => {
+    const seedLanguages = languages.length > 0 ? languages : FALLBACK_LANGUAGES;
+    setAddKeyNamespace("");
+    setAddKeyKey("");
+    setAddKeyValues(Object.fromEntries(seedLanguages.map(l => [l, ""])));
+    setAddKeyAutoTranslate(true);
+    setShowAddKey(true);
+  };
+
+  const closeAddKey = () => {
+    if (addingKey) return;
+    setShowAddKey(false);
+  };
+
+  const submitNewKey = async () => {
+    const namespace = addKeyNamespace.trim();
+    const innerKey = addKeyKey.trim();
+
+    if (!namespace || !innerKey) {
+      toast.error("Section and key are required");
+      return;
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(namespace)) {
+      toast.error("Section must contain only letters, numbers, _ or -");
+      return;
+    }
+    if (innerKey.startsWith(".") || innerKey.endsWith(".") || innerKey.includes("..")) {
+      toast.error("Key cannot start/end with a dot or contain empty segments");
+      return;
+    }
+    const fullKey = `${namespace}.${innerKey}`;
+    if (rows.some(r => r.fullKey === fullKey)) {
+      toast.error(`Key "${fullKey}" already exists`);
+      return;
+    }
+    const enValue = (addKeyValues.en ?? "").trim();
+    if (!enValue) {
+      toast.error("English value is required");
+      return;
+    }
+    const enPlaceholders = extractPlaceholders(enValue);
+    for (const lang of languages) {
+      if (lang === "en") continue;
+      const val = (addKeyValues[lang] ?? "").trim();
+      if (!val) continue;
+      if (!samePlaceholders(extractPlaceholders(val), enPlaceholders)) {
+        toast.error(`Placeholder mismatch in ${labelForLanguage(lang)}`);
+        return;
+      }
+    }
+
+    setAddingKey(true);
+    try {
+      if (addKeyAutoTranslate) {
+        const result = await autoTranslate({
+          namespace,
+          key: innerKey,
+          sourceValue: enValue,
+          sourceLanguage: "en",
+        }).unwrap();
+        if (result.failed.length === 0) {
+          toast.success(`Added "${fullKey}" with auto-translations`);
+        } else {
+          toast.warning(
+            `Added "${fullKey}". Auto-translate fell back to English for: ${result.failed
+              .map(labelForLanguage)
+              .join(", ")}`,
+          );
+        }
+        setShowAddKey(false);
+        void refetch();
+        return;
+      }
+
+      const failed: string[] = [];
+      for (const lang of languages) {
+        const value = (addKeyValues[lang] ?? "").trim();
+        if (!value) continue;
+        try {
+          await updateTranslation({ language: lang, namespace, key: innerKey, value }).unwrap();
+        } catch (error) {
+          failed.push(`${labelForLanguage(lang)}: ${getErrorMessage(error)}`);
+        }
+      }
+      if (failed.length === 0) {
+        toast.success(`Added "${fullKey}"`);
+        setShowAddKey(false);
+        void refetch();
+      } else {
+        toast.error(`Some languages failed: ${failed.join(" | ")}`);
+        void refetch();
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setAddingKey(false);
     }
   };
 
@@ -265,6 +374,15 @@ export const TranslationManagement: React.FC = () => {
             >
               <RotateCcw size={16} />
               Rollback
+            </Button>
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={openAddKey}
+              disabled={!canEdit || isUpdating}
+              className="h-9 rounded-md px-3"
+            >
+              <Plus size={16} />
+              Add key
             </Button>
             <Button
               variant={ButtonVariant.PRIMARY}
@@ -416,6 +534,135 @@ export const TranslationManagement: React.FC = () => {
           </section>
         </div>
       </div>
+
+      {showAddKey && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={closeAddKey}
+        >
+          <div
+            className="w-full max-w-3xl rounded-md bg-white shadow-xl"
+            onClick={event => event.stopPropagation()}
+          >
+            <div className="border-b border-neutral-200 px-6 py-4">
+              <h2 className="font-secondary text-lg">Add new translation key</h2>
+              <p className="mt-1 text-sm text-typography-600">
+                The new key will be added to drafts. Click Publish from the main page to make it
+                live.
+              </p>
+            </div>
+            <div className="space-y-4 px-6 py-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-typography-700">Section</label>
+                  <input
+                    list="add-key-section-options"
+                    value={addKeyNamespace}
+                    onChange={event => setAddKeyNamespace(event.target.value)}
+                    placeholder="e.g. review or new-section"
+                    className="mt-1 h-9 w-full rounded-md border border-neutral-300 px-3 text-sm outline-none focus:border-primary-500"
+                    disabled={addingKey}
+                  />
+                  <datalist id="add-key-section-options">
+                    {sections.map(section => (
+                      <option key={section} value={section} />
+                    ))}
+                  </datalist>
+                  <p className="mt-1 text-xs text-typography-500">
+                    Pick an existing section or type a new one.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-typography-700">Key</label>
+                  <input
+                    value={addKeyKey}
+                    onChange={event => setAddKeyKey(event.target.value)}
+                    placeholder="e.g. tabs.scribe"
+                    className="mt-1 h-9 w-full rounded-md border border-neutral-300 px-3 text-sm outline-none focus:border-primary-500"
+                    disabled={addingKey}
+                  />
+                  <p className="mt-1 text-xs text-typography-500">
+                    Use dots for nested paths (e.g. <code>tabs.scribe</code>).
+                  </p>
+                </div>
+              </div>
+              {(addKeyNamespace || addKeyKey) && (
+                <div className="rounded-md bg-neutral-50 px-3 py-2 text-xs text-typography-700">
+                  Full key:{" "}
+                  <code className="font-mono">
+                    {addKeyNamespace || "<section>"}.{addKeyKey || "<key>"}
+                  </code>
+                </div>
+              )}
+              <label className="flex items-start gap-2 rounded-md border border-primary-100 bg-primary-50 px-3 py-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={addKeyAutoTranslate}
+                  onChange={event => setAddKeyAutoTranslate(event.target.checked)}
+                  disabled={addingKey}
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="font-medium">Auto-translate from English</span>
+                  <span className="ml-1 text-typography-600">
+                    — fills Hindi, Marathi, Tamil and Kannada using OpenAI. Uncheck to type
+                    translations manually.
+                  </span>
+                </span>
+              </label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {(languages.length > 0 ? languages : FALLBACK_LANGUAGES)
+                  .filter(lang => !addKeyAutoTranslate || lang === "en")
+                  .map(lang => (
+                    <div key={lang}>
+                      <label className="block text-sm font-medium text-typography-700">
+                        {labelForLanguage(lang)}
+                        {lang === "en" && <span className="ml-1 text-red-600">*</span>}
+                      </label>
+                      <textarea
+                        value={addKeyValues[lang] ?? ""}
+                        onChange={event =>
+                          setAddKeyValues(prev => ({ ...prev, [lang]: event.target.value }))
+                        }
+                        placeholder={
+                          lang === "en"
+                            ? "Required — source value"
+                            : `Optional — leave blank to skip ${labelForLanguage(lang)}`
+                        }
+                        rows={2}
+                        className="mt-1 min-h-[56px] w-full resize-y rounded-md border border-neutral-300 p-2 text-sm leading-5 outline-none focus:border-primary-500"
+                        disabled={addingKey}
+                      />
+                    </div>
+                  ))}
+              </div>
+              <p className="text-xs text-typography-500">
+                {addKeyAutoTranslate
+                  ? "Auto-translation may take a few seconds. You can refine values from the main table after the key is added."
+                  : "Languages left blank won't be saved for this key. You can fill them in later from the main page."}
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-neutral-200 px-6 py-4">
+              <Button
+                variant={ButtonVariant.SECONDARY}
+                onClick={closeAddKey}
+                disabled={addingKey}
+                className="h-9 rounded-md px-4"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant={ButtonVariant.PRIMARY}
+                onClick={submitNewKey}
+                disabled={addingKey}
+                className="h-9 rounded-md px-4 text-white"
+              >
+                {addingKey ? "Adding..." : "Add key"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -74,3 +74,12 @@ export type DynamicI18nAggregatedResponse = {
   languages: string[];
   rows: DynamicI18nAggregatedRow[];
 };
+
+export type DynamicI18nAutoTranslateResult = {
+  namespace: string;
+  key: string;
+  sourceLanguage: string;
+  values: Record<string, string>;
+  /** Languages where OpenAI failed; the source value was saved as fallback. */
+  failed: string[];
+};

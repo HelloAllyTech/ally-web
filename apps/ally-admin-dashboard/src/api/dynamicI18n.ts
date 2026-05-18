@@ -3,6 +3,7 @@ import {
   DynamicI18nAggregatedResponse,
   DynamicI18nAggregatedRow,
   DynamicI18nAuditLog,
+  DynamicI18nAutoTranslateResult,
   DynamicI18nDiffResponse,
   DynamicI18nManifest,
   DynamicI18nStatus,
@@ -108,6 +109,23 @@ export const dynamicI18nAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.I18N_TRANSLATIONS],
     }),
+    autoTranslateI18n: builder.mutation<
+      DynamicI18nAutoTranslateResult,
+      {
+        namespace: string;
+        key: string;
+        sourceValue: string;
+        sourceLanguage?: string;
+        targetLanguages?: string[];
+      }
+    >({
+      query: body => ({
+        url: `${ApiEndpoints.I18N.TRANSLATIONS}/auto-translate`,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.I18N_TRANSLATIONS],
+    }),
     getI18nDiff: builder.query<DynamicI18nDiffResponse, TranslationQuery>({
       query: params => ({
         url: ApiEndpoints.I18N.DIFF,
@@ -148,6 +166,7 @@ export const {
   useGetI18nTranslationsQuery,
   useGetAllI18nTranslationsQuery,
   useUpdateI18nTranslationsMutation,
+  useAutoTranslateI18nMutation,
   useGetI18nDiffQuery,
   usePublishI18nMutation,
   useRollbackI18nMutation,
