@@ -3,6 +3,7 @@
     "appName": "Ally",
     "or": "किंवा",
     "loading": "लोड करत आहे…",
+    "loadMore": "अधिक लोड करा",
     "hours_one": "{{count}} तास",
     "hours_other": "{{count}} तास",
     "minutes_one": "{{count}} मिनिट",

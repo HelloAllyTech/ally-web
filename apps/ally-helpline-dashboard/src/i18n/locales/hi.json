@@ -3,6 +3,7 @@
     "appName": "Ally",
     "or": "या",
     "loading": "लोड हो रहा है…",
+    "loadMore": "और लोड करें",
     "hours_one": "{{count}} घंटे",
     "hours_other": "{{count}} घंटे",
     "minutes_one": "{{count}} मिनट / मिनटों",

@@ -3,6 +3,7 @@
     "appName": "Ally",
     "or": "OR",
     "loading": "Loading…",
+    "loadMore": "Load More",
     "hours_one": "{{count}} hour",
     "hours_other": "{{count}} hours",
     "minutes_one": "{{count}} minute",

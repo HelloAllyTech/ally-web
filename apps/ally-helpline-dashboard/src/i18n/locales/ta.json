@@ -3,6 +3,7 @@
     "appName": "Ally (சகா)",
     "or": "அல்லது",
     "loading": "ஏற்றுகிறது…",
+    "loadMore": "மேலும் ஏற்று",
     "hours_one": "{{count}} மணி",
     "hours_other": "{{count}} மணி நேரம்",
     "minutes_one": "{{count}} நிமிடம்",
