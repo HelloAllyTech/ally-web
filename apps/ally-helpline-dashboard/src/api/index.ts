@@ -12,3 +12,4 @@ export * from "./user";
 export * from "./leaderBoard";
 export * from "./reviews";
 export * from "./customFields";
+export * from "./tooltips";
