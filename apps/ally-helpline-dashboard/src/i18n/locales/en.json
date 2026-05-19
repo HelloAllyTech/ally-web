@@ -402,7 +402,17 @@
     },
     "feedback": {
       "sessionFeedback": "Session Feedback",
-      "noData": "No data found"
+      "noData": "No data found",
+      "dialog": {
+        "header": "Did this feel like useful practice for real sessions?",
+        "rating": {
+          "1": "Not at all",
+          "2": "Not really",
+          "3": "Maybe",
+          "4": "Yes",
+          "5": "5 — Absolutely"
+        }
+      }
     },
     "common": {
       "tryAnother": "Try another simulation",

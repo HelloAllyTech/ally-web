@@ -1,5 +1,6 @@
 import { FC, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useSubmitSimulationFeedbackMutation } from "@api";
@@ -8,6 +9,7 @@ import { Button, StarRating, TextField } from "@components";
 import { FeedbackSectionProps } from "../types";
 
 export const SimulationFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitComplete }) => {
+  const { t } = useTranslation();
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState<string>("");
 
@@ -16,20 +18,8 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitCompl
   const isSubmitDisabled = rating === 0 || isLoading;
 
   const getSimulationRatingText = (rating: number) => {
-    switch (rating) {
-      case 1:
-        return "Needs major improvements.";
-      case 2:
-        return "Could be better.";
-      case 3:
-        return "Decent, but room to grow.";
-      case 4:
-        return "Nice experience!";
-      case 5:
-        return "Excellent and highly effective!";
-      default:
-        return "";
-    }
+    if (rating < 1 || rating > 5) return "";
+    return t(`postSim.feedback.dialog.rating.${rating}`);
   };
 
   const onSubmit = async () => {
@@ -47,7 +37,7 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({ id, onSubmitCompl
 
   return (
     <>
-      <span className="text-typography-800 font-medium">How was your experience?</span>
+      <span className="text-typography-800 font-medium">{t("postSim.feedback.dialog.header")}</span>
       <StarRating rating={rating} setRating={setRating} />
       <span className="h-6">{getSimulationRatingText(rating)}</span>
       <TextField
