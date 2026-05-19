@@ -160,6 +160,7 @@ export const FORM_FIELD_IDS = {
   CURRENT_STATE: "currentState",
   KNOWLEDGE_SOURCE: "knowledgeSources",
   STATE_NAMES: "stateNames",
+  ENABLE_PROSODY: "enableProsody",
 };
 
 export const REGENERATE_TYPE = {
@@ -417,6 +418,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         disabled: true,
+      },
+      {
+        id: "enableProsody",
+        label: "Speech Prosody",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
       },
       {
         id: "currentState",

@@ -3,6 +3,7 @@
     "appName": "Ally",
     "or": "OR",
     "loading": "Loading…",
+    "loadMore": "Load More",
     "hours_one": "{{count}} hour",
     "hours_other": "{{count}} hours",
     "minutes_one": "{{count}} minute",
@@ -401,7 +402,17 @@
     },
     "feedback": {
       "sessionFeedback": "Session Feedback",
-      "noData": "No data found"
+      "noData": "No data found",
+      "dialog": {
+        "header": "Did this feel like useful practice for real sessions?",
+        "rating": {
+          "1": "Not at all",
+          "2": "Not really",
+          "3": "Maybe",
+          "4": "Yes",
+          "5": "5 — Absolutely"
+        }
+      }
     },
     "common": {
       "tryAnother": "Try another simulation",
@@ -412,6 +423,10 @@
   },
   "review": {
     "title": "Review",
+    "tabs": {
+      "scribe": "Scribe",
+      "simulation": "Simulation"
+    },
     "filter": {
       "all": "All",
       "latest": "Latest",
@@ -446,6 +461,7 @@
       "editedLabel": "[Edited]",
       "addNotePlaceholder": "Add a note...",
       "shareModalHeader": "Share this for review",
+      "addComment": "Add Comment",
       "addCommentPlaceholder": "Add a comment",
       "commentAction": "Comment",
       "replyAction": "Reply",
@@ -919,7 +935,7 @@
     "endSession": "End session",
     "sessionDuration": "Session Duration:",
     "dataSafe": "Your data is safe",
-    "waitingForAgent": "Waiting for agent to join...",
+    "waitingForAgent": "Waiting for the agent to join, this could take a few seconds…",
     "connectingToSession": "Connecting to session...",
     "allowMicrophone": "Allow microphone permission",
     "microphonePromptBrowser": "To start the simulation, please allow microphone permission from your browser.",

@@ -240,6 +240,7 @@ describe("createSimulation utils", () => {
         agentDialogues: "Sample dialogues",
         customFields: [],
         optGuardrails: false,
+        enableProsody: true,
         currentState: false,
         checklistType: "GUIDED",
         experienceMode: "CHECKLIST",
@@ -282,6 +283,48 @@ describe("createSimulation utils", () => {
         "7": "Descripción en español",
       });
       expect(result.challengeDescriptionPrimaryLanguageId).toBe(1);
+    });
+
+    it("should preserve enableProsody=false from metadata (not coerce to default true)", () => {
+      const mockResponse = {
+        id: "sim-prosody-off",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: { customFields: [], enableProsody: false },
+      } as unknown as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.enableProsody).toBe(false);
+    });
+
+    it("should default enableProsody to true when metadata omits it (backwards-compat for existing scenarios)", () => {
+      const mockResponse = {
+        id: "sim-no-prosody-key",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: { customFields: [] },
+      } as unknown as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.enableProsody).toBe(true);
     });
 
     it("should default translationDescription to {} and challengeDescriptionPrimaryLanguageId to null when backend omits them", () => {

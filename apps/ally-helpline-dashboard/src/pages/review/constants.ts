@@ -33,9 +33,13 @@ export enum ReviewTab {
 }
 
 export const TABS = [
-  { label: "Scribe", value: ReviewTab.SCRIBE, permission: Permissions.VIEW_SCRIBE_REVIEWS },
   {
-    label: "Simulation",
+    labelKey: "review.tabs.scribe",
+    value: ReviewTab.SCRIBE,
+    permission: Permissions.VIEW_SCRIBE_REVIEWS,
+  },
+  {
+    labelKey: "review.tabs.simulation",
     value: ReviewTab.SIMULATION,
     permission: Permissions.VIEW_SIMULATION_REVIEWS,
   },

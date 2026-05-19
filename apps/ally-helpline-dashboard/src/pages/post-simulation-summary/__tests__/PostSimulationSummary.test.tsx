@@ -99,6 +99,13 @@ vi.mock("@containers", () => ({
     </div>
   )),
   useSimulationSummaryPolling: () => ({ summaryData: undefined, retryMaxReached: false }),
+  FeedbackDialog: ({ open, id, sessionType }: any) =>
+    open ? (
+      <div data-testid="feedback-dialog" data-id={id} data-session-type={sessionType} />
+    ) : null,
+  ShortSessionUI: ({ className }: any) => (
+    <div data-testid="short-session-ui" className={className} />
+  ),
 }));
 
 // Mock SimulationTranscriptTab

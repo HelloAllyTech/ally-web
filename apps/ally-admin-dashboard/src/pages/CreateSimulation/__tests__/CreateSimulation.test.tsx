@@ -72,6 +72,7 @@ vi.mock("@api", () => ({
 // Mock hooks
 vi.mock("@hooks", () => ({
   useDebounce: (fn: any) => fn, // Return the function immediately without debouncing
+  useScenarioTranslationsSocket: () => undefined,
 }));
 
 // Mock components
@@ -140,6 +141,7 @@ vi.mock("@components", () => ({
   SimulationEventMapTable: ({ simulationId }: any) => (
     <div data-testid="event-map-table">Event Map Table for {simulationId}</div>
   ),
+  TranslationProgressToast: () => null,
 }));
 
 // Mock constants

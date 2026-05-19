@@ -153,8 +153,7 @@ describe("SimulationSummarySidebar Component", () => {
       expect(screen.getByTestId("tab-label-2")).toHaveTextContent("Ask AI");
       expect(screen.getByTestId("tab-5")).toBeInTheDocument();
       expect(screen.getByTestId("tab-label-5")).toHaveTextContent("Skills Demonstrated");
-      expect(screen.getByTestId("tab-4")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-label-4")).toHaveTextContent("Reflection");
+      expect(screen.queryByTestId("tab-4")).not.toBeInTheDocument();
     });
 
     it("should render simulation summary component in summary tab", () => {

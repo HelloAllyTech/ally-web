@@ -13,6 +13,7 @@ vi.mock("@api", () => ({
   useGetAllI18nTranslationsQuery: vi.fn(),
   useGetI18nAuditLogQuery: vi.fn(),
   useUpdateI18nTranslationsMutation: vi.fn(),
+  useAutoTranslateI18nMutation: vi.fn(),
   usePublishI18nMutation: vi.fn(),
   useRollbackI18nMutation: vi.fn(),
 }));
@@ -156,6 +157,18 @@ describe("TranslationManagement", () => {
       updateTranslation,
       { isLoading: false },
     ] as ReturnType<typeof api.useUpdateI18nTranslationsMutation>);
+    vi.mocked(api.useAutoTranslateI18nMutation).mockReturnValue([
+      vi.fn().mockReturnValue({
+        unwrap: vi.fn().mockResolvedValue({
+          namespace: "common",
+          key: "test",
+          sourceLanguage: "en",
+          values: { en: "test" },
+          failed: [],
+        }),
+      }),
+      { isLoading: false },
+    ] as unknown as ReturnType<typeof api.useAutoTranslateI18nMutation>);
     vi.mocked(api.usePublishI18nMutation).mockReturnValue([
       publishI18n,
       { isLoading: false },
