@@ -187,7 +187,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     if (roomStatus === RoomStatus.CONNECTED || roomStatus === RoomStatus.CONNECTING)
       return (
         translations?.waitingForAgent ??
-        "Waiting for the agent to join, this could take up to 15 seconds…"
+        "Waiting for the agent to join, this could take a few seconds…"
       );
     if (!isMicrophoneGranted)
       return translations?.clickToAllow ?? "Click to allow microphone and join the session.";
