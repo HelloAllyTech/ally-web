@@ -64,7 +64,8 @@ vi.mock("@utils", () => ({
 
 import { useLiveKitRoom } from "../useLiveKitRoom";
 
-const RINGING_BELL_DELAY = 5000;
+// Just needs to be > STRICT_MODE_GUARD_MS (100ms) so the deferred connect fires.
+const CONNECT_TIMER_ADVANCE_MS = 500;
 
 const ROOM_DATA = {
   accessToken: "test-token",
@@ -73,7 +74,7 @@ const ROOM_DATA = {
 
 async function waitForConnection() {
   await act(async () => {
-    vi.advanceTimersByTime(RINGING_BELL_DELAY + 100);
+    vi.advanceTimersByTime(CONNECT_TIMER_ADVANCE_MS);
     // Flush microtasks so the async connectToRoom body (after await room.connect) completes
     await Promise.resolve();
     await Promise.resolve();

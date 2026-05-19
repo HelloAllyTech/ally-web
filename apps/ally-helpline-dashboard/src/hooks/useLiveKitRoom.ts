@@ -17,7 +17,14 @@ import { decodeUint8ToJson } from "@utils";
 
 import { AgentTurnStatus, LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
-const RINGING_BELL_DELAY = 5000; // 5 seconds for ringing the bell
+// Tiny delay before connect to avoid React 18 StrictMode mount/unmount/mount races
+// against the shared Room instance. Was 5000ms when it was also acting as a
+// "give the agent time to boot" hack; agent-readiness is now event-driven below.
+const STRICT_MODE_GUARD_MS = 100;
+// If the agent participant joins but produces no audio (e.g. user-speaks-first
+// scenarios), transition out of ringing after this grace window so the user
+// isn't stuck on a ringing UI waiting for a sound that won't come.
+const AGENT_SILENT_GRACE_MS = 1500;
 
 export const useLiveKitRoom = (
   handleDisconnect: () => void,
@@ -37,6 +44,11 @@ export const useLiveKitRoom = (
 
   const lastEventTimestampRef = useRef<number | null>(null);
   const autoTerminationAudio = useRef<HTMLAudioElement | null>(new Audio(AutoTermination));
+
+  // Tracks whether we've already transitioned to AGENT_JOINED in this session;
+  // prevents the grace timer + active-speakers handler from racing.
+  const agentJoinedRef = useRef(false);
+  const silentGraceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { id } = useParams();
 
@@ -79,11 +91,29 @@ export const useLiveKitRoom = (
     });
   }, []);
 
-  const onRemoteParticipantConnected = useCallback(() => {
-    setStartTime(prev => prev || new Date());
-    updateAgentTurnStatus("thinking");
+  const transitionToAgentJoined = useCallback(() => {
+    if (agentJoinedRef.current) return;
+    agentJoinedRef.current = true;
+    if (silentGraceTimerRef.current) {
+      clearTimeout(silentGraceTimerRef.current);
+      silentGraceTimerRef.current = null;
+    }
     setRoomStatus(RoomStatus.AGENT_JOINED);
   }, []);
+
+  const onRemoteParticipantConnected = useCallback(() => {
+    setStartTime(prev => prev || new Date());
+    // Turn status flips to "thinking" as soon as the agent participant joins
+    // so the UI can show the prep indicator. Room status stays in ringing until
+    // the agent actually emits audio (or the silent-grace fallback fires).
+    updateAgentTurnStatus("thinking");
+    if (!agentJoinedRef.current && !silentGraceTimerRef.current) {
+      silentGraceTimerRef.current = setTimeout(() => {
+        silentGraceTimerRef.current = null;
+        transitionToAgentJoined();
+      }, AGENT_SILENT_GRACE_MS);
+    }
+  }, [transitionToAgentJoined, updateAgentTurnStatus]);
 
   const onRoomDisconnect = useCallback(() => {
     if (!endSessionButtonRef.current) autoTerminationAudio.current?.play();
@@ -124,6 +154,13 @@ export const useLiveKitRoom = (
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
 
+    // Reset ringing/agent-joined tracking so a subsequent connect starts fresh.
+    agentJoinedRef.current = false;
+    if (silentGraceTimerRef.current) {
+      clearTimeout(silentGraceTimerRef.current);
+      silentGraceTimerRef.current = null;
+    }
+
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
   }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected, updateAgentTurnStatus]);
@@ -159,10 +196,12 @@ export const useLiveKitRoom = (
         room.on(RoomEvent.Disconnected, onRoomDisconnect);
         room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
 
-        // Speaking detection — determines SPEAKING vs USER_TURN states
+        // Speaking detection — determines SPEAKING vs USER_TURN states, and
+        // the first agent-speaking event also ends the ringing UI.
         room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
           const agentSpeaking = speakers.some(s => s.identity !== room.localParticipant.identity);
           if (agentSpeaking) {
+            transitionToAgentJoined();
             updateAgentTurnStatus(AGENT_STATE_SPEAKING);
           } else {
             if (agentTurnStatusRef.current !== AGENT_STATE_THINKING) {
@@ -196,10 +235,12 @@ export const useLiveKitRoom = (
   };
 
   useEffect(() => {
-    // Add a small delay before connecting to avoid race conditions in StrictMode
+    // Connect right away; ringing UI is gated by roomStatus !== AGENT_JOINED and
+    // is left in place until the agent emits audio (or the silent-grace fallback).
+    // A tiny delay is kept solely to dodge StrictMode mount/unmount races.
     const connectionTimeout = setTimeout(() => {
       connectToRoom();
-    }, RINGING_BELL_DELAY); // 10 seconds for ringing the bell
+    }, STRICT_MODE_GUARD_MS);
 
     return () => {
       clearTimeout(connectionTimeout);
