@@ -105,6 +105,7 @@ export interface SimulationInput {
   timerMode?: boolean;
   maxTimeValue?: string;
   optGuardrails?: boolean;
+  enableProsody?: boolean;
   currentState?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
@@ -183,6 +184,7 @@ export interface GetSimulationByIdResponse {
     showScoreMeter?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
+    enableProsody?: boolean;
     currentState?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
