@@ -23,7 +23,7 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({ formMe
   const { data: catalogLanguages = [], isLoading: catalogLoading } =
     useGetAvailableLanguageVoicesQuery({
       active: true,
-      voicesNeeded: false,
+      voicesNeeded: true,
     }) as { data: LanguageOption[]; isLoading: boolean };
 
   const languageVoices =
