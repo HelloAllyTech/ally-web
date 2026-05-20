@@ -84,4 +84,4 @@ export * from "./badges-tab";
 export * from "./entity-toggle-card";
 export * from "./assigned-organizations";
 export * from "./translation-progress-toast";
-export * from "./translations-step";
+export * from "./title-translations";

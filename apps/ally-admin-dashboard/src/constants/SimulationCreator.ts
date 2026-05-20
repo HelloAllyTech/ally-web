@@ -90,7 +90,6 @@ export const SIMULATION_CREATOR_STEP_IDS = {
   overview: "overview",
   basicSettings: "basic-settings",
   advancedSettings: "advanced-settings",
-  translations: "translations",
   report: "report",
 };
 
@@ -103,7 +102,6 @@ export const StepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
   { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
   { id: SIMULATION_CREATOR_STEP_IDS.advancedSettings, title: "Advanced Settings" },
-  { id: SIMULATION_CREATOR_STEP_IDS.translations, title: "Translations" },
   { id: SIMULATION_CREATOR_STEP_IDS.report, title: "Report" },
 ];
 
@@ -124,6 +122,7 @@ export const FORM_FIELD_TYPES = {
     BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
     STATES_INSTRUCTION: "states_instruction",
     BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
+    TITLE_TRANSLATIONS: "title_translations",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -206,6 +205,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
         fullWidth: true,
         maxLength: 100,
+      },
+      {
+        id: "translationTitle",
+        label: "",
+        type: FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS,
+        fullWidth: true,
+        isMandatory: false,
       },
       {
         id: "competency",

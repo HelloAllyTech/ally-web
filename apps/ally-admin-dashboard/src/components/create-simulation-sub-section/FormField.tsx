@@ -22,6 +22,7 @@ import { RegenerateButton } from "../regenerate-button";
 import { StateInstruction } from "../states-instruction";
 import { TagSelector } from "../tag-selector";
 import { TimeInput } from "../time-input";
+import { TitleTranslationsPanel } from "../title-translations";
 import { ToggleSection } from "../toggle-section";
 
 export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
@@ -164,6 +165,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES:
         return <OpeningDialoguesPanel formMethods={formMethods} isMandatory={isMandatory} />;
+      case FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS:
+        return <TitleTranslationsPanel formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION:
         return (
           <ChallengeDescriptionPanel
