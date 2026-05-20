@@ -3,7 +3,7 @@ import { FC, useCallback, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 
 import { useGetAvailableLanguageVoicesQuery } from "@api";
-import { FORM_FIELD_IDS } from "@constants";
+import { APP_TRANSLATION_LANGUAGE_CODES, FORM_FIELD_IDS } from "@constants";
 
 import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
 
@@ -23,7 +23,7 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({ formMe
   const { data: catalogLanguages = [], isLoading: catalogLoading } =
     useGetAvailableLanguageVoicesQuery({
       active: true,
-      voicesNeeded: true,
+      voicesNeeded: false,
     }) as { data: LanguageOption[]; isLoading: boolean };
 
   const languageVoices =
@@ -40,11 +40,6 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({ formMe
     (useWatch({ control, name: TRANSLATION_TITLE_FIELD }) as Record<string, string> | undefined) ??
     {};
 
-  const selectedLanguageIds = useMemo(
-    () => Object.keys(languageVoices ?? {}).filter(id => !!languageVoices[id]),
-    [languageVoices],
-  );
-
   const resolvedPrimaryId = useMemo(() => {
     if (primaryLanguageId != null) return String(primaryLanguageId);
     const enFirst = catalogLanguages.find(
@@ -54,21 +49,37 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({ formMe
           .includes("en") || String(l.translationCode ?? "") === "en",
     );
     if (enFirst) return String(enFirst.language_id);
-    return selectedLanguageIds[0] ?? null;
-  }, [primaryLanguageId, catalogLanguages, selectedLanguageIds]);
+    return catalogLanguages[0] ? String(catalogLanguages[0].language_id) : null;
+  }, [primaryLanguageId, catalogLanguages]);
 
   const translatableTabs = useMemo(() => {
-    return selectedLanguageIds
-      .filter(id => id !== resolvedPrimaryId)
-      .map(id => {
-        const lang = catalogLanguages.find(l => String(l.language_id) === id);
-        return {
-          languageId: id,
-          label: lang?.label ?? `Language ${id}`,
-        };
-      })
+    const byId = new Map<string, { languageId: string; label: string }>();
+
+    // Always include the app's translation languages, matched by translationCode.
+    for (const lang of catalogLanguages) {
+      if (
+        APP_TRANSLATION_LANGUAGE_CODES.includes(String(lang.translationCode ?? "").toLowerCase())
+      ) {
+        const id = String(lang.language_id);
+        byId.set(id, { languageId: id, label: lang.label ?? `Language ${id}` });
+      }
+    }
+
+    // Plus any language the scenario has explicitly voice-mapped.
+    for (const [langId, voice] of Object.entries(languageVoices ?? {})) {
+      if (!voice) continue;
+      if (byId.has(langId)) continue;
+      const lang = catalogLanguages.find(l => String(l.language_id) === langId);
+      byId.set(langId, {
+        languageId: langId,
+        label: lang?.label ?? `Language ${langId}`,
+      });
+    }
+
+    return Array.from(byId.values())
+      .filter(t => t.languageId !== resolvedPrimaryId)
       .sort((a, b) => Number(a.languageId) - Number(b.languageId));
-  }, [selectedLanguageIds, resolvedPrimaryId, catalogLanguages]);
+  }, [catalogLanguages, languageVoices, resolvedPrimaryId]);
 
   const activeLanguageId = useMemo(() => {
     if (selectedLanguageId && translatableTabs.some(t => t.languageId === selectedLanguageId)) {

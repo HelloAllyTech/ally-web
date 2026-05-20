@@ -86,6 +86,11 @@ export const CHECKLIST_TYPE_OPTIONS = [
   { value: "LIST", label: "List" },
 ];
 
+// translationCode of languages the app supports for in-product translation.
+// These tabs always appear in the title-translations panel even when not
+// configured in the scenario's Language–Voice mapping.
+export const APP_TRANSLATION_LANGUAGE_CODES = ["hi", "mr", "kn", "ta"];
+
 export const SIMULATION_CREATOR_STEP_IDS = {
   overview: "overview",
   basicSettings: "basic-settings",
