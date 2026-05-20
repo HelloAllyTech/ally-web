@@ -27,6 +27,7 @@ import {
   TranslationJob,
   TranslationLanguageProgress,
   TranslationProgressToast,
+  TranslationsStep,
   VerticalStepper,
 } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -482,6 +483,7 @@ export const CreateSimulation: FC = () => {
       openingStatements,
       translationOpeningStatements,
       translationDescription,
+      translationTitle,
       triggerWarningIds,
       customFields,
       agentDialogues,
@@ -576,6 +578,7 @@ export const CreateSimulation: FC = () => {
       openingStatements: openingStatementsArray,
       translationOpeningStatements: translationOpeningStatements ?? {},
       translationDescription: translationDescription ?? {},
+      translationTitle: translationTitle ?? {},
       agentDialogues: agentDialoguesArray,
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
@@ -704,7 +707,10 @@ export const CreateSimulation: FC = () => {
       }
     }
     //TODO: add report step to the requiresSave condition
-    const requiresSave = stepId === stepIds.advancedSettings || stepId === stepIds.report;
+    const requiresSave =
+      stepId === stepIds.advancedSettings ||
+      stepId === stepIds.translations ||
+      stepId === stepIds.report;
 
     if (requiresSave && !simulationId) {
       const response = await handleSaveDraft();
@@ -757,6 +763,8 @@ export const CreateSimulation: FC = () => {
       }
       case stepIds.advancedSettings:
         return <SimulationEventMapTable simulationId={simulationId} />;
+      case stepIds.translations:
+        return renderStep("Translations", <TranslationsStep formMethods={formMethods} />);
       case stepIds.report:
         return (
           <ReportSection

@@ -196,6 +196,7 @@ export interface GetSimulationByIdResponse {
   openingDialoguePrimaryLanguageId?: number | null;
   translationDescription?: Record<string, string>;
   challengeDescriptionPrimaryLanguageId?: number | null;
+  translationTitle?: Record<string, string>;
   competency?: Competency;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {

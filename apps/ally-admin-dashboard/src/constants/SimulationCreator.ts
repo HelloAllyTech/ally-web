@@ -90,6 +90,7 @@ export const SIMULATION_CREATOR_STEP_IDS = {
   overview: "overview",
   basicSettings: "basic-settings",
   advancedSettings: "advanced-settings",
+  translations: "translations",
   report: "report",
 };
 
@@ -102,6 +103,7 @@ export const StepperList = [
   { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
   { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
   { id: SIMULATION_CREATOR_STEP_IDS.advancedSettings, title: "Advanced Settings" },
+  { id: SIMULATION_CREATOR_STEP_IDS.translations, title: "Translations" },
   { id: SIMULATION_CREATOR_STEP_IDS.report, title: "Report" },
 ];
 
