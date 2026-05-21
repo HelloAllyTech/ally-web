@@ -23,7 +23,6 @@ export const useScenarioTranslationsSocket = ({
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const socketUrl = `${baseUrl}/${SocketConnectionPaths.SCENARIO_TRANSLATIONS}`;
-  console.log(socketUrl, "socketUrl");
 
   const getReconnectDelay = useCallback(() => {
     const baseDelay = 2000;
@@ -80,7 +79,6 @@ export const useScenarioTranslationsSocket = ({
           scheduleReconnect();
         }
       });
-      console.log("Connection established");
     } catch (error) {
       logger.error(`${logPrefix} connection error: ${error}`);
       scheduleReconnect();

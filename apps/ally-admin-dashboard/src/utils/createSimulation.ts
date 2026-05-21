@@ -30,6 +30,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     openingDialoguePrimaryLanguageId: data.openingDialoguePrimaryLanguageId ?? null,
     translationDescription: data.translationDescription ?? {},
     challengeDescriptionPrimaryLanguageId: data.challengeDescriptionPrimaryLanguageId ?? null,
+    translationTitle: data.translationTitle ?? {},
     personality: data?.metadata?.personality,
     profession: data?.metadata?.profession,
     sessionBehaviorGuidelines: data?.metadata?.sessionBehaviorGuidelines,
