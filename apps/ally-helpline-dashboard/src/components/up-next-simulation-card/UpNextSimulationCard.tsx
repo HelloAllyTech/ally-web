@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { htmlToPlainText } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled } from "@assets";
 import { Button, ButtonVariant } from "@components";
 import { useStartSimulation } from "@hooks";
@@ -160,7 +161,7 @@ export const UpNextSimulationCard = ({ data, metaData }: UpNextSimulationCardPro
           <div className="p-4">
             <div className="text-base text-typography-800 font-semibold">Scenario:</div>
             <div className="text-base text-typography-900 font-normal">
-              {upcomingScenario?.description}
+              {htmlToPlainText(upcomingScenario?.description)}
             </div>
           </div>
         </div>

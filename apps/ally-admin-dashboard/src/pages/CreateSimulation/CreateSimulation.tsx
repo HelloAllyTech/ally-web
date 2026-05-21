@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
@@ -24,6 +24,9 @@ import {
   ReportPrimaryTab,
   SimulationEventMapTable,
   SimulationPreview,
+  TranslationJob,
+  TranslationLanguageProgress,
+  TranslationProgressToast,
   VerticalStepper,
 } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -39,15 +42,17 @@ import {
   ROLE_INSTRUCTION_PROMPT_CODE,
   BEHAVIOUR_STATES,
 } from "@constants";
-import { useDebounce } from "@hooks";
+import { useDebounce, useScenarioTranslationsSocket } from "@hooks";
 import { selectUploadsInProgress } from "@reducer/reportUploadReducer";
 import {
+  ScenarioTranslationStatus,
   SimulationStatus,
   SimulationPreviewType,
   triggerWarning,
   behaviourInstruction,
   stateInstruction,
   knowledgeSource,
+  TranslationProgressPayload,
 } from "@types";
 import {
   getCreateSimulationSubSectionById,
@@ -130,6 +135,121 @@ export const CreateSimulation: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const reportStepRef = useRef<ReportSectionHandle>(null);
   const [reportPrimaryTab, setReportPrimaryTab] = useState<ReportPrimaryTab>("report");
+
+  const [translationJobs, setTranslationJobs] = useState<Record<string, TranslationJob>>({});
+  const dismissTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
+
+  const dismissTranslationJob = useCallback((jobId: string) => {
+    const timeout = dismissTimeoutsRef.current[jobId];
+    if (timeout) {
+      clearTimeout(timeout);
+      delete dismissTimeoutsRef.current[jobId];
+    }
+    setTranslationJobs(prev => {
+      if (!prev[jobId]) return prev;
+      const next = { ...prev };
+      delete next[jobId];
+      return next;
+    });
+  }, []);
+
+  const scheduleAutoDismiss = useCallback(
+    (jobId: string, delayMs: number) => {
+      if (dismissTimeoutsRef.current[jobId]) {
+        clearTimeout(dismissTimeoutsRef.current[jobId]);
+      }
+      dismissTimeoutsRef.current[jobId] = setTimeout(() => dismissTranslationJob(jobId), delayMs);
+    },
+    [dismissTranslationJob],
+  );
+
+  const handleTranslationProgress = useCallback(
+    (payload: TranslationProgressPayload) => {
+      setTranslationJobs(prev => {
+        const existing = prev[payload.jobId];
+        const existingLanguages: TranslationLanguageProgress[] = existing?.languages ?? [];
+
+        let nextLanguages = existingLanguages;
+        if (payload.language) {
+          const idx = existingLanguages.findIndex(l => l.code === payload.language);
+          const statusForLang: TranslationLanguageProgress["status"] =
+            payload.status === ScenarioTranslationStatus.TRANSLATING
+              ? "translating"
+              : payload.status === ScenarioTranslationStatus.TRANSLATED
+                ? "translated"
+                : payload.status === ScenarioTranslationStatus.LANGUAGE_FAILED
+                  ? "failed"
+                  : (existingLanguages[idx]?.status ?? "pending");
+
+          const entry: TranslationLanguageProgress = {
+            code: payload.language,
+            status: statusForLang,
+            error: payload.error,
+          };
+          if (idx >= 0) {
+            nextLanguages = [...existingLanguages];
+            nextLanguages[idx] = entry;
+          } else {
+            nextLanguages = [...existingLanguages, entry];
+          }
+        }
+
+        let nextStatus: TranslationJob["status"];
+        if (payload.status === ScenarioTranslationStatus.COMPLETED) {
+          nextStatus = "completed";
+        } else if (payload.status === ScenarioTranslationStatus.FAILED) {
+          nextStatus = "failed";
+        } else if (payload.status === ScenarioTranslationStatus.STARTED) {
+          nextStatus = "started";
+        } else {
+          nextStatus = "in_progress";
+        }
+
+        const job: TranslationJob = {
+          jobId: payload.jobId,
+          scenarioId: payload.scenarioId,
+          scenarioTitle: payload.scenarioTitle ?? existing?.scenarioTitle,
+          action: payload.action,
+          status: nextStatus,
+          completed: payload.completed ?? existing?.completed ?? 0,
+          total: payload.total ?? existing?.total ?? 0,
+          languages: nextLanguages,
+          error:
+            payload.status === ScenarioTranslationStatus.FAILED ? payload.error : existing?.error,
+          startedAt: existing?.startedAt ?? Date.now(),
+          completedAt:
+            payload.status === ScenarioTranslationStatus.COMPLETED ||
+            payload.status === ScenarioTranslationStatus.FAILED
+              ? Date.now()
+              : existing?.completedAt,
+        };
+
+        return { ...prev, [payload.jobId]: job };
+      });
+
+      if (
+        payload.status === ScenarioTranslationStatus.COMPLETED ||
+        payload.status === ScenarioTranslationStatus.FAILED
+      ) {
+        scheduleAutoDismiss(payload.jobId, 4000);
+      }
+    },
+    [scheduleAutoDismiss],
+  );
+
+  useScenarioTranslationsSocket({ onTranslationProgress: handleTranslationProgress });
+
+  useEffect(() => {
+    const timeouts = dismissTimeoutsRef.current;
+    return () => {
+      Object.values(timeouts).forEach(clearTimeout);
+    };
+  }, []);
+
+  const translationJobsList = useMemo(
+    () => Object.values(translationJobs).sort((a, b) => a.startedAt - b.startedAt),
+    [translationJobs],
+  );
 
   // API mutation for creating simulation
   const [createSimulationQuery, { isLoading: isCreatingSimulation }] =
@@ -362,6 +482,7 @@ export const CreateSimulation: FC = () => {
       openingStatements,
       translationOpeningStatements,
       translationDescription,
+      translationTitle,
       triggerWarningIds,
       customFields,
       agentDialogues,
@@ -456,6 +577,7 @@ export const CreateSimulation: FC = () => {
       openingStatements: openingStatementsArray,
       translationOpeningStatements: translationOpeningStatements ?? {},
       translationDescription: translationDescription ?? {},
+      translationTitle: translationTitle ?? {},
       agentDialogues: agentDialoguesArray,
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
@@ -801,6 +923,8 @@ export const CreateSimulation: FC = () => {
           onClose={() => setIsPreviewOpen(false)}
         />
       )}
+
+      <TranslationProgressToast jobs={translationJobsList} onDismiss={dismissTranslationJob} />
     </div>
   );
 };

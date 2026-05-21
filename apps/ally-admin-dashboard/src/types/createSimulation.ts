@@ -26,6 +26,7 @@ export type FormData = {
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
   allowedFillerWords?: Record<string, string[]>;
+  languageCharacteristics?: Record<string, string>;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;
@@ -37,6 +38,7 @@ export type FormData = {
   openingDialoguePrimaryLanguageId?: number | null;
   translationDescription?: Record<string, string>;
   challengeDescriptionPrimaryLanguageId?: number | null;
+  translationTitle?: Record<string, string>;
   autoTerminationStatus?: boolean;
   experienceMode?: string;
   checklistType?: string;

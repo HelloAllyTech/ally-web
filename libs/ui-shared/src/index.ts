@@ -15,6 +15,7 @@ import Pagination from "./lib/pagination";
 import ResourceCard from "./lib/resource-card";
 import ResourceSearch from "./lib/resource-search";
 import ResourceSearchBar from "./lib/resource-search-bar";
+import { RichTextRenderer, htmlToPlainText } from "./lib/rich-text-renderer";
 import SearchHeader from "./lib/search-header";
 import {
   SimulationPage,
@@ -67,4 +68,6 @@ export {
   Toggle,
   AutoExpandableTextarea,
   Tabs,
+  RichTextRenderer,
+  htmlToPlainText,
 };

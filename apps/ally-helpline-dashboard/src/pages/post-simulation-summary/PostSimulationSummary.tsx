@@ -22,8 +22,13 @@ import {
   ToggleSwitch,
 } from "@components";
 import { REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
-import { ShortSessionUI, SimulationSummary, useSimulationSummaryPolling } from "@containers";
-import { pageType, ShareForReviewsInput } from "@types";
+import {
+  FeedbackDialog,
+  ShortSessionUI,
+  SimulationSummary,
+  useSimulationSummaryPolling,
+} from "@containers";
+import { pageType, SessionType, ShareForReviewsInput } from "@types";
 
 import { UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
@@ -104,6 +109,7 @@ export const PostSimulationSummary: FC = () => {
 
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
   const [shareForReview, setShareForReview] = useState<boolean>(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(true);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
@@ -146,6 +152,12 @@ export const PostSimulationSummary: FC = () => {
 
   return (
     <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10">
+      <FeedbackDialog
+        open={showFeedbackDialog}
+        onClose={() => setShowFeedbackDialog(false)}
+        id={sessionId ?? ""}
+        sessionType={SessionType.SIMULATION}
+      />
       <motion.div
         variants={containerVariants}
         initial="hidden"

@@ -86,6 +86,11 @@ export const CHECKLIST_TYPE_OPTIONS = [
   { value: "LIST", label: "List" },
 ];
 
+// translationCode of languages the app supports for in-product translation.
+// These tabs always appear in the title-translations panel even when not
+// configured in the scenario's Language–Voice mapping.
+export const APP_TRANSLATION_LANGUAGE_CODES = ["hi", "mr", "kn", "ta"];
+
 export const SIMULATION_CREATOR_STEP_IDS = {
   overview: "overview",
   basicSettings: "basic-settings",
@@ -122,6 +127,7 @@ export const FORM_FIELD_TYPES = {
     BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
     STATES_INSTRUCTION: "states_instruction",
     BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
+    TITLE_TRANSLATIONS: "title_translations",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -160,6 +166,7 @@ export const FORM_FIELD_IDS = {
   CURRENT_STATE: "currentState",
   KNOWLEDGE_SOURCE: "knowledgeSources",
   STATE_NAMES: "stateNames",
+  ENABLE_PROSODY: "enableProsody",
 };
 
 export const REGENERATE_TYPE = {
@@ -203,6 +210,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
         fullWidth: true,
         maxLength: 100,
+      },
+      {
+        id: "translationTitle",
+        label: "",
+        type: FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS,
+        fullWidth: true,
+        isMandatory: false,
       },
       {
         id: "competency",
@@ -417,6 +431,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         disabled: true,
+      },
+      {
+        id: "enableProsody",
+        label: "Speech Prosody",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
       },
       {
         id: "currentState",

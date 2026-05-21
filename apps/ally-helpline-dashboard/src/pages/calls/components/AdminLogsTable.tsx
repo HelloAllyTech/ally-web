@@ -583,6 +583,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
           showSelectedFilters={isCall}
           onFilterChange={isCall ? handleFilterChange : undefined}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
+          loadMoreLabel={t("common.loadMore")}
           fallbackUI={renderFallbackUI()}
           className={`min-w-full font-secondary overflow-y-scroll text-sm text-typography-800 ${className}`}
           data-testid="admin-logs-table"

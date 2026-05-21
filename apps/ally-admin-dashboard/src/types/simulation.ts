@@ -99,11 +99,13 @@ export interface SimulationInput {
   languageVoices?: Record<string, string>;
   linguisticStyleSamples?: Record<string, string[]>;
   allowedFillerWords?: Record<string, string[]>;
+  languageCharacteristics?: Record<string, string>;
   experienceMode?: string;
   checklistType?: string;
   timerMode?: boolean;
   maxTimeValue?: string;
   optGuardrails?: boolean;
+  enableProsody?: boolean;
   currentState?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
@@ -182,6 +184,7 @@ export interface GetSimulationByIdResponse {
     showScoreMeter?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
+    enableProsody?: boolean;
     currentState?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
@@ -189,11 +192,13 @@ export interface GetSimulationByIdResponse {
     stateNames?: stateInstruction[];
     linguisticStyleSamples?: Record<string, string[]>;
     allowedFillerWords?: Record<string, string[]>;
+    languageCharacteristics?: Record<string, string>;
   };
   translationOpeningStatements?: Record<string, string[]>;
   openingDialoguePrimaryLanguageId?: number | null;
   translationDescription?: Record<string, string>;
   challengeDescriptionPrimaryLanguageId?: number | null;
+  translationTitle?: Record<string, string>;
   competency?: Competency;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {

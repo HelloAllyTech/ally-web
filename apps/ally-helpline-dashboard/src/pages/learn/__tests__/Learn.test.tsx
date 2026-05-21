@@ -17,7 +17,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeAll, beforeEach, afterAll } from "vitest";
 
 // Use vi.hoisted to ensure mocks are available when vi.mock factory runs
 const { mockUseGetScenariosQuery, mockUseGetScenarioPathwaysQuery, mockUseGetScenarioCasesQuery } =
@@ -52,7 +52,23 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, "localStorage", { value: localStorageMock });
+// Install in beforeAll / restore in afterAll so the override does not leak
+// into other test files in the same worker.
+const ORIGINAL_LOCAL_STORAGE_DESCRIPTOR = Object.getOwnPropertyDescriptor(window, "localStorage");
+beforeAll(() => {
+  Object.defineProperty(window, "localStorage", {
+    configurable: true,
+    writable: true,
+    value: localStorageMock,
+  });
+});
+afterAll(() => {
+  if (ORIGINAL_LOCAL_STORAGE_DESCRIPTOR) {
+    Object.defineProperty(window, "localStorage", ORIGINAL_LOCAL_STORAGE_DESCRIPTOR);
+  } else {
+    delete (window as unknown as Record<string, unknown>).localStorage;
+  }
+});
 
 // Mock assets
 vi.mock("@assets", () => ({

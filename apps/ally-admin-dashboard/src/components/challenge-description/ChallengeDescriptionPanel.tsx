@@ -21,6 +21,7 @@ import { RegenerateFieldResponse } from "@types";
 import { isNonEmptyString } from "@utils";
 
 import { buildScenarioContext } from "../linguistic-style-samples/scenarioLanguageUtils";
+import { RichTextEditor } from "../rich-text-editor";
 
 import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
 
@@ -300,13 +301,11 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
         </div>
         {activeLanguageId && (
           <div className="p-4">
-            <textarea
+            <RichTextEditor
               value={valueForActiveTab}
-              onChange={e => handleChange(e.target.value)}
+              onChange={handleChange}
               placeholder={placeholder}
               maxLength={maxLength}
-              rows={5}
-              className="w-full px-3 py-2 border border-border-light rounded text-sm text-typography-800 resize-y"
             />
           </div>
         )}

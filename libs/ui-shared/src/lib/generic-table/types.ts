@@ -73,6 +73,7 @@ export interface GenericTableProps<T> {
   style?: React.CSSProperties;
   fallbackUI?: React.ReactNode;
   handleLoadMore?: () => void;
+  loadMoreLabel?: string;
   onFilterChange?: (data: { filter: TableFilter; sort: TableSort }) => void;
 }
 

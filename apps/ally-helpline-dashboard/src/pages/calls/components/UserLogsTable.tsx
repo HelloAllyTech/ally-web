@@ -435,6 +435,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           data={displayData}
           isLoading={isLoading}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
+          loadMoreLabel={t("common.loadMore")}
           fallbackUI={renderFallbackUI()}
           className={`min-w-full font-primary overflow-y-scroll text-sm text-typography-800 ${className}`}
           data-testid="user-logs-table"

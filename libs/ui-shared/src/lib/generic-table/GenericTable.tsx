@@ -42,6 +42,7 @@ export const GenericTable = forwardRef(
       showSelectedFilters = false,
       onFilterChange,
       handleLoadMore,
+      loadMoreLabel = "Load More",
     }: GenericTableProps<T>,
     ref: React.Ref<HTMLDivElement | null>,
   ) => {
@@ -283,7 +284,7 @@ export const GenericTable = forwardRef(
             className="flex cursor-pointer mt-4 text-center items-center pb-[60px]"
           >
             <Plus size={20} />
-            <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">Load More</span>
+            <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">{loadMoreLabel}</span>
             {isLoading && (
               <CircularProgress color="primary" size={20} className="ml-2 mr-2 text-[#000]" />
             )}

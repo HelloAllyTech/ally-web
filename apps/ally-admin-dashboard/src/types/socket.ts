@@ -5,8 +5,37 @@ export enum SocketEvent {
   JOIN_USER_REPORTS_ROOM = "JOIN_USER_REPORTS_ROOM",
   JOIN_SCENARIO_REPORT_ROOM = "JOIN_SCENARIO_REPORT_ROOM",
   REPORTS_UPDATED = "REPORTS_UPDATED",
+  JOIN_USER_TRANSLATIONS_ROOM = "JOIN_USER_TRANSLATIONS_ROOM",
+  TRANSLATION_PROGRESS = "TRANSLATION_PROGRESS",
   DISCONNECT = "DISCONNECT",
 }
+
+export enum ScenarioTranslationStatus {
+  STARTED = "STARTED",
+  TRANSLATING = "TRANSLATING",
+  TRANSLATED = "TRANSLATED",
+  LANGUAGE_FAILED = "LANGUAGE_FAILED",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+}
+
+export enum ScenarioTranslationAction {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+}
+
+export type TranslationProgressPayload = {
+  jobId: string;
+  scenarioId?: number;
+  scenarioTitle?: string;
+  action: ScenarioTranslationAction;
+  status: ScenarioTranslationStatus;
+  language?: string;
+  completed: number;
+  total: number;
+  error?: string;
+  emittedAt: string;
+};
 
 export type ConnectedEventPayload = {
   userId: string;

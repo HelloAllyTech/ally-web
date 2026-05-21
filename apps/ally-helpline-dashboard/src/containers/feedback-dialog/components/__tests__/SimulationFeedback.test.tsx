@@ -99,7 +99,9 @@ describe("SimulationFeedback", () => {
     it("should render the component with initial state", () => {
       render(<SimulationFeedback {...defaultProps} />);
 
-      expect(screen.getByText("How was your experience?")).toBeInTheDocument();
+      expect(
+        screen.getByText("Did this feel like useful practice for real sessions?"),
+      ).toBeInTheDocument();
       expect(screen.getByTestId("star-rating")).toBeInTheDocument();
       expect(screen.getByPlaceholderText("Tell us how we can improve...")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
@@ -149,7 +151,7 @@ describe("SimulationFeedback", () => {
       const star4 = screen.getByTestId("star-4");
       await user.click(star4);
 
-      expect(screen.getByText("Nice experience!")).toBeInTheDocument();
+      expect(screen.getByText("Yes")).toBeInTheDocument();
     });
 
     it("should show different rating texts for different ratings", async () => {
@@ -158,19 +160,19 @@ describe("SimulationFeedback", () => {
 
       // Test rating 1
       await user.click(screen.getByTestId("star-1"));
-      expect(screen.getByText("Needs major improvements.")).toBeInTheDocument();
+      expect(screen.getByText("Not at all")).toBeInTheDocument();
 
       // Test rating 2
       await user.click(screen.getByTestId("star-2"));
-      expect(screen.getByText("Could be better.")).toBeInTheDocument();
+      expect(screen.getByText("Not really")).toBeInTheDocument();
 
       // Test rating 3
       await user.click(screen.getByTestId("star-3"));
-      expect(screen.getByText("Decent, but room to grow.")).toBeInTheDocument();
+      expect(screen.getByText("Maybe")).toBeInTheDocument();
 
       // Test rating 5
       await user.click(screen.getByTestId("star-5"));
-      expect(screen.getByText("Excellent and highly effective!")).toBeInTheDocument();
+      expect(screen.getByText("5 — Absolutely")).toBeInTheDocument();
     });
 
     it("should enable submit button when rating is selected", async () => {
@@ -190,12 +192,12 @@ describe("SimulationFeedback", () => {
 
       // Click star 2
       await user.click(screen.getByTestId("star-2"));
-      expect(screen.getByText("Could be better.")).toBeInTheDocument();
+      expect(screen.getByText("Not really")).toBeInTheDocument();
 
       // Click star 4
       await user.click(screen.getByTestId("star-4"));
-      expect(screen.getByText("Nice experience!")).toBeInTheDocument();
-      expect(screen.queryByText("Could be better.")).not.toBeInTheDocument();
+      expect(screen.getByText("Yes")).toBeInTheDocument();
+      expect(screen.queryByText("Not really")).not.toBeInTheDocument();
     });
   });
 
@@ -385,9 +387,7 @@ describe("SimulationFeedback", () => {
 
       // Should not show any rating text for zero rating
       expect(
-        screen.queryByText(
-          /Needs major improvements|Could be better|Decent|Nice experience|Excellent/,
-        ),
+        screen.queryByText(/Not at all|Not really|Maybe|Yes|Absolutely/),
       ).not.toBeInTheDocument();
     });
 
@@ -408,12 +408,12 @@ describe("SimulationFeedback", () => {
 
       // Set rating to 4
       await user.click(screen.getByTestId("star-4"));
-      expect(screen.getByText("Nice experience!")).toBeInTheDocument();
+      expect(screen.getByText("Yes")).toBeInTheDocument();
 
       // Change to rating 1
       await user.click(screen.getByTestId("star-1"));
-      expect(screen.getByText("Needs major improvements.")).toBeInTheDocument();
-      expect(screen.queryByText("Nice experience!")).not.toBeInTheDocument();
+      expect(screen.getByText("Not at all")).toBeInTheDocument();
+      expect(screen.queryByText("Yes")).not.toBeInTheDocument();
     });
 
     it("should handle rapid rating changes", async () => {
@@ -425,7 +425,7 @@ describe("SimulationFeedback", () => {
       await user.click(screen.getByTestId("star-3"));
       await user.click(screen.getByTestId("star-5"));
 
-      expect(screen.getByText("Excellent and highly effective!")).toBeInTheDocument();
+      expect(screen.getByText("5 — Absolutely")).toBeInTheDocument();
     });
 
     it("should handle form submission with all fields filled", async () => {

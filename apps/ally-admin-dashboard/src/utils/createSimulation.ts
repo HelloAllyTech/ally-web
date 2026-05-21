@@ -30,6 +30,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     openingDialoguePrimaryLanguageId: data.openingDialoguePrimaryLanguageId ?? null,
     translationDescription: data.translationDescription ?? {},
     challengeDescriptionPrimaryLanguageId: data.challengeDescriptionPrimaryLanguageId ?? null,
+    translationTitle: data.translationTitle ?? {},
     personality: data?.metadata?.personality,
     profession: data?.metadata?.profession,
     sessionBehaviorGuidelines: data?.metadata?.sessionBehaviorGuidelines,
@@ -38,6 +39,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     languageVoices: (data?.metadata as any)?.languageVoices,
     linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
     allowedFillerWords: (data?.metadata as any)?.allowedFillerWords,
+    languageCharacteristics: (data?.metadata as any)?.languageCharacteristics,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
     difficultyLevel: data?.difficultyLevel,
@@ -65,6 +67,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     timerMode: data?.metadata?.timerMode,
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
+    enableProsody: data?.metadata?.enableProsody ?? true,
     currentState: data?.metadata?.currentState,
     stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
       ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
