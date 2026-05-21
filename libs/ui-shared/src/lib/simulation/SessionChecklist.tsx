@@ -55,7 +55,7 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
       layout
       initial={{ width: 0, opacity: 0 }}
       animate={{ width: "100%", opacity: 1 }}
-      className="overflow-hidden bg-[#1d2020] flex flex-col h-full w-full rounded-lg p-4 font-sans"
+      className="overflow-hidden bg-[#1d2020] flex flex-col flex-1 min-h-0 w-full rounded-lg p-4 font-sans"
     >
       {/* Header */}
       <div
