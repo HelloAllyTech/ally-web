@@ -21,7 +21,7 @@ const mockTooltip = {
 
 describe("AppTooltip", () => {
   beforeEach(() => {
-    mockUseGetActiveTooltipsQuery.mockReturnValue({ data: [mockTooltip] });
+    mockUseGetActiveTooltipsQuery.mockReturnValue({ data: [mockTooltip], isLoading: false });
   });
 
   it("renders children when no matching tooltip exists for location", () => {
@@ -34,8 +34,20 @@ describe("AppTooltip", () => {
     expect(screen.getByRole("button", { name: "Click me" })).toBeInTheDocument();
   });
 
+  it("renders children while loading", () => {
+    mockUseGetActiveTooltipsQuery.mockReturnValue({ data: [], isLoading: true });
+
+    render(
+      <AppTooltip location="login_button">
+        <button>Click me</button>
+      </AppTooltip>,
+    );
+
+    expect(screen.getByRole("button", { name: "Click me" })).toBeInTheDocument();
+  });
+
   it("renders children when tooltips list is empty", () => {
-    mockUseGetActiveTooltipsQuery.mockReturnValue({ data: [] });
+    mockUseGetActiveTooltipsQuery.mockReturnValue({ data: [], isLoading: false });
 
     render(
       <AppTooltip location="login_button">
@@ -71,6 +83,7 @@ describe("AppTooltip", () => {
   it("shows tooltip text without emoji when icon is not set", async () => {
     mockUseGetActiveTooltipsQuery.mockReturnValue({
       data: [{ ...mockTooltip, icon: null }],
+      isLoading: false,
     });
 
     render(

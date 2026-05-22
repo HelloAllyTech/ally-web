@@ -11,7 +11,10 @@ interface AppTooltipProps {
 }
 
 const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
-  const { data: tooltips = [] } = useGetActiveTooltipsQuery();
+  const { data: tooltips = [], isLoading } = useGetActiveTooltipsQuery();
+
+  if (isLoading) return children;
+
   const tooltip = tooltips.find(t => t.location === location);
 
   if (!tooltip) return children;
@@ -20,7 +23,7 @@ const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
 
   return (
     <Tooltip title={title} componentsProps={toolTipStyles} arrow>
-      {children}
+      <span style={{ display: "block" }}>{children}</span>
     </Tooltip>
   );
 };
