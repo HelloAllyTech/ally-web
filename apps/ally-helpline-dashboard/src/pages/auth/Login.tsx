@@ -274,25 +274,23 @@ export const Login: FunctionComponent = () => {
               </label>
             </div>
           </div>
-          <div className="mt-6">
-            <AppTooltip location="login_button">
-              <Button
-                type="button"
-                className="w-full rounded-[5px]"
-                disabled={isLoading || isSubmitDisabled}
-                onClick={handleNext}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
-                    {t("auth.login.generatingOtp")}
-                  </div>
-                ) : (
-                  t("common.next")
-                )}
-              </Button>
-            </AppTooltip>
-          </div>
+          <AppTooltip location="login_button">
+            <Button
+              type="button"
+              className="w-full rounded-[5px] mt-6"
+              disabled={isLoading || isSubmitDisabled}
+              onClick={handleNext}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-[5px] animate-spin mr-2"></div>
+                  {t("auth.login.generatingOtp")}
+                </div>
+              ) : (
+                t("common.next")
+              )}
+            </Button>
+          </AppTooltip>
           <div className="text-sm text-typography-800">
             <div className="mb-3">
               <div className="flex items-center mb-3">

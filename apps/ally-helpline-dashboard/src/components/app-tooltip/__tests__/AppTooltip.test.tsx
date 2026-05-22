@@ -46,24 +46,14 @@ describe("AppTooltip", () => {
     expect(screen.getByRole("button", { name: "Click me" })).toBeInTheDocument();
   });
 
-  it("renders info icon when matching tooltip exists", () => {
+  it("renders child element when matching tooltip exists", () => {
     render(
       <AppTooltip location="login_button">
         <button>Click me</button>
       </AppTooltip>,
     );
 
-    expect(screen.getByTestId("InfoOutlinedIcon")).toBeInTheDocument();
-  });
-
-  it("does not render info icon when no matching tooltip", () => {
-    render(
-      <AppTooltip location="nonexistent_location">
-        <button>Click me</button>
-      </AppTooltip>,
-    );
-
-    expect(screen.queryByTestId("InfoOutlinedIcon")).not.toBeInTheDocument();
+    expect(screen.getByText("Click me")).toBeInTheDocument();
   });
 
   it("shows tooltip text with icon on hover", async () => {
@@ -73,7 +63,7 @@ describe("AppTooltip", () => {
       </AppTooltip>,
     );
 
-    await userEvent.hover(screen.getByTestId("InfoOutlinedIcon"));
+    await userEvent.hover(screen.getByText("Click me"));
 
     expect(await screen.findByText("😀 Click on the login button to see more")).toBeInTheDocument();
   });
@@ -89,7 +79,7 @@ describe("AppTooltip", () => {
       </AppTooltip>,
     );
 
-    await userEvent.hover(screen.getByTestId("InfoOutlinedIcon"));
+    await userEvent.hover(screen.getByText("Click me"));
 
     expect(await screen.findByText("Click on the login button to see more")).toBeInTheDocument();
   });
