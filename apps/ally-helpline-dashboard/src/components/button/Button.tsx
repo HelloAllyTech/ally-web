@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { forwardRef } from "react";
 
 import { ButtonProps, ButtonVariant } from "./types";
 
@@ -19,16 +19,17 @@ const getButtonStyles = (variant: ButtonProps["variant"]) => {
   }
 };
 
-const Button: FC<ButtonProps> = ({
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   className,
   variant = "primary",
   fullWidth,
   children,
   ...props
-}) => {
+}, ref) => {
   return (
     <button
-      className={`h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px] 
+      ref={ref}
+      className={`h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px]
         transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
         disabled:cursor-default disabled:opacity-50 ${getButtonStyles(variant)} ${fullWidth ? "w-full" : ""} ${className}`}
       {...props}
@@ -36,6 +37,8 @@ const Button: FC<ButtonProps> = ({
       {children}
     </button>
   );
-};
+});
+
+Button.displayName = "Button";
 
 export default Button;
