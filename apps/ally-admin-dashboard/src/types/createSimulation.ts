@@ -38,6 +38,7 @@ export type FormData = {
   openingDialoguePrimaryLanguageId?: number | null;
   translationDescription?: Record<string, string>;
   challengeDescriptionPrimaryLanguageId?: number | null;
+  translationTitle?: Record<string, string>;
   autoTerminationStatus?: boolean;
   experienceMode?: string;
   checklistType?: string;
