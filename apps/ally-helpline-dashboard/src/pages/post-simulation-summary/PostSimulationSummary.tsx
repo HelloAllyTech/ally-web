@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
+  useLazyGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
 import { BackCircle, Comment } from "@assets";
@@ -45,6 +46,7 @@ export const PostSimulationSummary: FC = () => {
     { sessionId: sessionId ?? "", languageCode: i18n.language },
     { skip: !sessionId },
   );
+  const [fetchSimulationSummary] = useLazyGetSimulationSummaryQuery();
   const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(
     sessionId,
     i18n.language,
@@ -176,13 +178,25 @@ export const PostSimulationSummary: FC = () => {
     handleFeedbackClose();
   };
 
-  const guardExit = (navigate: () => void) => {
-    if (!summary?.hasFeedback && !exitPromptShown.current) {
-      exitPromptShown.current = true;
-      setPendingExit(() => navigate);
-      setFeedbackOpen(true);
-    } else {
-      navigate();
+  const guardExit = async (navigateFn: () => void) => {
+    if (exitPromptShown.current) {
+      navigateFn();
+      return;
+    }
+    try {
+      const result = await fetchSimulationSummary({
+        sessionId: sessionId ?? "",
+        languageCode: i18n.language,
+      }).unwrap();
+      if (!result.hasFeedback) {
+        exitPromptShown.current = true;
+        setPendingExit(() => navigateFn);
+        setFeedbackOpen(true);
+      } else {
+        navigateFn();
+      }
+    } catch {
+      navigateFn();
     }
   };
 

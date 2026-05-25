@@ -236,8 +236,7 @@ export type GetSimulationSummaryResponse = SimulationSummary;
 
 export interface SubmitSimulationFeedbackRequest {
   sessionId: string;
-  // TODO: add issues: SimulationIssueOptions[] to sessionFeedback once backend contract is extended
-  sessionFeedback: { rating: number; feedback?: string };
+  sessionFeedback: { rating: number; feedback?: string; tags?: string[] };
 }
 
 export interface SubmitSimulationFeedbackResponse {

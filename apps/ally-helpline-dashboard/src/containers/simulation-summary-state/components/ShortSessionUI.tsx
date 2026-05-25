@@ -16,7 +16,7 @@ export const ShortSessionUI: FC<ShortSessionUIProps> = ({ className = "", summar
   const { t } = useTranslation();
   const [showSimulationDetailsModal, setShowSimulationDetailsModal] = useState(false);
 
-  const callDurationInSeconds = Math.floor((summaryData?.details?.callDuration ?? 0) / 1000);
+  const callDurationInSeconds = summaryData?.details?.callDuration ?? 0;
   const formattedCallDuration =
     callDurationInSeconds < 60
       ? `${callDurationInSeconds} sec`

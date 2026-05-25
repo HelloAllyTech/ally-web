@@ -34,9 +34,7 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({
   const onSubmit = async () => {
     const response = await submitSimulationFeedback({
       sessionId: id.toString(),
-      sessionFeedback: { rating, feedback: comment },
-      // TODO: insert this tags into DB
-      // tags: selectedTags,
+      sessionFeedback: { rating, feedback: comment, tags: selectedTags },
     });
     if (response.error) {
       throw new Error();

@@ -53,7 +53,7 @@ export function useSimulationSummaryPolling(
               data.sessionFeedback ?? (data.hasFeedback ? MOCK_SESSION_FEEDBACK : undefined),
           };
           if (isMounted) setSummaryData(enriched);
-          setIsShortSession(data?.details?.callDuration <= 30); // 30 seconds
+          setIsShortSession(data?.details?.callDuration > 0 && data?.details?.callDuration <= 30);
         }
 
         if (data?.details?.summary?.feedback) return;
