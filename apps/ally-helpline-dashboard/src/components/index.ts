@@ -1,4 +1,5 @@
 import Accordion from "./accordion";
+export { AppTooltip } from "./app-tooltip";
 import { AchievementBadgeModal } from "./achievement-badge-modal";
 import { AchievementItem, AchievementItemData } from "./achievement-item";
 import AchievementsCard from "./achievements-card";

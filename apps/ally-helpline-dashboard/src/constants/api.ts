@@ -196,4 +196,7 @@ export const ApiEndpoints = {
     GET_CUSTOM_FIELD_TYPES: "/v1/settings/custom-field-types",
     GET_CUSTOM_FIELDS_ENABLED: "/v1/settings/custom-fields-enabled",
   },
+  TOOLTIPS: {
+    GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",
+  },
 };

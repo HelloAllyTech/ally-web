@@ -145,6 +145,7 @@ export const baseAPI = createApi({
     TAG_TYPES.REVIEW,
     TAG_TYPES.CUSTOM_FIELD_DEFINITIONS,
     TAG_TYPES.CUSTOM_FIELD_VALUES,
+    TAG_TYPES.TOOLTIPS,
   ],
   endpoints: () => ({}),
 });

@@ -130,6 +130,7 @@ export const TAG_TYPES = {
   GENERAL_COMMENTS: "GeneralComments",
   CUSTOM_FIELD_DEFINITIONS: "CustomFieldDefinitions",
   CUSTOM_FIELD_VALUES: "CustomFieldValues",
+  TOOLTIPS: "Tooltips",
 };
 
 export const SORT_ORDER = {
@@ -148,3 +149,7 @@ export const toolTipStyles = {
     },
   },
 };
+
+export enum TooltipLocation {
+  LOGIN_BUTTON = "login_button",
+}
