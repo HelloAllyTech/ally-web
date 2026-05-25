@@ -107,6 +107,7 @@ vi.mock("@assets", () => ({
 }));
 
 vi.mock("@components", () => ({
+  AppTooltip: ({ children }: any) => <>{children}</>,
   Button: ({ children, onClick, disabled, className }: any) => (
     <button data-testid="button" onClick={onClick} disabled={disabled} className={className}>
       {children}
@@ -153,6 +154,9 @@ vi.mock("@constants", () => ({
   LoginSection: {
     EMAIL: "email",
     OTP: "otp",
+  },
+  TooltipLocation: {
+    LOGIN_BUTTON: "login_button",
   },
 }));
 

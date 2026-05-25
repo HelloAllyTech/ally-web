@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
+import { TooltipLocation } from "@constants";
+
 import AppTooltip from "../AppTooltip";
 
 vi.mock("@api", () => ({
@@ -14,7 +16,7 @@ const mockUseGetActiveTooltipsQuery = useGetActiveTooltipsQuery as ReturnType<ty
 
 const mockTooltip = {
   id: "tooltip-uuid-1",
-  location: "login_button",
+  location: TooltipLocation.LOGIN_BUTTON,
   tipText: "Click on the login button to see more",
   icon: "😀",
 };
@@ -26,7 +28,7 @@ describe("AppTooltip", () => {
 
   it("renders children when no matching tooltip exists for location", () => {
     render(
-      <AppTooltip location="nonexistent_location">
+      <AppTooltip location={"nonexistent_location" as TooltipLocation}>
         <button>Click me</button>
       </AppTooltip>,
     );
@@ -38,7 +40,7 @@ describe("AppTooltip", () => {
     mockUseGetActiveTooltipsQuery.mockReturnValue({ data: [], isLoading: true });
 
     render(
-      <AppTooltip location="login_button">
+      <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
         <button>Click me</button>
       </AppTooltip>,
     );
@@ -50,7 +52,7 @@ describe("AppTooltip", () => {
     mockUseGetActiveTooltipsQuery.mockReturnValue({ data: [], isLoading: false });
 
     render(
-      <AppTooltip location="login_button">
+      <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
         <button>Click me</button>
       </AppTooltip>,
     );
@@ -60,7 +62,7 @@ describe("AppTooltip", () => {
 
   it("renders child element when matching tooltip exists", () => {
     render(
-      <AppTooltip location="login_button">
+      <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
         <button>Click me</button>
       </AppTooltip>,
     );
@@ -70,7 +72,7 @@ describe("AppTooltip", () => {
 
   it("shows tooltip text with icon on hover", async () => {
     render(
-      <AppTooltip location="login_button">
+      <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
         <button>Click me</button>
       </AppTooltip>,
     );
@@ -87,7 +89,7 @@ describe("AppTooltip", () => {
     });
 
     render(
-      <AppTooltip location="login_button">
+      <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
         <button>Click me</button>
       </AppTooltip>,
     );

@@ -23,6 +23,7 @@ import {
   LOCAL_STORAGE_KEYS,
   LoginSection,
   ROUTES,
+  TooltipLocation,
   User,
 } from "@constants";
 import { useUser } from "@hooks";
@@ -274,7 +275,7 @@ export const Login: FunctionComponent = () => {
               </label>
             </div>
           </div>
-          <AppTooltip location="login_button">
+          <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
             <Button
               type="button"
               className="w-full rounded-[5px] mt-6"

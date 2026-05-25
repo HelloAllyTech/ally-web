@@ -3,10 +3,10 @@ import React from "react";
 import { Tooltip } from "@mui/material";
 
 import { useGetActiveTooltipsQuery } from "@api";
-import { toolTipStyles } from "@constants";
+import { TooltipLocation, toolTipStyles } from "@constants";
 
 interface AppTooltipProps {
-  location: string;
+  location: TooltipLocation;
   children: React.ReactElement;
 }
 

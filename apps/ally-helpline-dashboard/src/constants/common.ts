@@ -149,3 +149,7 @@ export const toolTipStyles = {
     },
   },
 };
+
+export enum TooltipLocation {
+  LOGIN_BUTTON = "login_button",
+}
