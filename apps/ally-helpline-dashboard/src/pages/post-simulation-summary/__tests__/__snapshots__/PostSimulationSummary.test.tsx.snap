@@ -9,11 +9,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
       class="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10"
     >
       <div
-        data-id="123"
-        data-session-type="simulation"
-        data-testid="feedback-dialog"
-      />
-      <div
         class="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
         data-animate="visible"
         data-initial="hidden"
@@ -183,11 +178,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
     <div
       class="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10"
     >
-      <div
-        data-id="789"
-        data-session-type="simulation"
-        data-testid="feedback-dialog"
-      />
       <div
         class="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
         data-animate="visible"

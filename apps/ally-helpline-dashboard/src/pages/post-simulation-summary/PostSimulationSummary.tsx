@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { Tab, Tabs } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
@@ -109,7 +109,17 @@ export const PostSimulationSummary: FC = () => {
 
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
   const [shareForReview, setShareForReview] = useState<boolean>(false);
-  const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(true);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
+  const feedbackDialogEvaluatedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (summaryData && !feedbackDialogEvaluatedRef.current) {
+      feedbackDialogEvaluatedRef.current = true;
+      if (!summaryData.hasFeedback) {
+        setShowFeedbackDialog(true);
+      }
+    }
+  }, [summaryData]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
