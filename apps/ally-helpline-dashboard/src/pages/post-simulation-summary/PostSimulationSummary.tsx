@@ -17,6 +17,7 @@ import {
   AskAiTab,
   Button,
   ReflectionTab,
+  SessionRatingTrigger,
   ShareForReview,
   SkillsTab,
   ToggleSwitch,
@@ -40,7 +41,11 @@ export const PostSimulationSummary: FC = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
-  const { data: summary, isLoading } = useGetSimulationSummaryQuery(
+  const {
+    data: summary,
+    isLoading,
+    refetch,
+  } = useGetSimulationSummaryQuery(
     { sessionId: sessionId ?? "", languageCode: i18n.language },
     { skip: !sessionId },
   );
@@ -107,17 +112,23 @@ export const PostSimulationSummary: FC = () => {
       : []),
   ];
 
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [rating, setRating] = useState<number | null>(null);
+  const [hasFeedback, setHasFeedback] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (summary?.hasFeedback) setHasFeedback(true);
+  }, [summary?.hasFeedback]);
+
   const [selectedTab, setSelectedTab] = useState<number>(tabList?.[0].id);
   const [shareForReview, setShareForReview] = useState<boolean>(false);
   const [showFeedbackDialog, setShowFeedbackDialog] = useState<boolean>(false);
   const feedbackDialogEvaluatedRef = useRef<boolean>(false);
+  const pendingNavigationRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (summaryData && !feedbackDialogEvaluatedRef.current) {
       feedbackDialogEvaluatedRef.current = true;
-      if (!summaryData.hasFeedback) {
-        setShowFeedbackDialog(true);
-      }
     }
   }, [summaryData]);
 
@@ -160,6 +171,43 @@ export const PostSimulationSummary: FC = () => {
 
   const getTabContent = () => tabList.find(tab => tab.id === selectedTab)?.content;
 
+  const handleStarSelect = (rating: number) => {
+    setRating(rating);
+    setFeedbackOpen(true);
+  };
+
+  const flushPendingNavigation = () => {
+    if (pendingNavigationRef.current) {
+      pendingNavigationRef.current();
+      pendingNavigationRef.current = null;
+    }
+  };
+
+  const handleFeedbackClose = () => {
+    setFeedbackOpen(false);
+    setRating(null);
+    flushPendingNavigation();
+  };
+
+  const handleFeedbackSubmitted = () => {
+    setHasFeedback(true);
+    setFeedbackOpen(false);
+    setRating(null);
+    refetch();
+    flushPendingNavigation();
+  };
+
+  const guardExit = (nav: () => void) => {
+    if (!hasFeedback) {
+      pendingNavigationRef.current = nav;
+      setFeedbackOpen(true);
+    } else {
+      nav();
+    }
+  };
+
+  const displayRating = rating ?? summary?.sessionFeedback?.rating ?? 0;
+
   return (
     <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10">
       <FeedbackDialog
@@ -176,10 +224,13 @@ export const PostSimulationSummary: FC = () => {
       >
         <div className="mt-8 flex w-full shrink-0 items-center justify-between">
           <div className="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
-            <button onClick={() => navigate(-1)}>
+            <button onClick={() => guardExit(() => navigate(-1))}>
               <BackCircle />
             </button>
             {t("postSim.titlePrefix")} <em>{t("common.summary")}</em>
+            {!isShortSession && (
+              <SessionRatingTrigger value={displayRating} onSelect={handleStarSelect} size="sm" />
+            )}
           </div>
           {!isShortSession && (
             <div className="flex justify-center gap-2 items-center">
@@ -262,6 +313,20 @@ export const PostSimulationSummary: FC = () => {
           </>
         )}
       </motion.div>
+      <FeedbackDialog
+        open={feedbackOpen}
+        onClose={handleFeedbackClose}
+        onSubmitComplete={handleFeedbackSubmitted}
+        id={sessionId ?? ""}
+        sessionType={SessionType.SIMULATION}
+        initialRating={summary?.sessionFeedback?.rating}
+        initialComment={summary?.sessionFeedback?.feedback}
+        initialTags={
+          rating === null || rating === summary?.sessionFeedback?.rating
+            ? summary?.sessionFeedback?.tags
+            : undefined
+        }
+      />
     </div>
   );
 };

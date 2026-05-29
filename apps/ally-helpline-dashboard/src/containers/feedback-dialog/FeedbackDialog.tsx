@@ -8,7 +8,16 @@ import { SessionType } from "@types";
 import { CallFeedback, SimulationFeedback } from "./components";
 import { FeedbackDialogProps } from "./types";
 
-const FeedbackDialog: FC<FeedbackDialogProps> = ({ id, open, sessionType, onClose }) => {
+const FeedbackDialog: FC<FeedbackDialogProps> = ({
+  id,
+  open,
+  sessionType,
+  onClose,
+  onSubmitComplete,
+  initialRating,
+  initialComment,
+  initialTags,
+}) => {
   const motionVariants = {
     initial: { opacity: 0, y: 16, scale: 0.98 },
     animate: { opacity: 1, y: 0, scale: 1 },
@@ -20,7 +29,15 @@ const FeedbackDialog: FC<FeedbackDialogProps> = ({ id, open, sessionType, onClos
       case SessionType.CALL:
         return <CallFeedback id={id} onSubmitComplete={onClose} />;
       case SessionType.SIMULATION:
-        return <SimulationFeedback id={id} onSubmitComplete={onClose} />;
+        return (
+          <SimulationFeedback
+            id={id}
+            onSubmitComplete={onSubmitComplete ?? onClose}
+            initialRating={initialRating}
+            initialComment={initialComment}
+            initialTags={initialTags}
+          />
+        );
     }
   };
 

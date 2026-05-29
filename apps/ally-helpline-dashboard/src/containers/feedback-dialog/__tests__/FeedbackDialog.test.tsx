@@ -26,12 +26,27 @@ vi.mock("../components/SimulationFeedback", () => ({
   SimulationFeedback: ({
     id,
     onSubmitComplete,
+    initialRating,
+    initialComment,
+    initialTags,
   }: {
     id: number | string;
     onSubmitComplete: () => void;
+    initialRating?: number;
+    initialComment?: string;
+    initialTags?: string[];
   }) => (
     <div data-testid="simulation-feedback">
       <span>Simulation Feedback for ID: {id}</span>
+      {initialRating !== undefined && (
+        <span data-testid="initial-rating">{initialRating}</span>
+      )}
+      {initialComment !== undefined && (
+        <span data-testid="initial-comment">{initialComment}</span>
+      )}
+      {initialTags !== undefined && (
+        <span data-testid="initial-tags">{initialTags.join(",")}</span>
+      )}
       <button onClick={onSubmitComplete}>Submit Simulation Feedback</button>
     </div>
   ),
@@ -307,6 +322,67 @@ describe("FeedbackDialog", () => {
 
       rerender(<FeedbackDialog {...defaultProps} open={true} />);
       expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+  });
+
+  describe("onSubmitComplete and initial props (SimulationFeedback)", () => {
+    const simulationBase = {
+      id: "sim-id",
+      open: true,
+      onClose: vi.fn(),
+      sessionType: SessionType.SIMULATION,
+    };
+
+    it("should call onSubmitComplete instead of onClose when provided", () => {
+      const onSubmitCompleteMock = vi.fn();
+      const onCloseMock = vi.fn();
+      render(
+        <FeedbackDialog
+          {...simulationBase}
+          onClose={onCloseMock}
+          onSubmitComplete={onSubmitCompleteMock}
+        />,
+      );
+
+      fireEvent.click(screen.getByText("Submit Simulation Feedback"));
+
+      expect(onSubmitCompleteMock).toHaveBeenCalledTimes(1);
+      expect(onCloseMock).not.toHaveBeenCalled();
+    });
+
+    it("should fall back to onClose when onSubmitComplete is not provided", () => {
+      const onCloseMock = vi.fn();
+      render(<FeedbackDialog {...simulationBase} onClose={onCloseMock} />);
+
+      fireEvent.click(screen.getByText("Submit Simulation Feedback"));
+
+      expect(onCloseMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("should forward initialRating to SimulationFeedback", () => {
+      render(<FeedbackDialog {...simulationBase} initialRating={3} />);
+
+      expect(screen.getByTestId("initial-rating")).toHaveTextContent("3");
+    });
+
+    it("should forward initialComment to SimulationFeedback", () => {
+      render(<FeedbackDialog {...simulationBase} initialComment="Nice session" />);
+
+      expect(screen.getByTestId("initial-comment")).toHaveTextContent("Nice session");
+    });
+
+    it("should forward initialTags to SimulationFeedback", () => {
+      render(<FeedbackDialog {...simulationBase} initialTags={["Good", "Helpful"]} />);
+
+      expect(screen.getByTestId("initial-tags")).toHaveTextContent("Good,Helpful");
+    });
+
+    it("should not render initial-* testids when optional props are omitted", () => {
+      render(<FeedbackDialog {...simulationBase} />);
+
+      expect(screen.queryByTestId("initial-rating")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("initial-comment")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("initial-tags")).not.toBeInTheDocument();
     });
   });
 });

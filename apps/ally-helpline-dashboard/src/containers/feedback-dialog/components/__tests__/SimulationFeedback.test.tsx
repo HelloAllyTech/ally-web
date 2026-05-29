@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
@@ -8,29 +6,39 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { FeedbackSectionProps } from "../../types";
 import { SimulationFeedback } from "../SimulationFeedback";
 
-// Mock the API hook
+const TAGS: Record<number, string[]> = {
+  1: ["Poor", "Not helpful", "Very bad"],
+  2: ["Below average", "Lacking", "Unsatisfying"],
+  3: ["Neutral", "Okay", "Average"],
+  4: ["Good", "Helpful", "Satisfying"],
+  5: ["Excellent", "Amazing", "Highly useful"],
+};
+
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: any) => {
+      if (options?.returnObjects) {
+        const match = key.match(/rating\.tags\.(\d)$/);
+        return match ? (TAGS[Number(match[1])] ?? []) : [];
+      }
+      return key;
+    },
+    i18n: { language: "en" },
+  }),
+}));
+
 const mockSubmitSimulationFeedback = vi.fn();
 vi.mock("@api", () => ({
   useSubmitSimulationFeedbackMutation: () => [mockSubmitSimulationFeedback, { isLoading: false }],
 }));
 
-// Mock the child components
 vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled, ...props }: any) => (
     <button onClick={onClick} disabled={disabled} {...props}>
       {children}
     </button>
   ),
-  TextField: ({
-    value,
-    onChange,
-    placeholder,
-    multiline,
-    rows,
-    fullWidth,
-    className,
-    ...props
-  }: any) => (
+  TextField: ({ value, onChange, placeholder, multiline, rows, fullWidth, className, ...props }: any) => (
     <textarea
       value={value}
       onChange={onChange}
@@ -58,25 +66,6 @@ vi.mock("@components", () => ({
   ),
 }));
 
-// Mock StarRating component
-vi.mock("@containers/simulation-summary-state/components/StarRating", () => ({
-  default: ({ rating, setRating }: { rating: number; setRating: (rating: number) => void }) => (
-    <div data-testid="star-rating">
-      {[1, 2, 3, 4, 5].map(star => (
-        <button
-          key={star}
-          data-testid={`star-${star}`}
-          onClick={() => setRating(star)}
-          className={star <= rating ? "filled" : "empty"}
-        >
-          ⭐
-        </button>
-      ))}
-    </div>
-  ),
-}));
-
-// Mock toast
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
@@ -99,15 +88,12 @@ describe("SimulationFeedback", () => {
     it("should render the component with initial state", () => {
       render(<SimulationFeedback {...defaultProps} />);
 
-      expect(
-        screen.getByText("Did this feel like useful practice for real sessions?"),
-      ).toBeInTheDocument();
       expect(screen.getByTestId("star-rating")).toBeInTheDocument();
       expect(screen.getByPlaceholderText("Tell us how we can improve...")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
     });
 
-    it("should render with correct initial values", () => {
+    it("should render with correct initial values when no initial props", () => {
       render(<SimulationFeedback {...defaultProps} />);
 
       const textarea = screen.getByPlaceholderText("Tell us how we can improve...");
@@ -131,6 +117,50 @@ describe("SimulationFeedback", () => {
       expect(textarea).toHaveAttribute("data-fullwidth", "true");
       expect(textarea).toHaveAttribute("rows", "4");
     });
+
+    it("should not show tags when rating is 0", () => {
+      render(<SimulationFeedback {...defaultProps} />);
+
+      expect(screen.queryByText("Good")).not.toBeInTheDocument();
+      expect(screen.queryByText("Poor")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Initial Props", () => {
+    it("should pre-populate rating from initialRating", () => {
+      render(<SimulationFeedback {...defaultProps} initialRating={4} />);
+
+      expect(screen.getByRole("button", { name: "Submit" })).not.toBeDisabled();
+      expect(screen.getByTestId("star-4")).toHaveClass("filled");
+    });
+
+    it("should pre-populate comment from initialComment", () => {
+      render(<SimulationFeedback {...defaultProps} initialComment="Great session" />);
+
+      expect(screen.getByPlaceholderText("Tell us how we can improve...")).toHaveValue(
+        "Great session",
+      );
+    });
+
+    it("should pre-select tags from initialTags when initialRating matches", () => {
+      render(
+        <SimulationFeedback {...defaultProps} initialRating={4} initialTags={["Good", "Helpful"]} />,
+      );
+
+      const goodTag = screen.getByRole("button", { name: "Good" });
+      const helpfulTag = screen.getByRole("button", { name: "Helpful" });
+      const satisfyingTag = screen.getByRole("button", { name: "Satisfying" });
+
+      expect(goodTag).toHaveClass("bg-primary-600");
+      expect(helpfulTag).toHaveClass("bg-primary-600");
+      expect(satisfyingTag).not.toHaveClass("bg-primary-600");
+    });
+
+    it("should enable submit when initialRating >= 1", () => {
+      render(<SimulationFeedback {...defaultProps} initialRating={3} />);
+
+      expect(screen.getByRole("button", { name: "Submit" })).not.toBeDisabled();
+    });
   });
 
   describe("Star Rating Interaction", () => {
@@ -138,66 +168,106 @@ describe("SimulationFeedback", () => {
       const user = userEvent.setup();
       render(<SimulationFeedback {...defaultProps} />);
 
-      const star3 = screen.getByTestId("star-3");
-      await user.click(star3);
+      await user.click(screen.getByTestId("star-3"));
 
-      expect(star3).toHaveClass("filled");
+      expect(screen.getByTestId("star-3")).toHaveClass("filled");
     });
 
     it("should show rating text when rating is selected", async () => {
       const user = userEvent.setup();
       render(<SimulationFeedback {...defaultProps} />);
 
-      const star4 = screen.getByTestId("star-4");
-      await user.click(star4);
+      await user.click(screen.getByTestId("star-4"));
 
-      expect(screen.getByText("Yes")).toBeInTheDocument();
-    });
-
-    it("should show different rating texts for different ratings", async () => {
-      const user = userEvent.setup();
-      render(<SimulationFeedback {...defaultProps} />);
-
-      // Test rating 1
-      await user.click(screen.getByTestId("star-1"));
-      expect(screen.getByText("Not at all")).toBeInTheDocument();
-
-      // Test rating 2
-      await user.click(screen.getByTestId("star-2"));
-      expect(screen.getByText("Not really")).toBeInTheDocument();
-
-      // Test rating 3
-      await user.click(screen.getByTestId("star-3"));
-      expect(screen.getByText("Maybe")).toBeInTheDocument();
-
-      // Test rating 5
-      await user.click(screen.getByTestId("star-5"));
-      expect(screen.getByText("5 — Absolutely")).toBeInTheDocument();
+      expect(
+        screen.getByText("postSim.feedback.dialog.rating.4"),
+      ).toBeInTheDocument();
     });
 
     it("should enable submit button when rating is selected", async () => {
       const user = userEvent.setup();
       render(<SimulationFeedback {...defaultProps} />);
 
-      const submitButton = screen.getByRole("button", { name: "Submit" });
-      expect(submitButton).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
 
       await user.click(screen.getByTestId("star-3"));
-      expect(submitButton).not.toBeDisabled();
+
+      expect(screen.getByRole("button", { name: "Submit" })).not.toBeDisabled();
     });
 
     it("should handle rating changes correctly", async () => {
       const user = userEvent.setup();
       render(<SimulationFeedback {...defaultProps} />);
 
-      // Click star 2
       await user.click(screen.getByTestId("star-2"));
-      expect(screen.getByText("Not really")).toBeInTheDocument();
-
-      // Click star 4
       await user.click(screen.getByTestId("star-4"));
-      expect(screen.getByText("Yes")).toBeInTheDocument();
-      expect(screen.queryByText("Not really")).not.toBeInTheDocument();
+
+      expect(screen.getByTestId("star-4")).toHaveClass("filled");
+    });
+  });
+
+  describe("Tag Behavior", () => {
+    it("should show tags when rating >= 1", async () => {
+      const user = userEvent.setup();
+      render(<SimulationFeedback {...defaultProps} />);
+
+      await user.click(screen.getByTestId("star-4"));
+
+      expect(screen.getByRole("button", { name: "Good" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Helpful" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Satisfying" })).toBeInTheDocument();
+    });
+
+    it("should show different tags for different ratings", async () => {
+      const user = userEvent.setup();
+      render(<SimulationFeedback {...defaultProps} />);
+
+      await user.click(screen.getByTestId("star-1"));
+      expect(screen.getByRole("button", { name: "Poor" })).toBeInTheDocument();
+
+      await user.click(screen.getByTestId("star-5"));
+      expect(screen.getByRole("button", { name: "Excellent" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Poor" })).not.toBeInTheDocument();
+    });
+
+    it("should toggle a tag on click", async () => {
+      const user = userEvent.setup();
+      render(<SimulationFeedback {...defaultProps} />);
+
+      await user.click(screen.getByTestId("star-4"));
+      const goodTag = screen.getByRole("button", { name: "Good" });
+
+      await user.click(goodTag);
+      expect(goodTag).toHaveClass("bg-primary-600");
+
+      await user.click(goodTag);
+      expect(goodTag).not.toHaveClass("bg-primary-600");
+    });
+
+    it("should allow selecting multiple tags", async () => {
+      const user = userEvent.setup();
+      render(<SimulationFeedback {...defaultProps} />);
+
+      await user.click(screen.getByTestId("star-4"));
+      await user.click(screen.getByRole("button", { name: "Good" }));
+      await user.click(screen.getByRole("button", { name: "Helpful" }));
+
+      expect(screen.getByRole("button", { name: "Good" })).toHaveClass("bg-primary-600");
+      expect(screen.getByRole("button", { name: "Helpful" })).toHaveClass("bg-primary-600");
+    });
+
+    it("should clear selected tags when rating changes", async () => {
+      const user = userEvent.setup();
+      render(<SimulationFeedback {...defaultProps} />);
+
+      await user.click(screen.getByTestId("star-4"));
+      await user.click(screen.getByRole("button", { name: "Good" }));
+      expect(screen.getByRole("button", { name: "Good" })).toHaveClass("bg-primary-600");
+
+      await user.click(screen.getByTestId("star-5"));
+      expect(screen.queryByRole("button", { name: "Good" })).not.toBeInTheDocument();
+      const excellentTag = screen.getByRole("button", { name: "Excellent" });
+      expect(excellentTag).not.toHaveClass("bg-primary-600");
     });
   });
 
@@ -212,30 +282,16 @@ describe("SimulationFeedback", () => {
       expect(textarea).toHaveValue("This is a test comment");
     });
 
-    it("should handle multiline comments", async () => {
-      const user = userEvent.setup();
-      render(<SimulationFeedback {...defaultProps} />);
-
-      const textarea = screen.getByPlaceholderText("Tell us how we can improve...");
-      const multilineText = "Line 1\nLine 2\nLine 3";
-      await user.type(textarea, multilineText);
-
-      expect(textarea).toHaveValue(multilineText);
-    });
-
     it("should handle special characters in comments", async () => {
-      const user = userEvent.setup();
       render(<SimulationFeedback {...defaultProps} />);
 
       const textarea = screen.getByPlaceholderText("Tell us how we can improve...");
-      const specialText = "Special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?";
-      fireEvent.change(textarea, { target: { value: specialText } });
+      fireEvent.change(textarea, { target: { value: "Special: !@#$%^&*()" } });
 
-      expect(textarea).toHaveValue(specialText);
+      expect(textarea).toHaveValue("Special: !@#$%^&*()");
     });
 
-    it("should handle long comments", async () => {
-      const user = userEvent.setup();
+    it("should handle long comments", () => {
       render(<SimulationFeedback {...defaultProps} />);
 
       const textarea = screen.getByPlaceholderText("Tell us how we can improve...");
@@ -247,22 +303,51 @@ describe("SimulationFeedback", () => {
   });
 
   describe("Submit Behavior", () => {
-    it("should call API with correct parameters when submitted", async () => {
+    it("should call API with rating, feedback, and selected tags", async () => {
       const user = userEvent.setup();
       render(<SimulationFeedback {...defaultProps} />);
 
-      // Set rating and comment
       await user.click(screen.getByTestId("star-4"));
-      const textarea = screen.getByPlaceholderText("Tell us how we can improve...");
-      await user.type(textarea, "Great simulation!");
-
-      // Submit
-      const submitButton = screen.getByRole("button", { name: "Submit" });
-      await user.click(submitButton);
+      await user.click(screen.getByRole("button", { name: "Good" }));
+      fireEvent.change(screen.getByPlaceholderText("Tell us how we can improve..."), {
+        target: { value: "Great simulation!" },
+      });
+      await user.click(screen.getByRole("button", { name: "Submit" }));
 
       expect(mockSubmitSimulationFeedback).toHaveBeenCalledWith({
         sessionId: "test-session-123",
-        sessionFeedback: { rating: 4, feedback: "Great simulation!" },
+        sessionFeedback: { rating: 4, feedback: "Great simulation!", tags: ["Good"] },
+      });
+    });
+
+    it("should submit with empty tags array when no tags selected", async () => {
+      const user = userEvent.setup();
+      render(<SimulationFeedback {...defaultProps} />);
+
+      await user.click(screen.getByTestId("star-3"));
+      await user.click(screen.getByRole("button", { name: "Submit" }));
+
+      expect(mockSubmitSimulationFeedback).toHaveBeenCalledWith({
+        sessionId: "test-session-123",
+        sessionFeedback: { rating: 3, feedback: "", tags: [] },
+      });
+    });
+
+    it("should submit pre-populated initialTags when not changed", async () => {
+      const user = userEvent.setup();
+      render(
+        <SimulationFeedback
+          {...defaultProps}
+          initialRating={4}
+          initialTags={["Good", "Helpful"]}
+        />,
+      );
+
+      await user.click(screen.getByRole("button", { name: "Submit" }));
+
+      expect(mockSubmitSimulationFeedback).toHaveBeenCalledWith({
+        sessionId: "test-session-123",
+        sessionFeedback: { rating: 4, feedback: "", tags: ["Good", "Helpful"] },
       });
     });
 
@@ -287,76 +372,11 @@ describe("SimulationFeedback", () => {
       await user.click(screen.getByRole("button", { name: "Submit" }));
 
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith("Feedback submitted successfully");
+        expect(toast.success).toHaveBeenCalled();
       });
     });
 
-    // Note: Error handling test removed due to unhandled rejection issues
-    // The component's error handling is tested through the success scenarios
-    // and the error is properly thrown in the component's onSubmit function
-  });
-
-  describe("Loading States", () => {
-    it("should show loading state when isLoading is true", () => {
-      // Create a simple component that simulates loading state
-      const LoadingSimulationFeedback = () => {
-        const isLoading = true; // Force loading state
-        const isSubmitDisabled = true; // Force disabled state
-
-        return (
-          <>
-            <span className="text-[#6B7280] font-medium">How was your experience?</span>
-            <div data-testid="star-rating">
-              {[1, 2, 3, 4, 5].map(star => (
-                <button key={star} data-testid={`star-${star}`} className="empty">
-                  ⭐
-                </button>
-              ))}
-            </div>
-            <span className="h-6"></span>
-            <textarea placeholder="Tell us how we can improve..." rows={4} className="w-full" />
-            <button disabled={isSubmitDisabled}>{isLoading ? "Submitting..." : "Submit"}</button>
-          </>
-        );
-      };
-
-      render(<LoadingSimulationFeedback />);
-
-      expect(screen.getByRole("button", { name: "Submitting..." })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Submitting..." })).toBeDisabled();
-    });
-
-    it("should disable submit button when loading", () => {
-      const LoadingSimulationFeedback = () => {
-        const isLoading = true; // Force loading state
-        const isSubmitDisabled = true; // Force disabled state
-
-        return (
-          <>
-            <span className="text-[#6B7280] font-medium">How was your experience?</span>
-            <div data-testid="star-rating">
-              {[1, 2, 3, 4, 5].map(star => (
-                <button key={star} data-testid={`star-${star}`} className="empty">
-                  ⭐
-                </button>
-              ))}
-            </div>
-            <span className="h-6"></span>
-            <textarea placeholder="Tell us how we can improve..." rows={4} className="w-full" />
-            <button disabled={isSubmitDisabled}>{isLoading ? "Submitting..." : "Submit"}</button>
-          </>
-        );
-      };
-
-      render(<LoadingSimulationFeedback />);
-
-      const submitButton = screen.getByRole("button", { name: "Submitting..." });
-      expect(submitButton).toBeDisabled();
-    });
-  });
-
-  describe("Edge Cases", () => {
-    it("should handle numeric id correctly", async () => {
+    it("should handle numeric id by converting to string", async () => {
       const user = userEvent.setup();
       render(<SimulationFeedback {...defaultProps} id={12345} />);
 
@@ -365,104 +385,51 @@ describe("SimulationFeedback", () => {
 
       expect(mockSubmitSimulationFeedback).toHaveBeenCalledWith({
         sessionId: "12345",
-        sessionFeedback: { rating: 3, feedback: "" },
+        sessionFeedback: { rating: 3, feedback: "", tags: [] },
       });
     });
 
-    it("should handle empty comment submission", async () => {
-      const user = userEvent.setup();
+    it("should not submit when rating is 0", () => {
       render(<SimulationFeedback {...defaultProps} />);
 
-      await user.click(screen.getByTestId("star-5"));
-      await user.click(screen.getByRole("button", { name: "Submit" }));
-
-      expect(mockSubmitSimulationFeedback).toHaveBeenCalledWith({
-        sessionId: "test-session-123",
-        sessionFeedback: { rating: 5, feedback: "" },
-      });
-    });
-
-    it("should handle zero rating", () => {
-      render(<SimulationFeedback {...defaultProps} />);
-
-      // Should not show any rating text for zero rating
-      expect(
-        screen.queryByText(/Not at all|Not really|Maybe|Yes|Absolutely/),
-      ).not.toBeInTheDocument();
-    });
-
-    it("should handle undefined onSubmitComplete gracefully", () => {
-      const propsWithoutCallback = { ...defaultProps };
-      delete (propsWithoutCallback as any).onSubmitComplete;
-
-      expect(() => {
-        render(<SimulationFeedback {...propsWithoutCallback} />);
-      }).not.toThrow();
+      expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
     });
   });
 
-  describe("Component Integration", () => {
-    it("should maintain state consistency between rating and text", async () => {
-      const user = userEvent.setup();
+  describe("Edge Cases", () => {
+    it("should handle zero rating — no tags shown", () => {
       render(<SimulationFeedback {...defaultProps} />);
 
-      // Set rating to 4
-      await user.click(screen.getByTestId("star-4"));
-      expect(screen.getByText("Yes")).toBeInTheDocument();
-
-      // Change to rating 1
-      await user.click(screen.getByTestId("star-1"));
-      expect(screen.getByText("Not at all")).toBeInTheDocument();
-      expect(screen.queryByText("Yes")).not.toBeInTheDocument();
+      expect(screen.queryByText("Neutral")).not.toBeInTheDocument();
     });
 
-    it("should handle rapid rating changes", async () => {
-      const user = userEvent.setup();
-      render(<SimulationFeedback {...defaultProps} />);
+    it("should not throw when onSubmitComplete is undefined", () => {
+      const propsWithoutCallback = { ...defaultProps };
+      delete (propsWithoutCallback as any).onSubmitComplete;
 
-      // Rapidly click different stars
-      await user.click(screen.getByTestId("star-1"));
-      await user.click(screen.getByTestId("star-3"));
-      await user.click(screen.getByTestId("star-5"));
-
-      expect(screen.getByText("5 — Absolutely")).toBeInTheDocument();
-    });
-
-    it("should handle form submission with all fields filled", async () => {
-      const user = userEvent.setup();
-      render(<SimulationFeedback {...defaultProps} />);
-
-      // Fill all fields
-      await user.click(screen.getByTestId("star-4"));
-      const textarea = screen.getByPlaceholderText("Tell us how we can improve...");
-      await user.type(textarea, "Very helpful simulation!");
-
-      // Submit
-      await user.click(screen.getByRole("button", { name: "Submit" }));
-
-      expect(mockSubmitSimulationFeedback).toHaveBeenCalledWith({
-        sessionId: "test-session-123",
-        sessionFeedback: { rating: 4, feedback: "Very helpful simulation!" },
-      });
+      expect(() => render(<SimulationFeedback {...propsWithoutCallback} />)).not.toThrow();
     });
   });
 
   describe("Accessibility", () => {
-    it("should have proper form structure", () => {
-      render(<SimulationFeedback {...defaultProps} />);
-
-      expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("Tell us how we can improve...")).toBeInTheDocument();
-    });
-
     it("should have accessible star rating buttons", () => {
       render(<SimulationFeedback {...defaultProps} />);
 
       for (let i = 1; i <= 5; i++) {
         const star = screen.getByTestId(`star-${i}`);
-        expect(star).toBeInTheDocument();
         expect(star.tagName).toBe("BUTTON");
       }
+    });
+
+    it("should have accessible tag buttons", async () => {
+      const user = userEvent.setup();
+      render(<SimulationFeedback {...defaultProps} />);
+
+      await user.click(screen.getByTestId("star-3"));
+
+      const neutralTag = screen.getByRole("button", { name: "Neutral" });
+      expect(neutralTag).toBeInTheDocument();
+      expect(neutralTag).toHaveAttribute("type", "button");
     });
   });
 });

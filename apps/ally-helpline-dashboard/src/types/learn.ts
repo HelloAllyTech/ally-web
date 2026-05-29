@@ -212,6 +212,7 @@ export interface SimulationSummary {
   };
   events: KeyEvent[];
   hasFeedback: boolean;
+  sessionFeedback: { rating: number; feedback?: string; tags: string[] };
   scenario: Scenario;
   reviewCreatedAt: string;
   reviewNote: string | null;
@@ -238,7 +239,7 @@ export type GetSimulationSummaryResponse = SimulationSummary;
 
 export interface SubmitSimulationFeedbackRequest {
   sessionId: string;
-  sessionFeedback: { rating: number; feedback?: string };
+  sessionFeedback: { rating: number; feedback?: string; tags: string[] };
 }
 
 export interface SubmitSimulationFeedbackResponse {

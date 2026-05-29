@@ -13,14 +13,13 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import { AskAiTab, SkillsTab, ToggleSwitch, ShareForReview } from "@components";
+import { AskAiTab, SessionRatingTrigger, SkillsTab, ToggleSwitch, ShareForReview } from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { FeedbackDialog, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { RootState } from "@store";
 import { SessionType, ShareForReviewsInput } from "@types";
 
 import { SummarySidebarWrapper, SimulationTranscriptTab } from ".";
-import { SUMMARY_FEEDBACK_TIMEOUT } from "./constants";
 import { SimulationSummarySidebarProps } from "./types";
 
 const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
@@ -34,12 +33,14 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   const [shareForReview, setShareForReview] = useState<boolean>(false);
 
   const hasFeedback = useRef<boolean>(false);
-  const startTimeRef = useRef<number | null>(null);
+  const openedFromCloseGuardRef = useRef<boolean>(false);
+
+  const [rating, setRating] = useState<number | null>(null);
 
   const navigate = useNavigate();
 
   const { user, permissions } = useSelector((state: RootState) => state.user);
-  const { data: summary } = useGetSimulationSummaryQuery(
+  const { data: summary, refetch } = useGetSimulationSummaryQuery(
     { sessionId: summaryId, languageCode: i18n.language },
     { skip: !summaryId },
   );
@@ -56,18 +57,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     }
   }, [summaryData]);
 
-  useEffect(() => {
-    if (summaryId) {
-      startTimeRef.current = Date.now();
-    } else {
-      startTimeRef.current = null;
-    }
-  }, [summaryId]);
-
-  const hasThresholdElapsed = (): boolean => {
-    if (startTimeRef.current == null) return false;
-    return Date.now() - startTimeRef.current >= SUMMARY_FEEDBACK_TIMEOUT;
-  };
   const handleCreateReview = async ({
     note,
     scenarioSessionId,
@@ -111,11 +100,25 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       handleCreateReview({ status: value });
     }
   };
+
+  const displayRating = rating ?? summary?.sessionFeedback?.rating ?? 0;
+
+  const handleStarSelect = (star: number) => {
+    setRating(star);
+    openedFromCloseGuardRef.current = false;
+    setShowFeedbackDialog(true);
+  };
+
   const SidebarTitle = (
     <div className="text-base flex items-center justify-between w-full gap-2">
-      <span className="font-semibold font-tertiary text-typography-800">
-        {t("common.summary", "Summary")}
-      </span>
+      <div className="flex items-center gap-2">
+        <span className="font-semibold font-tertiary text-typography-800">
+          {t("common.summary", "Summary")}
+        </span>
+        {!isShortSession && (
+          <SessionRatingTrigger value={displayRating} onSelect={handleStarSelect} size="sm" />
+        )}
+      </div>
 
       {!isShortSession && summary?.counselorId === user?.id && (
         <div
@@ -226,14 +229,12 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   ];
 
   const onSidebarClose = () => {
-    const overThirtySeconds = hasThresholdElapsed();
-
     if (
       canShowFeedback &&
       !hasFeedback.current &&
-      overThirtySeconds &&
       permissions?.includes(Permissions.EDIT_SCENARIO_SESSION)
     ) {
+      openedFromCloseGuardRef.current = true;
       setShowFeedbackDialog(true);
     } else {
       closeSummarySidebar();
@@ -242,7 +243,16 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const onCloseFeedbackDialog = () => {
     setShowFeedbackDialog(false);
-    closeSummarySidebar();
+    setRating(null);
+    if (openedFromCloseGuardRef.current) closeSummarySidebar();
+  };
+
+  const onFeedbackSubmitted = () => {
+    hasFeedback.current = true;
+    refetch();
+    setShowFeedbackDialog(false);
+    setRating(null);
+    if (openedFromCloseGuardRef.current) closeSummarySidebar();
   };
 
   return (
@@ -256,8 +266,16 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
       <FeedbackDialog
         open={showFeedbackDialog}
         onClose={onCloseFeedbackDialog}
+        onSubmitComplete={onFeedbackSubmitted}
         id={summaryId}
         sessionType={SessionType.SIMULATION}
+        initialRating={rating ?? summary?.sessionFeedback?.rating}
+        initialComment={summary?.sessionFeedback?.feedback}
+        initialTags={
+          rating === null || rating === summary?.sessionFeedback?.rating
+            ? summary?.sessionFeedback?.tags
+            : undefined
+        }
       />
     </SummarySidebarWrapper>
   );

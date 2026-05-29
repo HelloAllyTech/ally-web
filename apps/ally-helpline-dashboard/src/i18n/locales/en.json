@@ -410,7 +410,14 @@
           "2": "Not really",
           "3": "Maybe",
           "4": "Yes",
-          "5": "5 — Absolutely"
+          "5": "5 — Absolutely",
+          "tags": {
+            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
+            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
+            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
+            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
+            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
+          }
         }
       }
     },

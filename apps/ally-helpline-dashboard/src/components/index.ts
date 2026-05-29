@@ -54,6 +54,7 @@ import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
 import SearchResources from "./search-resources";
 import SelectableText from "./selectable-text/SelectableText";
+import { SessionRatingTrigger } from "./session-rating-trigger";
 import { ShareForReview } from "./share-for-review";
 import ShinyText from "./shiny-text";
 import SkillsTab from "./skills-tab";
@@ -120,6 +121,7 @@ export {
   SearchResources,
   ShinyText,
   StarRating,
+  SessionRatingTrigger,
   TagGroup,
   TextField,
   TimePicker,
