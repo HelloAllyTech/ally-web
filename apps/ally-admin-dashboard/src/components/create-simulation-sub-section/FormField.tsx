@@ -52,9 +52,11 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   // Cross-check this field against the selected main-agent prompt's
   // declared `availableVariables`. When `promptVariable` is set on the
   // field config and that placeholder isn't referenced by the chosen
-  // variant, we keep the field editable (other subsystems like prosody,
-  // evaluator and branching may still consume the value) but surface a
-  // muted badge so the admin knows the main agent prompt won't read it.
+  // variant, fields with `hideWhenUnused` are hidden outright; fields
+  // without it render normally without any visual treatment (the dim +
+  // "Not used by selected prompt" badge that used to live here were
+  // removed as visual noise — admins read the variant's body directly
+  // if they need to confirm what's referenced).
   const selectedMainPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
   const { data: mainAgentPrompts } = useGetPromptsByTypeQuery("main_agent", {
     // Skip the query entirely when no field on screen needs the result.
@@ -114,19 +116,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   if (isUnusedByPrompt && hideWhenUnused) {
     return null;
   }
-
-  const unusedBadge = isUnusedByPrompt ? (
-    <span
-      className="ml-2 inline-block rounded bg-neutral-100 text-typography-600 text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5"
-      title={
-        `The selected main-agent prompt doesn't reference {${promptVariable}}. ` +
-        `Editing here is still useful because prosody, evaluator, and other ` +
-        `subsystems may read this value independently.`
-      }
-    >
-      Not used by selected prompt
-    </span>
-  ) : null;
 
   const updateTriggerWarnings = triggerWarning => {
     formMethods.setValue("triggerWarningIds", triggerWarning);
@@ -363,10 +352,5 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     }
   };
 
-  return (
-    <div className={isUnusedByPrompt ? "opacity-80" : undefined}>
-      {getFieldElement()}
-      {unusedBadge && <div className="mt-1 flex items-center">{unusedBadge}</div>}
-    </div>
-  );
+  return <div>{getFieldElement()}</div>;
 };
