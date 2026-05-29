@@ -408,6 +408,26 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       }
     }, [currentUpload, reportId, activeTab]);
 
+    // Toast on report-generation FAILED transitions. Fires exactly once per
+    // reportId via the lastFailedToastedReportIdRef guard so re-renders or
+    // poll refetches don't spam the user. The errorMessage comes from the
+    // GET response (server side mirrors metadata.errorMessage onto a
+    // top-level field). Falls back to a generic message when ai-learn
+    // didn't supply a reason (older backend, network blip on the webhook).
+    const lastFailedToastedReportIdRef = useRef<string | null>(null);
+    useEffect(() => {
+      if (!currentUpload || !reportId) return;
+      if (currentUpload.status !== ReportGenerationStatus.FAILED) return;
+      if (lastFailedToastedReportIdRef.current === reportId) return;
+      lastFailedToastedReportIdRef.current = reportId;
+      const reason =
+        fetchedReportData?.errorMessage?.trim() ||
+        "Something went wrong while generating this report.";
+      toast.error(`Report generation failed: ${reason}`, {
+        duration: 8000,
+      });
+    }, [currentUpload?.status, reportId, fetchedReportData?.errorMessage]);
+
     useEffect(() => {
       if (!isGenerating || !reportId || !scenarioId) return;
       dispatch(

@@ -31,6 +31,15 @@ vi.mock("@api", async importOriginal => {
         unwrap: () => regenerateFieldMock(),
       }),
     ],
+    // FormField cross-references the selected main-agent prompt's
+    // availableVariables. The full @api module's injected endpoints
+    // collapse to {} under the baseApi stub above, so the hook needs
+    // an explicit no-op stub.
+    useGetPromptsByTypeQuery: () => ({
+      data: undefined,
+      isFetching: false,
+      isError: false,
+    }),
   };
 });
 

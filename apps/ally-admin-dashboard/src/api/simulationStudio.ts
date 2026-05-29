@@ -462,6 +462,31 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * List prompt variants by promptType (e.g. 'main_agent').
+     * Powers the studio prompt picker and the prompt-management Type filter.
+     */
+    getPromptsByType: builder.query<Prompt[], string>({
+      query: promptType => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_PROMPTS_BY_TYPE(promptType),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Duplicate an existing prompt to start a new variant. Returns the new
+     * Prompt row with useDashboardOverride=true and an initial v1 version
+     * cloned from the source. Caller typically navigates to the new id.
+     */
+    duplicatePrompt: builder.mutation<Prompt, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.DUPLICATE_PROMPT(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
      * Create a new prompt
      */
     createPrompt: builder.mutation<Prompt, { prompts: Prompt[] }>({
@@ -801,8 +826,10 @@ export const {
   useCreateLanguageMutation,
   useUpdateLanguageMutation,
   useGetPromptsQuery,
+  useGetPromptsByTypeQuery,
   useCreatePromptMutation,
   useUpdatePromptMutation,
+  useDuplicatePromptMutation,
   useRevertPromptMutation,
   useDeletePromptMutation,
   useGetDynamicBranchingInstructionQuery,

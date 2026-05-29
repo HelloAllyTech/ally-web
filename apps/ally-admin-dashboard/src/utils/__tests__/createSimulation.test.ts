@@ -256,6 +256,8 @@ describe("createSimulation utils", () => {
           },
         ],
         stateNames: [],
+        selectedMainPromptCode: undefined,
+        states: [],
       });
     });
 

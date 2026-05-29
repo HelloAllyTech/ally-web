@@ -4,6 +4,7 @@ export * from "./en";
 export * from "./uiStyles";
 export * from "./reportGeneration";
 export * from "./SimulationCreator";
+export * from "./PromptVariableCatalog";
 export * from "./simulation";
 export * from "./models";
 export * from "./permissions";

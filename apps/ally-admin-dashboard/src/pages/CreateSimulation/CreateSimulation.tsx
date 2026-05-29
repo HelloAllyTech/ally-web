@@ -607,6 +607,29 @@ export const CreateSimulation: FC = () => {
           : BEHAVIOUR_STATES.map(s => ({ stateId: s.stateId, name: `State ${s.stateId}` }));
     }
 
+    // Drop incomplete simulation-state cards before save. StatesEditor
+    // auto-seeds a blank card so the editor isn't visually empty when a
+    // hasStates variant is selected; if the user doesn't fill in at least
+    // the `name`, the backend's SimulationStateDto.name is @IsNotEmpty()
+    // and would 400 the request. States are optional overall — an empty
+    // array is valid. We require `name` specifically (not just "any field
+    // touched") because that's what the backend validates as mandatory;
+    // filtering on OR would allow guidelines-only states that still 400.
+    if (Array.isArray((simulationData as any).states)) {
+      (simulationData as any).states = ((simulationData as any).states as any[]).filter(
+        s => typeof s?.name === "string" && s.name.trim().length > 0,
+      );
+    }
+
+    // Normalize empty-string selectedMainPromptCode to undefined.
+    // DropdownField's `allowDeselect` writes "" on clear, but downstream
+    // (ai-learn / scenario metadata) treats `undefined` and `""` differently
+    // in some paths. Sending `undefined` keeps the field cleanly absent so
+    // resolver fallback to default kicks in without ambiguity.
+    if ((simulationData as any).selectedMainPromptCode === "") {
+      (simulationData as any).selectedMainPromptCode = undefined;
+    }
+
     let response;
     if (simulationId) {
       response = await updateSimulationByIdQuery({

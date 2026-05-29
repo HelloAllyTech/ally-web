@@ -6,8 +6,13 @@ import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import { Refresh, DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en } from "@constants";
+import { en, MAIN_AGENT_PROMPT_VARIABLE_CATALOG } from "@constants";
 import { Prompt } from "@types";
+
+import {
+  getAvailableVariableName,
+  normalizeAvailableVariables,
+} from "../../utils/availableVariables";
 
 interface PromptSidePanelProps {
   selectedPrompt: Prompt | null;
@@ -15,6 +20,13 @@ interface PromptSidePanelProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (prompt: Prompt) => void;
+  /**
+   * Optional duplicate action. When provided, a "Duplicate as variant"
+   * button appears in the panel header for prompts that have a promptType
+   * set. The parent owns the mutation and is expected to refresh the list
+   * and open the new variant in the panel.
+   */
+  onDuplicate?: (sourceId: string) => Promise<void> | void;
 }
 
 interface FieldProps {
@@ -132,6 +144,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   isOpen,
   onClose,
   onUpdate,
+  onDuplicate,
 }) => {
   const [formData, setFormData] = useState<Partial<Prompt>>({
     name: "",
@@ -140,6 +153,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     prompt: "",
     useDashboardOverride: false,
   });
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showRevertConfirmModal, setShowRevertConfirmModal] = useState(false);
@@ -193,25 +207,81 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     }
   }, [selectedPrompt]);
 
-  const availableVariables = useMemo(() => {
-    const vars = selectedPrompt?.availableVariables;
+  // Live parse the current textarea content for `{name}` placeholders.
+  // Mirrors the regex used server-side in parseVariablesFromPrompt; the
+  // server still owns reconcile on save, but having a live view here lets
+  // the chip list reflect what's in the editor right now instead of what
+  // was last saved. Skips block placeholders for cleanliness (same as the
+  // post-save view did via the .endsWith filter below).
+  const liveUsedNames = useMemo(() => {
+    const text = formData.prompt ?? "";
+    const names = new Set<string>();
+    const matches = text.matchAll(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g);
+    for (const match of matches) {
+      names.add(match[1]);
+    }
+    return names;
+  }, [formData.prompt]);
 
-    if (!vars || vars.length === 0) {
-      return [];
+  const availableVariables = useMemo(() => {
+    // For each name actually present in the text right now, prefer the
+    // server-side metadata's label/required when available, else render as
+    // a bare `{ name }` chip. This way newly-typed placeholders show up
+    // immediately and stale ones (still in the persisted availableVariables
+    // but no longer in the text) disappear immediately.
+    const metaByName = new Map<string, ReturnType<typeof normalizeAvailableVariables>[number]>();
+    for (const entry of normalizeAvailableVariables(selectedPrompt?.availableVariables)) {
+      metaByName.set(entry.name, entry);
     }
 
-    // Filter out block placeholders to keep the UI clean
-    const filtered = vars.filter(
-      v => !v.endsWith("_block") && !v.endsWith("_prompt") && !v.includes("prompt_"),
+    const items = Array.from(liveUsedNames).map(name => metaByName.get(name) ?? { name });
+
+    // Drop block placeholders to keep the UI focused on author-facing vars.
+    const filtered = items.filter(
+      v => !v.name.endsWith("_block") && !v.name.endsWith("_prompt") && !v.name.includes("prompt_"),
     );
 
-    return [...filtered].sort();
-  }, [selectedPrompt?.availableVariables]);
+    return filtered.sort((a, b) => a.name.localeCompare(b.name));
+  }, [liveUsedNames, selectedPrompt?.availableVariables]);
+
+  // Names currently referenced by the prompt text (the "used" set), for
+  // catalog filtering below. Same source as the chip list — live from text.
+  const usedNames = liveUsedNames;
+
+  // Catalog entries the platform can substitute but this prompt isn't
+  // referencing. Returned as a flat list — categories used to surface as
+  // group headers (Scenario / Persona / Character / Behavior /
+  // System-computed) but that added visual noise without aiding picker
+  // use, so we now render every available placeholder as a single
+  // unordered chip cluster. The `group` field is still in the catalog
+  // for future grouping needs but is no longer rendered. Only shown for
+  // main_agent prompts since the catalog is main-agent-specific; for
+  // branching / multilingual we'd need separate catalogs.
+  const unusedVariables = useMemo(() => {
+    const promptType = selectedPrompt?.promptType ?? formData.promptType;
+    if (promptType !== "main_agent") return [];
+
+    const hasStatesEnabled = Boolean(selectedPrompt?.hasStates ?? formData.hasStates);
+
+    const flat: typeof MAIN_AGENT_PROMPT_VARIABLE_CATALOG = [];
+    for (const entry of MAIN_AGENT_PROMPT_VARIABLE_CATALOG) {
+      if (entry.statesOnly && !hasStatesEnabled) continue;
+      if (usedNames.has(entry.name)) continue;
+      flat.push(entry);
+    }
+    return flat;
+  }, [
+    selectedPrompt?.promptType,
+    selectedPrompt?.hasStates,
+    formData.promptType,
+    formData.hasStates,
+    usedNames,
+  ]);
 
   const hasAnyBlocks = useMemo(() => {
     return (
       (selectedPrompt?.usesBlocks?.length ?? 0) > 0 ||
-      selectedPrompt?.availableVariables?.some((v: string) => v.endsWith("_block"))
+      selectedPrompt?.availableVariables?.some(v => getAvailableVariableName(v).endsWith("_block"))
     );
   }, [selectedPrompt?.usesBlocks, selectedPrompt?.availableVariables]);
 
@@ -228,6 +298,11 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       promptCode,
       prompt: formData.prompt || "",
       useDashboardOverride: true, // Automatically enable override when saved
+      // Preserve promptType (role tag, immutable after creation in this UI).
+      // hasStates is intentionally NOT in the payload — it's set at create
+      // time by either the file-sync (meta JSON) or the duplicate endpoint,
+      // and prompt management edits should not flip it.
+      promptType: formData.promptType ?? selectedPrompt?.promptType,
       ...(selectedPrompt?.id && {
         id: selectedPrompt.id,
         createdAt: selectedPrompt.createdAt || new Date().toISOString(),
@@ -236,6 +311,16 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     };
     onUpdate(updatedPrompt);
   }, [formData, selectedPrompt, onUpdate]);
+
+  const handleDuplicate = useCallback(async () => {
+    if (!selectedPrompt?.id || !onDuplicate || isDuplicating) return;
+    try {
+      setIsDuplicating(true);
+      await onDuplicate(selectedPrompt.id);
+    } finally {
+      setIsDuplicating(false);
+    }
+  }, [selectedPrompt?.id, onDuplicate, isDuplicating]);
 
   const handleClose = useCallback(() => {
     // Check if there are unsaved changes
@@ -357,14 +442,38 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
             </Field>
 
             {availableVariables.length > 0 && (
-              <Field label={en.simulation.availableVariables}>
+              <Field label="Used in this prompt" multiline>
                 <div className="flex flex-wrap gap-2">
                   {availableVariables.map(v => (
+                    // Chip shows the exact `{name}` an author types into the
+                    // prompt text — labels would invite typos like `{Name}`.
                     <span
-                      key={v}
-                      className="inline-flex px-2 py-0.5 rounded text-sm bg-neutral-100 text-typography-700 font-mono"
+                      key={v.name}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm bg-neutral-100 text-typography-700 font-mono"
                     >
-                      {v}
+                      <span>{`{${v.name}}`}</span>
+                      {v.required && <span className="text-destructive-500">*</span>}
+                    </span>
+                  ))}
+                </div>
+              </Field>
+            )}
+
+            {unusedVariables.length > 0 && (
+              <Field label="Available (not used)" multiline>
+                {/*
+                  Flat chip cluster — no category grouping. Each chip shows
+                  the exact `{name}` an author types into the prompt text;
+                  labels were dropped so there's no risk of typing `{Name}`
+                  (uppercase) and ending up with an unsubstituted placeholder.
+                */}
+                <div className="w-full flex flex-wrap gap-2">
+                  {unusedVariables.map(entry => (
+                    <span
+                      key={entry.name}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm bg-neutral-50 border border-dashed border-border-light text-typography-600 font-mono"
+                    >
+                      <span>{`{${entry.name}}`}</span>
                     </span>
                   ))}
                 </div>
@@ -416,6 +525,16 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
               >
                 Save
               </Button>
+              {onDuplicate && selectedPrompt?.id && selectedPrompt?.promptType && (
+                <Button
+                  variant={ButtonVariant.SECONDARY}
+                  onClick={handleDuplicate}
+                  disabled={isDuplicating}
+                  title="Create a new variant from this prompt"
+                >
+                  {isDuplicating ? "Duplicating…" : "Duplicate as variant"}
+                </Button>
+              )}
             </div>
           </div>
         </div>

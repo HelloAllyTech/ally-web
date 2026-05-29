@@ -49,6 +49,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       message: event.message,
     })),
     responseLength: data?.metadata?.responseLength,
+    selectedMainPromptCode: data?.metadata?.selectedMainPromptCode,
+    states: data?.metadata?.states ?? [],
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),
     isPublic: Boolean(data?.isPublic),

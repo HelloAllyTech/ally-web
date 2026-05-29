@@ -15,6 +15,13 @@ export type ReportData = {
   status: string;
   transcripts?: TranscriptMessage[];
   scenarioTitle?: string;
+  /**
+   * Human-readable failure reason from ai-learn (only set when
+   * status === FAILED). Mirrored from server-side
+   * scenario_reports.metadata.errorMessage by the GET endpoint so the
+   * studio can surface it in a toast without digging into metadata.
+   */
+  errorMessage?: string;
 };
 
 export type HistoryItem = {

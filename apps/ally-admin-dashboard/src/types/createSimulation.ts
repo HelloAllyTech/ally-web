@@ -71,6 +71,24 @@ export interface FormFieldConfig {
   note?: string;
   regenerateType?: string;
   visibleWhen?: (formValues: Partial<FormData>) => boolean;
+  /**
+   * Snake-case placeholder name this field fills in the main-agent prompt
+   * (e.g. "tone" for the Tone input). When set, the studio cross-checks
+   * the selected prompt's `availableVariables`; if the placeholder isn't
+   * referenced, the field is rendered with a muted "Not used by selected
+   * prompt" badge. Editing is still allowed because most of these fields
+   * also feed prosody / evaluator / branching independently of the main
+   * prompt.
+   */
+  promptVariable?: string;
+  /**
+   * When true together with `promptVariable`, hide the field entirely
+   * (return null from FormField) instead of soft-labeling with a badge.
+   * Use this for editors that exist purely to feed a prompt placeholder
+   * (e.g. behavior_instructions_json, custom_fields_text). Don't use for
+   * fields with parallel consumers (prosody / evaluator).
+   */
+  hideWhenUnused?: boolean;
 }
 
 export interface FieldGroupType {
@@ -242,6 +260,21 @@ export interface GetLanguagesQuery {
   active?: boolean;
 }
 
+/**
+ * Per-variable metadata used by the studio editor. Stored alongside (or
+ * replacing) the bare placeholder names in {@link Prompt.availableVariables}.
+ */
+export interface AvailableVariable {
+  /** Placeholder name as it appears in the prompt text (`{name}`). */
+  name: string;
+  /** Optional display label shown in the studio. */
+  label?: string;
+  /** Whether the studio should treat this field as required. */
+  required?: boolean;
+}
+
+export type AvailableVariableEntry = string | AvailableVariable;
+
 export interface Prompt {
   id?: string;
   name: string;
@@ -255,9 +288,26 @@ export interface Prompt {
   createdAt?: string;
   updatedAt?: string;
   isObsolete?: boolean;
-  /** Source-synced variable placeholders available for runtime substitution */
-  availableVariables?: string[];
+  /**
+   * Source-synced variable placeholders available for runtime substitution.
+   * Each entry is either a bare placeholder name (legacy) or an
+   * `AvailableVariable` object with label / required metadata. Readers
+   * should normalize via `getAvailableVariableName()`.
+   */
+  availableVariables?: AvailableVariableEntry[];
   kind?: string;
+  /**
+   * Role/category of this prompt in the agent pipeline.
+   * Examples: 'main_agent', 'branching', 'multilingual'. Variants share the
+   * same promptType — the studio prompt picker lists rows by promptType.
+   */
+  promptType?: string;
+  /**
+   * When true, this prompt declares a States section; the studio renders
+   * the state editor and runtime substitutes the matched state's
+   * guidelines into {state_x_guidelines} and gates RAG per state.
+   */
+  hasStates?: boolean;
   usesBlocks?: string[];
 }
 

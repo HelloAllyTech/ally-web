@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useGetPromptsQuery, useUpdatePromptMutation } from "@api";
+import { useDuplicatePromptMutation, useGetPromptsQuery, useUpdatePromptMutation } from "@api";
 import { FilterDropdown, NotionTable, ListToolbar, PromptSidePanel } from "@components";
 import { en, PROMPT_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import { Prompt } from "@types";
@@ -80,6 +80,7 @@ export const PromptManagement: React.FC = () => {
   }, [searchQuery]);
 
   const [updatePrompt] = useUpdatePromptMutation();
+  const [duplicatePrompt] = useDuplicatePromptMutation();
 
   // Handle data updates when query data changes
   useEffect(() => {
@@ -114,7 +115,12 @@ export const PromptManagement: React.FC = () => {
   };
 
   const handleApplyFilters = (newFilters: PromptManagementFilters) => {
-    setFilters(newFilters);
+    // The FilterDropdown may emit a partial object containing only the
+    // sections the user interacted with. Normalize to a fully-populated
+    // filters object so downstream array reads never see `undefined`.
+    setFilters({
+      categories: newFilters.categories ?? [],
+    });
     setIsFilterOpen(false);
   };
 
@@ -210,6 +216,20 @@ export const PromptManagement: React.FC = () => {
     }
   };
 
+  const handlePromptDuplicate = async (sourceId: string) => {
+    try {
+      const created = await duplicatePrompt(sourceId).unwrap();
+      toast.success("Variant created");
+      // Re-open the side panel with the new variant pre-selected so the user
+      // can rename it / edit text immediately. The prompts list will refresh
+      // via the PROMPTS tag invalidation.
+      setSelectedPrompt(created);
+      setIsSidePanelOpen(true);
+    } catch {
+      toast.error("Failed to duplicate prompt");
+    }
+  };
+
   const handleLoadMore = () => {
     if (isFetching || !hasMore) return;
     setOffset(prev => prev + limit);
@@ -289,6 +309,7 @@ export const PromptManagement: React.FC = () => {
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           onUpdate={handlePromptUpdate}
+          onDuplicate={handlePromptDuplicate}
         />
       )}
     </div>

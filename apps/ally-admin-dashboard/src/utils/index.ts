@@ -8,3 +8,4 @@ export * from "./expressionTreeHelpers";
 export * from "./tagUtils";
 export * from "./reportUtils";
 export * from "./loggerWithRedux";
+export * from "./availableVariables";

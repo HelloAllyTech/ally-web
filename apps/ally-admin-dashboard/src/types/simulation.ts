@@ -113,6 +113,29 @@ export interface SimulationInput {
   stateNames?: stateInstruction[];
   translationOpeningStatements?: Record<string, string[]>;
   translationDescription?: Record<string, string>;
+  /**
+   * promptCode of the main-agent prompt variant this simulation uses
+   * (e.g. 'ally_ai_learn_system_main_agent_prompt_full'). When unset, the
+   * runtime falls back to the default main_agent prompt. Branching and
+   * multilingual prompts are not selectable per simulation; they remain
+   * singletons shared by every variant.
+   */
+  selectedMainPromptCode?: string;
+  /**
+   * Per-simulation states used by main-agent prompts with `hasStates: true`.
+   * Each entry: id, name, guidelines, isStarting, scoreLower, scoreUpper,
+   * ragEnabled. Validation rules (one starting, contiguous ranges, min gap
+   * 50, open bounds at ends) are enforced server-side on save.
+   */
+  states?: {
+    id: string;
+    name: string;
+    guidelines: string;
+    isStarting: boolean;
+    scoreLower: number | null;
+    scoreUpper: number | null;
+    ragEnabled: boolean;
+  }[];
 }
 
 export interface UpdateSimulationByIdInput {
@@ -193,6 +216,21 @@ export interface GetSimulationByIdResponse {
     linguisticStyleSamples?: Record<string, string[]>;
     allowedFillerWords?: Record<string, string[]>;
     languageCharacteristics?: Record<string, string>;
+    /** promptCode of the main-agent prompt variant chosen for this simulation. */
+    selectedMainPromptCode?: string;
+    /**
+     * Per-simulation states used by main-agent prompts with `hasStates: true`.
+     * Same shape as `SimulationInput.states`.
+     */
+    states?: {
+      id: string;
+      name: string;
+      guidelines: string;
+      isStarting: boolean;
+      scoreLower: number | null;
+      scoreUpper: number | null;
+      ragEnabled: boolean;
+    }[];
   };
   translationOpeningStatements?: Record<string, string[]>;
   openingDialoguePrimaryLanguageId?: number | null;
@@ -522,6 +560,31 @@ export interface ScenarioContext {
   languageId?: string;
   languageCode?: string;
   languageName?: string;
+  /**
+   * Number of states to produce — only set when fieldName is "states".
+   * The studio passes the count of state cards currently on screen so
+   * the LLM generates exactly that many.
+   */
+  numStates?: number;
+  /**
+   * Stringified JSON of already-filled states — only set when fieldName
+   * is "states" and the user has filled cards alongside blank ones.
+   * Lets the LLM compose new states that don't duplicate names or
+   * overlap score ranges with the existing ones.
+   */
+  existingStates?: string;
+  /**
+   * Number of knowledge source documents to produce — only set when
+   * fieldName is "knowledgeSources". Studio passes the current document
+   * count so the LLM produces exactly that many.
+   */
+  numKnowledgeSources?: number;
+  /**
+   * Stringified JSON of existing knowledge source titles — only set
+   * when fieldName is "knowledgeSources". Lets the LLM avoid producing
+   * duplicates of titles already in the form.
+   */
+  existingKnowledgeSources?: string;
 }
 
 export interface AutofillModelOption {

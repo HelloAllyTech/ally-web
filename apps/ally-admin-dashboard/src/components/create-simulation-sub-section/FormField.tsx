@@ -1,8 +1,10 @@
-import { FC } from "react";
+import { FC, useEffect, useMemo } from "react";
 
+import { useGetPromptsByTypeQuery } from "@api";
 import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
+import { getAvailableVariableName } from "../../utils/availableVariables";
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { BehavioursAndStatesInstruction } from "../behaviours-and-states-instruction";
 import { BehavioursInstruction } from "../behaviours-instruction";
@@ -16,9 +18,11 @@ import { InputField } from "../input-field";
 import { KnowledgeSource } from "../knowledge-source";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { LinguisticStyleSamples } from "../linguistic-style-samples";
+import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
 import { OpeningDialoguesPanel } from "../opening-dialogues";
 import { RadioButtonGroup } from "../radio-button-group";
 import { RegenerateButton } from "../regenerate-button";
+import { StatesEditor } from "../states-editor";
 import { StateInstruction } from "../states-instruction";
 import { TagSelector } from "../tag-selector";
 import { TimeInput } from "../time-input";
@@ -38,10 +42,91 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     defaultValue,
     note,
     regenerateType,
+    promptVariable,
+    hideWhenUnused,
   } = config;
   const {
     formState: { errors },
   } = formMethods;
+
+  // Cross-check this field against the selected main-agent prompt's
+  // declared `availableVariables`. When `promptVariable` is set on the
+  // field config and that placeholder isn't referenced by the chosen
+  // variant, we keep the field editable (other subsystems like prosody,
+  // evaluator and branching may still consume the value) but surface a
+  // muted badge so the admin knows the main agent prompt won't read it.
+  const selectedMainPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
+  const { data: mainAgentPrompts } = useGetPromptsByTypeQuery("main_agent", {
+    // Skip the query entirely when no field on screen needs the result.
+    // Keeps the picker / variable-aware fields self-contained.
+    skip: !promptVariable,
+  });
+  // Three states for the prompt-presence check:
+  //   - "no_selection": no selectedMainPromptCode set → default main_agent
+  //     prompt is in play; we optimistically treat all annotated fields
+  //     as "used" (default is broad).
+  //   - "missing": selectedMainPromptCode points at a variant that isn't
+  //     in the loaded list. Could be a deleted variant or a sync race.
+  //     Surfaced as a visible warning rather than silently treated as used.
+  //   - "loaded": variant found; cross-check availableVariables.
+  type PromptLookupState =
+    | { kind: "no_selection" }
+    | { kind: "missing"; code: string }
+    | { kind: "loaded"; usedNames: Set<string> };
+  const promptLookup: PromptLookupState = useMemo(() => {
+    if (!selectedMainPromptCode) return { kind: "no_selection" };
+    if (!mainAgentPrompts) return { kind: "no_selection" };
+    const selected = mainAgentPrompts.find(p => p.promptCode === selectedMainPromptCode);
+    if (!selected) {
+      return { kind: "missing", code: selectedMainPromptCode };
+    }
+    return {
+      kind: "loaded",
+      usedNames: new Set((selected.availableVariables ?? []).map(getAvailableVariableName)),
+    };
+  }, [selectedMainPromptCode, mainAgentPrompts]);
+
+  const isUnusedByPrompt = useMemo(() => {
+    if (!promptVariable) return false;
+    if (promptLookup.kind !== "loaded") return false;
+    return !promptLookup.usedNames.has(promptVariable);
+  }, [promptVariable, promptLookup]);
+
+  // Surface variant-not-found once per field-render via a dev-console
+  // warning so it shows up in QA / dev tools without an in-UI toast spam.
+  // The misconfiguration is real but localized — runtime will fall back to
+  // the default prompt, so editing isn't blocked.
+  useEffect(() => {
+    if (promptLookup.kind === "missing" && promptVariable) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[FormField] selectedMainPromptCode "${promptLookup.code}" is not in the loaded ` +
+          "main_agent prompts list. Variant may have been deleted or sync hasn't run yet. " +
+          "Falling back to default prompt at runtime; this field is rendered as 'used' by default.",
+      );
+    }
+  }, [promptLookup, promptVariable]);
+
+  // Strict-hide for fields that exist purely to feed a prompt placeholder
+  // (e.g. behavior_instructions_json, custom_fields_text). Bail before
+  // rendering so the editor entirely disappears for variants that don't
+  // reference the placeholder.
+  if (isUnusedByPrompt && hideWhenUnused) {
+    return null;
+  }
+
+  const unusedBadge = isUnusedByPrompt ? (
+    <span
+      className="ml-2 inline-block rounded bg-neutral-100 text-typography-600 text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5"
+      title={
+        `The selected main-agent prompt doesn't reference {${promptVariable}}. ` +
+        `Editing here is still useful because prosody, evaluator, and other ` +
+        `subsystems may read this value independently.`
+      }
+    >
+      Not used by selected prompt
+    </span>
+  ) : null;
 
   const updateTriggerWarnings = triggerWarning => {
     formMethods.setValue("triggerWarningIds", triggerWarning);
@@ -165,6 +250,19 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES:
         return <OpeningDialoguesPanel formMethods={formMethods} isMandatory={isMandatory} />;
+      case FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER:
+        return (
+          <MainAgentPromptPicker
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
+        );
+      case FORM_FIELD_TYPES.CUSTOM.STATES_EDITOR:
+        return (
+          <StatesEditor id={id} label={label} formMethods={formMethods} isMandatory={isMandatory} />
+        );
       case FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS:
         return <TitleTranslationsPanel formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION:
@@ -265,5 +363,10 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     }
   };
 
-  return <div>{getFieldElement()}</div>;
+  return (
+    <div className={isUnusedByPrompt ? "opacity-80" : undefined}>
+      {getFieldElement()}
+      {unusedBadge && <div className="mt-1 flex items-center">{unusedBadge}</div>}
+    </div>
+  );
 };

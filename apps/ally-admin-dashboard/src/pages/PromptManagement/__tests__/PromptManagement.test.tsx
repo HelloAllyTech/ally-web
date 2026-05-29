@@ -11,12 +11,14 @@ import { Prompt } from "@types";
 const mockGetPromptsQuery = vi.fn();
 const mockCreatePromptMutation = vi.fn();
 const mockUpdatePromptMutation = vi.fn();
+const mockDuplicatePromptMutation = vi.fn();
 const mockDeletePromptMutation = vi.fn();
 
 vi.mock("@api", () => ({
   useGetPromptsQuery: () => mockGetPromptsQuery(),
   useCreatePromptMutation: () => mockCreatePromptMutation(),
   useUpdatePromptMutation: () => mockUpdatePromptMutation(),
+  useDuplicatePromptMutation: () => mockDuplicatePromptMutation(),
   useDeletePromptMutation: () => mockDeletePromptMutation(),
 }));
 
@@ -155,6 +157,10 @@ describe("PromptManagement Component", () => {
       { isLoading: false },
     ]);
     mockUpdatePromptMutation.mockReturnValue([
+      vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve(true) }),
+      { isLoading: false },
+    ]);
+    mockDuplicatePromptMutation.mockReturnValue([
       vi.fn().mockResolvedValue({ unwrap: () => Promise.resolve(true) }),
       { isLoading: false },
     ]);

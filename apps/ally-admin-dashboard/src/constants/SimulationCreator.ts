@@ -128,6 +128,8 @@ export const FORM_FIELD_TYPES = {
     STATES_INSTRUCTION: "states_instruction",
     BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
     TITLE_TRANSLATIONS: "title_translations",
+    MAIN_AGENT_PROMPT_PICKER: "main_agent_prompt_picker",
+    STATES_EDITOR: "states_editor",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -167,6 +169,8 @@ export const FORM_FIELD_IDS = {
   KNOWLEDGE_SOURCE: "knowledgeSources",
   STATE_NAMES: "stateNames",
   ENABLE_PROSODY: "enableProsody",
+  SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
+  STATES: "states",
 };
 
 export const REGENERATE_TYPE = {
@@ -176,6 +180,8 @@ export const REGENERATE_TYPE = {
   STATE_INSTRUCTIONS: "stateInstructions",
   CHALLENGE_DESCRIPTION: "challengeDescription",
   BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
+  STATES: "states",
+  KNOWLEDGE_SOURCES: "knowledgeSources",
 };
 
 export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
@@ -210,6 +216,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
         fullWidth: true,
         maxLength: 100,
+        promptVariable: "title",
       },
       {
         id: "translationTitle",
@@ -224,6 +231,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.COMPETENCY,
         options: [],
         isMandatory: true,
+        promptVariable: "competency",
       },
       {
         id: "difficultyLevel",
@@ -250,6 +258,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
         isDashedLineAbove: true,
+        promptVariable: "character_profile_text",
       },
       {
         id: "description",
@@ -261,6 +270,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
         regenerateType: REGENERATE_TYPE.DESCRIPTION,
+        promptVariable: "description",
       },
       {
         id: "coverImageUrl",
@@ -301,6 +311,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     label: "Basic Settings",
     fields: [
       {
+        id: "selectedMainPromptCode",
+        label: "Main agent prompt",
+        type: FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER,
+        fullWidth: true,
+        isMandatory: false,
+      },
+      {
         id: "prompt",
         label: "Role instruction",
         type: FORM_FIELD_TYPES.TEXT,
@@ -309,8 +326,23 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 1500,
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: false,
+        promptVariable: "role_instructions",
       },
-      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
+      {
+        // Pinned right after Role instruction. Self-hides when the
+        // selected main-agent prompt does not declare hasStates=true.
+        // Stored on Scenarios.metadata.states; runtime resolves the
+        // active state per turn score.
+        id: "states",
+        label: "States",
+        type: FORM_FIELD_TYPES.CUSTOM.STATES_EDITOR,
+        fullWidth: true,
+        isMandatory: false,
+      },
+      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed.
+      // Both branches feed `{behavior_instructions_json}` in the rendered
+      // prompt, so they self-hide when the selected variant doesn't
+      // reference that placeholder.
       ...(FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG
         ? [
             {
@@ -320,6 +352,8 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
               fullWidth: true,
               isMandatory: false,
               regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+              promptVariable: "behavior_instructions_json",
+              hideWhenUnused: true,
             },
           ]
         : [
@@ -330,6 +364,8 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
               fullWidth: true,
               isMandatory: false,
               regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+              promptVariable: "behavior_instructions_json",
+              hideWhenUnused: true,
             },
             {
               id: "stateInstructions",
@@ -338,6 +374,8 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
               fullWidth: true,
               isMandatory: true,
               regenerateType: REGENERATE_TYPE.STATE_INSTRUCTIONS,
+              promptVariable: "behavior_instructions_json",
+              hideWhenUnused: true,
             },
           ]),
 
@@ -347,6 +385,11 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM_FIELDS,
         fullWidth: true,
         isDashedLineAbove: true,
+        // Custom fields exist solely to render `{custom_fields_text}` in the
+        // prompt — no other consumer reads them. Hide the editor when the
+        // selected variant doesn't reference that placeholder.
+        promptVariable: "custom_fields_text",
+        hideWhenUnused: true,
       },
       {
         id: "knowledgeSources",
@@ -367,6 +410,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES,
         fullWidth: true,
         isMandatory: true,
+        promptVariable: "opening_statements",
       },
       {
         id: "linguisticStyleSamples",
