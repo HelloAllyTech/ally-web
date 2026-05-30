@@ -99,9 +99,13 @@ vi.mock("@containers", () => ({
     </div>
   )),
   useSimulationSummaryPolling: () => ({ summaryData: undefined, retryMaxReached: false }),
-  FeedbackDialog: ({ open, id, sessionType }: any) =>
+  FeedbackDialog: ({ open, id, sessionType, onClose }: any) =>
     open ? (
-      <div data-testid="feedback-dialog" data-id={id} data-session-type={sessionType} />
+      <div data-testid="feedback-dialog" data-id={id} data-session-type={sessionType}>
+        <button data-testid="feedback-dialog-close" onClick={onClose}>
+          close
+        </button>
+      </div>
     ) : null,
   ShortSessionUI: ({ className }: any) => (
     <div data-testid="short-session-ui" className={className} />
@@ -356,7 +360,7 @@ describe("PostSimulationSummary Component", () => {
    * Verifies navigation functionality
    */
   describe("Navigation Functionality", () => {
-    it("should navigate back when clicking back button", () => {
+    it("should defer navigation and open the feedback dialog when no feedback exists", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -365,12 +369,14 @@ describe("PostSimulationSummary Component", () => {
 
       const header = screen.getByText(/role play/i).closest("div");
       const backButton = within(header!).getByRole("button");
-      backButton.click();
+      fireEvent.click(backButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith(-1);
+      // Exit is gated by feedback: clicking back opens the dialog instead of navigating.
+      expect(screen.getByTestId("feedback-dialog")).toBeInTheDocument();
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it("should call navigate when clicking back button", () => {
+    it("should flush the deferred navigation after the feedback dialog is dismissed", () => {
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -379,8 +385,11 @@ describe("PostSimulationSummary Component", () => {
 
       const header = screen.getByText(/role play/i).closest("div");
       const backButton = within(header!).getByRole("button");
-      backButton.click();
+      fireEvent.click(backButton);
 
+      fireEvent.click(screen.getByTestId("feedback-dialog-close"));
+
+      expect(mockNavigate).toHaveBeenCalledWith(-1);
       expect(mockNavigate).toHaveBeenCalledTimes(1);
     });
   });
@@ -760,7 +769,7 @@ describe("PostSimulationSummary Component", () => {
     });
 
     it("should handle navigation errors gracefully", () => {
-      // Test that navigation function is called without errors when using back button
+      // Test that navigation function is called without errors once the gated exit flushes.
       render(
         <TestWrapper>
           <PostSimulationSummary />
@@ -769,7 +778,9 @@ describe("PostSimulationSummary Component", () => {
 
       const header = screen.getByText(/role play/i).closest("div");
       const backButton = within(header!).getByRole("button");
-      backButton.click();
+      fireEvent.click(backButton);
+
+      fireEvent.click(screen.getByTestId("feedback-dialog-close"));
 
       expect(mockNavigate).toHaveBeenCalledWith(-1);
     });
