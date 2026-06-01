@@ -1,4 +1,3 @@
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { cellTypes } from "@components";
 import { en, ExperienceMode } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
@@ -124,8 +123,6 @@ export const FORM_FIELD_TYPES = {
     CHALLENGE_DESCRIPTION: "challenge_description",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
-    BEHAVIOURS_INSTRUCTION: "behaviours_instruction",
-    STATES_INSTRUCTION: "states_instruction",
     BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
     TITLE_TRANSLATIONS: "title_translations",
     MAIN_AGENT_PROMPT_PICKER: "main_agent_prompt_picker",
@@ -340,45 +337,23 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         isMandatory: false,
       },
-      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed.
-      // Both branches feed `{behavior_instructions_json}` in the rendered
-      // prompt, so they self-hide when the selected variant doesn't
-      // reference that placeholder.
-      ...(FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG
-        ? [
-            {
-              id: "behaviorInstructions",
-              label: "Behaviour Instructions",
-              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_STATES_INSTRUCTION,
-              fullWidth: true,
-              isMandatory: false,
-              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
-              promptVariable: "behavior_instructions_json",
-              hideWhenUnused: true,
-            },
-          ]
-        : [
-            {
-              id: "behaviorInstructions",
-              label: "Behaviour Instructions",
-              type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_INSTRUCTION,
-              fullWidth: true,
-              isMandatory: false,
-              regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
-              promptVariable: "behavior_instructions_json",
-              hideWhenUnused: true,
-            },
-            {
-              id: "stateInstructions",
-              label: "State Instructions & Dialogues",
-              type: FORM_FIELD_TYPES.CUSTOM.STATES_INSTRUCTION,
-              fullWidth: true,
-              isMandatory: true,
-              regenerateType: REGENERATE_TYPE.STATE_INSTRUCTIONS,
-              promptVariable: "behavior_instructions_json",
-              hideWhenUnused: true,
-            },
-          ]),
+      // The unified Behaviour Instructions table is always rendered.
+      // Its rows drive the score-keeper via the SHOULD_DO/SHOULD_NOT_DO
+      // → ±10 mapping in ally-be, regardless of whether the prompt body
+      // references `{behavior_instructions_json}`. The component itself
+      // is body-driven for the per-state coaching columns: when the
+      // selected variant uses `{state_x_guidelines}` (the new score-
+      // bounded states model), the legacy fixed-state cells (-1/1/2/3)
+      // disappear and only category + behaviours remain. Otherwise the
+      // full grid renders for backward compat with Prompt #1 style.
+      {
+        id: "behaviorInstructions",
+        label: "Behaviour Instructions",
+        type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_STATES_INSTRUCTION,
+        fullWidth: true,
+        isMandatory: false,
+        regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+      },
 
       {
         id: "customFields",
@@ -893,37 +868,6 @@ export const USER_BADGES_TABLE_COLUMNS = [
   },
 ];
 
-export const BEHAVIOURS_INSTRUCTION_TABLE_COLUMNS = [
-  {
-    id: "category",
-    label: "Category",
-    accessor: "category",
-    placeholder: "Add Name",
-    dataType: cellTypes.dropdown,
-    options: BEHAVIOURS_INSTRUCTION_CATEGORIES,
-    minWidth: 200,
-    width: "21%",
-  },
-  {
-    id: "behaviors",
-    label: "Helper behaviours",
-    accessor: "behaviors",
-    placeholder: "Add Instruction",
-    dataType: cellTypes.dropdownTags,
-    minWidth: 290,
-    width: "36%",
-  },
-  {
-    id: "instructions",
-    label: "Actors response",
-    accessor: "instructions",
-    placeholder: "Add Response",
-    dataType: cellTypes.editableText,
-    minWidth: 310,
-    width: "36%",
-  },
-];
-
 export const BEHAVIOUR_STATES = [
   { stateId: "-1", label: "State -1 Instructions" },
   { stateId: "1", label: "State 1 Instructions" },
@@ -971,31 +915,6 @@ export const BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS = [
     maxLength: BEHAVIOURS_AND_STATES_INSTRUCTION_FIELD_MAX_LENGTH,
   })),
 ];
-
-export const STATES_INSTRUCTION_TABLE_HEADERS = [
-  {
-    key: "stateId",
-    header: "States",
-    editable: false,
-    format: (value: any) => `State ${value}`,
-  },
-  { key: "name", header: "Name", editable: true },
-  { key: "instruction", header: "Instruction", editable: true },
-  {
-    key: "dialogues",
-    header: "Dialogues",
-    editable: true,
-    getEditableValue: (value: any) =>
-      Array.isArray(value) ? value.filter(Boolean).join("\n") : String(value ?? ""),
-  },
-];
-
-export const DEFAULT_STATE_INSTRUCTIONS = BEHAVIOUR_STATES.map(({ stateId }) => ({
-  stateId,
-  name: "",
-  instruction: "",
-  dialogues: [] as string[],
-}));
 
 export const TOOLTIPS_TABLE_COLUMNS = [
   {

@@ -10,6 +10,7 @@ import {
   en,
   FORM_FIELD_IDS,
 } from "@constants";
+import { useIsPlaceholderUsed } from "@hooks";
 import { ButtonVariant } from "@src/components/types";
 import { behaviourStateInstruction, HelperTagItem } from "@types";
 
@@ -51,6 +52,20 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   const stateNames: { stateId: string; name: string }[] =
     formMethods.watch(FORM_FIELD_IDS.STATE_NAMES) ?? [];
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+
+  // Body-driven gate: drop the per-state instruction columns (and the
+  // state-names header row) when the selected variant uses the new
+  // score-bounded states model (`{state_x_guidelines}`). For Prompt #2
+  // and any future variant that gets state guidance from the new
+  // StatesEditor, the legacy fixed -1/1/2/3 state cells are dead
+  // weight — the rules-only view (category + behaviours) is all the
+  // author needs. The rules still score the counselor unchanged.
+  const selectedMainPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
+  const { isUsed: usesStateXGuidelines } = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    "state_x_guidelines",
+  );
+  const showLegacyStateColumns = !usesStateXGuidelines;
 
   useEffect(() => {
     if (formData.length === 0) {
@@ -104,21 +119,30 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     return row;
   }, []);
 
-  const tableData = useMemo(
-    () => ({
-      data: [
-        createStateNamesRow(stateNamesDict),
-        ...formData.map(behavior => createTableRowObject(behavior)),
-      ],
-      columns: BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS.map(col => {
-        if (col.id.startsWith("stateInstruction_")) {
-          return { ...col, label: col.label };
-        }
-        return col;
-      }),
-    }),
-    [formData, stateNamesDict, createTableRowObject, createStateNamesRow],
-  );
+  const tableData = useMemo(() => {
+    // Drop the per-state-instruction columns from the unified table when
+    // the variant doesn't use the legacy fixed-state coaching model.
+    // Without those columns the state-names header row would render with
+    // only "Category"/"Behaviours" cells (and nothing in them), so we
+    // skip the header row too — leaving the table as a pure rules grid.
+    const columns = BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS.filter(
+      col => showLegacyStateColumns || !col.id.startsWith("stateInstruction_"),
+    ).map(col => {
+      if (col.id.startsWith("stateInstruction_")) {
+        return { ...col, label: col.label };
+      }
+      return col;
+    });
+
+    const data = showLegacyStateColumns
+      ? [
+          createStateNamesRow(stateNamesDict),
+          ...formData.map(behavior => createTableRowObject(behavior)),
+        ]
+      : formData.map(behavior => createTableRowObject(behavior));
+
+    return { data, columns };
+  }, [formData, stateNamesDict, createTableRowObject, createStateNamesRow, showLegacyStateColumns]);
 
   const handleAddRow = useCallback(() => {
     if (formData.length >= 10) {
@@ -200,7 +224,18 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     <div className="flex flex-col gap-2 w-[930px] overflow-x-auto">
       <div className="text-base text-typography-900 font-primary flex gap-1 justify-between items-center min-h-10">
         <div className="flex gap-1 items-center">
-          {en.simulation.behavioursInstruction}
+          {/*
+            For variants that use the new score-bounded states model
+            (`{state_x_guidelines}`), this section's purpose collapses to
+            "score the counselor" — the per-state coaching grid is
+            already hidden by `showLegacyStateColumns`. Relabel the
+            header to match the new purpose so authors aren't confused
+            by "Behaviour Instructions" when no behaviour-driven
+            coaching reaches the agent.
+          */}
+          {showLegacyStateColumns
+            ? en.simulation.behavioursInstruction
+            : en.simulation.scoringRubric}
           {isMandatory && <span className="text-destructive-500">*</span>}
         </div>
         <div className="flex gap-2 items-center">

@@ -3,11 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
-import {
-  useGetAutofillModelsQuery,
-  useGetPromptsByTypeQuery,
-  useRegenerateFieldMutation,
-} from "@api";
+import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
 import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
 import {
@@ -15,8 +11,7 @@ import {
   FALLBACK_AUTOFILL_MODEL_OPTIONS,
   REGENERATE_TYPE,
 } from "@constants";
-
-import { getAvailableVariableName } from "../../utils/availableVariables";
+import { useIsPlaceholderUsed } from "@hooks";
 
 /**
  * Per-simulation state entry as stored on `Scenarios.metadata.states`.
@@ -187,27 +182,19 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
   formMethods,
   isMandatory = false,
 }) => {
-  const { data: prompts } = useGetPromptsByTypeQuery("main_agent");
-
   const selectedPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
 
-  // Visibility gate: body-driven, matching how every other variable-aware
-  // field works. The States editor shows iff the picked variant's prompt
-  // body references `{state_x_guidelines}` (auto-reconciled into
-  // `availableVariables` on every save). Falling back to the legacy
-  // `hasStates` boolean keeps existing variants visible during the
-  // transition — admins re-saving a prompt with the placeholder removed
-  // will see the editor auto-hide on next load.
-  const selectedHasStates = useMemo(() => {
-    if (!selectedPromptCode) return false;
-    const match = prompts?.find(p => p.promptCode === selectedPromptCode);
-    if (!match) return false;
-    const usedNames = new Set((match.availableVariables ?? []).map(getAvailableVariableName));
-    if (usedNames.has("state_x_guidelines")) return true;
-    // Legacy fallback for rows whose availableVariables hasn't been
-    // re-reconciled yet (e.g. old data created before auto-reconcile).
-    return Boolean(match.hasStates);
-  }, [prompts, selectedPromptCode]);
+  // Visibility gate: body-driven, shared with FormField via the
+  // useIsPlaceholderUsed hook. The States editor shows iff the picked
+  // variant's prompt body references `{state_x_guidelines}` (auto-
+  // reconciled into `availableVariables` on every save). The legacy
+  // hasStates fallback that used to live here is gone — the 1780100000000
+  // backfill migration populates availableVariables for every row, so
+  // the reconciled list is now the single source of truth.
+  const { isUsed: selectedHasStates } = useIsPlaceholderUsed(
+    selectedPromptCode,
+    "state_x_guidelines",
+  );
 
   const watchedStates = (formMethods.watch(id) as SimulationStateFormValue[] | undefined) ?? [];
   const [states, setStates] = useState<SimulationStateFormValue[]>(watchedStates);
@@ -527,6 +514,20 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
         </div>
       )}
 
+      {/*
+        Per-state RAG help. Without this hint admins see a "RAG enabled"
+        checkbox on each state card with no context for what it controls.
+        Toggling it off is the only documented way to make {retrieved_context}
+        substitute empty for a turn — surface that here so the cause is
+        traceable from the UI, not buried in the runtime resolver.
+      */}
+      <div className="rounded border border-border-light bg-neutral-50 px-3 py-2 text-xs leading-5 text-typography-600">
+        <span className="font-medium text-typography-800">RAG per state.</span> When a state has RAG
+        disabled, the runtime substitutes <code>{`{retrieved_context}`}</code> as empty for any turn
+        while that state is active — useful for grounded-only or intentionally minimal phases. Other
+        states keep retrieving normally.
+      </div>
+
       {states.map(state => {
         const errors = validation.perState[state.id] ?? [];
         return (
@@ -545,7 +546,14 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 />
                 Starting state
               </label>
-              <label className="flex items-center gap-2 text-sm text-typography-700">
+              <label
+                className="flex items-center gap-2 text-sm text-typography-700"
+                title={
+                  state.ragEnabled
+                    ? "Knowledge-base retrieval runs while this state is active. {retrieved_context} substitutes normally."
+                    : "Retrieval is skipped while this state is active. {retrieved_context} substitutes empty — useful for grounded-only or minimal phases."
+                }
+              >
                 <input
                   type="checkbox"
                   checked={state.ragEnabled}
@@ -553,6 +561,9 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                   className="h-4 w-4 cursor-pointer"
                 />
                 RAG enabled
+                {!state.ragEnabled && (
+                  <span className="text-xs text-typography-500">(context blanked)</span>
+                )}
               </label>
               <button
                 type="button"

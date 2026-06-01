@@ -68,6 +68,9 @@ const mockDeletePrompt = vi.fn().mockResolvedValue({ unwrap: () => Promise.resol
 vi.mock("@api", () => ({
   useRevertPromptMutation: () => [mockRevertPrompt, { isLoading: false }],
   useDeletePromptMutation: () => [mockDeletePrompt, { isLoading: false }],
+  // Side panel queries an in-use count for duplicates to gate the
+  // "Delete variant" button. Tests mount with no in-use scenarios.
+  useGetPromptUsageQuery: () => ({ data: { count: 0, scenarios: [] }, isFetching: false }),
 }));
 
 // Mock constants

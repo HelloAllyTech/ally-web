@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { useGetPromptUsageQuery } from "@api";
 import { Refresh, DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -27,6 +28,13 @@ interface PromptSidePanelProps {
    * and open the new variant in the panel.
    */
   onDuplicate?: (sourceId: string) => Promise<void> | void;
+  /**
+   * Optional delete action — exposed only for prompts that originated from
+   * a "Duplicate as variant" copy (their promptCode contains `_copy_`).
+   * File-backed prompts are not deletable through this path; they must
+   * first be obsoleted by removing the .txt file in the codebase.
+   */
+  onDelete?: (id: string) => Promise<void> | void;
 }
 
 interface FieldProps {
@@ -145,6 +153,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   onClose,
   onUpdate,
   onDuplicate,
+  onDelete,
 }) => {
   const [formData, setFormData] = useState<Partial<Prompt>>({
     name: "",
@@ -154,9 +163,11 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     useDashboardOverride: false,
   });
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showRevertConfirmModal, setShowRevertConfirmModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [editingBlock, setEditingBlock] = useState<Prompt | null>(null);
 
   const getBlockByCode = useCallback(
@@ -321,6 +332,44 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       setIsDuplicating(false);
     }
   }, [selectedPrompt?.id, onDuplicate, isDuplicating]);
+
+  // Only "Duplicate as variant" copies are deletable from this panel.
+  // The promptCode suffix is the only durable marker — name and description
+  // are author-editable and can't be trusted.
+  const isDuplicate = useMemo(
+    () => Boolean(selectedPrompt?.promptCode?.includes("_copy_")),
+    [selectedPrompt?.promptCode],
+  );
+
+  // Fetch in-use count only for duplicates (the only deletable rows) — file-
+  // backed prompts can't be removed via this panel, so the usage info would
+  // be noise. `skip` avoids firing the query for everything else.
+  const { data: usageData, isFetching: isUsageLoading } = useGetPromptUsageQuery(
+    selectedPrompt?.id ?? "",
+    { skip: !selectedPrompt?.id || !isDuplicate },
+  );
+  const inUseCount = usageData?.count ?? 0;
+  const isInUse = inUseCount > 0;
+
+  const handleDeleteClick = useCallback(() => {
+    if (!selectedPrompt?.id || !onDelete || isDeleting || isInUse) return;
+    setShowDeleteConfirmModal(true);
+  }, [selectedPrompt?.id, onDelete, isDeleting, isInUse]);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!selectedPrompt?.id || !onDelete) return;
+    try {
+      setIsDeleting(true);
+      await onDelete(selectedPrompt.id);
+      setShowDeleteConfirmModal(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [selectedPrompt?.id, onDelete]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setShowDeleteConfirmModal(false);
+  }, []);
 
   const handleClose = useCallback(() => {
     // Check if there are unsaved changes
@@ -535,6 +584,22 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                   {isDuplicating ? "Duplicating…" : "Duplicate as variant"}
                 </Button>
               )}
+              {onDelete && selectedPrompt?.id && isDuplicate && (
+                <Button
+                  variant={ButtonVariant.SECONDARY}
+                  onClick={handleDeleteClick}
+                  disabled={isDeleting || isUsageLoading || isInUse}
+                  title={
+                    isUsageLoading
+                      ? "Checking usage…"
+                      : isInUse
+                        ? `Used by ${inUseCount} simulation${inUseCount === 1 ? "" : "s"} — switch ${inUseCount === 1 ? "it" : "them"} to another prompt before deleting`
+                        : "Permanently delete this duplicated variant"
+                  }
+                >
+                  {isDeleting ? "Deleting…" : isInUse ? `In use (${inUseCount})` : "Delete variant"}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -566,6 +631,24 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         secondaryButton={{
           label: "Cancel",
           onClick: handleRevertCancel,
+        }}
+      />
+      <ActionConfirmationPopup
+        isOpen={showDeleteConfirmModal}
+        onClose={handleDeleteCancel}
+        title="Delete variant"
+        description={
+          "This will permanently remove the duplicated variant. Simulations " +
+          "still pointing to it will fall back to the default. This cannot " +
+          "be undone."
+        }
+        primaryButton={{
+          label: isDeleting ? "Deleting…" : "Delete",
+          onClick: handleDeleteConfirm,
+        }}
+        secondaryButton={{
+          label: "Cancel",
+          onClick: handleDeleteCancel,
         }}
       />
 

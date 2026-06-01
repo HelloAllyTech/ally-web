@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
@@ -50,7 +49,6 @@ import {
   SimulationPreviewType,
   triggerWarning,
   behaviourInstruction,
-  stateInstruction,
   knowledgeSource,
   TranslationProgressPayload,
 } from "@types";
@@ -342,46 +340,22 @@ export const CreateSimulation: FC = () => {
         const hasAnyVoiceSelected = !!mappings && Object.values(mappings).some(v => !!v);
         if (!hasAnyVoiceSelected) return false;
       }
-      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
-      if (
-        !FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG &&
-        fieldId === FORM_FIELD_IDS.STATE_INSTRUCTIONS
-      ) {
-        const stateInstructionsVal = value as stateInstruction[];
+      if (fieldId === FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) {
+        const behaviorInstructions = value as behaviourInstruction[];
+        // A behaviour rule is "complete" with just category + at least
+        // one linked behaviour — those two fields drive scoring in every
+        // prompt variant. Per-state coaching cells (when shown by the
+        // unified table for legacy variants) are optional content that
+        // authors can fill in when relevant; they're not gating fields.
+        // Previously per-state instructions were required, but that's
+        // incompatible with Prompt #2-style variants where the per-state
+        // columns are hidden entirely.
         if (
-          stateInstructionsVal.some(
-            instruction =>
-              instruction.instruction.trim() === "" || instruction.dialogues?.length === 0,
+          behaviorInstructions.some(
+            instruction => instruction.behaviors.length === 0 || instruction.category.length === 0,
           )
         )
           return false;
-      }
-      if (fieldId === FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) {
-        const behaviorInstructions = value as behaviourInstruction[];
-        // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
-        if (FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG) {
-          if (
-            behaviorInstructions.some(
-              instruction =>
-                instruction.behaviors.length === 0 ||
-                instruction.category.length === 0 ||
-                !instruction.stateInstructions ||
-                instruction.stateInstructions.filter(si => si.instruction.trim().length > 0)
-                  .length === 0,
-            )
-          )
-            return false;
-        } else {
-          if (
-            behaviorInstructions.some(
-              instruction =>
-                instruction.behaviors.length === 0 ||
-                instruction.category.length === 0 ||
-                instruction.instructions.length === 0,
-            )
-          )
-            return false;
-        }
       }
       return true;
     });
@@ -441,22 +415,11 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    const rawStateInstructions = formMethods.getValues(FORM_FIELD_IDS.STATE_INSTRUCTIONS) as
-      | stateInstruction[]
-      | undefined;
     const rawBehaviorInstructions = formMethods.getValues(FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS) as
       | behaviourInstruction[]
       | undefined;
 
-    if (!FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG) {
-      if (
-        isNonEmptyArray(rawStateInstructions) &&
-        rawStateInstructions.some(si => !isValidStateInstructionId(si?.stateId))
-      ) {
-        toast.error(en.errors.invalidStateInstructionIds);
-        return null;
-      }
-    } else if (isNonEmptyArray(rawBehaviorInstructions)) {
+    if (isNonEmptyArray(rawBehaviorInstructions)) {
       const hasInvalidStateId = rawBehaviorInstructions.some(instruction =>
         (instruction.stateInstructions ?? []).some(si => !isValidStateInstructionId(si?.stateId)),
       );
@@ -486,7 +449,6 @@ export const CreateSimulation: FC = () => {
       triggerWarningIds,
       customFields,
       agentDialogues,
-      stateInstructions,
       behaviorInstructions,
       maxTimeValue,
       timerMode,
@@ -556,16 +518,13 @@ export const CreateSimulation: FC = () => {
             category: instruction.category,
             behaviors: uniqueBehaviorIds(instruction.behaviors),
             instructions: normalizeInstructions(instruction.instructions),
-          };
-          // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
-          if (FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG) {
-            entry.stateInstructions = (instruction.stateInstructions ?? [])
+            stateInstructions: (instruction.stateInstructions ?? [])
               .filter((si: any) => isNonEmptyString(si?.instruction))
               .map((si: any) => ({
                 stateId: si.stateId,
                 instruction: si.instruction,
-              }));
-          }
+              })),
+          };
 
           behaviourInstructionsArray.push(entry);
         }
@@ -582,8 +541,6 @@ export const CreateSimulation: FC = () => {
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
       status,
-      // TODO: Remove this once the BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG is removed
-      ...(!FEATURE_FLAGS_MAP.BEHAVIOURS_AND_STATES_INSTRUCTION_FLAG && { stateInstructions }),
       behaviorInstructions: behaviourInstructionsArray,
       competencyId: restForm.competency?.id,
       maxTimeValue: timerMode ? maxTimeValue : null,

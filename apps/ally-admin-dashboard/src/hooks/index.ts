@@ -1,6 +1,7 @@
 import { useClickOutside } from "./useClickOutside";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
+import { useIsPlaceholderUsed } from "./useIsPlaceholderUsed";
 import { useLiveKitRoom } from "./useLiveKitRoom";
 import { useScenarioReportsSocket } from "./useScenarioReportsSocket";
 import { useScenarioTranslationsSocket } from "./useScenarioTranslationsSocket";
@@ -14,6 +15,7 @@ export {
   useLiveKitRoom,
   useClickOutside,
   useDebounce,
+  useIsPlaceholderUsed,
   useSimulations,
   useSimulationPathways,
   useSimulationCases,
