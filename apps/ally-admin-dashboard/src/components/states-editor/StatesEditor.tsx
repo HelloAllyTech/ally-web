@@ -48,51 +48,51 @@ const generateId = (): string =>
     .toString(36)
     .padStart(3, "0")}`;
 
+// New state seed. Bounds default to a sensible [0, 50) window so the
+// user has placeholder values they can edit instead of starting with
+// missing-number validation errors. The auto-add path in addState
+// recomputes ranges via distributeStateRanges so adding a second state
+// re-distributes both states into [0,50) / [50,100) automatically.
 const blankState = (isFirst: boolean): SimulationStateFormValue => ({
   id: generateId(),
   name: "",
   guidelines: "",
   isStarting: isFirst,
-  scoreLower: isFirst ? null : 0,
-  scoreUpper: null,
+  scoreLower: 0,
+  scoreUpper: MIN_STATE_GAP,
   ragEnabled: true,
 });
 
 /**
- * Compute deterministic score ranges for N states that always satisfy
- * the validation rules (first lower open, last upper open, contiguous,
- * min gap 50). Used to override whatever the LLM produced for ranges —
- * LLMs aren't reliable on this kind of numeric constraint and we'd
- * rather guarantee a savable set than gamble on the model.
+ * Compute deterministic score ranges for N states that satisfy the
+ * validation rules (strict numeric bounds, contiguous, min gap 50).
+ * Used to override whatever the LLM produced for ranges — LLMs aren't
+ * reliable on numeric constraints and we'd rather guarantee a savable
+ * set than gamble on the model.
  *
- * Scheme: first state covers (-∞, MIN_STATE_GAP) so turn 1 (score=0)
- * always falls in the starting state. ai-learn's score_keeper returns
- * 0 at session start (not null), and our resolver uses upper-exclusive
- * matching, so the first boundary must be > 0 for the starting state
- * to be active on the first turn.
+ * Scheme: ranges start at 0 and step by MIN_STATE_GAP. The first state
+ * covers [0, 50). ai-learn's score_keeper returns 0 at session start
+ * (not null) and our resolver uses upper-exclusive matching, so the
+ * first boundary at MIN_STATE_GAP keeps the starting state active on
+ * turn 1. Out-of-range scores (above last upper) clamp to the last
+ * state at runtime — see _resolve_simulation_state_by_score in ai-learn.
  *
- *   N=1 → [null, null)
- *   N=2 → [null, 50),  [50, null)
- *   N=3 → [null, 50),  [50, 100),  [100, null)
- *   N=4 → [null, 50),  [50, 100),  [100, 150),  [150, null)
+ *   N=1 → [0, 50)
+ *   N=2 → [0, 50),  [50, 100)
+ *   N=3 → [0, 50),  [50, 100),  [100, 150)
+ *   N=4 → [0, 50),  [50, 100),  [100, 150),  [150, 200)
  */
 const distributeStateRanges = (
   count: number,
-): Array<{ scoreLower: number | null; scoreUpper: number | null }> => {
+): Array<{ scoreLower: number; scoreUpper: number }> => {
   if (count <= 0) return [];
-  if (count === 1) return [{ scoreLower: null, scoreUpper: null }];
-  const ranges: Array<{ scoreLower: number | null; scoreUpper: number | null }> = [];
-  ranges.push({ scoreLower: null, scoreUpper: MIN_STATE_GAP });
-  for (let i = 1; i < count - 1; i++) {
+  const ranges: Array<{ scoreLower: number; scoreUpper: number }> = [];
+  for (let i = 0; i < count; i++) {
     ranges.push({
       scoreLower: i * MIN_STATE_GAP,
       scoreUpper: (i + 1) * MIN_STATE_GAP,
     });
   }
-  ranges.push({
-    scoreLower: (count - 1) * MIN_STATE_GAP,
-    scoreUpper: null,
-  });
   return ranges;
 };
 
@@ -124,17 +124,21 @@ const computeValidation = (
   }
 
   const sorted = [...states].sort((a, b) => {
-    const al = a.scoreLower ?? Number.NEGATIVE_INFINITY;
-    const bl = b.scoreLower ?? Number.NEGATIVE_INFINITY;
+    const al = a.scoreLower ?? 0;
+    const bl = b.scoreLower ?? 0;
     return al - bl;
   });
 
-  if (sorted[0]?.scoreLower !== null) {
-    perState[sorted[0].id].push("First state must have an open lower bound (clear the minimum).");
-  }
-  const last = sorted[sorted.length - 1];
-  if (last?.scoreUpper !== null) {
-    perState[last.id].push("Last state must have an open upper bound (clear the maximum).");
+  // Strict-bounds rule: every state must have finite numeric bounds.
+  // Out-of-range scores at runtime clamp to the nearest end-state, so
+  // total coverage is preserved without the legacy "open" placeholder.
+  for (const state of sorted) {
+    if (typeof state.scoreLower !== "number") {
+      perState[state.id].push("Min score is required (finite number).");
+    }
+    if (typeof state.scoreUpper !== "number") {
+      perState[state.id].push("Max score is required (finite number).");
+    }
   }
 
   for (let i = 0; i < sorted.length; i++) {
@@ -149,16 +153,8 @@ const computeValidation = (
     }
 
     if (i < sorted.length - 1) {
-      // We're guaranteed to be on an intermediate state here (the outer
-      // guard `i < sorted.length - 1` excludes the last). Drop redundant
-      // bound-checks that the old code wrapped around `i !== last` and
-      // `i + 1 !== 0` — both were always true inside this branch.
       const next = sorted[i + 1];
-      if (upper === null) {
-        perState[state.id].push("Only the last state may have an open upper bound.");
-      } else if (next.scoreLower === null) {
-        perState[next.id].push("Only the first state may have an open lower bound.");
-      } else if (
+      if (
         typeof upper === "number" &&
         typeof next.scoreLower === "number" &&
         upper !== next.scoreLower
@@ -567,8 +563,12 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 <input
                   type="number"
                   value={state.scoreLower ?? ""}
-                  placeholder="open"
+                  placeholder="e.g. 0"
                   onChange={event => {
+                    // Empty input keeps the state's bound as null briefly so
+                    // the field can be cleared and retyped; validation flags
+                    // the missing number until a digit lands. Once typed,
+                    // bound is stored as a finite number.
                     const raw = event.target.value;
                     updateState(state.id, {
                       scoreLower: raw === "" ? null : Number(raw),
@@ -582,7 +582,7 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 <input
                   type="number"
                   value={state.scoreUpper ?? ""}
-                  placeholder="open"
+                  placeholder="e.g. 50"
                   onChange={event => {
                     const raw = event.target.value;
                     updateState(state.id, {
@@ -593,7 +593,8 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 />
               </div>
               <span className="text-xs text-typography-500">
-                Leave blank for open bound. Range must span ≥ {MIN_STATE_GAP}.
+                Both bounds required. Range must span ≥ {MIN_STATE_GAP}. Scores beyond the last
+                state's max clamp to that state at runtime.
               </span>
             </div>
 
