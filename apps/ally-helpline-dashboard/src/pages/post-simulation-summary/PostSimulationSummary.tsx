@@ -127,10 +127,13 @@ export const PostSimulationSummary: FC = () => {
   const pendingNavigationRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (summaryData && !feedbackDialogEvaluatedRef.current) {
+    if (summaryData && !isLoading && !feedbackDialogEvaluatedRef.current) {
       feedbackDialogEvaluatedRef.current = true;
+      if (!summary?.hasFeedback) {
+        setFeedbackOpen(true);
+      }
     }
-  }, [summaryData]);
+  }, [summaryData, isLoading, summary]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
