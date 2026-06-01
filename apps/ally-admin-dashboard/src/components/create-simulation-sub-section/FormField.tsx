@@ -5,6 +5,7 @@ import { FILE_TYPE, FORM_FIELD_TYPES, en } from "@constants";
 import { FormFieldProps } from "@types";
 
 import { getAvailableVariableName } from "../../utils/availableVariables";
+import { Accordion } from "../accordion";
 import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { BehavioursAndStatesInstruction } from "../behaviours-and-states-instruction";
 import { BehavioursInstruction } from "../behaviours-instruction";
@@ -44,6 +45,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     regenerateType,
     promptVariable,
     hideWhenUnused,
+    accordion,
   } = config;
   const {
     formState: { errors },
@@ -351,6 +353,14 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         return null;
     }
   };
+
+  if (accordion) {
+    return (
+      <Accordion title={label} defaultExpanded={false}>
+        {getFieldElement()}
+      </Accordion>
+    );
+  }
 
   return <div>{getFieldElement()}</div>;
 };

@@ -89,6 +89,8 @@ export interface FormFieldConfig {
    * fields with parallel consumers (prosody / evaluator).
    */
   hideWhenUnused?: boolean;
+  /** When true, wrap the field in a collapsed accordion. */
+  accordion?: boolean;
 }
 
 export interface FieldGroupType {

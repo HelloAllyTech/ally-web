@@ -327,6 +327,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: false,
         promptVariable: "role_instructions",
+        accordion: true,
       },
       {
         // Pinned right after Role instruction. Self-hides when the
