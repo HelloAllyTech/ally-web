@@ -535,6 +535,25 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.PROMPTS],
     }),
 
+    /**
+     * In-use count + a small sample of referencing scenarios for a prompt
+     * variant. Drives the in-use guard and tooltip on the studio's
+     * "Delete variant" button — fetched on demand only when the side panel
+     * opens for a duplicated variant.
+     */
+    getPromptUsage: builder.query<
+      { count: number; scenarios: Array<{ id: number; title: string }> },
+      string
+    >({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_PROMPT_USAGE(id),
+        method: HttpMethod.GET,
+      }),
+      // Re-fetch when a simulation is created/updated (which may change
+      // which variant it points at) or when the prompts list refreshes.
+      providesTags: [TAG_TYPES.PROMPTS, TAG_TYPES.SIMULATION],
+    }),
+
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
@@ -832,6 +851,7 @@ export const {
   useDuplicatePromptMutation,
   useRevertPromptMutation,
   useDeletePromptMutation,
+  useGetPromptUsageQuery,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,

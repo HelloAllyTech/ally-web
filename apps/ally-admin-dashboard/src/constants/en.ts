@@ -426,6 +426,7 @@ export const en = {
     newRow: "New row",
     statesInstruction: "States Instruction & Dialogues",
     behavioursInstruction: "Behaviour Instructions",
+    scoringRubric: "Scoring Rubric",
     ImageLibrary: "Image Library",
     imageLibrary: "Image Library",
     selectImage: "Select image",

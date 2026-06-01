@@ -2,7 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useDuplicatePromptMutation, useGetPromptsQuery, useUpdatePromptMutation } from "@api";
+import {
+  useDeletePromptMutation,
+  useDuplicatePromptMutation,
+  useGetPromptsQuery,
+  useUpdatePromptMutation,
+} from "@api";
 import { FilterDropdown, NotionTable, ListToolbar, PromptSidePanel } from "@components";
 import { en, PROMPT_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import { Prompt } from "@types";
@@ -81,6 +86,7 @@ export const PromptManagement: React.FC = () => {
 
   const [updatePrompt] = useUpdatePromptMutation();
   const [duplicatePrompt] = useDuplicatePromptMutation();
+  const [deletePrompt] = useDeletePromptMutation();
 
   // Handle data updates when query data changes
   useEffect(() => {
@@ -230,6 +236,23 @@ export const PromptManagement: React.FC = () => {
     }
   };
 
+  const handlePromptDelete = async (id: string) => {
+    try {
+      await deletePrompt(id).unwrap();
+      toast.success("Variant deleted");
+      // Close the panel — the row no longer exists; refetch invalidates
+      // the PROMPTS tag so the list re-renders without it.
+      setSelectedPrompt(null);
+      setIsSidePanelOpen(false);
+    } catch (err: any) {
+      // Surface the backend message when available — covers the case where
+      // the server refused deletion (e.g. attempted on a file-backed
+      // prompt that hasn't been obsoleted).
+      const msg = err?.data?.message ?? "Failed to delete prompt";
+      toast.error(msg);
+    }
+  };
+
   const handleLoadMore = () => {
     if (isFetching || !hasMore) return;
     setOffset(prev => prev + limit);
@@ -310,6 +333,7 @@ export const PromptManagement: React.FC = () => {
           onClose={handleSidePanelClose}
           onUpdate={handlePromptUpdate}
           onDuplicate={handlePromptDuplicate}
+          onDelete={handlePromptDelete}
         />
       )}
     </div>
