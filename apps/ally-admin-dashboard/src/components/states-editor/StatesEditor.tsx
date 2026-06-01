@@ -16,6 +16,8 @@ import {
   REGENERATE_TYPE,
 } from "@constants";
 
+import { getAvailableVariableName } from "../../utils/availableVariables";
+
 /**
  * Per-simulation state entry as stored on `Scenarios.metadata.states`.
  * Mirrors the ally-be `SimulationState` interface. Re-declared here to
@@ -189,10 +191,22 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
 
   const selectedPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
 
+  // Visibility gate: body-driven, matching how every other variable-aware
+  // field works. The States editor shows iff the picked variant's prompt
+  // body references `{state_x_guidelines}` (auto-reconciled into
+  // `availableVariables` on every save). Falling back to the legacy
+  // `hasStates` boolean keeps existing variants visible during the
+  // transition — admins re-saving a prompt with the placeholder removed
+  // will see the editor auto-hide on next load.
   const selectedHasStates = useMemo(() => {
     if (!selectedPromptCode) return false;
     const match = prompts?.find(p => p.promptCode === selectedPromptCode);
-    return Boolean(match?.hasStates);
+    if (!match) return false;
+    const usedNames = new Set((match.availableVariables ?? []).map(getAvailableVariableName));
+    if (usedNames.has("state_x_guidelines")) return true;
+    // Legacy fallback for rows whose availableVariables hasn't been
+    // re-reconciled yet (e.g. old data created before auto-reconcile).
+    return Boolean(match.hasStates);
   }, [prompts, selectedPromptCode]);
 
   const watchedStates = (formMethods.watch(id) as SimulationStateFormValue[] | undefined) ?? [];
