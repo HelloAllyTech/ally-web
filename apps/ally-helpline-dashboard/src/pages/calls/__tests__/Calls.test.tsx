@@ -50,6 +50,7 @@ vi.mock("@assets", () => ({
 
 // Mock components
 vi.mock("@components", () => ({
+  AppTooltip: ({ children }: any) => <>{children}</>,
   Button: ({ children, ...props }: any) => (
     <button data-testid="mock-button" {...props}>
       {children}
@@ -179,6 +180,10 @@ vi.mock("@constants", () => ({
   Permissions: {
     START_MICROPHONE_CHAT: "start:microphone-chat",
     VIEW_AUDIO_UPLOAD: "view:audio-upload-url",
+  },
+  TooltipLocation: {
+    START_SESSION_BUTTON: "start_session_button",
+    UPLOAD_AUDIO_BUTTON: "upload_audio_button",
   },
 }));
 

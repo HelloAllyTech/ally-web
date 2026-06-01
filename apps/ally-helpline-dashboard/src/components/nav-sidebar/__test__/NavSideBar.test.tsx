@@ -72,6 +72,7 @@ vi.mock("@mui/icons-material/OpenInNew", () => ({
 }));
 
 vi.mock("@components", () => ({
+  AppTooltip: ({ children }: any) => children,
   ConfirmationDialog: vi.fn(
     ({ isOpen, onClose, onButtonClick, title, content, buttonText, icon, ...props }: any) => {
       if (!isOpen) return null;
@@ -116,6 +117,16 @@ vi.mock("@constants", () => {
   };
   return {
     TabId,
+    TooltipLocation: {
+      LEARN_TAB: "learn_tab",
+      REVIEW_TAB: "review_tab",
+      BADGES_TAB: "badges_tab",
+      COMMUNITY_TAB: "community_tab",
+      SESSIONS_TAB: "sessions_tab",
+      STATISTICS_TAB: "statistics_tab",
+      SEARCH_TAB: "search_tab",
+      LANGUAGE_SELECTOR: "language_selector",
+    },
     TOOLTIP_LIGHT_PROPS: { test: "light-props" },
     navBarOptions: [
       {

@@ -22,6 +22,7 @@ vi.mock("@hooks", () => ({
 
 vi.mock("@components", () => ({
   PermissionGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AppTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@assets", () => ({
@@ -43,6 +44,10 @@ vi.mock("@constants", () => ({
     CALL_SUMMARY: "CallSummary",
     CALL_LOGS: "CallLogs",
     SIMULATION_LOGS: "SimulationLogs",
+  },
+  TooltipLocation: {
+    PROFILE_MENU: "profile_menu",
+    LOGOUT_BUTTON: "logout_button",
   },
 }));
 

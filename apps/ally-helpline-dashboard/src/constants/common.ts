@@ -152,4 +152,20 @@ export const toolTipStyles = {
 
 export enum TooltipLocation {
   LOGIN_BUTTON = "login_button",
+  // Navigation sidebar tabs
+  LEARN_TAB = "learn_tab",
+  REVIEW_TAB = "review_tab",
+  BADGES_TAB = "badges_tab",
+  COMMUNITY_TAB = "community_tab",
+  SESSIONS_TAB = "sessions_tab",
+  STATISTICS_TAB = "statistics_tab",
+  SEARCH_TAB = "search_tab",
+  // Navigation sidebar footer
+  PROFILE_MENU = "profile_menu",
+  LOGOUT_BUTTON = "logout_button",
+  LANGUAGE_SELECTOR = "language_selector",
+  // Key page actions
+  START_SIMULATION_BUTTON = "start_simulation_button",
+  START_SESSION_BUTTON = "start_session_button",
+  UPLOAD_AUDIO_BUTTON = "upload_audio_button",
 }

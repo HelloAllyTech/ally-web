@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Ally, Arrow, Bolt, DataPolicy, Logout, ManageAccount } from "@assets";
-import { PermissionGuard } from "@components";
-import { ALLY_DATA_POLICY_URL, Permissions } from "@constants";
+import { AppTooltip, PermissionGuard } from "@components";
+import { ALLY_DATA_POLICY_URL, Permissions, TooltipLocation } from "@constants";
 import { useSimulationCredits } from "@hooks";
 import { User } from "@types";
 import { openLinkInNewTab } from "@utils";
@@ -39,61 +39,69 @@ const UserInfo: FC<{
   return (
     <div className="relative w-full" ref={containerRef} data-testid="user-info">
       <div className="flex flex-col gap-3 w-full">
-        <div
-          data-testid="user-info-trigger"
-          onClick={() => setShowLogout(prev => !prev)}
-          className="flex border-gray-200 items-center cursor-pointer "
-        >
-          <div className="flex gap-2 items-center w-full">
-            <div
-              data-testid="user-info-avatar-ring"
-              className={"w-[40px] h-[40px] rounded-full p-[2px]"}
-              style={
-                hasPercentage
-                  ? {
-                      background: `conic-gradient(${ringColor} ${CreditPercentage * 3.6}deg, #e5e7eb ${CreditPercentage * 3.6}deg)`,
-                    }
-                  : undefined
-              }
-            >
+        <AppTooltip location={TooltipLocation.PROFILE_MENU}>
+          <div
+            data-testid="user-info-trigger"
+            onClick={() => setShowLogout(prev => !prev)}
+            className="flex border-gray-200 items-center cursor-pointer "
+          >
+            <div className="flex gap-2 items-center w-full">
               <div
-                className="bg-white rounded-full flex items-center justify-center w-full h-full overflow-hidden"
-                data-testid="user-info-avatar"
+                data-testid="user-info-avatar-ring"
+                className={"w-[40px] h-[40px] rounded-full p-[2px]"}
+                style={
+                  hasPercentage
+                    ? {
+                        background: `conic-gradient(${ringColor} ${CreditPercentage * 3.6}deg, #e5e7eb ${CreditPercentage * 3.6}deg)`,
+                      }
+                    : undefined
+                }
               >
-                <CustomImage
-                  className="rounded-full object-cover"
-                  fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
-                  fallbackText={name ? name?.slice(0, 1).toUpperCase() : "NA"}
-                  src={profileUrl}
-                  alt={t("user.profileAlt")}
-                />
+                <div
+                  className="bg-white rounded-full flex items-center justify-center w-full h-full overflow-hidden"
+                  data-testid="user-info-avatar"
+                >
+                  <CustomImage
+                    className="rounded-full object-cover"
+                    fallbackClassName="flex items-center justify-center text-typography-600 bg-neutral-100 rounded-full object-cover w-full h-full"
+                    fallbackText={name ? name?.slice(0, 1).toUpperCase() : "NA"}
+                    src={profileUrl}
+                    alt={t("user.profileAlt")}
+                  />
+                </div>
               </div>
+              {isExpanded && (
+                <div
+                  className="flex flex-col font-primary max-w-[150px] overflow-hidden"
+                  data-testid="user-info-details"
+                >
+                  <div
+                    className="text-lg text-typography-800 truncate"
+                    data-testid="user-info-name"
+                  >
+                    {user?.name}
+                  </div>
+                  <div
+                    className="text-xs text-typography-800 truncate"
+                    data-testid="user-info-email"
+                  >
+                    {user?.email}
+                  </div>
+                </div>
+              )}
             </div>
             {isExpanded && (
-              <div
-                className="flex flex-col font-primary max-w-[150px] overflow-hidden"
-                data-testid="user-info-details"
-              >
-                <div className="text-lg text-typography-800 truncate" data-testid="user-info-name">
-                  {user?.name}
-                </div>
-                <div className="text-xs text-typography-800 truncate" data-testid="user-info-email">
-                  {user?.email}
-                </div>
+              <div className="flex-shrink-0">
+                <Arrow
+                  data-testid="user-info-toggle-arrow"
+                  className={`w-5 h-2 text-typography-800 transition-transform duration-300 ${
+                    showLogout ? "-rotate-90" : ""
+                  }`}
+                />
               </div>
             )}
           </div>
-          {isExpanded && (
-            <div className="flex-shrink-0">
-              <Arrow
-                data-testid="user-info-toggle-arrow"
-                className={`w-5 h-2 text-typography-800 transition-transform duration-300 ${
-                  showLogout ? "-rotate-90" : ""
-                }`}
-              />
-            </div>
-          )}
-        </div>
+        </AppTooltip>
         <div
           className={`border-[0.5px] flex items-center justify-center py-2  transition-all duration-200  rounded-md ${!isExpanded ? "h-10 w-10 p-1" : ""}`}
         >
@@ -161,14 +169,16 @@ const UserInfo: FC<{
               {t("user.dataPolicy")}
             </button>
             <button></button>
-            <button
-              data-testid="user-info-logout-button"
-              onClick={onLogout}
-              className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
-            >
-              <Logout className="w-4 h-4" data-testid="user-info-logout-icon" />
-              {t("user.logout")}
-            </button>
+            <AppTooltip location={TooltipLocation.LOGOUT_BUTTON}>
+              <button
+                data-testid="user-info-logout-button"
+                onClick={onLogout}
+                className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
+              >
+                <Logout className="w-4 h-4" data-testid="user-info-logout-icon" />
+                {t("user.logout")}
+              </button>
+            </AppTooltip>
           </div>
         </div>
       )}

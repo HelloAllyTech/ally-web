@@ -32,7 +32,14 @@ vi.mock("@assets", () => ({
   ShareIcon: (props: any) => <svg data-testid="share-icon" {...props} />,
 }));
 
+vi.mock("@constants", () => ({
+  TooltipLocation: {
+    START_SIMULATION_BUTTON: "start_simulation_button",
+  },
+}));
+
 vi.mock("@components", () => ({
+  AppTooltip: ({ children }: any) => <>{children}</>,
   Button: ({ children, onClick, disabled, variant, className, ...props }: any) => (
     <button
       data-testid="mock-button"

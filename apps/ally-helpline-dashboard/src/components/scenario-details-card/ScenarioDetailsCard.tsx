@@ -7,7 +7,8 @@ import { toast } from "sonner";
 
 import { ChipGroup, CustomVideo, RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { ShareIcon } from "@assets";
-import { Button, ConfirmationDialog, ButtonVariant } from "@components";
+import { AppTooltip, Button, ConfirmationDialog, ButtonVariant } from "@components";
+import { TooltipLocation } from "@constants";
 
 import { ScenarioDetailsCardProps } from "./types";
 
@@ -144,16 +145,18 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
           )}
 
           <div className="flex justify-center my-2">
-            <Button
-              onClick={handleStartSimulation}
-              variant="primary"
-              className={`!font-tertiary !text-base  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
-              disabled={isDisabled}
-              aria-label={t("learn.scenario.startAria")}
-            >
-              {isStarting && <CircularProgress size={16} className="mr-2" />}
-              {t("common.startSimulation")}
-            </Button>
+            <AppTooltip location={TooltipLocation.START_SIMULATION_BUTTON}>
+              <Button
+                onClick={handleStartSimulation}
+                variant="primary"
+                className={`!font-tertiary !text-base  !py-3 ${isDisabled && "!bg-gray-400"} w-[240px]`}
+                disabled={isDisabled}
+                aria-label={t("learn.scenario.startAria")}
+              >
+                {isStarting && <CircularProgress size={16} className="mr-2" />}
+                {t("common.startSimulation")}
+              </Button>
+            </AppTooltip>
           </div>
         </div>
       </motion.div>

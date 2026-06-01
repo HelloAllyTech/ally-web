@@ -6,8 +6,15 @@ import { useNavigate } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { Archive, MoreVertIcon, Refresh, StartSession, UploadIcon } from "@assets";
-import { Button, ButtonVariant, CustomMenu, PermissionGuard, ToggleButtonGroup } from "@components";
-import { CallType, Permissions, ROUTES } from "@constants";
+import {
+  AppTooltip,
+  Button,
+  ButtonVariant,
+  CustomMenu,
+  PermissionGuard,
+  ToggleButtonGroup,
+} from "@components";
+import { CallType, Permissions, ROUTES, TooltipLocation } from "@constants";
 import { useUser } from "@hooks";
 import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
@@ -115,36 +122,40 @@ export const Calls: FC = () => {
           <div className="flex gap-2 items-center font-tertiary" data-testid="calls-action-buttons">
             <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
               {availableChatTypes?.includes(CallType.AUDIO_UPLOAD) && (
-                <Button
-                  data-testid="calls-upload-audio-button"
-                  variant={
-                    hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
-                    availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
-                      ? ButtonVariant.SECONDARY
-                      : ButtonVariant.PRIMARY
-                  }
-                  onClick={() => setIsAudioUploadDialogOpen(true)}
-                >
-                  <UploadIcon
-                    data-testid="calls-upload-icon"
-                    className={
+                <AppTooltip location={TooltipLocation.UPLOAD_AUDIO_BUTTON}>
+                  <Button
+                    data-testid="calls-upload-audio-button"
+                    variant={
                       hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
                       availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
-                        ? "text-neutral-500 path-fill-current"
-                        : "text-white path-fill-current"
+                        ? ButtonVariant.SECONDARY
+                        : ButtonVariant.PRIMARY
                     }
-                  />
-                  {t("calls.actions.uploadAudio")}
-                </Button>
+                    onClick={() => setIsAudioUploadDialogOpen(true)}
+                  >
+                    <UploadIcon
+                      data-testid="calls-upload-icon"
+                      className={
+                        hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
+                        availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
+                          ? "text-neutral-500 path-fill-current"
+                          : "text-white path-fill-current"
+                      }
+                    />
+                    {t("calls.actions.uploadAudio")}
+                  </Button>
+                </AppTooltip>
               )}
             </PermissionGuard>
             <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
               {(availableChatTypes?.includes(CallType.MICROPHONE_CHAT) ||
                 availableChatTypes?.includes(CallType.DICTATION_MODE)) && (
-                <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
-                  <StartSession data-testid="calls-start-session-icon" />
-                  {t("calls.actions.startSession")}
-                </Button>
+                <AppTooltip location={TooltipLocation.START_SESSION_BUTTON}>
+                  <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
+                    <StartSession data-testid="calls-start-session-icon" />
+                    {t("calls.actions.startSession")}
+                  </Button>
+                </AppTooltip>
               )}
             </PermissionGuard>
           </div>

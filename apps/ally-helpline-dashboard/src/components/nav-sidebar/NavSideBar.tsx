@@ -8,8 +8,14 @@ import { useNavigate } from "react-router-dom";
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
-import { ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
-import { navBarOptions, TOOLTIP_LIGHT_PROPS, TabId, Permissions } from "@constants";
+import { AppTooltip, ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
+import {
+  navBarOptions,
+  TOOLTIP_LIGHT_PROPS,
+  TabId,
+  Permissions,
+  TooltipLocation,
+} from "@constants";
 import { useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
@@ -18,6 +24,18 @@ import LanguageSelector from "../language-selector/LanguageSelector";
 import NotificationBadge from "../notification-badge/NotificationBadge";
 
 const EXPANDED_WIDTH = 1200;
+
+// Built lazily (inside the component) so `TabId`/`TooltipLocation` are not
+// dereferenced at module load — keeps tests that mock @constants from breaking.
+const getTabTooltipLocations = (): Partial<Record<string, TooltipLocation>> => ({
+  [TabId.LEARN]: TooltipLocation.LEARN_TAB,
+  [TabId.REVIEW]: TooltipLocation.REVIEW_TAB,
+  [TabId.BADGES]: TooltipLocation.BADGES_TAB,
+  [TabId.LEADERBOARD]: TooltipLocation.COMMUNITY_TAB,
+  [TabId.CALLS]: TooltipLocation.SESSIONS_TAB,
+  [TabId.ANALYTICS]: TooltipLocation.STATISTICS_TAB,
+  [TabId.SEARCH]: TooltipLocation.SEARCH_TAB,
+});
 
 const defaultProfileUploadValues: {
   profileImageUrl: string;
@@ -158,24 +176,36 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   };
 
   const renderTabs = () => {
+    const tabTooltipLocations = getTabTooltipLocations();
     return (
       <div
         className="flex-1 flex-col gap-1 m-2 border-t border-t-[#E5E7EB] pt-3"
         data-testid="nav-sidebar-tabs"
       >
-        {permittedTabs?.map(({ id, Icon, title, path, key: translationKey }: any) => (
-          <Tab
-            key={id}
-            id={id}
-            Icon={Icon}
-            title={title}
-            tKey={translationKey}
-            activeTab={activeTab}
-            isExpanded={isExpanded}
-            onClick={() => onTabClick(path)}
-            badgeCount={id === TabId.REVIEW ? unreadData?.count : undefined}
-          />
-        ))}
+        {permittedTabs?.map(({ id, Icon, title, path, key: translationKey }: any) => {
+          const tab = (
+            <Tab
+              id={id}
+              Icon={Icon}
+              title={title}
+              tKey={translationKey}
+              activeTab={activeTab}
+              isExpanded={isExpanded}
+              onClick={() => onTabClick(path)}
+              badgeCount={id === TabId.REVIEW ? unreadData?.count : undefined}
+            />
+          );
+
+          const tooltipLocation = tabTooltipLocations[id];
+
+          return tooltipLocation ? (
+            <AppTooltip key={id} location={tooltipLocation}>
+              {tab}
+            </AppTooltip>
+          ) : (
+            <div key={id}>{tab}</div>
+          );
+        })}
       </div>
     );
   };
@@ -257,9 +287,11 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
           <hr className="w-full border-t border-gray-200" data-testid="nav-sidebar-divider" />
 
           {isExpanded && FEATURE_FLAGS_MAP.LANGUAGE_SELECTOR_FLAG && (
-            <div className="w-full" data-testid="nav-sidebar-language-selector">
-              <LanguageSelector label={t("nav.language.label")} />
-            </div>
+            <AppTooltip location={TooltipLocation.LANGUAGE_SELECTOR}>
+              <div className="w-full" data-testid="nav-sidebar-language-selector">
+                <LanguageSelector label={t("nav.language.label")} />
+              </div>
+            </AppTooltip>
           )}
 
           <UserInfo
