@@ -752,7 +752,7 @@ export const summarySections = [
   {
     icon: { icon: OngoingRisks, alt: "ongoing-risks" },
     key: SummarySectionKey.OngoingRisks,
-    title: "Ongoing Risks",
+    title: "Risk Assessment",
   },
 ];
 

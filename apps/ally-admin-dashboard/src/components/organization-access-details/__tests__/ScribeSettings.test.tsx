@@ -141,7 +141,7 @@ const {
       },
       {
         id: "2",
-        label: "Ongoing Risks",
+        label: "Risk Assessment",
         enabled: false,
         fields: [{ id: "4", label: "Risk, Self Harm Notes", visible: false }],
       },
@@ -214,13 +214,13 @@ describe("ScribeSettings", () => {
   it("renders all parent accordions", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     expect(screen.getByTestId("accordion-Intake")).toBeInTheDocument();
-    expect(screen.getByTestId("accordion-Ongoing Risks")).toBeInTheDocument();
+    expect(screen.getByTestId("accordion-Risk Assessment")).toBeInTheDocument();
   });
 
   it("renders child items within accordions", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     const intakeContent = screen.getByTestId("accordion-content-Intake");
-    const ongoingRisksContent = screen.getByTestId("accordion-content-Ongoing Risks");
+    const ongoingRisksContent = screen.getByTestId("accordion-content-Risk Assessment");
 
     // Child items are now checkboxes, not toggles
     expect(within(intakeContent).getByText("Intake Notes")).toBeInTheDocument();
@@ -245,7 +245,7 @@ describe("ScribeSettings", () => {
     const intakeToggle = screen.getByTestId("toggle-Intake");
     expect(intakeToggle).toHaveAttribute("data-enabled", "true");
 
-    const ongoingRisksToggle = screen.getByTestId("toggle-Ongoing Risks");
+    const ongoingRisksToggle = screen.getByTestId("toggle-Risk Assessment");
     expect(ongoingRisksToggle).toHaveAttribute("data-enabled", "false");
   });
 
@@ -296,8 +296,8 @@ describe("ScribeSettings", () => {
 
   it("does not enable parent when any child is enabled", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    const ongoingRisksToggle = screen.getByTestId("toggle-Ongoing Risks");
-    const ongoingRisksContent = screen.getByTestId("accordion-content-Ongoing Risks");
+    const ongoingRisksToggle = screen.getByTestId("toggle-Risk Assessment");
+    const ongoingRisksContent = screen.getByTestId("accordion-content-Risk Assessment");
     const checkboxes = within(ongoingRisksContent).getAllByRole("checkbox");
     const riskSelfHarmNotesCheckbox = checkboxes[0];
 
@@ -330,7 +330,7 @@ describe("ScribeSettings", () => {
 
   it("disables parent toggle when no children are enabled", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
-    const ongoingRisksHeader = screen.getByTestId("accordion-header-Ongoing Risks");
+    const ongoingRisksHeader = screen.getByTestId("accordion-header-Risk Assessment");
     const disabledWrapper = ongoingRisksHeader.querySelector(".cursor-not-allowed");
 
     // Should have disabled styling when no children are enabled
@@ -358,7 +358,7 @@ describe("ScribeSettings", () => {
   it("displays correct enabled/disabled text for parent items", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     // Enabled/Disabled text appears for:
-    // 1. Summary sections (Intake = Enabled, Ongoing Risks = Disabled)
+    // 1. Summary sections (Intake = Enabled, Risk Assessment = Disabled)
     // 2. SCRIBE_SETTINGS_ITEMS (5 items: all Disabled by default in mock)
     // 3. Custom fields master toggle (Enabled, since useGetCustomFieldsEnabledQuery → true)
     // 4. Custom field types (SINGLE_SELECT = Enabled, DATE = Enabled — both on by default)
@@ -387,7 +387,7 @@ describe("ScribeSettings", () => {
     render(<ScribeSettings tenantId={mockTenantId} />);
     // Intake section has 1 of 3 selected
     expect(screen.getByText("1 of 3 selected")).toBeInTheDocument();
-    // Ongoing Risks section has 0 of 1 selected
+    // Risk Assessment section has 0 of 1 selected
     expect(screen.getByText("0 of 1 selected")).toBeInTheDocument();
   });
 

@@ -54,7 +54,7 @@ const SCRIBE_SECTIONS = [
   { key: "tags", label: "Tags" },
   { key: "metrics", label: "Metrics" },
   { key: "intake", label: "Intake" },
-  { key: "ongoingRisks", label: "Ongoing Risks" },
+  { key: "ongoingRisks", label: "Risk Assessment" },
 ];
 
 interface ModalState {
