@@ -73,6 +73,13 @@ vi.mock("@api", () => ({
   useGetPromptUsageQuery: () => ({ data: { count: 0, scenarios: [] }, isFetching: false }),
 }));
 
+// Allowlist hook gates the "Duplicate as variant" / "Delete variant"
+// buttons. Default to true in tests so the existing button-visibility
+// assertions continue to pass; tests don't have a Redux provider.
+vi.mock("@hooks", () => ({
+  useCanUseSelectablePrompts: () => true,
+}));
+
 // Mock constants
 vi.mock("@constants", () => ({
   en: {

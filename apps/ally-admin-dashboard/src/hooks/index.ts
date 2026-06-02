@@ -1,3 +1,4 @@
+import { useCanUseSelectablePrompts } from "./useCanUseSelectablePrompts";
 import { useClickOutside } from "./useClickOutside";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
@@ -11,6 +12,7 @@ import { useSimulations } from "./useSimulations";
 import { useUser } from "./useUser";
 
 export {
+  useCanUseSelectablePrompts,
   useUser,
   useLiveKitRoom,
   useClickOutside,

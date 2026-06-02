@@ -12,6 +12,13 @@ const { regenerateFieldMock } = vi.hoisted(() => ({
 }));
 
 // Mock baseAPI first
+// Mock @hooks — FormField uses useIsPlaceholderUsed which transitively
+// pulls useSelector for the allowlist check. Tests don't mount a Redux
+// provider, so stub the hook to the "no_selection" state directly.
+vi.mock("@hooks", () => ({
+  useIsPlaceholderUsed: () => ({ isUsed: false, kind: "no_selection" }),
+}));
+
 vi.mock("@api/baseApi", () => ({
   baseAPI: {
     injectEndpoints: vi.fn(() => ({})),

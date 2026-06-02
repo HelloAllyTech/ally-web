@@ -19,17 +19,6 @@ export const FEATURE_FLAGS_MAP = {
     "NEXT_PUBLIC_LANGUAGE_SELECTOR_FLAG",
   ),
   TURN_INDICATOR_FLAG: getEnvVar("VITE_TURN_INDICATOR_FLAG", "NEXT_PUBLIC_TURN_INDICATOR_FLAG"),
-  // Hides the entry points to the selectable main-agent prompt variants
-  // feature: the studio's main-agent prompt picker in edit-simulation,
-  // and the "Duplicate as variant" / "Delete variant" buttons in
-  // PromptSidePanel. Everything else (Prompt Management page for editing
-  // non-variant prompts, the legacy Behaviour Instructions table, runtime
-  // resolution via default Prompt #1) stays available. Used to keep the
-  // feature dark in prod until per-user permission gating is added.
-  SELECTABLE_MAIN_AGENT_PROMPT_FLAG: getEnvVar(
-    "VITE_SELECTABLE_MAIN_AGENT_PROMPT_FLAG",
-    "NEXT_PUBLIC_SELECTABLE_MAIN_AGENT_PROMPT_FLAG",
-  ),
   MAX_ACTIVE_USERS_POPUP_FLAG: getEnvVar(
     "VITE_MAX_ACTIVE_USERS_POPUP_FLAG",
     "NEXT_PUBLIC_MAX_ACTIVE_USERS_POPUP_FLAG",

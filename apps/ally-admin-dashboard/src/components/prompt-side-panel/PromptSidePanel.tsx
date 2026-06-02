@@ -3,12 +3,12 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetPromptUsageQuery } from "@api";
 import { Refresh, DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en, MAIN_AGENT_PROMPT_VARIABLE_CATALOG } from "@constants";
+import { useCanUseSelectablePrompts } from "@hooks";
 import { Prompt } from "@types";
 
 import {
@@ -156,6 +156,11 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   onDuplicate,
   onDelete,
 }) => {
+  // Variant-creation actions live behind an email allowlist while the
+  // feature is being validated by select testers. The rest of Prompt
+  // Management (editing existing prompts, restoring defaults, etc.)
+  // remains accessible to everyone.
+  const canUseSelectablePrompts = useCanUseSelectablePrompts();
   const [formData, setFormData] = useState<Partial<Prompt>>({
     name: "",
     description: "",
@@ -576,14 +581,13 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                 Save
               </Button>
               {/*
-                Variant-creation actions live behind the same feature
-                flag as the studio's main-agent picker. With the flag
-                off, admins can still edit existing prompts (Prompt #1,
-                branching, evaluator, blocks, etc.) but can't create or
-                remove `_copy_*` variant rows — keeping the feature dark
-                without locking down the rest of Prompt Management.
+                Variant-creation actions are restricted to the
+                selectable-prompts allowlist while the feature is in
+                testing. Everyone else can still edit existing prompts
+                (Prompt #1, branching, evaluator, blocks, etc.) but
+                can't create or remove `_copy_*` variant rows.
               */}
-              {FEATURE_FLAGS_MAP.SELECTABLE_MAIN_AGENT_PROMPT_FLAG &&
+              {canUseSelectablePrompts &&
                 onDuplicate &&
                 selectedPrompt?.id &&
                 selectedPrompt?.promptType && (
@@ -596,29 +600,22 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                     {isDuplicating ? "Duplicating…" : "Duplicate as variant"}
                   </Button>
                 )}
-              {FEATURE_FLAGS_MAP.SELECTABLE_MAIN_AGENT_PROMPT_FLAG &&
-                onDelete &&
-                selectedPrompt?.id &&
-                isDuplicate && (
-                  <Button
-                    variant={ButtonVariant.SECONDARY}
-                    onClick={handleDeleteClick}
-                    disabled={isDeleting || isUsageLoading || isInUse}
-                    title={
-                      isUsageLoading
-                        ? "Checking usage…"
-                        : isInUse
-                          ? `Used by ${inUseCount} simulation${inUseCount === 1 ? "" : "s"} — switch ${inUseCount === 1 ? "it" : "them"} to another prompt before deleting`
-                          : "Permanently delete this duplicated variant"
-                    }
-                  >
-                    {isDeleting
-                      ? "Deleting…"
+              {canUseSelectablePrompts && onDelete && selectedPrompt?.id && isDuplicate && (
+                <Button
+                  variant={ButtonVariant.SECONDARY}
+                  onClick={handleDeleteClick}
+                  disabled={isDeleting || isUsageLoading || isInUse}
+                  title={
+                    isUsageLoading
+                      ? "Checking usage…"
                       : isInUse
-                        ? `In use (${inUseCount})`
-                        : "Delete variant"}
-                  </Button>
-                )}
+                        ? `Used by ${inUseCount} simulation${inUseCount === 1 ? "" : "s"} — switch ${inUseCount === 1 ? "it" : "them"} to another prompt before deleting`
+                        : "Permanently delete this duplicated variant"
+                  }
+                >
+                  {isDeleting ? "Deleting…" : isInUse ? `In use (${inUseCount})` : "Delete variant"}
+                </Button>
+              )}
             </div>
           </div>
         </div>
