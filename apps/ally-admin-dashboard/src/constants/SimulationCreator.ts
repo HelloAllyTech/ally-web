@@ -1,3 +1,4 @@
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { cellTypes } from "@components";
 import { en, ExperienceMode } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
@@ -307,13 +308,22 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
     label: "Basic Settings",
     fields: [
-      {
-        id: "selectedMainPromptCode",
-        label: "Main agent prompt",
-        type: FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER,
-        fullWidth: true,
-        isMandatory: false,
-      },
+      // Main-agent variant picker is gated behind a feature flag while
+      // the feature is dark in production. When off, no scenario can
+      // assign a variant — `selectedMainPromptCode` stays unset and the
+      // runtime resolves to the default Prompt #1. Per-user/permission
+      // gating will replace this env flag in a follow-up.
+      ...(FEATURE_FLAGS_MAP.SELECTABLE_MAIN_AGENT_PROMPT_FLAG
+        ? [
+            {
+              id: "selectedMainPromptCode",
+              label: "Main agent prompt",
+              type: FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER,
+              fullWidth: true,
+              isMandatory: false,
+            },
+          ]
+        : []),
       {
         id: "prompt",
         label: "Role instruction",

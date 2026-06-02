@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetPromptUsageQuery } from "@api";
 import { Refresh, DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
@@ -574,32 +575,50 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
               >
                 Save
               </Button>
-              {onDuplicate && selectedPrompt?.id && selectedPrompt?.promptType && (
-                <Button
-                  variant={ButtonVariant.SECONDARY}
-                  onClick={handleDuplicate}
-                  disabled={isDuplicating}
-                  title="Create a new variant from this prompt"
-                >
-                  {isDuplicating ? "Duplicating…" : "Duplicate as variant"}
-                </Button>
-              )}
-              {onDelete && selectedPrompt?.id && isDuplicate && (
-                <Button
-                  variant={ButtonVariant.SECONDARY}
-                  onClick={handleDeleteClick}
-                  disabled={isDeleting || isUsageLoading || isInUse}
-                  title={
-                    isUsageLoading
-                      ? "Checking usage…"
+              {/*
+                Variant-creation actions live behind the same feature
+                flag as the studio's main-agent picker. With the flag
+                off, admins can still edit existing prompts (Prompt #1,
+                branching, evaluator, blocks, etc.) but can't create or
+                remove `_copy_*` variant rows — keeping the feature dark
+                without locking down the rest of Prompt Management.
+              */}
+              {FEATURE_FLAGS_MAP.SELECTABLE_MAIN_AGENT_PROMPT_FLAG &&
+                onDuplicate &&
+                selectedPrompt?.id &&
+                selectedPrompt?.promptType && (
+                  <Button
+                    variant={ButtonVariant.SECONDARY}
+                    onClick={handleDuplicate}
+                    disabled={isDuplicating}
+                    title="Create a new variant from this prompt"
+                  >
+                    {isDuplicating ? "Duplicating…" : "Duplicate as variant"}
+                  </Button>
+                )}
+              {FEATURE_FLAGS_MAP.SELECTABLE_MAIN_AGENT_PROMPT_FLAG &&
+                onDelete &&
+                selectedPrompt?.id &&
+                isDuplicate && (
+                  <Button
+                    variant={ButtonVariant.SECONDARY}
+                    onClick={handleDeleteClick}
+                    disabled={isDeleting || isUsageLoading || isInUse}
+                    title={
+                      isUsageLoading
+                        ? "Checking usage…"
+                        : isInUse
+                          ? `Used by ${inUseCount} simulation${inUseCount === 1 ? "" : "s"} — switch ${inUseCount === 1 ? "it" : "them"} to another prompt before deleting`
+                          : "Permanently delete this duplicated variant"
+                    }
+                  >
+                    {isDeleting
+                      ? "Deleting…"
                       : isInUse
-                        ? `Used by ${inUseCount} simulation${inUseCount === 1 ? "" : "s"} — switch ${inUseCount === 1 ? "it" : "them"} to another prompt before deleting`
-                        : "Permanently delete this duplicated variant"
-                  }
-                >
-                  {isDeleting ? "Deleting…" : isInUse ? `In use (${inUseCount})` : "Delete variant"}
-                </Button>
-              )}
+                        ? `In use (${inUseCount})`
+                        : "Delete variant"}
+                  </Button>
+                )}
             </div>
           </div>
         </div>

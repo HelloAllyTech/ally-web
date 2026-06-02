@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared/featureFlag";
 import { useGetPromptsByTypeQuery } from "@api";
 
 import { getAvailableVariableName } from "../utils/availableVariables";
@@ -50,16 +51,27 @@ export function useIsPlaceholderUsed(
   selectedPromptCode: string | undefined,
   placeholder: string | undefined,
 ): UseIsPlaceholderUsedResult {
+  // When the selectable-variants feature flag is off, the studio has no
+  // picker and the runtime resolves to the default Prompt #1 — so the
+  // gate should ignore any stored `selectedMainPromptCode` value on the
+  // scenario. Treating it as "no_selection" routes every body-driven
+  // gate into its legacy fallback (StatesEditor self-hides, per-state
+  // coaching columns stay visible, FormField shows all fields). This is
+  // non-destructive: the DB row keeps its variant code intact, so
+  // flipping the flag back on later restores the variant view.
+  const flagOff = !FEATURE_FLAGS_MAP.SELECTABLE_MAIN_AGENT_PROMPT_FLAG;
+
   // Skip the network call when nothing on screen needs it. The query is
   // shared across all useIsPlaceholderUsed call sites via RTK Query's
   // automatic deduplication, so multiple gated fields don't multiply the
   // request count.
   const { data: prompts } = useGetPromptsByTypeQuery("main_agent", {
-    skip: !placeholder,
+    skip: !placeholder || flagOff,
   });
 
   return useMemo<UseIsPlaceholderUsedResult>(() => {
     if (!placeholder) return { isUsed: false, kind: "no_selection" };
+    if (flagOff) return { isUsed: false, kind: "no_selection" };
     if (!selectedPromptCode) return { isUsed: false, kind: "no_selection" };
     if (!prompts) return { isUsed: false, kind: "no_selection" };
     const match = prompts.find(p => p.promptCode === selectedPromptCode);
@@ -68,5 +80,5 @@ export function useIsPlaceholderUsed(
     }
     const names = new Set((match.availableVariables ?? []).map(getAvailableVariableName));
     return { isUsed: names.has(placeholder), kind: "loaded" };
-  }, [placeholder, selectedPromptCode, prompts]);
+  }, [placeholder, selectedPromptCode, prompts, flagOff]);
 }

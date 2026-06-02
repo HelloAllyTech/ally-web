@@ -53,19 +53,38 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     formMethods.watch(FORM_FIELD_IDS.STATE_NAMES) ?? [];
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
-  // Body-driven gate: drop the per-state instruction columns (and the
-  // state-names header row) when the selected variant uses the new
-  // score-bounded states model (`{state_x_guidelines}`). For Prompt #2
-  // and any future variant that gets state guidance from the new
-  // StatesEditor, the legacy fixed -1/1/2/3 state cells are dead
-  // weight — the rules-only view (category + behaviours) is all the
-  // author needs. The rules still score the counselor unchanged.
+  // Body-driven gate: the legacy per-state instruction columns and the
+  // state-names header row only matter when the variant body actually
+  // consumes `{behavior_instructions_json}` AND doesn't use the new
+  // score-bounded states model (`{state_x_guidelines}`). That's the
+  // Prompt #1 shape. For anything else — Prompt #2 (states), Prompt #3
+  // (neither placeholder), or any lean variant — the per-state cells
+  // are dead weight: their values would never reach the agent. Hide
+  // them and the table collapses to a pure scoring rubric (category +
+  // behaviours), which still drives the score-keeper via the
+  // SHOULD_DO/SHOULD_NOT_DO → ±10 mapping in ally-be regardless of
+  // what the prompt body references.
   const selectedMainPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
+  const behaviorJsonLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    "behavior_instructions_json",
+  );
   const { isUsed: usesStateXGuidelines } = useIsPlaceholderUsed(
     selectedMainPromptCode,
     "state_x_guidelines",
   );
-  const showLegacyStateColumns = !usesStateXGuidelines;
+  // When no variant is selected (e.g. the variant picker is hidden by the
+  // feature flag, or the scenario was authored before variants existed),
+  // the runtime resolves to the default Prompt #1 — which has
+  // {behavior_instructions_json} and no {state_x_guidelines}. The UI gate
+  // mirrors that fallback so the per-state coaching columns stay visible
+  // for legacy scenarios instead of disappearing into a "no_selection"
+  // edge case. For loaded variants the gate evaluates against the
+  // variant's actual reconciled body.
+  const showLegacyStateColumns =
+    behaviorJsonLookup.kind === "no_selection"
+      ? true
+      : behaviorJsonLookup.isUsed && !usesStateXGuidelines;
 
   useEffect(() => {
     if (formData.length === 0) {
