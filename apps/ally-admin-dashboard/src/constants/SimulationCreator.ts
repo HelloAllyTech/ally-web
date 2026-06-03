@@ -236,6 +236,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Pick Competency",
         type: FORM_FIELD_TYPES.COMPETENCY,
         options: [],
+        // Competency stays mandatory and always visible. It's not just
+        // a prompt placeholder — it's a first-class scenario attribute
+        // (identifies the counselor skill being trained, used by
+        // analytics / organization / filtering). The `promptVariable`
+        // declaration below is intentionally kept so studio authors
+        // see `{competency}` in the chip list when editing a variant,
+        // but there's no `hideWhenUnused` because the field is
+        // structural metadata, not a prompt-only feeder field.
         isMandatory: true,
         promptVariable: "competency",
       },
@@ -265,6 +273,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
         isDashedLineAbove: true,
         promptVariable: "character_profile_text",
+        hideWhenUnused: true,
       },
       {
         id: "description",
@@ -321,6 +330,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
         isMandatory: false,
         promptVariable: "role_instructions",
+        hideWhenUnused: true,
         accordion: true,
       },
       {
@@ -369,6 +379,12 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Knowledge Sources",
         type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
         fullWidth: true,
+        // Knowledge sources feed RAG retrieval, which substitutes
+        // into `{retrieved_context}`. Variants that don't reference
+        // that placeholder won't surface retrieved knowledge at
+        // render time, so the field is useless.
+        promptVariable: "retrieved_context",
+        hideWhenUnused: true,
       },
       {
         id: "languageVoices",
@@ -391,6 +407,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
         isMandatory: false,
         fullWidth: true,
+        // No FormField-level hideWhenUnused here — the inner
+        // LinguisticStyleSamples component renders TWO independent
+        // sub-panels (samples + filler words) and each self-gates on
+        // its own placeholder (`{samples}` and `{allowed_fillers}`).
+        // A single parent gate would couple them and force authors to
+        // keep / drop both together, which doesn't match how variants
+        // actually opt in to these features.
       },
       {
         id: "autoTerminationStatus",

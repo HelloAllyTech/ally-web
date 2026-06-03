@@ -496,41 +496,55 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
               </div>
             </Field>
 
-            {availableVariables.length > 0 && (
-              <Field label="Used in this prompt" multiline>
-                <div className="flex flex-wrap gap-2">
-                  {availableVariables.map(v => (
-                    // Chip shows the exact `{name}` an author types into the
-                    // prompt text — labels would invite typos like `{Name}`.
-                    <span
-                      key={v.name}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm bg-neutral-100 text-typography-700 font-mono"
-                    >
-                      <span>{`{${v.name}}`}</span>
-                      {v.required && <span className="text-destructive-500">*</span>}
-                    </span>
-                  ))}
-                </div>
-              </Field>
-            )}
-
-            {unusedVariables.length > 0 && (
-              <Field label="Available (not used)" multiline>
+            {(availableVariables.length > 0 || unusedVariables.length > 0) && (
+              <Field label="Available variables" multiline>
                 {/*
-                  Flat chip cluster — no category grouping. Each chip shows
-                  the exact `{name}` an author types into the prompt text;
-                  labels were dropped so there's no risk of typing `{Name}`
-                  (uppercase) and ending up with an unsubstituted placeholder.
+                  Single chip cluster covering BOTH "used in this prompt"
+                  and "available but not used" variables. Used chips
+                  render with a solid neutral background; unused chips
+                  are muted with a dashed border so the author can see
+                  at a glance which placeholders are already in their
+                  template vs which they could still add. The chip text
+                  is always the exact `{name}` an author types into the
+                  prompt body — labels would invite typos like `{Name}`.
+
+                  Sorted alphabetically across the merged set so the
+                  list stays stable as the author types new placeholders
+                  (used) or removes them (back to unused).
                 */}
-                <div className="w-full flex flex-wrap gap-2">
-                  {unusedVariables.map(entry => (
-                    <span
-                      key={entry.name}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm bg-neutral-50 border border-dashed border-border-light text-typography-600 font-mono"
-                    >
-                      <span>{`{${entry.name}}`}</span>
-                    </span>
-                  ))}
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    ...availableVariables.map(v => ({
+                      name: v.name,
+                      required: Boolean(v.required),
+                      isUsed: true,
+                    })),
+                    // The catalog used for the "unused" set doesn't carry a
+                    // `required` flag — required-ness only flows through the
+                    // server-side metadata for placeholders that have been
+                    // typed into the prompt. Render unused chips without the
+                    // asterisk; matches the original "Available (not used)"
+                    // section's behavior.
+                    ...unusedVariables.map(entry => ({
+                      name: entry.name,
+                      required: false,
+                      isUsed: false,
+                    })),
+                  ]
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(chip => (
+                      <span
+                        key={chip.name}
+                        className={
+                          chip.isUsed
+                            ? "inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm bg-neutral-100 text-typography-700 font-mono"
+                            : "inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm bg-neutral-50 border border-dashed border-border-light text-typography-500 font-mono"
+                        }
+                      >
+                        <span>{`{${chip.name}}`}</span>
+                        {chip.required && <span className="text-destructive-500">*</span>}
+                      </span>
+                    ))}
                 </div>
               </Field>
             )}

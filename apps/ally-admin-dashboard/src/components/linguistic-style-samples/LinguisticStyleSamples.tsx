@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 
 import { DEFAULT_AUTOFILL_MODEL } from "@constants";
+import { useIsPlaceholderUsed } from "@hooks";
 
 import { AllowedFillerWordsPanel } from "./AllowedFillerWordsPanel";
 import { LinguisticStyleSamplesPanel } from "./LinguisticStyleSamplesPanel";
@@ -20,21 +21,45 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
 }) => {
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
 
+  // Body-driven gates per sub-panel. Each renders iff its own placeholder
+  // is referenced by the picked main-agent variant — authors who remove
+  // only the filler-words line from the prompt can keep using samples,
+  // and vice versa. Defaults match useIsPlaceholderUsed's behavior:
+  // unloaded / no-selection → kind != "loaded" → treat as USED so the
+  // panels render during initial load (no flicker). Strict-hide only
+  // when we've definitively loaded a variant that doesn't reference
+  // the placeholder.
+  const selectedMainPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
+  const samplesLookup = useIsPlaceholderUsed(selectedMainPromptCode, "samples");
+  const fillersLookup = useIsPlaceholderUsed(selectedMainPromptCode, "allowed_fillers");
+  const showSamplesPanel = !(samplesLookup.kind === "loaded" && !samplesLookup.isUsed);
+  const showFillersPanel = !(fillersLookup.kind === "loaded" && !fillersLookup.isUsed);
+
+  // Both sub-panels hidden → the whole field is a no-op; collapse the
+  // outer wrapper so the form doesn't leave an empty section header.
+  if (!showSamplesPanel && !showFillersPanel) {
+    return null;
+  }
+
   return (
     <div className="w-full flex flex-col gap-8" data-testid="linguistic-style-samples">
-      <LinguisticStyleSamplesPanel
-        id={id}
-        label={label}
-        formMethods={formMethods}
-        isMandatory={isMandatory}
-        selectedModel={selectedModel}
-        onSelectedModelChange={setSelectedModel}
-      />
-      <AllowedFillerWordsPanel
-        formMethods={formMethods}
-        selectedModel={selectedModel}
-        onSelectedModelChange={setSelectedModel}
-      />
+      {showSamplesPanel && (
+        <LinguisticStyleSamplesPanel
+          id={id}
+          label={label}
+          formMethods={formMethods}
+          isMandatory={isMandatory}
+          selectedModel={selectedModel}
+          onSelectedModelChange={setSelectedModel}
+        />
+      )}
+      {showFillersPanel && (
+        <AllowedFillerWordsPanel
+          formMethods={formMethods}
+          selectedModel={selectedModel}
+          onSelectedModelChange={setSelectedModel}
+        />
+      )}
     </div>
   );
 };

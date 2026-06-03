@@ -11,6 +11,7 @@ import {
   useGenerateReportMutation,
   useCancelReportGenerationMutation,
   useLazyGetReportTranscriptQuery,
+  useGetPromptsByTypeQuery,
 } from "@api";
 import { ArrowDown, Plus } from "@assets";
 import { PromptConfiguration, ReportContent, TabButton, Accordion } from "@components";
@@ -41,6 +42,15 @@ export interface ReportSectionProps {
   areAllMandatoryFieldsFilled?: boolean;
   onPrimaryTabChange?: (tab: ReportPrimaryTab) => void;
   hasUnsavedChanges?: boolean;
+  /**
+   * promptCode of the main-agent variant currently selected for this
+   * scenario (or undefined when the default is in use). Surfaced under
+   * the Test Configuration as a small read-only line so the author can
+   * see which "skill" the report will run on. Flows through to
+   * PromptConfiguration as currentMainPromptName after we resolve the
+   * code → display name via the prompts API.
+   */
+  selectedMainPromptCode?: string;
 }
 
 export interface ReportSectionHandle {
@@ -147,10 +157,30 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       areAllMandatoryFieldsFilled = false,
       hasUnsavedChanges = false,
       onPrimaryTabChange,
+      selectedMainPromptCode,
     },
     ref,
   ) => {
     const dispatch = useDispatch();
+
+    // Resolve the picked main-agent prompt code to its human-readable
+    // name. The list is small (one row per variant) and already cached
+    // RTK-side by the studio's MainAgentPromptPicker, so this hook
+    // typically hits the cache and adds zero extra requests in the
+    // common case. When the scenario is on the default variant
+    // (selectedMainPromptCode is undefined/empty) we render
+    // "Default main agent prompt" as the friendly fallback so the
+    // author still knows what's in effect.
+    const { data: mainAgentPrompts } = useGetPromptsByTypeQuery("main_agent");
+    const currentMainPromptName = useMemo(() => {
+      if (!selectedMainPromptCode) return "Default main agent prompt";
+      const match = (mainAgentPrompts ?? []).find(p => p.promptCode === selectedMainPromptCode);
+      // Fall back to the raw code if the prompt list hasn't loaded yet
+      // or the picked variant has been removed since selection — better
+      // than showing nothing.
+      return match?.name ?? selectedMainPromptCode;
+    }, [selectedMainPromptCode, mainAgentPrompts]);
+
     const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
     const [selectedLanguage, setSelectedLanguage] = useState<{ value: string; label: string }>(
       DEFAULT_LANGUAGE,
@@ -596,6 +626,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                     showReportGenerationLoader || !areAllMandatoryFieldsFilled || hasUnsavedChanges
                   }
                   buttonTooltip={getButtonTooltipText()}
+                  currentMainPromptName={currentMainPromptName}
                 />
               </div>
             </details>
@@ -672,6 +703,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
               hasUnsavedChanges
             }
             buttonTooltip={getButtonTooltipText()}
+            currentMainPromptName={currentMainPromptName}
           />
           {showReportGenerationLoader && renderGeneratingPlaceholder()}
         </div>

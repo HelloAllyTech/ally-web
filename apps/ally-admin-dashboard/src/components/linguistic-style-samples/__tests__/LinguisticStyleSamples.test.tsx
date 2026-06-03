@@ -53,6 +53,15 @@ vi.mock("@api", () => ({
   useRegenerateFieldMutation: () => [mockRegenerateField],
 }));
 
+// LinguisticStyleSamples now self-gates each sub-panel via
+// useIsPlaceholderUsed. Stub it to "no_selection" so both panels
+// render in the default test path (existing assertions assume both
+// are present). Body-driven hiding is exercised in FormField's own
+// dedicated `hideWhenUnused gating` tests.
+vi.mock("@hooks", () => ({
+  useIsPlaceholderUsed: () => ({ isUsed: false, kind: "no_selection" }),
+}));
+
 vi.mock("@components/autofill-model-select", () => ({
   AutofillModelSelect: ({ value, onChange, disabled }: any) => (
     <select

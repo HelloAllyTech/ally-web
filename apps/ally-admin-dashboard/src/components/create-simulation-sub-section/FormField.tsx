@@ -78,7 +78,16 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   // (e.g. behavior_instructions_json, custom_fields_text). Bail before
   // rendering so the editor entirely disappears for variants that don't
   // reference the placeholder.
-  if (isUnusedByPrompt && hideWhenUnused) {
+  //
+  // Hard guard: a field marked `isMandatory: true` is NEVER hidden even
+  // if it also carries `hideWhenUnused: true`. Mandatory means the
+  // scenario can't save / activate without it, so silently removing
+  // the input would corner the author into an un-fillable form. If a
+  // field config asks for both, mandatory wins. The expectation is
+  // that authors only set `hideWhenUnused` on optional fields; this
+  // guard turns the inconsistency into a benign no-op instead of a
+  // broken UX.
+  if (isUnusedByPrompt && hideWhenUnused && !isMandatory) {
     return null;
   }
 

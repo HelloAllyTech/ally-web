@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
@@ -13,20 +13,14 @@ import {
 } from "@constants";
 import { useIsPlaceholderUsed } from "@hooks";
 
-/**
- * Per-simulation state entry as stored on `Scenarios.metadata.states`.
- * Mirrors the ally-be `SimulationState` interface. Re-declared here to
- * avoid a hard cross-package type dependency.
- */
-export interface SimulationStateFormValue {
-  id: string;
-  name: string;
-  guidelines: string;
-  isStarting: boolean;
-  scoreLower: number | null;
-  scoreUpper: number | null;
-  ragEnabled: boolean;
-}
+import { cascadeBoundEdit, MIN_STATE_GAP } from "./cascadeBoundEdit";
+import { seedNextState } from "./stateSeeds";
+import { SimulationStateFormValue } from "./types";
+
+// Re-export the form-value type from this barrel for legacy importers
+// (the editor used to own it). Anything new should import from
+// `./types` directly.
+export type { SimulationStateFormValue };
 
 interface StatesEditorProps {
   /** RHF id (e.g. "states"). */
@@ -38,27 +32,10 @@ interface StatesEditorProps {
   isMandatory?: boolean;
 }
 
-const MIN_STATE_GAP = 50;
-
 const generateId = (): string =>
   `state_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e4)
     .toString(36)
     .padStart(3, "0")}`;
-
-// New state seed. Bounds default to a sensible [0, 50) window so the
-// user has placeholder values they can edit instead of starting with
-// missing-number validation errors. The auto-add path in addState
-// recomputes ranges via distributeStateRanges so adding a second state
-// re-distributes both states into [0,50) / [50,100) automatically.
-const blankState = (isFirst: boolean): SimulationStateFormValue => ({
-  id: generateId(),
-  name: "",
-  guidelines: "",
-  isStarting: isFirst,
-  scoreLower: 0,
-  scoreUpper: MIN_STATE_GAP,
-  ragEnabled: true,
-});
 
 /**
  * Compute deterministic score ranges for N states that satisfy the
@@ -91,79 +68,6 @@ const distributeStateRanges = (
     });
   }
   return ranges;
-};
-
-/**
- * Client-side mirror of `validateSimulationStates` from ally-be. Returns
- * a list of human-readable errors per state plus a list of cross-cutting
- * errors. Used to surface inline guidance as the user edits — server-side
- * validation is the source of truth on save.
- */
-const computeValidation = (
-  states: SimulationStateFormValue[],
-): { perState: Record<string, string[]>; global: string[] } => {
-  const perState: Record<string, string[]> = {};
-  const global: string[] = [];
-
-  if (states.length === 0) {
-    return { perState, global };
-  }
-
-  for (const state of states) {
-    perState[state.id] = [];
-  }
-
-  const startingCount = states.filter(s => s.isStarting).length;
-  if (startingCount === 0) {
-    global.push("Exactly one state must be marked as the starting state.");
-  } else if (startingCount > 1) {
-    global.push(`Only one state may be the starting state; found ${startingCount}.`);
-  }
-
-  const sorted = [...states].sort((a, b) => {
-    const al = a.scoreLower ?? 0;
-    const bl = b.scoreLower ?? 0;
-    return al - bl;
-  });
-
-  // Strict-bounds rule: every state must have finite numeric bounds.
-  // Out-of-range scores at runtime clamp to the nearest end-state, so
-  // total coverage is preserved without the legacy "open" placeholder.
-  for (const state of sorted) {
-    if (typeof state.scoreLower !== "number") {
-      perState[state.id].push("Min score is required (finite number).");
-    }
-    if (typeof state.scoreUpper !== "number") {
-      perState[state.id].push("Max score is required (finite number).");
-    }
-  }
-
-  for (let i = 0; i < sorted.length; i++) {
-    const state = sorted[i];
-    const lower = state.scoreLower;
-    const upper = state.scoreUpper;
-
-    if (typeof lower === "number" && typeof upper === "number" && upper - lower < MIN_STATE_GAP) {
-      perState[state.id].push(
-        `Score range must span at least ${MIN_STATE_GAP} (currently ${upper - lower}).`,
-      );
-    }
-
-    if (i < sorted.length - 1) {
-      const next = sorted[i + 1];
-      if (
-        typeof upper === "number" &&
-        typeof next.scoreLower === "number" &&
-        upper !== next.scoreLower
-      ) {
-        perState[state.id].push(
-          `Upper bound (${upper}) must equal next state's lower bound (${next.scoreLower}).`,
-        );
-      }
-    }
-  }
-
-  return { perState, global };
 };
 
 /**
@@ -217,13 +121,33 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
   );
 
   const addState = useCallback(() => {
-    const next: SimulationStateFormValue[] = [...states, blankState(states.length === 0)];
+    // New state's bounds continue from where the last one left off
+    // (last.scoreUpper → new.scoreLower). seedNextState handles the
+    // empty-list case and the "user mid-typing a bound" edge cases.
+    const next: SimulationStateFormValue[] = [...states, seedNextState(states)];
     writeBack(next);
   }, [states, writeBack]);
 
   const updateState = useCallback(
     (stateId: string, patch: Partial<SimulationStateFormValue>) => {
       writeBack(states.map(s => (s.id === stateId ? { ...s, ...patch } : s)));
+    },
+    [states, writeBack],
+  );
+
+  /**
+   * Editing a score bound takes a different path than `updateState`
+   * because changes to scoreLower / scoreUpper ripple through neighbouring
+   * cards (contiguity + min-gap invariants). Routed through
+   * `cascadeBoundEdit` so a single keystroke on one field reflows all
+   * affected fields in one writeBack — keeps the form clean of red
+   * validation flashes while the user is mid-edit.
+   */
+  const updateStateBound = useCallback(
+    (stateId: string, field: "scoreLower" | "scoreUpper", value: number | null) => {
+      const index = states.findIndex(s => s.id === stateId);
+      if (index === -1) return;
+      writeBack(cascadeBoundEdit(states, index, field, value));
     },
     [states, writeBack],
   );
@@ -242,8 +166,6 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
     [states, writeBack],
   );
 
-  const validation = useMemo(() => computeValidation(states), [states]);
-
   // Auto-seed a single blank state ONCE per editor-mount when the editor
   // becomes visible with no states. Subsequent "Remove" actions that drop
   // the count to zero must NOT re-seed — otherwise the user can never
@@ -259,7 +181,7 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
     }
     if (states.length === 0 && !hasAutoSeededRef.current) {
       hasAutoSeededRef.current = true;
-      const seed = [blankState(true)];
+      const seed = [seedNextState([])];
       setStates(seed);
       formMethods.setValue(id, seed, { shouldDirty: false });
     }
@@ -496,46 +418,23 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
             )}{" "}
             {generateLabel}
           </button>
-          <button
-            type="button"
-            onClick={addState}
-            className="text-sm text-primary hover:text-primary-700"
-          >
-            + Add state
-          </button>
         </div>
       </div>
 
-      {validation.global.length > 0 && (
-        <div className="rounded border border-destructive-200 bg-destructive-50 px-3 py-2 text-sm text-destructive-700">
-          {validation.global.map(msg => (
-            <div key={msg}>{msg}</div>
-          ))}
-        </div>
-      )}
-
-      {/*
-        Per-state RAG help. Without this hint admins see a "RAG enabled"
-        checkbox on each state card with no context for what it controls.
-        Toggling it off is the only documented way to make {retrieved_context}
-        substitute empty for a turn — surface that here so the cause is
-        traceable from the UI, not buried in the runtime resolver.
-      */}
-      <div className="rounded border border-border-light bg-neutral-50 px-3 py-2 text-xs leading-5 text-typography-600">
-        <span className="font-medium text-typography-800">RAG per state.</span> When a state has RAG
-        disabled, the runtime substitutes <code>{`{retrieved_context}`}</code> as empty for any turn
-        while that state is active — useful for grounded-only or intentionally minimal phases. Other
-        states keep retrieving normally.
-      </div>
-
-      {states.map(state => {
-        const errors = validation.perState[state.id] ?? [];
+      {states.map((state, index) => {
+        const isFirst = index === 0;
         return (
           <div
             key={state.id}
             className="rounded border border-border-light bg-white p-3 flex flex-col gap-2"
           >
-            <div className="flex items-center justify-between gap-3">
+            {/*
+              Single header row packs Starting / RAG / Min / Max / Remove
+              together. The cascade hook (updateStateBound) keeps Min and
+              Max in lock-step with neighbouring cards, so no helper text
+              or inline validation is needed below the inputs.
+            */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               <label className="flex items-center gap-2 text-sm text-typography-700">
                 <input
                   type="radio"
@@ -546,14 +445,7 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 />
                 Starting state
               </label>
-              <label
-                className="flex items-center gap-2 text-sm text-typography-700"
-                title={
-                  state.ragEnabled
-                    ? "Knowledge-base retrieval runs while this state is active. {retrieved_context} substitutes normally."
-                    : "Retrieval is skipped while this state is active. {retrieved_context} substitutes empty — useful for grounded-only or minimal phases."
-                }
-              >
+              <label className="flex items-center gap-2 text-sm text-typography-700">
                 <input
                   type="checkbox"
                   checked={state.ragEnabled}
@@ -561,14 +453,62 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                   className="h-4 w-4 cursor-pointer"
                 />
                 RAG enabled
-                {!state.ragEnabled && (
-                  <span className="text-xs text-typography-500">(context blanked)</span>
-                )}
               </label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-typography-700">Min</span>
+                <input
+                  type="number"
+                  // Display layer: each non-first state shows Min as
+                  // `scoreLower + 1` so the boundary between adjacent
+                  // states reads naturally (state 0 Max=50, state 1
+                  // Min=51). Storage stays contiguous (state[i].upper
+                  // == state[i+1].lower) so the ai-learn upper-exclusive
+                  // resolver continues to work unchanged — only the
+                  // displayed number shifts by 1 for non-first states.
+                  value={
+                    state.scoreLower == null
+                      ? ""
+                      : isFirst
+                        ? state.scoreLower
+                        : state.scoreLower + 1
+                  }
+                  // First state's lower is structurally pinned at 0 (see
+                  // cascadeBoundEdit) — disable the input so the lock is
+                  // visible, not just enforced silently.
+                  readOnly={isFirst}
+                  disabled={isFirst}
+                  placeholder="e.g. 0"
+                  onChange={event => {
+                    const raw = event.target.value;
+                    // Reverse the +1 display shift before storing for
+                    // non-first states. First-state edits are ignored
+                    // upstream (cascadeBoundEdit guards on index===0)
+                    // so the conversion only matters for index > 0.
+                    const parsed = raw === "" ? null : isFirst ? Number(raw) : Number(raw) - 1;
+                    updateStateBound(state.id, "scoreLower", parsed);
+                  }}
+                  className={`rounded border border-border-light px-2 py-1 text-sm w-20 ${
+                    isFirst ? "bg-neutral-100 text-typography-500 cursor-not-allowed" : ""
+                  }`}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-typography-700">Max</span>
+                <input
+                  type="number"
+                  value={state.scoreUpper ?? ""}
+                  placeholder="e.g. 50"
+                  onChange={event => {
+                    const raw = event.target.value;
+                    updateStateBound(state.id, "scoreUpper", raw === "" ? null : Number(raw));
+                  }}
+                  className="rounded border border-border-light px-2 py-1 text-sm w-20"
+                />
+              </div>
               <button
                 type="button"
                 onClick={() => removeState(state.id)}
-                className="text-sm text-destructive-500 hover:text-destructive-700"
+                className="text-sm text-typography-500 hover:text-typography-700"
               >
                 Remove
               </button>
@@ -582,64 +522,28 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
               className="rounded border border-border-light px-2 py-1 text-sm"
             />
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-typography-700">Min score</span>
-                <input
-                  type="number"
-                  value={state.scoreLower ?? ""}
-                  placeholder="e.g. 0"
-                  onChange={event => {
-                    // Empty input keeps the state's bound as null briefly so
-                    // the field can be cleared and retyped; validation flags
-                    // the missing number until a digit lands. Once typed,
-                    // bound is stored as a finite number.
-                    const raw = event.target.value;
-                    updateState(state.id, {
-                      scoreLower: raw === "" ? null : Number(raw),
-                    });
-                  }}
-                  className="rounded border border-border-light px-2 py-1 text-sm w-24"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-typography-700">Max score</span>
-                <input
-                  type="number"
-                  value={state.scoreUpper ?? ""}
-                  placeholder="e.g. 50"
-                  onChange={event => {
-                    const raw = event.target.value;
-                    updateState(state.id, {
-                      scoreUpper: raw === "" ? null : Number(raw),
-                    });
-                  }}
-                  className="rounded border border-border-light px-2 py-1 text-sm w-24"
-                />
-              </div>
-              <span className="text-xs text-typography-500">
-                Both bounds required. Range must span ≥ {MIN_STATE_GAP}. Scores beyond the last
-                state's max clamp to that state at runtime.
-              </span>
-            </div>
-
             <textarea
               value={state.guidelines}
               onChange={event => updateState(state.id, { guidelines: event.target.value })}
               placeholder="Guidelines injected into {state_x_guidelines} when this state is active."
               className="rounded border border-border-light px-2 py-1 text-sm min-h-[60px]"
             />
-
-            {errors.length > 0 && (
-              <ul className="text-xs text-destructive-600 list-disc list-inside">
-                {errors.map(msg => (
-                  <li key={msg}>{msg}</li>
-                ))}
-              </ul>
-            )}
           </div>
         );
       })}
+
+      {/*
+        Bottom-anchored add-state action — matches the "+ new row" pattern
+        used elsewhere in the studio so users naturally scroll to the
+        bottom of the list to extend it.
+      */}
+      <button
+        type="button"
+        onClick={addState}
+        className="self-start text-sm text-primary hover:text-primary-700"
+      >
+        + Add state
+      </button>
     </div>
   );
 };

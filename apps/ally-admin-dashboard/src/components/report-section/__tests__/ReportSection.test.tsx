@@ -154,6 +154,12 @@ vi.mock("@api", () => ({
     vi.fn(),
     { data: mockGetReportTranscriptQuery(), isLoading: false },
   ],
+  // ReportSection now resolves the scenario's selectedMainPromptCode to
+  // a human-readable name via the main-agent prompt list. The component
+  // tolerates an empty / loading list (falls back to the raw code or
+  // "Default main agent prompt"), so an empty array is a safe default
+  // for tests that don't care about the name display.
+  useGetPromptsByTypeQuery: () => ({ data: [] }),
 }));
 
 // Create test store

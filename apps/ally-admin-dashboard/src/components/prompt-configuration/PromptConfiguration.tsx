@@ -21,6 +21,7 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
   buttonDisabled = false,
   buttonTooltip,
   selectedLanguage,
+  currentMainPromptName,
 }) => {
   const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
     active: true,
@@ -43,6 +44,18 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
 
   return (
     <div className="space-y-4">
+      {/*
+        Current main-agent prompt name. Rendered only when the parent
+        supplies one — keeps existing callsites that don't pass the
+        prop visually unchanged.
+      */}
+      {currentMainPromptName && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-typography-600">Skill version:</span>
+          <span className="font-medium text-typography-900">{currentMainPromptName}</span>
+        </div>
+      )}
+
       {/* Helper Agent Prompt */}
       <div className="flex flex-col border border-gray-200 rounded-lg pt-4">
         <label className="text-sm font-medium text-typography-900 mb-2 block px-4">

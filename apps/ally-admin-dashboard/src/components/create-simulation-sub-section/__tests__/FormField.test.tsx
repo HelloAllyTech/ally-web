@@ -7,16 +7,27 @@ import { FormFieldConfig } from "@types";
 import { FormField } from "../FormField";
 
 // Hoist mock functions
-const { regenerateFieldMock } = vi.hoisted(() => ({
+const { regenerateFieldMock, placeholderLookupMock } = vi.hoisted(() => ({
   regenerateFieldMock: vi.fn(),
+  // Mutable holder so individual tests can drive what useIsPlaceholderUsed
+  // returns (e.g. force `{ isUsed: false, kind: "loaded" }` to exercise the
+  // hide-when-unused branch and the mandatory-override guard).
+  placeholderLookupMock: {
+    current: { isUsed: false, kind: "no_selection" } as {
+      isUsed: boolean;
+      kind: string;
+    },
+  },
 }));
 
 // Mock baseAPI first
 // Mock @hooks — FormField uses useIsPlaceholderUsed which transitively
 // pulls useSelector for the allowlist check. Tests don't mount a Redux
-// provider, so stub the hook to the "no_selection" state directly.
+// provider, so the mock returns a stub. The stub reads from
+// `placeholderLookupMock.current` so tests can override it per-case
+// (default = "no_selection" which means the gate never fires).
 vi.mock("@hooks", () => ({
-  useIsPlaceholderUsed: () => ({ isUsed: false, kind: "no_selection" }),
+  useIsPlaceholderUsed: () => placeholderLookupMock.current,
 }));
 
 vi.mock("@api/baseApi", () => ({
@@ -146,6 +157,110 @@ const TestWrapper = ({ children, defaultValues = {} }: any) => {
 describe("FormField", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset to the harmless default so tests that don't care about the
+    // hide-when-unused gate don't accidentally hit it.
+    placeholderLookupMock.current = { isUsed: false, kind: "no_selection" };
+  });
+
+  describe("hideWhenUnused gating", () => {
+    // The variant resolver has finished loading and the picked variant
+    // does NOT reference the field's placeholder → triggers the
+    // hide-when-unused branch.
+    const setVariantUnused = () => {
+      placeholderLookupMock.current = { isUsed: false, kind: "loaded" };
+    };
+
+    it("hides an OPTIONAL field that opts into hideWhenUnused when the variant doesn't reference it", () => {
+      setVariantUnused();
+      const config: FormFieldConfig = {
+        id: "characterProfileText",
+        label: "Character Backstory",
+        type: "text",
+        isMandatory: false,
+        promptVariable: "character_profile_text",
+        hideWhenUnused: true,
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      // FormField bails before rendering the InputField, so the
+      // characteristic `input-{id}` test id doesn't appear in the DOM.
+      expect(screen.queryByTestId("input-characterProfileText")).not.toBeInTheDocument();
+    });
+
+    it("keeps a MANDATORY field rendered even if hideWhenUnused is set — mandatory wins", () => {
+      // Hard guard: a mis-configured field that's both mandatory and
+      // marked hide-when-unused must NEVER disappear. Removing the only
+      // input for a required value would corner the author into an
+      // un-saveable form. The guard turns a config inconsistency into a
+      // benign no-op.
+      setVariantUnused();
+      const config: FormFieldConfig = {
+        id: "title",
+        label: "Title",
+        type: "text",
+        isMandatory: true,
+        promptVariable: "title",
+        hideWhenUnused: true,
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      // The input still renders → the field is visible despite the
+      // hide-when-unused flag, because mandatory takes precedence.
+      expect(screen.getByTestId("input-title")).toBeInTheDocument();
+    });
+
+    it("keeps an optional field visible when the variant DOES reference it", () => {
+      placeholderLookupMock.current = { isUsed: true, kind: "loaded" };
+      const config: FormFieldConfig = {
+        id: "characterProfileText",
+        label: "Character Backstory",
+        type: "text",
+        isMandatory: false,
+        promptVariable: "character_profile_text",
+        hideWhenUnused: true,
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("input-characterProfileText")).toBeInTheDocument();
+    });
+
+    it("keeps a field visible while the variant lookup hasn't loaded yet (no_selection)", () => {
+      // Default lookup state — happens during initial render or when no
+      // variant is picked. Field stays visible to avoid a frame of
+      // flicker before the resolver lands.
+      placeholderLookupMock.current = { isUsed: false, kind: "no_selection" };
+      const config: FormFieldConfig = {
+        id: "characterProfileText",
+        label: "Character Backstory",
+        type: "text",
+        isMandatory: false,
+        promptVariable: "character_profile_text",
+        hideWhenUnused: true,
+      };
+
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={config} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("input-characterProfileText")).toBeInTheDocument();
+    });
   });
 
   describe("SELECT Field Type", () => {

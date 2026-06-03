@@ -746,6 +746,13 @@ export const CreateSimulation: FC = () => {
             areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
             hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
             onPrimaryTabChange={setReportPrimaryTab}
+            // Surface the currently-picked main-agent variant in the
+            // Test Configuration so the author can see which "skill"
+            // the next report run will use without leaving this tab.
+            // `watch` keeps it live as they flip the picker upstream.
+            selectedMainPromptCode={
+              formMethods.watch("selectedMainPromptCode") as string | undefined
+            }
           />
         );
       default:
