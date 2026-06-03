@@ -58,23 +58,28 @@ export const MAIN_AGENT_PROMPT_VARIABLE_CATALOG: PromptCatalogEntry[] = [
   { name: "profession", label: "Profession", group: "persona" },
 
   // Character (interior life + backstory)
+  //
+  // Note: the structured `personality`, `tone`, `starting_state`,
+  // `emotional_needs`, `life_history_summary`, `core_memories` placeholders
+  // were originally part of this group (PR #350, Oct 2025) but their UI
+  // inputs were removed Jan 2026 ("Remove deprecated simulation step
+  // constants") and the BE/runtime plumbing followed in a later cleanup.
+  // The author-facing equivalent is now the free-text
+  // `character_profile_text` field, which captures all of these as one
+  // paragraph and reaches both the prompt body and the prosody system.
   { name: "character_profile_text", label: "Character Profile", group: "character" },
-  { name: "personality", label: "Personality", group: "character" },
-  { name: "tone", label: "Tone", group: "character" },
-  { name: "starting_state", label: "Starting Emotional State", group: "character" },
-  { name: "emotional_needs", label: "Emotional Needs", group: "character" },
-  { name: "life_history_summary", label: "Life History", group: "character" },
-  { name: "core_memories", label: "Core Memories", group: "character" },
   // Lifted from previous_memory_block; variants can use {previous_memory}
   // directly instead of the canned "Summary from your previous session: X"
   // wrapper.
   { name: "previous_memory", label: "Previous Memory", group: "character" },
 
   // Behavior / session
-  { name: "session_behavior_guidelines", label: "Session Behavior Guidelines", group: "behavior" },
-  { name: "agent_goal", label: "Agent Goal", group: "behavior" },
+  //
+  // `session_behavior_guidelines`, `agent_goal`, and `response_length` were
+  // also part of the deprecated simulator-creator inputs and were removed
+  // alongside the character-side fields above. Behaviour Instructions
+  // table + Behavior Rules JSON cover the same runtime intent end-to-end.
   { name: "opening_statements", label: "Opening Statements", group: "behavior" },
-  { name: "response_length", label: "Response Length", group: "behavior" },
 
   // System-computed (filled by the prompt builder, not the studio)
   //

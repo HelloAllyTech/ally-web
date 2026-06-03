@@ -158,19 +158,12 @@ describe("createSimulation utils", () => {
           age: 25,
           name: "John Doe",
           context: "Test context",
-          coreMemories: "Test memories",
-          agentGoal: "Test goal",
           currentLocation: "New York",
-          emotionalNeeds: "Test needs",
           gender: "male",
           genderIdentity: "Male/Man",
-          lifeHistory: "Test history",
           openingStatements: ["Hello, how are you?"],
-          personality: "Friendly",
           profession: "Engineer",
-          sessionBehaviorGuidelines: "Be supportive",
           sexualOrientation: "Heterosexual",
-          startingState: "Calm",
           languageVoices: {
             1: "voice-123",
           },
@@ -201,20 +194,16 @@ describe("createSimulation utils", () => {
         age: 25,
         name: "John Doe",
         context: "Test context",
-        coreMemories: "Test memories",
         isGlobal: false,
         isPublic: false,
         knowledgeSources: undefined,
-        agentGoal: "Test goal",
         allowedFillerWords: undefined,
         behaviorInstructions: [],
         characterProfileText: undefined,
         competency: undefined,
         currentLocation: "New York",
-        emotionalNeeds: "Test needs",
         gender: "male",
         genderIdentity: "Male/Man",
-        lifeHistory: "Test history",
         linguisticStyleSamples: undefined,
         openingStatements: "Hello, how are you?",
         translationOpeningStatements: {},
@@ -222,12 +211,9 @@ describe("createSimulation utils", () => {
         translationDescription: {},
         challengeDescriptionPrimaryLanguageId: null,
         translationTitle: {},
-        personality: "Friendly",
         profession: "Engineer",
-        sessionBehaviorGuidelines: "Be supportive",
         sexualOrientation: "Heterosexual",
         showScoreMeter: undefined,
-        startingState: "Calm",
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         terminationEvents: undefined,
@@ -235,7 +221,6 @@ describe("createSimulation utils", () => {
           1: "voice-123",
         },
         difficultyLevel: "medium",
-        responseLength: undefined,
         prompt: undefined,
         triggerWarningIds: [],
         agentDialogues: "Sample dialogues",
@@ -508,8 +493,6 @@ describe("createSimulation utils", () => {
       expect(result.name).toBe("John Doe");
       expect(result.age).toBe(25);
       expect(result.context).toBeUndefined();
-      expect(result.coreMemories).toBeUndefined();
-      expect(result.agentGoal).toBeUndefined();
     });
 
     it("should handle null metadata", () => {
