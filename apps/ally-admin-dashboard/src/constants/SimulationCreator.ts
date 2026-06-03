@@ -91,7 +91,6 @@ export const CHECKLIST_TYPE_OPTIONS = [
 export const APP_TRANSLATION_LANGUAGE_CODES = ["hi", "mr", "kn", "ta"];
 
 export const SIMULATION_CREATOR_STEP_IDS = {
-  overview: "overview",
   basicSettings: "basic-settings",
   advancedSettings: "advanced-settings",
   report: "report",
@@ -103,7 +102,6 @@ export const BEHAVIOURS_INSTRUCTION_CATEGORIES = [
 ];
 
 export const StepperList = [
-  { id: SIMULATION_CREATOR_STEP_IDS.overview, title: "Overview" },
   { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
   { id: SIMULATION_CREATOR_STEP_IDS.advancedSettings, title: "Advanced Settings" },
   { id: SIMULATION_CREATOR_STEP_IDS.report, title: "Report" },
@@ -200,11 +198,22 @@ Important Instructions:
 - Keep each reply under ~120 words.`;
 
 export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
-  //TODO: uncomment these fields once the fields are added to the API
   {
-    id: SIMULATION_CREATOR_STEP_IDS.overview,
-    label: "Overview",
+    id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
+    label: "Basic Settings",
     fields: [
+      // Main-agent variant picker. Always declared here as first field; runtime
+      // visibility is gated per-user by `useCanUseSelectablePrompts` —
+      // CreateSimulationSubSection filters this field out for users
+      // not on the allowlist so they keep getting the legacy default-
+      // Prompt-#1 experience without a blank slot in the form.
+      {
+        id: "selectedMainPromptCode",
+        label: "Skill Version",
+        type: FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER,
+        fullWidth: true,
+        isMandatory: false,
+      },
       {
         id: "title",
         label: "Title",
@@ -300,24 +309,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Trigger warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
         fullWidth: true,
-      },
-    ] as FormFieldConfig[],
-  },
-  {
-    id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
-    label: "Basic Settings",
-    fields: [
-      // Main-agent variant picker. Always declared here; runtime
-      // visibility is gated per-user by `useCanUseSelectablePrompts` —
-      // CreateSimulationSubSection filters this field out for users
-      // not on the allowlist so they keep getting the legacy default-
-      // Prompt-#1 experience without a blank slot in the form.
-      {
-        id: "selectedMainPromptCode",
-        label: "Main agent prompt",
-        type: FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER,
-        fullWidth: true,
-        isMandatory: false,
+        isDashedLineAbove: true,
       },
       {
         id: "prompt",

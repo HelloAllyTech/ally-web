@@ -12,11 +12,11 @@ import {
 describe("createSimulation utils", () => {
   describe("getCreateSimulationSubSectionById", () => {
     it("should return the correct section for valid id", () => {
-      const section = getCreateSimulationSubSectionById("overview");
+      const section = getCreateSimulationSubSectionById("basic-settings");
 
       expect(section).toBeDefined();
-      expect(section?.id).toBe("overview");
-      expect(section?.label).toBe("Overview");
+      expect(section?.id).toBe("basic-settings");
+      expect(section?.label).toBe("Basic Settings");
     });
 
     it("should return the basic settings section", () => {
@@ -45,17 +45,17 @@ describe("createSimulation utils", () => {
     });
 
     it("should return section with all fields", () => {
-      const section = getCreateSimulationSubSectionById("overview");
+      const section = getCreateSimulationSubSectionById("basic-settings");
 
       expect(section?.fields).toBeDefined();
       expect(Array.isArray(section?.fields)).toBe(true);
       expect(section?.fields.length).toBeGreaterThan(0);
     });
-    describe("overview section fields", () => {
-      const getOverviewSection = () => getCreateSimulationSubSectionById("overview");
+    describe("basic settings section fields", () => {
+      const getBasicSettingsSection = () => getCreateSimulationSubSectionById("basic-settings");
 
-      it("should have title field correctly configured in overview section", () => {
-        const section = getOverviewSection();
+      it("should have title field correctly configured in basic settings section", () => {
+        const section = getBasicSettingsSection();
         const field = section?.fields.find(f => f.id === "title");
         expect(field).toBeDefined();
         expect(field?.label).toBe("Title");
@@ -63,16 +63,16 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(true);
       });
 
-      it("should have difficultyLevel field correctly configured in overview section", () => {
-        const section = getOverviewSection();
+      it("should have difficultyLevel field correctly configured in basic settings section", () => {
+        const section = getBasicSettingsSection();
         const field = section?.fields.find(f => f.id === "difficultyLevel");
         expect(field).toBeDefined();
         expect(field?.type).toBe("select");
         expect(field?.isMandatory).toBe(true);
       });
 
-      it("should have challenge description field in overview section", () => {
-        const section = getOverviewSection();
+      it("should have challenge description field in basic settings section", () => {
+        const section = getBasicSettingsSection();
         const field = section?.fields.find(f => f.id === "description");
 
         expect(field).toBeDefined();
@@ -83,14 +83,14 @@ describe("createSimulation utils", () => {
       });
 
       it("should have characterProfileText (Character Backstory) as optional", () => {
-        const section = getOverviewSection();
+        const section = getBasicSettingsSection();
         const field = section?.fields.find(f => f.id === "characterProfileText");
         expect(field).toBeDefined();
         expect(field?.isMandatory).toBe(false);
       });
 
-      it("should place challenge description after character backstory in overview section", () => {
-        const section = getOverviewSection();
+      it("should place challenge description after character backstory in basic settings section", () => {
+        const section = getBasicSettingsSection();
         const fieldIds = section?.fields.map(field => field.id) ?? [];
 
         expect(fieldIds.indexOf("characterProfileText")).toBeGreaterThan(-1);
@@ -99,22 +99,19 @@ describe("createSimulation utils", () => {
         );
       });
 
-      it("should have coverImageUrl field correctly configured in overview section", () => {
-        const section = getOverviewSection();
+      it("should have coverImageUrl field correctly configured in basic settings section", () => {
+        const section = getBasicSettingsSection();
         const field = section?.fields.find(f => f.id === "coverImageUrl");
         expect(field).toBeDefined();
         expect(field?.label).toBe("Cover Image");
         expect(field?.type).toBe("image_upload");
         expect(field?.isMandatory).toBe(true);
       });
-    });
 
-    describe("basic settings section fields", () => {
-      it("should not have challenge description field in basic settings section", () => {
-        const section = getCreateSimulationSubSectionById("basic-settings");
-        const field = section?.fields.find(f => f.id === "description");
-
-        expect(field).toBeUndefined();
+      it("should have selectedMainPromptCode (Skill Version) as first field", () => {
+        const section = getBasicSettingsSection();
+        expect(section?.fields[0]?.id).toBe("selectedMainPromptCode");
+        expect(section?.fields[0]?.label).toBe("Skill Version");
       });
 
       it("should have prompt (Role instruction) as optional", () => {

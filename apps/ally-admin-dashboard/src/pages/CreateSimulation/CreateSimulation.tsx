@@ -123,7 +123,7 @@ export const CreateSimulation: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
-  const [currentStep, setCurrentStep] = useState(stepIds.overview);
+  const [currentStep, setCurrentStep] = useState(stepIds.basicSettings);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showOptionalFieldsWarning, setShowOptionalFieldsWarning] = useState(false);
   const pendingActionRef = useRef<(() => Promise<void>) | null>(null);
@@ -675,7 +675,7 @@ export const CreateSimulation: FC = () => {
     if (isReportGenerationInProgress) {
       return;
     }
-    if (currentStep === stepIds.overview) {
+    if (currentStep === stepIds.basicSettings) {
       if (!areAllMandatoryFieldsFilledInOverview) {
         toast.error(
           overviewMissingMandatoryLabels.length > 0
@@ -726,7 +726,6 @@ export const CreateSimulation: FC = () => {
 
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case stepIds.overview:
       case stepIds.basicSettings: {
         const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
         return renderStep(
@@ -757,7 +756,7 @@ export const CreateSimulation: FC = () => {
   const isLastStep = currentStep === stepIds.report;
 
   const handleNext = async () => {
-    if (currentStep === stepIds.overview) {
+    if (currentStep === stepIds.basicSettings) {
       if (!areAllMandatoryFieldsFilledInOverview) {
         toast.error(
           overviewMissingMandatoryLabels.length > 0
@@ -839,7 +838,7 @@ export const CreateSimulation: FC = () => {
           <Footer
             onPrevious={handlePrevious}
             onNext={handleNext}
-            showPrevious={currentStep !== stepIds.overview}
+            showPrevious={currentStep !== stepIds.basicSettings}
             showNext={true}
             isNextDisabled={false}
             isPreviousDisabled={
