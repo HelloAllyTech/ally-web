@@ -223,9 +223,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1500,
         defaultValue: DEFAULT_ROLE_INSTRUCTION,
-        isMandatory: false,
+        // Role instructions are one of the three mandatory fields (with
+        // title and competency). It keeps its collapsible accordion, but
+        // `hideWhenUnused` is intentionally dropped: a mandatory field must
+        // always be reachable. (FormField also hard-guards this — a
+        // mandatory field is never hidden even when hideWhenUnused is set.)
+        isMandatory: true,
         promptVariable: "role_instructions",
-        hideWhenUnused: true,
         accordion: true,
       },
       {
@@ -242,7 +246,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Challenge Description",
         placeholder: "What is the primary learning goal?",
         type: FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION,
-        isMandatory: true,
+        isMandatory: false,
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
@@ -271,13 +275,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
         promptVariable: "competency",
       },
-      {
-        id: "difficultyLevel",
-        label: "Difficulty Level",
-        type: FORM_FIELD_TYPES.SELECT,
-        options: DIFFICULTY_LEVEL_OPTIONS,
-        isMandatory: true,
-      },
+      // Difficulty Level is deprecated from the studio UI. It's no longer
+      // author-editable; the backend defaults it to MEDIUM (and the scoring
+      // state config falls back to MEDIUM when it's absent). Existing
+      // scenarios keep whatever value they were saved with. The
+      // `DIFFICULTY_LEVEL_OPTIONS` / `FORM_FIELD_IDS.DIFFICULTY_LEVEL`
+      // constants are retained for read-only display (e.g. preview) and
+      // back-compat.
       {
         id: "characterProfileSelector",
         label: "Character Profile Selector",
@@ -324,7 +328,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "coverImageUrl",
         label: "Cover Image",
         type: FORM_FIELD_TYPES.IMAGE_UPLOAD,
-        isMandatory: true,
+        isMandatory: false,
         fullWidth: true,
       },
       {
@@ -372,7 +376,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Opening Dialogues",
         type: FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES,
         fullWidth: true,
-        isMandatory: true,
+        isMandatory: false,
         promptVariable: "opening_statements",
       },
       {
@@ -401,7 +405,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
         options: EXPERIENCE_MODE_OPTIONS,
         fullWidth: false,
-        isMandatory: true,
+        isMandatory: false,
       },
       {
         id: "checklistType",

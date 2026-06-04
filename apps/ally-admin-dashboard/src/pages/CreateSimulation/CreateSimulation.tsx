@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
@@ -13,7 +14,7 @@ import {
   useLazyGetAdminSimulationByIdQuery,
   useUpdateSimulationByIdMutation,
 } from "@api";
-import { Tabs } from "@ally-ui-mono/ui-shared";
+import { ArrowDown } from "@assets";
 import {
   ActionConfirmationPopup,
   Button,
@@ -28,7 +29,6 @@ import {
   TranslationProgressToast,
 } from "@components";
 import { ButtonVariant } from "@components/types";
-import { ArrowDown } from "@assets";
 import {
   en,
   ROUTES,
@@ -132,7 +132,7 @@ export const CreateSimulation: FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const reportStepRef = useRef<ReportSectionHandle>(null);
-  const [reportPrimaryTab, setReportPrimaryTab] = useState<ReportPrimaryTab>("report");
+  const [, setReportPrimaryTab] = useState<ReportPrimaryTab>("report");
 
   const [translationJobs, setTranslationJobs] = useState<Record<string, TranslationJob>>({});
   const dismissTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
@@ -319,7 +319,6 @@ export const CreateSimulation: FC = () => {
   }, [simulationId, managedRoleInstruction, formMethods]);
 
   const {
-    handleSubmit,
     formState: { dirtyFields },
     watch,
   } = formMethods;
@@ -371,7 +370,8 @@ export const CreateSimulation: FC = () => {
   const emptyOptionalFields = useMemo(() => {
     const fields: { id: string; label: string }[] = [
       { id: FORM_FIELD_IDS.CHARACTER_PROFILE_TEXT, label: "Character Backstory" },
-      { id: FORM_FIELD_IDS.PROMPT, label: "Role Instructions" },
+      // Role Instructions is now a mandatory field, so it's handled by the
+      // mandatory-field gate, not the "empty optional fields" warning.
       { id: FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS, label: "Behaviour Instructions" },
       { id: FORM_FIELD_IDS.LINGUISTIC_STYLE_SAMPLES, label: "Linguistic Style Samples" },
     ];
@@ -784,7 +784,9 @@ export const CreateSimulation: FC = () => {
           <span className="text-typography-800 cursor-pointer" onClick={handlePageBack}>
             {en.simulation.rolePlays}
           </span>
-          <span className="-rotate-90"><ArrowDown /></span>
+          <span className="-rotate-90">
+            <ArrowDown />
+          </span>
           <h1 className="text-2xl text-typography-900">{pageTitle}</h1>
         </div>
         <div className="flex items-center gap-3">

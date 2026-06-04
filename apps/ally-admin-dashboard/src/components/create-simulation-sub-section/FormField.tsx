@@ -317,8 +317,18 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   };
 
   if (accordion) {
+    // A mandatory field rendered inside an accordion passes an empty label
+    // to its inner input (see the TEXT case), so surface the required
+    // asterisk on the accordion header itself — otherwise a mandatory
+    // accordion field would show no required indicator at all.
+    const headerTitle = isMandatory ? (
+      <div className="text-base font-medium text-typography-900 flex items-center gap-1">
+        {label}
+        <span className="text-destructive-500">*</span>
+      </div>
+    ) : undefined;
     return (
-      <Accordion title={label} defaultExpanded={false}>
+      <Accordion title={label} headerTitle={headerTitle} defaultExpanded={false}>
         {getFieldElement()}
       </Accordion>
     );

@@ -51,10 +51,8 @@ const formFieldNames = {
 };
 
 export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> = ({
-  label,
   id,
   formMethods,
-  isMandatory = false,
 }) => {
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
   const [isCharacterDropdownOpen, setIsCharacterDropdownOpen] = useState(false);
@@ -270,7 +268,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
               </div>
               <div className="overflow-y-auto custom-scrollbar">
                 {isLoading ? (
-                  <div className="px-3 py-4 text-sm text-typography-600 text-center">Loading...</div>
+                  <div className="px-3 py-4 text-sm text-typography-600 text-center">
+                    Loading...
+                  </div>
                 ) : charactersData && charactersData?.characters?.length > 0 ? (
                   <>
                     <div
@@ -320,23 +320,22 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
             id={formFieldIds.NAME}
             formMethods={formMethods}
             placeholder="Enter name"
-            isMandatory
           />
         </div>
 
         {/* Age */}
         <div>
           <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.AGE} <span className="text-destructive-500">*</span>
+            {formFieldNames.AGE}
           </label>
           <Controller
             name={formFieldIds.AGE}
             control={formMethods.control}
             defaultValue=""
             rules={{
-              required: "Age is required",
+              // Age is optional; only validate the format when a value is entered.
               validate: value => {
-                if (value === "" || value == null) return "Age is required";
+                if (value === "" || value == null) return true;
                 const num = typeof value === "number" ? value : parseInt(String(value), 10);
                 if (isNaN(num) || num < 0) return "Please enter a valid age";
                 return true;
@@ -366,7 +365,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
         {/* Gender */}
         <div>
           <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.GENDER} <span className="text-destructive-500">*</span>
+            {formFieldNames.GENDER}
           </label>
           <Controller
             name={formFieldIds.GENDER}
@@ -389,13 +388,12 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
         {/* Profession */}
         <div>
           <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.PROFESSION} <span className="text-destructive-500">*</span>
+            {formFieldNames.PROFESSION}
           </label>
           <Controller
             name={formFieldIds.PROFESSION}
             control={formMethods.control}
             defaultValue=""
-            rules={{ required: "Profession is required" }}
             render={({ field }) => (
               <input
                 type="text"
@@ -423,14 +421,13 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
             id={formFieldIds.CURRENT_LOCATION}
             formMethods={formMethods}
             placeholder="Enter location"
-            isMandatory
           />
         </div>
 
         {/* Gender identity */}
         <div>
           <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.GENDER_IDENTITY} <span className="text-destructive-500">*</span>
+            {formFieldNames.GENDER_IDENTITY}
           </label>
           <Controller
             name={formFieldIds.GENDER_IDENTITY}
@@ -455,7 +452,7 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
         {/* Sexual orientation */}
         <div>
           <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.SEXUAL_ORIENTATION} <span className="text-destructive-500">*</span>
+            {formFieldNames.SEXUAL_ORIENTATION}
           </label>
           <Controller
             name={formFieldIds.SEXUAL_ORIENTATION}

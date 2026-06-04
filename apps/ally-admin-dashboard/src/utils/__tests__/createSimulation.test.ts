@@ -63,12 +63,10 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(true);
       });
 
-      it("should have difficultyLevel field correctly configured in basic settings section", () => {
+      it("should no longer expose the difficultyLevel field (deprecated from the UI)", () => {
         const section = getBasicSettingsSection();
         const field = section?.fields.find(f => f.id === "difficultyLevel");
-        expect(field).toBeDefined();
-        expect(field?.type).toBe("select");
-        expect(field?.isMandatory).toBe(true);
+        expect(field).toBeUndefined();
       });
 
       it("should have challenge description field in basic settings section", () => {
@@ -79,7 +77,7 @@ describe("createSimulation utils", () => {
         expect(field?.label).toBe("Challenge Description");
         expect(field?.placeholder).toBe("What is the primary learning goal?");
         expect(field?.type).toBe("challenge_description");
-        expect(field?.isMandatory).toBe(true);
+        expect(field?.isMandatory).toBe(false);
       });
 
       it("should have characterProfileText (Character Backstory) as optional", () => {
@@ -105,7 +103,7 @@ describe("createSimulation utils", () => {
         expect(field).toBeDefined();
         expect(field?.label).toBe("Cover Image");
         expect(field?.type).toBe("image_upload");
-        expect(field?.isMandatory).toBe(true);
+        expect(field?.isMandatory).toBe(false);
       });
 
       it("should have selectedMainPromptCode (Skill Version) as first field", () => {
@@ -114,11 +112,11 @@ describe("createSimulation utils", () => {
         expect(section?.fields[0]?.label).toBe("Skill Version");
       });
 
-      it("should have prompt (Role instruction) as optional", () => {
+      it("should have prompt (Role instruction) as mandatory", () => {
         const section = getCreateSimulationSubSectionById("basic-settings");
         const field = section?.fields.find(f => f.id === "prompt");
         expect(field).toBeDefined();
-        expect(field?.isMandatory).toBe(false);
+        expect(field?.isMandatory).toBe(true);
       });
 
       it("should have behaviorInstructions (Behaviour Instructions) as optional", () => {
