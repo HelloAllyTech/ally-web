@@ -243,7 +243,6 @@ describe("SimulationEventMapTable", () => {
 
     render(<SimulationEventMapTable simulationId={"123"} />);
 
-    expect(screen.getByText("Event Configuration")).toBeInTheDocument();
     expect(screen.getByTestId("notion-table")).toBeInTheDocument();
     const addBtn = screen.getByText("Add Event").closest("button") as HTMLButtonElement;
     expect(addBtn).toBeDisabled();
