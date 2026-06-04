@@ -30,6 +30,7 @@ export interface Scenario {
   metadata?: {
     name?: string;
     experienceMode?: string;
+    enableFeedback?: boolean;
   };
   triggerWarnings?: TriggerChipItemWarning[];
   checklistEvents?: any[];

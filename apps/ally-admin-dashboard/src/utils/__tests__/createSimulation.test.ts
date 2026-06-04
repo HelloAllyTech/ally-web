@@ -211,6 +211,7 @@ describe("createSimulation utils", () => {
         profession: "Engineer",
         sexualOrientation: "Heterosexual",
         showScoreMeter: undefined,
+        enableFeedback: true,
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         terminationEvents: undefined,

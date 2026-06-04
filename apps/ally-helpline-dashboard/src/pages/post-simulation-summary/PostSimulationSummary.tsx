@@ -126,6 +126,11 @@ export const PostSimulationSummary: FC = () => {
   const feedbackDialogEvaluatedRef = useRef<boolean>(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
 
+  // When the trainer has disabled the AI feedback summary for this scenario,
+  // we skip the evaluation surface entirely. Default to enabled when the flag
+  // is missing (legacy scenarios).
+  const feedbackEnabled = summary?.scenario?.metadata?.enableFeedback !== false;
+
   useEffect(() => {
     if (summaryData && !isLoading && !feedbackDialogEvaluatedRef.current) {
       feedbackDialogEvaluatedRef.current = true;
@@ -134,6 +139,17 @@ export const PostSimulationSummary: FC = () => {
       }
     }
   }, [summaryData, isLoading, summary]);
+
+  // Feedback-disabled flow: as soon as the scenario config loads, either prompt
+  // for the star rating (if not yet given) or go straight to the role-play list.
+  useEffect(() => {
+    if (!summary || feedbackEnabled) return;
+    if (summary.hasFeedback) {
+      navigate(ROUTES.LEARN);
+    } else {
+      setFeedbackOpen(true);
+    }
+  }, [summary, feedbackEnabled, navigate]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
@@ -210,6 +226,25 @@ export const PostSimulationSummary: FC = () => {
   };
 
   const displayRating = rating ?? summary?.sessionFeedback?.rating ?? 0;
+
+  // Feedback disabled: render only the star-rating dialog; submitting or
+  // dismissing it returns the learner to the role-play list.
+  if (summary && !feedbackEnabled) {
+    return (
+      <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white">
+        <FeedbackDialog
+          open={feedbackOpen}
+          onClose={() => navigate(ROUTES.LEARN)}
+          onSubmitComplete={() => navigate(ROUTES.LEARN)}
+          id={sessionId ?? ""}
+          sessionType={SessionType.SIMULATION}
+          initialRating={summary?.sessionFeedback?.rating}
+          initialComment={summary?.sessionFeedback?.feedback}
+          initialTags={summary?.sessionFeedback?.tags}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[100dvh] min-h-0 w-full flex-col items-center overflow-hidden bg-white pb-10">

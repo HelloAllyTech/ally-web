@@ -159,6 +159,7 @@ export const FORM_FIELD_IDS = {
   TIMER_MODE: "timerMode",
   MAX_TIME_VALUE: "maxTimeValue",
   SHOW_SCORE_METER: "showScoreMeter",
+  ENABLE_FEEDBACK: "enableFeedback",
   OPT_GUARDRAILS: "optGuardrails",
   CURRENT_STATE: "currentState",
   KNOWLEDGE_SOURCE: "knowledgeSources",
@@ -463,6 +464,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Score",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
+      },
+      {
+        id: "enableFeedback",
+        label: "AI Feedback Summary",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
       },
       {
         id: "optGuardrails",

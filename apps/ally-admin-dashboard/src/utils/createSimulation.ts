@@ -73,6 +73,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       ),
     })),
     showScoreMeter: data?.metadata?.showScoreMeter,
+    enableFeedback: data?.metadata?.enableFeedback ?? true,
     characterProfileText: data?.metadata?.characterProfileText,
     competency: data?.competency,
     stateNames: (data?.metadata as any)?.stateNames ?? [],
