@@ -16,6 +16,23 @@ import {
   normalizeAvailableVariables,
 } from "../../utils/availableVariables";
 
+/**
+ * Placeholders that the runtime substitutes but the studio shouldn't
+ * advertise in the available-variables chip list. Mirrors
+ * `HIDDEN_PLACEHOLDERS` in ally-ai-learn/scripts/sync_prompts.py — that
+ * one filters server-side, this one filters the FE's live-parsed list
+ * (the chip list re-parses prompt body text on every render and would
+ * otherwise re-add anything found, including these). Keep both in sync.
+ *
+ * - `custom_fields_text`: rendered concatenation of customFields[].
+ *   Authors fill the individual pairs, never the rendered string.
+ * - `language_characteristics`: per-scenario language-style override.
+ *   The merged-in resolved value reaches the prompt via `{language_label}`;
+ *   the raw override placeholder only differs in the empty-when-absent
+ *   pattern, which doesn't justify a chip alongside `{name}` / `{age}`.
+ */
+const HIDDEN_PLACEHOLDERS = new Set<string>(["custom_fields_text", "language_characteristics"]);
+
 interface PromptSidePanelProps {
   selectedPrompt: Prompt | null;
   allPrompts: Prompt[];
@@ -254,8 +271,18 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     const items = Array.from(liveUsedNames).map(name => metaByName.get(name) ?? { name });
 
     // Drop block placeholders to keep the UI focused on author-facing vars.
+    // Also drop the HIDDEN_PLACEHOLDERS set — runtime substitutes them but
+    // they don't fit the "one chip = one author input" mental model (see
+    // sync_prompts.py for the BE-side equivalent + rationale). Without
+    // this client-side mirror, the chip list re-parses the prompt body
+    // and silently re-adds them even though the BE excludes them from
+    // availableVariables.
     const filtered = items.filter(
-      v => !v.name.endsWith("_block") && !v.name.endsWith("_prompt") && !v.name.includes("prompt_"),
+      v =>
+        !v.name.endsWith("_block") &&
+        !v.name.endsWith("_prompt") &&
+        !v.name.includes("prompt_") &&
+        !HIDDEN_PLACEHOLDERS.has(v.name),
     );
 
     return filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -284,6 +311,11 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     for (const entry of MAIN_AGENT_PROMPT_VARIABLE_CATALOG) {
       if (entry.statesOnly && !hasStatesEnabled) continue;
       if (usedNames.has(entry.name)) continue;
+      // Same denylist as the "used" chips above — keeps the unused
+      // section consistent with the sync_prompts.py HIDDEN_PLACEHOLDERS
+      // semantics. Entries flagged here are still resolvable at runtime
+      // for variants that explicitly reference them.
+      if (HIDDEN_PLACEHOLDERS.has(entry.name)) continue;
       flat.push(entry);
     }
     return flat;

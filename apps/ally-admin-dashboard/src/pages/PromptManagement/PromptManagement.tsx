@@ -133,7 +133,7 @@ export const PromptManagement: React.FC = () => {
   const filteredPrompts = useMemo(() => {
     const sourcePrompts = filters.categories.length > 0 ? promptCatalog : prompts;
 
-    return sourcePrompts.filter(prompt => {
+    const filtered = sourcePrompts.filter(prompt => {
       if (prompt.isObsolete || prompt.kind === "block") {
         return false;
       }
@@ -144,6 +144,30 @@ export const PromptManagement: React.FC = () => {
 
       return prompt.category ? filters.categories.includes(prompt.category) : false;
     });
+
+    // Priority sort: pin main_agent + branching prompts to the top of
+    // the list. Within each priority group, the original
+    // CREATED_AT DESC order (set by the server query) is preserved
+    // because Array.prototype.sort is stable in modern JS engines.
+    //
+    // Note on pagination: the unfiltered (`filters.categories.length === 0`)
+    // path is paginated server-side. If a future page contains more
+    // main_agent / branching prompts, they'd be appended after lower-
+    // priority prompts that loaded earlier. In practice there are
+    // only a handful of these prompts (one default + one variant for
+    // main_agent, one branching) and they all fit in the first page,
+    // so this is acceptable. If we ever scale to dozens of variants,
+    // move the priority sort server-side.
+    const PROMPT_TYPE_PRIORITY: Record<string, number> = {
+      main_agent: 0,
+      branching: 1,
+    };
+    const getPriority = (promptType?: string | null) =>
+      promptType && PROMPT_TYPE_PRIORITY[promptType] !== undefined
+        ? PROMPT_TYPE_PRIORITY[promptType]
+        : Number.MAX_SAFE_INTEGER;
+
+    return [...filtered].sort((a, b) => getPriority(a.promptType) - getPriority(b.promptType));
   }, [filters.categories, promptCatalog, prompts]);
 
   const categoryOptions = useMemo(() => {
