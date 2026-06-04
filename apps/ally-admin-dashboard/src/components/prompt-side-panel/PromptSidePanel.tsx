@@ -8,7 +8,6 @@ import { Refresh, DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en, MAIN_AGENT_PROMPT_VARIABLE_CATALOG } from "@constants";
-import { useCanUseSelectablePrompts } from "@hooks";
 import { Prompt } from "@types";
 
 import {
@@ -173,11 +172,6 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   onDuplicate,
   onDelete,
 }) => {
-  // Variant-creation actions live behind an email allowlist while the
-  // feature is being validated by select testers. The rest of Prompt
-  // Management (editing existing prompts, restoring defaults, etc.)
-  // remains accessible to everyone.
-  const canUseSelectablePrompts = useCanUseSelectablePrompts();
   const [formData, setFormData] = useState<Partial<Prompt>>({
     name: "",
     description: "",
@@ -627,26 +621,21 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                 Save
               </Button>
               {/*
-                Variant-creation actions are restricted to the
-                selectable-prompts allowlist while the feature is in
-                testing. Everyone else can still edit existing prompts
-                (Prompt #1, branching, evaluator, blocks, etc.) but
-                can't create or remove `_copy_*` variant rows.
+                Variant-creation actions. Available to everyone now that
+                the selectable-prompts feature is GA — was previously
+                gated by a testing-phase email allowlist.
               */}
-              {canUseSelectablePrompts &&
-                onDuplicate &&
-                selectedPrompt?.id &&
-                selectedPrompt?.promptType && (
-                  <Button
-                    variant={ButtonVariant.SECONDARY}
-                    onClick={handleDuplicate}
-                    disabled={isDuplicating}
-                    title="Create a new variant from this prompt"
-                  >
-                    {isDuplicating ? "Duplicating…" : "Duplicate as variant"}
-                  </Button>
-                )}
-              {canUseSelectablePrompts && onDelete && selectedPrompt?.id && isDuplicate && (
+              {onDuplicate && selectedPrompt?.id && selectedPrompt?.promptType && (
+                <Button
+                  variant={ButtonVariant.SECONDARY}
+                  onClick={handleDuplicate}
+                  disabled={isDuplicating}
+                  title="Create a new variant from this prompt"
+                >
+                  {isDuplicating ? "Duplicating…" : "Duplicate as variant"}
+                </Button>
+              )}
+              {onDelete && selectedPrompt?.id && isDuplicate && (
                 <Button
                   variant={ButtonVariant.SECONDARY}
                   onClick={handleDeleteClick}

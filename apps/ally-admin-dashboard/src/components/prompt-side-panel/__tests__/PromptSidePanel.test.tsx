@@ -73,12 +73,11 @@ vi.mock("@api", () => ({
   useGetPromptUsageQuery: () => ({ data: { count: 0, scenarios: [] }, isFetching: false }),
 }));
 
-// Allowlist hook gates the "Duplicate as variant" / "Delete variant"
-// buttons. Default to true in tests so the existing button-visibility
-// assertions continue to pass; tests don't have a Redux provider.
-vi.mock("@hooks", () => ({
-  useCanUseSelectablePrompts: () => true,
-}));
+// Stub @hooks so the component renders without a Redux provider. The
+// allowlist gate has been removed (variant actions are GA now), so no
+// hooks from this barrel are read by PromptSidePanel anymore — empty
+// stub keeps the resolver from failing at import time.
+vi.mock("@hooks", () => ({}));
 
 // Mock constants
 vi.mock("@constants", () => ({

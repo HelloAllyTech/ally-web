@@ -203,11 +203,10 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
     id: SIMULATION_CREATOR_STEP_IDS.basicSettings,
     label: "Basic Settings",
     fields: [
-      // Main-agent variant picker. Always declared here as first field; runtime
-      // visibility is gated per-user by `useCanUseSelectablePrompts` —
-      // CreateSimulationSubSection filters this field out for users
-      // not on the allowlist so they keep getting the legacy default-
-      // Prompt-#1 experience without a blank slot in the form.
+      // Main-agent variant picker — always rendered. Lets the studio
+      // author pick which `main_agent` prompt the scenario runs on
+      // (default Prompt #1, the lean #2 variant, or any
+      // duplicated-as-variant row).
       {
         id: "selectedMainPromptCode",
         label: "Skill Version",

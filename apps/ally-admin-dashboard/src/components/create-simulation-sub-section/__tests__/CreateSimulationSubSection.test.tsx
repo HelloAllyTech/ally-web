@@ -17,12 +17,10 @@ vi.mock("../FormField", () => ({
   ),
 }));
 
-// Mock the allowlist hook — tests don't have a Redux provider and the
-// allowlist decision is irrelevant to layout/rendering assertions here.
-// Defaulting to true keeps the test items list unfiltered.
-vi.mock("@hooks", () => ({
-  useCanUseSelectablePrompts: () => true,
-}));
+// Stub @hooks for resolver completeness — the allowlist gate has been
+// removed (variant picker is GA), so this component no longer reads any
+// hooks from the barrel. Empty mock keeps the import resolving cleanly.
+vi.mock("@hooks", () => ({}));
 
 // Wrapper component to provide form context
 const TestWrapper = ({ children, defaultValues = {} }: any) => {
