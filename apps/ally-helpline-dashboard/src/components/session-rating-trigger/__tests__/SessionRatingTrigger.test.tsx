@@ -16,9 +16,7 @@ vi.mock("react-i18next", () => ({
 }));
 
 vi.mock("@assets", () => ({
-  StarYellowIcon: ({ fill }: { fill: string }) => (
-    <svg data-testid="star-icon" data-fill={fill} />
-  ),
+  StarYellowIcon: ({ fill }: { fill: string }) => <svg data-testid="star-icon" data-fill={fill} />,
 }));
 
 describe("SessionRatingTrigger", () => {

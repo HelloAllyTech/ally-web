@@ -38,7 +38,16 @@ vi.mock("@components", () => ({
       {children}
     </button>
   ),
-  TextField: ({ value, onChange, placeholder, multiline, rows, fullWidth, className, ...props }: any) => (
+  TextField: ({
+    value,
+    onChange,
+    placeholder,
+    multiline,
+    rows,
+    fullWidth,
+    className,
+    ...props
+  }: any) => (
     <textarea
       value={value}
       onChange={onChange}
@@ -144,7 +153,11 @@ describe("SimulationFeedback", () => {
 
     it("should pre-select tags from initialTags when initialRating matches", () => {
       render(
-        <SimulationFeedback {...defaultProps} initialRating={4} initialTags={["Good", "Helpful"]} />,
+        <SimulationFeedback
+          {...defaultProps}
+          initialRating={4}
+          initialTags={["Good", "Helpful"]}
+        />,
       );
 
       const goodTag = screen.getByRole("button", { name: "Good" });
@@ -179,9 +192,7 @@ describe("SimulationFeedback", () => {
 
       await user.click(screen.getByTestId("star-4"));
 
-      expect(
-        screen.getByText("postSim.feedback.dialog.rating.4"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("postSim.feedback.dialog.rating.4")).toBeInTheDocument();
     });
 
     it("should enable submit button when rating is selected", async () => {

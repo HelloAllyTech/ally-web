@@ -13,7 +13,13 @@ import {
   useUpdateReviewMutation,
 } from "@api";
 import { Comment } from "@assets";
-import { AskAiTab, SessionRatingTrigger, SkillsTab, ToggleSwitch, ShareForReview } from "@components";
+import {
+  AskAiTab,
+  SessionRatingTrigger,
+  SkillsTab,
+  ToggleSwitch,
+  ShareForReview,
+} from "@components";
 import { Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import { FeedbackDialog, SimulationSummary, useSimulationSummaryPolling } from "@containers";
 import { RootState } from "@store";

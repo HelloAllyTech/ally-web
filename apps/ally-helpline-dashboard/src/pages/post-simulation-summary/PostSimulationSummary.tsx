@@ -227,6 +227,15 @@ export const PostSimulationSummary: FC = () => {
 
   const displayRating = rating ?? summary?.sessionFeedback?.rating ?? 0;
 
+  // Wait for the scenario config to resolve before deciding what to render.
+  // Otherwise feedbackEnabled defaults to true during loading and the full
+  // evaluation summary flashes on scenarios where the trainer disabled it.
+  if (isLoading) {
+    return (
+      <div className="flex h-[100dvh] min-h-0 w-full items-center justify-center overflow-hidden bg-white" />
+    );
+  }
+
   // Feedback disabled: render only the star-rating dialog; submitting or
   // dismissing it returns the learner to the role-play list.
   if (summary && !feedbackEnabled) {

@@ -38,15 +38,9 @@ vi.mock("../components/SimulationFeedback", () => ({
   }) => (
     <div data-testid="simulation-feedback">
       <span>Simulation Feedback for ID: {id}</span>
-      {initialRating !== undefined && (
-        <span data-testid="initial-rating">{initialRating}</span>
-      )}
-      {initialComment !== undefined && (
-        <span data-testid="initial-comment">{initialComment}</span>
-      )}
-      {initialTags !== undefined && (
-        <span data-testid="initial-tags">{initialTags.join(",")}</span>
-      )}
+      {initialRating !== undefined && <span data-testid="initial-rating">{initialRating}</span>}
+      {initialComment !== undefined && <span data-testid="initial-comment">{initialComment}</span>}
+      {initialTags !== undefined && <span data-testid="initial-tags">{initialTags.join(",")}</span>}
       <button onClick={onSubmitComplete}>Submit Simulation Feedback</button>
     </div>
   ),

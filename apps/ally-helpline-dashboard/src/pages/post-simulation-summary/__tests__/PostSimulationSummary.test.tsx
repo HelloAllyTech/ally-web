@@ -18,6 +18,7 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+import { useGetSimulationSummaryQuery } from "@api";
 import { SimulationSummary } from "@containers";
 import { ROUTES } from "@constants";
 import { store } from "@store";
@@ -851,6 +852,123 @@ describe("PostSimulationSummary Component", () => {
       );
       expect(title.className).toContain("text-2xl");
       expect(title.className).toContain("sm:text-4xl");
+    });
+  });
+
+  /**
+   * TEST GROUP: Feedback toggle (enableFeedback)
+   * Verifies the trainer-controlled enableFeedback flag gates the post-session
+   * evaluation summary vs. a rating-only flow.
+   */
+  describe("Feedback toggle (enableFeedback)", () => {
+    const mockedSummaryQuery = vi.mocked(useGetSimulationSummaryQuery);
+
+    const summaryQueryResult = (data: unknown, isLoading = false) =>
+      ({ data, isLoading, refetch: vi.fn() }) as unknown as ReturnType<
+        typeof useGetSimulationSummaryQuery
+      >;
+
+    it("renders neither the summary nor the rating dialog while the config is loading", () => {
+      mockedSummaryQuery.mockReturnValue(summaryQueryResult(undefined, true));
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.queryByTestId("simulation-summary")).toBeNull();
+      expect(screen.queryByTestId("mui-tabs")).toBeNull();
+      expect(screen.queryByTestId("feedback-dialog")).toBeNull();
+    });
+
+    it("renders the full evaluation summary when feedback is enabled", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: { metadata: { enableFeedback: true } },
+          hasFeedback: false,
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
+      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
+    });
+
+    it("treats a missing flag as enabled (legacy scenarios)", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({ scenario: { metadata: {} }, hasFeedback: false }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
+    });
+
+    it("hides the evaluation summary and only prompts for a rating when feedback is disabled", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: { metadata: { enableFeedback: false } },
+          hasFeedback: false,
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(screen.queryByTestId("mui-tabs")).toBeNull();
+      expect(screen.queryByTestId("simulation-summary")).toBeNull();
+      expect(screen.getByTestId("feedback-dialog")).toBeInTheDocument();
+    });
+
+    it("returns to the role-play list after the rating dialog is dismissed", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: { metadata: { enableFeedback: false } },
+          hasFeedback: false,
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      fireEvent.click(screen.getByTestId("feedback-dialog-close"));
+
+      expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
+    });
+
+    it("skips straight to the role-play list when feedback is disabled and a rating already exists", () => {
+      mockedSummaryQuery.mockReturnValue(
+        summaryQueryResult({
+          scenario: { metadata: { enableFeedback: false } },
+          hasFeedback: true,
+          sessionFeedback: { rating: 4 },
+        }),
+      );
+
+      render(
+        <TestWrapper>
+          <PostSimulationSummary />
+        </TestWrapper>,
+      );
+
+      expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
+      expect(screen.queryByTestId("mui-tabs")).toBeNull();
     });
   });
 
