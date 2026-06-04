@@ -257,7 +257,10 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "triggerWarningIds",
         label: "Trigger warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
-        fullWidth: true,
+        // Half-width so it pairs with the adjacent Competency dropdown below
+        // (two short metadata selectors share one row) instead of each
+        // stretching across the full column with a large empty right side.
+        fullWidth: false,
       },
       {
         id: "competency",
@@ -329,14 +332,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Cover Image",
         type: FORM_FIELD_TYPES.IMAGE_UPLOAD,
         isMandatory: false,
-        fullWidth: true,
+        // Cover Image + Cover Video sit side by side as two upload tiles
+        // rather than two full-width tiles stacked vertically.
+        fullWidth: false,
       },
       {
         id: "coverVideoUrl",
         label: "Cover Video",
         type: FORM_FIELD_TYPES.VIDEO_UPLOAD,
         isMandatory: false,
-        fullWidth: true,
+        // Pairs with Cover Image above on the same row (see note there).
+        fullWidth: false,
       },
       {
         // Self-hides when the selected main-agent prompt does not declare hasStates=true.
