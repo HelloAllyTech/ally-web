@@ -777,9 +777,17 @@ export const CreateSimulation: FC = () => {
   const pageTitle = simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation;
 
   return (
-    <div className="h-[100vh] font-primary flex flex-col">
-      {/* Title + action buttons — matches Roleplays page header */}
-      <div className="flex justify-between items-center px-6 py-4 shrink-0">
+    // h-full (not h-[100vh]): the page already lives inside PrivateLayout's
+    // `p-4 lg:p-6 h-[100vh] overflow-y-hidden` box. Using h-full fills that
+    // box exactly — a nested h-[100vh] overflowed by the wrapper's padding
+    // and clipped the form's bottom. Mirrors the Roleplays page, which fills
+    // the same wrapper rather than re-declaring viewport height.
+    <div className="h-full font-primary flex flex-col">
+      {/* Header — aligned with the Roleplays page header: no extra
+          horizontal padding (the PrivateLayout gutter is shared) and the
+          title uses font-secondary, so the title position and typeface stay
+          put when navigating Roleplays → Edit. Breadcrumb + actions added. */}
+      <div className="flex justify-between items-center shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-typography-800 cursor-pointer" onClick={handlePageBack}>
             {en.simulation.rolePlays}
@@ -787,7 +795,7 @@ export const CreateSimulation: FC = () => {
           <span className="-rotate-90">
             <ArrowDown />
           </span>
-          <h1 className="text-2xl text-typography-900">{pageTitle}</h1>
+          <h1 className="text-2xl text-typography-900 font-secondary">{pageTitle}</h1>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -816,20 +824,22 @@ export const CreateSimulation: FC = () => {
         </div>
       </div>
 
-      {/* Sticky tab bar — matches Roleplays page Tabs */}
-      <div className="sticky top-0 z-10 bg-white shrink-0 px-6">
-        <Tabs
-          items={StepperList.map(s => ({ id: s.id, label: s.title }))}
-          activeId={currentStep}
-          onChange={tab => !isReportGenerationInProgress && handleStepClick(tab)}
-          showCount={false}
-          className="mb-2 mt-6 border-b border-border-light font-primary"
-        />
-      </div>
+      {/* Tab bar — identical class set and full width to match the Roleplays
+          page tabs exactly, so the tab strip is seamless across both pages. */}
+      <Tabs
+        items={StepperList.map(s => ({ id: s.id, label: s.title }))}
+        activeId={currentStep}
+        onChange={tab => !isReportGenerationInProgress && handleStepClick(tab)}
+        showCount={false}
+        className="mb-2 mt-6 border-b border-border-light font-primary shrink-0"
+      />
 
-      {/* Scrollable content */}
-      <div ref={containerRef} className="flex-1 overflow-y-auto custom-scrollbar p-6">
-        {renderCurrentStep()}
+      {/* Scrollable content in a centered, readable column. The full-width
+          chrome above matches the parent; the editable form is bounded
+          (~Notion's editor width) and centered so whitespace is balanced on
+          both sides instead of stretching fields edge-to-edge. */}
+      <div ref={containerRef} className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="w-full max-w-[1040px] mx-auto py-6">{renderCurrentStep()}</div>
       </div>
 
       <ActionConfirmationPopup

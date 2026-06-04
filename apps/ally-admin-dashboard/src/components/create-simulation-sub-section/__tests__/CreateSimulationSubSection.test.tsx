@@ -214,7 +214,6 @@ describe("CreateSimulationSubSection", () => {
 
       const mainContainer = container.firstChild;
       expect(mainContainer).toHaveClass("w-full");
-      expect(mainContainer).toHaveClass("max-w-5xl");
     });
 
     it("uses flex-wrap layout", () => {
@@ -240,7 +239,7 @@ describe("CreateSimulationSubSection", () => {
       );
 
       const mainContainer = container.firstChild;
-      expect(mainContainer).toHaveClass("gap-5");
+      expect(mainContainer).toHaveClass("gap-6");
     });
   });
 
@@ -385,7 +384,6 @@ describe("CreateSimulationSubSection", () => {
 
       const mainContainer = container.firstChild;
       expect(mainContainer).toHaveClass("w-full");
-      expect(mainContainer).toHaveClass("max-w-5xl");
     });
   });
 
