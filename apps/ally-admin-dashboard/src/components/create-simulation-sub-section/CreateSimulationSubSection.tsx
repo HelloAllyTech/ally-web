@@ -85,16 +85,13 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
   };
 
   return (
-    <div className="flex flex-row flex-wrap gap-5 w-[60%] min-w-[930px]">
+    <div className="flex flex-row flex-wrap gap-5 w-full max-w-5xl">
       {items?.map(item => {
         if (!shouldRenderField(item)) {
           return null;
         }
         return (
           <Fragment key={item.id}>
-            {item.isDashedLineAbove && (
-              <div className="border-t border-dashed border-border-light w-full" />
-            )}
             <div
               ref={item.id === "checklistType" ? checklistTypeRef : null}
               className={item.fullWidth ? "w-full" : "w-[48%]"}

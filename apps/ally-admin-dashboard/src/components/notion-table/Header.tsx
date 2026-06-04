@@ -10,6 +10,7 @@ export const Header = ({
     <div
       key={key}
       {...restHeaderProps}
+      style={{ ...restHeaderProps.style, width: "100%" }}
       className={`relative w-full h-full bg-white border-r border-border-light select-none`}
     >
       <div className="flex items-center p-3 cursor-pointer hover:bg-neutral-100 w-full">

@@ -59,7 +59,7 @@ describe("createSimulation utils", () => {
         const field = section?.fields.find(f => f.id === "title");
         expect(field).toBeDefined();
         expect(field?.label).toBe("Title");
-        expect(field?.type).toBe("text");
+        expect(field?.type).toBe("title_panel");
         expect(field?.isMandatory).toBe(true);
       });
 
@@ -89,12 +89,12 @@ describe("createSimulation utils", () => {
         expect(field?.isMandatory).toBe(false);
       });
 
-      it("should place challenge description after character backstory in basic settings section", () => {
+      it("should place challenge description before character backstory in basic settings section", () => {
         const section = getBasicSettingsSection();
         const fieldIds = section?.fields.map(field => field.id) ?? [];
 
         expect(fieldIds.indexOf("characterProfileText")).toBeGreaterThan(-1);
-        expect(fieldIds.indexOf("description")).toBeGreaterThan(
+        expect(fieldIds.indexOf("description")).toBeLessThan(
           fieldIds.indexOf("characterProfileText"),
         );
       });

@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
 import { useGetPromptsByTypeQuery } from "@api";
 
 import { DropdownField } from "../dropdown-field";
+import { FormLabel } from "../form-label";
 
 interface MainAgentPromptPickerProps {
   /** Field id in the simulation form (e.g. "selectedMainPromptCode"). */
@@ -48,12 +49,19 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
     [prompts],
   );
 
+  // Auto-select the first prompt when none is chosen yet
+  useEffect(() => {
+    if (options.length === 0) return;
+    const current = formMethods.getValues(id);
+    if (!current) {
+      formMethods.setValue(id, options[0].value, { shouldDirty: false });
+    }
+  }, [options, id, formMethods]);
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
-        <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
-          {label} {isMandatory && <span className="text-destructive-500">*</span>}
-        </label>
+        <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
         {isFetching && <span className="text-sm text-typography-600">Loading variants…</span>}
       </div>
       <DropdownField
@@ -61,8 +69,6 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
         label={label}
         formMethods={formMethods}
         options={options}
-        placeholder="Default main agent prompt"
-        allowDeselect
         isMandatory={isMandatory}
       />
     </div>

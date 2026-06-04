@@ -18,6 +18,13 @@ const mockEn = vi.hoisted(() => ({
     discardDescription: "Are you sure you want to discard changes?",
     saveAndExit: "Save and Exit",
     discardChanges: "Discard Changes",
+    save: "Save Draft",
+    publish: "Publish",
+    publishing: "Publishing",
+    preview: "Preview",
+    rolePlays: "Roleplays",
+    editSimulation: "Edit Simulation",
+    createNewSimulation: "Create Simulation",
   },
   errors: {
     failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
@@ -76,45 +83,32 @@ vi.mock("@hooks", () => ({
 }));
 
 // Mock components
-vi.mock("@components", () => ({
-  Header: ({ onBack, onSaveDraft, onPublish, onPreview, isValid }: any) => (
-    <div data-testid="header">
-      <button onClick={onBack}>Back</button>
-      <button onClick={onSaveDraft} disabled={!isValid}>
-        Save Draft
-      </button>
-      <button onClick={onPublish} disabled={!isValid}>
-        Publish
-      </button>
-      <button onClick={onPreview}>Preview</button>
-    </div>
-  ),
-  VerticalStepper: ({ steps, currentStep, onStepClick }: any) => (
-    <div data-testid="vertical-stepper">
-      {steps.map((step: any) => (
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  Tabs: ({ items, activeId, onChange }: any) => (
+    <div data-testid="tabs">
+      {items.map((item: any) => (
         <button
-          key={step.id}
-          onClick={() => onStepClick(step.id)}
-          data-active={currentStep === step.id}
+          key={item.id}
+          onClick={() => onChange(item.id)}
+          data-active={activeId === item.id}
         >
-          {step.label}
+          {item.label}
         </button>
       ))}
     </div>
   ),
-  Footer: ({ onPrevious, onNext, showPrevious, showNext, isLastStep }: any) => (
-    <div data-testid="footer">
-      {showPrevious && <button onClick={onPrevious}>Previous</button>}
-      {showNext && <button onClick={onNext}>{isLastStep ? "Publish" : "Next"}</button>}
-    </div>
+}));
+
+vi.mock("@assets", () => ({
+  ArrowDown: () => <span data-testid="arrow-down" />,
+}));
+
+vi.mock("@components", () => ({
+  Button: ({ children, onClick, disabled, className }: any) => (
+    <button onClick={onClick} disabled={disabled} className={className}>
+      {children}
+    </button>
   ),
-  MoreOptionsPopup: ({ isOpen, onClose, onDiscardSimulation }: any) =>
-    isOpen ? (
-      <div data-testid="more-options-popup">
-        <button onClick={onDiscardSimulation}>Discard</button>
-        <button onClick={onClose}>Close</button>
-      </div>
-    ) : null,
   ActionConfirmationPopup: ({ isOpen, onClose, primaryButton, secondaryButton, title }: any) =>
     isOpen ? (
       <div data-testid="confirmation-popup">
@@ -131,7 +125,7 @@ vi.mock("@components", () => ({
         <button onClick={onClose}>Close Preview</button>
       </div>
     ) : null,
-  CreateSimulationSubSection: ({ items, formMethods }: any) => (
+  CreateSimulationSubSection: ({ items }: any) => (
     <div data-testid="simulation-subsection">
       {items.map((item: any) => (
         <div key={item.id}>{item.label}</div>
@@ -141,6 +135,7 @@ vi.mock("@components", () => ({
   SimulationEventMapTable: ({ simulationId }: any) => (
     <div data-testid="event-map-table">Event Map Table for {simulationId}</div>
   ),
+  ReportSection: () => <div data-testid="report-section" />,
   TranslationProgressToast: () => null,
 }));
 
@@ -170,9 +165,9 @@ vi.mock("@constants", () => ({
     EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
   },
   StepperList: [
-    { id: "overview", label: "Overview" },
-    { id: "basic-settings", label: "Character Identity" },
-    { id: "advanced-settings", label: "Event Configuration" },
+    { id: "overview", title: "Overview" },
+    { id: "basic-settings", title: "Character Identity" },
+    { id: "advanced-settings", title: "Event Configuration" },
   ],
   StepperListOld: [
     { id: "basic-info", label: "Basic Information" },
@@ -286,9 +281,9 @@ describe("CreateSimulation", () => {
     it("should render create simulation page", () => {
       renderCreateSimulation();
 
-      expect(screen.getByTestId("header")).toBeInTheDocument();
-      expect(screen.getByTestId("vertical-stepper")).toBeInTheDocument();
-      expect(screen.getByTestId("footer")).toBeInTheDocument();
+      expect(screen.getByTestId("tabs")).toBeInTheDocument();
+      expect(screen.getByText("Save Draft")).toBeInTheDocument();
+      expect(screen.getByText("Publish")).toBeInTheDocument();
     });
 
     it("should not render the deprecated 'Voice' standalone field", () => {
@@ -300,22 +295,24 @@ describe("CreateSimulation", () => {
   });
 
   describe("Navigation", () => {
-    it("should navigate to next step when next button is clicked", async () => {
+    it("should navigate to a step when its tab is clicked", async () => {
       renderCreateSimulation();
 
-      const nextButton = screen.getByText("Next");
-      fireEvent.click(nextButton);
+      // Click "Overview" tab — no save required, switches directly
+      const overviewTab = screen.getByText("Overview");
+      fireEvent.click(overviewTab);
 
       await waitFor(() => {
-        const characterIdentityButton = screen.getByText("Character Identity");
-        expect(characterIdentityButton).toHaveAttribute("data-active", "true");
+        expect(overviewTab).toHaveAttribute("data-active", "true");
       });
     });
 
-    it("should not show previous button on first step", () => {
+    it("should show all steps as tabs", () => {
       renderCreateSimulation();
 
-      expect(screen.queryByText("Previous")).not.toBeInTheDocument();
+      expect(screen.getByText("Overview")).toBeInTheDocument();
+      expect(screen.getByText("Character Identity")).toBeInTheDocument();
+      expect(screen.getByText("Event Configuration")).toBeInTheDocument();
     });
   });
 
@@ -323,7 +320,7 @@ describe("CreateSimulation", () => {
     it("should navigate back without popup when no changes", () => {
       renderCreateSimulation();
 
-      const backButton = screen.getByText("Back");
+      const backButton = screen.getByText("Roleplays");
       fireEvent.click(backButton);
 
       expect(mockNavigate).toHaveBeenCalledWith(-1);
@@ -333,7 +330,7 @@ describe("CreateSimulation", () => {
       mockFormMethods.formState.dirtyFields = { title: true };
       renderCreateSimulation();
 
-      const backButton = screen.getByText("Back");
+      const backButton = screen.getByText("Roleplays");
       fireEvent.click(backButton);
 
       expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
@@ -344,7 +341,7 @@ describe("CreateSimulation", () => {
       mockFormMethods.formState.dirtyFields = { title: true };
       renderCreateSimulation();
 
-      const backButton = screen.getByText("Back");
+      const backButton = screen.getByText("Roleplays");
       fireEvent.click(backButton);
 
       const discardButton = screen.getByText("Discard Changes");
@@ -357,7 +354,7 @@ describe("CreateSimulation", () => {
       mockFormMethods.formState.dirtyFields = { title: true };
       renderCreateSimulation();
 
-      const backButton = screen.getByText("Back");
+      const backButton = screen.getByText("Roleplays");
       fireEvent.click(backButton);
 
       const closeButton = screen.getByText("Close");
@@ -372,7 +369,7 @@ describe("CreateSimulation", () => {
       mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(
@@ -390,7 +387,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(
@@ -413,7 +410,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(
@@ -646,7 +643,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(
@@ -678,7 +675,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(
@@ -701,7 +698,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(() => {
@@ -722,7 +719,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(
@@ -744,7 +741,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       // Should not validate if maxTimeValue is not provided
@@ -770,7 +767,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(
@@ -806,7 +803,7 @@ describe("CreateSimulation", () => {
 
       renderCreateSimulation();
 
-      const saveDraftButton = screen.getByText("Save Draft");
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
       fireEvent.click(saveDraftButton);
 
       await waitFor(

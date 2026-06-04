@@ -92,6 +92,7 @@ export interface DropdownFieldProps {
   ) => ReactNode;
   onClose?: () => void;
   allowDeselect?: boolean;
+  borderless?: boolean;
 }
 
 // NarrativeContext

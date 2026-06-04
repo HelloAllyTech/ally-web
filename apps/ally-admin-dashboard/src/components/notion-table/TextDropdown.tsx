@@ -25,6 +25,7 @@ interface TextDropdownProps {
   disabled?: boolean;
   onLoadMore?: () => void;
   onSearch?: (searchTerm: string) => void;
+  optionRenderer?: (option: DropdownOption, onSelect: (value: string) => void) => React.ReactNode;
 }
 
 export const TextDropdown = ({
@@ -39,6 +40,7 @@ export const TextDropdown = ({
   disabled = false,
   onLoadMore,
   onSearch,
+  optionRenderer,
 }: TextDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -216,26 +218,38 @@ export const TextDropdown = ({
                 No options found
               </div>
             ) : (
-              filteredOptions.map((option, index) => (
-                <div
-                  key={option?.value}
-                  ref={el => (optionRefs.current[index] = el)}
-                  onClick={() => selectOption(option)}
-                  className={clsx("px-3 py-2 cursor-pointer text-sm flex items-center", {
-                    "bg-primary-50 text-primary-700": index === highlightedIndex,
-                    "bg-white text-typography-900 hover:bg-background-secondary":
-                      index !== highlightedIndex,
-                  })}
-                >
-                  {option.backgroundColor && (
-                    <div
-                      className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
-                      style={{ backgroundColor: option.backgroundColor }}
-                    />
-                  )}
-                  <span className="whitespace-nowrap">{option?.label}</span>
-                </div>
-              ))
+              filteredOptions.map((option, index) =>
+                optionRenderer ? (
+                  <div
+                    key={option?.value}
+                    ref={el => (optionRefs.current[index] = el)}
+                    className={clsx({
+                      "bg-primary-50 text-primary-700": index === highlightedIndex,
+                    })}
+                  >
+                    {optionRenderer(option, (v: string) => selectOption({ ...option, value: v }))}
+                  </div>
+                ) : (
+                  <div
+                    key={option?.value}
+                    ref={el => (optionRefs.current[index] = el)}
+                    onClick={() => selectOption(option)}
+                    className={clsx("px-3 py-2 cursor-pointer text-sm flex items-center", {
+                      "bg-primary-50 text-primary-700": index === highlightedIndex,
+                      "bg-white text-typography-900 hover:bg-background-secondary":
+                        index !== highlightedIndex,
+                    })}
+                  >
+                    {option.backgroundColor && (
+                      <div
+                        className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
+                        style={{ backgroundColor: option.backgroundColor }}
+                      />
+                    )}
+                    <span className="whitespace-nowrap">{option?.label}</span>
+                  </div>
+                )
+              )
             )}
             {/* Load More Button */}
             {onLoadMore && (

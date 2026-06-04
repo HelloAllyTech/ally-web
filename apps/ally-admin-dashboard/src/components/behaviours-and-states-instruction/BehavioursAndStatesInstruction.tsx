@@ -2,8 +2,9 @@ import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react"
 
 import { toast } from "sonner";
 
-import { Plus, Trash } from "@assets";
+import { Trash } from "@assets";
 import { Button, NotionTable } from "@components";
+import { AddItemButton } from "../add-item-button";
 import {
   BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS,
   BEHAVIOUR_STATES,
@@ -223,14 +224,11 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   }, [formMethods, id, formData, selectedRows]);
 
   const tableFooter = (
-    <button
-      type="button"
+    <AddItemButton
       onClick={handleAddRow}
-      className="w-fit border border-dashed px-3 py-2 flex text-typography-700 gap-3 items-center text-xs mt-2"
-    >
-      <Plus />
-      {en.simulation.newRow}
-    </button>
+      label={en.simulation.newRow}
+      className="mt-2 px-3 py-2"
+    />
   );
 
   const tableStyle = { paddingBottom: "10px" };
@@ -240,7 +238,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   }, []);
 
   return (
-    <div className="flex flex-col gap-2 w-[930px] overflow-x-auto">
+    <div className="flex flex-col gap-2 w-full overflow-x-auto">
       <div className="text-base text-typography-900 font-primary flex gap-1 justify-between items-center min-h-10">
         <div className="flex gap-1 items-center">
           {/*
@@ -278,6 +276,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
         tableStyle={tableStyle}
         onSelectionChange={handleSelectionChange}
         autoHeight
+        fillWidth
       />
     </div>
   );

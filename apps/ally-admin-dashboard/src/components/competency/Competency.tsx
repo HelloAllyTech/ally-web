@@ -9,6 +9,8 @@ import { en } from "@constants";
 import { useClickOutside } from "@hooks";
 import { Competency as CompetencyType } from "@types";
 
+import { FormLabel } from "../form-label";
+
 interface CompetencyProps {
   id: string;
   formMethods: any;
@@ -119,9 +121,7 @@ export const Competency: React.FC<CompetencyProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
-        <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
-          {label} {isMandatory && <span className="text-destructive-500">*</span>}
-        </label>
+        <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
       </div>
       <div ref={dropdownRef}>
         <div className="relative">

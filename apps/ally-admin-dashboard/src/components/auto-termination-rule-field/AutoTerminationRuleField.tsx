@@ -91,7 +91,7 @@ export const AutoTerminationRuleField: React.FC<AutoTerminationRuleFieldProps> =
 
   return (
     <div
-      className={`flex flex-col gap-6 w-full border border-border-light rounded-md p-4 bg-neutral-50 `}
+      className={`flex flex-col gap-6 w-full rounded-md p-4 bg-neutral-50`}
     >
       <div className="flex items-center justify-between">
         <span className="text-base text-typography-900">{label}</span>

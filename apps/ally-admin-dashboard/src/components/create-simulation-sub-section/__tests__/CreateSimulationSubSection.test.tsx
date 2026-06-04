@@ -213,8 +213,8 @@ describe("CreateSimulationSubSection", () => {
       );
 
       const mainContainer = container.firstChild;
-      expect(mainContainer).toHaveClass("w-[60%]");
-      expect(mainContainer).toHaveClass("min-w-[930px]");
+      expect(mainContainer).toHaveClass("w-full");
+      expect(mainContainer).toHaveClass("max-w-5xl");
     });
 
     it("uses flex-wrap layout", () => {
@@ -245,135 +245,22 @@ describe("CreateSimulationSubSection", () => {
   });
 
   describe("Dashed Line Separator", () => {
-    it("renders dashed line when isDashedLineAbove is true", () => {
+    it("does not render dashed lines regardless of isDashedLineAbove (removed feature)", () => {
       const itemsWithDashedLine: FormFieldConfig[] = [
-        {
-          id: "field1",
-          label: "Field 1",
-          type: "text",
-        },
-        {
-          id: "field2",
-          label: "Field 2",
-          type: "text",
-          isDashedLineAbove: true,
-        },
+        { id: "field1", label: "Field 1", type: "text" },
+        { id: "field2", label: "Field 2", type: "text", isDashedLineAbove: true },
       ];
 
       const { container } = render(
         <TestWrapper>
           {(formMethods: any) => (
             <CreateSimulationSubSection items={itemsWithDashedLine} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      const dashedLine = container.querySelector(".border-dashed");
-      expect(dashedLine).toBeInTheDocument();
-      expect(dashedLine).toHaveClass("border-t");
-    });
-
-    it("does not render dashed line when isDashedLineAbove is false", () => {
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <CreateSimulationSubSection items={mockItems} formMethods={formMethods} />
           )}
         </TestWrapper>,
       );
 
       const dashedLine = container.querySelector(".border-dashed");
       expect(dashedLine).not.toBeInTheDocument();
-    });
-
-    it("renders multiple dashed lines for multiple fields", () => {
-      const itemsWithMultipleDashedLines: FormFieldConfig[] = [
-        {
-          id: "field1",
-          label: "Field 1",
-          type: "text",
-        },
-        {
-          id: "field2",
-          label: "Field 2",
-          type: "text",
-          isDashedLineAbove: true,
-        },
-        {
-          id: "field3",
-          label: "Field 3",
-          type: "text",
-          isDashedLineAbove: true,
-        },
-      ];
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <CreateSimulationSubSection
-              items={itemsWithMultipleDashedLines}
-              formMethods={formMethods}
-            />
-          )}
-        </TestWrapper>,
-      );
-
-      const dashedLines = container.querySelectorAll(".border-dashed");
-      expect(dashedLines.length).toBe(2);
-    });
-
-    it("dashed line has full width", () => {
-      const itemsWithDashedLine: FormFieldConfig[] = [
-        {
-          id: "field1",
-          label: "Field 1",
-          type: "text",
-        },
-        {
-          id: "field2",
-          label: "Field 2",
-          type: "text",
-          isDashedLineAbove: true,
-        },
-      ];
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <CreateSimulationSubSection items={itemsWithDashedLine} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      const dashedLine = container.querySelector(".border-dashed");
-      expect(dashedLine).toHaveClass("w-full");
-    });
-
-    it("dashed line has bottom margin", () => {
-      const itemsWithDashedLine: FormFieldConfig[] = [
-        {
-          id: "field1",
-          label: "Field 1",
-          type: "text",
-        },
-        {
-          id: "field2",
-          label: "Field 2",
-          type: "text",
-          isDashedLineAbove: true,
-        },
-      ];
-
-      const { container } = render(
-        <TestWrapper>
-          {(formMethods: any) => (
-            <CreateSimulationSubSection items={itemsWithDashedLine} formMethods={formMethods} />
-          )}
-        </TestWrapper>,
-      );
-
-      const dashedLine = container.querySelector(".border-dashed");
-      expect(dashedLine).toHaveClass("border-t", "border-dashed", "border-border-light", "w-full");
     });
   });
 
@@ -497,8 +384,8 @@ describe("CreateSimulationSubSection", () => {
       );
 
       const mainContainer = container.firstChild;
-      expect(mainContainer).toHaveClass("w-[60%]");
-      expect(mainContainer).toHaveClass("min-w-[930px]");
+      expect(mainContainer).toHaveClass("w-full");
+      expect(mainContainer).toHaveClass("max-w-5xl");
     });
   });
 

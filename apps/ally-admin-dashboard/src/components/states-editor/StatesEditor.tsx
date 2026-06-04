@@ -4,8 +4,10 @@ import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
-import { WandStars } from "@assets";
+import { TrashRed } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
+import { AutofillButton } from "../autofill-button";
+import { FormLabel } from "../form-label";
 import {
   DEFAULT_AUTOFILL_MODEL,
   FALLBACK_AUTOFILL_MODEL_OPTIONS,
@@ -387,37 +389,20 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center">
-        <label className="text-typography-900 text-base flex items-center gap-1">
-          {label} {isMandatory && <span className="text-destructive-500">*</span>}
-        </label>
+        <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
         <div className="flex items-center gap-3">
           <AutofillModelSelect
             value={selectedModel}
             onChange={setSelectedModel}
             disabled={isGenerating}
           />
-          <button
-            type="button"
+          <AutofillButton
             onClick={handleGenerate}
-            disabled={isGenerating || states.length === 0}
-            className={`flex items-center gap-1 text-sm border rounded-2xl px-2 py-1 transition-opacity ${
-              isGenerating || states.length === 0
-                ? "text-primary-300 border-primary-300 cursor-not-allowed"
-                : "text-primary-500 border-primary-500 hover:bg-primary-50 cursor-pointer"
-            } ${isGenerating ? "animate-fadeInOut" : ""}`}
-            title={
-              isGenerating
-                ? ""
-                : "Generate state content for blank cards (or regenerate all when no blanks remain). Use + Add state to control the count first."
-            }
-          >
-            {isGenerating ? (
-              <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <WandStars />
-            )}{" "}
-            {generateLabel}
-          </button>
+            isLoading={isGenerating}
+            label={generateLabel}
+            disabled={states.length === 0}
+            compact
+          />
         </div>
       </div>
 
@@ -487,8 +472,8 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                     const parsed = raw === "" ? null : isFirst ? Number(raw) : Number(raw) - 1;
                     updateStateBound(state.id, "scoreLower", parsed);
                   }}
-                  className={`rounded border border-border-light px-2 py-1 text-sm w-20 ${
-                    isFirst ? "bg-neutral-100 text-typography-500 cursor-not-allowed" : ""
+                  className={`rounded px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light ${
+                    isFirst ? "bg-neutral-100 text-typography-500 cursor-not-allowed" : "bg-transparent"
                   }`}
                 />
               </div>
@@ -502,15 +487,16 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                     const raw = event.target.value;
                     updateStateBound(state.id, "scoreUpper", raw === "" ? null : Number(raw));
                   }}
-                  className="rounded border border-border-light px-2 py-1 text-sm w-20"
+                  className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => removeState(state.id)}
-                className="text-sm text-typography-500 hover:text-typography-700"
+                className="flex items-center text-typography-500 hover:text-destructive-500 transition-colors"
+                aria-label="Remove state"
               >
-                Remove
+                <TrashRed className="w-4 h-4" />
               </button>
             </div>
 
@@ -519,14 +505,14 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
               value={state.name}
               onChange={event => updateState(state.id, { name: event.target.value })}
               placeholder="State name (e.g. Withdrawn, Engaged, Reflective)"
-              className="rounded border border-border-light px-2 py-1 text-sm"
+              className="w-full bg-transparent px-2 py-1 text-sm border-b border-border-light focus:outline-none focus:border-primary-500"
             />
 
             <textarea
               value={state.guidelines}
               onChange={event => updateState(state.id, { guidelines: event.target.value })}
               placeholder="Guidelines injected into {state_x_guidelines} when this state is active."
-              className="rounded border border-border-light px-2 py-1 text-sm min-h-[60px]"
+              className="w-full bg-transparent px-2 py-1 text-sm min-h-[60px] focus:outline-none resize-y"
             />
           </div>
         );

@@ -125,6 +125,7 @@ export const FORM_FIELD_TYPES = {
     TITLE_TRANSLATIONS: "title_translations",
     MAIN_AGENT_PROMPT_PICKER: "main_agent_prompt_picker",
     STATES_EDITOR: "states_editor",
+    TITLE_PANEL: "title_panel",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -215,21 +216,44 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
       },
       {
+        id: "prompt",
+        label: "Role instruction",
+        type: FORM_FIELD_TYPES.TEXT,
+        multiline: true,
+        fullWidth: true,
+        maxLength: 1500,
+        defaultValue: DEFAULT_ROLE_INSTRUCTION,
+        isMandatory: false,
+        promptVariable: "role_instructions",
+        hideWhenUnused: true,
+        accordion: true,
+      },
+      {
         id: "title",
         label: "Title",
-        placeholder: "Enter title",
-        type: FORM_FIELD_TYPES.TEXT,
+        type: FORM_FIELD_TYPES.CUSTOM.TITLE_PANEL,
         isMandatory: true,
         fullWidth: true,
         maxLength: 100,
         promptVariable: "title",
       },
       {
-        id: "translationTitle",
-        label: "",
-        type: FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS,
+        id: "description",
+        label: "Challenge Description",
+        placeholder: "What is the primary learning goal?",
+        type: FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION,
+        isMandatory: true,
+        multiline: true,
         fullWidth: true,
-        isMandatory: false,
+        maxLength: 1000,
+        regenerateType: REGENERATE_TYPE.DESCRIPTION,
+        promptVariable: "description",
+      },
+      {
+        id: "triggerWarningIds",
+        label: "Trigger warnings",
+        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
+        fullWidth: true,
       },
       {
         id: "competency",
@@ -260,7 +284,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM.CHARACTER_PROFILE_SELECTOR,
         isMandatory: false,
         fullWidth: true,
-        isDashedLineAbove: true,
       },
       {
         id: "characterProfileText",
@@ -271,21 +294,31 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 2500,
         isMandatory: false,
         regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
-        isDashedLineAbove: true,
         promptVariable: "character_profile_text",
         hideWhenUnused: true,
       },
       {
-        id: "description",
-        label: "Challenge Description",
-        placeholder: "What is the primary learning goal?",
-        type: FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION,
-        isMandatory: true,
-        multiline: true,
+        id: "customFields",
+        label: "Custom Fields",
+        type: FORM_FIELD_TYPES.CUSTOM_FIELDS,
         fullWidth: true,
-        maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.DESCRIPTION,
-        promptVariable: "description",
+        // Custom fields exist solely to render `{custom_fields_text}` in the
+        // prompt — no other consumer reads them. Hide the editor when the
+        // selected variant doesn't reference that placeholder.
+        promptVariable: "custom_fields_text",
+        hideWhenUnused: true,
+      },
+      {
+        id: "knowledgeSources",
+        label: "Knowledge Sources",
+        type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
+        fullWidth: true,
+        // Knowledge sources feed RAG retrieval, which substitutes
+        // into `{retrieved_context}`. Variants that don't reference
+        // that placeholder won't surface retrieved knowledge at
+        // render time, so the field is useless.
+        promptVariable: "retrieved_context",
+        hideWhenUnused: true,
       },
       {
         id: "coverImageUrl",
@@ -302,42 +335,8 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
       },
       {
-        id: "isGlobal",
-        label: "Default org-level visibility",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-      },
-      {
-        id: "isPublic",
-        label: "Public visibility",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-      },
-      {
-        id: "triggerWarningIds",
-        label: "Trigger warnings",
-        type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
-        fullWidth: true,
-        isDashedLineAbove: true,
-      },
-      {
-        id: "prompt",
-        label: "Role instruction",
-        type: FORM_FIELD_TYPES.TEXT,
-        multiline: true,
-        fullWidth: true,
-        maxLength: 1500,
-        defaultValue: DEFAULT_ROLE_INSTRUCTION,
-        isMandatory: false,
-        promptVariable: "role_instructions",
-        hideWhenUnused: true,
-        accordion: true,
-      },
-      {
-        // Pinned right after Role instruction. Self-hides when the
-        // selected main-agent prompt does not declare hasStates=true.
-        // Stored on Scenarios.metadata.states; runtime resolves the
-        // active state per turn score.
+        // Self-hides when the selected main-agent prompt does not declare hasStates=true.
+        // Stored on Scenarios.metadata.states; runtime resolves the active state per turn score.
         id: "states",
         label: "States",
         type: FORM_FIELD_TYPES.CUSTOM.STATES_EDITOR,
@@ -360,31 +359,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         isMandatory: false,
         regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
-      },
-
-      {
-        id: "customFields",
-        label: "Custom Fields",
-        type: FORM_FIELD_TYPES.CUSTOM_FIELDS,
-        fullWidth: true,
-        isDashedLineAbove: true,
-        // Custom fields exist solely to render `{custom_fields_text}` in the
-        // prompt — no other consumer reads them. Hide the editor when the
-        // selected variant doesn't reference that placeholder.
-        promptVariable: "custom_fields_text",
-        hideWhenUnused: true,
-      },
-      {
-        id: "knowledgeSources",
-        label: "Knowledge Sources",
-        type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
-        fullWidth: true,
-        // Knowledge sources feed RAG retrieval, which substitutes
-        // into `{retrieved_context}`. Variants that don't reference
-        // that placeholder won't surface retrieved knowledge at
-        // render time, so the field is useless.
-        promptVariable: "retrieved_context",
-        hideWhenUnused: true,
       },
       {
         id: "languageVoices",
@@ -442,7 +416,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "timerMode",
         label: "Session Timer",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        isDashedLineAbove: true,
         fullWidth: true,
       },
       {
@@ -470,6 +443,18 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
+      },
+      {
+        id: "isGlobal",
+        label: "Default org-level visibility",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+      },
+      {
+        id: "isPublic",
+        label: "Public visibility",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
       },
       {
         id: "optGuardrails",

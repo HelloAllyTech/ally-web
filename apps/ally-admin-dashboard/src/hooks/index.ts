@@ -1,4 +1,5 @@
 import { useClickOutside } from "./useClickOutside";
+import { useResolvedPrimaryLanguageId } from "./useResolvedPrimaryLanguageId";
 import { useCreatePortal } from "./useCreatePortal";
 import { useDebounce } from "./useDebounce";
 import { useIsPlaceholderUsed } from "./useIsPlaceholderUsed";
@@ -22,4 +23,5 @@ export {
   useCreatePortal,
   useScenarioReportsSocket,
   useScenarioTranslationsSocket,
+  useResolvedPrimaryLanguageId,
 };

@@ -3,27 +3,15 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { useGetAvailableLanguageVoicesQuery, useLazyGetPreviewVoiceQuery } from "@api";
-import { DropdownField } from "@components";
+import { NotionTable, cellTypes } from "@components";
 import { en } from "@constants";
-import { BlackTick, PauseIcon, PlayIcon } from "@src/assets";
 
 interface VoiceOption {
   id: string;
   name: string;
   provider?: string;
-  config?: {
-    voiceProvider?: string;
-    languageCode?: string;
-    voiceId?: string;
-    voice_name?: string;
-    model?: string;
-    speaker?: string;
-    name?: string;
-    gender?: string;
-    instantMode?: boolean;
-  };
+  config?: Record<string, unknown>;
   text?: string;
-  language_code?: string;
 }
 
 interface LanguageOption {
@@ -40,17 +28,33 @@ interface LanguageVoiceMappingProps {
   isMandatory?: boolean;
 }
 
-const SkeletonLoader = () => (
-  <div className="flex flex-col gap-3 animate-pulse">
-    {[...Array(5)].map((_, index) => (
-      <div key={index} className="flex flex-row items-center gap-4 rounded-md py-2 bg-white">
-        <div className="w-1/3 h-10 bg-gray-200 rounded" />
-        <div className="w-2/3 h-10 bg-gray-200 rounded" />
-      </div>
-    ))}
-    <div className="w-1/6 h-10 bg-gray-200 rounded" />
-  </div>
-);
+const COLUMNS = [
+  {
+    id: "language",
+    label: "Language",
+    accessor: "language",
+    dataType: cellTypes.normalText,
+    minWidth: 180,
+    width: 220,
+  },
+  {
+    id: "voice",
+    label: "Voice",
+    accessor: "voice",
+    dataType: cellTypes.voiceDropdown,
+    minWidth: 280,
+    width: 400,
+  },
+  {
+    id: "label",
+    label: "Label",
+    accessor: "label",
+    dataType: cellTypes.editableText,
+    minWidth: 200,
+    width: 300,
+    placeholder: "Add label…",
+  },
+];
 
 export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   id = "languageVoices",
@@ -60,60 +64,32 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
 }) => {
   const [getPreviewVoice] = useLazyGetPreviewVoiceQuery();
   const { data: availableLanguages = [], isLoading: isLoadingAvailableLanguages } =
-    useGetAvailableLanguageVoicesQuery({
-      active: true,
-      voicesNeeded: true,
-    }) as {
+    useGetAvailableLanguageVoicesQuery({ active: true, voicesNeeded: true }) as {
       data: LanguageOption[];
       isLoading: boolean;
     };
 
-  const {
-    setError,
-    clearErrors,
-    setValue,
-    watch,
-    formState: { errors },
-  } = formMethods;
+  const { setError, clearErrors, setValue, watch, formState: { errors } } = formMethods;
 
-  // Watch the form value to get real-time updates when selection changes
   const languageVoices = watch(id) ?? {};
-  // Per-language free-text label override; co-located with the voice picker
-  // because both are "per-language config for this scenario".
   const languageCharacteristics =
     (watch("languageCharacteristics") as Record<string, string> | undefined) ?? {};
 
-  const handleLanguageLabelChange = useCallback(
-    (languageId: string, text: string) => {
-      setValue("languageCharacteristics", {
-        ...languageCharacteristics,
-        [languageId]: text,
-      });
-    },
-    [languageCharacteristics, setValue],
-  );
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [voicePreviewCache, setVoicePreviewCache] = useState<Record<string, ArrayBuffer>>({});
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const languages: LanguageOption[] = availableLanguages ?? [];
 
-  const [showAll, setShowAll] = useState(false);
-  const [voiceSearchTerms, setVoiceSearchTerms] = useState<Record<string, string>>({});
-
-  const handleVoiceSearch = useCallback((languageId: string, searchTerm: string) => {
-    setVoiceSearchTerms(prev => ({ ...prev, [languageId]: searchTerm }));
-  }, []);
-
-  const playAudio = useCallback(async (audioData: ArrayBuffer) => {
-    // Stop the currently playing audio if any
+  const stopAudio = useCallback(() => {
     if (audioSourceRef.current) {
-      // Remove onended handler to prevent it from setting playingVoice to null
       audioSourceRef.current.onended = null;
       audioSourceRef.current.stop();
       audioSourceRef.current = null;
     }
+  }, []);
 
+  const playAudio = useCallback(async (audioData: ArrayBuffer) => {
+    stopAudio();
     const audioContext = new AudioContext();
     const decoded = await audioContext.decodeAudioData(audioData.slice(0));
     const source = audioContext.createBufferSource();
@@ -126,192 +102,98 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     source.start();
     audioSourceRef.current = source;
     setIsAudioLoading(false);
-  }, []);
-  const visibleLanguages = useMemo(() => {
-    if (showAll) return languages;
-    return languages.slice(0, 5);
-  }, [languages, showAll]);
+  }, [stopAudio]);
 
-  const getOptionsForLanguage = useCallback(
-    (languageId: string, searchTerm?: string) => {
-      const language = languages.find(lang => String(lang.language_id) === languageId);
-      if (!language) return [];
+  const handlePlay = useCallback(async (voiceId: string) => {
+    stopAudio();
+    setPlayingVoice(voiceId);
 
-      const allOptions = language.voices.map(voice => ({
-        value: voice.id,
-        label: voice.provider ? `${voice.name}  (${voice.provider})` : voice.name,
-        provider: voice.provider,
-        config: voice.config,
-        text: voice.text,
-      }));
+    const cached = voicePreviewCache[voiceId];
+    if (cached) {
+      playAudio(cached);
+      return;
+    }
 
-      if (!searchTerm?.trim()) return allOptions;
+    setIsAudioLoading(true);
+    try {
+      const result = await getPreviewVoice({ voiceId }).unwrap();
+      setVoicePreviewCache(prev => ({ ...prev, [voiceId]: result }));
+      playAudio(result);
+    } catch {
+      setIsAudioLoading(false);
+      setPlayingVoice(null);
+      toast.error("Failed to load voice preview");
+    }
+  }, [stopAudio, voicePreviewCache, getPreviewVoice, playAudio]);
 
-      const lowerSearch = searchTerm.toLowerCase();
-      return allOptions.filter(
-        opt =>
-          opt.label.toLowerCase().includes(lowerSearch) ||
-          (opt.provider ?? "").toLowerCase().includes(lowerSearch),
-      );
-    },
-    [languages],
-  );
-  const renderDropdownFields = useCallback(() => {
-    return visibleLanguages.map(language => {
+  const handlePause = useCallback(() => {
+    stopAudio();
+    setPlayingVoice(null);
+  }, [stopAudio]);
+
+  const languages: LanguageOption[] = availableLanguages ?? [];
+
+  const getVoiceOptions = useCallback((language: LanguageOption) =>
+    language.voices.map(v => ({
+      value: v.id,
+      label: v.provider ? `${v.name} (${v.provider})` : v.name,
+    })),
+  []);
+
+  const tableData = useMemo(() => {
+    const data = languages.map(language => {
       const languageId = String(language.language_id);
-      const searchTerm = voiceSearchTerms[languageId] ?? "";
-      const options = getOptionsForLanguage(languageId, searchTerm);
       const selectedVoiceId = languageVoices?.[languageId] ?? "";
+      const voiceOptions = getVoiceOptions(language);
 
-      const handlePlay = async (voiceId: string) => {
-        // Stop the currently playing audio immediately
-        if (audioSourceRef.current) {
-          audioSourceRef.current.onended = null;
-          audioSourceRef.current.stop();
-          audioSourceRef.current = null;
-        }
-
-        setPlayingVoice(voiceId);
-
-        // Check if we have cached data for this voiceId
-        const cachedAudio = voicePreviewCache[voiceId];
-        if (cachedAudio) {
-          playAudio(cachedAudio);
-          return;
-        }
-
-        // If not cached, fetch from API
-        setIsAudioLoading(true);
-        const voice = options.find(opt => opt.value === voiceId);
-        const voiceConfig = { ...voice?.config };
-        delete voiceConfig.languageCode;
-
-        try {
-          const result = await getPreviewVoice({ voiceId }).unwrap();
-
-          // Cache the result and play
-          setVoicePreviewCache(prev => ({
-            ...prev,
-            [voiceId]: result,
-          }));
-          playAudio(result);
-        } catch {
-          setIsAudioLoading(false);
-          setPlayingVoice(null);
-          toast.error("Failed to load voice preview");
-        }
+      return {
+        language: { value: language.label, disabled: true, rowId: languageId },
+        voice: {
+          value: selectedVoiceId,
+          options: voiceOptions,
+          playingVoiceId: playingVoice,
+          isAudioLoading,
+          onPlay: handlePlay,
+          onPause: handlePause,
+          disabled: false,
+          rowId: languageId,
+        },
+        label: {
+          value: languageCharacteristics[languageId] ?? "",
+          disabled: false,
+          rowId: languageId,
+        },
       };
-
-      const handlePause = () => {
-        setPlayingVoice(null);
-      };
-
-      const renderOption = (
-        option: { value: string; label: string },
-        onSelect: (value: string) => void,
-      ) => {
-        const isCurrentVoice = playingVoice === option.value;
-        const isLoading = isCurrentVoice && isAudioLoading;
-        const isPlaying = isCurrentVoice && !isAudioLoading;
-
-        return (
-          <div
-            key={option.value}
-            className="px-3 w-full py-2 text-sm cursor-pointer flex justify-between transition-colors"
-            onClick={() => onSelect(option.value)}
-          >
-            <span>{option.label}</span>
-            <div className="relative w-1/2 h-6 flex items-center justify-end gap-2">
-              {selectedVoiceId === option.value && <BlackTick className="min-w-6 h-6 " />}
-              {isLoading ? (
-                <div className="w-6 h-6 border-2 border-gray-300 border-t-typography-800 rounded-full animate-spin" />
-              ) : isPlaying ? (
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    handlePause();
-                  }}
-                >
-                  <PauseIcon className="w-6 h-6" />
-                </button>
-              ) : (
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    handlePlay(option.value);
-                  }}
-                >
-                  <PlayIcon className="w-6 h-6" />
-                </button>
-              )}
-            </div>
-          </div>
-        );
-      };
-
-      return (
-        <div
-          key={languageId}
-          className="flex flex-row items-start gap-4 border border-border-light rounded-md px-3 py-2 bg-white"
-        >
-          <div className="w-1/4 pt-2 text-sm text-typography-800 font-medium">{language.label}</div>
-          <div className="w-1/3">
-            <DropdownField
-              id={`${id}.${languageId}`}
-              label=""
-              formMethods={formMethods}
-              options={options}
-              defaultOption={
-                selectedVoiceId
-                  ? getOptionsForLanguage(languageId).find(opt => opt.value === selectedVoiceId)
-                      ?.label
-                  : en.simulation.selectVoice
-              }
-              isSearchable={true}
-              handleSearchTextChange={(term: string) => handleVoiceSearch(languageId, term)}
-              optionsRenderer={renderOption}
-              onClose={() => {
-                handlePause();
-                handleVoiceSearch(languageId, "");
-              }}
-              allowDeselect={true}
-            />
-          </div>
-          <div className="flex-1">
-            <textarea
-              value={languageCharacteristics[languageId] ?? ""}
-              onChange={e => handleLanguageLabelChange(languageId, e.target.value)}
-              rows={2}
-              className="w-full text-sm text-typography-900 border border-border-light rounded-md p-2 focus:outline-none focus:border-primary-500 resize-y"
-              data-testid={`language-label-input-${languageId}`}
-            />
-          </div>
-        </div>
-      );
     });
+
+    return { columns: COLUMNS, data };
   }, [
-    formMethods,
-    getOptionsForLanguage,
-    id,
+    languages,
     languageVoices,
     languageCharacteristics,
-    handleLanguageLabelChange,
-    visibleLanguages,
     playingVoice,
     isAudioLoading,
-    getPreviewVoice,
-    voicePreviewCache,
-    playAudio,
-    voiceSearchTerms,
-    handleVoiceSearch,
+    getVoiceOptions,
+    handlePlay,
+    handlePause,
   ]);
 
-  // Create a stable string representation of languageVoices for dependency tracking
-  const languageVoicesString = useMemo(() => {
-    return JSON.stringify(languageVoices || {});
-  }, [languageVoices]);
+  const handleRowChange = useCallback((action: any) => {
+    const { columnId, value, rowId } = action;
+    if (!rowId || !columnId) return;
 
-  // Use a ref to track previous validation state to prevent infinite loops
+    if (columnId === "voice") {
+      setValue(id, { ...languageVoices, [rowId]: value }, { shouldDirty: true });
+    } else if (columnId === "label") {
+      setValue(
+        "languageCharacteristics",
+        { ...languageCharacteristics, [rowId]: value },
+        { shouldDirty: true },
+      );
+    }
+  }, [id, languageVoices, languageCharacteristics, setValue]);
+
+  const languageVoicesString = useMemo(() => JSON.stringify(languageVoices || {}), [languageVoices]);
   const prevHasMappingsRef = useRef<boolean | null>(null);
 
   useEffect(() => {
@@ -320,17 +202,11 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       prevHasMappingsRef.current = null;
       return;
     }
-
     const currentVoices = JSON.parse(languageVoicesString);
     const hasMappings = Object.values(currentVoices).some(v => !!v);
-
-    // Only update errors if the validation state has actually changed
     if (prevHasMappingsRef.current !== hasMappings) {
       if (!hasMappings) {
-        setError(id, {
-          type: "required",
-          message: en.simulation.atLeastOneLanguageMustHaveVoiceSelected,
-        });
+        setError(id, { type: "required", message: en.simulation.atLeastOneLanguageMustHaveVoiceSelected });
       } else {
         clearErrors(id);
       }
@@ -338,52 +214,35 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     }
   }, [languages.length, languageVoicesString, id]);
 
-  if (!isLoadingAvailableLanguages && languages.length === 0) {
-    return null;
+  if (!isLoadingAvailableLanguages && languages.length === 0) return null;
+
+  if (isLoadingAvailableLanguages) {
+    return (
+      <div className="flex flex-col gap-3">
+        <label className="text-typography-900 text-base flex items-center gap-1">
+          {label}{isMandatory && <span className="text-destructive-500">*</span>}
+        </label>
+        <div className="animate-pulse border border-border-light rounded-md h-48" />
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col gap-3" data-testid="language-voice-mapping">
-      <label className="text-typography-900 cursor-pointer text-base flex items-center gap-1">
-        {label}
-        {isMandatory && <span className="text-destructive-500">*</span>}
+      <label className="text-typography-900 text-base flex items-center gap-1">
+        {label}{isMandatory && <span className="text-destructive-500">*</span>}
       </label>
       {errors?.[id]?.message && (
-        <p className="text-destructive-500 text-sm mt-1">{errors[id].message}</p>
+        <p className="text-destructive-500 text-sm">{errors[id].message}</p>
       )}
-      {isLoadingAvailableLanguages ? (
-        <SkeletonLoader />
-      ) : (
-        <>
-          <div
-            className="flex flex-row items-center gap-4 px-3 text-xs font-medium uppercase tracking-wide text-typography-600"
-            data-testid="language-voice-mapping-header"
-          >
-            <div className="w-1/4">Language</div>
-            <div className="w-1/3">Voice</div>
-            <div className="flex-1">Label</div>
-          </div>
-          <div className="flex flex-col gap-3">{renderDropdownFields()}</div>
-          {languages.length > visibleLanguages.length && (
-            <button
-              type="button"
-              className="self-start text-sm text-primary-500 hover:text-primary-600 mt-1"
-              onClick={() => setShowAll(true)}
-            >
-              Show all ({languages.length})
-            </button>
-          )}
-          {showAll && languages.length > 5 && (
-            <button
-              type="button"
-              className="self-start text-sm text-primary-500 hover:text-primary-600 mt-1"
-              onClick={() => setShowAll(false)}
-            >
-              Show less
-            </button>
-          )}
-        </>
-      )}
+      <NotionTable
+        tableData={tableData}
+        onRowChange={handleRowChange}
+        autoHeight
+        hideSelectionColumn
+        hasResizer={false}
+        fillWidth
+      />
     </div>
   );
 };

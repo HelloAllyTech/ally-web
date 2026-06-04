@@ -4,10 +4,12 @@ import { useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
-import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
 import { FillerTagPicker } from "@components/filler-tag-picker";
 import { FALLBACK_AUTOFILL_MODEL_OPTIONS, en } from "@constants";
+
+import { AutofillButton } from "../autofill-button";
+import { LanguageTabPanel } from "../language-tab-panel";
 import { isNonEmptyArray } from "@utils";
 
 import {
@@ -194,42 +196,21 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
             onChange={onSelectedModelChange}
             disabled={regeneratingFillersAll}
           />
-          <button
-            type="button"
+          <AutofillButton
             onClick={handleRegenerateAllFillers}
-            disabled={regeneratingFillersAll}
-            className="inline-flex items-center gap-1 text-sm border rounded-2xl px-3 py-1.5 cursor-pointer transition-opacity border-primary-500 text-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {regeneratingFillersAll ? (
-              <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <WandStars />
-            )}{" "}
-            {bulkAutofillLabel}
-          </button>
+            isLoading={regeneratingFillersAll}
+            label={bulkAutofillLabel}
+          />
         </div>
       </div>
-      <div className="border border-border-light rounded-md overflow-hidden bg-white">
-        <div className="flex border-b border-border-light overflow-x-auto">
-          {(languagesToShow as LanguageOption[]).map(lang => {
-            const languageId = String(lang.language_id);
-            const isActive = activeLanguageId === languageId;
-            return (
-              <button
-                key={languageId}
-                type="button"
-                onClick={() => setSelectedLanguageId(languageId)}
-                className={`shrink-0 px-4 py-3 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "text-primary-500 border-b-2 border-primary-500 bg-primary-50/30"
-                    : "text-typography-600 hover:text-typography-800 hover:bg-gray-50"
-                }`}
-              >
-                {lang.label}
-              </button>
-            );
-          })}
-        </div>
+      <LanguageTabPanel
+        tabs={(languagesToShow as LanguageOption[]).map(l => ({
+          id: String(l.language_id),
+          label: l.label ?? String(l.language_id),
+        }))}
+        activeTabId={activeLanguageId}
+        onTabChange={setSelectedLanguageId}
+      >
         {activeLanguageId && (
           <div className="p-4">
             <div className="min-h-[40px]">
@@ -242,7 +223,7 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
             </div>
           </div>
         )}
-      </div>
+      </LanguageTabPanel>
     </div>
   );
 };

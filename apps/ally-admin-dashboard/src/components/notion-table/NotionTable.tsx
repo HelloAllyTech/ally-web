@@ -116,6 +116,7 @@ export const NotionTable = ({
   editIndex = 1,
   hasResizer = true,
   hideSelectionColumn = false,
+  fillWidth = false,
 }: NotionTableProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { columns = [], data = [] } = tableData || {};
@@ -232,6 +233,7 @@ export const NotionTable = ({
       const { key, ...restRowProps } = rowProps;
       const rowIndex = row.index;
       const isEditable = row.original?.isEditable?.value ?? true;
+      const visibleCells = row.cells;
 
       return (
         <div
@@ -243,10 +245,12 @@ export const NotionTable = ({
               ? "hover:bg-background-secondary"
               : "opacity-80 cursor-not-allowed bg-gray-50",
           )}
+          style={fillWidth ? { width: "100%" } : restRowProps.style}
         >
-          {row.cells.map((cell, cellIndex) => {
+          {visibleCells.map((cell, cellIndex) => {
             const cellProps = cell.getCellProps();
             const { key: cellKey, ...restCellProps } = cellProps;
+            const isLastCell = fillWidth && cellIndex === visibleCells.length - 1;
             return (
               <div
                 key={cellKey}
@@ -254,15 +258,19 @@ export const NotionTable = ({
                 className="relative flex items-center border-b w-full px-3 py-[7px] border-r border-border-light group"
                 style={{
                   backgroundColor: cell.column.id === "score" && cell.value.color,
-                  width: isSelectionColumn(cell.column.id)
-                    ? SELECTION_COLUMN_WIDTH - 1
-                    : cell.column.width,
-                  minWidth: isSelectionColumn(cell.column.id)
-                    ? SELECTION_COLUMN_WIDTH - 1
-                    : cell.column.minWidth,
-                  maxWidth: isSelectionColumn(cell.column.id)
-                    ? SELECTION_COLUMN_WIDTH - 1
-                    : cell.column.maxWidth,
+                  ...(isLastCell
+                    ? { flex: 1, minWidth: cell.column.minWidth }
+                    : {
+                        width: isSelectionColumn(cell.column.id)
+                          ? SELECTION_COLUMN_WIDTH - 1
+                          : cell.column.width,
+                        minWidth: isSelectionColumn(cell.column.id)
+                          ? SELECTION_COLUMN_WIDTH - 1
+                          : cell.column.minWidth,
+                        maxWidth: isSelectionColumn(cell.column.id)
+                          ? SELECTION_COLUMN_WIDTH - 1
+                          : cell.column.maxWidth,
+                      }),
                 }}
               >
                 {onRowClick && cellIndex === editIndex && isEditable && (
@@ -301,21 +309,22 @@ export const NotionTable = ({
             const headerGroupProps = headerGroup.getHeaderGroupProps();
             const { key, ...restHeaderGroupProps } = headerGroupProps;
             return (
-              <div key={key} {...restHeaderGroupProps} className="flex w-full">
+              <div key={key} {...restHeaderGroupProps} style={fillWidth ? { width: "100%" } : restHeaderGroupProps.style} className="flex w-full">
                 {headerGroup.headers.map((column, headerIndex) => {
                   const headerProps = column.getHeaderProps();
                   const { key: headerKey, ...restHeaderProps } = headerProps;
                   const colKey = headerKey ?? `${column.id}-${headerIndex}`;
+                  const isLastHeader = fillWidth && headerIndex === headerGroup.headers.length - 1;
 
                   return (
                     <div
                       key={colKey}
                       {...restHeaderProps}
-                      style={{
-                        width: column.width,
-                        minWidth: column.minWidth,
-                        maxWidth: column.maxWidth,
-                      }}
+                      style={
+                        isLastHeader
+                          ? { flex: 1, minWidth: column.minWidth }
+                          : { width: column.width, minWidth: column.minWidth, maxWidth: column.maxWidth }
+                      }
                       className={`border border-border-light border-r-0 ${hideSelectionColumn ? "border-l" : "border-l-0"}`}
                     >
                       {renderHeaderCell(column, headerIndex, hasResizer)}

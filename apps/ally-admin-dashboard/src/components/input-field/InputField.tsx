@@ -87,17 +87,21 @@ export const InputField: React.FC<InputFieldProps> = ({
   const registerResult = register(id, { required: requiredErrorMessage });
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex justify-between">
-        <label
-          htmlFor="title"
-          className="text-typography-900 text-base cursor-pointer flex items-center gap-1"
-        >
-          {label}
-          {isMandatory && <span className="text-destructive-500">*</span>}
-          {infoIconContent && <InfoIcon />}
-        </label>
-        {regenerateButton}
-      </div>
+      {(label || regenerateButton) && (
+        <div className="flex justify-between">
+          {label && (
+            <label
+              htmlFor="title"
+              className="text-typography-900 text-base cursor-pointer flex items-center gap-1"
+            >
+              {label}
+              {isMandatory && <span className="text-destructive-500">*</span>}
+              {infoIconContent && <InfoIcon />}
+            </label>
+          )}
+          {regenerateButton}
+        </div>
+      )}
       <div className="relative mb-[15px]">
         {multiline ? (
           <textarea

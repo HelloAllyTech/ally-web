@@ -8,7 +8,6 @@ import {
   useGetAvailableLanguageVoicesQuery,
   useRegenerateFieldMutation,
 } from "@api";
-import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
 import {
   DEFAULT_AUTOFILL_MODEL,
@@ -17,9 +16,13 @@ import {
   FORM_FIELD_IDS,
   REGENERATE_TYPE,
 } from "@constants";
+import { useResolvedPrimaryLanguageId } from "@hooks";
 import { RegenerateFieldResponse } from "@types";
 import { isNonEmptyString } from "@utils";
 
+import { AutofillButton } from "../autofill-button";
+import { FormLabel } from "../form-label";
+import { LanguageTabPanel } from "../language-tab-panel";
 import { buildScenarioContext } from "../linguistic-style-samples/scenarioLanguageUtils";
 import { RichTextEditor } from "../rich-text-editor";
 
@@ -95,21 +98,10 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
       .sort((a, b) => Number(a.languageId) - Number(b.languageId));
   }, [catalogLanguages]);
 
-  const resolvedPrimaryId = useMemo(() => {
-    if (challengeDescriptionPrimaryLanguageId != null) {
-      return String(challengeDescriptionPrimaryLanguageId);
-    }
-    const catalog = catalogLanguages as LanguageOption[];
-    const enFirst = catalog.find(
-      l =>
-        String(l.value ?? "")
-          .toLowerCase()
-          .includes("en") ||
-        String((l as { translationCode?: string }).translationCode ?? "") === "en",
-    );
-    if (enFirst) return String(enFirst.language_id);
-    return catalog[0] ? String(catalog[0].language_id) : null;
-  }, [challengeDescriptionPrimaryLanguageId, catalogLanguages]);
+  const resolvedPrimaryId = useResolvedPrimaryLanguageId(
+    catalogLanguages as LanguageOption[],
+    challengeDescriptionPrimaryLanguageId,
+  );
 
   const effectivePrimaryId = useMemo(() => {
     if (resolvedPrimaryId) return resolvedPrimaryId;
@@ -255,50 +247,26 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
   return (
     <div className="w-full flex flex-col gap-3" data-testid="challenge-description-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
-          {label} {isMandatory && <span className="text-destructive-500">*</span>}
-        </label>
+        <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <AutofillModelSelect
             value={selectedModel}
             onChange={setSelectedModel}
             disabled={regenerating}
           />
-          <button
-            type="button"
+          <AutofillButton
             onClick={handleGenerate}
-            disabled={regenerating || catalogLoading || tabsWithLocale.length === 0}
-            className="inline-flex items-center gap-1 text-sm border rounded-2xl px-3 py-1.5 transition-opacity border-primary-500 text-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {regenerating ? (
-              <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <WandStars />
-            )}{" "}
-            {autofillLabel}
-          </button>
+            isLoading={regenerating}
+            label={autofillLabel}
+            disabled={catalogLoading || tabsWithLocale.length === 0}
+          />
         </div>
       </div>
-      <div className="border border-border-light rounded-md overflow-hidden bg-white">
-        <div className="flex border-b border-border-light overflow-x-auto">
-          {scenarioLanguageTabs.map(tab => {
-            const isActive = activeLanguageId === tab.languageId;
-            return (
-              <button
-                key={tab.languageId}
-                type="button"
-                onClick={() => setSelectedLanguageId(tab.languageId)}
-                className={`shrink-0 px-4 py-3 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "text-primary-500 border-b-2 border-primary-500 bg-primary-50/30"
-                    : "text-typography-600 hover:text-typography-800 hover:bg-gray-50"
-                }`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+      <LanguageTabPanel
+        tabs={scenarioLanguageTabs.map(t => ({ id: t.languageId, label: t.label }))}
+        activeTabId={activeLanguageId}
+        onTabChange={setSelectedLanguageId}
+      >
         {activeLanguageId && (
           <div className="p-4">
             <RichTextEditor
@@ -306,10 +274,11 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
               onChange={handleChange}
               placeholder={placeholder}
               maxLength={maxLength}
+              borderless
             />
           </div>
         )}
-      </div>
+      </LanguageTabPanel>
     </div>
   );
 };

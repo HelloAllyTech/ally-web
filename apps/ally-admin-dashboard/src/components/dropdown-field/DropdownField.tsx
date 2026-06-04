@@ -22,6 +22,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   optionsRenderer,
   onClose,
   allowDeselect = false,
+  borderless = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -110,12 +111,16 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
             return (
               <>
                 <div
-                  className="w-full rounded border border-border-light px-3 py-1 bg-white text-base cursor-pointer flex items-center justify-between focus-within:ring-1 focus-within:ring-primary"
+                  className={
+                    borderless
+                      ? "w-full bg-transparent py-2 text-left flex items-center justify-between cursor-pointer"
+                      : "w-full rounded border border-border-light px-3 py-1 bg-white text-base cursor-pointer flex items-center justify-between focus-within:ring-1 focus-within:ring-primary"
+                  }
                   onClick={() => setIsOpen(prev => !prev)}
                 >
                   <span
                     className={
-                      selected || defaultOption ? "text-typography-900" : "text-typography-600"
+                      selected || defaultOption ? "text-typography-900 truncate mr-1" : "text-typography-500 truncate mr-1"
                     }
                   >
                     {selected ? selected.label : defaultOption || placeholder}

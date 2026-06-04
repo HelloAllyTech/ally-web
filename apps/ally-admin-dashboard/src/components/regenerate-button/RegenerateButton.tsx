@@ -3,8 +3,8 @@ import { FC, useState } from "react";
 import { toast } from "sonner";
 
 import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
-import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
+import { AutofillButton } from "../autofill-button";
 import {
   BEHAVIOUR_STATES,
   DEFAULT_AUTOFILL_MODEL,
@@ -212,23 +212,13 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
         onChange={setSelectedModel}
         disabled={isRegenerating || disabled}
       />
-      <button
-        type="button"
+      <AutofillButton
         onClick={handleRegenerate}
-        disabled={isRegenerating || disabled}
-        className={`flex items-center gap-1 text-sm border rounded-2xl px-2 py-1 cursor-pointer transition-opacity ${
-          isRegenerating || disabled
-            ? "text-primary-300 border-primary-300 cursor-not-allowed"
-            : "text-primary-500 border-primary-500 hover:bg-primary-50"
-        } ${isRegenerating ? "animate-fadeInOut" : ""}`}
-      >
-        {isRegenerating ? (
-          <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <WandStars />
-        )}{" "}
-        {buttonText}
-      </button>
+        isLoading={isRegenerating}
+        label={buttonText}
+        disabled={disabled}
+        compact
+      />
     </div>
   );
 };

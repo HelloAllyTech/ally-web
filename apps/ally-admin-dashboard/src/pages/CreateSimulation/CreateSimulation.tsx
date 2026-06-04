@@ -13,11 +13,11 @@ import {
   useLazyGetAdminSimulationByIdQuery,
   useUpdateSimulationByIdMutation,
 } from "@api";
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   ActionConfirmationPopup,
+  Button,
   CreateSimulationSubSection,
-  Footer,
-  Header,
   ReportSection,
   ReportSectionHandle,
   ReportPrimaryTab,
@@ -26,9 +26,9 @@ import {
   TranslationJob,
   TranslationLanguageProgress,
   TranslationProgressToast,
-  VerticalStepper,
 } from "@components";
 import { ButtonVariant } from "@components/types";
+import { ArrowDown } from "@assets";
 import {
   en,
   ROUTES,
@@ -573,9 +573,13 @@ export const CreateSimulation: FC = () => {
     // touched") because that's what the backend validates as mandatory;
     // filtering on OR would allow guidelines-only states that still 400.
     if (Array.isArray((simulationData as any).states)) {
-      (simulationData as any).states = ((simulationData as any).states as any[]).filter(
+      const filledStates = ((simulationData as any).states as any[]).filter(
         s => typeof s?.name === "string" && s.name.trim().length > 0,
       );
+      // When all state cards are blank the user hasn't configured any states.
+      // Send null (not []) so the backend treats this as "not configured" and
+      // skips validation against the prompt variant's {state_x_guidelines}.
+      (simulationData as any).states = filledStates.length > 0 ? filledStates : null;
     }
 
     // Normalize empty-string selectedMainPromptCode to undefined.
@@ -699,37 +703,13 @@ export const CreateSimulation: FC = () => {
     containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handlePrevious = () => {
-    if (currentStep === stepIds.report && reportStepRef.current?.isOnHistoryTab()) {
-      reportStepRef.current.switchToReportTab();
-      return;
-    }
-    const currentIndex = StepperList.findIndex(step => step.id === currentStep);
-    if (currentIndex > 0) {
-      const previousStep = StepperList[currentIndex - 1];
-      handleStepClick(previousStep.id);
-    }
-  };
-
-  const renderStep = (title: string, component: React.ReactNode) => {
-    return (
-      <div className={`flex flex-col h-full w-100%`}>
-        <div className="sticky flex flex-row justify-between top-0 z-10 pt-3 mx-6 pb-4 border-b border-border-light">
-          <h2 className="text-lg font-medium text-typography-900">{title}</h2>
-        </div>
-        <div ref={containerRef} className="p-6 pt-4 overflow-y-auto h-full custom-scrollbar">
-          {component}
-        </div>
-      </div>
-    );
-  };
+  const renderStep = (component: React.ReactNode) => component;
 
   const renderCurrentStep = () => {
     switch (currentStep) {
       case stepIds.basicSettings: {
         const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
         return renderStep(
-          simulationSubSectionData.label,
           <CreateSimulationSubSection
             items={simulationSubSectionData.fields}
             formMethods={formMethods}
@@ -737,47 +717,22 @@ export const CreateSimulation: FC = () => {
         );
       }
       case stepIds.advancedSettings:
-        return <SimulationEventMapTable simulationId={simulationId} />;
+        return renderStep(<SimulationEventMapTable simulationId={simulationId} />);
       case stepIds.report:
-        return (
+        return renderStep(
           <ReportSection
             ref={reportStepRef}
             scenarioId={simulationId}
             areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
             hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
             onPrimaryTabChange={setReportPrimaryTab}
-            // Surface the currently-picked main-agent variant in the
-            // Test Configuration so the author can see which "skill"
-            // the next report run will use without leaving this tab.
-            // `watch` keeps it live as they flip the picker upstream.
             selectedMainPromptCode={
               formMethods.watch("selectedMainPromptCode") as string | undefined
             }
-          />
+          />,
         );
       default:
         return null;
-    }
-  };
-
-  const isLastStep = currentStep === stepIds.report;
-
-  const handleNext = async () => {
-    if (currentStep === stepIds.basicSettings) {
-      if (!areAllMandatoryFieldsFilledInOverview) {
-        toast.error(
-          overviewMissingMandatoryLabels.length > 0
-            ? `${en.errors.overviewMandatoryFieldsNotFilled} — ${overviewMissingMandatoryLabels.join(", ")}`
-            : en.errors.overviewMandatoryFieldsNotFilled,
-        );
-        return;
-      }
-    }
-    if (isLastStep) {
-      handleSubmit(handlePublish)();
-    } else {
-      const nextStep = StepperList.findIndex(step => step.id === currentStep) + 1;
-      handleStepClick(StepperList[nextStep].id);
     }
   };
 
@@ -819,42 +774,60 @@ export const CreateSimulation: FC = () => {
     }
   };
 
+  const pageTitle = simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation;
+
   return (
-    <div className="h-[100vh] font-primary ml-[-10px] lg:ml-0">
-      <Header
-        isValid={areAllMandatoryFieldsFilled}
-        onBack={handlePageBack}
-        onSaveDraft={handleSaveDraft}
-        onPublish={handlePublish}
-        onPreview={handlePreview}
-        isPublishing={isCreatingSimulation}
-        title={simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation}
-        type="Simulation"
-      />
-
-      <div className="flex h-[calc(100vh-100px)]">
-        <VerticalStepper
-          steps={StepperList}
-          currentStep={currentStep}
-          onStepClick={handleStepClick}
-          disabled={isReportGenerationInProgress}
-        />
-
-        <div className="flex-1 flex flex-col h-[calc(100vh-160px)]">
-          <div className="flex-1 overflow-hidden">{renderCurrentStep()}</div>
-          <Footer
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            showPrevious={currentStep !== stepIds.basicSettings}
-            showNext={true}
-            isNextDisabled={false}
-            isPreviousDisabled={
-              isReportGenerationInProgress &&
-              (currentStep !== stepIds.report || reportPrimaryTab !== "history")
-            }
-            isLastStep={isLastStep}
-          />
+    <div className="h-[100vh] font-primary flex flex-col">
+      {/* Title + action buttons — matches Roleplays page header */}
+      <div className="flex justify-between items-center px-6 py-4 shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-typography-800 cursor-pointer" onClick={handlePageBack}>
+            {en.simulation.rolePlays}
+          </span>
+          <span className="-rotate-90"><ArrowDown /></span>
+          <h1 className="text-2xl text-typography-900">{pageTitle}</h1>
         </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant={ButtonVariant.TEXT}
+            onClick={handleSaveDraft}
+            className="px-4 h-[40px] text-typography-900"
+          >
+            {en.simulation.save}
+          </Button>
+          <Button
+            variant={ButtonVariant.TEXT}
+            onClick={handlePreview}
+            disabled={!areAllMandatoryFieldsFilled}
+            className={`px-4 h-[40px] ${areAllMandatoryFieldsFilled ? "text-primary-500" : "text-typography-600 cursor-not-allowed"}`}
+          >
+            {en.simulation.preview}
+          </Button>
+          <Button
+            variant={ButtonVariant.PRIMARY}
+            onClick={handlePublish}
+            disabled={!areAllMandatoryFieldsFilled || isCreatingSimulation}
+            className="transition-colors h-[40px] pr-[20px]"
+          >
+            {isCreatingSimulation ? en.simulation.publishing : en.simulation.publish}
+          </Button>
+        </div>
+      </div>
+
+      {/* Sticky tab bar — matches Roleplays page Tabs */}
+      <div className="sticky top-0 z-10 bg-white shrink-0 px-6">
+        <Tabs
+          items={StepperList.map(s => ({ id: s.id, label: s.title }))}
+          activeId={currentStep}
+          onChange={tab => !isReportGenerationInProgress && handleStepClick(tab)}
+          showCount={false}
+          className="mb-2 mt-6 border-b border-border-light font-primary"
+        />
+      </div>
+
+      {/* Scrollable content */}
+      <div ref={containerRef} className="flex-1 overflow-y-auto custom-scrollbar p-6">
+        {renderCurrentStep()}
       </div>
 
       <ActionConfirmationPopup

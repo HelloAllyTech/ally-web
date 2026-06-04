@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
 import { Close, Delete, Plus, Search, WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
+import { AddItemButton } from "../add-item-button";
+import { FormLabel } from "../form-label";
 import {
   DEFAULT_AUTOFILL_MODEL,
   FALLBACK_AUTOFILL_MODEL_OPTIONS,
@@ -331,7 +333,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder={en.knowledgeSource.search}
-              className="w-full rounded border border-border-light bg-white py-2 pl-10 pr-3 text-sm"
+              className="w-full rounded bg-background-secondary py-2 pl-10 pr-3 text-sm focus:outline-none"
             />
           </div>
         </div>
@@ -438,19 +440,13 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
     return (
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
-          <label className="text-typography-900 text-base flex items-center gap-2">
-            {label} {isMandatory && <span className="text-destructive-500">*</span>}
-          </label>
+          <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
           {renderAutofillControls()}
         </div>
-        <button
-          type="button"
+        <AddItemButton
           onClick={handleAddTab}
-          className="w-fit border border-dashed px-4 py-2 flex text-typography-700 gap-3 items-center text-xs"
-        >
-          <Plus />
-          {en.knowledgeSource.createKnowledgeSource}
-        </button>
+          label={en.knowledgeSource.createKnowledgeSource}
+        />
       </div>
     );
   }
@@ -458,7 +454,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <label className="text-typography-900 text-base cursor-pointer flex items-center gap-2">
+        <label className="text-typography-900 text-base flex items-center gap-2">
           {label} {isMandatory && <span className="text-destructive-500">*</span>}
         </label>
         {renderAutofillControls()}

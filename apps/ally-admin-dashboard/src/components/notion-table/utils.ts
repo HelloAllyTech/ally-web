@@ -23,6 +23,7 @@ export const cellTypes = {
   roles: "roles",
   actionItem: "actionItem",
   previewAudio: "previewAudio",
+  voiceDropdown: "voiceDropdown",
 };
 
 export const keyCodes = {

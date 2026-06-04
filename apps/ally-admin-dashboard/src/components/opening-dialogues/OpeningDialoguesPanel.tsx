@@ -8,7 +8,6 @@ import {
   useGetAvailableLanguageVoicesQuery,
   useRegenerateFieldMutation,
 } from "@api";
-import { WandStars } from "@assets";
 import { AutofillModelSelect } from "@components/autofill-model-select";
 import {
   DEFAULT_AUTOFILL_MODEL,
@@ -17,9 +16,13 @@ import {
   FORM_FIELD_IDS,
   REGENERATE_TYPE,
 } from "@constants";
+import { useResolvedPrimaryLanguageId } from "@hooks";
 import { RegenerateFieldResponse } from "@types";
 import { isNonEmptyArray } from "@utils";
 
+import { AutofillButton } from "../autofill-button";
+import { FormLabel } from "../form-label";
+import { LanguageTabPanel } from "../language-tab-panel";
 import { buildScenarioContext } from "../linguistic-style-samples/scenarioLanguageUtils";
 
 import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
@@ -90,21 +93,10 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
       .sort((a, b) => Number(a.languageId) - Number(b.languageId));
   }, [catalogLanguages]);
 
-  const resolvedPrimaryId = useMemo(() => {
-    if (openingDialoguePrimaryLanguageId != null) {
-      return String(openingDialoguePrimaryLanguageId);
-    }
-    const catalog = catalogLanguages as LanguageOption[];
-    const enFirst = catalog.find(
-      l =>
-        String(l.value ?? "")
-          .toLowerCase()
-          .includes("en") ||
-        String((l as { translationCode?: string }).translationCode ?? "") === "en",
-    );
-    if (enFirst) return String(enFirst.language_id);
-    return catalog[0] ? String(catalog[0].language_id) : null;
-  }, [openingDialoguePrimaryLanguageId, catalogLanguages]);
+  const resolvedPrimaryId = useResolvedPrimaryLanguageId(
+    catalogLanguages as LanguageOption[],
+    openingDialoguePrimaryLanguageId,
+  );
 
   const effectivePrimaryId = useMemo(() => {
     if (resolvedPrimaryId) return resolvedPrimaryId;
@@ -271,50 +263,26 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
   return (
     <div className="w-full flex flex-col gap-3" data-testid="opening-dialogues-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
-          Opening Dialogues {isMandatory && <span className="text-destructive-500">*</span>}
-        </label>
+        <FormLabel isMandatory={isMandatory}>Opening Dialogues</FormLabel>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <AutofillModelSelect
             value={selectedModel}
             onChange={setSelectedModel}
             disabled={regenerating}
           />
-          <button
-            type="button"
+          <AutofillButton
             onClick={handleGenerate}
-            disabled={regenerating || catalogLoading || tabsWithLocale.length === 0}
-            className="inline-flex items-center gap-1 text-sm border rounded-2xl px-3 py-1.5 transition-opacity border-primary-500 text-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {regenerating ? (
-              <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <WandStars />
-            )}{" "}
-            {openingAutofillLabel}
-          </button>
+            isLoading={regenerating}
+            label={openingAutofillLabel}
+            disabled={catalogLoading || tabsWithLocale.length === 0}
+          />
         </div>
       </div>
-      <div className="border border-border-light rounded-md overflow-hidden bg-white">
-        <div className="flex border-b border-border-light overflow-x-auto">
-          {scenarioLanguageTabs.map(tab => {
-            const isActive = activeLanguageId === tab.languageId;
-            return (
-              <button
-                key={tab.languageId}
-                type="button"
-                onClick={() => setSelectedLanguageId(tab.languageId)}
-                className={`shrink-0 px-4 py-3 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "text-primary-500 border-b-2 border-primary-500 bg-primary-50/30"
-                    : "text-typography-600 hover:text-typography-800 hover:bg-gray-50"
-                }`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+      <LanguageTabPanel
+        tabs={scenarioLanguageTabs.map(t => ({ id: t.languageId, label: t.label }))}
+        activeTabId={activeLanguageId}
+        onTabChange={setSelectedLanguageId}
+      >
         {activeLanguageId && (
           <div className="p-4 flex flex-col gap-2">
             {Array.from({ length: OPENING_DIALOGUE_LINE_SLOTS }, (_, i) => (
@@ -324,12 +292,12 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
                 value={linesForActiveTab[i] ?? ""}
                 onChange={e => handleLineChange(i, e.target.value)}
                 placeholder={`Opening line ${i + 1}`}
-                className="w-full px-3 py-2 border border-border-light rounded text-sm text-typography-800"
+                className="w-full px-3 py-2 text-sm text-typography-800 bg-transparent border-b border-border-light focus:outline-none focus:border-primary-500 last:border-b-0"
               />
             ))}
           </div>
         )}
-      </div>
+      </LanguageTabPanel>
     </div>
   );
 };

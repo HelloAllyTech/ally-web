@@ -341,6 +341,59 @@ export const Cell = ({
         <span />
       );
       break;
+    case cellTypes.voiceDropdown: {
+      const voiceOptions = initialValue?.options ?? [];
+      const onPlay = initialValue?.onPlay as ((voiceId: string) => void) | undefined;
+      const onPause = initialValue?.onPause as (() => void) | undefined;
+      const playingVoiceId = initialValue?.playingVoiceId as string | null;
+      const isVoiceAudioLoading = Boolean(initialValue?.isAudioLoading);
+
+      const voiceOptionRenderer = (
+        option: { value: string; label: string },
+        onSelect: (v: string) => void,
+      ) => {
+        const isCurrentVoice = playingVoiceId === option.value;
+        const isLoading = isCurrentVoice && isVoiceAudioLoading;
+        const isPlaying = isCurrentVoice && !isVoiceAudioLoading;
+        const isSelected = (value.value ?? "") === option.value;
+
+        return (
+          <div
+            key={option.value}
+            className="px-3 py-2 text-sm flex items-center justify-between gap-2 cursor-pointer hover:bg-background-secondary"
+            onClick={() => onSelect(option.value)}
+          >
+            <span className={isSelected ? "text-primary-700 font-medium" : ""}>{option.label}</span>
+            <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-typography-800 rounded-full animate-spin" />
+              ) : isPlaying ? (
+                <button type="button" onClick={() => onPause?.()}>
+                  <PauseIcon className="w-5 h-5" />
+                </button>
+              ) : (
+                <button type="button" onClick={() => onPlay?.(option.value)}>
+                  <PlayIcon className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      element = (
+        <TextDropdown
+          value={value.value ?? ""}
+          options={voiceOptions}
+          onChange={updateCellValue}
+          placeholder="Select voice"
+          isSearchable={true}
+          disabled={isDisabled}
+          optionRenderer={voiceOptionRenderer}
+        />
+      );
+      break;
+    }
     case cellTypes.previewAudio: {
       const previewValue = initialValue ?? {};
       const isPreviewLoading = Boolean(previewValue.isLoading);

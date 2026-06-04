@@ -242,267 +242,239 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
   };
 
   return (
-    <div className="w-full">
-      <label className="text-typography-900 font-weight-400 text-base mb-2 flex items-center gap-1">
-        {label} {isMandatory && <span className="text-destructive-500">*</span>}
-      </label>
-
-      <div className="space-y-6 border border-border-light rounded-md p-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-typography-900 font-weight-400 text-base mb-2 block">
-              Select character
-            </label>
-            <div className="relative" ref={characterDropdownRef}>
-              <div
-                className="w-full rounded border border-border-light px-3 py-1 bg-white text-base cursor-pointer flex items-center justify-between hover:border-border-dark transition-colors"
-                onClick={() => setIsCharacterDropdownOpen(prev => !prev)}
-              >
-                <span
-                  className={selectedCharacterId ? "text-typography-900" : "text-typography-500"}
-                >
-                  {getDisplayLabel()}
-                </span>
-                <span
-                  className={`text-typography-600 transition-transform ${isCharacterDropdownOpen ? "rotate-180" : ""}`}
-                >
-                  <ArrowSolid />
-                </span>
-              </div>
-
-              {isCharacterDropdownOpen && (
-                <div className="absolute left-0 top-full mt-1 w-full bg-white border border-border-light rounded-md shadow-lg max-h-[400px] z-10 flex flex-col">
-                  {/* Search input - sticky at top */}
-                  <div className="px-3 py-2 border-b border-border-light bg-white sticky top-0">
-                    <input
-                      type="text"
-                      placeholder="Search characters..."
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="w-full rounded border border-border-light px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      onClick={e => e.stopPropagation()}
-                    />
-                  </div>
-
-                  {/* Character list - scrollable */}
-                  <div className="overflow-y-auto custom-scrollbar">
-                    {isLoading ? (
-                      <div className="px-3 py-4 text-sm text-typography-600 text-center">
-                        Loading...
-                      </div>
-                    ) : charactersData && charactersData?.characters?.length > 0 ? (
-                      <>
-                        <div
-                          key={CUSTOM_CHARACTER_ID}
-                          className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                            selectedCharacterId === CUSTOM_CHARACTER_ID
-                              ? "bg-primary-50 text-primary font-weight-400"
-                              : "text-typography-900 hover:bg-background-secondary"
-                          }`}
-                          onClick={() => handleCharacterSelect(CUSTOM_CHARACTER_ID)}
-                        >
-                          Custom
-                        </div>
-                        {charactersData.characters.map(character => (
-                          <div
-                            key={character.id}
-                            className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                              selectedCharacterId === character.id
-                                ? "bg-primary-50 text-primary font-weight-400"
-                                : "text-typography-900 hover:bg-background-secondary"
-                            }`}
-                            onClick={() => handleCharacterSelect(character.id, character)}
-                          >
-                            {`${character?.name} (${character?.gender}, ${character?.age}, ${character?.profession})`}
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <div className="px-3 py-4 text-sm text-typography-600 text-center">
-                        {debouncedSearchQuery
-                          ? en.common.noCharactersFoundMatchingYourSearch
-                          : en.common.noResultsFound}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+    <div className="w-full flex flex-col gap-6">
+      {/* Header row: label + inline character selector */}
+      <div className="flex items-center justify-between">
+        <span className="text-typography-900 text-base">Character Profile</span>
+        <div className="relative" ref={characterDropdownRef}>
+          <div
+            className="flex items-center gap-2 text-sm text-typography-600 cursor-pointer hover:text-typography-900 transition-colors"
+            onClick={() => setIsCharacterDropdownOpen(prev => !prev)}
+          >
+            <span>{getDisplayLabel()}</span>
+            <span className={`transition-transform ${isCharacterDropdownOpen ? "rotate-180" : ""}`}>
+              <ArrowSolid />
+            </span>
           </div>
+          {isCharacterDropdownOpen && (
+            <div className="absolute right-0 top-full mt-1 min-w-[280px] bg-white border border-border-light rounded-md shadow-lg max-h-[400px] z-10 flex flex-col">
+              <div className="px-3 py-2 border-b border-border-light bg-white sticky top-0">
+                <input
+                  type="text"
+                  placeholder="Search characters..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full rounded border border-border-light px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  onClick={e => e.stopPropagation()}
+                />
+              </div>
+              <div className="overflow-y-auto custom-scrollbar">
+                {isLoading ? (
+                  <div className="px-3 py-4 text-sm text-typography-600 text-center">Loading...</div>
+                ) : charactersData && charactersData?.characters?.length > 0 ? (
+                  <>
+                    <div
+                      key={CUSTOM_CHARACTER_ID}
+                      className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                        selectedCharacterId === CUSTOM_CHARACTER_ID
+                          ? "bg-primary-50 text-primary font-weight-400"
+                          : "text-typography-900 hover:bg-background-secondary"
+                      }`}
+                      onClick={() => handleCharacterSelect(CUSTOM_CHARACTER_ID)}
+                    >
+                      Custom
+                    </div>
+                    {charactersData.characters.map(character => (
+                      <div
+                        key={character.id}
+                        className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                          selectedCharacterId === character.id
+                            ? "bg-primary-50 text-primary font-weight-400"
+                            : "text-typography-900 hover:bg-background-secondary"
+                        }`}
+                        onClick={() => handleCharacterSelect(character.id, character)}
+                      >
+                        {`${character?.name} (${character?.gender}, ${character?.age}, ${character?.profession})`}
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="px-3 py-4 text-sm text-typography-600 text-center">
+                    {debouncedSearchQuery
+                      ? en.common.noCharactersFoundMatchingYourSearch
+                      : en.common.noResultsFound}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* All fields in one unified 2-column grid */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+        {/* Name */}
+        <div>
+          <InputField
+            label={formFieldNames.NAME}
+            id={formFieldIds.NAME}
+            formMethods={formMethods}
+            placeholder="Enter name"
+            isMandatory
+          />
         </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <InputField
-                label={formFieldNames.NAME}
-                id={formFieldIds.NAME}
-                formMethods={formMethods}
-                placeholder="Enter name"
-                isMandatory
-              />
-            </div>
-            <div>
-              <label className="text-typography-900 font-weight-400 text-base mb-2 flex items-center gap-1">
-                {formFieldNames.AGE} <span className="text-destructive-500">*</span>
-              </label>
-              <Controller
-                name={formFieldIds.AGE}
-                control={formMethods.control}
-                defaultValue=""
-                rules={{
-                  required: "Age is required",
-                  validate: value => {
-                    if (value === "" || value == null) return "Age is required";
-                    const num = typeof value === "number" ? value : parseInt(String(value), 10);
-                    if (isNaN(num) || num < 0) return "Please enter a valid age";
-                    return true;
-                  },
+        {/* Age */}
+        <div>
+          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+            {formFieldNames.AGE} <span className="text-destructive-500">*</span>
+          </label>
+          <Controller
+            name={formFieldIds.AGE}
+            control={formMethods.control}
+            defaultValue=""
+            rules={{
+              required: "Age is required",
+              validate: value => {
+                if (value === "" || value == null) return "Age is required";
+                const num = typeof value === "number" ? value : parseInt(String(value), 10);
+                if (isNaN(num) || num < 0) return "Please enter a valid age";
+                return true;
+              },
+            }}
+            render={({ field }) => (
+              <input
+                type="number"
+                placeholder="--"
+                value={field.value === null || field.value === undefined ? "" : field.value}
+                onChange={e => {
+                  const val = e.target.value;
+                  field.onChange(val === "" ? "" : parseInt(val, 10) || "");
                 }}
-                render={({ field }) => (
-                  <input
-                    type="number"
-                    placeholder="--"
-                    value={field.value === null || field.value === undefined ? "" : field.value}
-                    onChange={e => {
-                      const val = e.target.value;
-                      field.onChange(val === "" ? "" : parseInt(val, 10) || "");
-                    }}
-                    onBlur={field.onBlur}
-                    name={field.name}
-                    ref={field.ref}
-                    className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                )}
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
+                className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary"
               />
-              {errors[formFieldIds.AGE]?.message && (
-                <p className="text-destructive-500 text-sm mt-1">
-                  {errors[formFieldIds.AGE].message}
-                </p>
-              )}
-            </div>
-          </div>
+            )}
+          />
+          {errors[formFieldIds.AGE]?.message && (
+            <p className="text-destructive-500 text-sm mt-1">{errors[formFieldIds.AGE].message}</p>
+          )}
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-typography-900 font-weight-400 text-base mb-2 flex items-center gap-1">
-                {formFieldNames.GENDER} <span className="text-destructive-500">*</span>
-              </label>
-              <Controller
-                name={formFieldIds.GENDER}
-                control={formMethods.control}
-                defaultValue=""
-                render={({ field }) => (
-                  <CustomDropdownField
-                    options={GENDER_OPTIONS}
-                    placeholder="Select gender"
-                    customStyle={{
-                      height: "34px",
-                    }}
-                    defaultOption={
-                      field.value
-                        ? GENDER_OPTIONS.find(opt => opt.value === field.value) || null
-                        : null
-                    }
-                    onHandleSelect={option => field.onChange(option.value)}
-                  />
-                )}
+        {/* Gender */}
+        <div>
+          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+            {formFieldNames.GENDER} <span className="text-destructive-500">*</span>
+          </label>
+          <Controller
+            name={formFieldIds.GENDER}
+            control={formMethods.control}
+            defaultValue=""
+            render={({ field }) => (
+              <CustomDropdownField
+                options={GENDER_OPTIONS}
+                placeholder="Select gender"
+                customStyle={{ height: "34px" }}
+                defaultOption={
+                  field.value ? GENDER_OPTIONS.find(opt => opt.value === field.value) || null : null
+                }
+                onHandleSelect={option => field.onChange(option.value)}
               />
-            </div>
-            <div>
-              <label className="text-typography-900 text-base font-weight-400 mb-2 flex items-center gap-1">
-                {formFieldNames.PROFESSION} <span className="text-destructive-500">*</span>
-              </label>
-              <Controller
-                name={formFieldIds.PROFESSION}
-                control={formMethods.control}
-                defaultValue=""
-                rules={{ required: "Profession is required" }}
-                render={({ field }) => (
-                  <input
-                    type="text"
-                    placeholder="Enter profession"
-                    value={field.value === null || field.value === undefined ? "" : field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    name={field.name}
-                    ref={field.ref}
-                    className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
-                  />
-                )}
-              />
-              {errors[formFieldIds.PROFESSION]?.message && (
-                <p className="text-destructive-500 text-sm mt-1">
-                  {String(errors[formFieldIds.PROFESSION].message)}
-                </p>
-              )}
-            </div>
-          </div>
+            )}
+          />
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <InputField
-                label={formFieldNames.CURRENT_LOCATION}
-                id={formFieldIds.CURRENT_LOCATION}
-                formMethods={formMethods}
-                placeholder="Enter location"
-                isMandatory
+        {/* Profession */}
+        <div>
+          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+            {formFieldNames.PROFESSION} <span className="text-destructive-500">*</span>
+          </label>
+          <Controller
+            name={formFieldIds.PROFESSION}
+            control={formMethods.control}
+            defaultValue=""
+            rules={{ required: "Profession is required" }}
+            render={({ field }) => (
+              <input
+                type="text"
+                placeholder="Enter profession"
+                value={field.value === null || field.value === undefined ? "" : field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
+                className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
               />
-            </div>
-            <div>
-              <label className="text-typography-900 text-base font-weight-400 mb-2 flex items-center gap-1">
-                {formFieldNames.GENDER_IDENTITY} <span className="text-destructive-500">*</span>
-              </label>
-              <Controller
-                name={formFieldIds.GENDER_IDENTITY}
-                control={formMethods.control}
-                defaultValue=""
-                render={({ field }) => (
-                  <CustomDropdownField
-                    options={GENDER_IDENTITY_OPTIONS}
-                    placeholder="Select gender identity"
-                    customStyle={{
-                      height: "34px",
-                    }}
-                    defaultOption={
-                      field.value
-                        ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === field.value) || null
-                        : null
-                    }
-                    onHandleSelect={option => field.onChange(option.value)}
-                  />
-                )}
-              />
-            </div>
-          </div>
+            )}
+          />
+          {errors[formFieldIds.PROFESSION]?.message && (
+            <p className="text-destructive-500 text-sm mt-1">
+              {String(errors[formFieldIds.PROFESSION].message)}
+            </p>
+          )}
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-typography-900 text-base font-weight-400 mb-2 flex items-center gap-1">
-                {formFieldNames.SEXUAL_ORIENTATION} <span className="text-destructive-500">*</span>
-              </label>
-              <Controller
-                name={formFieldIds.SEXUAL_ORIENTATION}
-                control={formMethods.control}
-                defaultValue=""
-                render={({ field }) => (
-                  <CustomDropdownField
-                    options={SEXUAL_ORIENTATION_OPTIONS}
-                    placeholder="Select sexual orientation"
-                    customStyle={{
-                      height: "34px",
-                    }}
-                    defaultOption={
-                      field.value
-                        ? SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === field.value) || null
-                        : null
-                    }
-                    onHandleSelect={option => field.onChange(option.value)}
-                  />
-                )}
+        {/* Current location */}
+        <div>
+          <InputField
+            label={formFieldNames.CURRENT_LOCATION}
+            id={formFieldIds.CURRENT_LOCATION}
+            formMethods={formMethods}
+            placeholder="Enter location"
+            isMandatory
+          />
+        </div>
+
+        {/* Gender identity */}
+        <div>
+          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+            {formFieldNames.GENDER_IDENTITY} <span className="text-destructive-500">*</span>
+          </label>
+          <Controller
+            name={formFieldIds.GENDER_IDENTITY}
+            control={formMethods.control}
+            defaultValue=""
+            render={({ field }) => (
+              <CustomDropdownField
+                options={GENDER_IDENTITY_OPTIONS}
+                placeholder="Select gender identity"
+                customStyle={{ height: "34px" }}
+                defaultOption={
+                  field.value
+                    ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === field.value) || null
+                    : null
+                }
+                onHandleSelect={option => field.onChange(option.value)}
               />
-            </div>
-          </div>
+            )}
+          />
+        </div>
+
+        {/* Sexual orientation */}
+        <div>
+          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+            {formFieldNames.SEXUAL_ORIENTATION} <span className="text-destructive-500">*</span>
+          </label>
+          <Controller
+            name={formFieldIds.SEXUAL_ORIENTATION}
+            control={formMethods.control}
+            defaultValue=""
+            render={({ field }) => (
+              <CustomDropdownField
+                options={SEXUAL_ORIENTATION_OPTIONS}
+                placeholder="Select sexual orientation"
+                customStyle={{ height: "34px" }}
+                defaultOption={
+                  field.value
+                    ? SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === field.value) || null
+                    : null
+                }
+                onHandleSelect={option => field.onChange(option.value)}
+              />
+            )}
+          />
         </div>
       </div>
     </div>

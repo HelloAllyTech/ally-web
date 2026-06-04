@@ -1,6 +1,7 @@
 import { FC } from "react";
 
-import { Plus, TrashRed } from "@assets";
+import { TrashRed } from "@assets";
+import { AddItemButton } from "../add-item-button";
 import { en, FORM_FIELD_IDS } from "@constants";
 import { SimulationCustomField } from "@types";
 
@@ -92,14 +93,7 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
       })}
 
       {customFields.length < 3 ? (
-        <button
-          type="button"
-          onClick={() => handleAddField()}
-          className="w-fit border border-dashed px-4 py-2 flex text-typography-700 gap-3 items-center text-xs"
-        >
-          <Plus />
-          {en.simulation.newField}
-        </button>
+        <AddItemButton onClick={() => handleAddField()} label={en.simulation.newField} />
       ) : (
         <span className="text-destructive-500 text-xs">* {en.simulation.customFieldLimit}</span>
       )}

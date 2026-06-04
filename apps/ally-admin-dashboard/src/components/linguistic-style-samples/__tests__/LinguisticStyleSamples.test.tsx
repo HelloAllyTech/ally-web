@@ -145,9 +145,9 @@ describe("LinguisticStyleSamples", () => {
 
     render(<LinguisticStyleSamples formMethods={formMethods} />);
 
-    expect(screen.getAllByRole("button", { name: "English" })).toHaveLength(2);
-    expect(screen.getAllByRole("button", { name: "Hindi" })).toHaveLength(2);
-    expect(screen.getAllByRole("button", { name: "Malayalam" })).toHaveLength(2);
+    expect(screen.getAllByRole("tab", { name: "English" })).toHaveLength(2);
+    expect(screen.getAllByRole("tab", { name: "Hindi" })).toHaveLength(2);
+    expect(screen.getAllByRole("tab", { name: "Malayalam" })).toHaveLength(2);
   });
 
   it("generates samples for all catalog languages via bulk Generate", async () => {

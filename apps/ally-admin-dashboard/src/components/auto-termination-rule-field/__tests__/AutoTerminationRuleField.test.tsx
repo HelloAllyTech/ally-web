@@ -785,7 +785,7 @@ describe("AutoTerminationRuleField", () => {
         </TestWrapper>,
       );
 
-      const mainContainer = container.querySelector(".border-border-light");
+      const mainContainer = container.querySelector(".bg-neutral-50");
       expect(mainContainer).toBeInTheDocument();
     });
 

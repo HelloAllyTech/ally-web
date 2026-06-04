@@ -16,6 +16,7 @@ interface RichTextEditorProps {
   maxLength?: number;
   disabled?: boolean;
   className?: string;
+  borderless?: boolean;
 }
 
 export const RichTextEditor: FC<RichTextEditorProps> = ({
@@ -25,6 +26,7 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
   maxLength,
   disabled = false,
   className = "",
+  borderless = false,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -82,7 +84,7 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
 
   return (
     <div
-      className={`border border-border-light rounded-md overflow-hidden bg-white ${
+      className={`${borderless ? "" : "border border-border-light rounded-md"} overflow-hidden bg-white ${
         disabled ? "opacity-60 cursor-not-allowed" : ""
       } ${className}`}
       data-testid="rich-text-editor"

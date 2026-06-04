@@ -105,7 +105,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         return (
           <div className="flex flex-col gap-2">
             <div className="flex justify-between">
-              <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
+              <label className="text-typography-900 text-base flex items-center gap-1">
                 {label} {isMandatory && <span className="text-destructive-500">*</span>}
               </label>
             </div>
@@ -124,7 +124,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.TEXT:
         return (
           <InputField
-            label={label}
+            label={accordion ? "" : label}
             id={id}
             formMethods={formMethods}
             maxLength={maxLength}
@@ -228,6 +228,14 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
         );
       case FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS:
         return <TitleTranslationsPanel formMethods={formMethods} />;
+      case FORM_FIELD_TYPES.CUSTOM.TITLE_PANEL:
+        return (
+          <TitleTranslationsPanel
+            formMethods={formMethods}
+            label={label}
+            isMandatory={isMandatory}
+          />
+        );
       case FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION:
         return (
           <ChallengeDescriptionPanel
@@ -256,7 +264,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             <div className="flex flex-col gap-4">
               {label && (
                 <div className="flex items-center gap-2">
-                  <label className="text-typography-900 text-base cursor-pointer flex items-center gap-1">
+                  <label className="text-typography-900 text-base flex items-center gap-1">
                     {label} {isMandatory && <span className="text-destructive-500">*</span>}
                   </label>
                   {note && <span className="text-typography-500 text-sm">{note}</span>}
