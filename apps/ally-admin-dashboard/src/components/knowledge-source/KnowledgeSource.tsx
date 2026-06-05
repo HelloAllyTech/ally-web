@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Close, Delete, Plus, Search } from "@assets";
 import { en } from "@constants";
 
-import { AddItemButton } from "../add-item-button";
 import { FormLabel } from "../form-label";
 
 /**
@@ -55,6 +54,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
     item.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
   const activeTab = knowledgeSources[activeTabIndex];
+
 
   const handleAddTab = () => {
     if (activeTab && (activeTab.title.trim() === "" || activeTab.content.trim() === "")) {
@@ -248,17 +248,6 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
     );
   };
 
-  if (!knowledgeSources || knowledgeSources.length === 0) {
-    return (
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-between items-center">
-          <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
-          {renderAutofillControls()}
-        </div>
-        <AddItemButton onClick={handleAddTab} label={en.knowledgeSource.createKnowledgeSource} />
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-4">

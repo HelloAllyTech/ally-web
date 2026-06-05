@@ -307,7 +307,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             formMethods={formMethods}
             id={id}
             isMandatory={isMandatory}
-            label={label}
+            label={accordion ? "" : label}
           />
         );
       default:

@@ -1,7 +1,6 @@
 import { FC } from "react";
 
 import { TrashRed } from "@assets";
-import { AddItemButton } from "../add-item-button";
 import { en, FORM_FIELD_IDS } from "@constants";
 import { SimulationCustomField } from "@types";
 
@@ -93,7 +92,13 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
       })}
 
       {customFields.length < 3 ? (
-        <AddItemButton onClick={() => handleAddField()} label={en.simulation.newField} />
+        <button
+          type="button"
+          onClick={() => handleAddField()}
+          className="self-start text-sm text-primary hover:text-primary-700"
+        >
+          + {en.simulation.newField}
+        </button>
       ) : (
         <span className="text-destructive-500 text-xs">* {en.simulation.customFieldLimit}</span>
       )}

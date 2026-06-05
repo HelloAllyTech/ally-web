@@ -15,7 +15,6 @@ import { useIsPlaceholderUsed } from "@hooks";
 import { ButtonVariant } from "@src/components/types";
 import { behaviourStateInstruction, HelperTagItem } from "@types";
 
-import { AddItemButton } from "../add-item-button";
 import { HelperTag } from "../helper-tag";
 
 interface BehaviourRow {
@@ -46,51 +45,6 @@ const createEmptyFormValue = (): BehaviourRow => ({
   })),
 });
 
-interface AddNewRubricRowProps {
-  formData: BehaviourRow[];
-  onAdd: (tags: HelperTagItem[], category: string) => void;
-}
-
-const AddNewRubricRow: FC<AddNewRubricRowProps> = ({ onAdd }) => {
-  const [pendingTags, setPendingTags] = useState<HelperTagItem[]>([]);
-  const [category, setCategory] = useState("SHOULD_DO");
-
-  const handleAdd = () => {
-    if (pendingTags.length === 0) return;
-    onAdd(pendingTags, category);
-    setPendingTags([]);
-  };
-
-  return (
-    <div className="flex items-start gap-2">
-      <div className="flex-1">
-        <HelperTag
-          tags={pendingTags}
-          updateTags={tags => setPendingTags(tags as HelperTagItem[])}
-        />
-      </div>
-      <select
-        value={category}
-        onChange={e => setCategory(e.target.value)}
-        className="text-sm border border-border-light rounded px-2 py-1.5 bg-white text-typography-900 outline-none h-[34px]"
-      >
-        {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <button
-        type="button"
-        onClick={handleAdd}
-        disabled={pendingTags.length === 0}
-        className="text-sm px-3 py-1.5 rounded border border-border-light bg-white text-typography-700 hover:bg-background-secondary disabled:opacity-40 disabled:cursor-not-allowed h-[34px]"
-      >
-        Add
-      </button>
-    </div>
-  );
-};
 
 export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionProps> = ({
   formMethods,
@@ -102,6 +56,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   const stateNames: { stateId: string; name: string }[] =
     formMethods.watch(FORM_FIELD_IDS.STATE_NAMES) ?? [];
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [pendingRow, setPendingRow] = useState<{ category: string } | null>(null);
 
   // Body-driven gate: the legacy per-state instruction columns and the
   // state-names header row only matter when the variant body actually
@@ -342,7 +297,33 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     [formData, formMethods, id],
   );
 
+  const commitPendingTag = useCallback(
+    (tag: HelperTagItem, category: string) => {
+      const existingRow = formData.find(
+        r =>
+          r.category === category && (r.behaviors as unknown as HelperTagItem[]).length < 5,
+      );
+      let updatedFormData;
+      if (existingRow) {
+        updatedFormData = formData.map(r =>
+          r.id === existingRow.id
+            ? { ...r, behaviors: [...(r.behaviors as unknown as HelperTagItem[]), tag] }
+            : r,
+        );
+      } else {
+        updatedFormData = [
+          ...formData.filter(r => (r.behaviors as unknown as HelperTagItem[]).length > 0),
+          { ...createEmptyFormValue(), category, behaviors: [tag] },
+        ];
+      }
+      formMethods.setValue(id, updatedFormData, { shouldDirty: true });
+      setPendingRow(null);
+    },
+    [formData, formMethods, id],
+  );
+
   const renderScoringRubric = () => (
+    <>
     <div className="w-full border border-border-light rounded overflow-hidden">
       {/* Header */}
       <div className="grid grid-cols-[1fr_180px_40px] bg-white border-b border-border-light">
@@ -393,37 +374,55 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
         ))
       )}
 
-      {/* Add row: uses existing HelperTag + category selector in a compact form row */}
-      <div className="px-3 py-2 border-t border-border-light bg-white">
-        <AddNewRubricRow
-          formData={formData}
-          onAdd={(tags, category) => {
-            const existingRow = formData.find(
-              r =>
-                r.category === category && (r.behaviors as unknown as HelperTagItem[]).length < 5,
-            );
-            let updatedFormData;
-            if (existingRow) {
-              updatedFormData = formData.map(r =>
-                r.id === existingRow.id
-                  ? { ...r, behaviors: [...(r.behaviors as unknown as HelperTagItem[]), ...tags] }
-                  : r,
-              );
-            } else {
-              updatedFormData = [
-                ...formData.filter(r => (r.behaviors as unknown as HelperTagItem[]).length > 0),
-                { ...createEmptyFormValue(), category, behaviors: tags },
-              ];
-            }
-            formMethods.setValue(id, updatedFormData, { shouldDirty: true });
-          }}
-        />
-      </div>
+      {/* Pending new row */}
+      {pendingRow && (
+        <div className="grid grid-cols-[1fr_180px_40px] items-center border-t border-border-light bg-white">
+          <div className="px-4 py-2">
+            <HelperTag
+              tags={[]}
+              maxTags={1}
+              updateTags={tags => {
+                if (tags.length === 1) {
+                  commitPendingTag(tags[0] as HelperTagItem, pendingRow.category);
+                }
+              }}
+            />
+          </div>
+          <div className="px-3 py-2 border-l border-border-light">
+            <select
+              value={pendingRow.category}
+              onChange={e => setPendingRow(prev => prev ? { ...prev, category: e.target.value } : null)}
+              className="w-full text-sm bg-transparent border-none outline-none cursor-pointer text-typography-900"
+            >
+              {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div />
+        </div>
+      )}
     </div>
+    <button
+      type="button"
+      onClick={() => setPendingRow({ category: "SHOULD_DO" })}
+      className="self-start text-sm text-primary hover:text-primary-700 mt-2 px-3 py-2"
+    >
+      + {en.simulation.newRow}
+    </button>
+    </>
   );
 
   const tableFooter = (
-    <AddItemButton onClick={handleAddRow} label={en.simulation.newRow} className="mt-2 px-3 py-2" />
+    <button
+      type="button"
+      onClick={handleAddRow}
+      className="self-start text-sm text-primary hover:text-primary-700 mt-2 px-3 py-2"
+    >
+      + {en.simulation.newRow}
+    </button>
   );
 
   const tableStyle = { paddingBottom: "10px" };

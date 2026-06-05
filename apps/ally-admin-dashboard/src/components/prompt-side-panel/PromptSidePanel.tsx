@@ -23,14 +23,12 @@ import {
  * (the chip list re-parses prompt body text on every render and would
  * otherwise re-add anything found, including these). Keep both in sync.
  *
- * - `custom_fields_text`: rendered concatenation of customFields[].
- *   Authors fill the individual pairs, never the rendered string.
  * - `language_characteristics`: per-scenario language-style override.
  *   The merged-in resolved value reaches the prompt via `{language_label}`;
  *   the raw override placeholder only differs in the empty-when-absent
  *   pattern, which doesn't justify a chip alongside `{name}` / `{age}`.
  */
-const HIDDEN_PLACEHOLDERS = new Set<string>(["custom_fields_text", "language_characteristics"]);
+const HIDDEN_PLACEHOLDERS = new Set<string>(["language_characteristics"]);
 
 interface PromptSidePanelProps {
   selectedPrompt: Prompt | null;

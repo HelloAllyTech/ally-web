@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 
 import { useCreateTriggerWarningMutation, useGetTriggerWarningsQuery } from "@api";
-import { Close, Plus, Search } from "@assets";
+import { Close, Search } from "@assets";
 import { en } from "@constants";
 import { useClickOutside, useCreatePortal } from "@hooks";
 import { triggerWarning } from "@types";
@@ -28,7 +28,7 @@ export const TagSelector: React.FC<TagsDropdown> = ({
   const observerRef = useRef(null);
   const loadingRef = useRef(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: options, isFetching } = useGetTriggerWarningsQuery({
@@ -205,21 +205,14 @@ export const TagSelector: React.FC<TagsDropdown> = ({
 
         <div className="relative">
           {triggerWarnings?.length < 5 && (
-            <div
+            <button
               ref={triggerRef}
-              className="flex items-center border border-border-light rounded-full px-2 w-[70px]"
+              type="button"
               onClick={addTagButton}
+              className="text-sm text-primary hover:text-primary-700"
             >
-              <input
-                type="text"
-                placeholder="Add"
-                className="focus:outline-none flex-1 bg-white cursor-pointer max-w-[40px]"
-                readOnly
-              />
-              <button type="button" className="mr-2 text-primary text-sm">
-                <Plus />
-              </button>
-            </div>
+              + Add
+            </button>
           )}
           {openDropdown && renderDropdown()}
         </div>
