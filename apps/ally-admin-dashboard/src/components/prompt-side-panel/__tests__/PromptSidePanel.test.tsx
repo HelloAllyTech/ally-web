@@ -81,6 +81,7 @@ vi.mock("@hooks", () => ({}));
 
 // Mock constants
 vi.mock("@constants", () => ({
+  MAIN_AGENT_PROMPT_VARIABLE_CATALOG: [],
   en: {
     simulation: {
       editPrompt: "Edit Prompt",

@@ -134,13 +134,17 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
       hasAutoSeededRef.current = false;
       return;
     }
-    if (states.length === 0 && !hasAutoSeededRef.current) {
+    // Use watchedStates (live form value) not local states to avoid the race
+    // where selectedHasStates flips true in the same render as formMethods.reset()
+    // but the local states hasn't synced yet — causing the seed to fire even
+    // though the form already has states loaded from the API.
+    if (watchedStates.length === 0 && !hasAutoSeededRef.current) {
       hasAutoSeededRef.current = true;
       const seed = [seedNextState([])];
       setStates(seed);
       formMethods.setValue(id, seed, { shouldDirty: false });
     }
-  }, [selectedHasStates, states.length, formMethods, id]);
+  }, [selectedHasStates, watchedStates.length, formMethods, id]);
 
   // ---- Autofill (Generate / Regenerate) ----------------------------------
   // Mirrors the RegenerateButton pattern but local to StatesEditor because

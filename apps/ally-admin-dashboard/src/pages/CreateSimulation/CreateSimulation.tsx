@@ -579,7 +579,9 @@ export const CreateSimulation: FC = () => {
       // When all state cards are blank the user hasn't configured any states.
       // Send null (not []) so the backend treats this as "not configured" and
       // skips validation against the prompt variant's {state_x_guidelines}.
-      (simulationData as any).states = filledStates.length > 0 ? filledStates : null;
+      // Send undefined (not null) when empty so ally-be's merge logic excludes
+      // the field and preserves any states already stored in metadata.
+      (simulationData as any).states = filledStates.length > 0 ? filledStates : undefined;
     }
 
     // Normalize empty-string selectedMainPromptCode to undefined.

@@ -262,7 +262,14 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       metaByName.set(entry.name, entry);
     }
 
-    const items = Array.from(liveUsedNames).map(name => metaByName.get(name) ?? { name });
+    // Only surface variables that are recognised (in server-side metadata or
+    // the catalog). Unknown placeholders typed into the body are silently
+    // ignored — they reach the runtime via SafeFormatter but shouldn't
+    // pollute the chip list with unvalidated names.
+    const catalogNames = new Set(MAIN_AGENT_PROMPT_VARIABLE_CATALOG.map(e => e.name));
+    const items = Array.from(liveUsedNames)
+      .filter(name => metaByName.has(name) || catalogNames.has(name))
+      .map(name => metaByName.get(name) ?? { name });
 
     // Drop block placeholders to keep the UI focused on author-facing vars.
     // Also drop the HIDDEN_PLACEHOLDERS set — runtime substitutes them but
