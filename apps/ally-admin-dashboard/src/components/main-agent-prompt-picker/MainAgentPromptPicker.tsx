@@ -49,14 +49,23 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
     [prompts],
   );
 
-  // Auto-select the first prompt when none is chosen yet
+  // Subscribe to the field value so this re-runs whenever it changes —
+  // crucially after the parent form's reset() (when editing a scenario that
+  // loaded without a saved selectedMainPromptCode). Keying the effect only
+  // on `options` left a race: on a warm cache the list is already populated
+  // at mount, the effect ran once, and the subsequent reset() wiped the
+  // value with no dependency change to re-trigger the default — so the field
+  // showed "Select" until a hard refresh happened to fetch the list *after*
+  // the reset. Watching the value closes that race in both orderings.
+  const currentValue = formMethods.watch(id);
+
+  // Auto-select the first prompt whenever none is chosen yet.
   useEffect(() => {
     if (options.length === 0) return;
-    const current = formMethods.getValues(id);
-    if (!current) {
+    if (!currentValue) {
       formMethods.setValue(id, options[0].value, { shouldDirty: false });
     }
-  }, [options, id, formMethods]);
+  }, [options, id, formMethods, currentValue]);
 
   return (
     <div className="flex flex-col gap-2">
