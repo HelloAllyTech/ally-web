@@ -542,18 +542,10 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                   {[
                     ...availableVariables.map(v => ({
                       name: v.name,
-                      required: Boolean(v.required),
                       isUsed: true,
                     })),
-                    // The catalog used for the "unused" set doesn't carry a
-                    // `required` flag — required-ness only flows through the
-                    // server-side metadata for placeholders that have been
-                    // typed into the prompt. Render unused chips without the
-                    // asterisk; matches the original "Available (not used)"
-                    // section's behavior.
                     ...unusedVariables.map(entry => ({
                       name: entry.name,
-                      required: false,
                       isUsed: false,
                     })),
                   ]
@@ -568,7 +560,6 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                         }
                       >
                         <span>{`{${chip.name}}`}</span>
-                        {chip.required && <span className="text-destructive-500">*</span>}
                       </span>
                     ))}
                 </div>

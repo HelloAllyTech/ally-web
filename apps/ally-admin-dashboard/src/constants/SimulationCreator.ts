@@ -182,6 +182,7 @@ export const REGENERATE_TYPE = {
 };
 
 export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
+export const DEFAULT_MAIN_AGENT_PROMPT_CODE = "ally_ai_learn_system_main_agent_prompt";
 
 export const DEFAULT_ROLE_INSTRUCTION = `You are an AI roleplay assistant for counselor training. In this simulation, you must act ONLY as the client in a therapy session. Stay fully in character, provide realistic dialogue, and do not switch roles unless explicitly instructed.
 
@@ -251,7 +252,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
         regenerateType: REGENERATE_TYPE.DESCRIPTION,
-        promptVariable: "description",
+        promptVariable: "challenge_description",
       },
       {
         id: "triggerWarningIds",
@@ -976,3 +977,20 @@ export const TOOLTIPS_TABLE_COLUMNS = [
     minWidth: 160,
   },
 ];
+
+/**
+ * Maps prompt placeholder name → whether the corresponding simulation form
+ * field is mandatory. Derived from SIMULATION_CREATOR_FIELD_GROUPS so it
+ * stays in sync automatically when isMandatory changes on any field.
+ */
+export const PROMPT_VARIABLE_MANDATORY_MAP: ReadonlyMap<string, boolean> = (() => {
+  const map = new Map<string, boolean>();
+  for (const group of SIMULATION_CREATOR_FIELD_GROUPS) {
+    for (const field of group.fields) {
+      if (field.promptVariable) {
+        map.set(field.promptVariable, Boolean(field.isMandatory));
+      }
+    }
+  }
+  return map;
+})();

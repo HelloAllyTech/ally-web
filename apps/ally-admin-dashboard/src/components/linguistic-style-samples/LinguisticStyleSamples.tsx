@@ -1,6 +1,5 @@
-import { FC, useState } from "react";
+import { FC } from "react";
 
-import { DEFAULT_AUTOFILL_MODEL } from "@constants";
 import { useIsPlaceholderUsed } from "@hooks";
 
 import { AllowedFillerWordsPanel } from "./AllowedFillerWordsPanel";
@@ -19,8 +18,6 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   formMethods,
   isMandatory = false,
 }) => {
-  const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
-
   // Body-driven gates per sub-panel. Each renders iff its own placeholder
   // is referenced by the picked main-agent variant — authors who remove
   // only the filler-words line from the prompt can keep using samples,
@@ -30,7 +27,7 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   // when we've definitively loaded a variant that doesn't reference
   // the placeholder.
   const selectedMainPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
-  const samplesLookup = useIsPlaceholderUsed(selectedMainPromptCode, "samples");
+  const samplesLookup = useIsPlaceholderUsed(selectedMainPromptCode, "linguistic_samples");
   const fillersLookup = useIsPlaceholderUsed(selectedMainPromptCode, "allowed_fillers");
   const showSamplesPanel = !(samplesLookup.kind === "loaded" && !samplesLookup.isUsed);
   const showFillersPanel = !(fillersLookup.kind === "loaded" && !fillersLookup.isUsed);
@@ -49,17 +46,9 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
           label={label}
           formMethods={formMethods}
           isMandatory={isMandatory}
-          selectedModel={selectedModel}
-          onSelectedModelChange={setSelectedModel}
         />
       )}
-      {showFillersPanel && (
-        <AllowedFillerWordsPanel
-          formMethods={formMethods}
-          selectedModel={selectedModel}
-          onSelectedModelChange={setSelectedModel}
-        />
-      )}
+      {showFillersPanel && <AllowedFillerWordsPanel formMethods={formMethods} />}
     </div>
   );
 };

@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
 import { AutofillModelSelect } from "@components/autofill-model-select";
-import { AutofillButton } from "../autofill-button";
 import {
   BEHAVIOUR_STATES,
   DEFAULT_AUTOFILL_MODEL,
@@ -15,6 +14,8 @@ import {
 } from "@constants";
 import { RegenerateFieldResponse } from "@types";
 import { isNonEmptyArray, isNonEmptyObject, isNonEmptyString } from "@utils";
+
+import { AutofillButton } from "../autofill-button";
 
 interface RegenerateButtonProps {
   regenerateType?: string;
@@ -138,32 +139,44 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
     }
   };
 
-  const getFieldValue = () => {
-    if (!formMethods || !regenerateType) return null;
-
-    const formValues = formMethods.getValues();
-
+  const getWatchedFieldId = () => {
     switch (regenerateType) {
       case REGENERATE_TYPE.OPENING_STATEMENTS:
-        return formValues[FORM_FIELD_IDS.OPENING_STATEMENTS];
+        return FORM_FIELD_IDS.OPENING_STATEMENTS;
       case REGENERATE_TYPE.CHARACTER_PROFILE_TEXT:
-        return formValues[FORM_FIELD_IDS.CHARACTER_PROFILE_TEXT];
+        return FORM_FIELD_IDS.CHARACTER_PROFILE_TEXT;
       case REGENERATE_TYPE.DESCRIPTION:
-        return formValues[FORM_FIELD_IDS.DESCRIPTION];
+        return FORM_FIELD_IDS.DESCRIPTION;
       case REGENERATE_TYPE.STATE_INSTRUCTIONS:
-        return formValues[FORM_FIELD_IDS.STATE_INSTRUCTIONS];
+        return FORM_FIELD_IDS.STATE_INSTRUCTIONS;
       case REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS:
-        return formValues[FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS];
+        return FORM_FIELD_IDS.BEHAVIOR_INSTRUCTIONS;
       default:
         return null;
     }
   };
 
+  const watchedFieldId = getWatchedFieldId();
+  const watchedFieldValue = formMethods?.watch(watchedFieldId ?? "") ?? null;
+
   const isFieldEmpty = () => {
-    const fieldValue = getFieldValue();
+    const fieldValue = watchedFieldId ? watchedFieldValue : null;
     if (fieldValue === null || fieldValue === undefined) return true;
-    if (Array.isArray(fieldValue)) return fieldValue.length === 0;
     if (typeof fieldValue === "string") return fieldValue.trim() === "";
+    if (Array.isArray(fieldValue)) {
+      if (fieldValue.length === 0) return true;
+      // Behaviour instructions: treat as empty when every row is blank
+      // (no category and no behaviors selected) — the component seeds one
+      // blank placeholder row on mount so the array is never truly empty.
+      if (regenerateType === REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS) {
+        return fieldValue.every(
+          (row: any) =>
+            (!row?.category || String(row.category).trim() === "") &&
+            (!row?.behaviors || row.behaviors.length === 0),
+        );
+      }
+      return false;
+    }
     return false;
   };
 

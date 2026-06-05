@@ -3,6 +3,7 @@ import React, { useEffect, useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 
 import { useGetPromptsByTypeQuery } from "@api";
+import { DEFAULT_MAIN_AGENT_PROMPT_CODE } from "@constants";
 
 import { DropdownField } from "../dropdown-field";
 import { FormLabel } from "../form-label";
@@ -59,11 +60,13 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
   // the reset. Watching the value closes that race in both orderings.
   const currentValue = formMethods.watch(id);
 
-  // Auto-select the first prompt whenever none is chosen yet.
+  // Auto-select the default prompt by its stable promptCode whenever none is chosen yet.
   useEffect(() => {
     if (options.length === 0) return;
     if (!currentValue) {
-      formMethods.setValue(id, options[0].value, { shouldDirty: false });
+      const defaultOption =
+        options.find(o => o.value === DEFAULT_MAIN_AGENT_PROMPT_CODE) ?? options[0];
+      formMethods.setValue(id, defaultOption.value, { shouldDirty: false });
     }
   }, [options, id, formMethods, currentValue]);
 

@@ -1,21 +1,14 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useWatch } from "react-hook-form";
-import { toast } from "sonner";
 
-import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
-import { AutofillModelSelect } from "@components/autofill-model-select";
 import { FillerTagPicker } from "@components/filler-tag-picker";
-import { FALLBACK_AUTOFILL_MODEL_OPTIONS, en } from "@constants";
+import { en } from "@constants";
 
-import { AutofillButton } from "../autofill-button";
 import { LanguageTabPanel } from "../language-tab-panel";
-import { isNonEmptyArray } from "@utils";
-
 import {
   ALLOWED_FILLER_WORDS_FIELD,
   ALLOWED_FILLER_WORDS_MAX,
-  buildScenarioContext,
   stringsToFillerTags,
   uniqueFillerNamesPreserveOrder,
   type FillerTag,
@@ -25,21 +18,9 @@ import { useScenarioLanguagesToShow } from "./useScenarioLanguagesToShow";
 
 interface AllowedFillerWordsPanelProps {
   formMethods: any;
-  selectedModel: string;
-  onSelectedModelChange: (model: string) => void;
 }
 
-export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
-  formMethods,
-  selectedModel,
-  onSelectedModelChange,
-}) => {
-  const [regenerateField] = useRegenerateFieldMutation();
-  const { data: apiModels } = useGetAutofillModelsQuery();
-  const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
-  const selectedProvider =
-    allModelOptions.find(m => m.value === selectedModel)?.provider ?? "openai";
-  const [regeneratingFillersAll, setRegeneratingFillersAll] = useState(false);
+export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({ formMethods }) => {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
   /** Accumulated filler names per language (AI + user) so removed items stay searchable in the picker. */
   const [fillerHintNamesByLang, setFillerHintNamesByLang] = useState<Record<string, string[]>>({});
@@ -89,20 +70,6 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
     return stringsToFillerTags(allowedFillerWords[activeLanguageId]);
   }, [activeLanguageId, allowedFillerWords]);
 
-  const hasAnyFillersContent = useMemo(() => {
-    for (const arr of Object.values(allowedFillerWords ?? {})) {
-      if (!Array.isArray(arr)) continue;
-      if (arr.some(n => String(n ?? "").trim().length > 0)) return true;
-    }
-    return false;
-  }, [allowedFillerWords]);
-
-  const bulkAutofillLabel = regeneratingFillersAll
-    ? en.simulation.generating
-    : hasAnyFillersContent
-      ? en.simulation.regenerate
-      : en.simulation.generate;
-
   const handleFillerTagsChange = useCallback(
     (tags: FillerTag[]) => {
       if (!activeLanguageId) return;
@@ -115,71 +82,6 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
     [activeLanguageId, allowedFillerWords, setValue],
   );
 
-  const handleRegenerateAllFillers = useCallback(async () => {
-    if (languagesToShow.length === 0) return;
-    setRegeneratingFillersAll(true);
-    const languages = languagesToShow as LanguageOption[];
-    const results = await Promise.allSettled(
-      languages.map(lang => {
-        const languageId = String(lang.language_id);
-        const scenarioContext = buildScenarioContext(
-          formMethods,
-          languageId,
-          lang.value ?? "",
-          lang.label ?? "",
-        );
-        return regenerateField({
-          fieldName: ALLOWED_FILLER_WORDS_FIELD,
-          scenarioContext,
-          model: selectedModel,
-          provider: selectedProvider,
-        })
-          .unwrap()
-          .then(response => ({
-            languageId,
-            label: lang.label ?? languageId,
-            content: response?.content as string[] | undefined,
-          }));
-      }),
-    );
-    let updated = { ...allowedFillerWords };
-    let successCount = 0;
-    results.forEach((result, index) => {
-      const lang = languages[index];
-      const languageId = String(lang.language_id);
-      if (result.status === "fulfilled" && isNonEmptyArray(result.value.content)) {
-        const cleaned = uniqueFillerNamesPreserveOrder(
-          result.value.content.map(s => (typeof s === "string" ? s.trim() : "")).filter(Boolean),
-        );
-        updated = {
-          ...updated,
-          [languageId]: cleaned,
-        };
-        successCount++;
-      } else if (result.status === "rejected") {
-        toast.error(`${en.errors.failedToRegenerate} ${lang.label ?? languageId}`);
-      }
-    });
-    if (successCount > 0) {
-      setValue(ALLOWED_FILLER_WORDS_FIELD, updated);
-      toast.success(en.simulation.generatedFillersAllCount(successCount));
-    } else if (languages.length > 0) {
-      const allRejected = results.every(r => r.status === "rejected");
-      if (!allRejected) {
-        toast.warning(en.simulation.bulkGenerateNoFillers);
-      }
-    }
-    setRegeneratingFillersAll(false);
-  }, [
-    allowedFillerWords,
-    formMethods,
-    languagesToShow,
-    regenerateField,
-    selectedModel,
-    selectedProvider,
-    setValue,
-  ]);
-
   if (isLoading || languagesToShow.length === 0) {
     return null;
   }
@@ -190,18 +92,6 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
         <span className="font-regular text-base text-typography-900">
           {en.simulation.allowedFillersSectionTitle}
         </span>
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          <AutofillModelSelect
-            value={selectedModel}
-            onChange={onSelectedModelChange}
-            disabled={regeneratingFillersAll}
-          />
-          <AutofillButton
-            onClick={handleRegenerateAllFillers}
-            isLoading={regeneratingFillersAll}
-            label={bulkAutofillLabel}
-          />
-        </div>
       </div>
       <LanguageTabPanel
         tabs={(languagesToShow as LanguageOption[]).map(l => ({

@@ -132,7 +132,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             multiline={multiline}
             isMandatory={isMandatory}
             defaultValue={defaultValue}
-            regenerateButton={regenerateButton}
           />
         );
       case FORM_FIELD_TYPES.NUMBER:

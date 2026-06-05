@@ -41,7 +41,7 @@ export interface PromptCatalogEntry {
 export const MAIN_AGENT_PROMPT_VARIABLE_CATALOG: PromptCatalogEntry[] = [
   // Scenario meta
   { name: "title", label: "Title", group: "scenario" },
-  { name: "description", label: "Description", group: "scenario" },
+  { name: "challenge_description", label: "Challenge Description", group: "scenario" },
   { name: "competency", label: "Competency", group: "scenario" },
   { name: "role_instructions", label: "Role Instructions", group: "scenario" },
 
@@ -115,10 +115,10 @@ export const MAIN_AGENT_PROMPT_VARIABLE_CATALOG: PromptCatalogEntry[] = [
   },
   // Style / voice fields lifted from the multilingual block when the
   // "Main Agent Prompt #2" variant landed. Variants can now reference
-  // `{samples}` and `{allowed_fillers}` directly in their body without
+  // `{linguistic_samples}` and `{allowed_fillers}` directly in their body without
   // pulling in the full `{multilingual_instructions_block}` wrapper.
   {
-    name: "samples",
+    name: "linguistic_samples",
     label: "Tone & Style Samples",
     group: "system",
     systemComputed: true,

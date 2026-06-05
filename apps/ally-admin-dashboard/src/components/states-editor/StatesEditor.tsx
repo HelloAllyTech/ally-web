@@ -1,21 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { UseFormReturn } from "react-hook-form";
-import { toast } from "sonner";
 
-import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
 import { TrashRed } from "@assets";
-import { AutofillModelSelect } from "@components/autofill-model-select";
-import { AutofillButton } from "../autofill-button";
-import { FormLabel } from "../form-label";
-import {
-  DEFAULT_AUTOFILL_MODEL,
-  FALLBACK_AUTOFILL_MODEL_OPTIONS,
-  REGENERATE_TYPE,
-} from "@constants";
 import { useIsPlaceholderUsed } from "@hooks";
 
-import { cascadeBoundEdit, MIN_STATE_GAP } from "./cascadeBoundEdit";
+import { FormLabel } from "../form-label";
+import { cascadeBoundEdit } from "./cascadeBoundEdit";
 import { seedNextState } from "./stateSeeds";
 import { SimulationStateFormValue } from "./types";
 
@@ -33,44 +24,6 @@ interface StatesEditorProps {
   formMethods: UseFormReturn<any>;
   isMandatory?: boolean;
 }
-
-const generateId = (): string =>
-  `state_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e4)
-    .toString(36)
-    .padStart(3, "0")}`;
-
-/**
- * Compute deterministic score ranges for N states that satisfy the
- * validation rules (strict numeric bounds, contiguous, min gap 50).
- * Used to override whatever the LLM produced for ranges — LLMs aren't
- * reliable on numeric constraints and we'd rather guarantee a savable
- * set than gamble on the model.
- *
- * Scheme: ranges start at 0 and step by MIN_STATE_GAP. The first state
- * covers [0, 50). ai-learn's score_keeper returns 0 at session start
- * (not null) and our resolver uses upper-exclusive matching, so the
- * first boundary at MIN_STATE_GAP keeps the starting state active on
- * turn 1. Out-of-range scores (above last upper) clamp to the last
- * state at runtime — see _resolve_simulation_state_by_score in ai-learn.
- *
- *   N=1 → [0, 50)
- *   N=2 → [0, 50),  [50, 100)
- *   N=3 → [0, 50),  [50, 100),  [100, 150)
- *   N=4 → [0, 50),  [50, 100),  [100, 150),  [150, 200)
- */
-const distributeStateRanges = (
-  count: number,
-): Array<{ scoreLower: number; scoreUpper: number }> => {
-  if (count <= 0) return [];
-  const ranges: Array<{ scoreLower: number; scoreUpper: number }> = [];
-  for (let i = 0; i < count; i++) {
-    ranges.push({
-      scoreLower: i * MIN_STATE_GAP,
-      scoreUpper: (i + 1) * MIN_STATE_GAP,
-    });
-  }
-  return ranges;
-};
 
 /**
  * Per-simulation states editor for main-agent prompts with `hasStates: true`.
@@ -193,191 +146,6 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
   // Mirrors the RegenerateButton pattern but local to StatesEditor because
   // states need custom request context (numStates, existingStates) and a
   // bespoke merge step on response.
-  const [regenerateField] = useRegenerateFieldMutation();
-  const { data: apiModels } = useGetAutofillModelsQuery();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
-  const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
-  const selectedProvider =
-    allModelOptions.find(m => m.value === selectedModel)?.provider ?? "openai";
-
-  // A state card is "blank" iff its `name` is empty / whitespace. We key
-  // off name specifically (rather than name OR guidelines) for two reasons:
-  // (1) the backend's SimulationStateDto.name is @IsNotEmpty(), so a state
-  //     without a name is the canonical "incomplete" card that CreateSimulation
-  //     drops at save time — same heuristic across the editor and the save path.
-  // (2) Authors sometimes draft guidelines before naming a state; treating
-  //     guideline-only cards as "filled" would prevent Generate from finding
-  //     blanks to fill, which is unintuitive.
-  const isBlankState = useCallback((s: SimulationStateFormValue) => !s.name?.trim(), []);
-  const blankCount = states.filter(isBlankState).length;
-  const allBlank = blankCount === states.length;
-  const anyFilled = blankCount < states.length;
-
-  // Button text: matches RegenerateButton's vocabulary so the UI feels
-  // consistent across the studio.
-  const generateLabel = isGenerating
-    ? "Generating…"
-    : allBlank
-      ? "Generate"
-      : anyFilled && blankCount > 0
-        ? "Fill blanks"
-        : "Regenerate";
-
-  const buildScenarioContext = useCallback(() => {
-    const values = formMethods.getValues();
-    return {
-      title: values.title,
-      name: values.name,
-      age: values.age,
-      gender: values.gender,
-      genderIdentity: values.genderIdentity,
-      sexualOrientation: values.sexualOrientation,
-      profession: values.profession,
-      currentLocation: values.currentLocation,
-      competency: values.competency?.name,
-      characterProfileText: values.characterProfileText,
-      challengeDescription: values.description,
-    };
-  }, [formMethods]);
-
-  const handleGenerate = useCallback(async () => {
-    if (isGenerating) return;
-
-    // Mode 1: some blanks alongside filled cards → fill only the blanks,
-    //         keep filled ones, ask LLM for exactly `blankCount` new states
-    //         that complement the existing ones.
-    // Mode 2: all cards blank → generate `states.length` fresh states.
-    // Mode 3: all cards filled (user clicked Regenerate) → re-roll the whole
-    //         set, ask for `states.length` fresh states; existing names go
-    //         into context so the LLM can produce variation.
-    const numToGenerate = anyFilled && blankCount > 0 ? blankCount : states.length;
-    const filledForContext = states.filter(s => !isBlankState(s));
-    const existingStatesJson =
-      filledForContext.length > 0
-        ? JSON.stringify(
-            filledForContext.map(s => ({
-              name: s.name,
-              guidelines: s.guidelines,
-              scoreLower: s.scoreLower,
-              scoreUpper: s.scoreUpper,
-            })),
-          )
-        : "";
-
-    setIsGenerating(true);
-    try {
-      const response = await regenerateField({
-        fieldName: REGENERATE_TYPE.STATES,
-        scenarioContext: {
-          ...buildScenarioContext(),
-          numStates: numToGenerate,
-          existingStates: existingStatesJson,
-        },
-        model: selectedModel,
-        provider: selectedProvider,
-      }).unwrap();
-
-      // Backend's autofill-shared.util.ts `extractContent` for the STATES
-      // case returns `SimulationStateAutofillItem[]` directly (not wrapped
-      // in `{states: [...]}`). Older shapes may have nested it under
-      // `.states` — accept either so we don't crash on schema drift.
-      const raw = response.content;
-      // Debug log so we can see the response shape when generation fails.
-      // Safe to leave in for now; removable once UX is stable.
-      // eslint-disable-next-line no-console
-      console.debug("[StatesEditor] regenerate response", response);
-      const generated: Array<Omit<SimulationStateFormValue, "id">> = Array.isArray(raw)
-        ? (raw as Array<Omit<SimulationStateFormValue, "id">>)
-        : Array.isArray((raw as { states?: unknown })?.states)
-          ? (raw as { states: Array<Omit<SimulationStateFormValue, "id">> }).states
-          : [];
-      if (generated.length === 0) {
-        // eslint-disable-next-line no-console
-        console.error("[StatesEditor] regenerate returned no states; raw content:", raw);
-        toast.error("Generation returned no states. Try a different model.");
-        return;
-      }
-
-      // Compute deterministic ranges so the result always satisfies the
-      // validation rules. LLMs aren't reliable on contiguity / open-bound /
-      // min-gap constraints — better to trust them for creative content
-      // (name + guidelines + ragEnabled) and synthesize the numbers ourselves.
-      // The user can still adjust ranges manually after generation.
-      const ranges = distributeStateRanges(generated.length);
-      const withIds: SimulationStateFormValue[] = generated.map((g, i) => ({
-        id: generateId(),
-        name: g.name ?? "",
-        guidelines: g.guidelines ?? "",
-        isStarting: i === 0,
-        scoreLower: ranges[i]?.scoreLower ?? null,
-        scoreUpper: ranges[i]?.scoreUpper ?? null,
-        ragEnabled: g.ragEnabled ?? true,
-      }));
-
-      const isFillBlanksMode = anyFilled && blankCount > 0;
-      let next: SimulationStateFormValue[];
-      if (isFillBlanksMode) {
-        // Fill-blanks mode: walk existing array, replace blanks with
-        // generated entries in order, preserving filled cards entirely
-        // (including any manually-tuned score ranges). Pull only
-        // name + guidelines + ragEnabled from the generated content.
-        // If generated count > blank count, truncate; if fewer, leave
-        // remaining blanks alone.
-        //
-        // We intentionally do NOT call distributeStateRanges here: that
-        // would clobber the user's manually-tuned ranges on already-
-        // filled cards. The newly-filled cards keep whatever ranges
-        // they had as blank cards (from blankState() defaults or
-        // earlier user edits). If the resulting set isn't contiguous,
-        // the inline validation in the editor will flag it and the
-        // user can adjust manually before saving.
-        let cursor = 0;
-        next = states.map(s => {
-          if (!isBlankState(s) || cursor >= withIds.length) return s;
-          const gen = withIds[cursor];
-          cursor += 1;
-          return {
-            ...s,
-            name: gen.name,
-            guidelines: gen.guidelines,
-            ragEnabled: gen.ragEnabled,
-          };
-        });
-      } else {
-        // All-blank or all-filled: replace everything wholesale AND
-        // redistribute ranges deterministically. This is a "fresh start"
-        // operation; the user's expectation is uniform default ranges
-        // that they can then adjust.
-        next = withIds;
-        const finalRanges = distributeStateRanges(next.length);
-        next = next.map((s, i) => ({
-          ...s,
-          isStarting: i === 0,
-          scoreLower: finalRanges[i]?.scoreLower ?? null,
-          scoreUpper: finalRanges[i]?.scoreUpper ?? null,
-        }));
-      }
-
-      writeBack(next);
-      toast.success("States generated.");
-    } catch {
-      toast.error("Failed to generate states.");
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [
-    isGenerating,
-    anyFilled,
-    blankCount,
-    states,
-    isBlankState,
-    regenerateField,
-    buildScenarioContext,
-    selectedModel,
-    selectedProvider,
-    writeBack,
-  ]);
   // ------------------------------------------------------------------------
 
   if (!selectedHasStates) {
@@ -390,20 +158,6 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center">
         <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
-        <div className="flex items-center gap-3">
-          <AutofillModelSelect
-            value={selectedModel}
-            onChange={setSelectedModel}
-            disabled={isGenerating}
-          />
-          <AutofillButton
-            onClick={handleGenerate}
-            isLoading={isGenerating}
-            label={generateLabel}
-            disabled={states.length === 0}
-            compact
-          />
-        </div>
       </div>
 
       {states.map((state, index) => {
@@ -473,7 +227,9 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                     updateStateBound(state.id, "scoreLower", parsed);
                   }}
                   className={`rounded px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light ${
-                    isFirst ? "bg-neutral-100 text-typography-500 cursor-not-allowed" : "bg-transparent"
+                    isFirst
+                      ? "bg-neutral-100 text-typography-500 cursor-not-allowed"
+                      : "bg-transparent"
                   }`}
                 />
               </div>

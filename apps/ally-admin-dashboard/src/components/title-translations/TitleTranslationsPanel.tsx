@@ -8,6 +8,7 @@ import { useResolvedPrimaryLanguageId } from "@hooks";
 
 import { FormLabel } from "../form-label";
 import { LanguageTabPanel } from "../language-tab-panel";
+
 import type { LanguageOption } from "../linguistic-style-samples/scenarioLanguageUtils";
 
 const TRANSLATION_TITLE_FIELD = "translationTitle" as const;
@@ -91,10 +92,7 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
       .sort((a, b) => Number(a.languageId) - Number(b.languageId));
   }, [catalogLanguages, languageVoices, resolvedPrimaryId]);
 
-  const allTabs = useMemo(
-    () => [primaryTab, ...translatableTabs],
-    [primaryTab, translatableTabs],
-  );
+  const allTabs = useMemo(() => [primaryTab, ...translatableTabs], [primaryTab, translatableTabs]);
 
   const activeLanguageId = useMemo(() => {
     if (selectedLanguageId && allTabs.some(t => t.languageId === selectedLanguageId)) {
@@ -129,14 +127,17 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
   );
 
   if (catalogLoading) {
-    return (
-      <div className="w-full text-sm text-typography-600">Loading languages…</div>
-    );
+    return <div className="w-full text-sm text-typography-600">Loading languages…</div>;
   }
 
   return (
     <div className="w-full flex flex-col gap-3" data-testid="title-translations-panel">
-      <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
+      <div className="flex flex-col gap-0.5">
+        <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
+        <span className="text-typography-500 text-xs">
+          English title is required. Titles in other languages will be automatically generated.
+        </span>
+      </div>
       <LanguageTabPanel
         tabs={allTabs.map(t => ({ id: t.languageId, label: t.label }))}
         activeTabId={activeLanguageId}

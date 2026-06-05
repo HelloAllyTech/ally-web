@@ -864,7 +864,7 @@ export const CreateSimulation: FC = () => {
         isOpen={showOptionalFieldsWarning}
         onClose={() => setShowOptionalFieldsWarning(false)}
         title="Before you continue..."
-        description="The following fields are empty, which may affect simulation performance:"
+        description="Some optional fields are empty. This may affect the simulation quality. Are you sure you want to continue?"
         primaryButton={{
           label: "Continue anyway",
           onClick: () => {
@@ -879,13 +879,7 @@ export const CreateSimulation: FC = () => {
           onClick: () => setShowOptionalFieldsWarning(false),
           variant: ButtonVariant.SECONDARY,
         }}
-      >
-        <ul className="text-left text-typography-800 font-primary text-sm mb-2 list-disc pl-5">
-          {emptyOptionalFields.map(field => (
-            <li key={field.id}>{field.label}</li>
-          ))}
-        </ul>
-      </ActionConfirmationPopup>
+      />
 
       {previewSimulation && (
         <SimulationPreview

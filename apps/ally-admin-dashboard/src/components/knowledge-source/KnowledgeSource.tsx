@@ -1,20 +1,14 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { Tooltip } from "@mui/material";
 import { Controller } from "react-hook-form";
 import { toast } from "sonner";
 
-import { useGetAutofillModelsQuery, useRegenerateFieldMutation } from "@api";
-import { Close, Delete, Plus, Search, WandStars } from "@assets";
-import { AutofillModelSelect } from "@components/autofill-model-select";
+import { Close, Delete, Plus, Search } from "@assets";
+import { en } from "@constants";
+
 import { AddItemButton } from "../add-item-button";
 import { FormLabel } from "../form-label";
-import {
-  DEFAULT_AUTOFILL_MODEL,
-  FALLBACK_AUTOFILL_MODEL_OPTIONS,
-  REGENERATE_TYPE,
-  en,
-} from "@constants";
 
 /**
  * How many knowledge documents to generate when the form is empty and the
@@ -23,7 +17,6 @@ import {
  * life context). Users can adjust the count by clicking + Add before
  * generating; the LLM produces exactly the current count.
  */
-const DEFAULT_GENERATE_COUNT = 5;
 
 interface KnowledgeSourceItem {
   id: string;
@@ -118,190 +111,9 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
     handleUpdateTab(activeTabIndex, "content", value);
   };
 
-  // ---- Autofill (Generate / Regenerate) ----------------------------------
-  // Mirrors StatesEditor's local-autofill pattern (rather than reusing the
-  // shared RegenerateButton) because knowledge sources need custom request
-  // context (numKnowledgeSources, existingKnowledgeSources) and a bespoke
-  // merge that handles blank tabs.
-  const [regenerateField] = useRegenerateFieldMutation();
-  const { data: apiModels } = useGetAutofillModelsQuery();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
-  const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
-  const selectedProvider =
-    allModelOptions.find(m => m.value === selectedModel)?.provider ?? "openai";
-
-  // A document is "blank" when its title is empty/whitespace. Keying off
-  // title (not OR over content) mirrors StatesEditor's rule: title is the
-  // canonical "incomplete" signal because the retrieval LLM uses titles
-  // to pick relevant documents.
-  const isBlankSource = useCallback((s: KnowledgeSourceItem) => !s?.title?.trim(), []);
-
-  const blankCount = knowledgeSources.filter(isBlankSource).length;
-  const allBlank = knowledgeSources.length === 0 || blankCount === knowledgeSources.length;
-  const anyFilled = blankCount < knowledgeSources.length;
-
-  const generateLabel = isGenerating
-    ? "Generating…"
-    : allBlank
-      ? "Generate"
-      : anyFilled && blankCount > 0
-        ? "Fill blanks"
-        : "Regenerate";
-
-  const buildScenarioContext = useCallback(() => {
-    const values = formMethods.getValues();
-    return {
-      title: values.title,
-      name: values.name,
-      age: values.age,
-      gender: values.gender,
-      genderIdentity: values.genderIdentity,
-      sexualOrientation: values.sexualOrientation,
-      profession: values.profession,
-      currentLocation: values.currentLocation,
-      competency: values.competency?.name,
-      characterProfileText: values.characterProfileText,
-      challengeDescription: values.description,
-    };
-  }, [formMethods]);
-
-  const handleGenerate = useCallback(async () => {
-    if (isGenerating) return;
-
-    // Mode selection mirrors StatesEditor:
-    //   - All blank / empty → produce DEFAULT_GENERATE_COUNT fresh docs
-    //   - Some blank + some filled → fill only the blanks (preserve filled)
-    //   - All filled → re-roll the whole set
-    let numToGenerate: number;
-    if (knowledgeSources.length === 0) {
-      numToGenerate = DEFAULT_GENERATE_COUNT;
-    } else if (anyFilled && blankCount > 0) {
-      numToGenerate = blankCount;
-    } else {
-      numToGenerate = knowledgeSources.length;
-    }
-
-    const filledForContext = knowledgeSources.filter((s: KnowledgeSourceItem) => !isBlankSource(s));
-    const existingTitlesJson =
-      filledForContext.length > 0
-        ? JSON.stringify(
-            filledForContext.map((s: KnowledgeSourceItem) => ({
-              title: s.title,
-            })),
-          )
-        : "";
-
-    setIsGenerating(true);
-    try {
-      const response = await regenerateField({
-        fieldName: REGENERATE_TYPE.KNOWLEDGE_SOURCES,
-        scenarioContext: {
-          ...buildScenarioContext(),
-          numKnowledgeSources: numToGenerate,
-          existingKnowledgeSources: existingTitlesJson,
-        },
-        model: selectedModel,
-        provider: selectedProvider,
-      }).unwrap();
-
-      // Backend `extractContent` returns `KnowledgeSourceAutofillItem[]`
-      // directly as `response.content`. Tolerate both shapes for safety.
-      const raw = response.content;
-      const generated: Array<{ title: string; content: string }> = Array.isArray(raw)
-        ? (raw as Array<{ title: string; content: string }>)
-        : Array.isArray((raw as { sources?: unknown })?.sources)
-          ? (raw as { sources: Array<{ title: string; content: string }> }).sources
-          : [];
-
-      if (generated.length === 0) {
-        toast.error("Generation returned no documents. Try a different model.");
-        return;
-      }
-
-      // ID assignment is client-side; the LLM doesn't produce ids.
-      const withIds: KnowledgeSourceItem[] = generated.map(g => ({
-        id: crypto.randomUUID(),
-        title: g.title ?? "",
-        content: g.content ?? "",
-      }));
-
-      let next: KnowledgeSourceItem[];
-      if (knowledgeSources.length === 0) {
-        // Empty form → replace with generated set wholesale.
-        next = withIds;
-      } else if (anyFilled && blankCount > 0) {
-        // Fill-blanks: walk the array, replace blank tabs with generated
-        // entries in order, preserving filled tabs (keeping their ids).
-        let cursor = 0;
-        next = knowledgeSources.map((s: KnowledgeSourceItem) => {
-          if (!isBlankSource(s) || cursor >= withIds.length) return s;
-          const gen = withIds[cursor];
-          cursor += 1;
-          return { ...s, title: gen.title, content: gen.content };
-        });
-      } else {
-        // All filled → re-roll wholesale.
-        next = withIds;
-      }
-
-      setValue(id, next, { shouldDirty: true });
-      // Reset selection to the first tab so the user sees a fresh card.
-      setActiveTabIndex(0);
-      toast.success("Knowledge sources generated.");
-    } catch {
-      toast.error("Failed to generate knowledge sources.");
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [
-    isGenerating,
-    knowledgeSources,
-    anyFilled,
-    blankCount,
-    isBlankSource,
-    regenerateField,
-    buildScenarioContext,
-    selectedModel,
-    selectedProvider,
-    setValue,
-    id,
-  ]);
   // ------------------------------------------------------------------------
 
-  const renderAutofillControls = (compact = false) => (
-    <div className="flex items-center gap-3">
-      <AutofillModelSelect
-        value={selectedModel}
-        onChange={setSelectedModel}
-        disabled={isGenerating}
-      />
-      <button
-        type="button"
-        onClick={handleGenerate}
-        disabled={isGenerating}
-        className={`flex items-center gap-1 ${
-          compact ? "text-xs" : "text-sm"
-        } border rounded-2xl px-2 py-1 transition-opacity ${
-          isGenerating
-            ? "text-primary-300 border-primary-300 cursor-not-allowed"
-            : "text-primary-500 border-primary-500 hover:bg-primary-50 cursor-pointer"
-        } ${isGenerating ? "animate-fadeInOut" : ""}`}
-        title={
-          isGenerating
-            ? ""
-            : "Generate knowledge source documents from scenario context (description, character profile, competency). Use + to control the count first."
-        }
-      >
-        {isGenerating ? (
-          <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <WandStars />
-        )}{" "}
-        {generateLabel}
-      </button>
-    </div>
-  );
+  const renderAutofillControls = () => null;
 
   const renderKnowledgeSources = () => {
     return (
@@ -443,10 +255,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
           <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
           {renderAutofillControls()}
         </div>
-        <AddItemButton
-          onClick={handleAddTab}
-          label={en.knowledgeSource.createKnowledgeSource}
-        />
+        <AddItemButton onClick={handleAddTab} label={en.knowledgeSource.createKnowledgeSource} />
       </div>
     );
   }
