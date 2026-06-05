@@ -130,6 +130,18 @@ export const MAIN_AGENT_PROMPT_VARIABLE_CATALOG: PromptCatalogEntry[] = [
     systemComputed: true,
   },
   {
+    name: "helpful_behaviours",
+    label: "Helpful Behaviours",
+    group: "behavior",
+    systemComputed: true,
+  },
+  {
+    name: "unhelpful_behaviours",
+    label: "Unhelpful Behaviours",
+    group: "behavior",
+    systemComputed: true,
+  },
+  {
     name: "retrieved_context",
     label: "Retrieved Context (RAG)",
     group: "system",

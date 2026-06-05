@@ -29,6 +29,8 @@ const PROMPT_BUILDER_KWARGS: ReadonlySet<string> = new Set([
   "current_location",
   "custom_fields_text",
   "challenge_description",
+  "helpful_behaviours",
+  "unhelpful_behaviours",
   "gender",
   "gender_identity",
   "language_characteristics",

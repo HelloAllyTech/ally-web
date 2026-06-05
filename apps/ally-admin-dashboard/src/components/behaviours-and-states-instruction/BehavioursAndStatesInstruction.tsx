@@ -2,11 +2,11 @@ import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react"
 
 import { toast } from "sonner";
 
-import { Trash } from "@assets";
+import { Close, Trash } from "@assets";
 import { Button, NotionTable } from "@components";
-import { AddItemButton } from "../add-item-button";
 import {
   BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS,
+  BEHAVIOURS_INSTRUCTION_CATEGORIES,
   BEHAVIOUR_STATES,
   en,
   FORM_FIELD_IDS,
@@ -14,6 +14,9 @@ import {
 import { useIsPlaceholderUsed } from "@hooks";
 import { ButtonVariant } from "@src/components/types";
 import { behaviourStateInstruction, HelperTagItem } from "@types";
+
+import { AddItemButton } from "../add-item-button";
+import { HelperTag } from "../helper-tag";
 
 interface BehaviourRow {
   id?: string;
@@ -42,6 +45,52 @@ const createEmptyFormValue = (): BehaviourRow => ({
     instruction: "",
   })),
 });
+
+interface AddNewRubricRowProps {
+  formData: BehaviourRow[];
+  onAdd: (tags: HelperTagItem[], category: string) => void;
+}
+
+const AddNewRubricRow: FC<AddNewRubricRowProps> = ({ onAdd }) => {
+  const [pendingTags, setPendingTags] = useState<HelperTagItem[]>([]);
+  const [category, setCategory] = useState("SHOULD_DO");
+
+  const handleAdd = () => {
+    if (pendingTags.length === 0) return;
+    onAdd(pendingTags, category);
+    setPendingTags([]);
+  };
+
+  return (
+    <div className="flex items-start gap-2">
+      <div className="flex-1">
+        <HelperTag
+          tags={pendingTags}
+          updateTags={tags => setPendingTags(tags as HelperTagItem[])}
+        />
+      </div>
+      <select
+        value={category}
+        onChange={e => setCategory(e.target.value)}
+        className="text-sm border border-border-light rounded px-2 py-1.5 bg-white text-typography-900 outline-none h-[34px]"
+      >
+        {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        onClick={handleAdd}
+        disabled={pendingTags.length === 0}
+        className="text-sm px-3 py-1.5 rounded border border-border-light bg-white text-typography-700 hover:bg-background-secondary disabled:opacity-40 disabled:cursor-not-allowed h-[34px]"
+      >
+        Add
+      </button>
+    </div>
+  );
+};
 
 export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionProps> = ({
   formMethods,
@@ -147,12 +196,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     // skip the header row too — leaving the table as a pure rules grid.
     const columns = BEHAVIOURS_AND_STATES_INSTRUCTION_TABLE_COLUMNS.filter(
       col => showLegacyStateColumns || !col.id.startsWith("stateInstruction_"),
-    ).map(col => {
-      if (col.id.startsWith("stateInstruction_")) {
-        return { ...col, label: col.label };
-      }
-      return col;
-    });
+    );
 
     const data = showLegacyStateColumns
       ? [
@@ -223,12 +267,163 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
     setSelectedRows([]);
   }, [formMethods, id, formData, selectedRows]);
 
+  // Flattened rows for scoring rubric view: one row per (behaviour tag, category) pair.
+  const rubricRows = useMemo(() => {
+    const rows: { rowId: string; tag: HelperTagItem; isShould: boolean }[] = [];
+    for (const row of formData) {
+      if (!row.behaviors?.length) continue;
+      const isShould = row.category === "SHOULD_DO";
+      for (const tag of row.behaviors as unknown as HelperTagItem[]) {
+        if (tag?.id) {
+          rows.push({ rowId: row.id ?? "", tag, isShould });
+        }
+      }
+    }
+    return rows;
+  }, [formData]);
+
+  const handleRemoveBehaviourFromRow = useCallback(
+    (rowId: string, tagId: string) => {
+      const updatedFormData = formData
+        .map(row => {
+          if (row.id !== rowId) return row;
+          const newBehaviors = (row.behaviors as unknown as HelperTagItem[]).filter(
+            t => t.id !== tagId,
+          );
+          return { ...row, behaviors: newBehaviors };
+        })
+        .filter(row => (row.behaviors as unknown as HelperTagItem[]).length > 0);
+      const nextData = updatedFormData.length > 0 ? updatedFormData : [createEmptyFormValue()];
+      formMethods.setValue(id, nextData, {
+        shouldDirty: true,
+      });
+    },
+    [formData, formMethods, id],
+  );
+
+  const handleRubricRowCategoryChange = useCallback(
+    (rowId: string, tagId: string, newCategory: string) => {
+      // Move the tag to a row with the matching category (create one if needed)
+      const updatedFormData = formData.map(row => {
+        if (row.id !== rowId) return row;
+        return {
+          ...row,
+          behaviors: (row.behaviors as unknown as HelperTagItem[]).filter(t => t.id !== tagId),
+        };
+      });
+      const targetRow = updatedFormData.find(
+        row =>
+          row.category === newCategory && (row.behaviors as unknown as HelperTagItem[]).length < 5,
+      );
+      const tag = (
+        formData.find(r => r.id === rowId)?.behaviors as unknown as HelperTagItem[]
+      )?.find(t => t.id === tagId);
+      if (!tag) return;
+      let finalData;
+      if (targetRow) {
+        finalData = updatedFormData.map(row =>
+          row.id === targetRow.id
+            ? { ...row, behaviors: [...(row.behaviors as unknown as HelperTagItem[]), tag] }
+            : row,
+        );
+      } else {
+        finalData = [
+          ...updatedFormData,
+          { ...createEmptyFormValue(), category: newCategory, behaviors: [tag] },
+        ];
+      }
+      const cleaned = finalData.filter(
+        row => (row.behaviors as unknown as HelperTagItem[]).length > 0,
+      );
+      formMethods.setValue(id, cleaned.length > 0 ? cleaned : [createEmptyFormValue()], {
+        shouldDirty: true,
+      });
+    },
+    [formData, formMethods, id],
+  );
+
+  const renderScoringRubric = () => (
+    <div className="w-full border border-border-light rounded overflow-hidden">
+      {/* Header */}
+      <div className="grid grid-cols-[1fr_180px_40px] bg-white border-b border-border-light">
+        <div className="px-4 py-2.5 text-xs font-medium text-typography-600 uppercase tracking-wide">
+          Helper Behaviour Class
+        </div>
+        <div className="px-4 py-2.5 text-xs font-medium text-typography-600 uppercase tracking-wide border-l border-border-light">
+          Category
+        </div>
+        <div />
+      </div>
+
+      {/* Rows */}
+      {rubricRows.length === 0 ? (
+        <div className="px-4 py-6 text-sm text-typography-500 text-center">
+          No behaviour classes added yet.
+        </div>
+      ) : (
+        rubricRows.map(({ rowId, tag, isShould }, i) => (
+          <div
+            key={`${rowId}-${tag.id}`}
+            className={`grid grid-cols-[1fr_180px_40px] items-center border-b border-border-light last:border-b-0 ${i % 2 === 0 ? "bg-white" : "bg-background-secondary/40"} group`}
+          >
+            <div className="px-4 py-2.5 text-sm text-typography-900">{tag.name}</div>
+            <div className="px-3 py-2 border-l border-border-light">
+              <select
+                value={isShould ? "SHOULD_DO" : "SHOULD_NOT_DO"}
+                onChange={e => handleRubricRowCategoryChange(rowId, tag.id, e.target.value)}
+                className="w-full text-sm bg-transparent border-none outline-none cursor-pointer text-typography-900"
+              >
+                {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => handleRemoveBehaviourFromRow(rowId, tag.id)}
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-typography-400 hover:text-destructive-500 p-1"
+              >
+                <Close className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+
+      {/* Add row: uses existing HelperTag + category selector in a compact form row */}
+      <div className="px-3 py-2 border-t border-border-light bg-white">
+        <AddNewRubricRow
+          formData={formData}
+          onAdd={(tags, category) => {
+            const existingRow = formData.find(
+              r =>
+                r.category === category && (r.behaviors as unknown as HelperTagItem[]).length < 5,
+            );
+            let updatedFormData;
+            if (existingRow) {
+              updatedFormData = formData.map(r =>
+                r.id === existingRow.id
+                  ? { ...r, behaviors: [...(r.behaviors as unknown as HelperTagItem[]), ...tags] }
+                  : r,
+              );
+            } else {
+              updatedFormData = [
+                ...formData.filter(r => (r.behaviors as unknown as HelperTagItem[]).length > 0),
+                { ...createEmptyFormValue(), category, behaviors: tags },
+              ];
+            }
+            formMethods.setValue(id, updatedFormData, { shouldDirty: true });
+          }}
+        />
+      </div>
+    </div>
+  );
+
   const tableFooter = (
-    <AddItemButton
-      onClick={handleAddRow}
-      label={en.simulation.newRow}
-      className="mt-2 px-3 py-2"
-    />
+    <AddItemButton onClick={handleAddRow} label={en.simulation.newRow} className="mt-2 px-3 py-2" />
   );
 
   const tableStyle = { paddingBottom: "10px" };
@@ -269,15 +464,19 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
           {regenerateButton}
         </div>
       </div>
-      <NotionTable
-        tableData={tableData}
-        tableFooter={tableFooter}
-        onRowChange={handleRowChange}
-        tableStyle={tableStyle}
-        onSelectionChange={handleSelectionChange}
-        autoHeight
-        fillWidth
-      />
+      {showLegacyStateColumns ? (
+        <NotionTable
+          tableData={tableData}
+          tableFooter={tableFooter}
+          onRowChange={handleRowChange}
+          tableStyle={tableStyle}
+          onSelectionChange={handleSelectionChange}
+          autoHeight
+          fillWidth
+        />
+      ) : (
+        renderScoringRubric()
+      )}
     </div>
   );
 };
