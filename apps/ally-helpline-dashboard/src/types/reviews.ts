@@ -43,6 +43,7 @@ export interface ReviewItem {
   note: string;
   noteEditedAt: string;
   isEdited: boolean;
+  isReviewed: boolean;
 }
 
 export interface GetReviewsInput {

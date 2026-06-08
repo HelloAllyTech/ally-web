@@ -135,6 +135,7 @@ const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
             badgeTextColor="#7E57C2"
             badgeText={t("common.simulation", "Simulation")}
             isEdited={item.isEdited}
+            isReviewed={item.isReviewed}
             isViewMoreExpanded={expandedViewMoreIds.has(item.id)}
             onTapViewMore={() => handleTapViewMore(item.id)}
             note={item.note}

@@ -128,3 +128,23 @@ describe("FeedCard audio playback", () => {
     expect(screen.queryByTestId("audio-transcript-player")).not.toBeInTheDocument();
   });
 });
+
+describe("FeedCard reviewed badge", () => {
+  it("renders the Reviewed badge when isReviewed is true", () => {
+    renderFeedCard({ isReviewed: true });
+
+    expect(screen.getByText("Reviewed")).toBeInTheDocument();
+  });
+
+  it("does not render the Reviewed badge when isReviewed is false", () => {
+    renderFeedCard({ isReviewed: false });
+
+    expect(screen.queryByText("Reviewed")).not.toBeInTheDocument();
+  });
+
+  it("does not render the Reviewed badge by default", () => {
+    renderFeedCard();
+
+    expect(screen.queryByText("Reviewed")).not.toBeInTheDocument();
+  });
+});

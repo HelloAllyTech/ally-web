@@ -29,6 +29,7 @@ const FeedCard: FC<FeedCardProps> = ({
   badgeTextColor,
   badgeText,
   isEdited = false,
+  isReviewed = false,
   isViewMoreExpanded = false,
   isScribeReview,
   onTapViewMore,
@@ -174,6 +175,31 @@ const FeedCard: FC<FeedCardProps> = ({
             </div>
           </div>
         </div>
+        {isReviewed && reviewedBadge()}
+      </div>
+    );
+  };
+
+  const reviewedBadge = () => {
+    return (
+      <div className="flex items-center gap-1 h-5 w-fit rounded-full bg-[#E6F4EA] px-2 py-[2px] text-[11px] font-medium leading-none text-[#1E8E3E] flex-shrink-0">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden
+        >
+          <path
+            d="M20 6L9 17l-5-5"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {t("review.feedCard.reviewed", "Reviewed")}
       </div>
     );
   };
