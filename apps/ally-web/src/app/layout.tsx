@@ -1,12 +1,12 @@
 import "./global.css";
-import { IBM_Plex_Sans, Inter } from "next/font/google";
+import { IBM_Plex_Serif, Inter } from "next/font/google";
 
-const ibmPlexSans = IBM_Plex_Sans({
+const ibmPlexSerif = IBM_Plex_Serif({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-ibm-plex-sans",
+  variable: "--font-ibm-plex-serif",
   display: "swap", // Improves font loading performance
-  fallback: ["Inter", "system-ui", "sans-serif"], // Fallback fonts
+  fallback: ["Inter", "system-ui", "serif"], // Fallback fonts
 });
 
 const inter = Inter({
@@ -25,7 +25,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${ibmPlexSans.variable} ${inter.variable}`}>
+    <html lang="en" className={`${ibmPlexSerif.variable} ${inter.variable}`}>
       <body className="min-h-screen bg-white font-sans">{children}</body>
     </html>
   );
