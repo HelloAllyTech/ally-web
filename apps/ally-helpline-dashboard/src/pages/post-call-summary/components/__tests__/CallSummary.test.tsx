@@ -88,6 +88,7 @@ vi.mock("@hooks", () => ({
   useEnhance: () => enhanceResult,
   useDebounce: (fn: any) => fn,
   useUser: () => userResult,
+  useCustomFieldsEnabled: () => mockGetCustomFieldsEnabled(),
 }));
 
 vi.mock("@components", () => ({

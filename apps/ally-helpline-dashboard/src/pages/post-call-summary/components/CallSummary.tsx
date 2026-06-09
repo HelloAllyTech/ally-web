@@ -17,13 +17,12 @@ import {
   useUpdateCallSummaryNotesMutation,
   useGetCustomFieldValuesQuery,
   useUpsertCustomFieldValuesMutation,
-  useGetCustomFieldsEnabledQuery,
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
 import { LanguageMap, Permissions, ROUTES, toolTipStyles } from "@constants";
 import { FeedbackDialog } from "@containers";
-import { useEnhance, useDebounce } from "@hooks";
+import { useEnhance, useDebounce, useCustomFieldsEnabled } from "@hooks";
 import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import { RootState } from "@store";
 import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag } from "@types";
@@ -82,7 +81,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
 
   // Custom field state
-  const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
+  const { data: customFieldsEnabled } = useCustomFieldsEnabled();
   const customFieldsActive = customFieldsEnabled !== false;
   const { data: customFieldValues } = useGetCustomFieldValuesQuery(chatId, {
     skip: !chatId || !customFieldsActive,

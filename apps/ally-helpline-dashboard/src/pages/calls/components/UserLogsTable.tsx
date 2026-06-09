@@ -11,7 +11,6 @@ import {
   useGetCallLogsQuery,
   useGetSimulationLogsQuery,
   useGetCustomFieldDefinitionsQuery,
-  useGetCustomFieldsEnabledQuery,
 } from "@api";
 import {
   NoResults,
@@ -27,6 +26,7 @@ import {
   ScribeIcon,
 } from "@assets";
 import { Button, Chip, TagGroup, FallbackUI } from "@components";
+import { useCustomFieldsEnabled } from "@hooks";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } from "@types";
@@ -58,7 +58,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const isCall = sessionType === SessionType.CALL;
   const isSimulation = sessionType === SessionType.SIMULATION;
 
-  const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
+  const { data: customFieldsEnabled } = useCustomFieldsEnabled();
   const customFieldsActive = customFieldsEnabled !== false;
 
   const { data: customFieldDefs = [] } = useGetCustomFieldDefinitionsQuery(undefined, {

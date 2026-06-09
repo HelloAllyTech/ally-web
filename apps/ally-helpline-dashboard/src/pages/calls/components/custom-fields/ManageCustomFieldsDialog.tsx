@@ -20,13 +20,13 @@ import { toast } from "sonner";
 
 import {
   useGetCustomFieldDefinitionsQuery,
-  useGetCustomFieldsEnabledQuery,
   useDeleteCustomFieldDefinitionMutation,
   useReorderCustomFieldDefinitionsMutation,
   useUpdateCustomFieldDefinitionMutation,
 } from "@api";
 import { Button } from "@components";
 import { Permissions } from "@constants";
+import { useCustomFieldsEnabled } from "@hooks";
 import { RootState } from "@store";
 import { CustomFieldDefinition, CustomFieldScope, CustomFieldType } from "@types";
 
@@ -82,7 +82,7 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
   const { permissions } = useSelector((state: RootState) => state.user);
   const canManage = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
 
-  const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
+  const { data: customFieldsEnabled } = useCustomFieldsEnabled();
   const customFieldsActive = customFieldsEnabled !== false;
 
   const { data: rawDefinitions = [], isLoading } = useGetCustomFieldDefinitionsQuery(undefined, {

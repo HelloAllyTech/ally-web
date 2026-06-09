@@ -7,9 +7,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { useSelector } from "react-redux";
 
 import { DropdownField } from "@ally-ui-mono/ui-shared";
-import { useGetCustomFieldValuesQuery, useGetCustomFieldsEnabledQuery } from "@api";
+import { useGetCustomFieldValuesQuery } from "@api";
 import TextField from "@components/text-field";
 import { Permissions } from "@constants";
+import { useCustomFieldsEnabled } from "@hooks";
 import { RootState } from "@store";
 import {
   CustomFieldEditPermission,
@@ -48,10 +49,9 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     onValueChange !== undefined;
 
   // Standalone mode: fetch internally
-  const { data: customFieldsEnabled, isLoading: isFeatureLoading } = useGetCustomFieldsEnabledQuery(
-    undefined,
-    { skip: isControlled },
-  );
+  const { data: customFieldsEnabled, isLoading: isFeatureLoading } = useCustomFieldsEnabled({
+    skip: isControlled,
+  });
   const customFieldsActive = isControlled ? true : customFieldsEnabled !== false;
   const { data: fetchedFieldValues, isLoading } = useGetCustomFieldValuesQuery(chatId, {
     skip: isControlled || !chatId || !customFieldsActive,

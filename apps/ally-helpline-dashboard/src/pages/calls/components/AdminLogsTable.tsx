@@ -13,7 +13,6 @@ import {
   useGetCallTagsQuery,
   useGetAdminSimulationLogsQuery,
   useGetCustomFieldDefinitionsQuery,
-  useGetCustomFieldsEnabledQuery,
 } from "@api";
 import {
   NoResults,
@@ -33,6 +32,7 @@ import {
 } from "@assets";
 import { Button, Chip, FallbackUI, PermissionGuard, TagGroup } from "@components";
 import { CallProvider, Permissions } from "@constants";
+import { useCustomFieldsEnabled } from "@hooks";
 import { updateFilters } from "@reducer";
 import { RootState } from "@store";
 import {
@@ -81,7 +81,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   };
   const { user: currentUser, permissions } = useSelector((state: RootState) => state.user);
   const canManageCustomFields = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
-  const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery();
+  const { data: customFieldsEnabled } = useCustomFieldsEnabled();
   const customFieldsActive = customFieldsEnabled !== false;
 
   const { data: customFieldDefs = [] } = useGetCustomFieldDefinitionsQuery(undefined, {

@@ -14,3 +14,4 @@ export * from "./useScenarioLanguages";
 export * from "./useAchievementBadgeModal";
 export * from "./useReactionModal";
 export * from "./useSendMessage";
+export * from "./useCustomFieldsEnabled";
