@@ -11,9 +11,11 @@ import { SimulationStateFormValue } from "../types";
  * through full editor-UI tests.
  *
  * Reference invariants:
- *   - states[0].scoreLower is the open lower end and may be negative; it is
- *     editable and clamped only against state 0's own upper (no previous
- *     state to push).
+ *   - states[0].scoreLower is the open lower end and may be negative.
+ *   - Min and Max are a LINKED pair: raising a lower past the gap pushes the
+ *     upper up (and cascades forward); lowering state 0's upper pulls its
+ *     open lower down. Shared boundaries are never pulled left (no backward
+ *     cascade) — those edits clamp instead.
  *   - For each i: scoreUpper - scoreLower >= MIN_STATE_GAP (50).
  *   - For each i < N-1: states[i].scoreUpper == states[i+1].scoreLower.
  */
@@ -71,24 +73,37 @@ describe("cascadeBoundEdit", () => {
       ]);
     });
 
-    it("clamps the first state's lower against its own upper's min gap", () => {
-      // Upper is 50; lower cannot exceed 50 - 50 = 0. Typing 30 clamps to 0.
+    it("pushes its own upper up (and cascades) when raising the lower past the gap", () => {
+      // Raising state 0's lower to 30 would leave only 20 of headroom under
+      // upper=50. Instead of refusing, push state 0's upper to 30+50=80 and
+      // ripple forward: state 1 follows to [80, 130].
       const before = [state("a", 0, 50), state("b", 50, 100)];
       const after = cascadeBoundEdit(before, 0, "scoreLower", 30);
       expect(pairs(after)).toEqual([
-        [0, 50],
-        [50, 100],
+        [30, 80],
+        [80, 130],
       ]);
     });
   });
 
   describe("intra-state min-gap on scoreUpper", () => {
-    it("clamps upward when the user types a value below lower + MIN_GAP", () => {
-      // State 0 currently [0, 50). User types 30 in the upper → that would
-      // give a 30-wide range; we clamp the value up to 50 instead.
+    it("pulls state 0's open lower down when upper drops below the gap", () => {
+      // State 0 [0, 50). User types 30 in the upper → 30-wide range. State 0's
+      // lower is the open end, so pull it down to 30-50=-20 to keep the gap.
       const before = [state("a", 0, 50)];
       const after = cascadeBoundEdit(before, 0, "scoreUpper", 30);
-      expect(pairs(after)).toEqual([[0, MIN_STATE_GAP]]);
+      expect(pairs(after)).toEqual([[-20, 30]]);
+    });
+
+    it("clamps the upper up for a non-first state (shared lower, no backward pull)", () => {
+      // State 1's lower (50) is shared with state 0's upper, so we can't pull
+      // it left. Typing 70 in state 1's upper clamps up to 50+50=100.
+      const before = [state("a", 0, 50), state("b", 50, 100)];
+      const after = cascadeBoundEdit(before, 1, "scoreUpper", 70);
+      expect(pairs(after)).toEqual([
+        [0, 50],
+        [50, 100],
+      ]);
     });
 
     it("accepts a value at or above lower + MIN_GAP unchanged", () => {
@@ -179,7 +194,7 @@ describe("cascadeBoundEdit", () => {
     });
   });
 
-  describe("scoreLower edit (i > 0) — contiguity + clamp both sides", () => {
+  describe("scoreLower edit (i > 0) — shared boundary, push-not-refuse", () => {
     it("moves both state[i-1].upper and state[i].lower together", () => {
       // Boundary starts at 50. Move it to 70 — state 0 widens to
       // [0,70] (70 wide, valid) and state 1 narrows to [70,200] (130
@@ -194,7 +209,8 @@ describe("cascadeBoundEdit", () => {
 
     it("clamps upward to preserve the previous state's min gap", () => {
       // Lowering boundary from 50 → 20 would leave state 0 only 20 wide.
-      // Refuse and clamp to state 0's min-gap floor = 0 + 50 = 50.
+      // Refuse and clamp to state 0's min-gap floor = 0 + 50 = 50 (we never
+      // pull the left neighbour / cascade backward).
       const before = [state("a", 0, 50), state("b", 50, 100)];
       const after = cascadeBoundEdit(before, 1, "scoreLower", 20);
       expect(pairs(after)).toEqual([
@@ -203,14 +219,15 @@ describe("cascadeBoundEdit", () => {
       ]);
     });
 
-    it("clamps downward to preserve the current state's min gap", () => {
+    it("pushes the current state's upper up when raising the boundary past its gap", () => {
       // Raising boundary from 50 → 80 would leave state 1 only 20 wide
-      // (80..100). Clamp to state 1's min-gap ceiling = 100 - 50 = 50.
+      // (80..100). Instead of refusing, push state 1's upper to 80+50=130
+      // so the Min/Max stay linked.
       const before = [state("a", 0, 50), state("b", 50, 100)];
       const after = cascadeBoundEdit(before, 1, "scoreLower", 80);
       expect(pairs(after)).toEqual([
-        [0, 50],
-        [50, 100],
+        [0, 80],
+        [80, 130],
       ]);
     });
 
@@ -226,11 +243,23 @@ describe("cascadeBoundEdit", () => {
     });
   });
 
-  describe("single state", () => {
+  describe("single state — Min/Max move as a linked pair", () => {
     it("edits scoreUpper without any forward cascade", () => {
       const before = [state("only", 0, 50)];
       const after = cascadeBoundEdit(before, 0, "scoreUpper", 500);
       expect(pairs(after)).toEqual([[0, 500]]);
+    });
+
+    it("raising Min past the gap pushes Max up", () => {
+      const before = [state("only", -1, 49)];
+      const after = cascadeBoundEdit(before, 0, "scoreLower", 60);
+      expect(pairs(after)).toEqual([[60, 110]]);
+    });
+
+    it("lowering Max below the gap pulls Min down", () => {
+      const before = [state("only", -1, 49)];
+      const after = cascadeBoundEdit(before, 0, "scoreUpper", 10);
+      expect(pairs(after)).toEqual([[-40, 10]]);
     });
   });
 });

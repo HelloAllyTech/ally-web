@@ -229,10 +229,13 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                     const raw = event.target.value;
                     // Reverse the +1 display shift before storing for
                     // non-first states; the first state stores its lower
-                    // verbatim.
+                    // verbatim. Store the typed value as-is WITHOUT clamping
+                    // so the field doesn't snap back mid-type; the min-gap
+                    // clamp + neighbour cascade run on blur.
                     const parsed = raw === "" ? null : isFirst ? Number(raw) : Number(raw) - 1;
-                    updateStateBound(state.id, "scoreLower", parsed);
+                    updateState(state.id, { scoreLower: parsed });
                   }}
+                  onBlur={() => updateStateBound(state.id, "scoreLower", state.scoreLower)}
                   className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
                 />
               </div>
@@ -254,8 +257,12 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                   }
                   onChange={event => {
                     const raw = event.target.value;
-                    updateStateBound(state.id, "scoreUpper", raw === "" ? null : Number(raw));
+                    // Store as-is while typing; clamp + cascade on blur so a
+                    // value momentarily below the min-gap floor doesn't snap
+                    // back on every keystroke.
+                    updateState(state.id, { scoreUpper: raw === "" ? null : Number(raw) });
                   }}
+                  onBlur={() => updateStateBound(state.id, "scoreUpper", state.scoreUpper)}
                   className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
                 />
               </div>
