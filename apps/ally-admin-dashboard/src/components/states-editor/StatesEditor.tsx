@@ -166,6 +166,7 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
 
       {states.map((state, index) => {
         const isFirst = index === 0;
+        const isLast = index === states.length - 1;
         return (
           <div
             key={state.id}
@@ -199,15 +200,18 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
               </label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-typography-700">Min</span>
+                {/*
+                  All Min values are editable, including the first state's
+                  (which is the open bottom of the range and may be negative).
+                  The −∞ placeholder hints that the first state catches every
+                  lower score; it is NOT a lock. Non-first states display Min
+                  as `scoreLower + 1` so the boundary between adjacent states
+                  reads naturally (state 0 Max=50, state 1 Min=51) — storage
+                  stays contiguous (state[i].upper == state[i+1].lower) so the
+                  ai-learn upper-exclusive resolver is unaffected.
+                */}
                 <input
                   type="number"
-                  // Display layer: each non-first state shows Min as
-                  // `scoreLower + 1` so the boundary between adjacent
-                  // states reads naturally (state 0 Max=50, state 1
-                  // Min=51). Storage stays contiguous (state[i].upper
-                  // == state[i+1].lower) so the ai-learn upper-exclusive
-                  // resolver continues to work unchanged — only the
-                  // displayed number shifts by 1 for non-first states.
                   value={
                     state.scoreLower == null
                       ? ""
@@ -215,34 +219,39 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                         ? state.scoreLower
                         : state.scoreLower + 1
                   }
-                  // First state's lower is structurally pinned at 0 (see
-                  // cascadeBoundEdit) — disable the input so the lock is
-                  // visible, not just enforced silently.
-                  readOnly={isFirst}
-                  disabled={isFirst}
-                  placeholder="e.g. 0"
+                  placeholder={isFirst ? "−∞" : "e.g. 51"}
+                  title={
+                    isFirst
+                      ? "Open lower bound — any lower score falls into this state. Editable; may be negative."
+                      : undefined
+                  }
                   onChange={event => {
                     const raw = event.target.value;
                     // Reverse the +1 display shift before storing for
-                    // non-first states. First-state edits are ignored
-                    // upstream (cascadeBoundEdit guards on index===0)
-                    // so the conversion only matters for index > 0.
+                    // non-first states; the first state stores its lower
+                    // verbatim.
                     const parsed = raw === "" ? null : isFirst ? Number(raw) : Number(raw) - 1;
                     updateStateBound(state.id, "scoreLower", parsed);
                   }}
-                  className={`rounded px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light ${
-                    isFirst
-                      ? "bg-neutral-100 text-typography-500 cursor-not-allowed"
-                      : "bg-transparent"
-                  }`}
+                  className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
                 />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-typography-700">Max</span>
+                {/*
+                  The last state's Max is the open top of the range — the
+                  runtime clamps any higher score into it — but it stays
+                  editable. The +∞ placeholder is a hint, not a lock.
+                */}
                 <input
                   type="number"
                   value={state.scoreUpper ?? ""}
-                  placeholder="e.g. 50"
+                  placeholder={isLast ? "+∞" : "e.g. 50"}
+                  title={
+                    isLast
+                      ? "Open upper bound — any higher score falls into this state. Editable."
+                      : undefined
+                  }
                   onChange={event => {
                     const raw = event.target.value;
                     updateStateBound(state.id, "scoreUpper", raw === "" ? null : Number(raw));

@@ -19,7 +19,12 @@ export const MIN_STATE_GAP = 50;
  *
  * Rules
  * -----
- * - State 0's `scoreLower` is locked at 0; edits to it are ignored.
+ * - State 0's `scoreLower` and the last state's `scoreUpper` are the open
+ *   ends of the scoring range (the runtime resolver clamps any score beyond
+ *   them into the first / last state). They remain user-editable — the
+ *   value is just the labelled boundary, and state 0's lower may be
+ *   negative. State 0's lower has no previous state to push, so it is
+ *   clamped only against its own upper's min gap.
  * - Empty input (null) is allowed for any other field and bypasses the
  *   cascade — the user is mid-type. Save-time validation will flag the
  *   missing bound.
@@ -48,20 +53,25 @@ export const cascadeBoundEdit = (
     return states.map((s, i) => (i === index ? { ...s, [field]: null } : s));
   }
 
-  // State 0's lower is locked at 0 — the form ignores the edit. The
-  // input is rendered read-only too; this guard catches any path that
-  // dispatches an update programmatically.
-  if (index === 0 && field === "scoreLower") {
-    return states;
-  }
-
   const next = states.map(s => ({ ...s }));
 
   if (field === "scoreLower") {
-    // Editing this lower also moves the previous state's upper.
-    const prev = next[index - 1];
     const cur = next[index];
     let v = rawValue;
+
+    if (index === 0) {
+      // State 0 has no previous state — its lower is the open bottom of the
+      // range and may be negative. Clamp only against its own upper so the
+      // intra-state min gap holds.
+      if (typeof cur.scoreUpper === "number") {
+        v = Math.min(v, cur.scoreUpper - MIN_STATE_GAP);
+      }
+      next[index].scoreLower = v;
+      return next;
+    }
+
+    // Editing a non-first lower also moves the previous state's upper.
+    const prev = next[index - 1];
 
     // Min-gap floor from the previous state (preserve its width).
     if (typeof prev.scoreLower === "number") {

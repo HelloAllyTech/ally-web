@@ -11,7 +11,9 @@ import { SimulationStateFormValue } from "../types";
  * through full editor-UI tests.
  *
  * Reference invariants:
- *   - states[0].scoreLower is locked at 0 (input is rendered read-only).
+ *   - states[0].scoreLower is the open lower end and may be negative; it is
+ *     editable and clamped only against state 0's own upper (no previous
+ *     state to push).
  *   - For each i: scoreUpper - scoreLower >= MIN_STATE_GAP (50).
  *   - For each i < N-1: states[i].scoreUpper == states[i+1].scoreLower.
  */
@@ -49,12 +51,30 @@ describe("cascadeBoundEdit", () => {
     });
   });
 
-  describe("state 0 lock", () => {
-    it("ignores edits to scoreLower of the first state", () => {
+  describe("state 0 open lower end (editable, may be negative)", () => {
+    it("lets the first state's lower go negative without touching others", () => {
       const before = [state("a", 0, 50), state("b", 50, 100)];
-      const after = cascadeBoundEdit(before, 0, "scoreLower", 25);
-      // First state's lower is structurally pinned at 0 — value untouched,
-      // no cascade at all.
+      const after = cascadeBoundEdit(before, 0, "scoreLower", -100);
+      // No previous state to push; only state 0's own lower moves.
+      expect(pairs(after)).toEqual([
+        [-100, 50],
+        [50, 100],
+      ]);
+    });
+
+    it("accepts a mid-negative first-state lower", () => {
+      const before = [state("a", 0, 50), state("b", 50, 100)];
+      const after = cascadeBoundEdit(before, 0, "scoreLower", -25);
+      expect(pairs(after)).toEqual([
+        [-25, 50],
+        [50, 100],
+      ]);
+    });
+
+    it("clamps the first state's lower against its own upper's min gap", () => {
+      // Upper is 50; lower cannot exceed 50 - 50 = 0. Typing 30 clamps to 0.
+      const before = [state("a", 0, 50), state("b", 50, 100)];
+      const after = cascadeBoundEdit(before, 0, "scoreLower", 30);
       expect(pairs(after)).toEqual([
         [0, 50],
         [50, 100],
