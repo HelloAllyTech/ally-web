@@ -1,4 +1,12 @@
-import { forwardRef, useImperativeHandle, useState, useEffect, useRef, useMemo } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 
 import { CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -172,14 +180,23 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
     // "Default main agent prompt" as the friendly fallback so the
     // author still knows what's in effect.
     const { data: mainAgentPrompts } = useGetPromptsByTypeQuery("main_agent");
-    const currentMainPromptName = useMemo(() => {
-      if (!selectedMainPromptCode) return "Default main agent prompt";
-      const match = (mainAgentPrompts ?? []).find(p => p.promptCode === selectedMainPromptCode);
-      // Fall back to the raw code if the prompt list hasn't loaded yet
-      // or the picked variant has been removed since selection — better
-      // than showing nothing.
-      return match?.name ?? selectedMainPromptCode;
-    }, [selectedMainPromptCode, mainAgentPrompts]);
+    // Resolve a main-agent promptCode → its human-readable "skill" name.
+    // Shared by the live Test Configuration line and each history row so
+    // both render the skill identically. Falls back to the raw code if the
+    // prompt list hasn't loaded yet or the variant was removed since the
+    // report ran; empty/undefined code means the default variant.
+    const resolveMainPromptName = useCallback(
+      (code?: string): string => {
+        if (!code) return "Default main agent prompt";
+        const match = (mainAgentPrompts ?? []).find(p => p.promptCode === code);
+        return match?.name ?? code;
+      },
+      [mainAgentPrompts],
+    );
+    const currentMainPromptName = useMemo(
+      () => resolveMainPromptName(selectedMainPromptCode),
+      [resolveMainPromptName, selectedMainPromptCode],
+    );
 
     const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
     const [selectedLanguage, setSelectedLanguage] = useState<{ value: string; label: string }>(
@@ -360,7 +377,10 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
         config?.languageId != null &&
         config?.turns != null
       ) {
-        setHelperAgentPrompt(config.helperAgentPrompt);
+        // Intentionally do NOT hydrate the helper-agent prompt from the
+        // latest report — the Generate Report form keeps DEFAULT_HELPER_PROMPT
+        // so the current default always wins, even for scenarios that already
+        // have report history. Language/turns still carry over for continuity.
         setSelectedLanguage({
           value: language?.id?.toString() || "",
           label: language?.label || "",
@@ -744,6 +764,9 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                     {formatReportCreatedAt(item.createdAt)}
                   </span>
                   <span className="text-xs font-normal text-typography-600">{`${item.language.label || item.language.id}· ${item.config.turns} turns`}</span>
+                  <span className="text-xs font-normal text-typography-600">
+                    Skill version: {resolveMainPromptName(item.config.selectedMainPromptCode)}
+                  </span>
                 </div>
               </div>
             );
@@ -755,6 +778,20 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                 customAccordionSx={REPORT_ACCORDION_SX}
                 headerTitle={historyItemHeader}
               >
+                {item.config?.helperAgentPrompt && (
+                  // The helper-agent prompt is snapshotted per report and can
+                  // differ between runs, so each history entry shows the exact
+                  // prompt it used (read-only). Scrollable to keep long prompts
+                  // from blowing out the accordion height.
+                  <div className="border border-gray-200 rounded-lg p-4 mb-3">
+                    <p className="text-sm font-medium text-typography-900 mb-1">
+                      Helper Agent prompt
+                    </p>
+                    <p className="text-xs text-typography-600 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                      {item.config.helperAgentPrompt}
+                    </p>
+                  </div>
+                )}
                 <ReportContent
                   reportData={item}
                   transcriptData={cachedTranscript?.messages}

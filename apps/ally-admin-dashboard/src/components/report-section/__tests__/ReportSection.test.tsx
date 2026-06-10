@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { ReportSection } from "../ReportSection";
 import reportUploadReducer from "@reducer/reportUploadReducer";
-import { ReportGenerationStatus } from "@constants/reportGeneration";
+import { ReportGenerationStatus, DEFAULT_HELPER_PROMPT } from "@constants/reportGeneration";
 
 // Hoist cellTypes mock to ensure it's available during module hoisting
 const { mockCellTypes } = vi.hoisted(() => ({
@@ -606,7 +606,7 @@ describe("ReportSection", () => {
   });
 
   describe("Report Data Display", () => {
-    it("displays helper prompt from the displayed report in PromptConfiguration", async () => {
+    it("keeps the default helper prompt instead of hydrating it from the displayed report", async () => {
       const store = createTestStore();
       const reportHelperPrompt = "Custom helper prompt from report response";
       mockGetReportsQuery.mockReturnValue({
@@ -636,7 +636,11 @@ describe("ReportSection", () => {
         expect(screen.getByTestId("report-content")).toBeInTheDocument();
       });
 
-      expect(screen.getByTestId("prompt-display")).toHaveTextContent(reportHelperPrompt);
+      // The Generate Report form keeps DEFAULT_HELPER_PROMPT even when the
+      // scenario has history — the current default always wins, so the
+      // report's saved prompt must NOT be hydrated into the editable field.
+      expect(screen.getByTestId("prompt-display")).toHaveTextContent(DEFAULT_HELPER_PROMPT);
+      expect(screen.getByTestId("prompt-display")).not.toHaveTextContent(reportHelperPrompt);
       expect(screen.getByTestId("generate-button")).toHaveTextContent("Regenerate Report");
     });
 

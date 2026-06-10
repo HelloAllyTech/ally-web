@@ -44,16 +44,7 @@ export const DETAILS_STYLES = `
   }
 `;
 
-export const DEFAULT_HELPER_PROMPT = `You are a test helper agent designed to simulate a client seeking counseling support.
-Your goal is to engage authentically with the roleplay agent, expressing realistic emotions, concerns, and responses.
-
-Guidelines:
-- Be genuine and emotionally authentic
-- Share concerns and feelings naturally
-- Respond to the counselor's interventions realistically
-- Show appropriate vulnerability
-- Ask clarifying questions when needed
-- Display a range of emotions appropriate to the scenario`;
+export const DEFAULT_HELPER_PROMPT = `You are a mental healthcare worker`;
 
 export enum ReportGenerationStatus {
   STARTED = "STARTED",

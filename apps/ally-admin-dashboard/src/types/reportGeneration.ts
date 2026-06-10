@@ -37,6 +37,13 @@ export type ReportConfig = {
   languageId: number;
   languageName: string;
   turns: number;
+  /**
+   * promptCode of the main-agent variant ("skill") this report was
+   * generated with, snapshotted server-side at generation time. Undefined
+   * for reports generated before this was captured, or when the scenario
+   * was on the default variant.
+   */
+  selectedMainPromptCode?: string;
 };
 
 export type ReportMetric = {
