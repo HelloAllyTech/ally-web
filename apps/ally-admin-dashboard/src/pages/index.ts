@@ -16,3 +16,7 @@ export * from "./UserBadges/UserBadges";
 export * from "./GuardrailsManagement/GuardrailsManagement";
 export * from "./TranslationManagement/TranslationManagement";
 export * from "./Tooltips/Tooltips";
+// NOTE: Analytics is intentionally NOT re-exported here. It pulls in IBM Carbon
+// + Carbon Charts (+ d3) and its own scoped stylesheet; keeping it out of this
+// eagerly-imported barrel lets RouteLayout lazy-load it as a separate chunk so
+// those heavy deps load only when a super-admin opens the Analytics tab.

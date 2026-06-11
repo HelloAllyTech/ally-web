@@ -12,7 +12,7 @@ import {
   useUploadProfileImageMutation,
 } from "@api";
 import { NavigationItem } from "@components/types";
-import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions, UserRole } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
 
@@ -102,6 +102,11 @@ export const useUser = () => {
       label: en.userManagement.badges,
       path: ROUTES.USER_BADGES,
     },
+    {
+      id: SIDEBAR_ITEMS.ANALYTICS,
+      label: "Analytics",
+      path: ROUTES.ANALYTICS,
+    },
   ];
 
   /**
@@ -161,44 +166,52 @@ export const useUser = () => {
   };
 
   const filteredNavigationItems = useMemo(() => {
-    // Return empty array if permissions are not loaded yet
-    if (!permissions || permissions.length === 0) {
-      return [];
-    }
+    const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
+    const analyticsItem = navigationItems.find(item => item.id === SIDEBAR_ITEMS.ANALYTICS);
 
-    // Filter navigation items based on user permissions
-    return navigationItems.filter(item => {
-      switch (item.id) {
-        case SIDEBAR_ITEMS.SIMULATION_STUDIO:
-          return permissions.includes(Permissions.EDIT_SCENARIO);
-        case SIDEBAR_ITEMS.EVENTS:
-          return permissions.includes(Permissions.EDIT_EVENT);
-        case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
-          return permissions.includes(Permissions.EDIT_CHARACTER_LIBRARY);
-        case SIDEBAR_ITEMS.SCENARIO_VOICES:
-          return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
-        case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
-          return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
-        case SIDEBAR_ITEMS.PROMPTS:
-          return permissions.includes(Permissions.EDIT_PROMPT);
-        case SIDEBAR_ITEMS.USERS:
-          return (
-            permissions.includes(Permissions.EDIT_USER) ||
-            permissions.includes(Permissions.VIEW_USERS)
-          );
-        case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
-          return permissions.includes(Permissions.EDIT_GUARDRAIL);
-        case SIDEBAR_ITEMS.TRANSLATIONS:
-          return permissions.includes(Permissions.VIEW_I18N_TRANSLATIONS);
-        case SIDEBAR_ITEMS.TOOLTIPS:
-          return permissions.includes(Permissions.VIEW_TOOLTIPS);
-        case SIDEBAR_ITEMS.USER_BADGES:
-          return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
-        default:
-          return true;
-      }
-    });
-  }, [permissions]);
+    // Permission-gated items require permissions to be loaded; until then show
+    // nothing for them. The Analytics tab is role-gated (super-admin only) and
+    // is appended below independently of permissions.
+    const base =
+      !permissions || permissions.length === 0
+        ? []
+        : navigationItems.filter(item => {
+            switch (item.id) {
+              case SIDEBAR_ITEMS.SIMULATION_STUDIO:
+                return permissions.includes(Permissions.EDIT_SCENARIO);
+              case SIDEBAR_ITEMS.EVENTS:
+                return permissions.includes(Permissions.EDIT_EVENT);
+              case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
+                return permissions.includes(Permissions.EDIT_CHARACTER_LIBRARY);
+              case SIDEBAR_ITEMS.SCENARIO_VOICES:
+                return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
+              case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
+                return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
+              case SIDEBAR_ITEMS.PROMPTS:
+                return permissions.includes(Permissions.EDIT_PROMPT);
+              case SIDEBAR_ITEMS.USERS:
+                return (
+                  permissions.includes(Permissions.EDIT_USER) ||
+                  permissions.includes(Permissions.VIEW_USERS)
+                );
+              case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
+                return permissions.includes(Permissions.EDIT_GUARDRAIL);
+              case SIDEBAR_ITEMS.TRANSLATIONS:
+                return permissions.includes(Permissions.VIEW_I18N_TRANSLATIONS);
+              case SIDEBAR_ITEMS.TOOLTIPS:
+                return permissions.includes(Permissions.VIEW_TOOLTIPS);
+              case SIDEBAR_ITEMS.USER_BADGES:
+                return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
+              case SIDEBAR_ITEMS.ANALYTICS:
+                // Role-gated, not permission-gated; appended below for super-admins.
+                return false;
+              default:
+                return true;
+            }
+          });
+
+    return isSuperAdmin && analyticsItem ? [...base, analyticsItem] : base;
+  }, [permissions, user?.role]);
 
   return {
     availableChatTypes,

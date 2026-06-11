@@ -156,6 +156,59 @@ export interface AnalyticsData {
   }>;
 }
 
+// Platform analytics (super-admin overview) — mirrors the backend
+// AnalyticsOverviewResponseDto from GET /api/v1/analytics/overview.
+export type AnalyticsRange = "30d" | "90d" | "12m";
+
+export interface AnalyticsSummary {
+  totalUsers: number;
+  activeUsers30d: number;
+  simsThisWeek: number;
+  retentionRatePct: number;
+}
+
+export interface UserGrowthPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  date: string;
+  newUsers: number;
+  cumulativeUsers: number;
+}
+
+export interface ActiveUsersPoint {
+  /** Day (yyyy-mm-dd). */
+  date: string;
+  dau: number;
+  wau: number;
+  mau: number;
+}
+
+export interface SimulationsCompletedPoint {
+  /** ISO week start (yyyy-mm-dd). */
+  weekStart: string;
+  count: number;
+}
+
+export interface RetentionPoint {
+  /** ISO week start (yyyy-mm-dd). */
+  weekStart: string;
+  newUsers: number;
+  returningUsers: number;
+}
+
+export interface UsersByRolePoint {
+  role: string;
+  count: number;
+}
+
+export interface AnalyticsOverviewResponse {
+  summary: AnalyticsSummary;
+  userGrowth: UserGrowthPoint[];
+  activeUsers: ActiveUsersPoint[];
+  simulationsCompleted: SimulationsCompletedPoint[];
+  retention: RetentionPoint[];
+  usersByRole: UsersByRolePoint[];
+}
+
 // Settings types
 export interface AppSettings {
   id: string;

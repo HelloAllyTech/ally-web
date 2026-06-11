@@ -7,13 +7,14 @@ import { useGetUserQuery, useGetPermissionsQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
 import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
 import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
-import { LOCAL_STORAGE_KEYS, ROUTES, Permissions } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, Permissions, UserRole } from "@constants";
 import { setUser, setPermissions } from "@reducer";
 import { hasPermissions } from "@utils";
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
   requiredPermissions?: Permissions[];
+  requiredRole?: UserRole;
   isPreview?: boolean;
 }
 
@@ -21,6 +22,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   children,
   isPreview,
   requiredPermissions = [],
+  requiredRole,
 }) => {
   const isAuthenticated =
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
@@ -41,12 +43,22 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
 
   // Check if user has permission to access current route
   let hasPermission = true;
+  let hasRole = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
     hasPermission = hasPermissions(permissions, requiredPermissions);
   }
 
-  if (hasPermission && isPreview) return children;
+  // Role gating is independent of permissions: routes can require a specific
+  // role (e.g. SUPER_ADMIN) regardless of the permission set. Routes that pass
+  // no requiredRole stay backward compatible (hasRole stays true).
+  if (!isUserLoading) {
+    hasRole = !requiredRole || userData?.role === requiredRole;
+  }
+
+  const hasAccess = hasPermission && hasRole;
+
+  if (hasAccess && isPreview) return children;
 
   return (
     <ScenarioReportsSocketProvider>
@@ -54,7 +66,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
         <Sidebar />
         <main className="flex-1 overflow-auto">
           <div className="p-4 lg:p-6 h-[100vh] overflow-y-hidden">
-            {hasPermission ? children : <AccessDenied />}
+            {hasAccess ? children : <AccessDenied />}
           </div>
         </main>
         <ReportUploadProgressDialog />

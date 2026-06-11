@@ -31,4 +31,5 @@ export const SIDEBAR_ITEMS = {
   MANAGE_GUARDRAILS: "manage-guardrails",
   TRANSLATIONS: "translations",
   TOOLTIPS: "tooltips",
+  ANALYTICS: "analytics",
 };
