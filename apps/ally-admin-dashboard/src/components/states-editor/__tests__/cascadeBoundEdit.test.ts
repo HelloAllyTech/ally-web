@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cascadeBoundEdit } from "../cascadeBoundEdit";
+import { cascadeBoundEdit, removeStateAndStitch } from "../cascadeBoundEdit";
 import { SimulationStateFormValue } from "../types";
 
 /**
@@ -30,7 +30,6 @@ const state = (
   id,
   name: id,
   guidelines: "",
-  isStarting: false,
   scoreLower,
   scoreUpper,
   ragEnabled: true,
@@ -261,5 +260,83 @@ describe("cascadeBoundEdit", () => {
       const after = cascadeBoundEdit(before, 0, "scoreUpper", 10);
       expect(pairs(after)).toEqual([[-40, 10]]);
     });
+  });
+});
+
+describe("removeStateAndStitch", () => {
+  it("re-stitches the gap when a MIDDLE state is removed", () => {
+    // [0,50)[50,100)[100,200) — remove the middle one. The previous state
+    // absorbs the band: its upper extends to the following state's lower.
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", 100, 200)];
+    const after = removeStateAndStitch(before, "b");
+    expect(after.map(s => s.id)).toEqual(["a", "c"]);
+    expect(pairs(after)).toEqual([
+      [0, 100], // 'a' grew to swallow the removed [50,100) band
+      [100, 200],
+    ]);
+  });
+
+  it("keeps ranges contiguous after a middle removal (no gap, no overlap)", () => {
+    const before = [
+      state("a", 0, 50),
+      state("b", 50, 120),
+      state("c", 120, 180),
+      state("d", 180, 250),
+    ];
+    const after = removeStateAndStitch(before, "c");
+    // 'b' absorbs [120,180); the sequence stays fully contiguous.
+    for (let i = 0; i < after.length - 1; i++) {
+      expect(after[i].scoreUpper).toBe(after[i + 1].scoreLower);
+    }
+    expect(pairs(after)).toEqual([
+      [0, 50],
+      [50, 180],
+      [180, 250],
+    ]);
+  });
+
+  it("removing the FIRST state needs no stitch (next becomes the open lower end)", () => {
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", 100, 200)];
+    const after = removeStateAndStitch(before, "a");
+    expect(pairs(after)).toEqual([
+      [50, 100],
+      [100, 200],
+    ]);
+  });
+
+  it("removing the LAST state needs no stitch (prev becomes the open upper end)", () => {
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", 100, 200)];
+    const after = removeStateAndStitch(before, "c");
+    expect(pairs(after)).toEqual([
+      [0, 50],
+      [50, 100],
+    ]);
+  });
+
+  it("removing the only state yields an empty list", () => {
+    expect(removeStateAndStitch([state("a", 0, 50)], "a")).toEqual([]);
+  });
+
+  it("returns the list unchanged when the id is not found", () => {
+    const before = [state("a", 0, 50), state("b", 50, 100)];
+    expect(removeStateAndStitch(before, "missing")).toEqual(before);
+  });
+
+  it("skips the stitch when a boundary is null (user mid-type) — save validation flags it", () => {
+    // Following state's lower is null, so there's nothing to stitch to;
+    // the card is just dropped.
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", null, 200)];
+    const after = removeStateAndStitch(before, "b");
+    expect(pairs(after)).toEqual([
+      [0, 50], // unchanged — no numeric boundary to stitch to
+      [null, 200],
+    ]);
+  });
+
+  it("does not mutate the input array", () => {
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", 100, 200)];
+    const snapshot = pairs(before);
+    removeStateAndStitch(before, "b");
+    expect(pairs(before)).toEqual(snapshot);
   });
 });

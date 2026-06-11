@@ -122,3 +122,48 @@ export const cascadeBoundEdit = (
   cascadeForwardFrom(index);
   return next;
 };
+
+/**
+ * Remove the state with `id` and re-stitch the sequence so the contiguity
+ * invariant (state[i].upper == state[i+1].lower) survives the deletion.
+ *
+ * Without this, a plain `filter` leaves a gap when a MIDDLE state is removed
+ * (e.g. removing [50,100) from [0,50)[50,100)[100,200) leaves [0,50)[100,200)
+ * — a hole from 50 to 100), which the score resolver can't map and which
+ * save-time validation then rejects.
+ *
+ * Rules
+ * -----
+ * - Removing the first or last state needs no stitch: the remaining states
+ *   are already contiguous among themselves, and the new end simply becomes
+ *   the open bound.
+ * - Removing a middle state closes the gap by extending the PREVIOUS state's
+ *   `scoreUpper` up to the next state's `scoreLower` (the previous state
+ *   absorbs the removed band). Its width only grows, so the min-gap invariant
+ *   still holds.
+ * - If either boundary is null (user mid-type), the stitch is skipped and the
+ *   card is just dropped — save-time validation will flag the gap.
+ */
+export const removeStateAndStitch = (
+  states: SimulationStateFormValue[],
+  id: string,
+): SimulationStateFormValue[] => {
+  const index = states.findIndex(s => s.id === id);
+  if (index === -1) return states;
+
+  const next = states.filter(s => s.id !== id);
+
+  // End removals (and emptying the list) need no stitch.
+  if (index === 0 || index === states.length - 1 || next.length === 0) {
+    return next;
+  }
+
+  // Middle removal: `filter` keeps order, so the previous state is still at
+  // index-1 and the state that followed the removed one is now at `index`.
+  const prev = next[index - 1];
+  const following = next[index];
+  if (typeof prev.scoreUpper === "number" && typeof following.scoreLower === "number") {
+    next[index - 1] = { ...prev, scoreUpper: following.scoreLower };
+  }
+  return next;
+};

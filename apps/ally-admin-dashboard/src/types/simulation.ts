@@ -115,15 +115,15 @@ export interface SimulationInput {
   selectedMainPromptCode?: string;
   /**
    * Per-simulation states used by main-agent prompts with `hasStates: true`.
-   * Each entry: id, name, guidelines, isStarting, scoreLower, scoreUpper,
-   * ragEnabled. Validation rules (one starting, contiguous ranges, min gap
-   * 50, open bounds at ends) are enforced server-side on save.
+   * Each entry: id, name, guidelines, scoreLower, scoreUpper, ragEnabled.
+   * Validation rules (contiguous ranges, min gap 50, finite bounds) are
+   * enforced server-side on save. The starting state is emergent — the
+   * runtime opens in whichever range contains score 0.
    */
   states?: {
     id: string;
     name: string;
     guidelines: string;
-    isStarting: boolean;
     scoreLower: number | null;
     scoreUpper: number | null;
     ragEnabled: boolean;
@@ -210,7 +210,6 @@ export interface GetSimulationByIdResponse {
       id: string;
       name: string;
       guidelines: string;
-      isStarting: boolean;
       scoreLower: number | null;
       scoreUpper: number | null;
       ragEnabled: boolean;

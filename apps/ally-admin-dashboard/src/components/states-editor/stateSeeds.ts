@@ -28,9 +28,10 @@ const generateId = (): string =>
  *    Either way the new card lands somewhere typeable; the cascade will
  *    reflow once the user fills the missing field.
  *
- * `isStarting` is true iff the list was empty — the first state in a
- * scenario is always the starting state. Subsequent adds default to
- * non-starting; the user can flip the radio if they want to change it.
+ * There is no `isStarting` flag — the starting state is emergent (the
+ * state whose range contains 0). The first seeded state spans
+ * [0, MIN_STATE_GAP), so it naturally opens the simulation until the
+ * author edits the bounds.
  */
 export const seedNextState = (existing: SimulationStateFormValue[]): SimulationStateFormValue => {
   const isFirst = existing.length === 0;
@@ -39,7 +40,6 @@ export const seedNextState = (existing: SimulationStateFormValue[]): SimulationS
       id: generateId(),
       name: "",
       guidelines: "",
-      isStarting: true,
       scoreLower: 0,
       scoreUpper: MIN_STATE_GAP,
       ragEnabled: true,
@@ -60,9 +60,34 @@ export const seedNextState = (existing: SimulationStateFormValue[]): SimulationS
     id: generateId(),
     name: "",
     guidelines: "",
-    isStarting: false,
     scoreLower: lower,
     scoreUpper: lower + MIN_STATE_GAP,
     ragEnabled: true,
   };
+};
+
+/**
+ * Resolve which state opens the simulation: the one whose half-open range
+ * `[scoreLower, scoreUpper)` contains 0 (the session's starting score). If
+ * 0 sits below every range, the runtime clamps to the first state — so we
+ * mirror that here and return the first state's id. Returns undefined for
+ * an empty list. Pure + dependency-free so it can be unit-tested and reused
+ * by the editor without pulling in component imports.
+ *
+ * Mirrors `_resolve_simulation_state_by_score` (ally-ai-learn) at score 0.
+ */
+export const startingStateId = (states: SimulationStateFormValue[]): string | undefined => {
+  if (states.length === 0) return undefined;
+  const containsZero = states.find(
+    s =>
+      typeof s.scoreLower === "number" &&
+      typeof s.scoreUpper === "number" &&
+      s.scoreLower <= 0 &&
+      0 < s.scoreUpper,
+  );
+  // Fall back to the lowest-bounded state (clamp target) when no range
+  // contains 0 — matches the runtime's below-range clamp to the first state.
+  if (containsZero) return containsZero.id;
+  const sorted = [...states].sort((a, b) => (a.scoreLower ?? 0) - (b.scoreLower ?? 0));
+  return sorted[0].id;
 };
