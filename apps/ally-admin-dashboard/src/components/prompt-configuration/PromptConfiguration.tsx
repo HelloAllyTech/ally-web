@@ -25,9 +25,11 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
   evaluatorPromptCode,
   onEvaluatorPromptChange,
 }) => {
+  // Report generation is a text-only simulation (no TTS), so it does not need
+  // scenario voices. Unlike the live-session picker we don't require both-gender
+  // voice coverage here — any active language can be reported on.
   const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
     active: true,
-    hasVoices: true,
   }) as {
     data: ScenarioLanguage[];
   };
