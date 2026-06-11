@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cascadeBoundEdit } from "../cascadeBoundEdit";
+import { cascadeBoundEdit, removeStateAndStitch } from "../cascadeBoundEdit";
 import { SimulationStateFormValue } from "../types";
 
 /**
@@ -11,7 +11,11 @@ import { SimulationStateFormValue } from "../types";
  * through full editor-UI tests.
  *
  * Reference invariants:
- *   - states[0].scoreLower is locked at 0 (input is rendered read-only).
+ *   - states[0].scoreLower is the open lower end and may be negative.
+ *   - Min and Max are a LINKED pair: raising a lower past the gap pushes the
+ *     upper up (and cascades forward); lowering state 0's upper pulls its
+ *     open lower down. Shared boundaries are never pulled left (no backward
+ *     cascade) — those edits clamp instead.
  *   - For each i: scoreUpper - scoreLower >= MIN_STATE_GAP (50).
  *   - For each i < N-1: states[i].scoreUpper == states[i+1].scoreLower.
  */
@@ -26,7 +30,6 @@ const state = (
   id,
   name: id,
   guidelines: "",
-  isStarting: false,
   scoreLower,
   scoreUpper,
   ragEnabled: true,
@@ -49,26 +52,57 @@ describe("cascadeBoundEdit", () => {
     });
   });
 
-  describe("state 0 lock", () => {
-    it("ignores edits to scoreLower of the first state", () => {
+  describe("state 0 open lower end (editable, may be negative)", () => {
+    it("lets the first state's lower go negative without touching others", () => {
       const before = [state("a", 0, 50), state("b", 50, 100)];
-      const after = cascadeBoundEdit(before, 0, "scoreLower", 25);
-      // First state's lower is structurally pinned at 0 — value untouched,
-      // no cascade at all.
+      const after = cascadeBoundEdit(before, 0, "scoreLower", -100);
+      // No previous state to push; only state 0's own lower moves.
       expect(pairs(after)).toEqual([
-        [0, 50],
+        [-100, 50],
         [50, 100],
+      ]);
+    });
+
+    it("accepts a mid-negative first-state lower", () => {
+      const before = [state("a", 0, 50), state("b", 50, 100)];
+      const after = cascadeBoundEdit(before, 0, "scoreLower", -25);
+      expect(pairs(after)).toEqual([
+        [-25, 50],
+        [50, 100],
+      ]);
+    });
+
+    it("pushes its own upper up (and cascades) when raising the lower past the gap", () => {
+      // Raising state 0's lower to 30 would leave only 20 of headroom under
+      // upper=50. Instead of refusing, push state 0's upper to 30+50=80 and
+      // ripple forward: state 1 follows to [80, 130].
+      const before = [state("a", 0, 50), state("b", 50, 100)];
+      const after = cascadeBoundEdit(before, 0, "scoreLower", 30);
+      expect(pairs(after)).toEqual([
+        [30, 80],
+        [80, 130],
       ]);
     });
   });
 
   describe("intra-state min-gap on scoreUpper", () => {
-    it("clamps upward when the user types a value below lower + MIN_GAP", () => {
-      // State 0 currently [0, 50). User types 30 in the upper → that would
-      // give a 30-wide range; we clamp the value up to 50 instead.
+    it("pulls state 0's open lower down when upper drops below the gap", () => {
+      // State 0 [0, 50). User types 30 in the upper → 30-wide range. State 0's
+      // lower is the open end, so pull it down to 30-50=-20 to keep the gap.
       const before = [state("a", 0, 50)];
       const after = cascadeBoundEdit(before, 0, "scoreUpper", 30);
-      expect(pairs(after)).toEqual([[0, MIN_STATE_GAP]]);
+      expect(pairs(after)).toEqual([[-20, 30]]);
+    });
+
+    it("clamps the upper up for a non-first state (shared lower, no backward pull)", () => {
+      // State 1's lower (50) is shared with state 0's upper, so we can't pull
+      // it left. Typing 70 in state 1's upper clamps up to 50+50=100.
+      const before = [state("a", 0, 50), state("b", 50, 100)];
+      const after = cascadeBoundEdit(before, 1, "scoreUpper", 70);
+      expect(pairs(after)).toEqual([
+        [0, 50],
+        [50, 100],
+      ]);
     });
 
     it("accepts a value at or above lower + MIN_GAP unchanged", () => {
@@ -159,7 +193,7 @@ describe("cascadeBoundEdit", () => {
     });
   });
 
-  describe("scoreLower edit (i > 0) — contiguity + clamp both sides", () => {
+  describe("scoreLower edit (i > 0) — shared boundary, push-not-refuse", () => {
     it("moves both state[i-1].upper and state[i].lower together", () => {
       // Boundary starts at 50. Move it to 70 — state 0 widens to
       // [0,70] (70 wide, valid) and state 1 narrows to [70,200] (130
@@ -174,7 +208,8 @@ describe("cascadeBoundEdit", () => {
 
     it("clamps upward to preserve the previous state's min gap", () => {
       // Lowering boundary from 50 → 20 would leave state 0 only 20 wide.
-      // Refuse and clamp to state 0's min-gap floor = 0 + 50 = 50.
+      // Refuse and clamp to state 0's min-gap floor = 0 + 50 = 50 (we never
+      // pull the left neighbour / cascade backward).
       const before = [state("a", 0, 50), state("b", 50, 100)];
       const after = cascadeBoundEdit(before, 1, "scoreLower", 20);
       expect(pairs(after)).toEqual([
@@ -183,14 +218,15 @@ describe("cascadeBoundEdit", () => {
       ]);
     });
 
-    it("clamps downward to preserve the current state's min gap", () => {
+    it("pushes the current state's upper up when raising the boundary past its gap", () => {
       // Raising boundary from 50 → 80 would leave state 1 only 20 wide
-      // (80..100). Clamp to state 1's min-gap ceiling = 100 - 50 = 50.
+      // (80..100). Instead of refusing, push state 1's upper to 80+50=130
+      // so the Min/Max stay linked.
       const before = [state("a", 0, 50), state("b", 50, 100)];
       const after = cascadeBoundEdit(before, 1, "scoreLower", 80);
       expect(pairs(after)).toEqual([
-        [0, 50],
-        [50, 100],
+        [0, 80],
+        [80, 130],
       ]);
     });
 
@@ -206,11 +242,101 @@ describe("cascadeBoundEdit", () => {
     });
   });
 
-  describe("single state", () => {
+  describe("single state — Min/Max move as a linked pair", () => {
     it("edits scoreUpper without any forward cascade", () => {
       const before = [state("only", 0, 50)];
       const after = cascadeBoundEdit(before, 0, "scoreUpper", 500);
       expect(pairs(after)).toEqual([[0, 500]]);
     });
+
+    it("raising Min past the gap pushes Max up", () => {
+      const before = [state("only", -1, 49)];
+      const after = cascadeBoundEdit(before, 0, "scoreLower", 60);
+      expect(pairs(after)).toEqual([[60, 110]]);
+    });
+
+    it("lowering Max below the gap pulls Min down", () => {
+      const before = [state("only", -1, 49)];
+      const after = cascadeBoundEdit(before, 0, "scoreUpper", 10);
+      expect(pairs(after)).toEqual([[-40, 10]]);
+    });
+  });
+});
+
+describe("removeStateAndStitch", () => {
+  it("re-stitches the gap when a MIDDLE state is removed", () => {
+    // [0,50)[50,100)[100,200) — remove the middle one. The previous state
+    // absorbs the band: its upper extends to the following state's lower.
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", 100, 200)];
+    const after = removeStateAndStitch(before, "b");
+    expect(after.map(s => s.id)).toEqual(["a", "c"]);
+    expect(pairs(after)).toEqual([
+      [0, 100], // 'a' grew to swallow the removed [50,100) band
+      [100, 200],
+    ]);
+  });
+
+  it("keeps ranges contiguous after a middle removal (no gap, no overlap)", () => {
+    const before = [
+      state("a", 0, 50),
+      state("b", 50, 120),
+      state("c", 120, 180),
+      state("d", 180, 250),
+    ];
+    const after = removeStateAndStitch(before, "c");
+    // 'b' absorbs [120,180); the sequence stays fully contiguous.
+    for (let i = 0; i < after.length - 1; i++) {
+      expect(after[i].scoreUpper).toBe(after[i + 1].scoreLower);
+    }
+    expect(pairs(after)).toEqual([
+      [0, 50],
+      [50, 180],
+      [180, 250],
+    ]);
+  });
+
+  it("removing the FIRST state needs no stitch (next becomes the open lower end)", () => {
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", 100, 200)];
+    const after = removeStateAndStitch(before, "a");
+    expect(pairs(after)).toEqual([
+      [50, 100],
+      [100, 200],
+    ]);
+  });
+
+  it("removing the LAST state needs no stitch (prev becomes the open upper end)", () => {
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", 100, 200)];
+    const after = removeStateAndStitch(before, "c");
+    expect(pairs(after)).toEqual([
+      [0, 50],
+      [50, 100],
+    ]);
+  });
+
+  it("removing the only state yields an empty list", () => {
+    expect(removeStateAndStitch([state("a", 0, 50)], "a")).toEqual([]);
+  });
+
+  it("returns the list unchanged when the id is not found", () => {
+    const before = [state("a", 0, 50), state("b", 50, 100)];
+    expect(removeStateAndStitch(before, "missing")).toEqual(before);
+  });
+
+  it("skips the stitch when a boundary is null (user mid-type) — save validation flags it", () => {
+    // Following state's lower is null, so there's nothing to stitch to;
+    // the card is just dropped.
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", null, 200)];
+    const after = removeStateAndStitch(before, "b");
+    expect(pairs(after)).toEqual([
+      [0, 50], // unchanged — no numeric boundary to stitch to
+      [null, 200],
+    ]);
+  });
+
+  it("does not mutate the input array", () => {
+    const before = [state("a", 0, 50), state("b", 50, 100), state("c", 100, 200)];
+    const snapshot = pairs(before);
+    removeStateAndStitch(before, "b");
+    expect(pairs(before)).toEqual(snapshot);
   });
 });

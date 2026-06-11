@@ -11,7 +11,6 @@ export interface SimulationStateFormValue {
   id: string;
   name: string;
   guidelines: string;
-  isStarting: boolean;
   scoreLower: number | null;
   scoreUpper: number | null;
   ragEnabled: boolean;

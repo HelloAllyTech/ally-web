@@ -1,3 +1,5 @@
+export type ConversationalGuardrailKind = "USER" | "SYSTEM";
+
 export interface ConversationalGuardrail {
   id: string;
   name: string;
@@ -6,6 +8,10 @@ export interface ConversationalGuardrail {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  // SYSTEM guardrails are platform-provided. Mandatory ones cannot be disabled
+  // or deleted (their dialogue text remains editable).
+  kind?: ConversationalGuardrailKind;
+  mandatory?: boolean;
 }
 
 export interface CreateConversationalGuardrailInput {

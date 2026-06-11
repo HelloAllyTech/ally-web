@@ -115,6 +115,15 @@ export const GuardrailsManagement: React.FC = () => {
     const { columnId, value, rowId } = action;
     const item = guardrails.find(g => g.id === rowId);
 
+    // Mandatory (system) guardrails cannot be disabled. Their dialogue text
+    // stays editable, so only block attempts to set active=false.
+    const isDeactivating =
+      (columnId === "active" && value === false) || (columnId === "all" && value?.active === false);
+    if (item?.mandatory && isDeactivating) {
+      toast.error("This is a system guardrail and cannot be disabled.");
+      return;
+    }
+
     if (item && value !== undefined) {
       // If columnId is 'all', value is the full update object
       let updatePayload: UpdateConversationalGuardrailInput = {};
@@ -146,16 +155,29 @@ export const GuardrailsManagement: React.FC = () => {
 
   const handleDeleteGuardrails = async (ids: string[]) => {
     if (ids.length === 0) return;
+
+    // System guardrails are mandatory and cannot be deleted (delete = set
+    // active=false). Skip them and warn rather than failing the whole batch.
+    const deletableIds = ids.filter(id => !guardrails.find(g => g.id === id)?.mandatory);
+    if (deletableIds.length < ids.length) {
+      toast.error("System guardrails cannot be deleted and were skipped.");
+    }
+    if (deletableIds.length === 0) {
+      setShowDeleteConfirmationPopup(false);
+      setSelectedGuardrails([]);
+      return;
+    }
+
     try {
       const results = await Promise.all(
-        ids.map(id => updateGuardrail({ id, guardrail: { active: false } })),
+        deletableIds.map(id => updateGuardrail({ id, guardrail: { active: false } })),
       );
       const hasError = results.some((r: any) => r.error);
 
       if (hasError) {
         toast.error("Failed to delete some guardrails");
       } else {
-        toast.success(`Successfully deleted ${ids.length} guardrail(s)`);
+        toast.success(`Successfully deleted ${deletableIds.length} guardrail(s)`);
         setShowDeleteConfirmationPopup(false);
         setSelectedGuardrails([]);
         setIsSidePanelOpen(false);
@@ -171,10 +193,17 @@ export const GuardrailsManagement: React.FC = () => {
     return {
       data: guardrails.map(g => ({
         id: { value: g.id, disabled: false, rowId: g.id },
-        name: { value: g.name, disabled: false, rowId: g.id },
+        // Mark system guardrails inline and lock their toggle. The suffix is
+        // display-only — the side panel reads the raw guardrail, so its name
+        // stays clean and editable.
+        name: {
+          value: g.mandatory ? `${g.name}  ·  System (always on)` : g.name,
+          disabled: !!g.mandatory,
+          rowId: g.id,
+        },
         helperDialogue: { value: g.helperDialogue, disabled: false, rowId: g.id },
         actorDialogue: { value: g.actorDialogue, disabled: false, rowId: g.id },
-        active: { value: g.active, disabled: false, rowId: g.id },
+        active: { value: g.active, disabled: !!g.mandatory, rowId: g.id },
         createdAt: {
           value: new Date(g.createdAt).toLocaleDateString(),
           disabled: true,

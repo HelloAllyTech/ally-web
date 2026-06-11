@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { seedNextState } from "../stateSeeds";
+import { seedNextState, startingStateId } from "../stateSeeds";
 import { SimulationStateFormValue } from "../types";
 
-const state = (scoreLower: number | null, scoreUpper: number | null): SimulationStateFormValue => ({
-  id: `s_${Math.random()}`,
+const state = (
+  scoreLower: number | null,
+  scoreUpper: number | null,
+  id = `s_${Math.random()}`,
+): SimulationStateFormValue => ({
+  id,
   name: "",
   guidelines: "",
-  isStarting: false,
   scoreLower,
   scoreUpper,
   ragEnabled: true,
@@ -18,7 +21,6 @@ describe("seedNextState", () => {
     const seed = seedNextState([]);
     expect(seed.scoreLower).toBe(0);
     expect(seed.scoreUpper).toBe(50);
-    expect(seed.isStarting).toBe(true);
   });
 
   it("continues from the previous state's scoreUpper (storage contiguity)", () => {
@@ -28,7 +30,6 @@ describe("seedNextState", () => {
     const seed = seedNextState([state(0, 50), state(50, 100)]);
     expect(seed.scoreLower).toBe(100);
     expect(seed.scoreUpper).toBe(150);
-    expect(seed.isStarting).toBe(false);
   });
 
   it("handles non-default last state (custom widths)", () => {
@@ -57,14 +58,6 @@ describe("seedNextState", () => {
     expect(seed.scoreUpper).toBe(50);
   });
 
-  it("first state of a new list is the starting state by default", () => {
-    expect(seedNextState([]).isStarting).toBe(true);
-  });
-
-  it("subsequent states are NOT the starting state by default", () => {
-    expect(seedNextState([state(0, 50)]).isStarting).toBe(false);
-  });
-
   it("ragEnabled defaults to true on new states", () => {
     expect(seedNextState([]).ragEnabled).toBe(true);
     expect(seedNextState([state(0, 50)]).ragEnabled).toBe(true);
@@ -74,5 +67,34 @@ describe("seedNextState", () => {
     const a = seedNextState([]);
     const b = seedNextState([]);
     expect(a.id).not.toBe(b.id);
+  });
+});
+
+describe("startingStateId", () => {
+  it("returns undefined for an empty list", () => {
+    expect(startingStateId([])).toBeUndefined();
+  });
+
+  it("picks the state whose half-open range contains 0", () => {
+    const states = [state(0, 50, "a"), state(50, 100, "b"), state(100, 200, "c")];
+    expect(startingStateId(states)).toBe("a");
+  });
+
+  it("is upper-exclusive: 0 belongs to the state starting at 0, not ending at 0", () => {
+    // state "neg" is [-50, 0); state "pos" is [0, 50). Score 0 is in "pos".
+    const states = [state(-50, 0, "neg"), state(0, 50, "pos")];
+    expect(startingStateId(states)).toBe("pos");
+  });
+
+  it("matches a negative-lower starting band", () => {
+    const states = [state(-100, 50, "a"), state(50, 150, "b")];
+    expect(startingStateId(states)).toBe("a");
+  });
+
+  it("clamps to the lowest-bounded state when 0 is below every range", () => {
+    // Ranges start at 50 — 0 sits below them, so the runtime clamps to the
+    // first (lowest-lower) state. Order-independent.
+    const states = [state(100, 200, "high"), state(50, 100, "low")];
+    expect(startingStateId(states)).toBe("low");
   });
 });

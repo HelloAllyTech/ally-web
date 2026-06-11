@@ -6,8 +6,8 @@ import { TrashRed } from "@assets";
 import { useIsPlaceholderUsed } from "@hooks";
 
 import { FormLabel } from "../form-label";
-import { cascadeBoundEdit } from "./cascadeBoundEdit";
-import { seedNextState } from "./stateSeeds";
+import { cascadeBoundEdit, removeStateAndStitch } from "./cascadeBoundEdit";
+import { seedNextState, startingStateId } from "./stateSeeds";
 import { SimulationStateFormValue } from "./types";
 
 // Re-export the form-value type from this barrel for legacy importers
@@ -107,16 +107,11 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
     [states, writeBack],
   );
 
-  const setStartingState = useCallback(
-    (stateId: string) => {
-      writeBack(states.map(s => ({ ...s, isStarting: s.id === stateId })));
-    },
-    [states, writeBack],
-  );
-
   const removeState = useCallback(
     (stateId: string) => {
-      writeBack(states.filter(s => s.id !== stateId));
+      // Re-stitch so deleting a middle card doesn't leave a score gap
+      // between its neighbours (the previous state absorbs the band).
+      writeBack(removeStateAndStitch(states, stateId));
     },
     [states, writeBack],
   );
@@ -164,119 +159,144 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
         <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
       </div>
 
-      {states.map((state, index) => {
-        const isFirst = index === 0;
-        return (
-          <div
-            key={state.id}
-            className="rounded border border-border-light bg-white p-3 flex flex-col gap-2"
-          >
-            {/*
-              Single header row packs Starting / RAG / Min / Max / Remove
-              together. The cascade hook (updateStateBound) keeps Min and
-              Max in lock-step with neighbouring cards, so no helper text
+      {(() => {
+        // The starting state is derived, not chosen: it's the card whose
+        // range contains 0 (the session's opening score), falling back to
+        // the first card when 0 sits below every range. Computed once per
+        // render and shown as a read-only badge.
+        const startingId = startingStateId(states);
+        return states.map((state, index) => {
+          const isFirst = index === 0;
+          const isLast = index === states.length - 1;
+          return (
+            <div
+              key={state.id}
+              className="rounded border border-border-light bg-white p-3 flex flex-col gap-2"
+            >
+              {/*
+              Single header row packs Starting badge / RAG / Min / Max /
+              Remove together. The cascade hook (updateStateBound) keeps Min
+              and Max in lock-step with neighbouring cards, so no helper text
               or inline validation is needed below the inputs.
             */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <label className="flex items-center gap-2 text-sm text-typography-700">
-                <input
-                  type="radio"
-                  name={`${id}-starting`}
-                  checked={state.isStarting}
-                  onChange={() => setStartingState(state.id)}
-                  className="h-4 w-4 cursor-pointer"
-                />
-                Starting state
-              </label>
-              <label className="flex items-center gap-2 text-sm text-typography-700">
-                <input
-                  type="checkbox"
-                  checked={state.ragEnabled}
-                  onChange={event => updateState(state.id, { ragEnabled: event.target.checked })}
-                  className="h-4 w-4 cursor-pointer"
-                />
-                RAG enabled
-              </label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-typography-700">Min</span>
-                <input
-                  type="number"
-                  // Display layer: each non-first state shows Min as
-                  // `scoreLower + 1` so the boundary between adjacent
-                  // states reads naturally (state 0 Max=50, state 1
-                  // Min=51). Storage stays contiguous (state[i].upper
-                  // == state[i+1].lower) so the ai-learn upper-exclusive
-                  // resolver continues to work unchanged — only the
-                  // displayed number shifts by 1 for non-first states.
-                  value={
-                    state.scoreLower == null
-                      ? ""
-                      : isFirst
-                        ? state.scoreLower
-                        : state.scoreLower + 1
-                  }
-                  // First state's lower is structurally pinned at 0 (see
-                  // cascadeBoundEdit) — disable the input so the lock is
-                  // visible, not just enforced silently.
-                  readOnly={isFirst}
-                  disabled={isFirst}
-                  placeholder="e.g. 0"
-                  onChange={event => {
-                    const raw = event.target.value;
-                    // Reverse the +1 display shift before storing for
-                    // non-first states. First-state edits are ignored
-                    // upstream (cascadeBoundEdit guards on index===0)
-                    // so the conversion only matters for index > 0.
-                    const parsed = raw === "" ? null : isFirst ? Number(raw) : Number(raw) - 1;
-                    updateStateBound(state.id, "scoreLower", parsed);
-                  }}
-                  className={`rounded px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light ${
-                    isFirst
-                      ? "bg-neutral-100 text-typography-500 cursor-not-allowed"
-                      : "bg-transparent"
-                  }`}
-                />
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                {state.id === startingId ? (
+                  <span
+                    className="inline-flex items-center gap-2 rounded-full bg-primary-50 px-2.5 py-0.5 text-sm text-primary-700"
+                    title="This state opens the simulation because its range contains the starting score (0). Edit the bounds to change which state starts."
+                  >
+                    Starting state
+                  </span>
+                ) : (
+                  <span className="text-sm text-transparent select-none" aria-hidden="true">
+                    Starting state
+                  </span>
+                )}
+                <label className="flex items-center gap-2 text-sm text-typography-700">
+                  <input
+                    type="checkbox"
+                    checked={state.ragEnabled}
+                    onChange={event => updateState(state.id, { ragEnabled: event.target.checked })}
+                    className="h-4 w-4 cursor-pointer"
+                  />
+                  RAG enabled
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-typography-700">Min</span>
+                  {/*
+                  All Min values are editable, including the first state's
+                  (which is the open bottom of the range and may be negative).
+                  The −∞ placeholder hints that the first state catches every
+                  lower score; it is NOT a lock. Non-first states display Min
+                  as `scoreLower + 1` so the boundary between adjacent states
+                  reads naturally (state 0 Max=50, state 1 Min=51) — storage
+                  stays contiguous (state[i].upper == state[i+1].lower) so the
+                  ai-learn upper-exclusive resolver is unaffected.
+                */}
+                  <input
+                    type="number"
+                    value={
+                      state.scoreLower == null
+                        ? ""
+                        : isFirst
+                          ? state.scoreLower
+                          : state.scoreLower + 1
+                    }
+                    placeholder={isFirst ? "−∞" : "e.g. 51"}
+                    title={
+                      isFirst
+                        ? "Open lower bound — any lower score falls into this state. Editable; may be negative."
+                        : undefined
+                    }
+                    onChange={event => {
+                      const raw = event.target.value;
+                      // Reverse the +1 display shift before storing for
+                      // non-first states; the first state stores its lower
+                      // verbatim. Store the typed value as-is WITHOUT clamping
+                      // so the field doesn't snap back mid-type; the min-gap
+                      // clamp + neighbour cascade run on blur.
+                      const parsed = raw === "" ? null : isFirst ? Number(raw) : Number(raw) - 1;
+                      updateState(state.id, { scoreLower: parsed });
+                    }}
+                    onBlur={() => updateStateBound(state.id, "scoreLower", state.scoreLower)}
+                    className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-typography-700">Max</span>
+                  {/*
+                  The last state's Max is the open top of the range — the
+                  runtime clamps any higher score into it — but it stays
+                  editable. The +∞ placeholder is a hint, not a lock.
+                */}
+                  <input
+                    type="number"
+                    value={state.scoreUpper ?? ""}
+                    placeholder={isLast ? "+∞" : "e.g. 50"}
+                    title={
+                      isLast
+                        ? "Open upper bound — any higher score falls into this state. Editable."
+                        : undefined
+                    }
+                    onChange={event => {
+                      const raw = event.target.value;
+                      // Store as-is while typing; clamp + cascade on blur so a
+                      // value momentarily below the min-gap floor doesn't snap
+                      // back on every keystroke.
+                      updateState(state.id, { scoreUpper: raw === "" ? null : Number(raw) });
+                    }}
+                    onBlur={() => updateStateBound(state.id, "scoreUpper", state.scoreUpper)}
+                    className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeState(state.id)}
+                  className="flex items-center text-typography-500 hover:text-destructive-500 transition-colors"
+                  aria-label="Remove state"
+                >
+                  <TrashRed className="w-4 h-4" />
+                </button>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-typography-700">Max</span>
-                <input
-                  type="number"
-                  value={state.scoreUpper ?? ""}
-                  placeholder="e.g. 50"
-                  onChange={event => {
-                    const raw = event.target.value;
-                    updateStateBound(state.id, "scoreUpper", raw === "" ? null : Number(raw));
-                  }}
-                  className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeState(state.id)}
-                className="flex items-center text-typography-500 hover:text-destructive-500 transition-colors"
-                aria-label="Remove state"
-              >
-                <TrashRed className="w-4 h-4" />
-              </button>
+
+              <input
+                type="text"
+                value={state.name}
+                onChange={event => updateState(state.id, { name: event.target.value })}
+                placeholder="State name (e.g. Withdrawn, Engaged, Reflective)"
+                className="w-full bg-transparent px-2 py-1 text-sm border-b border-border-light focus:outline-none focus:border-primary-500"
+              />
+
+              <textarea
+                value={state.guidelines}
+                onChange={event => updateState(state.id, { guidelines: event.target.value })}
+                placeholder="Guidelines injected into {state_x_guidelines} when this state is active."
+                className="w-full bg-transparent px-2 py-1 text-sm min-h-[60px] focus:outline-none resize-y"
+              />
             </div>
-
-            <input
-              type="text"
-              value={state.name}
-              onChange={event => updateState(state.id, { name: event.target.value })}
-              placeholder="State name (e.g. Withdrawn, Engaged, Reflective)"
-              className="w-full bg-transparent px-2 py-1 text-sm border-b border-border-light focus:outline-none focus:border-primary-500"
-            />
-
-            <textarea
-              value={state.guidelines}
-              onChange={event => updateState(state.id, { guidelines: event.target.value })}
-              placeholder="Guidelines injected into {state_x_guidelines} when this state is active."
-              className="w-full bg-transparent px-2 py-1 text-sm min-h-[60px] focus:outline-none resize-y"
-            />
-          </div>
-        );
-      })}
+          );
+        });
+      })()}
 
       {/*
         Bottom-anchored add-state action — matches the "+ new row" pattern

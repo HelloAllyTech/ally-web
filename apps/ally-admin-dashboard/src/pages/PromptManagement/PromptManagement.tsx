@@ -161,6 +161,7 @@ export const PromptManagement: React.FC = () => {
     const PROMPT_TYPE_PRIORITY: Record<string, number> = {
       main_agent: 0,
       branching: 1,
+      transcript_evaluator: 2,
     };
     const getPriority = (promptType?: string | null) =>
       promptType && PROMPT_TYPE_PRIORITY[promptType] !== undefined

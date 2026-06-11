@@ -9,11 +9,13 @@ import {
   GENDER_OPTIONS,
   GENDER_IDENTITY_OPTIONS,
   SEXUAL_ORIENTATION_OPTIONS,
+  PROMPT_VARIABLE_MANDATORY_MAP,
   en,
   CUSTOM_CHARACTER_ID,
 } from "@constants";
-import { useClickOutside } from "@hooks";
+import { useClickOutside, useIsPlaceholderUsed } from "@hooks";
 import { CharacterData } from "@types";
+import { camelToSnakeCase } from "@utils/common";
 
 interface CharacterProfileSelectorProps {
   label: string;
@@ -89,6 +91,53 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     setIsCharacterDropdownOpen(false);
     setSearchQuery("");
   });
+
+  // Persona sub-fields are body-driven, exactly like the rest of the studio
+  // form (see FormField + useIsPlaceholderUsed): each hides when the selected
+  // main-agent variant doesn't reference its placeholder — e.g. removing
+  // `{sexual_orientation}` from the prompt drops the field — unless the field
+  // is marked mandatory in SIMULATION_CREATOR_FIELD_GROUPS. We never hide while
+  // the variant is loading / unselected / missing, mirroring FormField's
+  // "only hide once kind === 'loaded'" rule.
+  const selectedMainPromptCode = watch("selectedMainPromptCode") as string | undefined;
+  const nameLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    camelToSnakeCase(formFieldIds.NAME),
+  );
+  const ageLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    camelToSnakeCase(formFieldIds.AGE),
+  );
+  const genderLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    camelToSnakeCase(formFieldIds.GENDER),
+  );
+  const professionLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    camelToSnakeCase(formFieldIds.PROFESSION),
+  );
+  const locationLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    camelToSnakeCase(formFieldIds.CURRENT_LOCATION),
+  );
+  const genderIdentityLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    camelToSnakeCase(formFieldIds.GENDER_IDENTITY),
+  );
+  const sexualOrientationLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    camelToSnakeCase(formFieldIds.SEXUAL_ORIENTATION),
+  );
+
+  const isPersonaFieldVisible = (
+    fieldId: string,
+    lookup: ReturnType<typeof useIsPlaceholderUsed>,
+  ): boolean => {
+    // Mandatory fields (declared in SIMULATION_CREATOR_FIELD_GROUPS) always show.
+    if (PROMPT_VARIABLE_MANDATORY_MAP.get(camelToSnakeCase(fieldId))) return true;
+    // Otherwise hide only once the variant is loaded and doesn't reference it.
+    return !(lookup.kind === "loaded" && !lookup.isUsed);
+  };
 
   // Media fields are intentionally excluded from character comparison:
   // they can differ between the simulation and character (simulation-level overrides)
@@ -314,165 +363,183 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
       {/* All fields in one unified 2-column grid */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-6">
         {/* Name */}
-        <div>
-          <InputField
-            label={formFieldNames.NAME}
-            id={formFieldIds.NAME}
-            formMethods={formMethods}
-            placeholder="Enter name"
-          />
-        </div>
+        {isPersonaFieldVisible(formFieldIds.NAME, nameLookup) && (
+          <div>
+            <InputField
+              label={formFieldNames.NAME}
+              id={formFieldIds.NAME}
+              formMethods={formMethods}
+              placeholder="Enter name"
+            />
+          </div>
+        )}
 
         {/* Age */}
-        <div>
-          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.AGE}
-          </label>
-          <Controller
-            name={formFieldIds.AGE}
-            control={formMethods.control}
-            defaultValue=""
-            rules={{
-              // Age is optional; only validate the format when a value is entered.
-              validate: value => {
-                if (value === "" || value == null) return true;
-                const num = typeof value === "number" ? value : parseInt(String(value), 10);
-                if (isNaN(num) || num < 0) return "Please enter a valid age";
-                return true;
-              },
-            }}
-            render={({ field }) => (
-              <input
-                type="number"
-                placeholder="--"
-                value={field.value === null || field.value === undefined ? "" : field.value}
-                onChange={e => {
-                  const val = e.target.value;
-                  field.onChange(val === "" ? "" : parseInt(val, 10) || "");
-                }}
-                onBlur={field.onBlur}
-                name={field.name}
-                ref={field.ref}
-                className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+        {isPersonaFieldVisible(formFieldIds.AGE, ageLookup) && (
+          <div>
+            <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+              {formFieldNames.AGE}
+            </label>
+            <Controller
+              name={formFieldIds.AGE}
+              control={formMethods.control}
+              defaultValue=""
+              rules={{
+                // Age is optional; only validate the format when a value is entered.
+                validate: value => {
+                  if (value === "" || value == null) return true;
+                  const num = typeof value === "number" ? value : parseInt(String(value), 10);
+                  if (isNaN(num) || num < 0) return "Please enter a valid age";
+                  return true;
+                },
+              }}
+              render={({ field }) => (
+                <input
+                  type="number"
+                  placeholder="--"
+                  value={field.value === null || field.value === undefined ? "" : field.value}
+                  onChange={e => {
+                    const val = e.target.value;
+                    field.onChange(val === "" ? "" : parseInt(val, 10) || "");
+                  }}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                  className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              )}
+            />
+            {errors[formFieldIds.AGE]?.message && (
+              <p className="text-destructive-500 text-sm mt-1">
+                {errors[formFieldIds.AGE].message}
+              </p>
             )}
-          />
-          {errors[formFieldIds.AGE]?.message && (
-            <p className="text-destructive-500 text-sm mt-1">{errors[formFieldIds.AGE].message}</p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Gender */}
-        <div>
-          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.GENDER}
-          </label>
-          <Controller
-            name={formFieldIds.GENDER}
-            control={formMethods.control}
-            defaultValue=""
-            render={({ field }) => (
-              <CustomDropdownField
-                options={GENDER_OPTIONS}
-                placeholder="Select gender"
-                customStyle={{ height: "34px" }}
-                defaultOption={
-                  field.value ? GENDER_OPTIONS.find(opt => opt.value === field.value) || null : null
-                }
-                onHandleSelect={option => field.onChange(option.value)}
-              />
-            )}
-          />
-        </div>
+        {isPersonaFieldVisible(formFieldIds.GENDER, genderLookup) && (
+          <div>
+            <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+              {formFieldNames.GENDER}
+            </label>
+            <Controller
+              name={formFieldIds.GENDER}
+              control={formMethods.control}
+              defaultValue=""
+              render={({ field }) => (
+                <CustomDropdownField
+                  options={GENDER_OPTIONS}
+                  placeholder="Select gender"
+                  customStyle={{ height: "34px" }}
+                  defaultOption={
+                    field.value
+                      ? GENDER_OPTIONS.find(opt => opt.value === field.value) || null
+                      : null
+                  }
+                  onHandleSelect={option => field.onChange(option.value)}
+                />
+              )}
+            />
+          </div>
+        )}
 
         {/* Profession */}
-        <div>
-          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.PROFESSION}
-          </label>
-          <Controller
-            name={formFieldIds.PROFESSION}
-            control={formMethods.control}
-            defaultValue=""
-            render={({ field }) => (
-              <input
-                type="text"
-                placeholder="Enter profession"
-                value={field.value === null || field.value === undefined ? "" : field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                name={field.name}
-                ref={field.ref}
-                className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
-              />
+        {isPersonaFieldVisible(formFieldIds.PROFESSION, professionLookup) && (
+          <div>
+            <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+              {formFieldNames.PROFESSION}
+            </label>
+            <Controller
+              name={formFieldIds.PROFESSION}
+              control={formMethods.control}
+              defaultValue=""
+              render={({ field }) => (
+                <input
+                  type="text"
+                  placeholder="Enter profession"
+                  value={field.value === null || field.value === undefined ? "" : field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
+                  className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
+                />
+              )}
+            />
+            {errors[formFieldIds.PROFESSION]?.message && (
+              <p className="text-destructive-500 text-sm mt-1">
+                {String(errors[formFieldIds.PROFESSION].message)}
+              </p>
             )}
-          />
-          {errors[formFieldIds.PROFESSION]?.message && (
-            <p className="text-destructive-500 text-sm mt-1">
-              {String(errors[formFieldIds.PROFESSION].message)}
-            </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Current location */}
-        <div>
-          <InputField
-            label={formFieldNames.CURRENT_LOCATION}
-            id={formFieldIds.CURRENT_LOCATION}
-            formMethods={formMethods}
-            placeholder="Enter location"
-          />
-        </div>
+        {isPersonaFieldVisible(formFieldIds.CURRENT_LOCATION, locationLookup) && (
+          <div>
+            <InputField
+              label={formFieldNames.CURRENT_LOCATION}
+              id={formFieldIds.CURRENT_LOCATION}
+              formMethods={formMethods}
+              placeholder="Enter location"
+            />
+          </div>
+        )}
 
         {/* Gender identity */}
-        <div>
-          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.GENDER_IDENTITY}
-          </label>
-          <Controller
-            name={formFieldIds.GENDER_IDENTITY}
-            control={formMethods.control}
-            defaultValue=""
-            render={({ field }) => (
-              <CustomDropdownField
-                options={GENDER_IDENTITY_OPTIONS}
-                placeholder="Select gender identity"
-                customStyle={{ height: "34px" }}
-                defaultOption={
-                  field.value
-                    ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === field.value) || null
-                    : null
-                }
-                onHandleSelect={option => field.onChange(option.value)}
-              />
-            )}
-          />
-        </div>
+        {isPersonaFieldVisible(formFieldIds.GENDER_IDENTITY, genderIdentityLookup) && (
+          <div>
+            <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+              {formFieldNames.GENDER_IDENTITY}
+            </label>
+            <Controller
+              name={formFieldIds.GENDER_IDENTITY}
+              control={formMethods.control}
+              defaultValue=""
+              render={({ field }) => (
+                <CustomDropdownField
+                  options={GENDER_IDENTITY_OPTIONS}
+                  placeholder="Select gender identity"
+                  customStyle={{ height: "34px" }}
+                  defaultOption={
+                    field.value
+                      ? GENDER_IDENTITY_OPTIONS.find(opt => opt.value === field.value) || null
+                      : null
+                  }
+                  onHandleSelect={option => field.onChange(option.value)}
+                />
+              )}
+            />
+          </div>
+        )}
 
         {/* Sexual orientation */}
-        <div>
-          <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
-            {formFieldNames.SEXUAL_ORIENTATION}
-          </label>
-          <Controller
-            name={formFieldIds.SEXUAL_ORIENTATION}
-            control={formMethods.control}
-            defaultValue=""
-            render={({ field }) => (
-              <CustomDropdownField
-                options={SEXUAL_ORIENTATION_OPTIONS}
-                placeholder="Select sexual orientation"
-                customStyle={{ height: "34px" }}
-                defaultOption={
-                  field.value
-                    ? SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === field.value) || null
-                    : null
-                }
-                onHandleSelect={option => field.onChange(option.value)}
-              />
-            )}
-          />
-        </div>
+        {isPersonaFieldVisible(formFieldIds.SEXUAL_ORIENTATION, sexualOrientationLookup) && (
+          <div>
+            <label className="text-typography-900 text-base mb-2 flex items-center gap-1">
+              {formFieldNames.SEXUAL_ORIENTATION}
+            </label>
+            <Controller
+              name={formFieldIds.SEXUAL_ORIENTATION}
+              control={formMethods.control}
+              defaultValue=""
+              render={({ field }) => (
+                <CustomDropdownField
+                  options={SEXUAL_ORIENTATION_OPTIONS}
+                  placeholder="Select sexual orientation"
+                  customStyle={{ height: "34px" }}
+                  defaultOption={
+                    field.value
+                      ? SEXUAL_ORIENTATION_OPTIONS.find(opt => opt.value === field.value) || null
+                      : null
+                  }
+                  onHandleSelect={option => field.onChange(option.value)}
+                />
+              )}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

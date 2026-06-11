@@ -1,4 +1,12 @@
-import { forwardRef, useImperativeHandle, useState, useEffect, useRef, useMemo } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 
 import { CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -51,6 +59,30 @@ export interface ReportSectionProps {
    * code → display name via the prompts API.
    */
   selectedMainPromptCode?: string;
+  /**
+   * Helper-agent prompt persisted on the scenario (metadata.helperAgentPrompt).
+   * Used to pre-fill the report config instead of always resetting to
+   * DEFAULT_HELPER_PROMPT, so an edited prompt survives reload and is reused
+   * for future reports. Undefined for scenarios that never saved one.
+   */
+  savedHelperAgentPrompt?: string;
+  /**
+   * Push helper-prompt edits back into the simulation form so they save via
+   * the normal "save simulation" flow (and mark the form dirty). Wired to
+   * formMethods.setValue(HELPER_AGENT_PROMPT, value, { shouldDirty: true }).
+   */
+  onHelperPromptChange?: (prompt: string) => void;
+  /**
+   * Selected transcript-evaluator variant (metadata.selectedEvaluatorPromptCode).
+   * Drives the evaluator picker on the report config; undefined = default evaluator.
+   */
+  savedEvaluatorPromptCode?: string;
+  /**
+   * Push evaluator variant selection back into the simulation form so it saves
+   * via the normal flow. Wired to
+   * formMethods.setValue(SELECTED_EVALUATOR_PROMPT_CODE, value, { shouldDirty: true }).
+   */
+  onEvaluatorPromptChange?: (promptCode: string) => void;
 }
 
 export interface ReportSectionHandle {
@@ -158,6 +190,10 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
       hasUnsavedChanges = false,
       onPrimaryTabChange,
       selectedMainPromptCode,
+      savedHelperAgentPrompt,
+      onHelperPromptChange,
+      savedEvaluatorPromptCode,
+      onEvaluatorPromptChange,
     },
     ref,
   ) => {
@@ -172,16 +208,51 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
     // "Default main agent prompt" as the friendly fallback so the
     // author still knows what's in effect.
     const { data: mainAgentPrompts } = useGetPromptsByTypeQuery("main_agent");
-    const currentMainPromptName = useMemo(() => {
-      if (!selectedMainPromptCode) return "Default main agent prompt";
-      const match = (mainAgentPrompts ?? []).find(p => p.promptCode === selectedMainPromptCode);
-      // Fall back to the raw code if the prompt list hasn't loaded yet
-      // or the picked variant has been removed since selection — better
-      // than showing nothing.
-      return match?.name ?? selectedMainPromptCode;
-    }, [selectedMainPromptCode, mainAgentPrompts]);
+    // Resolve a main-agent promptCode → its human-readable "skill" name.
+    // Shared by the live Test Configuration line and each history row so
+    // both render the skill identically. Falls back to the raw code if the
+    // prompt list hasn't loaded yet or the variant was removed since the
+    // report ran; empty/undefined code means the default variant.
+    const resolveMainPromptName = useCallback(
+      (code?: string): string => {
+        if (!code) return "Default main agent prompt";
+        const match = (mainAgentPrompts ?? []).find(p => p.promptCode === code);
+        return match?.name ?? code;
+      },
+      [mainAgentPrompts],
+    );
+    const currentMainPromptName = useMemo(
+      () => resolveMainPromptName(selectedMainPromptCode),
+      [resolveMainPromptName, selectedMainPromptCode],
+    );
 
-    const [helperAgentPrompt, setHelperAgentPrompt] = useState(DEFAULT_HELPER_PROMPT);
+    // Resolve a transcript-evaluator promptCode → its human-readable name, for
+    // the read-only "Evaluator" line on each history row (so the author can see
+    // which evaluator variant scored each past report). Mirrors
+    // resolveMainPromptName; empty/undefined code means the default evaluator.
+    const { data: evaluatorPrompts } = useGetPromptsByTypeQuery("transcript_evaluator");
+    const resolveEvaluatorPromptName = useCallback(
+      (code?: string): string => {
+        if (!code) return "Default evaluator";
+        const match = (evaluatorPrompts ?? []).find(p => p.promptCode === code);
+        return match?.name ?? code;
+      },
+      [evaluatorPrompts],
+    );
+
+    const [helperAgentPrompt, setHelperAgentPrompt] = useState(
+      savedHelperAgentPrompt || DEFAULT_HELPER_PROMPT,
+    );
+
+    // Keep the editor in sync with the scenario's saved prompt: when the form
+    // hydrates on edit (or the user switches scenarios), pull the persisted
+    // value in. Guarded on truthy so scenarios without a saved prompt — or a
+    // user clearing the field — don't clobber the value back to a stale prop.
+    useEffect(() => {
+      if (savedHelperAgentPrompt) {
+        setHelperAgentPrompt(savedHelperAgentPrompt);
+      }
+    }, [savedHelperAgentPrompt]);
     const [selectedLanguage, setSelectedLanguage] = useState<{ value: string; label: string }>(
       DEFAULT_LANGUAGE,
     );
@@ -360,7 +431,10 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
         config?.languageId != null &&
         config?.turns != null
       ) {
-        setHelperAgentPrompt(config.helperAgentPrompt);
+        // Intentionally do NOT hydrate the helper-agent prompt from the
+        // latest report — the Generate Report form keeps DEFAULT_HELPER_PROMPT
+        // so the current default always wins, even for scenarios that already
+        // have report history. Language/turns still carry over for continuity.
         setSelectedLanguage({
           value: language?.id?.toString() || "",
           label: language?.label || "",
@@ -483,6 +557,9 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
           turns: Number(selectedTurns.value),
           helperAgentPrompt,
           languageName: selectedLanguage.label,
+          // Sent live so Regenerate uses the currently picked evaluator variant
+          // without needing a scenario save first.
+          selectedEvaluatorPromptCode: savedEvaluatorPromptCode,
         };
 
         const response = await generateReportMutation({
@@ -578,6 +655,9 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
         prev ? { ...prev, config: { ...prev.config, helperAgentPrompt: prompt } } : null,
       );
       setHelperAgentPrompt(prompt);
+      // Persist via the simulation form: marks it dirty and saves the prompt
+      // onto the scenario through the normal "save simulation" flow.
+      onHelperPromptChange?.(prompt);
     };
 
     const getButtonTooltipText = () => {
@@ -621,6 +701,8 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                   onLanguageChange={handleLanguageChange}
                   onTurnsChange={handleTurnsChange}
                   onButtonClick={handleGenerate}
+                  evaluatorPromptCode={savedEvaluatorPromptCode}
+                  onEvaluatorPromptChange={onEvaluatorPromptChange}
                   buttonText={REPORT_GENERATION_MESSAGES.REGENERATE_REPORT}
                   buttonDisabled={
                     showReportGenerationLoader || !areAllMandatoryFieldsFilled || hasUnsavedChanges
@@ -689,12 +771,14 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
           <PromptConfiguration
             prompt={helperAgentPrompt}
             turns={Number(selectedTurns.value)}
-            onPromptChange={setHelperAgentPrompt}
+            onPromptChange={handlePromptChange}
             onLanguageChange={language => setSelectedLanguage(language)}
             onTurnsChange={turns =>
               setSelectedTurns({ value: String(turns), label: `${turns} turns` })
             }
             onButtonClick={handleGenerate}
+            evaluatorPromptCode={savedEvaluatorPromptCode}
+            onEvaluatorPromptChange={onEvaluatorPromptChange}
             buttonText={REPORT_GENERATION_MESSAGES.GENERATE_REPORT}
             buttonDisabled={
               showReportGenerationLoader ||
@@ -744,6 +828,12 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                     {formatReportCreatedAt(item.createdAt)}
                   </span>
                   <span className="text-xs font-normal text-typography-600">{`${item.language.label || item.language.id}· ${item.config.turns} turns`}</span>
+                  <span className="text-xs font-normal text-typography-600">
+                    Skill version: {resolveMainPromptName(item.config.selectedMainPromptCode)}
+                  </span>
+                  <span className="text-xs font-normal text-typography-600">
+                    Evaluator: {resolveEvaluatorPromptName(item.config.selectedEvaluatorPromptCode)}
+                  </span>
                 </div>
               </div>
             );
@@ -755,6 +845,20 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                 customAccordionSx={REPORT_ACCORDION_SX}
                 headerTitle={historyItemHeader}
               >
+                {item.config?.helperAgentPrompt && (
+                  // The helper-agent prompt is snapshotted per report and can
+                  // differ between runs, so each history entry shows the exact
+                  // prompt it used (read-only). Scrollable to keep long prompts
+                  // from blowing out the accordion height.
+                  <div className="border border-gray-200 rounded-lg p-4 mb-3">
+                    <p className="text-sm font-medium text-typography-900 mb-1">
+                      Helper Agent prompt
+                    </p>
+                    <p className="text-xs text-typography-600 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                      {item.config.helperAgentPrompt}
+                    </p>
+                  </div>
+                )}
                 <ReportContent
                   reportData={item}
                   transcriptData={cachedTranscript?.messages}

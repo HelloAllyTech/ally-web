@@ -135,7 +135,7 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
       <div className="flex flex-col gap-0.5">
         <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
         <span className="text-typography-500 text-xs">
-          English title is required. Titles in other languages will be automatically generated.
+          English title is required, other languages will be auto generated if left blank.
         </span>
       </div>
       <LanguageTabPanel

@@ -141,6 +141,7 @@ export const FORM_FIELD_IDS = {
   DIFFICULTY_LEVEL: "difficultyLevel",
   CHARACTER_PROFILE_SELECTOR: "characterProfileSelector",
   CHARACTER_PROFILE_TEXT: "characterProfileText",
+  HELPER_AGENT_PROMPT: "helperAgentPrompt",
   COVER_IMAGE_URL: "coverImageUrl",
   COVER_VIDEO_URL: "coverVideoUrl",
   IS_GLOBAL: "isGlobal",
@@ -167,6 +168,7 @@ export const FORM_FIELD_IDS = {
   STATE_NAMES: "stateNames",
   ENABLE_PROSODY: "enableProsody",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
+  SELECTED_EVALUATOR_PROMPT_CODE: "selectedEvaluatorPromptCode",
   STATES: "states",
 };
 

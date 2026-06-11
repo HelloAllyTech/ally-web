@@ -44,10 +44,17 @@ export const RegenerateButton: FC<RegenerateButtonProps> = ({
 
     const formValues = formMethods.getValues();
 
+    // The age input is registered without valueAsNumber, so it always reads
+    // back as a string. The backend DTO requires a number, so coerce here and
+    // omit it entirely when blank/invalid rather than sending a string.
+    const ageNumber = Number(formValues.age);
+    const hasValidAge =
+      formValues.age != null && formValues.age !== "" && Number.isFinite(ageNumber);
+
     return {
-      title: formValues.title,
+      title: formValues.title ?? "",
       name: formValues.name,
-      age: formValues.age,
+      ...(hasValidAge ? { age: ageNumber } : {}),
       gender: formValues.gender,
       genderIdentity: formValues.genderIdentity,
       sexualOrientation: formValues.sexualOrientation,
