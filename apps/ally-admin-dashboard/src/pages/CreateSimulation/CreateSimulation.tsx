@@ -726,10 +726,30 @@ export const CreateSimulation: FC = () => {
             ref={reportStepRef}
             scenarioId={simulationId}
             areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
-            hasUnsavedChanges={Object.keys(dirtyFields).length > 0}
             onPrimaryTabChange={setReportPrimaryTab}
+            // Report-only fields (helper prompt, evaluator variant) are sent
+            // live with each report, so editing them must NOT block Regenerate.
+            // Scenario-structural edits still do — report generation reads the
+            // SAVED scenario for persona / main-agent prompt / etc.
+            hasUnsavedChanges={Object.keys(dirtyFields).some(
+              field =>
+                field !== FORM_FIELD_IDS.HELPER_AGENT_PROMPT &&
+                field !== FORM_FIELD_IDS.SELECTED_EVALUATOR_PROMPT_CODE,
+            )}
             selectedMainPromptCode={
               formMethods.watch("selectedMainPromptCode") as string | undefined
+            }
+            savedHelperAgentPrompt={formMethods.watch("helperAgentPrompt") as string | undefined}
+            onHelperPromptChange={prompt =>
+              formMethods.setValue("helperAgentPrompt", prompt, { shouldDirty: true })
+            }
+            savedEvaluatorPromptCode={
+              formMethods.watch("selectedEvaluatorPromptCode") as string | undefined
+            }
+            onEvaluatorPromptChange={promptCode =>
+              formMethods.setValue("selectedEvaluatorPromptCode", promptCode, {
+                shouldDirty: true,
+              })
             }
           />,
         );

@@ -44,6 +44,14 @@ export type ReportConfig = {
    * was on the default variant.
    */
   selectedMainPromptCode?: string;
+  /**
+   * promptCode of the transcript-evaluator variant to score this report with.
+   * Sent live with each generate request so Regenerate reflects the currently
+   * picked variant without requiring a scenario save. Undefined = default
+   * evaluator (server falls back to the scenario's saved selection, then the
+   * default template).
+   */
+  selectedEvaluatorPromptCode?: string;
 };
 
 export type ReportMetric = {

@@ -22,4 +22,13 @@ export interface PromptConfigurationProps {
    * switched variants without saving, the line updates immediately.
    */
   currentMainPromptName?: string;
+  /**
+   * Selected transcript-evaluator prompt variant promptCode (or undefined for
+   * the default evaluator). Drives the EvaluatorPromptPicker shown above the
+   * helper-agent prompt. Pass together with onEvaluatorPromptChange to enable
+   * the picker; omit both to hide it (keeps other callsites unchanged).
+   */
+  evaluatorPromptCode?: string;
+  /** Called with the chosen transcript-evaluator variant's promptCode. */
+  onEvaluatorPromptChange?: (promptCode: string) => void;
 }

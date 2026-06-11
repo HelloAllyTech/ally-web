@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { Divider, Tooltip } from "@mui/material";
 
 import { useGetScenarioLanguagesQuery } from "@api";
-import { CustomDropdownField, Button } from "@components";
+import { CustomDropdownField, Button, EvaluatorPromptPicker } from "@components";
 import { ButtonVariant } from "@components/types";
 import { REPORT_GENERATION_MESSAGES, TURNS_OPTIONS, toolTipStyles } from "@constants";
 import { ScenarioLanguage } from "@types";
@@ -22,6 +22,8 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
   buttonTooltip,
   selectedLanguage,
   currentMainPromptName,
+  evaluatorPromptCode,
+  onEvaluatorPromptChange,
 }) => {
   const { data: languageOptions = [] } = useGetScenarioLanguagesQuery({
     active: true,
@@ -54,6 +56,13 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
           <span className="text-typography-600">Skill version:</span>
           <span className="font-medium text-typography-900">{currentMainPromptName}</span>
         </div>
+      )}
+
+      {/* Transcript-evaluator prompt variant picker. Rendered only when the
+          parent wires it (report tab); hidden for other callsites and until
+          a transcript_evaluator prompt exists. */}
+      {onEvaluatorPromptChange && (
+        <EvaluatorPromptPicker value={evaluatorPromptCode} onChange={onEvaluatorPromptChange} />
       )}
 
       {/* Helper Agent Prompt */}

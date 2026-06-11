@@ -42,6 +42,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       message: event.message,
     })),
     selectedMainPromptCode: data?.metadata?.selectedMainPromptCode,
+    selectedEvaluatorPromptCode: data?.metadata?.selectedEvaluatorPromptCode,
     states: data?.metadata?.states ?? [],
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),
@@ -75,6 +76,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     showScoreMeter: data?.metadata?.showScoreMeter,
     enableFeedback: data?.metadata?.enableFeedback ?? true,
     characterProfileText: data?.metadata?.characterProfileText,
+    helperAgentPrompt: data?.metadata?.helperAgentPrompt,
     competency: data?.competency,
     stateNames: (data?.metadata as any)?.stateNames ?? [],
     knowledgeSources: data?.metadata?.knowledgeSources?.map((source: knowledgeSource) => ({

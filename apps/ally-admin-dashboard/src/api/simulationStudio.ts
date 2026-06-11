@@ -727,6 +727,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           languageId: input.config.languageId,
           turns: input.config.turns,
           helperAgentPrompt: input.config.helperAgentPrompt,
+          selectedEvaluatorPromptCode: input.config.selectedEvaluatorPromptCode,
         },
       }),
     }),
