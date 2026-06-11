@@ -41,7 +41,7 @@ Object.defineProperty(window, "matchMedia", {
 
 // Mock next/font/google to avoid calling real font loader in tests
 vi.mock("next/font/google", () => ({
-  IBM_Plex_Sans: () => ({ variable: "--font-ibm-plex-sans" }),
+  IBM_Plex_Serif: () => ({ variable: "--font-ibm-plex-serif" }),
   Inter: () => ({ variable: "--font-inter" }),
 }));
 
