@@ -156,6 +156,9 @@ export const ApiEndpoints = {
     GET_ROLES: "/v1/authorization/roles",
     CHANGE_USER_ROLES: "/v1/authorization/change-roles",
   },
+  ANALYTICS: {
+    OVERVIEW: "/v1/analytics/overview",
+  },
 };
 
 export const ROUTES = {
@@ -180,6 +183,7 @@ export const ROUTES = {
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
   MANAGE_TRANSLATIONS: "/manage-translations",
   MANAGE_TOOLTIPS: "/manage-tooltips",
+  ANALYTICS: "/analytics",
 };
 
 export const LOCAL_STORAGE_KEYS = {

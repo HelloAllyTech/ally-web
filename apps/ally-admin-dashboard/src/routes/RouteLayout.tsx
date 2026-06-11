@@ -1,8 +1,8 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { Permissions, ROUTES } from "@constants";
+import { Permissions, ROUTES, UserRole } from "@constants";
 import {
   CreateSimulation,
   Login,
@@ -26,6 +26,12 @@ import {
 
 import { PrivateLayout } from "./PrivateLayout";
 import { PublicRoute } from "./PublicRoute";
+
+// Lazy-loaded so IBM Carbon + Carbon Charts (+ d3) and the scoped Carbon
+// stylesheet ship as their own chunk, loaded only when the Analytics tab opens.
+const Analytics = lazy(() =>
+  import("../pages/Analytics/Analytics").then(module => ({ default: module.Analytics })),
+);
 
 export const RouteLayout: React.FC = () => {
   return (
@@ -201,6 +207,16 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.VIEW_TOOLTIPS]}>
               <TooltipManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ANALYTICS}
+          element={
+            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+              <Suspense fallback={null}>
+                <Analytics />
+              </Suspense>
             </PrivateLayout>
           }
         />

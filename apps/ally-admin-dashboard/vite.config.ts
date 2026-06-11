@@ -32,6 +32,18 @@ export default defineConfig(() => ({
     host: "localhost",
   },
   plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(["*.md"]), svgr()],
+  // Carbon v11 ships SCSS that triggers many Dart-Sass deprecation warnings.
+  // quietDeps silences node_modules noise; silenceDeprecations keeps the
+  // remaining (expected) Carbon warnings from failing the build.
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: "modern-compiler",
+        quietDeps: true,
+        silenceDeprecations: ["global-builtin", "import", "color-functions", "legacy-js-api"],
+      },
+    },
+  },
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
