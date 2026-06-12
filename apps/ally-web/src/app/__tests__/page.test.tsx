@@ -14,6 +14,13 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   },
 }));
 
+// ErrorState uses useRouter for its retry action
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: vi.fn(),
+  }),
+}));
+
 // Mock the fetchReferenceDocuments function to throw an error
 vi.mock("../api", () => ({
   fetchReferenceDocuments: vi.fn().mockRejectedValue(new Error("API Error")),
@@ -44,12 +51,13 @@ describe("Search Page (Vitest)", () => {
     expect(screen.getByText("Error loading search results.")).toBeInTheDocument();
   });
 
-  it("should have proper error handling", async () => {
+  it("should have proper error handling with a retry affordance", async () => {
     const component = await SearchPage({ searchParams: { q: "vitest query" } });
     render(component);
 
     const errorElement = screen.getByText("Error loading search results.");
     expect(errorElement).toBeInTheDocument();
-    expect(errorElement.tagName).toBe("DIV");
+    expect(errorElement.tagName).toBe("H1");
+    expect(screen.getByTestId("error-state-retry")).toBeInTheDocument();
   });
 });

@@ -1,7 +1,7 @@
 import { logger } from "@ally-ui-mono/ui-shared";
 
 import { fetchReferenceDocuments } from "./api";
-import { SearchClient } from "./components";
+import { ErrorState, SearchClient } from "./components";
 
 export default async function SearchPage({
   searchParams,
@@ -29,7 +29,7 @@ export default async function SearchPage({
       />
     );
   } catch (error) {
-    logger.info(`Error in SearchPage: ${error}`);
-    return <div>Error loading search results.</div>;
+    logger.error(`Error in SearchPage: ${error}`);
+    return <ErrorState />;
   }
 }

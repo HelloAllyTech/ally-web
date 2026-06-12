@@ -15,10 +15,17 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/search",
 }));
 
+vi.mock("sonner", () => ({
+  toast: {
+    error: vi.fn(),
+  },
+}));
+
 vi.mock("@ally-ui-mono/ui-shared", () => {
   return {
     logger: {
       info: vi.fn(),
+      error: vi.fn(),
     },
     ResourceSearch: ({ onSearch, onCategoryChange, onInfiniteScroll, resources }: any) => {
       return React.createElement(
@@ -82,5 +89,17 @@ describe("SearchClient (Vitest)", () => {
     await fireEvent.click(screen.getByText("infinite-btn"));
 
     expect(await screen.findByText("resources-count-2")).toBeInTheDocument();
+  });
+
+  it("surfaces a toast when infinite scroll fails", async () => {
+    const { fetchReferenceDocuments } = await import("../../../api");
+    const { toast } = await import("sonner");
+    (fetchReferenceDocuments as any).mockRejectedValueOnce(new Error("network down"));
+
+    render(<SearchClient {...baseProps} />);
+    await fireEvent.click(screen.getByText("infinite-btn"));
+
+    expect(toast.error).toHaveBeenCalledWith("Couldn't load more results. Please try again.");
+    expect(screen.getByText("resources-count-1")).toBeInTheDocument();
   });
 });

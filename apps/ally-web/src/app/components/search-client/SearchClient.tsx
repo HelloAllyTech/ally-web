@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useRouter, usePathname } from "next/navigation";
+import { toast } from "sonner";
 
 import { logger, ResourceSearch, Resource } from "@ally-ui-mono/ui-shared";
 
@@ -72,7 +73,8 @@ export default function SearchClient({
       // The total value on infinite scroll after excluded Ids are added is the total after the first fetch
       setHasMore(total > newDocuments.length);
     } catch (error) {
-      logger.info(`Error in onInfiniteScroll: ${error}`);
+      logger.error(`Error in onInfiniteScroll: ${error}`);
+      toast.error("Couldn't load more results. Please try again.");
     }
     setIsLoading(false);
   };

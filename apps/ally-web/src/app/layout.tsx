@@ -1,5 +1,6 @@
 import "./global.css";
 import { IBM_Plex_Serif, Inter } from "next/font/google";
+import { Toaster } from "sonner";
 
 const ibmPlexSerif = IBM_Plex_Serif({
   subsets: ["latin"],
@@ -26,7 +27,10 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${ibmPlexSerif.variable} ${inter.variable}`}>
-      <body className="min-h-screen bg-white font-sans">{children}</body>
+      <body className="min-h-screen bg-white font-sans">
+        {children}
+        <Toaster position="bottom-right" richColors />
+      </body>
     </html>
   );
 }
