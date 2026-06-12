@@ -17,8 +17,10 @@ import {
 import "@carbon/charts/styles.css";
 import "./analytics-carbon.scss";
 
-import { useGetAnalyticsOverviewQuery } from "@api";
-import { AnalyticsRange } from "@types";
+import { useGetAnalyticsOverviewQuery, useGetVoiceLatencyQuery } from "@api";
+import { AnalyticsBucket, AnalyticsRange } from "@types";
+
+import { buildVoiceLatencySeries, latencyBucketTitle, LATENCY_GROUPS } from "./latencyChart";
 
 const CHART_HEIGHT = "320px";
 
@@ -28,6 +30,14 @@ const RANGE_ITEMS: RangeItem[] = [
   { id: "30d", label: "Last 30 days" },
   { id: "90d", label: "Last 90 days" },
   { id: "12m", label: "Last 12 months" },
+];
+
+type BucketItem = { id: AnalyticsBucket; label: string };
+
+const LATENCY_BUCKET_ITEMS: BucketItem[] = [
+  { id: "day", label: "Day-wise" },
+  { id: "week", label: "Week-wise" },
+  { id: "month", label: "Month-wise" },
 ];
 
 // Carbon-palette hexes reused across the chart color scales.
@@ -41,9 +51,55 @@ const COLORS = {
 
 export const Analytics = () => {
   const [range, setRange] = useState<AnalyticsRange>("30d");
+  const [latencyBucket, setLatencyBucket] = useState<AnalyticsBucket>("day");
   const { data, isLoading, isError, refetch } = useGetAnalyticsOverviewQuery({ range });
+  const {
+    data: latency,
+    isLoading: latencyLoading,
+    isError: latencyError,
+    refetch: refetchLatency,
+  } = useGetVoiceLatencyQuery({ range, bucket: latencyBucket });
 
   const bucketTitle = range === "12m" ? "Month" : "Week";
+
+  // Latency comes back in ms split by source; chart it in seconds, one line
+  // per (source × {avg, p95}). Buckets with no turns are simply absent.
+  const latencyData = useMemo(() => buildVoiceLatencySeries(latency?.points ?? []), [latency]);
+
+  const latencyAxisTitle = useMemo(() => latencyBucketTitle(latency?.bucket), [latency]);
+
+  const latencyOptions = useMemo(
+    () => ({
+      title: "Voice-to-voice latency (avg & p95)",
+      axes: {
+        left: {
+          mapsTo: "value",
+          scaleType: ScaleTypes.LINEAR,
+          title: "Seconds",
+          thresholds: [
+            {
+              value: (latency?.targetMs ?? 1500) / 1000,
+              label: "Target",
+              fillColor: COLORS.green,
+            },
+          ],
+        },
+        bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: latencyAxisTitle },
+      },
+      curve: "curveMonotoneX",
+      height: CHART_HEIGHT,
+      color: {
+        scale: {
+          [LATENCY_GROUPS.pipelineAvg]: COLORS.blue,
+          [LATENCY_GROUPS.pipelineP95]: COLORS.cyan,
+          [LATENCY_GROUPS.transcriptAvg]: COLORS.purple,
+          [LATENCY_GROUPS.transcriptP95]: COLORS.teal,
+        },
+      },
+      toolbar: { enabled: false },
+    }),
+    [latency, latencyAxisTitle],
+  );
 
   const growthData = useMemo(
     () =>
@@ -161,6 +217,8 @@ export const Analytics = () => {
   ];
 
   const selectedItem = RANGE_ITEMS.find(item => item.id === range) ?? RANGE_ITEMS[0];
+  const selectedLatencyBucket =
+    LATENCY_BUCKET_ITEMS.find(item => item.id === latencyBucket) ?? LATENCY_BUCKET_ITEMS[0];
   const showSkeletons = isLoading && !data;
 
   return (
@@ -168,91 +226,128 @@ export const Analytics = () => {
       <Theme theme="white">
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <Heading className="text-2xl">Platform analytics</Heading>
-          <div className="w-56">
-            <Dropdown
-              id="analytics-range"
-              size="md"
-              titleText="Time range"
-              hideLabel
-              label="Time range"
-              items={RANGE_ITEMS}
-              selectedItem={selectedItem}
-              itemToString={item => item?.label ?? ""}
-              onChange={({ selectedItem }) => {
-                if (selectedItem) setRange(selectedItem.id);
-              }}
-            />
+            <Heading className="text-2xl">Platform analytics</Heading>
+            <div className="w-56">
+              <Dropdown
+                id="analytics-range"
+                size="md"
+                titleText="Time range"
+                hideLabel
+                label="Time range"
+                items={RANGE_ITEMS}
+                selectedItem={selectedItem}
+                itemToString={item => item?.label ?? ""}
+                onChange={({ selectedItem }) => {
+                  if (selectedItem) setRange(selectedItem.id);
+                }}
+              />
+            </div>
           </div>
-        </div>
 
-        {isError ? (
-          <div className="flex flex-col items-start gap-4">
-            <InlineNotification
-              kind="error"
-              lowContrast
-              hideCloseButton
-              title="Couldn't load analytics"
-              subtitle="There was a problem fetching platform metrics."
-            />
-            <Button kind="tertiary" size="sm" onClick={() => refetch()}>
-              Retry
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-              {kpis.map(kpi => (
-                <Tile key={kpi.label} className="analytics-kpi">
-                  <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-                  {showSkeletons || kpi.value === undefined ? (
-                    <SkeletonText heading width="60%" />
+          {isError ? (
+            <div className="flex flex-col items-start gap-4">
+              <InlineNotification
+                kind="error"
+                lowContrast
+                hideCloseButton
+                title="Couldn't load analytics"
+                subtitle="There was a problem fetching platform metrics."
+              />
+              <Button kind="tertiary" size="sm" onClick={() => refetch()}>
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                {kpis.map(kpi => (
+                  <Tile key={kpi.label} className="analytics-kpi">
+                    <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
+                    {showSkeletons || kpi.value === undefined ? (
+                      <SkeletonText heading width="60%" />
+                    ) : (
+                      <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
+                    )}
+                  </Tile>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <Tile className="xl:col-span-2">
+                  <div className="flex justify-end mb-2">
+                    <div className="w-44">
+                      <Dropdown
+                        id="latency-bucket"
+                        size="sm"
+                        titleText="Granularity"
+                        hideLabel
+                        label="Granularity"
+                        items={LATENCY_BUCKET_ITEMS}
+                        selectedItem={selectedLatencyBucket}
+                        itemToString={item => item?.label ?? ""}
+                        onChange={({ selectedItem }) => {
+                          if (selectedItem) setLatencyBucket(selectedItem.id);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {latencyLoading && !latency ? (
+                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                  ) : latencyError ? (
+                    <div className="flex flex-col items-start gap-4">
+                      <InlineNotification
+                        kind="error"
+                        lowContrast
+                        hideCloseButton
+                        title="Couldn't load voice-to-voice latency"
+                        subtitle="There was a problem fetching turn-latency metrics."
+                      />
+                      <Button kind="tertiary" size="sm" onClick={() => refetchLatency()}>
+                        Retry
+                      </Button>
+                    </div>
                   ) : (
-                    <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
+                    <LineChart data={latencyData} options={latencyOptions} />
                   )}
                 </Tile>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <Tile className="xl:col-span-2">
-                {showSkeletons ? (
-                  <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                ) : (
-                  <LineChart data={growthData} options={growthOptions} />
-                )}
-              </Tile>
-              <Tile>
-                {showSkeletons ? (
-                  <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                ) : (
-                  <LineChart data={activeData} options={activeOptions} />
-                )}
-              </Tile>
-              <Tile>
-                {showSkeletons ? (
-                  <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                ) : (
-                  <SimpleBarChart data={simsData} options={simsOptions} />
-                )}
-              </Tile>
-              <Tile>
-                {showSkeletons ? (
-                  <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                ) : (
-                  <StackedBarChart data={retentionData} options={retentionOptions} />
-                )}
-              </Tile>
-              <Tile>
-                {showSkeletons ? (
-                  <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                ) : (
-                  <DonutChart data={rolesData} options={rolesOptions} />
-                )}
-              </Tile>
-            </div>
-          </>
-        )}
+                <Tile className="xl:col-span-2">
+                  {showSkeletons ? (
+                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                  ) : (
+                    <LineChart data={growthData} options={growthOptions} />
+                  )}
+                </Tile>
+                <Tile>
+                  {showSkeletons ? (
+                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                  ) : (
+                    <LineChart data={activeData} options={activeOptions} />
+                  )}
+                </Tile>
+                <Tile>
+                  {showSkeletons ? (
+                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                  ) : (
+                    <SimpleBarChart data={simsData} options={simsOptions} />
+                  )}
+                </Tile>
+                <Tile>
+                  {showSkeletons ? (
+                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                  ) : (
+                    <StackedBarChart data={retentionData} options={retentionOptions} />
+                  )}
+                </Tile>
+                <Tile>
+                  {showSkeletons ? (
+                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                  ) : (
+                    <DonutChart data={rolesData} options={rolesOptions} />
+                  )}
+                </Tile>
+              </div>
+            </>
+          )}
         </Section>
       </Theme>
     </div>

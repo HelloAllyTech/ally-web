@@ -159,6 +159,7 @@ export interface AnalyticsData {
 // Platform analytics (super-admin overview) — mirrors the backend
 // AnalyticsOverviewResponseDto from GET /api/v1/analytics/overview.
 export type AnalyticsRange = "30d" | "90d" | "12m";
+export type AnalyticsBucket = "day" | "week" | "month";
 
 export interface AnalyticsSummary {
   totalUsers: number;
@@ -207,6 +208,27 @@ export interface AnalyticsOverviewResponse {
   simulationsCompleted: SimulationsCompletedPoint[];
   retention: RetentionPoint[];
   usersByRole: UsersByRolePoint[];
+}
+
+// VoiceLatencyResponseDto from GET /api/v1/analytics/voice-latency.
+export interface VoiceLatencyPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  /** 'pipeline' (live agent) or 'transcript' (historical, derived). */
+  source: string;
+  turns: number;
+  avgMs: number;
+  p50Ms: number;
+  p95Ms: number;
+}
+
+export interface VoiceLatencyResponse {
+  range: AnalyticsRange;
+  /** Bucket granularity for this range ('day' | 'week' | 'month'). */
+  bucket: string;
+  /** Latency target line for reference (ms). */
+  targetMs: number;
+  points: VoiceLatencyPoint[];
 }
 
 // Settings types

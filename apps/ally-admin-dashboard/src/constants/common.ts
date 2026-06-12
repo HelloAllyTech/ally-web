@@ -158,6 +158,7 @@ export const ApiEndpoints = {
   },
   ANALYTICS: {
     OVERVIEW: "/v1/analytics/overview",
+    VOICE_LATENCY: "/v1/analytics/voice-latency",
   },
 };
 
