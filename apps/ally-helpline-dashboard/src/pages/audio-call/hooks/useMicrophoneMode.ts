@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
 
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -64,6 +65,7 @@ interface UseMicrophoneModeReturn {
 }
 
 export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { availableChatTypes, user } = useSelector((state: RootState) => state.user);
 
@@ -437,9 +439,7 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
     if (isSessionCreated && !isStartAudioChatEmitted) {
       if (microphoneChatId) {
         setIsStartAudioChatEmitted(true);
-        toast.info(
-          "You've joined an active call. To start a fresh conversation, simply end this call and begin a new one.",
-        );
+        toast.info(t("audioCall.joinedActiveCall"));
         return;
       }
       const socketData = {

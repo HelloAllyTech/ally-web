@@ -141,6 +141,10 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     } else if (offset === 0) {
       setHasMore(false);
       setLogs([]);
+    } else {
+      // A load-more page came back empty; stop the spinner and further fetches
+      setIsLoadingMore(false);
+      setHasMore(false);
     }
   }, [callLogsData, simulationLogsData, sessionType]);
 
@@ -433,7 +437,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           ref={tableRef}
           columns={isCall ? callColumns : simulationColumns}
           data={displayData}
-          isLoading={isLoading}
+          isLoading={isLoading || isLoadingMore}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           loadMoreLabel={t("common.loadMore")}
           fallbackUI={renderFallbackUI()}

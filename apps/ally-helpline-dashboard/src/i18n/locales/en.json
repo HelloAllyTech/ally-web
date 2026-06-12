@@ -982,6 +982,7 @@
     }
   },
   "audioCall": {
+    "joinedActiveCall": "You've joined an active call. To start a fresh conversation, simply end this call and begin a new one.",
     "fallback": {
       "ongoingCall": "There is an ongoing call",
       "ongoingCallDesc": "You have an active call happening now",

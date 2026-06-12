@@ -1,6 +1,7 @@
 import { ThemeProvider } from "@mui/material/styles";
 import { Toaster } from "sonner";
 
+import { ErrorBoundary } from "@ally-ui-mono/ui-shared";
 import RouteLayout from "@routes/RouteLayout";
 
 import { theme } from "./theme";
@@ -19,7 +20,9 @@ const App = () => (
         },
       }}
     />
-    <RouteLayout />
+    <ErrorBoundary>
+      <RouteLayout />
+    </ErrorBoundary>
   </ThemeProvider>
 );
 

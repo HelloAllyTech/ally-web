@@ -374,6 +374,24 @@ describe("UserLogsTable", () => {
         expect(screen.queryByTestId("circular-progress")).not.toBeInTheDocument();
       });
     });
+
+    it("shows the table loading indicator while loading more logs", async () => {
+      // A full page (= pagination limit) keeps hasMore true so load-more is active
+      const fullPage = Array.from({ length: 25 }, (_, i) => ({ ...SCRIBE_CALL_LOG, id: i + 1 }));
+      mockUseGetCallLogsQuery.mockReturnValue({
+        data: { data: fullPage },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      renderComponent(SessionType.CALL);
+      expect(screen.queryByTestId("table-loading")).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId("load-more-button"));
+      await waitFor(() => {
+        expect(screen.getByTestId("table-loading")).toBeInTheDocument();
+      });
+    });
   });
 
   // -------------------------------------------------------------------------
