@@ -190,17 +190,26 @@ const ResourceCard: FC<ResourceCardProps> = ({
   return (
     <div
       data-testid="resource-card"
+      role="button"
+      tabIndex={0}
+      aria-expanded={isExpanded}
       onClick={onExpandCard}
+      onKeyDown={e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onExpandCard();
+        }
+      }}
       className={`w-full flex flex-col gap-2 rounded-[8px] p-3 sm:p-4 md:p-3 lg:p-4 min-w-0 ${resourceCardStyles[mode].card}`}
     >
       {renderTags()}
       <div className="flex flex-col font-['IBM_Plex_Serif']" data-testid="resource-card-content">
-        <span
+        <h3
           data-testid="resource-card-title"
           className={`font-[500] text-[15px] sm:text-[14px] md:text-[14px] lg:text-[16px] ${resourceCardStyles[mode].title}`}
         >
           {title}
-        </span>
+        </h3>
         {renderDescription()}
         {renderShowMoreLess()}
       </div>

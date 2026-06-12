@@ -125,6 +125,10 @@ const SearchBar: FC<SearchBarProps> = ({
           },
           backgroundColor: searchBarStyles[mode].backgroundColor,
         }}
+        inputProps={{
+          ...params.inputProps,
+          "aria-label": placeholder || "Search resources",
+        }}
         InputProps={{
           ...params.InputProps,
           maxLength: MAX_CHARACTER_LIMIT,
@@ -149,7 +153,7 @@ const SearchBar: FC<SearchBarProps> = ({
     <form onSubmit={handleSubmit} className="w-full" data-testid="search-bar-form">
       <Autocomplete
         freeSolo
-        id="free-solo-2-demo"
+        id="resource-search-autocomplete"
         data-testid="search-bar-autocomplete"
         options={suggestions}
         className="w-full h-[36px] sm:h-[60px]"

@@ -52,11 +52,13 @@ const SuggestionsContainer: FC<SuggestionsContainerProps> = ({
         {suggestions?.map(chip => (
           <button
             key={chip}
+            type="button"
             data-testid={`suggestion-chip-${chip.toLowerCase().replace(/\s+/g, "-")}`}
             className={`w-auto flex items-center border-[0.5px] rounded-xl px-[10px] py-[6px] leading-[100%] tracking-[0] cursor-pointer hover:bg-gray-100 transition whitespace-nowrap ${suggestionsStyles[mode].suggestionButton}`}
             onClick={() => onSelect(chip)}
           >
             <SearchIcon
+              aria-hidden="true"
               className={`mr-2 w-4 h-4 shrink-0 ${suggestionsStyles[mode].searchIcon}`}
               data-testid="suggestion-chip-icon"
             />

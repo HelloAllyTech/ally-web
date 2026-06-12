@@ -6,6 +6,7 @@ import { ChipGroup } from "./lib/chip-group";
 import { CustomImage } from "./lib/custom-image";
 import { CustomVideo } from "./lib/custom-video";
 import { Dropdown, DropdownField } from "./lib/dropdown-field";
+import ErrorBoundary from "./lib/error-boundary";
 import GenericTable from "./lib/generic-table";
 import { GoogleSignInButton } from "./lib/google-sign-in-button";
 import { ImageUpload } from "./lib/image-upload";
@@ -33,6 +34,7 @@ import { logger } from "./logger";
 
 export type { Resource, SearchVariant, SimulationDetailsModalProps } from "./types";
 export type { ChipItem, ChipGroupProps } from "./lib/chip-group";
+export type { ErrorBoundaryProps } from "./lib/error-boundary";
 export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";
 export type { MaxActiveUsersDialogProps } from "./lib/max-active-users-dialog";
 export type { SimulationTranslations, TurnIndicatorTranslations } from "./lib/simulation";
@@ -45,6 +47,7 @@ export {
   CustomVideo,
   Dropdown,
   DropdownField,
+  ErrorBoundary,
   GenericTable,
   GoogleSignInButton,
   InfiniteScroll,

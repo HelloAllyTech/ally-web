@@ -30,4 +30,15 @@ describe("ResourceCard", () => {
     fireEvent.click(screen.getByText("Test Title"));
     expect(setExpandedCard).toHaveBeenCalledWith(true);
   });
+
+  it("toggles expand via keyboard and exposes expanded state", () => {
+    const setExpandedCard = vi.fn();
+    render(<ResourceCard {...baseProps} setExpandedCard={setExpandedCard} />);
+    const card = screen.getByTestId("resource-card");
+    expect(card).toHaveAttribute("aria-expanded", "false");
+    fireEvent.keyDown(card, { key: "Enter" });
+    expect(setExpandedCard).toHaveBeenCalledWith(true);
+    fireEvent.keyDown(card, { key: " " });
+    expect(setExpandedCard).toHaveBeenCalledTimes(2);
+  });
 });
