@@ -15,6 +15,7 @@ interface PrivateLayoutProps {
   children: React.ReactNode;
   requiredPermissions?: Permissions[];
   requiredRole?: UserRole;
+  requiredEmail?: string;
   isPreview?: boolean;
 }
 
@@ -23,6 +24,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   isPreview,
   requiredPermissions = [],
   requiredRole,
+  requiredEmail,
 }) => {
   const isAuthenticated =
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
@@ -44,6 +46,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   // Check if user has permission to access current route
   let hasPermission = true;
   let hasRole = true;
+  let hasEmail = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
     hasPermission = hasPermissions(permissions, requiredPermissions);
@@ -56,7 +59,14 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     hasRole = !requiredRole || userData?.role === requiredRole;
   }
 
-  const hasAccess = hasPermission && hasRole;
+  // Email gating restricts a route to a single user regardless of role or
+  // permissions. Routes that pass no requiredEmail stay backward compatible.
+  if (!isUserLoading) {
+    hasEmail =
+      !requiredEmail || userData?.email?.toLowerCase() === requiredEmail.toLowerCase();
+  }
+
+  const hasAccess = hasPermission && hasRole && hasEmail;
 
   if (hasAccess && isPreview) return children;
 

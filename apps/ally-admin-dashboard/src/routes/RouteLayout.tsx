@@ -22,6 +22,7 @@ import {
   UserBadges,
   TranslationManagement,
   TooltipManagement,
+  Lab,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -217,6 +218,14 @@ export const RouteLayout: React.FC = () => {
               <Suspense fallback={null}>
                 <Analytics />
               </Suspense>
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.LAB}
+          element={
+            <PrivateLayout requiredEmail="sandeep.malhotra@helloally.ai">
+              <Lab />
             </PrivateLayout>
           }
         />

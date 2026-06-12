@@ -184,6 +184,7 @@ export const ROUTES = {
   MANAGE_TRANSLATIONS: "/manage-translations",
   MANAGE_TOOLTIPS: "/manage-tooltips",
   ANALYTICS: "/analytics",
+  LAB: "/lab",
 };
 
 export const LOCAL_STORAGE_KEYS = {
