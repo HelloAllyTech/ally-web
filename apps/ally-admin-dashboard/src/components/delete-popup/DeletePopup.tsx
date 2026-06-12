@@ -35,6 +35,8 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
       <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200 px-[32px] py-[24px] text-typography-900 font-primary">
         {/* Close button */}
         <button
+          type="button"
+          aria-label={en.common.close}
           onClick={handleClose}
           className="absolute top-[8px] right-[8px] text-typography-600 hover:text-typography-800 transition-colors"
         >

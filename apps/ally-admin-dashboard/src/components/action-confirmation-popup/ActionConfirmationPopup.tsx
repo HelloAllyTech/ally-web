@@ -3,6 +3,7 @@ import { FC, ReactNode, useEffect, useRef } from "react";
 import { Close } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant, PopupButtonProps } from "@components/types";
+import { en } from "@constants";
 
 interface ActionConfirmationPopupProps {
   isOpen: boolean;
@@ -61,6 +62,8 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
   const popupHeader = (
     <div className="flex flex-col items-center justify-between p-5">
       <button
+        type="button"
+        aria-label={en.common.close}
         onClick={onClose}
         className="absolute top-[5px] right-[5px] text-typography-600 hover:text-typography-800 transition-colors"
       >

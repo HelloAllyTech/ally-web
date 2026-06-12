@@ -18,6 +18,15 @@ vi.mock("@components", () => ({
   },
 }));
 
+// Mock @constants to avoid loading the full constants barrel
+vi.mock("@constants", () => ({
+  en: {
+    common: {
+      close: "Close",
+    },
+  },
+}));
+
 // Mock Close asset
 vi.mock("@assets", () => ({
   Close: ({ width, height }: { width?: number; height?: number }) => (
@@ -117,6 +126,12 @@ describe("ActionConfirmationPopup", () => {
       render(<ActionConfirmationPopup {...defaultProps} />);
 
       expect(screen.getByTestId("close-icon")).toBeInTheDocument();
+    });
+
+    it("exposes an accessible name on the close button", () => {
+      render(<ActionConfirmationPopup {...defaultProps} />);
+
+      expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
     });
   });
 

@@ -1,5 +1,6 @@
 import { Toaster } from "sonner";
 
+import { ErrorBoundary } from "@ally-ui-mono/ui-shared";
 import { LogViewer } from "@components/log-viewer";
 import { RouteLayout } from "@routes/RouteLayout";
 
@@ -12,7 +13,9 @@ export function App() {
   };
   return (
     <>
-      <RouteLayout />
+      <ErrorBoundary>
+        <RouteLayout />
+      </ErrorBoundary>
       {import.meta.env.VITE_SHOW_LOG_TERMINAL === "true" && <LogViewer />}
       <Toaster
         position="bottom-right"

@@ -11,6 +11,7 @@ export const en = {
     goBack: "Go Back",
     save: "Save",
     cancel: "Cancel",
+    close: "Close",
     delete: "Delete",
     noOptionsAvailable: "No options available",
     noResultsFound: "No results found",
