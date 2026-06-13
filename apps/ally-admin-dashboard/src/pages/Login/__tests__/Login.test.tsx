@@ -69,10 +69,13 @@ const mockGoogleSignInMutation = vi.fn(() => [
     error: null,
   },
 ]);
+const mockDevLogin = vi.fn();
+const mockUseDevLoginMutation = vi.fn(() => [mockDevLogin, { isLoading: false }]);
 vi.mock("@api", () => ({
   useGenerateOTPMutation: () => mockUseGenerateOTPMutation(),
   useVerifyOTPMutation: () => mockUseVerifyOTPMutation(),
   useGoogleSignInMutation: () => mockGoogleSignInMutation(),
+  useDevLoginMutation: () => mockUseDevLoginMutation(),
   baseAPI: {
     injectEndpoints: vi.fn(() => ({})),
     reducerPath: "baseAPI",

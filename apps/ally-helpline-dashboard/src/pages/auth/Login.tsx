@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { GoogleSignInButton } from "@ally-ui-mono/ui-shared";
 import {
+  useDevLoginMutation,
   useGenerateOTPMutation,
   useGoogleSignInMutation,
   usePutTermsAndAgreementMutation,
@@ -32,6 +33,25 @@ import { openLinkInNewTab, validateEmail } from "@utils";
 
 const RESEND_CODE_COUNTDOWN = 60; // 2 minutes
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
+
+// Developer login bypasses the OTP (and terms) flow for local development. It
+// only renders on the dev server (or when VITE_ENABLE_DEV_LOGIN=true), and the
+// backend endpoint it calls is gated to NODE_ENV=local, so it is inert in
+// production even if a button were somehow shipped.
+const SHOW_DEV_LOGIN =
+  import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEV_LOGIN === "true";
+
+// Emails default to the seeded fixtures and can be overridden via env.
+const DEV_LOGIN_ACCOUNTS: { label: string; email: string }[] = [
+  {
+    label: "Admin",
+    email: import.meta.env.VITE_DEV_LOGIN_ADMIN_EMAIL || "org-admin@example.com",
+  },
+  {
+    label: "Counsellor",
+    email: import.meta.env.VITE_DEV_LOGIN_USER_EMAIL || "learner@example.com",
+  },
+];
 
 export const Login: FunctionComponent = () => {
   const { t } = useTranslation();
@@ -68,6 +88,7 @@ export const Login: FunctionComponent = () => {
   ] = useVerifyOTPMutation();
 
   const [googleSignIn] = useGoogleSignInMutation();
+  const [devLogin, { isLoading: isDevLoggingIn }] = useDevLoginMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
@@ -228,6 +249,27 @@ export const Login: FunctionComponent = () => {
     toast.error(t("auth.login.google.error"));
   };
 
+  const handleDevLogin = async (devEmail: string) => {
+    try {
+      const response = await devLogin({ email: devEmail });
+      if (response?.data) {
+        // Dev login intentionally skips the OTP and terms-acceptance steps.
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, response.data.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, response.data.refreshToken);
+        const userData = await checkAuth();
+        if (userData) {
+          navigate("/");
+        }
+      } else {
+        const error = response.error as FetchBaseQueryError;
+        const errorData = error?.data as { message: string } | undefined;
+        toast.error(errorData?.message ?? t("auth.login.errors.verifyOtp"));
+      }
+    } catch {
+      toast.error(t("auth.login.errors.verifyOtp"));
+    }
+  };
+
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -322,6 +364,27 @@ export const Login: FunctionComponent = () => {
               {t("auth.login.privacy")}
             </span>
           </div>
+          {SHOW_DEV_LOGIN && (
+            <div className="mt-2 rounded-[8px] border border-dashed border-amber-400 bg-amber-50 p-3">
+              <p className="mb-2 text-xs font-semibold text-amber-700">
+                Developer login (local only) — skips OTP
+              </p>
+              <div className="flex flex-col gap-2">
+                {DEV_LOGIN_ACCOUNTS.map(account => (
+                  <Button
+                    key={account.email}
+                    type="button"
+                    variant="secondary"
+                    className="w-full rounded-[5px]"
+                    disabled={isDevLoggingIn || isLoading}
+                    onClick={() => handleDevLogin(account.email)}
+                  >
+                    {`Login as ${account.label}`}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       );
     }

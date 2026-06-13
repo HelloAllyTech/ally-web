@@ -81,6 +81,7 @@ vi.mock("@api", () => ({
       error: null,
     },
   ],
+  useDevLoginMutation: () => [vi.fn(), { isLoading: false }],
 }));
 
 vi.mock("@assets", () => ({

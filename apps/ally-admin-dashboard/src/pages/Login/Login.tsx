@@ -7,7 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { CustomImage, GoogleSignInButton } from "@ally-ui-mono/ui-shared";
-import { useGenerateOTPMutation, useVerifyOTPMutation, useGoogleSignInMutation } from "@api";
+import {
+  useGenerateOTPMutation,
+  useVerifyOTPMutation,
+  useGoogleSignInMutation,
+  useDevLoginMutation,
+} from "@api";
 import { BackCircle, LoginImage } from "@assets";
 import { Button, OTP, TextField } from "@components";
 import {
@@ -24,6 +29,28 @@ import { validateEmail, openLinkInNewTab } from "@utils";
 
 const RESEND_CODE_COUNTDOWN = 60; // 60 seconds
 const DEFAULT_EXPIRES_IN = 10; // 10 minutes
+
+// Developer login bypasses the OTP flow for local development. It only renders
+// when running the dev server (or when VITE_ENABLE_DEV_LOGIN=true), and the
+// backend endpoint it calls is itself gated to NODE_ENV=local, so it is inert
+// in production even if a button were somehow shipped.
+const SHOW_DEV_LOGIN =
+  import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEV_LOGIN === "true";
+
+// The admin dashboard only accepts SUPER_ADMIN / MULTI_TENANT_ADMIN roles.
+// Emails default to the seeded fixtures and can be overridden via env.
+const DEV_LOGIN_ACCOUNTS: { label: string; email: string }[] = [
+  {
+    label: "Super Admin",
+    email: import.meta.env.VITE_DEV_LOGIN_ADMIN_EMAIL || "admin@example.com",
+  },
+  {
+    label: "Multi-Tenant Admin",
+    email:
+      import.meta.env.VITE_DEV_LOGIN_TENANT_ADMIN_EMAIL ||
+      "multi-tenant-admin1@example.com",
+  },
+];
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -56,6 +83,7 @@ export const Login: React.FC = () => {
   ] = useVerifyOTPMutation();
 
   const [googleSignIn] = useGoogleSignInMutation();
+  const [devLogin, { isLoading: isDevLoggingIn }] = useDevLoginMutation();
 
   const { isAuthenticated, checkAuth } = useUser();
 
@@ -180,6 +208,27 @@ export const Login: React.FC = () => {
     toast.error("Failed to sign in with Google");
   };
 
+  const handleDevLogin = async (devEmail: string) => {
+    try {
+      const response = await devLogin({ email: devEmail });
+      if (response?.data) {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, response.data.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN, response.data.refreshToken);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+        const userData = await checkAuth();
+        if (userData) {
+          navigate("/");
+        }
+      } else {
+        const error = response.error as FetchBaseQueryError;
+        const errorData = error?.data as { message: string } | undefined;
+        toast.error(errorData?.message ?? "Developer login failed");
+      }
+    } catch {
+      toast.error("Developer login failed");
+    }
+  };
+
   const getLoginSection = () => {
     if (loginSection === LoginSection.EMAIL) {
       return (
@@ -269,6 +318,27 @@ export const Login: React.FC = () => {
               {en.auth.privacyPolicy}.
             </span>
           </div>
+          {SHOW_DEV_LOGIN && (
+            <div className="mt-2 rounded-[8px] border border-dashed border-amber-400 bg-amber-50 p-3">
+              <p className="mb-2 text-xs font-semibold text-amber-700">
+                Developer login (local only) — skips OTP
+              </p>
+              <div className="flex flex-col gap-2">
+                {DEV_LOGIN_ACCOUNTS.map(account => (
+                  <Button
+                    key={account.email}
+                    type="button"
+                    variant="secondary"
+                    className="w-full rounded-[5px]"
+                    disabled={isDevLoggingIn || isLoading}
+                    onClick={() => handleDevLogin(account.email)}
+                  >
+                    {`Login as ${account.label}`}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       );
     }

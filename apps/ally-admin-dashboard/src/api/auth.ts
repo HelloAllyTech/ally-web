@@ -99,6 +99,21 @@ const authAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    /**
+     * Local/dev only: logs in as a seeded user by email, bypassing the OTP flow.
+     * Backed by a server endpoint that only works when NODE_ENV=local (or
+     * ENABLE_DEV_LOGIN=true), so it is inert against staging/production.
+     * @param {{ email: string }} data - Seeded user email to log in as
+     * @returns {Promise<VerifyOTPResponse>} Auth response with tokens
+     */
+    devLogin: builder.mutation<VerifyOTPResponse, { email: string }>({
+      query: data => ({
+        url: ApiEndpoints.AUTH.DEV_LOGIN,
+        method: HttpMethod.POST,
+        body: data,
+      }),
+    }),
+
     // /**
     //  * Authenticates user credentials and returns access/refresh tokens.
     //  * @param {any} data - idToken
@@ -175,6 +190,7 @@ const authAPI = baseAPI.injectEndpoints({
 
 export const {
   useLoginMutation,
+  useDevLoginMutation,
   useSignupMutation,
   useGetUserQuery,
   useLazyGetUserQuery,
