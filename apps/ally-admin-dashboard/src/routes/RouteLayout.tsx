@@ -22,6 +22,9 @@ import {
   UserBadges,
   TranslationManagement,
   TooltipManagement,
+  Settings,
+  Terms,
+  Privacy,
 } from "@pages";
 
 import { PrivateLayout } from "./PrivateLayout";
@@ -55,6 +58,10 @@ export const RouteLayout: React.FC = () => {
             </PublicRoute>
           }
         />
+
+        {/* Legal pages — fully public, accessible whether or not signed in */}
+        <Route path={ROUTES.TERMS} element={<Terms />} />
+        <Route path={ROUTES.PRIVACY} element={<Privacy />} />
 
         {/* Private Routes */}
         <Route
@@ -217,6 +224,14 @@ export const RouteLayout: React.FC = () => {
               <Suspense fallback={null}>
                 <Analytics />
               </Suspense>
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.SETTINGS}
+          element={
+            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+              <Settings />
             </PrivateLayout>
           }
         />

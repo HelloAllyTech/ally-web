@@ -195,6 +195,8 @@ export const ApiEndpoints = {
     GET_SUMMARY_SECTIONS: "/v1/settings/summary-sections",
     GET_CUSTOM_FIELD_TYPES: "/v1/settings/custom-field-types",
     GET_CUSTOM_FIELDS_ENABLED: "/v1/settings/custom-fields-enabled",
+    TERMS: "/v1/settings/terms",
+    PRIVACY: "/v1/settings/privacy",
   },
   TOOLTIPS: {
     GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",

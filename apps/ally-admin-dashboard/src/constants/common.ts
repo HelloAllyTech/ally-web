@@ -160,6 +160,10 @@ export const ApiEndpoints = {
     OVERVIEW: "/v1/analytics/overview",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
   },
+  SETTINGS: {
+    TERMS: "/v1/settings/terms",
+    PRIVACY: "/v1/settings/privacy",
+  },
 };
 
 export const ROUTES = {
@@ -185,6 +189,9 @@ export const ROUTES = {
   MANAGE_TRANSLATIONS: "/manage-translations",
   MANAGE_TOOLTIPS: "/manage-tooltips",
   ANALYTICS: "/analytics",
+  SETTINGS: "/settings",
+  TERMS: "/terms",
+  PRIVACY: "/privacy",
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -213,9 +220,11 @@ export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const SINGLE_DIGIT_REGEX = /^\d$/;
 
 export const ALLY_URL = "https://www.helloally.ai";
-export const ALLY_TERMS_URL = "https://www.helloally.ai/terms";
-export const ALLY_PRIVACY_POLICY_URL = "https://www.helloally.ai/policy";
-export const ALLY_DATA_POLICY_URL = "https://www.helloally.ai/policy";
+// In-app legal pages (see ROUTES.TERMS / ROUTES.PRIVACY). Opened in a new tab
+// via openLinkInNewTab, which resolves the relative path against this origin.
+export const ALLY_TERMS_URL = "/terms";
+export const ALLY_PRIVACY_POLICY_URL = "/privacy";
+export const ALLY_DATA_POLICY_URL = "/privacy";
 
 export const SORT_BY = {
   CREATED_AT: "createdAt",
@@ -258,6 +267,7 @@ export const TAG_TYPES = {
   FILLER_TAGS: "fillerTags",
   COMPETENCIES: "competencies",
   ADMIN_TENANTS: "adminTenants",
+  SETTINGS: "settings",
 };
 
 export const CUSTOM_CHARACTER_ID = "custom";

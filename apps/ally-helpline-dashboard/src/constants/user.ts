@@ -2,7 +2,8 @@ export const User = {
   USER_SUSPENDED: "user suspended",
 };
 
-export const PRIVACY_POLICY_URL = "https://www.helloally.ai/policy";
+// In-app privacy page (ROUTES.PRIVACY), opened in a new tab via openLinkInNewTab.
+export const PRIVACY_POLICY_URL = "/privacy";
 
 export const termsAndAgreementData = [
   {

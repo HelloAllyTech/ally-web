@@ -32,4 +32,5 @@ export const SIDEBAR_ITEMS = {
   TRANSLATIONS: "translations",
   TOOLTIPS: "tooltips",
   ANALYTICS: "analytics",
+  SETTINGS: "settings",
 };
