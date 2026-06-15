@@ -222,7 +222,7 @@ export const Analytics = () => {
   const showSkeletons = isLoading && !data;
 
   return (
-    <div className="analytics-carbon font-primary h-full overflow-y-auto pr-1">
+    <div className="font-primary h-full overflow-y-auto pr-1">
       <Theme theme="white">
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">

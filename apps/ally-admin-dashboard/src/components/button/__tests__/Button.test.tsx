@@ -7,7 +7,7 @@ import { Button } from "../Button";
 vi.mock("@utils", () => ({
   getButtonStyles: (variant: string) => {
     const styles = {
-      primary: "bg-blue-600 text-white",
+      primary: "bg-blue-600 text-white hover:bg-blue-700",
       secondary: "bg-gray-200 text-typography-800",
       destructive: "bg-red-600 text-white",
       text: "bg-transparent text-blue-600",
@@ -93,7 +93,7 @@ describe("Button", () => {
   it("applies hover styles", () => {
     render(<Button>Hover me</Button>);
     const button = screen.getByText("Hover me");
-    expect(button.className).toContain("hover:-translate-y-[1px]");
+    expect(button.className).toContain("hover:bg-blue-700");
   });
 
   it("has correct default height", () => {
@@ -109,28 +109,28 @@ describe("Button", () => {
     expect(button.className).toContain("py-2");
   });
 
-  it("has rounded corners", () => {
+  it("has square corners (Carbon)", () => {
     render(<Button>Button</Button>);
     const button = screen.getByText("Button");
-    expect(button.className).toContain("rounded-[100px]");
+    expect(button.className).toContain("rounded-none");
   });
 
   it("has transition effects", () => {
     render(<Button>Button</Button>);
     const button = screen.getByText("Button");
-    expect(button.className).toContain("transition-transform");
+    expect(button.className).toContain("transition-colors");
   });
 
-  it("prevents default disabled hover behavior", () => {
+  it("applies disabled styles", () => {
     render(<Button disabled>Disabled Button</Button>);
     const button = screen.getByText("Disabled Button");
-    expect(button.className).toContain("disabled:hover:translate-y-0");
+    expect(button.className).toContain("disabled:cursor-not-allowed");
   });
 
   it("has disabled cursor style", () => {
     render(<Button disabled>Disabled Button</Button>);
     const button = screen.getByText("Disabled Button");
-    expect(button.className).toContain("disabled:cursor-default");
+    expect(button.className).toContain("disabled:cursor-not-allowed");
   });
 
   it("has disabled opacity", () => {

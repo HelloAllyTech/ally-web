@@ -84,7 +84,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
         <Button
           onClick={secondaryButton.onClick}
           variant={secondaryButton.variant || ButtonVariant.SECONDARY}
-          className="text-typography-900 text-base border w-full border-border-dark rounded-full p-2 font-tertiary"
+          className="text-typography-900 text-base border w-full border-border-dark rounded-none p-2"
         >
           {secondaryButton.label}
         </Button>
@@ -92,9 +92,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
       <Button
         onClick={primaryButton.onClick}
         variant={primaryButton.variant || ButtonVariant.PRIMARY}
-        className={`text-white text-base rounded-full p-2 font-tertiary ${
-          secondaryButton ? "w-full" : "w-1/3"
-        }`}
+        className={`text-white text-base rounded-none p-2 ${secondaryButton ? "w-full" : "w-1/3"}`}
       >
         {primaryButton.label}
       </Button>
@@ -106,7 +104,7 @@ export const ActionConfirmationPopup: FC<ActionConfirmationPopupProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[1px]" />
       <div className="fixed inset-0 flex items-center justify-center px-4 shadow-2xl animate-fadeIn">
         <div
-          className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-in fade-in-0 zoom-in-95 duration-200 px-8 py-2 "
+          className="relative bg-white rounded-none shadow-xl max-w-md w-full animate-in fade-in-0 zoom-in-95 duration-200 px-8 py-2 "
           ref={popupRef}
         >
           {popupHeader}

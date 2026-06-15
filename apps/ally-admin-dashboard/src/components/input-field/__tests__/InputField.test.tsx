@@ -235,7 +235,7 @@ describe("InputField", () => {
       </TestWrapper>,
     );
     const input = screen.getByRole("textbox");
-    expect(input.className).toContain("focus:ring-1");
+    expect(input.className).toContain("focus:border-primary-500");
   });
 
   it("has correct padding", () => {

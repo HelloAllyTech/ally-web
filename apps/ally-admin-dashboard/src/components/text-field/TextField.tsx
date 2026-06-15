@@ -43,26 +43,28 @@ export const TextField: FC<TextFieldProps> = ({
         value={value}
         variant="outlined"
         sx={{
+          // Carbon field tokens: border-subtle (gray-20), square corners come
+          // from the global MUI theme (shape.borderRadius: 0).
           "& .MuiInputBase-root": {
-            border: showBorder ? "1px solid #E5E7EB" : "none",
-            borderColor: "#E5E7EB !important",
+            border: showBorder ? "1px solid #e0e0e0" : "none",
+            borderColor: "#e0e0e0 !important",
           },
           "& .MuiOutlinedInput-root": {
             ...(!multiline && { height: heights[fieldSize] }),
             backgroundColor: "#FFF",
             ...(showBorder && multiline ? { padding: "12px" } : { padding: 0 }),
             "& fieldset": {
-              border: showBorder ? "1px solid #E5E7EB" : "none",
-              borderColor: "#E5E7EB !important",
+              border: showBorder ? "1px solid #e0e0e0" : "none",
+              borderColor: "#e0e0e0 !important",
             },
             "&.Mui-disabled": {
-              backgroundColor: "#F6F6F6",
+              backgroundColor: "#f4f4f4", // gray-10
             },
           },
           "& .MuiInputBase-input": {
             ...(!multiline && { height: heights[fieldSize] }),
             boxSizing: "border-box",
-            color: "#4A4459",
+            color: "#161616", // Carbon text-primary
             fontSize: "14px",
             ...inputStyles,
           },

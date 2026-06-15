@@ -78,6 +78,19 @@
 }
 
 @layer base {
+  /* Serif everywhere. The app is serif-only (IBM Plex Serif): this sets the
+     base font for all unstyled elements so nothing falls back to a system
+     sans-serif stack, and forces Carbon Charts' SVG <text> nodes serif too
+     (chart text is rendered as SVG and won't inherit the body font otherwise). */
+  html,
+  body {
+    font-family: "IBM Plex Serif", serif;
+  }
+
+  svg text {
+    font-family: "IBM Plex Serif", serif;
+  }
+
   /* Custom Scrollbar Styles */
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;

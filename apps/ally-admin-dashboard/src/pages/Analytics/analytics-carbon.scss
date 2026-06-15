@@ -1,28 +1,13 @@
-// Scoped IBM Carbon styles for the Analytics tab ONLY.
+// Page-local layout helpers for the Analytics tab.
 //
-// We deliberately do NOT import Carbon's prebuilt `styles.css`, which resets
-// the global `<body>` font to IBM Plex Sans. This app has no global
-// `body { font-family }` rule — its serif look comes solely from the Tailwind
-// `font-primary` utility — so a global Carbon reset would flip the WHOLE app
-// to sans-serif.
-//
-// Instead we pull in Carbon via SCSS with its global side effects disabled:
-//   $css--reset       -> no `* / html / body` reset
-//   $css--body        -> no `body { background / color }` rule
-//   $css--font-face   -> no `@font-face` Plex imports / font assignment
-//   $css--default-type-> no bare-element (`h1`, `p`, `code`, ...) type styles
-// What remains is additive and inert outside this page: `:root { --cds-* }`
-// design tokens (unused elsewhere) and `.cds--*` class rules (Carbon class
-// names never appear on the app's Tailwind markup). Combined with the scoped
-// serif override below, Carbon cannot leak into the other tabs.
-@use "@carbon/styles" with (
-  $css--reset: false,
-  $css--body: false,
-  $css--font-face: false,
-  $css--default-type: false
-);
+// Carbon itself is now loaded GLOBALLY (see `src/carbon-global.scss`, imported
+// from `main.tsx`) as the app-wide design language, themed White via
+// `<GlobalTheme>` in `App.tsx`. We therefore no longer `@use "@carbon/styles"`
+// here — doing so would ship Carbon's entire stylesheet a second time in the
+// Analytics chunk. The old `.analytics-carbon` serif override is gone too: the
+// global serif rules in `styles.css` (incl. `svg text` for Carbon Charts)
+// cover this page now.
 
-// --- Page-local layout helpers ---
 .analytics-chart-skeleton {
   width: 100%;
   height: 320px;
@@ -30,15 +15,4 @@
 
 .analytics-kpi {
   min-height: 104px;
-}
-
-// --- Scoped serif override ---
-// Force IBM Plex Serif on every Carbon node and on Carbon Charts' SVG text,
-// matching the Tailwind `font-primary` family used by the rest of the app.
-// Scoped under `.analytics-carbon` so it never affects the other tabs.
-.analytics-carbon,
-.analytics-carbon [class^="cds--"],
-.analytics-carbon [class*=" cds--"],
-.analytics-carbon svg text {
-  font-family: "IBM Plex Serif", serif !important;
 }

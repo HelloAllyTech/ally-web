@@ -1,3 +1,4 @@
+import { GlobalTheme } from "@carbon/react";
 import { Toaster } from "sonner";
 
 import { LogViewer } from "@components/log-viewer";
@@ -11,7 +12,9 @@ export function App() {
     },
   };
   return (
-    <>
+    // Carbon "White" theme app-wide: resolves the `--cds-*` design tokens used
+    // by every Carbon component to the light surface.
+    <GlobalTheme theme="white">
       <RouteLayout />
       {import.meta.env.VITE_SHOW_LOG_TERMINAL === "true" && <LogViewer />}
       <Toaster
@@ -20,7 +23,7 @@ export function App() {
         toastOptions={toastOptions}
         style={toastOptions.style}
       />
-    </>
+    </GlobalTheme>
   );
 }
 
