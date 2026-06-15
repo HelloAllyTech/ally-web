@@ -227,10 +227,10 @@ describe("ActionConfirmationPopup", () => {
       expect(popup).toBeInTheDocument();
     });
 
-    it("popup has rounded corners", () => {
+    it("popup has square (Carbon) corners", () => {
       const { container } = render(<ActionConfirmationPopup {...defaultProps} />);
 
-      const popup = container.querySelector(".rounded-lg");
+      const popup = container.querySelector(".rounded-none");
       expect(popup).toBeInTheDocument();
     });
 
@@ -257,11 +257,11 @@ describe("ActionConfirmationPopup", () => {
       expect(screen.queryByText("Cancel")).not.toBeInTheDocument();
     });
 
-    it("buttons have rounded-full style", () => {
+    it("buttons have square (Carbon) style", () => {
       render(<ActionConfirmationPopup {...defaultProps} />);
 
       const confirmButton = screen.getByText("Confirm");
-      expect(confirmButton).toHaveClass("rounded-full");
+      expect(confirmButton).toHaveClass("rounded-none");
     });
 
     it("buttons container has correct gap", () => {

@@ -32,7 +32,7 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={handleClose} />
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200 px-[32px] py-[24px] text-typography-900 font-primary">
+      <div className="relative bg-white rounded-none shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-200 px-[32px] py-[24px] text-typography-900 font-primary">
         {/* Close button */}
         <button
           onClick={handleClose}
@@ -55,12 +55,12 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
         </div>
 
         {/* Simulation details card */}
-        <div className="rounded-lg p-2 mb-3 flex items-center gap-4 border border-border-light">
-          <div className="w-24 h-16 rounded-lg flex-shrink-0 flex items-center justify-center">
+        <div className="rounded-none p-2 mb-3 flex items-center gap-4 border border-border-light">
+          <div className="w-24 h-16 rounded-none flex-shrink-0 flex items-center justify-center">
             <CustomImage
               src={cardData.coverImageUrl}
               alt={cardData.title}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-cover rounded-none"
             />
           </div>
           <div className="flex-1 min-w-0">
@@ -78,7 +78,7 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
               type="checkbox"
               checked={isConfirmed}
               onChange={e => setIsConfirmed(e.target.checked)}
-              className="mt-1 w-4 h-4 text-primary border-border-light rounded"
+              className="mt-1 w-4 h-4 text-primary border-border-light rounded-none"
             />
             <span className="text-base leading-relaxed">
               {description || en.simulation.deleteConfirmationText}
@@ -90,14 +90,14 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
         <div className="flex gap-3">
           <button
             onClick={handleClose}
-            className="flex-1 bg-white font-tertiary border border-border-medium text-base font-medium py-2 px-4 rounded-[50px] hover:bg-background-secondary transition-colors"
+            className="flex-1 bg-white border border-border-medium text-base font-normal py-2 px-4 rounded-none hover:bg-background-secondary transition-colors"
           >
             {en.simulation.cancel}
           </button>
           <button
             onClick={handleConfirmDelete}
             disabled={!isConfirmed}
-            className={`flex-1 text-base font-tertiary font-medium py-2 px-4 rounded-[50px] transition-colors bg-destructive-500 text-white hover:bg-destructive-600 ${
+            className={`flex-1 text-base font-normal py-2 px-4 rounded-none transition-colors bg-destructive-500 text-white hover:bg-destructive-600 ${
               isConfirmed
                 ? "hover:bg-destructive-600"
                 : "bg-destructive-500 text-white hover:bg-destructive-600 opacity-50 cursor-not-allowed"

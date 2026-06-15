@@ -27,7 +27,7 @@ describe("Input", () => {
     const customClass = "bg-blue-500";
     render(<Input className={customClass} data-testid="test-input" />);
     const inputElement = screen.getByTestId("test-input");
-    expect(inputElement.className).toContain("rounded-md");
+    expect(inputElement.className).toContain("rounded-none");
     expect(inputElement.className).toContain(customClass);
   });
 
@@ -74,8 +74,8 @@ describe("Input", () => {
   it("should have focus-visible styling", () => {
     render(<Input data-testid="test-input" />);
     const inputElement = screen.getByTestId("test-input");
-    expect(inputElement.className).toContain("focus-visible:outline-none");
-    expect(inputElement.className).toContain("focus-visible:ring-2");
+    expect(inputElement.className).toContain("focus:outline-none");
+    expect(inputElement.className).toContain("focus-visible:border-primary-500");
   });
 
   it("should handle empty className gracefully", () => {
