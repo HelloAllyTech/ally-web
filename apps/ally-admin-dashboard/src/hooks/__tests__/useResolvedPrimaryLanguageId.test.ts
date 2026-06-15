@@ -11,16 +11,12 @@ const catalog = [
 
 describe("useResolvedPrimaryLanguageId", () => {
   it("returns the overrideLanguageId when provided", () => {
-    const { result } = renderHook(() =>
-      useResolvedPrimaryLanguageId(catalog, 2),
-    );
+    const { result } = renderHook(() => useResolvedPrimaryLanguageId(catalog, 2));
     expect(result.current).toBe("2");
   });
 
   it("finds English by value when no override is given", () => {
-    const { result } = renderHook(() =>
-      useResolvedPrimaryLanguageId(catalog, null),
-    );
+    const { result } = renderHook(() => useResolvedPrimaryLanguageId(catalog, null));
     expect(result.current).toBe("1");
   });
 
@@ -40,16 +36,12 @@ describe("useResolvedPrimaryLanguageId", () => {
       { language_id: 10, value: "hi-IN", label: "Hindi", voices: [] },
       { language_id: 11, value: "ml-IN", label: "Malayalam", voices: [] },
     ];
-    const { result } = renderHook(() =>
-      useResolvedPrimaryLanguageId(noEnglish, null),
-    );
+    const { result } = renderHook(() => useResolvedPrimaryLanguageId(noEnglish, null));
     expect(result.current).toBe("10");
   });
 
   it("returns null when catalog is empty and no override", () => {
-    const { result } = renderHook(() =>
-      useResolvedPrimaryLanguageId([], null),
-    );
+    const { result } = renderHook(() => useResolvedPrimaryLanguageId([], null));
     expect(result.current).toBeNull();
   });
 });

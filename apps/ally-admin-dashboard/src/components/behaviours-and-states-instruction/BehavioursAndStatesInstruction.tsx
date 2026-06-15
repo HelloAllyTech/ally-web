@@ -45,7 +45,6 @@ const createEmptyFormValue = (): BehaviourRow => ({
   })),
 });
 
-
 export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionProps> = ({
   formMethods,
   id,
@@ -300,8 +299,7 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   const commitPendingTag = useCallback(
     (tag: HelperTagItem, category: string) => {
       const existingRow = formData.find(
-        r =>
-          r.category === category && (r.behaviors as unknown as HelperTagItem[]).length < 5,
+        r => r.category === category && (r.behaviors as unknown as HelperTagItem[]).length < 5,
       );
       let updatedFormData;
       if (existingRow) {
@@ -324,34 +322,76 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
 
   const renderScoringRubric = () => (
     <>
-    <div className="w-full border border-border-light rounded overflow-hidden">
-      {/* Header */}
-      <div className="grid grid-cols-[1fr_180px_40px] bg-white border-b border-border-light">
-        <div className="px-4 py-2.5 text-xs font-medium text-typography-600 uppercase tracking-wide">
-          Helper Behaviour Class
+      <div className="w-full border border-border-light rounded overflow-hidden">
+        {/* Header */}
+        <div className="grid grid-cols-[1fr_180px_40px] bg-white border-b border-border-light">
+          <div className="px-4 py-2.5 text-xs font-medium text-typography-600 uppercase tracking-wide">
+            Helper Behaviour Class
+          </div>
+          <div className="px-4 py-2.5 text-xs font-medium text-typography-600 uppercase tracking-wide border-l border-border-light">
+            Category
+          </div>
+          <div />
         </div>
-        <div className="px-4 py-2.5 text-xs font-medium text-typography-600 uppercase tracking-wide border-l border-border-light">
-          Category
-        </div>
-        <div />
-      </div>
 
-      {/* Rows */}
-      {rubricRows.length === 0 ? (
-        <div className="px-4 py-6 text-sm text-typography-500 text-center">
-          No behaviour classes added yet.
-        </div>
-      ) : (
-        rubricRows.map(({ rowId, tag, isShould }, i) => (
-          <div
-            key={`${rowId}-${tag.id}`}
-            className={`grid grid-cols-[1fr_180px_40px] items-center border-b border-border-light last:border-b-0 ${i % 2 === 0 ? "bg-white" : "bg-background-secondary/40"} group`}
-          >
-            <div className="px-4 py-2.5 text-sm text-typography-900">{tag.name}</div>
+        {/* Rows */}
+        {rubricRows.length === 0 ? (
+          <div className="px-4 py-6 text-sm text-typography-500 text-center">
+            No behaviour classes added yet.
+          </div>
+        ) : (
+          rubricRows.map(({ rowId, tag, isShould }, i) => (
+            <div
+              key={`${rowId}-${tag.id}`}
+              className={`grid grid-cols-[1fr_180px_40px] items-center border-b border-border-light last:border-b-0 ${i % 2 === 0 ? "bg-white" : "bg-background-secondary/40"} group`}
+            >
+              <div className="px-4 py-2.5 text-sm text-typography-900">{tag.name}</div>
+              <div className="px-3 py-2 border-l border-border-light">
+                <select
+                  value={isShould ? "SHOULD_DO" : "SHOULD_NOT_DO"}
+                  onChange={e => handleRubricRowCategoryChange(rowId, tag.id, e.target.value)}
+                  className="w-full text-sm bg-transparent border-none outline-none cursor-pointer text-typography-900"
+                >
+                  {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => handleRemoveBehaviourFromRow(rowId, tag.id)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-typography-400 hover:text-destructive-500 p-1"
+                >
+                  <Close className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+
+        {/* Pending new row */}
+        {pendingRow && (
+          <div className="grid grid-cols-[1fr_180px_40px] items-center border-t border-border-light bg-white">
+            <div className="px-4 py-2">
+              <HelperTag
+                tags={[]}
+                maxTags={1}
+                updateTags={tags => {
+                  if (tags.length === 1) {
+                    commitPendingTag(tags[0] as HelperTagItem, pendingRow.category);
+                  }
+                }}
+              />
+            </div>
             <div className="px-3 py-2 border-l border-border-light">
               <select
-                value={isShould ? "SHOULD_DO" : "SHOULD_NOT_DO"}
-                onChange={e => handleRubricRowCategoryChange(rowId, tag.id, e.target.value)}
+                value={pendingRow.category}
+                onChange={e =>
+                  setPendingRow(prev => (prev ? { ...prev, category: e.target.value } : null))
+                }
                 className="w-full text-sm bg-transparent border-none outline-none cursor-pointer text-typography-900"
               >
                 {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
@@ -361,57 +401,17 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
                 ))}
               </select>
             </div>
-            <div className="flex items-center justify-center">
-              <button
-                type="button"
-                onClick={() => handleRemoveBehaviourFromRow(rowId, tag.id)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-typography-400 hover:text-destructive-500 p-1"
-              >
-                <Close className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            <div />
           </div>
-        ))
-      )}
-
-      {/* Pending new row */}
-      {pendingRow && (
-        <div className="grid grid-cols-[1fr_180px_40px] items-center border-t border-border-light bg-white">
-          <div className="px-4 py-2">
-            <HelperTag
-              tags={[]}
-              maxTags={1}
-              updateTags={tags => {
-                if (tags.length === 1) {
-                  commitPendingTag(tags[0] as HelperTagItem, pendingRow.category);
-                }
-              }}
-            />
-          </div>
-          <div className="px-3 py-2 border-l border-border-light">
-            <select
-              value={pendingRow.category}
-              onChange={e => setPendingRow(prev => prev ? { ...prev, category: e.target.value } : null)}
-              className="w-full text-sm bg-transparent border-none outline-none cursor-pointer text-typography-900"
-            >
-              {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div />
-        </div>
-      )}
-    </div>
-    <button
-      type="button"
-      onClick={() => setPendingRow({ category: "SHOULD_DO" })}
-      className="self-start text-sm text-primary hover:text-primary-700 mt-2 px-3 py-2"
-    >
-      + {en.simulation.newRow}
-    </button>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => setPendingRow({ category: "SHOULD_DO" })}
+        className="self-start text-sm text-primary hover:text-primary-700 mt-2 px-3 py-2"
+      >
+        + {en.simulation.newRow}
+      </button>
     </>
   );
 

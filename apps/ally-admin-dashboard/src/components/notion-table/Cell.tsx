@@ -364,7 +364,10 @@ export const Cell = ({
             onClick={() => onSelect(option.value)}
           >
             <span className={isSelected ? "text-primary-700 font-medium" : ""}>{option.label}</span>
-            <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+            <div
+              className="flex items-center gap-1 flex-shrink-0"
+              onClick={e => e.stopPropagation()}
+            >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-gray-300 border-t-typography-800 rounded-full animate-spin" />
               ) : isPlaying ? (

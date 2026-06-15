@@ -29,8 +29,7 @@
 
 @use "@carbon/styles" with (
   $font-families: (
-    "mono":
-      string.unquote(
+    "mono": string.unquote(
         "'IBM Plex Mono', system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular', monospace"
       ),
     "sans": string.unquote("'IBM Plex Serif', serif"),

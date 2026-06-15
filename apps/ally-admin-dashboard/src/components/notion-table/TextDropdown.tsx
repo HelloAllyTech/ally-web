@@ -248,7 +248,7 @@ export const TextDropdown = ({
                     )}
                     <span className="whitespace-nowrap">{option?.label}</span>
                   </div>
-                )
+                ),
               )
             )}
             {/* Load More Button */}

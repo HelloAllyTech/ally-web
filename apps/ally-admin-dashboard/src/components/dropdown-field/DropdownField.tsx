@@ -120,7 +120,9 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                 >
                   <span
                     className={
-                      selected || defaultOption ? "text-typography-900 truncate mr-1" : "text-typography-500 truncate mr-1"
+                      selected || defaultOption
+                        ? "text-typography-900 truncate mr-1"
+                        : "text-typography-500 truncate mr-1"
                     }
                   >
                     {selected ? selected.label : defaultOption || placeholder}

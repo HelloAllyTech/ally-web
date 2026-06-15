@@ -69,7 +69,13 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       isLoading: boolean;
     };
 
-  const { setError, clearErrors, setValue, watch, formState: { errors } } = formMethods;
+  const {
+    setError,
+    clearErrors,
+    setValue,
+    watch,
+    formState: { errors },
+  } = formMethods;
 
   const languageVoices = watch(id) ?? {};
   const languageCharacteristics =
@@ -88,43 +94,49 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     }
   }, []);
 
-  const playAudio = useCallback(async (audioData: ArrayBuffer) => {
-    stopAudio();
-    const audioContext = new AudioContext();
-    const decoded = await audioContext.decodeAudioData(audioData.slice(0));
-    const source = audioContext.createBufferSource();
-    source.buffer = decoded;
-    source.connect(audioContext.destination);
-    source.onended = () => {
-      setPlayingVoice(null);
-      audioSourceRef.current = null;
-    };
-    source.start();
-    audioSourceRef.current = source;
-    setIsAudioLoading(false);
-  }, [stopAudio]);
-
-  const handlePlay = useCallback(async (voiceId: string) => {
-    stopAudio();
-    setPlayingVoice(voiceId);
-
-    const cached = voicePreviewCache[voiceId];
-    if (cached) {
-      playAudio(cached);
-      return;
-    }
-
-    setIsAudioLoading(true);
-    try {
-      const result = await getPreviewVoice({ voiceId }).unwrap();
-      setVoicePreviewCache(prev => ({ ...prev, [voiceId]: result }));
-      playAudio(result);
-    } catch {
+  const playAudio = useCallback(
+    async (audioData: ArrayBuffer) => {
+      stopAudio();
+      const audioContext = new AudioContext();
+      const decoded = await audioContext.decodeAudioData(audioData.slice(0));
+      const source = audioContext.createBufferSource();
+      source.buffer = decoded;
+      source.connect(audioContext.destination);
+      source.onended = () => {
+        setPlayingVoice(null);
+        audioSourceRef.current = null;
+      };
+      source.start();
+      audioSourceRef.current = source;
       setIsAudioLoading(false);
-      setPlayingVoice(null);
-      toast.error("Failed to load voice preview");
-    }
-  }, [stopAudio, voicePreviewCache, getPreviewVoice, playAudio]);
+    },
+    [stopAudio],
+  );
+
+  const handlePlay = useCallback(
+    async (voiceId: string) => {
+      stopAudio();
+      setPlayingVoice(voiceId);
+
+      const cached = voicePreviewCache[voiceId];
+      if (cached) {
+        playAudio(cached);
+        return;
+      }
+
+      setIsAudioLoading(true);
+      try {
+        const result = await getPreviewVoice({ voiceId }).unwrap();
+        setVoicePreviewCache(prev => ({ ...prev, [voiceId]: result }));
+        playAudio(result);
+      } catch {
+        setIsAudioLoading(false);
+        setPlayingVoice(null);
+        toast.error("Failed to load voice preview");
+      }
+    },
+    [stopAudio, voicePreviewCache, getPreviewVoice, playAudio],
+  );
 
   const handlePause = useCallback(() => {
     stopAudio();
@@ -133,12 +145,14 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
 
   const languages: LanguageOption[] = availableLanguages ?? [];
 
-  const getVoiceOptions = useCallback((language: LanguageOption) =>
-    language.voices.map(v => ({
-      value: v.id,
-      label: v.provider ? `${v.name} (${v.provider})` : v.name,
-    })),
-  []);
+  const getVoiceOptions = useCallback(
+    (language: LanguageOption) =>
+      language.voices.map(v => ({
+        value: v.id,
+        label: v.provider ? `${v.name} (${v.provider})` : v.name,
+      })),
+    [],
+  );
 
   const tableData = useMemo(() => {
     const data = languages.map(language => {
@@ -178,22 +192,28 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     handlePause,
   ]);
 
-  const handleRowChange = useCallback((action: any) => {
-    const { columnId, value, rowId } = action;
-    if (!rowId || !columnId) return;
+  const handleRowChange = useCallback(
+    (action: any) => {
+      const { columnId, value, rowId } = action;
+      if (!rowId || !columnId) return;
 
-    if (columnId === "voice") {
-      setValue(id, { ...languageVoices, [rowId]: value }, { shouldDirty: true });
-    } else if (columnId === "label") {
-      setValue(
-        "languageCharacteristics",
-        { ...languageCharacteristics, [rowId]: value },
-        { shouldDirty: true },
-      );
-    }
-  }, [id, languageVoices, languageCharacteristics, setValue]);
+      if (columnId === "voice") {
+        setValue(id, { ...languageVoices, [rowId]: value }, { shouldDirty: true });
+      } else if (columnId === "label") {
+        setValue(
+          "languageCharacteristics",
+          { ...languageCharacteristics, [rowId]: value },
+          { shouldDirty: true },
+        );
+      }
+    },
+    [id, languageVoices, languageCharacteristics, setValue],
+  );
 
-  const languageVoicesString = useMemo(() => JSON.stringify(languageVoices || {}), [languageVoices]);
+  const languageVoicesString = useMemo(
+    () => JSON.stringify(languageVoices || {}),
+    [languageVoices],
+  );
   const prevHasMappingsRef = useRef<boolean | null>(null);
 
   useEffect(() => {
@@ -206,7 +226,10 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     const hasMappings = Object.values(currentVoices).some(v => !!v);
     if (prevHasMappingsRef.current !== hasMappings) {
       if (!hasMappings) {
-        setError(id, { type: "required", message: en.simulation.atLeastOneLanguageMustHaveVoiceSelected });
+        setError(id, {
+          type: "required",
+          message: en.simulation.atLeastOneLanguageMustHaveVoiceSelected,
+        });
       } else {
         clearErrors(id);
       }
@@ -220,7 +243,8 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
     return (
       <div className="flex flex-col gap-3">
         <label className="text-typography-900 text-base flex items-center gap-1">
-          {label}{isMandatory && <span className="text-destructive-500">*</span>}
+          {label}
+          {isMandatory && <span className="text-destructive-500">*</span>}
         </label>
         <div className="animate-pulse border border-border-light rounded-md h-48" />
       </div>
@@ -230,7 +254,8 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   return (
     <div className="flex flex-col gap-3" data-testid="language-voice-mapping">
       <label className="text-typography-900 text-base flex items-center gap-1">
-        {label}{isMandatory && <span className="text-destructive-500">*</span>}
+        {label}
+        {isMandatory && <span className="text-destructive-500">*</span>}
       </label>
       {errors?.[id]?.message && (
         <p className="text-destructive-500 text-sm">{errors[id].message}</p>

@@ -309,7 +309,12 @@ export const NotionTable = ({
             const headerGroupProps = headerGroup.getHeaderGroupProps();
             const { key, ...restHeaderGroupProps } = headerGroupProps;
             return (
-              <div key={key} {...restHeaderGroupProps} style={fillWidth ? { width: "100%" } : restHeaderGroupProps.style} className="flex w-full">
+              <div
+                key={key}
+                {...restHeaderGroupProps}
+                style={fillWidth ? { width: "100%" } : restHeaderGroupProps.style}
+                className="flex w-full"
+              >
                 {headerGroup.headers.map((column, headerIndex) => {
                   const headerProps = column.getHeaderProps();
                   const { key: headerKey, ...restHeaderProps } = headerProps;
@@ -323,7 +328,11 @@ export const NotionTable = ({
                       style={
                         isLastHeader
                           ? { flex: 1, minWidth: column.minWidth }
-                          : { width: column.width, minWidth: column.minWidth, maxWidth: column.maxWidth }
+                          : {
+                              width: column.width,
+                              minWidth: column.minWidth,
+                              maxWidth: column.maxWidth,
+                            }
                       }
                       className={`border border-border-light border-r-0 ${hideSelectionColumn ? "border-l" : "border-l-0"}`}
                     >

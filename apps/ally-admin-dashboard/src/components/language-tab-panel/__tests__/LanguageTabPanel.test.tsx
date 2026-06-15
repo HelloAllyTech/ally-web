@@ -53,7 +53,11 @@ describe("LanguageTabPanel", () => {
 
   it("hides the tab bar when there is only one tab", () => {
     render(
-      <LanguageTabPanel tabs={[{ id: "1", label: "English" }]} activeTabId="1" onTabChange={vi.fn()}>
+      <LanguageTabPanel
+        tabs={[{ id: "1", label: "English" }]}
+        activeTabId="1"
+        onTabChange={vi.fn()}
+      >
         <div>content</div>
       </LanguageTabPanel>,
     );

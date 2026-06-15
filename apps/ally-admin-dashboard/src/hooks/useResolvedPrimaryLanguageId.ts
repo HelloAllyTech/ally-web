@@ -10,7 +10,9 @@ export function useResolvedPrimaryLanguageId(
     if (overrideLanguageId != null) return String(overrideLanguageId);
     const enFirst = catalogLanguages.find(
       l =>
-        String(l.value ?? "").toLowerCase().includes("en") ||
+        String(l.value ?? "")
+          .toLowerCase()
+          .includes("en") ||
         String((l as { translationCode?: string }).translationCode ?? "") === "en",
     );
     if (enFirst) return String(enFirst.language_id);

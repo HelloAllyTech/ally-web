@@ -7,8 +7,6 @@ import { toast } from "sonner";
 import { Close, Delete, Plus, Search } from "@assets";
 import { en } from "@constants";
 
-import { FormLabel } from "../form-label";
-
 /**
  * How many knowledge documents to generate when the form is empty and the
  * user clicks Generate. Chosen to match the typical authored set (see
@@ -54,7 +52,6 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
     item.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
   const activeTab = knowledgeSources[activeTabIndex];
-
 
   const handleAddTab = () => {
     if (activeTab && (activeTab.title.trim() === "" || activeTab.content.trim() === "")) {
@@ -247,7 +244,6 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
       </div>
     );
   };
-
 
   return (
     <div className="flex flex-col gap-4">

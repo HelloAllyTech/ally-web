@@ -62,7 +62,9 @@ describe("AutofillButton", () => {
   });
 
   it("compact variant fades color when disabled instead of opacity", () => {
-    render(<AutofillButton onClick={vi.fn()} isLoading={false} label="Generate" compact disabled />);
+    render(
+      <AutofillButton onClick={vi.fn()} isLoading={false} label="Generate" compact disabled />,
+    );
     expect(screen.getByRole("button").className).toContain("text-primary-300");
     expect(screen.getByRole("button").className).toContain("border-primary-300");
   });

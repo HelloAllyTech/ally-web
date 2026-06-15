@@ -87,11 +87,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   Tabs: ({ items, activeId, onChange }: any) => (
     <div data-testid="tabs">
       {items.map((item: any) => (
-        <button
-          key={item.id}
-          onClick={() => onChange(item.id)}
-          data-active={activeId === item.id}
-        >
+        <button key={item.id} onClick={() => onChange(item.id)} data-active={activeId === item.id}>
           {item.label}
         </button>
       ))}

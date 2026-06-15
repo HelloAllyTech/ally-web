@@ -29,12 +29,7 @@ export const AutofillButton: FC<AutofillButtonProps> = ({
     : "inline-flex items-center gap-1 text-sm border rounded-2xl px-3 py-1.5 transition-opacity border-primary-500 text-primary-500 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={isInactive}
-      className={className}
-    >
+    <button type="button" onClick={onClick} disabled={isInactive} className={className}>
       {isLoading ? (
         <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
       ) : (
