@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { CircularProgress, Divider, Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
@@ -88,16 +88,22 @@ const CallSummary: FC<CallSummaryProps> = ({
   });
   const [upsertCustomFieldValues] = useUpsertCustomFieldValuesMutation();
   const [customLocalValues, setCustomLocalValues] = useState<Record<string, string | null>>({});
+  const seededChatIdRef = useRef<number | null>(null);
 
+  // Seed local edit state once per chat. Re-seeding on every customFieldValues
+  // change would clobber the user's in-progress edits: a background refetch
+  // (window focus, polling, or a tag invalidation from another mutation) resets
+  // typed values back to the stale server value before the user can save.
   useEffect(() => {
-    if (customFieldValues) {
+    if (customFieldValues && seededChatIdRef.current !== chatId) {
       const initial: Record<string, string | null> = {};
       customFieldValues.forEach((f: CustomFieldValue) => {
         initial[f.fieldDefinitionId] = f.value ?? null;
       });
       setCustomLocalValues(initial);
+      seededChatIdRef.current = chatId;
     }
-  }, [customFieldValues]);
+  }, [customFieldValues, chatId]);
 
   const handleCustomFieldChange = (fieldDefinitionId: string, value: string | null) => {
     setCustomLocalValues(prev => ({ ...prev, [fieldDefinitionId]: value }));

@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useRef } from "react";
 
 import { CircularProgress, Autocomplete, Checkbox, TextField as MuiTextField } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -59,16 +59,19 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
 
   // Standalone internal state
   const [localValues, setLocalValues] = useState<Record<string, string | null>>({});
+  const seededChatIdRef = useRef<number | null>(null);
 
+  // Seed once per chat so a background refetch doesn't overwrite in-progress edits.
   useEffect(() => {
-    if (!isControlled && fetchedFieldValues) {
+    if (!isControlled && fetchedFieldValues && seededChatIdRef.current !== chatId) {
       const initial: Record<string, string | null> = {};
       fetchedFieldValues.forEach(f => {
         initial[f.fieldDefinitionId] = f.value ?? null;
       });
       setLocalValues(initial);
+      seededChatIdRef.current = chatId;
     }
-  }, [fetchedFieldValues, isControlled]);
+  }, [fetchedFieldValues, isControlled, chatId]);
 
   if (!isControlled && (isFeatureLoading || isLoading)) {
     if (filterSectionKey) return null;
