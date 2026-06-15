@@ -90,3 +90,4 @@ export * from "./language-tab-panel";
 export * from "./form-label";
 export * from "./autofill-button";
 export * from "./add-item-button";
+export * from "./legal-page";

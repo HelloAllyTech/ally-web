@@ -2,9 +2,11 @@ import { Carousel1, Carousel4, Carousel3, Carousel2 } from "@assets";
 import { CarouselSlideType } from "@components";
 
 export const ALLY_URL = "https://www.helloally.ai";
-export const ALLY_TERMS_URL = "https://www.helloally.ai/terms";
-export const ALLY_PRIVACY_POLICY_URL = "https://www.helloally.ai/policy";
-export const ALLY_DATA_POLICY_URL = "https://www.helloally.ai/policy";
+// In-app legal pages (see ROUTES.TERMS / ROUTES.PRIVACY). Opened in a new tab
+// via openLinkInNewTab, which resolves the relative path against this origin.
+export const ALLY_TERMS_URL = "/terms";
+export const ALLY_PRIVACY_POLICY_URL = "/privacy";
+export const ALLY_DATA_POLICY_URL = "/privacy";
 
 export enum MediaRecorderState {
   INACTIVE = "inactive",
@@ -131,6 +133,7 @@ export const TAG_TYPES = {
   CUSTOM_FIELD_DEFINITIONS: "CustomFieldDefinitions",
   CUSTOM_FIELD_VALUES: "CustomFieldValues",
   TOOLTIPS: "Tooltips",
+  SETTINGS: "Settings",
 };
 
 export const SORT_ORDER = {

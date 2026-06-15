@@ -10,6 +10,8 @@ import {
   CaseTrackDetails,
   SuspendedUser,
   ImpersonateHandler,
+  Terms,
+  Privacy,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -34,6 +36,9 @@ const RouteLayout = () => {
           <Route path={ROUTES.IMPERSONATE} element={<ImpersonateHandler />} />
           <Route path={ROUTES.HEALTH} element={<Health />} />
           <Route path={ROUTES.MAGIC_VERIFY} element={<MagicLinkVerify />} />
+          {/* Legal pages — public, accessible whether or not signed in */}
+          <Route path={ROUTES.TERMS} element={<Terms />} />
+          <Route path={ROUTES.PRIVACY} element={<Privacy />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}

@@ -19,6 +19,8 @@ export const ROUTES = {
   MAGIC_VERIFY: "/auth/verify",
   SUSPENDED_USER: "/suspended-user",
   IMPERSONATE: "/impersonate",
+  TERMS: "/terms",
+  PRIVACY: "/privacy",
 
   // Private Routes
   HOME: "/",

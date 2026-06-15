@@ -10,3 +10,4 @@ export * from "./userBadges";
 export * from "./dynamicI18n";
 export * from "./tooltips";
 export * from "./analytics";
+export * from "./legalContent";

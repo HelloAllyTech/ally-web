@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { BarChart3, Info, Languages } from "lucide-react";
+import { BarChart3, Info, Languages, Settings } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -141,6 +141,8 @@ export const Sidebar: React.FC = () => {
         return <Info size={20} strokeWidth={1.8} />;
       case SIDEBAR_ITEMS.ANALYTICS:
         return <BarChart3 size={20} strokeWidth={1.8} />;
+      case SIDEBAR_ITEMS.SETTINGS:
+        return <Settings size={20} strokeWidth={1.8} />;
       default:
         return null;
     }
@@ -175,6 +177,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_TOOLTIPS);
       case ROUTES.ANALYTICS:
         return location.pathname.includes(ROUTES.ANALYTICS);
+      case ROUTES.SETTINGS:
+        return location.pathname.includes(ROUTES.SETTINGS);
       default:
         return false;
     }
