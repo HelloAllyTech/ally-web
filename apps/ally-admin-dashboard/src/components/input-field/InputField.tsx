@@ -111,7 +111,7 @@ export const InputField: React.FC<InputFieldProps> = ({
             placeholder={placeholder}
             disabled={disabled}
             style={{ minHeight: `${minHeight}px`, fontSize: "14px" }}
-            className={`w-full rounded custom-scrollbar border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:primary-500 px-2 py-1 pr-16`}
+            className={`w-full rounded-none custom-scrollbar bg-secondary-50 border-0 border-b border-border-dark text-md placeholder:text-typography-600 focus:outline-none focus:border-b-2 focus:border-primary-500 px-2 py-1 pr-16`}
           />
         ) : (
           <input
@@ -133,7 +133,7 @@ export const InputField: React.FC<InputFieldProps> = ({
               : {})}
             style={{ fontSize: "14px" }}
             onChange={handleFieldChange}
-            className={`w-full rounded border text-md border-border-light focus:ring-1 placeholder:text-typography-600 focus:ring-primary focus:outline-none px-2 py-1 ${type === FORM_FIELD_TYPES.NUMBER ? "pr-[8px]" : "pr-[50px]"}`}
+            className={`w-full rounded-none bg-secondary-50 border-0 border-b text-md border-border-dark placeholder:text-typography-600 focus:border-b-2 focus:border-primary-500 focus:outline-none px-2 py-1 ${type === FORM_FIELD_TYPES.NUMBER ? "pr-[8px]" : "pr-[50px]"}`}
           />
         )}
         {maxLength && type === FORM_FIELD_TYPES.TEXT && (

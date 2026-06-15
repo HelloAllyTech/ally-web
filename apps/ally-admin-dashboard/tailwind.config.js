@@ -9,12 +9,26 @@ module.exports = {
   ],
   theme: {
     fontFamily: {
+      // Serif-only design language: every UI font resolves to IBM Plex Serif.
+      // `sans`/`serif` are defined so Tailwind preflight and any `font-sans`
+      // utility are serif too; `secondary`/`tertiary` are kept as aliases so the
+      // existing `font-secondary` (was Replay Pro) and `font-tertiary` (was
+      // Roboto, sans-serif) class usages across the app become serif with no
+      // per-file edits. `mono` stays monospaced — code/IDs keep their legibility.
+      sans: ["IBM Plex Serif", "serif"],
+      serif: ["IBM Plex Serif", "serif"],
+      mono: ["IBM Plex Mono", "monospace"],
       primary: ["IBM Plex Serif", "serif"],
-      secondary: ["Replay Pro", "serif"],
-      tertiary: ["Roboto", "sans-serif"],
+      secondary: ["IBM Plex Serif", "serif"],
+      tertiary: ["IBM Plex Serif", "serif"],
     },
     extend: {
       fontSize: {
+        // Type scale. Kept Carbon-compatible: these px steps already line up
+        // with IBM Carbon's productive type scale (12/14/16/18/24/28/32), so we
+        // leave them intact rather than re-snapping every step — that would
+        // reflow dense tables/labels across the app for little visual gain. The
+        // Carbon look comes from the serif type family + tokens + component shapes.
         // Custom font sizes used throughout the application
         xs: ["12px", { lineHeight: "16px" }], // Extra small - labels, captions
         sm: ["13px", { lineHeight: "20px" }], // Small - table text, secondary content
@@ -27,95 +41,96 @@ module.exports = {
         "4xl": ["32px", { lineHeight: "44px" }], // 4X large - hero titles, main headers
       },
       colors: {
-        // Primary Colors
+        // Primary Colors — IBM Carbon Blue. Interactive default is Blue 60
+        // (#0f62fe); 500/600 (used for button bg/hover) map to Blue 60/70.
         primary: {
-          DEFAULT: "#10264C",
-          50: "#E2F2FF",
-          100: "#B7D7FF",
-          200: "#86B8FF",
-          300: "#5F99FC",
-          400: "#6188C9",
-          500: "#0957D0",
-          600: "#0957D0",
-          700: "#0143A8",
-          800: "#123268",
-          900: "#10264C",
+          DEFAULT: "#0f62fe",
+          50: "#edf5ff", // blue-10
+          100: "#d0e2ff", // blue-20
+          200: "#a6c8ff", // blue-30
+          300: "#78a9ff", // blue-40
+          400: "#4589ff", // blue-50
+          500: "#0f62fe", // blue-60 (interactive)
+          600: "#0043ce", // blue-70 (hover)
+          700: "#002d9c", // blue-80
+          800: "#001d6c", // blue-90
+          900: "#001141", // blue-100
         },
-        // Secondary/Accent Colors
+        // Secondary Colors — IBM Carbon Gray (secondary buttons use Gray 80).
         secondary: {
-          DEFAULT: "#C8C5D0",
-          50: "#F5F5F7",
-          100: "#EBEAEF",
-          200: "#D7D5DF",
-          300: "#C8C5D0",
-          400: "#B0ADC0",
-          500: "#9895A8",
-          600: "#7A7788",
-          700: "#5C5968",
-          800: "#3E3B48",
-          900: "#201D28",
+          DEFAULT: "#393939",
+          50: "#f4f4f4", // gray-10
+          100: "#e0e0e0", // gray-20
+          200: "#c6c6c6", // gray-30
+          300: "#a8a8a8", // gray-40
+          400: "#8d8d8d", // gray-50
+          500: "#6f6f6f", // gray-60
+          600: "#525252", // gray-70
+          700: "#393939", // gray-80
+          800: "#262626", // gray-90
+          900: "#161616", // gray-100
         },
-        // Destructive/Error Colors
+        // Destructive/Error Colors — IBM Carbon Red (danger default Red 60).
         destructive: {
-          DEFAULT: "#F93535",
-          50: "#FFCDD2",
-          100: "#FFBABA",
-          200: "#FF8A8A",
-          300: "#FF5A5A",
-          400: "#F93535",
-          500: "#E02020",
-          600: "#C71818",
-          700: "#AE1010",
-          800: "#950808",
-          900: "#5C0A0A",
+          DEFAULT: "#da1e28",
+          50: "#fff1f1", // red-10
+          100: "#ffd7d9", // red-20
+          200: "#ffb3b8", // red-30
+          300: "#ff8389", // red-40
+          400: "#fa4d56", // red-50
+          500: "#da1e28", // red-60 (default)
+          600: "#a2191f", // red-70 (hover)
+          700: "#750e13", // red-80
+          800: "#520408", // red-90
+          900: "#2d0709", // red-100
         },
-        // Success/Active Colors
+        // Success/Active Colors — IBM Carbon Green (support-success Green 50).
         success: {
-          DEFAULT: "#18441B",
-          50: "#E8F5E9",
-          100: "#C8E6C9",
-          200: "#A5D6A7",
-          300: "#81C784",
-          400: "#66BB6A",
-          500: "#4CAF50",
-          600: "#43A047",
-          700: "#388E3C",
-          800: "#2E7D32",
-          900: "#18441B",
-          light: "#B9F6CA",
-          lighter: "#69F0AE",
-          text: "#00E676",
-          darkText: "#00C853",
+          DEFAULT: "#24a148",
+          50: "#defbe6", // green-10
+          100: "#a7f0ba", // green-20
+          200: "#6fdc8c", // green-30
+          300: "#42be65", // green-40
+          400: "#24a148", // green-50
+          500: "#198038", // green-60
+          600: "#0e6027", // green-70
+          700: "#044317", // green-80
+          800: "#022d0d", // green-90
+          900: "#071908", // green-100
+          light: "#a7f0ba",
+          lighter: "#6fdc8c",
+          text: "#24a148",
+          darkText: "#198038",
         },
-        // Warning Colors
+        // Warning Colors — IBM Carbon Yellow (support-warning Yellow 30).
         warning: {
-          DEFAULT: "#F57C00",
-          50: "#FFF3E0",
-          100: "#FFE0B2",
-          200: "#FFCC80",
-          300: "#FFB74D",
-          400: "#FFA726",
-          500: "#FF9800",
-          600: "#FB8C00",
-          700: "#F57C00",
-          800: "#EF6C00",
-          900: "#E65100",
-          text: "#662400",
+          DEFAULT: "#f1c21b",
+          50: "#fcf4d6", // yellow-10
+          100: "#fddc69", // yellow-20
+          200: "#f1c21b", // yellow-30 (default)
+          300: "#d2a106", // yellow-40
+          400: "#b28600", // yellow-50
+          500: "#8e6a00", // yellow-60
+          600: "#684e00", // yellow-70
+          700: "#483700", // yellow-80
+          800: "#302400", // yellow-90
+          900: "#1c1500", // yellow-100
+          text: "#684e00",
         },
-        // Neutral/Gray Colors
+        // Neutral/Gray Colors — IBM Carbon Gray.
         neutral: {
-          DEFAULT: "#424242",
-          50: "#FAFAFA",
-          100: "#F5F5F5",
-          200: "#EEEEEE",
-          300: "#E0E0E0",
-          400: "#BDBDBD",
-          500: "#9E9E9E",
-          600: "#757575",
-          700: "#616161",
-          800: "#424242",
-          900: "#333333",
-          950: "#17181A",
+          DEFAULT: "#525252",
+          50: "#f4f4f4", // gray-10
+          100: "#e0e0e0", // gray-20
+          200: "#c6c6c6", // gray-30
+          300: "#a8a8a8", // gray-40
+          400: "#8d8d8d", // gray-50
+          500: "#6f6f6f", // gray-60
+          600: "#525252", // gray-70
+          700: "#393939", // gray-80
+          800: "#262626", // gray-90
+          900: "#161616", // gray-100
+          950: "#0d0d0d",
         },
         // Scrollbar Colors
         scrollbar: {
@@ -123,23 +138,23 @@ module.exports = {
           thumb: "#888888",
           thumbHover: "#555555",
         },
-        // Background Colors
+        // Background Colors — IBM Carbon layer tokens (White theme).
         background: {
-          DEFAULT: "#FFFFFF",
-          secondary: "#F9FAFB",
-          tertiary: "#F3F4F6",
+          DEFAULT: "#ffffff", // background
+          secondary: "#f4f4f4", // layer-01 (gray-10)
+          tertiary: "#e0e0e0", // layer-02 (gray-20)
         },
         amber: {
           50: "#FFF8E1",
           200: "#FFE082",
         },
-        // Border Colors
+        // Border Colors — IBM Carbon border tokens.
         border: {
-          DEFAULT: "#D2D2D2",
-          light: "#E5E7EB",
-          medium: "#D1D5DB",
-          dark: "#9CA3AF",
-          blue: "#0957D0",
+          DEFAULT: "#e0e0e0", // border-subtle (gray-20)
+          light: "#e0e0e0",
+          medium: "#c6c6c6", // gray-30
+          dark: "#8d8d8d", // gray-50
+          blue: "#0f62fe", // focus / interactive (blue-60)
           amber400: "#FFCA28",
         },
         // Text Colors
