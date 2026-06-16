@@ -98,6 +98,7 @@ export interface SimulationInput {
   maxTimeValue?: string;
   optGuardrails?: boolean;
   enableProsody?: boolean;
+  fillerEnabled?: boolean;
   currentState?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
@@ -192,6 +193,7 @@ export interface GetSimulationByIdResponse {
     maxTimeValue?: string;
     optGuardrails?: boolean;
     enableProsody?: boolean;
+    fillerEnabled?: boolean;
     currentState?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
