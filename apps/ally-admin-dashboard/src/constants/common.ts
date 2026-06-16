@@ -117,6 +117,7 @@ export const ApiEndpoints = {
     TENANTS: "/v1/tenants",
     TENANTS_BY_ID: (id: string) => `/v1/tenants/${id}`,
     ADD_USER: "/v1/users",
+    BULK_ADD_USERS: "/v1/users/bulk",
     SIMULATION_CREDITS: "/v1/simulation-credits",
     SUMMARY_SECTIONS: `/v1/settings/summary-sections`,
     SUMMARY_FIELDS: `/v1/settings/summary-fields`,

@@ -22,6 +22,7 @@ import {
   addCredit,
   addNewOrganizationModal,
   addUser,
+  bulkAddUser,
   changeUserRoles,
   en,
   userEditModal,
@@ -94,13 +95,18 @@ export const UserManagement: FC = () => {
     filterChips,
     getField,
     addUsermodalOpen,
+    bulkAddModalOpen,
     selectedUser,
     selectedOption,
     addFilterCtaMemo,
     userMethods,
+    bulkUserMethods,
     handleOptionSelect,
     handleDropdownClose,
     handleAddUser,
+    handleBulkAddUser,
+    handleBulkAddClick,
+    handleBulkAddClose,
     handleRemoveUser,
     handleEditUser,
     handleSuspendUser,
@@ -370,6 +376,15 @@ export const UserManagement: FC = () => {
                     }
                   : undefined
               }
+              secondaryAction={
+                canEditUser
+                  ? {
+                      label: en.userManagement.bulkAddUsers,
+                      onClick: handleBulkAddClick,
+                      variant: ButtonVariant.SECONDARY,
+                    }
+                  : undefined
+              }
             />
 
             <UserModal
@@ -387,6 +402,21 @@ export const UserManagement: FC = () => {
                     the user is created.
                   </div>
                 ) : undefined
+              }
+            />
+
+            <UserModal
+              isOpen={bulkAddModalOpen}
+              onClose={handleBulkAddClose}
+              title={en.userManagement.bulkAddUsersTitle}
+              fields={getField(bulkAddUser)}
+              buttonName={en.userManagement.bulkAddUsers}
+              formMethods={bulkUserMethods}
+              handleClick={handleBulkAddUser}
+              extraContent={
+                <div className="text-sm text-typography-600 bg-background-secondary p-3 rounded-lg border border-border-light italic">
+                  {en.userManagement.bulkAddUsersHint}
+                </div>
               }
             />
 

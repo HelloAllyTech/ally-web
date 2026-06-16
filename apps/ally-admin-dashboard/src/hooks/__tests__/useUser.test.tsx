@@ -62,6 +62,8 @@ vi.mock("@api", () => ({
   useGetProfileImageUrlMutation: () => [mockGetProfileUrl],
   useDeleteProfileImageMutation: () => [mockDeleteProfile],
   useUploadProfileImageMutation: () => [mockUploadProfile],
+  useLazyGetUserPreferencesQuery: () => [vi.fn(), { isLoading: false }],
+  useUpdateUserPreferencesMutation: () => [vi.fn()],
   baseAPI: {
     injectEndpoints: vi.fn(() => ({})),
     reducerPath: "api",

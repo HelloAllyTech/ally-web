@@ -8,6 +8,26 @@ export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
 };
 
+/**
+ * Split a free-text blob of email addresses (separated by newlines, commas, or
+ * semicolons) into a trimmed, de-duplicated list. Duplicates are compared
+ * case-insensitively but the first-seen casing is preserved; blanks are dropped.
+ * Used by the bulk-add-users flow.
+ */
+export const parseEmailList = (raw: string): string[] => {
+  const seen = new Set<string>();
+  return (raw || "")
+    .split(/[\n,;]+/)
+    .map(email => email.trim())
+    .filter(email => {
+      if (!email) return false;
+      const key = email.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
 export const getKeyFromIndex = (index: number, prefix: string = "key") => `${prefix}-${index}`;
 
 export const updateQueryParamListWithoutReload = (

@@ -372,6 +372,56 @@ describe("ListToolbar", () => {
     });
   });
 
+  describe("Secondary Action Button", () => {
+    it("renders the secondary action when provided", () => {
+      const secondaryAction = {
+        label: "Bulk Add",
+        onClick: vi.fn(),
+        variant: "secondary" as const,
+      };
+
+      render(<ListToolbar {...defaultProps} secondaryAction={secondaryAction} />);
+
+      expect(screen.getByText("Bulk Add")).toBeInTheDocument();
+    });
+
+    it("does not render a secondary action when not provided", () => {
+      render(<ListToolbar {...defaultProps} action={{ label: "Add", onClick: vi.fn() }} />);
+
+      expect(screen.queryByText("Bulk Add")).not.toBeInTheDocument();
+    });
+
+    it("calls onClick when the secondary action is clicked", async () => {
+      const user = userEvent.setup();
+      const mockOnClick = vi.fn();
+
+      render(
+        <ListToolbar
+          {...defaultProps}
+          secondaryAction={{ label: "Bulk Add", onClick: mockOnClick }}
+        />,
+      );
+
+      await user.click(screen.getByText("Bulk Add"));
+
+      expect(mockOnClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("renders both the primary and secondary actions together", () => {
+      render(
+        <ListToolbar
+          {...defaultProps}
+          action={{ label: "Add User", onClick: vi.fn() }}
+          secondaryAction={{ label: "Bulk Add", onClick: vi.fn() }}
+        />,
+      );
+
+      expect(screen.getByText("Add User")).toBeInTheDocument();
+      expect(screen.getByText("Bulk Add")).toBeInTheDocument();
+      expect(screen.getAllByTestId("action-button")).toHaveLength(2);
+    });
+  });
+
   describe("Combined Functionality", () => {
     it("renders all components together", () => {
       const mockFilterChips: FilterChipProps[] = [

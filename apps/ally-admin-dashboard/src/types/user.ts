@@ -152,6 +152,25 @@ export type AddUserFormData = {
   simulationCreditLimit?: number;
 };
 
+export interface BulkAddUsersBody {
+  emails: string[];
+  roles: string[];
+  tenantId: string;
+  simulationCreditLimit?: number;
+}
+
+export interface BulkAddUsersResponse {
+  created: number;
+  users: { id: number; email: string }[];
+}
+
+export type BulkAddUserFormData = {
+  emails: string;
+  tenantId: string;
+  roles: string[];
+  simulationCreditLimit?: number;
+};
+
 export interface TabOption {
   id: string;
   label: string;

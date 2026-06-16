@@ -232,6 +232,7 @@ export interface ListToolbarProps {
   filterChips?: FilterChipProps[];
   addFilterCta?: AddFilterCtaProps;
   action?: ActionProps;
+  secondaryAction?: ActionProps;
   className?: string;
   addFilterButtonRef?: React.RefObject<HTMLButtonElement>;
 }

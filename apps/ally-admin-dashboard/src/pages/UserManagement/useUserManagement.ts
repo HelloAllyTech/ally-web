@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import {
   useAddUserMutation,
+  useBulkAddUsersMutation,
   useDeleteUserMutation,
   useGetUsersQuery,
   useEditUserMutation,
@@ -25,8 +26,15 @@ import {
   userStatus,
   UserRole,
 } from "@constants";
-import { AddUserFormData, FieldProps, Tenant, UserListUser, UserRoles } from "@types";
-import { getChipValue } from "@utils";
+import {
+  AddUserFormData,
+  BulkAddUserFormData,
+  FieldProps,
+  Tenant,
+  UserListUser,
+  UserRoles,
+} from "@types";
+import { getChipValue, parseEmailList } from "@utils";
 
 export const USERS_PAGE_SIZE = 20;
 const IMPERSONATION_APP_URL = import.meta.env.VITE_IMPERSONATION_APP_URL;
@@ -35,6 +43,7 @@ export function useUserManagement(tenants: Tenant[]) {
   const [search, setSearch] = useState<string>("");
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [addUsermodalOpen, setAddUserModalOpen] = useState<boolean>(false);
+  const [bulkAddModalOpen, setBulkAddModalOpen] = useState<boolean>(false);
 
   const [filters, setFilters] = useState<FilterValues>({
     organizations: [],
@@ -68,8 +77,21 @@ export function useUserManagement(tenants: Tenant[]) {
     mode: "onChange",
   });
 
+  // Bulk-add uses its own form (emails textarea + shared common settings).
+  const defaultBulkValues = {
+    emails: "",
+    tenantId: "",
+    roles: [],
+    simulationCreditLimit: 0,
+  };
+  const bulkUserMethods = useForm({
+    defaultValues: defaultBulkValues,
+    mode: "onChange",
+  });
+
   // Users are subscribed so invalidation triggers refetch automatically
   const [addUserdata] = useAddUserMutation();
+  const [bulkAddUsers] = useBulkAddUsersMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [editUser] = useEditUserMutation();
   const [updateUserStatus] = useUpdateUserStatusMutation();
@@ -245,6 +267,42 @@ export function useUserManagement(tenants: Tenant[]) {
     setAddUserModalOpen(true);
   };
 
+  const handleBulkAddClick = () => {
+    bulkUserMethods.reset(defaultBulkValues);
+    setBulkAddModalOpen(true);
+  };
+
+  const handleBulkAddClose = () => {
+    setBulkAddModalOpen(false);
+    bulkUserMethods.reset(defaultBulkValues);
+  };
+
+  const handleBulkAddUser = async (data: BulkAddUserFormData) => {
+    try {
+      // parseEmailList splits the textarea on newlines/commas/semicolons and
+      // de-dupes. Backend still validates format + existing accounts and
+      // rejects the whole batch all-or-nothing.
+      const emails = parseEmailList(data?.emails);
+      if (emails.length === 0) {
+        toast.error(en.userManagement.bulkAddUsersEmptyError);
+        return;
+      }
+      const payload = {
+        emails,
+        roles: data?.roles,
+        tenantId: data?.tenantId,
+        ...(data?.roles?.includes(UserRole.LEARNER)
+          ? { simulationCreditLimit: Math.max(Number(data?.simulationCreditLimit || 0), 20) }
+          : {}),
+      };
+      const response = await bulkAddUsers(payload).unwrap();
+      handleBulkAddClose();
+      toast.success(en.userManagement.bulkAddUsersSuccess(response?.created ?? emails.length));
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.userManagement.bulkAddUsersFailed);
+    }
+  };
+
   const handleRemoveUser = async (userId: number) => {
     try {
       if (userId) {
@@ -400,11 +458,15 @@ export function useUserManagement(tenants: Tenant[]) {
 
     // form methods
     userMethods,
+    bulkUserMethods,
 
     // handlers
     handleOptionSelect,
     handleDropdownClose,
     handleAddUser,
+    handleBulkAddUser,
+    handleBulkAddClick,
+    handleBulkAddClose,
     handleRemoveUser,
     handleEditUser,
     handleSuspendUser,
@@ -420,6 +482,8 @@ export function useUserManagement(tenants: Tenant[]) {
     addUserdata,
     addUsermodalOpen,
     setAddUserModalOpen,
+    bulkAddModalOpen,
+    setBulkAddModalOpen,
     deleteUser,
     editUser,
     changeRole,

@@ -15,6 +15,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   filterChips,
   addFilterCta,
   action,
+  secondaryAction,
   className,
   addFilterButtonRef,
 }) => {
@@ -73,16 +74,21 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     </button>
   ) : null;
 
-  const actionButton = action ? (
-    <Button
-      onClick={action.onClick}
-      variant={action.variant}
-      className={`inline-flex font-tertiary items-center text-sm font-medium px-4 py-2 rounded-full`}
-    >
-      {action?.icon ? <span className="mr-[1px] text-lg">{action?.icon}</span> : <Add />}
-      {action.label}
-    </Button>
-  ) : null;
+  const renderActionButton = (actionProps: typeof action) =>
+    actionProps ? (
+      <Button
+        onClick={actionProps.onClick}
+        variant={actionProps.variant}
+        className={`inline-flex font-tertiary items-center text-sm font-medium px-4 py-2 rounded-full`}
+      >
+        {actionProps?.icon ? (
+          <span className="mr-[1px] text-lg">{actionProps?.icon}</span>
+        ) : (
+          <Add />
+        )}
+        {actionProps.label}
+      </Button>
+    ) : null;
 
   return (
     <div className={`flex items-center justify-between gap-4 min-h-[50px] ${className ?? ""}`}>
@@ -96,7 +102,10 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
         )}
       </div>
 
-      {actionButton}
+      <div className="flex items-center gap-2">
+        {renderActionButton(secondaryAction)}
+        {renderActionButton(action)}
+      </div>
     </div>
   );
 };

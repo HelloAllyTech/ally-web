@@ -5,6 +5,7 @@ import { SimulationStatus, UserRoles } from "@types";
 
 import {
   validateEmail,
+  parseEmailList,
   getKeyFromIndex,
   updateQueryParamListWithoutReload,
   openLinkInNewTab,
@@ -600,6 +601,38 @@ describe("common utils", () => {
     it("round-trip: toLocationSlug then fromLocationSlug restores title-case", () => {
       expect(fromLocationSlug(toLocationSlug("Login Button"))).toBe("Login Button");
       expect(fromLocationSlug(toLocationSlug("Profile Icon"))).toBe("Profile Icon");
+    });
+  });
+
+  describe("parseEmailList", () => {
+    it("splits on newlines, commas, and semicolons", () => {
+      expect(parseEmailList("a@x.com\nb@x.com, c@x.com; d@x.com")).toEqual([
+        "a@x.com",
+        "b@x.com",
+        "c@x.com",
+        "d@x.com",
+      ]);
+    });
+
+    it("trims surrounding whitespace from each entry", () => {
+      expect(parseEmailList("  a@x.com  ,\t b@x.com \n")).toEqual(["a@x.com", "b@x.com"]);
+    });
+
+    it("drops empty entries from trailing/repeated separators", () => {
+      expect(parseEmailList("a@x.com,,\n\n;b@x.com,")).toEqual(["a@x.com", "b@x.com"]);
+    });
+
+    it("de-duplicates case-insensitively, preserving first-seen casing", () => {
+      expect(parseEmailList("John@X.com\njohn@x.com\nJOHN@X.COM")).toEqual(["John@X.com"]);
+    });
+
+    it("returns an empty array for empty or whitespace-only input", () => {
+      expect(parseEmailList("")).toEqual([]);
+      expect(parseEmailList("   \n , ; ")).toEqual([]);
+    });
+
+    it("handles a single email with no separators", () => {
+      expect(parseEmailList("solo@x.com")).toEqual(["solo@x.com"]);
     });
   });
 });

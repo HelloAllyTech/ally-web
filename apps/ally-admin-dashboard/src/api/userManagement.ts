@@ -7,6 +7,8 @@ import {
   GetTenantResponse,
   GetUsersResponse,
   CreateUserBody,
+  BulkAddUsersBody,
+  BulkAddUsersResponse,
   CreateTenantBody,
   EditUserBody,
   UserRoles,
@@ -101,6 +103,15 @@ const userManagementAPI = baseAPI.injectEndpoints({
     addUser: builder.mutation<{ id: number }, CreateUserBody>({
       query: body => ({
         url: ApiEndpoints.USER_MANAGEMENT.ADD_USER,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.USERS],
+    }),
+
+    bulkAddUsers: builder.mutation<BulkAddUsersResponse, BulkAddUsersBody>({
+      query: body => ({
+        url: ApiEndpoints.USER_MANAGEMENT.BULK_ADD_USERS,
         method: HttpMethod.POST,
         body,
       }),
@@ -384,6 +395,7 @@ export const {
   useDeleteUserMutation,
   useUpdateUserStatusMutation,
   useAddUserMutation,
+  useBulkAddUsersMutation,
   useEditUserMutation,
   useChangeRoleMutation,
   useGetRoleQuery,

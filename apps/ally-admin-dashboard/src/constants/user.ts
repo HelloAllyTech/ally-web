@@ -29,6 +29,7 @@ export enum UserMenuOptions {
 export const USER_MODAL_FIELDS_IDS = {
   NAME: "name",
   EMAIL: "email",
+  EMAILS: "emails",
   TENANTID: "tenantId",
   EXTERNALID: "externalId",
   ROLES: "roles",
@@ -76,6 +77,46 @@ export const addUser = [
     fieldType: "input",
     inputType: "text",
     maxLength: 50,
+  },
+  {
+    id: USER_MODAL_FIELDS_IDS.TENANTID,
+    label: "Assign Organization",
+    placeholder: "Select Organization",
+    fieldType: "dropdown",
+    inputType: "text",
+    options: [],
+    maxLength: 50,
+    required: true,
+  },
+  {
+    id: USER_MODAL_FIELDS_IDS.ROLES,
+    label: "Role access",
+    placeholder: "Select Role",
+    options: [],
+    fieldType: "dropdownWithTag",
+    inputType: "text",
+    required: true,
+  },
+  {
+    id: USER_MODAL_FIELDS_IDS.CREDITS,
+    label: "Simulation Credits",
+    inputType: "number",
+    fieldType: "input",
+    placeholder: "20",
+    maxLength: 10,
+    required: true,
+  },
+];
+
+export const bulkAddUser = [
+  {
+    id: USER_MODAL_FIELDS_IDS.EMAILS,
+    label: "Email addresses",
+    placeholder: "Enter one email per line, or separate with commas",
+    fieldType: "textarea",
+    inputType: "text",
+    maxLength: 20000,
+    required: true,
   },
   {
     id: USER_MODAL_FIELDS_IDS.TENANTID,

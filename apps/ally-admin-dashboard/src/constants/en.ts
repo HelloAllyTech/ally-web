@@ -490,6 +490,14 @@ export const en = {
     active: "Active",
     suspended: "Suspended",
     addUser: "Add user",
+    bulkAddUsers: "Bulk add",
+    bulkAddUsersTitle: "Bulk Add Users",
+    bulkAddUsersSuccess: (count: number) =>
+      `${count} ${count === 1 ? "user" : "users"} added successfully`,
+    bulkAddUsersFailed: "Failed to add users",
+    bulkAddUsersEmptyError: "Enter at least one email address",
+    bulkAddUsersHint:
+      "Users are created without a name — they'll be asked to complete their profile on first login.",
     search: "Search",
     addFilter: "Filter",
     view: "View",

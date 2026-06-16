@@ -39,6 +39,10 @@ describe("userManagement API", () => {
       expect(ApiEndpoints.USER_MANAGEMENT.ADD_USER).toBe("/v1/users");
     });
 
+    it("should have correct bulk add users endpoint", () => {
+      expect(ApiEndpoints.USER_MANAGEMENT.BULK_ADD_USERS).toBe("/v1/users/bulk");
+    });
+
     it("should have correct get roles endpoint", () => {
       expect(ApiEndpoints.AUTHORIZATION.GET_ROLES).toBe("/v1/authorization/roles");
     });
@@ -204,6 +208,35 @@ describe("userManagement API", () => {
       expect(userData.tenantId).toBeDefined();
       expect(userData.simulationCreditLimit).toBe(100);
       expect(userData.status).toBe("ACTIVE");
+    });
+
+    it("should handle bulk add users body", () => {
+      const bulkBody = {
+        emails: ["a@example.com", "b@example.com"],
+        roles: ["LEARNER"],
+        tenantId: "tenant-1",
+        simulationCreditLimit: 50,
+      };
+
+      expect(Array.isArray(bulkBody.emails)).toBe(true);
+      expect(bulkBody.emails).toHaveLength(2);
+      expect(Array.isArray(bulkBody.roles)).toBe(true);
+      expect(bulkBody.tenantId).toBe("tenant-1");
+      expect(bulkBody.simulationCreditLimit).toBe(50);
+    });
+
+    it("should handle bulk add users response", () => {
+      const bulkResponse = {
+        created: 2,
+        users: [
+          { id: 1, email: "a@example.com" },
+          { id: 2, email: "b@example.com" },
+        ],
+      };
+
+      expect(bulkResponse.created).toBe(2);
+      expect(bulkResponse.users).toHaveLength(2);
+      expect(bulkResponse.users[0].email).toBe("a@example.com");
     });
 
     it("should handle edit user body", () => {
