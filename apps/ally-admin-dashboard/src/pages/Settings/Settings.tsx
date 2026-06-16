@@ -82,7 +82,7 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="py-[2px] font-primary">
+    <div className="h-full overflow-y-auto py-[2px] pr-1 font-primary">
       <h1 className="text-2xl text-typography-900 pb-2 font-secondary">Settings</h1>
       <p className="text-sm text-typography-600 pb-6">
         Edit the content shown on the public Terms of Service and Privacy Policy pages.
