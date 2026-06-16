@@ -25,6 +25,8 @@ export const ApiEndpoints = {
     PROFILE_IMAGE_URL: "/v1/users/profile-image-url",
     PROFILE_IMAGE: "/v1/users/profile-image",
     GET_USER_IMPERSONATED_TOKENS: "/v1/auth/impersonate",
+    GET_USER_PREFERENCES: "/v1/users/me/preferences",
+    UPDATE_USER_PREFERENCES: "/v1/users/preferences",
   },
   AI: {
     GET_PREVIEW_VOICE: (voiceId: string) => `/v1/voice-preview/generate/${voiceId}`,
@@ -268,6 +270,7 @@ export const TAG_TYPES = {
   COMPETENCIES: "competencies",
   ADMIN_TENANTS: "adminTenants",
   SETTINGS: "settings",
+  USER_PREFERENCES: "userPreferences",
 };
 
 export const CUSTOM_CHARACTER_ID = "custom";

@@ -118,6 +118,7 @@ export const baseAPI = createApi({
     TAG_TYPES.CUSTOM_FIELDS_ENABLED,
     TAG_TYPES.I18N_TRANSLATIONS,
     TAG_TYPES.SETTINGS,
+    TAG_TYPES.USER_PREFERENCES,
   ],
   endpoints: () => ({}),
 });

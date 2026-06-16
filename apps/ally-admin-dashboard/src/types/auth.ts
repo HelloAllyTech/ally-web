@@ -46,12 +46,22 @@ export enum UserAvailabilityStatus {
   AVAILABLE = "available",
 }
 
+// Per-user preferences blob stored in the backend `user_preferences.data` JSONB.
+// Keys are merged independently on save (see backend upsert), so the admin
+// dashboard can write `admin_sidebar_order` without clobbering mobile-owned keys.
+export interface UserPreferencesData {
+  default_language_id?: number;
+  // Ordered list of sidebar item ids (SIDEBAR_ITEMS values) for the left nav.
+  admin_sidebar_order?: string[];
+}
+
 export interface UserState {
   isAuthenticated: boolean;
   user: User;
   userStatus: UserAvailabilityStatus;
   permissions: string[];
   availableChatTypes: CallType[];
+  preferences: UserPreferencesData | null;
 }
 
 // Common API types and interfaces

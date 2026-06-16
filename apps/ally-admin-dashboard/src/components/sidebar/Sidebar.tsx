@@ -1,5 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { BarChart3, Info, Languages, Settings } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -26,6 +35,8 @@ import { UserModal } from "@components";
 import { SIDEBAR_ITEMS, ROUTES, en, profileSettings, USER_MODAL_FIELDS_IDS } from "@constants";
 import { useClickOutside, useUser } from "@hooks";
 
+import { SortableNavItem } from "./SortableNavItem";
+
 const EXPANDED_WIDTH = 1200;
 
 const defaultProfileUploadValues: {
@@ -41,11 +52,30 @@ export const Sidebar: React.FC = () => {
     user,
     logout,
     filteredNavigationItems,
+    canReorder,
+    reorderSidebar,
     getProfileUrl,
     deleteProfile,
     uploadProfileImage,
     refetchUser,
   } = useUser();
+
+  // Press-and-drag: a click below the activation distance still navigates,
+  // a press-and-move past it starts a reorder (and the trailing click is
+  // suppressed by dnd-kit).
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const ids = filteredNavigationItems.map(item => item.id);
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    reorderSidebar(arrayMove(ids, oldIndex, newIndex));
+  };
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
@@ -186,35 +216,26 @@ export const Sidebar: React.FC = () => {
 
   const sidebarItems = (
     <nav className="flex-1 min-h-0 overflow-y-auto px-2 py-4">
-      <ul className="space-y-1">
-        {filteredNavigationItems.map(item => {
-          const isActive = isTabItemActive(item.path);
-          return (
-            <li key={item.id}>
-              <button
-                onClick={() => handleNavigation(item.path)}
-                className={`w-full flex items-center px-3 py-3 mb-3 rounded-lg text-left transition-colors ${
-                  isActive
-                    ? "bg-neutral-100 text-typography-900 font-medium "
-                    : "text-typography-800 hover:bg-background-secondary hover:text-typography-900"
-                }`}
-                title={!isExpanded ? item.label : ""}
-              >
-                <span
-                  className={`w-6 flex items-center justify-center ${isExpanded ? "mr-3" : "mx-auto"} ${isActive ? "text-typography-800" : "text-typography-600"}`}
-                >
-                  {renderIcon(item.id)}
-                </span>
-                {isExpanded && (
-                  <span className="text-base text-ellipsis overflow-hidden whitespace-nowrap">
-                    {item.label}
-                  </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext
+          items={filteredNavigationItems.map(item => item.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <ul className="space-y-1">
+            {filteredNavigationItems.map(item => (
+              <SortableNavItem
+                key={item.id}
+                item={item}
+                icon={renderIcon(item.id)}
+                isActive={isTabItemActive(item.path)}
+                isExpanded={isExpanded}
+                canReorder={canReorder}
+                onNavigate={handleNavigation}
+              />
+            ))}
+          </ul>
+        </SortableContext>
+      </DndContext>
     </nav>
   );
 

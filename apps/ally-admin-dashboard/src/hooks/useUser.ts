@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 
 import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
 import { logger } from "@ally-ui-mono/ui-shared";
 import {
@@ -10,22 +11,45 @@ import {
   useGetProfileImageUrlMutation,
   useDeleteProfileImageMutation,
   useUploadProfileImageMutation,
+  useLazyGetUserPreferencesQuery,
+  useUpdateUserPreferencesMutation,
 } from "@api";
 import { NavigationItem } from "@components/types";
 import { LOCAL_STORAGE_KEYS, ROUTES, en, SIDEBAR_ITEMS, Permissions, UserRole } from "@constants";
-import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
+import { setUser, authenticate, unauthenticate, setPermissions, setPreferences } from "@reducer";
 import { RootState, store } from "@store";
+
+/**
+ * Returns `items` reordered to follow `savedOrder` (a list of item ids).
+ * Ids in `savedOrder` that aren't currently visible are skipped, and visible
+ * items missing from `savedOrder` (e.g. newly added tabs) are appended in their
+ * original relative order. Tolerant of stale/unknown ids — never hides a tab.
+ */
+const applySavedOrder = (items: NavigationItem[], savedOrder?: string[]): NavigationItem[] => {
+  if (!savedOrder?.length) return items;
+  const byId = new Map(items.map(item => [item.id, item]));
+  const ordered = savedOrder
+    .map(id => byId.get(id))
+    .filter((item): item is NavigationItem => Boolean(item));
+  const orderedIds = new Set(savedOrder);
+  const rest = items.filter(item => !orderedIds.has(item.id));
+  return [...ordered, ...rest];
+};
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
   const { availableChatTypes, user, userStatus } = useSelector((state: RootState) => state.user);
   const permissions = useSelector((state: RootState) => state.user.permissions);
+  const preferences = useSelector((state: RootState) => state.user.preferences);
+  const adminSidebarOrder = preferences?.admin_sidebar_order;
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
   const [getProfileUrl] = useGetProfileImageUrlMutation();
   const [deleteProfile] = useDeleteProfileImageMutation();
   const [uploadProfileImage] = useUploadProfileImageMutation();
+  const [getUserPreferences] = useLazyGetUserPreferencesQuery();
+  const [updateUserPreferences] = useUpdateUserPreferencesMutation();
 
   /**
    * Refetches user data and updates Redux store
@@ -132,6 +156,15 @@ export const useUser = () => {
           store.dispatch(setUser(userData?.data));
           store.dispatch(setPermissions(permissionsData?.data as any));
           store.dispatch(authenticate());
+          // Load per-user preferences (e.g. saved sidebar order). Non-fatal:
+          // roles without the preference permission (e.g. MULTI_TENANT_ADMIN)
+          // get a 403 here and simply fall back to the default nav order.
+          try {
+            const prefs = await getUserPreferences().unwrap();
+            store.dispatch(setPreferences(prefs ?? null));
+          } catch (prefError) {
+            logger.info(`No user preferences loaded: ${prefError}`);
+          }
           return userData?.data;
         } catch (error) {
           logger.info(`Error fetching user or permissions:, ${error}`);
@@ -147,7 +180,7 @@ export const useUser = () => {
       logout();
       return null;
     }
-  }, [getUser, getPermissions]);
+  }, [getUser, getPermissions, getUserPreferences]);
 
   /**
    * Logs out the user by clearing all authentication data and state.
@@ -163,6 +196,7 @@ export const useUser = () => {
     // Clear user state
     store.dispatch(setUser(null));
     store.dispatch(setPermissions([]));
+    store.dispatch(setPreferences(null));
     store.dispatch(unauthenticate());
 
     // Clear tokens
@@ -219,8 +253,32 @@ export const useUser = () => {
             }
           });
 
-    return isSuperAdmin ? [...base, ...roleGatedItems] : base;
-  }, [permissions, user?.role]);
+    const visible = isSuperAdmin ? [...base, ...roleGatedItems] : base;
+    return applySavedOrder(visible, adminSidebarOrder);
+  }, [permissions, user?.role, adminSidebarOrder]);
+
+  // Only super admins may personalize their sidebar order.
+  const canReorder = user?.role === UserRole.SUPER_ADMIN;
+
+  /**
+   * Persists a new sidebar order to the current user's preferences.
+   * Optimistically updates Redux so the nav reorders immediately, then reverts
+   * and surfaces a toast if the save fails.
+   */
+  const reorderSidebar = useCallback(
+    async (nextIds: string[]) => {
+      const previous = preferences?.admin_sidebar_order;
+      store.dispatch(setPreferences({ ...(preferences ?? {}), admin_sidebar_order: nextIds }));
+      try {
+        await updateUserPreferences({ admin_sidebar_order: nextIds }).unwrap();
+      } catch (error) {
+        store.dispatch(setPreferences({ ...(preferences ?? {}), admin_sidebar_order: previous }));
+        toast.error("Failed to save sidebar order");
+        logger.info(`Failed to save sidebar order: ${error}`);
+      }
+    },
+    [preferences, updateUserPreferences],
+  );
 
   return {
     availableChatTypes,
@@ -234,6 +292,8 @@ export const useUser = () => {
     user,
     userStatus,
     filteredNavigationItems,
+    canReorder,
+    reorderSidebar,
     getProfileUrl,
     deleteProfile,
     uploadProfileImage,

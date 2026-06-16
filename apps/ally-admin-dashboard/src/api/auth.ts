@@ -17,6 +17,7 @@ import {
   GetProfileUrlRequest,
   profileUrlRequest,
   ImpersonateResponse,
+  UserPreferencesData,
 } from "@types";
 
 const authAPI = baseAPI.injectEndpoints({
@@ -170,6 +171,31 @@ const authAPI = baseAPI.injectEndpoints({
         body: data,
       }),
     }),
+
+    /**
+     * Retrieves the current user's stored preferences (e.g. the admin sidebar
+     * order). The backend responds with `{ data: {...} } | null`; we unwrap to
+     * the inner blob and default to an empty object when none exists yet.
+     */
+    getUserPreferences: builder.query<UserPreferencesData, void>({
+      query: () => ApiEndpoints.AUTH.GET_USER_PREFERENCES,
+      transformResponse: (response: unknown) =>
+        (response as { data?: UserPreferencesData } | null)?.data ?? {},
+      providesTags: [TAG_TYPES.USER_PREFERENCES],
+    }),
+
+    /**
+     * Upserts user preferences. The backend merges the provided keys into the
+     * existing preferences blob, so callers only send the keys they own
+     * (here: `admin_sidebar_order`) without clobbering others.
+     */
+    updateUserPreferences: builder.mutation<{ success: boolean }, Partial<UserPreferencesData>>({
+      query: body => ({
+        url: ApiEndpoints.AUTH.UPDATE_USER_PREFERENCES,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -188,4 +214,7 @@ export const {
   useGetProfileImageUrlMutation,
   useVerifyMagicLinkMutation,
   useGetUserImpersonatedTokenMutation,
+  useGetUserPreferencesQuery,
+  useLazyGetUserPreferencesQuery,
+  useUpdateUserPreferencesMutation,
 } = authAPI;
