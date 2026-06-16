@@ -13,6 +13,8 @@ import {
   ListOrdered,
   Quote,
   Minus,
+  Link2,
+  Unlink,
 } from "lucide-react";
 
 interface ToolbarButtonProps {
@@ -55,6 +57,22 @@ export const RichTextToolbar: FC<RichTextToolbarProps> = ({ editor }) => {
   if (!editor) return null;
 
   const iconSize = 16;
+
+  const handleSetLink = () => {
+    const previousUrl = editor.getAttributes("link").href as string | undefined;
+    const url = window.prompt("Enter URL", previousUrl ?? "https://");
+
+    // Cancelled the prompt — leave the selection untouched.
+    if (url === null) return;
+
+    // Empty submission removes the link.
+    if (url.trim() === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
+  };
 
   return (
     <div
@@ -150,6 +168,20 @@ export const RichTextToolbar: FC<RichTextToolbarProps> = ({ editor }) => {
         title="Horizontal divider"
       >
         <Minus size={iconSize} />
+      </ToolbarButton>
+
+      <ToolbarDivider />
+
+      {/* Links */}
+      <ToolbarButton onClick={handleSetLink} isActive={editor.isActive("link")} title="Add link">
+        <Link2 size={iconSize} />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().unsetLink().run()}
+        disabled={!editor.isActive("link")}
+        title="Remove link"
+      >
+        <Unlink size={iconSize} />
       </ToolbarButton>
     </div>
   );

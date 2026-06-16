@@ -32,6 +32,12 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        link: {
+          openOnClick: false,
+          autolink: true,
+          defaultProtocol: "https",
+          HTMLAttributes: { rel: "noopener noreferrer nofollow", target: "_blank" },
+        },
       }),
       Underline,
       Placeholder.configure({

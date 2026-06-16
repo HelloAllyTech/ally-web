@@ -16,7 +16,12 @@ const legalContentAPI = baseAPI.injectEndpoints({
       query: () => ({ url: ApiEndpoints.SETTINGS.PRIVACY }),
       providesTags: [{ type: TAG_TYPES.SETTINGS, id: "PRIVACY" }],
     }),
+    getTermsAndAgreement: builder.query<LegalContentResponse, void>({
+      query: () => ({ url: ApiEndpoints.SETTINGS.TERMS_AND_AGREEMENT }),
+      providesTags: [{ type: TAG_TYPES.SETTINGS, id: "TERMS_AND_AGREEMENT" }],
+    }),
   }),
 });
 
-export const { useGetTermsQuery, useGetPrivacyQuery } = legalContentAPI;
+export const { useGetTermsQuery, useGetPrivacyQuery, useGetTermsAndAgreementQuery } =
+  legalContentAPI;

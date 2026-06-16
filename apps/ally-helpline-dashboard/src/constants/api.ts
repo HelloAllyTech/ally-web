@@ -197,6 +197,7 @@ export const ApiEndpoints = {
     GET_CUSTOM_FIELDS_ENABLED: "/v1/settings/custom-fields-enabled",
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
+    TERMS_AND_AGREEMENT: "/v1/settings/terms-and-agreement",
   },
   TOOLTIPS: {
     GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",

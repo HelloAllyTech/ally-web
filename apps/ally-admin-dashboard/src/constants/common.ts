@@ -163,6 +163,7 @@ export const ApiEndpoints = {
   SETTINGS: {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
+    TERMS_AND_AGREEMENT: "/v1/settings/terms-and-agreement",
   },
 };
 
