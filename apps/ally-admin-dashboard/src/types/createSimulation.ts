@@ -27,6 +27,8 @@ export type FormData = {
   linguisticStyleSamples?: Record<string, string[]>;
   allowedFillerWords?: Record<string, string[]>;
   languageCharacteristics?: Record<string, string>;
+  fillerEnabled?: boolean;
+  fillerDialogues?: Record<string, string[]>;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;
@@ -90,6 +92,12 @@ export interface FormFieldConfig {
    * fields with parallel consumers (prosody / evaluator).
    */
   hideWhenUnused?: boolean;
+  /**
+   * Gate this field behind a per-user feature flag (key under the current
+   * user's `featureFlags` from /users/me). When set and the user lacks the
+   * flag, the field is not rendered. Used for email-allowlisted features.
+   */
+  featureFlag?: string;
   /** When true, wrap the field in a collapsed accordion. */
   accordion?: boolean;
 }
