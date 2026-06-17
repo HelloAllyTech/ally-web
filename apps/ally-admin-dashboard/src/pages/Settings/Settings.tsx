@@ -82,29 +82,34 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="py-[2px] font-primary">
+    <div className="py-[2px] font-primary h-full flex flex-col">
       <h1 className="text-2xl text-typography-900 pb-2 font-secondary">Settings</h1>
       <p className="text-sm text-typography-600 pb-6">
         Edit the content shown on the public Terms of Service and Privacy Policy pages.
       </p>
 
-      <div className="flex flex-col gap-10 max-w-3xl">
-        <LegalEditor
-          title="Terms of Service"
-          value={termsHtml}
-          onChange={setTermsHtml}
-          onSave={handleSaveTerms}
-          isSaving={isSavingTerms}
-          isLoading={isTermsLoading}
-        />
-        <LegalEditor
-          title="Privacy Policy"
-          value={privacyHtml}
-          onChange={setPrivacyHtml}
-          onSave={handleSavePrivacy}
-          isSaving={isSavingPrivacy}
-          isLoading={isPrivacyLoading}
-        />
+      {/* The page lives inside a fixed-height layout, so the editors (which grow
+          with their content) need their own scroll area. min-h-0 lets this flex
+          child shrink below its content height so overflow-y-auto can kick in. */}
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-10 max-w-3xl pb-6">
+          <LegalEditor
+            title="Terms of Service"
+            value={termsHtml}
+            onChange={setTermsHtml}
+            onSave={handleSaveTerms}
+            isSaving={isSavingTerms}
+            isLoading={isTermsLoading}
+          />
+          <LegalEditor
+            title="Privacy Policy"
+            value={privacyHtml}
+            onChange={setPrivacyHtml}
+            onSave={handleSavePrivacy}
+            isSaving={isSavingPrivacy}
+            isLoading={isPrivacyLoading}
+          />
+        </div>
       </div>
     </div>
   );
