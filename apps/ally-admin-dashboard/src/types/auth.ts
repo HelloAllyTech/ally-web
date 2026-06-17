@@ -293,7 +293,6 @@ export interface ConversationDriftResponse {
   failureModeBreakdown: DriftCount[];
   kindsOfDrift: DriftCount[];
   rootCause: DriftCount[];
-  sttInputQuality: DriftCount[];
   topicMix: DriftCount[];
   coherenceMix: DriftCount[];
   sttGarbleMix: DriftCount[];

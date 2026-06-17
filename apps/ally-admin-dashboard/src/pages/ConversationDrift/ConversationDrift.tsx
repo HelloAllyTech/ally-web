@@ -299,9 +299,18 @@ export const ConversationDrift = () => {
       })),
     [data],
   );
-  const sttInputBars = useMemo(
+  // STT input quality, split into its two distinct axes so each chart is one
+  // clean dimension: severity (how badly garbled) vs error type (what kind).
+  const garbleSeverityBars = useMemo(
     () =>
-      (data?.sttInputQuality ?? []).map(r => ({
+      (data?.sttGarbleMix ?? [])
+        .filter(r => r.key === "partial" || r.key === "severe")
+        .map(r => ({ group: STT_INPUT_LABEL[r.key] ?? r.key, value: r.count })),
+    [data],
+  );
+  const errorTypeBars = useMemo(
+    () =>
+      (data?.sttErrorTypeMix ?? []).map(r => ({
         group: STT_INPUT_LABEL[r.key] ?? r.key,
         value: r.count,
       })),
@@ -464,15 +473,27 @@ export const ConversationDrift = () => {
                 </Cell>
               </div>
 
-              {/* STT INPUT QUALITY — counselor-side garble/errors, ALL sessions */}
+              {/* STT INPUT QUALITY — counselor-side garble, ALL sessions. Two
+                  separate axes: severity (how bad) and error type (what kind). */}
               <SubHeading>STT input quality (all sessions)</SubHeading>
-              <div className="grid grid-cols-1 gap-6">
+              <p className="text-xs text-typography-500 -mt-2 mb-3">
+                How often the counselor&apos;s speech-to-text was garbled, across all sessions —
+                independent of whether the AI drifted.
+              </p>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <Cell
-                  title="Counselor STT garble & error types"
-                  caption="How often the counselor's speech-to-text was garbled, and the error type — across all sessions, independent of whether the AI drifted. A session can show several, so bars overlap."
-                  empty={!data?.sttInputQuality?.length}
+                  title="Garble severity"
+                  caption="How badly the counselor transcript was mangled (sessions with ≥1 partial / severe turn)."
+                  empty={!garbleSeverityBars.length}
                 >
-                  <SimpleBarChart data={sttInputBars} options={sttInputOpts} />
+                  <SimpleBarChart data={garbleSeverityBars} options={sttInputOpts} />
+                </Cell>
+                <Cell
+                  title="STT error type"
+                  caption="What kind of STT mistake occurred — points at the fix (provider / language / biasing)."
+                  empty={!data?.sttErrorTypeMix?.length}
+                >
+                  <SimpleBarChart data={errorTypeBars} options={sttInputOpts} />
                 </Cell>
               </div>
 
