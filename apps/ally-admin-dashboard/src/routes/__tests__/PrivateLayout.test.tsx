@@ -41,6 +41,7 @@ vi.mock("@store", () => ({
 vi.mock("@api", () => ({
   useGetUserQuery: () => ({ data: { id: 1 }, isLoading: false }),
   useGetPermissionsQuery: () => ({ data: [Permissions.EDIT_USER], isLoading: false }),
+  useGetUserPreferencesQuery: () => ({ data: undefined, isLoading: false }),
   useLazyGetUserQuery: () => [vi.fn().mockResolvedValue({ data: { id: 1 } }), { isLoading: false }],
   useLazyGetPermissionsQuery: () => [
     vi.fn().mockResolvedValue({ data: [Permissions.EDIT_USER] }),
