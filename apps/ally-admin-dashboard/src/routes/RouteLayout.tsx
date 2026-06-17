@@ -27,6 +27,7 @@ import {
   Privacy,
 } from "@pages";
 
+import { DefaultRedirect } from "./DefaultRedirect";
 import { PrivateLayout } from "./PrivateLayout";
 import { PublicRoute } from "./PublicRoute";
 
@@ -235,7 +236,7 @@ export const RouteLayout: React.FC = () => {
             </PrivateLayout>
           }
         />
-        <Route path="/" element={<Navigate to={ROUTES.SIMULATION_STUDIO} replace />} />
+        <Route path="/" element={<DefaultRedirect />} />
 
         <Route path="*" element={<Navigate to={ROUTES.SIMULATION_STUDIO} replace />} />
       </Routes>

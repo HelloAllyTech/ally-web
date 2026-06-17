@@ -1,0 +1,113 @@
+import { describe, it, expect } from "vitest";
+
+import { NavigationItem } from "@components/types";
+import { ROUTES, SIDEBAR_ITEMS, Permissions, UserRole } from "@constants";
+
+import { applySavedOrder, deriveNavigationItems } from "../navigation";
+
+describe("applySavedOrder", () => {
+  const items: NavigationItem[] = [
+    { id: "a", label: "A", path: "/a" },
+    { id: "b", label: "B", path: "/b" },
+    { id: "c", label: "C", path: "/c" },
+  ];
+
+  it("returns items unchanged when there is no saved order", () => {
+    expect(applySavedOrder(items)).toEqual(items);
+    expect(applySavedOrder(items, [])).toEqual(items);
+  });
+
+  it("reorders items to follow the saved order", () => {
+    expect(applySavedOrder(items, ["c", "a", "b"]).map(i => i.id)).toEqual(["c", "a", "b"]);
+  });
+
+  it("appends visible items missing from the saved order, in original relative order", () => {
+    expect(applySavedOrder(items, ["c"]).map(i => i.id)).toEqual(["c", "a", "b"]);
+  });
+
+  it("ignores stale/unknown ids in the saved order without hiding any tab", () => {
+    expect(applySavedOrder(items, ["zzz", "b", "ghost"]).map(i => i.id)).toEqual(["b", "a", "c"]);
+  });
+});
+
+describe("deriveNavigationItems", () => {
+  it("returns no items when permissions are missing/empty for a non-super-admin", () => {
+    expect(
+      deriveNavigationItems({ permissions: undefined, role: undefined, savedOrder: undefined }),
+    ).toEqual([]);
+    expect(
+      deriveNavigationItems({ permissions: [], role: UserRole.ADMIN, savedOrder: undefined }),
+    ).toEqual([]);
+  });
+
+  it("filters permission-gated items to those the user can access", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.EDIT_EVENT],
+      role: UserRole.ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.EVENTS]);
+    expect(result[0].path).toBe(ROUTES.MANAGE_EVENTS);
+  });
+
+  it("resolves Simulation Studio as the first tab for a user with EDIT_SCENARIO", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.EDIT_SCENARIO],
+      role: UserRole.ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
+    expect(result[0].path).toBe(ROUTES.SIMULATION_STUDIO);
+  });
+
+  it("treats USERS as accessible with either EDIT_USER or VIEW_USERS", () => {
+    expect(
+      deriveNavigationItems({
+        permissions: [Permissions.VIEW_USERS],
+        role: UserRole.ADMIN,
+        savedOrder: undefined,
+      }).map(i => i.id),
+    ).toContain(SIDEBAR_ITEMS.USERS);
+  });
+
+  it("appends role-gated Analytics then Settings (last) for super-admins", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.EDIT_SCENARIO],
+      role: UserRole.SUPER_ADMIN,
+      savedOrder: undefined,
+    });
+    const ids = result.map(i => i.id);
+    expect(ids).toContain(SIDEBAR_ITEMS.ANALYTICS);
+    expect(ids).toContain(SIDEBAR_ITEMS.SETTINGS);
+    // Settings is always last in the default order.
+    expect(ids[ids.length - 1]).toBe(SIDEBAR_ITEMS.SETTINGS);
+    expect(ids.indexOf(SIDEBAR_ITEMS.ANALYTICS)).toBeLessThan(ids.indexOf(SIDEBAR_ITEMS.SETTINGS));
+  });
+
+  it("shows only role-gated items to a super-admin with no permissions", () => {
+    const result = deriveNavigationItems({
+      permissions: [],
+      role: UserRole.SUPER_ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.SETTINGS]);
+  });
+
+  it("applies the user's saved order so their chosen tab is first", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.EDIT_SCENARIO, Permissions.EDIT_EVENT],
+      role: UserRole.ADMIN,
+      savedOrder: [SIDEBAR_ITEMS.EVENTS],
+    });
+    expect(result[0].id).toBe(SIDEBAR_ITEMS.EVENTS);
+  });
+
+  it("never surfaces role-gated items for a non-super-admin, even via a stale saved order", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.EDIT_EVENT],
+      role: UserRole.ADMIN,
+      savedOrder: [SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.SETTINGS, SIDEBAR_ITEMS.EVENTS],
+    });
+    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.EVENTS]);
+  });
+});

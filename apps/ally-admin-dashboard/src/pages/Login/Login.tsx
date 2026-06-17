@@ -70,7 +70,8 @@ export const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate("/dashboard");
+      // Route through the root so DefaultRedirect lands the user on their first tab.
+      navigate("/");
     }
   }, [isAuthenticated, user, navigate]);
 
