@@ -114,11 +114,15 @@ const kindsOpts = {
   toolbar: { enabled: false },
 };
 
-// "By experiment" is one chart with a dimension selector instead of three.
-const EXP_ITEMS: { id: "promptVersion" | "model" | "provider"; label: string }[] = [
+// "By experiment" is one chart with a dimension selector. Both the LLM and the
+// STT model can contribute to drift; provider is intentionally omitted.
+const EXP_ITEMS: {
+  id: "promptVersion" | "model" | "sttModel";
+  label: string;
+}[] = [
   { id: "promptVersion", label: "Prompt version" },
-  { id: "model", label: "Model" },
-  { id: "provider", label: "Provider" },
+  { id: "model", label: "LLM model" },
+  { id: "sttModel", label: "STT model" },
 ];
 
 // "Root cause" = the STT-vs-LLM attribution of DRIFTED sessions only (why the
@@ -219,7 +223,7 @@ const Cell = ({
 export const ConversationDrift = () => {
   const [range, setRange] = useState<AnalyticsRange>("90d");
   const [language, setLanguage] = useState<string>("");
-  const [expDim, setExpDim] = useState<"promptVersion" | "model" | "provider">("promptVersion");
+  const [expDim, setExpDim] = useState<"promptVersion" | "model" | "sttModel">("promptVersion");
 
   const { data, isLoading, isError, refetch } = useGetConversationDriftQuery({
     range,
@@ -326,16 +330,16 @@ export const ConversationDrift = () => {
     [data],
   );
 
-  // "By experiment" rows for the selected dimension. Treat an all-'unknown'
-  // result as empty: those sessions predate experiment-config capture, so a lone
-  // "unknown" bar is noise, not signal.
+  // "By experiment" rows for the selected dimension (LLM model / STT model /
+  // prompt version). The backend already excludes uncaptured values, so an
+  // empty result just means nothing was captured for that dimension yet.
   const expRows =
     expDim === "promptVersion"
       ? data?.driftRateByPromptVersion
       : expDim === "model"
         ? data?.driftRateByModel
-        : data?.driftRateByProvider;
-  const expEmpty = !expRows?.length || expRows.every(r => r.key === "unknown");
+        : data?.driftRateBySttModel;
+  const expEmpty = !expRows?.length;
   const selectedExp = EXP_ITEMS.find(i => i.id === expDim);
 
   return (
@@ -523,7 +527,7 @@ export const ConversationDrift = () => {
                   title={`Drift rate by ${selectedExp?.label.toLowerCase() ?? "dimension"}`}
                   caption={
                     expEmpty
-                      ? "Not captured for these sessions yet — populates once live app sessions (which record prompt / model / provider) are judged."
+                      ? "Not captured for these sessions yet — populates once sessions with this dimension recorded are judged."
                       : "% of sessions that drifted, per value"
                   }
                   empty={expEmpty}

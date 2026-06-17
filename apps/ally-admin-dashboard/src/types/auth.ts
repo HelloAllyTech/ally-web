@@ -300,7 +300,7 @@ export interface ConversationDriftResponse {
   firstDriftTurnHistogram: DriftHistogramBin[];
   driftTrend: DriftTrendPoint[];
   driftRateByModel: DriftRateByDimension[];
-  driftRateByProvider: DriftRateByDimension[];
+  driftRateBySttModel: DriftRateByDimension[];
   driftRateByPromptVersion: DriftRateByDimension[];
 }
 
