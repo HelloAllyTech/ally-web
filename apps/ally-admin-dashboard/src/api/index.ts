@@ -2,6 +2,7 @@
 export * from "./baseApi";
 export * from "./auth";
 export * from "./simulationStudio";
+export * from "./agentBuilder";
 export * from "./userManagement";
 export * from "./scenarioPath";
 export * from "./previewVoice";

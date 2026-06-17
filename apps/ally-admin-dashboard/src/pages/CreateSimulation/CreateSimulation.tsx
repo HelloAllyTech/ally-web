@@ -17,6 +17,7 @@ import {
 import { ArrowDown } from "@assets";
 import {
   ActionConfirmationPopup,
+  AgentBuilderCopilot,
   Button,
   CreateSimulationSubSection,
   ReportSection,
@@ -30,6 +31,7 @@ import {
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
+  canUseAgentBuilderCopilot,
   en,
   ROUTES,
   StepperList,
@@ -41,7 +43,7 @@ import {
   ROLE_INSTRUCTION_PROMPT_CODE,
   BEHAVIOUR_STATES,
 } from "@constants";
-import { useDebounce, useScenarioTranslationsSocket } from "@hooks";
+import { useDebounce, useScenarioTranslationsSocket, useUser } from "@hooks";
 import { selectUploadsInProgress } from "@reducer/reportUploadReducer";
 import {
   ScenarioTranslationStatus,
@@ -122,6 +124,8 @@ const getMissingOverviewMandatoryLabels = (values: Record<string, unknown>): str
 export const CreateSimulation: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { user } = useUser();
+  const canUseAgentBuilder = canUseAgentBuilderCopilot(user);
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
   const [currentStep, setCurrentStep] = useState(stepIds.basicSettings);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
@@ -681,6 +685,13 @@ export const CreateSimulation: FC = () => {
     if (isReportGenerationInProgress) {
       return;
     }
+    // The Agent Builder Copilot tab is standalone — it doesn't require the
+    // simulation's mandatory fields or a saved draft to open.
+    if (stepId === stepIds.agentBuilderCopilot) {
+      setCurrentStep(stepId);
+      containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     if (currentStep === stepIds.basicSettings) {
       if (!areAllMandatoryFieldsFilledInOverview) {
         toast.error(
@@ -720,6 +731,10 @@ export const CreateSimulation: FC = () => {
       }
       case stepIds.advancedSettings:
         return renderStep(<SimulationEventMapTable simulationId={simulationId} />);
+      case stepIds.agentBuilderCopilot:
+        return renderStep(
+          <AgentBuilderCopilot formMethods={formMethods} simulationId={simulationId} />,
+        );
       case stepIds.report:
         return renderStep(
           <ReportSection
@@ -849,7 +864,17 @@ export const CreateSimulation: FC = () => {
       {/* Tab bar — identical class set and full width to match the Roleplays
           page tabs exactly, so the tab strip is seamless across both pages. */}
       <Tabs
-        items={StepperList.map(s => ({ id: s.id, label: s.title }))}
+        items={[
+          ...StepperList,
+          ...(canUseAgentBuilder
+            ? [
+                {
+                  id: stepIds.agentBuilderCopilot,
+                  title: en.simulation.agentBuilder.tabTitle,
+                },
+              ]
+            : []),
+        ].map(s => ({ id: s.id, label: s.title }))}
         activeId={currentStep}
         onChange={tab => !isReportGenerationInProgress && handleStepClick(tab)}
         showCount={false}

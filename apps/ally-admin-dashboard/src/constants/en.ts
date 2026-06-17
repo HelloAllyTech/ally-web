@@ -456,6 +456,21 @@ export const en = {
     guardrails: "Guardrails",
     deleteCharacter: "Delete character",
     addStateName: "Add State Name",
+    agentBuilder: {
+      tabTitle: "Agent Builder Copilot",
+      heading: "Describe your agent",
+      descriptionPlaceholder:
+        "Describe the person the AI should role-play — who they are, their background, what's bringing them to this session, how they speak and behave...",
+      generate: "Generate",
+      regenerate: "Regenerate",
+      generating: "Generating your agent prompt...",
+      outputLabel: "Generated system prompt",
+      outputPlaceholder:
+        "The generated system prompt will appear here. You can edit it after generation.",
+      generatedSuccessfully: "Agent system prompt generated successfully",
+      failedToGenerate: "Failed to generate agent system prompt. Please try again.",
+      emptyDescription: "Please describe your agent before generating.",
+    },
   },
   notification: {
     beforeYouGetStarted: "Before you get started",
