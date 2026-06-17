@@ -127,7 +127,15 @@ export const CreateSimulation: FC = () => {
   const { user } = useUser();
   const canUseAgentBuilder = canUseAgentBuilderCopilot(user);
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
-  const [currentStep, setCurrentStep] = useState(stepIds.basicSettings);
+  // Allowlisted authors land on the Agent Builder Copilot tab by default;
+  // everyone else opens on Basic Settings. Covers the common case where the
+  // user record is already in the store on mount (in-app navigation), so the
+  // tab is correct on first paint with no flash. The hard-refresh case — where
+  // PrivateLayout mounts this page before the user query resolves — is handled
+  // by the effect below.
+  const [currentStep, setCurrentStep] = useState(
+    canUseAgentBuilder ? stepIds.agentBuilderCopilot : stepIds.basicSettings,
+  );
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showOptionalFieldsWarning, setShowOptionalFieldsWarning] = useState(false);
   const pendingActionRef = useRef<(() => Promise<void>) | null>(null);
@@ -299,6 +307,21 @@ export const CreateSimulation: FC = () => {
       hasSetInitialStepForReportInProgress.current = true;
     }
   }, [simulationId, isReportGenerationInProgress]);
+
+  // Fallback for the hard-refresh / direct-URL case: PrivateLayout mounts this
+  // page before the user query resolves, so `canUseAgentBuilder` is false at
+  // mount and the useState initializer above can't see the allowlisted author.
+  // Once the user record lands, promote them to the Agent Builder Copilot tab —
+  // but only once, and never when a report-in-progress redirect has claimed the
+  // initial step, so we don't fight that or the author's own tab clicks.
+  const hasSetInitialAgentBuilderStep = useRef(false);
+  useEffect(() => {
+    if (hasSetInitialAgentBuilderStep.current || !canUseAgentBuilder) return;
+    hasSetInitialAgentBuilderStep.current = true;
+    if (!hasSetInitialStepForReportInProgress.current) {
+      setCurrentStep(stepIds.agentBuilderCopilot);
+    }
+  }, [canUseAgentBuilder]);
 
   useEffect(() => {
     if (simulationId) getAdminSimulationByIdQuery(simulationId);
@@ -865,7 +888,6 @@ export const CreateSimulation: FC = () => {
           page tabs exactly, so the tab strip is seamless across both pages. */}
       <Tabs
         items={[
-          ...StepperList,
           ...(canUseAgentBuilder
             ? [
                 {
@@ -874,6 +896,7 @@ export const CreateSimulation: FC = () => {
                 },
               ]
             : []),
+          ...StepperList,
         ].map(s => ({ id: s.id, label: s.title }))}
         activeId={currentStep}
         onChange={tab => !isReportGenerationInProgress && handleStepClick(tab)}

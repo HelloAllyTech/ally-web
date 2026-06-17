@@ -98,6 +98,16 @@ export const SIMULATION_CREATOR_STEP_IDS = {
   agentBuilderCopilot: "agent-builder-copilot",
 };
 
+/**
+ * Backend prompt code for the "system skill" the Agent Builder Copilot uses to
+ * turn a free-text actor description into a roleplay-actor system prompt.
+ * Mirrors AGENT_BUILDER_PROMPT_CODE in ally-be
+ * (src/learn/constants/agent-builder.constants.ts). Used to look the prompt up
+ * via the prompts API so authors can view (read-only) the skill powering
+ * Generate/Regenerate; the prompt itself is edited under System Skills.
+ */
+export const AGENT_BUILDER_SYSTEM_PROMPT_CODE = "agent_builder_system_prompt";
+
 export const BEHAVIOURS_INSTRUCTION_CATEGORIES = [
   { value: "SHOULD_DO", label: "Helper should do" },
   { value: "SHOULD_NOT_DO", label: "Helper should not do" },
