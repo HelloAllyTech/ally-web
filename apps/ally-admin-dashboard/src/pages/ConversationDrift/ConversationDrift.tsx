@@ -56,6 +56,8 @@ const barOpts = (leftTitle: string) => ({
   legend: { enabled: false },
   toolbar: { enabled: false },
 });
+// Two series — Live (pipeline) vs Historical (transcript) — like the
+// voice-latency chart's pipeline/transcript split.
 const trendOpts = {
   height: CHART_HEIGHT,
   axes: {
@@ -63,8 +65,16 @@ const trendOpts = {
     bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: "Period" },
   },
   curve: "curveMonotoneX",
-  legend: { enabled: false },
+  color: { scale: { Live: "#0f62fe", Historical: "#8d8d8d" } },
+  legend: { enabled: true },
   toolbar: { enabled: false },
+};
+
+// Session source → friendly series name for the trend.
+const SOURCE_LABEL: Record<string, string> = {
+  pipeline: "Live",
+  transcript: "Historical",
+  unknown: "Unknown",
 };
 
 // Friendly labels + a distinct colour per drift kind for the consolidated chart.
@@ -297,18 +307,10 @@ export const ConversationDrift = () => {
       })),
     [data],
   );
-  const onsetBars = useMemo(
-    () =>
-      (data?.firstDriftTurnHistogram ?? []).map(b => ({
-        group: `turn ${b.turn}`,
-        value: b.sessions,
-      })),
-    [data],
-  );
   const trendData = useMemo(
     () =>
       (data?.driftTrend ?? []).map(p => ({
-        group: "Drift rate",
+        group: SOURCE_LABEL[p.source] ?? p.source,
         key: p.bucket,
         value: Number((p.driftRate * 100).toFixed(1)),
       })),
@@ -416,20 +418,13 @@ export const ConversationDrift = () => {
                   </Tile>
                 ))}
               </div>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-4">
+              <div className="grid grid-cols-1 gap-6 mt-4">
                 <Cell
                   title="Drift rate over time"
-                  caption="% of sessions that drifted, per period"
+                  caption="% of sessions that drifted, per period — Live (real app runs) vs Historical (backfilled)"
                   empty={!data?.driftTrend?.length}
                 >
                   <LineChart data={trendData} options={trendOpts} />
-                </Cell>
-                <Cell
-                  title="When does drift start?"
-                  caption="Sessions by the turn at which drift first began (empty until sessions drift)"
-                  empty={!data?.firstDriftTurnHistogram?.length}
-                >
-                  <SimpleBarChart data={onsetBars} options={barOpts("Sessions")} />
                 </Cell>
               </div>
 

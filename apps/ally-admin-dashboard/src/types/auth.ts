@@ -278,6 +278,8 @@ export interface DriftHistogramBin {
 
 export interface DriftTrendPoint {
   bucket: string;
+  /** session source: 'pipeline' (live) | 'transcript' (historical) | 'unknown'. */
+  source: string;
   totalSessions: number;
   driftedSessions: number;
   driftRate: number;
