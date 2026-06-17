@@ -20,6 +20,8 @@ const {
   mockGetProfileUrl,
   mockDeleteProfile,
   mockUploadProfile,
+  mockGetUserPreferences,
+  mockUpdateQueryData,
 } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
   mockGetPermissions: vi.fn(),
@@ -29,6 +31,10 @@ const {
   mockGetProfileUrl: vi.fn(),
   mockDeleteProfile: vi.fn(),
   mockUploadProfile: vi.fn(),
+  // Sidebar order is read from the RTK Query cache via this hook; default to no
+  // saved preferences (undefined) so existing tests assert the default nav order.
+  mockGetUserPreferences: vi.fn(() => ({ data: undefined })),
+  mockUpdateQueryData: vi.fn(() => ({ undo: vi.fn() })),
 }));
 
 // Mock the logger
@@ -62,6 +68,7 @@ vi.mock("@api", () => ({
   useGetProfileImageUrlMutation: () => [mockGetProfileUrl],
   useDeleteProfileImageMutation: () => [mockDeleteProfile],
   useUploadProfileImageMutation: () => [mockUploadProfile],
+  useGetUserPreferencesQuery: mockGetUserPreferences,
   useLazyGetUserPreferencesQuery: () => [vi.fn(), { isLoading: false }],
   useUpdateUserPreferencesMutation: () => [vi.fn()],
   baseAPI: {
@@ -71,6 +78,11 @@ vi.mock("@api", () => ({
     middleware: () => (next: any) => (action: any) => next(action),
     util: {
       resetApiState: mockResetApiState,
+    },
+  },
+  authAPI: {
+    util: {
+      updateQueryData: mockUpdateQueryData,
     },
   },
 }));
@@ -114,6 +126,9 @@ describe("useUser", () => {
     store = createMockStore();
     vi.clearAllMocks();
     localStorage.clear();
+    // clearAllMocks doesn't reset implementations — restore the default (no saved
+    // preferences) so per-test overrides don't leak across tests.
+    mockGetUserPreferences.mockReturnValue({ data: undefined });
   });
 
   afterEach(() => {
@@ -353,6 +368,38 @@ describe("useUser", () => {
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
       expect(result.current.filteredNavigationItems[1].id).toBe(SIDEBAR_ITEMS.SCENARIO_VOICES);
       expect(result.current.filteredNavigationItems[2].id).toBe(SIDEBAR_ITEMS.MANAGE_GUARDRAILS);
+    });
+
+    it("applies the saved sidebar order from the preferences cache on first render", () => {
+      // Saved order (reverse of the default) comes straight from the RTK Query
+      // cache mock — no Redux dispatch — so it's reflected on the first render.
+      mockGetUserPreferences.mockReturnValue({
+        data: {
+          admin_sidebar_order: [
+            SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+            SIDEBAR_ITEMS.SCENARIO_VOICES,
+            SIDEBAR_ITEMS.SIMULATION_STUDIO,
+          ],
+        },
+      });
+
+      store = createMockStore({
+        permissions: [
+          Permissions.EDIT_SCENARIO,
+          Permissions.EDIT_SCENARIO_VOICE,
+          Permissions.EDIT_GUARDRAIL,
+        ],
+      });
+
+      const { result } = renderHook(() => useUser(), {
+        wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
+      });
+
+      expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+        SIDEBAR_ITEMS.SCENARIO_VOICES,
+        SIDEBAR_ITEMS.SIMULATION_STUDIO,
+      ]);
     });
 
     it("should filter navigation items based on EDIT_EVENT permission", () => {

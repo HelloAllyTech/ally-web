@@ -20,7 +20,7 @@ import {
   UserPreferencesData,
 } from "@types";
 
-const authAPI = baseAPI.injectEndpoints({
+export const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
     /**
      * Creates a new user account with the provided registration data.
