@@ -3,6 +3,8 @@ import {
   AnalyticsBucket,
   AnalyticsOverviewResponse,
   AnalyticsRange,
+  ConversationDriftResponse,
+  DriftBackfillJob,
   VoiceLatencyResponse,
 } from "@types";
 
@@ -14,6 +16,14 @@ type AnalyticsRangeQuery = {
 
 type VoiceLatencyQuery = AnalyticsRangeQuery & {
   bucket?: AnalyticsBucket;
+};
+
+type ConversationDriftQuery = AnalyticsRangeQuery & {
+  language?: string;
+  scenarioId?: number;
+  llmModel?: string;
+  llmProvider?: string;
+  promptVersion?: string;
 };
 
 export const analyticsAPI = baseAPI.injectEndpoints({
@@ -32,7 +42,42 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: { ...(range ? { range } : {}), ...(bucket ? { bucket } : {}) },
       }),
     }),
+    getConversationDrift: builder.query<ConversationDriftResponse, ConversationDriftQuery>({
+      query: ({ range, language, scenarioId, llmModel, llmProvider, promptVersion } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CONVERSATION_DRIFT,
+        method: HttpMethod.GET,
+        params: {
+          ...(range ? { range } : {}),
+          ...(language ? { language } : {}),
+          ...(scenarioId != null ? { scenarioId } : {}),
+          ...(llmModel ? { llmModel } : {}),
+          ...(llmProvider ? { llmProvider } : {}),
+          ...(promptVersion ? { promptVersion } : {}),
+        },
+      }),
+    }),
+    // Kick off the async backfill (last `sinceDays` days, default 90 ≈ 3 months).
+    startDriftBackfill: builder.mutation<DriftBackfillJob, { sinceDays?: number }>({
+      query: ({ sinceDays = 90 } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.CONVERSATION_DRIFT_BACKFILL,
+        method: HttpMethod.POST,
+        body: { sinceDays },
+      }),
+    }),
+    // Poll job progress; the page sets pollingInterval while a job is running.
+    getDriftBackfillStatus: builder.query<DriftBackfillJob, string>({
+      query: jobId => ({
+        url: `${ApiEndpoints.ANALYTICS.CONVERSATION_DRIFT_BACKFILL}/${jobId}`,
+        method: HttpMethod.GET,
+      }),
+    }),
   }),
 });
 
-export const { useGetAnalyticsOverviewQuery, useGetVoiceLatencyQuery } = analyticsAPI;
+export const {
+  useGetAnalyticsOverviewQuery,
+  useGetVoiceLatencyQuery,
+  useGetConversationDriftQuery,
+  useStartDriftBackfillMutation,
+  useGetDriftBackfillStatusQuery,
+} = analyticsAPI;

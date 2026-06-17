@@ -240,6 +240,90 @@ export interface VoiceLatencyResponse {
   points: VoiceLatencyPoint[];
 }
 
+// ConversationDriftResponseDto from GET /api/v1/analytics/conversation-drift.
+export interface DriftRateByLanguage {
+  language: string;
+  totalSessions: number;
+  driftedSessions: number;
+  /** driftedSessions / totalSessions, 0..1. */
+  driftRate: number;
+}
+
+export interface DriftCount {
+  /** category value (topic / coherence / attribution / failure / STT). */
+  key: string;
+  /** distinct sessions with >=1 turn in this category. */
+  count: number;
+}
+
+/** One cell of the language × drift-kind heatmap (sessions affected). */
+export interface DriftKindByLanguage {
+  language: string;
+  /** drift kind (off_topic / degrading / hallucination / ...). */
+  kind: string;
+  count: number;
+}
+
+/** Drift rate grouped by an experiment dimension (model / provider / prompt version). */
+export interface DriftRateByDimension {
+  /** dimension value, or 'unknown' if not yet captured for that session. */
+  key: string;
+  totalSessions: number;
+  driftedSessions: number;
+  driftRate: number;
+}
+
+export interface DriftSummary {
+  totalSessions: number;
+  driftedSessions: number;
+  driftRate: number;
+}
+
+export interface DriftHistogramBin {
+  turn: number;
+  sessions: number;
+}
+
+export interface DriftTrendPoint {
+  bucket: string;
+  totalSessions: number;
+  driftedSessions: number;
+  driftRate: number;
+}
+
+export interface ConversationDriftResponse {
+  range: AnalyticsRange;
+  summary: DriftSummary;
+  driftRateByLanguage: DriftRateByLanguage[];
+  attributionMix: DriftCount[];
+  failureModeBreakdown: DriftCount[];
+  kindsOfDrift: DriftCount[];
+  kindByLanguage: DriftKindByLanguage[];
+  rootCause: DriftCount[];
+  topicMix: DriftCount[];
+  coherenceMix: DriftCount[];
+  sttGarbleMix: DriftCount[];
+  sttErrorTypeMix: DriftCount[];
+  firstDriftTurnHistogram: DriftHistogramBin[];
+  driftTrend: DriftTrendPoint[];
+  driftRateByModel: DriftRateByDimension[];
+  driftRateByProvider: DriftRateByDimension[];
+  driftRateByPromptVersion: DriftRateByDimension[];
+}
+
+/** Async drift-backfill job state (POST/GET conversation-drift/backfill). */
+export interface DriftBackfillJob {
+  jobId: string;
+  /** queued | running | done | error */
+  status: string;
+  total: number;
+  processed: number;
+  judged: number;
+  drifted: number;
+  skipped: number;
+  error?: string | null;
+}
+
 // Settings types
 export interface AppSettings {
   id: string;
