@@ -13,6 +13,13 @@
   height: 320px;
 }
 
-.analytics-kpi {
-  min-height: 104px;
+// Carbon Charts ships its own precompiled `styles.css` (imported just before
+// this file) that hardcodes `--cds-charts-font-family: 'IBM Plex Sans'` on
+// `.cds--chart-holder` and resolves all SVG text through that var. That beats
+// the global `svg text` serif rule, which lives in `@layer base` (unlayered
+// Carbon CSS always wins over layered rules). Redefining the var here — same
+// selector, later in source order — forces chart text serif to match the app.
+.cds--chart-holder {
+  --cds-charts-font-family: "IBM Plex Serif", serif;
+  --cds-charts-font-family-condensed: "IBM Plex Serif", serif;
 }
