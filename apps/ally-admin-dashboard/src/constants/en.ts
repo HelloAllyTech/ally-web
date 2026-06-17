@@ -468,6 +468,14 @@ export const en = {
       outputPlaceholder:
         "The generated system prompt will appear here. You can edit it after generation.",
       generatedSuccessfully: "Agent system prompt generated successfully",
+      appliedSuccessfully: "Generated and filled the Basic Settings tab",
+      appliedSummary: (count: number) =>
+        `Generated and filled ${count} Basic Settings field${count === 1 ? "" : "s"}`,
+      parseFallback:
+        "Generated, but couldn't auto-fill the form — review the output below and copy what you need.",
+      appliedFieldsLabel: "Filled Basic Settings fields",
+      noFieldsApplied: "Generated, but no fields could be filled. Review the output below.",
+      viewRawOutput: "View raw generated output",
       failedToGenerate: "Failed to generate agent system prompt. Please try again.",
       emptyDescription: "Please describe your agent before generating.",
       viewSystemSkill: "View the system skill used to generate this",
