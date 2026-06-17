@@ -32,7 +32,7 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
               className="px-6 pt-6 text-sm font-medium font-primary text-gray-500 animate-pulse"
               data-testid="summary-generating-text"
             >
-              {t("simulationSummary.generatingFeedback", "Generating your feedback…")}
+              {t("postCallSummary.generatingFeedback", "Generating your feedback…")}
             </p>
             <LoaderSkeleton />
           </div>
