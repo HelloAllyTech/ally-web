@@ -61,7 +61,6 @@ export interface UserState {
   userStatus: UserAvailabilityStatus;
   permissions: string[];
   availableChatTypes: CallType[];
-  preferences: UserPreferencesData | null;
 }
 
 // Common API types and interfaces

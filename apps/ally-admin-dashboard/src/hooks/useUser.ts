@@ -8,14 +8,16 @@ import {
   useLazyGetUserQuery,
   useLazyGetPermissionsQuery,
   baseAPI,
+  authAPI,
   useGetProfileImageUrlMutation,
   useDeleteProfileImageMutation,
   useUploadProfileImageMutation,
+  useGetUserPreferencesQuery,
   useLazyGetUserPreferencesQuery,
   useUpdateUserPreferencesMutation,
 } from "@api";
 import { LOCAL_STORAGE_KEYS, UserRole } from "@constants";
-import { setUser, authenticate, unauthenticate, setPermissions, setPreferences } from "@reducer";
+import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
 import { deriveNavigationItems } from "@utils";
 
@@ -23,7 +25,13 @@ export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
   const { availableChatTypes, user, userStatus } = useSelector((state: RootState) => state.user);
   const permissions = useSelector((state: RootState) => state.user.permissions);
-  const preferences = useSelector((state: RootState) => state.user.preferences);
+  // Read preferences (e.g. saved sidebar order) straight from the RTK Query cache
+  // rather than a Redux mirror, so the saved order is available on the same render
+  // the cache is warm — no dispatch-on-effect lag (which previously caused the nav
+  // to flash the default order before settling). Mirrors DefaultRedirect's approach.
+  // Skip on the auth flag so it never fires on the unauthenticated Login page.
+  const isAuthed = localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
+  const { data: preferences } = useGetUserPreferencesQuery(undefined, { skip: !isAuthed });
   const adminSidebarOrder = preferences?.admin_sidebar_order;
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
@@ -69,12 +77,13 @@ export const useUser = () => {
           store.dispatch(setUser(userData?.data));
           store.dispatch(setPermissions(permissionsData?.data as any));
           store.dispatch(authenticate());
-          // Load per-user preferences (e.g. saved sidebar order). Non-fatal:
-          // roles without the preference permission (e.g. MULTI_TENANT_ADMIN)
-          // get a 403 here and simply fall back to the default nav order.
+          // Warm the preferences cache (e.g. saved sidebar order) so the nav renders
+          // in the saved order on first paint after navigate("/"). Non-fatal: roles
+          // without the preference permission (e.g. MULTI_TENANT_ADMIN) get a 403 here
+          // and simply fall back to the default nav order. The cache is the single
+          // source of truth — useGetUserPreferencesQuery reads this same entry.
           try {
-            const prefs = await getUserPreferences().unwrap();
-            store.dispatch(setPreferences(prefs ?? null));
+            await getUserPreferences().unwrap();
           } catch (prefError) {
             logger.info(`No user preferences loaded: ${prefError}`);
           }
@@ -103,13 +112,12 @@ export const useUser = () => {
    * - Dispatches unauthenticate action
    */
   const logout = () => {
-    // Clear RTK Query cache
+    // Clear RTK Query cache (this also drops the cached user preferences).
     store.dispatch(baseAPI.util.resetApiState());
 
     // Clear user state
     store.dispatch(setUser(null));
     store.dispatch(setPermissions([]));
-    store.dispatch(setPreferences(null));
     store.dispatch(unauthenticate());
 
     // Clear tokens
@@ -127,22 +135,26 @@ export const useUser = () => {
 
   /**
    * Persists a new sidebar order to the current user's preferences.
-   * Optimistically updates Redux so the nav reorders immediately, then reverts
-   * and surfaces a toast if the save fails.
+   * Optimistically patches the RTK Query cache so the nav reorders immediately,
+   * then undoes the patch and surfaces a toast if the save fails. On success the
+   * mutation invalidates USER_PREFERENCES, which refetches and reconciles.
    */
   const reorderSidebar = useCallback(
     async (nextIds: string[]) => {
-      const previous = preferences?.admin_sidebar_order;
-      store.dispatch(setPreferences({ ...(preferences ?? {}), admin_sidebar_order: nextIds }));
+      const patch = store.dispatch(
+        authAPI.util.updateQueryData("getUserPreferences", undefined, draft => {
+          draft.admin_sidebar_order = nextIds;
+        }),
+      );
       try {
         await updateUserPreferences({ admin_sidebar_order: nextIds }).unwrap();
       } catch (error) {
-        store.dispatch(setPreferences({ ...(preferences ?? {}), admin_sidebar_order: previous }));
+        patch.undo();
         toast.error("Failed to save sidebar order");
         logger.info(`Failed to save sidebar order: ${error}`);
       }
     },
-    [preferences, updateUserPreferences],
+    [updateUserPreferences],
   );
 
   return {
