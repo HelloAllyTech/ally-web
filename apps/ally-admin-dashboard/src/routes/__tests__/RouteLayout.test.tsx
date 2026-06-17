@@ -14,6 +14,11 @@ vi.mock("../PrivateLayout", () => ({
 vi.mock("../PublicRoute", () => ({
   PublicRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
+// Stub DefaultRedirect (it depends on RTK Query/store); its own behavior is
+// covered by DefaultRedirect.test.tsx.
+vi.mock("../DefaultRedirect", () => ({
+  DefaultRedirect: () => <div>DefaultRedirectPage</div>,
+}));
 
 // Stub out pages referenced by the router
 vi.mock("@pages", () => ({
@@ -112,6 +117,12 @@ describe("RouteLayout", () => {
     window.history.pushState({}, "", ROUTES.MANAGE_PROMPTS);
     render(<RouteLayout />);
     expect(screen.getByText("PromptManagementPage")).toBeInTheDocument();
+  });
+
+  it("renders DefaultRedirect at the root route", () => {
+    window.history.pushState({}, "", "/");
+    render(<RouteLayout />);
+    expect(screen.getByText("DefaultRedirectPage")).toBeInTheDocument();
   });
 
   it("redirects unknown route to Simulation Studio", () => {

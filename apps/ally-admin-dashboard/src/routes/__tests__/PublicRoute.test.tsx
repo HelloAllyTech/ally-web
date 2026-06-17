@@ -34,13 +34,13 @@ describe("PublicRoute", () => {
     expect(screen.getByText("LoginForm")).toBeInTheDocument();
   });
 
-  it("redirects to simulation studio when authenticated", () => {
+  it("redirects to the root (DefaultRedirect) when authenticated", () => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
 
     render(
       <MemoryRouter initialEntries={[ROUTES.LOGIN]}>
         <Routes>
-          <Route path={ROUTES.SIMULATION_STUDIO} element={<div>Studio</div>} />
+          <Route path="/" element={<div>Root</div>} />
           <Route
             path={ROUTES.LOGIN}
             element={
@@ -53,7 +53,7 @@ describe("PublicRoute", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Studio")).toBeInTheDocument();
+    expect(screen.getByText("Root")).toBeInTheDocument();
     expect(screen.queryByText("LoginForm")).not.toBeInTheDocument();
   });
 });
