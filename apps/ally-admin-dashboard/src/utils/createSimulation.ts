@@ -32,6 +32,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     languageVoices: (data?.metadata as any)?.languageVoices,
     linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
     allowedFillerWords: (data?.metadata as any)?.allowedFillerWords,
+    fillerDialogues: (data?.metadata as any)?.fillerDialogues,
     languageCharacteristics: (data?.metadata as any)?.languageCharacteristics,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,

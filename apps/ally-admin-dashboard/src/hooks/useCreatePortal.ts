@@ -40,6 +40,13 @@ export function useCreatePortal(
       top = rect.top - dropdownHeight - 4;
     }
 
+    // Never let a flipped dropdown run off the top of the viewport (mirrors the
+    // horizontal clamp below). Keeps it on-screen instead of overlapping far-up
+    // content when the trigger sits low and space above is tight.
+    if (top < margin) {
+      top = margin;
+    }
+
     // Adjust horizontally if overflow
     if (left + width > viewportWidth - margin) {
       left = viewportWidth - width - margin;

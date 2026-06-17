@@ -22,6 +22,13 @@ vi.mock("../FormField", () => ({
 // hooks from the barrel. Empty mock keeps the import resolving cleanly.
 vi.mock("@hooks", () => ({}));
 
+// The component reads per-user featureFlags via useSelector. There's no Redux
+// Provider in this test, so stub useSelector to return undefined — featureFlag
+// gated fields are simply hidden (no existing case asserts them).
+vi.mock("react-redux", () => ({
+  useSelector: () => undefined,
+}));
+
 // Mock for the prompts-by-type query that drives the parent-level
 // variant gate. Tests override `mainAgentPromptsMock.current` to
 // simulate "loaded" / "unloaded" / "variant not found" states.

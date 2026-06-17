@@ -169,7 +169,13 @@ export const FillerTagPicker: React.FC<FillerTagPickerProps> = ({
     setOpenDropdown(prev => !prev);
   };
 
-  const dropdownPosition = useCreatePortal(triggerRef, openDropdown);
+  // Pass a realistic dropdown height so the picker opens BELOW the trigger
+  // instead of flipping ~280px up (the default) and overlapping unrelated
+  // fields when the trigger sits low in the viewport. The actual dropdown
+  // (search + a few options) is short; the list itself scrolls (max-h-240).
+  const dropdownPosition = useCreatePortal(triggerRef, openDropdown, {
+    dropdownHeight: 200,
+  });
 
   const createNewTag = async () => {
     const newTag = searchQuery.trim();

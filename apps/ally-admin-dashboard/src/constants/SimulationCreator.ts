@@ -118,6 +118,7 @@ export const FORM_FIELD_TYPES = {
     LANGUAGE_VOICE_MAPPING: "language_voice_mapping",
     LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
     OPENING_DIALOGUES: "opening_dialogues",
+    FILLER_DIALOGUES: "filler_dialogues",
     CHALLENGE_DESCRIPTION: "challenge_description",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
@@ -491,6 +492,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,
+        featureFlag: "thinkingFiller",
+      },
+      {
+        id: "fillerDialogues",
+        label: "Dialogues",
+        type: FORM_FIELD_TYPES.CUSTOM.FILLER_DIALOGUES,
+        fullWidth: true,
+        featureFlag: "thinkingFiller",
+        // Only show the dialogues editor once Thinking Filler is enabled.
+        dependsOn: "fillerEnabled",
+        visibleWhen: (formValues: any) => formValues.fillerEnabled === true,
       },
       {
         id: "currentState",

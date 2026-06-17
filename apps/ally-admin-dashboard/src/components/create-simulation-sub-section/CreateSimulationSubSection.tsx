@@ -1,6 +1,7 @@
 import { FC, Fragment, useEffect, useMemo, useRef } from "react";
 
 import { UseFormReturn } from "react-hook-form";
+import { useSelector } from "react-redux";
 
 import { useGetPromptsByTypeQuery } from "@api";
 import { FORM_FIELD_IDS, SESSION_TIMER_CONFIG } from "@constants";
@@ -20,6 +21,12 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
 }) => {
   const timerMode = formMethods.watch(FORM_FIELD_IDS.TIMER_MODE);
   const checklistTypeRef = useRef<HTMLDivElement>(null);
+
+  // Per-user feature flags from /users/me (e.g. email-allowlisted features).
+  // Fields with a `featureFlag` are hidden unless the user has it enabled.
+  const featureFlags = useSelector((state: any) => state?.user?.user?.featureFlags) as
+    | Record<string, boolean>
+    | undefined;
 
   // Auto-set default maxTimeValue when timerMode is enabled
   useEffect(() => {
@@ -63,6 +70,11 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
   // override beats hideWhenUnused (mirrors the safety guard inside
   // FormField), and the visibleWhen predicate is checked last.
   const shouldRenderField = (field: FormFieldConfig) => {
+    // Per-user feature-flag gate: hide fields the current user isn't entitled
+    // to (email-allowlisted features resolved server-side via /users/me).
+    if (field.featureFlag && !featureFlags?.[field.featureFlag]) {
+      return false;
+    }
     // Variant-driven hiding: skip the whole render (wrapper + dashed
     // line + content) when the picked variant's body doesn't reference
     // the field's placeholder. Mandatory fields are never hidden — the

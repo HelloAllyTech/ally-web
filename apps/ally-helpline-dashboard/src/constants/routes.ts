@@ -1,12 +1,4 @@
-import {
-  SearchIcon,
-  StatsIcon,
-  ScribeIcon,
-  LearnIcon,
-  Leaderboard,
-  ReviewNavIcon,
-  Badge,
-} from "@assets";
+import { StatsIcon, ScribeIcon, LearnIcon, Leaderboard, ReviewNavIcon, Badge } from "@assets";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -115,14 +107,5 @@ export const navBarOptions = [
     path: ROUTES.ANALYTICS,
     activePages: [],
     permissions: [Permissions.VIEW_ANALYTICS_DASHBOARD],
-  },
-  {
-    id: TabId.SEARCH,
-    title: "Search",
-    key: "nav.tabs.search",
-    Icon: SearchIcon,
-    path: ROUTES.SEARCH,
-    activePages: [],
-    permissions: [Permissions.VIEW_REFERNCE_DOCUMENT],
   },
 ];
