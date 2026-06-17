@@ -80,6 +80,7 @@ vi.mock("@api", () => ({
 vi.mock("@hooks", () => ({
   useDebounce: (fn: any) => fn, // Return the function immediately without debouncing
   useScenarioTranslationsSocket: () => undefined,
+  useUser: () => ({ user: { email: "test@example.com" } }),
 }));
 
 // Mock components
@@ -138,6 +139,8 @@ vi.mock("@components", () => ({
 // Mock constants
 vi.mock("@constants", () => ({
   en: mockEn,
+  // Agent Builder Copilot tab is gated; keep it hidden in these tests.
+  canUseAgentBuilderCopilot: () => false,
   ExperienceMode: {
     FEEDBACK: "FEEDBACK",
     CHECKLIST: "CHECKLIST",

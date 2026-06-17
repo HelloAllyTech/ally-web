@@ -79,6 +79,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     enableFeedback: data?.metadata?.enableFeedback ?? true,
     characterProfileText: data?.metadata?.characterProfileText,
     helperAgentPrompt: data?.metadata?.helperAgentPrompt,
+    agentBuilderDescription: (data?.metadata as any)?.agentBuilderDescription,
+    agentBuilderPrompt: (data?.metadata as any)?.agentBuilderPrompt,
     competency: data?.competency,
     stateNames: (data?.metadata as any)?.stateNames ?? [],
     knowledgeSources: data?.metadata?.knowledgeSources?.map((source: knowledgeSource) => ({

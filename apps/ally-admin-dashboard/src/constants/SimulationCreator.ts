@@ -94,6 +94,8 @@ export const SIMULATION_CREATOR_STEP_IDS = {
   basicSettings: "basic-settings",
   advancedSettings: "advanced-settings",
   report: "report",
+  // Gated tab — only added to the visible tab list for allowlisted users.
+  agentBuilderCopilot: "agent-builder-copilot",
 };
 
 export const BEHAVIOURS_INSTRUCTION_CATEGORIES = [
