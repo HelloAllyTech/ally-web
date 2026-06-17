@@ -378,6 +378,11 @@
   "postSim": {
     "titlePrefix": "भूमिका वठवणे (रोल प्ले)",
     "skills": {
+      "categories": {
+        "listeningEngagement": "श्रवण सहभाग",
+        "emotionalAttunement": "भावनिक सुसंगती",
+        "supportiveEngagement": "सहाय्यक सहभाग"
+      },
       "empty": "या सेशनसाठी कोणताही कौशल्यविषयक डेटा उपलब्ध नाही",
       "failed": "कौशल्य डेटा लोड करण्यात अडचण",
       "coverage": "कौशल्यक्षेत्रे",
@@ -401,6 +406,7 @@
       "description": "अर्थपूर्ण प्रतिसाद मिळवण्यासाठी आम्हाला संवाद असलेला अधिक डेटा हवा आहे."
     },
     "feedback": {
+      "generating": "तुमचा फीडबॅक तयार होत आहे…",
       "sessionFeedback": "सेशनबद्दलचा प्रतिसाद",
       "noData": "डेटा आढळला नाही",
       "dialog": {

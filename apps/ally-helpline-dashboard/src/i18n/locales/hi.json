@@ -378,6 +378,11 @@
   "postSim": {
     "titlePrefix": "रोल प्ले",
     "skills": {
+      "categories": {
+        "listeningEngagement": "श्रवण सहभागिता",
+        "emotionalAttunement": "भावनात्मक तालमेल",
+        "supportiveEngagement": "सहायक सहभागिता"
+      },
       "empty": "इस सेशन के लिए कोई कौशल डेटा उपलब्ध नहीं है",
       "failed": "कौशल डेटा लोड करने में समस्या",
       "coverage": "कौशल क्षेत्र",
@@ -401,6 +406,7 @@
       "description": "अर्थपूर्ण प्रतिक्रिया प्राप्त करने के लिए हमें अधिक संवाद वाला डेटा चाहिए।"
     },
     "feedback": {
+      "generating": "आपका फ़ीडबैक तैयार किया जा रहा है…",
       "sessionFeedback": "सेशन के बारे में प्रतिक्रिया",
       "noData": "डेटा नहीं मिला",
       "dialog": {

@@ -16,6 +16,8 @@ import { OverallScoreMeter } from "@src/components";
 import { SKILL_COLORS } from "@src/components/skills-tab/constants";
 import { SimulationSummary } from "@src/types";
 
+import type { TFunction } from "i18next";
+
 interface SkillCoverage {
   label: string;
   icon: string;
@@ -43,6 +45,20 @@ interface CustomDotProps {
 const CHART_HEIGHT = 350;
 const CHART_MARGIN = { top: 20, right: 20, left: 0, bottom: 20 };
 const Y_AXIS_TICKS = [-5, -3, -1, 1, 3, 5];
+
+// Skill categories come from the backend as canonical English names (also used
+// as identifiers/colors), so we translate only the DISPLAY label via a fixed
+// i18n map, falling back to the raw category when it isn't a known skill.
+const SKILL_LABEL_I18N: Record<string, string> = {
+  "Listening Engagement": "postSim.skills.categories.listeningEngagement",
+  "Emotional Attunement": "postSim.skills.categories.emotionalAttunement",
+  "Supportive Engagement": "postSim.skills.categories.supportiveEngagement",
+};
+
+const getSkillLabel = (t: TFunction, category: string): string => {
+  const key = SKILL_LABEL_I18N[category];
+  return key ? t(key, { defaultValue: category }) : category;
+};
 
 // Utility Functions
 const formatTime = (seconds: number): string => {
@@ -179,12 +195,16 @@ const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => {
           {skills.map(skill => (
             <div key={skill.label} className="px-6 border rounded-sm py-5 flex w-full gap-2.5">
               <div className="min-w-10 w-10 h-10 rounded-sm border flex items-center justify-center">
-                <img src={skill.icon} alt={skill.label} className="w-1/2 h-1/2 object-contain" />
+                <img
+                  src={skill.icon}
+                  alt={getSkillLabel(t, skill.label)}
+                  className="w-1/2 h-1/2 object-contain"
+                />
               </div>
               <div className="flex flex-col gap-3 w-full">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-normal font-primary text-typography-700">
-                    {skill.label}
+                    {getSkillLabel(t, skill.label)}
                   </span>
                   <span className="text-sm font-semibold font-primary text-typography-900">
                     {skill.percentage}%
@@ -327,12 +347,18 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
         </h3>
       </div>
       <div className="px-6 py-6">
-        {strengths?.map((strength, index) => (
-          <li key={index} className="flex items-start">
-            <span className="text-typography-900 mr-2">•</span>
-            <span className="text-typography-900 font-primary text-base">{strength}</span>
-          </li>
-        ))}
+        {strengths.length === 0 ? (
+          <p className="text-typography-700 font-primary text-center animate-pulse">
+            {t("postSim.feedback.generating", "Generating your feedback…")}
+          </p>
+        ) : (
+          strengths.map((strength, index) => (
+            <li key={index} className="flex items-start">
+              <span className="text-typography-900 mr-2">•</span>
+              <span className="text-typography-900 font-primary text-base">{strength}</span>
+            </li>
+          ))
+        )}
       </div>
     </div>
   );
@@ -358,28 +384,36 @@ const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
           {t("postSim.skills.areasForGrowth")}
         </h3>
       </div>
-      <ul className="px-6 py-6 space-y-6 list-none">
-        {areasForGrowth?.map((area, index) => (
-          <li key={index} className="flex items-start gap-2">
-            <span className="text-typography-900 mr-2">•</span>
-            <div className="flex flex-col gap-2 w-full">
-              <span className="text-typography-900 font-primary text-base">
-                {area.improvement || area}
-              </span>
-              {area.recommendation && (
-                <div className="text-typography-900 bg-[#FFF3E080] border-l-[1px] border-l-[#FFA726] flex flex-col gap-1 pl-2 py-2">
-                  <span className="text-[#E65100] tracking-[2px] text-xs font-medium font-tertiary">
-                    {t("postSim.skills.recommended")}
-                  </span>
-                  <span className="text-typography-900 text-base font-primary">
-                    {area.recommendation}
-                  </span>
-                </div>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
+      {areasForGrowth.length === 0 ? (
+        <div className="px-6 py-6">
+          <p className="text-typography-700 font-primary text-center animate-pulse">
+            {t("postSim.feedback.generating", "Generating your feedback…")}
+          </p>
+        </div>
+      ) : (
+        <ul className="px-6 py-6 space-y-6 list-none">
+          {areasForGrowth?.map((area, index) => (
+            <li key={index} className="flex items-start gap-2">
+              <span className="text-typography-900 mr-2">•</span>
+              <div className="flex flex-col gap-2 w-full">
+                <span className="text-typography-900 font-primary text-base">
+                  {area.improvement || area}
+                </span>
+                {area.recommendation && (
+                  <div className="text-typography-900 bg-[#FFF3E080] border-l-[1px] border-l-[#FFA726] flex flex-col gap-1 pl-2 py-2">
+                    <span className="text-[#E65100] tracking-[2px] text-xs font-medium font-tertiary">
+                      {t("postSim.skills.recommended")}
+                    </span>
+                    <span className="text-typography-900 text-base font-primary">
+                      {area.recommendation}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

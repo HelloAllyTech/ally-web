@@ -386,6 +386,11 @@
   "postSim": {
     "titlePrefix": "Role play",
     "skills": {
+      "categories": {
+        "listeningEngagement": "Listening Engagement",
+        "emotionalAttunement": "Emotional Attunement",
+        "supportiveEngagement": "Supportive Engagement"
+      },
       "empty": "No skills data available for this session",
       "failed": "Failed to load skills data",
       "coverage": "Skill Coverage",
@@ -409,6 +414,7 @@
       "description": "We need more interaction data to provide meaningful feedback."
     },
     "feedback": {
+      "generating": "Generating your feedback…",
       "sessionFeedback": "Session Feedback",
       "noData": "No data found",
       "dialog": {
