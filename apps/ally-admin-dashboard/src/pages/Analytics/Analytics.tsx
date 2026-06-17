@@ -9,7 +9,11 @@ import {
   InlineNotification,
   Section,
   SkeletonPlaceholder,
-  SkeletonText,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Theme,
   Tile,
 } from "@carbon/react";
@@ -202,22 +206,6 @@ export const Analytics = () => {
     toolbar: { enabled: false },
   };
 
-  const kpis = [
-    { label: "Total users", value: data ? data.summary.totalUsers.toLocaleString() : undefined },
-    {
-      label: "Active users (30d)",
-      value: data ? data.summary.activeUsers30d.toLocaleString() : undefined,
-    },
-    {
-      label: "Simulations this week",
-      value: data ? data.summary.simsThisWeek.toLocaleString() : undefined,
-    },
-    {
-      label: "Retention rate (30d)",
-      value: data ? `${data.summary.retentionRatePct}%` : undefined,
-    },
-  ];
-
   const selectedItem = RANGE_ITEMS.find(item => item.id === range) ?? RANGE_ITEMS[0];
   const selectedLatencyBucket =
     LATENCY_BUCKET_ITEMS.find(item => item.id === latencyBucket) ?? LATENCY_BUCKET_ITEMS[0];
@@ -228,7 +216,7 @@ export const Analytics = () => {
       <Theme theme="white">
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <Heading className="text-2xl">Platform analytics</Heading>
+            <Heading className="text-2xl">Analytics</Heading>
             <div className="w-56">
               <Dropdown
                 id="analytics-range"
@@ -246,36 +234,73 @@ export const Analytics = () => {
             </div>
           </div>
 
-          {isError ? (
-            <div className="flex flex-col items-start gap-4">
-              <InlineNotification
-                kind="error"
-                lowContrast
-                hideCloseButton
-                title="Couldn't load analytics"
-                subtitle="There was a problem fetching platform metrics."
-              />
-              <Button kind="tertiary" size="sm" onClick={() => refetch()}>
-                Retry
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-                {kpis.map(kpi => (
-                  <Tile key={kpi.label} className="analytics-kpi">
-                    <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-                    {showSkeletons || kpi.value === undefined ? (
-                      <SkeletonText heading width="60%" />
-                    ) : (
-                      <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
-                    )}
-                  </Tile>
-                ))}
-              </div>
+          <Tabs>
+            <TabList aria-label="Analytics sections">
+              <Tab>Overview</Tab>
+              <Tab>Latency</Tab>
+              <Tab>Drift</Tab>
+              <Tab>Tokens</Tab>
+            </TabList>
+            <TabPanels>
+              {/* Overview — everything except the voice-to-voice latency chart. */}
+              <TabPanel>
+                {isError ? (
+                  <div className="flex flex-col items-start gap-4">
+                    <InlineNotification
+                      kind="error"
+                      lowContrast
+                      hideCloseButton
+                      title="Couldn't load analytics"
+                      subtitle="There was a problem fetching platform metrics."
+                    />
+                    <Button kind="tertiary" size="sm" onClick={() => refetch()}>
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <Tile className="xl:col-span-2">
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <LineChart data={growthData} options={growthOptions} />
+                      )}
+                    </Tile>
+                    <Tile>
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <LineChart data={activeData} options={activeOptions} />
+                      )}
+                    </Tile>
+                    <Tile>
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <SimpleBarChart data={simsData} options={simsOptions} />
+                      )}
+                    </Tile>
+                    <Tile>
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <StackedBarChart data={retentionData} options={retentionOptions} />
+                      )}
+                    </Tile>
+                    <Tile>
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <DonutChart data={rolesData} options={rolesOptions} />
+                      )}
+                    </Tile>
+                  </div>
+                )}
+              </TabPanel>
 
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <Tile className="xl:col-span-2">
+              {/* Latency — voice-to-voice latency, with its own granularity + query state. */}
+              <TabPanel>
+                <Tile>
                   <div className="flex justify-end mb-2">
                     <div className="w-44">
                       <Dropdown
@@ -312,49 +337,23 @@ export const Analytics = () => {
                     <LineChart data={latencyData} options={latencyOptions} />
                   )}
                 </Tile>
-                <Tile className="xl:col-span-2">
-                  {showSkeletons ? (
-                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                  ) : (
-                    <LineChart data={growthData} options={growthOptions} />
-                  )}
-                </Tile>
-                <Tile>
-                  {showSkeletons ? (
-                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                  ) : (
-                    <LineChart data={activeData} options={activeOptions} />
-                  )}
-                </Tile>
-                <Tile>
-                  {showSkeletons ? (
-                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                  ) : (
-                    <SimpleBarChart data={simsData} options={simsOptions} />
-                  )}
-                </Tile>
-                <Tile>
-                  {showSkeletons ? (
-                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                  ) : (
-                    <StackedBarChart data={retentionData} options={retentionOptions} />
-                  )}
-                </Tile>
-                <Tile>
-                  {showSkeletons ? (
-                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
-                  ) : (
-                    <DonutChart data={rolesData} options={rolesOptions} />
-                  )}
-                </Tile>
-              </div>
-            </>
-          )}
+              </TabPanel>
+
+              {/* Drift — the conversation-drift analytics, its own filters + charts. */}
+              <TabPanel>
+                <ConversationDrift />
+              </TabPanel>
+
+              {/* Tokens — placeholder until token-usage metrics are wired up. */}
+              <TabPanel>
+                <p className="text-typography-600 py-8">
+                  Token usage analytics are coming soon.
+                </p>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </Section>
       </Theme>
-
-      {/* Conversation drift analytics — same page, its own filters + charts. */}
-      <ConversationDrift />
     </div>
   );
 };
