@@ -3,12 +3,12 @@ import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Navigate } from "react-router-dom";
 
-import { useGetUserQuery, useGetPermissionsQuery } from "@api";
+import { useGetUserQuery, useGetPermissionsQuery, useGetUserPreferencesQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
 import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
 import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
 import { LOCAL_STORAGE_KEYS, ROUTES, Permissions, UserRole } from "@constants";
-import { setUser, setPermissions } from "@reducer";
+import { setUser, setPermissions, setPreferences } from "@reducer";
 import { hasPermissions } from "@utils";
 
 interface PrivateLayoutProps {
@@ -29,13 +29,18 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
 
   const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
   const { data: permissions, isLoading: isPermissionsLoading } = useGetPermissionsQuery();
+  // Restore saved preferences (e.g. sidebar order) on refresh. Not part of the
+  // loading gate below: roles without view:user:preferences get a 403, leaving
+  // `userPreferences` undefined, and the layout simply falls back to defaults.
+  const { data: userPreferences } = useGetUserPreferencesQuery();
 
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (userData) dispatch(setUser(userData));
     if (permissions) dispatch(setPermissions(permissions));
-  }, [userData, permissions]);
+    if (userPreferences) dispatch(setPreferences(userPreferences));
+  }, [userData, permissions, userPreferences]);
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />;

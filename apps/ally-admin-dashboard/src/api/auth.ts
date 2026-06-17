@@ -195,6 +195,7 @@ const authAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body,
       }),
+      invalidatesTags: [TAG_TYPES.USER_PREFERENCES],
     }),
   }),
 });
