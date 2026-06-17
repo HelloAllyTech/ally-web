@@ -1,4 +1,5 @@
 export * from "./access-denied/AccessDenied";
+export * from "./complete-profile/CompleteProfile";
 export * from "./analytics/Analytics";
 export * from "./audio-call/AudioCall";
 export * from "./auth/Login";

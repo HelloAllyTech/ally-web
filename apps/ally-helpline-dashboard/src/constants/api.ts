@@ -3,6 +3,7 @@ export const ApiEndpoints = {
     SIGNUP: "/v1/auth/signup",
     LOGIN: "/v1/auth/login",
     GET_USER: "/v1/users/me",
+    COMPLETE_PROFILE: "/v1/users/me/complete-profile",
     GENERATE_OTP: "/v2/auth/generate-otp",
     VERIFY_OTP: "/v2/auth/verify-otp",
     MAGIC_LINK_VERIFY: "/v1/auth/magic-link/verify",

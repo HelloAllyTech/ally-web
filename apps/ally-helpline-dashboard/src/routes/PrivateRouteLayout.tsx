@@ -17,6 +17,7 @@ import {
   Archives,
   Analytics,
   AudioCall,
+  CompleteProfile,
   PostCallSummary,
   Search,
   StressBuster,
@@ -101,10 +102,15 @@ const PrivateRouteLayout: FC = () => {
       return ROUTES.CALLS;
     if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
     if (hasReviewPermission(permissions)) return ROUTES.REVIEW;
-    return ROUTES.HOME;
+    // Fallback: ROUTES.HOME ("/") has no page of its own and only redirects to
+    // itself (blank screen). Send unmatched users to Learn, which always
+    // renders and defaults to the Simulations tab.
+    return ROUTES.LEARN;
   };
 
   if (!user) return <></>;
+  // Bulk-created accounts must finish their profile before entering the app.
+  if (user.profileCompleted === false) return <CompleteProfile />;
   return (
     <NavbarWrapper>
       <Routes>

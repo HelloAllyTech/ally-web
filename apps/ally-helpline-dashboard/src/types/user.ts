@@ -6,6 +6,9 @@ export interface User {
   role: UserRole;
   userId: number;
   status: string;
+  // False for accounts created in bulk by an admin (no name yet); gates the
+  // user into the Complete Profile screen on first login.
+  profileCompleted?: boolean;
 }
 
 export enum UserRole {

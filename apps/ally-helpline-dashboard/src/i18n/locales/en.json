@@ -319,6 +319,14 @@
     },
     "goToLogin": "Go to login"
   },
+  "completeProfile": {
+    "title": "Complete your profile",
+    "subtitle": "Tell us a little about yourself to get started.",
+    "nameLabel": "Full name",
+    "namePlaceholder": "Enter your full name",
+    "submit": "Continue",
+    "error": "Couldn't save your profile. Please try again."
+  },
   "terms": {
     "title": "Terms and agreement",
     "footerPrefix": "For complete details, please review our",

@@ -158,6 +158,19 @@ const authAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Completes the current user's profile on first login (bulk-created
+     * accounts). Invalidates the USER tag so the gate clears on refetch.
+     */
+    completeProfile: builder.mutation<{ success: boolean }, { name: string; phone?: string }>({
+      query: body => ({
+        url: ApiEndpoints.AUTH.COMPLETE_PROFILE,
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.USER],
+    }),
+
+    /**
      * Verifies magic link token and authenticates user.
      * @param {string} token - Magic link token from URL
      * @returns {Promise<VerifyOTPResponse>} Authentication response with tokens
@@ -195,4 +208,5 @@ export const {
   useGetProfileImageUrlMutation,
   useGetLogoUrlQuery,
   useVerifyMagicLinkMutation,
+  useCompleteProfileMutation,
 } = authAPI;
