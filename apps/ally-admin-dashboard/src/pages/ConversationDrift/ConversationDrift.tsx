@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { ScaleTypes } from "@carbon/charts";
-import { HeatmapChart, LineChart, SimpleBarChart } from "@carbon/charts-react";
+import { LineChart, SimpleBarChart } from "@carbon/charts-react";
 import {
   Button,
   Dropdown,
@@ -56,6 +56,8 @@ const barOpts = (leftTitle: string) => ({
   legend: { enabled: false },
   toolbar: { enabled: false },
 });
+// Two series — Live (pipeline) vs Historical (transcript) — like the
+// voice-latency chart's pipeline/transcript split.
 const trendOpts = {
   height: CHART_HEIGHT,
   axes: {
@@ -63,8 +65,16 @@ const trendOpts = {
     bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: "Period" },
   },
   curve: "curveMonotoneX",
-  legend: { enabled: false },
+  color: { scale: { Live: "#0f62fe", Historical: "#8d8d8d" } },
+  legend: { enabled: true },
   toolbar: { enabled: false },
+};
+
+// Session source → friendly series name for the trend.
+const SOURCE_LABEL: Record<string, string> = {
+  pipeline: "Live",
+  transcript: "Historical",
+  unknown: "Unknown",
 };
 
 // Friendly labels + a distinct colour per drift kind for the consolidated chart.
@@ -80,26 +90,28 @@ const DRIFT_KIND_LABEL: Record<string, string> = {
   role_slip: "Role slip",
   wrong_intent: "Wrong intent",
 };
-// Kinds × language as a heatmap (not a stacked bar): a session can have several
-// kinds, so each (language, kind) cell is independent and a multi-kind session
-// simply lights up multiple cells — no misleading sum-to-whole.
-const heatmapOpts = {
+// One distinct colour per drift kind for the consolidated "kinds of drift" bar.
+const DRIFT_KIND_COLOR: Record<string, string> = {
+  "Off-topic": "#fa4d56",
+  Gibberish: "#a2191f",
+  Degrading: "#ff832b",
+  "Mostly incoherent": "#8a3800",
+  Hallucination: "#8a3ffc",
+  "Context lock-in": "#6929c4",
+  "Wrong language": "#0f62fe",
+  Repetition: "#005d5d",
+  "Role slip": "#9f1853",
+  "Wrong intent": "#1192e8",
+};
+const kindsOpts = {
   height: CHART_HEIGHT,
   axes: {
-    bottom: { title: "Language", mapsTo: "language", scaleType: ScaleTypes.LABELS },
-    left: { title: "Drift kind", mapsTo: "kind", scaleType: ScaleTypes.LABELS },
+    left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Sessions" },
+    bottom: { mapsTo: "group", scaleType: ScaleTypes.LABELS },
   },
-  heatmap: { colorLegend: { title: "Sessions affected" } },
+  color: { scale: DRIFT_KIND_COLOR },
+  legend: { enabled: false },
   toolbar: { enabled: false },
-};
-
-// Code → friendly language label (reused for the heatmap axis).
-const LANG_LABEL: Record<string, string> = {
-  ta: "Tamil",
-  hi: "Hindi",
-  bn: "Bengali",
-  te: "Telugu",
-  en: "English",
 };
 
 // "By experiment" is one chart with a dimension selector instead of three.
@@ -109,39 +121,19 @@ const EXP_ITEMS: { id: "promptVersion" | "model" | "provider"; label: string }[]
   { id: "provider", label: "Provider" },
 ];
 
-// Consolidated "root cause" chart: attribution (STT vs LLM) + the STT
-// specifics (garble severity + error type) in one bar chart. Coloured by
-// family — LLM causes cool (blue/purple), STT causes warm (red/orange) — so
-// the STT-vs-LLM split reads at a glance.
+// "Root cause" = the STT-vs-LLM attribution of DRIFTED sessions only (why the
+// drift happened). Coloured by family — LLM cool (blue/purple), STT warm.
 const ROOT_CAUSE_LABEL: Record<string, string> = {
   llm_direct: "LLM (direct)",
   context_lockin: "LLM: context lock-in",
   stt_direct: "STT (direct)",
   stt_cascade: "STT (cascade)",
-  partial: "Garble: partial",
-  severe: "Garble: severe",
-  phonetic_garble: "STT: phonetic garble",
-  wrong_language: "STT: wrong language",
-  number_format: "STT: number format",
-  entity_swap: "STT: entity swap",
-  code_mix_fail: "STT: code-mix fail",
-  truncation: "STT: truncation",
 };
 const ROOT_CAUSE_COLOR: Record<string, string> = {
-  // LLM family — cool
   "LLM (direct)": "#0f62fe",
   "LLM: context lock-in": "#6929c4",
-  // STT family — warm
   "STT (direct)": "#fa4d56",
   "STT (cascade)": "#ff832b",
-  "Garble: partial": "#ffb784",
-  "Garble: severe": "#a2191f",
-  "STT: phonetic garble": "#d2a106",
-  "STT: wrong language": "#9f1853",
-  "STT: number format": "#8a3800",
-  "STT: entity swap": "#ba4e00",
-  "STT: code-mix fail": "#ba4e8a",
-  "STT: truncation": "#570408",
 };
 const rootCauseOpts = {
   height: CHART_HEIGHT,
@@ -150,6 +142,39 @@ const rootCauseOpts = {
     bottom: { mapsTo: "group", scaleType: ScaleTypes.LABELS },
   },
   color: { scale: ROOT_CAUSE_COLOR },
+  legend: { enabled: false },
+  toolbar: { enabled: false },
+};
+
+// STT input quality (counselor-side garble severity + error type) — a separate
+// concern from drift, shown across ALL sessions. Warm STT palette.
+const STT_INPUT_LABEL: Record<string, string> = {
+  partial: "Garble: partial",
+  severe: "Garble: severe",
+  phonetic_garble: "Phonetic garble",
+  wrong_language: "Wrong language",
+  number_format: "Number format",
+  entity_swap: "Entity swap",
+  code_mix_fail: "Code-mix fail",
+  truncation: "Truncation",
+};
+const STT_INPUT_COLOR: Record<string, string> = {
+  "Garble: partial": "#ffb784",
+  "Garble: severe": "#a2191f",
+  "Phonetic garble": "#d2a106",
+  "Wrong language": "#9f1853",
+  "Number format": "#8a3800",
+  "Entity swap": "#ba4e00",
+  "Code-mix fail": "#ba4e8a",
+  Truncation: "#570408",
+};
+const sttInputOpts = {
+  height: CHART_HEIGHT,
+  axes: {
+    left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Sessions" },
+    bottom: { mapsTo: "group", scaleType: ScaleTypes.LABELS },
+  },
+  color: { scale: STT_INPUT_COLOR },
   legend: { enabled: false },
   toolbar: { enabled: false },
 };
@@ -258,6 +283,14 @@ export const ConversationDrift = () => {
       })),
     [data],
   );
+  const kindsBars = useMemo(
+    () =>
+      (data?.kindsOfDrift ?? []).map(r => ({
+        group: DRIFT_KIND_LABEL[r.key] ?? r.key,
+        value: r.count,
+      })),
+    [data],
+  );
   const rootCauseBars = useMemo(
     () =>
       (data?.rootCause ?? []).map(r => ({
@@ -266,40 +299,23 @@ export const ConversationDrift = () => {
       })),
     [data],
   );
-  const onsetBars = useMemo(
+  const sttInputBars = useMemo(
     () =>
-      (data?.firstDriftTurnHistogram ?? []).map(b => ({
-        group: `turn ${b.turn}`,
-        value: b.sessions,
+      (data?.sttInputQuality ?? []).map(r => ({
+        group: STT_INPUT_LABEL[r.key] ?? r.key,
+        value: r.count,
       })),
     [data],
   );
   const trendData = useMemo(
     () =>
       (data?.driftTrend ?? []).map(p => ({
-        group: "Drift rate",
+        group: SOURCE_LABEL[p.source] ?? p.source,
         key: p.bucket,
         value: Number((p.driftRate * 100).toFixed(1)),
       })),
     [data],
   );
-
-  // Full language × kind grid (missing cells filled with 0 so the heatmap is a
-  // complete rectangle). Kinds are ordered by the DRIFT_KIND_LABEL declaration.
-  const heatmapData = useMemo(() => {
-    const rows = data?.kindByLanguage ?? [];
-    if (!rows.length) return [];
-    const langs = [...new Set(rows.map(r => r.language))];
-    const kindsPresent = Object.keys(DRIFT_KIND_LABEL).filter(k => rows.some(r => r.kind === k));
-    const lookup = new Map(rows.map(r => [`${r.language}|${r.kind}`, r.count]));
-    return langs.flatMap(lang =>
-      kindsPresent.map(k => ({
-        language: LANG_LABEL[lang] ?? lang,
-        kind: DRIFT_KIND_LABEL[k] ?? k,
-        value: lookup.get(`${lang}|${k}`) ?? 0,
-      })),
-    );
-  }, [data]);
 
   // "By experiment" rows for the selected dimension. Treat an all-'unknown'
   // result as empty: those sessions predate experiment-config capture, so a lone
@@ -402,20 +418,13 @@ export const ConversationDrift = () => {
                   </Tile>
                 ))}
               </div>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-4">
+              <div className="grid grid-cols-1 gap-6 mt-4">
                 <Cell
                   title="Drift rate over time"
-                  caption="% of sessions that drifted, per period"
+                  caption="% of sessions that drifted, per period — Live (real app runs) vs Historical (backfilled)"
                   empty={!data?.driftTrend?.length}
                 >
                   <LineChart data={trendData} options={trendOpts} />
-                </Cell>
-                <Cell
-                  title="When does drift start?"
-                  caption="Sessions by the turn at which drift first began (empty until sessions drift)"
-                  empty={!data?.firstDriftTurnHistogram?.length}
-                >
-                  <SimpleBarChart data={onsetBars} options={barOpts("Sessions")} />
                 </Cell>
               </div>
 
@@ -431,28 +440,39 @@ export const ConversationDrift = () => {
                 </Cell>
               </div>
 
-              {/* KINDS OF DRIFT × LANGUAGE — heatmap (cells independent; a
-                  multi-kind session lights up several cells, no double-count) */}
-              <SubHeading>Kinds of drift by language (sessions affected)</SubHeading>
+              {/* KINDS OF DRIFT — consolidated colour-coded bar, drifted sessions */}
+              <SubHeading>Kinds of drift (drifted sessions)</SubHeading>
               <div className="grid grid-cols-1 gap-6">
                 <Cell
-                  title="Kinds of drift × language"
-                  caption="Sessions with ≥1 turn of each drift kind, per language. Darker = more sessions. A session can show several kinds, so it counts in multiple cells — drift categories only (healthy states excluded)."
-                  empty={!data?.kindByLanguage?.length}
+                  title="Kinds of drift"
+                  caption="Among sessions that drifted, how many showed each kind. A session can show several kinds, so bars overlap. Empty when no session crossed the drift threshold."
+                  empty={!data?.kindsOfDrift?.length}
                 >
-                  <HeatmapChart data={heatmapData} options={heatmapOpts} />
+                  <SimpleBarChart data={kindsBars} options={kindsOpts} />
                 </Cell>
               </div>
 
-              {/* ROOT CAUSE / STT — one consolidated, colour-coded bar chart */}
-              <SubHeading>Root cause — STT vs LLM (sessions affected)</SubHeading>
+              {/* ROOT CAUSE — attribution of DRIFTED sessions (STT vs LLM) */}
+              <SubHeading>Root cause — STT vs LLM (drifted sessions)</SubHeading>
               <div className="grid grid-cols-1 gap-6">
                 <Cell
                   title="Root cause"
-                  caption="Sessions affected by each root cause — LLM (blue/purple) vs STT (red/orange), with the STT garble severity & error type. A session can show several, so bars overlap."
+                  caption="Among drifted sessions, what caused it — LLM (blue/purple) vs STT (red/orange). Empty when no session drifted."
                   empty={!data?.rootCause?.length}
                 >
                   <SimpleBarChart data={rootCauseBars} options={rootCauseOpts} />
+                </Cell>
+              </div>
+
+              {/* STT INPUT QUALITY — counselor-side garble/errors, ALL sessions */}
+              <SubHeading>STT input quality (all sessions)</SubHeading>
+              <div className="grid grid-cols-1 gap-6">
+                <Cell
+                  title="Counselor STT garble & error types"
+                  caption="How often the counselor's speech-to-text was garbled, and the error type — across all sessions, independent of whether the AI drifted. A session can show several, so bars overlap."
+                  empty={!data?.sttInputQuality?.length}
+                >
+                  <SimpleBarChart data={sttInputBars} options={sttInputOpts} />
                 </Cell>
               </div>
 

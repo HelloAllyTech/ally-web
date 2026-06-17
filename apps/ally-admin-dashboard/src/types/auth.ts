@@ -256,14 +256,6 @@ export interface DriftCount {
   count: number;
 }
 
-/** One cell of the language × drift-kind heatmap (sessions affected). */
-export interface DriftKindByLanguage {
-  language: string;
-  /** drift kind (off_topic / degrading / hallucination / ...). */
-  kind: string;
-  count: number;
-}
-
 /** Drift rate grouped by an experiment dimension (model / provider / prompt version). */
 export interface DriftRateByDimension {
   /** dimension value, or 'unknown' if not yet captured for that session. */
@@ -286,6 +278,8 @@ export interface DriftHistogramBin {
 
 export interface DriftTrendPoint {
   bucket: string;
+  /** session source: 'pipeline' (live) | 'transcript' (historical) | 'unknown'. */
+  source: string;
   totalSessions: number;
   driftedSessions: number;
   driftRate: number;
@@ -298,8 +292,8 @@ export interface ConversationDriftResponse {
   attributionMix: DriftCount[];
   failureModeBreakdown: DriftCount[];
   kindsOfDrift: DriftCount[];
-  kindByLanguage: DriftKindByLanguage[];
   rootCause: DriftCount[];
+  sttInputQuality: DriftCount[];
   topicMix: DriftCount[];
   coherenceMix: DriftCount[];
   sttGarbleMix: DriftCount[];
