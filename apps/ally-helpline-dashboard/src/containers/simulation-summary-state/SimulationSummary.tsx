@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { FeedbackSection, LoaderSkeleton } from "./components";
 import { SimulationSummaryProps } from "./types";
 
@@ -10,6 +12,8 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
   retryMaxReached = false,
   hideSection = false,
 }) => {
+  const { t } = useTranslation();
+
   if (hideSection) return null;
 
   const showFeedback = retryMaxReached || (summaryData?.details?.summary?.feedback ?? false);
@@ -24,6 +28,12 @@ export const SimulationSummary: FC<SimulationSummaryProps> = ({
           <FeedbackSection {...summaryData} sessionId={sessionId} />
         ) : (
           <div className="max-h-full w-full overflow-hidden">
+            <p
+              className="px-6 pt-6 text-sm font-medium font-primary text-gray-500 animate-pulse"
+              data-testid="summary-generating-text"
+            >
+              {t("simulationSummary.generatingFeedback", "Generating your feedback…")}
+            </p>
             <LoaderSkeleton />
           </div>
         )}
