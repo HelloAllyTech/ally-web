@@ -42,6 +42,21 @@ export const legalContentAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SETTINGS],
     }),
+    getTermsAndAgreement: builder.query<LegalContentResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.SETTINGS.TERMS_AND_AGREEMENT,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.SETTINGS],
+    }),
+    updateTermsAndAgreement: builder.mutation<{ success: boolean }, UpdateLegalContentRequest>({
+      query: body => ({
+        url: ApiEndpoints.SETTINGS.TERMS_AND_AGREEMENT,
+        method: HttpMethod.PUT,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.SETTINGS],
+    }),
   }),
 });
 
@@ -50,4 +65,6 @@ export const {
   useGetPrivacyQuery,
   useUpdateTermsMutation,
   useUpdatePrivacyMutation,
+  useGetTermsAndAgreementQuery,
+  useUpdateTermsAndAgreementMutation,
 } = legalContentAPI;
