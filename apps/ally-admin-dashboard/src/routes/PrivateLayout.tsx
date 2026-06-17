@@ -69,8 +69,18 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     <ScenarioReportsSocketProvider>
       <div className="flex h-screen bg-white">
         <Sidebar />
-        <main className="flex-1 overflow-auto">
-          <div className="p-4 lg:p-6 h-[100vh] overflow-y-hidden">
+        {/* Single scroll container for the whole app shell: main never scrolls,
+            the padded wrapper is the one scroll area. A page that sets its own
+            overflow fills the wrapper exactly (its scroll is the one); a tall
+            page with no own overflow scrolls the wrapper — one scrollbar either way.
+            `relative` makes this wrapper the containing block for absolutely-
+            positioned descendants — notably Carbon's `cds--visually-hidden`
+            <label>s from hideLabel Dropdowns. Without it those labels resolve
+            against the initial containing block (<html>) and stretch the page
+            scroll height far past the content, producing a phantom second
+            scrollbar and empty white space you can scroll into below the page. */}
+        <main className="flex-1 overflow-hidden">
+          <div className="relative p-4 lg:p-6 h-full overflow-y-auto">
             {hasAccess ? children : <AccessDenied />}
           </div>
         </main>

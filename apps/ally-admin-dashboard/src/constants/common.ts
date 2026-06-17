@@ -162,6 +162,8 @@ export const ApiEndpoints = {
   ANALYTICS: {
     OVERVIEW: "/v1/analytics/overview",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
+    CONVERSATION_DRIFT: "/v1/analytics/conversation-drift",
+    CONVERSATION_DRIFT_BACKFILL: "/v1/analytics/conversation-drift/backfill",
   },
   SETTINGS: {
     TERMS: "/v1/settings/terms",

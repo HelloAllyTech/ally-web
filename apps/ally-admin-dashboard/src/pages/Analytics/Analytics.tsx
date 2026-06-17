@@ -22,6 +22,8 @@ import { AnalyticsBucket, AnalyticsRange } from "@types";
 
 import { buildVoiceLatencySeries, latencyBucketTitle, LATENCY_GROUPS } from "./latencyChart";
 
+import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
+
 const CHART_HEIGHT = "320px";
 
 type RangeItem = { id: AnalyticsRange; label: string };
@@ -222,7 +224,7 @@ export const Analytics = () => {
   const showSkeletons = isLoading && !data;
 
   return (
-    <div className="font-primary h-full overflow-y-auto pr-1">
+    <div className="font-primary pr-1">
       <Theme theme="white">
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -350,6 +352,9 @@ export const Analytics = () => {
           )}
         </Section>
       </Theme>
+
+      {/* Conversation drift analytics — same page, its own filters + charts. */}
+      <ConversationDrift />
     </div>
   );
 };
