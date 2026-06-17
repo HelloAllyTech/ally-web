@@ -15,7 +15,7 @@ import { RoomStatus } from "@types";
 export const Simulation = () => {
   const navigate = useNavigate();
   const { id, scenarioTitle } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
 
   const simulationTranslations: SimulationTranslations = {
@@ -76,7 +76,7 @@ export const Simulation = () => {
 
   const onEndSimulation = async () => {
     try {
-      await endSimulation({ sessionId: id });
+      await endSimulation({ sessionId: id, languageCode: i18n.language });
       logger.info(`Ended simulation for session: ${id}`);
     } catch (error) {
       logger.error(`Failed to end simulation: ${error}`);

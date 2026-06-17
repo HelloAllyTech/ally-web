@@ -35,6 +35,7 @@ const mockWakeLockRequest = vi.fn().mockResolvedValue({
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+    i18n: { language: "en" },
   }),
 }));
 
@@ -205,7 +206,10 @@ describe("Simulation", () => {
 
     await fireEvent.click(endBtn);
 
-    expect(mockEndSimulation).toHaveBeenCalledWith({ sessionId: "test-session-123" });
+    expect(mockEndSimulation).toHaveBeenCalledWith({
+      sessionId: "test-session-123",
+      languageCode: "en",
+    });
   });
 
   test("should render warning dialog with correct translations", () => {

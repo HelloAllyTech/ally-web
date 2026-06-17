@@ -137,6 +137,7 @@ export interface StartSimulationResponse {
 
 export interface EndSimulationInput {
   sessionId: string;
+  languageCode?: string;
 }
 
 export interface EndSimulationResponse {
