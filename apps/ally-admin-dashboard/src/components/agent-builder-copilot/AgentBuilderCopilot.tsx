@@ -4,8 +4,10 @@ import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useGenerateAgentPromptMutation, useGetAutofillModelsQuery } from "@api";
+import { InfoIcon } from "@assets";
 import { DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS, en } from "@constants";
 
+import { AgentBuilderSystemSkillPanel } from "./AgentBuilderSystemSkillPanel";
 import { AutofillModelSelect } from "../autofill-model-select";
 import { Button } from "../button";
 import { InputField } from "../input-field";
@@ -31,6 +33,7 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods 
   const { data: apiModels } = useGetAutofillModelsQuery();
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
+  const [isSkillPanelOpen, setIsSkillPanelOpen] = useState(false);
 
   const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
   const selectedProvider =
@@ -104,6 +107,15 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods 
         >
           {isGenerating ? en.simulation.agentBuilder.generating : generateLabel}
         </Button>
+        <button
+          type="button"
+          onClick={() => setIsSkillPanelOpen(true)}
+          title={en.simulation.agentBuilder.viewSystemSkill}
+          aria-label={en.simulation.agentBuilder.viewSystemSkill}
+          className="flex items-center justify-center w-9 h-9 rounded-md text-typography-500 hover:bg-neutral-100 transition-colors"
+        >
+          <InfoIcon width={18} height={18} />
+        </button>
       </div>
 
       {isGenerating && (
@@ -124,6 +136,11 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods 
           disabled={isGenerating}
         />
       )}
+
+      <AgentBuilderSystemSkillPanel
+        isOpen={isSkillPanelOpen}
+        onClose={() => setIsSkillPanelOpen(false)}
+      />
     </div>
   );
 };

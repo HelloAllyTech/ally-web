@@ -470,6 +470,16 @@ export const en = {
       generatedSuccessfully: "Agent system prompt generated successfully",
       failedToGenerate: "Failed to generate agent system prompt. Please try again.",
       emptyDescription: "Please describe your agent before generating.",
+      viewSystemSkill: "View the system skill used to generate this",
+      systemSkillPanelTitle: "System skill",
+      systemSkillPanelSubtitle:
+        "The system skill used to generate and regenerate your roleplay agent prompt.",
+      systemSkillNameLabel: "Name",
+      systemSkillDescriptionLabel: "Description",
+      systemSkillPromptLabel: "Prompt",
+      systemSkillManagedNote: "This skill is managed under System Skills.",
+      systemSkillLoading: "Loading system skill…",
+      systemSkillNotFound: "Could not load the system skill. It may not be configured yet.",
     },
   },
   notification: {

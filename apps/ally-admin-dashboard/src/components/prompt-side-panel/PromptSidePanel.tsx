@@ -487,6 +487,12 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="space-y-3">
+            <Field label="UUID">
+              <span className="font-mono text-base text-typography-800 break-all">
+                {selectedPrompt?.id ?? "—"}
+              </span>
+            </Field>
+
             <Field label="Prompt Code">
               <span className="font-mono text-base text-typography-800">
                 {selectedPrompt?.promptCode ?? formData.promptCode ?? "—"}
