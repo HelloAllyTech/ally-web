@@ -3,6 +3,7 @@ export * from "./detectionConfig";
 export * from "./permissions";
 export * from "./eventManagement";
 export * from "./createSimulation";
+export * from "./agentBuilderOutput";
 export * from "./eventMapping";
 export * from "./expressionTreeHelpers";
 export * from "./tagUtils";
