@@ -756,7 +756,17 @@ export const CreateSimulation: FC = () => {
         return renderStep(<SimulationEventMapTable simulationId={simulationId} />);
       case stepIds.agentBuilderCopilot:
         return renderStep(
-          <AgentBuilderCopilot formMethods={formMethods} simulationId={simulationId} />,
+          <AgentBuilderCopilot
+            formMethods={formMethods}
+            simulationId={simulationId}
+            onApplied={() => {
+              // Switching INTO basic-settings is ungated (the mandatory-field
+              // gate only fires when leaving it), so jump straight there to
+              // show the auto-filled values.
+              setCurrentStep(stepIds.basicSettings);
+              containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />,
         );
       case stepIds.report:
         return renderStep(
