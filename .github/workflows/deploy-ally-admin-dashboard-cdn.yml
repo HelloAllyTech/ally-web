@@ -303,7 +303,12 @@ jobs:
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
 
-          aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/             --delete             --cache-control "public, max-age=86400"             --metadata-directive REPLACE
+          # Pass 1: hashed, immutable assets — cache hard for a year. Exclude *.html so the
+          # SPA entry point is never long-cached. --delete prunes stale files.
+          aws s3 sync dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ --delete --exclude "*.html" --cache-control "public, max-age=31536000, immutable" --metadata-directive REPLACE
+
+          # Pass 2: index.html — always revalidate so users pick up new asset hashes after a deploy.
+          aws s3 cp dist/apps/ally-admin-dashboard/ s3://${{ steps.cdn-config.outputs.s3_website_bucket }}/ --recursive --exclude "*" --include "*.html" --content-type "text/html" --cache-control "no-cache, must-revalidate" --metadata-directive REPLACE
 
           if [ -f "dist/apps/ally-admin-dashboard/.well-known/apple-app-site-association" ]; then
             echo ":gear: Setting correct Content-Type for apple-app-site-association..." >> $GITHUB_STEP_SUMMARY

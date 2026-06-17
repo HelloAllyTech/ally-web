@@ -231,9 +231,20 @@ jobs:
         run: |
           echo ":cloud: Syncing files to S3..." >> $GITHUB_STEP_SUMMARY
           
+          # Pass 1: hashed, immutable assets — cache hard for a year.
+          # Exclude *.html so the SPA entry point is never long-cached. --delete prunes stale files.
           aws s3 sync apps/ally-helpline-dashboard/dist/ s3://${{ secrets.PRD_DASHBOARD_S3_BUCKET }}/ \
             --delete \
-            --cache-control "public, max-age=86400" \
+            --exclude "*.html" \
+            --cache-control "public, max-age=31536000, immutable" \
+            --metadata-directive REPLACE
+
+          # Pass 2: index.html — always revalidate so users pick up new asset hashes after a deploy.
+          aws s3 cp apps/ally-helpline-dashboard/dist/ s3://${{ secrets.PRD_DASHBOARD_S3_BUCKET }}/ \
+            --recursive \
+            --exclude "*" --include "*.html" \
+            --content-type "text/html" \
+            --cache-control "no-cache, must-revalidate" \
             --metadata-directive REPLACE
           
           if [ -f "apps/ally-helpline-dashboard/dist/.well-known/apple-app-site-association" ]; then
