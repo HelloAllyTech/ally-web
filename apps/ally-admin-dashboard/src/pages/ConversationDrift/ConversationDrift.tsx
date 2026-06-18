@@ -267,7 +267,13 @@ export const ConversationDrift = ({
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Heading className="text-2xl">Conversation drift</Heading>
-            <Button kind="tertiary" size="md" disabled={jobActive} onClick={handleRerun}>
+            <Button
+              kind="tertiary"
+              size="md"
+              disabled
+              title="3-month backfill already completed"
+              onClick={handleRerun}
+            >
               {jobActive ? "Re-running…" : "Re-run last 3 months"}
             </Button>
           </div>
@@ -336,7 +342,10 @@ export const ConversationDrift = ({
                   caption="% of sessions that drifted, per language"
                   empty={!data?.driftRateByLanguage?.length}
                 >
-                  <SimpleBarChart data={driftRateBars} options={barOpts({ leftTitle: "Drift rate %" })} />
+                  <SimpleBarChart
+                    data={driftRateBars}
+                    options={barOpts({ leftTitle: "Drift rate %" })}
+                  />
                 </ChartCard>
               </div>
 
@@ -424,7 +433,10 @@ export const ConversationDrift = ({
                   }
                   empty={expEmpty}
                 >
-                  <SimpleBarChart data={ratePctBars(expRows)} options={barOpts({ leftTitle: "Drift rate %" })} />
+                  <SimpleBarChart
+                    data={ratePctBars(expRows)}
+                    options={barOpts({ leftTitle: "Drift rate %" })}
+                  />
                 </ChartCard>
               </div>
             </Tile>
