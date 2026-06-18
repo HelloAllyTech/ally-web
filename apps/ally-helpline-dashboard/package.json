@@ -37,7 +37,7 @@
     "livekit-client": "^2.15.2",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
-    "posthog-js": "^1.364.7",
+    "posthog-js": "^1.390.2",
     "react": "18.3.1",
     "react-audio-visualize": "^1.2.0",
     "react-calendar": "^6.0.0",
