@@ -25,6 +25,8 @@ const mockEn = vi.hoisted(() => ({
     rolePlays: "Roleplays",
     editSimulation: "Edit Simulation",
     createNewSimulation: "Create Simulation",
+    advancedEventsLatencyWarning: (count: number) =>
+      `Heads up: ${count} advanced events are selected for this simulation. Selecting more than 10 can increase response latency during a session.`,
   },
   errors: {
     failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
@@ -66,6 +68,9 @@ const mockCreateSimulation = vi.fn();
 const mockUpdateSimulation = vi.fn();
 const mockGetSimulationById = vi.fn();
 const mockDeleteCoverImage = vi.fn();
+// Mutable count of mapped (advanced) events returned to the page; tests vary it
+// to exercise the latency warning threshold.
+const mockMappedEvents = vi.hoisted(() => ({ count: 0 }));
 
 vi.mock("@api", () => ({
   useCreateSimulationMutation: () => [mockCreateSimulation, { isLoading: false }],
@@ -74,6 +79,9 @@ vi.mock("@api", () => ({
   useDeleteCoverImageMutation: () => [mockDeleteCoverImage],
   useGetAvailableLanguageVoicesQuery: () => ({ data: [] }),
   useGetPromptsQuery: () => ({ data: [] }),
+  useGetMappedScenarioEventsQuery: () => ({
+    data: { data: Array.from({ length: mockMappedEvents.count }, (_, i) => ({ id: String(i) })) },
+  }),
 }));
 
 // Mock hooks
@@ -98,6 +106,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 vi.mock("@assets", () => ({
   ArrowDown: () => <span data-testid="arrow-down" />,
+  WarningAlt: () => <span data-testid="warning-alt" />,
 }));
 
 vi.mock("@components", () => ({
@@ -139,6 +148,7 @@ vi.mock("@components", () => ({
 // Mock constants
 vi.mock("@constants", () => ({
   en: mockEn,
+  ADVANCED_EVENTS_LATENCY_THRESHOLD: 10,
   // Agent Builder Copilot tab is gated; keep it hidden in these tests.
   canUseAgentBuilderCopilot: () => false,
   ExperienceMode: {
@@ -252,6 +262,7 @@ describe("CreateSimulation", () => {
     vi.clearAllMocks();
     (useForm as any).mockReturnValue(mockFormMethods);
     mockParams.id = undefined;
+    mockMappedEvents.count = 0;
 
     // Mock scrollTo function for containerRef
     Element.prototype.scrollTo = vi.fn();
@@ -290,6 +301,24 @@ describe("CreateSimulation", () => {
 
       expect(screen.queryByText("Voice")).not.toBeInTheDocument();
       expect(screen.queryByTestId("voice-dropdown-voice")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Advanced events latency warning", () => {
+    it("does not show the latency warning at or below the threshold", () => {
+      mockMappedEvents.count = 10;
+      renderCreateSimulation();
+
+      expect(screen.queryByTestId("warning-alt")).not.toBeInTheDocument();
+      expect(screen.queryByText(/advanced events/)).not.toBeInTheDocument();
+    });
+
+    it("shows the latency warning when advanced events exceed the threshold", () => {
+      mockMappedEvents.count = 11;
+      renderCreateSimulation();
+
+      expect(screen.getByTestId("warning-alt")).toBeInTheDocument();
+      expect(screen.getByText(/11 advanced events/)).toBeInTheDocument();
     });
   });
 

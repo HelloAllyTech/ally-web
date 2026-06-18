@@ -188,6 +188,8 @@ export const en = {
     imageMaxSizeLabel: "2MB",
     file: "File",
     addEvent: "Add event",
+    advancedEventsLatencyWarning: (count: number) =>
+      `Heads up: ${count} advanced events are selected for this simulation. Selecting more than 10 can increase response latency during a session.`,
     bulkAddEvents: "Bulk add events",
     bulkAddEventsTitle: "Bulk add events",
     selectTags: "Select tags",
