@@ -972,7 +972,8 @@
       "listening": "ಕೇಳುತ್ತಿದೆ...",
       "yourTurnToSpeak": "ಈಗ ನೀವು ಮಾತನಾಡುವ ಸರದಿ",
       "yourTurnToListen": "ಈಗ ನೀವು ಕೇಳುವ ಸರದಿ",
-      "thinking": "ಯೋಚಿಸುತ್ತಿದೆ..."
+      "thinking": "ಯೋಚಿಸುತ್ತಿದೆ...",
+      "paused": "ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ"
     },
     "warningDialog": {
       "titleNormal": "ಅಧಿವೇಶನ",

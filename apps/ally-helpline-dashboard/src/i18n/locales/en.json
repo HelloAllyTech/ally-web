@@ -981,7 +981,8 @@
       "listening": "Listening...",
       "yourTurnToSpeak": "Your turn to speak",
       "yourTurnToListen": "Your turn to listen",
-      "thinking": "Thinking..."
+      "thinking": "Thinking...",
+      "paused": "Paused"
     },
     "warningDialog": {
       "titleNormal": "Session",

@@ -421,6 +421,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           detectedEventIds={detectedEventIds}
           isMuted={isMuted}
           isFocusMode={isFocusMode}
+          isPaused={isPaused}
           checklistMode={checklistMode}
           agentTurnStatus={agentTurnStatus} // ← add this
           checklistItems={checklistItems}

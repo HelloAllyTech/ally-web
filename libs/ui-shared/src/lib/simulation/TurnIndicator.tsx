@@ -12,6 +12,7 @@ export enum TurnState {
   USER_TURN_TO_SPEAK = "user_turn_to_speak",
   USER_TURN_TO_LISTEN = "user_turn_to_listen",
   THINKING = "thinking",
+  PAUSED = "paused",
   IDLE = "idle",
 }
 
@@ -26,6 +27,7 @@ const DEFAULT_TRANSLATIONS: TurnIndicatorTranslations = {
   yourTurnToSpeak: "Your turn to speak",
   yourTurnToListen: "Your turn to listen",
   thinking: "Thinking...",
+  paused: "Paused",
 };
 
 const getTurnMessage = (turnState: TurnState, t: TurnIndicatorTranslations): string => {
@@ -40,6 +42,8 @@ const getTurnMessage = (turnState: TurnState, t: TurnIndicatorTranslations): str
       return t.yourTurnToListen;
     case TurnState.THINKING:
       return t.thinking;
+    case TurnState.PAUSED:
+      return t.paused;
     case TurnState.IDLE:
     default:
       return "";
@@ -55,6 +59,8 @@ const getBackgroundColor = (turnState: TurnState): string => {
     case TurnState.AI_LISTENING:
     case TurnState.USER_TURN_TO_LISTEN:
       return "bg-blue-600";
+    case TurnState.PAUSED:
+      return "bg-gray-500";
     case TurnState.IDLE:
     default:
       return "bg-transparent";

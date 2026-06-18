@@ -972,7 +972,8 @@
       "listening": "सुन रहें है...",
       "yourTurnToSpeak": "अब आपको बोलना है",
       "yourTurnToListen": "अब आपको सुनना है",
-      "thinking": "सोच रहें है..."
+      "thinking": "सोच रहें है...",
+      "paused": "रोका गया"
     },
     "warningDialog": {
       "titleNormal": "सेशन",

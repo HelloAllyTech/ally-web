@@ -40,6 +40,7 @@ export interface SimulationInterfaceProps {
   detectedEventIds?: string[];
   isFocusMode: boolean;
   isMuted: boolean;
+  isPaused?: boolean;
   checklistMode?: ChecklistMode;
   checklistItems?: ChecklistItem[];
   isMicrophoneGranted: boolean;
@@ -60,6 +61,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   detectedEventIds,
   isFocusMode,
   isMuted,
+  isPaused = false,
   checklistMode = ChecklistMode.OFF,
   checklistItems = [],
   isMicrophoneGranted,
@@ -104,6 +106,15 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
 
   // Map agentTurnStatus from hook + LiveKit speaking into TurnState for each card
   const { remoteTurnState, localTurnState } = useMemo(() => {
+    // While paused, both cards show "Paused" — the underlying speaking/thinking/
+    // your-turn status is frozen and would otherwise be stale and misleading.
+    if (isPaused) {
+      return {
+        remoteTurnState: TurnState.PAUSED,
+        localTurnState: TurnState.PAUSED,
+      };
+    }
+
     const isLocalSpeaking = localParticipant?.isSpeaking || false;
     const isThinking = agentTurnStatus === "thinking";
 
@@ -124,7 +135,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
     }
 
     return { remoteTurnState, localTurnState };
-  }, [agentTurnStatus, debouncedRemoteSpeaking, localParticipant?.isSpeaking]);
+  }, [isPaused, agentTurnStatus, debouncedRemoteSpeaking, localParticipant?.isSpeaking]);
 
   const hasStateNames = stateNames.length > 0;
   const showSessionProgress = hasStateNames || !!(roomData?.timerMode && startTime);

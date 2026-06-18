@@ -51,6 +51,7 @@ export const Simulation = () => {
       yourTurnToSpeak: t("simulationPage.turnIndicator.yourTurnToSpeak"),
       yourTurnToListen: t("simulationPage.turnIndicator.yourTurnToListen"),
       thinking: t("simulationPage.turnIndicator.thinking"),
+      paused: t("simulationPage.turnIndicator.paused"),
     },
   };
 

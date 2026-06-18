@@ -23,6 +23,7 @@ export interface TurnIndicatorTranslations {
   yourTurnToSpeak: string;
   yourTurnToListen: string;
   thinking: string;
+  paused: string;
 }
 
 export interface SimulationTranslations {
