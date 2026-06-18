@@ -6,6 +6,8 @@ import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ToggleButtonGroup } from "@src/components";
 import { cn } from "@utils";
 
+import type { TFunction } from "i18next";
+
 export interface LeaderboardUser {
   userId: number;
   rank: number;
@@ -61,10 +63,7 @@ const getRankBadgeStyle = (rank: number): string => {
   }
 };
 
-const formatMinutesToHoursAndMinutes = (
-  minutes: number,
-  t: (key: string, defaultValue?: string) => string,
-): string => {
+const formatMinutesToHoursAndMinutes = (minutes: number, t: TFunction): string => {
   if (minutes < 60) {
     return `${minutes} ${
       minutes !== 1

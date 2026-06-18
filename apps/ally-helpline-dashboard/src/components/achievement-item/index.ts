@@ -1,3 +1,3 @@
 export { AchievementItem } from "./AchievementItem";
 
-export { type AchievementItemData } from "./types";
+export { type AchievementItemData } from "@types";

@@ -30,7 +30,7 @@ export const EmojiPickerTrigger = ({
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
       const inContainer = containerRef.current?.contains(target);

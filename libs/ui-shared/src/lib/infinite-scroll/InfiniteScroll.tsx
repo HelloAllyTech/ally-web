@@ -58,10 +58,10 @@ const InfiniteScroll: FC<InfiniteScrollProps> = ({
 
     // When scroll container ref is provided but not yet set, wait for it (e.g. parent just mounted)
     if (scrollContainerRef != null && root === null) {
-      return;
+      return undefined;
     }
     if (!sentinel) {
-      return;
+      return undefined;
     }
 
     const observer = new IntersectionObserver(
