@@ -952,6 +952,9 @@
   "simulationPage": {
     "mute": "Mute",
     "unmute": "Unmute",
+    "pause": "Pause",
+    "resume": "Resume",
+    "pauseControlError": "Couldn't reach the session — please try again",
     "focus": "Focus",
     "focused": "Focused",
     "endSession": "End session",

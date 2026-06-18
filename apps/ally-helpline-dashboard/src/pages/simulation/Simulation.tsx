@@ -21,6 +21,9 @@ export const Simulation = () => {
   const simulationTranslations: SimulationTranslations = {
     mute: t("simulationPage.mute"),
     unmute: t("simulationPage.unmute"),
+    pause: t("simulationPage.pause"),
+    resume: t("simulationPage.resume"),
+    pauseControlError: t("simulationPage.pauseControlError"),
     focus: t("simulationPage.focus"),
     focused: t("simulationPage.focused"),
     endSession: t("simulationPage.endSession"),

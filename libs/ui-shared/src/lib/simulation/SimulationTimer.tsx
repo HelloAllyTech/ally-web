@@ -5,23 +5,42 @@ import { FC, useEffect, useRef, useState } from "react";
 import { SimulationTimerProps } from "./types";
 import { MAX_SESSION_MINUTES, WARNING_THRESHOLD } from "./waveformConstants";
 
+// The agent authoritatively ends the session at the limit; this client auto-end
+// is only a fallback if the agent failed to, so it fires a bit past the limit.
+const CLIENT_AUTO_END_GRACE_SECONDS = 15;
+
 export const SimulationTimer: FC<SimulationTimerProps> = ({
   onTimeLimit,
   onWarning,
   startTime,
   timeLimit = MAX_SESSION_MINUTES,
+  isPaused = false,
+  pausedOffsetMs = 0,
   translations,
 }) => {
   const [timer, setTimer] = useState<number>(0);
 
   const hasWarnedRef = useRef(false);
+  // Read pause state inside the interval without restarting it on every change.
+  const isPausedRef = useRef(isPaused);
+  const pausedOffsetMsRef = useRef(pausedOffsetMs);
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+    pausedOffsetMsRef.current = pausedOffsetMs;
+  });
 
   useEffect(() => {
     if (!startTime) return () => {};
 
     const interval = setInterval(() => {
+      // While paused, hold the displayed time and don't advance the limit —
+      // paused time must not count toward the scenario time limit.
+      if (isPausedRef.current) return;
+
       const now = Date.now();
-      const timeElapsed = Math.floor((now - Date.parse(startTime)) / 1000);
+      const timeElapsed = Math.floor(
+        (now - Date.parse(startTime) - pausedOffsetMsRef.current) / 1000,
+      );
       setTimer(timeElapsed);
 
       if (timeLimit - timeElapsed <= WARNING_THRESHOLD && !hasWarnedRef.current) {
@@ -29,7 +48,7 @@ export const SimulationTimer: FC<SimulationTimerProps> = ({
         hasWarnedRef.current = true;
       }
 
-      if (timeElapsed >= timeLimit) {
+      if (timeElapsed >= timeLimit + CLIENT_AUTO_END_GRACE_SECONDS) {
         onTimeLimit?.();
         clearInterval(interval);
       }

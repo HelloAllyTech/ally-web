@@ -20,6 +20,9 @@ export const BottomSection: FC<BottomSectionProps> = ({
   startTime,
   onFocusButtonClick,
   timeLimit,
+  isPaused,
+  pausedOffsetMs,
+  onPauseClick,
   translations,
 }) => {
   return (
@@ -31,6 +34,8 @@ export const BottomSection: FC<BottomSectionProps> = ({
           onTimeLimit={onEndSimulation}
           startTime={startTime?.toString()}
           timeLimit={timeLimit}
+          isPaused={isPaused}
+          pausedOffsetMs={pausedOffsetMs}
           translations={
             translations ? { sessionDuration: translations.sessionDuration } : undefined
           }
@@ -41,9 +46,11 @@ export const BottomSection: FC<BottomSectionProps> = ({
         isFocusMode={isFocusMode}
         isEndingSession={isEndingSession}
         showFocusButton={showFocusButton}
+        isPaused={isPaused}
         onEndSessionClick={onEndSimulation}
         onMuteClick={onMuteSimulation}
         onFocusButtonClick={onFocusButtonClick}
+        onPauseClick={onPauseClick}
         translations={translations}
       />
       <div

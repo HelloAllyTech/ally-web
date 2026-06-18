@@ -28,6 +28,9 @@ export interface TurnIndicatorTranslations {
 export interface SimulationTranslations {
   mute: string;
   unmute: string;
+  pause: string;
+  resume: string;
+  pauseControlError: string;
   focus: string;
   focused: string;
   endSession: string;
@@ -74,6 +77,8 @@ export interface SimulationTimerProps {
   onWarning: () => void;
   startTime: string;
   timeLimit?: number;
+  isPaused?: boolean;
+  pausedOffsetMs?: number;
   translations?: Pick<SimulationTranslations, "sessionDuration">;
 }
 
@@ -128,12 +133,14 @@ export interface SimulationControlsProps {
   isFocusMode: boolean;
   isMuted: boolean;
   showFocusButton: boolean;
+  isPaused?: boolean;
   onEndSessionClick: () => void;
   onMuteClick: () => void;
   onFocusButtonClick: () => void;
+  onPauseClick?: () => void;
   translations?: Pick<
     SimulationTranslations,
-    "mute" | "unmute" | "focus" | "focused" | "endSession"
+    "mute" | "unmute" | "pause" | "resume" | "focus" | "focused" | "endSession"
   >;
 }
 
@@ -154,6 +161,9 @@ export interface BottomSectionProps {
   isFocusMode: boolean;
   showFocusButton: boolean;
   onFocusButtonClick: () => void;
+  isPaused?: boolean;
+  pausedOffsetMs?: number;
+  onPauseClick?: () => void;
   translations?: SimulationTranslations;
 }
 
