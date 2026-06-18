@@ -480,6 +480,7 @@ export const en = {
       emptyDescription: "Please describe your agent before generating.",
       viewSystemSkill: "View the system skill used to generate this",
       systemSkillPanelTitle: "System skill",
+      systemSkillCloseLabel: "Close panel",
       systemSkillPanelSubtitle:
         "The system skill used to generate and regenerate your roleplay agent prompt.",
       systemSkillNameLabel: "Name",
