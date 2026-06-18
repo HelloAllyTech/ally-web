@@ -25,27 +25,6 @@ import { AnalyticsRange } from "@types";
 
 const CHART_HEIGHT = "300px";
 
-// Stored language values are full locale codes (e.g. 'en-IN', 'hi-IN'), so the
-// dropdown is built from the actual values in the data — a hardcoded short-code
-// list ('en', 'hi') wouldn't match and would filter to nothing. Friendly names
-// where known, else the raw code.
-const LANG_NAME: Record<string, string> = {
-  en: "English",
-  "en-IN": "English (IN)",
-  "en-US": "English (US)",
-  "en-GB": "English (GB)",
-  "hi-IN": "Hindi",
-  "ta-IN": "Tamil",
-  "te-IN": "Telugu",
-  "bn-IN": "Bengali",
-  "mr-IN": "Marathi",
-  "kn-IN": "Kannada",
-  "ml-IN": "Malayalam",
-  "gu-IN": "Gujarati",
-  "pa-IN": "Punjabi",
-};
-const langLabel = (code: string) => LANG_NAME[code] ?? code;
-
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
 // Everything is now session-level. The "kind" panels count SESSIONS per
@@ -225,26 +204,21 @@ const Cell = ({
   </div>
 );
 
-// `range` comes from the shared time-range selector at the top of the Analytics
-// page — no separate range dropdown here.
-export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
-  const [language, setLanguage] = useState<string>("");
+// `range` and `language` come from the shared selectors at the top of the
+// Analytics page — no separate dropdowns here.
+export const ConversationDrift = ({
+  range,
+  language,
+}: {
+  range: AnalyticsRange;
+  language: string;
+}) => {
   const [expDim, setExpDim] = useState<"promptVersion" | "model" | "sttModel">("promptVersion");
-  // The full set of language codes present, captured from the unfiltered
-  // ("all languages") response so the dropdown stays complete after a filter is
-  // applied (the filtered response only returns the selected language).
-  const [langOptions, setLangOptions] = useState<string[]>([]);
 
   const { data, isLoading, isError, refetch } = useGetConversationDriftQuery({
     range,
     language: language || undefined,
   });
-
-  useEffect(() => {
-    if (language === "" && data?.driftRateByLanguage?.length) {
-      setLangOptions(data.driftRateByLanguage.map(r => r.language).filter(Boolean));
-    }
-  }, [data, language]);
 
   // Re-run backfill (last 3 months) for prompt iteration; poll until done.
   const [startBackfill, { isLoading: starting }] = useStartDriftBackfillMutation();
@@ -272,15 +246,6 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
       if (job.status === "done") refetch();
     }
   }, [job, refetch]);
-
-  const languageItems = useMemo(
-    () => [
-      { id: "", label: "All languages" },
-      ...langOptions.map(code => ({ id: code, label: langLabel(code) })),
-    ],
-    [langOptions],
-  );
-  const selectedLanguage = languageItems.find(i => i.id === language);
 
   const worstLanguage = useMemo(() => {
     const rows = data?.driftRateByLanguage ?? [];
@@ -372,26 +337,9 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Heading className="text-2xl">Conversation drift</Heading>
-            <div className="flex items-center gap-3">
-              <div className="w-44">
-                <Dropdown
-                  id="drift-language"
-                  size="md"
-                  titleText="Language"
-                  hideLabel
-                  label="Language"
-                  items={languageItems}
-                  selectedItem={selectedLanguage}
-                  itemToString={item => item?.label ?? ""}
-                  onChange={({ selectedItem }) => {
-                    if (selectedItem) setLanguage(selectedItem.id);
-                  }}
-                />
-              </div>
-              <Button kind="tertiary" size="md" disabled={jobActive} onClick={handleRerun}>
-                {jobActive ? "Re-running…" : "Re-run last 3 months"}
-              </Button>
-            </div>
+            <Button kind="tertiary" size="md" disabled={jobActive} onClick={handleRerun}>
+              {jobActive ? "Re-running…" : "Re-run last 3 months"}
+            </Button>
           </div>
 
           {job && (

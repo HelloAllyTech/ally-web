@@ -21,7 +21,11 @@ import {
 import "@carbon/charts/styles.css";
 import "./analytics-carbon.scss";
 
-import { useGetAnalyticsOverviewQuery, useGetVoiceLatencyQuery } from "@api";
+import {
+  useGetAnalyticsOverviewQuery,
+  useGetScenarioLanguagesQuery,
+  useGetVoiceLatencyQuery,
+} from "@api";
 import { AnalyticsBucket, AnalyticsRange } from "@types";
 
 import { buildVoiceLatencySeries, latencyBucketTitle, LATENCY_GROUPS } from "./latencyChart";
@@ -57,14 +61,34 @@ const COLORS = {
 
 export const Analytics = () => {
   const [range, setRange] = useState<AnalyticsRange>("30d");
+  // Page-level language filter, shared across tabs (id "" = all languages).
+  // Sourced from the canonical scenario-language list so values match what's
+  // stored (e.g. 'en-IN'); only Drift + Latency actually filter by it.
+  const [language, setLanguage] = useState<string>("");
   const [latencyBucket, setLatencyBucket] = useState<AnalyticsBucket>("day");
+  const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({
+    active: true,
+  });
   const { data, isLoading, isError, refetch } = useGetAnalyticsOverviewQuery({ range });
   const {
     data: latency,
     isLoading: latencyLoading,
     isError: latencyError,
     refetch: refetchLatency,
-  } = useGetVoiceLatencyQuery({ range, bucket: latencyBucket });
+  } = useGetVoiceLatencyQuery({
+    range,
+    bucket: latencyBucket,
+    language: language || undefined,
+  });
+
+  const languageItems = useMemo(
+    () => [
+      { id: "", label: "All languages" },
+      ...(scenarioLanguages ?? []).map(l => ({ id: l.value, label: l.label })),
+    ],
+    [scenarioLanguages],
+  );
+  const selectedLanguageItem = languageItems.find(i => i.id === language) ?? languageItems[0];
 
   const bucketTitle = range === "12m" ? "Month" : "Week";
 
@@ -217,20 +241,37 @@ export const Analytics = () => {
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Heading className="text-2xl">Analytics</Heading>
-            <div className="w-56">
-              <Dropdown
-                id="analytics-range"
-                size="md"
-                titleText="Time range"
-                hideLabel
-                label="Time range"
-                items={RANGE_ITEMS}
-                selectedItem={selectedItem}
-                itemToString={item => item?.label ?? ""}
-                onChange={({ selectedItem }) => {
-                  if (selectedItem) setRange(selectedItem.id);
-                }}
-              />
+            <div className="flex items-center gap-3">
+              <div className="w-48">
+                <Dropdown
+                  id="analytics-language"
+                  size="md"
+                  titleText="Language"
+                  hideLabel
+                  label="Language"
+                  items={languageItems}
+                  selectedItem={selectedLanguageItem}
+                  itemToString={item => item?.label ?? ""}
+                  onChange={({ selectedItem }) => {
+                    if (selectedItem) setLanguage(selectedItem.id);
+                  }}
+                />
+              </div>
+              <div className="w-56">
+                <Dropdown
+                  id="analytics-range"
+                  size="md"
+                  titleText="Time range"
+                  hideLabel
+                  label="Time range"
+                  items={RANGE_ITEMS}
+                  selectedItem={selectedItem}
+                  itemToString={item => item?.label ?? ""}
+                  onChange={({ selectedItem }) => {
+                    if (selectedItem) setRange(selectedItem.id);
+                  }}
+                />
+              </div>
             </div>
           </div>
 
@@ -342,7 +383,7 @@ export const Analytics = () => {
               {/* Drift — conversation-drift analytics; shares the page-level
                   time range, has its own language filter + charts. */}
               <TabPanel>
-                <ConversationDrift range={range} />
+                <ConversationDrift range={range} language={language} />
               </TabPanel>
 
               {/* Tokens — placeholder until token-usage metrics are wired up. */}

@@ -16,6 +16,7 @@ type AnalyticsRangeQuery = {
 
 type VoiceLatencyQuery = AnalyticsRangeQuery & {
   bucket?: AnalyticsBucket;
+  language?: string;
 };
 
 type ConversationDriftQuery = AnalyticsRangeQuery & {
@@ -36,10 +37,14 @@ export const analyticsAPI = baseAPI.injectEndpoints({
       }),
     }),
     getVoiceLatency: builder.query<VoiceLatencyResponse, VoiceLatencyQuery>({
-      query: ({ range, bucket } = {}) => ({
+      query: ({ range, bucket, language } = {}) => ({
         url: ApiEndpoints.ANALYTICS.VOICE_LATENCY,
         method: HttpMethod.GET,
-        params: { ...(range ? { range } : {}), ...(bucket ? { bucket } : {}) },
+        params: {
+          ...(range ? { range } : {}),
+          ...(bucket ? { bucket } : {}),
+          ...(language ? { language } : {}),
+        },
       }),
     }),
     getConversationDrift: builder.query<ConversationDriftResponse, ConversationDriftQuery>({
