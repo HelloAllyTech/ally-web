@@ -18,10 +18,10 @@ import "./analytics-carbon.scss";
 import { useGetScenarioLanguagesQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
-import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { OverviewTab } from "./tabs/OverviewTab";
-import { TokensTab } from "./tabs/TokensTab";
+import { TokenConsumption } from "./TokenConsumption";
+import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
 
 const RANGE_ITEMS: { id: AnalyticsRange; label: string }[] = [
   { id: "30d", label: "Last 30 days" },
@@ -71,7 +71,7 @@ const TABS: TabDef[] = [
     id: "tokens",
     label: "Tokens",
     uses: { language: false },
-    render: () => <TokensTab />,
+    render: f => <TokenConsumption range={f.range} />,
   },
 ];
 
