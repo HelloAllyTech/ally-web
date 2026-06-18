@@ -1,5 +1,6 @@
 import { FC, useState } from "react";
 
+import { Terminal } from "@icons";
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -162,7 +163,7 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods,
             aria-label={en.simulation.agentBuilder.viewSystemSkill}
             className="flex items-center justify-center w-9 h-9 rounded-md text-typography-500 hover:bg-neutral-100 transition-colors"
           >
-            <span className="material-symbols-outlined text-[20px] leading-none">terminal</span>
+            <Terminal size={20} />
           </button>
         </div>
       </div>

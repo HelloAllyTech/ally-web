@@ -1,6 +1,5 @@
 import { FC } from "react";
 
-import { type Editor } from "@tiptap/react";
 import {
   Bold,
   Italic,
@@ -13,7 +12,8 @@ import {
   ListOrdered,
   Quote,
   Minus,
-} from "lucide-react";
+} from "@icons";
+import { type Editor } from "@tiptap/react";
 
 interface ToolbarButtonProps {
   onClick: () => void;

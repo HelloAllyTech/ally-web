@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 
-import { Info, Plus, RefreshCw, RotateCcw, UploadCloud } from "lucide-react";
+import { Info, Plus, RefreshCw, RotateCcw, UploadCloud } from "@icons";
 import { toast } from "sonner";
 
 import {
