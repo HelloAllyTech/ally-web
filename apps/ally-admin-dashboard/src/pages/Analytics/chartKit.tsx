@@ -162,6 +162,11 @@ interface ChartCardProps {
   emptyText?: string;
   /** Span 2 columns in a grid (for wide charts). */
   wide?: boolean;
+  /**
+   * Render without the outer {@link Tile} (a plain `<div>` instead) — for
+   * multi-panel layouts that already live inside one shared Tile.
+   */
+  bare?: boolean;
   height?: string;
   children: ReactNode;
 }
@@ -181,39 +186,45 @@ export const ChartCard = ({
   errorSubtitle = "There was a problem fetching the data.",
   emptyText = "No data for this range",
   wide = false,
+  bare = false,
   height = CHART_HEIGHT,
   children,
-}: ChartCardProps) => (
-  <Tile className={wide ? "xl:col-span-2" : undefined}>
-    {title && <p className="text-sm font-medium text-typography-900">{title}</p>}
-    {caption && <p className="text-xs text-typography-500 mb-2">{caption}</p>}
-    {title && !caption && <div className="mb-2" />}
-    {loading ? (
-      <SkeletonPlaceholder className="analytics-chart-skeleton" />
-    ) : error ? (
-      <div className="flex flex-col items-start gap-4">
-        <InlineNotification
-          kind="error"
-          lowContrast
-          hideCloseButton
-          title={errorTitle}
-          subtitle={errorSubtitle}
-        />
-        {onRetry && (
-          <Button kind="tertiary" size="sm" onClick={onRetry}>
-            Retry
-          </Button>
-        )}
-      </div>
-    ) : empty ? (
-      <div
-        className="flex items-center justify-center rounded border border-dashed border-[#e0e0e0] text-sm text-typography-500"
-        style={{ height }}
-      >
-        {emptyText}
-      </div>
-    ) : (
-      children
-    )}
-  </Tile>
-);
+}: ChartCardProps) => {
+  const body = (
+    <>
+      {title && <p className="text-sm font-medium text-typography-900">{title}</p>}
+      {caption && <p className="text-xs text-typography-500 mb-2">{caption}</p>}
+      {title && !caption && <div className="mb-2" />}
+      {loading ? (
+        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+      ) : error ? (
+        <div className="flex flex-col items-start gap-4">
+          <InlineNotification
+            kind="error"
+            lowContrast
+            hideCloseButton
+            title={errorTitle}
+            subtitle={errorSubtitle}
+          />
+          {onRetry && (
+            <Button kind="tertiary" size="sm" onClick={onRetry}>
+              Retry
+            </Button>
+          )}
+        </div>
+      ) : empty ? (
+        <div
+          className="flex items-center justify-center rounded border border-dashed border-[#e0e0e0] text-sm text-typography-500"
+          style={{ height }}
+        >
+          {emptyText}
+        </div>
+      ) : (
+        children
+      )}
+    </>
+  );
+
+  if (bare) return <div>{body}</div>;
+  return <Tile className={wide ? "xl:col-span-2" : undefined}>{body}</Tile>;
+};
