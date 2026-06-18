@@ -79,6 +79,7 @@ import {
   Video as CVideo,
   View as CView,
   ViewOff as CViewOff,
+  WarningAlt as CWarningAlt,
   ZoomIn as CZoomIn,
 } from "@carbon/icons-react";
 import { Heading1 as LHeading1, Heading2 as LHeading2, Heading3 as LHeading3 } from "lucide-react";
@@ -175,6 +176,7 @@ export const UploadImage = createCarbonIcon(CUpload);
 export const User = createCarbonIcon(CUserAvatar);
 export const Users = createCarbonIcon(CGroup);
 export const VideoCamera = createCarbonIcon(CVideo);
+export const WarningAlt = createCarbonIcon(CWarningAlt);
 
 /* -------------------------------------------------------------------------- */
 /* Colour variants — same Carbon glyph, original colour preserved via CSS     */

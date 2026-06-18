@@ -12,6 +12,11 @@ export const SESSION_TIMER_CONFIG = {
   MIN_TIME: "00:00:00", // 0 minutes (0 seconds)
 };
 
+// Beyond this many advanced (mapped) events on a single simulation, real-time
+// event detection during a session starts to add noticeable latency. Used to
+// surface a non-blocking warning to authors on the Create/Edit Simulation page.
+export const ADVANCED_EVENTS_LATENCY_THRESHOLD = 10;
+
 export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
   { id: "ACTIVE", label: "Published" },
   { id: "ARCHIVED", label: "Archived" },

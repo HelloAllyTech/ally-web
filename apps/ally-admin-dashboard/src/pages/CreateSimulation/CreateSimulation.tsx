@@ -10,11 +10,12 @@ import {
   useCreateSimulationMutation,
   useDeleteCoverImageMutation,
   useGetAvailableLanguageVoicesQuery,
+  useGetMappedScenarioEventsQuery,
   useGetPromptsQuery,
   useLazyGetAdminSimulationByIdQuery,
   useUpdateSimulationByIdMutation,
 } from "@api";
-import { ArrowDown } from "@assets";
+import { ArrowDown, WarningAlt } from "@assets";
 import {
   ActionConfirmationPopup,
   AgentBuilderCopilot,
@@ -31,6 +32,7 @@ import {
 } from "@components";
 import { ButtonVariant } from "@components/types";
 import {
+  ADVANCED_EVENTS_LATENCY_THRESHOLD,
   canUseAgentBuilderCopilot,
   en,
   ROUTES,
@@ -278,6 +280,17 @@ export const CreateSimulation: FC = () => {
     offset: 0,
     includeBlocks: false,
   });
+
+  // Advanced (mapped) event count, sourced from the same RTK Query cache the
+  // Advanced Settings tab's event table uses (shared SIMULATION_EVENTS tag), so
+  // adding/removing events there keeps this count live without a refetch here.
+  // Skipped until the draft has an id — a brand-new simulation has no events yet.
+  const { data: mappedScenarioEventsData } = useGetMappedScenarioEventsQuery(
+    { id: String(simulationId ?? "") },
+    { skip: !simulationId },
+  );
+  const advancedEventsCount = mappedScenarioEventsData?.data?.length ?? 0;
+  const showAdvancedEventsLatencyWarning = advancedEventsCount > ADVANCED_EVENTS_LATENCY_THRESHOLD;
 
   const formMethods = useForm({
     mode: "onChange",
@@ -893,6 +906,19 @@ export const CreateSimulation: FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* Latency warning — shown before the tab strip when this simulation has
+          more advanced (mapped) events than the recommended threshold, since a
+          large event set adds real-time detection latency during a session. */}
+      {showAdvancedEventsLatencyWarning && (
+        <div
+          role="alert"
+          className="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shrink-0 font-primary"
+        >
+          <WarningAlt className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{en.simulation.advancedEventsLatencyWarning(advancedEventsCount)}</span>
+        </div>
+      )}
 
       {/* Tab bar — identical class set and full width to match the Roleplays
           page tabs exactly, so the tab strip is seamless across both pages. */}
