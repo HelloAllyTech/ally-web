@@ -339,16 +339,15 @@ export const Analytics = () => {
                 </Tile>
               </TabPanel>
 
-              {/* Drift — the conversation-drift analytics, its own filters + charts. */}
+              {/* Drift — conversation-drift analytics; shares the page-level
+                  time range, has its own language filter + charts. */}
               <TabPanel>
-                <ConversationDrift />
+                <ConversationDrift range={range} />
               </TabPanel>
 
               {/* Tokens — placeholder until token-usage metrics are wired up. */}
               <TabPanel>
-                <p className="text-typography-600 py-8">
-                  Token usage analytics are coming soon.
-                </p>
+                <p className="text-typography-600 py-8">Token usage analytics are coming soon.</p>
               </TabPanel>
             </TabPanels>
           </Tabs>

@@ -25,12 +25,6 @@ import { AnalyticsRange } from "@types";
 
 const CHART_HEIGHT = "300px";
 
-const RANGE_ITEMS: { id: AnalyticsRange; label: string }[] = [
-  { id: "30d", label: "Last 30 days" },
-  { id: "90d", label: "Last 90 days" },
-  { id: "12m", label: "Last 12 months" },
-];
-
 // id "" = all languages.
 const LANGUAGE_ITEMS: { id: string; label: string }[] = [
   { id: "", label: "All languages" },
@@ -220,8 +214,9 @@ const Cell = ({
   </div>
 );
 
-export const ConversationDrift = () => {
-  const [range, setRange] = useState<AnalyticsRange>("90d");
+// `range` comes from the shared time-range selector at the top of the Analytics
+// page — no separate range dropdown here.
+export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
   const [language, setLanguage] = useState<string>("");
   const [expDim, setExpDim] = useState<"promptVersion" | "model" | "sttModel">("promptVersion");
 
@@ -257,7 +252,6 @@ export const ConversationDrift = () => {
     }
   }, [job, refetch]);
 
-  const selectedRange = RANGE_ITEMS.find(i => i.id === range);
   const selectedLanguage = LANGUAGE_ITEMS.find(i => i.id === language);
 
   const worstLanguage = useMemo(() => {
@@ -351,21 +345,6 @@ export const ConversationDrift = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Heading className="text-2xl">Conversation drift</Heading>
             <div className="flex items-center gap-3">
-              <div className="w-44">
-                <Dropdown
-                  id="drift-range"
-                  size="md"
-                  titleText="Time range"
-                  hideLabel
-                  label="Time range"
-                  items={RANGE_ITEMS}
-                  selectedItem={selectedRange}
-                  itemToString={item => item?.label ?? ""}
-                  onChange={({ selectedItem }) => {
-                    if (selectedItem) setRange(selectedItem.id);
-                  }}
-                />
-              </div>
               <div className="w-44">
                 <Dropdown
                   id="drift-language"
