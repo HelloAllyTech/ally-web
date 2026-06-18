@@ -25,15 +25,26 @@ import { AnalyticsRange } from "@types";
 
 const CHART_HEIGHT = "300px";
 
-// id "" = all languages.
-const LANGUAGE_ITEMS: { id: string; label: string }[] = [
-  { id: "", label: "All languages" },
-  { id: "ta", label: "Tamil" },
-  { id: "hi", label: "Hindi" },
-  { id: "bn", label: "Bengali" },
-  { id: "te", label: "Telugu" },
-  { id: "en", label: "English" },
-];
+// Stored language values are full locale codes (e.g. 'en-IN', 'hi-IN'), so the
+// dropdown is built from the actual values in the data — a hardcoded short-code
+// list ('en', 'hi') wouldn't match and would filter to nothing. Friendly names
+// where known, else the raw code.
+const LANG_NAME: Record<string, string> = {
+  en: "English",
+  "en-IN": "English (IN)",
+  "en-US": "English (US)",
+  "en-GB": "English (GB)",
+  "hi-IN": "Hindi",
+  "ta-IN": "Tamil",
+  "te-IN": "Telugu",
+  "bn-IN": "Bengali",
+  "mr-IN": "Marathi",
+  "kn-IN": "Kannada",
+  "ml-IN": "Malayalam",
+  "gu-IN": "Gujarati",
+  "pa-IN": "Punjabi",
+};
+const langLabel = (code: string) => LANG_NAME[code] ?? code;
 
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
@@ -219,11 +230,21 @@ const Cell = ({
 export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
   const [language, setLanguage] = useState<string>("");
   const [expDim, setExpDim] = useState<"promptVersion" | "model" | "sttModel">("promptVersion");
+  // The full set of language codes present, captured from the unfiltered
+  // ("all languages") response so the dropdown stays complete after a filter is
+  // applied (the filtered response only returns the selected language).
+  const [langOptions, setLangOptions] = useState<string[]>([]);
 
   const { data, isLoading, isError, refetch } = useGetConversationDriftQuery({
     range,
     language: language || undefined,
   });
+
+  useEffect(() => {
+    if (language === "" && data?.driftRateByLanguage?.length) {
+      setLangOptions(data.driftRateByLanguage.map(r => r.language).filter(Boolean));
+    }
+  }, [data, language]);
 
   // Re-run backfill (last 3 months) for prompt iteration; poll until done.
   const [startBackfill, { isLoading: starting }] = useStartDriftBackfillMutation();
@@ -252,7 +273,14 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
     }
   }, [job, refetch]);
 
-  const selectedLanguage = LANGUAGE_ITEMS.find(i => i.id === language);
+  const languageItems = useMemo(
+    () => [
+      { id: "", label: "All languages" },
+      ...langOptions.map(code => ({ id: code, label: langLabel(code) })),
+    ],
+    [langOptions],
+  );
+  const selectedLanguage = languageItems.find(i => i.id === language);
 
   const worstLanguage = useMemo(() => {
     const rows = data?.driftRateByLanguage ?? [];
@@ -352,7 +380,7 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
                   titleText="Language"
                   hideLabel
                   label="Language"
-                  items={LANGUAGE_ITEMS}
+                  items={languageItems}
                   selectedItem={selectedLanguage}
                   itemToString={item => item?.label ?? ""}
                   onChange={({ selectedItem }) => {
