@@ -9,7 +9,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { BarChart3, Info, Languages, Settings } from "lucide-react";
+import { BarChart3, Info, Languages, Settings } from "@icons";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -166,13 +166,13 @@ export const Sidebar: React.FC = () => {
       case SIDEBAR_ITEMS.USER_BADGES:
         return <Badge />;
       case SIDEBAR_ITEMS.TRANSLATIONS:
-        return <Languages size={20} strokeWidth={1.8} />;
+        return <Languages size={20} />;
       case SIDEBAR_ITEMS.TOOLTIPS:
-        return <Info size={20} strokeWidth={1.8} />;
+        return <Info size={20} />;
       case SIDEBAR_ITEMS.ANALYTICS:
-        return <BarChart3 size={20} strokeWidth={1.8} />;
+        return <BarChart3 size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
-        return <Settings size={20} strokeWidth={1.8} />;
+        return <Settings size={20} />;
       default:
         return null;
     }

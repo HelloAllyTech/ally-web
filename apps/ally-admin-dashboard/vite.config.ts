@@ -99,6 +99,7 @@ export default defineConfig(() => ({
       "@src/*": path.resolve(projectRoot, "./src/*"),
       "@components": path.resolve(projectRoot, "./src/components"),
       "@components/*": path.resolve(projectRoot, "./src/components/*"),
+      "@icons": path.resolve(projectRoot, "./src/components/icons"),
       "@containers": path.resolve(projectRoot, "./src/containers"),
       "@containers/*": path.resolve(projectRoot, "./src/containers/*"),
       "@api": path.resolve(projectRoot, "./src/api"),
