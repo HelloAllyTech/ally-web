@@ -79,7 +79,11 @@ export interface InputFieldProps {
 export interface DropdownFieldProps {
   label: string;
   id: string;
-  formMethods: UseFormReturn<any>;
+  /**
+   * Required for the default (react-hook-form) mode. Optional when the field
+   * is driven in controlled mode via `value` + `onChange`.
+   */
+  formMethods?: UseFormReturn<any>;
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
   isMandatory?: boolean;
@@ -93,6 +97,14 @@ export interface DropdownFieldProps {
   onClose?: () => void;
   allowDeselect?: boolean;
   borderless?: boolean;
+  /**
+   * Controlled mode: when both `value` and `onChange` are provided the field
+   * bypasses react-hook-form and is driven by these props directly (so the
+   * same styled dropdown can be reused for plain local state). `formMethods`
+   * is not needed in this mode.
+   */
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 // NarrativeContext

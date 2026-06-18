@@ -4,14 +4,15 @@ import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useGenerateAgentPromptMutation, useGetAutofillModelsQuery } from "@api";
-import { InfoIcon } from "@assets";
 import { DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS, en } from "@constants";
 import { applyAgentBuilderOutputToForm, parseAgentBuilderOutput } from "@utils";
 
 import { AgentBuilderSystemSkillPanel } from "./AgentBuilderSystemSkillPanel";
-import { AutofillModelSelect } from "../autofill-model-select";
 import { Button } from "../button";
+import { DropdownField } from "../dropdown-field";
+import { FormLabel } from "../form-label";
 import { InputField } from "../input-field";
+import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
 import { ButtonVariant } from "../types";
 
 const AGENT_DESCRIPTION_FIELD = "agentBuilderDescription";
@@ -48,6 +49,7 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods,
   const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
   const selectedProvider =
     allModelOptions.find(m => m.value === selectedModel)?.provider ?? "openai";
+  const modelOptions = allModelOptions.map(model => ({ label: model.label, value: model.value }));
 
   const description = (formMethods.watch(AGENT_DESCRIPTION_FIELD) as string) ?? "";
   const generatedRaw = (formMethods.watch(AGENT_PROMPT_FIELD) as string) ?? "";
@@ -125,29 +127,44 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods,
         disabled={isGenerating}
       />
 
-      <div className="flex items-center gap-3">
-        <AutofillModelSelect
-          value={selectedModel}
-          onChange={setSelectedModel}
-          disabled={isGenerating}
+      <div className="flex flex-col gap-4">
+        <MainAgentPromptPicker
+          id="selectedMainPromptCode"
+          label="Select agent skill version"
+          formMethods={formMethods}
+          className="w-72 max-w-full"
         />
-        <Button
-          variant={ButtonVariant.PRIMARY}
-          onClick={handleGenerate}
-          disabled={isGenerating || !description.trim()}
-          className="px-4 h-[40px]"
-        >
-          {isGenerating ? en.simulation.agentBuilder.generating : generateLabel}
-        </Button>
-        <button
-          type="button"
-          onClick={() => setIsSkillPanelOpen(true)}
-          title={en.simulation.agentBuilder.viewSystemSkill}
-          aria-label={en.simulation.agentBuilder.viewSystemSkill}
-          className="flex items-center justify-center w-9 h-9 rounded-md text-typography-500 hover:bg-neutral-100 transition-colors"
-        >
-          <InfoIcon width={18} height={18} />
-        </button>
+
+        <div className="flex flex-col gap-2 w-72 max-w-full">
+          <FormLabel>Select AI model for this task</FormLabel>
+          <DropdownField
+            id="agentBuilderModel"
+            label="Select AI model for this task"
+            options={modelOptions}
+            value={selectedModel}
+            onChange={setSelectedModel}
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant={ButtonVariant.PRIMARY}
+            onClick={handleGenerate}
+            disabled={isGenerating || !description.trim()}
+            className="px-4 h-[40px]"
+          >
+            {isGenerating ? en.simulation.agentBuilder.generating : generateLabel}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setIsSkillPanelOpen(true)}
+            title={en.simulation.agentBuilder.viewSystemSkill}
+            aria-label={en.simulation.agentBuilder.viewSystemSkill}
+            className="flex items-center justify-center w-9 h-9 rounded-md text-typography-500 hover:bg-neutral-100 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px] leading-none">terminal</span>
+          </button>
+        </div>
       </div>
 
       {isGenerating && (

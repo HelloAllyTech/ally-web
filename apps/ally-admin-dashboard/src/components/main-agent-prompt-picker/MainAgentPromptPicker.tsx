@@ -18,6 +18,8 @@ interface MainAgentPromptPickerProps {
   formMethods: UseFormReturn<any>;
   /** Whether the field is required to save (warning) / run (block). */
   isMandatory?: boolean;
+  /** Extra classes for the root wrapper (e.g. width when rendered inline). */
+  className?: string;
 }
 
 /**
@@ -38,6 +40,7 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
   label,
   formMethods,
   isMandatory = false,
+  className,
 }) => {
   const { data: prompts, isFetching } = useGetPromptsByTypeQuery("main_agent");
 
@@ -71,7 +74,7 @@ export const MainAgentPromptPicker: React.FC<MainAgentPromptPickerProps> = ({
   }, [options, id, formMethods, currentValue]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={`flex flex-col gap-2 ${className ?? ""}`}>
       <div className="flex justify-between">
         <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
         {isFetching && <span className="text-sm text-typography-600">Loading variants…</span>}

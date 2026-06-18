@@ -3,6 +3,15 @@
 @tailwind utilities;
 /* You can add global styles to this file, and also import other style files */
 
+/* Material Symbols (Outlined) — used for the terminal icon in Agent Builder Copilot */
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 100,
+    "GRAD" -25,
+    "opsz" 24;
+}
+
 /* IBM Plex Serif - Local Font Faces */
 @font-face {
   font-family: "IBM Plex Serif";
