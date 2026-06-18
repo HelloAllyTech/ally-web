@@ -15,6 +15,8 @@ export interface SessionProgressProps {
   score: number;
   startTime?: string;
   maxTimeSeconds?: number;
+  isPaused?: boolean;
+  pausedOffsetMs?: number;
 }
 
 export interface TurnIndicatorTranslations {
@@ -86,6 +88,8 @@ export interface SimulationTimerProps {
 export interface SessionGoalTimerProps {
   startTime: string;
   maxTimeSeconds: number;
+  isPaused?: boolean;
+  pausedOffsetMs?: number;
   translations?: Pick<SimulationTranslations, "sessionTimer" | "timeRemaining" | "min" | "sec">;
 }
 

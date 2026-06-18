@@ -1,15 +1,25 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { SessionGoalTimerProps } from "./types";
 
 export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({
   startTime,
   maxTimeSeconds,
+  isPaused = false,
+  pausedOffsetMs = 0,
   translations,
 }) => {
   const [remainingTime, setRemainingTime] = useState<number>(0);
+  // Read pause state inside the interval without restarting it; exclude paused
+  // time so "time remaining" doesn't tick down while the session is frozen.
+  const isPausedRef = useRef(isPaused);
+  const pausedOffsetMsRef = useRef(pausedOffsetMs);
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+    pausedOffsetMsRef.current = pausedOffsetMs;
+  });
 
   // Convert maxTimeValue (HH:MM:SS) to seconds
 
@@ -27,8 +37,11 @@ export const SessionGoalTimer: FC<SessionGoalTimerProps> = ({
     if (!startTime || !maxTimeSeconds) return () => {};
 
     const interval = setInterval(() => {
+      if (isPausedRef.current) return;
       const now = Date.now();
-      const timeElapsed = Math.floor((now - Date.parse(startTime)) / 1000);
+      const timeElapsed = Math.floor(
+        (now - Date.parse(startTime) - pausedOffsetMsRef.current) / 1000,
+      );
       const remaining = Math.max(0, maxTimeSeconds - timeElapsed);
 
       setRemainingTime(remaining);

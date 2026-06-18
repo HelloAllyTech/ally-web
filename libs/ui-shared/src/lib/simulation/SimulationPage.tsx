@@ -422,6 +422,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           isMuted={isMuted}
           isFocusMode={isFocusMode}
           isPaused={isPaused}
+          pausedOffsetMs={pausedOffsetMs}
           checklistMode={checklistMode}
           agentTurnStatus={agentTurnStatus} // ← add this
           checklistItems={checklistItems}

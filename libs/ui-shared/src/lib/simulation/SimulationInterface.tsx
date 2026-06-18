@@ -41,6 +41,7 @@ export interface SimulationInterfaceProps {
   isFocusMode: boolean;
   isMuted: boolean;
   isPaused?: boolean;
+  pausedOffsetMs?: number;
   checklistMode?: ChecklistMode;
   checklistItems?: ChecklistItem[];
   isMicrophoneGranted: boolean;
@@ -62,6 +63,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   isFocusMode,
   isMuted,
   isPaused = false,
+  pausedOffsetMs = 0,
   checklistMode = ChecklistMode.OFF,
   checklistItems = [],
   isMicrophoneGranted,
@@ -175,6 +177,8 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
                   score={score}
                   startTime={startTime}
                   maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
+                  isPaused={isPaused}
+                  pausedOffsetMs={pausedOffsetMs}
                 />
               )}
               {checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (

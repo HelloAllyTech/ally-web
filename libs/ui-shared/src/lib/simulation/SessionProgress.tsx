@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { motion } from "framer-motion";
 
@@ -14,17 +14,29 @@ export const SessionProgress: FC<SessionProgressProps> = ({
   score,
   startTime,
   maxTimeSeconds,
+  isPaused = false,
+  pausedOffsetMs = 0,
 }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const currentStateIndex = getCurrentStateIndex(score, difficultyLevel);
 
+  // Read pause state inside the interval without restarting it. Paused time is
+  // excluded so this matches the (frozen) main timer and the scenario limit.
+  const isPausedRef = useRef(isPaused);
+  const pausedOffsetMsRef = useRef(pausedOffsetMs);
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+    pausedOffsetMsRef.current = pausedOffsetMs;
+  });
+
   useEffect(() => {
     if (!startTime) return () => {};
 
     const interval = setInterval(() => {
+      if (isPausedRef.current) return;
       const now = Date.now();
-      const elapsed = Math.floor((now - Date.parse(startTime)) / 1000);
+      const elapsed = Math.floor((now - Date.parse(startTime) - pausedOffsetMsRef.current) / 1000);
       setElapsedSeconds(Math.max(0, elapsed));
     }, 1000);
 
