@@ -25,7 +25,7 @@ import { useGetAnalyticsOverviewQuery, useGetVoiceLatencyQuery } from "@api";
 import { AnalyticsBucket, AnalyticsRange } from "@types";
 
 import { buildVoiceLatencySeries, latencyBucketTitle, LATENCY_GROUPS } from "./latencyChart";
-
+import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
 
 const CHART_HEIGHT = "320px";
@@ -239,7 +239,7 @@ export const Analytics = () => {
               <Tab>Overview</Tab>
               <Tab>Latency</Tab>
               <Tab>Drift</Tab>
-              <Tab>Tokens</Tab>
+              <Tab>AI cost</Tab>
             </TabList>
             <TabPanels>
               {/* Overview — everything except the voice-to-voice latency chart. */}
@@ -345,9 +345,9 @@ export const Analytics = () => {
                 <ConversationDrift range={range} />
               </TabPanel>
 
-              {/* Tokens — placeholder until token-usage metrics are wired up. */}
+              {/* Tokens — AI token consumption as estimated USD cost, by model / task. */}
               <TabPanel>
-                <p className="text-typography-600 py-8">Token usage analytics are coming soon.</p>
+                <TokenConsumption range={range} />
               </TabPanel>
             </TabPanels>
           </Tabs>
