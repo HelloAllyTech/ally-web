@@ -15,6 +15,11 @@ import {
 import "@carbon/charts/styles.css";
 import "./analytics-carbon.scss";
 
+import { useGetAnalyticsOverviewQuery, useGetVoiceLatencyQuery } from "@api";
+import { AnalyticsBucket, AnalyticsRange } from "@types";
+
+import { buildVoiceLatencySeries, latencyBucketTitle, LATENCY_GROUPS } from "./latencyChart";
+import { TokenConsumption } from "./TokenConsumption";
 import { useGetScenarioLanguagesQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
@@ -143,6 +148,119 @@ export const Analytics = () => {
             onChange={({ selectedIndex }) => setTabIndex(selectedIndex)}
           >
             <TabList aria-label="Analytics sections">
+              <Tab>Overview</Tab>
+              <Tab>Latency</Tab>
+              <Tab>Drift</Tab>
+              <Tab>AI cost</Tab>
+            </TabList>
+            <TabPanels>
+              {/* Overview — everything except the voice-to-voice latency chart. */}
+              <TabPanel>
+                {isError ? (
+                  <div className="flex flex-col items-start gap-4">
+                    <InlineNotification
+                      kind="error"
+                      lowContrast
+                      hideCloseButton
+                      title="Couldn't load analytics"
+                      subtitle="There was a problem fetching platform metrics."
+                    />
+                    <Button kind="tertiary" size="sm" onClick={() => refetch()}>
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <Tile className="xl:col-span-2">
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <LineChart data={growthData} options={growthOptions} />
+                      )}
+                    </Tile>
+                    <Tile>
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <LineChart data={activeData} options={activeOptions} />
+                      )}
+                    </Tile>
+                    <Tile>
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <SimpleBarChart data={simsData} options={simsOptions} />
+                      )}
+                    </Tile>
+                    <Tile>
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <StackedBarChart data={retentionData} options={retentionOptions} />
+                      )}
+                    </Tile>
+                    <Tile>
+                      {showSkeletons ? (
+                        <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                      ) : (
+                        <DonutChart data={rolesData} options={rolesOptions} />
+                      )}
+                    </Tile>
+                  </div>
+                )}
+              </TabPanel>
+
+              {/* Latency — voice-to-voice latency, with its own granularity + query state. */}
+              <TabPanel>
+                <Tile>
+                  <div className="flex justify-end mb-2">
+                    <div className="w-44">
+                      <Dropdown
+                        id="latency-bucket"
+                        size="sm"
+                        titleText="Granularity"
+                        hideLabel
+                        label="Granularity"
+                        items={LATENCY_BUCKET_ITEMS}
+                        selectedItem={selectedLatencyBucket}
+                        itemToString={item => item?.label ?? ""}
+                        onChange={({ selectedItem }) => {
+                          if (selectedItem) setLatencyBucket(selectedItem.id);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {latencyLoading && !latency ? (
+                    <SkeletonPlaceholder className="analytics-chart-skeleton" />
+                  ) : latencyError ? (
+                    <div className="flex flex-col items-start gap-4">
+                      <InlineNotification
+                        kind="error"
+                        lowContrast
+                        hideCloseButton
+                        title="Couldn't load voice-to-voice latency"
+                        subtitle="There was a problem fetching turn-latency metrics."
+                      />
+                      <Button kind="tertiary" size="sm" onClick={() => refetchLatency()}>
+                        Retry
+                      </Button>
+                    </div>
+                  ) : (
+                    <LineChart data={latencyData} options={latencyOptions} />
+                  )}
+                </Tile>
+              </TabPanel>
+
+              {/* Drift — conversation-drift analytics; shares the page-level
+                  time range, has its own language filter + charts. */}
+              <TabPanel>
+                <ConversationDrift range={range} />
+              </TabPanel>
+
+              {/* Tokens — AI token consumption as estimated USD cost, by model / task. */}
+              <TabPanel>
+                <TokenConsumption range={range} />
+              </TabPanel>
               {TABS.map(t => (
                 <Tab key={t.id}>{t.label}</Tab>
               ))}

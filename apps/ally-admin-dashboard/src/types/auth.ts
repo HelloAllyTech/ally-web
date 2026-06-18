@@ -304,6 +304,40 @@ export interface ConversationDriftResponse {
   driftRateByPromptVersion: DriftRateByDimension[];
 }
 
+// TokenConsumptionResponseDto from GET /api/v1/analytics/token-consumption.
+export interface TokenConsumptionPoint {
+  /** AI service: 'llm' | 'stt' | 'tts'. */
+  service: string;
+  /** Model id (LLM/STT) or voice/model id (TTS). */
+  model: string;
+  /** Provider, e.g. 'openai' | 'anthropic' | 'deepgram' | 'elevenlabs'. */
+  provider: string;
+  /** Task/operation that consumed the resource (LlmTask value). */
+  task: string;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  /** Cached/prompt-cache tokens (subset of prompt). */
+  cachedTokens: number;
+  /** STT billable audio duration (ms). */
+  audioMs: number;
+  /** TTS billable synthesized characters. */
+  characters: number;
+  /** Number of calls in this slice. */
+  calls: number;
+  /** Estimated USD cost for this (service × model × task) slice. */
+  estimatedCostUsd: number;
+  /** false when the row has no pricing entry (cost shown as 0). */
+  priced: boolean;
+}
+
+export interface TokenConsumptionResponse {
+  range: AnalyticsRange;
+  totalEstimatedCostUsd: number;
+  totalTokens: number;
+  points: TokenConsumptionPoint[];
+}
+
 /** Async drift-backfill job state (POST/GET conversation-drift/backfill). */
 export interface DriftBackfillJob {
   jobId: string;
