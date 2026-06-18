@@ -1,21 +1,15 @@
-import { useMemo, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 
-import { ScaleTypes } from "@carbon/charts";
-import { DonutChart, LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 import {
-  Button,
   Dropdown,
   Heading,
-  InlineNotification,
   Section,
-  SkeletonPlaceholder,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
   Theme,
-  Tile,
 } from "@carbon/react";
 
 import "@carbon/charts/styles.css";
@@ -26,190 +20,86 @@ import { AnalyticsBucket, AnalyticsRange } from "@types";
 
 import { buildVoiceLatencySeries, latencyBucketTitle, LATENCY_GROUPS } from "./latencyChart";
 import { TokenConsumption } from "./TokenConsumption";
+import { useGetScenarioLanguagesQuery } from "@api";
+import { AnalyticsRange } from "@types";
+
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
+import { LatencyTab } from "./tabs/LatencyTab";
+import { OverviewTab } from "./tabs/OverviewTab";
+import { TokensTab } from "./tabs/TokensTab";
 
-const CHART_HEIGHT = "320px";
-
-type RangeItem = { id: AnalyticsRange; label: string };
-
-const RANGE_ITEMS: RangeItem[] = [
+const RANGE_ITEMS: { id: AnalyticsRange; label: string }[] = [
   { id: "30d", label: "Last 30 days" },
   { id: "90d", label: "Last 90 days" },
   { id: "12m", label: "Last 12 months" },
 ];
 
-type BucketItem = { id: AnalyticsBucket; label: string };
+/** Shared, page-level filter values passed into every tab. */
+interface TabFilters {
+  range: AnalyticsRange;
+  language: string;
+}
 
-const LATENCY_BUCKET_ITEMS: BucketItem[] = [
-  { id: "day", label: "Day-wise" },
-  { id: "week", label: "Week-wise" },
-  { id: "month", label: "Month-wise" },
+/**
+ * Tab registry — the single place to add/reorder analytics tabs. Each entry
+ * declares which page-level pickers it consumes (`uses`) and renders its own
+ * component with the shared filter values. Adding a tab = one entry + a
+ * component under ./tabs; tab-local pickers live inside that component.
+ */
+interface TabDef {
+  id: string;
+  label: string;
+  uses: { language: boolean };
+  render: (f: TabFilters) => ReactNode;
+}
+
+const TABS: TabDef[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    uses: { language: false },
+    render: f => <OverviewTab range={f.range} />,
+  },
+  {
+    id: "latency",
+    label: "Latency",
+    uses: { language: true },
+    render: f => <LatencyTab range={f.range} language={f.language} />,
+  },
+  {
+    id: "drift",
+    label: "Drift",
+    uses: { language: true },
+    render: f => <ConversationDrift range={f.range} language={f.language} />,
+  },
+  {
+    id: "tokens",
+    label: "Tokens",
+    uses: { language: false },
+    render: () => <TokensTab />,
+  },
 ];
-
-// Carbon-palette hexes reused across the chart color scales.
-const COLORS = {
-  blue: "#0f62fe",
-  purple: "#8a3ffc",
-  teal: "#08bdba",
-  green: "#42be65",
-  cyan: "#33b1ff",
-};
 
 export const Analytics = () => {
   const [range, setRange] = useState<AnalyticsRange>("30d");
-  const [latencyBucket, setLatencyBucket] = useState<AnalyticsBucket>("day");
-  const { data, isLoading, isError, refetch } = useGetAnalyticsOverviewQuery({ range });
-  const {
-    data: latency,
-    isLoading: latencyLoading,
-    isError: latencyError,
-    refetch: refetchLatency,
-  } = useGetVoiceLatencyQuery({ range, bucket: latencyBucket });
+  // Page-level filters, shared across tabs (language id "" = all). Each tab
+  // opts in via TabDef.uses; the picker only renders for tabs that use it.
+  const [language, setLanguage] = useState<string>("");
+  const [tabIndex, setTabIndex] = useState(0);
 
-  const bucketTitle = range === "12m" ? "Month" : "Week";
-
-  // Latency comes back in ms split by source; chart it in seconds, one line
-  // per (source × {avg, p95}). Buckets with no turns are simply absent.
-  const latencyData = useMemo(() => buildVoiceLatencySeries(latency?.points ?? []), [latency]);
-
-  const latencyAxisTitle = useMemo(() => latencyBucketTitle(latency?.bucket), [latency]);
-
-  const latencyOptions = useMemo(
-    () => ({
-      title: "Voice-to-voice latency (avg & p95)",
-      axes: {
-        left: {
-          mapsTo: "value",
-          scaleType: ScaleTypes.LINEAR,
-          title: "Seconds",
-          thresholds: [
-            {
-              value: (latency?.targetMs ?? 1500) / 1000,
-              label: "Target",
-              fillColor: COLORS.green,
-            },
-          ],
-        },
-        bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: latencyAxisTitle },
-      },
-      curve: "curveMonotoneX",
-      height: CHART_HEIGHT,
-      color: {
-        scale: {
-          [LATENCY_GROUPS.pipelineAvg]: COLORS.blue,
-          [LATENCY_GROUPS.pipelineP95]: COLORS.cyan,
-          [LATENCY_GROUPS.transcriptAvg]: COLORS.purple,
-          [LATENCY_GROUPS.transcriptP95]: COLORS.teal,
-        },
-      },
-      toolbar: { enabled: false },
-    }),
-    [latency, latencyAxisTitle],
+  const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });
+  const languageItems = useMemo(
+    () => [
+      { id: "", label: "All languages" },
+      ...(scenarioLanguages ?? []).map(l => ({ id: l.value, label: l.label })),
+    ],
+    [scenarioLanguages],
   );
 
-  const growthData = useMemo(
-    () =>
-      (data?.userGrowth ?? []).flatMap(point => [
-        { group: "New users", key: point.date, value: point.newUsers },
-        { group: "Cumulative users", key: point.date, value: point.cumulativeUsers },
-      ]),
-    [data],
-  );
-
-  const activeData = useMemo(
-    () =>
-      (data?.activeUsers ?? []).flatMap(point => [
-        { group: "DAU", key: point.date, value: point.dau },
-        { group: "WAU", key: point.date, value: point.wau },
-        { group: "MAU", key: point.date, value: point.mau },
-      ]),
-    [data],
-  );
-
-  const simsData = useMemo(
-    () =>
-      (data?.simulationsCompleted ?? []).map(point => ({
-        group: "Simulations",
-        key: point.weekStart,
-        value: point.count,
-      })),
-    [data],
-  );
-
-  const retentionData = useMemo(
-    () =>
-      (data?.retention ?? []).flatMap(point => [
-        { group: "New", key: point.weekStart, value: point.newUsers },
-        { group: "Returning", key: point.weekStart, value: point.returningUsers },
-      ]),
-    [data],
-  );
-
-  const rolesData = useMemo(
-    () => (data?.usersByRole ?? []).map(point => ({ group: point.role, value: point.count })),
-    [data],
-  );
-
-  const growthOptions = {
-    title: "User growth",
-    axes: {
-      left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Users" },
-      bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: bucketTitle },
-    },
-    curve: "curveMonotoneX",
-    height: CHART_HEIGHT,
-    color: { scale: { "New users": COLORS.purple, "Cumulative users": COLORS.blue } },
-    toolbar: { enabled: false },
-  };
-
-  const activeOptions = {
-    title: "Active users (DAU / WAU / MAU)",
-    axes: {
-      left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Distinct users" },
-      bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: "Day" },
-    },
-    curve: "curveMonotoneX",
-    points: { enabled: false },
-    height: CHART_HEIGHT,
-    color: { scale: { DAU: COLORS.blue, WAU: COLORS.teal, MAU: COLORS.purple } },
-    toolbar: { enabled: false },
-  };
-
-  const simsOptions = {
-    title: "Simulations completed per week",
-    axes: {
-      left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Completed" },
-      bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: "Week" },
-    },
-    height: CHART_HEIGHT,
-    color: { scale: { Simulations: COLORS.blue } },
-    legend: { enabled: false },
-    toolbar: { enabled: false },
-  };
-
-  const retentionOptions = {
-    title: "Weekly retention (new vs returning)",
-    axes: {
-      left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, stacked: true, title: "Active users" },
-      bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: "Week" },
-    },
-    height: CHART_HEIGHT,
-    color: { scale: { New: COLORS.green, Returning: COLORS.blue } },
-    toolbar: { enabled: false },
-  };
-
-  const rolesOptions = {
-    title: "Users by role",
-    resizable: true,
-    donut: { center: { label: "Users" } },
-    height: CHART_HEIGHT,
-    toolbar: { enabled: false },
-  };
-
-  const selectedItem = RANGE_ITEMS.find(item => item.id === range) ?? RANGE_ITEMS[0];
-  const selectedLatencyBucket =
-    LATENCY_BUCKET_ITEMS.find(item => item.id === latencyBucket) ?? LATENCY_BUCKET_ITEMS[0];
-  const showSkeletons = isLoading && !data;
+  const selectedRange = RANGE_ITEMS.find(i => i.id === range) ?? RANGE_ITEMS[0];
+  const selectedLanguage = languageItems.find(i => i.id === language) ?? languageItems[0];
+  const activeTab = TABS[tabIndex] ?? TABS[0];
+  const filters: TabFilters = { range, language };
 
   return (
     <div className="font-primary pr-1">
@@ -217,24 +107,46 @@ export const Analytics = () => {
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Heading className="text-2xl">Analytics</Heading>
-            <div className="w-56">
-              <Dropdown
-                id="analytics-range"
-                size="md"
-                titleText="Time range"
-                hideLabel
-                label="Time range"
-                items={RANGE_ITEMS}
-                selectedItem={selectedItem}
-                itemToString={item => item?.label ?? ""}
-                onChange={({ selectedItem }) => {
-                  if (selectedItem) setRange(selectedItem.id);
-                }}
-              />
+            <div className="flex items-center gap-3">
+              {activeTab.uses.language && (
+                <div className="w-48">
+                  <Dropdown
+                    id="analytics-language"
+                    size="md"
+                    titleText="Language"
+                    hideLabel
+                    label="Language"
+                    items={languageItems}
+                    selectedItem={selectedLanguage}
+                    itemToString={item => item?.label ?? ""}
+                    onChange={({ selectedItem }) => {
+                      if (selectedItem) setLanguage(selectedItem.id);
+                    }}
+                  />
+                </div>
+              )}
+              <div className="w-56">
+                <Dropdown
+                  id="analytics-range"
+                  size="md"
+                  titleText="Time range"
+                  hideLabel
+                  label="Time range"
+                  items={RANGE_ITEMS}
+                  selectedItem={selectedRange}
+                  itemToString={item => item?.label ?? ""}
+                  onChange={({ selectedItem }) => {
+                    if (selectedItem) setRange(selectedItem.id);
+                  }}
+                />
+              </div>
             </div>
           </div>
 
-          <Tabs>
+          <Tabs
+            selectedIndex={tabIndex}
+            onChange={({ selectedIndex }) => setTabIndex(selectedIndex)}
+          >
             <TabList aria-label="Analytics sections">
               <Tab>Overview</Tab>
               <Tab>Latency</Tab>
@@ -349,6 +261,14 @@ export const Analytics = () => {
               <TabPanel>
                 <TokenConsumption range={range} />
               </TabPanel>
+              {TABS.map(t => (
+                <Tab key={t.id}>{t.label}</Tab>
+              ))}
+            </TabList>
+            <TabPanels>
+              {TABS.map(t => (
+                <TabPanel key={t.id}>{t.render(filters)}</TabPanel>
+              ))}
             </TabPanels>
           </Tabs>
         </Section>

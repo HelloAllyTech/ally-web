@@ -1,6 +1,5 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { ScaleTypes } from "@carbon/charts";
 import { LineChart, SimpleBarChart } from "@carbon/charts-react";
 import {
   Button,
@@ -23,57 +22,22 @@ import {
 } from "@api";
 import { AnalyticsRange } from "@types";
 
-const CHART_HEIGHT = "300px";
-
-// Stored language values are full locale codes (e.g. 'en-IN', 'hi-IN'), so the
-// dropdown is built from the actual values in the data — a hardcoded short-code
-// list ('en', 'hi') wouldn't match and would filter to nothing. Friendly names
-// where known, else the raw code.
-const LANG_NAME: Record<string, string> = {
-  en: "English",
-  "en-IN": "English (IN)",
-  "en-US": "English (US)",
-  "en-GB": "English (GB)",
-  "hi-IN": "Hindi",
-  "ta-IN": "Tamil",
-  "te-IN": "Telugu",
-  "bn-IN": "Bengali",
-  "mr-IN": "Marathi",
-  "kn-IN": "Kannada",
-  "ml-IN": "Malayalam",
-  "gu-IN": "Gujarati",
-  "pa-IN": "Punjabi",
-};
-const langLabel = (code: string) => LANG_NAME[code] ?? code;
+import { ChartCard, PALETTE, barOpts, lineOpts } from "../Analytics/chartKit";
 
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
 // Everything is now session-level. The "kind" panels count SESSIONS per
 // category — and a session can fall in several categories (different turns),
 // so the counts overlap and don't sum to a whole → bars, not pies. Titles live
-// on <Cell> so empty charts can show a placeholder.
-const barOpts = (leftTitle: string) => ({
-  height: CHART_HEIGHT,
-  axes: {
-    left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: leftTitle },
-    bottom: { mapsTo: "group", scaleType: ScaleTypes.LABELS },
-  },
-  legend: { enabled: false },
-  toolbar: { enabled: false },
-});
+// on <ChartCard> so empty charts can show a placeholder.
+
 // Two series — Live (pipeline) vs Historical (transcript) — like the
 // voice-latency chart's pipeline/transcript split.
-const trendOpts = {
-  height: CHART_HEIGHT,
-  axes: {
-    left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Drift rate %" },
-    bottom: { mapsTo: "key", scaleType: ScaleTypes.LABELS, title: "Period" },
-  },
-  curve: "curveMonotoneX",
-  color: { scale: { Live: "#0f62fe", Historical: "#8d8d8d" } },
-  legend: { enabled: true },
-  toolbar: { enabled: false },
-};
+const trendOpts = lineOpts({
+  leftTitle: "Drift rate %",
+  bottomTitle: "Period",
+  colorScale: { Live: PALETTE.blue, Historical: PALETTE.gray },
+});
 
 // Session source → friendly series name for the trend.
 const SOURCE_LABEL: Record<string, string> = {
@@ -97,27 +61,18 @@ const DRIFT_KIND_LABEL: Record<string, string> = {
 };
 // One distinct colour per drift kind for the consolidated "kinds of drift" bar.
 const DRIFT_KIND_COLOR: Record<string, string> = {
-  "Off-topic": "#fa4d56",
-  Gibberish: "#a2191f",
-  Degrading: "#ff832b",
+  "Off-topic": PALETTE.red,
+  Gibberish: PALETTE.darkRed,
+  Degrading: PALETTE.orange,
   "Mostly incoherent": "#8a3800",
-  Hallucination: "#8a3ffc",
-  "Context lock-in": "#6929c4",
-  "Wrong language": "#0f62fe",
+  Hallucination: PALETTE.purple,
+  "Context lock-in": PALETTE.indigo,
+  "Wrong language": PALETTE.blue,
   Repetition: "#005d5d",
-  "Role slip": "#9f1853",
+  "Role slip": PALETTE.magenta,
   "Wrong intent": "#1192e8",
 };
-const kindsOpts = {
-  height: CHART_HEIGHT,
-  axes: {
-    left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Sessions" },
-    bottom: { mapsTo: "group", scaleType: ScaleTypes.LABELS },
-  },
-  color: { scale: DRIFT_KIND_COLOR },
-  legend: { enabled: false },
-  toolbar: { enabled: false },
-};
+const kindsOpts = barOpts({ leftTitle: "Sessions", colorScale: DRIFT_KIND_COLOR });
 
 // "By experiment" is one chart with a dimension selector. Both the LLM and the
 // STT model can contribute to drift; provider is intentionally omitted.
@@ -125,7 +80,7 @@ const EXP_ITEMS: {
   id: "promptVersion" | "model" | "sttModel";
   label: string;
 }[] = [
-  { id: "promptVersion", label: "Prompt version" },
+  { id: "promptVersion", label: "Main agent prompt" },
   { id: "model", label: "LLM model" },
   { id: "sttModel", label: "STT model" },
 ];
@@ -139,21 +94,12 @@ const ROOT_CAUSE_LABEL: Record<string, string> = {
   stt_cascade: "STT (cascade)",
 };
 const ROOT_CAUSE_COLOR: Record<string, string> = {
-  "LLM (direct)": "#0f62fe",
-  "LLM: context lock-in": "#6929c4",
-  "STT (direct)": "#fa4d56",
-  "STT (cascade)": "#ff832b",
+  "LLM (direct)": PALETTE.blue,
+  "LLM: context lock-in": PALETTE.indigo,
+  "STT (direct)": PALETTE.red,
+  "STT (cascade)": PALETTE.orange,
 };
-const rootCauseOpts = {
-  height: CHART_HEIGHT,
-  axes: {
-    left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Sessions" },
-    bottom: { mapsTo: "group", scaleType: ScaleTypes.LABELS },
-  },
-  color: { scale: ROOT_CAUSE_COLOR },
-  legend: { enabled: false },
-  toolbar: { enabled: false },
-};
+const rootCauseOpts = barOpts({ leftTitle: "Sessions", colorScale: ROOT_CAUSE_COLOR });
 
 // STT input quality (counselor-side garble severity + error type) — a separate
 // concern from drift, shown across ALL sessions. Warm STT palette.
@@ -169,24 +115,15 @@ const STT_INPUT_LABEL: Record<string, string> = {
 };
 const STT_INPUT_COLOR: Record<string, string> = {
   "Garble: partial": "#ffb784",
-  "Garble: severe": "#a2191f",
-  "Phonetic garble": "#d2a106",
-  "Wrong language": "#9f1853",
+  "Garble: severe": PALETTE.darkRed,
+  "Phonetic garble": PALETTE.gold,
+  "Wrong language": PALETTE.magenta,
   "Number format": "#8a3800",
   "Entity swap": "#ba4e00",
   "Code-mix fail": "#ba4e8a",
   Truncation: "#570408",
 };
-const sttInputOpts = {
-  height: CHART_HEIGHT,
-  axes: {
-    left: { mapsTo: "value", scaleType: ScaleTypes.LINEAR, title: "Sessions" },
-    bottom: { mapsTo: "group", scaleType: ScaleTypes.LABELS },
-  },
-  color: { scale: STT_INPUT_COLOR },
-  legend: { enabled: false },
-  toolbar: { enabled: false },
-};
+const sttInputOpts = barOpts({ leftTitle: "Sessions", colorScale: STT_INPUT_COLOR });
 
 const ratePctBars = (rows: { key: string; driftRate: number }[] = []) =>
   rows.map(r => ({ group: r.key, value: Number((r.driftRate * 100).toFixed(1)) }));
@@ -197,54 +134,21 @@ const SubHeading = ({ children }: { children: string }) => (
   </p>
 );
 
-const Cell = ({
-  title,
-  caption,
-  empty,
-  children,
+// `range` and `language` come from the shared selectors at the top of the
+// Analytics page — no separate dropdowns here.
+export const ConversationDrift = ({
+  range,
+  language,
 }: {
-  title: string;
-  caption?: string;
-  empty: boolean;
-  children: ReactNode;
-}) => (
-  <div>
-    <p className="text-sm font-medium text-typography-900">{title}</p>
-    {caption && <p className="text-xs text-typography-500 mb-2">{caption}</p>}
-    {!caption && <div className="mb-2" />}
-    {empty ? (
-      <div
-        className="flex items-center justify-center rounded border border-dashed border-[#e0e0e0] text-sm text-typography-500"
-        style={{ height: CHART_HEIGHT }}
-      >
-        No data for this range
-      </div>
-    ) : (
-      children
-    )}
-  </div>
-);
-
-// `range` comes from the shared time-range selector at the top of the Analytics
-// page — no separate range dropdown here.
-export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
-  const [language, setLanguage] = useState<string>("");
+  range: AnalyticsRange;
+  language: string;
+}) => {
   const [expDim, setExpDim] = useState<"promptVersion" | "model" | "sttModel">("promptVersion");
-  // The full set of language codes present, captured from the unfiltered
-  // ("all languages") response so the dropdown stays complete after a filter is
-  // applied (the filtered response only returns the selected language).
-  const [langOptions, setLangOptions] = useState<string[]>([]);
 
   const { data, isLoading, isError, refetch } = useGetConversationDriftQuery({
     range,
     language: language || undefined,
   });
-
-  useEffect(() => {
-    if (language === "" && data?.driftRateByLanguage?.length) {
-      setLangOptions(data.driftRateByLanguage.map(r => r.language).filter(Boolean));
-    }
-  }, [data, language]);
 
   // Re-run backfill (last 3 months) for prompt iteration; poll until done.
   const [startBackfill, { isLoading: starting }] = useStartDriftBackfillMutation();
@@ -272,15 +176,6 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
       if (job.status === "done") refetch();
     }
   }, [job, refetch]);
-
-  const languageItems = useMemo(
-    () => [
-      { id: "", label: "All languages" },
-      ...langOptions.map(code => ({ id: code, label: langLabel(code) })),
-    ],
-    [langOptions],
-  );
-  const selectedLanguage = languageItems.find(i => i.id === language);
 
   const worstLanguage = useMemo(() => {
     const rows = data?.driftRateByLanguage ?? [];
@@ -372,26 +267,9 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Heading className="text-2xl">Conversation drift</Heading>
-            <div className="flex items-center gap-3">
-              <div className="w-44">
-                <Dropdown
-                  id="drift-language"
-                  size="md"
-                  titleText="Language"
-                  hideLabel
-                  label="Language"
-                  items={languageItems}
-                  selectedItem={selectedLanguage}
-                  itemToString={item => item?.label ?? ""}
-                  onChange={({ selectedItem }) => {
-                    if (selectedItem) setLanguage(selectedItem.id);
-                  }}
-                />
-              </div>
-              <Button kind="tertiary" size="md" disabled={jobActive} onClick={handleRerun}>
-                {jobActive ? "Re-running…" : "Re-run last 3 months"}
-              </Button>
-            </div>
+            <Button kind="tertiary" size="md" disabled={jobActive} onClick={handleRerun}>
+              {jobActive ? "Re-running…" : "Re-run last 3 months"}
+            </Button>
           </div>
 
           {job && (
@@ -439,49 +317,53 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
                 ))}
               </div>
               <div className="grid grid-cols-1 gap-6 mt-4">
-                <Cell
+                <ChartCard
+                  bare
                   title="Drift rate over time"
                   caption="% of sessions that drifted, per period — Live (real app runs) vs Historical (backfilled)"
                   empty={!data?.driftTrend?.length}
                 >
                   <LineChart data={trendData} options={trendOpts} />
-                </Cell>
+                </ChartCard>
               </div>
 
               {/* WHERE */}
               <SubHeading>Where it&apos;s worst</SubHeading>
               <div className="grid grid-cols-1 gap-6">
-                <Cell
+                <ChartCard
+                  bare
                   title="Drift rate by language"
                   caption="% of sessions that drifted, per language"
                   empty={!data?.driftRateByLanguage?.length}
                 >
-                  <SimpleBarChart data={driftRateBars} options={barOpts("Drift rate %")} />
-                </Cell>
+                  <SimpleBarChart data={driftRateBars} options={barOpts({ leftTitle: "Drift rate %" })} />
+                </ChartCard>
               </div>
 
               {/* KINDS OF DRIFT — consolidated colour-coded bar, drifted sessions */}
               <SubHeading>Kinds of drift (drifted sessions)</SubHeading>
               <div className="grid grid-cols-1 gap-6">
-                <Cell
+                <ChartCard
+                  bare
                   title="Kinds of drift"
                   caption="Among sessions that drifted, how many showed each kind. A session can show several kinds, so bars overlap. Empty when no session crossed the drift threshold."
                   empty={!data?.kindsOfDrift?.length}
                 >
                   <SimpleBarChart data={kindsBars} options={kindsOpts} />
-                </Cell>
+                </ChartCard>
               </div>
 
               {/* ROOT CAUSE — attribution of DRIFTED sessions (STT vs LLM) */}
               <SubHeading>Root cause — STT vs LLM (drifted sessions)</SubHeading>
               <div className="grid grid-cols-1 gap-6">
-                <Cell
+                <ChartCard
+                  bare
                   title="Root cause"
                   caption="Among drifted sessions, what caused it — LLM (blue/purple) vs STT (red/orange). Empty when no session drifted."
                   empty={!data?.rootCause?.length}
                 >
                   <SimpleBarChart data={rootCauseBars} options={rootCauseOpts} />
-                </Cell>
+                </ChartCard>
               </div>
 
               {/* STT INPUT QUALITY — counselor-side garble, ALL sessions. Two
@@ -492,20 +374,22 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
                 independent of whether the AI drifted.
               </p>
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <Cell
+                <ChartCard
+                  bare
                   title="Garble severity"
                   caption="How badly the counselor transcript was mangled (sessions with ≥1 partial / severe turn)."
                   empty={!garbleSeverityBars.length}
                 >
                   <SimpleBarChart data={garbleSeverityBars} options={sttInputOpts} />
-                </Cell>
-                <Cell
+                </ChartCard>
+                <ChartCard
+                  bare
                   title="STT error type"
                   caption="What kind of STT mistake occurred — points at the fix (provider / language / biasing)."
                   empty={!data?.sttErrorTypeMix?.length}
                 >
                   <SimpleBarChart data={errorTypeBars} options={sttInputOpts} />
-                </Cell>
+                </ChartCard>
               </div>
 
               {/* EXPERIMENT SLICE — one chart with a dimension selector */}
@@ -530,7 +414,8 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-6">
-                <Cell
+                <ChartCard
+                  bare
                   title={`Drift rate by ${selectedExp?.label.toLowerCase() ?? "dimension"}`}
                   caption={
                     expEmpty
@@ -539,8 +424,8 @@ export const ConversationDrift = ({ range }: { range: AnalyticsRange }) => {
                   }
                   empty={expEmpty}
                 >
-                  <SimpleBarChart data={ratePctBars(expRows)} options={barOpts("Drift rate %")} />
-                </Cell>
+                  <SimpleBarChart data={ratePctBars(expRows)} options={barOpts({ leftTitle: "Drift rate %" })} />
+                </ChartCard>
               </div>
             </Tile>
           )}
