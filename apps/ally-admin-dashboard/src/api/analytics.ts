@@ -5,6 +5,7 @@ import {
   AnalyticsRange,
   ConversationDriftResponse,
   DriftBackfillJob,
+  TokenConsumptionResponse,
   VoiceLatencyResponse,
 } from "@types";
 
@@ -47,6 +48,13 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    getTokenConsumption: builder.query<TokenConsumptionResponse, AnalyticsRangeQuery>({
+      query: ({ range } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.TOKEN_CONSUMPTION,
+        method: HttpMethod.GET,
+        params: range ? { range } : undefined,
+      }),
+    }),
     getConversationDrift: builder.query<ConversationDriftResponse, ConversationDriftQuery>({
       query: ({ range, language, scenarioId, llmModel, llmProvider, promptVersion } = {}) => ({
         url: ApiEndpoints.ANALYTICS.CONVERSATION_DRIFT,
@@ -85,4 +93,5 @@ export const {
   useGetConversationDriftQuery,
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
+  useGetTokenConsumptionQuery,
 } = analyticsAPI;
