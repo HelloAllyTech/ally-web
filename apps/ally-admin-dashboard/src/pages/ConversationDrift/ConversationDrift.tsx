@@ -26,6 +26,11 @@ import { ChartCard, PALETTE, barOpts, lineOpts } from "../Analytics/chartKit";
 
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
+// The 3-month drift backfill has already been run, so the trigger button is
+// hidden. All the machinery below is kept intact — flip this to `true` to bring
+// the button back, or trigger a backfill directly via the backend API.
+const SHOW_BACKFILL_BUTTON = false;
+
 // Everything is now session-level. The "kind" panels count SESSIONS per
 // category — and a session can fall in several categories (different turns),
 // so the counts overlap and don't sum to a whole → bars, not pies. Titles live
@@ -267,18 +272,14 @@ export const ConversationDrift = ({
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Heading className="text-2xl">Conversation drift</Heading>
-            <Button
-              kind="tertiary"
-              size="md"
-              disabled
-              title="3-month backfill already completed"
-              onClick={handleRerun}
-            >
-              {jobActive ? "Re-running…" : "Re-run last 3 months"}
-            </Button>
+            {SHOW_BACKFILL_BUTTON && (
+              <Button kind="tertiary" size="md" disabled={jobActive} onClick={handleRerun}>
+                {jobActive ? "Re-running…" : "Re-run last 3 months"}
+              </Button>
+            )}
           </div>
 
-          {job && (
+          {SHOW_BACKFILL_BUTTON && job && (
             <InlineNotification
               kind={job.status === "error" ? "error" : job.status === "done" ? "success" : "info"}
               lowContrast
