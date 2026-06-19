@@ -102,6 +102,9 @@ export const ApiEndpoints = {
     GENERATE_FIELD: "/v1/learn/scenarios/generate-field",
     GENERATE_AGENT_PROMPT: "/v1/learn/agent-builder/generate-system-prompt",
     COMPETENCIES: "/v1/learn/competencies",
+    START_COPILOT_RUN: "/v1/learn/copilot/runs",
+    GET_COPILOT_RUN: (runId: string) => `/v1/learn/copilot/runs/${runId}`,
+    CANCEL_COPILOT_RUN: (runId: string) => `/v1/learn/copilot/runs/${runId}/cancel`,
   },
 
   CHARACTERS: {

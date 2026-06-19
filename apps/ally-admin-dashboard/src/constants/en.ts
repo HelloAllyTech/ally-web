@@ -491,6 +491,27 @@ export const en = {
       systemSkillManagedNote: "This skill is managed under System Skills.",
       systemSkillLoading: "Loading system skill…",
       systemSkillNotFound: "Could not load the system skill. It may not be configured yet.",
+      // Copilot auto-build & self-improve pipeline
+      build: "Build & Test Agent",
+      rebuild: "Rebuild & Test Agent",
+      building: "Building and testing your agent…",
+      failedToStart: "Failed to start the agent build. Please try again.",
+      cancel: "Cancel build",
+      cancelled: "Build cancelled.",
+      runFailedTitle: "Couldn't reach the target score",
+      runSucceededTitle: "Your agent is ready",
+      openInBasicSettings: "Review in Basic Settings",
+      bestScoreLabel: "Best score",
+      roundLabel: (n: number) => `Round ${n}`,
+      stepGenerating: "Generating the agent's settings",
+      stepEvaluating: "Running a practice conversation & scoring it",
+      stepRefining: "Refining the agent from the feedback",
+      scoredSuccess: (score: number) =>
+        `Scored ${score}/100 — the agent behaves like a realistic training partner.`,
+      scoredFailure: (score: number) =>
+        `Best score ${score}/100 after the maximum rounds. Review the recommendations and the draft, then adjust manually.`,
+      recommendationsLabel: "Evaluation & recommendations",
+      noRoundsYet: "Starting the first build round…",
     },
   },
   notification: {
