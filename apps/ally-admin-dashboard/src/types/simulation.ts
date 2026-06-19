@@ -191,6 +191,7 @@ export interface GetSimulationByIdResponse {
     timerMode?: boolean;
     showScoreMeter?: boolean;
     enableFeedback?: boolean;
+    pauseEnabled?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
     enableProsody?: boolean;
@@ -268,6 +269,7 @@ export interface StartSimulationResponse {
       checklistType?: string;
       showScoreMeter?: boolean;
       enableFeedback?: boolean;
+      pauseEnabled?: boolean;
       currentState?: boolean;
       stateNames?: stateInstruction[];
     };

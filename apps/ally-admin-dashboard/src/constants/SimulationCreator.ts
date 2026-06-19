@@ -477,6 +477,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: true,
       },
       {
+        id: "pauseEnabled",
+        label: "Allow Pause/Resume",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: true,
+      },
+      {
         id: "isGlobal",
         label: "Default org-level visibility",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,

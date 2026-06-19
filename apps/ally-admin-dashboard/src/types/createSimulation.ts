@@ -48,6 +48,7 @@ export type FormData = {
   maxTimeValue?: string;
   showScoreMeter?: boolean;
   enableFeedback?: boolean;
+  pauseEnabled?: boolean;
   optGuardrails?: boolean;
   currentState?: boolean;
   knowledgeSources?: knowledgeSource[];
