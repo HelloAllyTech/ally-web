@@ -112,6 +112,7 @@ export const useStartSimulation = (
             maxTimeValue: scenario?.maxTimeValue,
             timerMode: scenario?.timerMode,
             showScoreMeter: scenario?.showScoreMeter,
+            pauseEnabled: scenario?.pauseEnabled,
             stateNames: scenario?.stateNames || [],
             difficultyLevel: scenario?.difficultyLevel,
           }),

@@ -39,6 +39,7 @@ export interface Scenario {
   maxTimeValue?: string;
   timerMode?: boolean;
   showScoreMeter?: boolean;
+  pauseEnabled?: boolean;
   difficultyLevel?: string;
   stateNames?: { name: string; stateId: string }[];
   availableLanguages?: LanguageOption[];
