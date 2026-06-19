@@ -4,11 +4,17 @@ import { Terminal } from "@icons";
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
-import { useGenerateAgentPromptMutation, useGetAutofillModelsQuery } from "@api";
-import { DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS, en } from "@constants";
-import { applyAgentBuilderOutputToForm, parseAgentBuilderOutput } from "@utils";
+import {
+  COPILOT_TERMINAL_STATUSES,
+  useCancelCopilotRunMutation,
+  useGetAutofillModelsQuery,
+  useGetCopilotRunQuery,
+  useStartCopilotRunMutation,
+} from "@api";
+import { DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS, en, ROUTES } from "@constants";
 
 import { AgentBuilderSystemSkillPanel } from "./AgentBuilderSystemSkillPanel";
+import { CopilotBuildProgress } from "./CopilotBuildProgress";
 import { Button } from "../button";
 import { DropdownField } from "../dropdown-field";
 import { FormLabel } from "../form-label";
@@ -17,46 +23,56 @@ import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
 import { ButtonVariant } from "../types";
 
 const AGENT_DESCRIPTION_FIELD = "agentBuilderDescription";
-const AGENT_PROMPT_FIELD = "agentBuilderPrompt";
 const MAX_DESCRIPTION_LENGTH = 10000;
+const POLL_INTERVAL_MS = 2500;
 
 interface AgentBuilderCopilotProps {
   formMethods: UseFormReturn<any>;
   simulationId?: string;
   /**
-   * Called after a successful generation that auto-filled the form, so the
-   * parent can switch to the Basic Settings tab to show the applied values.
+   * Kept for API compatibility with the parent (tab switch). The Copilot
+   * pipeline now navigates to the built draft scenario on success instead.
    */
   onApplied?: () => void;
 }
 
 /**
- * Agent Builder Copilot tab (Create Simulation). Lets an author describe a
- * roleplay actor in free text and generate a structured scenario config via an
- * LLM. The structured output is parsed and applied to the shared form so the
- * Basic Settings tab is auto-filled; the raw generated JSON is kept in form
- * state (`agentBuilderPrompt`) so it persists with the scenario on Save/Publish.
+ * Agent Builder Copilot tab (Create Simulation). The superadmin describes a
+ * roleplay actor, picks a skill + model, and clicks Build. That kicks off a
+ * server-side pipeline (generate Basic Settings -> run a practice conversation
+ * -> evaluate -> refine until it scores well or the round budget runs out).
+ * The screen polls the run and shows per-round progress, scores, and the
+ * evaluation recommendations; on success it opens the built draft scenario in
+ * Basic Settings for review.
  */
-export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods, onApplied }) => {
-  const [generateAgentPrompt] = useGenerateAgentPromptMutation();
+export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods }) => {
   const { data: apiModels } = useGetAutofillModelsQuery();
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [startCopilotRun, { isLoading: isStarting }] = useStartCopilotRunMutation();
+  const [cancelCopilotRun, { isLoading: isCancelling }] = useCancelCopilotRunMutation();
+
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
   const [isSkillPanelOpen, setIsSkillPanelOpen] = useState(false);
-  // Field labels applied to Basic Settings on the last successful generation.
-  // null = no successful apply this mount (e.g. parse fallback or fresh tab).
-  const [appliedFields, setAppliedFields] = useState<string[] | null>(null);
+  const [runId, setRunId] = useState<string | null>(null);
 
   const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
-  const selectedProvider =
-    allModelOptions.find(m => m.value === selectedModel)?.provider ?? "openai";
   const modelOptions = allModelOptions.map(model => ({ label: model.label, value: model.value }));
 
   const description = (formMethods.watch(AGENT_DESCRIPTION_FIELD) as string) ?? "";
-  const generatedRaw = (formMethods.watch(AGENT_PROMPT_FIELD) as string) ?? "";
+  const selectedMainPromptCode =
+    (formMethods.watch("selectedMainPromptCode") as string | undefined) ?? undefined;
 
-  const handleGenerate = async () => {
-    if (isGenerating) return;
+  // Poll the run while one is active. Stop polling once it reaches a terminal
+  // state (RTK Query treats pollingInterval 0 as "do not poll").
+  const { data: run } = useGetCopilotRunQuery(runId ?? "", {
+    skip: !runId,
+    pollingInterval: POLL_INTERVAL_MS,
+  });
+
+  const isTerminal = !!run && COPILOT_TERMINAL_STATUSES.includes(run.status);
+  const isRunning = !!runId && (!run || !isTerminal);
+
+  const handleBuild = async () => {
+    if (isStarting || isRunning) return;
 
     const trimmedDescription = description.trim();
     if (!trimmedDescription) {
@@ -64,50 +80,40 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods,
       return;
     }
 
-    setIsGenerating(true);
-    setAppliedFields(null);
     try {
-      const response = await generateAgentPrompt({
-        description: trimmedDescription,
+      const { runId: newRunId } = await startCopilotRun({
+        brief: trimmedDescription,
+        skillPromptCode: selectedMainPromptCode,
         model: selectedModel,
-        provider: selectedProvider as "openai" | "anthropic",
       }).unwrap();
-
-      const raw = response.systemPrompt ?? "";
-      // Keep the raw generated output in form state so it persists with the
-      // scenario and stays visible for transparency / manual copy.
-      formMethods.setValue(AGENT_PROMPT_FIELD, raw, { shouldDirty: true });
-
-      const parsed = parseAgentBuilderOutput(raw);
-      if (parsed) {
-        const applied = applyAgentBuilderOutputToForm(parsed, formMethods);
-        setAppliedFields(applied);
-        if (applied.length > 0) {
-          toast.success(en.simulation.agentBuilder.appliedSummary(applied.length));
-          onApplied?.();
-        } else {
-          toast.warning(en.simulation.agentBuilder.noFieldsApplied);
-        }
-      } else {
-        // Couldn't parse structured JSON — fall back to seeding the role
-        // instruction (if empty) so the generation isn't lost, and surface the
-        // raw output for manual use. No navigation in this path.
-        const currentPrompt = (formMethods.getValues("prompt") as string) ?? "";
-        if (!currentPrompt.trim()) {
-          formMethods.setValue("prompt", raw, { shouldDirty: true });
-        }
-        toast.warning(en.simulation.agentBuilder.parseFallback);
-      }
+      setRunId(newRunId);
     } catch {
-      toast.error(en.simulation.agentBuilder.failedToGenerate);
-    } finally {
-      setIsGenerating(false);
+      toast.error(en.simulation.agentBuilder.failedToStart);
     }
   };
 
-  const generateLabel = generatedRaw.trim()
-    ? en.simulation.agentBuilder.regenerate
-    : en.simulation.agentBuilder.generate;
+  const handleCancel = async () => {
+    if (!runId) return;
+    try {
+      await cancelCopilotRun(runId).unwrap();
+    } catch {
+      // Best-effort: the poll will reflect the eventual state.
+    }
+  };
+
+  const handleOpenDraft = () => {
+    if (run?.draftScenarioId != null) {
+      // Hard navigation (not react-router navigate): the CreateSimulation page
+      // reads the route :id into state only once on mount, so a client-side
+      // route change to the draft's edit URL would not reload the scenario.
+      // A full document navigation remounts the page so the built draft loads.
+      window.location.assign(ROUTES.EDIT_SIMULATION(run.draftScenarioId));
+    }
+  };
+
+  const buildLabel = run
+    ? en.simulation.agentBuilder.rebuild
+    : en.simulation.agentBuilder.build;
 
   return (
     <div className="flex flex-col gap-6">
@@ -125,7 +131,7 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods,
         maxLength={MAX_DESCRIPTION_LENGTH}
         minHeight="200"
         placeholder={en.simulation.agentBuilder.descriptionPlaceholder}
-        disabled={isGenerating}
+        disabled={isRunning}
       />
 
       <div className="flex flex-col gap-4">
@@ -150,11 +156,11 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods,
         <div className="flex items-center gap-3">
           <Button
             variant={ButtonVariant.PRIMARY}
-            onClick={handleGenerate}
-            disabled={isGenerating || !description.trim()}
+            onClick={handleBuild}
+            disabled={isStarting || isRunning || !description.trim()}
             className="px-4 h-[40px]"
           >
-            {isGenerating ? en.simulation.agentBuilder.generating : generateLabel}
+            {isStarting || isRunning ? en.simulation.agentBuilder.building : buildLabel}
           </Button>
           <button
             type="button"
@@ -168,40 +174,13 @@ export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods,
         </div>
       </div>
 
-      {isGenerating && (
-        <div className="flex items-center gap-2 text-primary-500 text-sm animate-fadeInOut">
-          <div className="w-4 h-4 border-2 border-dashed border-primary-300 border-t-transparent rounded-full animate-spin" />
-          {en.simulation.agentBuilder.generating}
-        </div>
-      )}
-
-      {!isGenerating && appliedFields && appliedFields.length > 0 && (
-        <div className="flex flex-col gap-3 rounded-md border border-success-200 bg-success-50 p-4">
-          <span className="text-sm font-medium text-typography-900">
-            {en.simulation.agentBuilder.appliedFieldsLabel}
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {appliedFields.map(field => (
-              <span
-                key={field}
-                className="rounded-full bg-white border border-success-200 px-3 py-1 text-xs text-typography-800"
-              >
-                {field}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {!isGenerating && generatedRaw.trim().length > 0 && (
-        <details className="rounded-md border border-border-light bg-neutral-50 p-4">
-          <summary className="cursor-pointer text-sm text-typography-700 select-none">
-            {en.simulation.agentBuilder.viewRawOutput}
-          </summary>
-          <pre className="mt-3 whitespace-pre-wrap break-words font-mono text-xs text-typography-800">
-            {generatedRaw}
-          </pre>
-        </details>
+      {runId && run && (
+        <CopilotBuildProgress
+          run={run}
+          onOpenDraft={handleOpenDraft}
+          onCancel={handleCancel}
+          isCancelling={isCancelling}
+        />
       )}
 
       <AgentBuilderSystemSkillPanel
