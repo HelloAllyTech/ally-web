@@ -19,6 +19,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   defaultValue = "",
   disabled = false,
   regenerateButton,
+  enhanceButton,
 }) => {
   const isAgeField = id === "age";
   const MAX_AGE = 150;
@@ -87,9 +88,9 @@ export const InputField: React.FC<InputFieldProps> = ({
   const registerResult = register(id, { required: requiredErrorMessage });
   return (
     <div className="flex flex-col gap-2">
-      {(label || regenerateButton) && (
-        <div className="flex justify-between">
-          {label && (
+      {(label || regenerateButton || enhanceButton) && (
+        <div className="flex justify-between items-center gap-2">
+          {label ? (
             <label
               htmlFor="title"
               className="text-typography-900 text-base cursor-pointer flex items-center gap-1"
@@ -98,8 +99,13 @@ export const InputField: React.FC<InputFieldProps> = ({
               {isMandatory && <span className="text-destructive-500">*</span>}
               {infoIconContent && <InfoIcon />}
             </label>
+          ) : (
+            <span />
           )}
-          {regenerateButton}
+          <div className="flex items-center gap-2">
+            {regenerateButton}
+            {enhanceButton}
+          </div>
         </div>
       )}
       <div className="relative mb-[15px]">

@@ -73,6 +73,7 @@ export interface InputFieldProps {
   defaultValue?: string;
   disabled?: boolean;
   regenerateButton?: ReactNode;
+  enhanceButton?: ReactNode;
 }
 
 // DropdownField

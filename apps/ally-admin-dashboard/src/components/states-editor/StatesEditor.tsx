@@ -3,8 +3,10 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 
 import { TrashRed } from "@assets";
+import { ENHANCE_TYPE } from "@constants";
 import { useIsPlaceholderUsed } from "@hooks";
 
+import { EnhanceButton } from "../enhance-button";
 import { FormLabel } from "../form-label";
 import { cascadeBoundEdit, removeStateAndStitch } from "./cascadeBoundEdit";
 import { seedNextState, startingStateId } from "./stateSeeds";
@@ -287,12 +289,45 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 className="w-full bg-transparent px-2 py-1 text-sm border-b border-border-light focus:outline-none focus:border-primary-500"
               />
 
-              <textarea
-                value={state.guidelines}
-                onChange={event => updateState(state.id, { guidelines: event.target.value })}
-                placeholder="Guidelines injected into {state_x_guidelines} when this state is active."
-                className="w-full bg-transparent px-2 py-1 text-sm min-h-[60px] focus:outline-none resize-y"
-              />
+              <div className="flex flex-col gap-1">
+                {(state.name?.trim() || state.guidelines?.trim()) && (
+                  <div className="flex justify-end">
+                    <EnhanceButton
+                      enhanceType={ENHANCE_TYPE.STATE}
+                      label={state.name ? `${state.name} state` : "State"}
+                      // Structured field: send both name + guidelines as JSON,
+                      // apply the improved pair back to the card.
+                      currentValue={JSON.stringify({
+                        name: state.name ?? "",
+                        guidelines: state.guidelines ?? "",
+                      })}
+                      onApply={improved => {
+                        // The backend normalises this to clean {name,guidelines}
+                        // JSON (or fails the request). A parse error here is
+                        // therefore unexpected — let it propagate to the
+                        // EnhanceButton's error toast rather than writing a raw
+                        // blob into the guidelines field.
+                        const parsed = JSON.parse(improved) as {
+                          name?: string;
+                          guidelines?: string;
+                        };
+                        updateState(state.id, {
+                          ...(typeof parsed.name === "string" ? { name: parsed.name } : {}),
+                          ...(typeof parsed.guidelines === "string"
+                            ? { guidelines: parsed.guidelines }
+                            : {}),
+                        });
+                      }}
+                    />
+                  </div>
+                )}
+                <textarea
+                  value={state.guidelines}
+                  onChange={event => updateState(state.id, { guidelines: event.target.value })}
+                  placeholder="Guidelines injected into {state_x_guidelines} when this state is active."
+                  className="w-full bg-transparent px-2 py-1 text-sm min-h-[60px] focus:outline-none resize-y"
+                />
+              </div>
             </div>
           );
         });

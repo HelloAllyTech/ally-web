@@ -6,6 +6,7 @@ import { useGetAvailableLanguageVoicesQuery } from "@api";
 import { FORM_FIELD_IDS } from "@constants";
 import { useResolvedPrimaryLanguageId } from "@hooks";
 
+import { EnhanceButton } from "../enhance-button";
 import { FormLabel } from "../form-label";
 import { LanguageTabPanel } from "../language-tab-panel";
 import { RichTextEditor } from "../rich-text-editor";
@@ -23,6 +24,8 @@ interface ChallengeDescriptionPanelProps {
   label?: string;
   placeholder?: string;
   maxLength?: number;
+  /** When set, render a field-level Enhance control for the active tab. */
+  enhanceType?: string;
 }
 
 export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
@@ -31,6 +34,7 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
   label = "Challenge Description",
   placeholder,
   maxLength = DESCRIPTION_MAX_LENGTH,
+  enhanceType,
 }) => {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
 
@@ -145,6 +149,14 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
     <div className="w-full flex flex-col gap-3" data-testid="challenge-description-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
+        {enhanceType && (
+          <EnhanceButton
+            enhanceType={enhanceType}
+            label={label}
+            currentValue={valueForActiveTab}
+            onApply={handleChange}
+          />
+        )}
       </div>
       <LanguageTabPanel
         tabs={scenarioLanguageTabs.map(t => ({ id: t.languageId, label: t.label }))}

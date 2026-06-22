@@ -3,8 +3,9 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 
 import { FillerTagPicker } from "@components/filler-tag-picker";
-import { en } from "@constants";
+import { en, ENHANCE_TYPE } from "@constants";
 
+import { EnhanceButton } from "../enhance-button";
 import { LanguageTabPanel } from "../language-tab-panel";
 import {
   ALLOWED_FILLER_WORDS_FIELD,
@@ -82,6 +83,28 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({ form
     [activeLanguageId, allowedFillerWords, setValue],
   );
 
+  // Enhance treats the active language's filler words as a newline-joined
+  // blob; the improved text is split back into a unique, capped list.
+  const enhanceCurrentValue = (
+    activeLanguageId ? (allowedFillerWords[activeLanguageId] ?? []) : []
+  ).join("\n");
+  const handleEnhanceApply = useCallback(
+    (improved: string) => {
+      if (!activeLanguageId) return;
+      const names = uniqueFillerNamesPreserveOrder(
+        improved
+          .split(/[\n,]/)
+          .map(s => s.trim())
+          .filter(Boolean),
+      ).slice(0, ALLOWED_FILLER_WORDS_MAX);
+      setValue(ALLOWED_FILLER_WORDS_FIELD, {
+        ...allowedFillerWords,
+        [activeLanguageId]: names,
+      });
+    },
+    [activeLanguageId, allowedFillerWords, setValue],
+  );
+
   if (isLoading || languagesToShow.length === 0) {
     return null;
   }
@@ -92,6 +115,14 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({ form
         <span className="font-regular text-base text-typography-900">
           {en.simulation.allowedFillersSectionTitle}
         </span>
+        {activeLanguageId && (
+          <EnhanceButton
+            enhanceType={ENHANCE_TYPE.ALLOWED_FILLER_WORDS}
+            label={en.simulation.allowedFillersSectionTitle}
+            currentValue={enhanceCurrentValue}
+            onApply={handleEnhanceApply}
+          />
+        )}
       </div>
       <LanguageTabPanel
         tabs={(languagesToShow as LanguageOption[]).map(l => ({
