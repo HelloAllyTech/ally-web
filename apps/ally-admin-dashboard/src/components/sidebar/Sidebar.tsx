@@ -9,7 +9,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { BarChart3, Info, Languages, Settings } from "@icons";
+import { BarChart3, Flag, Info, Languages, Settings, SkillLevel } from "@icons";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -171,6 +171,10 @@ export const Sidebar: React.FC = () => {
         return <Info size={20} />;
       case SIDEBAR_ITEMS.ANALYTICS:
         return <BarChart3 size={20} />;
+      case SIDEBAR_ITEMS.OPTIMISATION_GOALS:
+        return <Flag size={20} />;
+      case SIDEBAR_ITEMS.COMPETENCIES:
+        return <SkillLevel size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
         return <Settings size={20} />;
       default:

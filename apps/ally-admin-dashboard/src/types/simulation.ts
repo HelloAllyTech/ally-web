@@ -524,6 +524,11 @@ export interface CreateFillerTagResponse {
 export interface Competency {
   id: string;
   name: string;
+  // True for user-owned custom competencies (created on the fly when a
+  // scenario's behaviours diverge from a defined competency's mapping). These
+  // are private to their owner and never shown in the superadmin Competencies
+  // tab — only in the owner's simulation-builder dropdown.
+  isCustom?: boolean;
 }
 
 export interface CompetenciesResponse {
@@ -531,8 +536,57 @@ export interface CompetenciesResponse {
   count: number;
 }
 
+export interface GetCompetenciesArgs {
+  name?: string;
+  // Include the requester's own custom competencies alongside the global ones.
+  includeOwnCustom?: boolean;
+}
+
 export interface CreateCompetencyRequest {
-  name: string;
+  // Omitted for custom competencies — the backend generates the name.
+  name?: string;
+  isCustom?: boolean;
+}
+
+export interface UpdateCompetencyRequest {
+  id: string;
+  data: { name: string };
+}
+
+export interface CompetencyBehavioursResponse {
+  helpful: HelperTagItem[];
+  unhelpful: HelperTagItem[];
+}
+
+export interface SetCompetencyBehavioursRequest {
+  id: string;
+  data: {
+    helpful: string[];
+    unhelpful: string[];
+  };
+}
+
+export interface OptimisationGoal {
+  id: string;
+  title: string;
+  category: string;
+  description?: string;
+}
+
+export interface OptimisationGoalsResponse {
+  data: OptimisationGoal[];
+  count: number;
+}
+
+export interface CreateOptimisationGoalRequest {
+  title: string;
+  category: string;
+  description?: string;
+}
+
+export interface UpdateOptimisationGoalRequest {
+  id: string;
+  data: CreateOptimisationGoalRequest;
 }
 
 export interface ScenarioContext {

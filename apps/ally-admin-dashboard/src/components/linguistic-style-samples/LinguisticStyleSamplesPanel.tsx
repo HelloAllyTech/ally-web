@@ -3,7 +3,7 @@ import { FC, useCallback, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 
 import { LanguageTabPanel } from "../language-tab-panel";
-import { SAMPLE_COUNT, type LanguageOption } from "./scenarioLanguageUtils";
+import { DEFAULT_SAMPLE_COUNT, type LanguageOption } from "./scenarioLanguageUtils";
 import { useScenarioLanguagesToShow } from "./useScenarioLanguagesToShow";
 
 interface LinguisticStyleSamplesPanelProps {
@@ -40,7 +40,7 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
 
   const handleSampleChange = useCallback(
     (languageId: string, index: number, value: string) => {
-      const current = linguisticStyleSamples[languageId] ?? Array(SAMPLE_COUNT).fill("");
+      const current = linguisticStyleSamples[languageId] ?? Array(DEFAULT_SAMPLE_COUNT).fill("");
       const updated = [...current];
       updated[index] = value;
       setValue(id, {
@@ -71,24 +71,28 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
         activeTabId={activeLanguageId}
         onTabChange={setSelectedLanguageId}
       >
-        {activeLanguageId && (
-          <div className="p-4 flex flex-col gap-2">
-            {Array.from({ length: SAMPLE_COUNT }, (_, i) => {
-              const samples: string[] =
-                linguisticStyleSamples[activeLanguageId] ?? Array(SAMPLE_COUNT).fill("");
-              return (
-                <input
-                  key={i}
-                  type="text"
-                  value={samples[i] ?? ""}
-                  onChange={e => handleSampleChange(activeLanguageId, i, e.target.value)}
-                  placeholder={`Sample ${i + 1}`}
-                  className="w-full px-3 py-2 text-sm text-typography-800 bg-transparent border-b border-border-light focus:outline-none focus:border-primary-500 last:border-b-0"
-                />
-              );
-            })}
-          </div>
-        )}
+        {activeLanguageId &&
+          (() => {
+            // Existing simulations keep however many rows they saved (no truncation);
+            // brand-new simulations start with DEFAULT_SAMPLE_COUNT blank rows.
+            const samples: string[] =
+              linguisticStyleSamples[activeLanguageId] ?? Array(DEFAULT_SAMPLE_COUNT).fill("");
+            const rowCount = samples.length || DEFAULT_SAMPLE_COUNT;
+            return (
+              <div className="p-4 flex flex-col gap-2">
+                {Array.from({ length: rowCount }, (_, i) => (
+                  <input
+                    key={i}
+                    type="text"
+                    value={samples[i] ?? ""}
+                    onChange={e => handleSampleChange(activeLanguageId, i, e.target.value)}
+                    placeholder={`Sample ${i + 1}`}
+                    className="w-full px-3 py-2 text-sm text-typography-800 bg-transparent border-b border-border-light focus:outline-none focus:border-primary-500 last:border-b-0"
+                  />
+                ))}
+              </div>
+            );
+          })()}
       </LanguageTabPanel>
     </div>
   );

@@ -23,6 +23,8 @@ import {
   TranslationManagement,
   TooltipManagement,
   Settings,
+  OptimisationGoals,
+  Competencies,
   Terms,
   Privacy,
 } from "@pages";
@@ -233,6 +235,22 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
               <Settings />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.OPTIMISATION_GOALS}
+          element={
+            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+              <OptimisationGoals />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.COMPETENCIES}
+          element={
+            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+              <Competencies />
             </PrivateLayout>
           }
         />

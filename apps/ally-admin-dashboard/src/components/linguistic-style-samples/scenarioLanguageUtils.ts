@@ -7,7 +7,8 @@ export interface LanguageOption {
   translationCode?: string;
 }
 
-export const SAMPLE_COUNT = 10;
+/** Default number of blank sample rows for a brand-new simulation. */
+export const DEFAULT_SAMPLE_COUNT = 5;
 export const ALLOWED_FILLER_WORDS_FIELD = "allowedFillerWords";
 
 /** Upper bound for filler picker (autofill returns up to 14). */

@@ -32,5 +32,7 @@ export const SIDEBAR_ITEMS = {
   TRANSLATIONS: "translations",
   TOOLTIPS: "tooltips",
   ANALYTICS: "analytics",
+  OPTIMISATION_GOALS: "optimisation-goals",
+  COMPETENCIES: "competencies",
   SETTINGS: "settings",
 };

@@ -19,6 +19,7 @@ import { ArrowDown, WarningAlt } from "@assets";
 import {
   ActionConfirmationPopup,
   AgentBuilderCopilot,
+  AgentBuilderCopilotV2Wizard,
   Button,
   CreateSimulationSubSection,
   ReportSection,
@@ -67,6 +68,23 @@ import {
 } from "@utils";
 
 const stepIds: any = SIMULATION_CREATOR_STEP_IDS;
+
+// How often the background timer attempts to autosave an unsaved draft.
+const AUTOSAVE_INTERVAL_MS = 10_000;
+
+// Fallback title for draft roleplays saved without an explicit title. Stamps
+// the current date/time so successive untitled drafts stay distinguishable in
+// the simulation list (e.g. "Untitled Roleplay - Jun 22, 2026, 3:42 PM").
+const generateDraftTitle = (): string => {
+  const stamp = new Date().toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return `${en.simulation.untitledRoleplay} - ${stamp}`;
+};
 
 // Get all mandatory field IDs from the configuration
 const getMandatoryFieldIds = () => {
@@ -432,12 +450,32 @@ export const CreateSimulation: FC = () => {
     }
   };
 
-  // Core function to save simulation changes
-  const saveSimulationChangesCore = async (status: SimulationStatus) => {
+  // Core function to save simulation changes.
+  // `silent` suppresses validation error toasts — used by the background
+  // autosave so a not-yet-valid draft fails quietly and simply retries on the
+  // next tick instead of spamming the user with toasts.
+  const saveSimulationChangesCore = async (
+    status: SimulationStatus,
+    options?: { silent?: boolean },
+  ) => {
+    const silent = options?.silent ?? false;
     const formData = formMethods.getValues();
     if (!formData.title?.trim()) {
-      toast.error(en.errors.titleIsRequired);
-      return null;
+      // For drafts, a missing title shouldn't block the (auto)save — generate a
+      // readable, timestamped fallback name and write it back into the form so
+      // the user sees the same title that gets persisted. Publishing still
+      // requires an explicit title.
+      if (status === SimulationStatus.DRAFT) {
+        const autoTitle = generateDraftTitle();
+        formMethods.setValue(FORM_FIELD_IDS.TITLE, autoTitle, {
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+        formData.title = autoTitle;
+      } else {
+        if (!silent) toast.error(en.errors.titleIsRequired);
+        return null;
+      }
     }
 
     if (formData.timerMode && formData.maxTimeValue) {
@@ -448,9 +486,13 @@ export const CreateSimulation: FC = () => {
           SESSION_TIMER_CONFIG.MAX_TIME,
         )?.isValid
       ) {
-        toast.error(
-          en.simulation.maxTimeError(SESSION_TIMER_CONFIG.MIN_TIME, SESSION_TIMER_CONFIG.MAX_TIME),
-        );
+        if (!silent)
+          toast.error(
+            en.simulation.maxTimeError(
+              SESSION_TIMER_CONFIG.MIN_TIME,
+              SESSION_TIMER_CONFIG.MAX_TIME,
+            ),
+          );
         return null;
       }
     }
@@ -464,7 +506,7 @@ export const CreateSimulation: FC = () => {
         (instruction.stateInstructions ?? []).some(si => !isValidStateInstructionId(si?.stateId)),
       );
       if (hasInvalidStateId) {
-        toast.error(en.errors.invalidStateInstructionIds);
+        if (!silent) toast.error(en.errors.invalidStateInstructionIds);
         return null;
       }
     }
@@ -477,7 +519,7 @@ export const CreateSimulation: FC = () => {
       try {
         await deleteCoverImage({ coverImageUrl: adminSimulationByIdData.coverImageUrl }).unwrap();
       } catch (error: any) {
-        toast.error(error?.data?.message || en.errors.fileUploadFailed);
+        if (!silent) toast.error(error?.data?.message || en.errors.fileUploadFailed);
       }
     }
 
@@ -653,9 +695,10 @@ export const CreateSimulation: FC = () => {
   // Debounced version to prevent duplicate simulation creation (500ms delay)
   const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
     try {
-      const response = await saveSimulationChanges(SimulationStatus.DRAFT);
+      const response = await saveSimulationChanges(SimulationStatus.DRAFT, options);
       if (response && !response.error) {
         if (response?.data?.[0]?.id && !simulationId) {
           setSimulationId(response?.data?.[0]?.id);
@@ -666,20 +709,61 @@ export const CreateSimulation: FC = () => {
 
         return response?.data;
       } else if (response?.error) {
-        toast.error(response?.error?.data?.message || en.errors.failedSimulationChange);
+        if (!silent)
+          toast.error(response?.error?.data?.message || en.errors.failedSimulationChange);
         return null;
       }
       return response?.data;
     } catch {
-      toast.error(en.errors.failedSimulationChange);
+      if (!silent) toast.error(en.errors.failedSimulationChange);
       return null;
     }
   };
+
+  // Background autosave. A timer periodically persists the draft on its own so
+  // in-progress work isn't lost. We keep the latest closure in a ref and run a
+  // single stable interval, so changing form state / save handlers don't churn
+  // the timer. The save is silent (no toasts) and only runs when there are
+  // genuine unsaved changes and nothing else is mid-flight.
+  const isAutosavingRef = useRef(false);
+  // Drives the subtle inline indicator next to the Save button.
+  const [autosaveState, setAutosaveState] = useState<"idle" | "saving" | "saved">("idle");
+  const autosaveRef = useRef<() => void>(() => {});
+  autosaveRef.current = () => {
+    if (isAutosavingRef.current) return; // an autosave is already running
+    if (isCreatingSimulation) return; // a create/publish is in flight
+    if (isReportGenerationInProgress) return; // don't fight report generation
+    if (Object.keys(dirtyFields).length === 0) return; // nothing to save
+
+    isAutosavingRef.current = true;
+    setAutosaveState("saving");
+    void handleSaveDraft({ silent: true })
+      .then(data => setAutosaveState(data ? "saved" : "idle"))
+      .catch(() => setAutosaveState("idle"))
+      .finally(() => {
+        isAutosavingRef.current = false;
+      });
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => autosaveRef.current(), AUTOSAVE_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Note: a brand-new roleplay is NOT persisted on mount. Nothing is saved until
+  // the user actually edits a field — at which point the interval autosave above
+  // (gated on `dirtyFields`) picks it up. A draft saved without an explicit title
+  // still gets a timestamped fallback name in `saveSimulationChangesCore`. This
+  // avoids littering the simulation list with empty "Untitled Roleplay" drafts
+  // from people who merely open the create page and leave.
 
   const doPublish = async () => {
     try {
       const response = await saveSimulationChanges(SimulationStatus.ACTIVE);
 
+      // A superseded/cancelled debounced call resolves to `undefined`; treat
+      // that as "nothing happened" rather than dereferencing it.
+      if (!response) return;
       if (response.error) {
         toast.error(response?.error?.data?.message || en.errors.failedSimulationCreation);
       } else {
@@ -781,6 +865,31 @@ export const CreateSimulation: FC = () => {
             }}
           />,
         );
+      case stepIds.agentBuilderCopilotV2: {
+        // V2 — split the canvas into two equal halves. The right half is a
+        // live mirror of the Basic Settings tab: it renders the EXACT same
+        // CreateSimulationSubSection bound to the SAME shared `formMethods`
+        // instance, so it's the same form surfaced in two places. react-hook-
+        // form holds a single source of truth, so edits here and on the Basic
+        // Settings tab stay in sync both ways with no extra wiring.
+        const basicSettingsSection = getCreateSimulationSubSectionById(stepIds.basicSettings);
+        return renderStep(
+          <div className="grid grid-cols-2 gap-6 h-full min-h-0">
+            {/* Left half — mirror of Basic Settings, independent vertical scroll. */}
+            <div className="min-h-0 h-full overflow-y-auto custom-scrollbar">
+              <CreateSimulationSubSection
+                items={basicSettingsSection?.fields ?? []}
+                formMethods={formMethods}
+              />
+            </div>
+            {/* Right half — chat-style agent-builder wizard. Scrolls on its own
+                (the wizard pins its composer and scrolls the chat internally). */}
+            <div className="min-h-0 h-full overflow-hidden border-l border-border-light pl-6">
+              <AgentBuilderCopilotV2Wizard formMethods={formMethods} />
+            </div>
+          </div>,
+        );
+      }
       case stepIds.report:
         return renderStep(
           <ReportSection
@@ -881,9 +990,24 @@ export const CreateSimulation: FC = () => {
           <h1 className="text-2xl text-typography-900 font-secondary">{pageTitle}</h1>
         </div>
         <div className="flex items-center gap-3">
+          {autosaveState !== "idle" && (
+            <span
+              className="flex items-center gap-1.5 text-xs text-typography-500 transition-opacity"
+              aria-live="polite"
+            >
+              {autosaveState === "saving" ? (
+                en.simulation.autosaving
+              ) : (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-success-400" />
+                  {en.simulation.draftAutosaved}
+                </>
+              )}
+            </span>
+          )}
           <Button
             variant={ButtonVariant.TEXT}
-            onClick={handleSaveDraft}
+            onClick={() => handleSaveDraft()}
             className="px-4 h-[40px] text-typography-900"
           >
             {en.simulation.save}
@@ -930,6 +1054,10 @@ export const CreateSimulation: FC = () => {
                   id: stepIds.agentBuilderCopilot,
                   title: en.simulation.agentBuilder.tabTitle,
                 },
+                {
+                  id: stepIds.agentBuilderCopilotV2,
+                  title: en.simulation.agentBuilder.tabTitleV2,
+                },
               ]
             : []),
           ...StepperList,
@@ -945,7 +1073,17 @@ export const CreateSimulation: FC = () => {
           (~Notion's editor width) and centered so whitespace is balanced on
           both sides instead of stretching fields edge-to-edge. */}
       <div ref={containerRef} className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="w-full max-w-[1040px] mx-auto py-6">{renderCurrentStep()}</div>
+        {/* The V2 tab is a full-width split screen, so it opts out of the
+            centered, max-width reading column the other tabs use. */}
+        <div
+          className={
+            currentStep === stepIds.agentBuilderCopilotV2
+              ? "w-full h-full min-h-0 py-6"
+              : "w-full max-w-[1040px] mx-auto py-6"
+          }
+        >
+          {renderCurrentStep()}
+        </div>
       </div>
 
       <ActionConfirmationPopup

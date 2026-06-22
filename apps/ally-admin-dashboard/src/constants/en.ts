@@ -43,6 +43,8 @@ export const en = {
     overviewMandatoryFieldsNotFilled:
       "Please fill all mandatory fields in the Overview step to proceed.",
     failedCompetencyCreation: "Failed to create competency",
+    failedCompetencyUpdate: "Failed to rename competency",
+    failedCompetencyDeletion: "Failed to delete competency",
     failedToDeleteBadges: "Failed to delete badges",
     failedToDeleteCharacter: "Failed to delete character(s)",
     failedToGoogleSignIn: "Failed to sign in with Google. Please try again.",
@@ -143,6 +145,9 @@ export const en = {
     redirectingToDashboard: "Redirecting to dashboard...",
   },
   simulation: {
+    untitledRoleplay: "Untitled Roleplay",
+    autosaving: "Saving…",
+    draftAutosaved: "Draft autosaved",
     createCharacter: "Create character",
     editCharacter: "Edit character",
     characterCreatedSuccessfully: "Character created successfully",
@@ -460,6 +465,7 @@ export const en = {
     addStateName: "Add State Name",
     agentBuilder: {
       tabTitle: "Agent Builder Copilot",
+      tabTitleV2: "Agent Builder Copilot V2",
       heading: "Describe your agent",
       descriptionPlaceholder:
         "Describe the person the AI should role-play — who they are, their background, what's bringing them to this session, how they speak and behave...",

@@ -43,6 +43,7 @@ import {
   Edit as CEdit,
   Filter as CFilter,
   FaceSatisfied as CFaceSatisfied,
+  Flag as CFlag,
   Flash as CFlash,
   FlowConnection as CFlowConnection,
   Globe as CGlobe,
@@ -63,6 +64,7 @@ import {
   Restart as CRestart,
   Search as CSearch,
   Settings as CSettings,
+  SkillLevel as CSkillLevel,
   Subtract as CSubtract,
   Terminal as CTerminal,
   TextBold as CTextBold,
@@ -200,6 +202,8 @@ export const BarChart3 = createCarbonIcon(CChartBar);
 export const Info = createCarbonIcon(CInformation);
 export const Languages = createCarbonIcon(CTranslate);
 export const Settings = createCarbonIcon(CSettings);
+export const Flag = createCarbonIcon(CFlag);
+export const SkillLevel = createCarbonIcon(CSkillLevel);
 export const Bold = createCarbonIcon(CTextBold);
 export const Italic = createCarbonIcon(CTextItalic);
 export const Underline = createCarbonIcon(CTextUnderline);

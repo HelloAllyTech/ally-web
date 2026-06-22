@@ -92,3 +92,4 @@ export * from "./autofill-button";
 export * from "./add-item-button";
 export * from "./legal-page";
 export * from "./agent-builder-copilot";
+export * from "./agent-builder-copilot-v2";

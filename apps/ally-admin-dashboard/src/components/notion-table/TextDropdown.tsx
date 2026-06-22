@@ -147,6 +147,7 @@ export const TextDropdown = ({
   const dropdownPosition = useCreatePortal(triggerRef, isOpen, {
     dropdownHeight: 240,
     matchTriggerWidth: true,
+    dropdownRef,
   });
 
   // Get current option display value
