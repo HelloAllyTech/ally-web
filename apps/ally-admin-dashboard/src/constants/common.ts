@@ -105,6 +105,7 @@ export const ApiEndpoints = {
     START_COPILOT_RUN: "/v1/learn/copilot/runs",
     GET_COPILOT_RUN: (runId: string) => `/v1/learn/copilot/runs/${runId}`,
     CANCEL_COPILOT_RUN: (runId: string) => `/v1/learn/copilot/runs/${runId}/cancel`,
+    REVISE_COPILOT_RUN: (runId: string) => `/v1/learn/copilot/runs/${runId}/revise`,
   },
 
   CHARACTERS: {

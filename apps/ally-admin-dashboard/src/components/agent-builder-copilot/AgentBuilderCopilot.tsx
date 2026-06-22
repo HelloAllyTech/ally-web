@@ -1,192 +1,137 @@
 import { FC, useState } from "react";
 
-import { Terminal } from "@icons";
 import { UseFormReturn } from "react-hook-form";
-import { toast } from "sonner";
 
-import {
-  COPILOT_TERMINAL_STATUSES,
-  useCancelCopilotRunMutation,
-  useGetAutofillModelsQuery,
-  useGetCopilotRunQuery,
-  useStartCopilotRunMutation,
-} from "@api";
-import { DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS, en, ROUTES } from "@constants";
+import { useGetAutofillModelsQuery } from "@api";
+import { DEFAULT_AUTOFILL_MODEL, en, FALLBACK_AUTOFILL_MODEL_OPTIONS, ROUTES } from "@constants";
 
 import { AgentBuilderSystemSkillPanel } from "./AgentBuilderSystemSkillPanel";
-import { CopilotBuildProgress } from "./CopilotBuildProgress";
+import { CopilotComposer } from "./chat/CopilotComposer";
+import { CopilotDetailPanel } from "./chat/CopilotDetailPanel";
+import { CopilotFeed, type OpenDetailArgs } from "./chat/CopilotFeed";
+import { useCopilotConversation } from "./chat/useCopilotConversation";
+import { scoreColor } from "./chat/scoreColor";
 import { Button } from "../button";
-import { DropdownField } from "../dropdown-field";
-import { FormLabel } from "../form-label";
-import { InputField } from "../input-field";
-import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
 import { ButtonVariant } from "../types";
+import { applyAgentBuilderOutputToForm } from "../../utils/agentBuilderOutput";
 
-const AGENT_DESCRIPTION_FIELD = "agentBuilderDescription";
-const MAX_DESCRIPTION_LENGTH = 10000;
-const POLL_INTERVAL_MS = 2500;
+const copy = en.simulation.agentBuilder;
 
 interface AgentBuilderCopilotProps {
   formMethods: UseFormReturn<any>;
   simulationId?: string;
-  /**
-   * Kept for API compatibility with the parent (tab switch). The Copilot
-   * pipeline now navigates to the built draft scenario on success instead.
-   */
+  /** Fallback when the built draft has no id to navigate to (rare). */
   onApplied?: () => void;
 }
 
 /**
- * Agent Builder Copilot tab (Create Simulation). The superadmin describes a
- * roleplay actor, picks a skill + model, and clicks Build. That kicks off a
- * server-side pipeline (generate Basic Settings -> run a practice conversation
- * -> evaluate -> refine until it scores well or the round budget runs out).
- * The screen polls the run and shows per-round progress, scores, and the
- * evaluation recommendations; on success it opens the built draft scenario in
- * Basic Settings for review.
+ * Agent Builder Copilot tab (Create Simulation), reshaped into a Claude-Coding-
+ * style chat. The superadmin describes a roleplay actor in a bottom-docked
+ * composer; their message pins to the feed and the composer greys out while a
+ * server-side pipeline (generate → practice conversation → evaluate → refine)
+ * streams detailed activity into the feed. Tested rounds expand inline and open
+ * a side panel with the transcript + evaluation. Once a run finishes, the
+ * composer re-enables to take free-text revision instructions, which re-run the
+ * build & test loop on the same draft — all in one continuous conversation.
  */
-export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods }) => {
+export const AgentBuilderCopilot: FC<AgentBuilderCopilotProps> = ({ formMethods, onApplied }) => {
   const { data: apiModels } = useGetAutofillModelsQuery();
-  const [startCopilotRun, { isLoading: isStarting }] = useStartCopilotRunMutation();
-  const [cancelCopilotRun, { isLoading: isCancelling }] = useCancelCopilotRunMutation();
-
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AUTOFILL_MODEL);
   const [isSkillPanelOpen, setIsSkillPanelOpen] = useState(false);
-  const [runId, setRunId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<OpenDetailArgs | null>(null);
 
   const allModelOptions = apiModels?.length ? apiModels : FALLBACK_AUTOFILL_MODEL_OPTIONS;
   const modelOptions = allModelOptions.map(model => ({ label: model.label, value: model.value }));
 
-  const description = (formMethods.watch(AGENT_DESCRIPTION_FIELD) as string) ?? "";
-  const selectedMainPromptCode =
-    (formMethods.watch("selectedMainPromptCode") as string | undefined) ?? undefined;
+  const { run, feed, phase, isRunning, pendingMessage, submit, revise, cancel } =
+    useCopilotConversation();
 
-  // Poll the run while one is active. Stop polling once it reaches a terminal
-  // state (RTK Query treats pollingInterval 0 as "do not poll").
-  const { data: run } = useGetCopilotRunQuery(runId ?? "", {
-    skip: !runId,
-    pollingInterval: POLL_INTERVAL_MS,
-  });
+  const composerMode = phase === "terminal" ? "revise" : "brief";
 
-  const isTerminal = !!run && COPILOT_TERMINAL_STATUSES.includes(run.status);
-  const isRunning = !!runId && (!run || !isTerminal);
+  const handleSubmit = (text: string): Promise<boolean> =>
+    composerMode === "revise"
+      ? revise(text)
+      : submit(text, {
+          skillPromptCode:
+            (formMethods.watch("selectedMainPromptCode") as string | undefined) ?? undefined,
+          model: selectedModel,
+        });
 
-  const handleBuild = async () => {
-    if (isStarting || isRunning) return;
-
-    const trimmedDescription = description.trim();
-    if (!trimmedDescription) {
-      toast.error(en.simulation.agentBuilder.emptyDescription);
+  const handleApply = () => {
+    if (run?.draftScenarioId != null) {
+      // Hard navigation: CreateSimulation reads the route :id only once on mount,
+      // so a full document load is needed to open the built draft.
+      window.location.assign(ROUTES.EDIT_SIMULATION(run.draftScenarioId));
       return;
     }
-
-    try {
-      const { runId: newRunId } = await startCopilotRun({
-        brief: trimmedDescription,
-        skillPromptCode: selectedMainPromptCode,
-        model: selectedModel,
-      }).unwrap();
-      setRunId(newRunId);
-    } catch {
-      toast.error(en.simulation.agentBuilder.failedToStart);
+    if (run?.bestFieldValues) {
+      applyAgentBuilderOutputToForm(run.bestFieldValues as Record<string, unknown>, formMethods);
     }
+    onApplied?.();
   };
 
-  const handleCancel = async () => {
-    if (!runId) return;
-    try {
-      await cancelCopilotRun(runId).unwrap();
-    } catch {
-      // Best-effort: the poll will reflect the eventual state.
-    }
-  };
-
-  const handleOpenDraft = () => {
-    if (run?.draftScenarioId != null) {
-      // Hard navigation (not react-router navigate): the CreateSimulation page
-      // reads the route :id into state only once on mount, so a client-side
-      // route change to the draft's edit URL would not reload the scenario.
-      // A full document navigation remounts the page so the built draft loads.
-      window.location.assign(ROUTES.EDIT_SIMULATION(run.draftScenarioId));
-    }
-  };
-
-  const buildLabel = run
-    ? en.simulation.agentBuilder.rebuild
-    : en.simulation.agentBuilder.build;
+  const showApplyBar =
+    phase === "terminal" &&
+    run != null &&
+    (run.status === "SUCCEEDED" || run.status === "FAILED") &&
+    (run.draftScenarioId != null || run.bestFieldValues != null);
+  const succeeded = run?.status === "SUCCEEDED";
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-xl text-typography-900 font-secondary">
-          {en.simulation.agentBuilder.heading}
-        </h2>
-      </div>
+    <div className="flex h-[calc(100vh-240px)] min-h-[520px] flex-col">
+      <CopilotFeed feed={feed} pendingMessage={pendingMessage} onOpenDetail={setDetail} />
 
-      <InputField
-        label=""
-        id={AGENT_DESCRIPTION_FIELD}
-        formMethods={formMethods}
-        multiline
-        maxLength={MAX_DESCRIPTION_LENGTH}
-        minHeight="200"
-        placeholder={en.simulation.agentBuilder.descriptionPlaceholder}
-        disabled={isRunning}
-      />
-
-      <div className="flex flex-col gap-4">
-        <MainAgentPromptPicker
-          id="selectedMainPromptCode"
-          label="Select agent skill version"
-          formMethods={formMethods}
-          className="w-72 max-w-full"
-        />
-
-        <div className="flex flex-col gap-2 w-72 max-w-full">
-          <FormLabel>Select AI model for this task</FormLabel>
-          <DropdownField
-            id="agentBuilderModel"
-            label="Select AI model for this task"
-            options={modelOptions}
-            value={selectedModel}
-            onChange={setSelectedModel}
-          />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant={ButtonVariant.PRIMARY}
-            onClick={handleBuild}
-            disabled={isStarting || isRunning || !description.trim()}
-            className="px-4 h-[40px]"
-          >
-            {isStarting || isRunning ? en.simulation.agentBuilder.building : buildLabel}
+      {showApplyBar && (
+        <div
+          className={`mx-auto flex w-full max-w-3xl items-center justify-between gap-3 rounded-md border px-4 py-3 ${
+            succeeded ? "border-success-200 bg-success-50" : "border-amber-200 bg-amber-50"
+          }`}
+        >
+          <span className="flex items-center gap-2 text-sm text-typography-900">
+            {run?.bestScore != null && (
+              <span
+                className="inline-flex h-6 min-w-[36px] items-center justify-center rounded-full px-2 text-xs font-semibold text-white"
+                style={{ backgroundColor: scoreColor(run.bestScore) }}
+              >
+                {run.bestScore}
+              </span>
+            )}
+            {succeeded ? copy.applyReadyLabel : copy.applyBestSoFarLabel}
+          </span>
+          <Button variant={ButtonVariant.PRIMARY} onClick={handleApply} className="h-9 shrink-0 px-4">
+            {copy.reviewAndApply}
           </Button>
-          <button
-            type="button"
-            onClick={() => setIsSkillPanelOpen(true)}
-            title={en.simulation.agentBuilder.viewSystemSkill}
-            aria-label={en.simulation.agentBuilder.viewSystemSkill}
-            className="flex items-center justify-center w-9 h-9 rounded-md text-typography-500 hover:bg-neutral-100 transition-colors"
-          >
-            <Terminal size={20} />
-          </button>
         </div>
-      </div>
-
-      {runId && run && (
-        <CopilotBuildProgress
-          run={run}
-          onOpenDraft={handleOpenDraft}
-          onCancel={handleCancel}
-          isCancelling={isCancelling}
-        />
       )}
+
+      <CopilotComposer
+        mode={composerMode}
+        disabled={isRunning}
+        isRunning={isRunning}
+        formMethods={formMethods}
+        model={selectedModel}
+        onModelChange={setSelectedModel}
+        modelOptions={modelOptions}
+        onSubmit={handleSubmit}
+        onCancel={cancel}
+        onOpenSkillPanel={() => setIsSkillPanelOpen(true)}
+      />
 
       <AgentBuilderSystemSkillPanel
         isOpen={isSkillPanelOpen}
         onClose={() => setIsSkillPanelOpen(false)}
       />
+
+      {detail && (
+        <CopilotDetailPanel
+          reportId={detail.reportId}
+          reportMarkdown={detail.reportMarkdown}
+          metrics={detail.metrics}
+          score={detail.score}
+          round={detail.round}
+          onClose={() => setDetail(null)}
+        />
+      )}
     </div>
   );
 };

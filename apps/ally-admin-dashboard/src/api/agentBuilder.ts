@@ -32,6 +32,49 @@ export interface CopilotRoundHistoryEntry {
   reportId?: string;
 }
 
+export type CopilotProgressEventKind =
+  | "run_started"
+  | "draft_provisioned"
+  | "round_started"
+  | "base_generation"
+  | "field_generation"
+  | "tier_completed"
+  | "generation_completed"
+  | "evaluation_started"
+  | "round_scored"
+  | "refining"
+  | "revise_requested"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+export type CopilotProgressEventStatus =
+  | "started"
+  | "completed"
+  | "skipped"
+  | "failed"
+  | "info";
+
+/** One entry in a run's append-only activity feed. The FE diffs by `seq`. */
+export interface CopilotProgressEvent {
+  id: string;
+  seq: number;
+  at: string;
+  round: number;
+  segment: number;
+  kind: CopilotProgressEventKind;
+  status: CopilotProgressEventStatus;
+  label: string;
+  payload?: {
+    fieldName?: string;
+    tier?: number;
+    score?: number | null;
+    metrics?: Record<string, number>;
+    reportId?: string;
+    reason?: string;
+  };
+}
+
 export interface CopilotRun {
   id: string;
   status: CopilotRunStatus;
@@ -45,12 +88,18 @@ export interface CopilotRun {
     competencyId?: string;
     competencyName?: string;
     turns: number;
+    segment?: number;
+    reviseInstruction?: string;
   };
   draftScenarioId?: number;
   round: number;
   bestScore?: number;
   bestFieldValues?: Record<string, unknown>;
   roundHistory?: CopilotRoundHistoryEntry[];
+  /** Append-only activity feed for the live chat UI. */
+  progressLog?: CopilotProgressEvent[];
+  /** Set on revise runs — the run this one continues. */
+  parentRunId?: string;
   errorMessage?: string;
   createdAt: string;
   updatedAt: string;
@@ -66,6 +115,11 @@ export interface StartCopilotRunRequest {
 export interface StartCopilotRunResponse {
   runId: string;
   status: CopilotRunStatus;
+}
+
+export interface ReviseCopilotRunRequest {
+  runId: string;
+  instruction: string;
 }
 
 /** Terminal statuses where the run has stopped and the frontend can act. */
@@ -116,6 +170,19 @@ const agentBuilderAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
       }),
     }),
+
+    /**
+     * Revise a finished run: re-runs the build & test loop on the same draft,
+     * carrying prior context plus the free-text instruction. Returns the new
+     * run id, which the chat keeps polling so the conversation stays continuous.
+     */
+    reviseCopilotRun: builder.mutation<StartCopilotRunResponse, ReviseCopilotRunRequest>({
+      query: ({ runId, instruction }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.REVISE_COPILOT_RUN(runId),
+        method: HttpMethod.POST,
+        body: { instruction },
+      }),
+    }),
   }),
 });
 
@@ -124,4 +191,5 @@ export const {
   useStartCopilotRunMutation,
   useGetCopilotRunQuery,
   useCancelCopilotRunMutation,
+  useReviseCopilotRunMutation,
 } = agentBuilderAPI;
