@@ -202,6 +202,23 @@ export const REGENERATE_TYPE = {
   KNOWLEDGE_SOURCES: "knowledgeSources",
 };
 
+/**
+ * Identifies which scenario field a field-level Enhance action targets. Must
+ * match the backend `EnhanceableField` enum. To add Enhance to a new field:
+ * add a value here, set `enhanceType` on the field config, and render an
+ * `<EnhanceButton>` for it. Nothing else is required.
+ */
+export const ENHANCE_TYPE = {
+  ROLE_INSTRUCTION: "roleInstruction",
+  CHARACTER_PROFILE_TEXT: "characterProfileText",
+  DESCRIPTION: "description",
+  OPENING_STATEMENTS: "openingStatements",
+  LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
+  ALLOWED_FILLER_WORDS: "allowedFillerWords",
+  KNOWLEDGE_SOURCES: "knowledgeSources",
+  STATE: "state",
+} as const;
+
 export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
 export const DEFAULT_MAIN_AGENT_PROMPT_CODE = "ally_ai_learn_system_main_agent_prompt";
 
@@ -253,6 +270,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: true,
         promptVariable: "role_instructions",
         accordion: true,
+        enhanceType: ENHANCE_TYPE.ROLE_INSTRUCTION,
       },
       {
         id: "title",
@@ -273,6 +291,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 1000,
         regenerateType: REGENERATE_TYPE.DESCRIPTION,
+        enhanceType: ENHANCE_TYPE.DESCRIPTION,
         promptVariable: "challenge_description",
       },
       {
@@ -323,6 +342,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         maxLength: 2500,
         isMandatory: false,
         regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
+        enhanceType: ENHANCE_TYPE.CHARACTER_PROFILE_TEXT,
         promptVariable: "character_profile_text",
         hideWhenUnused: true,
       },
@@ -406,6 +426,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         isMandatory: false,
         promptVariable: "opening_statements",
+        enhanceType: ENHANCE_TYPE.OPENING_STATEMENTS,
       },
       {
         id: "linguisticStyleSamples",
