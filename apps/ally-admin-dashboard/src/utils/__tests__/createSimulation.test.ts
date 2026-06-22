@@ -210,6 +210,7 @@ describe("createSimulation utils", () => {
         sexualOrientation: "Heterosexual",
         showScoreMeter: undefined,
         enableFeedback: true,
+        pauseEnabled: false,
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
         terminationEvents: undefined,
