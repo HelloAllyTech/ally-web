@@ -9,7 +9,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { BarChart3, Flag, Info, Languages, Settings, SkillLevel } from "@icons";
 import { BarChart3, Close, Flag, Info, Languages, Search, Settings, SkillLevel } from "@icons";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
