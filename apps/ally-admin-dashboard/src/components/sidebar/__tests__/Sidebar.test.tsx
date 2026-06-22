@@ -92,6 +92,11 @@ vi.mock("@constants", () => ({
     LOGIN: "/login",
   },
   en: {
+    common: {
+      searchMenu: "Search menu...",
+      noMenuResults: "No matching tabs",
+      clearSearch: "Clear search",
+    },
     auth: {
       logout: "Logout",
       profileSettings: "Profile Settings",
