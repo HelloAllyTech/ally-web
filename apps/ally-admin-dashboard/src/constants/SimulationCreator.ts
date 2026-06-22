@@ -481,7 +481,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Allow Pause/Resume",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: true,
+        defaultValue: false,
       },
       {
         id: "isGlobal",

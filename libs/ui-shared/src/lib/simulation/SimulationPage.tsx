@@ -454,10 +454,10 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         onFocusButtonClick={onFocusButtonClick}
         isPaused={isPaused}
         pausedOffsetMs={pausedOffsetMs}
-        // Hide the pause control when: (a) in admin preview (not a real billed
-        // session), or (b) the scenario has pause disabled. Opt-out default —
-        // only an explicit `false` hides it (missing/true → shown).
-        onPauseClick={isPreview || roomData?.pauseEnabled === false ? undefined : onTogglePause}
+        // Show the pause control only when: it is a real billed session (not
+        // admin preview) AND the scenario has pause explicitly enabled. Opt-in
+        // default — only an explicit `true` shows it (missing/false → hidden).
+        onPauseClick={!isPreview && roomData?.pauseEnabled === true ? onTogglePause : undefined}
         translations={translations}
       />
 

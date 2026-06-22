@@ -77,8 +77,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     })),
     showScoreMeter: data?.metadata?.showScoreMeter,
     enableFeedback: data?.metadata?.enableFeedback ?? true,
-    // Opt-out toggle: missing → enabled (only an explicit false disables it).
-    pauseEnabled: (data?.metadata as any)?.pauseEnabled ?? true,
+    // Opt-in toggle: missing → disabled (only an explicit true enables it).
+    pauseEnabled: (data?.metadata as any)?.pauseEnabled ?? false,
     characterProfileText: data?.metadata?.characterProfileText,
     helperAgentPrompt: data?.metadata?.helperAgentPrompt,
     agentBuilderDescription: (data?.metadata as any)?.agentBuilderDescription,
