@@ -12,6 +12,7 @@ import { CharacterProfileSelector } from "../character-profile-selector";
 import { Competency } from "../competency";
 import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
+import { EnhanceButton } from "../enhance-button";
 import { FileUpload } from "../file-upload";
 import { FillerDialoguesPanel } from "../filler-dialogues";
 import { InputField } from "../input-field";
@@ -41,6 +42,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     defaultValue,
     note,
     regenerateType,
+    enhanceType,
     promptVariable,
     hideWhenUnused,
     accordion,
@@ -100,6 +102,20 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     <RegenerateButton regenerateType={regenerateType} label={label} formMethods={formMethods} />
   ) : null;
 
+  // Field-level Enhance for simple TEXT inputs (e.g. Role instruction,
+  // Character Backstory). Panels that manage their own per-language value
+  // (Challenge Description, Opening Dialogues) render their own EnhanceButton
+  // wired to the active tab — see those components.
+  const watchedValueForEnhance = formMethods.watch(id);
+  const enhanceButton = enhanceType ? (
+    <EnhanceButton
+      enhanceType={enhanceType}
+      label={label}
+      currentValue={typeof watchedValueForEnhance === "string" ? watchedValueForEnhance : ""}
+      onApply={improved => formMethods.setValue(id, improved, { shouldDirty: true })}
+    />
+  ) : null;
+
   const getFieldElement = () => {
     switch (type) {
       case FORM_FIELD_TYPES.SELECT:
@@ -133,6 +149,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             multiline={multiline}
             isMandatory={isMandatory}
             defaultValue={defaultValue}
+            enhanceButton={enhanceButton}
           />
         );
       case FORM_FIELD_TYPES.NUMBER:
@@ -212,7 +229,13 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES:
-        return <OpeningDialoguesPanel formMethods={formMethods} isMandatory={isMandatory} />;
+        return (
+          <OpeningDialoguesPanel
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+            enhanceType={enhanceType}
+          />
+        );
       case FORM_FIELD_TYPES.CUSTOM.FILLER_DIALOGUES:
         return <FillerDialoguesPanel formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER:
@@ -246,6 +269,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             label={label}
             placeholder={placeholder}
             maxLength={maxLength}
+            enhanceType={enhanceType}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:

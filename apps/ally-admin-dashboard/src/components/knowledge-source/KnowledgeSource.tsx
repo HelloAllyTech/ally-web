@@ -5,7 +5,9 @@ import { Controller } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Close, Delete, Plus, Search } from "@assets";
-import { en } from "@constants";
+import { en, ENHANCE_TYPE } from "@constants";
+
+import { EnhanceButton } from "../enhance-button";
 
 /**
  * How many knowledge documents to generate when the form is empty and the
@@ -109,8 +111,6 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
   };
 
   // ------------------------------------------------------------------------
-
-  const renderAutofillControls = () => null;
 
   const renderKnowledgeSources = () => {
     return (
@@ -251,7 +251,14 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
         <label className="text-typography-900 text-base flex items-center gap-2">
           {label} {isMandatory && <span className="text-destructive-500">*</span>}
         </label>
-        {renderAutofillControls()}
+        {activeTab && (
+          <EnhanceButton
+            enhanceType={ENHANCE_TYPE.KNOWLEDGE_SOURCES}
+            label={en.knowledgeSource.label}
+            currentValue={activeTab.content}
+            onApply={improved => handleUpdateTab(activeTabIndex, "content", improved)}
+          />
+        )}
       </div>
 
       <Controller

@@ -79,8 +79,16 @@ vi.mock("@assets", () => ({
   WandStars: () => <span data-testid="wand-stars" />,
 }));
 
+vi.mock("../../enhance-button", () => ({
+  EnhanceButton: () => null,
+}));
+
 vi.mock("@constants", () => ({
   DEFAULT_AUTOFILL_MODEL: "gpt-4o-mini",
+  ENHANCE_TYPE: {
+    LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
+    ALLOWED_FILLER_WORDS: "allowedFillerWords",
+  },
   en: {
     simulation: {
       generate: "Generate",

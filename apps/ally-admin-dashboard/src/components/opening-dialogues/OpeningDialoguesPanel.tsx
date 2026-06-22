@@ -6,6 +6,7 @@ import { useGetAvailableLanguageVoicesQuery } from "@api";
 import { FORM_FIELD_IDS } from "@constants";
 import { useResolvedPrimaryLanguageId } from "@hooks";
 
+import { EnhanceButton } from "../enhance-button";
 import { FormLabel } from "../form-label";
 import { LanguageTabPanel } from "../language-tab-panel";
 
@@ -19,11 +20,14 @@ const PRIMARY_LANGUAGE_FIELD = "openingDialoguePrimaryLanguageId" as const;
 interface OpeningDialoguesPanelProps {
   formMethods: any;
   isMandatory?: boolean;
+  /** When set, render a field-level Enhance control for the active tab. */
+  enhanceType?: string;
 }
 
 export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
   formMethods,
   isMandatory = false,
+  enhanceType,
 }) => {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
 
@@ -129,6 +133,23 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
     [activeLanguageId, flushLinesToForm, linesForActiveTab],
   );
 
+  // Enhance treats the active tab's non-empty lines as a newline-joined blob;
+  // the improved text is split back into the fixed line slots.
+  const enhanceCurrentValue = linesForActiveTab.filter(l => l.trim().length > 0).join("\n");
+  const handleEnhanceApply = useCallback(
+    (improved: string) => {
+      if (!activeLanguageId) return;
+      const lines = improved
+        .split("\n")
+        .map(l => l.trim())
+        .filter(Boolean)
+        .slice(0, OPENING_DIALOGUE_LINE_SLOTS);
+      const padded = Array.from({ length: OPENING_DIALOGUE_LINE_SLOTS }, (_, i) => lines[i] ?? "");
+      flushLinesToForm(activeLanguageId, padded);
+    },
+    [activeLanguageId, flushLinesToForm],
+  );
+
   if (catalogLoading) {
     return (
       <div className="w-full text-sm text-typography-600" data-testid="opening-dialogues-loading">
@@ -150,6 +171,14 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
     <div className="w-full flex flex-col gap-3" data-testid="opening-dialogues-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FormLabel isMandatory={isMandatory}>Opening Dialogues</FormLabel>
+        {enhanceType && (
+          <EnhanceButton
+            enhanceType={enhanceType}
+            label="Opening Dialogues"
+            currentValue={enhanceCurrentValue}
+            onApply={handleEnhanceApply}
+          />
+        )}
       </div>
       <LanguageTabPanel
         tabs={scenarioLanguageTabs.map(t => ({ id: t.languageId, label: t.label }))}
