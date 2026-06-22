@@ -101,6 +101,8 @@ export const SIMULATION_CREATOR_STEP_IDS = {
   report: "report",
   // Gated tab — only added to the visible tab list for allowlisted users.
   agentBuilderCopilot: "agent-builder-copilot",
+  // V2 of the Agent Builder Copilot — empty placeholder tab for now.
+  agentBuilderCopilotV2: "agent-builder-copilot-v2",
 };
 
 /**
@@ -298,26 +300,9 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "triggerWarningIds",
         label: "Trigger warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
-        // Half-width so it pairs with the adjacent Competency dropdown below
-        // (two short metadata selectors share one row) instead of each
-        // stretching across the full column with a large empty right side.
-        fullWidth: false,
-      },
-      {
-        id: "competency",
-        label: "Pick Competency",
-        type: FORM_FIELD_TYPES.COMPETENCY,
-        options: [],
-        // Competency stays mandatory and always visible. It's not just
-        // a prompt placeholder — it's a first-class scenario attribute
-        // (identifies the counselor skill being trained, used by
-        // analytics / organization / filtering). The `promptVariable`
-        // declaration below is intentionally kept so studio authors
-        // see `{competency}` in the chip list when editing a variant,
-        // but there's no `hideWhenUnused` because the field is
-        // structural metadata, not a prompt-only feeder field.
-        isMandatory: true,
-        promptVariable: "competency",
+        // Full-width: the Competency dropdown that used to pair with this on
+        // one row now lives next to the Behaviour Instructions table below.
+        fullWidth: true,
       },
       // Difficulty Level is deprecated from the studio UI. It's no longer
       // author-editable; the backend defaults it to MEDIUM (and the scoring
@@ -395,6 +380,26 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         isMandatory: false,
       },
+      {
+        // Sits directly above the Behaviour Instructions / Scoring Rubric
+        // table: picking a competency auto-populates that table from the
+        // competency's mapped helpful/unhelpful behaviours, so the control
+        // is placed right next to the thing it drives.
+        id: "competency",
+        label: "Pick Competency",
+        type: FORM_FIELD_TYPES.COMPETENCY,
+        options: [],
+        // Competency stays mandatory and always visible. It's not just
+        // a prompt placeholder — it's a first-class scenario attribute
+        // (identifies the counselor skill being trained, used by
+        // analytics / organization / filtering). The `promptVariable`
+        // declaration below is intentionally kept so studio authors
+        // see `{competency}` in the chip list when editing a variant,
+        // but there's no `hideWhenUnused` because the field is
+        // structural metadata, not a prompt-only feeder field.
+        isMandatory: true,
+        promptVariable: "competency",
+      },
       // The unified Behaviour Instructions table is always rendered.
       // Its rows drive the score-keeper via the SHOULD_DO/SHOULD_NOT_DO
       // → ±10 mapping in ally-be, regardless of whether the prompt body
@@ -410,7 +415,9 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM.BEHAVIOURS_STATES_INSTRUCTION,
         fullWidth: true,
         isMandatory: false,
-        regenerateType: REGENERATE_TYPE.BEHAVIOR_INSTRUCTIONS,
+        // No Generate/Regenerate button: the table is now driven by the
+        // selected competency's mapped helpful/unhelpful behaviours, so the
+        // AI generation affordance is no longer needed here.
       },
       {
         id: "languageVoices",

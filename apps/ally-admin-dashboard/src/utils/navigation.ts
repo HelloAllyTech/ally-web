@@ -69,6 +69,16 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.ANALYTICS,
   },
   {
+    id: SIDEBAR_ITEMS.OPTIMISATION_GOALS,
+    label: "Optimisation Goals",
+    path: ROUTES.OPTIMISATION_GOALS,
+  },
+  {
+    id: SIDEBAR_ITEMS.COMPETENCIES,
+    label: "Competencies",
+    path: ROUTES.COMPETENCIES,
+  },
+  {
     id: SIDEBAR_ITEMS.SETTINGS,
     label: "Settings",
     path: ROUTES.SETTINGS,
@@ -118,7 +128,12 @@ export const deriveNavigationItems = ({
   // Role-gated (super-admin only) items, appended below independently of
   // permissions, in nav order: Analytics then Settings (last).
   const roleGatedItems = navigationItems.filter(item =>
-    [SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.SETTINGS].includes(item.id),
+    [
+      SIDEBAR_ITEMS.ANALYTICS,
+      SIDEBAR_ITEMS.OPTIMISATION_GOALS,
+      SIDEBAR_ITEMS.COMPETENCIES,
+      SIDEBAR_ITEMS.SETTINGS,
+    ].includes(item.id),
   );
 
   // Permission-gated items require permissions to be loaded; until then show
@@ -154,6 +169,8 @@ export const deriveNavigationItems = ({
             case SIDEBAR_ITEMS.USER_BADGES:
               return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
             case SIDEBAR_ITEMS.ANALYTICS:
+            case SIDEBAR_ITEMS.OPTIMISATION_GOALS:
+            case SIDEBAR_ITEMS.COMPETENCIES:
             case SIDEBAR_ITEMS.SETTINGS:
               // Role-gated, not permission-gated; appended below for super-admins.
               return false;

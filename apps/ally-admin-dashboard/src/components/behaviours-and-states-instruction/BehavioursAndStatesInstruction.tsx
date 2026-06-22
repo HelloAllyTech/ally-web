@@ -34,8 +34,13 @@ interface BehavioursAndStatesInstructionProps {
 
 const STATE_NAMES_ROW_ID = "state-names-row";
 
+// A stable per-row id. The table identifies the row to mutate by this id, and
+// the edit handler ignores changes whose rowId is null — so every row reaching
+// the table must carry one.
+const makeRowId = () => `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
 const createEmptyFormValue = (): BehaviourRow => ({
-  id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  id: makeRowId(),
   category: "",
   behaviors: [],
   instructions: [],
@@ -95,6 +100,18 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
       formMethods.setValue(id, [createEmptyFormValue()], { shouldDirty: false });
     }
   }, [formData.length, formMethods, id]);
+
+  // Backfill ids on any row that lacks one (e.g. rows auto-populated from a
+  // competency, or older drafts persisted before rows carried ids). Without an
+  // id the table can't target the row, so its × / + controls do nothing. The
+  // `some(!r.id)` guard makes this self-terminating; shouldDirty:false keeps it
+  // from marking the form dirty or tripping competency auto-creation.
+  useEffect(() => {
+    if (formData.some(row => !row.id)) {
+      const withIds = formData.map(row => (row.id ? row : { ...row, id: makeRowId() }));
+      formMethods.setValue(id, withIds, { shouldDirty: false });
+    }
+  }, [formData, formMethods, id]);
 
   const stateNamesDict = useMemo(() => {
     return stateNames.reduce(

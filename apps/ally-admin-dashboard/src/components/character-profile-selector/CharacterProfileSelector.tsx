@@ -128,6 +128,10 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     selectedMainPromptCode,
     camelToSnakeCase(formFieldIds.SEXUAL_ORIENTATION),
   );
+  const characterProfileTextLookup = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    camelToSnakeCase(formFieldIds.CHARACTER_PROFILE_TEXT),
+  );
 
   const isPersonaFieldVisible = (
     fieldId: string,
@@ -138,6 +142,20 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
     // Otherwise hide only once the variant is loaded and doesn't reference it.
     return !(lookup.kind === "loaded" && !lookup.isUsed);
   };
+
+  // The character preselect dropdown only prefills the persona fields below
+  // (and the separately-rendered Character Backstory). When the active
+  // main-agent variant references none of them, every field is hidden and the
+  // preselect dropdown has nothing to populate, so it should not appear.
+  const anyPersonaFieldVisible =
+    isPersonaFieldVisible(formFieldIds.NAME, nameLookup) ||
+    isPersonaFieldVisible(formFieldIds.AGE, ageLookup) ||
+    isPersonaFieldVisible(formFieldIds.GENDER, genderLookup) ||
+    isPersonaFieldVisible(formFieldIds.PROFESSION, professionLookup) ||
+    isPersonaFieldVisible(formFieldIds.CURRENT_LOCATION, locationLookup) ||
+    isPersonaFieldVisible(formFieldIds.GENDER_IDENTITY, genderIdentityLookup) ||
+    isPersonaFieldVisible(formFieldIds.SEXUAL_ORIENTATION, sexualOrientationLookup) ||
+    isPersonaFieldVisible(formFieldIds.CHARACTER_PROFILE_TEXT, characterProfileTextLookup);
 
   // Media fields are intentionally excluded from character comparison:
   // they can differ between the simulation and character (simulation-level overrides)
@@ -290,75 +308,81 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
 
   return (
     <div className="w-full flex flex-col gap-6">
-      {/* Header row: label + inline character selector */}
-      <div className="flex items-center justify-between">
-        <span className="text-typography-900 text-base">Character Profile</span>
-        <div className="relative" ref={characterDropdownRef}>
-          <div
-            className="flex items-center gap-2 text-sm text-typography-600 cursor-pointer hover:text-typography-900 transition-colors"
-            onClick={() => setIsCharacterDropdownOpen(prev => !prev)}
-          >
-            <span>{getDisplayLabel()}</span>
-            <span className={`transition-transform ${isCharacterDropdownOpen ? "rotate-180" : ""}`}>
-              <ArrowSolid />
-            </span>
-          </div>
-          {isCharacterDropdownOpen && (
-            <div className="absolute right-0 top-full mt-1 min-w-[280px] bg-white border border-border-light rounded-md shadow-lg max-h-[400px] z-10 flex flex-col">
-              <div className="px-3 py-2 border-b border-border-light bg-white sticky top-0">
-                <input
-                  type="text"
-                  placeholder="Search characters..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full rounded border border-border-light px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  onClick={e => e.stopPropagation()}
-                />
-              </div>
-              <div className="overflow-y-auto custom-scrollbar">
-                {isLoading ? (
-                  <div className="px-3 py-4 text-sm text-typography-600 text-center">
-                    Loading...
-                  </div>
-                ) : charactersData && charactersData?.characters?.length > 0 ? (
-                  <>
-                    <div
-                      key={CUSTOM_CHARACTER_ID}
-                      className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                        selectedCharacterId === CUSTOM_CHARACTER_ID
-                          ? "bg-primary-50 text-primary font-weight-400"
-                          : "text-typography-900 hover:bg-background-secondary"
-                      }`}
-                      onClick={() => handleCharacterSelect(CUSTOM_CHARACTER_ID)}
-                    >
-                      Custom
+      {/* Header row: label + inline character selector.
+          Hidden entirely when the active main-agent variant references none of
+          the persona fields below — there is nothing to label or prefill. */}
+      {anyPersonaFieldVisible && (
+        <div className="flex items-center justify-between">
+          <span className="text-typography-900 text-base">Character Profile</span>
+          <div className="relative" ref={characterDropdownRef}>
+            <div
+              className="flex items-center gap-2 text-sm text-typography-600 cursor-pointer hover:text-typography-900 transition-colors"
+              onClick={() => setIsCharacterDropdownOpen(prev => !prev)}
+            >
+              <span>{getDisplayLabel()}</span>
+              <span
+                className={`transition-transform ${isCharacterDropdownOpen ? "rotate-180" : ""}`}
+              >
+                <ArrowSolid />
+              </span>
+            </div>
+            {isCharacterDropdownOpen && (
+              <div className="absolute right-0 top-full mt-1 min-w-[280px] bg-white border border-border-light rounded-md shadow-lg max-h-[400px] z-10 flex flex-col">
+                <div className="px-3 py-2 border-b border-border-light bg-white sticky top-0">
+                  <input
+                    type="text"
+                    placeholder="Search characters..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full rounded border border-border-light px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    onClick={e => e.stopPropagation()}
+                  />
+                </div>
+                <div className="overflow-y-auto custom-scrollbar">
+                  {isLoading ? (
+                    <div className="px-3 py-4 text-sm text-typography-600 text-center">
+                      Loading...
                     </div>
-                    {charactersData.characters.map(character => (
+                  ) : charactersData && charactersData?.characters?.length > 0 ? (
+                    <>
                       <div
-                        key={character.id}
+                        key={CUSTOM_CHARACTER_ID}
                         className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                          selectedCharacterId === character.id
+                          selectedCharacterId === CUSTOM_CHARACTER_ID
                             ? "bg-primary-50 text-primary font-weight-400"
                             : "text-typography-900 hover:bg-background-secondary"
                         }`}
-                        onClick={() => handleCharacterSelect(character.id, character)}
+                        onClick={() => handleCharacterSelect(CUSTOM_CHARACTER_ID)}
                       >
-                        {`${character?.name} (${character?.gender}, ${character?.age}, ${character?.profession})`}
+                        Custom
                       </div>
-                    ))}
-                  </>
-                ) : (
-                  <div className="px-3 py-4 text-sm text-typography-600 text-center">
-                    {debouncedSearchQuery
-                      ? en.common.noCharactersFoundMatchingYourSearch
-                      : en.common.noResultsFound}
-                  </div>
-                )}
+                      {charactersData.characters.map(character => (
+                        <div
+                          key={character.id}
+                          className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                            selectedCharacterId === character.id
+                              ? "bg-primary-50 text-primary font-weight-400"
+                              : "text-typography-900 hover:bg-background-secondary"
+                          }`}
+                          onClick={() => handleCharacterSelect(character.id, character)}
+                        >
+                          {`${character?.name} (${character?.gender}, ${character?.age}, ${character?.profession})`}
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <div className="px-3 py-4 text-sm text-typography-600 text-center">
+                      {debouncedSearchQuery
+                        ? en.common.noCharactersFoundMatchingYourSearch
+                        : en.common.noResultsFound}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* All fields in one unified 2-column grid */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-6">

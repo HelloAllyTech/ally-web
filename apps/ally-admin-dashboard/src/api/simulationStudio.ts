@@ -41,8 +41,16 @@ import {
   FillerTagListResponse,
   CreateFillerTagResponse,
   CompetenciesResponse,
+  GetCompetenciesArgs,
   Competency,
   CreateCompetencyRequest,
+  UpdateCompetencyRequest,
+  CompetencyBehavioursResponse,
+  SetCompetencyBehavioursRequest,
+  OptimisationGoal,
+  OptimisationGoalsResponse,
+  CreateOptimisationGoalRequest,
+  UpdateOptimisationGoalRequest,
   AutofillModelOption,
   RegenerateFieldRequest,
   RegenerateFieldResponse,
@@ -768,11 +776,14 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Get all competencies
      */
-    getCompetencies: builder.query<CompetenciesResponse, { name?: string }>({
-      query: ({ name }) => ({
+    getCompetencies: builder.query<CompetenciesResponse, GetCompetenciesArgs>({
+      query: ({ name, includeOwnCustom } = {}) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCIES,
         method: HttpMethod.GET,
-        params: name ? { name } : undefined,
+        params: {
+          ...(name ? { name } : {}),
+          ...(includeOwnCustom ? { includeOwnCustom: true } : {}),
+        },
       }),
       providesTags: [TAG_TYPES.COMPETENCIES],
     }),
@@ -787,6 +798,97 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         body,
       }),
       invalidatesTags: [TAG_TYPES.COMPETENCIES],
+    }),
+
+    /**
+     * Update an existing competency
+     */
+    updateCompetency: builder.mutation<Competency, UpdateCompetencyRequest>({
+      query: ({ id, data }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_BY_ID(id),
+        method: HttpMethod.PUT,
+        body: data,
+      }),
+      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+    }),
+
+    /**
+     * Delete a competency
+     */
+    deleteCompetency: builder.mutation<void, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.COMPETENCIES],
+    }),
+
+    /**
+     * Get the helpful/unhelpful behaviours mapped to a competency
+     */
+    getCompetencyBehaviours: builder.query<CompetencyBehavioursResponse, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_BEHAVIOURS(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.COMPETENCY_BEHAVIOURS],
+    }),
+
+    /**
+     * Replace the helpful/unhelpful behaviours mapped to a competency
+     */
+    setCompetencyBehaviours: builder.mutation<
+      CompetencyBehavioursResponse,
+      SetCompetencyBehavioursRequest
+    >({
+      query: ({ id, data }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMPETENCY_BEHAVIOURS(id),
+        method: HttpMethod.PUT,
+        body: data,
+      }),
+      invalidatesTags: [TAG_TYPES.COMPETENCY_BEHAVIOURS],
+    }),
+
+    /**
+     * Optimisation goals — superadmin-managed list, also consumed by the
+     * Agent Builder Copilot V2 wizard.
+     */
+    getOptimisationGoals: builder.query<OptimisationGoalsResponse, { search?: string } | void>({
+      query: arg => {
+        const search = arg ? arg.search : undefined;
+        return {
+          url: ApiEndpoints.SIMULATION_STUDIO.OPTIMISATION_GOALS,
+          method: HttpMethod.GET,
+          params: search ? { search } : undefined,
+        };
+      },
+      providesTags: [TAG_TYPES.OPTIMISATION_GOALS],
+    }),
+
+    createOptimisationGoal: builder.mutation<OptimisationGoal, CreateOptimisationGoalRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.OPTIMISATION_GOALS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.OPTIMISATION_GOALS],
+    }),
+
+    updateOptimisationGoal: builder.mutation<OptimisationGoal, UpdateOptimisationGoalRequest>({
+      query: ({ id, data }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.OPTIMISATION_GOAL_BY_ID(id),
+        method: HttpMethod.PUT,
+        body: data,
+      }),
+      invalidatesTags: [TAG_TYPES.OPTIMISATION_GOALS],
+    }),
+
+    deleteOptimisationGoal: builder.mutation<void, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.OPTIMISATION_GOAL_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.OPTIMISATION_GOALS],
     }),
 
     /**
@@ -885,6 +987,15 @@ export const {
   useCancelReportGenerationMutation,
   useGetCompetenciesQuery,
   useCreateCompetencyMutation,
+  useUpdateCompetencyMutation,
+  useDeleteCompetencyMutation,
+  useGetCompetencyBehavioursQuery,
+  useLazyGetCompetencyBehavioursQuery,
+  useSetCompetencyBehavioursMutation,
+  useGetOptimisationGoalsQuery,
+  useCreateOptimisationGoalMutation,
+  useUpdateOptimisationGoalMutation,
+  useDeleteOptimisationGoalMutation,
   useGetReportTranscriptQuery,
   useLazyGetReportTranscriptQuery,
   useGetAutofillModelsQuery,

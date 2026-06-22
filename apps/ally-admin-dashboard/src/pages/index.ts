@@ -17,6 +17,8 @@ export * from "./GuardrailsManagement/GuardrailsManagement";
 export * from "./TranslationManagement/TranslationManagement";
 export * from "./Tooltips/Tooltips";
 export * from "./Settings/Settings";
+export * from "./OptimisationGoals/OptimisationGoals";
+export * from "./Competencies/Competencies";
 export * from "./Terms/Terms";
 export * from "./Privacy/Privacy";
 // NOTE: Analytics is intentionally NOT re-exported here. It pulls in IBM Carbon

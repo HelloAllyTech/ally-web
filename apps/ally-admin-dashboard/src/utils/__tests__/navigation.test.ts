@@ -90,7 +90,12 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.SETTINGS]);
+    expect(result.map(i => i.id)).toEqual([
+      SIDEBAR_ITEMS.ANALYTICS,
+      SIDEBAR_ITEMS.OPTIMISATION_GOALS,
+      SIDEBAR_ITEMS.COMPETENCIES,
+      SIDEBAR_ITEMS.SETTINGS,
+    ]);
   });
 
   it("applies the user's saved order so their chosen tab is first", () => {
