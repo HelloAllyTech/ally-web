@@ -2,6 +2,9 @@ export const en = {
   common: {
     apply: "Apply",
     search: "Search",
+    searchMenu: "Search menu...",
+    noMenuResults: "No matching tabs",
+    clearSearch: "Clear search",
     searchOrCreate: "Search or create",
     loading: "Loading...",
     loadMore: "Load more",
@@ -468,7 +471,8 @@ export const en = {
     deleteCharacter: "Delete character",
     addStateName: "Add State Name",
     agentBuilder: {
-      tabTitle: "Agent Builder Copilot",
+      tabTitle: "Agent Builder Copilot V1",
+      tabTitleV2: "Agent Builder Copilot V2",
       heading: "Describe your agent",
       descriptionPlaceholder:
         "Describe the person the AI should role-play — who they are, their background, what's bringing them to this session, how they speak and behave...",
