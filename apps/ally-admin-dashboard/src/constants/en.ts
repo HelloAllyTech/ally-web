@@ -2,6 +2,9 @@ export const en = {
   common: {
     apply: "Apply",
     search: "Search",
+    searchMenu: "Search menu...",
+    noMenuResults: "No matching tabs",
+    clearSearch: "Clear search",
     searchOrCreate: "Search or create",
     loading: "Loading...",
     loadMore: "Load more",
@@ -82,6 +85,7 @@ export const en = {
     failedToSaveVoice: "Failed to save voice",
     failedToCancelReportGeneration: "Failed to cancel report generation",
     failedToRegenerate: "Failed to regenerate",
+    failedToEnhance: "Failed to improve",
     failedToCreateFillerTag:
       "Could not create filler tag. It may already exist or the request failed.",
     linguisticStyleSamplesRequired:
@@ -450,6 +454,14 @@ export const en = {
     generate: "Generate",
     generating: "Generating...",
     regeneratedSuccessfully: "generated successfully",
+    enhance: {
+      trigger: "Improve",
+      enhancing: "Improving...",
+      modelLabel: "Model",
+      customPlaceholder: "Describe how to improve, or leave blank to auto-improve…",
+      customSubmit: "Apply",
+      enhancedSuccessfully: "improved successfully",
+    },
     generatedFillersAllCount: (n: number) => `Generated filler words for ${n} language(s)`,
     bulkGenerateNoSamples:
       "No linguistic style samples were saved. The model may have returned empty results—try again or edit manually.",
@@ -465,6 +477,7 @@ export const en = {
     addStateName: "Add State Name",
     agentBuilder: {
       tabTitle: "Agent Builder Copilot",
+      tabTitle: "Agent Builder Copilot V1",
       tabTitleV2: "Agent Builder Copilot V2",
       heading: "Describe your agent",
       descriptionPlaceholder:

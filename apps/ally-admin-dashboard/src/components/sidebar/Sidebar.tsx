@@ -10,6 +10,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { BarChart3, Flag, Info, Languages, Settings, SkillLevel } from "@icons";
+import { BarChart3, Close, Flag, Info, Languages, Search, Settings, SkillLevel } from "@icons";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -66,6 +67,9 @@ export const Sidebar: React.FC = () => {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const handleDragEnd = (event: DragEndEvent) => {
+    // Reordering is disabled while filtering — the rendered list is a subset, so
+    // drag indices wouldn't map back to the full order.
+    if (navSearch.trim()) return;
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -80,6 +84,7 @@ export const Sidebar: React.FC = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [openSettings, setOpenSettings] = useState(false);
+  const [navSearch, setNavSearch] = useState("");
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -218,26 +223,61 @@ export const Sidebar: React.FC = () => {
     }
   };
 
+  const query = navSearch.trim().toLowerCase();
+  const isSearching = query.length > 0;
+  const displayedNavItems = isSearching
+    ? filteredNavigationItems.filter(item => item.label.toLowerCase().includes(query))
+    : filteredNavigationItems;
+
   const sidebarItems = (
     <nav className="flex-1 min-h-0 overflow-y-auto px-2 py-4">
+      {/* Search bar before the first tab — lets users find the right tab fast. */}
+      {isExpanded && (
+        <div className="relative flex items-center mb-3">
+          <span className="absolute left-3 flex items-center text-typography-600 pointer-events-none">
+            <Search size={16} />
+          </span>
+          <input
+            type="text"
+            value={navSearch}
+            onChange={e => setNavSearch(e.target.value)}
+            placeholder={en.common.searchMenu}
+            aria-label={en.common.searchMenu}
+            className="w-full rounded-lg border border-border-light bg-transparent pl-9 pr-8 py-2 text-sm text-typography-900 placeholder-typography-600 outline-none focus:border-primary-500"
+          />
+          {navSearch.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setNavSearch("")}
+              aria-label={en.common.clearSearch}
+              className="absolute right-2 flex items-center text-typography-600 hover:text-typography-900"
+            >
+              <Close size={16} />
+            </button>
+          )}
+        </div>
+      )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext
-          items={filteredNavigationItems.map(item => item.id)}
+          items={displayedNavItems.map(item => item.id)}
           strategy={verticalListSortingStrategy}
         >
           <ul className="space-y-1">
-            {filteredNavigationItems.map(item => (
+            {displayedNavItems.map(item => (
               <SortableNavItem
                 key={item.id}
                 item={item}
                 icon={renderIcon(item.id)}
                 isActive={isTabItemActive(item.path)}
                 isExpanded={isExpanded}
-                canReorder={canReorder}
+                canReorder={canReorder && !isSearching}
                 onNavigate={handleNavigation}
               />
             ))}
           </ul>
+          {isExpanded && isSearching && displayedNavItems.length === 0 && (
+            <p className="px-3 py-2 text-sm text-typography-600">{en.common.noMenuResults}</p>
+          )}
         </SortableContext>
       </DndContext>
     </nav>

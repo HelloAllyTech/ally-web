@@ -648,3 +648,24 @@ export interface RegenerateFieldResponse {
   fieldName: string;
   content: Record<string, any>;
 }
+
+export interface EnhanceFieldRequest {
+  /** One of ENHANCE_TYPE — identifies the field being improved. */
+  fieldName: string;
+  /**
+   * Existing field content to improve (multi-line fields newline-joined; the
+   * state field sends a JSON string {name, guidelines}). This is the ONLY
+   * scenario data sent — no other fields are included as context.
+   */
+  currentValue: string;
+  /** Custom guidance; omit/empty for auto-improve. */
+  guidance?: string;
+  model?: string;
+  provider?: "openai" | "anthropic";
+}
+
+export interface EnhanceFieldResponse {
+  fieldName: string;
+  /** Improved content as plain text (multi-line fields keep line structure). */
+  content: string;
+}

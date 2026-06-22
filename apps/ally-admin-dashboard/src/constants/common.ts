@@ -100,6 +100,7 @@ export const ApiEndpoints = {
     FILLER_TAGS: "/v1/learn/filler-tags",
     GET_AUTOFILL_MODELS: "/v1/learn/models",
     GENERATE_FIELD: "/v1/learn/scenarios/generate-field",
+    ENHANCE_FIELD: "/v1/learn/scenarios/enhance-field",
     GENERATE_AGENT_PROMPT: "/v1/learn/agent-builder/generate-system-prompt",
     COMPETENCIES: "/v1/learn/competencies",
     COMPETENCY_BY_ID: (id: string) => `/v1/learn/competencies/${id}`,

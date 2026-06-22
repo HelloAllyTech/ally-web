@@ -8,12 +8,15 @@ interface AutofillModelSelectProps {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  /** Extra classes merged onto the <select> (e.g. width constraints). */
+  className?: string;
 }
 
 export const AutofillModelSelect: FC<AutofillModelSelectProps> = ({
   value,
   onChange,
   disabled = false,
+  className = "",
 }) => {
   const { data: models, isLoading } = useGetAutofillModelsQuery();
   const options: AutofillModelOption[] =
@@ -28,7 +31,7 @@ export const AutofillModelSelect: FC<AutofillModelSelectProps> = ({
       value={effectiveValue}
       onChange={e => onChange(e.target.value)}
       disabled={disabled || isLoading}
-      className="text-sm border rounded-md px-2 py-1 text-typography-800 bg-white border-border-light cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      className={`text-sm border rounded-md px-2 py-1 text-typography-800 bg-white border-border-light cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
       title={isLoading ? "Loading models..." : undefined}
     >
       {openaiOptions.length > 0 && (

@@ -54,6 +54,8 @@ import {
   AutofillModelOption,
   RegenerateFieldRequest,
   RegenerateFieldResponse,
+  EnhanceFieldRequest,
+  EnhanceFieldResponse,
   GetReportTranscriptInput,
   GetReportTranscriptResponse,
 } from "@types";
@@ -909,6 +911,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         body,
       }),
     }),
+
+    /**
+     * Enhance the existing content of a field using AI (preset/custom guidance)
+     */
+    enhanceField: builder.mutation<EnhanceFieldResponse, EnhanceFieldRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.ENHANCE_FIELD,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -987,4 +1000,5 @@ export const {
   useLazyGetReportTranscriptQuery,
   useGetAutofillModelsQuery,
   useRegenerateFieldMutation,
+  useEnhanceFieldMutation,
 } = simulationStudioAPI;

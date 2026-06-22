@@ -74,6 +74,12 @@ export interface FormFieldConfig {
   dependsOn?: keyof FormData;
   note?: string;
   regenerateType?: string;
+  /**
+   * When set, render a field-level "Improve" (Enhance) control for this field.
+   * The value is one of ENHANCE_TYPE and identifies the field to the backend.
+   * Independent of `regenerateType`; either, both, or neither may be set.
+   */
+  enhanceType?: string;
   visibleWhen?: (formValues: Partial<FormData>) => boolean;
   /**
    * Snake-case placeholder name this field fills in the main-agent prompt

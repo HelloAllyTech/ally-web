@@ -2,6 +2,9 @@ import { FC, useCallback, useMemo, useState } from "react";
 
 import { useWatch } from "react-hook-form";
 
+import { ENHANCE_TYPE } from "@constants";
+
+import { EnhanceButton } from "../enhance-button";
 import { LanguageTabPanel } from "../language-tab-panel";
 import { DEFAULT_SAMPLE_COUNT, type LanguageOption } from "./scenarioLanguageUtils";
 import { useScenarioLanguagesToShow } from "./useScenarioLanguagesToShow";
@@ -51,6 +54,26 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
     [id, linguisticStyleSamples, setValue],
   );
 
+  // Enhance treats the active language's non-empty samples as a newline-joined
+  // blob; the improved text is split back into the fixed sample slots.
+  const activeSamples: string[] = activeLanguageId
+    ? (linguisticStyleSamples[activeLanguageId] ?? [])
+    : [];
+  const enhanceCurrentValue = activeSamples.filter(s => s?.trim()).join("\n");
+  const handleEnhanceApply = useCallback(
+    (improved: string) => {
+      if (!activeLanguageId) return;
+      const lines = improved
+        .split("\n")
+        .map(l => l.trim())
+        .filter(Boolean)
+        .slice(0, SAMPLE_COUNT);
+      const padded = Array.from({ length: SAMPLE_COUNT }, (_, i) => lines[i] ?? "");
+      setValue(id, { ...linguisticStyleSamples, [activeLanguageId]: padded });
+    },
+    [activeLanguageId, id, linguisticStyleSamples, setValue],
+  );
+
   if (isLoading || languagesToShow.length === 0) {
     return null;
   }
@@ -62,6 +85,14 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
           {label}
           {isMandatory && <span className="text-destructive-500"> *</span>}
         </span>
+        {activeLanguageId && (
+          <EnhanceButton
+            enhanceType={ENHANCE_TYPE.LINGUISTIC_STYLE_SAMPLES}
+            label={label}
+            currentValue={enhanceCurrentValue}
+            onApply={handleEnhanceApply}
+          />
+        )}
       </div>
       <LanguageTabPanel
         tabs={(languagesToShow as LanguageOption[]).map(l => ({
