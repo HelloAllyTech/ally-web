@@ -36,6 +36,15 @@ import {
 
 interface SimulationEventMapTableProps {
   simulationId: string | undefined;
+  /**
+   * When set, the table operates in version mode: it loads from `versionEvents`
+   * (the draft version's snapshot) and reports every change up via
+   * `onVersionEventsChange` instead of writing to the live scenario. The live
+   * scenario is only touched when the version is published.
+   */
+  versionId?: string;
+  versionEvents?: any[];
+  onVersionEventsChange?: (events: any[]) => void;
 }
 
 const DEBOUNCE_DELAY = 500;
@@ -53,7 +62,12 @@ const VIEW_MODE_OPTIONS = [
   { label: "Checklist View", value: "checklist" },
 ] as const;
 
-export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simulationId }) => {
+export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
+  simulationId,
+  versionId,
+  versionEvents,
+  onVersionEventsChange,
+}) => {
   const [mappedEvents, setMappedEvents] = useState<UpdateScenarioEventDataParam[]>([
     createNewEvent(),
   ]);
@@ -104,11 +118,23 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
       .map(event => ({ label: event.name, value: event.id }));
   }, [sessionEvents, mappedEvents]);
 
-  // Initialize mapped events from API response
+  // Initialize mapped events. In version mode, seed from the version snapshot
+  // when it has events; otherwise fall back to the live mapping (so branching
+  // an older scenario that predates event-versioning still shows its events,
+  // which then get captured into the draft on first edit).
   useEffect(() => {
-    if (mappedScenarioEventsData?.data?.length > 0) {
-      const formattedEvents = mappedScenarioEventsData.data.map(event =>
-        formatApiResponseToMappedEvent(event, sessionEventsMap.get(event.eventId)?.detectionType),
+    // An array (even empty) is authoritative — the version captured its events.
+    // Only `undefined` (a version predating event-versioning) falls back to the
+    // live mapping so branching an older scenario keeps its events.
+    const sourceData =
+      versionId && Array.isArray(versionEvents) ? versionEvents : mappedScenarioEventsData?.data;
+
+    if (sourceData && sourceData.length > 0) {
+      const formattedEvents = sourceData.map((event: any) =>
+        formatApiResponseToMappedEvent(
+          event,
+          sessionEventsMap.get(event.eventId ?? event.id)?.detectionType,
+        ),
       );
 
       if (mappedEvents.length <= 1) updateEventOrderMapping(formattedEvents);
@@ -116,7 +142,15 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
     } else {
       setMappedEvents([createNewEvent()]);
     }
-  }, [mappedScenarioEventsData, sessionEventsMap]);
+  }, [mappedScenarioEventsData, sessionEventsMap, versionId, versionEvents]);
+
+  // Version mode: report the full event set to the parent on every change so it
+  // can be saved into the version config (never to the live scenario). Deps are
+  // intentionally limited to the event set + version id.
+  useEffect(() => {
+    if (!versionId || !onVersionEventsChange) return;
+    onVersionEventsChange(convertToApiFormat(mappedEvents));
+  }, [mappedEvents, versionId]);
 
   // Table columns configuration
   const tableColumns = useMemo(() => {
@@ -303,6 +337,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const saveEventsToApi = useCallback(
     async (events: UpdateScenarioEventDataParam[]) => {
       if (!simulationId) return;
+      // Version mode persists through onVersionEventsChange (see effect above);
+      // never write event changes to the live scenario.
+      if (versionId) return;
       const apiEvents = convertToApiFormat(events);
       try {
         const response: any = await mapScenarioEvents({
@@ -316,7 +353,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
         toast.error(en.errors.failedToSaveEvents);
       }
     },
-    [simulationId, mapScenarioEvents],
+    [simulationId, mapScenarioEvents, versionId],
   );
 
   // Changed events accumulator for debounce
@@ -393,7 +430,9 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({ simu
   const handleDeleteSelectedEvents = async () => {
     try {
       const eventIds = selectedEventRows.map(event => event.id.value)?.filter(isNonEmptyString);
-      if (eventIds?.length > 0) {
+      // Version mode: removal is reflected in local state and reported up via
+      // the version-events effect; don't delete from the live scenario.
+      if (eventIds?.length > 0 && !versionId) {
         await deleteScenarioEvents({
           scenarioId: Number(simulationId),
           eventIds: selectedEventRows.map(event => event.id.value),

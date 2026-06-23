@@ -27,6 +27,13 @@ const mockEn = vi.hoisted(() => ({
     createNewSimulation: "Create Simulation",
     advancedEventsLatencyWarning: (count: number) =>
       `Heads up: ${count} advanced events are selected for this simulation. Selecting more than 10 can increase response latency during a session.`,
+    versions: {
+      title: "Versions",
+      switchVersion: "Switch version",
+      readOnly: "read-only",
+      published: "Version published",
+      editingToast: (label: string) => `Editing ${label}`,
+    },
   },
   errors: {
     failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
@@ -82,6 +89,12 @@ vi.mock("@api", () => ({
   useGetMappedScenarioEventsQuery: () => ({
     data: { data: Array.from({ length: mockMappedEvents.count }, (_, i) => ({ id: String(i) })) },
   }),
+  useGetScenarioVersionsQuery: () => ({ data: [] }),
+  useUpdateScenarioVersionMutation: () => [vi.fn(() => ({ unwrap: async () => ({}) }))],
+  usePublishScenarioVersionMutation: () => [
+    vi.fn(() => ({ unwrap: async () => ({}) })),
+    { isLoading: false },
+  ],
 }));
 
 // Mock hooks
@@ -142,6 +155,7 @@ vi.mock("@components", () => ({
     <div data-testid="event-map-table">Event Map Table for {simulationId}</div>
   ),
   ReportSection: () => <div data-testid="report-section" />,
+  ScenarioVersionPanel: () => <div data-testid="scenario-version-panel" />,
   TranslationProgressToast: () => null,
 }));
 

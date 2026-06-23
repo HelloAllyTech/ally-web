@@ -14,6 +14,9 @@ import {
   useGetPromptsQuery,
   useLazyGetAdminSimulationByIdQuery,
   useUpdateSimulationByIdMutation,
+  useUpdateScenarioVersionMutation,
+  usePublishScenarioVersionMutation,
+  useGetScenarioVersionsQuery,
 } from "@api";
 import { ArrowDown, WarningAlt } from "@assets";
 import {
@@ -25,6 +28,7 @@ import {
   ReportSection,
   ReportSectionHandle,
   ReportPrimaryTab,
+  ScenarioVersionPanel,
   SimulationEventMapTable,
   SimulationPreview,
   TranslationJob,
@@ -56,10 +60,13 @@ import {
   behaviourInstruction,
   knowledgeSource,
   TranslationProgressPayload,
+  ScenarioVersionStatus,
+  formatVersionLabel,
 } from "@types";
 import {
   getCreateSimulationSubSectionById,
   formatSimulationResponseData,
+  formatVersionConfigToForm,
   isNonEmptyString,
   extractValidData,
   isEmpty,
@@ -161,6 +168,38 @@ export const CreateSimulation: FC = () => {
   const pendingActionRef = useRef<(() => Promise<void>) | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
+
+  // Version management. `activeVersionId` is the version subsequent test
+  // reports/previews run against; editing a version's isolated config is the
+  // remaining integration (form-load + autosave retarget).
+  const [isVersionPanelOpen, setIsVersionPanelOpen] = useState(false);
+  const [activeVersionId, setActiveVersionId] = useState<string | undefined>(undefined);
+  // Event mappings (Advanced Settings) live in a separate table, so they're
+  // carried on the version config as `mappedEvents`. `versionEvents` seeds the
+  // event table when editing a draft; the ref holds the latest set to fold into
+  // the version autosave; the json ref dedupes the table's initial hydration
+  // report so opening a draft doesn't trigger a spurious save.
+  const [versionEvents, setVersionEvents] = useState<any[] | undefined>(undefined);
+  const draftMappedEventsRef = useRef<any[] | undefined>(undefined);
+  const lastEventsJsonRef = useRef<string | undefined>(undefined);
+
+  // Shared cache with the version panel (same query args). Used to label the
+  // header trigger with the version currently in the editor.
+  const { data: scenarioVersions = [] } = useGetScenarioVersionsQuery(
+    { scenarioId: simulationId as string },
+    { skip: !simulationId },
+  );
+  const currentVersion =
+    scenarioVersions.find(v => v.id === activeVersionId) ??
+    scenarioVersions.find(v => v.status === ScenarioVersionStatus.PUBLISHED) ??
+    scenarioVersions[0];
+  // An explicitly-selected non-draft (archived) version is read-only — edits
+  // can't be saved to it; the user must branch.
+  const activeVersion = activeVersionId
+    ? scenarioVersions.find(v => v.id === activeVersionId)
+    : undefined;
+  const isActiveVersionReadOnly =
+    !!activeVersion && activeVersion.status !== ScenarioVersionStatus.DRAFT;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const reportStepRef = useRef<ReportSectionHandle>(null);
@@ -285,6 +324,9 @@ export const CreateSimulation: FC = () => {
   const [createSimulationQuery, { isLoading: isCreatingSimulation }] =
     useCreateSimulationMutation();
   const [updateSimulationByIdQuery] = useUpdateSimulationByIdMutation();
+  const [updateScenarioVersionQuery] = useUpdateScenarioVersionMutation();
+  const [publishScenarioVersionQuery, { isLoading: isPublishingVersion }] =
+    usePublishScenarioVersionMutation();
   const [getAdminSimulationByIdQuery, { data: adminSimulationByIdData }] =
     useLazyGetAdminSimulationByIdQuery();
   const [deleteCoverImage] = useDeleteCoverImageMutation();
@@ -359,10 +401,13 @@ export const CreateSimulation: FC = () => {
   }, [simulationId, getAdminSimulationByIdQuery]);
 
   useEffect(() => {
+    // When a draft version is loaded into the form, don't let a refetch of the
+    // live scenario clobber the in-editor draft.
+    if (activeVersionId) return;
     if (adminSimulationByIdData) {
       formMethods.reset(formatSimulationResponseData(adminSimulationByIdData));
     }
-  }, [adminSimulationByIdData, formMethods]);
+  }, [adminSimulationByIdData, formMethods, activeVersionId]);
 
   useEffect(() => {
     if (simulationId) return;
@@ -511,8 +556,11 @@ export const CreateSimulation: FC = () => {
       }
     }
 
-    // Delete cover image from s3 if it is changed
+    // Delete cover image from s3 if it is changed. Only in live mode — while
+    // editing a draft version the live scenario still references this asset
+    // (until publish), so deleting it would break the live cover image.
     if (
+      !activeVersionId &&
       isNonEmptyString(adminSimulationByIdData?.coverImageUrl) &&
       adminSimulationByIdData?.coverImageUrl !== formData.coverImageUrl
     ) {
@@ -634,6 +682,12 @@ export const CreateSimulation: FC = () => {
             content: item.content,
           }))
         : [],
+      // Carry the draft's event mappings on the version config (only when
+      // editing a version and the event table has provided them). The live
+      // update path ignores this key; publish replays it to scenario_events.
+      ...(activeVersionId && draftMappedEventsRef.current !== undefined
+        ? { mappedEvents: draftMappedEventsRef.current }
+        : {}),
     };
 
     if (Array.isArray((simulationData as any).stateNames)) {
@@ -675,8 +729,28 @@ export const CreateSimulation: FC = () => {
       (simulationData as any).selectedMainPromptCode = undefined;
     }
 
+    // Archived versions are immutable read-only snapshots; never attempt to
+    // persist edits to them (the version PUT would 400). Guide the user to
+    // branch instead. (The published version is edited via the live path —
+    // selecting it clears activeVersionId.)
+    if (simulationId && activeVersionId) {
+      const activeVer = scenarioVersions.find(v => v.id === activeVersionId);
+      if (activeVer && activeVer.status !== ScenarioVersionStatus.DRAFT) {
+        if (!silent) toast.error(en.simulation.versions.readOnlyEdit);
+        return null;
+      }
+    }
+
     let response;
-    if (simulationId) {
+    if (simulationId && activeVersionId) {
+      // Editing an isolated draft version: persist the snapshot to the version,
+      // not the live scenario. The live record only changes on publish.
+      response = await updateScenarioVersionQuery({
+        scenarioId: simulationId,
+        versionId: activeVersionId,
+        config: simulationData,
+      });
+    } else if (simulationId) {
       response = await updateSimulationByIdQuery({
         id: simulationId,
         simulation: simulationData,
@@ -694,6 +768,20 @@ export const CreateSimulation: FC = () => {
 
   // Debounced version to prevent duplicate simulation creation (500ms delay)
   const saveSimulationChanges = useDebounce(saveSimulationChangesCore, 500);
+
+  // Persist the current draft/live edits before switching versions. Autosave
+  // only runs on a 10s interval, so without this a quick switch would discard
+  // any field changes (e.g. Skill version) made since the last tick when the
+  // form is reset to the incoming version.
+  const flushPendingEdits = async () => {
+    if (Object.keys(dirtyFields).length === 0) return;
+    if (isActiveVersionReadOnly) return; // archived snapshot — nothing to save
+    try {
+      await saveSimulationChangesCore(SimulationStatus.DRAFT, { silent: true });
+    } catch {
+      /* best-effort — proceed with the switch even if the flush fails */
+    }
+  };
 
   const handleSaveDraft = async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
@@ -726,8 +814,10 @@ export const CreateSimulation: FC = () => {
   // the timer. The save is silent (no toasts) and only runs when there are
   // genuine unsaved changes and nothing else is mid-flight.
   const isAutosavingRef = useRef(false);
-  // Drives the subtle inline indicator next to the Save button.
-  const [autosaveState, setAutosaveState] = useState<"idle" | "saving" | "saved">("idle");
+  // Drives the subtle inline indicator next to the Save button. `error` means
+  // the last background autosave failed — surfaced so silent failures don't
+  // look like successful saves.
+  const [autosaveState, setAutosaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const autosaveRef = useRef<() => void>(() => {});
   autosaveRef.current = () => {
     if (isAutosavingRef.current) return; // an autosave is already running
@@ -737,9 +827,12 @@ export const CreateSimulation: FC = () => {
 
     isAutosavingRef.current = true;
     setAutosaveState("saving");
+    // handleSaveDraft returns truthy data on success, `null` on a genuine
+    // failure, and `undefined` for benign no-ops (debounce superseded /
+    // read-only version). Only `null`/throw is an error.
     void handleSaveDraft({ silent: true })
-      .then(data => setAutosaveState(data ? "saved" : "idle"))
-      .catch(() => setAutosaveState("idle"))
+      .then(data => setAutosaveState(data === null ? "error" : data ? "saved" : "idle"))
+      .catch(() => setAutosaveState("error"))
       .finally(() => {
         isAutosavingRef.current = false;
       });
@@ -759,6 +852,27 @@ export const CreateSimulation: FC = () => {
 
   const doPublish = async () => {
     try {
+      // Publishing the selected version. For a draft, persist its latest edits
+      // first; for a published/archived version (e.g. a rollback) the snapshot
+      // is immutable, so skip the save and publish it directly.
+      if (simulationId && activeVersionId) {
+        const activeVer = scenarioVersions.find(v => v.id === activeVersionId);
+        if (activeVer?.status === ScenarioVersionStatus.DRAFT) {
+          await saveSimulationChangesCore(SimulationStatus.DRAFT, { silent: true });
+        }
+        const res: any = await publishScenarioVersionQuery({
+          scenarioId: simulationId,
+          versionId: activeVersionId,
+        });
+        if (res?.error) {
+          toast.error(res?.error?.data?.message || en.errors.failedSimulationCreation);
+          return;
+        }
+        toast.success(en.simulation.versions.published);
+        navigate(ROUTES.SIMULATION_STUDIO);
+        return;
+      }
+
       const response = await saveSimulationChanges(SimulationStatus.ACTIVE);
 
       // A superseded/cancelled debounced call resolves to `undefined`; treat
@@ -850,7 +964,21 @@ export const CreateSimulation: FC = () => {
         );
       }
       case stepIds.advancedSettings:
-        return renderStep(<SimulationEventMapTable simulationId={simulationId} />);
+        return renderStep(
+          <SimulationEventMapTable
+            simulationId={simulationId}
+            versionId={activeVersionId}
+            versionEvents={versionEvents}
+            onVersionEventsChange={events => {
+              draftMappedEventsRef.current = events;
+              const json = JSON.stringify(events ?? null);
+              // Skip the table's initial hydration report; persist real edits.
+              if (json === lastEventsJsonRef.current) return;
+              lastEventsJsonRef.current = json;
+              saveSimulationChanges(SimulationStatus.DRAFT, { silent: true });
+            }}
+          />,
+        );
       case stepIds.agentBuilderCopilot:
         return renderStep(
           <AgentBuilderCopilot
@@ -895,6 +1023,7 @@ export const CreateSimulation: FC = () => {
           <ReportSection
             ref={reportStepRef}
             scenarioId={simulationId}
+            scenarioVersionId={activeVersionId}
             areAllMandatoryFieldsFilled={areAllMandatoryFieldsFilled}
             onPrimaryTabChange={setReportPrimaryTab}
             // Report-only fields (helper prompt, evaluator variant) are sent
@@ -992,11 +1121,18 @@ export const CreateSimulation: FC = () => {
         <div className="flex items-center gap-3">
           {autosaveState !== "idle" && (
             <span
-              className="flex items-center gap-1.5 text-xs text-typography-500 transition-opacity"
+              className={`flex items-center gap-1.5 text-xs transition-opacity ${
+                autosaveState === "error" ? "text-destructive-500" : "text-typography-500"
+              }`}
               aria-live="polite"
             >
               {autosaveState === "saving" ? (
                 en.simulation.autosaving
+              ) : autosaveState === "error" ? (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-destructive-500" />
+                  {en.simulation.autosaveFailed}
+                </>
               ) : (
                 <>
                   <span className="h-1.5 w-1.5 rounded-full bg-success-400" />
@@ -1004,6 +1140,78 @@ export const CreateSimulation: FC = () => {
                 </>
               )}
             </span>
+          )}
+          {simulationId && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsVersionPanelOpen(o => !o)}
+                title={en.simulation.versions.switchVersion}
+                className={`flex items-center gap-1.5 h-[40px] px-3 rounded text-typography-900 transition-colors ${
+                  isVersionPanelOpen ? "bg-secondary-50" : "hover:bg-secondary-50"
+                }`}
+              >
+                <span className="text-base max-w-[220px] truncate">
+                  {currentVersion
+                    ? formatVersionLabel(currentVersion)
+                    : en.simulation.versions.title}
+                </span>
+                {isActiveVersionReadOnly && (
+                  <span className="text-xs text-typography-500">
+                    · {en.simulation.versions.readOnly}
+                  </span>
+                )}
+                <span
+                  className={`scale-75 opacity-70 transition-transform ${
+                    isVersionPanelOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  <ArrowDown />
+                </span>
+              </button>
+              <ScenarioVersionPanel
+                scenarioId={simulationId}
+                activeVersionId={activeVersionId}
+                isOpen={isVersionPanelOpen}
+                onClose={() => setIsVersionPanelOpen(false)}
+                onEditVersion={async version => {
+                  // Save the outgoing draft/live edits before the form reset.
+                  await flushPendingEdits();
+                  if (version.status === ScenarioVersionStatus.PUBLISHED) {
+                    // The published version IS the live scenario — edit it via
+                    // the live path. Clearing activeVersionId makes the load
+                    // effect re-sync the form from the live record.
+                    setActiveVersionId(undefined);
+                    setVersionEvents(undefined);
+                    draftMappedEventsRef.current = undefined;
+                    lastEventsJsonRef.current = undefined;
+                    if (simulationId) getAdminSimulationByIdQuery(simulationId);
+                  } else {
+                    setActiveVersionId(version.id);
+                    formMethods.reset(formatVersionConfigToForm(version.config));
+                    const events = (version.config as Record<string, any>)?.mappedEvents;
+                    const eventsArr = Array.isArray(events) ? events : undefined;
+                    setVersionEvents(eventsArr);
+                    draftMappedEventsRef.current = eventsArr;
+                    lastEventsJsonRef.current = JSON.stringify(eventsArr ?? null);
+                  }
+                  setIsVersionPanelOpen(false);
+                  toast.success(en.simulation.versions.editingToast(formatVersionLabel(version)));
+                }}
+                onBeforeCreate={flushPendingEdits}
+                onVersionDeleted={deletedId => {
+                  // If the version we were editing got deleted, drop back to the
+                  // live scenario so saves don't target a missing version.
+                  if (deletedId === activeVersionId) {
+                    setActiveVersionId(undefined);
+                    setVersionEvents(undefined);
+                    draftMappedEventsRef.current = undefined;
+                    lastEventsJsonRef.current = undefined;
+                    if (simulationId) getAdminSimulationByIdQuery(simulationId);
+                  }
+                }}
+              />
+            </div>
           )}
           <Button
             variant={ButtonVariant.TEXT}
@@ -1023,10 +1231,12 @@ export const CreateSimulation: FC = () => {
           <Button
             variant={ButtonVariant.PRIMARY}
             onClick={handlePublish}
-            disabled={!areAllMandatoryFieldsFilled || isCreatingSimulation}
+            disabled={!areAllMandatoryFieldsFilled || isCreatingSimulation || isPublishingVersion}
             className="transition-colors h-[40px] pr-[20px]"
           >
-            {isCreatingSimulation ? en.simulation.publishing : en.simulation.publish}
+            {isCreatingSimulation || isPublishingVersion
+              ? en.simulation.publishing
+              : en.simulation.publish}
           </Button>
         </div>
       </div>

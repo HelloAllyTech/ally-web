@@ -20,6 +20,7 @@ import {
   useCancelReportGenerationMutation,
   useLazyGetReportTranscriptQuery,
   useGetPromptsByTypeQuery,
+  useGetScenarioVersionsQuery,
 } from "@api";
 import { ArrowDown, Plus } from "@assets";
 import { PromptConfiguration, ReportContent, TabButton, Accordion } from "@components";
@@ -41,12 +42,17 @@ import {
   setUploadsForScenario,
   setCurrentScenarioId,
 } from "@reducer/reportUploadReducer";
-import { ReportData, ReportConfig, TranscriptMessage } from "@types";
+import { ReportData, ReportConfig, TranscriptMessage, formatVersionLabel } from "@types";
 
 export type ReportPrimaryTab = "report" | "history";
 
 export interface ReportSectionProps {
   scenarioId?: string;
+  /**
+   * When set, reports are generated against this scenario version (which may be
+   * an unpublished draft) and tagged with it. Undefined runs the live scenario.
+   */
+  scenarioVersionId?: string;
   areAllMandatoryFieldsFilled?: boolean;
   onPrimaryTabChange?: (tab: ReportPrimaryTab) => void;
   hasUnsavedChanges?: boolean;
@@ -186,6 +192,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
   (
     {
       scenarioId,
+      scenarioVersionId,
       areAllMandatoryFieldsFilled = false,
       hasUnsavedChanges = false,
       onPrimaryTabChange,
@@ -308,6 +315,20 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
         refetchOnFocus: false,
       },
     );
+    // Map version id → display label so each report row can show which version
+    // it ran against (shared RTK cache with the version switcher; no extra fetch).
+    const { data: scenarioVersionsForReports = [] } = useGetScenarioVersionsQuery(
+      { scenarioId: scenarioId as string },
+      { skip: !scenarioId },
+    );
+    const versionLabelById = useMemo(() => {
+      const map: Record<string, string> = {};
+      scenarioVersionsForReports.forEach(v => {
+        map[v.id] = formatVersionLabel(v);
+      });
+      return map;
+    }, [scenarioVersionsForReports]);
+
     const refetchReportsHistoryRef = useRef(refetchReportsHistory);
     refetchReportsHistoryRef.current = refetchReportsHistory;
     const refetchReportsHistoryAndResetPagination = () => {
@@ -563,7 +584,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
         };
 
         const response = await generateReportMutation({
-          input: { scenarioId, config },
+          input: { scenarioId, ...(scenarioVersionId && { scenarioVersionId }), config },
         }).unwrap();
 
         if (response?.id) {
@@ -828,6 +849,11 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
                     {formatReportCreatedAt(item.createdAt)}
                   </span>
                   <span className="text-xs font-normal text-typography-600">{`${item.language.label || item.language.id}· ${item.config.turns} turns`}</span>
+                  {item.scenarioVersionId && versionLabelById[item.scenarioVersionId] && (
+                    <span className="inline-flex w-fit items-center px-[6px] py-[1px] rounded-full text-[11px] bg-secondary-50 text-typography-700">
+                      {versionLabelById[item.scenarioVersionId]}
+                    </span>
+                  )}
                   <span className="text-xs font-normal text-typography-600">
                     Skill version: {resolveMainPromptName(item.config.selectedMainPromptCode)}
                   </span>

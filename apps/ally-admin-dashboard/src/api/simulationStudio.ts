@@ -33,6 +33,9 @@ import {
   ReportData,
   GenerateReportInput,
   GenerateReportResponse,
+  ScenarioVersion,
+  CreateScenarioVersionInput,
+  UpdateScenarioVersionInput,
   GetImageLibraryQueryParams,
   GetImageLibraryResponse,
   GetFillerTagsQueryParams,
@@ -346,13 +349,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     /**
      * Get scenario preview
      */
-    scenarioPreview: builder.mutation<any, { scenarioId: number; languageId?: number }>({
-      query: ({ scenarioId, languageId }) => ({
+    scenarioPreview: builder.mutation<
+      any,
+      { scenarioId: number; languageId?: number; scenarioVersionId?: string }
+    >({
+      query: ({ scenarioId, languageId, scenarioVersionId }) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_PREVIEW,
         method: HttpMethod.POST,
         body: {
           scenarioId,
           languageId,
+          ...(scenarioVersionId && { scenarioVersionId }),
         },
       }),
       invalidatesTags: [TAG_TYPES.SIMULATION],
@@ -738,8 +745,80 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           turns: input.config.turns,
           helperAgentPrompt: input.config.helperAgentPrompt,
           selectedEvaluatorPromptCode: input.config.selectedEvaluatorPromptCode,
+          ...(input.scenarioVersionId && {
+            scenarioVersionId: input.scenarioVersionId,
+          }),
         },
       }),
+    }),
+
+    /**
+     * List saved versions of a scenario (newest first). The server lazily
+     * seeds a v1 from the live scenario if none exist yet.
+     */
+    getScenarioVersions: builder.query<ScenarioVersion[], { scenarioId: string | number }>({
+      query: ({ scenarioId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VERSIONS(scenarioId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.SCENARIO_VERSIONS],
+    }),
+
+    /**
+     * Create a new draft version, optionally branched from an existing one.
+     */
+    createScenarioVersion: builder.mutation<ScenarioVersion, CreateScenarioVersionInput>({
+      query: ({ scenarioId, name, fromVersionId, empty }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VERSIONS(scenarioId),
+        method: HttpMethod.POST,
+        body: {
+          ...(name && { name }),
+          ...(fromVersionId && { fromVersionId }),
+          ...(empty && { empty: true }),
+        },
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VERSIONS],
+    }),
+
+    /**
+     * Autosave a draft version (config and/or name). Does not touch the live
+     * scenario; only publish materialises a version.
+     */
+    updateScenarioVersion: builder.mutation<ScenarioVersion, UpdateScenarioVersionInput>({
+      query: ({ scenarioId, versionId, name, config }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VERSION_BY_ID(scenarioId, versionId),
+        method: HttpMethod.PUT,
+        body: { ...(name !== undefined && { name }), ...(config !== undefined && { config }) },
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VERSIONS],
+    }),
+
+    /**
+     * Publish a version: materialise its config into the live scenario.
+     */
+    publishScenarioVersion: builder.mutation<
+      ScenarioVersion,
+      { scenarioId: string | number; versionId: string }
+    >({
+      query: ({ scenarioId, versionId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PUBLISH_SCENARIO_VERSION(scenarioId, versionId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VERSIONS, TAG_TYPES.SIMULATION],
+    }),
+
+    /**
+     * Soft-delete a draft version (the published version cannot be deleted).
+     */
+    deleteScenarioVersion: builder.mutation<
+      boolean,
+      { scenarioId: string | number; versionId: string }
+    >({
+      query: ({ scenarioId, versionId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SCENARIO_VERSION_BY_ID(scenarioId, versionId),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VERSIONS],
     }),
 
     /**
@@ -984,6 +1063,12 @@ export const {
   useGetReportByIdQuery,
   useLazyGetReportByIdQuery,
   useGenerateReportMutation,
+  useGetScenarioVersionsQuery,
+  useLazyGetScenarioVersionsQuery,
+  useCreateScenarioVersionMutation,
+  useUpdateScenarioVersionMutation,
+  usePublishScenarioVersionMutation,
+  useDeleteScenarioVersionMutation,
   useCancelReportGenerationMutation,
   useGetCompetenciesQuery,
   useCreateCompetencyMutation,

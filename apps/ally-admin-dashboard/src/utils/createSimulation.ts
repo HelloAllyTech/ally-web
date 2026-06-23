@@ -9,6 +9,48 @@ export const getCreateSimulationSubSectionById = (id: string) => {
   return SIMULATION_CREATOR_FIELD_GROUPS.find(section => section.id === id);
 };
 
+/**
+ * Map a saved version's flattened `config` snapshot into react-hook-form values
+ * for the studio editor, delegating to formatSimulationResponseData so every
+ * default/transform (array→string joins, boolean defaults, etc.) applies
+ * identically to the live-scenario load path.
+ *
+ * formatSimulationResponseData reads some fields from the top level and others
+ * from `metadata`. The snapshot is flat (one value per key), so we expose the
+ * whole snapshot in BOTH places — each field is then found wherever it's read.
+ * This deliberately avoids a hand-maintained "which fields are metadata" list:
+ * a new scenario field round-trips automatically, with no second place to
+ * update (and no silent "reverts to default" if someone forgets).
+ *
+ * Only the fields the live GET returns as richer objects are reconstructed from
+ * the ids the snapshot stores: competency, trigger warnings, termination events.
+ */
+export const formatVersionConfigToForm = (config: Record<string, any>) => {
+  const cfg = config ?? {};
+
+  const adminShape = {
+    ...cfg,
+    metadata: { ...cfg },
+    competency: cfg.competency ?? (cfg.competencyId ? { id: cfg.competencyId } : undefined),
+    // config stores trigger warnings as a string[] of ids; formatSim expects
+    // objects under `triggerWarnings`.
+    triggerWarnings: Array.isArray(cfg.triggerWarningIds)
+      ? cfg.triggerWarningIds.map((tw: any) => (typeof tw === "string" ? { id: tw } : tw))
+      : (cfg.triggerWarnings ?? []),
+    // tolerate both the form shape ({id}) and the admin shape ({eventId}).
+    terminationEvents: Array.isArray(cfg.terminationEvents)
+      ? cfg.terminationEvents.map((e: any) => ({
+          eventId: e.eventId ?? e.id,
+          name: e.name,
+          message: e.message,
+        }))
+      : [],
+    behaviorInstructions: cfg.behaviorInstructions ?? [],
+  };
+
+  return formatSimulationResponseData(adminShape as GetSimulationByIdResponse);
+};
+
 export const formatSimulationResponseData = (data: GetSimulationByIdResponse) => {
   return {
     title: data.title,

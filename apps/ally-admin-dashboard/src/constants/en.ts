@@ -152,6 +152,52 @@ export const en = {
     untitledRoleplay: "Untitled Roleplay",
     autosaving: "Saving…",
     draftAutosaved: "Draft autosaved",
+    autosaveFailed: "Couldn’t save — click Save to retry",
+    versions: {
+      title: "Versions",
+      switchVersion: "Switch version",
+      newVersion: "+ New version",
+      loading: "Loading…",
+      empty: "No versions yet. Create one to start iterating.",
+      editing: "editing",
+      openTooltip: "Open this version in the editor",
+      branch: "Branch",
+      rename: "Rename",
+      delete: "Delete",
+      create: "Create",
+      save: "Save",
+      cancel: "Cancel",
+      namePlaceholder: "e.g. warmer opener",
+      newBlankTitle: "New blank version",
+      branchingFrom(label: string) {
+        return `Branching from ${label}`;
+      },
+      deleteTitle: "Delete",
+      deleteDescription: "This draft version will be removed. This can't be undone.",
+      published: "Version published",
+      readOnly: "read-only",
+      readOnlyEdit: "This version is read-only. Branch it to make changes.",
+      statusLabel: {
+        DRAFT: "Draft",
+        PUBLISHED: "Published",
+        ARCHIVED: "Archived",
+      } as Record<string, string>,
+      created(label: string) {
+        return `Created ${label}`;
+      },
+      renamed(label: string) {
+        return `Renamed to ${label}`;
+      },
+      deleted(label: string) {
+        return `Deleted ${label}`;
+      },
+      editingToast(label: string) {
+        return `Editing ${label}`;
+      },
+      createError: "Couldn't create a new version",
+      renameError: "Couldn't rename this version",
+      deleteError: "Couldn't delete this version",
+    },
     createCharacter: "Create character",
     editCharacter: "Edit character",
     characterCreatedSuccessfully: "Character created successfully",
@@ -476,7 +522,6 @@ export const en = {
     deleteCharacter: "Delete character",
     addStateName: "Add State Name",
     agentBuilder: {
-      tabTitle: "Agent Builder Copilot",
       tabTitle: "Agent Builder Copilot V1",
       tabTitleV2: "Agent Builder Copilot V2",
       heading: "Describe your agent",

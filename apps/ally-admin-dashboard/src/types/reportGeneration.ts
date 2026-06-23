@@ -3,6 +3,8 @@ import { ReportGenerationStatus } from "@constants/reportGeneration";
 export type ReportData = {
   id: string;
   scenarioId: string;
+  /** Scenario version this report was generated against (null for legacy rows). */
+  scenarioVersionId?: string | null;
   config: ReportConfig;
   language?: {
     id?: number;
@@ -69,6 +71,12 @@ export type GetReportsInput = {
 
 export type GenerateReportInput = {
   scenarioId: string;
+  /**
+   * Generate the report against this version's config (may be an unpublished
+   * draft). Omit to run the live scenario; the server tags the report with the
+   * scenario's published version.
+   */
+  scenarioVersionId?: string;
   config: ReportConfig;
 };
 

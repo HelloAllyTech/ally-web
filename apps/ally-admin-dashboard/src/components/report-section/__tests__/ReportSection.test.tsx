@@ -140,6 +140,9 @@ vi.mock("@api", () => ({
     data: mockGetReportsQuery(),
     refetch: mockRefetchReportsHistory,
   }),
+  // ReportSection maps report rows to their scenario version label; an empty
+  // list is a safe default for tests that don't exercise version tagging.
+  useGetScenarioVersionsQuery: () => ({ data: [] }),
   useLazyGetReportsQuery: () => [
     vi.fn(() => ({ unwrap: async () => ({ data: [] }) })),
     { data: undefined, isLoading: false },

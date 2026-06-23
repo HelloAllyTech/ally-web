@@ -90,6 +90,12 @@ export const ApiEndpoints = {
     GET_REPORT_BY_ID: (reportId: string) => `/v1/learn/scenarios/reports/${reportId}`,
     GET_REPORTS: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
     GENERATE_REPORT: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
+    SCENARIO_VERSIONS: (scenarioId: string | number) =>
+      `/v1/learn/scenarios/${scenarioId}/versions`,
+    SCENARIO_VERSION_BY_ID: (scenarioId: string | number, versionId: string) =>
+      `/v1/learn/scenarios/${scenarioId}/versions/${versionId}`,
+    PUBLISH_SCENARIO_VERSION: (scenarioId: string | number, versionId: string) =>
+      `/v1/learn/scenarios/${scenarioId}/versions/${versionId}/publish`,
     CANCEL_REPORT_GENERATION: (reportId: string) =>
       `/v1/learn/scenarios/reports/${reportId}/cancel`,
     GET_REPORT_TRANSCRIPT: (reportId: string) =>
@@ -262,6 +268,7 @@ export const TAG_TYPES = {
   SESSION_EVENTS: "sessionEvents",
   SESSION_EVENT_TAGS: "sessionEventTags",
   SIMULATION: "simulation",
+  SCENARIO_VERSIONS: "scenarioVersions",
   SIMULATION_EVENTS: "simulationEvents",
   SIMULATION_PATHS: "simulationPaths",
   SCENARIO_PATHS: "scenarioPaths",
