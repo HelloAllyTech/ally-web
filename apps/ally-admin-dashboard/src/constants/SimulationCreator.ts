@@ -212,6 +212,7 @@ export const REGENERATE_TYPE = {
  */
 export const ENHANCE_TYPE = {
   ROLE_INSTRUCTION: "roleInstruction",
+  TITLE: "title",
   CHARACTER_PROFILE_TEXT: "characterProfileText",
   DESCRIPTION: "description",
   OPENING_STATEMENTS: "openingStatements",
@@ -282,6 +283,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 100,
         promptVariable: "title",
+        enhanceType: ENHANCE_TYPE.TITLE,
       },
       {
         id: "description",

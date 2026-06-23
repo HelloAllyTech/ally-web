@@ -6,6 +6,7 @@ import { useGetAvailableLanguageVoicesQuery } from "@api";
 import { APP_TRANSLATION_LANGUAGE_CODES, FORM_FIELD_IDS } from "@constants";
 import { useResolvedPrimaryLanguageId } from "@hooks";
 
+import { EnhanceButton } from "../enhance-button";
 import { FormLabel } from "../form-label";
 import { LanguageTabPanel } from "../language-tab-panel";
 
@@ -20,12 +21,15 @@ interface TitleTranslationsPanelProps {
   formMethods: any;
   label?: string;
   isMandatory?: boolean;
+  /** When set, render a field-level Enhance control (primary tab only). */
+  enhanceType?: string;
 }
 
 export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
   formMethods,
   label = "Title",
   isMandatory = false,
+  enhanceType,
 }) => {
   const { setValue, control, getValues, watch } = formMethods;
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
@@ -126,17 +130,59 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
     [activeLanguageId, isPrimaryTab, getValues, setValue],
   );
 
+  // Improve runs on the primary tab only; re-translate into the other
+  // languages so every title translation stays in sync with the improved one.
+  const translateTargets = useMemo(
+    () =>
+      translatableTabs
+        .map(t => {
+          const lang = catalogLanguages.find(l => String(l.language_id) === t.languageId);
+          const code =
+            [lang?.value, lang?.translationCode].map(s => String(s ?? "").trim()).find(Boolean) ??
+            "";
+          return { languageId: t.languageId, languageCode: code };
+        })
+        .filter(t => t.languageCode),
+    [translatableTabs, catalogLanguages],
+  );
+
+  const handleEnhanceApply = useCallback(
+    (improved: string, translations?: Record<string, string>) => {
+      setValue(FORM_FIELD_IDS.TITLE, improved, { shouldDirty: true, shouldTouch: true });
+      if (translations && Object.keys(translations).length > 0) {
+        const prev = (getValues(TRANSLATION_TITLE_FIELD) ?? {}) as Record<string, string>;
+        setValue(
+          TRANSLATION_TITLE_FIELD,
+          { ...prev, ...translations },
+          { shouldDirty: true, shouldTouch: true },
+        );
+      }
+    },
+    [getValues, setValue],
+  );
+
   if (catalogLoading) {
     return <div className="w-full text-sm text-typography-600">Loading languages…</div>;
   }
 
   return (
     <div className="w-full flex flex-col gap-3" data-testid="title-translations-panel">
-      <div className="flex flex-col gap-0.5">
-        <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
-        <span className="text-typography-500 text-xs">
-          English title is required, other languages will be auto generated if left blank.
-        </span>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col gap-0.5">
+          <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
+          <span className="text-typography-500 text-xs">
+            English title is required, other languages will be auto generated if left blank.
+          </span>
+        </div>
+        {enhanceType && isPrimaryTab && (
+          <EnhanceButton
+            enhanceType={enhanceType}
+            label={label}
+            currentValue={title}
+            onApply={handleEnhanceApply}
+            translateTo={translateTargets}
+          />
+        )}
       </div>
       <LanguageTabPanel
         tabs={allTabs.map(t => ({ id: t.languageId, label: t.label }))}

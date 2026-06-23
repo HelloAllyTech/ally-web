@@ -259,6 +259,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             formMethods={formMethods}
             label={label}
             isMandatory={isMandatory}
+            enhanceType={enhanceType}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION:
