@@ -662,10 +662,18 @@ export interface EnhanceFieldRequest {
   guidance?: string;
   model?: string;
   provider?: "openai" | "anthropic";
+  /**
+   * Primary+translation fields only: re-translate the improved content into
+   * these languages. The response then carries a `translations` map keyed by
+   * languageId.
+   */
+  translateTo?: { languageId: string; languageCode: string }[];
 }
 
 export interface EnhanceFieldResponse {
   fieldName: string;
   /** Improved content as plain text (multi-line fields keep line structure). */
   content: string;
+  /** Translations of the improved content, keyed by languageId (if requested). */
+  translations?: Record<string, string>;
 }

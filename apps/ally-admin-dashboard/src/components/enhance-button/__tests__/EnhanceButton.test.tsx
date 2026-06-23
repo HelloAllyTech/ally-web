@@ -78,7 +78,7 @@ describe("EnhanceButton", () => {
     fireEvent.click(screen.getByText("Improve"));
     fireEvent.click(screen.getByTestId("enhance-custom-submit"));
 
-    await waitFor(() => expect(onApply).toHaveBeenCalledWith("Improved backstory."));
+    await waitFor(() => expect(onApply).toHaveBeenCalledWith("Improved backstory.", undefined));
     expect(mockEnhance).toHaveBeenCalledTimes(1);
     const arg = mockEnhance.mock.calls[0][0];
     expect(arg.fieldName).toBe("characterProfileText");
@@ -86,6 +86,8 @@ describe("EnhanceButton", () => {
     expect(arg.guidance).toBeUndefined();
     // Only the current value is sent — no other scenario fields as context.
     expect(arg.context).toBeUndefined();
+    // No re-translate unless translateTo is passed.
+    expect(arg.translateTo).toBeUndefined();
   });
 
   it("supports custom guidance entered by the user", async () => {
@@ -97,7 +99,28 @@ describe("EnhanceButton", () => {
     fireEvent.change(textarea, { target: { value: "Make it warmer" } });
     fireEvent.click(screen.getByTestId("enhance-custom-submit"));
 
-    await waitFor(() => expect(onApply).toHaveBeenCalledWith("Improved backstory."));
+    await waitFor(() => expect(onApply).toHaveBeenCalledWith("Improved backstory.", undefined));
     expect(mockEnhance.mock.calls[0][0].guidance).toBe("Make it warmer");
+  });
+
+  it("sends translateTo and passes returned translations to onApply", async () => {
+    mockEnhance.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          fieldName: "description",
+          content: "Improved primary.",
+          translations: { "2": "अनुवादित" },
+        }),
+    });
+    const onApply = vi.fn();
+    const translateTo = [{ languageId: "2", languageCode: "hi-IN" }];
+    setup({ onApply, translateTo });
+    fireEvent.click(screen.getByText("Improve"));
+    fireEvent.click(screen.getByTestId("enhance-custom-submit"));
+
+    await waitFor(() =>
+      expect(onApply).toHaveBeenCalledWith("Improved primary.", { "2": "अनुवादित" }),
+    );
+    expect(mockEnhance.mock.calls[0][0].translateTo).toEqual(translateTo);
   });
 });

@@ -125,6 +125,34 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
     [activeLanguageId, flushValueToForm],
   );
 
+  // Improve runs on the primary tab only; re-translate into the other
+  // languages so every translation stays in sync with the improved source.
+  const translateTargets = useMemo(
+    () =>
+      scenarioLanguageTabs
+        .filter(t => t.languageId !== effectivePrimaryId && t.value)
+        .map(t => ({ languageId: t.languageId, languageCode: t.value })),
+    [scenarioLanguageTabs, effectivePrimaryId],
+  );
+
+  const handleEnhanceApply = useCallback(
+    (improved: string, translations?: Record<string, string>) => {
+      setValue(FORM_FIELD_IDS.DESCRIPTION, improved, {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      if (translations && Object.keys(translations).length > 0) {
+        const prev = (getValues(TRANSLATION_DESCRIPTION_FIELD) ?? {}) as Record<string, string>;
+        setValue(
+          TRANSLATION_DESCRIPTION_FIELD,
+          { ...prev, ...translations },
+          { shouldDirty: true, shouldTouch: true },
+        );
+      }
+    },
+    [getValues, setValue],
+  );
+
   if (catalogLoading) {
     return (
       <div
@@ -149,12 +177,13 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
     <div className="w-full flex flex-col gap-3" data-testid="challenge-description-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
-        {enhanceType && (
+        {enhanceType && isPrimaryTab && (
           <EnhanceButton
             enhanceType={enhanceType}
             label={label}
-            currentValue={valueForActiveTab}
-            onApply={handleChange}
+            currentValue={description}
+            onApply={handleEnhanceApply}
+            translateTo={translateTargets}
           />
         )}
       </div>

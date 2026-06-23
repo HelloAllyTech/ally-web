@@ -133,21 +133,36 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
     [activeLanguageId, flushLinesToForm, linesForActiveTab],
   );
 
-  // Enhance treats the active tab's non-empty lines as a newline-joined blob;
-  // the improved text is split back into the fixed line slots.
+  // Enhance treats the primary tab's non-empty lines as a newline-joined blob;
+  // the improved text (and each re-translated language) is split back into the
+  // fixed line slots. Improve is offered on the primary tab only.
   const enhanceCurrentValue = linesForActiveTab.filter(l => l.trim().length > 0).join("\n");
+
+  const translateTargets = useMemo(
+    () =>
+      scenarioLanguageTabs
+        .filter(t => t.languageId !== effectivePrimaryId && t.value)
+        .map(t => ({ languageId: t.languageId, languageCode: t.value })),
+    [scenarioLanguageTabs, effectivePrimaryId],
+  );
+
   const handleEnhanceApply = useCallback(
-    (improved: string) => {
-      if (!activeLanguageId) return;
-      const lines = improved
-        .split("\n")
-        .map(l => l.trim())
-        .filter(Boolean)
-        .slice(0, OPENING_DIALOGUE_LINE_SLOTS);
-      const padded = Array.from({ length: OPENING_DIALOGUE_LINE_SLOTS }, (_, i) => lines[i] ?? "");
-      flushLinesToForm(activeLanguageId, padded);
+    (improved: string, translations?: Record<string, string>) => {
+      if (effectivePrimaryId == null) return;
+      const toSlots = (text: string) =>
+        text
+          .split("\n")
+          .map(l => l.trim())
+          .filter(Boolean)
+          .slice(0, OPENING_DIALOGUE_LINE_SLOTS);
+      flushLinesToForm(effectivePrimaryId, toSlots(improved));
+      if (translations) {
+        for (const [langId, text] of Object.entries(translations)) {
+          flushLinesToForm(langId, toSlots(text));
+        }
+      }
     },
-    [activeLanguageId, flushLinesToForm],
+    [effectivePrimaryId, flushLinesToForm],
   );
 
   if (catalogLoading) {
@@ -171,12 +186,13 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
     <div className="w-full flex flex-col gap-3" data-testid="opening-dialogues-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FormLabel isMandatory={isMandatory}>Opening Dialogues</FormLabel>
-        {enhanceType && (
+        {enhanceType && isPrimaryTab && (
           <EnhanceButton
             enhanceType={enhanceType}
             label="Opening Dialogues"
             currentValue={enhanceCurrentValue}
             onApply={handleEnhanceApply}
+            translateTo={translateTargets}
           />
         )}
       </div>

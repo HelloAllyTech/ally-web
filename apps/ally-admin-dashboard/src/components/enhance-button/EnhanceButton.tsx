@@ -15,8 +15,16 @@ interface EnhanceButtonProps {
   label?: string;
   /** Live current content of the field being improved. */
   currentValue: string;
-  /** Apply the improved content back to the field. */
-  onApply: (improved: string) => void;
+  /**
+   * Apply the improved content. `translations` (keyed by languageId) is present
+   * only when `translateTo` was supplied — used by primary+translation fields.
+   */
+  onApply: (improved: string, translations?: Record<string, string>) => void;
+  /**
+   * Primary+translation fields only: after improving the (primary) value,
+   * re-translate it into these languages and hand them to `onApply`.
+   */
+  translateTo?: { languageId: string; languageCode: string }[];
   disabled?: boolean;
 }
 
@@ -34,6 +42,7 @@ export const EnhanceButton: FC<EnhanceButtonProps> = ({
   label,
   currentValue,
   onApply,
+  translateTo,
   disabled = false,
 }) => {
   const [enhanceField] = useEnhanceFieldMutation();
@@ -90,11 +99,12 @@ export const EnhanceButton: FC<EnhanceButtonProps> = ({
         guidance: guidance.trim() ? guidance.trim() : undefined,
         model: selectedModel,
         provider: selectedProvider,
+        ...(translateTo?.length ? { translateTo } : {}),
       }).unwrap();
 
       const improved = response?.content;
       if (typeof improved === "string" && improved.trim()) {
-        onApply(improved);
+        onApply(improved, response?.translations);
         toast.success(`${label || "Field"} ${en.simulation.enhance.enhancedSuccessfully}`);
       } else {
         toast.error(`${en.errors.failedToEnhance} ${label || "field"}`);
