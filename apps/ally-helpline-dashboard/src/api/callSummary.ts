@@ -66,6 +66,21 @@ const callSummaryAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Re-runs AI summary generation from the chat's saved transcript, for a
+     * session whose transcript was captured but whose summary failed.
+     * Invalidates the summary/logs cache so the regenerated summary is shown.
+     * @param {number} chatId - The chat/session id.
+     * @returns {Promise<{ success: boolean; message: string }>}
+     */
+    retrySummary: builder.mutation<{ success: boolean; message: string }, number>({
+      query: chatId => ({
+        url: ApiEndpoints.CALL_SUMMARY.RETRY_SUMMARY(chatId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.CALL_SUMMARY, TAG_TYPES.CALL_LOGS],
+    }),
+
+    /**
      * Uses AI to improve and enhance the provided content,
      * typically used for improving call summaries or notes.
      * @param {EnhanceContentRequest} data - Content to be enhanced
@@ -179,6 +194,7 @@ export const {
   useGetSummaryFieldsQuery,
   useGetCallSummaryQuery,
   useUpdateCallSummaryMutation,
+  useRetrySummaryMutation,
   useEnhanceContentMutation,
   useGetTagsMutation,
   useUpdateCallInfoMutation,

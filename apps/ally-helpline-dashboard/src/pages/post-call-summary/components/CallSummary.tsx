@@ -11,6 +11,7 @@ import { logger, DropdownField } from "@ally-ui-mono/ui-shared";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
+  useRetrySummaryMutation,
   useGetTagsMutation,
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
@@ -72,6 +73,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     },
   );
   const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
+  const [retrySummary, { isLoading: isRetrying }] = useRetrySummaryMutation();
   const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
   const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();
   const [searchLocations, { isLoading: isSearchLocationsLoading }] = useLazySearchLocationsQuery();
@@ -171,6 +173,18 @@ const CallSummary: FC<CallSummaryProps> = ({
       setTimeout(() => {
         setCanShowSummary(true);
       }, 4000);
+    } else if (callSummary?.summaryStatus === ChatSummaryStatus.FAILED) {
+      // Summary generation failed but the transcript was saved. Seed whatever
+      // (possibly empty) summary exists so the fields render as editable blanks
+      // for manual entry, and show the form + a Retry action instead of a
+      // dead-end error screen.
+      const existing = callSummary.details?.summary;
+      const tags = existing?.tags;
+      setSummaryData({
+        ...(existing ?? {}),
+        tags: tags?.map(({ tag }) => tag).join(", ") ?? "",
+      });
+      setCanShowSummary(true);
     }
   }, [callSummary?.summaryStatus, isInSidebar]);
 
@@ -440,6 +454,21 @@ const CallSummary: FC<CallSummaryProps> = ({
     return;
   };
 
+  const handleRetrySummary = async () => {
+    try {
+      const res = await retrySummary(chatId).unwrap();
+      if (res?.success) {
+        toast.success(t("summary.retrySuccess"));
+      } else {
+        toast.warning(res?.message || t("summary.retryFailed"));
+      }
+    } catch {
+      toast.error(t("summary.retryFailed"));
+    }
+    // Refetch so a regenerated summary (or the still-failed state) is reflected.
+    await onRefetchSummary();
+  };
+
   const debouncedUpdateNotes = useDebounce((notes: string) => {
     updateCallSummaryNotes({
       chatId: chatId.toString(),
@@ -481,17 +510,33 @@ const CallSummary: FC<CallSummaryProps> = ({
     );
   }
 
-  if (canShowSummary && callSummary?.details?.summary) {
+  const isFailedSummary = callSummary?.summaryStatus === ChatSummaryStatus.FAILED;
+
+  if (canShowSummary && (callSummary?.details?.summary || isFailedSummary)) {
     return (
       <>
-        <InfoBanner
-          message={t("summary.disclaimer")}
-          icon={() => (
-            <Warning className="border-[#EC930F] border-[0.5px] rounded-[100px] p-2 w-8 h-8 shadow-lg" />
-          )}
-          wrapperClassName="border-[#EC930F] bg-[#FDF8E4]"
-          messageClassName="text-[#873200]"
-        />
+        {isFailedSummary ? (
+          // Summary generation failed but the transcript was saved: let the
+          // user retry generation or fill the fields in manually and save.
+          <div className="flex items-center justify-between gap-3 rounded-md border border-[#EC930F] bg-[#FDF8E4] px-4 py-3 mb-2">
+            <span className="text-[#873200] font-primary text-sm">
+              {t("summary.generationFailedEditable")}
+            </span>
+            <Button onClick={handleRetrySummary} disabled={isRetrying} className="shrink-0">
+              {isRetrying && <CircularProgress size={16} />}
+              {t("summary.retrySummary")}
+            </Button>
+          </div>
+        ) : (
+          <InfoBanner
+            message={t("summary.disclaimer")}
+            icon={() => (
+              <Warning className="border-[#EC930F] border-[0.5px] rounded-[100px] p-2 w-8 h-8 shadow-lg" />
+            )}
+            wrapperClassName="border-[#EC930F] bg-[#FDF8E4]"
+            messageClassName="text-[#873200]"
+          />
+        )}
         {headerContent}
         <div className={`overflow-y-auto font-primary pb-[60px] ${className}`}>
           {sections.map(({ title, icon, key }, index) => {

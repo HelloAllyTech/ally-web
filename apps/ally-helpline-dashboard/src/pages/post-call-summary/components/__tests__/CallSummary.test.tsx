@@ -27,6 +27,10 @@ const mockSearchLocations = vi.fn();
 // or any hook result used as a useEffect/useMemo dep triggers infinite re-renders.
 const summaryFieldsResult = { data: [], isLoading: false };
 const updateCallSummaryResult = [mockUpdateCallSummary, { isLoading: false }];
+const mockRetrySummary = vi.fn(() => ({
+  unwrap: () => Promise.resolve({ success: true, message: "ok" }),
+}));
+const retrySummaryResult = [mockRetrySummary, { isLoading: false }];
 const getTagsResult = [mockGetTags, { isLoading: false }];
 const locationsResult = { data: { data: [] }, isLoading: false };
 const lazySearchLocationsResult = [mockSearchLocations, { isLoading: false }];
@@ -67,6 +71,7 @@ vi.mock("@api", () => ({
   useGetCallSummaryQuery: vi.fn(),
   useGetSummaryFieldsQuery: () => summaryFieldsResult,
   useUpdateCallSummaryMutation: () => updateCallSummaryResult,
+  useRetrySummaryMutation: () => retrySummaryResult,
   useGetTagsMutation: () => getTagsResult,
   useGetLocationsQuery: () => locationsResult,
   useLazySearchLocationsQuery: () => lazySearchLocationsResult,
@@ -162,7 +167,7 @@ vi.mock("framer-motion", () => ({
 }));
 
 vi.mock("sonner", () => ({
-  toast: { error: vi.fn(), success: vi.fn() },
+  toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn() },
 }));
 
 vi.mock("@mui/material", () => ({
@@ -242,6 +247,30 @@ describe("CallSummary Component", () => {
     expect(screen.getByText("You can review the session now.")).toBeInTheDocument();
     // Notes section is rendered in the SummaryLoading component
     expect(screen.getByText("Add Notes (optional)")).toBeInTheDocument();
+  });
+
+  it("shows a Retry summary action on a failed summary and triggers retry", async () => {
+    const failedSummary = {
+      summaryStatus: ChatSummaryStatus.FAILED,
+      counselorId: 1,
+      details: { chatId: 1, callInfo: { notes: "" } },
+    };
+    const onRefetchSummary = vi.fn().mockResolvedValue({ data: {} });
+    render(
+      <CallSummary
+        chatId={1}
+        callSummary={failedSummary}
+        isSummaryLoading={false}
+        onRefetchSummary={onRefetchSummary}
+      />,
+    );
+
+    // The failed state is not a dead end: a Retry action is offered.
+    const retryButton = screen.getByText("Retry summary");
+    expect(retryButton).toBeInTheDocument();
+
+    fireEvent.click(retryButton);
+    expect(mockRetrySummary).toHaveBeenCalledWith(1);
   });
 
   // Note: Save functionality test removed as SummaryLoading component doesn't have a save button

@@ -53,6 +53,7 @@ export const ApiEndpoints = {
     SEARCH_LOCATIONS: "/v1/places/search",
     UPDATE_CALL_INFO: (chatId: number) => `/v1/chats/${chatId}/call-info`,
     UPDATE_CALL_SUMMARY: (chatId: number) => `/v1/chats/${chatId}/call-details`,
+    RETRY_SUMMARY: (chatId: number) => `/v1/chats/${chatId}/retry-summary`,
     EXPORT_CALL_SUMMARY: (chatId: number) => `/v1/chats/${chatId}/export-summary`,
     GET_TRANSCRIPT: (chatId: number) => `/v1/chats/${chatId}/messages`,
     UPDATE_CALL_SUMMARY_NOTES: (chatId: string) => `/v1/chats/${chatId}/notes`,
