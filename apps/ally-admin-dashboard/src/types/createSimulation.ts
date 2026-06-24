@@ -28,7 +28,6 @@ export type FormData = {
   allowedFillerWords?: Record<string, string[]>;
   languageCharacteristics?: Record<string, string>;
   fillerEnabled?: boolean;
-  fillerDialogues?: Record<string, string[]>;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;

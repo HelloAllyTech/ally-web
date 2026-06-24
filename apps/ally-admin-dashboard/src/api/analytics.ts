@@ -23,6 +23,7 @@ type VoiceLatencyQuery = AnalyticsRangeQuery & {
 type ConversationDriftQuery = AnalyticsRangeQuery & {
   language?: string;
   scenarioId?: number;
+  scenarioVersionId?: string;
   llmModel?: string;
   llmProvider?: string;
   promptVersion?: string;
@@ -56,13 +57,22 @@ export const analyticsAPI = baseAPI.injectEndpoints({
       }),
     }),
     getConversationDrift: builder.query<ConversationDriftResponse, ConversationDriftQuery>({
-      query: ({ range, language, scenarioId, llmModel, llmProvider, promptVersion } = {}) => ({
+      query: ({
+        range,
+        language,
+        scenarioId,
+        scenarioVersionId,
+        llmModel,
+        llmProvider,
+        promptVersion,
+      } = {}) => ({
         url: ApiEndpoints.ANALYTICS.CONVERSATION_DRIFT,
         method: HttpMethod.GET,
         params: {
           ...(range ? { range } : {}),
           ...(language ? { language } : {}),
           ...(scenarioId != null ? { scenarioId } : {}),
+          ...(scenarioVersionId ? { scenarioVersionId } : {}),
           ...(llmModel ? { llmModel } : {}),
           ...(llmProvider ? { llmProvider } : {}),
           ...(promptVersion ? { promptVersion } : {}),

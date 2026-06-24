@@ -14,7 +14,6 @@ import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
 import { EnhanceButton } from "../enhance-button";
 import { FileUpload } from "../file-upload";
-import { FillerDialoguesPanel } from "../filler-dialogues";
 import { InputField } from "../input-field";
 import { KnowledgeSource } from "../knowledge-source";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
@@ -236,8 +235,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             enhanceType={enhanceType}
           />
         );
-      case FORM_FIELD_TYPES.CUSTOM.FILLER_DIALOGUES:
-        return <FillerDialoguesPanel formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER:
         return (
           <MainAgentPromptPicker

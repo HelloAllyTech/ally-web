@@ -18,9 +18,11 @@ import "../Analytics/analytics-carbon.scss";
 import {
   useGetConversationDriftQuery,
   useGetDriftBackfillStatusQuery,
+  useGetScenarioVersionsQuery,
+  useGetSimulationsQuery,
   useStartDriftBackfillMutation,
 } from "@api";
-import { AnalyticsRange } from "@types";
+import { AnalyticsRange, formatVersionLabel } from "@types";
 
 import { ChartCard, PALETTE, barOpts, lineOpts } from "../Analytics/chartKit";
 
@@ -81,14 +83,20 @@ const kindsOpts = barOpts({ leftTitle: "Sessions", colorScale: DRIFT_KIND_COLOR 
 
 // "By experiment" is one chart with a dimension selector. Both the LLM and the
 // STT model can contribute to drift; provider is intentionally omitted.
-const EXP_ITEMS: {
-  id: "promptVersion" | "model" | "sttModel";
-  label: string;
-}[] = [
+type ExpDim = "promptVersion" | "model" | "sttModel" | "scenarioVersion";
+type ExpItem = { id: ExpDim; label: string };
+const EXP_ITEMS: ExpItem[] = [
   { id: "promptVersion", label: "Main agent prompt" },
   { id: "model", label: "LLM model" },
   { id: "sttModel", label: "STT model" },
 ];
+// Comparing scenario versions only makes sense within ONE scenario (bare "v1"
+// labels collide across scenarios), so this option is appended only when a
+// scenario is selected.
+const SCENARIO_VERSION_ITEM: ExpItem = {
+  id: "scenarioVersion",
+  label: "Scenario version",
+};
 
 // "Root cause" = the STT-vs-LLM attribution of DRIFTED sessions only (why the
 // drift happened). Coloured by family — LLM cool (blue/purple), STT warm.
@@ -148,12 +156,33 @@ export const ConversationDrift = ({
   range: AnalyticsRange;
   language: string;
 }) => {
-  const [expDim, setExpDim] = useState<"promptVersion" | "model" | "sttModel">("promptVersion");
+  const [expDim, setExpDim] = useState<ExpDim>("promptVersion");
+  // Drift-specific filters (range + language come from the shared header).
+  const [scenarioId, setScenarioId] = useState<number | undefined>(undefined);
+  const [scenarioVersionId, setScenarioVersionId] = useState<string | undefined>(undefined);
+
+  // Scenario list for the filter; versions are loaded only once a scenario is
+  // picked (versions are per-scenario).
+  const { data: scenarios } = useGetSimulationsQuery({ limit: 200 });
+  const { data: versions } = useGetScenarioVersionsQuery(
+    { scenarioId: scenarioId ?? 0 },
+    { skip: !scenarioId },
+  );
 
   const { data, isLoading, isError, refetch } = useGetConversationDriftQuery({
     range,
     language: language || undefined,
+    scenarioId,
+    scenarioVersionId,
   });
+
+  // When the scenario changes, drop a now-invalid version filter and fall back
+  // off the scenario-version dimension (which needs a selected scenario).
+  const handleScenarioChange = (id: number | undefined) => {
+    setScenarioId(id);
+    setScenarioVersionId(undefined);
+    if (!id && expDim === "scenarioVersion") setExpDim("promptVersion");
+  };
 
   // Re-run backfill (last 3 months) for prompt iteration; poll until done.
   const [startBackfill, { isLoading: starting }] = useStartDriftBackfillMutation();
@@ -255,14 +284,37 @@ export const ConversationDrift = ({
   // "By experiment" rows for the selected dimension (LLM model / STT model /
   // prompt version). The backend already excludes uncaptured values, so an
   // empty result just means nothing was captured for that dimension yet.
+  const expItems = scenarioId ? [...EXP_ITEMS, SCENARIO_VERSION_ITEM] : EXP_ITEMS;
   const expRows =
     expDim === "promptVersion"
       ? data?.driftRateByPromptVersion
       : expDim === "model"
         ? data?.driftRateByModel
-        : data?.driftRateBySttModel;
+        : expDim === "sttModel"
+          ? data?.driftRateBySttModel
+          : data?.driftRateByScenarioVersion;
   const expEmpty = !expRows?.length;
-  const selectedExp = EXP_ITEMS.find(i => i.id === expDim);
+  const selectedExp = expItems.find(i => i.id === expDim);
+
+  // Scenario + version filter options. "All …" rows clear the filter.
+  const scenarioItems = useMemo(
+    () => [
+      { id: null as number | null, label: "All scenarios" },
+      ...(scenarios?.data ?? []).map(s => ({ id: s.id as number | null, label: s.title })),
+    ],
+    [scenarios],
+  );
+  const selectedScenario =
+    scenarioItems.find(i => i.id === (scenarioId ?? null)) ?? scenarioItems[0];
+  const versionItems = useMemo(
+    () => [
+      { id: null as string | null, label: "All versions" },
+      ...(versions ?? []).map(v => ({ id: v.id as string | null, label: formatVersionLabel(v) })),
+    ],
+    [versions],
+  );
+  const selectedVersion =
+    versionItems.find(i => i.id === (scenarioVersionId ?? null)) ?? versionItems[0];
 
   return (
     // No own scroll container — flows inside the Analytics page's single scroll
@@ -272,11 +324,47 @@ export const ConversationDrift = ({
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Heading className="text-2xl">Conversation drift</Heading>
-            {SHOW_BACKFILL_BUTTON && (
-              <Button kind="tertiary" size="md" disabled={jobActive} onClick={handleRerun}>
-                {jobActive ? "Re-running…" : "Re-run last 3 months"}
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              {/* Scenario + version scope. Version only applies once a scenario
+                  is picked (versions are per-scenario). */}
+              <div className="w-56">
+                <Dropdown
+                  id="drift-scenario"
+                  size="sm"
+                  titleText="Scenario"
+                  hideLabel
+                  label="All scenarios"
+                  items={scenarioItems}
+                  selectedItem={selectedScenario}
+                  itemToString={item => item?.label ?? ""}
+                  onChange={({ selectedItem }) =>
+                    handleScenarioChange(selectedItem?.id ?? undefined)
+                  }
+                />
+              </div>
+              {scenarioId != null && (
+                <div className="w-44">
+                  <Dropdown
+                    id="drift-version"
+                    size="sm"
+                    titleText="Version"
+                    hideLabel
+                    label="All versions"
+                    items={versionItems}
+                    selectedItem={selectedVersion}
+                    itemToString={item => item?.label ?? ""}
+                    onChange={({ selectedItem }) =>
+                      setScenarioVersionId(selectedItem?.id ?? undefined)
+                    }
+                  />
+                </div>
+              )}
+              {SHOW_BACKFILL_BUTTON && (
+                <Button kind="tertiary" size="md" disabled={jobActive} onClick={handleRerun}>
+                  {jobActive ? "Re-running…" : "Re-run last 3 months"}
+                </Button>
+              )}
+            </div>
           </div>
 
           {SHOW_BACKFILL_BUTTON && job && (
@@ -414,7 +502,7 @@ export const ConversationDrift = ({
                     titleText="Dimension"
                     hideLabel
                     label="Dimension"
-                    items={EXP_ITEMS}
+                    items={expItems}
                     selectedItem={selectedExp}
                     itemToString={item => item?.label ?? ""}
                     onChange={({ selectedItem }) => {

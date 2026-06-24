@@ -302,6 +302,8 @@ export interface ConversationDriftResponse {
   driftRateByModel: DriftRateByDimension[];
   driftRateBySttModel: DriftRateByDimension[];
   driftRateByPromptVersion: DriftRateByDimension[];
+  // Per scenario-version comparison; populated only when a scenarioId is set.
+  driftRateByScenarioVersion: DriftRateByDimension[];
 }
 
 // TokenConsumptionResponseDto from GET /api/v1/analytics/token-consumption.
