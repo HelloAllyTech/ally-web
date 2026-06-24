@@ -823,7 +823,8 @@
     },
     "actions": {
       "uploadAudio": "ஒலி பதிவேற்றவும்",
-      "startSession": "அமர்வை தொடங்கு"
+      "startSession": "அமர்வை தொடங்கு",
+      "createNote": "குறிப்பு உருவாக்கு"
     },
     "table": {
       "counsellorName": "ஆலோசகர்",

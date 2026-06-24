@@ -811,7 +811,8 @@
     },
     "actions": {
       "uploadAudio": "ಆಡಿಯೋ ಅಪ್ಲೋಡ್ ಮಾಡಿ",
-      "startSession": "ಸೆಷನ್ ಪ್ರಾರಂಭಿಸಿ"
+      "startSession": "ಸೆಷನ್ ಪ್ರಾರಂಭಿಸಿ",
+      "createNote": "ಟಿಪ್ಪಣಿ ರಚಿಸಿ"
     },
     "table": {
       "counsellorName": "ಕೌನ್ಸೆಲರ್",

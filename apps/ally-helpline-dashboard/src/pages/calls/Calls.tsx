@@ -14,7 +14,7 @@ import {
   PermissionGuard,
   ToggleButtonGroup,
 } from "@components";
-import { CallType, Permissions, ROUTES, TooltipLocation } from "@constants";
+import { CallType, canCreateNote, Permissions, ROUTES, TooltipLocation } from "@constants";
 import { useUser } from "@hooks";
 import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
@@ -37,7 +37,7 @@ export const Calls: FC = () => {
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
-  const { permissions, availableChatTypes } = useUser();
+  const { permissions, availableChatTypes, user } = useUser();
   const supportedLogList = useMemo(() => getPermittedSessionLogList(permissions), [permissions]);
 
   useEffect(() => {
@@ -50,6 +50,10 @@ export const Calls: FC = () => {
 
   const handleStartSession = () => {
     setIsStartSessionDialogOpen(true);
+  };
+
+  const handleCreateNote = () => {
+    // TODO: wire up the Create Note flow once the UX is defined.
   };
 
   const handleRefresh = () => {
@@ -147,6 +151,15 @@ export const Calls: FC = () => {
                 </AppTooltip>
               )}
             </PermissionGuard>
+            {canCreateNote(user) && (
+              <Button
+                data-testid="calls-create-note-button"
+                variant={ButtonVariant.SECONDARY}
+                onClick={handleCreateNote}
+              >
+                {`+ ${t("calls.actions.createNote")}`}
+              </Button>
+            )}
             <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
               {(availableChatTypes?.includes(CallType.MICROPHONE_CHAT) ||
                 availableChatTypes?.includes(CallType.DICTATION_MODE)) && (
