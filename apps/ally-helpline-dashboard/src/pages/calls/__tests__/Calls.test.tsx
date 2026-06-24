@@ -185,6 +185,9 @@ vi.mock("@constants", () => ({
     START_SESSION_BUTTON: "start_session_button",
     UPLOAD_AUDIO_BUTTON: "upload_audio_button",
   },
+  canCreateNote: (user: { email?: string } | null) =>
+    !!user?.email &&
+    ["learner@example.com", "sandeep.malhotra+testing@helloally.com"].includes(user.email),
 }));
 
 // Get mock functions after mocks are set up
@@ -312,6 +315,28 @@ describe("Calls Component", () => {
 
       renderCalls();
       expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * TEST GROUP: Create Note Button (email-gated)
+   * Verifies the "+ Create Note" button only renders for allowlisted emails
+   */
+  describe("Create Note Button", () => {
+    it("should not show Create Note button for a non-allowlisted email", () => {
+      renderCalls();
+      expect(screen.queryByText("+ Create Note")).not.toBeInTheDocument();
+    });
+
+    it("should show Create Note button for an allowlisted email", () => {
+      mockUseUser.mockReturnValue({
+        availableChatTypes: ["MICROPHONE_CHAT"],
+        user: { ...mockUser, email: "learner@example.com" },
+        permissions: mockPermissions,
+      });
+
+      renderCalls();
+      expect(screen.getByText("+ Create Note")).toBeInTheDocument();
     });
   });
 

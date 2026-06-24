@@ -2,6 +2,18 @@ export const User = {
   USER_SUSPENDED: "user suspended",
 };
 
+/**
+ * Emails allowed to see the "Create Note" action on the Sessions tab.
+ * Temporary allowlist while the feature is piloted.
+ */
+export const CREATE_NOTE_ALLOWED_EMAILS = [
+  "learner@example.com",
+  "sandeep.malhotra+testing@helloally.com",
+];
+
+export const canCreateNote = (user?: { email?: string } | null): boolean =>
+  !!user?.email && CREATE_NOTE_ALLOWED_EMAILS.includes(user.email);
+
 // In-app privacy page (ROUTES.PRIVACY), opened in a new tab via openLinkInNewTab.
 export const PRIVACY_POLICY_URL = "/privacy";
 

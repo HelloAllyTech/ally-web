@@ -811,7 +811,8 @@
     },
     "actions": {
       "uploadAudio": "ऑडिओ अपलोड करा",
-      "startSession": "सेशनला प्रारंभ करा"
+      "startSession": "सेशनला प्रारंभ करा",
+      "createNote": "नोट तयार करा"
     },
     "table": {
       "counsellorName": "काऊन्सिलर",
