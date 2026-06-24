@@ -26,6 +26,7 @@ import {
   ArrowRight as CArrowRight,
   Badge as CBadge,
   Book as CBook,
+  Branch as CBranch,
   Calendar as CCalendar,
   ChartBar as CChartBar,
   Chat as CChat,
@@ -135,6 +136,7 @@ export const BackIcon = createCarbonIcon(CArrowLeft);
 export const Badge = createCarbonIcon(CBadge);
 export const Bolt = createCarbonIcon(CFlash);
 export const Book = createCarbonIcon(CBook);
+export const Branch = createCarbonIcon(CBranch);
 export const Calendar = createCarbonIcon(CCalendar);
 export const Cancel = createCarbonIcon(CClose);
 export const Chat = createCarbonIcon(CChat);

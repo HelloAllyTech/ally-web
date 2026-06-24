@@ -8,7 +8,7 @@ import {
   useUpdateScenarioVersionMutation,
   useDeleteScenarioVersionMutation,
 } from "@api";
-import { Close, Edit, Tick } from "@assets";
+import { Branch, Close, Edit, Tick, Trash } from "@assets";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
@@ -55,6 +55,10 @@ const nameInputClass =
   "flex-1 min-w-0 border border-border-light px-2 py-1 text-sm text-typography-900 focus:border-border-blue outline-none rounded";
 const iconBtnClass =
   "shrink-0 p-1 text-typography-600 hover:text-typography-900 disabled:opacity-50";
+// Per-row action icons (rename / branch / delete) — uniform icon buttons so the
+// row actions read consistently instead of mixing a pencil icon with text links.
+const rowActionBtnClass =
+  "shrink-0 p-1 rounded text-typography-500 hover:text-typography-900 hover:bg-secondary-100 disabled:opacity-50";
 
 /**
  * Compact version switcher — a dropdown anchored under the header version
@@ -255,30 +259,21 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 min-w-0">
-                        <button
-                          className="flex items-center gap-2 text-left min-w-0"
-                          onClick={() => onEditVersion(version)}
-                          title={t.openTooltip}
-                        >
-                          <span className="text-sm font-medium text-typography-900 truncate group-hover:underline">
-                            {formatVersionLabel(version)}
+                      <button
+                        className="flex items-center gap-2 text-left min-w-0"
+                        onClick={() => onEditVersion(version)}
+                        title={t.openTooltip}
+                      >
+                        <span className="text-sm font-medium text-typography-900 truncate group-hover:underline">
+                          {formatVersionLabel(version)}
+                        </span>
+                        <StatusPill status={version.status} />
+                        {isActive && (
+                          <span className="text-[11px] text-typography-500 shrink-0">
+                            {t.editing}
                           </span>
-                          <StatusPill status={version.status} />
-                          {isActive && (
-                            <span className="text-[11px] text-typography-500 shrink-0">
-                              {t.editing}
-                            </span>
-                          )}
-                        </button>
-                        <button
-                          className="shrink-0 p-0.5 text-typography-500 hover:text-typography-900 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => startRename(version)}
-                          title={t.rename}
-                        >
-                          <Edit />
-                        </button>
-                      </div>
+                        )}
+                      </button>
                     )}
                     {!isRenamingThis && (
                       <span className="text-[11px] text-typography-500 shrink-0">
@@ -287,19 +282,31 @@ export const ScenarioVersionPanel: React.FC<ScenarioVersionPanelProps> = ({
                     )}
                   </div>
                   {!isRenamingThis && (
-                    <div className="flex items-center gap-3 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        className="text-xs text-primary-500 hover:underline"
-                        onClick={() => startCreate({ fromVersionId: version.id })}
+                        className={rowActionBtnClass}
+                        onClick={() => startRename(version)}
+                        title={t.rename}
+                        aria-label={t.rename}
                       >
-                        {t.branch}
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        className={rowActionBtnClass}
+                        onClick={() => startCreate({ fromVersionId: version.id })}
+                        title={t.branch}
+                        aria-label={t.branch}
+                      >
+                        <Branch className="w-3.5 h-3.5" />
                       </button>
                       {!isPublished && (
                         <button
-                          className="text-xs text-destructive-500 hover:underline"
+                          className={`${rowActionBtnClass} hover:text-destructive-500`}
                           onClick={() => setDeleteTarget(version)}
+                          title={t.delete}
+                          aria-label={t.delete}
                         >
-                          {t.delete}
+                          <Trash className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>
