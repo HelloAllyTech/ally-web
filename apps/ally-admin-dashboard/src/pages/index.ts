@@ -19,6 +19,8 @@ export * from "./Tooltips/Tooltips";
 export * from "./Settings/Settings";
 export * from "./OptimisationGoals/OptimisationGoals";
 export * from "./Competencies/Competencies";
+export * from "./RoleplaySessionLogs/RoleplaySessionLogs";
+export * from "./RoleplaySessionLogs/RoleplaySessionLogDetail";
 export * from "./Terms/Terms";
 export * from "./Privacy/Privacy";
 // NOTE: Analytics is intentionally NOT re-exported here. It pulls in IBM Carbon

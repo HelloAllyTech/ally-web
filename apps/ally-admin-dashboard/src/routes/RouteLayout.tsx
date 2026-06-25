@@ -25,6 +25,8 @@ import {
   Settings,
   OptimisationGoals,
   Competencies,
+  RoleplaySessionLogs,
+  RoleplaySessionLogDetail,
   Terms,
   Privacy,
 } from "@pages";
@@ -251,6 +253,22 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
               <Competencies />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ROLEPLAY_SESSION_LOGS}
+          element={
+            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+              <RoleplaySessionLogs />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(":id")}
+          element={
+            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+              <RoleplaySessionLogDetail />
             </PrivateLayout>
           }
         />

@@ -9,7 +9,17 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { BarChart3, Close, Flag, Info, Languages, Search, Settings, SkillLevel } from "@icons";
+import {
+  BarChart3,
+  Close,
+  Flag,
+  Info,
+  Languages,
+  List,
+  Search,
+  Settings,
+  SkillLevel,
+} from "@icons";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -179,6 +189,8 @@ export const Sidebar: React.FC = () => {
         return <Flag size={20} />;
       case SIDEBAR_ITEMS.COMPETENCIES:
         return <SkillLevel size={20} />;
+      case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
+        return <List size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
         return <Settings size={20} />;
       default:
@@ -215,6 +227,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_TOOLTIPS);
       case ROUTES.ANALYTICS:
         return location.pathname.includes(ROUTES.ANALYTICS);
+      case ROUTES.ROLEPLAY_SESSION_LOGS:
+        return location.pathname.includes(ROUTES.ROLEPLAY_SESSION_LOGS);
       case ROUTES.SETTINGS:
         return location.pathname.includes(ROUTES.SETTINGS);
       default:

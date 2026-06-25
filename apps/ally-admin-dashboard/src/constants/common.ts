@@ -182,6 +182,10 @@ export const ApiEndpoints = {
     CONVERSATION_DRIFT_BACKFILL: "/v1/analytics/conversation-drift/backfill",
     TOKEN_CONSUMPTION: "/v1/analytics/token-consumption",
   },
+  ROLEPLAY_SESSION_LOGS: {
+    LIST: "/v1/roleplay-session-logs",
+    BY_ID: (id: string) => `/v1/roleplay-session-logs/${id}`,
+  },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
@@ -213,6 +217,8 @@ export const ROUTES = {
   ANALYTICS: "/analytics",
   OPTIMISATION_GOALS: "/optimisation-goals",
   COMPETENCIES: "/competencies",
+  ROLEPLAY_SESSION_LOGS: "/roleplay-session-logs",
+  ROLEPLAY_SESSION_LOG_DETAIL: (id: string | number) => `/roleplay-session-logs/${id}`,
   SETTINGS: "/settings",
   TERMS: "/terms",
   PRIVACY: "/privacy",
@@ -296,6 +302,7 @@ export const TAG_TYPES = {
   ADMIN_TENANTS: "adminTenants",
   SETTINGS: "settings",
   USER_PREFERENCES: "userPreferences",
+  ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
 };
 
 export const CUSTOM_CHARACTER_ID = "custom";
