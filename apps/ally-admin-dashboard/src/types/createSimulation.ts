@@ -28,6 +28,7 @@ export type FormData = {
   allowedFillerWords?: Record<string, string[]>;
   languageCharacteristics?: Record<string, string>;
   fillerEnabled?: boolean;
+  historyTrimEnabled?: boolean;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;

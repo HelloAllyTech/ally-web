@@ -30,8 +30,8 @@ const formatTokens = (n: number | null): string => {
 };
 
 /** Estimated USD cost; `~` prefix flags an unpriced (lower-bound) figure. */
-const formatCost = (n: number | null, priced: boolean): string => {
-  if (n === null) return "—";
+const formatCost = (n: number | null | undefined, priced: boolean): string => {
+  if (n === null || n === undefined) return "—";
   const value = n < 0.01 && n > 0 ? n.toFixed(4) : n.toFixed(2);
   return `${priced ? "" : "~"}$${value}`;
 };

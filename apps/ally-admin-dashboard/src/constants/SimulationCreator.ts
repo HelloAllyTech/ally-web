@@ -187,6 +187,7 @@ export const FORM_FIELD_IDS = {
   STATE_NAMES: "stateNames",
   ENABLE_PROSODY: "enableProsody",
   FILLER_ENABLED: "fillerEnabled",
+  HISTORY_TRIM_ENABLED: "historyTrimEnabled",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
   SELECTED_EVALUATOR_PROMPT_CODE: "selectedEvaluatorPromptCode",
   STATES: "states",
@@ -542,6 +543,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       {
         id: "fillerEnabled",
         label: "Thinking Filler",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
+      },
+      {
+        id: "historyTrimEnabled",
+        label: "Trim History",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,

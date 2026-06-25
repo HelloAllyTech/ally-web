@@ -106,6 +106,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     optGuardrails: data?.metadata?.optGuardrails,
     enableProsody: data?.metadata?.enableProsody ?? true,
     fillerEnabled: data?.metadata?.fillerEnabled ?? false,
+    historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? false,
     currentState: data?.metadata?.currentState,
     stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
       ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))

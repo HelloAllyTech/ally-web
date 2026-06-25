@@ -225,6 +225,7 @@ describe("createSimulation utils", () => {
         optGuardrails: false,
         enableProsody: true,
         fillerEnabled: false,
+        historyTrimEnabled: false,
         currentState: false,
         checklistType: "GUIDED",
         experienceMode: "CHECKLIST",
