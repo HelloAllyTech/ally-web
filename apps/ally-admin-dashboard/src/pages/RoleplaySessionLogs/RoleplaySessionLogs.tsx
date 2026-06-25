@@ -21,6 +21,21 @@ const formatDuration = (seconds: number | null): string => {
   return `${s}s`;
 };
 
+/** Compact token count, e.g. 12.3k / 1.2M. */
+const formatTokens = (n: number | null): string => {
+  if (n === null) return "—";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+};
+
+/** Estimated USD cost; `~` prefix flags an unpriced (lower-bound) figure. */
+const formatCost = (n: number | null, priced: boolean): string => {
+  if (n === null) return "—";
+  const value = n < 0.01 && n > 0 ? n.toFixed(4) : n.toFixed(2);
+  return `${priced ? "" : "~"}$${value}`;
+};
+
 const StatusPill: FC<{ status: RoleplaySessionStatus }> = ({ status }) => {
   const isEnded = status === "ENDED";
   const styles = isEnded
@@ -153,6 +168,8 @@ export const RoleplaySessionLogs: FC = () => {
                 <th className="py-3 pr-4 font-medium">Status</th>
                 <th className="py-3 pr-4 font-medium">Started</th>
                 <th className="py-3 pr-4 font-medium">Duration</th>
+                <th className="py-3 pr-4 font-medium">Tokens</th>
+                <th className="py-3 pr-4 font-medium">Cost</th>
                 <th className="py-3 pr-4 font-medium">Score</th>
               </tr>
             </thead>
@@ -174,6 +191,10 @@ export const RoleplaySessionLogs: FC = () => {
                   </td>
                   <td className="py-3 pr-4">{row.startedAt ? formatDate(row.startedAt) : "—"}</td>
                   <td className="py-3 pr-4">{formatDuration(row.durationSeconds)}</td>
+                  <td className="py-3 pr-4 whitespace-nowrap">{formatTokens(row.totalTokens)}</td>
+                  <td className="py-3 pr-4 whitespace-nowrap">
+                    {formatCost(row.estimatedCostUsd, row.costPriced)}
+                  </td>
                   <td className="py-3 pr-4">{row.score === null ? "—" : Math.round(row.score)}</td>
                 </tr>
               ))}
