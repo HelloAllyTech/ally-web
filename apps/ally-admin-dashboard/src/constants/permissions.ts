@@ -34,5 +34,6 @@ export const SIDEBAR_ITEMS = {
   ANALYTICS: "analytics",
   OPTIMISATION_GOALS: "optimisation-goals",
   COMPETENCIES: "competencies",
+  ROLEPLAY_SESSION_LOGS: "roleplay-session-logs",
   SETTINGS: "settings",
 };

@@ -12,3 +12,4 @@ export * from "./dynamicI18n";
 export * from "./tooltips";
 export * from "./analytics";
 export * from "./legalContent";
+export * from "./roleplaySessionLogs";

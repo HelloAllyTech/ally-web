@@ -79,6 +79,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.COMPETENCIES,
   },
   {
+    id: SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+    label: "Roleplay Session Logs",
+    path: ROUTES.ROLEPLAY_SESSION_LOGS,
+  },
+  {
     id: SIDEBAR_ITEMS.SETTINGS,
     label: "Settings",
     path: ROUTES.SETTINGS,
@@ -132,6 +137,7 @@ export const deriveNavigationItems = ({
       SIDEBAR_ITEMS.ANALYTICS,
       SIDEBAR_ITEMS.OPTIMISATION_GOALS,
       SIDEBAR_ITEMS.COMPETENCIES,
+      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
       SIDEBAR_ITEMS.SETTINGS,
     ].includes(item.id),
   );
@@ -171,6 +177,7 @@ export const deriveNavigationItems = ({
             case SIDEBAR_ITEMS.ANALYTICS:
             case SIDEBAR_ITEMS.OPTIMISATION_GOALS:
             case SIDEBAR_ITEMS.COMPETENCIES:
+            case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
             case SIDEBAR_ITEMS.SETTINGS:
               // Role-gated, not permission-gated; appended below for super-admins.
               return false;

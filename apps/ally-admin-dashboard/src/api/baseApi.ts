@@ -122,6 +122,7 @@ export const baseAPI = createApi({
     TAG_TYPES.I18N_TRANSLATIONS,
     TAG_TYPES.SETTINGS,
     TAG_TYPES.USER_PREFERENCES,
+    TAG_TYPES.ROLEPLAY_SESSION_LOGS,
   ],
   endpoints: () => ({}),
 });
