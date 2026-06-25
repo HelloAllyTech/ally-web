@@ -33,7 +33,7 @@ import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions
 import { SummaryLoading } from ".";
 import { getSummaryFields, getSummarySections, labelShownSections } from "../constants";
 import { CallSummaryProps, FieldType, SummaryField, SummarySectionKey } from "../types";
-import { getSectionFields } from "../utils";
+import { getSectionFields, summaryHasChanges } from "../utils";
 
 // TODO: Keep it outside the pages since two pages are using this componentß
 
@@ -370,36 +370,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     }
   };
 
-  const hasDataChanged = () => {
-    if (!callSummary?.details?.summary || !summaryData) {
-      return false;
-    }
-
-    const originalTags = callSummary.details.summary.tags;
-    const originalFormattedTags = originalTags?.map(({ tag }) => tag).join(", ");
-
-    // Compare the formatted data with the original API response
-    const originalData = {
-      ...callSummary.details.summary,
-      tags: originalFormattedTags,
-    };
-
-    // Deep comparison of the data
-    const originalKeys = Object.keys(originalData);
-    const currentKeys = Object.keys(summaryData);
-
-    if (originalKeys.length !== currentKeys.length) {
-      return true;
-    }
-
-    for (const key of originalKeys) {
-      if (originalData[key] !== summaryData[key]) {
-        return true;
-      }
-    }
-
-    return false;
-  };
+  const hasDataChanged = () => summaryHasChanges(callSummary?.details?.summary, summaryData);
 
   const navigateToCallLogs = () => {
     navigate(ROUTES.CALLS, { state: { refetch: true } });
