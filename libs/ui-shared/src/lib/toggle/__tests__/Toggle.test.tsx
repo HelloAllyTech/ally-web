@@ -97,7 +97,7 @@ describe("Toggle Component", () => {
       const { container } = render(<Toggle {...defaultProps} />);
 
       const slidingIndicator = container.querySelector(".absolute.top-0");
-      expect(slidingIndicator).toHaveStyle({ left: "0" });
+      expect(slidingIndicator).toHaveClass("left-0");
     });
 
     it("should call onChange with correct value when item is clicked", () => {
@@ -127,7 +127,7 @@ describe("Toggle Component", () => {
       fireEvent.click(secondOption);
 
       const slidingIndicator = container.querySelector(".absolute.top-0");
-      expect(slidingIndicator).toHaveStyle({ left: "50%" });
+      expect(slidingIndicator).toHaveClass("left-1/2");
     });
 
     it("should toggle back to first item when clicked", () => {
@@ -140,7 +140,7 @@ describe("Toggle Component", () => {
       fireEvent.click(screen.getByText("Option A"));
 
       const slidingIndicator = container.querySelector(".absolute.top-0");
-      expect(slidingIndicator).toHaveStyle({ left: "0" });
+      expect(slidingIndicator).toHaveClass("left-0");
     });
 
     it("should call onChange each time an item is clicked", () => {
@@ -195,14 +195,16 @@ describe("Toggle Component", () => {
       render(<Toggle {...defaultProps} />);
 
       const firstOption = screen.getByText("Option A");
-      expect(firstOption).toHaveStyle({ color: "#000000" });
+      expect(firstOption).toHaveClass("text-black");
+      expect(firstOption).toHaveAttribute("aria-checked", "true");
     });
 
     it("should apply inactive color to non-selected item", () => {
       render(<Toggle {...defaultProps} />);
 
       const secondOption = screen.getByText("Option B");
-      expect(secondOption).toHaveStyle({ color: "#00000060" });
+      expect(secondOption).toHaveClass("text-black/40");
+      expect(secondOption).toHaveAttribute("aria-checked", "false");
     });
 
     it("should update colors when selection changes", () => {
@@ -213,8 +215,8 @@ describe("Toggle Component", () => {
       const firstOption = screen.getByText("Option A");
       const secondOption = screen.getByText("Option B");
 
-      expect(firstOption).toHaveStyle({ color: "#00000060" });
-      expect(secondOption).toHaveStyle({ color: "#000000" });
+      expect(firstOption).toHaveClass("text-black/40");
+      expect(secondOption).toHaveClass("text-black");
     });
 
     it("should have sliding indicator with correct styles", () => {
@@ -226,7 +228,7 @@ describe("Toggle Component", () => {
       expect(slidingIndicator).toHaveClass("w-1/2");
       expect(slidingIndicator).toHaveClass("h-full");
       expect(slidingIndicator).toHaveClass("rounded-full");
-      expect(slidingIndicator).toHaveClass("bg-[#FFFFFF]");
+      expect(slidingIndicator).toHaveClass("bg-white");
     });
   });
 
@@ -236,9 +238,7 @@ describe("Toggle Component", () => {
       const { container } = render(<Toggle {...defaultProps} />);
 
       const slidingIndicator = container.querySelector(".absolute.top-0");
-      expect(slidingIndicator).toHaveStyle({
-        boxShadow: "3px 0px 9px 0px #00000012",
-      });
+      expect(slidingIndicator).toHaveClass("shadow-[3px_0px_9px_0px_#00000012]");
     });
 
     it("should apply right shadow when second item is selected", () => {
@@ -247,9 +247,7 @@ describe("Toggle Component", () => {
       fireEvent.click(screen.getByText("Option B"));
 
       const slidingIndicator = container.querySelector(".absolute.top-0");
-      expect(slidingIndicator).toHaveStyle({
-        boxShadow: "-7px 0px 9px 0px #00000012",
-      });
+      expect(slidingIndicator).toHaveClass("shadow-[-7px_0px_9px_0px_#00000012]");
     });
   });
 
@@ -336,6 +334,71 @@ describe("Toggle Component", () => {
 
       const items = container.querySelectorAll(".cursor-pointer");
       expect(items.length).toBe(2);
+    });
+
+    it("should expose a radiogroup with radio options", () => {
+      render(<Toggle {...defaultProps} label="Mode" />);
+
+      const group = screen.getByRole("radiogroup", { name: "Mode" });
+      expect(group).toBeInTheDocument();
+
+      const radios = screen.getAllByRole("radio");
+      expect(radios).toHaveLength(2);
+      expect(radios[0]).toHaveAttribute("aria-checked", "true");
+      expect(radios[1]).toHaveAttribute("aria-checked", "false");
+    });
+
+    it("should render options as real buttons", () => {
+      render(<Toggle {...defaultProps} />);
+
+      screen.getAllByRole("radio").forEach(radio => {
+        expect(radio.tagName).toBe("BUTTON");
+        expect(radio).toHaveAttribute("type", "button");
+      });
+    });
+
+    it("should apply roving tabindex to the selected option only", () => {
+      render(<Toggle {...defaultProps} />);
+
+      const radios = screen.getAllByRole("radio");
+      expect(radios[0]).toHaveAttribute("tabindex", "0");
+      expect(radios[1]).toHaveAttribute("tabindex", "-1");
+    });
+
+    it("should move selection with ArrowRight/ArrowLeft", () => {
+      const onChange = vi.fn();
+      render(<Toggle items={mockItems} onChange={onChange} />);
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.keyDown(radios[0], { key: "ArrowRight" });
+      expect(onChange).toHaveBeenCalledWith("optionB");
+      expect(radios[1]).toHaveAttribute("aria-checked", "true");
+
+      fireEvent.keyDown(radios[1], { key: "ArrowLeft" });
+      expect(onChange).toHaveBeenCalledWith("optionA");
+      expect(radios[0]).toHaveAttribute("aria-checked", "true");
+    });
+
+    it("should wrap selection with arrow keys", () => {
+      const onChange = vi.fn();
+      render(<Toggle items={mockItems} onChange={onChange} />);
+
+      const radios = screen.getAllByRole("radio");
+      // ArrowLeft from first wraps to last
+      fireEvent.keyDown(radios[0], { key: "ArrowLeft" });
+      expect(onChange).toHaveBeenCalledWith("optionB");
+    });
+
+    it("should jump to ends with Home/End", () => {
+      const onChange = vi.fn();
+      render(<Toggle items={mockItems} onChange={onChange} />);
+
+      const radios = screen.getAllByRole("radio");
+      fireEvent.keyDown(radios[0], { key: "End" });
+      expect(onChange).toHaveBeenCalledWith("optionB");
+
+      fireEvent.keyDown(radios[1], { key: "Home" });
+      expect(onChange).toHaveBeenCalledWith("optionA");
     });
   });
 

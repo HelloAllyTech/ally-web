@@ -75,10 +75,16 @@ const DropdownField: FC<DropdownFieldProps> = ({
         {label && <span>{label}</span>}
         <span className={valueClassName}>{value}</span>
         {!disabled && (
-          <PlayArrow
-            className="w-4 h-4 cursor-pointer rotate-90"
+          <button
+            type="button"
+            aria-label={label ? `Toggle ${label} options` : "Toggle options"}
+            aria-haspopup="listbox"
+            aria-expanded={isOpen}
             onClick={() => setIsOpen(prev => !prev)}
-          />
+            className="cursor-pointer bg-transparent border-0 p-0 flex items-center rounded-[4px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <PlayArrow className="w-4 h-4 rotate-90" />
+          </button>
         )}
       </div>
       {isOpen && (
@@ -86,6 +92,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
           options={options}
           handleChange={handleChange}
           onHandleSearch={onHandleSearch}
+          onClose={() => setIsOpen(false)}
           searchPlaceholder={searchPlaceholder}
           optionsMaxHeight={optionsMaxHeight}
           className={`left-0 min-w-full font-secondary ${

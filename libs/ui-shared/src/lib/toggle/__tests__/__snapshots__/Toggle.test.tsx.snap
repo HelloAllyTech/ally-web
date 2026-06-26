@@ -7,23 +7,29 @@ exports[`Toggle Component > Snapshot Tests > should match snapshot with default 
   >
     <div
       class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+      role="radiogroup"
     >
       <div
-        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-        style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-white pointer-events-none left-0 shadow-[3px_0px_9px_0px_#00000012]"
       />
-      <div
-        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-        style="color: rgb(0, 0, 0);"
+      <button
+        aria-checked="true"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm bg-transparent border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 text-black"
+        role="radio"
+        tabindex="0"
+        type="button"
       >
         Option A
-      </div>
-      <div
-        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-        style="color: rgba(0, 0, 0, 0.376);"
+      </button>
+      <button
+        aria-checked="false"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm bg-transparent border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 text-black/40"
+        role="radio"
+        tabindex="-1"
+        type="button"
       >
         Option B
-      </div>
+      </button>
     </div>
   </div>
 </DocumentFragment>
@@ -36,23 +42,29 @@ exports[`Toggle Component > Snapshot Tests > should match snapshot with differen
   >
     <div
       class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+      role="radiogroup"
     >
       <div
-        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-        style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-white pointer-events-none left-0 shadow-[3px_0px_9px_0px_#00000012]"
       />
-      <div
-        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-        style="color: rgb(0, 0, 0);"
+      <button
+        aria-checked="true"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm bg-transparent border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 text-black"
+        role="radio"
+        tabindex="0"
+        type="button"
       >
         Public
-      </div>
-      <div
-        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-        style="color: rgba(0, 0, 0, 0.376);"
+      </button>
+      <button
+        aria-checked="false"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm bg-transparent border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 text-black/40"
+        role="radio"
+        tabindex="-1"
+        type="button"
       >
         Private
-      </div>
+      </button>
     </div>
   </div>
 </DocumentFragment>
@@ -67,24 +79,31 @@ exports[`Toggle Component > Snapshot Tests > should match snapshot with label 1`
       Choose option
     </div>
     <div
+      aria-label="Choose option"
       class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+      role="radiogroup"
     >
       <div
-        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-        style="left: 0px; box-shadow: 3px 0px 9px 0px #00000012;"
+        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-white pointer-events-none left-0 shadow-[3px_0px_9px_0px_#00000012]"
       />
-      <div
-        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-        style="color: rgb(0, 0, 0);"
+      <button
+        aria-checked="true"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm bg-transparent border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 text-black"
+        role="radio"
+        tabindex="0"
+        type="button"
       >
         Option A
-      </div>
-      <div
-        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-        style="color: rgba(0, 0, 0, 0.376);"
+      </button>
+      <button
+        aria-checked="false"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm bg-transparent border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 text-black/40"
+        role="radio"
+        tabindex="-1"
+        type="button"
       >
         Option B
-      </div>
+      </button>
     </div>
   </div>
 </DocumentFragment>
@@ -97,23 +116,29 @@ exports[`Toggle Component > Snapshot Tests > should match snapshot with second i
   >
     <div
       class="flex gap-2 rounded-full border-[0.5px] bg-[#F3F3F3] relative"
+      role="radiogroup"
     >
       <div
-        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-[#FFFFFF]"
-        style="left: 50%; box-shadow: -7px 0px 9px 0px #00000012;"
+        class="transition-all duration-200 absolute top-0 w-1/2 h-full rounded-full bg-white pointer-events-none left-1/2 shadow-[-7px_0px_9px_0px_#00000012]"
       />
-      <div
-        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-        style="color: rgba(0, 0, 0, 0.376);"
+      <button
+        aria-checked="false"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm bg-transparent border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 text-black/40"
+        role="radio"
+        tabindex="-1"
+        type="button"
       >
         Option A
-      </div>
-      <div
-        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm"
-        style="color: rgb(0, 0, 0);"
+      </button>
+      <button
+        aria-checked="true"
+        class="rounded-full py-2 px-4 cursor-pointer z-10 transition-all duration-200 font-primary font-normal text-sm bg-transparent border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 text-black"
+        role="radio"
+        tabindex="0"
+        type="button"
       >
         Option B
-      </div>
+      </button>
     </div>
   </div>
 </DocumentFragment>

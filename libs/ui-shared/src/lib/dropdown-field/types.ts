@@ -17,4 +17,5 @@ export interface DropdownProps {
   optionsMaxHeight?: number;
   onHandleSearch?: (query: string) => void;
   searchPlaceholder?: string;
+  onClose?: () => void;
 }
