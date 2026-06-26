@@ -31,7 +31,7 @@ const Badge: FC<BadgeProps> = ({ variant, text, className }) => {
   };
   return (
     <div
-      className={`rounded-2xl px-2 py-0.5 text-[12px] font-medium ${getStyles(variant)} ${className}`}
+      className={`rounded-2xl px-2 py-0.5 text-xs font-medium ${getStyles(variant)} ${className}`}
     >
       {text}
     </div>

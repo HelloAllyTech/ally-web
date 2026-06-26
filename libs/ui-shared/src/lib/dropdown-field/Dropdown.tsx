@@ -1,11 +1,11 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useId, useState } from "react";
 
 import { DropdownProps } from "./types";
 
 /**
- * Dropdown component displays a searchable dropdown list of options.
+ * Dropdown component displays a searchable, keyboard-navigable listbox of options.
  * @component
  * @param {DropdownProps} props - Props for Dropdown
  */
@@ -17,8 +17,11 @@ const Dropdown: FC<DropdownProps> = ({
   optionsMaxHeight,
   onHandleSearch,
   searchPlaceholder,
+  onClose,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const listboxId = useId();
 
   /**
    * Returns the filtered options based on the search query.
@@ -33,6 +36,8 @@ const Dropdown: FC<DropdownProps> = ({
     );
   };
 
+  const filteredOptions = getOptions();
+
   /**
    * Handles search input changes and triggers optional search callback.
    * @param {string} query
@@ -42,6 +47,44 @@ const Dropdown: FC<DropdownProps> = ({
       onHandleSearch(query);
     }
     setSearchQuery(query);
+    setActiveIndex(-1);
+  };
+
+  /**
+   * Keyboard support: Up/Down move the highlight, Enter selects the highlighted
+   * option, Escape asks the parent to close the dropdown.
+   */
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        setActiveIndex(prev =>
+          filteredOptions.length ? (prev < 0 ? 0 : (prev + 1) % filteredOptions.length) : -1,
+        );
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        setActiveIndex(prev =>
+          filteredOptions.length
+            ? prev < 0
+              ? filteredOptions.length - 1
+              : (prev - 1 + filteredOptions.length) % filteredOptions.length
+            : -1,
+        );
+        break;
+      case "Enter":
+        if (activeIndex >= 0 && activeIndex < filteredOptions.length) {
+          event.preventDefault();
+          handleChange(filteredOptions[activeIndex]);
+        }
+        break;
+      case "Escape":
+        event.preventDefault();
+        onClose?.();
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -52,24 +95,43 @@ const Dropdown: FC<DropdownProps> = ({
     >
       <input
         type="text"
+        role="combobox"
+        aria-expanded
+        aria-controls={listboxId}
+        aria-label={searchPlaceholder || "Search"}
+        aria-activedescendant={activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined}
         value={searchQuery}
         onChange={e => handleSearch(e.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder={searchPlaceholder || "Search"}
-        className="w-full mb-2 px-2 py-1 rounded-[4px] bg-[#F5F5F7] border border-[#DBDBDB]"
+        className="w-full mb-2 px-2 py-1 rounded-[4px] bg-[#F5F5F7] border border-[#DBDBDB] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       />
       <div
+        id={listboxId}
+        role="listbox"
         className="flex flex-col gap-2 overflow-y-auto pr-1"
         style={{ maxHeight: optionsMaxHeight ?? 240 }}
       >
-        {getOptions().map(option => (
-          <span
-            key={option}
-            onClick={() => handleChange(option)}
-            className="cursor-pointer font-primary"
-          >
-            {option}
-          </span>
-        ))}
+        {filteredOptions.length === 0 ? (
+          <span className="px-1 py-1 text-sm text-black/50">No results</span>
+        ) : (
+          filteredOptions.map((option, index) => (
+            <button
+              key={option}
+              id={`${listboxId}-option-${index}`}
+              type="button"
+              role="option"
+              aria-selected={index === activeIndex}
+              onClick={() => handleChange(option)}
+              onMouseEnter={() => setActiveIndex(index)}
+              className={`text-left cursor-pointer font-primary rounded-[4px] px-1 py-0.5 bg-transparent border-0 focus:outline-none ${
+                index === activeIndex ? "bg-[#F5F5F7]" : ""
+              }`}
+            >
+              {option}
+            </button>
+          ))
+        )}
       </div>
     </div>
   );

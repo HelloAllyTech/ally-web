@@ -50,4 +50,50 @@ describe("Dropdown", () => {
     fireEvent.click(screen.getByText("X"));
     expect(handleChange).toHaveBeenCalledWith("X");
   });
+
+  it("exposes listbox and option roles", () => {
+    render(<Dropdown options={["Apple", "Banana"]} handleChange={vi.fn()} />);
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    expect(screen.getAllByRole("option")).toHaveLength(2);
+    expect(screen.getByRole("combobox")).toBeInTheDocument();
+  });
+
+  it("navigates options with arrow keys and selects with Enter", () => {
+    const handleChange = vi.fn();
+    render(<Dropdown options={["Apple", "Banana", "Cherry"]} handleChange={handleChange} />);
+
+    const input = screen.getByRole("combobox");
+    fireEvent.keyDown(input, { key: "ArrowDown" }); // highlight Apple
+    fireEvent.keyDown(input, { key: "ArrowDown" }); // highlight Banana
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(handleChange).toHaveBeenCalledWith("Banana");
+  });
+
+  it("wraps highlight from last back to first", () => {
+    const handleChange = vi.fn();
+    render(<Dropdown options={["A", "B"]} handleChange={handleChange} />);
+
+    const input = screen.getByRole("combobox");
+    fireEvent.keyDown(input, { key: "ArrowUp" }); // wraps to last (B)
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(handleChange).toHaveBeenCalledWith("B");
+  });
+
+  it("calls onClose when Escape is pressed", () => {
+    const onClose = vi.fn();
+    render(<Dropdown options={["A"]} handleChange={vi.fn()} onClose={onClose} />);
+
+    fireEvent.keyDown(screen.getByRole("combobox"), { key: "Escape" });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows a No results message when nothing matches", () => {
+    render(<Dropdown options={["Apple", "Banana"]} handleChange={vi.fn()} />);
+
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "zzz" } });
+    expect(screen.getByText("No results")).toBeInTheDocument();
+    expect(screen.queryAllByRole("option")).toHaveLength(0);
+  });
 });
