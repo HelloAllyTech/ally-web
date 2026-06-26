@@ -5,6 +5,8 @@ import {
   AnalyticsRange,
   ConversationDriftResponse,
   DriftBackfillJob,
+  ScribeOverviewResponse,
+  ScribeSummaryFailureResponse,
   TokenConsumptionResponse,
   VoiceLatencyResponse,
 } from "@types";
@@ -79,6 +81,20 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    getScribeOverview: builder.query<ScribeOverviewResponse, AnalyticsRangeQuery>({
+      query: ({ range } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SCRIBE_OVERVIEW,
+        method: HttpMethod.GET,
+        params: range ? { range } : undefined,
+      }),
+    }),
+    getScribeSummaryFailures: builder.query<ScribeSummaryFailureResponse, AnalyticsRangeQuery>({
+      query: ({ range } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SCRIBE_SUMMARY_FAILURES,
+        method: HttpMethod.GET,
+        params: range ? { range } : undefined,
+      }),
+    }),
     // Kick off the async backfill (last `sinceDays` days, default 90 ≈ 3 months).
     startDriftBackfill: builder.mutation<DriftBackfillJob, { sinceDays?: number }>({
       query: ({ sinceDays = 90 } = {}) => ({
@@ -104,4 +120,6 @@ export const {
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
   useGetTokenConsumptionQuery,
+  useGetScribeOverviewQuery,
+  useGetScribeSummaryFailuresQuery,
 } = analyticsAPI;

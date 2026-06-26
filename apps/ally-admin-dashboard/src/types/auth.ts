@@ -219,6 +219,62 @@ export interface AnalyticsOverviewResponse {
   usersByRole: UsersByRolePoint[];
 }
 
+// Scribe-session analytics from GET /api/v1/analytics/scribe/*.
+export interface ScribeTrendPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  count: number;
+}
+
+export interface ScribeCount {
+  key: string;
+  count: number;
+}
+
+export interface ScribeOverviewSummary {
+  totalSessions: number;
+  successRatePct: number;
+  processing: number;
+  noAudio: number;
+  failed: number;
+}
+
+export interface ScribeOverviewResponse {
+  range: AnalyticsRange;
+  bucket: string;
+  summary: ScribeOverviewSummary;
+  sessionsTrend: ScribeTrendPoint[];
+  outcomeBreakdown: ScribeCount[];
+  modeBreakdown: ScribeCount[];
+}
+
+export interface ScribeFailureRatePoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  failed: number;
+  terminal: number;
+  /** failed / terminal, 0..1. */
+  failureRate: number;
+}
+
+export interface ScribeFailureSummary {
+  totalTerminal: number;
+  totalFailed: number;
+  failureRatePct: number;
+  retryableSharePct: number;
+  timeoutSharePct: number;
+}
+
+export interface ScribeSummaryFailureResponse {
+  range: AnalyticsRange;
+  bucket: string;
+  summary: ScribeFailureSummary;
+  failureRateTrend: ScribeFailureRatePoint[];
+  failuresByStage: ScribeCount[];
+  retryableBreakdown: ScribeCount[];
+  timeoutBreakdown: ScribeCount[];
+}
+
 // VoiceLatencyResponseDto from GET /api/v1/analytics/voice-latency.
 export interface VoiceLatencyPoint {
   /** Bucket start (yyyy-mm-dd). */
