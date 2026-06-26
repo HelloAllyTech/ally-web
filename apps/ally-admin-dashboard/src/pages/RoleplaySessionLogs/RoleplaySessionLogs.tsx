@@ -11,6 +11,10 @@ import { formatDate } from "@utils";
 import { useRoleplaySessionLogs } from "./useRoleplaySessionLogs";
 import { V2VTestModal } from "./V2VTestModal";
 
+// Temporarily hide the V2V test launcher on admin. Flip to true to re-enable
+// the button (the modal + endpoint wiring stay intact).
+const SHOW_V2V_TEST = false;
+
 /** Seconds -> compact "1h 02m", "5m 30s" or "45s". */
 const formatDuration = (seconds: number | null): string => {
   if (seconds === null || seconds <= 0) return "—";
@@ -93,9 +97,11 @@ export const RoleplaySessionLogs: FC = () => {
             excluded.
           </p>
         </div>
-        <Button variant={ButtonVariant.PRIMARY} onClick={() => setV2vOpen(true)}>
-          Run V2V Test
-        </Button>
+        {SHOW_V2V_TEST && (
+          <Button variant={ButtonVariant.PRIMARY} onClick={() => setV2vOpen(true)}>
+            Run V2V Test
+          </Button>
+        )}
       </div>
 
       {/* Toolbar: search + status + date range. */}
