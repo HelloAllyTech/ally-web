@@ -109,6 +109,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? false,
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? false,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
+    interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? false,
     currentState: data?.metadata?.currentState,
     stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
       ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
