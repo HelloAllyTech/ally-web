@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
@@ -9,6 +9,7 @@ import { RoleplaySessionLogRow, RoleplaySessionStatus } from "@types";
 import { formatDate } from "@utils";
 
 import { useRoleplaySessionLogs } from "./useRoleplaySessionLogs";
+import { V2VTestModal } from "./V2VTestModal";
 
 /** Seconds -> compact "1h 02m", "5m 30s" or "45s". */
 const formatDuration = (seconds: number | null): string => {
@@ -80,6 +81,8 @@ export const RoleplaySessionLogs: FC = () => {
   const openDetail = (row: RoleplaySessionLogRow) =>
     navigate(ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(row.id));
 
+  const [v2vOpen, setV2vOpen] = useState(false);
+
   return (
     <div className="h-full font-primary flex flex-col">
       <div className="flex justify-between items-center shrink-0">
@@ -90,6 +93,9 @@ export const RoleplaySessionLogs: FC = () => {
             excluded.
           </p>
         </div>
+        <Button variant={ButtonVariant.PRIMARY} onClick={() => setV2vOpen(true)}>
+          Run V2V Test
+        </Button>
       </div>
 
       {/* Toolbar: search + status + date range. */}
@@ -230,6 +236,8 @@ export const RoleplaySessionLogs: FC = () => {
           </div>
         </div>
       )}
+
+      <V2VTestModal open={v2vOpen} onClose={() => setV2vOpen(false)} />
     </div>
   );
 };

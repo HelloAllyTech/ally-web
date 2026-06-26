@@ -174,3 +174,16 @@ export interface RoleplaySessionLogsParams {
   sortBy?: "createdAt" | "startedAt" | "endedAt" | "score" | "status";
   order?: "ASC" | "DESC";
 }
+
+/** Superadmin V2V test session launch. */
+export interface StartV2VTestParams {
+  scenarioId: number;
+  languageId: number;
+  maxExchanges?: number;
+}
+
+export interface StartV2VTestResponse {
+  scenarioSession?: { roomId?: string };
+  isTestSession?: boolean;
+  simulatedUserAgent?: string;
+}

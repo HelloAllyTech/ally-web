@@ -38,6 +38,7 @@ export const ApiEndpoints = {
     UPDATE_SIMULATION_BY_ID: (id: string | number) => `/v1/learn/scenarios/${id}`,
     SIMULATION_BY_ID: (id: string | number) => `/v1/learn/admin-scenarios/${id}`,
     START_SIMULATION: "/v1/learn/scenario-session-start",
+    START_V2V_TEST: "/v1/learn/v2v-test-session-start",
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     SCENARIO_VOICES: "/v1/learn/scenario-voices",
     CREATE_SCENARIO_VOICE: "/v1/learn/scenario-voices",

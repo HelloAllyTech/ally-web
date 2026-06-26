@@ -12,6 +12,12 @@ vi.mock("../useRoleplaySessionLogs", () => ({
   useRoleplaySessionLogs: vi.fn(),
 }));
 
+// The V2V launcher modal pulls in @api / shared components; stub it out so this
+// page test stays isolated (the modal is exercised separately).
+vi.mock("../V2VTestModal", () => ({
+  V2VTestModal: () => null,
+}));
+
 vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}>
