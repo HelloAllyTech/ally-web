@@ -99,7 +99,9 @@ export interface SimulationInput {
   optGuardrails?: boolean;
   enableProsody?: boolean;
   fillerEnabled?: boolean;
+  comfortAudioEnabled?: boolean;
   historyTrimEnabled?: boolean;
+  continuousBackchanneling?: boolean;
   currentState?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
@@ -196,7 +198,9 @@ export interface GetSimulationByIdResponse {
     optGuardrails?: boolean;
     enableProsody?: boolean;
     fillerEnabled?: boolean;
+    comfortAudioEnabled?: boolean;
     historyTrimEnabled?: boolean;
+    continuousBackchanneling?: boolean;
     currentState?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
