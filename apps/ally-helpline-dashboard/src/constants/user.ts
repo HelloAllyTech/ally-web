@@ -9,6 +9,7 @@ export const User = {
 export const CREATE_NOTE_ALLOWED_EMAILS = [
   "learner@example.com",
   "sandeep.malhotra+testing@helloally.com",
+  "sandeep.malhotra+1@helloally.com",
 ];
 
 export const canCreateNote = (user?: { email?: string } | null): boolean =>
