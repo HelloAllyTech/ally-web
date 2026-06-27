@@ -20,6 +20,7 @@ import {
   CancelAudioUploadResponse,
   ProcessAudioUploadInput,
   ProcessAudioUploadResponse,
+  CreateNoteResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -106,6 +107,19 @@ const callsAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Creates an empty manual scribe note (a SCRIBE-mode chat with no audio) and
+     * returns its id + auto-generated name, so org custom fields can be attached.
+     * @returns {Promise<CreateNoteResponse>} The new note's chatId and name
+     */
+    createNote: builder.mutation<CreateNoteResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.CALLS.CREATE_NOTE,
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: ["CallLogs", TAG_TYPES.CALL_LOGS],
+    }),
+
+    /**
      * Cancels a pending/active audio upload session by chat id.
      * Useful for aborting client-side uploads and cleaning server resources.
      * @param {CancelAudioUploadInput} params - Object with chatId to cancel
@@ -170,6 +184,7 @@ export const {
   useGetCallTagsQuery,
   useGetChatTypesQuery,
   useGetAudioUploadUrlMutation,
+  useCreateNoteMutation,
   useCancelAudioUploadMutation,
   useDeleteCallLogMutation,
   useProcessAudioUploadMutation,

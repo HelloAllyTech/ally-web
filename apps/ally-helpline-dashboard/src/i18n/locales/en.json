@@ -827,6 +827,13 @@
       "startSession": "Start Session",
       "createNote": "Create Note"
     },
+    "createNote": {
+      "title": "New note",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveError": "Couldn't save note",
+      "empty": "No note fields are configured for your organisation."
+    },
     "table": {
       "counsellorName": "Counsellor",
       "dateTime": "Date & Time",

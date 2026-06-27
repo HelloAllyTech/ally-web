@@ -161,3 +161,8 @@ export enum UploadStatus {
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED",
 }
+
+export interface CreateNoteResponse {
+  chatId: number;
+  name: string;
+}
