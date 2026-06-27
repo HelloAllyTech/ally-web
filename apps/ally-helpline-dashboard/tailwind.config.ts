@@ -18,9 +18,11 @@ export default {
   prefix: "",
   theme: {
     fontFamily: {
+      // Base/default font (drives Tailwind preflight's `html` font-family and `font-sans`)
+      sans: ["IBM Plex Serif", "serif"],
       primary: ["IBM Plex Serif", "serif"],
       secondary: ["Replay Pro", "serif"],
-      tertiary: ["Roboto", "sans-serif"],
+      tertiary: ["IBM Plex Serif", "serif"],
     },
     container: {
       center: true,

@@ -143,7 +143,7 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
             value={responses[index] ?? ""}
             onChange={e => updateResponse(index, e.target.value)}
             placeholder={t("reflection.writeThoughts")}
-            className="absolute inset-0 box-border w-full resize-none overflow-y-auto bg-transparent px-0 py-2 pb-3 font-sans text-base leading-normal text-typography-900 outline-none custom-scrollbar"
+            className="absolute inset-0 box-border w-full resize-none overflow-y-auto bg-transparent px-0 py-2 pb-3 font-primary text-base leading-normal text-typography-900 outline-none custom-scrollbar"
           />
         </div>
       </div>
