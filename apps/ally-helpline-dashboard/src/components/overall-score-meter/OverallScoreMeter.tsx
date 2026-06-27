@@ -2,6 +2,10 @@ import { FC, useEffect, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 
+import { TooltipLocation } from "@constants";
+
+import AppTooltip from "../app-tooltip/AppTooltip";
+
 interface OverallScoreMeterProps {
   percentage: number;
 }
@@ -39,39 +43,41 @@ export const OverallScoreMeter: FC<OverallScoreMeterProps> = ({ percentage }) =>
   }, [percentage]);
 
   return (
-    <div className="relative flex items-center justify-center">
-      <svg width={size} height={size} className="-rotate-90">
-        {/* Background track */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="#E5E7EB"
-          strokeWidth={strokeWidth}
-        />
-        {/* Progress arc */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="#6B9AE8"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      {/* Center text */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-semibold text-typography-800 font-primary">
-          {animatedPercentage}%
-        </span>
-        <span className="text-sm text-typography-500 mt-1 font-primary">
-          {t("summary.overallScore")}
-        </span>
+    <AppTooltip location={TooltipLocation.OVERALL_SCORE_METER}>
+      <div className="relative flex items-center justify-center">
+        <svg width={size} height={size} className="-rotate-90">
+          {/* Background track */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="#E5E7EB"
+            strokeWidth={strokeWidth}
+          />
+          {/* Progress arc */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="#6B9AE8"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+          />
+        </svg>
+        {/* Center text */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-4xl font-semibold text-typography-800 font-primary">
+            {animatedPercentage}%
+          </span>
+          <span className="text-sm text-typography-500 mt-1 font-primary">
+            {t("summary.overallScore")}
+          </span>
+        </div>
       </div>
-    </div>
+    </AppTooltip>
   );
 };

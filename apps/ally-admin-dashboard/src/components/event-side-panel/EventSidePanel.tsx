@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Tooltip } from "@mui/material";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared/index";
-import { DoubleArrowRight, InfoIcon, Trash } from "@assets";
+import { DoubleArrowRight, TooltipIcon, Trash } from "@assets";
 import {
   ActionConfirmationPopup,
   EmojiPickerComponent,
@@ -52,7 +52,7 @@ const Field: React.FC<FieldProps> = ({
       {tooltip && (
         <Tooltip title={tooltipTitle || label} placement="top" arrow slotProps={toolTipStyles}>
           <span className="cursor-pointer items-center ">
-            <InfoIcon />
+            <TooltipIcon />
           </span>
         </Tooltip>
       )}

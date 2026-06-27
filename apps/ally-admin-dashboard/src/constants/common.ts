@@ -168,6 +168,7 @@ export const ApiEndpoints = {
   },
   TOOLTIPS: {
     GET_TOOLTIPS: "/v1/tooltips",
+    GET_ACTIVE_TOOLTIPS: "/v1/tooltips/active",
     CREATE_TOOLTIP: "/v1/tooltips",
     UPDATE_TOOLTIP: (id: string) => `/v1/tooltips/${id}`,
   },
@@ -307,5 +308,52 @@ export const TAG_TYPES = {
   USER_PREFERENCES: "userPreferences",
   ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
 };
+
+/**
+ * Stable identifiers for data-driven tooltips. Each value is the unique
+ * `location` slug of a row in the backend `tooltips` table; superadmins edit
+ * the text under Manage Tooltips and it renders wherever the matching
+ * `location` is consumed (see ToggleSection). Add a key here, wrap the UI with
+ * the location, and seed/author the row so it shows up.
+ */
+export enum TooltipLocation {
+  // Edit Simulation → Basic Settings voice-session toggles
+  THINKING_FILLER = "thinking_filler",
+  COMFORT_AUDIO = "comfort_audio",
+  TRIM_HISTORY = "trim_history",
+  CONTINUOUS_BACKCHANNELING = "continuous_backchanneling",
+  INTERIM_REPLY = "interim_reply",
+  // Edit Simulation → Basic Settings (other toggles). Seeded blank + inactive;
+  // superadmins author the text and enable each under Manage Tooltips.
+  SESSION_TIMER = "session_timer",
+  SCORE = "score",
+  AI_FEEDBACK_SUMMARY = "ai_feedback_summary",
+  ALLOW_PAUSE_RESUME = "allow_pause_resume",
+  DEFAULT_ORG_VISIBILITY = "default_org_visibility",
+  PUBLIC_VISIBILITY = "public_visibility",
+  CONVERSATIONAL_GUARDRAILS = "conversational_guardrails",
+  SPEECH_PROSODY = "speech_prosody",
+  CURRENT_STATE = "current_state",
+  // Edit Simulation → form fields (seeded disabled; review + enable in Manage Tooltips)
+  CHARACTER_PROFILE_SELECTOR = "character_profile_selector",
+  CHARACTER_BACKSTORY = "character_backstory",
+  CUSTOM_FIELDS = "custom_fields",
+  KNOWLEDGE_SOURCES = "knowledge_sources",
+  TRIGGER_WARNINGS = "trigger_warnings",
+  SESSION_MAX_TIME = "session_max_time",
+  EXPERIENCE_MODE_TYPE = "experience_mode_type",
+  CHECKLIST_TYPE_VARIANT = "checklist_type_variant",
+  LINGUISTIC_STYLE_SAMPLES = "linguistic_style_samples",
+  OPENING_DIALOGUE_TEMPLATES = "opening_dialogue_templates",
+  AUTO_TERMINATION_RULES = "auto_termination_rules",
+  LANGUAGE_VOICE_MAPPING = "language_voice_mapping",
+  SESSION_STATES_PROGRESSION = "session_states_progression",
+  // Edit Simulation / studio actions
+  PUBLISH_SIMULATION_VERSION = "publish_simulation_version",
+  UNPUBLISH_SIMULATION = "unpublish_simulation",
+  ARCHIVE_SIMULATION = "archive_simulation",
+  EVENT_BRANCH_INSTRUCTION = "event_branch_instruction",
+  EVENT_TRIGGER_CONDITIONS = "event_trigger_conditions",
+}
 
 export const CUSTOM_CHARACTER_ID = "custom";

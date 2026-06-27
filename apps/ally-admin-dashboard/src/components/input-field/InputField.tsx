@@ -5,6 +5,8 @@ import { InputFieldProps } from "@components/types";
 import { FORM_FIELD_TYPES } from "@constants";
 import { isNonEmptyString } from "@utils";
 
+import { TooltipHint } from "../app-tooltip";
+
 export const InputField: React.FC<InputFieldProps> = ({
   label,
   id,
@@ -20,6 +22,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   disabled = false,
   regenerateButton,
   enhanceButton,
+  tooltipLocation,
 }) => {
   const isAgeField = id === "age";
   const MAX_AGE = 150;
@@ -98,6 +101,7 @@ export const InputField: React.FC<InputFieldProps> = ({
               {label}
               {isMandatory && <span className="text-destructive-500">*</span>}
               {infoIconContent && <InfoIcon />}
+              {tooltipLocation && <TooltipHint location={tooltipLocation} />}
             </label>
           ) : (
             <span />

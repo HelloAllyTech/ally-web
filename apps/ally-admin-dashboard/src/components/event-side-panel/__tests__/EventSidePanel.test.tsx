@@ -9,6 +9,7 @@ vi.mock("@assets", () => ({
   Trash: () => <svg data-testid="trash-icon" />,
   Close: () => <svg data-testid="close-icon" />,
   InfoIcon: () => <svg data-testid="info-icon" />,
+  TooltipIcon: () => <svg data-testid="tooltip-icon" />,
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({

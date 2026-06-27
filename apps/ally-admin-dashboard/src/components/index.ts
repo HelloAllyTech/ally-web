@@ -1,3 +1,4 @@
+export * from "./app-tooltip";
 export * from "./button";
 export * from "./input";
 export * from "./text-field";

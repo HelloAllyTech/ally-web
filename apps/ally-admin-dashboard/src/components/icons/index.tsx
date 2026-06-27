@@ -227,6 +227,28 @@ export const Heading2 = LHeading2;
 export const Heading3 = LHeading3;
 
 /* -------------------------------------------------------------------------- */
+/* Tooltip trigger glyph — Material Symbols "sticky_note" (thin)               */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Standard tooltip affordance across the admin. Unlike the Carbon icons above
+ * this renders the Material Symbols "sticky_note" glyph via a ligature span —
+ * the font is loaded in index.html (`icon_names=sticky_note,...`) and the thin
+ * variation-settings + sizing live in styles.css under `.tooltip-icon`. Colour
+ * follows the surrounding `color` (`currentColor`), same as the Carbon icons.
+ * Drop-in for the old `InfoIcon` tooltip trigger; `width`/`height`/`size` are
+ * accepted but ignored (sizing is CSS-driven for visual consistency).
+ */
+export const TooltipIcon = ({ className }: IconProps) => (
+  <span
+    className={["material-symbols-outlined tooltip-icon", className].filter(Boolean).join(" ")}
+    aria-hidden="true"
+  >
+    sticky_note
+  </span>
+);
+
+/* -------------------------------------------------------------------------- */
 /* Brand / domain-specific icons — preserved as the original custom SVGs      */
 /* -------------------------------------------------------------------------- */
 

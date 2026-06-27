@@ -12,7 +12,7 @@ import {
   useDeleteBadgeIconMutation,
   baseAPI,
 } from "@api";
-import { DoubleArrowRight, InfoIcon, Trash, ArrowDownFilled } from "@assets";
+import { DoubleArrowRight, TooltipIcon, Trash, ArrowDownFilled } from "@assets";
 import { ActionConfirmationPopup, Button, ToggleSwitch } from "@components";
 import { IconUploader } from "@components/icon-uploader";
 import { ButtonVariant } from "@components/types";
@@ -506,7 +506,7 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
             <div className="flex items-center gap-1 shrink-0">
               <span>Criteria</span>
               <div className="relative group">
-                <InfoIcon width={14} height={14} />
+                <TooltipIcon />
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-typography-900 text-white text-xs rounded whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                   {en.badge.cannotChangeAfterPublishing}
                   <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-typography-900" />

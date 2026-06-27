@@ -12,6 +12,20 @@
     "opsz" 24;
 }
 
+/* Standard tooltip trigger glyph (Material Symbols "sticky_note", thin). The
+   compound selector keeps these settings scoped to tooltip icons so the
+   Agent Builder "terminal" glyph above is unaffected. See the TooltipIcon
+   component in components/icons. */
+.tooltip-icon.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 100,
+    "GRAD" -25,
+    "opsz" 20;
+  font-size: 18px;
+  line-height: 1;
+}
+
 /* IBM Plex Serif - Local Font Faces */
 @font-face {
   font-family: "IBM Plex Serif";

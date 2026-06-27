@@ -1,5 +1,5 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
-import { Tooltip } from "@types";
+import { ActiveTooltip, Tooltip } from "@types";
 
 import { baseAPI } from "./baseApi";
 
@@ -35,6 +35,13 @@ export const tooltipsAPI = baseAPI.injectEndpoints({
       }),
       providesTags: [TAG_TYPES.TOOLTIPS],
     }),
+    getActiveTooltips: builder.query<ActiveTooltip[], void>({
+      query: () => ({
+        url: ApiEndpoints.TOOLTIPS.GET_ACTIVE_TOOLTIPS,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [{ type: TAG_TYPES.TOOLTIPS, id: "ACTIVE" }],
+    }),
     createTooltip: builder.mutation<Tooltip, CreateTooltipRequest>({
       query: body => ({
         url: ApiEndpoints.TOOLTIPS.CREATE_TOOLTIP,
@@ -54,5 +61,9 @@ export const tooltipsAPI = baseAPI.injectEndpoints({
   }),
 });
 
-export const { useGetTooltipsQuery, useCreateTooltipMutation, useUpdateTooltipMutation } =
-  tooltipsAPI;
+export const {
+  useGetTooltipsQuery,
+  useGetActiveTooltipsQuery,
+  useCreateTooltipMutation,
+  useUpdateTooltipMutation,
+} = tooltipsAPI;
