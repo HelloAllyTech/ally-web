@@ -40,7 +40,7 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
           textTransform: "none",
           fontSize: inheritFontSize ? "inherit" : "14px",
           fontWeight: 500,
-          fontFamily: "Roboto, sans-serif",
+          fontFamily: "'IBM Plex Serif', serif",
           "&.Mui-selected": {
             backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
             color: "#4D4D4D",
