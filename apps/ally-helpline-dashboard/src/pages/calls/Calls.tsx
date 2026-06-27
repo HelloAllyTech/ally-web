@@ -12,7 +12,6 @@ import {
   ButtonVariant,
   CustomMenu,
   PermissionGuard,
-  ToggleButtonGroup,
 } from "@components";
 import { CallType, canCreateNote, Permissions, ROUTES, TooltipLocation } from "@constants";
 import { useUser } from "@hooks";
@@ -27,31 +26,37 @@ import {
   UserLogsTable,
 } from "./components";
 import { SessionUserGroup } from "./constants";
-import {
-  getFormattedSupportedSessionUserGroups,
-  getPermittedSessionLogList,
-  getSupportedSessionTypeListByUserGroup,
-} from "./utils";
+import { getFormattedSupportedSessionUserGroups, getPermittedSessionLogList } from "./utils";
 
-export const Calls: FC = () => {
+interface CallsProps {
+  // Locks the page to a single session type so it acts as a dedicated
+  // Scribe Logs (CALL) or Roleplay Logs (SIMULATION) screen.
+  sessionType: SessionType;
+}
+
+export const Calls: FC<CallsProps> = ({ sessionType }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isStartSessionDialogOpen, setIsStartSessionDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
-  const [sessionType, setSessionType] = useState<SessionType>();
   const [sessionUserGroup, setSessionUserGroup] = useState(SessionUserGroup.MY_LOGS);
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
   const [isCreateNoteOpen, setIsCreateNoteOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
   const { permissions, availableChatTypes, user } = useUser();
-  const supportedLogList = useMemo(() => getPermittedSessionLogList(permissions), [permissions]);
+  const isScribe = sessionType === SessionType.CALL;
+  const supportedLogList = useMemo(
+    () =>
+      (getPermittedSessionLogList(permissions) ?? []).filter(
+        option => option.sessionType === sessionType,
+      ),
+    [permissions, sessionType],
+  );
 
   useEffect(() => {
-    if (!supportedLogList) return;
     if (supportedLogList?.length > 0) {
       setSessionUserGroup(supportedLogList[0].sessionUserGroup as SessionUserGroup);
-      setSessionType(supportedLogList[0].sessionType as SessionType);
     }
   }, [supportedLogList]);
 
@@ -67,20 +72,7 @@ export const Calls: FC = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  const permittedSessionLogViewList = getPermittedSessionLogList(permissions);
-  const userGroupList = getFormattedSupportedSessionUserGroups(
-    permittedSessionLogViewList ?? [],
-    t,
-  );
-  const sessionTypeList = useMemo(
-    () =>
-      getSupportedSessionTypeListByUserGroup(
-        permittedSessionLogViewList ?? [],
-        sessionUserGroup,
-        t,
-      ),
-    [sessionUserGroup, permittedSessionLogViewList, t],
-  );
+  const userGroupList = getFormattedSupportedSessionUserGroups(supportedLogList ?? [], t);
 
   const getContent = () => {
     if (sessionUserGroup === SessionUserGroup.ORG_LOGS) {
@@ -123,13 +115,14 @@ export const Calls: FC = () => {
             className="z-10 text-typography-900 text-2xl font-[500] flex items-center gap-2"
             data-testid="calls-title"
           >
-            {t("calls.title")}
+            {t(isScribe ? "calls.scribeTitle" : "calls.roleplayTitle")}
             <Refresh
               data-testid="calls-refresh-button"
               className="w-6 h-6 cursor-pointer border-l-[0.5px] border-border pl-2"
               onClick={handleRefresh}
             />
           </div>
+          {isScribe && (
           <div className="flex gap-2 items-center font-tertiary" data-testid="calls-action-buttons">
             <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
               {availableChatTypes?.includes(CallType.AUDIO_UPLOAD) && (
@@ -179,43 +172,29 @@ export const Calls: FC = () => {
               )}
             </PermissionGuard>
           </div>
+          )}
         </div>
         {userGroupList?.length > 1 && (
           <div className="w-full border-b border-border mb-4" data-testid="calls-user-group-tabs">
             <Tabs
               items={userGroupList.map(tab => ({ id: tab.id, label: tab.label }))}
               activeId={sessionUserGroup}
-              onChange={newId => {
-                setSessionUserGroup(newId as SessionUserGroup);
-                setSessionType(
-                  supportedLogList?.length > 0
-                    ? (supportedLogList[0].sessionType as SessionType)
-                    : undefined,
-                );
-              }}
+              onChange={newId => setSessionUserGroup(newId as SessionUserGroup)}
               className="border-none w-full normal-case text-base font-primary"
               showCount={false}
             />
           </div>
         )}
-        <div className="flex justify-between items-center gap-2">
-          {sessionTypeList?.length > 1 && (
-            <ToggleButtonGroup
-              data-testid="calls-session-type-toggle"
-              value={sessionType}
-              onValueChange={(value: SessionType) => setSessionType(value)}
-              items={sessionTypeList}
-            />
-          )}
-          {sessionType === SessionType.CALL && (
+        {isScribe && (
+          <div className="flex justify-end items-center gap-2">
             <div
               className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-sm hover:bg-[#EEEEEE] active:bg-[#EEEEEE] ml-auto"
               onClick={e => setMenuAnchor(e.currentTarget)}
             >
               <MoreVertIcon />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </motion.div>
       <div data-testid="calls-content">{getContent()}</div>
       <StartSessionDialog
@@ -234,7 +213,10 @@ export const Calls: FC = () => {
       </PermissionGuard>
 
       {canCreateNote(user) && (
-        <CreateNoteDrawer open={isCreateNoteOpen} onClose={() => setIsCreateNoteOpen(false)} />
+        <CreateNoteDrawer
+          open={isCreateNoteOpen}
+          onClose={() => setIsCreateNoteOpen(false)}
+        />
       )}
 
       <CustomMenu

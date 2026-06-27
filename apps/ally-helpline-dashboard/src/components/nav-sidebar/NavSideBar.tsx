@@ -32,7 +32,7 @@ const getTabTooltipLocations = (): Partial<Record<string, TooltipLocation>> => (
   [TabId.REVIEW]: TooltipLocation.REVIEW_TAB,
   [TabId.BADGES]: TooltipLocation.BADGES_TAB,
   [TabId.LEADERBOARD]: TooltipLocation.COMMUNITY_TAB,
-  [TabId.CALLS]: TooltipLocation.SESSIONS_TAB,
+  [TabId.SCRIBE_LOGS]: TooltipLocation.SESSIONS_TAB,
   [TabId.ANALYTICS]: TooltipLocation.STATISTICS_TAB,
   [TabId.SEARCH]: TooltipLocation.SEARCH_TAB,
 });

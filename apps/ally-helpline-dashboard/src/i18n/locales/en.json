@@ -84,6 +84,8 @@
       "badges": "Badges",
       "community": "Community",
       "sessions": "Sessions",
+      "scribeLogs": "Scribe Logs",
+      "roleplayLogs": "Roleplay Logs",
       "statistics": "Statistics",
       "search": "Search"
     },
@@ -819,6 +821,8 @@
   },
   "calls": {
     "title": "Session Logs",
+    "scribeTitle": "Scribe Logs",
+    "roleplayTitle": "Roleplay Logs",
     "menu": {
       "archives": "Archives"
     },

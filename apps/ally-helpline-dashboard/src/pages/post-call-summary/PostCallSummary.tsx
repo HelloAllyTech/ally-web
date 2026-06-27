@@ -149,7 +149,7 @@ export const PostCallSummary = () => {
   const Header = () => (
     <div className="flex items-center gap-2 font-secondary justify-between">
       <div className="flex items-center gap-2">
-        <button onClick={() => navigate(ROUTES.CALLS)}>
+        <button onClick={() => navigate(ROUTES.SCRIBE_LOGS)}>
           <BackCircle />
         </button>
         <span className="text-4xl">{t("postCallSummary.header.session")}</span>

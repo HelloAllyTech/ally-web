@@ -33,7 +33,7 @@ export const Archives: FC = () => {
   };
 
   const handleGoBack = () => {
-    navigate(ROUTES.CALLS);
+    navigate(ROUTES.SCRIBE_LOGS);
   };
 
   return (

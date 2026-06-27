@@ -17,7 +17,7 @@ import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { UserRole } from "@types";
+import { SessionType, UserRole } from "@types";
 
 import { Calls } from "../Calls";
 
@@ -156,6 +156,13 @@ vi.mock("../components", () => ({
       </button>
     </div>
   ),
+  CreateNoteDrawer: ({ open, onClose }: any) => (
+    <div data-testid="create-note-drawer" data-is-open={open}>
+      <button data-testid="close-note-drawer" onClick={onClose}>
+        Close Note Drawer
+      </button>
+    </div>
+  ),
 }));
 
 // Mock utils
@@ -196,7 +203,7 @@ vi.mock("@constants", () => ({
 const renderCalls = (props = {}) => {
   return render(
     <BrowserRouter>
-      <Calls {...props} />
+      <Calls sessionType={SessionType.CALL} {...props} />
     </BrowserRouter>,
   );
 };
@@ -263,9 +270,19 @@ describe("Calls Component", () => {
       expect(screen.getByTestId("user-logs-table")).toBeInTheDocument();
     });
 
-    it("should render Session Logs heading", () => {
+    it("should render Scribe Logs heading", () => {
       renderCalls();
-      expect(screen.getByText("Session Logs")).toBeInTheDocument();
+      expect(screen.getByText("Scribe Logs")).toBeInTheDocument();
+    });
+
+    it("should render Roleplay Logs heading on the roleplay page", () => {
+      renderCalls({ sessionType: SessionType.SIMULATION });
+      expect(screen.getByText("Roleplay Logs")).toBeInTheDocument();
+    });
+
+    it("should not show scribe action buttons on the roleplay page", () => {
+      renderCalls({ sessionType: SessionType.SIMULATION });
+      expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
     });
   });
 

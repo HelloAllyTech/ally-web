@@ -101,6 +101,7 @@ vi.mock("@assets", () => ({
   SearchIcon: () => <svg data-testid="search-icon" />,
   StatsIcon: () => <svg data-testid="stats-icon" />,
   ScribeIcon: () => <svg data-testid="scribe-icon" />,
+  ScenarioIcon: () => <svg data-testid="scenario-icon" />,
   ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
   Badge: () => <svg data-testid="badge-icon" />,
   Info: ({ className }: { className?: string }) => (

@@ -373,7 +373,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   const hasDataChanged = () => summaryHasChanges(callSummary?.details?.summary, summaryData);
 
   const navigateToCallLogs = () => {
-    navigate(ROUTES.CALLS, { state: { refetch: true } });
+    navigate(ROUTES.SCRIBE_LOGS, { state: { refetch: true } });
   };
 
   const handleSave = async () => {
