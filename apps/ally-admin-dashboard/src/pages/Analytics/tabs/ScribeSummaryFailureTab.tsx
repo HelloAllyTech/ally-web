@@ -22,6 +22,10 @@ const STAGE_LABELS: Record<string, string> = {
   "summary-timeout": "Timed out",
   "transcribe-result": "Delivery",
   deliver: "Delivery",
+  "dead-letter": "Dead-letter (retries exhausted)",
+  "transcription-request-dlq": "Dead-letter (request)",
+  "transcription-response-dlq": "Dead-letter (delivery)",
+  "other-error": "Other error",
   unknown: "Unknown",
 };
 
