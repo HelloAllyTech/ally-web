@@ -31,6 +31,7 @@ export type FormData = {
   comfortAudioEnabled?: boolean;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
+  interimReplyEnabled?: boolean;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;

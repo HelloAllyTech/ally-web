@@ -102,6 +102,7 @@ export interface SimulationInput {
   comfortAudioEnabled?: boolean;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
+  interimReplyEnabled?: boolean;
   currentState?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
@@ -201,6 +202,7 @@ export interface GetSimulationByIdResponse {
     comfortAudioEnabled?: boolean;
     historyTrimEnabled?: boolean;
     continuousBackchanneling?: boolean;
+    interimReplyEnabled?: boolean;
     currentState?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;

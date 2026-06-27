@@ -190,6 +190,7 @@ export const FORM_FIELD_IDS = {
   COMFORT_AUDIO_ENABLED: "comfortAudioEnabled",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
+  INTERIM_REPLY_ENABLED: "interimReplyEnabled",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
   SELECTED_EVALUATOR_PROMPT_CODE: "selectedEvaluatorPromptCode",
   STATES: "states",
@@ -566,6 +567,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
       {
         id: "continuousBackchanneling",
         label: "Continuous Back-channeling",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
+      },
+      {
+        id: "interimReplyEnabled",
+        label: "Interim Reply",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,
