@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 
 import { Tooltip } from "@mui/material";
 
-import { InfoIcon } from "@assets";
+import { TooltipIcon } from "@assets";
 import { NumberInput, TimeInput } from "@components";
 import { DETECTION_CONFIG_FIELDS, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
 import { isInfinityValue, toggleInfinityValue, getInfinityDisplay } from "@utils";
@@ -63,7 +63,7 @@ const FieldRow: React.FC<FieldRowProps> = ({ label, children, tooltip, tooltipTi
       {tooltip && (
         <Tooltip title={tooltipTitle || label} placement="top" arrow slotProps={toolTipStyles}>
           <span className="cursor-pointer items-center ">
-            <InfoIcon />
+            <TooltipIcon />
           </span>
         </Tooltip>
       )}

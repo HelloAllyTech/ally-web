@@ -89,6 +89,7 @@ vi.mock("@components/icon-uploader", () => ({
 vi.mock("@assets", () => ({
   DoubleArrowRight: () => <svg data-testid="double-arrow" />,
   InfoIcon: () => <svg data-testid="info-icon" />,
+  TooltipIcon: () => <svg data-testid="tooltip-icon" />,
   Trash: () => <svg data-testid="trash-icon" />,
   Edit: () => <svg data-testid="edit-icon" />,
   ArrowDownFilled: () => <svg data-testid="arrow-down-filled" />,
@@ -252,7 +253,7 @@ describe("CreateBadgeSidePanel", () => {
       renderComponent();
 
       expect(screen.getByText("Criteria")).toBeInTheDocument();
-      expect(screen.getByTestId("info-icon")).toBeInTheDocument();
+      expect(screen.getByTestId("tooltip-icon")).toBeInTheDocument();
     });
 
     it("displays category based on selected badge type", () => {

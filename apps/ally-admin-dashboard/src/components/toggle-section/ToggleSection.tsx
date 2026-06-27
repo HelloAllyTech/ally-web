@@ -1,6 +1,9 @@
+import { Tooltip } from "@mui/material";
 import { UseFormReturn, useController } from "react-hook-form";
 
-import { en } from "@constants";
+import { useGetActiveTooltipsQuery } from "@api";
+import { TooltipIcon } from "@assets";
+import { en, toolTipStyles } from "@constants";
 
 import { ToggleSwitch } from "../toggle-switch";
 
@@ -8,9 +11,20 @@ interface ToggleSectionProps {
   label: string;
   name: string;
   formMethods: UseFormReturn<any>;
+  /**
+   * `location` slug of a row in the data-driven tooltips system. When set and a
+   * matching active tooltip exists, an info icon + tooltip renders next to the
+   * label. Superadmins author the text under Manage Tooltips.
+   */
+  tooltipLocation?: string;
 }
 
-export const ToggleSection = ({ label, name, formMethods }: ToggleSectionProps) => {
+export const ToggleSection = ({
+  label,
+  name,
+  formMethods,
+  tooltipLocation,
+}: ToggleSectionProps) => {
   const {
     field: { value, onChange },
   } = useController({
@@ -18,9 +32,28 @@ export const ToggleSection = ({ label, name, formMethods }: ToggleSectionProps) 
     control: formMethods.control,
   });
 
+  const { data: tooltips = [] } = useGetActiveTooltipsQuery(undefined, {
+    skip: !tooltipLocation,
+  });
+  const tooltip = tooltipLocation ? tooltips.find(t => t.location === tooltipLocation) : undefined;
+  const tooltipTitle = tooltip
+    ? tooltip.icon
+      ? `${tooltip.icon} ${tooltip.tipText}`
+      : tooltip.tipText
+    : "";
+
   return (
     <div className="flex justify-between items-center py-2 w-full">
-      <span className="font-regular text-base text-typography-900">{label}</span>
+      <span className="flex items-center gap-2 font-regular text-base text-typography-900">
+        {label}
+        {tooltipTitle && (
+          <Tooltip title={tooltipTitle} placement="top" arrow slotProps={toolTipStyles}>
+            <span className="cursor-pointer flex items-center">
+              <TooltipIcon />
+            </span>
+          </Tooltip>
+        )}
+      </span>
       <span className="flex gap-3 text-base">
         <ToggleSwitch enabled={!!value} onChange={onChange} label={label} />
         {value ? en.common.enabled : en.common.disabled}

@@ -151,6 +151,7 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
 
 // Mock components
 vi.mock("@components", () => ({
+  AppTooltip: ({ children }: any) => children,
   LoginDialog: vi.fn(({ isOpen, onClose, onSuccess }: any) => (
     <div data-testid="login-dialog" style={{ display: isOpen ? "block" : "none" }}>
       <button data-testid="login-close" onClick={onClose}>

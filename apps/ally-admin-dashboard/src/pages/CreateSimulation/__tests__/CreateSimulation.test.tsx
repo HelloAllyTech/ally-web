@@ -123,6 +123,7 @@ vi.mock("@assets", () => ({
 }));
 
 vi.mock("@components", () => ({
+  AppTooltip: ({ children }: any) => children,
   Button: ({ children, onClick, disabled, className }: any) => (
     <button onClick={onClick} disabled={disabled} className={className}>
       {children}
@@ -163,6 +164,7 @@ vi.mock("@components", () => ({
 vi.mock("@constants", () => ({
   en: mockEn,
   ADVANCED_EVENTS_LATENCY_THRESHOLD: 10,
+  TooltipLocation: { PUBLISH_SIMULATION_VERSION: "publish_simulation_version" },
   // Agent Builder Copilot tab is gated; keep it hidden in these tests.
   canUseAgentBuilderCopilot: () => false,
   ExperienceMode: {

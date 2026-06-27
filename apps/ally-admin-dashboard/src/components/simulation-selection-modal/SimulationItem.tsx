@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
-import { CloseRed, DragIndicator, InfoIcon, Plus } from "@assets";
+import { CloseRed, DragIndicator, TooltipIcon, Plus } from "@assets";
 import { en, toolTipStyles } from "@constants";
 import { SimulationCardItemProps } from "@types";
 import { normalizeScore } from "@utils";
@@ -153,7 +153,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               arrow
             >
               <span>
-                <InfoIcon />
+                <TooltipIcon />
               </span>
             </Tooltip>
 

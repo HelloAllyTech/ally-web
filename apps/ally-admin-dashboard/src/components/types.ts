@@ -74,6 +74,9 @@ export interface InputFieldProps {
   disabled?: boolean;
   regenerateButton?: ReactNode;
   enhanceButton?: ReactNode;
+  /** Data-driven tooltip `location`; shows a sticky_note hint next to the label
+   *  when an active tooltip exists for it. */
+  tooltipLocation?: string;
 }
 
 // DropdownField

@@ -23,6 +23,7 @@ import {
   ActionConfirmationPopup,
   AgentBuilderCopilot,
   AgentBuilderCopilotV2Wizard,
+  AppTooltip,
   Button,
   CreateSimulationSubSection,
   ReportSection,
@@ -49,6 +50,7 @@ import {
   isValidStateInstructionId,
   ROLE_INSTRUCTION_PROMPT_CODE,
   BEHAVIOUR_STATES,
+  TooltipLocation,
 } from "@constants";
 import { useDebounce, useScenarioTranslationsSocket, useUser } from "@hooks";
 import { selectUploadsInProgress } from "@reducer/reportUploadReducer";
@@ -1228,16 +1230,18 @@ export const CreateSimulation: FC = () => {
           >
             {en.simulation.preview}
           </Button>
-          <Button
-            variant={ButtonVariant.PRIMARY}
-            onClick={handlePublish}
-            disabled={!areAllMandatoryFieldsFilled || isCreatingSimulation || isPublishingVersion}
-            className="transition-colors h-[40px] pr-[20px]"
-          >
-            {isCreatingSimulation || isPublishingVersion
-              ? en.simulation.publishing
-              : en.simulation.publish}
-          </Button>
+          <AppTooltip location={TooltipLocation.PUBLISH_SIMULATION_VERSION}>
+            <Button
+              variant={ButtonVariant.PRIMARY}
+              onClick={handlePublish}
+              disabled={!areAllMandatoryFieldsFilled || isCreatingSimulation || isPublishingVersion}
+              className="transition-colors h-[40px] pr-[20px]"
+            >
+              {isCreatingSimulation || isPublishingVersion
+                ? en.simulation.publishing
+                : en.simulation.publish}
+            </Button>
+          </AppTooltip>
         </div>
       </div>
 

@@ -9,6 +9,7 @@ import { DropdownField, MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
 import { useEndSimulationMutation, useGetScenarioQuery, useGetScenariosQuery } from "@api";
 import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
 import {
+  AppTooltip,
   LoginDialog,
   ScenarioDetailsCard,
   ConfirmationDialog,
@@ -17,7 +18,12 @@ import {
   CreditInfo,
   CreditsDisplay,
 } from "@components";
-import { AUTO_CLOSE_DIALOG_DURATION, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
+import {
+  AUTO_CLOSE_DIALOG_DURATION,
+  LOCAL_STORAGE_KEYS,
+  ROUTES,
+  TooltipLocation,
+} from "@constants";
 import { useSimulationCredits, useStartSimulation } from "@hooks";
 import { LanguageOption } from "@types";
 
@@ -104,18 +110,20 @@ export const Scenario: FC = () => {
 
   const renderBackButton = () => {
     return (
-      <motion.button
-        data-testid="scenario-back-button"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        transition={{ duration: 0.3 }}
-        onClick={() => navigate(ROUTES.LEARN)}
-        className="hover:scale-105 transition-transform"
-        aria-label={t("learn.scenario.backAria")}
-      >
-        <BackCircle />
-      </motion.button>
+      <AppTooltip location={TooltipLocation.SCENARIO_BACK_BUTTON}>
+        <motion.button
+          data-testid="scenario-back-button"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          onClick={() => navigate(ROUTES.LEARN)}
+          className="hover:scale-105 transition-transform"
+          aria-label={t("learn.scenario.backAria")}
+        >
+          <BackCircle />
+        </motion.button>
+      </AppTooltip>
     );
   };
 

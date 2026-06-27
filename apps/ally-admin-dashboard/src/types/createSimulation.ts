@@ -110,6 +110,12 @@ export interface FormFieldConfig {
   featureFlag?: string;
   /** When true, wrap the field in a collapsed accordion. */
   accordion?: boolean;
+  /**
+   * `location` slug of a data-driven tooltip (see TooltipLocation). When set,
+   * the field renders an info-icon tooltip whose text superadmins author under
+   * Manage Tooltips. Currently consumed by toggle fields (ToggleSection).
+   */
+  tooltipLocation?: string;
 }
 
 export interface FieldGroupType {

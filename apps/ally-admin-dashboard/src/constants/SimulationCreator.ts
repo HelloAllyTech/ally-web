@@ -1,5 +1,5 @@
 import { cellTypes } from "@components";
-import { en, ExperienceMode } from "@src/constants";
+import { en, ExperienceMode, TooltipLocation } from "@src/constants";
 import { CreatorFieldGroups, FormFieldConfig } from "@types";
 
 export const minInputHeight = {
@@ -305,6 +305,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "triggerWarningIds",
         label: "Trigger warnings",
         type: FORM_FIELD_TYPES.TAG_AND_DROPDOWN,
+        tooltipLocation: TooltipLocation.TRIGGER_WARNINGS,
         // Full-width: the Competency dropdown that used to pair with this on
         // one row now lives next to the Behaviour Instructions table below.
         fullWidth: true,
@@ -320,6 +321,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "characterProfileSelector",
         label: "Character Profile Selector",
         type: FORM_FIELD_TYPES.CUSTOM.CHARACTER_PROFILE_SELECTOR,
+        tooltipLocation: TooltipLocation.CHARACTER_PROFILE_SELECTOR,
         isMandatory: false,
         fullWidth: true,
       },
@@ -327,6 +329,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "characterProfileText",
         label: "Character Backstory",
         type: FORM_FIELD_TYPES.TEXT,
+        tooltipLocation: TooltipLocation.CHARACTER_BACKSTORY,
         multiline: true,
         fullWidth: true,
         maxLength: 2500,
@@ -340,6 +343,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "customFields",
         label: "Custom Fields",
         type: FORM_FIELD_TYPES.CUSTOM_FIELDS,
+        tooltipLocation: TooltipLocation.CUSTOM_FIELDS,
         fullWidth: true,
         // Custom fields exist solely to render `{custom_fields_text}` in the
         // prompt — no other consumer reads them. Hide the editor when the
@@ -351,6 +355,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "knowledgeSources",
         label: "Knowledge Sources",
         type: FORM_FIELD_TYPES.KNOWLEDGE_SOURCE,
+        tooltipLocation: TooltipLocation.KNOWLEDGE_SOURCES,
         fullWidth: true,
         // Knowledge sources feed RAG retrieval, which substitutes
         // into `{retrieved_context}`. Variants that don't reference
@@ -382,6 +387,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "states",
         label: "States",
         type: FORM_FIELD_TYPES.CUSTOM.STATES_EDITOR,
+        tooltipLocation: TooltipLocation.SESSION_STATES_PROGRESSION,
         fullWidth: true,
         isMandatory: false,
       },
@@ -428,6 +434,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "languageVoices",
         label: "Language-Voice",
         type: FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING,
+        tooltipLocation: TooltipLocation.LANGUAGE_VOICE_MAPPING,
         isMandatory: true,
         fullWidth: true,
       },
@@ -435,6 +442,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "openingStatements",
         label: "Opening Dialogues",
         type: FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES,
+        tooltipLocation: TooltipLocation.OPENING_DIALOGUE_TEMPLATES,
         fullWidth: true,
         isMandatory: false,
         promptVariable: "opening_statements",
@@ -444,6 +452,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "linguisticStyleSamples",
         label: "Linguistic Style Samples",
         type: FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
+        tooltipLocation: TooltipLocation.LINGUISTIC_STYLE_SAMPLES,
         isMandatory: false,
         fullWidth: true,
         // No FormField-level hideWhenUnused here — the inner
@@ -458,12 +467,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "autoTerminationStatus",
         label: "Auto termination",
         type: FORM_FIELD_TYPES.CUSTOM.AUTO_TERMINATION_RULE,
+        tooltipLocation: TooltipLocation.AUTO_TERMINATION_RULES,
         fullWidth: true,
       },
       {
         id: "experienceMode",
         label: "Experience Mode",
         type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
+        tooltipLocation: TooltipLocation.EXPERIENCE_MODE_TYPE,
         options: EXPERIENCE_MODE_OPTIONS,
         fullWidth: false,
         isMandatory: false,
@@ -472,6 +483,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "checklistType",
         label: "Checklist Type",
         type: FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS,
+        tooltipLocation: TooltipLocation.CHECKLIST_TYPE_VARIANT,
         options: CHECKLIST_TYPE_OPTIONS,
         fullWidth: false,
         dependsOn: "experienceMode",
@@ -482,12 +494,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Session Timer",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
+        tooltipLocation: TooltipLocation.SESSION_TIMER,
       },
       {
         id: "maxTimeValue",
         label: "Maximum time",
         placeholder: "00:05:00 - 02:00:00",
         type: FORM_FIELD_TYPES.TIME_INPUT,
+        tooltipLocation: TooltipLocation.SESSION_MAX_TIME,
         fullWidth: true,
         dependsOn: "timerMode",
         visibleWhen: (formValues: any) => formValues.timerMode === true,
@@ -501,6 +515,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Score",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
+        tooltipLocation: TooltipLocation.SCORE,
       },
       {
         id: "enableFeedback",
@@ -508,6 +523,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
+        tooltipLocation: TooltipLocation.AI_FEEDBACK_SUMMARY,
       },
       {
         id: "pauseEnabled",
@@ -515,18 +531,21 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,
+        tooltipLocation: TooltipLocation.ALLOW_PAUSE_RESUME,
       },
       {
         id: "isGlobal",
         label: "Default org-level visibility",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
+        tooltipLocation: TooltipLocation.DEFAULT_ORG_VISIBILITY,
       },
       {
         id: "isPublic",
         label: "Public visibility",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
+        tooltipLocation: TooltipLocation.PUBLIC_VISIBILITY,
       },
       {
         id: "optGuardrails",
@@ -535,6 +554,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         disabled: true,
+        tooltipLocation: TooltipLocation.CONVERSATIONAL_GUARDRAILS,
       },
       {
         id: "enableProsody",
@@ -542,6 +562,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: true,
+        tooltipLocation: TooltipLocation.SPEECH_PROSODY,
       },
       {
         id: "fillerEnabled",
@@ -549,6 +570,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,
+        tooltipLocation: TooltipLocation.THINKING_FILLER,
       },
       {
         id: "comfortAudioEnabled",
@@ -556,6 +578,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,
+        tooltipLocation: TooltipLocation.COMFORT_AUDIO,
       },
       {
         id: "historyTrimEnabled",
@@ -563,6 +586,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,
+        tooltipLocation: TooltipLocation.TRIM_HISTORY,
       },
       {
         id: "continuousBackchanneling",
@@ -570,6 +594,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,
+        tooltipLocation: TooltipLocation.CONTINUOUS_BACKCHANNELING,
       },
       {
         id: "interimReplyEnabled",
@@ -577,12 +602,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         defaultValue: false,
+        tooltipLocation: TooltipLocation.INTERIM_REPLY,
       },
       {
         id: "currentState",
         label: "Current State",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
+        tooltipLocation: TooltipLocation.CURRENT_STATE,
       },
     ] as FormFieldConfig[],
   },

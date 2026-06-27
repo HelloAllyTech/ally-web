@@ -45,6 +45,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     promptVariable,
     hideWhenUnused,
     accordion,
+    tooltipLocation,
   } = config;
   const {
     formState: { errors },
@@ -149,6 +150,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             isMandatory={isMandatory}
             defaultValue={defaultValue}
             enhanceButton={enhanceButton}
+            tooltipLocation={tooltipLocation}
           />
         );
       case FORM_FIELD_TYPES.NUMBER:
@@ -161,6 +163,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             maxLength={maxLength}
             placeholder={placeholder}
             isMandatory={isMandatory}
+            tooltipLocation={tooltipLocation}
           />
         );
       case FORM_FIELD_TYPES.IMAGE_UPLOAD:
@@ -196,7 +199,12 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.TOGGLE_BUTTON:
         return (
           <div className="w-full">
-            <ToggleSection label={label} name={id} formMethods={formMethods} />
+            <ToggleSection
+              label={label}
+              name={id}
+              formMethods={formMethods}
+              tooltipLocation={tooltipLocation}
+            />
           </div>
         );
       case FORM_FIELD_TYPES.TAG_AND_DROPDOWN:
