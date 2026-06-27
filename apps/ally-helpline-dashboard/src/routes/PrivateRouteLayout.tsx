@@ -30,12 +30,14 @@ import {
 import { ReviewDetails } from "@pages/review-details/ReviewDetails";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
 import { store } from "@store";
+import { SessionType } from "@types";
 import {
   hasAnalyticsPermission,
   hasCallPermission,
   hasLearnPermission,
   hasPermissions,
-  hasSessionLogsPermission,
+  hasScribeLogsPermission,
+  hasRoleplayLogsPermission,
   hasReviewPermission,
 } from "@utils";
 
@@ -98,8 +100,9 @@ const PrivateRouteLayout: FC = () => {
 
   const getLandingPageByRole = () => {
     if (hasLearnPermission(permissions)) return ROUTES.LEARN;
-    if (hasCallPermission(permissions) || hasSessionLogsPermission(permissions))
-      return ROUTES.CALLS;
+    if (hasCallPermission(permissions) || hasScribeLogsPermission(permissions))
+      return ROUTES.SCRIBE_LOGS;
+    if (hasRoleplayLogsPermission(permissions)) return ROUTES.ROLEPLAY_LOGS;
     if (hasAnalyticsPermission(permissions)) return ROUTES.ANALYTICS;
     if (hasReviewPermission(permissions)) return ROUTES.REVIEW;
     // Fallback: ROUTES.HOME ("/") has no page of its own and only redirects to
@@ -120,29 +123,33 @@ const PrivateRouteLayout: FC = () => {
           element={<PermissionGuardedRoute permission={CALL_PERMISSIONS} element={<AudioCall />} />}
         />
         <Route
-          path={ROUTES.CALLS}
+          path={ROUTES.SCRIBE_LOGS}
           element={
             <PermissionGuardedRoute
-              permission={[
-                Permissions.VIEW_CALL_LOGS,
-                Permissions.VIEW_CONSOLIDATED_LOGS,
-                Permissions.VIEW_SCENARIO_SESSION,
-                Permissions.VIEW_ADMIN_SCENARIO_SESSION,
-              ]}
-              element={<Calls />}
+              permission={[Permissions.VIEW_CALL_LOGS, Permissions.VIEW_CONSOLIDATED_LOGS]}
+              element={<Calls sessionType={SessionType.CALL} />}
             />
           }
         />
         <Route
-          path={ROUTES.ARCHIVES}
+          path={ROUTES.ROLEPLAY_LOGS}
           element={
             <PermissionGuardedRoute
               permission={[
-                Permissions.VIEW_CALL_LOGS,
-                Permissions.VIEW_CONSOLIDATED_LOGS,
                 Permissions.VIEW_SCENARIO_SESSION,
                 Permissions.VIEW_ADMIN_SCENARIO_SESSION,
               ]}
+              element={<Calls sessionType={SessionType.SIMULATION} />}
+            />
+          }
+        />
+        {/* Legacy /calls links now resolve to the Scribe Logs tab */}
+        <Route path="/calls" element={<Navigate to={ROUTES.SCRIBE_LOGS} replace />} />
+        <Route
+          path={ROUTES.ARCHIVES}
+          element={
+            <PermissionGuardedRoute
+              permission={[Permissions.VIEW_CALL_LOGS, Permissions.VIEW_CONSOLIDATED_LOGS]}
               element={<Archives />}
             />
           }

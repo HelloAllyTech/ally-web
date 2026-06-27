@@ -74,7 +74,7 @@ vi.mock("@constants", async importOriginal => {
   return {
     ...actual,
     ROUTES: {
-      CALLS: "/calls",
+      SCRIBE_LOGS: "/scribe-logs",
     },
   };
 });
@@ -378,7 +378,7 @@ describe("Archives Component", () => {
       const backButton = screen.getByTestId("archives-back-button");
       fireEvent.click(backButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith("/calls");
+      expect(mockNavigate).toHaveBeenCalledWith("/scribe-logs");
       expect(mockNavigate).toHaveBeenCalledTimes(1);
     });
 

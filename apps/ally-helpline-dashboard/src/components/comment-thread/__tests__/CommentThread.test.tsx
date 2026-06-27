@@ -21,6 +21,7 @@ vi.mock("@assets", () => ({
   SearchIcon: ({ className }: any) => <div data-testid="search-icon" className={className} />,
   StatsIcon: ({ className }: any) => <div data-testid="stats-icon" className={className} />,
   ScribeIcon: ({ className }: any) => <div data-testid="scribe-icon" className={className} />,
+  ScenarioIcon: () => <svg data-testid="scenario-icon" />,
   LearnIcon: ({ className }: any) => <div data-testid="learn-icon" className={className} />,
   Leaderboard: ({ className }: any) => <div data-testid="leaderboard" className={className} />,
   ReviewNavIcon: ({ className }: any) => (

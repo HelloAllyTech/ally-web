@@ -1,4 +1,12 @@
-import { StatsIcon, ScribeIcon, LearnIcon, Leaderboard, ReviewNavIcon, Badge } from "@assets";
+import {
+  StatsIcon,
+  ScribeIcon,
+  ScenarioIcon,
+  LearnIcon,
+  Leaderboard,
+  ReviewNavIcon,
+  Badge,
+} from "@assets";
 
 import { Permissions } from "./permissions";
 import { TabId } from "./tabs";
@@ -18,7 +26,8 @@ export const ROUTES = {
   HOME: "/",
   CALL_LOGS: "/call-logs",
   AUDIO_CALL: "/audio-call",
-  CALLS: "/calls",
+  SCRIBE_LOGS: "/scribe-logs",
+  ROLEPLAY_LOGS: "/roleplay-logs",
   CALENDER: "/calender",
   STRESS_BUSTER: "/stress-buster",
   ANALYTICS: "/analytics",
@@ -86,18 +95,22 @@ export const navBarOptions = [
     permissions: [Permissions.VIEW_LEADERBOARD],
   },
   {
-    id: TabId.CALLS,
-    title: "Sessions",
-    key: "nav.tabs.sessions",
+    id: TabId.SCRIBE_LOGS,
+    title: "Scribe Logs",
+    key: "nav.tabs.scribeLogs",
     Icon: ScribeIcon,
-    path: ROUTES.CALLS,
+    path: ROUTES.SCRIBE_LOGS,
+    activePages: [ROUTES.ARCHIVES],
+    permissions: [Permissions.VIEW_CALL_LOGS, Permissions.VIEW_CONSOLIDATED_LOGS],
+  },
+  {
+    id: TabId.ROLEPLAY_LOGS,
+    title: "Roleplay Logs",
+    key: "nav.tabs.roleplayLogs",
+    Icon: ScenarioIcon,
+    path: ROUTES.ROLEPLAY_LOGS,
     activePages: [],
-    permissions: [
-      Permissions.VIEW_CALL_LOGS,
-      Permissions.VIEW_CONSOLIDATED_LOGS,
-      Permissions.VIEW_SCENARIO_SESSION,
-      Permissions.VIEW_ADMIN_SCENARIO_SESSION,
-    ],
+    permissions: [Permissions.VIEW_SCENARIO_SESSION, Permissions.VIEW_ADMIN_SCENARIO_SESSION],
   },
   {
     id: TabId.ANALYTICS,

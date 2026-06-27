@@ -39,7 +39,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
       navBarOptions.find(
         option =>
           option.path === pathname || option.activePages.some(page => matchPath(page, pathname)),
-      )?.id ?? TabId.CALLS,
+      )?.id ?? TabId.SCRIBE_LOGS,
     [pathname],
   );
   const handleTabChange = (path: string) => {

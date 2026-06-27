@@ -106,7 +106,9 @@ vi.mock("@constants", () => ({
     LOGIN: "/login",
     ANALYTICS: "/analytics",
     LEARN: "/learn",
-    CALLS: "/calls",
+    SCRIBE_LOGS: "/scribe-logs",
+    ROLEPLAY_LOGS: "/roleplay-logs",
+    ARCHIVES: "/archives",
     HOME: "/",
     AUDIO_CALL: "/audio-call",
     STRESS_BUSTER: "/stress-buster",
@@ -127,6 +129,10 @@ vi.mock("@types", () => ({
     ADMIN: "ADMIN",
     COUNSELLOR: "COUNSELOR",
     LEARNER: "LEARNER",
+  },
+  SessionType: {
+    CALL: "call",
+    SIMULATION: "simulation",
   },
 }));
 
@@ -151,6 +157,8 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 vi.mock("@utils", () => ({
   hasAnalyticsPermission: vi.fn((permissions: any[]) => true),
   hasCallPermission: vi.fn((permissions: any[]) => true),
+  hasScribeLogsPermission: vi.fn((permissions: any[]) => true),
+  hasRoleplayLogsPermission: vi.fn((permissions: any[]) => false),
   hasLearnPermission: vi.fn((permissions: any[]) => false),
   hasPermissions: (permissions: any[], requiredPermission: any) => {
     if (!permissions || !Array.isArray(permissions)) {
