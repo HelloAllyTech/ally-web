@@ -19,7 +19,13 @@ import { useUser } from "@hooks";
 import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
 
-import { AudioUploadDialog, AdminLogsTable, StartSessionDialog, UserLogsTable } from "./components";
+import {
+  AudioUploadDialog,
+  AdminLogsTable,
+  CreateNoteDrawer,
+  StartSessionDialog,
+  UserLogsTable,
+} from "./components";
 import { SessionUserGroup } from "./constants";
 import {
   getFormattedSupportedSessionUserGroups,
@@ -35,6 +41,7 @@ export const Calls: FC = () => {
   const [sessionType, setSessionType] = useState<SessionType>();
   const [sessionUserGroup, setSessionUserGroup] = useState(SessionUserGroup.MY_LOGS);
   const [isAudioUploadDialogOpen, setIsAudioUploadDialogOpen] = useState(false);
+  const [isCreateNoteOpen, setIsCreateNoteOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
   const { permissions, availableChatTypes, user } = useUser();
@@ -53,7 +60,7 @@ export const Calls: FC = () => {
   };
 
   const handleCreateNote = () => {
-    // TODO: wire up the Create Note flow once the UX is defined.
+    setIsCreateNoteOpen(true);
   };
 
   const handleRefresh = () => {
@@ -225,6 +232,10 @@ export const Calls: FC = () => {
           onClose={() => setIsAudioUploadDialogOpen(false)}
         />
       </PermissionGuard>
+
+      {canCreateNote(user) && (
+        <CreateNoteDrawer open={isCreateNoteOpen} onClose={() => setIsCreateNoteOpen(false)} />
+      )}
 
       <CustomMenu
         anchorElement={menuAnchor}

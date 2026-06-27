@@ -4,6 +4,7 @@ import AudioUploadDialog from "./AudioUploadDialog";
 import AudioUploadInterface from "./AudioUploadInterface";
 import CallSummarySidebar from "./CallSummarySidebar";
 import CallTranscriptTab from "./CallTranscriptTab";
+import CreateNoteDrawer from "./create-note/CreateNoteDrawer";
 import DeleteCallLogConfirmationDialog from "./DeleteCallLogConfirmationDialog";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import SimulationTranscriptTab from "./SimulationTranscriptTab";
@@ -20,6 +21,7 @@ export {
   ArchivesLogsTable,
   CallSummarySidebar,
   CallTranscriptTab,
+  CreateNoteDrawer,
   DeleteCallLogConfirmationDialog,
   SimulationSummarySidebar,
   SimulationTranscriptTab,

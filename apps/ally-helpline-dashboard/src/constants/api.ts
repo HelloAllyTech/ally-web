@@ -39,6 +39,7 @@ export const ApiEndpoints = {
     GET_CALL_TAGS: "/v1/chats/tags",
     GET_CHAT_TYPES: "/v1/settings/chat-types",
     GET_AUDIO_UPLOAD_URL: "/v1/chats/upload-url",
+    CREATE_NOTE: "/v1/chats/note",
     CANCEL_AUDIO_UPLOAD: "/v1/chats/cancel-upload",
     PROCESS_AUDIO_UPLOAD: "/v1/chats/process-audio-upload",
     DELETE_CALL_LOG: (chatId: number) => `/v1/chats/${chatId}`,
