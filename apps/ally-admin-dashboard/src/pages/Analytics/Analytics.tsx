@@ -1,11 +1,9 @@
 import { ReactNode, useMemo, useState } from "react";
 
 import {
-  ContentSwitcher,
   Dropdown,
   Heading,
   Section,
-  Switch,
   Tab,
   TabList,
   TabPanel,
@@ -13,7 +11,6 @@ import {
   Tabs,
   Theme,
 } from "@carbon/react";
-import { useSearchParams } from "react-router-dom";
 
 import "@carbon/charts/styles.css";
 import "./analytics-carbon.scss";
@@ -53,14 +50,7 @@ interface TabDef {
   render: (f: TabFilters) => ReactNode;
 }
 
-/**
- * Two session types, each with its own tab set. AI/simulation analytics derive
- * from `scenario_sessions`; scribe analytics derive from `chats` (real
- * counselor sessions). The ContentSwitcher picks the active registry.
- */
-type SessionType = "ai" | "scribe";
-
-const AI_TABS: TabDef[] = [
+const TABS: TabDef[] = [
   {
     id: "overview",
     label: "Overview",
@@ -85,12 +75,9 @@ const AI_TABS: TabDef[] = [
     uses: { language: false },
     render: f => <TokenConsumption range={f.range} />,
   },
-];
-
-const SCRIBE_TABS: TabDef[] = [
   {
     id: "scribe-overview",
-    label: "Overview",
+    label: "Scribe overview",
     uses: { language: false },
     render: f => <ScribeOverviewTab range={f.range} />,
   },
@@ -102,37 +89,12 @@ const SCRIBE_TABS: TabDef[] = [
   },
 ];
 
-const TAB_SETS: Record<SessionType, TabDef[]> = {
-  ai: AI_TABS,
-  scribe: SCRIBE_TABS,
-};
-
-const SESSION_TYPES: SessionType[] = ["ai", "scribe"];
-
 export const Analytics = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const sessionType: SessionType = searchParams.get("sessions") === "scribe" ? "scribe" : "ai";
-  const tabs = TAB_SETS[sessionType];
-
   const [range, setRange] = useState<AnalyticsRange>("30d");
   // Page-level filters, shared across tabs (language id "" = all). Each tab
   // opts in via TabDef.uses; the picker only renders for tabs that use it.
   const [language, setLanguage] = useState<string>("");
   const [tabIndex, setTabIndex] = useState(0);
-
-  const handleSessionTypeChange = (next: SessionType) => {
-    if (next === sessionType) return;
-    setTabIndex(0); // tab sets differ; reset to the first tab
-    setSearchParams(
-      prev => {
-        const params = new URLSearchParams(prev);
-        if (next === "ai") params.delete("sessions");
-        else params.set("sessions", next);
-        return params;
-      },
-      { replace: true },
-    );
-  };
 
   const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });
   const languageItems = useMemo(
@@ -145,7 +107,7 @@ export const Analytics = () => {
 
   const selectedRange = RANGE_ITEMS.find(i => i.id === range) ?? RANGE_ITEMS[0];
   const selectedLanguage = languageItems.find(i => i.id === language) ?? languageItems[0];
-  const activeTab = tabs[tabIndex] ?? tabs[0];
+  const activeTab = TABS[tabIndex] ?? TABS[0];
   const filters: TabFilters = { range, language };
 
   return (
@@ -153,19 +115,7 @@ export const Analytics = () => {
       <Theme theme="white">
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div className="flex flex-wrap items-center gap-4">
-              <Heading className="text-2xl">Analytics</Heading>
-              <div className="w-72">
-                <ContentSwitcher
-                  size="md"
-                  selectedIndex={SESSION_TYPES.indexOf(sessionType)}
-                  onChange={({ index }) => handleSessionTypeChange(SESSION_TYPES[index ?? 0])}
-                >
-                  <Switch name="ai" text="AI Sessions" />
-                  <Switch name="scribe" text="Scribe Sessions" />
-                </ContentSwitcher>
-              </div>
-            </div>
+            <Heading className="text-2xl">Analytics</Heading>
             <div className="flex items-center gap-3">
               {activeTab.uses.language && (
                 <div className="w-48">
@@ -207,12 +157,12 @@ export const Analytics = () => {
             onChange={({ selectedIndex }) => setTabIndex(selectedIndex)}
           >
             <TabList aria-label="Analytics sections">
-              {tabs.map(t => (
+              {TABS.map(t => (
                 <Tab key={t.id}>{t.label}</Tab>
               ))}
             </TabList>
             <TabPanels>
-              {tabs.map(t => (
+              {TABS.map(t => (
                 <TabPanel key={t.id}>{t.render(filters)}</TabPanel>
               ))}
             </TabPanels>
