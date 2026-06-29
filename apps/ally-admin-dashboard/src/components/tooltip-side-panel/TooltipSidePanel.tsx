@@ -58,7 +58,9 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
   onClose,
   onSave,
 }) => {
-  const DEFAULT_ICON = "😀";
+  // No default emoji — the icon is optional (schema allows null), so an admin can
+  // create an icon-less tooltip instead of every tooltip silently inheriting 😀.
+  const DEFAULT_ICON = "";
 
   const [formData, setFormData] = useState<Partial<Tooltip>>({
     location: "",
@@ -91,6 +93,12 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
       !!(formData.location?.trim() && formData.tipText?.trim() && formData.tipText.length <= 200),
     [formData.location, formData.tipText],
   );
+
+  const validationMessage = useMemo(() => {
+    if (!formData.location?.trim() || !formData.tipText?.trim()) return en.tooltip.locationRequired;
+    if ((formData.tipText?.length ?? 0) > 200) return en.tooltip.tipTextTooLong;
+    return "";
+  }, [formData.location, formData.tipText]);
 
   const handleSave = useCallback(() => {
     if (!isFormValid) return;
@@ -131,10 +139,10 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
-      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
+      <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light flex flex-col">
         <PanelHeader onClose={handleClose} isEditing={!!selectedTooltip?.id} />
 
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 min-h-0 px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="mb-4">
             <input
               type="text"
@@ -156,7 +164,6 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
                   value={formData.tipText || ""}
                   onChange={e => handleFieldChange("tipText", e.target.value)}
                   placeholder="Enter tip text..."
-                  maxLength={200}
                   rows={4}
                   className="border border-border-light rounded-md focus:outline-none text-base w-full p-2 resize-none"
                 />
@@ -191,7 +198,7 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
               variant={ButtonVariant.PRIMARY}
               onClick={handleSave}
               disabled={!isFormValid}
-              title={!isFormValid ? en.tooltip.locationRequired : ""}
+              title={validationMessage}
             >
               Save
             </Button>

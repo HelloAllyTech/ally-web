@@ -834,6 +834,7 @@ export const en = {
     icon: "Icon",
     status: "Status",
     locationRequired: "Location and tip text are required",
+    tipTextTooLong: "Tip text must be 200 characters or less",
     unsavedChangesWarning: "You have unsaved changes. Are you sure you want to close?",
     tooltipCreated: "Tooltip created successfully",
     tooltipUpdated: "Tooltip updated successfully",
