@@ -248,6 +248,7 @@ describe("createSimulation utils", () => {
         agentBuilderDescription: undefined,
         agentBuilderPrompt: undefined,
         interimReplyEnabled: false,
+        temperature: "",
         languageCharacteristics: undefined,
         states: [],
       });

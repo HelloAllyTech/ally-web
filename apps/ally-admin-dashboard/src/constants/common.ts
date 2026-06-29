@@ -323,6 +323,7 @@ export enum TooltipLocation {
   TRIM_HISTORY = "trim_history",
   CONTINUOUS_BACKCHANNELING = "continuous_backchanneling",
   INTERIM_REPLY = "interim_reply",
+  LLM_TEMPERATURE = "llm_temperature",
   // Edit Simulation → Basic Settings (other toggles). Seeded blank + inactive;
   // superadmins author the text and enable each under Manage Tooltips.
   SESSION_TIMER = "session_timer",

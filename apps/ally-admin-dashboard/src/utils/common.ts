@@ -237,7 +237,9 @@ export const extractValidData = (
           return [key, isNonEmptyString(value) ? value : null];
 
         case FORM_FIELD_TYPES.NUMBER: //convert string to number and empty val to null
-          return [key, value ? parseInt(value) : null];
+          // parseFloat (not parseInt) so decimal values such as an LLM
+          // temperature of 0.7 survive instead of truncating to 0.
+          return [key, value ? parseFloat(value) : null];
 
         case FORM_FIELD_TYPES.IMAGE_UPLOAD: //image upload if empty returns object,so convert to null
           return [key, value?.length > 0 ? value : null];

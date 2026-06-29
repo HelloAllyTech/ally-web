@@ -103,6 +103,9 @@ export interface SimulationInput {
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
+  // Per-simulation sampling temperature (0–2) for the roleplay actor LLM.
+  // null/omitted = use the global default.
+  temperature?: number | null;
   currentState?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];

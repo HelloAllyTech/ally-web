@@ -32,6 +32,8 @@ export type FormData = {
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
+  // Held as a string in the form (number input); converted to a number on save.
+  temperature?: string | number;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;
@@ -76,6 +78,10 @@ export interface FormFieldConfig {
   component?: React.ReactNode;
   dependsOn?: keyof FormData;
   note?: string;
+  // Inclusive bounds for NUMBER fields. The input is clamped to [min, max]
+  // so out-of-range values can't be entered.
+  min?: number;
+  max?: number;
   regenerateType?: string;
   /**
    * When set, render a field-level "Improve" (Enhance) control for this field.

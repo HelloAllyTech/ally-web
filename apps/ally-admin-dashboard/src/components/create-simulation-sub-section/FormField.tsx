@@ -40,6 +40,8 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     isMandatory,
     defaultValue,
     note,
+    min,
+    max,
     regenerateType,
     enhanceType,
     promptVariable,
@@ -153,19 +155,49 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             tooltipLocation={tooltipLocation}
           />
         );
-      case FORM_FIELD_TYPES.NUMBER:
+      case FORM_FIELD_TYPES.NUMBER: {
+        // Compact, single-row layout (label left, small input right) so a
+        // bounded numeric setting like LLM temperature sits naturally among
+        // the toggle rows instead of stretching full width.
+        const numberReg = formMethods.register(id);
+        // Clamp to [min, max] on blur so a value outside the allowed range
+        // can never be entered/persisted (empty stays empty = use default).
+        const clampToRange = (raw: string): string => {
+          if (raw === "") return "";
+          const n = parseFloat(raw);
+          if (Number.isNaN(n)) return "";
+          let clamped = n;
+          if (typeof min === "number" && clamped < min) clamped = min;
+          if (typeof max === "number" && clamped > max) clamped = max;
+          return String(clamped);
+        };
         return (
-          <InputField
-            label={label}
-            id={id}
-            type={FORM_FIELD_TYPES.NUMBER}
-            formMethods={formMethods}
-            maxLength={maxLength}
-            placeholder={placeholder}
-            isMandatory={isMandatory}
-            tooltipLocation={tooltipLocation}
-          />
+          <div className="flex justify-between items-center py-2 w-full gap-4">
+            <span className="flex items-center gap-2 font-regular text-base text-typography-900">
+              {label}
+              {isMandatory && <span className="text-destructive-500">*</span>}
+            </span>
+            <input
+              {...numberReg}
+              id={id}
+              type="number"
+              inputMode="decimal"
+              step={0.1}
+              {...(typeof min === "number" ? { min } : {})}
+              {...(typeof max === "number" ? { max } : {})}
+              placeholder={placeholder}
+              onBlur={e => {
+                const clamped = clampToRange(e.target.value);
+                if (clamped !== e.target.value) {
+                  formMethods.setValue(id, clamped, { shouldDirty: true, shouldValidate: true });
+                }
+                numberReg.onBlur(e);
+              }}
+              className="w-20 text-right rounded-none bg-secondary-50 border-0 border-b border-border-dark text-md placeholder:text-typography-600 focus:border-b-2 focus:border-primary-500 focus:outline-none px-2 py-1"
+            />
+          </div>
         );
+      }
       case FORM_FIELD_TYPES.IMAGE_UPLOAD:
         return (
           <div className="w-full">

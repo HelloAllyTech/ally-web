@@ -191,6 +191,7 @@ export const FORM_FIELD_IDS = {
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
+  TEMPERATURE: "temperature",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
   SELECTED_EVALUATOR_PROMPT_CODE: "selectedEvaluatorPromptCode",
   STATES: "states",
@@ -610,6 +611,19 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
         tooltipLocation: TooltipLocation.CURRENT_STATE,
+      },
+      {
+        // Per-simulation sampling temperature for the roleplay actor LLM.
+        // Left blank = use the global default.
+        id: "temperature",
+        label: "LLM Temperature",
+        type: FORM_FIELD_TYPES.NUMBER,
+        fullWidth: true,
+        isMandatory: false,
+        placeholder: "0.7",
+        min: 0,
+        max: 2,
+        tooltipLocation: TooltipLocation.LLM_TEMPERATURE,
       },
     ] as FormFieldConfig[],
   },

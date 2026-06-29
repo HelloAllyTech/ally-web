@@ -110,6 +110,14 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? false,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? false,
+    // Stored as a number in metadata; the form's number input is registered as
+    // a string, so stringify it (and keep "" when unset = use global default).
+    // `as any` mirrors the convention used for other newer metadata fields
+    // (e.g. pauseEnabled, agentBuilder*) not yet in the response type.
+    temperature:
+      (data?.metadata as any)?.temperature != null
+        ? String((data?.metadata as any).temperature)
+        : "",
     currentState: data?.metadata?.currentState,
     stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
       ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
