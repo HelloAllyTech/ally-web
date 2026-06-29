@@ -332,7 +332,6 @@ export enum TooltipLocation {
   DEFAULT_ORG_VISIBILITY = "default_org_visibility",
   PUBLIC_VISIBILITY = "public_visibility",
   CONVERSATIONAL_GUARDRAILS = "conversational_guardrails",
-  SPEECH_PROSODY = "speech_prosody",
   CURRENT_STATE = "current_state",
   // Edit Simulation → form fields (seeded disabled; review + enable in Manage Tooltips)
   CHARACTER_PROFILE_SELECTOR = "character_profile_selector",

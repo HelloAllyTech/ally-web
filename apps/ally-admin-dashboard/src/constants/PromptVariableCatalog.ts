@@ -66,7 +66,7 @@ export const MAIN_AGENT_PROMPT_VARIABLE_CATALOG: PromptCatalogEntry[] = [
   // constants") and the BE/runtime plumbing followed in a later cleanup.
   // The author-facing equivalent is now the free-text
   // `character_profile_text` field, which captures all of these as one
-  // paragraph and reaches both the prompt body and the prosody system.
+  // paragraph and reaches the prompt body.
   { name: "character_profile_text", label: "Character Profile", group: "character" },
   // Lifted from previous_memory_block; variants can use {previous_memory}
   // directly instead of the canned "Summary from your previous session: X"

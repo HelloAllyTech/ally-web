@@ -191,7 +191,6 @@ export const applyAgentBuilderOutputToForm = (
   const toggleMap: Array<[string, string]> = [
     [FORM_FIELD_IDS.SHOW_SCORE_METER, "Score"],
     [FORM_FIELD_IDS.ENABLE_FEEDBACK, "AI Feedback Summary"],
-    [FORM_FIELD_IDS.ENABLE_PROSODY, "Speech Prosody"],
     [FORM_FIELD_IDS.AUTO_TERMINATION_STATUS, "Auto termination"],
     [FORM_FIELD_IDS.TIMER_MODE, "Session Timer"],
     [FORM_FIELD_IDS.IS_GLOBAL, "Default org-level visibility"],

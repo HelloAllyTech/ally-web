@@ -86,7 +86,6 @@ export interface RoleplaySessionLatency {
   avgBehaviorsMs: number | null;
   interruptedTurns: number;
   llmTimedOutTurns: number;
-  prosodySkippedTurns: number;
 }
 
 export interface RoleplaySessionRecording {

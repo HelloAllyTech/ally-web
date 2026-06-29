@@ -340,10 +340,6 @@ export const RoleplaySessionLogDetail: FC = () => {
             />
             <Field label="Interruptions" value={formatNumber(data.latency.interruptedTurns)} />
             <Field label="LLM timeouts" value={formatNumber(data.latency.llmTimedOutTurns)} />
-            <Field
-              label="Prosody skipped"
-              value={formatNumber(data.latency.prosodySkippedTurns)}
-            />
           </SectionCard>
         </section>
       )}

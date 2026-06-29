@@ -105,6 +105,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     timerMode: data?.metadata?.timerMode,
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
+    // @deprecated speech prosody removed; ignored by backend. Round-tripped from
+    // stored metadata for backward-compat (there is no longer a UI toggle).
     enableProsody: data?.metadata?.enableProsody ?? true,
     temperature: (data?.metadata as any)?.temperature ?? TEMPERATURE_DEFAULT,
     fillerEnabled: data?.metadata?.fillerEnabled ?? false,
