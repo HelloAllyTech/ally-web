@@ -224,6 +224,8 @@ describe("createSimulation utils", () => {
         customFields: [],
         optGuardrails: false,
         enableProsody: true,
+        enablePerformativeText: false,
+        enableBreakTags: false,
         temperature: 0.7,
         fillerEnabled: false,
         comfortAudioEnabled: false,
@@ -367,6 +369,54 @@ describe("createSimulation utils", () => {
       const result = formatSimulationResponseData(mockResponse);
 
       expect(result.enableProsody).toBe(true);
+    });
+
+    it("should preserve enablePerformativeText / enableBreakTags from metadata", () => {
+      const mockResponse = {
+        id: "sim-expr-on",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: {
+          customFields: [],
+          enablePerformativeText: true,
+          enableBreakTags: true,
+        },
+      } as unknown as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.enablePerformativeText).toBe(true);
+      expect(result.enableBreakTags).toBe(true);
+    });
+
+    it("should default enablePerformativeText / enableBreakTags to false when metadata omits them", () => {
+      const mockResponse = {
+        id: "sim-expr-default",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: { customFields: [] },
+      } as unknown as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.enablePerformativeText).toBe(false);
+      expect(result.enableBreakTags).toBe(false);
     });
 
     it("should default translationDescription to {} and challengeDescriptionPrimaryLanguageId to null when backend omits them", () => {

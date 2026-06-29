@@ -99,6 +99,8 @@ export interface SimulationInput {
   optGuardrails?: boolean;
   /** @deprecated Speech prosody removed; ignored by backend. Kept for backward-compat. */
   enableProsody?: boolean;
+  enablePerformativeText?: boolean;
+  enableBreakTags?: boolean;
   fillerEnabled?: boolean;
   comfortAudioEnabled?: boolean;
   historyTrimEnabled?: boolean;
@@ -200,6 +202,8 @@ export interface GetSimulationByIdResponse {
     optGuardrails?: boolean;
     /** @deprecated Speech prosody removed; ignored by backend. Kept for backward-compat. */
     enableProsody?: boolean;
+    enablePerformativeText?: boolean;
+    enableBreakTags?: boolean;
     fillerEnabled?: boolean;
     comfortAudioEnabled?: boolean;
     historyTrimEnabled?: boolean;
