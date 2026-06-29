@@ -228,7 +228,7 @@ describe("createSimulation utils", () => {
         enableBreakTags: false,
         temperature: 0.7,
         fillerEnabled: false,
-        comfortAudioEnabled: true,
+        comfortAudioEnabled: false,
         historyTrimEnabled: true,
         continuousBackchanneling: false,
         currentState: false,

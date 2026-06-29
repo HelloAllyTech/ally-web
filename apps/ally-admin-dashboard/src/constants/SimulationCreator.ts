@@ -611,7 +611,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Comfort Audio",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: true,
+        defaultValue: false,
         tooltipLocation: TooltipLocation.COMFORT_AUDIO,
       },
       {
