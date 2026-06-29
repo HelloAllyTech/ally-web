@@ -3,7 +3,7 @@
 exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 <DocumentFragment>
   <div
-    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium css-jmwfa8-MuiToggleButtonGroup-root"
+    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium css-vlyjib-MuiToggleButtonGroup-root"
     role="group"
   >
     <button
@@ -43,7 +43,7 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 exports[`ToggleButtonGroup > should match snapshot when rendered with default props 1`] = `
 <DocumentFragment>
   <div
-    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium css-jmwfa8-MuiToggleButtonGroup-root"
+    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium css-vlyjib-MuiToggleButtonGroup-root"
     role="group"
   >
     <button

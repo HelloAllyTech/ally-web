@@ -243,6 +243,12 @@ describe("createSimulation utils", () => {
         ],
         stateNames: [],
         selectedMainPromptCode: undefined,
+        selectedEvaluatorPromptCode: undefined,
+        helperAgentPrompt: undefined,
+        agentBuilderDescription: undefined,
+        agentBuilderPrompt: undefined,
+        interimReplyEnabled: false,
+        languageCharacteristics: undefined,
         states: [],
       });
     });
