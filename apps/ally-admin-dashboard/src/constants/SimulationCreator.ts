@@ -186,7 +186,6 @@ export const FORM_FIELD_IDS = {
   CURRENT_STATE: "currentState",
   KNOWLEDGE_SOURCE: "knowledgeSources",
   STATE_NAMES: "stateNames",
-  ENABLE_PROSODY: "enableProsody",
   FILLER_ENABLED: "fillerEnabled",
   COMFORT_AUDIO_ENABLED: "comfortAudioEnabled",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
@@ -569,14 +568,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         defaultValue: true,
         disabled: true,
         tooltipLocation: TooltipLocation.CONVERSATIONAL_GUARDRAILS,
-      },
-      {
-        id: "enableProsody",
-        label: "Speech Prosody",
-        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
-        fullWidth: true,
-        defaultValue: true,
-        tooltipLocation: TooltipLocation.SPEECH_PROSODY,
       },
       {
         id: "temperature",
