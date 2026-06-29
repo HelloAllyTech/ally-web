@@ -611,7 +611,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Comfort Audio",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: false,
+        defaultValue: true,
         tooltipLocation: TooltipLocation.COMFORT_AUDIO,
       },
       {
@@ -619,7 +619,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Trim History",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: false,
+        defaultValue: true,
         tooltipLocation: TooltipLocation.TRIM_HISTORY,
       },
       {
@@ -635,7 +635,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Interim Reply",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: false,
+        defaultValue: true,
         tooltipLocation: TooltipLocation.INTERIM_REPLY,
       },
       {

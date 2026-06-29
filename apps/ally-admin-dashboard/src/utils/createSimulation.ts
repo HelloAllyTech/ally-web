@@ -112,10 +112,10 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     enableProsody: data?.metadata?.enableProsody ?? true,
     temperature: (data?.metadata as any)?.temperature ?? TEMPERATURE_DEFAULT,
     fillerEnabled: data?.metadata?.fillerEnabled ?? false,
-    comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? false,
-    historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? false,
+    comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? true,
+    historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? true,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
-    interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? false,
+    interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,
     currentState: data?.metadata?.currentState,
     stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
       ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
