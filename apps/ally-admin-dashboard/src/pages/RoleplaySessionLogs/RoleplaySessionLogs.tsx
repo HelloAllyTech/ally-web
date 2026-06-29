@@ -11,9 +11,7 @@ import { formatDate } from "@utils";
 import { useRoleplaySessionLogs } from "./useRoleplaySessionLogs";
 import { V2VTestModal } from "./V2VTestModal";
 
-// Temporarily hide the V2V test launcher on admin. Flip to true to re-enable
-// the button (the modal + endpoint wiring stay intact).
-const SHOW_V2V_TEST = false;
+const SHOW_V2V_TEST = true;
 
 /** Seconds -> compact "1h 02m", "5m 30s" or "45s". */
 const formatDuration = (seconds: number | null): string => {
