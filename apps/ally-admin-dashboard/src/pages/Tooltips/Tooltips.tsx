@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 import { toast } from "sonner";
 
@@ -17,13 +17,30 @@ export const TooltipManagement: React.FC = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedTooltip, setSelectedTooltip] = useState<Tooltip | null>(null);
 
-  const { data: tooltips = [], isFetching } = useGetTooltipsQuery({
+  const { data, isFetching } = useGetTooltipsQuery({
     search: search || undefined,
     limit: LIMIT,
     offset,
     sortBy: SORT_BY.CREATED_AT,
     order: SORT_ORDER.DESC,
   });
+
+  // Accumulate pages so "Load more" appends rather than replacing the list, and
+  // derive hasMore from the last page size (an accumulated length can never tell
+  // us whether more pages remain).
+  const [tooltips, setTooltips] = useState<Tooltip[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+
+  useEffect(() => {
+    if (!data) return;
+    setTooltips(prev => {
+      if (offset === 0) return data;
+      const byId = new Map(prev.map(tooltip => [tooltip.id, tooltip]));
+      data.forEach(tooltip => byId.set(tooltip.id, tooltip));
+      return Array.from(byId.values());
+    });
+    setHasMore(data.length >= LIMIT);
+  }, [data, offset]);
 
   const [createTooltip] = useCreateTooltipMutation();
   const [updateTooltip] = useUpdateTooltipMutation();
@@ -118,11 +135,16 @@ export const TooltipManagement: React.FC = () => {
     [tooltips, updateTooltip],
   );
 
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setOffset(0);
+  }, []);
+
   const tableFooter = (
     <div className="flex justify-center py-4 text-sm text-typography-600">
       {isFetching ? (
         en.common.loading
-      ) : tooltips.length >= LIMIT ? (
+      ) : hasMore ? (
         <button
           onClick={() => setOffset(prev => prev + LIMIT)}
           className="text-primary-600 hover:underline"
@@ -143,7 +165,7 @@ export const TooltipManagement: React.FC = () => {
         </h1>
         <ListToolbar
           searchValue={search}
-          onSearchChange={setSearch}
+          onSearchChange={handleSearchChange}
           placeholder={en.tooltip.searchTooltips}
           action={{
             label: en.tooltip.createTooltip,
@@ -163,6 +185,7 @@ export const TooltipManagement: React.FC = () => {
             onRowClick={handleRowClick}
             onRowChange={handleTableRowChange}
             tableFooter={tableFooter}
+            hideSelectionColumn
           />
         </div>
       </div>
