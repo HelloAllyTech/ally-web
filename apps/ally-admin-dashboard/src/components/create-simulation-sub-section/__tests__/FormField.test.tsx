@@ -122,6 +122,7 @@ vi.mock("@constants", () => ({
       RADIO_BUTTONS: "radio_buttons",
     },
     TIME_INPUT: "time_input",
+    SLIDER: "slider",
   },
   TAG_TYPES: {
     USERS: "users",
@@ -1019,6 +1020,54 @@ describe("FormField", () => {
       const noteElement = screen.getByText("Test note");
       expect(noteElement).toBeInTheDocument();
       expect(noteElement).toHaveClass("text-typography-500");
+    });
+  });
+
+  describe("SLIDER Field Type", () => {
+    const sliderConfig: FormFieldConfig = {
+      id: "temperature" as any,
+      label: "LLM Temperature",
+      type: "slider",
+      min: 0,
+      max: 2,
+      step: 0.1,
+      defaultValue: 0.7 as any,
+      note: "Controls response variability.",
+    };
+
+    it("renders a range slider with label and pre-filled default value", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={sliderConfig} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("LLM Temperature")).toBeInTheDocument();
+      const slider = screen.getByRole("slider");
+      expect(slider).toHaveValue("0.7");
+      // Numeric readout reflects the seeded default.
+      expect(screen.getByText("0.7")).toBeInTheDocument();
+    });
+
+    it("reflects an existing form value", () => {
+      render(
+        <TestWrapper defaultValues={{ temperature: 1.5 }}>
+          {(formMethods: any) => <FormField config={sliderConfig} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByRole("slider")).toHaveValue("1.5");
+      expect(screen.getByText("1.5")).toBeInTheDocument();
+    });
+
+    it("renders the note text", () => {
+      render(
+        <TestWrapper>
+          {(formMethods: any) => <FormField config={sliderConfig} formMethods={formMethods} />}
+        </TestWrapper>,
+      );
+
+      expect(screen.getByText("Controls response variability.")).toBeInTheDocument();
     });
   });
 });

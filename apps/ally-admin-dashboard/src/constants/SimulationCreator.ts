@@ -152,6 +152,7 @@ export const FORM_FIELD_TYPES = {
   TIME_INPUT: "time_input",
   COMPETENCY: "competency",
   KNOWLEDGE_SOURCE: "knowledge_source",
+  SLIDER: "slider",
 };
 
 export const FORM_FIELD_IDS = {
@@ -194,6 +195,7 @@ export const FORM_FIELD_IDS = {
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
   SELECTED_EVALUATOR_PROMPT_CODE: "selectedEvaluatorPromptCode",
   STATES: "states",
+  TEMPERATURE: "temperature",
 };
 
 export const REGENERATE_TYPE = {
@@ -224,6 +226,18 @@ export const ENHANCE_TYPE = {
   KNOWLEDGE_SOURCES: "knowledgeSources",
   STATE: "state",
 } as const;
+
+/**
+ * Roleplay-level LLM sampling temperature defaults. Mirrors ally-ai-learn's
+ * accepted range (0–2) and the global LLM_TEMPERATURE fallback (0.7). The value
+ * is persisted on scenarios.metadata.temperature and forwarded to the voice
+ * agent as promptData.temperature, overriding the per-language / global default
+ * for this simulation only.
+ */
+export const TEMPERATURE_DEFAULT = 0.7;
+export const TEMPERATURE_MIN = 0;
+export const TEMPERATURE_MAX = 2;
+export const TEMPERATURE_STEP = 0.1;
 
 export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
 export const DEFAULT_MAIN_AGENT_PROMPT_CODE = "ally_ai_learn_system_main_agent_prompt";
@@ -563,6 +577,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         tooltipLocation: TooltipLocation.SPEECH_PROSODY,
+      },
+      {
+        id: "temperature",
+        label: "LLM Temperature",
+        type: FORM_FIELD_TYPES.SLIDER,
+        fullWidth: true,
+        min: TEMPERATURE_MIN,
+        max: TEMPERATURE_MAX,
+        step: TEMPERATURE_STEP,
+        defaultValue: TEMPERATURE_DEFAULT,
+        note: "Controls response variability for this roleplay. Lower (0.2–0.4) keeps the persona tightly consistent; higher adds variety. Default 0.7.",
       },
       {
         id: "fillerEnabled",
