@@ -22,6 +22,7 @@ import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
 import { OpeningDialoguesPanel } from "../opening-dialogues";
 import { RadioButtonGroup } from "../radio-button-group";
 import { RegenerateButton } from "../regenerate-button";
+import { SliderField } from "../slider-field";
 import { StatesEditor } from "../states-editor";
 import { TagSelector } from "../tag-selector";
 import { TimeInput } from "../time-input";
@@ -206,6 +207,20 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               tooltipLocation={tooltipLocation}
             />
           </div>
+        );
+      case FORM_FIELD_TYPES.SLIDER:
+        return (
+          <SliderField
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            min={config.min}
+            max={config.max}
+            step={config.step}
+            defaultValue={config.defaultValue as unknown as number}
+            isMandatory={isMandatory}
+            note={note}
+          />
         );
       case FORM_FIELD_TYPES.TAG_AND_DROPDOWN:
         return (

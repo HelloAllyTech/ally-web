@@ -224,6 +224,7 @@ describe("createSimulation utils", () => {
         customFields: [],
         optGuardrails: false,
         enableProsody: true,
+        temperature: 0.7,
         fillerEnabled: false,
         comfortAudioEnabled: false,
         historyTrimEnabled: false,
@@ -668,6 +669,33 @@ describe("createSimulation utils", () => {
 
       const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.difficultyLevel).toBe("MEDIUM");
+    });
+
+    it("should keep slider value as a float (not truncate to int)", () => {
+      const formData = {
+        temperature: 0.7,
+      };
+
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.temperature).toBe(0.7);
+    });
+
+    it("should parse a stringified slider value to a float", () => {
+      const formData = {
+        temperature: "1.3",
+      };
+
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.temperature).toBe(1.3);
+    });
+
+    it("should convert empty slider value to null", () => {
+      const formData = {
+        temperature: "",
+      };
+
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.temperature).toBeNull();
     });
 
     it("should handle image upload field with valid URL", () => {

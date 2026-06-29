@@ -32,6 +32,7 @@ export type FormData = {
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
+  temperature?: number;
   triggerWarningIds: triggerWarning[];
   description: string;
   prompt: string;
@@ -73,6 +74,10 @@ export interface FormFieldConfig {
   maxLength?: number;
   multiline?: boolean;
   defaultValue?: string;
+  /** Slider (FORM_FIELD_TYPES.SLIDER) bounds. */
+  min?: number;
+  max?: number;
+  step?: number;
   component?: React.ReactNode;
   dependsOn?: keyof FormData;
   note?: string;

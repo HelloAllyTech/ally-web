@@ -2,6 +2,7 @@ import {
   FORM_FIELD_IDS,
   isValidStateInstructionId,
   SIMULATION_CREATOR_FIELD_GROUPS,
+  TEMPERATURE_DEFAULT,
 } from "@constants";
 import { GetSimulationByIdResponse, knowledgeSource } from "@types";
 
@@ -105,6 +106,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,
     enableProsody: data?.metadata?.enableProsody ?? true,
+    temperature: (data?.metadata as any)?.temperature ?? TEMPERATURE_DEFAULT,
     fillerEnabled: data?.metadata?.fillerEnabled ?? false,
     comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? false,
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? false,
