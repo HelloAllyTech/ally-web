@@ -444,7 +444,9 @@
       "all": "ಎಲ್ಲಾ",
       "latest": "ಇತ್ತೀಚಿನ",
       "mostReviewed": "ಅತ್ಯಂತ ವಿಮರ್ಶಿತ",
-      "undiscovered": "ಅನ್ವೇಷಣೆಯಿಲ್ಲದ"
+      "undiscovered": "ಅನ್ವೇಷಣೆಯಿಲ್ಲದ",
+      "read": "Read",
+      "unread": "Unread"
     },
     "empty": {
       "title": "ಇನ್ನೂ ಯಾವುದೇ ಹಂಚಿದ ಅಧಿವೇಶನಗಳು ಇಲ್ಲ",
@@ -552,6 +554,12 @@
         "second_one": "{{count}} ಸೆಕೆಂಡು",
         "second_other": "{{count}} ಸೆಕೆಂಡುಗಳು"
       }
+    },
+    "sort": {
+      "label": "Sort by",
+      "latest": "Latest First",
+      "mostViewed": "Most Viewed First",
+      "mostCommented": "Most Commented First"
     }
   },
   "callFeedback": {

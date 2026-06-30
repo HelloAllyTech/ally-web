@@ -454,7 +454,9 @@
       "all": "All",
       "latest": "Latest",
       "mostReviewed": "Most reviewed",
-      "undiscovered": "Undiscovered"
+      "undiscovered": "Undiscovered",
+      "read": "Read",
+      "unread": "Unread"
     },
     "empty": {
       "title": "No shared sessions yet",
@@ -563,6 +565,12 @@
         "second_one": "{{count}} second",
         "second_other": "{{count}} seconds"
       }
+    },
+    "sort": {
+      "label": "Sort by",
+      "latest": "Latest First",
+      "mostViewed": "Most Viewed First",
+      "mostCommented": "Most Commented First"
     }
   },
   "callFeedback": {

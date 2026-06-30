@@ -456,7 +456,9 @@
       "all": "எல்லாம்",
       "latest": "சமீபத்திய",
       "mostReviewed": "மிகவும் மதிப்பீடு செய்யப்பட்டவை",
-      "undiscovered": "கண்டெடுக்காதவை"
+      "undiscovered": "கண்டெடுக்காதவை",
+      "read": "Read",
+      "unread": "Unread"
     },
     "empty": {
       "title": "இன்னும் பகிரப்பட்ட அமர்வுகள் இல்லை",
@@ -564,6 +566,12 @@
         "second_one": "{{count}} விநாடி",
         "second_other": "{{count}} விநாடிகள்"
       }
+    },
+    "sort": {
+      "label": "Sort by",
+      "latest": "Latest First",
+      "mostViewed": "Most Viewed First",
+      "mostCommented": "Most Commented First"
     }
   },
   "callFeedback": {
