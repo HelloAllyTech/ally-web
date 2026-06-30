@@ -1,13 +1,13 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { CircularProgress, Divider, Tooltip } from "@mui/material";
+import { CircularProgress, Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { logger, DropdownField } from "@ally-ui-mono/ui-shared";
+import { logger } from "@ally-ui-mono/ui-shared";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
@@ -20,7 +20,7 @@ import {
   useUpsertCustomFieldValuesMutation,
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
-import { Accordion, TextField, Button, InfoBanner, FallbackUI } from "@components";
+import { Accordion, Button, InfoBanner, FallbackUI } from "@components";
 import { LanguageMap, Permissions, ROUTES, toolTipStyles } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce, useCustomFieldsEnabled } from "@hooks";
@@ -31,6 +31,7 @@ import { CustomFieldEditPermission, CustomFieldValue } from "@types";
 import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions } from "@utils";
 
 import { SummaryLoading } from ".";
+import SummaryFieldInput from "./SummaryFieldInput";
 import { getSummaryFields, getSummarySections, labelShownSections } from "../constants";
 import { CallSummaryProps, FieldType, SummaryField, SummarySectionKey } from "../types";
 import { getSectionFields, summaryHasChanges } from "../utils";
@@ -266,108 +267,39 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const getFieldDisplay = (field: SummaryField) => {
     const value = getFieldValue(field.key, field.type);
-    switch (field.type) {
-      case FieldType.Dropdown:
-        return (
-          <div key={field.key} className="flex gap-1">
-            <span className="font-medium text-lg text-typography-800 whitespace-nowrap bg-green">{`${field.label}: `}</span>
-            <DropdownField
-              disabled={isFieldDisabled(field)}
-              value={value ?? field.placeholder ?? "--"}
-              valueClassName={`${field.isEditable ? "text-typography-900" : "text-typography-800"} 
-                text-lg font-primary`}
-              onChange={value => setSummaryData(prev => ({ ...prev, [field.key]: value }))}
-              onHandleSearch={field.key === SummaryFieldKey.Location ? onHandleSearch : undefined}
-              options={getDropdownOptions(field.key, field.options)}
+    const isEnhancing = enhancing === field.key;
+    const enhanceEndAdornment =
+      field.isEnhanceable && shouldAllowEdit && value && value.trim() ? (
+        <Tooltip title={t("summary.enhance")} placement="bottom" arrow slotProps={toolTipStyles}>
+          <span className="absolute bottom-2 right-2">
+            <EnhanceButton
+              fieldName={field.key}
+              inputText={value}
+              updateValue={text => setSummaryData(prev => ({ ...prev, [field.key]: text }))}
             />
-          </div>
-        );
-      case FieldType.Multiline:
-        return (
-          <div key={field.key} className="flex flex-col gap-1">
-            {labelShownSections?.includes(field.sectionKey) && (
-              <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
-            )}
-            <TextField
-              value={enhancing === field.key ? "" : value || ""}
-              onChange={e =>
-                setSummaryData(prev => ({
-                  ...prev,
-                  [field.key]: e.target.value,
-                }))
-              }
-              multiline
-              rows={field.key === SummaryFieldKey.SessionSummary ? 10 : 4}
-              className="w-full"
-              inputStyles={{
-                color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
-                fontSize: "16px",
-                fontFamily: "IBM_Plex_Serif",
-                cursor: enhancing === field.key ? "not-allowed" : "auto",
-              }}
-              placeholder={enhancing === field.key ? "" : field.placeholder}
-              showBorder={false}
-              InputProps={{
-                readOnly: isFieldDisabled(field),
-                startAdornment: enhancing === field.key && EnhancementLoadingSkeleton,
-                endAdornment: field.isEnhanceable && shouldAllowEdit && value && value.trim() && (
-                  <Tooltip
-                    title={t("summary.enhance")}
-                    placement="bottom"
-                    arrow
-                    slotProps={toolTipStyles}
-                  >
-                    <span className="absolute bottom-2 right-2">
-                      <EnhanceButton
-                        fieldName={field.key}
-                        inputText={value}
-                        updateValue={text =>
-                          setSummaryData(prev => ({
-                            ...prev,
-                            [field.key]: text,
-                          }))
-                        }
-                      />
-                    </span>
-                  </Tooltip>
-                ),
-              }}
-            />
-          </div>
-        );
-      case FieldType.Number:
-      case FieldType.Text:
-      default:
-        return (
-          <div key={field.key}>
-            <div className="flex items-center">
-              <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
-              <div className="flex-1">
-                <TextField
-                  value={value ?? "--"}
-                  onChange={e =>
-                    setSummaryData(prev => ({
-                      ...prev,
-                      [field.key]: e.target.value,
-                    }))
-                  }
-                  placeholder={field.placeholder}
-                  inputStyles={{
-                    color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
-                    fontSize: "16px",
-                    fontFamily: "IBM_Plex_Serif",
-                  }}
-                  InputProps={{
-                    readOnly: isFieldDisabled(field),
-                  }}
-                  showBorder={false}
-                />
-              </div>
-            </div>
-            {field.key === "clientId" && <Divider sx={{ width: "90%", marginTop: "6px" }} />}
-          </div>
-        );
-    }
+          </span>
+        </Tooltip>
+      ) : undefined;
+
+    return (
+      <SummaryFieldInput
+        key={field.key}
+        field={field}
+        value={value}
+        disabled={isFieldDisabled(field)}
+        options={
+          field.type === FieldType.Dropdown
+            ? getDropdownOptions(field.key, field.options)
+            : undefined
+        }
+        showLabel={labelShownSections?.includes(field.sectionKey)}
+        onChange={(key, val) => setSummaryData(prev => ({ ...prev, [key]: val }))}
+        onSearch={onHandleSearch}
+        isEnhancing={isEnhancing}
+        enhanceStartAdornment={isEnhancing ? EnhancementLoadingSkeleton : undefined}
+        enhanceEndAdornment={enhanceEndAdornment}
+      />
+    );
   };
 
   const hasDataChanged = () => summaryHasChanges(callSummary?.details?.summary, summaryData);

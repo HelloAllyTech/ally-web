@@ -107,8 +107,8 @@ const callsAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Creates an empty manual scribe note (a SCRIBE-mode chat with no audio) and
-     * returns its id + auto-generated name, so org custom fields can be attached.
+     * Creates an empty manual scribe note (a DICTATION-mode chat with no audio)
+     * and returns its id + auto-generated name, so org custom fields can be attached.
      * @returns {Promise<CreateNoteResponse>} The new note's chatId and name
      */
     createNote: builder.mutation<CreateNoteResponse, void>({

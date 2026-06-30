@@ -4,12 +4,14 @@ import { CircularProgress, Autocomplete, Checkbox, TextField as MuiTextField } f
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { ChevronDown } from "lucide-react";
 import { useSelector } from "react-redux";
 
 import { DropdownField } from "@ally-ui-mono/ui-shared";
 import { useGetCustomFieldValuesQuery } from "@api";
 import TextField from "@components/text-field";
 import { Permissions } from "@constants";
+import { carbonField } from "@constants/carbonFieldStyles";
 import { useCustomFieldsEnabled } from "@hooks";
 import { RootState } from "@store";
 import {
@@ -28,6 +30,9 @@ interface CustomFieldValuesPanelProps {
   externalFieldValues?: CustomFieldValue[];
   externalLocalValues?: Record<string, string | null>;
   onValueChange?: (fieldDefinitionId: string, value: string | null) => void;
+  // Visual language. "default" is unchanged (post-call summary, call detail).
+  // "carbon" renders IBM Carbon-style raw controls for the manual "New note" drawer.
+  variant?: "default" | "carbon";
 }
 
 const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
@@ -38,6 +43,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   externalFieldValues,
   externalLocalValues,
   onValueChange,
+  variant = "default",
 }) => {
   const { permissions } = useSelector((state: RootState) => state.user);
   const isAdmin = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
@@ -265,15 +271,136 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     return null;
   };
 
+  // IBM Carbon-style renderer (label above, gray fill, bottom border) for the
+  // "New note" drawer. Uses raw controls but the SAME value encoding as
+  // renderField (single-select stores option id, multi-select stores a JSON
+  // id array, date stores ISO, boolean stores "true"/"false").
+  const renderCarbonField = (
+    field: CustomFieldValue,
+    isEditable: boolean,
+    value: string | null,
+  ) => {
+    const labelEl = <label className={carbonField.label}>{field.name}</label>;
+
+    if (field.fieldType === CustomFieldType.TEXT || field.fieldType === CustomFieldType.NUMBER) {
+      return (
+        <div key={field.fieldDefinitionId} className={carbonField.group}>
+          {labelEl}
+          <input
+            className={carbonField.input}
+            type={field.fieldType === CustomFieldType.NUMBER ? "number" : "text"}
+            disabled={!isEditable}
+            value={value ?? ""}
+            onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+          />
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.SINGLE_SELECT) {
+      return (
+        <div key={field.fieldDefinitionId} className={carbonField.group}>
+          {labelEl}
+          <div className="relative">
+            <select
+              className={carbonField.select}
+              disabled={!isEditable}
+              value={value ?? ""}
+              onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+            >
+              <option value="">--</option>
+              {(field.options ?? []).map(o => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className={carbonField.selectChevron} />
+          </div>
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.MULTI_SELECT) {
+      const selectedIds: string[] = value ? JSON.parse(value) : [];
+      const toggle = (id: string) => {
+        const next = selectedIds.includes(id)
+          ? selectedIds.filter(x => x !== id)
+          : [...selectedIds, id];
+        handleChange(field.fieldDefinitionId, next.length ? JSON.stringify(next) : null);
+      };
+      return (
+        <div key={field.fieldDefinitionId} className={carbonField.group}>
+          {labelEl}
+          <div className="flex flex-col gap-2 bg-[#f4f4f4] border-b border-[#8d8d8d] p-3">
+            {(field.options ?? []).map(o => (
+              <label key={o.id} className={carbonField.checkboxRow}>
+                <input
+                  type="checkbox"
+                  className={carbonField.checkbox}
+                  disabled={!isEditable}
+                  checked={selectedIds.includes(o.id)}
+                  onChange={() => toggle(o.id)}
+                />
+                {o.label}
+              </label>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.DATE) {
+      return (
+        <div key={field.fieldDefinitionId} className={carbonField.group}>
+          {labelEl}
+          <input
+            type="date"
+            className={carbonField.input}
+            disabled={!isEditable}
+            value={value ? new Date(value).toISOString().slice(0, 10) : ""}
+            onChange={e =>
+              handleChange(
+                field.fieldDefinitionId,
+                e.target.value ? new Date(e.target.value).toISOString() : null,
+              )
+            }
+          />
+        </div>
+      );
+    }
+
+    if (field.fieldType === CustomFieldType.BOOLEAN) {
+      return (
+        <div key={field.fieldDefinitionId} className={carbonField.group}>
+          {labelEl}
+          <div className="relative">
+            <select
+              className={carbonField.select}
+              disabled={!isEditable}
+              value={value ?? ""}
+              onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+            >
+              <option value="">--</option>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+            <ChevronDown className={carbonField.selectChevron} />
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const renderer = variant === "carbon" ? renderCarbonField : renderField;
+
   if (filterSectionKey) {
     return (
       <>
         {visibleFieldValues.map(field =>
-          renderField(
-            field,
-            canEditField(field),
-            currentLocalValues[field.fieldDefinitionId] ?? null,
-          ),
+          renderer(field, canEditField(field), currentLocalValues[field.fieldDefinitionId] ?? null),
         )}
       </>
     );
@@ -298,7 +425,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
           <p className="text-xs text-typography-400 mb-2">{label}</p>
           <div className="flex flex-col gap-3">
             {fields.map(field =>
-              renderField(
+              renderer(
                 field,
                 canEditField(field),
                 currentLocalValues[field.fieldDefinitionId] ?? null,
