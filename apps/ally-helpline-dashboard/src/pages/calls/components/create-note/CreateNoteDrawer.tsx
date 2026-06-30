@@ -7,13 +7,25 @@ import { toast } from "sonner";
 import {
   useCreateNoteMutation,
   useGetCustomFieldDefinitionsQuery,
+  useGetSummaryFieldsQuery,
+  useGetTagsMutation,
+  useUpdateCallSummaryMutation,
   useUpsertCustomFieldValuesMutation,
 } from "@api";
 import { Drawer } from "@components";
+import { Permissions } from "@constants";
+import { carbonField } from "@constants/carbonFieldStyles";
 import { useDebounce, useUser } from "@hooks";
-import { CustomFieldDefinition, CustomFieldValue, UserRole } from "@types";
-
-import CustomFieldValuesPanel from "../custom-fields/CustomFieldValuesPanel";
+import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
+import SummaryFieldInput from "@pages/post-call-summary/components/SummaryFieldInput";
+import {
+  getSummaryFields,
+  getSummarySections,
+  labelShownSections,
+} from "@pages/post-call-summary/constants";
+import { FieldType } from "@pages/post-call-summary/types";
+import { getSectionFields } from "@pages/post-call-summary/utils";
+import { CustomFieldDefinition, CustomFieldValue, SummaryFieldKey, Tag, UserRole } from "@types";
 
 interface CreateNoteDrawerProps {
   open: boolean;
@@ -25,25 +37,39 @@ const SAVE_DEBOUNCE_MS = 600;
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 /**
- * Right-side panel for creating a manual scribe note. Renders every active
- * custom field enabled for the organisation as an editable form. The note's
- * underlying chat record is created lazily on the first edit, then field values
- * auto-save (debounced) against it; the note is auto-named CALL-{id}-{date}.
+ * Right-side panel for creating a manual scribe note. Renders the tenant's
+ * enabled built-in summary template fields (read-only/auto fields disabled)
+ * grouped by section, interleaved with the org's custom fields, as an editable
+ * form. The note's underlying chat record is created lazily on the first edit,
+ * then values auto-save (debounced): custom-field values go to the custom-field
+ * endpoint and built-in summary values go to the call-details endpoint. The note
+ * is auto-named CALL-{id}-{date}.
  */
 const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
-  const { user } = useUser();
+  const { user, permissions } = useUser();
   const isCounsellor = user?.role === UserRole.COUNSELLOR;
+  const canViewSummaryFields = Boolean(permissions?.includes(Permissions.VIEW_SUMMARY_FIELDS));
+  const canEditCallDetails = Boolean(permissions?.includes(Permissions.EDIT_CALL_DETAILS));
 
   const { data: definitions, isLoading: isDefinitionsLoading } = useGetCustomFieldDefinitionsQuery(
     undefined,
     { skip: !open },
   );
+  const { data: visibleFields, isLoading: isSummaryFieldsLoading } = useGetSummaryFieldsQuery(
+    undefined,
+    { skip: !open || !canViewSummaryFields },
+  );
 
   const [createNote] = useCreateNoteMutation();
   const [upsertValues] = useUpsertCustomFieldValuesMutation();
+  const [updateCallSummary] = useUpdateCallSummaryMutation();
+  const [getTags] = useGetTagsMutation();
 
+  // Custom-field edit state (keyed by fieldDefinitionId).
   const [localValues, setLocalValues] = useState<Record<string, string | null>>({});
+  // Built-in summary-field edit state (keyed by SummaryFieldKey).
+  const [summaryValues, setSummaryValues] = useState<Record<string, string | null>>({});
   const [noteName, setNoteName] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
@@ -51,22 +77,33 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const noteIdRef = useRef<number | null>(null);
   const creatingRef = useRef<Promise<number> | null>(null);
   const latestValuesRef = useRef<Record<string, string | null>>({});
+  const latestSummaryRef = useRef<Record<string, string | null>>({});
+
+  // Built-in template metadata (translated). Memoised so the editable-key set is stable.
+  const translatedFields = useMemo(() => getSummaryFields(t), [t]);
+  const sections = useMemo(() => getSummarySections(t), [t]);
+  const editableSummaryKeys = useMemo(
+    () => new Set(translatedFields.filter(f => f.isEditable).map(f => f.key)),
+    [translatedFields],
+  );
 
   // Each time the panel opens, start a fresh note.
   useEffect(() => {
     if (open) {
       setLocalValues({});
+      setSummaryValues({});
       setNoteName(null);
       setSaveState("idle");
       noteIdRef.current = null;
       creatingRef.current = null;
       latestValuesRef.current = {};
+      latestSummaryRef.current = {};
     }
   }, [open]);
 
-  // The org's active scribe fields, mapped into the shape the panel expects
+  // The org's active custom fields, mapped into the shape the panel expects
   // (definitions carry no values yet, so every field starts blank).
-  const fieldValues: CustomFieldValue[] = useMemo(
+  const customFieldValues: CustomFieldValue[] = useMemo(
     () =>
       (definitions ?? [])
         .filter((def: CustomFieldDefinition) => def.isActive)
@@ -102,6 +139,33 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     return creatingRef.current;
   };
 
+  // Build the built-in summary payload from the editable fields the user filled.
+  // The call-details endpoint REPLACES summary wholesale, so we send the full
+  // accumulated set every save. Tags must be converted to the Tag[] shape.
+  const buildSummaryPayload = async (): Promise<Record<string, unknown> | null> => {
+    const entries = Object.entries(latestSummaryRef.current).filter(
+      ([key, val]) => editableSummaryKeys.has(key as SummaryFieldKey) && val != null && val !== "",
+    );
+    if (entries.length === 0) return null;
+
+    const summary: Record<string, unknown> = {};
+    for (const [key, val] of entries) {
+      if (key === SummaryFieldKey.Tags) {
+        const tagList = String(val)
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean);
+        if (tagList.length === 0) continue;
+        const response = await getTags({ tags: tagList });
+        const tagsInput: Tag[] = "data" in response && response.data ? response.data : [];
+        summary.tags = tagsInput;
+      } else {
+        summary[key] = val;
+      }
+    }
+    return Object.keys(summary).length > 0 ? summary : null;
+  };
+
   const persist = async () => {
     setSaveState("saving");
     try {
@@ -110,7 +174,11 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
         fieldDefinitionId,
         value: value ?? undefined,
       }));
-      await upsertValues({ chatId, values }).unwrap();
+      const summary = await buildSummaryPayload();
+      await Promise.all([
+        values.length > 0 ? upsertValues({ chatId, values }).unwrap() : Promise.resolve(),
+        summary ? updateCallSummary({ chatId, data: { summary } }).unwrap() : Promise.resolve(),
+      ]);
       setSaveState("saved");
     } catch {
       setSaveState("error");
@@ -130,10 +198,22 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     debouncedPersist();
   };
 
+  const handleSummaryChange = (key: string, value: string) => {
+    setSummaryValues(prev => {
+      const next = { ...prev, [key]: value };
+      latestSummaryRef.current = next;
+      return next;
+    });
+    debouncedPersist();
+  };
+
   // Flush pending edits before the drawer unmounts (useDebounce cancels its
   // timer on unmount, so the last keystroke would otherwise be lost).
   const handleClose = () => {
-    if (Object.keys(latestValuesRef.current).length > 0 && saveState !== "saved") {
+    const hasPending =
+      Object.keys(latestValuesRef.current).length > 0 ||
+      Object.keys(latestSummaryRef.current).length > 0;
+    if (hasPending && saveState !== "saved") {
       void persist();
     }
     onClose();
@@ -149,29 +229,65 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
           : "";
 
   const renderBody = () => {
-    if (isDefinitionsLoading) {
+    if (isDefinitionsLoading || isSummaryFieldsLoading) {
       return (
         <div className="flex justify-center py-6" data-testid="create-note-loading">
           <CircularProgress size={20} />
         </div>
       );
     }
-    if (fieldValues.length === 0) {
+
+    // Group built-in + custom fields by section (mirrors the post-call summary
+    // page). A section renders only when it has at least one enabled built-in
+    // field or at least one custom field.
+    const renderedSections = sections
+      .map(section => ({
+        section,
+        builtInFields: getSectionFields(section.key, visibleFields ?? [], translatedFields),
+        customCount: customFieldValues.filter(f => f.sectionKey === section.key).length,
+      }))
+      .filter(({ builtInFields, customCount }) => builtInFields.length > 0 || customCount > 0);
+
+    if (renderedSections.length === 0) {
       return (
         <p className="text-typography-600 text-sm py-4" data-testid="create-note-empty">
           {t("calls.createNote.empty")}
         </p>
       );
     }
+
     return (
-      <CustomFieldValuesPanel
-        chatId={0}
-        canEdit
-        isCounsellor={isCounsellor}
-        externalFieldValues={fieldValues}
-        externalLocalValues={localValues}
-        onValueChange={handleValueChange}
-      />
+      <div className="mt-2 flex flex-col gap-8" data-testid="create-note-fields">
+        {renderedSections.map(({ section, builtInFields }) => (
+          <section key={section.key}>
+            <p className={carbonField.sectionHeader}>{section.title}</p>
+            <div className="flex flex-col gap-5">
+              {builtInFields.map(field => (
+                <SummaryFieldInput
+                  key={field.key}
+                  variant="carbon"
+                  field={field}
+                  value={summaryValues[field.key] ?? null}
+                  disabled={!field.isEditable || !canEditCallDetails}
+                  options={field.type === FieldType.Dropdown ? (field.options ?? []) : undefined}
+                  showLabel={labelShownSections?.includes(field.sectionKey)}
+                  onChange={handleSummaryChange}
+                />
+              ))}
+              <CustomFieldValuesPanel
+                chatId={0}
+                canEdit
+                variant="carbon"
+                isCounsellor={isCounsellor}
+                filterSectionKey={section.key}
+                externalFieldValues={customFieldValues}
+                externalLocalValues={localValues}
+                onValueChange={handleValueChange}
+              />
+            </div>
+          </section>
+        ))}
+      </div>
     );
   };
 
@@ -180,18 +296,27 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       open={open}
       onClose={handleClose}
       className="font-primary"
-      drawerClassName="h-screen w-[440px] max-w-[92vw]"
+      drawerClassName="h-screen w-[50vw] min-w-[600px] max-w-[95vw]"
       bodyClassName="overflow-y-auto"
       title={noteName ?? t("calls.createNote.title")}
     >
-      <div className="flex flex-col gap-2" data-testid="create-note-drawer">
+      <div className="flex flex-col gap-3 font-primary" data-testid="create-note-drawer">
         {saveLabel && (
           <span
-            className={`text-xs ${
-              saveState === "error" ? "text-destructive-500" : "text-typography-500"
+            className={`inline-flex items-center gap-1.5 font-primary text-xs ${
+              saveState === "error" ? "text-[#da1e28]" : "text-[#525252]"
             }`}
             data-testid="create-note-save-status"
           >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                saveState === "error"
+                  ? "bg-[#da1e28]"
+                  : saveState === "saved"
+                    ? "bg-[#24a148]"
+                    : "bg-[#0f62fe]"
+              }`}
+            />
             {saveLabel}
           </span>
         )}
