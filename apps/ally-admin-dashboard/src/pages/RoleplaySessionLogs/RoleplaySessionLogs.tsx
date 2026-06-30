@@ -66,6 +66,8 @@ export const RoleplaySessionLogs: FC = () => {
     setSearchInput,
     status,
     onStatusChange,
+    sessionType,
+    onSessionTypeChange,
     dateFrom,
     onDateFromChange,
     dateTo,
@@ -124,6 +126,18 @@ export const RoleplaySessionLogs: FC = () => {
             <option value="">All statuses</option>
             <option value="ENDED">Ended</option>
             <option value="ACTIVE">In progress</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-typography-700">Session type</label>
+          <select
+            value={sessionType}
+            onChange={e => onSessionTypeChange(e.target.value as "all" | "test" | "real")}
+            className="rounded border border-border-light px-3 py-2 bg-white text-sm outline-none focus:border-primary-500"
+          >
+            <option value="all">All sessions</option>
+            <option value="real">Real only</option>
+            <option value="test">V2V test only</option>
           </select>
         </div>
         <div className="flex flex-col gap-1">
@@ -195,7 +209,16 @@ export const RoleplaySessionLogs: FC = () => {
                     <div className="text-typography-700 text-xs">{row.counselorEmail || ""}</div>
                   </td>
                   <td className="py-3 pr-4">{row.orgName || "—"}</td>
-                  <td className="py-3 pr-4">{row.scenarioTitle || "—"}</td>
+                  <td className="py-3 pr-4">
+                    <div className="flex items-center gap-2">
+                      <span>{row.scenarioTitle || "—"}</span>
+                      {row.isV2VTest && (
+                        <span className="inline-flex items-center px-[6px] py-[2px] rounded-full text-[11px] font-medium bg-primary-100 text-primary-700 whitespace-nowrap">
+                          V2V Test
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="py-3 pr-4">
                     <StatusPill status={row.status} />
                   </td>
@@ -205,7 +228,9 @@ export const RoleplaySessionLogs: FC = () => {
                   <td className="py-3 pr-4 whitespace-nowrap">
                     {formatCost(row.estimatedCostUsd, row.costPriced)}
                   </td>
-                  <td className="py-3 pr-4">{row.score === null ? "—" : Math.round(row.score)}</td>
+                  <td className="py-3 pr-4">
+                    {row.score === null ? "—" : Math.min(100, Math.round(row.score))}
+                  </td>
                 </tr>
               ))}
             </tbody>
