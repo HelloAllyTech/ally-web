@@ -97,10 +97,6 @@ export interface SimulationInput {
   timerMode?: boolean;
   maxTimeValue?: string;
   optGuardrails?: boolean;
-  /** @deprecated Speech prosody removed; ignored by backend. Kept for backward-compat. */
-  enableProsody?: boolean;
-  enablePerformativeText?: boolean;
-  enableBreakTags?: boolean;
   fillerEnabled?: boolean;
   comfortAudioEnabled?: boolean;
   historyTrimEnabled?: boolean;
@@ -200,10 +196,6 @@ export interface GetSimulationByIdResponse {
     pauseEnabled?: boolean;
     maxTimeValue?: string;
     optGuardrails?: boolean;
-    /** @deprecated Speech prosody removed; ignored by backend. Kept for backward-compat. */
-    enableProsody?: boolean;
-    enablePerformativeText?: boolean;
-    enableBreakTags?: boolean;
     fillerEnabled?: boolean;
     comfortAudioEnabled?: boolean;
     historyTrimEnabled?: boolean;

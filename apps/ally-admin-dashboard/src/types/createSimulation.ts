@@ -95,7 +95,7 @@ export interface FormFieldConfig {
    * the selected prompt's `availableVariables`; if the placeholder isn't
    * referenced, the field is rendered with a muted "Not used by selected
    * prompt" badge. Editing is still allowed because most of these fields
-   * also feed prosody / evaluator / branching independently of the main
+   * also feed evaluator / branching independently of the main
    * prompt.
    */
   promptVariable?: string;
@@ -104,7 +104,7 @@ export interface FormFieldConfig {
    * (return null from FormField) instead of soft-labeling with a badge.
    * Use this for editors that exist purely to feed a prompt placeholder
    * (e.g. behavior_instructions_json, custom_fields_text). Don't use for
-   * fields with parallel consumers (prosody / evaluator).
+   * fields with parallel consumers (evaluator / branching).
    */
   hideWhenUnused?: boolean;
   /**
