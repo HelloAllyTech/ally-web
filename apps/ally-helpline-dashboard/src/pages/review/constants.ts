@@ -7,6 +7,18 @@ export const FILTER_OPTIONS = (t: any) => [
   { value: "UNDISCOVERED", label: t("review.filter.undiscovered") },
 ];
 
+export const READ_FILTER_OPTIONS = (t: any) => [
+  { value: "ALL", label: t("review.filter.all") },
+  { value: "READ", label: t("review.filter.read") },
+  { value: "UNREAD", label: t("review.filter.unread") },
+];
+
+export const SORT_OPTIONS = (t: any) => [
+  { value: "LATEST", label: t("review.sort.latest") },
+  { value: "MOST_VIEWED", label: t("review.sort.mostViewed") },
+  { value: "MOST_COMMENTED", label: t("review.sort.mostCommented") },
+];
+
 export const PAGE_SIZE = 10;
 export const SKELETON_COUNT = 3;
 

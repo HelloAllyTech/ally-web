@@ -79,7 +79,7 @@ const MetricBar: FC<{ label: string; score: number }> = ({ label, score }) => {
     <div className="flex flex-col gap-1">
       <div className="flex justify-between text-sm text-typography-900">
         <span>{label}</span>
-        <span className="font-medium">{Math.round(score)}</span>
+        <span className="font-medium">{Math.round(clamped)}</span>
       </div>
       <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
         <div
@@ -136,7 +136,10 @@ export const RoleplaySessionLogDetail: FC = () => {
         <Field label="Started" value={data.startedAt ? formatDate(data.startedAt) : "—"} />
         <Field label="Ended" value={data.endedAt ? formatDate(data.endedAt) : "—"} />
         <Field label="Duration" value={formatDurationSeconds(data.durationSeconds)} />
-        <Field label="Score" value={data.score === null ? "—" : Math.round(data.score)} />
+        <Field
+          label="Score"
+          value={data.score === null ? "—" : Math.min(100, Math.round(data.score))}
+        />
         {data.platform && <Field label="Platform" value={data.platform} />}
         {data.language && <Field label="Language" value={data.language} />}
         {data.voiceId && <Field label="Voice" value={data.voiceId} />}
@@ -151,18 +154,14 @@ export const RoleplaySessionLogDetail: FC = () => {
       {/* Roleplay actor performance vs optimisation goals */}
       {(data.actorEvaluation || data.optimisationGoals.length > 0) && (
         <section className="mt-6">
-          <h2 className="text-lg font-secondary text-typography-900 mb-2">
-            Actor performance
-          </h2>
+          <h2 className="text-lg font-secondary text-typography-900 mb-2">Actor performance</h2>
           {data.actorEvaluation?.status === "IN_PROGRESS" ? (
             <div className="rounded-lg border border-border-light bg-white p-4">
               <p className="text-sm text-typography-700">Evaluation in progress…</p>
             </div>
           ) : data.actorEvaluation?.status === "FAILED" ? (
             <div className="rounded-lg border border-border-light bg-white p-4">
-              <p className="text-sm text-destructive-500">
-                Evaluation failed for this session.
-              </p>
+              <p className="text-sm text-destructive-500">Evaluation failed for this session.</p>
             </div>
           ) : data.actorEvaluation &&
             (data.actorEvaluation.compositeScore !== null ||
@@ -171,7 +170,9 @@ export const RoleplaySessionLogDetail: FC = () => {
             <div className="rounded-lg border border-border-light bg-white p-4 flex flex-col gap-4">
               <div className="flex items-center gap-4">
                 <div className="text-3xl font-secondary text-typography-900">
-                  {data.actorEvaluation.compositeScore ?? "—"}
+                  {data.actorEvaluation.compositeScore !== null
+                    ? Math.min(100, data.actorEvaluation.compositeScore)
+                    : "—"}
                   <span className="text-base text-typography-700">/100</span>
                 </div>
                 {data.actorEvaluation.pass !== null && (
@@ -215,9 +216,7 @@ export const RoleplaySessionLogDetail: FC = () => {
                 Not yet evaluated. The actor is scored against these optimisation goals:
               </p>
               {data.optimisationGoals.length === 0 ? (
-                <p className="text-sm text-typography-700">
-                  No optimisation goals are configured.
-                </p>
+                <p className="text-sm text-typography-700">No optimisation goals are configured.</p>
               ) : (
                 <ul className="list-disc pl-5 text-sm text-typography-900">
                   {data.optimisationGoals.map(g => (
@@ -240,10 +239,7 @@ export const RoleplaySessionLogDetail: FC = () => {
           <SectionCard>
             <Field label="Total LLM tokens" value={formatNumber(data.usage.llmTotalTokens)} />
             <Field label="Prompt tokens" value={formatNumber(data.usage.llmPromptTokens)} />
-            <Field
-              label="Completion tokens"
-              value={formatNumber(data.usage.llmCompletionTokens)}
-            />
+            <Field label="Completion tokens" value={formatNumber(data.usage.llmCompletionTokens)} />
             <Field label="Cached tokens" value={formatNumber(data.usage.llmCachedTokens)} />
             <Field label="STT audio" value={formatAudio(data.usage.sttAudioMs)} />
             <Field label="TTS characters" value={formatNumber(data.usage.ttsCharacters)} />
@@ -310,9 +306,7 @@ export const RoleplaySessionLogDetail: FC = () => {
       {/* Voice-pipeline latency & quality */}
       {data.latency && (
         <section className="mt-6">
-          <h2 className="text-lg font-secondary text-typography-900 mb-2">
-            Latency &amp; quality
-          </h2>
+          <h2 className="text-lg font-secondary text-typography-900 mb-2">Latency &amp; quality</h2>
           <SectionCard>
             <Field label="Turns" value={formatNumber(data.latency.turnCount)} />
             <Field
@@ -330,10 +324,7 @@ export const RoleplaySessionLogDetail: FC = () => {
             <Field label="EOU delay (avg)" value={formatMs(data.latency.avgEouDelayMs)} />
             <Field label="LLM TTFT (avg)" value={formatMs(data.latency.avgLlmTtftMs)} />
             <Field label="TTS TTFB (avg)" value={formatMs(data.latency.avgTtsTtfbMs)} />
-            <Field
-              label="LLM response (avg)"
-              value={formatMs(data.latency.avgLlmResponseMs)}
-            />
+            <Field label="LLM response (avg)" value={formatMs(data.latency.avgLlmResponseMs)} />
             <Field
               label="Knowledge retrieval (avg)"
               value={formatMs(data.latency.avgKnowledgeRetrievalMs)}
@@ -352,10 +343,7 @@ export const RoleplaySessionLogDetail: FC = () => {
           </h2>
           <SectionCard>
             {data.recording && (
-              <Field
-                label="Recording"
-                value={`Available (egress ${data.recording.egressId})`}
-              />
+              <Field label="Recording" value={`Available (egress ${data.recording.egressId})`} />
             )}
             {data.feedback && (
               <Field label="Learner rating" value={`${data.feedback.rating} / 5`} />

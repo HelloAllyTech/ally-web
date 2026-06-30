@@ -169,6 +169,15 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
+  Dropdown: ({ value, options, onChange }: any) => (
+    <select data-testid="sort-dropdown" value={value} onChange={e => onChange(e.target.value)}>
+      {options?.map((opt: any) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  ),
   ToggleButtonGroup: ({ value, onValueChange, items }: any) => (
     <div data-testid="toggle-button-group">
       {items.map((item: any) => (
@@ -313,6 +322,9 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe("Review Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset window.location before each test so BrowserRouter-based tests don't inherit
+    // URL state mutated by a prior test (e.g. a single-permission test that set ?tab=SIMULATION).
+    window.history.pushState({}, "", "/");
     mockPermissionsList = [Permissions.VIEW_SIMULATION_REVIEWS, Permissions.VIEW_SCRIBE_REVIEWS];
     mockUseGetReviewsQuery.mockReturnValue(defaultReviewsQueryReturn);
     mockUseGetReviewThreadsQuery.mockReturnValue(defaultThreadsQueryReturn);
@@ -896,11 +908,11 @@ describe("Review Component", () => {
    * TEST GROUP: Navigation
    */
   describe("Navigation", () => {
-    it("navigates to review details when review transcript is clicked", () => {
+    it("navigates to simulation review details when review transcript is clicked on Simulation tab", () => {
       render(
-        <TestWrapper>
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
           <Review />
-        </TestWrapper>,
+        </MemoryRouter>,
       );
 
       fireEvent.click(screen.getByTestId("review-transcript-review-1"));
@@ -908,11 +920,11 @@ describe("Review Component", () => {
       expect(mockNavigate).toHaveBeenCalledWith("/simulation-review/review-1");
     });
 
-    it("navigates to correct review details for different reviews", () => {
+    it("navigates to correct simulation review details for different reviews", () => {
       render(
-        <TestWrapper>
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
           <Review />
-        </TestWrapper>,
+        </MemoryRouter>,
       );
 
       fireEvent.click(screen.getByTestId("review-transcript-review-2"));
@@ -1078,6 +1090,111 @@ describe("Review Component", () => {
 
       const buttons = screen.getAllByRole("button");
       expect(buttons.length).toBeGreaterThan(0);
+    });
+  });
+
+  /**
+   * TEST GROUP: Simulation Tab
+   */
+  describe("Simulation Tab", () => {
+    it("shows read filter options (ALL/READ/UNREAD) instead of Scribe filters", () => {
+      render(
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
+          <Review />
+        </MemoryRouter>,
+      );
+
+      expect(screen.getByTestId("filter-ALL")).toBeInTheDocument();
+      expect(screen.getByTestId("filter-READ")).toBeInTheDocument();
+      expect(screen.getByTestId("filter-UNREAD")).toBeInTheDocument();
+      expect(screen.queryByTestId("filter-MOST_REVIEWED")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("filter-UNDISCOVERED")).not.toBeInTheDocument();
+    });
+
+    it("shows sort dropdown on Simulation tab", () => {
+      render(
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
+          <Review />
+        </MemoryRouter>,
+      );
+
+      expect(screen.getByTestId("sort-dropdown")).toBeInTheDocument();
+    });
+
+    it("defaults sort dropdown to LATEST", () => {
+      render(
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
+          <Review />
+        </MemoryRouter>,
+      );
+
+      const dropdown = screen.getByTestId("sort-dropdown") as HTMLSelectElement;
+      expect(dropdown.value).toBe("LATEST");
+    });
+
+    it("changes read filter to READ when clicked", () => {
+      render(
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
+          <Review />
+        </MemoryRouter>,
+      );
+
+      fireEvent.click(screen.getByTestId("filter-READ"));
+
+      expect(screen.getByTestId("filter-READ")).toHaveClass("active");
+      expect(screen.getByTestId("filter-ALL")).not.toHaveClass("active");
+    });
+
+    it("changes read filter to UNREAD when clicked", () => {
+      render(
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
+          <Review />
+        </MemoryRouter>,
+      );
+
+      fireEvent.click(screen.getByTestId("filter-UNREAD"));
+
+      expect(screen.getByTestId("filter-UNREAD")).toHaveClass("active");
+    });
+
+    it("changes sort to MOST_VIEWED when selected from dropdown", () => {
+      render(
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
+          <Review />
+        </MemoryRouter>,
+      );
+
+      fireEvent.change(screen.getByTestId("sort-dropdown"), {
+        target: { value: "MOST_VIEWED" },
+      });
+
+      const dropdown = screen.getByTestId("sort-dropdown") as HTMLSelectElement;
+      expect(dropdown.value).toBe("MOST_VIEWED");
+    });
+
+    it("changes sort to MOST_COMMENTED when selected from dropdown", () => {
+      render(
+        <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
+          <Review />
+        </MemoryRouter>,
+      );
+
+      fireEvent.change(screen.getByTestId("sort-dropdown"), {
+        target: { value: "MOST_COMMENTED" },
+      });
+
+      const dropdown = screen.getByTestId("sort-dropdown") as HTMLSelectElement;
+      expect(dropdown.value).toBe("MOST_COMMENTED");
+    });
+
+    it("does not show sort dropdown on Scribe tab", () => {
+      render(
+        <TestWrapper>
+          <Review />
+        </TestWrapper>,
+      );
+
+      expect(screen.queryByTestId("sort-dropdown")).not.toBeInTheDocument();
     });
   });
 });

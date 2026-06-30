@@ -23,6 +23,8 @@ export interface RoleplaySessionLogRow {
   estimatedCostUsd: number | null;
   /** False when at least one usage bucket had no pricing entry. */
   costPriced: boolean;
+  /** True when this session was started by the super-admin V2V test tool. */
+  isV2VTest: boolean;
 }
 
 /** A (provider, model) pair used by one of the AI services. */
@@ -172,6 +174,8 @@ export interface RoleplaySessionLogsParams {
   tenantId?: string;
   sortBy?: "createdAt" | "startedAt" | "endedAt" | "score" | "status";
   order?: "ASC" | "DESC";
+  /** true = only V2V test sessions, false = only real sessions, omit = all */
+  isV2VTest?: boolean;
 }
 
 /** Superadmin V2V test session launch. */

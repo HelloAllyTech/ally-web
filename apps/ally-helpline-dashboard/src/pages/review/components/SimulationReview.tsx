@@ -26,7 +26,7 @@ const SkeletonList: FC = () => (
   </>
 );
 
-const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
+const SimulationReview: FC<SimulationReviewProps> = ({ readFilter, sortBy }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
@@ -42,14 +42,15 @@ const SimulationReview: FC<SimulationReviewProps> = ({ filter }) => {
   } = useGetReviewsQuery({
     limit: PAGE_SIZE,
     offset,
-    sortBy: filter,
+    sortBy,
+    readFilter,
     languageCode: i18n.language,
   });
 
   useEffect(() => {
     setOffset(0);
     setFeedData([]);
-  }, [filter, i18n.language]);
+  }, [readFilter, sortBy, i18n.language]);
 
   useEffect(() => {
     if (!simulationReviewsData?.data) return;

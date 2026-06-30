@@ -116,10 +116,12 @@ export const ReviewDetails = () => {
   }, []);
 
   useEffect(() => {
-    if (reviewId) {
+    if (!reviewId) return;
+    const timer = setTimeout(() => {
       markReviewAsRead({ id: reviewId, isScribe: isScribeReview });
-    }
-  }, [reviewId, markReviewAsRead]);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [reviewId, isScribeReview]);
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);

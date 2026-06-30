@@ -444,7 +444,9 @@
       "all": "सर्व",
       "latest": "नवीनतम",
       "mostReviewed": "सर्वाधिक वेळा तपासले गेलेले",
-      "undiscovered": "न सापडलेले"
+      "undiscovered": "न सापडलेले",
+      "read": "Read",
+      "unread": "Unread"
     },
     "empty": {
       "title": "अजून कोणतीही सेशन्स शेअर करण्यात आलेली नाहीत",
@@ -552,6 +554,12 @@
         "second_one": "{{count}} सेकंद",
         "second_other": "{{count}} सेकंद"
       }
+    },
+    "sort": {
+      "label": "Sort by",
+      "latest": "Latest First",
+      "mostViewed": "Most Viewed First",
+      "mostCommented": "Most Commented First"
     }
   },
   "callFeedback": {

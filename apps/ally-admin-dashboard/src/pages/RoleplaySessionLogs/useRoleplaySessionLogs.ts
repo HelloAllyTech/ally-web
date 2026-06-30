@@ -10,10 +10,14 @@ export const ROLEPLAY_LOGS_PAGE_SIZE = 25;
  * debounced search, status / date-range filters and offset pagination. Any
  * filter change resets paging back to the first page.
  */
+/** "all" = no filter, "test" = V2V only, "real" = non-V2V only */
+type SessionTypeFilter = "all" | "test" | "real";
+
 export function useRoleplaySessionLogs() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<RoleplaySessionStatus | "">("");
+  const [sessionType, setSessionType] = useState<SessionTypeFilter>("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [offset, setOffset] = useState(0);
@@ -34,11 +38,13 @@ export function useRoleplaySessionLogs() {
     };
     if (search) next.search = search;
     if (status) next.status = status;
+    if (sessionType === "test") next.isV2VTest = true;
+    if (sessionType === "real") next.isV2VTest = false;
     if (dateFrom) next.dateFrom = dateFrom;
     // Treat the picked end date as inclusive (end of that day, UTC).
     if (dateTo) next.dateTo = `${dateTo}T23:59:59.999Z`;
     return next;
-  }, [search, status, dateFrom, dateTo, offset]);
+  }, [search, status, sessionType, dateFrom, dateTo, offset]);
 
   const { data, isLoading, isFetching, isError, refetch } = useGetRoleplaySessionLogsQuery(params);
 
@@ -47,6 +53,10 @@ export function useRoleplaySessionLogs() {
 
   const onStatusChange = (value: RoleplaySessionStatus | "") => {
     setStatus(value);
+    setOffset(0);
+  };
+  const onSessionTypeChange = (value: SessionTypeFilter) => {
+    setSessionType(value);
     setOffset(0);
   };
   const onDateFromChange = (value: string) => {
@@ -58,11 +68,12 @@ export function useRoleplaySessionLogs() {
     setOffset(0);
   };
 
-  const hasActiveFilters = Boolean(search || status || dateFrom || dateTo);
+  const hasActiveFilters = Boolean(search || status || sessionType !== "all" || dateFrom || dateTo);
   const clearFilters = () => {
     setSearchInput("");
     setSearch("");
     setStatus("");
+    setSessionType("all");
     setDateFrom("");
     setDateTo("");
     setOffset(0);
@@ -89,6 +100,8 @@ export function useRoleplaySessionLogs() {
     setSearchInput,
     status,
     onStatusChange,
+    sessionType,
+    onSessionTypeChange,
     dateFrom,
     onDateFromChange,
     dateTo,
