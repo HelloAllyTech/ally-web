@@ -47,8 +47,19 @@ vi.mock("@api", () => ({
     mockUseGetScribeReviewsQuery(params, options),
 }));
 
+const mockDropdownField = ({ value, options, onChange }: any) => (
+  <select data-testid="sort-dropdown" value={value} onChange={e => onChange(e.target.value)}>
+    {options?.map((opt: string) => (
+      <option key={opt} value={opt}>
+        {opt}
+      </option>
+    ))}
+  </select>
+);
+
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   FEATURE_FLAGS_MAP: mockFeatureFlags,
+  DropdownField: (props: any) => mockDropdownField(props),
   Tabs: ({ items, activeId, onChange, className }: any) => (
     <div data-testid="tabs" className={className}>
       {items?.map((item: any) => (
@@ -67,6 +78,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 vi.mock("@ally-ui-mono/ui-shared/index", () => ({
   FEATURE_FLAGS_MAP: mockFeatureFlags,
+  DropdownField: (props: any) => mockDropdownField(props),
   Tabs: ({ items, activeId, onChange, className }: any) => (
     <div data-testid="tabs" className={className}>
       {items?.map((item: any) => (
@@ -1129,7 +1141,7 @@ describe("Review Component", () => {
       );
 
       const dropdown = screen.getByTestId("sort-dropdown") as HTMLSelectElement;
-      expect(dropdown.value).toBe("LATEST");
+      expect(dropdown.value).toBe("Latest First");
     });
 
     it("changes read filter to READ when clicked", () => {
@@ -1165,11 +1177,11 @@ describe("Review Component", () => {
       );
 
       fireEvent.change(screen.getByTestId("sort-dropdown"), {
-        target: { value: "MOST_VIEWED" },
+        target: { value: "Most Viewed First" },
       });
 
       const dropdown = screen.getByTestId("sort-dropdown") as HTMLSelectElement;
-      expect(dropdown.value).toBe("MOST_VIEWED");
+      expect(dropdown.value).toBe("Most Viewed First");
     });
 
     it("changes sort to MOST_COMMENTED when selected from dropdown", () => {
@@ -1180,11 +1192,11 @@ describe("Review Component", () => {
       );
 
       fireEvent.change(screen.getByTestId("sort-dropdown"), {
-        target: { value: "MOST_COMMENTED" },
+        target: { value: "Most Commented First" },
       });
 
       const dropdown = screen.getByTestId("sort-dropdown") as HTMLSelectElement;
-      expect(dropdown.value).toBe("MOST_COMMENTED");
+      expect(dropdown.value).toBe("Most Commented First");
     });
 
     it("does not show sort dropdown on Scribe tab", () => {

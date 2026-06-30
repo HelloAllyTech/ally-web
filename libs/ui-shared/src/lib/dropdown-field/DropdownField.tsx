@@ -20,6 +20,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
   valueClassName,
   onHandleSearch,
   searchPlaceholder,
+  hideSearch = false,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [openUpward, setOpenUpward] = useState<boolean>(false);
@@ -94,6 +95,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
           onHandleSearch={onHandleSearch}
           onClose={() => setIsOpen(false)}
           searchPlaceholder={searchPlaceholder}
+          hideSearch={hideSearch}
           optionsMaxHeight={optionsMaxHeight}
           className={`left-0 min-w-full font-secondary ${
             openUpward ? "bottom-full mb-2" : "top-full mt-2"

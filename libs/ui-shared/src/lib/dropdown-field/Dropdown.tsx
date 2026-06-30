@@ -18,6 +18,7 @@ const Dropdown: FC<DropdownProps> = ({
   onHandleSearch,
   searchPlaceholder,
   onClose,
+  hideSearch = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -93,19 +94,23 @@ const Dropdown: FC<DropdownProps> = ({
       style={style}
       onClick={e => e.stopPropagation()}
     >
-      <input
-        type="text"
-        role="combobox"
-        aria-expanded
-        aria-controls={listboxId}
-        aria-label={searchPlaceholder || "Search"}
-        aria-activedescendant={activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined}
-        value={searchQuery}
-        onChange={e => handleSearch(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={searchPlaceholder || "Search"}
-        className="w-full mb-2 px-2 py-1 rounded-[4px] bg-[#F5F5F7] border border-[#DBDBDB] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-      />
+      {!hideSearch && (
+        <input
+          type="text"
+          role="combobox"
+          aria-expanded
+          aria-controls={listboxId}
+          aria-label={searchPlaceholder || "Search"}
+          aria-activedescendant={
+            activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined
+          }
+          value={searchQuery}
+          onChange={e => handleSearch(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={searchPlaceholder || "Search"}
+          className="w-full mb-2 px-2 py-1 rounded-[4px] bg-[#F5F5F7] border border-[#DBDBDB] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        />
+      )}
       <div
         id={listboxId}
         role="listbox"

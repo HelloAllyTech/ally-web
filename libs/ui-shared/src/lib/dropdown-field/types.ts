@@ -7,6 +7,7 @@ export interface DropdownFieldProps {
   onHandleSearch?: (query: string) => void | undefined;
   options: string[];
   searchPlaceholder?: string;
+  hideSearch?: boolean;
 }
 
 export interface DropdownProps {
@@ -18,4 +19,5 @@ export interface DropdownProps {
   onHandleSearch?: (query: string) => void;
   searchPlaceholder?: string;
   onClose?: () => void;
+  hideSearch?: boolean;
 }

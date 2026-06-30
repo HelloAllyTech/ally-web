@@ -11,17 +11,21 @@ const Dropdown: FC<DropdownProps> = ({
   minWidth = 200,
   sx,
   placeholder,
+  disableClearable = false,
+  readOnly = false,
 }) => {
   const selectedOption = options.find(o => String(o.value) === value) ?? null;
 
   return (
     <Autocomplete
       disablePortal
+      disableClearable={disableClearable}
       options={options}
       value={selectedOption}
       onChange={(_, opt) => onChange(opt ? String(opt.value) : "")}
       isOptionEqualToValue={(o, v) => String(o.value) === String(v.value)}
       getOptionLabel={o => o.label}
+      filterOptions={readOnly ? opts => opts : undefined}
       renderOption={(props, option) => {
         const { key, ...restProps } = props;
         return (
@@ -32,7 +36,14 @@ const Dropdown: FC<DropdownProps> = ({
       }}
       ListboxProps={{ sx: { maxHeight: 240, overflowY: "auto" } }}
       slotProps={{ popper: { placement: "bottom-start" } }}
-      renderInput={params => <TextField {...params} size="small" placeholder={placeholder} />}
+      renderInput={params => (
+        <TextField
+          {...params}
+          size="small"
+          placeholder={placeholder}
+          inputProps={{ ...params.inputProps, readOnly }}
+        />
+      )}
       sx={{
         minWidth,
         ".MuiOutlinedInput-root": {

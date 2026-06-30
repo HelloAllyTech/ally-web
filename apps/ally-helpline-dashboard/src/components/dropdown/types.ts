@@ -12,4 +12,6 @@ export interface DropdownProps {
   minWidth?: number;
   placeholder?: string;
   sx?: SxProps;
+  disableClearable?: boolean;
+  readOnly?: boolean;
 }

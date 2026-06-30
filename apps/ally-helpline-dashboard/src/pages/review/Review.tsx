@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
-import { Tabs } from "@ally-ui-mono/ui-shared";
-import { Dropdown, ToggleButtonGroup } from "@components";
+import { DropdownField, Tabs } from "@ally-ui-mono/ui-shared";
+import { ToggleButtonGroup } from "@components";
 import { useUser } from "@hooks";
 import { hasPermissions } from "@utils";
 
@@ -119,14 +119,20 @@ const ReviewWithTabs: FC = () => {
         <span className="font-primary text-xs text-typography-600 whitespace-nowrap">
           {t("review.sort.label")}
         </span>
-        <Dropdown
-          value={simulationSortBy}
-          options={sortOptions}
-          onChange={newSort => {
-            if (newSort !== simulationSortBy) setSimulationSortBy(newSort);
-          }}
-          minWidth={180}
-        />
+        <div className="w-fit">
+          <DropdownField
+            value={
+              sortOptions.find(o => o.value === simulationSortBy)?.label ?? sortOptions[0].label
+            }
+            options={sortOptions.map(o => o.label)}
+            onChange={label => {
+              const opt = sortOptions.find(o => o.label === label);
+              if (opt && opt.value !== simulationSortBy) setSimulationSortBy(opt.value);
+            }}
+            valueClassName="font-primary text-xs text-typography-800"
+            hideSearch
+          />
+        </div>
       </div>
     </div>
   );
