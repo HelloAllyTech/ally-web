@@ -15,6 +15,7 @@ interface CustomDropdownProps {
   onChange: (value: string | number) => void;
   placeholder?: string;
   required?: boolean;
+  searchable?: boolean;
 }
 
 export const CustomDropdown: React.FC<CustomDropdownProps> = ({
@@ -24,11 +25,14 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
   onChange,
   placeholder = en.userManagement.selectOrg,
   required = false,
+  searchable = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const dropdownPosition = useCreatePortal(triggerRef, isOpen, {
     matchTriggerWidth: true,
@@ -37,6 +41,7 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
+    setSearchQuery("");
   }, []);
 
   useEffect(() => {
@@ -52,21 +57,31 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, handleClose]);
 
-  // Helper function to get option id
+  useEffect(() => {
+    if (isOpen && searchable) {
+      setTimeout(() => searchInputRef.current?.focus(), 0);
+    }
+  }, [isOpen, searchable]);
+
   const getOptionId = (option: Option | UserRoles): string | number => {
     return option.id;
   };
 
-  // Helper function to get option display value
   const getOptionValue = (option: Option | UserRoles): string => {
     return "value" in option ? option.value : option.name;
   };
 
   const selectedOption = options.find(opt => getOptionId(opt).toString() === value.toString());
 
+  const filteredOptions =
+    searchable && searchQuery
+      ? options.filter(opt => getOptionValue(opt).toLowerCase().includes(searchQuery.toLowerCase()))
+      : options;
+
   const handleSelect = (optionId: string | number) => {
     onChange(optionId);
     setIsOpen(false);
+    setSearchQuery("");
   };
 
   return (
@@ -96,40 +111,56 @@ export const CustomDropdown: React.FC<CustomDropdownProps> = ({
           createPortal(
             <div
               ref={portalRef}
-              className="fixed bg-white border rounded-md shadow-lg max-h-[240px] overflow-auto z-[9999] animate-fadeIn custom-scrollbar"
+              className="fixed bg-white border rounded-md shadow-lg z-[9999] animate-fadeIn flex flex-col"
               style={{
                 top: dropdownPosition.top,
                 left: dropdownPosition.left,
                 width: dropdownPosition.width,
+                maxHeight: "240px",
               }}
             >
-              {options.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-typography-900 ">
-                  {en.common.noOptionsAvailable}
+              {searchable && (
+                <div className="px-2 pt-2 pb-1 border-b sticky top-0 bg-white">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search..."
+                    className="w-full px-2 py-1 text-sm border rounded outline-none font-primary text-typography-900 placeholder:text-typography-500 focus:border-primary"
+                    onClick={e => e.stopPropagation()}
+                  />
                 </div>
-              ) : (
-                options.map(option => {
-                  const optionId = getOptionId(option);
-                  const optionValue = getOptionValue(option);
-                  const isSelected = optionId.toString() === value.toString();
-
-                  return (
-                    <div
-                      key={optionId}
-                      className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
-                        isSelected
-                          ? "bg-primary-50 text-primary font-medium"
-                          : "text-typography-900 hover:bg-background-secondary"
-                      }`}
-                      onClick={() => handleSelect(optionId)}
-                    >
-                      <div className="flex items-center justify-between text-sm font-primary">
-                        <span>{formatCapitalizedEnum(optionValue)}</span>
-                      </div>
-                    </div>
-                  );
-                })
               )}
+              <div className="overflow-auto custom-scrollbar flex-1">
+                {filteredOptions.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-typography-900">
+                    {en.common.noOptionsAvailable}
+                  </div>
+                ) : (
+                  filteredOptions.map(option => {
+                    const optionId = getOptionId(option);
+                    const optionValue = getOptionValue(option);
+                    const isSelected = optionId.toString() === value.toString();
+
+                    return (
+                      <div
+                        key={optionId}
+                        className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                          isSelected
+                            ? "bg-primary-50 text-primary font-medium"
+                            : "text-typography-900 hover:bg-background-secondary"
+                        }`}
+                        onClick={() => handleSelect(optionId)}
+                      >
+                        <div className="flex items-center justify-between text-sm font-primary">
+                          <span>{formatCapitalizedEnum(optionValue)}</span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>,
             document.body,
           )}

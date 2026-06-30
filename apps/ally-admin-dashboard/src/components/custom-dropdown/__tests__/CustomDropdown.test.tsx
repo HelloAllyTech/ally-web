@@ -382,12 +382,11 @@ describe("CustomDropdown", () => {
       const trigger = screen.getByText("Select Organization");
       fireEvent.click(trigger);
 
-      const dropdown =
-        document.body.querySelector(".fixed.overflow-auto") ??
-        document.body.querySelector("[class*='shadow-lg']");
+      const dropdown = document.body.querySelector("[class*='shadow-lg']");
       expect(dropdown).toBeInTheDocument();
-      expect(dropdown).toHaveClass("max-h-[240px]");
-      expect(dropdown).toHaveClass("overflow-auto");
+      expect(dropdown).toHaveStyle({ maxHeight: "240px" });
+      const scrollable = dropdown?.querySelector(".overflow-auto");
+      expect(scrollable).toBeInTheDocument();
     });
 
     it("uses IBM Plex Serif font", () => {

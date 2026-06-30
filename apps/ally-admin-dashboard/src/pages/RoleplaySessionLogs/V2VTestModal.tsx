@@ -73,6 +73,7 @@ export const V2VTestModal: FC<V2VTestModalProps> = ({ open, onClose }) => {
         <CustomDropdown
           label="Scenario"
           required
+          searchable
           options={scenarioOptions}
           value={scenarioId}
           onChange={setScenarioId}
