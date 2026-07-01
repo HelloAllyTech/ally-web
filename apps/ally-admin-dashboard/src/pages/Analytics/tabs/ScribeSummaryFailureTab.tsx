@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 
-import { DonutChart, LineChart, SimpleBarChart } from "@carbon/charts-react";
+import { DonutChart, LineChart } from "@carbon/charts-react";
 import { Tile } from "@carbon/react";
 
 import { useGetScribeSummaryFailuresQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
-import { ChartCard, PALETTE, barOpts, donutOpts, lineOpts } from "../chartKit";
+import { ChartCard, PALETTE, donutOpts, lineOpts } from "../chartKit";
 
 const BUCKET_TITLE: Record<string, string> = {
   day: "Day",
@@ -14,34 +14,10 @@ const BUCKET_TITLE: Record<string, string> = {
   month: "Month",
 };
 
-/** Friendlier labels for the pipeline-stage values written to chat metadata. */
-const STAGE_LABELS: Record<string, string> = {
-  transcribe: "Transcription",
-  diarize: "Diarization",
-  summarize: "Summarization",
-  "summary-timeout": "Timed out",
-  "transcribe-result": "Delivery",
-  deliver: "Delivery",
-  "dead-letter": "Dead-letter (retries exhausted)",
-  "transcription-request-dlq": "Dead-letter (request)",
-  "transcription-response-dlq": "Dead-letter (delivery)",
-  "other-error": "Other error",
-  unknown: "Unknown",
-};
-
-/** Friendlier labels for the stored-audio state of failed sessions. */
-const AUDIO_STATUS_LABELS: Record<string, string> = {
-  "upload-never-finalized": "Upload never finalized (abnormal end)",
-  "uploaded-ok": "Uploaded OK (later expired/lost)",
-  "upload-failed": "Upload failed",
-  "audio-cleared": "Audio cleared (storageKey null)",
-  "no-upload-record": "No upload record",
-};
-
 /**
- * Scribe summary-generation failures — the failure rate (FAILED / terminal),
- * its trend, and where failures happen (stage), whether they're recoverable
- * (retryable) and whether the summary timeout caused them. Derived from the
+ * Scribe summary-generation failures — the failure rate (FAILED / terminal) and
+ * its trend, a single unified per-failure breakdown (audio lifecycle + pipeline
+ * reason), and whether failures are recoverable (retryable). Derived from the
  * `chats` table; not language-scoped.
  */
 export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) => {
@@ -60,24 +36,6 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
       })),
     [data],
   );
-  const stageData = useMemo(
-    () =>
-      (data?.failuresByStage ?? []).map(o => ({
-        group: STAGE_LABELS[o.key] ?? o.key,
-        value: o.count,
-      })),
-    [data],
-  );
-  const audioStatusData = useMemo(
-    () =>
-      (data?.audioStatusBreakdown ?? [])
-        .filter(o => o.count > 0)
-        .map(o => ({
-          group: AUDIO_STATUS_LABELS[o.key] ?? o.key,
-          value: o.count,
-        })),
-    [data],
-  );
   const retryableData = useMemo(
     () =>
       (data?.retryableBreakdown ?? [])
@@ -88,6 +46,9 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
         })),
     [data],
   );
+  const breakdown = data?.failureBreakdown ?? [];
+  const breakdownMax = Math.max(...breakdown.map(b => b.count), 1);
+
   const s = data?.summary;
   const kpis = [
     { label: "Summary failure rate", value: s ? `${s.failureRatePct}%` : "—" },
@@ -139,71 +100,37 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
           />
         </ChartCard>
         <ChartCard
-          title="Top failure reasons"
-          caption="Actual error text on failed sessions (first 80 chars), most frequent first"
+          title="Failure breakdown"
+          caption="One bucket per failure — audio lifecycle state first, then pipeline reason"
           loading={loading}
           wide
-          empty={!data?.topFailureReasons?.length}
+          empty={!breakdown.length}
         >
           <div className="flex flex-col gap-2">
-            {(data?.topFailureReasons ?? []).map(r => {
-              const max = Math.max(...(data?.topFailureReasons ?? []).map(x => x.count), 1);
-              return (
-                <div key={r.key} className="flex items-center gap-3">
-                  <div
-                    className="text-sm text-typography-900 truncate"
-                    style={{ flex: "0 0 60%" }}
-                    title={r.key}
-                  >
-                    {r.key}
-                  </div>
-                  <div className="flex-1 h-3 rounded" style={{ background: "#f0f0f0" }}>
-                    <div
-                      className="h-3 rounded"
-                      style={{
-                        width: `${Math.round((r.count / max) * 100)}%`,
-                        background: PALETTE.red,
-                      }}
-                    />
-                  </div>
-                  <div className="text-sm font-medium text-typography-900 w-10 text-right">
-                    {r.count}
-                  </div>
+            {breakdown.map(r => (
+              <div key={r.key} className="flex items-center gap-3">
+                <div
+                  className="text-sm text-typography-900 truncate"
+                  style={{ flex: "0 0 55%" }}
+                  title={r.key}
+                >
+                  {r.key}
                 </div>
-              );
-            })}
+                <div className="flex-1 h-3 rounded" style={{ background: "#f0f0f0" }}>
+                  <div
+                    className="h-3 rounded"
+                    style={{
+                      width: `${Math.round((r.count / breakdownMax) * 100)}%`,
+                      background: PALETTE.red,
+                    }}
+                  />
+                </div>
+                <div className="text-sm font-medium text-typography-900 w-10 text-right">
+                  {r.count}
+                </div>
+              </div>
+            ))}
           </div>
-        </ChartCard>
-        <ChartCard
-          title="Stored audio state of failures"
-          caption="'Upload never finalized' = abnormal session end; 'uploaded OK' = audio existed then expired/lost"
-          loading={loading}
-          wide
-          empty={!audioStatusData.length}
-        >
-          <SimpleBarChart
-            data={audioStatusData}
-            options={barOpts({
-              leftTitle: "Failures",
-              bottomTitle: "Audio state",
-              colorScale: { Failures: PALETTE.magenta },
-            })}
-          />
-        </ChartCard>
-        <ChartCard
-          title="Failures by stage"
-          caption="Where in the pipeline failures occur"
-          loading={loading}
-          empty={!stageData.length}
-        >
-          <SimpleBarChart
-            data={stageData}
-            options={barOpts({
-              leftTitle: "Failures",
-              bottomTitle: "Stage",
-              colorScale: { Failures: PALETTE.orange },
-            })}
-          />
         </ChartCard>
         <ChartCard
           title="Retryable vs terminal"

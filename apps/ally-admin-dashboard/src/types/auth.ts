@@ -270,9 +270,7 @@ export interface ScribeSummaryFailureResponse {
   bucket: string;
   summary: ScribeFailureSummary;
   failureRateTrend: ScribeFailureRatePoint[];
-  failuresByStage: ScribeCount[];
-  topFailureReasons: ScribeCount[];
-  audioStatusBreakdown: ScribeCount[];
+  failureBreakdown: ScribeCount[];
   retryableBreakdown: ScribeCount[];
 }
 
