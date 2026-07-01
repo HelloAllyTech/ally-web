@@ -271,6 +271,7 @@ export interface ScribeSummaryFailureResponse {
   summary: ScribeFailureSummary;
   failureRateTrend: ScribeFailureRatePoint[];
   failureBreakdown: ScribeCount[];
+  failuresByMode: ScribeCount[];
   retryableBreakdown: ScribeCount[];
 }
 

@@ -14,6 +14,13 @@ const BUCKET_TITLE: Record<string, string> = {
   month: "Month",
 };
 
+/** Session-mode labels (DICTATION = live, SCRIBE = uploaded recording). */
+const MODE_LABELS: Record<string, string> = {
+  DICTATION: "Live (Dictation)",
+  SCRIBE: "Upload (Scribe)",
+  UNKNOWN: "Unknown",
+};
+
 /**
  * Scribe summary-generation failures — the failure rate (FAILED / terminal) and
  * its trend, a single unified per-failure breakdown (audio lifecycle + pipeline
@@ -44,6 +51,13 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
           group: o.key === "retryable" ? "Retryable" : "Terminal",
           value: o.count,
         })),
+    [data],
+  );
+  const modeData = useMemo(
+    () =>
+      (data?.failuresByMode ?? [])
+        .filter(o => o.count > 0)
+        .map(o => ({ group: MODE_LABELS[o.key] ?? o.key, value: o.count })),
     [data],
   );
   const breakdown = data?.failureBreakdown ?? [];
@@ -131,6 +145,28 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
               </div>
             ))}
           </div>
+        </ChartCard>
+        <ChartCard
+          title="Failures by session mode"
+          caption="DICTATION = live recording; SCRIBE = uploaded file"
+          loading={loading}
+          empty={!modeData.length}
+        >
+          <DonutChart
+            data={modeData}
+            options={donutOpts({
+              centerLabel: "Failures",
+              extra: {
+                color: {
+                  scale: {
+                    "Live (Dictation)": PALETTE.magenta,
+                    "Upload (Scribe)": PALETTE.blue,
+                    Unknown: PALETTE.gray,
+                  },
+                },
+              },
+            })}
+          />
         </ChartCard>
         <ChartCard
           title="Retryable vs terminal"
