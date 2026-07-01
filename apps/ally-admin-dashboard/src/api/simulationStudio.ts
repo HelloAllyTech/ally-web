@@ -29,6 +29,7 @@ import {
   DeleteCharacterRequest,
   Prompt,
   GetPromptsQuery,
+  LlmModelInfo,
   GetReportsInput,
   ReportData,
   GenerateReportInput,
@@ -476,6 +477,18 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         params,
       }),
       providesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Canonical LLM model registry (single source of truth for the
+     * Prompt Management model picker). Optionally filtered to a runtime.
+     */
+    getLlmModels: builder.query<LlmModelInfo[], string | void>({
+      query: runtime => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_LLM_MODELS,
+        method: HttpMethod.GET,
+        ...(runtime ? { params: { runtime } } : {}),
+      }),
     }),
 
     /**
@@ -1040,6 +1053,7 @@ export const {
   useCreateLanguageMutation,
   useUpdateLanguageMutation,
   useGetPromptsQuery,
+  useGetLlmModelsQuery,
   useGetPromptsByTypeQuery,
   useCreatePromptMutation,
   useUpdatePromptMutation,

@@ -341,6 +341,44 @@ export interface Prompt {
    */
   hasStates?: boolean;
   usesBlocks?: string[];
+  /**
+   * Prompt-level LLM provider override ('openai' | 'gemini' | 'anthropic'),
+   * sent alongside `model` so runtimes don't infer it from the model name.
+   */
+  provider?: string;
+  /**
+   * Prompt-level LLM model override (OpenAI/Gemini). Sits between the
+   * code/language defaults and any simulation-level value. Undefined =
+   * inherit the code/language default.
+   */
+  model?: string;
+  /**
+   * Prompt-level LLM sampling temperature override (0–2). Undefined = inherit
+   * the code/language default; a simulation-level temperature still wins.
+   */
+  temperature?: number;
+}
+
+export type LlmProviderName = "openai" | "gemini" | "anthropic";
+
+/** Runtimes that execute LLM calls (mirrors the ally-be LlmRuntime enum). */
+export type LlmRuntime = "ai-learn" | "ally-ai" | "ally-be";
+
+/**
+ * One selectable LLM model from the backend registry
+ * (GET /api/v1/llm/models). Single source of truth for the Prompt Management
+ * model picker — see prompt-llm-config-standardization-adr.md.
+ */
+export interface LlmModelInfo {
+  provider: LlmProviderName;
+  /** Model id passed to the provider (e.g. 'gpt-4o', 'gemini-2.5-pro'). */
+  model: string;
+  /** Human-readable label for the picker. */
+  label: string;
+  /** False for reasoning models (o-series, gpt-5) that reject a custom temperature. */
+  supportsTemperature: boolean;
+  /** Runtimes that can actually run this model today. */
+  runtimes: LlmRuntime[];
 }
 
 export interface GetPromptsQuery {
