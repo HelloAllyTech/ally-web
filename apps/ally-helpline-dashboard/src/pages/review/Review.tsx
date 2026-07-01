@@ -11,15 +11,7 @@ import { hasPermissions } from "@utils";
 
 import ScribeReview from "./components/ScribeReview";
 import SimulationReview from "./components/SimulationReview";
-import {
-  READ_FILTER_OPTIONS,
-  SCRIBE_READ_FILTER_OPTIONS,
-  SCRIBE_SORT_OPTIONS,
-  SORT_OPTIONS,
-  ReviewTab,
-  TABS,
-  containerVariants,
-} from "./constants";
+import { READ_FILTER_OPTIONS, SORT_OPTIONS, ReviewTab, TABS, containerVariants } from "./constants";
 
 export const Review: FC = () => {
   return <ReviewWithTabs />;
@@ -37,8 +29,6 @@ const ReviewWithTabs: FC = () => {
 
   const readFilterOptions = READ_FILTER_OPTIONS(t);
   const sortOptions = SORT_OPTIONS(t);
-  const scribeReadFilterOptions = SCRIBE_READ_FILTER_OPTIONS(t);
-  const scribeSortOptions = SCRIBE_SORT_OPTIONS(t);
 
   const tabFromUrl = searchParams.get("tab");
   const filterFromUrl = searchParams.get("filter");
@@ -49,11 +39,7 @@ const ReviewWithTabs: FC = () => {
   const isVisibleTab = (tab: string | null) => visibleTabs.some(t => t.value === tab);
   const isValidReadFilter = (f: string | null) =>
     f && readFilterOptions.some(option => option.value === f);
-  const isValidScribeReadFilter = (f: string | null) =>
-    f && scribeReadFilterOptions.some(option => option.value === f);
   const isValidSort = (s: string | null) => s && sortOptions.some(option => option.value === s);
-  const isValidScribeSort = (s: string | null) =>
-    s && scribeSortOptions.some(option => option.value === s);
 
   const initialTab =
     isValidTab(tabFromUrl) && isVisibleTab(tabFromUrl)
@@ -69,12 +55,10 @@ const ReviewWithTabs: FC = () => {
     initialTab === ReviewTab.SIMULATION && isValidSort(sortFromUrl) ? sortFromUrl! : "LATEST",
   );
   const [scribeReadFilter, setScribeReadFilter] = useState(
-    initialTab === ReviewTab.SCRIBE && isValidScribeReadFilter(filterFromUrl)
-      ? filterFromUrl!
-      : "ALL",
+    initialTab === ReviewTab.SCRIBE && isValidReadFilter(filterFromUrl) ? filterFromUrl! : "ALL",
   );
   const [scribeSortBy, setScribeSortBy] = useState(
-    initialTab === ReviewTab.SCRIBE && isValidScribeSort(sortFromUrl) ? sortFromUrl! : "LATEST",
+    initialTab === ReviewTab.SCRIBE && isValidSort(sortFromUrl) ? sortFromUrl! : "LATEST",
   );
   const [activeTab, setActiveTab] = useState<string>(initialTab);
 
@@ -167,11 +151,11 @@ const ReviewWithTabs: FC = () => {
         onValueChange={newFilter => {
           if (newFilter !== scribeReadFilter) setScribeReadFilter(newFilter);
         }}
-        items={scribeReadFilterOptions}
+        items={readFilterOptions}
         equalWidth
         inheritFontSize={true}
       />
-      {renderSortRow(scribeSortBy, scribeSortOptions, setScribeSortBy)}
+      {renderSortRow(scribeSortBy, sortOptions, setScribeSortBy)}
     </div>
   );
 

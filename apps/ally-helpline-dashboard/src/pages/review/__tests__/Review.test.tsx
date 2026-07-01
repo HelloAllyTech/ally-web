@@ -375,10 +375,11 @@ describe("Review Component", () => {
           <Review />
         </TestWrapper>,
       );
-      // Default tab is SCRIBE; Scribe filter options are ALL and UNDISCOVERED
+      // Both tabs now use ALL/READ/UNREAD filters
       expect(screen.getByTestId("toggle-button-group")).toBeInTheDocument();
       expect(screen.getByTestId("filter-ALL")).toBeInTheDocument();
-      expect(screen.getByTestId("filter-UNDISCOVERED")).toBeInTheDocument();
+      expect(screen.getByTestId("filter-READ")).toBeInTheDocument();
+      expect(screen.getByTestId("filter-UNREAD")).toBeInTheDocument();
     });
 
     it("renders feed cards when data is available", () => {
@@ -680,30 +681,30 @@ describe("Review Component", () => {
       expect(allButton).toHaveClass("active");
     });
 
-    it("changes filter to UNDISCOVERED when clicked on Scribe tab", () => {
+    it("changes filter to UNREAD when clicked on Scribe tab", () => {
       render(
         <TestWrapper>
           <Review />
         </TestWrapper>,
       );
 
-      fireEvent.click(screen.getByTestId("filter-UNDISCOVERED"));
+      fireEvent.click(screen.getByTestId("filter-UNREAD"));
 
-      expect(screen.getByTestId("filter-UNDISCOVERED")).toHaveClass("active");
+      expect(screen.getByTestId("filter-UNREAD")).toHaveClass("active");
       expect(screen.getByTestId("filter-ALL")).not.toHaveClass("active");
     });
 
-    it("changes to UNDISCOVERED filter when clicked", () => {
+    it("changes filter to READ when clicked on Scribe tab", () => {
       render(
         <TestWrapper>
           <Review />
         </TestWrapper>,
       );
 
-      fireEvent.click(screen.getByTestId("filter-UNDISCOVERED"));
+      fireEvent.click(screen.getByTestId("filter-READ"));
 
-      const undiscoveredButton = screen.getByTestId("filter-UNDISCOVERED");
-      expect(undiscoveredButton).toHaveClass("active");
+      const readButton = screen.getByTestId("filter-READ");
+      expect(readButton).toHaveClass("active");
     });
   });
 
@@ -1095,7 +1096,7 @@ describe("Review Component", () => {
    * TEST GROUP: Simulation Tab
    */
   describe("Simulation Tab", () => {
-    it("shows read filter options (ALL/READ/UNREAD) instead of Scribe filters", () => {
+    it("shows read filter options (ALL/READ/UNREAD)", () => {
       render(
         <MemoryRouter initialEntries={["/review?tab=SIMULATION"]}>
           <Review />
@@ -1106,7 +1107,6 @@ describe("Review Component", () => {
       expect(screen.getByTestId("filter-READ")).toBeInTheDocument();
       expect(screen.getByTestId("filter-UNREAD")).toBeInTheDocument();
       expect(screen.queryByTestId("filter-MOST_REVIEWED")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("filter-UNDISCOVERED")).not.toBeInTheDocument();
     });
 
     it("shows sort dropdown on Simulation tab", () => {

@@ -33,9 +33,6 @@ const ScribeReview: FC<ScribeReviewProps> = ({ readFilter, sortBy }) => {
   const [feedData, setFeedData] = useState<ReviewItem[]>([]);
   const [expandedViewMoreIds, setExpandedViewMoreIds] = useState<Set<string>>(new Set());
 
-  // UNDISCOVERED is a backend filter/sort combo; otherwise use the selected sort
-  const apiSortBy = readFilter === "UNDISCOVERED" ? "UNDISCOVERED" : sortBy;
-
   const {
     data: scribeReviewsData,
     isFetching: isScribeReviewsFetching,
@@ -44,7 +41,8 @@ const ScribeReview: FC<ScribeReviewProps> = ({ readFilter, sortBy }) => {
   } = useGetScribeReviewsQuery({
     limit: PAGE_SIZE,
     offset,
-    sortBy: apiSortBy,
+    sortBy,
+    readFilter,
     languageCode: i18n.language,
   });
 
