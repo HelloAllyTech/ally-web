@@ -10,18 +10,6 @@ import { DEFAULT_UI_THEME, UiTheme } from "./themes";
  */
 const buildPalette = (uiTheme: UiTheme): PaletteOptions => {
   switch (uiTheme) {
-    case "midnight":
-      return {
-        mode: "dark",
-        primary: { main: "#7AA2F7" },
-        background: { default: "#12121B", paper: "#1A1B26" },
-      };
-    case "ocean":
-      return {
-        mode: "dark",
-        primary: { main: "#2EC4C6" },
-        background: { default: "#0E1F2B", paper: "#132A38" },
-      };
     case "forest":
       return {
         mode: "light",

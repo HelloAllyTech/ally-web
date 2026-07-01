@@ -41,7 +41,7 @@ describe("ProfileSettings theme picker", () => {
       />,
     );
     expect(screen.getByRole("radiogroup")).toBeInTheDocument();
-    expect(screen.getAllByRole("radio")).toHaveLength(5);
+    expect(screen.getAllByRole("radio")).toHaveLength(3);
   });
 
   it("marks the selected theme as checked", () => {
@@ -67,7 +67,7 @@ describe("ProfileSettings theme picker", () => {
         onSelectTheme={onSelectTheme}
       />,
     );
-    fireEvent.click(screen.getByRole("radio", { name: "Ocean" }));
-    expect(onSelectTheme).toHaveBeenCalledWith("ocean");
+    fireEvent.click(screen.getByRole("radio", { name: "Sunset" }));
+    expect(onSelectTheme).toHaveBeenCalledWith("sunset");
   });
 });

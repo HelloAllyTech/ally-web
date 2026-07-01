@@ -30,7 +30,7 @@
           if (raw) {
             var slice = JSON.parse(raw);
             var stored = slice && slice.uiTheme ? JSON.parse(slice.uiTheme) : null;
-            if (["daylight", "midnight", "forest", "sunset", "ocean"].indexOf(stored) >= 0) {
+            if (["daylight", "forest", "sunset"].indexOf(stored) >= 0) {
               theme = stored;
             }
           }

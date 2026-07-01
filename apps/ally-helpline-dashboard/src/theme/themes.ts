@@ -5,8 +5,14 @@
  *
  * Each theme id maps to a `[data-theme="<id>"]` block in index.css that
  * overrides the `--color-*` CSS variables consumed by the Tailwind palette.
+ *
+ * Only LIGHT themes are offered. The app's surfaces overwhelmingly hardcode
+ * `bg-white` (~100 sites) while text uses the theme-aware `text-typography-*`
+ * tokens, so a dark background palette renders white-on-white. Dark themes
+ * (Midnight, Ocean) were removed until those surfaces are migrated to semantic
+ * tokens (`bg-background`, `border-border`).
  */
-export const UI_THEMES = ["daylight", "midnight", "forest", "sunset", "ocean"] as const;
+export const UI_THEMES = ["daylight", "forest", "sunset"] as const;
 
 export type UiTheme = (typeof UI_THEMES)[number];
 
@@ -22,10 +28,6 @@ export const THEME_META: Record<UiTheme, { labelKey: string; swatch: [string, st
     labelKey: "profile.settings.appearance.daylight",
     swatch: ["#FFFFFF", "#0957D0", "#10264C"],
   },
-  midnight: {
-    labelKey: "profile.settings.appearance.midnight",
-    swatch: ["#12121B", "#7AA2F7", "#E7EDFF"],
-  },
   forest: {
     labelKey: "profile.settings.appearance.forest",
     swatch: ["#F4F8F0", "#2E7D4F", "#1B3A2B"],
@@ -33,10 +35,6 @@ export const THEME_META: Record<UiTheme, { labelKey: string; swatch: [string, st
   sunset: {
     labelKey: "profile.settings.appearance.sunset",
     swatch: ["#FFF6F0", "#E4572E", "#7A2E1E"],
-  },
-  ocean: {
-    labelKey: "profile.settings.appearance.ocean",
-    swatch: ["#0E1F2B", "#2EC4C6", "#D6F0F2"],
   },
 };
 

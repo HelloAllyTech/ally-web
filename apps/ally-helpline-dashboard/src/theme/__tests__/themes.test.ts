@@ -3,8 +3,9 @@ import { describe, it, expect } from "vitest";
 import { DEFAULT_UI_THEME, isUiTheme, THEME_META, UI_THEMES } from "../themes";
 
 describe("themes contract", () => {
-  it("exposes exactly the five expected themes", () => {
-    expect(UI_THEMES).toEqual(["daylight", "midnight", "forest", "sunset", "ocean"]);
+  it("exposes exactly the three (light-only) themes", () => {
+    // Dark themes (Midnight, Ocean) were removed — see themes.ts for why.
+    expect(UI_THEMES).toEqual(["daylight", "forest", "sunset"]);
   });
 
   it("uses a valid default theme", () => {

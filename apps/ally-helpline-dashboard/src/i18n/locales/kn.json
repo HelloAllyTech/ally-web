@@ -813,10 +813,8 @@
       "appearance": {
         "title": "ಸ್ವರೂಪ",
         "daylight": "Daylight",
-        "midnight": "Midnight",
         "forest": "Forest",
-        "sunset": "Sunset",
-        "ocean": "Ocean"
+        "sunset": "Sunset"
       }
     }
   },
