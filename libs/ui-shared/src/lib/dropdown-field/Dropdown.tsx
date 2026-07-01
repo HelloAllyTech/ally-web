@@ -114,11 +114,11 @@ const Dropdown: FC<DropdownProps> = ({
       <div
         id={listboxId}
         role="listbox"
-        className="flex flex-col gap-2 overflow-y-auto pr-1"
+        className="flex flex-col gap-0.5 overflow-y-auto pr-1"
         style={{ maxHeight: optionsMaxHeight ?? 240 }}
       >
         {filteredOptions.length === 0 ? (
-          <span className="px-1 py-1 text-sm text-black/50">No results</span>
+          <span className="px-1 py-1 text-xs text-black/50">No results</span>
         ) : (
           filteredOptions.map((option, index) => (
             <button
@@ -129,7 +129,7 @@ const Dropdown: FC<DropdownProps> = ({
               aria-selected={index === activeIndex}
               onClick={() => handleChange(option)}
               onMouseEnter={() => setActiveIndex(index)}
-              className={`text-left cursor-pointer font-primary rounded-[4px] px-1 py-0.5 bg-transparent border-0 focus:outline-none ${
+              className={`text-left cursor-pointer text-xs font-primary rounded-[4px] px-2 py-1 bg-transparent border-0 focus:outline-none ${
                 index === activeIndex ? "bg-[#F5F5F7]" : ""
               }`}
             >

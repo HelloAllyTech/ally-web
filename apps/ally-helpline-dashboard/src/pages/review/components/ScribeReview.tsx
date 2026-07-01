@@ -25,13 +25,16 @@ const SkeletonList: FC = () => (
   </>
 );
 
-const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
+const ScribeReview: FC<ScribeReviewProps> = ({ readFilter, sortBy }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
   const [offset, setOffset] = useState(0);
   const [feedData, setFeedData] = useState<ReviewItem[]>([]);
   const [expandedViewMoreIds, setExpandedViewMoreIds] = useState<Set<string>>(new Set());
+
+  // UNDISCOVERED is a backend filter/sort combo; otherwise use the selected sort
+  const apiSortBy = readFilter === "UNDISCOVERED" ? "UNDISCOVERED" : sortBy;
 
   const {
     data: scribeReviewsData,
@@ -41,14 +44,14 @@ const ScribeReview: FC<ScribeReviewProps> = ({ filter }) => {
   } = useGetScribeReviewsQuery({
     limit: PAGE_SIZE,
     offset,
-    sortBy: filter,
+    sortBy: apiSortBy,
     languageCode: i18n.language,
   });
 
   useEffect(() => {
     setOffset(0);
     setFeedData([]);
-  }, [filter, i18n.language]);
+  }, [readFilter, sortBy, i18n.language]);
 
   useEffect(() => {
     if (!scribeReviewsData?.data) return;

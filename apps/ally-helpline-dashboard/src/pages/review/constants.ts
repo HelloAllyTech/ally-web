@@ -1,10 +1,13 @@
 import { Permissions } from "@constants";
 
-export const FILTER_OPTIONS = (t: any) => [
+export const SCRIBE_READ_FILTER_OPTIONS = (t: any) => [
   { value: "ALL", label: t("review.filter.all") },
+  { value: "UNDISCOVERED", label: t("review.filter.undiscovered") },
+];
+
+export const SCRIBE_SORT_OPTIONS = (t: any) => [
   { value: "LATEST", label: t("review.filter.latest") },
   { value: "MOST_REVIEWED", label: t("review.filter.mostReviewed") },
-  { value: "UNDISCOVERED", label: t("review.filter.undiscovered") },
 ];
 
 export const READ_FILTER_OPTIONS = (t: any) => [
