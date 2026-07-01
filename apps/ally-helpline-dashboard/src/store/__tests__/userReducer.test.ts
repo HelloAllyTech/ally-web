@@ -44,9 +44,9 @@ describe("User Reducer", () => {
     });
 
     it("should overwrite a previously selected theme", () => {
-      testStore.dispatch(setUiTheme("midnight"));
-      testStore.dispatch(setUiTheme("ocean"));
-      expect(testStore.getState().user.uiTheme).toBe("ocean");
+      testStore.dispatch(setUiTheme("forest"));
+      testStore.dispatch(setUiTheme("sunset"));
+      expect(testStore.getState().user.uiTheme).toBe("sunset");
     });
   });
 

@@ -828,10 +828,8 @@
       "appearance": {
         "title": "Appearance",
         "daylight": "Daylight",
-        "midnight": "Midnight",
         "forest": "Forest",
-        "sunset": "Sunset",
-        "ocean": "Ocean"
+        "sunset": "Sunset"
       }
     }
   },

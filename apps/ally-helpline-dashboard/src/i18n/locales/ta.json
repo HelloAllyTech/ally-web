@@ -825,10 +825,8 @@
       "appearance": {
         "title": "தோற்றம்",
         "daylight": "Daylight",
-        "midnight": "Midnight",
         "forest": "Forest",
-        "sunset": "Sunset",
-        "ocean": "Ocean"
+        "sunset": "Sunset"
       }
     }
   },
