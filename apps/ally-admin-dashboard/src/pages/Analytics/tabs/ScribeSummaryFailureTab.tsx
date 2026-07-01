@@ -88,17 +88,6 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
         })),
     [data],
   );
-  const timeoutData = useMemo(
-    () =>
-      (data?.timeoutBreakdown ?? [])
-        .filter(o => o.count > 0)
-        .map(o => ({
-          group: o.key === "timeout" ? "Summary timeout" : "Other error",
-          value: o.count,
-        })),
-    [data],
-  );
-
   const s = data?.summary;
   const kpis = [
     { label: "Summary failure rate", value: s ? `${s.failureRatePct}%` : "—" },
@@ -229,27 +218,6 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
               extra: {
                 color: {
                   scale: { Retryable: PALETTE.gold, Terminal: PALETTE.darkRed },
-                },
-              },
-            })}
-          />
-        </ChartCard>
-        <ChartCard
-          title="Timeout vs other error"
-          caption="Failures caused by the summary timeout vs other reasons"
-          loading={loading}
-          empty={!timeoutData.length}
-        >
-          <DonutChart
-            data={timeoutData}
-            options={donutOpts({
-              centerLabel: "Failures",
-              extra: {
-                color: {
-                  scale: {
-                    "Summary timeout": PALETTE.magenta,
-                    "Other error": PALETTE.gray,
-                  },
                 },
               },
             })}
