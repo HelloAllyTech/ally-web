@@ -35,12 +35,18 @@ vi.mock("@constants", () => ({
   Permissions: {
     VIEW_SUMMARY_FIELDS: "view:settings:summary-fields",
     EDIT_CALL_DETAILS: "edit:call:details",
+    COUNSELOR_ACCESS: "counselor:access",
   },
+}));
+
+vi.mock("@utils", () => ({
+  hasPermissions: (permissions: string[] | null | undefined, required: string) =>
+    Array.isArray(permissions) && permissions.includes(required),
 }));
 
 const userResult = {
   user: { role: "COUNSELLOR" },
-  permissions: ["view:settings:summary-fields", "edit:call:details"],
+  permissions: ["view:settings:summary-fields", "edit:call:details", "counselor:access"],
 };
 vi.mock("@hooks", () => ({
   useUser: () => userResult,

@@ -13,8 +13,8 @@ import {
   CustomMenu,
   PermissionGuard,
 } from "@components";
-import { CallType, canCreateNote, Permissions, ROUTES, TooltipLocation } from "@constants";
-import { useUser } from "@hooks";
+import { CallType, Permissions, ROUTES, TooltipLocation } from "@constants";
+import { useScribeNoteCreationEnabled, useUser } from "@hooks";
 import { SessionType } from "@types";
 import { hasPermissions } from "@utils";
 
@@ -44,7 +44,10 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
   const [isCreateNoteOpen, setIsCreateNoteOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
-  const { permissions, availableChatTypes, user } = useUser();
+  const { permissions, availableChatTypes } = useUser();
+  const { data: scribeNoteCreationEnabled } = useScribeNoteCreationEnabled();
+  const isCounsellor = hasPermissions(permissions, Permissions.COUNSELOR_ACCESS);
+  const canCreateNote = isCounsellor && Boolean(scribeNoteCreationEnabled);
   const isScribe = sessionType === SessionType.CALL;
   const supportedLogList = useMemo(
     () =>
@@ -151,7 +154,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
                 </AppTooltip>
               )}
             </PermissionGuard>
-            {canCreateNote(user) && (
+            {canCreateNote && (
               <Button
                 data-testid="calls-create-note-button"
                 variant={ButtonVariant.SECONDARY}
@@ -212,7 +215,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
         />
       </PermissionGuard>
 
-      {canCreateNote(user) && (
+      {canCreateNote && (
         <CreateNoteDrawer
           open={isCreateNoteOpen}
           onClose={() => setIsCreateNoteOpen(false)}
