@@ -75,6 +75,8 @@ export default defineConfig({
       "@store/*": path.resolve(projectRoot, "./src/store/*"),
       "@reducer": path.resolve(projectRoot, "./src/reducer"),
       "@reducer/*": path.resolve(projectRoot, "./src/reducer/*"),
+      "@theme": path.resolve(projectRoot, "./src/theme"),
+      "@theme/*": path.resolve(projectRoot, "./src/theme/*"),
       "@ally-ui-mono/ui-shared": path.resolve(projectRoot, "../../libs/ui-shared/src"),
       // Add any other aliases from tsconfig.base.json here
     },

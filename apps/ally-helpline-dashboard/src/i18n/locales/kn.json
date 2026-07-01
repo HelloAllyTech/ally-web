@@ -809,7 +809,15 @@
       "cancel": "ರದ್ದು ಮಾಡಿ",
       "done": "ಮುಗಿಯಿತು",
       "error_image_size": "ಚಿತ್ರದ ಗಾತ್ರ 2MB ಕ್ಕಿಂತ ಕಡಿಮೆ ಇರಬೇಕು ಮತ್ತು ಸರಿಯಾದ ಅಂಶ ಅನುಪಾತವನ್ನು ಹೊಂದಿರಬೇಕು.",
-      "upload_hint": "PNG ಅಥವಾ JPG ಫೈಲ್‌ಗಳು ಮಾತ್ರ 1:1 ಅನುಪಾತ (ಗರಿಷ್ಠ 2MB)"
+      "upload_hint": "PNG ಅಥವಾ JPG ಫೈಲ್‌ಗಳು ಮಾತ್ರ 1:1 ಅನುಪಾತ (ಗರಿಷ್ಠ 2MB)",
+      "appearance": {
+        "title": "ಸ್ವರೂಪ",
+        "daylight": "Daylight",
+        "midnight": "Midnight",
+        "forest": "Forest",
+        "sunset": "Sunset",
+        "ocean": "Ocean"
+      }
     }
   },
   "calls": {

@@ -192,6 +192,7 @@ vi.mock("@constants", () => {
       MANAGE_CUSTOM_FIELD_DEFINITIONS: "manage:custom-field:definitions",
       EDIT_CUSTOM_FIELD_VALUES: "edit:custom-field:values",
     },
+    canPickUiTheme: () => false,
   };
 });
 

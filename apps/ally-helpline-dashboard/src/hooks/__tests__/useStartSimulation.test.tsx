@@ -31,6 +31,11 @@ vi.mock("@api", () => ({
   useEndSimulationMutation: vi.fn(),
   useLazyGetUserQuery: () => [mockGetUser, { isLoading: false }],
   useLazyGetPermissionsQuery: () => [mockGetPermissions, { isLoading: false }],
+  useLazyGetUserPreferencesQuery: () => [
+    vi.fn().mockResolvedValue({ data: { data: {} } }),
+    { isLoading: false },
+  ],
+  useUpdateUserPreferencesMutation: () => [vi.fn()],
   useGetProfileImageUrlMutation: () => [vi.fn()],
   useDeleteProfileImageMutation: () => [vi.fn()],
   useUploadProfileImageMutation: () => [vi.fn()],

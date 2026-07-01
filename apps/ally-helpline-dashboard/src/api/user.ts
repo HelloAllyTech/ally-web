@@ -38,4 +38,8 @@ const learnAPI = baseAPI.injectEndpoints({
   }),
 });
 
-export const { useGetUserPreferencesQuery, useUpdateUserPreferencesMutation } = learnAPI;
+export const {
+  useGetUserPreferencesQuery,
+  useLazyGetUserPreferencesQuery,
+  useUpdateUserPreferencesMutation,
+} = learnAPI;
