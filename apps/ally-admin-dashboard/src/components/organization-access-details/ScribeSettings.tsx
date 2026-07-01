@@ -13,6 +13,8 @@ import {
   useUpdateCustomFieldTypesMutation,
   useGetCustomFieldsEnabledQuery,
   useUpdateCustomFieldsEnabledMutation,
+  useGetScribeNoteCreationEnabledQuery,
+  useUpdateScribeNoteCreationEnabledMutation,
 } from "@api";
 import { ArrowSolid } from "@assets";
 import { ToggleSwitch, Accordion, Button } from "@components";
@@ -114,6 +116,8 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
   const [updateCustomFieldTypes] = useUpdateCustomFieldTypesMutation();
   const { data: customFieldsEnabled } = useGetCustomFieldsEnabledQuery(tenantId);
   const [updateCustomFieldsEnabled] = useUpdateCustomFieldsEnabledMutation();
+  const { data: scribeNoteCreationEnabled } = useGetScribeNoteCreationEnabledQuery(tenantId);
+  const [updateScribeNoteCreationEnabled] = useUpdateScribeNoteCreationEnabledMutation();
 
   const allCustomFieldTypes = [
     { key: "SINGLE_SELECT", label: en.userManagement.singleSelectFieldType },
@@ -125,6 +129,8 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
   ];
 
   const [localCustomFieldsEnabled, setLocalCustomFieldsEnabled] = useState<boolean>(false);
+  const [localScribeNoteCreationEnabled, setLocalScribeNoteCreationEnabled] =
+    useState<boolean>(false);
   const [localEnabledTypes, setLocalEnabledTypes] = useState<string[]>(
     allCustomFieldTypes.map(t => t.key),
   );
@@ -134,6 +140,12 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
       setLocalCustomFieldsEnabled(customFieldsEnabled);
     }
   }, [customFieldsEnabled]);
+
+  useEffect(() => {
+    if (scribeNoteCreationEnabled !== undefined) {
+      setLocalScribeNoteCreationEnabled(scribeNoteCreationEnabled);
+    }
+  }, [scribeNoteCreationEnabled]);
 
   useEffect(() => {
     if (enabledCustomFieldTypes !== undefined) {
@@ -147,6 +159,16 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
       await updateCustomFieldsEnabled({ tenantId, enabled }).unwrap();
     } catch (error: any) {
       setLocalCustomFieldsEnabled(!enabled);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
+
+  const handleScribeNoteCreationEnabledToggle = async (enabled: boolean) => {
+    setLocalScribeNoteCreationEnabled(enabled);
+    try {
+      await updateScribeNoteCreationEnabled({ tenantId, enabled }).unwrap();
+    } catch (error: any) {
+      setLocalScribeNoteCreationEnabled(!enabled);
       toast.error(error?.data?.message || en.errors.failedUpdateAccess);
     }
   };
@@ -646,6 +668,24 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
       {localCustomFieldsEnabled && (
         <CustomFieldDefinitionsSection tenantId={tenantId} enabledTypes={localEnabledTypes} />
       )}
+
+      <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary mt-2">
+        <div className="flex h-9 flex-row justify-between items-center">
+          <div className="text-sm text-typography-700 font-normal">
+            {en.userManagement.scribeNoteCreationEnabled}
+          </div>
+          <div className="flex flex-row items-center gap-3">
+            <ToggleSwitch
+              enabled={localScribeNoteCreationEnabled}
+              onChange={handleScribeNoteCreationEnabledToggle}
+              label={en.userManagement.scribeNoteCreationEnabled}
+            />
+            <span className="text-sm text-typography-900 font-normal">
+              {localScribeNoteCreationEnabled ? en.common.enabled : en.common.disabled}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

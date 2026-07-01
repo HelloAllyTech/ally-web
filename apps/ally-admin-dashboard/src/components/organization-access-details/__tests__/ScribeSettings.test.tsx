@@ -180,6 +180,11 @@ vi.mock("@api", () => {
   // which the component only does when this query returns data: true.
   const customFieldsEnabledResult = { data: true, isLoading: false };
   const updateCustomFieldsEnabledResult = [vi.fn().mockResolvedValue({}), { isLoading: false }];
+  const scribeNoteCreationEnabledResult = { data: false, isLoading: false };
+  const updateScribeNoteCreationEnabledResult = [
+    vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) }),
+    { isLoading: false },
+  ];
 
   return {
     useGetSummarySectionsQuery: () => summarySectionsResult,
@@ -192,6 +197,8 @@ vi.mock("@api", () => {
     useUpdateCustomFieldTypesMutation: () => updateCustomFieldTypesResult,
     useGetCustomFieldsEnabledQuery: () => customFieldsEnabledResult,
     useUpdateCustomFieldsEnabledMutation: () => updateCustomFieldsEnabledResult,
+    useGetScribeNoteCreationEnabledQuery: () => scribeNoteCreationEnabledResult,
+    useUpdateScribeNoteCreationEnabledMutation: () => updateScribeNoteCreationEnabledResult,
     useGetCustomFieldDefinitionsQuery: () => ({ data: [], isLoading: false }),
     useCreateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
     useUpdateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],

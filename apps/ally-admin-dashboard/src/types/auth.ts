@@ -272,8 +272,8 @@ export interface ScribeSummaryFailureResponse {
   failureRateTrend: ScribeFailureRatePoint[];
   failuresByStage: ScribeCount[];
   topFailureReasons: ScribeCount[];
+  audioStatusBreakdown: ScribeCount[];
   retryableBreakdown: ScribeCount[];
-  timeoutBreakdown: ScribeCount[];
 }
 
 // VoiceLatencyResponseDto from GET /api/v1/analytics/voice-latency.

@@ -3,19 +3,6 @@ export const User = {
 };
 
 /**
- * Emails allowed to see the "Create Note" action on the Sessions tab.
- * Temporary allowlist while the feature is piloted.
- */
-export const CREATE_NOTE_ALLOWED_EMAILS = [
-  "learner@example.com",
-  "sandeep.malhotra+testing@helloally.ai",
-  "sandeep.malhotra+1@helloally.ai",
-];
-
-export const canCreateNote = (user?: { email?: string } | null): boolean =>
-  !!user?.email && CREATE_NOTE_ALLOWED_EMAILS.includes(user.email);
-
-/**
  * Emails allowed to see the UI theme picker while the feature is in alpha.
  * Temporary allowlist — remove once the feature is rolled out to everyone.
  */

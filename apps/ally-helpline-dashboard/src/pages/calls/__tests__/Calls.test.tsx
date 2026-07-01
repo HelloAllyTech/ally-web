@@ -174,8 +174,10 @@ vi.mock("../utils", () => ({
 
 // Mock useUser hook
 const mockUseUser = vi.fn();
+const mockUseScribeNoteCreationEnabled = vi.fn();
 vi.mock("@hooks", () => ({
   useUser: () => mockUseUser(),
+  useScribeNoteCreationEnabled: () => mockUseScribeNoteCreationEnabled(),
 }));
 
 // Mock constants
@@ -187,14 +189,12 @@ vi.mock("@constants", () => ({
   Permissions: {
     START_MICROPHONE_CHAT: "start:microphone-chat",
     VIEW_AUDIO_UPLOAD: "view:audio-upload-url",
+    COUNSELOR_ACCESS: "counselor:access",
   },
   TooltipLocation: {
     START_SESSION_BUTTON: "start_session_button",
     UPLOAD_AUDIO_BUTTON: "upload_audio_button",
   },
-  canCreateNote: (user: { email?: string } | null) =>
-    !!user?.email &&
-    ["learner@example.com", "sandeep.malhotra+testing@helloally.com"].includes(user.email),
 }));
 
 // Get mock functions after mocks are set up
@@ -225,11 +225,63 @@ describe("Calls Component", () => {
       user: mockUser,
       permissions: mockPermissions,
     });
+    // Tenant toggle OFF by default; individual tests opt in.
+    mockUseScribeNoteCreationEnabled.mockReturnValue({ data: false });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
     cleanup();
+  });
+
+  /**
+   * TEST GROUP: Create Note gating
+   * Button + drawer require the counsellor permission AND the tenant toggle.
+   */
+  describe("Create Note gating", () => {
+    const counsellorPermissions = ["counselor:access"];
+
+    it("shows the Create Note button and drawer for a counsellor when the tenant toggle is ON", () => {
+      mockUseUser.mockReturnValue({
+        availableChatTypes: ["MICROPHONE_CHAT"],
+        user: mockUser,
+        permissions: counsellorPermissions,
+      });
+      mockUseScribeNoteCreationEnabled.mockReturnValue({ data: true });
+
+      renderCalls();
+
+      expect(screen.getByTestId("calls-create-note-button")).toBeInTheDocument();
+      expect(screen.getByTestId("create-note-drawer")).toBeInTheDocument();
+    });
+
+    it("hides Create Note for a counsellor when the tenant toggle is OFF", () => {
+      mockUseUser.mockReturnValue({
+        availableChatTypes: ["MICROPHONE_CHAT"],
+        user: mockUser,
+        permissions: counsellorPermissions,
+      });
+      mockUseScribeNoteCreationEnabled.mockReturnValue({ data: false });
+
+      renderCalls();
+
+      expect(screen.queryByTestId("calls-create-note-button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("create-note-drawer")).not.toBeInTheDocument();
+    });
+
+    it("hides Create Note for a non-counsellor even when the tenant toggle is ON", () => {
+      mockUseUser.mockReturnValue({
+        availableChatTypes: ["MICROPHONE_CHAT"],
+        user: { ...mockUser, role: UserRole.ADMIN },
+        permissions: ["view:audio-upload-url"],
+      });
+      mockUseScribeNoteCreationEnabled.mockReturnValue({ data: true });
+
+      renderCalls();
+
+      expect(screen.queryByTestId("calls-create-note-button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("create-note-drawer")).not.toBeInTheDocument();
+    });
   });
 
   /**
@@ -336,21 +388,30 @@ describe("Calls Component", () => {
   });
 
   /**
-   * TEST GROUP: Create Note Button (email-gated)
-   * Verifies the "+ Create Note" button only renders for allowlisted emails
+   * TEST GROUP: Create Note Button
+   * The "+ Create Note" button renders only for counsellors when the tenant
+   * toggle is on.
    */
   describe("Create Note Button", () => {
-    it("should not show Create Note button for a non-allowlisted email", () => {
+    it("does not show the Create Note button when the tenant toggle is off", () => {
+      mockUseUser.mockReturnValue({
+        availableChatTypes: ["MICROPHONE_CHAT"],
+        user: mockUser,
+        permissions: ["counselor:access"],
+      });
+      mockUseScribeNoteCreationEnabled.mockReturnValue({ data: false });
+
       renderCalls();
       expect(screen.queryByText("+ Create Note")).not.toBeInTheDocument();
     });
 
-    it("should show Create Note button for an allowlisted email", () => {
+    it("shows the Create Note button for a counsellor when the tenant toggle is on", () => {
       mockUseUser.mockReturnValue({
         availableChatTypes: ["MICROPHONE_CHAT"],
-        user: { ...mockUser, email: "learner@example.com" },
-        permissions: mockPermissions,
+        user: mockUser,
+        permissions: ["counselor:access"],
       });
+      mockUseScribeNoteCreationEnabled.mockReturnValue({ data: true });
 
       renderCalls();
       expect(screen.getByText("+ Create Note")).toBeInTheDocument();

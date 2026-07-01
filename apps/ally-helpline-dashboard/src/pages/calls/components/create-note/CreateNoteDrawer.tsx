@@ -25,7 +25,8 @@ import {
 } from "@pages/post-call-summary/constants";
 import { FieldType } from "@pages/post-call-summary/types";
 import { getSectionFields } from "@pages/post-call-summary/utils";
-import { CustomFieldDefinition, CustomFieldValue, SummaryFieldKey, Tag, UserRole } from "@types";
+import { CustomFieldDefinition, CustomFieldValue, SummaryFieldKey, Tag } from "@types";
+import { hasPermissions } from "@utils";
 
 interface CreateNoteDrawerProps {
   open: boolean;
@@ -47,8 +48,8 @@ type SaveState = "idle" | "saving" | "saved" | "error";
  */
 const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
-  const { user, permissions } = useUser();
-  const isCounsellor = user?.role === UserRole.COUNSELLOR;
+  const { permissions } = useUser();
+  const isCounsellor = hasPermissions(permissions, Permissions.COUNSELOR_ACCESS);
   const canViewSummaryFields = Boolean(permissions?.includes(Permissions.VIEW_SUMMARY_FIELDS));
   const canEditCallDetails = Boolean(permissions?.includes(Permissions.EDIT_CALL_DETAILS));
 

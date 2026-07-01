@@ -100,6 +100,10 @@ const customFieldsAPI = baseAPI.injectEndpoints({
     getCustomFieldsEnabled: builder.query<boolean, void>({
       query: () => ApiEndpoints.SETTINGS.GET_CUSTOM_FIELDS_ENABLED,
     }),
+
+    getScribeNoteCreationEnabled: builder.query<boolean, void>({
+      query: () => ApiEndpoints.SETTINGS.GET_SCRIBE_NOTE_CREATION_ENABLED,
+    }),
   }),
 });
 
@@ -114,4 +118,5 @@ export const {
   useGetSummarySectionsQuery,
   useGetEnabledCustomFieldTypesQuery,
   useGetCustomFieldsEnabledQuery,
+  useGetScribeNoteCreationEnabledQuery,
 } = customFieldsAPI;

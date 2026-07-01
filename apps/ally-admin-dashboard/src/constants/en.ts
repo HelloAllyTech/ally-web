@@ -713,6 +713,7 @@ export const en = {
     configureSimulationSettings: "Configure scribe fields",
     customFields: "Custom fields",
     customFieldsEnabled: "Enable custom fields",
+    scribeNoteCreationEnabled: "Enable manual note creation",
     customFieldTypes: "Custom field types",
     singleSelectFieldType: "Single select",
     multiSelectFieldType: "Multi select",

@@ -29,6 +29,15 @@ const STAGE_LABELS: Record<string, string> = {
   unknown: "Unknown",
 };
 
+/** Friendlier labels for the stored-audio state of failed sessions. */
+const AUDIO_STATUS_LABELS: Record<string, string> = {
+  "upload-never-finalized": "Upload never finalized (abnormal end)",
+  "uploaded-ok": "Uploaded OK (later expired/lost)",
+  "upload-failed": "Upload failed",
+  "audio-cleared": "Audio cleared (storageKey null)",
+  "no-upload-record": "No upload record",
+};
+
 /**
  * Scribe summary-generation failures — the failure rate (FAILED / terminal),
  * its trend, and where failures happen (stage), whether they're recoverable
@@ -59,6 +68,16 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
       })),
     [data],
   );
+  const audioStatusData = useMemo(
+    () =>
+      (data?.audioStatusBreakdown ?? [])
+        .filter(o => o.count > 0)
+        .map(o => ({
+          group: AUDIO_STATUS_LABELS[o.key] ?? o.key,
+          value: o.count,
+        })),
+    [data],
+  );
   const retryableData = useMemo(
     () =>
       (data?.retryableBreakdown ?? [])
@@ -69,17 +88,6 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
         })),
     [data],
   );
-  const timeoutData = useMemo(
-    () =>
-      (data?.timeoutBreakdown ?? [])
-        .filter(o => o.count > 0)
-        .map(o => ({
-          group: o.key === "timeout" ? "Summary timeout" : "Other error",
-          value: o.count,
-        })),
-    [data],
-  );
-
   const s = data?.summary;
   const kpis = [
     { label: "Summary failure rate", value: s ? `${s.failureRatePct}%` : "—" },
@@ -167,6 +175,22 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
           </div>
         </ChartCard>
         <ChartCard
+          title="Stored audio state of failures"
+          caption="'Upload never finalized' = abnormal session end; 'uploaded OK' = audio existed then expired/lost"
+          loading={loading}
+          wide
+          empty={!audioStatusData.length}
+        >
+          <SimpleBarChart
+            data={audioStatusData}
+            options={barOpts({
+              leftTitle: "Failures",
+              bottomTitle: "Audio state",
+              colorScale: { Failures: PALETTE.magenta },
+            })}
+          />
+        </ChartCard>
+        <ChartCard
           title="Failures by stage"
           caption="Where in the pipeline failures occur"
           loading={loading}
@@ -194,27 +218,6 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
               extra: {
                 color: {
                   scale: { Retryable: PALETTE.gold, Terminal: PALETTE.darkRed },
-                },
-              },
-            })}
-          />
-        </ChartCard>
-        <ChartCard
-          title="Timeout vs other error"
-          caption="Failures caused by the summary timeout vs other reasons"
-          loading={loading}
-          empty={!timeoutData.length}
-        >
-          <DonutChart
-            data={timeoutData}
-            options={donutOpts({
-              centerLabel: "Failures",
-              extra: {
-                color: {
-                  scale: {
-                    "Summary timeout": PALETTE.magenta,
-                    "Other error": PALETTE.gray,
-                  },
                 },
               },
             })}
