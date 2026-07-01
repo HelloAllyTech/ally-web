@@ -49,12 +49,12 @@ describe("ProfileSettings theme picker", () => {
       <ProfileSettings
         {...baseProps}
         showThemePicker
-        selectedTheme="forest"
+        selectedTheme="claude"
         onSelectTheme={vi.fn()}
       />,
     );
-    const forest = screen.getByRole("radio", { name: "Forest" });
-    expect(forest).toHaveAttribute("aria-checked", "true");
+    const claude = screen.getByRole("radio", { name: "Claude" });
+    expect(claude).toHaveAttribute("aria-checked", "true");
   });
 
   it("calls onSelectTheme with the chosen theme id", () => {
@@ -67,7 +67,7 @@ describe("ProfileSettings theme picker", () => {
         onSelectTheme={onSelectTheme}
       />,
     );
-    fireEvent.click(screen.getByRole("radio", { name: "Sunset" }));
-    expect(onSelectTheme).toHaveBeenCalledWith("sunset");
+    fireEvent.click(screen.getByRole("radio", { name: "Carbon" }));
+    expect(onSelectTheme).toHaveBeenCalledWith("carbon");
   });
 });

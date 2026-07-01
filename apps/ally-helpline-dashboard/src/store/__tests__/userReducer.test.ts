@@ -39,14 +39,14 @@ describe("User Reducer", () => {
 
   describe("UI Theme Actions", () => {
     it("should update the ui theme", () => {
-      testStore.dispatch(setUiTheme("forest"));
-      expect(testStore.getState().user.uiTheme).toBe("forest");
+      testStore.dispatch(setUiTheme("claude"));
+      expect(testStore.getState().user.uiTheme).toBe("claude");
     });
 
     it("should overwrite a previously selected theme", () => {
-      testStore.dispatch(setUiTheme("forest"));
-      testStore.dispatch(setUiTheme("sunset"));
-      expect(testStore.getState().user.uiTheme).toBe("sunset");
+      testStore.dispatch(setUiTheme("current"));
+      testStore.dispatch(setUiTheme("carbon"));
+      expect(testStore.getState().user.uiTheme).toBe("carbon");
     });
   });
 

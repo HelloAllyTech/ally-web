@@ -812,9 +812,12 @@
       "upload_hint": "फक्त PNG किंवा JPG फाइल्स 1 : 1 रेशो (कमाल 2MB साइज)",
       "appearance": {
         "title": "स्वरूप",
-        "daylight": "Daylight",
-        "forest": "Forest",
-        "sunset": "Sunset"
+        "current": "Current",
+        "current_desc": "The classic Ally look",
+        "claude": "Claude",
+        "claude_desc": "Warm, airy, and soft",
+        "carbon": "Carbon",
+        "carbon_desc": "Sharp, precise, and dense"
       }
     }
   },

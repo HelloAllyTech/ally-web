@@ -824,9 +824,12 @@
       "upload_hint": "PNG அல்லது JPG கோப்புகள் மட்டுமே 1:1 விகிதம் (அதிகபட்சம் 2mb)",
       "appearance": {
         "title": "தோற்றம்",
-        "daylight": "Daylight",
-        "forest": "Forest",
-        "sunset": "Sunset"
+        "current": "Current",
+        "current_desc": "The classic Ally look",
+        "claude": "Claude",
+        "claude_desc": "Warm, airy, and soft",
+        "carbon": "Carbon",
+        "carbon_desc": "Sharp, precise, and dense"
       }
     }
   },

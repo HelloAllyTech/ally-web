@@ -812,9 +812,12 @@
       "upload_hint": "PNG ಅಥವಾ JPG ಫೈಲ್‌ಗಳು ಮಾತ್ರ 1:1 ಅನುಪಾತ (ಗರಿಷ್ಠ 2MB)",
       "appearance": {
         "title": "ಸ್ವರೂಪ",
-        "daylight": "Daylight",
-        "forest": "Forest",
-        "sunset": "Sunset"
+        "current": "Current",
+        "current_desc": "The classic Ally look",
+        "claude": "Claude",
+        "claude_desc": "Warm, airy, and soft",
+        "carbon": "Carbon",
+        "carbon_desc": "Sharp, precise, and dense"
       }
     }
   },

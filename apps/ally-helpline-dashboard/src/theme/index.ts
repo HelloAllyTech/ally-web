@@ -1,42 +1,34 @@
 import { createTheme, alpha, type Theme, type PaletteOptions } from "@mui/material/styles";
 
-import { DEFAULT_UI_THEME, UiTheme } from "./themes";
+import { DEFAULT_UI_THEME, THEME_TOKENS, UiTheme } from "./themes";
 
 /**
  * Per-theme MUI palette. MUI is only used for a handful of surfaces here
- * (Dialogs, Tooltips, date pickers), so a minimal palette — mode + primary +
- * background — is enough to keep those surfaces coherent with the Tailwind
- * theme. Everything else falls back to MUI defaults.
+ * (Dialogs, Tooltips, date pickers, toasts), so a minimal palette — mode +
+ * primary + background — is enough to keep those surfaces coherent with the
+ * Tailwind theme. Values come from the shared THEME_TOKENS map so the JS (MUI)
+ * and CSS-variable (Tailwind) sides stay in sync.
  */
 const buildPalette = (uiTheme: UiTheme): PaletteOptions => {
-  switch (uiTheme) {
-    case "forest":
-      return {
-        mode: "light",
-        primary: { main: "#2E7D4F" },
-        background: { default: "#F4F8F0", paper: "#FFFFFF" },
-      };
-    case "sunset":
-      return {
-        mode: "light",
-        primary: { main: "#E4572E" },
-        background: { default: "#FFF6F0", paper: "#FFFFFF" },
-      };
-    case "daylight":
-    default:
-      return {
-        mode: "light",
-        primary: { main: "#0957D0" },
-      };
-  }
+  const tokens = THEME_TOKENS[uiTheme] ?? THEME_TOKENS[DEFAULT_UI_THEME];
+  return {
+    mode: tokens.mode,
+    primary: { main: tokens.primary },
+    background: { default: tokens.background.default, paper: tokens.background.paper },
+  };
 };
 
-/** Build a MUI theme for the given UI theme id. */
+/** Build a MUI theme for the given theme id. */
 export const buildTheme = (uiTheme: UiTheme): Theme & { alpha: typeof alpha } => {
+  const tokens = THEME_TOKENS[uiTheme] ?? THEME_TOKENS[DEFAULT_UI_THEME];
+
   const baseTheme = createTheme({
     typography: {
-      // Override MUI's default sans-serif (Roboto,Helvetica,Arial) with the brand serif
-      fontFamily: ["IBM Plex Serif", "serif"].join(","),
+      // Match the active theme's body font family.
+      fontFamily: tokens.fontFamily,
+    },
+    shape: {
+      borderRadius: tokens.radius,
     },
     palette: buildPalette(uiTheme),
   });

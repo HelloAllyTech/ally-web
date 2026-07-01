@@ -812,9 +812,12 @@
       "upload_hint": "केवल PNG या JPG फ़ाइलें, 1:1 रेशियो (अधिकतम 2MB साइज़)",
       "appearance": {
         "title": "दिखावट",
-        "daylight": "Daylight",
-        "forest": "Forest",
-        "sunset": "Sunset"
+        "current": "Current",
+        "current_desc": "The classic Ally look",
+        "claude": "Claude",
+        "claude_desc": "Warm, airy, and soft",
+        "carbon": "Carbon",
+        "carbon_desc": "Sharp, precise, and dense"
       }
     }
   },

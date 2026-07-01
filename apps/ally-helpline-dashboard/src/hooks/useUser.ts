@@ -14,7 +14,7 @@ import { baseAPI } from "@api/baseAPI";
 import { LOCAL_STORAGE_KEYS } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions, setUiTheme } from "@reducer";
 import { RootState, store } from "@store";
-import { DEFAULT_UI_THEME, isUiTheme, UiTheme } from "@theme/themes";
+import { DEFAULT_UI_THEME, normalizeUiTheme, UiTheme } from "@theme/themes";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
@@ -39,7 +39,9 @@ export const useUser = () => {
       const prefs = await getPreferences();
       // Double unwrap: RTK Query result wrapper + the API's { data } envelope.
       const storedTheme = prefs?.data?.data?.ui_theme;
-      store.dispatch(setUiTheme(isUiTheme(storedTheme) ? storedTheme : DEFAULT_UI_THEME));
+      // normalizeUiTheme maps legacy colour-theme ids (daylight/forest/sunset)
+      // to "current" and falls back to the default for anything unrecognised.
+      store.dispatch(setUiTheme(normalizeUiTheme(storedTheme)));
     } catch (error) {
       logger.info(`Error loading UI theme preference: ${error}`);
     }

@@ -18,11 +18,14 @@ export default {
   prefix: "",
   theme: {
     fontFamily: {
-      // Base/default font (drives Tailwind preflight's `html` font-family and `font-sans`)
-      sans: ["IBM Plex Serif", "serif"],
-      primary: ["IBM Plex Serif", "serif"],
-      secondary: ["Replay Pro", "serif"],
-      tertiary: ["IBM Plex Serif", "serif"],
+      // Font families resolve per design system from CSS variables defined in
+      // index.css (--font-*). The "current" system's values reproduce the
+      // original stacks (IBM Plex Serif / Replay Pro) exactly, so there is zero
+      // regression; claude/carbon override them via [data-design-system].
+      sans: "var(--font-sans)",
+      primary: "var(--font-primary)",
+      secondary: "var(--font-secondary)",
+      tertiary: "var(--font-tertiary)",
     },
     container: {
       center: true,

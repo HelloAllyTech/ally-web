@@ -827,9 +827,12 @@
       "upload_hint": "PNG or JPG files only 1:1 ratio (max 2mb)",
       "appearance": {
         "title": "Appearance",
-        "daylight": "Daylight",
-        "forest": "Forest",
-        "sunset": "Sunset"
+        "current": "Current",
+        "current_desc": "The classic Ally look",
+        "claude": "Claude",
+        "claude_desc": "Warm, airy, and soft",
+        "carbon": "Carbon",
+        "carbon_desc": "Sharp, precise, and dense"
       }
     }
   },
