@@ -19,6 +19,11 @@ vi.mock("../../api/learn", () => ({
 
 vi.mock("../../api/user", () => ({
   useGetUserPreferencesQuery: () => mockUseGetUserPreferencesQuery(),
+  useLazyGetUserPreferencesQuery: () => [
+    vi.fn().mockResolvedValue({ data: { data: {} } }),
+    { isLoading: false },
+  ],
+  useUpdateUserPreferencesMutation: () => [vi.fn()],
 }));
 
 import { useScenarioLanguages } from "../useScenarioLanguages";

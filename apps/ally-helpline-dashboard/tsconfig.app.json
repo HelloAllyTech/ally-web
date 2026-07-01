@@ -51,6 +51,8 @@
       "@store/*": ["src/store/*"],
       "@reducer": ["src/reducer"],
       "@reducer/*": ["src/reducer/*"],
+      "@theme": ["src/theme"],
+      "@theme/*": ["src/theme/*"],
       "@ally-ui-mono/ui-shared/*": ["../../libs/ui-shared/src/*"]
     }
   },

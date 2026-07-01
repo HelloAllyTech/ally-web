@@ -44,36 +44,45 @@ export default {
         "3xl": ["28px", { lineHeight: "40px" }], // 3X large - large OTP inputs
         "4xl": ["32px", { lineHeight: "44px" }], // 4X large - hero titles, main headers
       },
+      // Themeable scales (primary, secondary, neutral, background, border,
+      // scrollbar, typography) resolve from CSS variables defined per theme in
+      // index.css. Opaque scales use `rgb(var(--...) / <alpha-value>)` so
+      // Tailwind opacity utilities (e.g. bg-primary-500/50) keep working; the
+      // alpha-based typography scale uses a bare `var()` because its alpha is
+      // baked into the value. The default (daylight) values in index.css
+      // reproduce the original palette exactly, so there is zero regression.
+      // Semantic status scales (destructive, success, warning) stay literal so
+      // error/success/warning colours remain recognisable across every theme.
       colors: {
         // Primary Colors
         primary: {
-          DEFAULT: "#10264C",
-          50: "#E2F2FF",
-          100: "#B7D7FF",
-          200: "#86B8FF",
-          300: "#5F99FC",
-          400: "#6188C9",
-          500: "#0957D0",
-          600: "#0957D0",
-          700: "#0143A8",
-          800: "#123268",
-          900: "#10264C",
+          DEFAULT: "rgb(var(--color-primary-DEFAULT) / <alpha-value>)",
+          50: "rgb(var(--color-primary-50) / <alpha-value>)",
+          100: "rgb(var(--color-primary-100) / <alpha-value>)",
+          200: "rgb(var(--color-primary-200) / <alpha-value>)",
+          300: "rgb(var(--color-primary-300) / <alpha-value>)",
+          400: "rgb(var(--color-primary-400) / <alpha-value>)",
+          500: "rgb(var(--color-primary-500) / <alpha-value>)",
+          600: "rgb(var(--color-primary-600) / <alpha-value>)",
+          700: "rgb(var(--color-primary-700) / <alpha-value>)",
+          800: "rgb(var(--color-primary-800) / <alpha-value>)",
+          900: "rgb(var(--color-primary-900) / <alpha-value>)",
         },
         // Secondary/Accent Colors
         secondary: {
-          DEFAULT: "#C8C5D0",
-          50: "#F5F5F7",
-          100: "#EBEAEF",
-          200: "#D7D5DF",
-          300: "#C8C5D0",
-          400: "#B0ADC0",
-          500: "#9895A8",
-          600: "#7A7788",
-          700: "#5C5968",
-          800: "#3E3B48",
-          900: "#201D28",
+          DEFAULT: "rgb(var(--color-secondary-DEFAULT) / <alpha-value>)",
+          50: "rgb(var(--color-secondary-50) / <alpha-value>)",
+          100: "rgb(var(--color-secondary-100) / <alpha-value>)",
+          200: "rgb(var(--color-secondary-200) / <alpha-value>)",
+          300: "rgb(var(--color-secondary-300) / <alpha-value>)",
+          400: "rgb(var(--color-secondary-400) / <alpha-value>)",
+          500: "rgb(var(--color-secondary-500) / <alpha-value>)",
+          600: "rgb(var(--color-secondary-600) / <alpha-value>)",
+          700: "rgb(var(--color-secondary-700) / <alpha-value>)",
+          800: "rgb(var(--color-secondary-800) / <alpha-value>)",
+          900: "rgb(var(--color-secondary-900) / <alpha-value>)",
         },
-        // Destructive/Error Colors
+        // Destructive/Error Colors (semantic — constant across themes)
         destructive: {
           DEFAULT: "#F93535",
           50: "#FFCDD2",
@@ -87,7 +96,7 @@ export default {
           800: "#950808",
           900: "#5C0A0A",
         },
-        // Success/Active Colors
+        // Success/Active Colors (semantic — constant across themes)
         success: {
           DEFAULT: "#18441B",
           50: "#E8F5E9",
@@ -95,7 +104,7 @@ export default {
           200: "#A5D6A7",
           300: "#81C784",
           400: "#66BB6A",
-          500: "bgCAF50",
+          500: "bgCAF50", // pre-existing typo (invalid colour); preserved verbatim to avoid behaviour change — fix in a follow-up
           600: "#43A047",
           700: "#388E3C",
           800: "#2E7D32",
@@ -105,7 +114,7 @@ export default {
           text: "#00E676",
           darkText: "#00C853",
         },
-        // Warning Colors
+        // Warning Colors (semantic — constant across themes)
         warning: {
           DEFAULT: "#F57C00",
           50: "#FFF3E0",
@@ -122,50 +131,50 @@ export default {
         },
         // Neutral/Gray Colors
         neutral: {
-          DEFAULT: "#424242",
-          50: "#FAFAFA",
-          100: "#F5F5F5",
-          200: "#EEEEEE",
-          300: "#E0E0E0",
-          400: "#BDBDBD",
-          500: "#9E9E9E",
-          600: "#757575",
-          700: "#616161",
-          800: "#424242",
-          900: "#333333",
+          DEFAULT: "rgb(var(--color-neutral-DEFAULT) / <alpha-value>)",
+          50: "rgb(var(--color-neutral-50) / <alpha-value>)",
+          100: "rgb(var(--color-neutral-100) / <alpha-value>)",
+          200: "rgb(var(--color-neutral-200) / <alpha-value>)",
+          300: "rgb(var(--color-neutral-300) / <alpha-value>)",
+          400: "rgb(var(--color-neutral-400) / <alpha-value>)",
+          500: "rgb(var(--color-neutral-500) / <alpha-value>)",
+          600: "rgb(var(--color-neutral-600) / <alpha-value>)",
+          700: "rgb(var(--color-neutral-700) / <alpha-value>)",
+          800: "rgb(var(--color-neutral-800) / <alpha-value>)",
+          900: "rgb(var(--color-neutral-900) / <alpha-value>)",
         },
         // Scrollbar Colors
         scrollbar: {
-          track: "#F1F1F1",
-          thumb: "#888888",
-          thumbHover: "#555555",
+          track: "rgb(var(--color-scrollbar-track) / <alpha-value>)",
+          thumb: "rgb(var(--color-scrollbar-thumb) / <alpha-value>)",
+          thumbHover: "rgb(var(--color-scrollbar-thumbHover) / <alpha-value>)",
         },
         // Background Colors
         background: {
-          DEFAULT: "#FFFFFF",
-          secondary: "#F9FAFB",
-          tertiary: "#F3F4F6",
+          DEFAULT: "rgb(var(--color-background-DEFAULT) / <alpha-value>)",
+          secondary: "rgb(var(--color-background-secondary) / <alpha-value>)",
+          tertiary: "rgb(var(--color-background-tertiary) / <alpha-value>)",
         },
         // Border Colors
         border: {
-          DEFAULT: "#D2D2D2",
-          light: "#E5E7EB",
-          medium: "#D1D5DB",
-          dark: "#9CA3AF",
+          DEFAULT: "rgb(var(--color-border-DEFAULT) / <alpha-value>)",
+          light: "rgb(var(--color-border-light) / <alpha-value>)",
+          medium: "rgb(var(--color-border-medium) / <alpha-value>)",
+          dark: "rgb(var(--color-border-dark) / <alpha-value>)",
         },
-        // Text Colors
+        // Text Colors (alpha baked into the value → bare var(), no <alpha-value>)
         typography: {
-          Default: "rgba(0, 0, 0, 0.87)",
-          50: "rgba(0, 0, 0, 0.04)",
-          100: "rgba(0, 0, 0, 0.08)", //"rgba(0, 0, 0, 0.08)"
-          200: "rgba(0, 0, 0, 0.12)", //"rgba(0, 0, 0, 0.12)"
-          300: "rgba(0, 0, 0, 0.16)", //"rgba(0, 0, 0, 0.16)" #E5E7EB
-          400: "rgba(0, 0, 0, 0.24)", //"rgba(0, 0, 0, 0.24)" #D1D5DB
-          500: "rgba(0, 0, 0, 0.32)", //"rgba(0, 0, 0, 0.32)"
-          600: "rgba(0, 0, 0, 0.38)", //"rgba(0, 0, 0, 0.38)"   //placeholder
-          700: "rgba(0, 0, 0, 0.54)", //"rgba(0, 0, 0, 0.54)"
-          800: "rgba(0, 0, 0, 0.6)", //"rgba(0, 0, 0, 0.6)"
-          900: "rgba(0, 0, 0, 0.87)", //"rgba(0, 0, 0, 0.87)"
+          Default: "var(--color-typography-Default)",
+          50: "var(--color-typography-50)",
+          100: "var(--color-typography-100)",
+          200: "var(--color-typography-200)",
+          300: "var(--color-typography-300)",
+          400: "var(--color-typography-400)",
+          500: "var(--color-typography-500)",
+          600: "var(--color-typography-600)",
+          700: "var(--color-typography-700)",
+          800: "var(--color-typography-800)",
+          900: "var(--color-typography-900)",
         },
       },
       keyframes: {

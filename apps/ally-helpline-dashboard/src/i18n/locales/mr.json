@@ -809,7 +809,15 @@
       "cancel": "रद्द करा",
       "done": "पूर्ण झाले",
       "error_image_size": "इमेजचा साइज 2MBपेक्षा कमी असावा आणि आस्पेक्ट रेशो (उंची x रुंदी) योग्य असावा.",
-      "upload_hint": "फक्त PNG किंवा JPG फाइल्स 1 : 1 रेशो (कमाल 2MB साइज)"
+      "upload_hint": "फक्त PNG किंवा JPG फाइल्स 1 : 1 रेशो (कमाल 2MB साइज)",
+      "appearance": {
+        "title": "स्वरूप",
+        "daylight": "Daylight",
+        "midnight": "Midnight",
+        "forest": "Forest",
+        "sunset": "Sunset",
+        "ocean": "Ocean"
+      }
     }
   },
   "calls": {

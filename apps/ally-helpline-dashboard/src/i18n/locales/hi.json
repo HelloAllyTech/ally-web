@@ -809,7 +809,15 @@
       "cancel": "रद्द करें",
       "done": "पूर्ण हुआ",
       "error_image_size": "इमेज का आकार 2MB से कम होना चाहिए और आस्पेक्ट रेशियो (ऊँचाई x चौड़ाई) सही होना चाहिए।",
-      "upload_hint": "केवल PNG या JPG फ़ाइलें, 1:1 रेशियो (अधिकतम 2MB साइज़)"
+      "upload_hint": "केवल PNG या JPG फ़ाइलें, 1:1 रेशियो (अधिकतम 2MB साइज़)",
+      "appearance": {
+        "title": "दिखावट",
+        "daylight": "Daylight",
+        "midnight": "Midnight",
+        "forest": "Forest",
+        "sunset": "Sunset",
+        "ocean": "Ocean"
+      }
     }
   },
   "calls": {

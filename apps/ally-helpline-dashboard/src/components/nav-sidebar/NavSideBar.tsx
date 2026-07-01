@@ -15,6 +15,7 @@ import {
   TabId,
   Permissions,
   TooltipLocation,
+  canPickUiTheme,
 } from "@constants";
 import { useUser } from "@hooks";
 
@@ -59,7 +60,7 @@ const Tab: FC<TabProps> = ({
       data-testid={`nav-tab-${id}`}
       className={`
           w-full h-12 rounded-md p-4 flex items-center gap-3 my-1 cursor-pointer
-          ${activeTab === id ? "bg-[#F3F3F3] rounded-[2px]" : "hover:bg-[#F5F5F5]"}
+          ${activeTab === id ? "bg-background-tertiary rounded-[2px]" : "hover:bg-background-secondary"}
           transition-all duration-300 group
         `}
       onClick={onClick}
@@ -95,8 +96,17 @@ const Tab: FC<TabProps> = ({
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { t } = useTranslation();
-  const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
-    useUser();
+  const {
+    permissions,
+    user,
+    logout,
+    getProfileUrl,
+    deleteProfile,
+    uploadProfile,
+    refetchUser,
+    uiTheme,
+    setUiThemePreference,
+  } = useUser();
 
   const { data: unreadData } = useGetUnreadReviewCountQuery(
     { isScribe: false },
@@ -179,7 +189,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     const tabTooltipLocations = getTabTooltipLocations();
     return (
       <div
-        className="flex-1 flex-col gap-1 m-2 border-t border-t-[#E5E7EB] pt-3"
+        className="flex-1 flex-col gap-1 m-2 border-t border-t-border-light pt-3"
         data-testid="nav-sidebar-tabs"
       >
         {permittedTabs?.map(({ id, Icon, title, path, key: translationKey }: any) => {
@@ -227,7 +237,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     <>
       <div
         data-testid="nav-sidebar"
-        className={`bg-white h-screen flex flex-col justify-between border-r border-r-[#E5E7EB] transition-all duration-300 relative ${
+        className={`bg-background h-screen flex flex-col justify-between border-r border-r-border-light transition-all duration-300 relative ${
           isExpanded ? "w-64" : "w-24"
         } p-[12px] font-primary`}
       >
@@ -331,6 +341,9 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         formMethods={profileSettingsForm}
         onButtonClick={handleProfileUpload}
         getProfileUrl={getProfileUrl}
+        showThemePicker={canPickUiTheme(user)}
+        selectedTheme={uiTheme}
+        onSelectTheme={setUiThemePreference}
       />
     </>
   );

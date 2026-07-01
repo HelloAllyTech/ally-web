@@ -15,6 +15,19 @@ export const CREATE_NOTE_ALLOWED_EMAILS = [
 export const canCreateNote = (user?: { email?: string } | null): boolean =>
   !!user?.email && CREATE_NOTE_ALLOWED_EMAILS.includes(user.email);
 
+/**
+ * Emails allowed to see the UI theme picker while the feature is in alpha.
+ * Temporary allowlist — remove once the feature is rolled out to everyone.
+ */
+export const THEME_PICKER_ALLOWED_EMAILS = [
+  "example@learner.com",
+  "sandeep.malhotra+1@helloally.ai",
+  "sandeep.malhotra+testing@helloally.ai",
+];
+
+export const canPickUiTheme = (user?: { email?: string } | null): boolean =>
+  !!user?.email && THEME_PICKER_ALLOWED_EMAILS.includes(user.email);
+
 // In-app privacy page (ROUTES.PRIVACY), opened in a new tab via openLinkInNewTab.
 export const PRIVACY_POLICY_URL = "/privacy";
 
