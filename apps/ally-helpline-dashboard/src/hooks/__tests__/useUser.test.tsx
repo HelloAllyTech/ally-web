@@ -18,12 +18,15 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 const apiMocks = {
   getUser: vi.fn(),
   getPermissions: vi.fn(),
+  getPreferences: vi.fn().mockResolvedValue({ data: { data: {} } }),
 };
 
 vi.mock("@api", async () => {
   return {
     useLazyGetUserQuery: () => [apiMocks.getUser, { isLoading: false }],
     useLazyGetPermissionsQuery: () => [apiMocks.getPermissions, { isLoading: false }],
+    useLazyGetUserPreferencesQuery: () => [apiMocks.getPreferences, { isLoading: false }],
+    useUpdateUserPreferencesMutation: () => [vi.fn()],
     useGetProfileImageUrlMutation: () => [vi.fn()],
     useDeleteProfileImageMutation: () => [vi.fn()],
     useUploadProfileImageMutation: () => [vi.fn()],

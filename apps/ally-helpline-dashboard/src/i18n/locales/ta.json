@@ -821,7 +821,15 @@
       "cancel": "ரத்து செய்",
       "done": "செய்யப்பட்டது",
       "error_image_size": "படம் 2MB க்குக் கீழே இருக்க வேண்டும் மற்றும் சரியான அளவில் இருக்க வேண்டும்.",
-      "upload_hint": "PNG அல்லது JPG கோப்புகள் மட்டுமே 1:1 விகிதம் (அதிகபட்சம் 2mb)"
+      "upload_hint": "PNG அல்லது JPG கோப்புகள் மட்டுமே 1:1 விகிதம் (அதிகபட்சம் 2mb)",
+      "appearance": {
+        "title": "தோற்றம்",
+        "daylight": "Daylight",
+        "midnight": "Midnight",
+        "forest": "Forest",
+        "sunset": "Sunset",
+        "ocean": "Ocean"
+      }
     }
   },
   "calls": {

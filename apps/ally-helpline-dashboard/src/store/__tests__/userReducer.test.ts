@@ -9,7 +9,9 @@ import userSlice, {
   unauthenticate,
   setPermissions,
   setAvailableChatTypes,
+  setUiTheme,
 } from "@reducer/userReducer";
+import { DEFAULT_UI_THEME } from "@theme/themes";
 import { UserRole, User, UserState } from "@types";
 
 describe("User Reducer", () => {
@@ -31,6 +33,20 @@ describe("User Reducer", () => {
       expect(state.user.user).toBeNull();
       expect(state.user.permissions).toEqual([]);
       expect(state.user.availableChatTypes).toEqual([]);
+      expect(state.user.uiTheme).toBe(DEFAULT_UI_THEME);
+    });
+  });
+
+  describe("UI Theme Actions", () => {
+    it("should update the ui theme", () => {
+      testStore.dispatch(setUiTheme("forest"));
+      expect(testStore.getState().user.uiTheme).toBe("forest");
+    });
+
+    it("should overwrite a previously selected theme", () => {
+      testStore.dispatch(setUiTheme("midnight"));
+      testStore.dispatch(setUiTheme("ocean"));
+      expect(testStore.getState().user.uiTheme).toBe("ocean");
     });
   });
 

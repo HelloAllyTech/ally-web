@@ -8,11 +8,16 @@ vi.mock("@routes/RouteLayout", () => ({
   default: () => <div data-testid="route-layout">Route Layout</div>,
 }));
 
-// Mock the theme
+// Mock the theme factory
 vi.mock("../theme", () => ({
-  theme: {
+  buildTheme: () => ({
     typography: {},
-  },
+  }),
+}));
+
+// Mock react-redux so App can read the (selected) UI theme without a store
+vi.mock("react-redux", () => ({
+  useSelector: () => "daylight",
 }));
 
 // Mock MUI components

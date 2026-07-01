@@ -824,7 +824,15 @@
       "cancel": "Cancel",
       "done": "Done",
       "error_image_size": "Image must be under 2MB and have the correct aspect ratio.",
-      "upload_hint": "PNG or JPG files only 1:1 ratio (max 2mb)"
+      "upload_hint": "PNG or JPG files only 1:1 ratio (max 2mb)",
+      "appearance": {
+        "title": "Appearance",
+        "daylight": "Daylight",
+        "midnight": "Midnight",
+        "forest": "Forest",
+        "sunset": "Sunset",
+        "ocean": "Ocean"
+      }
     }
   },
   "calls": {
