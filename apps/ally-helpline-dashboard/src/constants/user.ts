@@ -20,7 +20,7 @@ export const canCreateNote = (user?: { email?: string } | null): boolean =>
  * Temporary allowlist — remove once the feature is rolled out to everyone.
  */
 export const THEME_PICKER_ALLOWED_EMAILS = [
-  "example@learner.com",
+  "learner@example.com",
   "sandeep.malhotra+1@helloally.ai",
   "sandeep.malhotra+testing@helloally.ai",
 ];
