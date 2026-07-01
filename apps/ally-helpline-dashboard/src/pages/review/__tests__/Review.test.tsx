@@ -375,10 +375,9 @@ describe("Review Component", () => {
           <Review />
         </TestWrapper>,
       );
+      // Default tab is SCRIBE; Scribe filter options are ALL and UNDISCOVERED
       expect(screen.getByTestId("toggle-button-group")).toBeInTheDocument();
       expect(screen.getByTestId("filter-ALL")).toBeInTheDocument();
-      expect(screen.getByTestId("filter-LATEST")).toBeInTheDocument();
-      expect(screen.getByTestId("filter-MOST_REVIEWED")).toBeInTheDocument();
       expect(screen.getByTestId("filter-UNDISCOVERED")).toBeInTheDocument();
     });
 
@@ -681,30 +680,17 @@ describe("Review Component", () => {
       expect(allButton).toHaveClass("active");
     });
 
-    it("changes filter when toggle button is clicked", () => {
+    it("changes filter to UNDISCOVERED when clicked on Scribe tab", () => {
       render(
         <TestWrapper>
           <Review />
         </TestWrapper>,
       );
 
-      fireEvent.click(screen.getByTestId("filter-LATEST"));
+      fireEvent.click(screen.getByTestId("filter-UNDISCOVERED"));
 
-      const latestButton = screen.getByTestId("filter-LATEST");
-      expect(latestButton).toHaveClass("active");
-    });
-
-    it("changes to MOST_REVIEWED filter when clicked", () => {
-      render(
-        <TestWrapper>
-          <Review />
-        </TestWrapper>,
-      );
-
-      fireEvent.click(screen.getByTestId("filter-MOST_REVIEWED"));
-
-      const mostReviewedButton = screen.getByTestId("filter-MOST_REVIEWED");
-      expect(mostReviewedButton).toHaveClass("active");
+      expect(screen.getByTestId("filter-UNDISCOVERED")).toHaveClass("active");
+      expect(screen.getByTestId("filter-ALL")).not.toHaveClass("active");
     });
 
     it("changes to UNDISCOVERED filter when clicked", () => {
@@ -1199,14 +1185,14 @@ describe("Review Component", () => {
       expect(dropdown.value).toBe("Most Commented First");
     });
 
-    it("does not show sort dropdown on Scribe tab", () => {
+    it("shows sort dropdown on Scribe tab", () => {
       render(
         <TestWrapper>
           <Review />
         </TestWrapper>,
       );
 
-      expect(screen.queryByTestId("sort-dropdown")).not.toBeInTheDocument();
+      expect(screen.getByTestId("sort-dropdown")).toBeInTheDocument();
     });
   });
 });

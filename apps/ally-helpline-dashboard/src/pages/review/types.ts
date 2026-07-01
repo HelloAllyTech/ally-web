@@ -4,5 +4,6 @@ export interface SimulationReviewProps {
 }
 
 export interface ScribeReviewProps {
-  filter: string;
+  readFilter: string;
+  sortBy: string;
 }

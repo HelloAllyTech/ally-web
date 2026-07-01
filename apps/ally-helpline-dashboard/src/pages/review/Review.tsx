@@ -12,8 +12,9 @@ import { hasPermissions } from "@utils";
 import ScribeReview from "./components/ScribeReview";
 import SimulationReview from "./components/SimulationReview";
 import {
-  FILTER_OPTIONS,
   READ_FILTER_OPTIONS,
+  SCRIBE_READ_FILTER_OPTIONS,
+  SCRIBE_SORT_OPTIONS,
   SORT_OPTIONS,
   ReviewTab,
   TABS,
@@ -34,9 +35,10 @@ const ReviewWithTabs: FC = () => {
     [permissions],
   );
 
-  const filterOptions = FILTER_OPTIONS(t);
   const readFilterOptions = READ_FILTER_OPTIONS(t);
   const sortOptions = SORT_OPTIONS(t);
+  const scribeReadFilterOptions = SCRIBE_READ_FILTER_OPTIONS(t);
+  const scribeSortOptions = SCRIBE_SORT_OPTIONS(t);
 
   const tabFromUrl = searchParams.get("tab");
   const filterFromUrl = searchParams.get("filter");
@@ -47,9 +49,11 @@ const ReviewWithTabs: FC = () => {
   const isVisibleTab = (tab: string | null) => visibleTabs.some(t => t.value === tab);
   const isValidReadFilter = (f: string | null) =>
     f && readFilterOptions.some(option => option.value === f);
-  const isValidScribeFilter = (f: string | null) =>
-    f && filterOptions.some(option => option.value === f);
+  const isValidScribeReadFilter = (f: string | null) =>
+    f && scribeReadFilterOptions.some(option => option.value === f);
   const isValidSort = (s: string | null) => s && sortOptions.some(option => option.value === s);
+  const isValidScribeSort = (s: string | null) =>
+    s && scribeSortOptions.some(option => option.value === s);
 
   const initialTab =
     isValidTab(tabFromUrl) && isVisibleTab(tabFromUrl)
@@ -64,8 +68,13 @@ const ReviewWithTabs: FC = () => {
   const [simulationSortBy, setSimulationSortBy] = useState(
     initialTab === ReviewTab.SIMULATION && isValidSort(sortFromUrl) ? sortFromUrl! : "LATEST",
   );
-  const [scribeFilter, setScribeFilter] = useState(
-    initialTab === ReviewTab.SCRIBE && isValidScribeFilter(filterFromUrl) ? filterFromUrl! : "ALL",
+  const [scribeReadFilter, setScribeReadFilter] = useState(
+    initialTab === ReviewTab.SCRIBE && isValidScribeReadFilter(filterFromUrl)
+      ? filterFromUrl!
+      : "ALL",
+  );
+  const [scribeSortBy, setScribeSortBy] = useState(
+    initialTab === ReviewTab.SCRIBE && isValidScribeSort(sortFromUrl) ? sortFromUrl! : "LATEST",
   );
   const [activeTab, setActiveTab] = useState<string>(initialTab);
 
@@ -78,15 +87,22 @@ const ReviewWithTabs: FC = () => {
   }, [visibleTabs, activeTab]);
 
   useEffect(() => {
-    if (activeTab === ReviewTab.SIMULATION) {
-      setSearchParams(
-        { tab: activeTab, filter: simulationReadFilter, sort: simulationSortBy },
-        { replace: true },
-      );
-    } else {
-      setSearchParams({ tab: activeTab, filter: scribeFilter }, { replace: true });
-    }
-  }, [activeTab, simulationReadFilter, simulationSortBy, scribeFilter, setSearchParams]);
+    setSearchParams(
+      {
+        tab: activeTab,
+        filter: activeTab === ReviewTab.SIMULATION ? simulationReadFilter : scribeReadFilter,
+        sort: activeTab === ReviewTab.SIMULATION ? simulationSortBy : scribeSortBy,
+      },
+      { replace: true },
+    );
+  }, [
+    activeTab,
+    simulationReadFilter,
+    simulationSortBy,
+    scribeReadFilter,
+    scribeSortBy,
+    setSearchParams,
+  ]);
 
   const handleTabSwitch = (newValue: string) => {
     setActiveTab(newValue);
@@ -95,13 +111,37 @@ const ReviewWithTabs: FC = () => {
   const content = () => {
     switch (activeTab) {
       case ReviewTab.SCRIBE:
-        return <ScribeReview filter={scribeFilter} />;
+        return <ScribeReview readFilter={scribeReadFilter} sortBy={scribeSortBy} />;
       case ReviewTab.SIMULATION:
         return <SimulationReview readFilter={simulationReadFilter} sortBy={simulationSortBy} />;
       default:
         return null;
     }
   };
+
+  const renderSortRow = (
+    currentSort: string,
+    options: { value: string; label: string }[],
+    onSortChange: (v: string) => void,
+  ) => (
+    <div className="flex items-center gap-2">
+      <span className="font-primary text-xs text-typography-600 whitespace-nowrap">
+        {t("review.sort.label")}
+      </span>
+      <div className="w-fit">
+        <DropdownField
+          value={options.find(o => o.value === currentSort)?.label ?? options[0].label}
+          options={options.map(o => o.label)}
+          onChange={label => {
+            const opt = options.find(o => o.label === label);
+            if (opt && opt.value !== currentSort) onSortChange(opt.value);
+          }}
+          valueClassName="font-primary text-xs text-typography-800"
+          hideSearch
+        />
+      </div>
+    </div>
+  );
 
   const renderSimulationControls = () => (
     <div className="py-3 sm:py-4 md:py-6 w-full flex flex-col gap-3">
@@ -115,47 +155,30 @@ const ReviewWithTabs: FC = () => {
         equalWidth
         inheritFontSize={true}
       />
-      <div className="flex items-center gap-2">
-        <span className="font-primary text-xs text-typography-600 whitespace-nowrap">
-          {t("review.sort.label")}
-        </span>
-        <div className="w-fit">
-          <DropdownField
-            value={
-              sortOptions.find(o => o.value === simulationSortBy)?.label ?? sortOptions[0].label
-            }
-            options={sortOptions.map(o => o.label)}
-            onChange={label => {
-              const opt = sortOptions.find(o => o.label === label);
-              if (opt && opt.value !== simulationSortBy) setSimulationSortBy(opt.value);
-            }}
-            valueClassName="font-primary text-xs text-typography-800"
-            hideSearch
-          />
-        </div>
-      </div>
+      {renderSortRow(simulationSortBy, sortOptions, setSimulationSortBy)}
     </div>
   );
 
   const renderScribeControls = () => (
-    <div className="py-3 sm:py-4 md:py-6 w-full">
+    <div className="py-3 sm:py-4 md:py-6 w-full flex flex-col gap-3">
       <ToggleButtonGroup
         className="w-full font-primary text-[10px] sm:text-xs md:text-sm leading-[1.5]"
-        value={scribeFilter}
+        value={scribeReadFilter}
         onValueChange={newFilter => {
-          if (newFilter !== scribeFilter) setScribeFilter(newFilter);
+          if (newFilter !== scribeReadFilter) setScribeReadFilter(newFilter);
         }}
-        items={filterOptions}
+        items={scribeReadFilterOptions}
         equalWidth
         inheritFontSize={true}
       />
+      {renderSortRow(scribeSortBy, scribeSortOptions, setScribeSortBy)}
     </div>
   );
 
   const contentKey =
     activeTab === ReviewTab.SIMULATION
       ? `${activeTab}-${simulationReadFilter}-${simulationSortBy}`
-      : `${activeTab}-${scribeFilter}`;
+      : `${activeTab}-${scribeReadFilter}-${scribeSortBy}`;
 
   return (
     <div className="flex h-full w-full flex-col bg-[#FAFAFA]">
