@@ -131,6 +131,42 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
           />
         </ChartCard>
         <ChartCard
+          title="Top failure reasons"
+          caption="Actual error text on failed sessions (first 80 chars), most frequent first"
+          loading={loading}
+          wide
+          empty={!data?.topFailureReasons?.length}
+        >
+          <div className="flex flex-col gap-2">
+            {(data?.topFailureReasons ?? []).map(r => {
+              const max = Math.max(...(data?.topFailureReasons ?? []).map(x => x.count), 1);
+              return (
+                <div key={r.key} className="flex items-center gap-3">
+                  <div
+                    className="text-sm text-typography-900 truncate"
+                    style={{ flex: "0 0 60%" }}
+                    title={r.key}
+                  >
+                    {r.key}
+                  </div>
+                  <div className="flex-1 h-3 rounded" style={{ background: "#f0f0f0" }}>
+                    <div
+                      className="h-3 rounded"
+                      style={{
+                        width: `${Math.round((r.count / max) * 100)}%`,
+                        background: PALETTE.red,
+                      }}
+                    />
+                  </div>
+                  <div className="text-sm font-medium text-typography-900 w-10 text-right">
+                    {r.count}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ChartCard>
+        <ChartCard
           title="Failures by stage"
           caption="Where in the pipeline failures occur"
           loading={loading}
