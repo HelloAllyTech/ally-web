@@ -14,11 +14,18 @@ const BUCKET_TITLE: Record<string, string> = {
   month: "Month",
 };
 
-/** Session-mode labels (DICTATION = live, SCRIBE = uploaded recording). */
+/** Note-mode labels (summary style — independent of how audio was captured). */
 const MODE_LABELS: Record<string, string> = {
-  DICTATION: "Live (Dictation)",
-  SCRIBE: "Upload (Scribe)",
+  DICTATION: "Dictation",
+  SCRIBE: "Scribe",
   UNKNOWN: "Unknown",
+};
+
+/** Capture-method labels (how the audio was recorded). */
+const CAPTURE_LABELS: Record<string, string> = {
+  live: "Live (streamed)",
+  upload: "Upload (file)",
+  unknown: "Unknown",
 };
 
 /**
@@ -43,21 +50,18 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
       })),
     [data],
   );
-  const retryableData = useMemo(
-    () =>
-      (data?.retryableBreakdown ?? [])
-        .filter(o => o.count > 0)
-        .map(o => ({
-          group: o.key === "retryable" ? "Retryable" : "Terminal",
-          value: o.count,
-        })),
-    [data],
-  );
   const modeData = useMemo(
     () =>
       (data?.failuresByMode ?? [])
         .filter(o => o.count > 0)
         .map(o => ({ group: MODE_LABELS[o.key] ?? o.key, value: o.count })),
+    [data],
+  );
+  const captureData = useMemo(
+    () =>
+      (data?.failuresByCaptureMethod ?? [])
+        .filter(o => o.count > 0)
+        .map(o => ({ group: CAPTURE_LABELS[o.key] ?? o.key, value: o.count })),
     [data],
   );
   const breakdown = data?.failureBreakdown ?? [];
@@ -147,8 +151,30 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
           </div>
         </ChartCard>
         <ChartCard
-          title="Failures by session mode"
-          caption="DICTATION = live recording; SCRIBE = uploaded file"
+          title="Failures by capture method"
+          caption="How the audio was recorded: live stream vs uploaded file"
+          loading={loading}
+          empty={!captureData.length}
+        >
+          <DonutChart
+            data={captureData}
+            options={donutOpts({
+              centerLabel: "Failures",
+              extra: {
+                color: {
+                  scale: {
+                    "Live (streamed)": PALETTE.magenta,
+                    "Upload (file)": PALETTE.blue,
+                    Unknown: PALETTE.gray,
+                  },
+                },
+              },
+            })}
+          />
+        </ChartCard>
+        <ChartCard
+          title="Failures by note mode"
+          caption="Summary style — independent of how audio was captured"
           loading={loading}
           empty={!modeData.length}
         >
@@ -159,28 +185,10 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
               extra: {
                 color: {
                   scale: {
-                    "Live (Dictation)": PALETTE.magenta,
-                    "Upload (Scribe)": PALETTE.blue,
+                    Dictation: PALETTE.purple,
+                    Scribe: PALETTE.teal,
                     Unknown: PALETTE.gray,
                   },
-                },
-              },
-            })}
-          />
-        </ChartCard>
-        <ChartCard
-          title="Retryable vs terminal"
-          caption="Failures with a saved transcript can be retried"
-          loading={loading}
-          empty={!retryableData.length}
-        >
-          <DonutChart
-            data={retryableData}
-            options={donutOpts({
-              centerLabel: "Failures",
-              extra: {
-                color: {
-                  scale: { Retryable: PALETTE.gold, Terminal: PALETTE.darkRed },
                 },
               },
             })}

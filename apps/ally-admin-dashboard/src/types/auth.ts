@@ -272,7 +272,7 @@ export interface ScribeSummaryFailureResponse {
   failureRateTrend: ScribeFailureRatePoint[];
   failureBreakdown: ScribeCount[];
   failuresByMode: ScribeCount[];
-  retryableBreakdown: ScribeCount[];
+  failuresByCaptureMethod: ScribeCount[];
 }
 
 // VoiceLatencyResponseDto from GET /api/v1/analytics/voice-latency.
