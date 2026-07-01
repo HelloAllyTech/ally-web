@@ -42,6 +42,9 @@ export enum Permissions {
   VIEW_CUSTOM_FIELD_DEFINITIONS = "view:custom-field:definitions",
   MANAGE_CUSTOM_FIELD_DEFINITIONS = "manage:custom-field:definitions",
   EDIT_CUSTOM_FIELD_VALUES = "edit:custom-field:values",
+
+  // Counsellor
+  COUNSELOR_ACCESS = "counselor:access",
 }
 
 export const CALL_PERMISSIONS = [

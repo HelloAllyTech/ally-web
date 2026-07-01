@@ -312,6 +312,26 @@ const userManagementAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CUSTOM_FIELDS_ENABLED],
     }),
 
+    getScribeNoteCreationEnabled: builder.query<boolean, string>({
+      query: tenantId => ({
+        url: ApiEndpoints.USER_MANAGEMENT.SCRIBE_NOTE_CREATION_ENABLED,
+        params: { tenantId },
+      }),
+      providesTags: [TAG_TYPES.SCRIBE_NOTE_CREATION_ENABLED],
+    }),
+
+    updateScribeNoteCreationEnabled: builder.mutation<
+      { success: boolean },
+      { tenantId: string; enabled: boolean }
+    >({
+      query: ({ tenantId, enabled }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.SCRIBE_NOTE_CREATION_ENABLED,
+        method: HttpMethod.PUT,
+        body: { tenantId, enabled },
+      }),
+      invalidatesTags: [TAG_TYPES.SCRIBE_NOTE_CREATION_ENABLED],
+    }),
+
     getCustomFieldDefinitions: builder.query<CustomFieldDefinition[], string>({
       query: tenantId => ({
         url: ApiEndpoints.USER_MANAGEMENT.CUSTOM_FIELD_DEFINITIONS,
@@ -421,6 +441,8 @@ export const {
   useUpdateCustomFieldTypesMutation,
   useGetCustomFieldsEnabledQuery,
   useUpdateCustomFieldsEnabledMutation,
+  useGetScribeNoteCreationEnabledQuery,
+  useUpdateScribeNoteCreationEnabledMutation,
   useGetCustomFieldDefinitionsQuery,
   useCreateCustomFieldDefinitionMutation,
   useUpdateCustomFieldDefinitionMutation,
