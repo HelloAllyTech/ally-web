@@ -29,11 +29,6 @@ const OUTCOME_COLORS: Record<string, string> = {
   Pending: PALETTE.gold,
   "No audio": PALETTE.gray,
 };
-const SESSION_MODE_LABELS: Record<string, string> = {
-  SCRIBE: "Upload (Scribe)",
-  DICTATION: "Live (Dictation)",
-};
-
 /** Note-mode labels (summary style — independent of how audio was captured). */
 const NOTE_MODE_LABELS: Record<string, string> = {
   DICTATION: "Dictation",
@@ -82,11 +77,14 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
         .map(o => ({ group: OUTCOME_LABELS[o.key] ?? o.key, value: o.count })),
     [overview.data],
   );
-  const sessionModeData = useMemo(
+  // All-sessions capture method (how the audio was recorded), grouped by
+  // provider — NOT note mode. This is the honest upload-vs-live split and is
+  // consistent with the "Failures by capture method" chart.
+  const captureMethodData = useMemo(
     () =>
-      (overview.data?.modeBreakdown ?? [])
+      (overview.data?.captureBreakdown ?? [])
         .filter(m => m.count > 0)
-        .map(m => ({ group: SESSION_MODE_LABELS[m.key] ?? m.key, value: m.count })),
+        .map(m => ({ group: CAPTURE_LABELS[m.key] ?? m.key, value: m.count })),
     [overview.data],
   );
 
@@ -220,20 +218,21 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
               />
             </ChartCard>
             <ChartCard
-              title="Session mode"
-              caption="Uploaded recordings vs live dictation"
+              title="Capture method"
+              caption="How the audio was recorded: uploaded file vs live stream"
               loading={overviewLoading}
-              empty={!sessionModeData.length}
+              empty={!captureMethodData.length}
             >
               <DonutChart
-                data={sessionModeData}
+                data={captureMethodData}
                 options={donutOpts({
                   centerLabel: "Sessions",
                   extra: {
                     color: {
                       scale: {
-                        "Upload (Scribe)": PALETTE.purple,
-                        "Live (Dictation)": PALETTE.teal,
+                        "Upload (file)": PALETTE.purple,
+                        "Live (streamed)": PALETTE.teal,
+                        Unknown: PALETTE.gray,
                       },
                     },
                   },

@@ -246,6 +246,7 @@ export interface ScribeOverviewResponse {
   sessionsTrend: ScribeTrendPoint[];
   outcomeBreakdown: ScribeCount[];
   modeBreakdown: ScribeCount[];
+  captureBreakdown: ScribeCount[];
 }
 
 export interface ScribeFailureRatePoint {
