@@ -14,6 +14,49 @@ export interface GenerateAgentPromptResponse {
   model: string;
 }
 
+/** The Basic Settings fields Agent Builder Copilot V2 generates in parallel. */
+export type AgentBuilderV2Field =
+  | "role_instruction"
+  | "title"
+  | "challenge_description"
+  | "knowledge_sources"
+  | "persona";
+
+export interface GenerateAgentBuilderV2FieldRequest {
+  field: AgentBuilderV2Field;
+  actorDescription: string;
+  competency?: string;
+  optimisationGoals?: string;
+  numKnowledgeSources?: number;
+  model?: string;
+  provider?: "openai" | "anthropic";
+}
+
+/** Persona demographics returned by the `persona` field generator. */
+export interface AgentBuilderV2Persona {
+  name?: string;
+  age?: number;
+  gender?: string;
+  profession?: string;
+  currentLocation?: string;
+}
+
+export interface AgentBuilderV2KnowledgeSource {
+  title: string;
+  content: string;
+}
+
+/**
+ * `value`'s shape depends on `field`:
+ *  - role_instruction / title / challenge_description → string
+ *  - persona → AgentBuilderV2Persona
+ *  - knowledge_sources → AgentBuilderV2KnowledgeSource[]
+ */
+export interface GenerateAgentBuilderV2FieldResponse {
+  field: AgentBuilderV2Field;
+  value: unknown;
+}
+
 export type CopilotRunStatus =
   | "STARTED"
   | "GENERATING"
@@ -144,6 +187,23 @@ const agentBuilderAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Agent Builder Copilot V2: generate ONE Basic Settings field from the
+     * wizard's actor brief + competency + optimisation goals. The wizard fires
+     * one of these per target field concurrently; each returned trigger exposes
+     * `.abort()` so the whole batch can be cancelled.
+     */
+    generateAgentBuilderV2Field: builder.mutation<
+      GenerateAgentBuilderV2FieldResponse,
+      GenerateAgentBuilderV2FieldRequest
+    >({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_AGENT_BUILDER_V2_FIELD,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+
+    /**
      * Copilot auto-build & self-improve: kicks off a server-side pipeline that
      * generates the actor's Basic Settings, runs a practice conversation +
      * evaluation, and refines until it scores well or the round budget runs out.
@@ -188,6 +248,7 @@ const agentBuilderAPI = baseAPI.injectEndpoints({
 
 export const {
   useGenerateAgentPromptMutation,
+  useGenerateAgentBuilderV2FieldMutation,
   useStartCopilotRunMutation,
   useGetCopilotRunQuery,
   useCancelCopilotRunMutation,
