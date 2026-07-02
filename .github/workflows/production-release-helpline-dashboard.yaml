@@ -17,6 +17,7 @@ name: Production Release - Helpline Dashboard
 permissions:
   id-token: write
   contents: write  # Required for creating releases and tags
+  pull-requests: write
 
 on:
   workflow_dispatch:
@@ -204,17 +205,25 @@ jobs:
       - name: Sync translations
         run: npm run i18n:sync -- ${{ secrets.OPENAI_API_KEY }}
 
-      - name: Commit updated locales
+      - name: Open PR for updated locales
         run: |
           if [[ -n "$(git status --porcelain)" ]]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
+            git checkout -b chore/i18n-auto-sync
             git add apps/ally-helpline-dashboard/src/i18n/locales/*.json apps/ally-helpline-dashboard/src/i18n/versions/*.json
-            git commit --no-verify -m "chore(i18n): auto-translate missing keys [skip ci]"
-            git push
+            git commit --no-verify -m "chore(i18n): auto-translate missing keys"
+            git push origin chore/i18n-auto-sync --force
+            gh pr create \
+              --title "chore(i18n): auto-translate missing keys" \
+              --body "Automatically translated missing translation keys detected during CI deployment." \
+              --base master \
+              --head chore/i18n-auto-sync || echo "PR already exists, skipping creation."
           else
-            echo "No translation updates to commit."
+            echo "No translation updates."
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Read API base URL from environment file
         run: |
