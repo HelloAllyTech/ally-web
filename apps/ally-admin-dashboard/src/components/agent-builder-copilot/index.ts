@@ -1,1 +1,1 @@
-export { AgentBuilderCopilot } from "./AgentBuilderCopilot";
+export { AgentBuilderCopilotWizard } from "./AgentBuilderCopilotWizard";

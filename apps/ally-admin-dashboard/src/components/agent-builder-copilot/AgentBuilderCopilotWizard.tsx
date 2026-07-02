@@ -9,10 +9,10 @@ import { CheckCircle, FailIcon } from "@icons";
 import { Button } from "../button";
 import { Competency } from "../competency";
 import { ButtonVariant } from "../types";
-import { V2Task, V2TaskStatus, useAgentBuilderV2Generation } from "./useAgentBuilderV2Generation";
+import { GenerationTask, GenerationTaskStatus, useAgentBuilderGeneration } from "./useAgentBuilderGeneration";
 
 /**
- * Chat-style wizard on the RIGHT half of the "Agent Builder Copilot V2" tab.
+ * Chat-style wizard on the RIGHT half of the "Agent Builder Copilot" tab.
  *
  * Flow:
  *   1. "Describe roleplay actor"   — long free-text input
@@ -41,7 +41,7 @@ interface ChatEntry {
   answer: string;
 }
 
-interface AgentBuilderCopilotV2WizardProps {
+interface AgentBuilderCopilotWizardProps {
   // Shared react-hook-form instance — the competency pick + generated values
   // all write here, keeping the Basic Settings tab in sync.
   formMethods: UseFormReturn<any>;
@@ -51,7 +51,7 @@ const Spinner = () => (
   <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-dashed border-primary-300 border-t-transparent" />
 );
 
-const TaskStatusIcon = ({ status }: { status: V2TaskStatus }) => {
+const TaskStatusIcon = ({ status }: { status: GenerationTaskStatus }) => {
   if (status === "active") return <Spinner />;
   if (status === "done") return <CheckCircle size={16} className="shrink-0 text-[#43A047]" />;
   if (status === "error") return <FailIcon size={16} className="shrink-0 text-[#FE6F64]" />;
@@ -59,14 +59,14 @@ const TaskStatusIcon = ({ status }: { status: V2TaskStatus }) => {
   return <span className="inline-block h-4 w-4 shrink-0 text-center text-typography-400">–</span>;
 };
 
-const taskNote = (task: V2Task): string | null => {
+const taskNote = (task: GenerationTask): string | null => {
   if (task.status === "error") return task.error || "generation failed";
   if (task.status === "empty") return "no content generated";
   if (task.status === "aborted") return "cancelled";
   return null;
 };
 
-export const AgentBuilderCopilotV2Wizard: React.FC<AgentBuilderCopilotV2WizardProps> = ({
+export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps> = ({
   formMethods,
 }) => {
   const [step, setStep] = useState<WizardStepId>("describe");
@@ -78,7 +78,7 @@ export const AgentBuilderCopilotV2Wizard: React.FC<AgentBuilderCopilotV2WizardPr
   const goalOptions = goalsData?.data ?? [];
 
   const { phase, tasks, start, abort, reset, doneCount, appliedCount } =
-    useAgentBuilderV2Generation(formMethods);
+    useAgentBuilderGeneration(formMethods);
 
   const pushHistory = (question: string, answer: string) =>
     setHistory(prev => [...prev, { question, answer }]);
