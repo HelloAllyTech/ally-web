@@ -12,6 +12,7 @@ const stableApiResponse = { data: [], total: 0 };
 
 // Mock all icons used in constants
 vi.mock("@assets", () => ({
+  ManageAccount: () => <svg data-testid="manage-account-icon" />,
   AccountCircle: ({ className }: any) => <div data-testid="account-circle" className={className} />,
   Badge: ({ className }: any) => <div data-testid="badge" className={className} />,
   Carousel1: ({ className }: any) => <div data-testid="carousel-1" className={className} />,

@@ -111,6 +111,7 @@ vi.mock("@components", () => ({
   },
 }));
 vi.mock("@assets", () => ({
+  ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Warning: () => <div>Warning</div>,
   Assessment: () => <div>Assessment</div>,
   Carousel1: "Carousel1",

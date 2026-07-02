@@ -30,6 +30,7 @@ vi.mock("@components", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ManageAccount: () => <svg data-testid="manage-account-icon" />,
   NoNetwork: ({ stroke, ...props }: any) => (
     <div data-testid="no-network-icon" data-stroke={stroke} {...props}>
       NoNetwork Icon

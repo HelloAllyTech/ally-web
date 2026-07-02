@@ -20,6 +20,7 @@ vi.mock("@components", () => ({
 }));
 
 vi.mock("@assets", () => ({
+  ManageAccount: () => <svg data-testid="manage-account-icon" />,
   DataPolicy: () => <svg data-testid="data-policy-icon" />,
   Carousel1: "Carousel1",
   Carousel2: "Carousel2",

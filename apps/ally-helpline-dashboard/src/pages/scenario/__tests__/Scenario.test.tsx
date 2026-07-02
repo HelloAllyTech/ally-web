@@ -91,6 +91,7 @@ vi.mock("@api", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ManageAccount: () => <svg data-testid="manage-account-icon" />,
   BackCircle: () => <div data-testid="back-circle">BackCircle</div>,
   ExistingCall: () => <div data-testid="existing-call">ExistingCall</div>,
   PageNotFoundIllustration: () => <div data-testid="page-not-found">PageNotFound</div>,

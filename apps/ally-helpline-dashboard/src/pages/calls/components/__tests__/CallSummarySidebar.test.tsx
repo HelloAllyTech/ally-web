@@ -58,6 +58,7 @@ vi.mock("@api", () => ({
 
 // Mock assets
 vi.mock("@assets", () => ({
+  ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Download: () => <div data-testid="download-icon">Download</div>,
   Delete: () => <div data-testid="delete-icon">Delete</div>,
   Archive: () => <div data-testid="archive-icon">Archive</div>,

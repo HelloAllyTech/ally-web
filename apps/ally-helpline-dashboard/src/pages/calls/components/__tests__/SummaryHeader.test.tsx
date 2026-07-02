@@ -26,6 +26,7 @@ vi.mock("@hooks", () => ({
 
 // Mock assets/components
 vi.mock("@assets", () => ({
+  ManageAccount: () => <svg data-testid="manage-account-icon" />,
   Edit: (props: any) => <div {...props}>EditIcon</div>,
   Carousel1: (props: any) => <div {...props}>Carousel1</div>,
   Carousel2: (props: any) => <div {...props}>Carousel2</div>,

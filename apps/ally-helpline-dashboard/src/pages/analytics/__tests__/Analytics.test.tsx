@@ -32,6 +32,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 // Mock the NoAnalytics asset
 vi.mock("@assets", () => ({
+  ManageAccount: () => <svg data-testid="manage-account-icon" />,
   NoAnalytics: () => <div data-testid="no-analytics">No Analytics Available</div>,
   Carousel1: "Carousel1",
   Carousel2: "Carousel2",
