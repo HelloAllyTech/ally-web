@@ -46,7 +46,11 @@ export const ScribeSummaryFailureTab = ({ range }: { range: AnalyticsRange }) =>
       (data?.failureRateTrend ?? []).map(p => ({
         group: "Failure rate",
         key: p.bucket,
-        value: parseFloat((p.failureRate * 100).toFixed(1)),
+        // A day with no terminal sessions has an undefined rate (0/0), not 0%.
+        // Emit a gap (null) so the line breaks instead of dropping to the floor
+        // — a 0 there falsely reads as "failures improved". A real 0% (sessions
+        // ran, none failed) still plots as 0.
+        value: p.terminal > 0 ? parseFloat((p.failureRate * 100).toFixed(1)) : null,
       })),
     [data],
   );

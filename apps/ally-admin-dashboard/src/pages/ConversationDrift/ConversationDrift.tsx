@@ -276,7 +276,10 @@ export const ConversationDrift = ({
       (data?.driftTrend ?? []).map(p => ({
         group: SOURCE_LABEL[p.source] ?? p.source,
         key: p.bucket,
-        value: Number((p.driftRate * 100).toFixed(1)),
+        // No sessions that period -> drift rate is undefined (0/0), not 0%.
+        // Emit a gap (null) rather than a floor-hugging 0 that reads as "no
+        // drift". A real 0% (sessions ran, none drifted) still plots as 0.
+        value: p.totalSessions > 0 ? Number((p.driftRate * 100).toFixed(1)) : null,
       })),
     [data],
   );
