@@ -297,6 +297,34 @@ export interface VoiceLatencyResponse {
   points: VoiceLatencyPoint[];
 }
 
+// StartLatencyResponseDto from GET /api/v1/analytics/start-latency.
+// "Time to first word": agent job start -> the agent begins its opening dialogue.
+export interface StartLatencyPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  /** 'pipeline' (live, full segment breakdown) or 'transcript' (total only). */
+  source: string;
+  sessions: number;
+  /** Total start latency (ms). For pipeline rows the 4 segments below sum to this. */
+  avgMs: number;
+  p50Ms: number;
+  p95Ms: number;
+  /** Mean segment durations (ms); 0 for transcript rows. */
+  configureMs: number;
+  initializeMs: number;
+  connectMs: number;
+  prepMs: number;
+}
+
+export interface StartLatencyResponse {
+  range: AnalyticsRange;
+  /** Bucket granularity for this range ('day' | 'week' | 'month'). */
+  bucket: string;
+  /** Start-latency target line for reference (ms). */
+  targetMs: number;
+  points: StartLatencyPoint[];
+}
+
 // ConversationDriftResponseDto from GET /api/v1/analytics/conversation-drift.
 export interface DriftRateByLanguage {
   language: string;

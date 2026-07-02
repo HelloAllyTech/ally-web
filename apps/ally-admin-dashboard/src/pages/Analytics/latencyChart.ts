@@ -1,4 +1,4 @@
-import { AnalyticsBucket, VoiceLatencyPoint } from "@types";
+import { AnalyticsBucket, StartLatencyPoint, VoiceLatencyPoint } from "@types";
 
 // Latency series labels, keyed so the color scale and data groups stay in sync.
 export const LATENCY_GROUPS = {
@@ -34,4 +34,40 @@ export function latencyBucketTitle(bucket?: AnalyticsBucket | string): string {
   if (bucket === "day") return "Day";
   if (bucket === "month") return "Month";
   return "Week";
+}
+
+// Start-latency ("time to first word") stacked-segment labels. Pipeline rows
+// carry the four-segment breakdown; transcript-derived (backfilled) rows have
+// only a total, shown as a single "Historical total" segment.
+export const START_LATENCY_GROUPS = {
+  configure: "Configure",
+  initialize: "Initialize",
+  connect: "Connect",
+  prep: "Prep",
+  transcriptTotal: "Historical total",
+};
+
+/**
+ * Map the BE's per-bucket, per-source start-latency points (ms) into Carbon
+ * stacked-bar data in **seconds**. A `pipeline` row contributes one datum per
+ * segment (Configure / Initialize / Connect / Prep) so the stack sums to the
+ * mean total time-to-first-word; a `transcript` (backfilled) row has no segment
+ * breakdown, so it contributes a single "Historical total" datum. Buckets with
+ * no sessions are absent from `points` (no fabricated zero).
+ */
+export function buildStartLatencySeries(points: StartLatencyPoint[]): LatencyDatum[] {
+  const toS = (ms: number) => Math.round(ms) / 1000;
+  return points.flatMap(point => {
+    if (point.source === "pipeline") {
+      return [
+        { group: START_LATENCY_GROUPS.configure, key: point.bucket, value: toS(point.configureMs) },
+        { group: START_LATENCY_GROUPS.initialize, key: point.bucket, value: toS(point.initializeMs) },
+        { group: START_LATENCY_GROUPS.connect, key: point.bucket, value: toS(point.connectMs) },
+        { group: START_LATENCY_GROUPS.prep, key: point.bucket, value: toS(point.prepMs) },
+      ];
+    }
+    return [
+      { group: START_LATENCY_GROUPS.transcriptTotal, key: point.bucket, value: toS(point.avgMs) },
+    ];
+  });
 }
