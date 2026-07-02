@@ -20,8 +20,7 @@ import { AnalyticsRange } from "@types";
 
 import { LatencyTab } from "./tabs/LatencyTab";
 import { OverviewTab } from "./tabs/OverviewTab";
-import { ScribeOverviewTab } from "./tabs/ScribeOverviewTab";
-import { ScribeSummaryFailureTab } from "./tabs/ScribeSummaryFailureTab";
+import { ScribeTab } from "./tabs/ScribeTab";
 import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
 
@@ -76,16 +75,10 @@ const TABS: TabDef[] = [
     render: f => <TokenConsumption range={f.range} />,
   },
   {
-    id: "scribe-overview",
-    label: "Scribe overview",
+    id: "scribe",
+    label: "Scribe",
     uses: { language: false },
-    render: f => <ScribeOverviewTab range={f.range} />,
-  },
-  {
-    id: "scribe-summary-failure",
-    label: "Summary failure",
-    uses: { language: false },
-    render: f => <ScribeSummaryFailureTab range={f.range} />,
+    render: f => <ScribeTab range={f.range} />,
   },
 ];
 
