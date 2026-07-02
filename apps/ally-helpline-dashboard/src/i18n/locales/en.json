@@ -87,7 +87,8 @@
       "scribeLogs": "Scribe Logs",
       "roleplayLogs": "Roleplay Logs",
       "statistics": "Statistics",
-      "search": "Search"
+      "search": "Search",
+      "organizationSettings": "Org. Settings"
     },
     "logout": {
       "title": {
@@ -853,7 +854,30 @@
       "saving": "Saving…",
       "saved": "Saved",
       "saveError": "Couldn't save note",
-      "empty": "No note fields are configured for your organisation."
+      "empty": "No note fields are configured for your organisation.",
+      "voice": {
+        "record": "Record a note",
+        "listening": "Listening…",
+        "paused": "Paused",
+        "pause": "Pause",
+        "resume": "Resume",
+        "stop": "Stop",
+        "ready": "Recording ready",
+        "generate": "Generate notes",
+        "generating": "Generating notes…",
+        "discard": "Discard",
+        "micDenied": "Microphone access was denied. Enable it in your browser settings to record.",
+        "unsupported": "Audio recording isn't supported in this browser.",
+        "noSpeech": "We couldn't hear any speech. Please try recording again.",
+        "generateError": "Couldn't generate notes from the recording. Please try again.",
+        "generated": "Notes generated from your recording",
+        "nothingExtracted": "We transcribed the audio but couldn't fill any fields from it.",
+        "processing": {
+          "transcribing": "Transcribing your recording…",
+          "extracting": "Extracting note details…",
+          "populating": "Filling in the fields…"
+        }
+      }
     },
     "table": {
       "counsellorName": "Counsellor",

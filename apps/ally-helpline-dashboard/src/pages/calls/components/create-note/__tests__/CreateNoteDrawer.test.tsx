@@ -10,11 +10,30 @@ const mockCreateNote = vi.fn();
 const mockUpsertValues = vi.fn();
 const mockUpdateCallSummary = vi.fn();
 const mockGetTags = vi.fn();
+const mockGenerateNoteFromAudio = vi.fn();
 const mockUseGetSummaryFields = vi.fn();
 const mockUseGetDefinitions = vi.fn();
 
+// Controllable audio-recorder stub. Tests can tweak fields before rendering.
+const mockRecorderStart = vi.fn();
+const mockRecorderReset = vi.fn();
+const recorderState: any = {
+  status: "idle",
+  isRecording: false,
+  isPaused: false,
+  durationMs: 0,
+  blob: null,
+  error: null,
+  start: mockRecorderStart,
+  pause: vi.fn(),
+  resume: vi.fn(),
+  stop: vi.fn(),
+  reset: mockRecorderReset,
+};
+
 vi.mock("@api", () => ({
   useCreateNoteMutation: () => [mockCreateNote],
+  useGenerateNoteFromAudioMutation: () => [mockGenerateNoteFromAudio, { isLoading: false }],
   useGetCustomFieldDefinitionsQuery: () => mockUseGetDefinitions(),
   useGetSummaryFieldsQuery: () => mockUseGetSummaryFields(),
   useGetTagsMutation: () => [mockGetTags],
@@ -22,10 +41,29 @@ vi.mock("@api", () => ({
   useUpsertCustomFieldValuesMutation: () => [mockUpsertValues],
 }));
 
+vi.mock("@assets/icons", () => ({ MicIcon: () => <svg data-testid="mic-icon" /> }));
+
+// The recording surface is exercised in its own scope; here just detect that it
+// opened when the mic is clicked.
+vi.mock("../VoiceNotePanel", () => ({
+  default: () => <div data-testid="voice-panel" />,
+}));
+
 vi.mock("@components", () => ({
-  Drawer: ({ children, title }: any) => (
+  Drawer: ({ children, title, headerButtons }: any) => (
     <div>
       <div>{title}</div>
+      {(headerButtons ?? [])
+        .filter((b: any) => b.show)
+        .map((b: any) => (
+          <button
+            key={b.alt}
+            data-testid={`drawer-header-button-${b.alt}`}
+            onClick={b.onClick}
+          >
+            {b.icon}
+          </button>
+        ))}
       {children}
     </div>
   ),
@@ -36,6 +74,7 @@ vi.mock("@constants", () => ({
     VIEW_SUMMARY_FIELDS: "view:settings:summary-fields",
     EDIT_CALL_DETAILS: "edit:call:details",
     COUNSELOR_ACCESS: "counselor:access",
+    MANAGE_CUSTOM_FIELD_DEFINITIONS: "manage:custom-field-definitions",
   },
 }));
 
@@ -45,18 +84,32 @@ vi.mock("@utils", () => ({
 }));
 
 const userResult = {
-  user: { role: "COUNSELLOR" },
+  user: { role: "COUNSELLOR", email: "sandeep.malhotra+internal@helloally.ai" },
   permissions: ["view:settings:summary-fields", "edit:call:details", "counselor:access"],
 };
 vi.mock("@hooks", () => ({
   useUser: () => userResult,
   // Run the debounced persist synchronously so saves can be asserted.
   useDebounce: (fn: any) => fn,
+  useAudioRecorder: () => recorderState,
 }));
 
 vi.mock("@types", () => ({
   UserRole: { COUNSELLOR: "COUNSELLOR", ADMIN: "ADMIN" },
   SummaryFieldKey: { Tags: "tags" },
+  CustomFieldType: {
+    SINGLE_SELECT: "SINGLE_SELECT",
+    MULTI_SELECT: "MULTI_SELECT",
+    DATE: "DATE",
+    TEXT: "TEXT",
+    NUMBER: "NUMBER",
+    BOOLEAN: "BOOLEAN",
+  },
+  CustomFieldEditPermission: {
+    ADMIN_ONLY: "ADMIN_ONLY",
+    COUNSELLOR_ONLY: "COUNSELLOR_ONLY",
+    BOTH: "BOTH",
+  },
 }));
 
 vi.mock("@mui/material", () => ({
@@ -168,6 +221,16 @@ const customDef = (id: string, name: string, sectionKey: string) => ({
 describe("CreateNoteDrawer", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    recorderState.status = "idle";
+    recorderState.isRecording = false;
+    recorderState.blob = null;
+    recorderState.error = null;
+    userResult.permissions = [
+      "view:settings:summary-fields",
+      "edit:call:details",
+      "counselor:access",
+    ];
+    userResult.user = { role: "COUNSELLOR", email: "sandeep.malhotra+internal@helloally.ai" };
     mockCreateNote.mockReturnValue({
       unwrap: () => Promise.resolve({ chatId: 123, name: "CALL-123" }),
     });
@@ -280,5 +343,39 @@ describe("CreateNoteDrawer", () => {
         data: { summary: { tags: [{ tag: "x", priority_rating: 1 }] } },
       }),
     );
+  });
+
+  it("shows the mic button for a counsellor who can edit details when fields exist", () => {
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    expect(screen.getByTestId("drawer-header-button-voice-note")).toBeInTheDocument();
+  });
+
+  it("hides the mic button when the user cannot edit call details", () => {
+    userResult.permissions = ["view:settings:summary-fields", "counselor:access"];
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    expect(screen.queryByTestId("drawer-header-button-voice-note")).not.toBeInTheDocument();
+  });
+
+  it("hides the mic button when there are no fillable fields", () => {
+    mockUseGetSummaryFields.mockReturnValue({ data: [], isLoading: false });
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    expect(screen.queryByTestId("drawer-header-button-voice-note")).not.toBeInTheDocument();
+  });
+
+  it("hides the mic button for users not on the voice-note allowlist", () => {
+    userResult.user = { role: "COUNSELLOR", email: "someone.else@helloally.ai" };
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    expect(screen.queryByTestId("drawer-header-button-voice-note")).not.toBeInTheDocument();
+  });
+
+  it("starts recording and opens the voice panel when the mic is clicked", () => {
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+    expect(mockRecorderStart).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("voice-panel")).toBeInTheDocument();
   });
 });

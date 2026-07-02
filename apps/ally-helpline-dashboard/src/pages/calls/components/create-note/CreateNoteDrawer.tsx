@@ -1,11 +1,13 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { CircularProgress } from "@mui/material";
+import { Mic } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import {
   useCreateNoteMutation,
+  useGenerateNoteFromAudioMutation,
   useGetCustomFieldDefinitionsQuery,
   useGetSummaryFieldsQuery,
   useGetTagsMutation,
@@ -15,7 +17,7 @@ import {
 import { Drawer } from "@components";
 import { Permissions } from "@constants";
 import { carbonField } from "@constants/carbonFieldStyles";
-import { useDebounce, useUser } from "@hooks";
+import { useAudioRecorder, useDebounce, useUser } from "@hooks";
 import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import SummaryFieldInput from "@pages/post-call-summary/components/SummaryFieldInput";
 import {
@@ -25,15 +27,111 @@ import {
 } from "@pages/post-call-summary/constants";
 import { FieldType } from "@pages/post-call-summary/types";
 import { getSectionFields } from "@pages/post-call-summary/utils";
-import { CustomFieldDefinition, CustomFieldValue, SummaryFieldKey, Tag } from "@types";
+import {
+  CustomFieldDefinition,
+  CustomFieldEditPermission,
+  CustomFieldType,
+  CustomFieldValue,
+  SingleSelectOption,
+  SummaryFieldKey,
+  Tag,
+  VoiceNoteFieldSpec,
+  VoiceNoteFieldType,
+} from "@types";
 import { hasPermissions } from "@utils";
+
+import VoiceNotePanel from "./VoiceNotePanel";
 
 interface CreateNoteDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
+/** How to turn an extracted (human-readable) value back into stored form. */
+type VoiceDecoder =
+  | { kind: "builtin" }
+  | { kind: "custom"; fieldType: CustomFieldType; options?: SingleSelectOption[] };
+
 const SAVE_DEBOUNCE_MS = 600;
+
+// TEMPORARY: while the voice-dictation feature is in limited rollout, the mic is
+// shown only to these users (lower-cased for a case-insensitive match). Remove
+// this gate — or replace it with a per-tenant Preference toggle — once GA.
+const VOICE_NOTE_EMAIL_ALLOWLIST = [
+  "learner@example.com",
+  "sandeep.malhotra+internal@helloally.ai",
+];
+
+const mapBuiltinType = (type: FieldType): VoiceNoteFieldType => {
+  if (type === FieldType.Dropdown) return "select";
+  if (type === FieldType.Multiline) return "multiline";
+  if (type === FieldType.Number) return "number";
+  return "text";
+};
+
+const mapCustomType = (type: CustomFieldType): VoiceNoteFieldType => {
+  switch (type) {
+    case CustomFieldType.SINGLE_SELECT:
+      return "select";
+    case CustomFieldType.MULTI_SELECT:
+      return "multiselect";
+    case CustomFieldType.NUMBER:
+      return "number";
+    case CustomFieldType.BOOLEAN:
+      return "boolean";
+    case CustomFieldType.DATE:
+      return "date";
+    default:
+      return "text";
+  }
+};
+
+/**
+ * Convert an LLM value (always a human-readable string) into the exact storage
+ * encoding each field expects. Built-in fields (and custom text/number) store
+ * the value verbatim; custom fields mirror CustomFieldValuesPanel: single-select
+ * → option id, multi-select → JSON id array, boolean → "true"/"false", date →
+ * ISO. Returns null when the value can't be mapped (e.g. an option no longer
+ * exists), so nothing invalid is written.
+ */
+const encodeVoiceValue = (decoder: VoiceDecoder, value: string): string | null => {
+  const trimmed = value.trim();
+  if (decoder.kind !== "custom") return trimmed || null;
+  switch (decoder.fieldType) {
+    case CustomFieldType.SINGLE_SELECT: {
+      const opt = decoder.options?.find(o => o.label.toLowerCase() === trimmed.toLowerCase());
+      return opt ? opt.id : null;
+    }
+    case CustomFieldType.MULTI_SELECT: {
+      // The backend sends matched labels as a JSON array (comma-safe); fall
+      // back to comma-splitting if it isn't valid JSON.
+      let labels: string[];
+      try {
+        const parsed = JSON.parse(trimmed);
+        labels = Array.isArray(parsed) ? parsed.map(String) : [trimmed];
+      } catch {
+        labels = trimmed.split(",");
+      }
+      const wanted = labels.map(s => s.trim().toLowerCase()).filter(Boolean);
+      const ids = (decoder.options ?? [])
+        .filter(o => wanted.includes(o.label.toLowerCase()))
+        .map(o => o.id);
+      return ids.length ? JSON.stringify(ids) : null;
+    }
+    case CustomFieldType.BOOLEAN: {
+      const v = trimmed.toLowerCase();
+      if (["yes", "true", "y"].includes(v)) return "true";
+      if (["no", "false", "n"].includes(v)) return "false";
+      return null;
+    }
+    case CustomFieldType.DATE: {
+      const d = new Date(trimmed);
+      return Number.isNaN(d.getTime()) ? null : d.toISOString();
+    }
+    default:
+      return trimmed || null;
+  }
+};
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -48,10 +146,11 @@ type SaveState = "idle" | "saving" | "saved" | "error";
  */
 const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
-  const { permissions } = useUser();
+  const { permissions, user } = useUser();
   const isCounsellor = hasPermissions(permissions, Permissions.COUNSELOR_ACCESS);
   const canViewSummaryFields = Boolean(permissions?.includes(Permissions.VIEW_SUMMARY_FIELDS));
   const canEditCallDetails = Boolean(permissions?.includes(Permissions.EDIT_CALL_DETAILS));
+  const isAdmin = Boolean(permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS));
 
   const { data: definitions, isLoading: isDefinitionsLoading } = useGetCustomFieldDefinitionsQuery(
     undefined,
@@ -66,6 +165,20 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const [upsertValues] = useUpsertCustomFieldValuesMutation();
   const [updateCallSummary] = useUpdateCallSummaryMutation();
   const [getTags] = useGetTagsMutation();
+  const [generateNoteFromAudio, { isLoading: isGeneratingNotes }] =
+    useGenerateNoteFromAudioMutation();
+
+  // Voice dictation. The recorder buffer is only sent to `generateNoteFromAudio`
+  // and then discarded — audio is never persisted client- or server-side.
+  const recorder = useAudioRecorder();
+  const {
+    reset: resetRecorder,
+    start: startRecorder,
+    error: recorderError,
+    status: recorderStatus,
+    blob: recordedBlob,
+  } = recorder;
+  const [voiceOpen, setVoiceOpen] = useState(false);
 
   // Custom-field edit state (keyed by fieldDefinitionId).
   const [localValues, setLocalValues] = useState<Record<string, string | null>>({});
@@ -79,6 +192,10 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const creatingRef = useRef<Promise<number> | null>(null);
   const latestValuesRef = useRef<Record<string, string | null>>({});
   const latestSummaryRef = useRef<Record<string, string | null>>({});
+  // True when there are edits not yet confirmed saved. Guards the close-flush so
+  // an edit made after a prior save (while saveState is still "saved") isn't
+  // dropped when the drawer closes within the debounce window.
+  const dirtyRef = useRef(false);
 
   // Built-in template metadata (translated). Memoised so the editable-key set is stable.
   const translatedFields = useMemo(() => getSummaryFields(t), [t]);
@@ -99,8 +216,25 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       creatingRef.current = null;
       latestValuesRef.current = {};
       latestSummaryRef.current = {};
+      dirtyRef.current = false;
+      setVoiceOpen(false);
+      resetRecorder();
     }
-  }, [open]);
+  }, [open, resetRecorder]);
+
+  // Surface recorder problems (denied mic, unsupported browser) as toasts.
+  useEffect(() => {
+    if (!recorderError) return;
+    if (recorderError === "permission") {
+      toast.error(t("calls.createNote.voice.micDenied"));
+    } else if (recorderError === "unsupported") {
+      toast.error(t("calls.createNote.voice.unsupported"));
+    } else {
+      toast.error(t("calls.createNote.voice.generateError"));
+    }
+    setVoiceOpen(false);
+    resetRecorder();
+  }, [recorderError, resetRecorder, t]);
 
   // The org's active custom fields, mapped into the shape the panel expects
   // (definitions carry no values yet, so every field starts blank).
@@ -124,6 +258,69 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
         })),
     [definitions],
   );
+
+  // The set of fields voice dictation can fill — built-in editable fields the
+  // user may edit plus org custom fields they may edit — each paired with a
+  // decoder so the extracted value is written back in the right encoding.
+  const { voiceFields, voiceDecoders } = useMemo(() => {
+    const fields: VoiceNoteFieldSpec[] = [];
+    const decoders = new Map<string, VoiceDecoder>();
+
+    if (canEditCallDetails) {
+      for (const section of sections) {
+        const builtIns = getSectionFields(section.key, visibleFields ?? [], translatedFields);
+        for (const field of builtIns) {
+          if (!field.isEditable) continue;
+          fields.push({
+            id: field.key,
+            label: field.label,
+            type: mapBuiltinType(field.type),
+            options:
+              field.type === FieldType.Dropdown && field.options?.length
+                ? field.options
+                : undefined,
+            hint: field.placeholder,
+          });
+          decoders.set(field.key, { kind: "builtin" });
+        }
+      }
+    }
+
+    for (const cf of customFieldValues) {
+      const canEdit =
+        cf.editPermission === CustomFieldEditPermission.BOTH ||
+        (cf.editPermission === CustomFieldEditPermission.ADMIN_ONLY && isAdmin) ||
+        (cf.editPermission === CustomFieldEditPermission.COUNSELLOR_ONLY && isCounsellor);
+      if (!canEdit) continue;
+      const options =
+        cf.fieldType === CustomFieldType.BOOLEAN
+          ? ["Yes", "No"]
+          : cf.options?.length
+            ? cf.options.map(o => o.label)
+            : undefined;
+      fields.push({
+        id: cf.fieldDefinitionId,
+        label: cf.name,
+        type: mapCustomType(cf.fieldType),
+        options,
+      });
+      decoders.set(cf.fieldDefinitionId, {
+        kind: "custom",
+        fieldType: cf.fieldType,
+        options: cf.options,
+      });
+    }
+
+    return { voiceFields: fields, voiceDecoders: decoders };
+  }, [
+    sections,
+    visibleFields,
+    translatedFields,
+    customFieldValues,
+    canEditCallDetails,
+    isAdmin,
+    isCounsellor,
+  ]);
 
   // Create the note record once, reusing the in-flight promise for rapid edits.
   const ensureNote = async (): Promise<number> => {
@@ -180,6 +377,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
         values.length > 0 ? upsertValues({ chatId, values }).unwrap() : Promise.resolve(),
         summary ? updateCallSummary({ chatId, data: { summary } }).unwrap() : Promise.resolve(),
       ]);
+      dirtyRef.current = false;
       setSaveState("saved");
     } catch {
       setSaveState("error");
@@ -196,6 +394,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       latestValuesRef.current = next;
       return next;
     });
+    dirtyRef.current = true;
     debouncedPersist();
   };
 
@@ -205,20 +404,103 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       latestSummaryRef.current = next;
       return next;
     });
+    dirtyRef.current = true;
     debouncedPersist();
+  };
+
+  // Write the model's extracted values into the form using each field's decoder,
+  // then persist. Returns how many fields were actually filled.
+  const applyGeneratedValues = (values: { id: string; value: string }[]): number => {
+    const nextSummary = { ...latestSummaryRef.current };
+    const nextLocal = { ...latestValuesRef.current };
+    let filled = 0;
+    for (const { id, value } of values) {
+      const decoder = voiceDecoders.get(id);
+      if (!decoder) continue;
+      if (decoder.kind === "builtin") {
+        nextSummary[id] = value;
+        filled += 1;
+      } else {
+        const encoded = encodeVoiceValue(decoder, value);
+        if (encoded != null) {
+          nextLocal[id] = encoded;
+          filled += 1;
+        }
+      }
+    }
+    if (filled === 0) return 0;
+    latestSummaryRef.current = nextSummary;
+    latestValuesRef.current = nextLocal;
+    dirtyRef.current = true;
+    setSummaryValues(nextSummary);
+    setLocalValues(nextLocal);
+    void persist();
+    return filled;
+  };
+
+  const handleMicClick = () => {
+    if (isGeneratingNotes) return;
+    setVoiceOpen(true);
+    if (recorderStatus === "idle") void startRecorder();
+  };
+
+  const handleDiscardVoice = () => {
+    resetRecorder();
+    setVoiceOpen(false);
+  };
+
+  const handleGenerateNotes = async () => {
+    if (!recordedBlob) return;
+    try {
+      const result = await generateNoteFromAudio({
+        audio: recordedBlob,
+        fields: voiceFields,
+      }).unwrap();
+      const filled = applyGeneratedValues(result.values);
+      resetRecorder();
+      setVoiceOpen(false);
+      if (filled > 0) {
+        toast.success(t("calls.createNote.voice.generated"));
+      } else {
+        toast(t("calls.createNote.voice.nothingExtracted"));
+      }
+    } catch (error) {
+      const message = (error as { data?: { message?: string } })?.data?.message;
+      toast.error(
+        message === "NO_SPEECH_DETECTED"
+          ? t("calls.createNote.voice.noSpeech")
+          : t("calls.createNote.voice.generateError"),
+      );
+    }
   };
 
   // Flush pending edits before the drawer unmounts (useDebounce cancels its
   // timer on unmount, so the last keystroke would otherwise be lost).
   const handleClose = () => {
-    const hasPending =
-      Object.keys(latestValuesRef.current).length > 0 ||
-      Object.keys(latestSummaryRef.current).length > 0;
-    if (hasPending && saveState !== "saved") {
+    // Flush unsaved edits. dirtyRef is cleared only on a successful save, so
+    // this catches edits made after a prior save that the debounce hasn't
+    // persisted yet.
+    if (dirtyRef.current) {
       void persist();
     }
+    resetRecorder();
+    setVoiceOpen(false);
     onClose();
   };
+
+  // Voice is offered only to counsellors who can edit call details and only
+  // when there are fields to fill. The drawer itself is already gated behind
+  // the tenant's scribe-note-creation preference. During limited rollout it is
+  // further restricted to the email allowlist above.
+  const isVoiceAllowlisted =
+    !!user?.email && VOICE_NOTE_EMAIL_ALLOWLIST.includes(user.email.trim().toLowerCase());
+  const canUseVoice =
+    isVoiceAllowlisted && isCounsellor && canEditCallDetails && voiceFields.length > 0;
+  const voiceProcessingMessages = [
+    t("calls.createNote.voice.processing.transcribing"),
+    t("calls.createNote.voice.processing.extracting"),
+    t("calls.createNote.voice.processing.populating"),
+  ];
 
   const saveLabel =
     saveState === "saving"
@@ -300,8 +582,37 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       drawerClassName="h-screen w-[50vw] min-w-[600px] max-w-[95vw]"
       bodyClassName="overflow-y-auto"
       title={noteName ?? t("calls.createNote.title")}
+      headerButtons={[
+        {
+          alt: "voice-note",
+          // lucide Mic is stroke-based and uses currentColor, so the text color
+          // applies. (The @assets/icons MicIcon hardcodes fill="white" and would
+          // be invisible on the white drawer header.)
+          icon: (
+            <Mic
+              className={`h-5 w-5 ${recorder.isRecording ? "text-[#da1e28]" : "text-[#161616]"}`}
+            />
+          ),
+          onClick: handleMicClick,
+          show: canUseVoice,
+          text: t("calls.createNote.voice.record"),
+        },
+      ]}
     >
       <div className="flex flex-col gap-3 font-primary" data-testid="create-note-drawer">
+        {voiceOpen && (
+          <VoiceNotePanel
+            status={recorder.status}
+            durationMs={recorder.durationMs}
+            isGenerating={isGeneratingNotes}
+            generatingMessages={voiceProcessingMessages}
+            onPause={recorder.pause}
+            onResume={recorder.resume}
+            onStop={recorder.stop}
+            onGenerate={handleGenerateNotes}
+            onDiscard={handleDiscardVoice}
+          />
+        )}
         {saveLabel && (
           <span
             className={`inline-flex items-center gap-1.5 font-primary text-xs ${
