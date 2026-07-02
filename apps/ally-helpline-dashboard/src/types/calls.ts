@@ -166,3 +166,40 @@ export interface CreateNoteResponse {
   chatId: number;
   name: string;
 }
+
+/**
+ * A generic, human-readable description of a form field for the voice-note
+ * extractor. The drawer maps both built-in summary fields and org custom
+ * fields onto these types; `id` is the summary key (built-in) or the custom
+ * field definition id, and `options` are the choice labels for selects.
+ */
+export type VoiceNoteFieldType =
+  | "text"
+  | "multiline"
+  | "number"
+  | "select"
+  | "multiselect"
+  | "date"
+  | "boolean";
+
+export interface VoiceNoteFieldSpec {
+  id: string;
+  label: string;
+  type: VoiceNoteFieldType;
+  options?: string[];
+  hint?: string;
+}
+
+export interface GenerateNoteFromAudioInput {
+  audio: Blob;
+  fields: VoiceNoteFieldSpec[];
+  /** Optional ISO-639-1 language hint; omitted lets the model auto-detect. */
+  languageHint?: string;
+}
+
+export interface GenerateNoteFromAudioResponse {
+  /** Plain-text transcript of the dictation (never persisted). */
+  transcript: string;
+  /** Values the model could fill (value is a human-readable string). */
+  values: { id: string; value: string }[];
+}

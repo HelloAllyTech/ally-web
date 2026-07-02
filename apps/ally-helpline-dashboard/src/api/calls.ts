@@ -21,6 +21,8 @@ import {
   ProcessAudioUploadInput,
   ProcessAudioUploadResponse,
   CreateNoteResponse,
+  GenerateNoteFromAudioInput,
+  GenerateNoteFromAudioResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -120,6 +122,43 @@ const callsAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Transcribes a dictated audio recording and extracts scribe-note field
+     * values from it. The audio is processed server-side in memory and never
+     * stored. Sent as multipart/form-data; fetchBaseQuery passes the FormData
+     * body through untouched so the browser sets the multipart boundary.
+     * @param {GenerateNoteFromAudioInput} params - Audio blob + target field specs
+     * @returns {Promise<GenerateNoteFromAudioResponse>} Transcript + extracted values
+     */
+    generateNoteFromAudio: builder.mutation<
+      GenerateNoteFromAudioResponse,
+      GenerateNoteFromAudioInput
+    >({
+      query: ({ audio, fields, languageHint }) => {
+        // Name the part with an extension matching the recorded container so
+        // the server-side STT (which infers format from the filename) accepts
+        // it — Safari records audio/mp4, Chromium audio/webm.
+        const extByType: Record<string, string> = {
+          "audio/webm": "webm",
+          "audio/ogg": "ogg",
+          "audio/mp4": "mp4",
+          "audio/mpeg": "mp3",
+          "audio/wav": "wav",
+        };
+        const base = (audio.type || "audio/webm").split(";")[0];
+        const ext = extByType[base] ?? "webm";
+        const formData = new FormData();
+        formData.append("audio", audio, `dictation.${ext}`);
+        formData.append("fields", JSON.stringify(fields));
+        if (languageHint) formData.append("languageHint", languageHint);
+        return {
+          url: ApiEndpoints.CALLS.GENERATE_NOTE_FROM_AUDIO,
+          method: HttpMethod.POST,
+          body: formData,
+        };
+      },
+    }),
+
+    /**
      * Cancels a pending/active audio upload session by chat id.
      * Useful for aborting client-side uploads and cleaning server resources.
      * @param {CancelAudioUploadInput} params - Object with chatId to cancel
@@ -185,6 +224,7 @@ export const {
   useGetChatTypesQuery,
   useGetAudioUploadUrlMutation,
   useCreateNoteMutation,
+  useGenerateNoteFromAudioMutation,
   useCancelAudioUploadMutation,
   useDeleteCallLogMutation,
   useProcessAudioUploadMutation,
