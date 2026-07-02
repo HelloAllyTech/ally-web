@@ -14,19 +14,20 @@ const BUCKET_TITLE: Record<string, string> = {
   month: "Month",
 };
 
-/** Human labels + colors for the summaryStatus outcome donut. */
+// Human labels for the summaryStatus outcome donut. PENDING + IN_PROGRESS are
+// both mapped to "Processing" so the donut's categories line up 1:1 with the
+// KPI tiles above (which merge them into a single "Processing" count).
 const OUTCOME_LABELS: Record<string, string> = {
   SUCCESS: "Summarised",
   FAILED: "Failed",
-  IN_PROGRESS: "In progress",
-  PENDING: "Pending",
+  IN_PROGRESS: "Processing",
+  PENDING: "Processing",
   NO_AUDIO: "No audio",
 };
 const OUTCOME_COLORS: Record<string, string> = {
   Summarised: PALETTE.green,
   Failed: PALETTE.red,
-  "In progress": PALETTE.blue,
-  Pending: PALETTE.gold,
+  Processing: PALETTE.gold,
   "No audio": PALETTE.gray,
 };
 /** Note-mode labels (summary style — independent of how audio was captured). */
@@ -70,13 +71,17 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
       })),
     [overview.data],
   );
-  const outcomeData = useMemo(
-    () =>
-      (overview.data?.outcomeBreakdown ?? [])
-        .filter(o => o.count > 0)
-        .map(o => ({ group: OUTCOME_LABELS[o.key] ?? o.key, value: o.count })),
-    [overview.data],
-  );
+  // Aggregate by mapped label so PENDING + IN_PROGRESS collapse into one
+  // "Processing" slice — matching the KPI tiles above exactly.
+  const outcomeData = useMemo(() => {
+    const byLabel = new Map<string, number>();
+    for (const o of overview.data?.outcomeBreakdown ?? []) {
+      if (o.count <= 0) continue;
+      const label = OUTCOME_LABELS[o.key] ?? o.key;
+      byLabel.set(label, (byLabel.get(label) ?? 0) + o.count);
+    }
+    return Array.from(byLabel, ([group, value]) => ({ group, value }));
+  }, [overview.data]);
   // All-sessions capture method (how the audio was recorded), grouped by
   // provider — NOT note mode. This is the honest upload-vs-live split and is
   // consistent with the "Failures by capture method" chart.
