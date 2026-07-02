@@ -40,7 +40,8 @@
     "test:docker:coverage": "./test-docker.sh coverage",
     "test:docker:watch": "./test-docker.sh watch",
     "test:docker:clean": "./test-docker.sh clean",
-    "i18n:sync": "node scripts/i18n-sync.mjs"
+    "i18n:sync": "node scripts/i18n-sync.mjs",
+    "i18n:publish": "node scripts/i18n-publish.mjs"
   },
   "private": true,
   "dependencies": {
