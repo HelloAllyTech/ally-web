@@ -88,7 +88,8 @@
       "roleplayLogs": "Roleplay Logs",
       "statistics": "Statistics",
       "search": "Search",
-      "organizationSettings": "Org. Settings"
+      "organizationSettings": "Org. Settings",
+      "organizationSettingsTag": "Testing"
     },
     "logout": {
       "title": {

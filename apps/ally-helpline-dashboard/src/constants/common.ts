@@ -134,6 +134,17 @@ export const TAG_TYPES = {
   CUSTOM_FIELD_VALUES: "CustomFieldValues",
   TOOLTIPS: "Tooltips",
   SETTINGS: "Settings",
+  // Org. Settings screen (own tenant) resources
+  OWN_TENANT: "OwnTenant",
+  SUMMARY_SECTIONS: "SummarySections",
+  CUSTOM_FIELD_TYPES: "CustomFieldTypes",
+  CUSTOM_FIELDS_ENABLED: "CustomFieldsEnabled",
+  SCRIBE_NOTE_CREATION_ENABLED: "ScribeNoteCreationEnabled",
+  // Org. Settings access-management tabs (own tenant scenario/path/case/badge)
+  ORG_SCENARIOS: "OrgScenarios",
+  ORG_SCENARIO_PATHS: "OrgScenarioPaths",
+  ORG_CASES: "OrgCases",
+  ORG_BADGES: "OrgBadges",
 };
 
 export const SORT_ORDER = {
