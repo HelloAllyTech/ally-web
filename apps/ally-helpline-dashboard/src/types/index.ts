@@ -18,3 +18,4 @@ export * from "./reviews";
 export * from "./chat";
 export * from "./customFields";
 export * from "./tooltip";
+export * from "./organizationSettings";

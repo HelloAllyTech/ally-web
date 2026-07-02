@@ -6,6 +6,7 @@ import {
   Leaderboard,
   ReviewNavIcon,
   Badge,
+  ManageAccount,
 } from "@assets";
 
 import { Permissions } from "./permissions";
@@ -32,6 +33,7 @@ export const ROUTES = {
   STRESS_BUSTER: "/stress-buster",
   ANALYTICS: "/analytics",
   SETTINGS: "/settings",
+  ORGANIZATION_SETTINGS: "/organization-settings",
   SUMMARY: "/summary/:chatId",
   SEARCH: "/search",
   LEARN: "/learn",
@@ -120,5 +122,18 @@ export const navBarOptions = [
     path: ROUTES.ANALYTICS,
     activePages: [],
     permissions: [Permissions.VIEW_ANALYTICS_DASHBOARD],
+  },
+  {
+    id: TabId.ORGANIZATION_SETTINGS,
+    title: "Org. Settings",
+    key: "nav.tabs.organizationSettings",
+    // Temporary "Testing" pill flagging that this tab is still gated/in-testing.
+    tagKey: "nav.tabs.organizationSettingsTag",
+    Icon: ManageAccount,
+    path: ROUTES.ORGANIZATION_SETTINGS,
+    activePages: [],
+    // Not permission-gated: visibility is decided by canViewOrganizationSettings
+    // (ADMIN role + temporary email allowlist), handled in NavSideBar.
+    permissions: [] as Permissions[],
   },
 ];

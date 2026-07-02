@@ -14,6 +14,7 @@ export interface TabProps {
   Icon: FC<SVGProps<SVGSVGElement>>;
   title: string;
   tKey?: string;
+  tagKey?: string;
   activeTab: TabId;
   onClick: () => void;
   isExpanded: boolean;

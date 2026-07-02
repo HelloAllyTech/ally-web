@@ -26,6 +26,7 @@ import {
   Leaderboard,
   Review,
   AchievementsViewAll,
+  OrganizationSettings,
 } from "@pages";
 import { ReviewDetails } from "@pages/review-details/ReviewDetails";
 import { setAvailableChatTypes, unauthenticate } from "@reducer";
@@ -268,6 +269,8 @@ const PrivateRouteLayout: FC = () => {
             />
           }
         />
+        {/* Access is enforced inside the page (ADMIN role + temporary allowlist). */}
+        <Route path={ROUTES.ORGANIZATION_SETTINGS} element={<OrganizationSettings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </NavbarWrapper>

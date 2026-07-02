@@ -16,6 +16,7 @@ import {
   Permissions,
   TooltipLocation,
   canPickUiTheme,
+  canViewOrganizationSettings,
 } from "@constants";
 import { useUser } from "@hooks";
 
@@ -49,6 +50,7 @@ const Tab: FC<TabProps> = ({
   Icon,
   title,
   tKey,
+  tagKey,
   activeTab,
   isExpanded,
   onClick,
@@ -76,14 +78,26 @@ const Tab: FC<TabProps> = ({
       </div>
 
       {isExpanded && (
-        <div className="flex items-center justify-between flex-1">
-          <div
-            data-testid={`nav-tab-title-${id}`}
-            className={`${
-              activeTab === id ? "text-typography-900 font-[500]" : "text-typography-800 font-[400]"
-            } font-primary text-lg`}
-          >
-            {tKey ? t(tKey) : title}
+        <div className="flex items-center justify-between flex-1 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div
+              data-testid={`nav-tab-title-${id}`}
+              className={`${
+                activeTab === id
+                  ? "text-typography-900 font-[500]"
+                  : "text-typography-800 font-[400]"
+              } font-primary text-lg`}
+            >
+              {tKey ? t(tKey) : title}
+            </div>
+            {tagKey && (
+              <span
+                data-testid={`nav-tab-tag-${id}`}
+                className="flex-shrink-0 rounded-full bg-warning-50 px-2 py-[1px] text-[10px] font-semibold uppercase leading-none tracking-wide text-warning-700"
+              >
+                {t(tagKey)}
+              </span>
+            )}
           </div>
           {badgeCount !== undefined && badgeCount > 0 && (
             <NotificationBadge count={badgeCount} isExpanded />
@@ -115,6 +129,12 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState<boolean>(false);
   const permittedTabs = navBarOptions.filter(tab => {
+    // Organization Settings is gated by ADMIN role + a temporary email
+    // allowlist, not by a permission (see canViewOrganizationSettings).
+    if (tab.id === TabId.ORGANIZATION_SETTINGS) {
+      return canViewOrganizationSettings(user);
+    }
+
     // Check if user has permission for this tab
     const hasPermission =
       !tab.permissions || permissions?.some(permission => tab.permissions.includes(permission));
@@ -192,13 +212,14 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         className="flex-1 flex-col gap-1 m-2 border-t border-t-border-light pt-3"
         data-testid="nav-sidebar-tabs"
       >
-        {permittedTabs?.map(({ id, Icon, title, path, key: translationKey }: any) => {
+        {permittedTabs?.map(({ id, Icon, title, path, key: translationKey, tagKey }: any) => {
           const tab = (
             <Tab
               id={id}
               Icon={Icon}
               title={title}
               tKey={translationKey}
+              tagKey={tagKey}
               activeTab={activeTab}
               isExpanded={isExpanded}
               onClick={() => onTabClick(path)}
