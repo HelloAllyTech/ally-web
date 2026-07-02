@@ -2,11 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
-import { AgentBuilderV2Field, useGenerateAgentBuilderV2FieldMutation } from "@api";
-import { applyAgentBuilderV2Field } from "@utils";
+import { AgentBuilderField, useGenerateAgentBuilderFieldMutation } from "@api";
+import { applyAgentBuilderField } from "@utils";
 
 /**
- * Drives Agent Builder Copilot V2's parallel field generation.
+ * Drives Agent Builder Copilot's parallel field generation.
  *
  * On `start`, it fires one LLM call PER target Basic Settings field concurrently
  * (via the abortable RTK mutation trigger). As each returns it parses + writes
@@ -20,26 +20,26 @@ import { applyAgentBuilderV2Field } from "@utils";
  * after the batch settles.
  */
 
-export type V2TaskStatus = "active" | "done" | "empty" | "error" | "aborted";
+export type GenerationTaskStatus = "active" | "done" | "empty" | "error" | "aborted";
 
-export interface V2Task {
-  field: AgentBuilderV2Field;
+export interface GenerationTask {
+  field: AgentBuilderField;
   /** Human label shown in the chat feed. */
   label: string;
-  status: V2TaskStatus;
+  status: GenerationTaskStatus;
   error?: string;
 }
 
-export type V2Phase = "idle" | "running" | "done" | "aborted";
+export type GenerationPhase = "idle" | "running" | "done" | "aborted";
 
-export interface V2GenerationInputs {
+export interface GenerationInputs {
   actorDescription: string;
   competency?: string;
   optimisationGoals?: string;
 }
 
 /** The fields generated in parallel, in the order shown in the feed. */
-const V2_FIELD_PLAN: { field: AgentBuilderV2Field; label: string }[] = [
+const FIELD_PLAN: { field: AgentBuilderField; label: string }[] = [
   { field: "role_instruction", label: "Role instruction" },
   { field: "title", label: "Title" },
   { field: "challenge_description", label: "Challenge description" },
@@ -54,10 +54,10 @@ const errorMessage = (err: unknown): string => {
   return anyErr?.data?.message || anyErr?.error || anyErr?.message || "Generation failed";
 };
 
-export const useAgentBuilderV2Generation = (formMethods: UseFormReturn<any>) => {
-  const [trigger] = useGenerateAgentBuilderV2FieldMutation();
-  const [phase, setPhase] = useState<V2Phase>("idle");
-  const [tasks, setTasks] = useState<V2Task[]>([]);
+export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
+  const [trigger] = useGenerateAgentBuilderFieldMutation();
+  const [phase, setPhase] = useState<GenerationPhase>("idle");
+  const [tasks, setTasks] = useState<GenerationTask[]>([]);
 
   // In-flight mutation handles (each exposes `.abort()`) + a flag the resolve/
   // reject callbacks read to stop applying once the user has aborted.
@@ -68,22 +68,22 @@ export const useAgentBuilderV2Generation = (formMethods: UseFormReturn<any>) => 
   // `phase` is stale within the same tick, so a ref is required).
   const runningRef = useRef(false);
 
-  const patchTask = useCallback((field: AgentBuilderV2Field, patch: Partial<V2Task>) => {
+  const patchTask = useCallback((field: AgentBuilderField, patch: Partial<GenerationTask>) => {
     setTasks(prev => prev.map(t => (t.field === field ? { ...t, ...patch } : t)));
   }, []);
 
   const start = useCallback(
-    (inputs: V2GenerationInputs) => {
+    (inputs: GenerationInputs) => {
       // Ignore re-entrant calls while a batch is already running so we never
       // reset the abort flag or lose the running batch's abort handles.
       if (runningRef.current) return;
       runningRef.current = true;
       abortedRef.current = false;
-      setTasks(V2_FIELD_PLAN.map(t => ({ ...t, status: "active" as V2TaskStatus })));
+      setTasks(FIELD_PLAN.map(t => ({ ...t, status: "active" as GenerationTaskStatus })));
       setPhase("running");
 
       const handles: { abort: () => void }[] = [];
-      const runs = V2_FIELD_PLAN.map(({ field }) => {
+      const runs = FIELD_PLAN.map(({ field }) => {
         const handle = trigger({
           field,
           actorDescription: inputs.actorDescription,
@@ -98,7 +98,7 @@ export const useAgentBuilderV2Generation = (formMethods: UseFormReturn<any>) => 
           .unwrap()
           .then(res => {
             if (abortedRef.current) return;
-            const applied = applyAgentBuilderV2Field(field, res.value, formMethods, {
+            const applied = applyAgentBuilderField(field, res.value, formMethods, {
               validate: false,
             });
             patchTask(field, { status: applied ? "done" : "empty" });

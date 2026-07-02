@@ -108,17 +108,12 @@ export const ApiEndpoints = {
     GET_AUTOFILL_MODELS: "/v1/learn/models",
     GENERATE_FIELD: "/v1/learn/scenarios/generate-field",
     ENHANCE_FIELD: "/v1/learn/scenarios/enhance-field",
-    GENERATE_AGENT_PROMPT: "/v1/learn/agent-builder/generate-system-prompt",
-    GENERATE_AGENT_BUILDER_V2_FIELD: "/v1/learn/agent-builder/v2/generate-field",
+    GENERATE_AGENT_BUILDER_FIELD: "/v1/learn/agent-builder/generate-field",
     COMPETENCIES: "/v1/learn/competencies",
     COMPETENCY_BY_ID: (id: string) => `/v1/learn/competencies/${id}`,
     COMPETENCY_BEHAVIOURS: (id: string) => `/v1/learn/competencies/${id}/behaviours`,
     OPTIMISATION_GOALS: "/v1/learn/optimisation-goals",
     OPTIMISATION_GOAL_BY_ID: (id: string) => `/v1/learn/optimisation-goals/${id}`,
-    START_COPILOT_RUN: "/v1/learn/copilot/runs",
-    GET_COPILOT_RUN: (runId: string) => `/v1/learn/copilot/runs/${runId}`,
-    CANCEL_COPILOT_RUN: (runId: string) => `/v1/learn/copilot/runs/${runId}/cancel`,
-    REVISE_COPILOT_RUN: (runId: string) => `/v1/learn/copilot/runs/${runId}/revise`,
   },
 
   CHARACTERS: {

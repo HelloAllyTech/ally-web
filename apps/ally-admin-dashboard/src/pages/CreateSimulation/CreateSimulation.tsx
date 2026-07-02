@@ -21,8 +21,7 @@ import {
 import { ArrowDown, WarningAlt } from "@assets";
 import {
   ActionConfirmationPopup,
-  AgentBuilderCopilot,
-  AgentBuilderCopilotV2Wizard,
+  AgentBuilderCopilotWizard,
   AppTooltip,
   Button,
   CreateSimulationSubSection,
@@ -981,23 +980,9 @@ export const CreateSimulation: FC = () => {
             }}
           />,
         );
-      case stepIds.agentBuilderCopilot:
-        return renderStep(
-          <AgentBuilderCopilot
-            formMethods={formMethods}
-            simulationId={simulationId}
-            onApplied={() => {
-              // Switching INTO basic-settings is ungated (the mandatory-field
-              // gate only fires when leaving it), so jump straight there to
-              // show the auto-filled values.
-              setCurrentStep(stepIds.basicSettings);
-              containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          />,
-        );
-      case stepIds.agentBuilderCopilotV2: {
-        // V2 — split the canvas into two equal halves. The right half is a
-        // live mirror of the Basic Settings tab: it renders the EXACT same
+      case stepIds.agentBuilderCopilot: {
+        // Split the canvas into two equal halves. The left half is a live
+        // mirror of the Basic Settings tab: it renders the EXACT same
         // CreateSimulationSubSection bound to the SAME shared `formMethods`
         // instance, so it's the same form surfaced in two places. react-hook-
         // form holds a single source of truth, so edits here and on the Basic
@@ -1015,7 +1000,7 @@ export const CreateSimulation: FC = () => {
             {/* Right half — chat-style agent-builder wizard. Scrolls on its own
                 (the wizard pins its composer and scrolls the chat internally). */}
             <div className="min-h-0 h-full overflow-hidden border-l border-border-light pl-6">
-              <AgentBuilderCopilotV2Wizard formMethods={formMethods} />
+              <AgentBuilderCopilotWizard formMethods={formMethods} />
             </div>
           </div>,
         );
@@ -1268,10 +1253,6 @@ export const CreateSimulation: FC = () => {
                   id: stepIds.agentBuilderCopilot,
                   title: en.simulation.agentBuilder.tabTitle,
                 },
-                {
-                  id: stepIds.agentBuilderCopilotV2,
-                  title: en.simulation.agentBuilder.tabTitleV2,
-                },
               ]
             : []),
           ...StepperList,
@@ -1287,11 +1268,12 @@ export const CreateSimulation: FC = () => {
           (~Notion's editor width) and centered so whitespace is balanced on
           both sides instead of stretching fields edge-to-edge. */}
       <div ref={containerRef} className="flex-1 overflow-y-auto custom-scrollbar">
-        {/* The V2 tab is a full-width split screen, so it opts out of the
-            centered, max-width reading column the other tabs use. */}
+        {/* The Agent Builder Copilot tab is a full-width split screen, so it
+            opts out of the centered, max-width reading column the other tabs
+            use. */}
         <div
           className={
-            currentStep === stepIds.agentBuilderCopilotV2
+            currentStep === stepIds.agentBuilderCopilot
               ? "w-full h-full min-h-0 py-6"
               : "w-full max-w-[1040px] mx-auto py-6"
           }

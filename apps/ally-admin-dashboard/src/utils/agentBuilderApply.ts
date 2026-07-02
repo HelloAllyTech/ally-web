@@ -3,18 +3,18 @@ import { UseFormReturn } from "react-hook-form";
 import { FORM_FIELD_IDS, GENDER_OPTIONS } from "@constants";
 
 import type {
-  AgentBuilderV2Field,
-  AgentBuilderV2KnowledgeSource,
-  AgentBuilderV2Persona,
+  AgentBuilderField,
+  AgentBuilderKnowledgeSource,
+  AgentBuilderPersona,
 } from "@api";
 
 /**
- * Applies ONE Agent Builder Copilot V2 field result to the shared react-hook-form
+ * Applies ONE Agent Builder Copilot field result to the shared react-hook-form
  * instance, so each parallel generation paints into the mirrored Basic Settings
- * form as soon as it returns. Mirrors the guards in agentBuilderOutput.ts
- * (length caps, gender enum allow-list) but takes a `validate` flag: streamed
- * writes pass `false` to avoid tripping the 10s autosave + mandatory-field
- * revalidation on every field; the wizard runs one `trigger()` at the end.
+ * form as soon as it returns. Guards the writes (length caps, gender enum
+ * allow-list) and takes a `validate` flag: streamed writes pass `false` to
+ * avoid tripping the 10s autosave + mandatory-field revalidation on every
+ * field; the wizard runs one `trigger()` at the end.
  *
  * Returns a human-readable label for the applied field, or null when the value
  * was empty / unusable (so the chat feed can mark that task as skipped).
@@ -29,8 +29,7 @@ const MAX_LENGTHS = {
 // Computed on call, NOT at module load: reading `@constants` at the top level
 // forces it to fully initialize the moment this module is imported, which is
 // fragile under the utils/constants/components import cycle (and module mocking
-// in tests) where the consts can transiently be undefined. See the same note in
-// agentBuilderOutput.ts.
+// in tests) where the consts can transiently be undefined.
 const genderValues = (): Set<string> => new Set((GENDER_OPTIONS ?? []).map(o => o.value));
 
 const isNonEmptyString = (v: unknown): v is string =>
@@ -44,8 +43,8 @@ const uid = (): string =>
     ? crypto.randomUUID()
     : `ks-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-export const applyAgentBuilderV2Field = (
-  field: AgentBuilderV2Field,
+export const applyAgentBuilderField = (
+  field: AgentBuilderField,
   value: unknown,
   formMethods: UseFormReturn<any>,
   options?: { validate?: boolean },
@@ -75,7 +74,7 @@ export const applyAgentBuilderV2Field = (
     }
 
     case "knowledge_sources": {
-      const items = Array.isArray(value) ? (value as AgentBuilderV2KnowledgeSource[]) : [];
+      const items = Array.isArray(value) ? (value as AgentBuilderKnowledgeSource[]) : [];
       const rows = items
         .filter(k => isNonEmptyString(k?.title) && isNonEmptyString(k?.content))
         .map(k => ({ id: uid(), title: k.title.trim(), content: k.content.trim() }));
@@ -85,7 +84,7 @@ export const applyAgentBuilderV2Field = (
     }
 
     case "persona": {
-      const p = (value ?? {}) as AgentBuilderV2Persona;
+      const p = (value ?? {}) as AgentBuilderPersona;
       let touched = false;
       if (isNonEmptyString(p.name)) {
         set("name", p.name.trim());
