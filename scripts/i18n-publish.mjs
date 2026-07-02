@@ -43,7 +43,8 @@ const main = async () => {
     throw new Error(`ci-sync failed (HTTP ${res.status}): ${text}`);
   }
 
-  const manifest = await res.json();
+  const text = await res.text();
+  const manifest = text ? JSON.parse(text) : null;
   if (!manifest) {
     console.log("Draft already in sync — nothing to publish.");
     return;
