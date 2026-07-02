@@ -25,15 +25,34 @@ const FIELD_TYPE_LABELS: Record<CustomFieldType, string> = {
   [CustomFieldType.MULTI_SELECT]: "Multi select",
   [CustomFieldType.DATE]: "Date",
   [CustomFieldType.TEXT]: "Text",
+  [CustomFieldType.MULTILINE_TEXT]: "Multiline text",
   [CustomFieldType.NUMBER]: "Number",
   [CustomFieldType.BOOLEAN]: "Yes / No",
 };
+
+// Types an admin can pick when creating a Manual field. AI-fill fields are
+// locked to TEXT or MULTILINE_TEXT (see the fill-mode radio's onChange).
+const MANUAL_SELECTABLE_TYPES = Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[];
 
 const EDIT_PERMISSION_LABELS: Record<CustomFieldEditPermission, string> = {
   [CustomFieldEditPermission.ADMIN_ONLY]: "Admin only",
   [CustomFieldEditPermission.COUNSELLOR_ONLY]: "Counsellor only",
   [CustomFieldEditPermission.BOTH]: "Both",
+  // Not selectable when creating a field (see the "Who can edit" <select>
+  // below) — only ever set on a migrated built-in field. Still needs a label
+  // so an existing READ_ONLY field's row/dropdown renders correctly rather
+  // than showing a blank/undefined value.
+  [CustomFieldEditPermission.READ_ONLY]: "Read only (system)",
 };
+
+// Excludes READ_ONLY: a super admin should never set this on a *new* field
+// via this form — it only makes sense on the fields migrated from the old
+// built-in system, seeded directly by the backend. An existing READ_ONLY
+// field keeps working correctly here (see openEdit/handleSave), it's just
+// not offered as a choice going forward.
+const SELECTABLE_EDIT_PERMISSIONS = (
+  Object.keys(EDIT_PERMISSION_LABELS) as CustomFieldEditPermission[]
+).filter(p => p !== CustomFieldEditPermission.READ_ONLY);
 
 const TYPES_WITH_OPTIONS = [CustomFieldType.SINGLE_SELECT, CustomFieldType.MULTI_SELECT];
 
@@ -107,6 +126,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
   const [showInTable, setShowInTable] = useState(true);
   const [fillMode, setFillMode] = useState<CustomFieldFillMode>(CustomFieldFillMode.MANUAL);
   const [aiInstruction, setAiInstruction] = useState("");
+  const [enhanceable, setEnhanceable] = useState(false);
   const [options, setOptions] = useState<OptionRow[]>([newOptionRow(0)]);
 
   const resetForm = () => {
@@ -117,6 +137,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
     setShowInTable(true);
     setFillMode(CustomFieldFillMode.MANUAL);
     setAiInstruction("");
+    setEnhanceable(false);
     setOptions([newOptionRow(0)]);
   };
 
@@ -133,6 +154,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
     setShowInTable(def.showInTable);
     setFillMode(def.fillMode);
     setAiInstruction(def.aiInstruction ?? "");
+    setEnhanceable(def.enhanceable ?? false);
     setOptions(
       def.options && def.options.length > 0
         ? def.options.map(o => ({ id: o.id, label: o.label, order: o.order }))
@@ -165,8 +187,13 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
       sectionKey,
       editPermission,
       showInTable,
-      fillMode,
+      // The backend rejects any attempt to set fillMode: SYSTEM directly —
+      // it's reserved for internally-seeded fields. Renaming/re-sectioning a
+      // migrated field must not resend its own current fillMode back, or the
+      // save would be rejected outright.
+      fillMode: isEditingSystemField ? undefined : fillMode,
       aiInstruction: aiInstruction.trim() || undefined,
+      enhanceable,
       options: TYPES_WITH_OPTIONS.includes(selectedType)
         ? options
             .filter(o => o.label.trim())
@@ -209,6 +236,12 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
 
   const isSaving = isCreating || isUpdating;
   const isEditing = Boolean(modal.editing);
+  // Migrated built-in field (Call ID, Call Duration, etc.) — computed live by
+  // the backend, never AI-filled or manually entered. Its fillMode can't be
+  // changed (see handleSave), so hide the controls that would suggest it can.
+  const isEditingSystemField = modal.editing?.fillMode === CustomFieldFillMode.SYSTEM;
+  const isNarrativeType =
+    selectedType === CustomFieldType.TEXT || selectedType === CustomFieldType.MULTILINE_TEXT;
 
   return (
     <div className="mt-4">
@@ -218,7 +251,6 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
           <Button
             variant={ButtonVariant.SECONDARY}
             onClick={openCreate}
-            disabled={definitions.length >= 3}
             className="text-xs h-8 px-3"
           >
             + Add custom field
@@ -330,13 +362,13 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                             onChange={() => {
                               setFillMode(mode);
                               // AI fill is only meaningful for free-text fields,
-                              // so lock the field type to TEXT when AI is picked.
-                              // Switching back to Manual restores the first
-                              // enabled type so the user can pick again.
+                              // so offer just Text/Multiline. Switching back to
+                              // Manual restores the first enabled type.
                               if (mode === CustomFieldFillMode.AI) {
                                 setSelectedType(CustomFieldType.TEXT);
                               } else {
                                 setAiInstruction("");
+                                setEnhanceable(false);
                                 setSelectedType(
                                   (enabledTypes[0] as CustomFieldType) ?? CustomFieldType.TEXT,
                                 );
@@ -352,38 +384,36 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                   </div>
                 </div>
 
-                {/* Field type — only shown for Manual. AI fill always uses
-                    TEXT (already set on the fill-mode radio onChange) so the
-                    type picker is skipped to keep the flow short. */}
-                {fillMode !== CustomFieldFillMode.AI && (
-                  <div className="flex flex-col gap-2">
-                    <p className="text-sm text-typography-600">Select field type</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(Object.keys(FIELD_TYPE_LABELS) as CustomFieldType[])
-                        .filter(type => enabledTypes.includes(type))
-                        .map(type => (
-                          <label
-                            key={type}
-                            className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer text-sm ${
-                              selectedType === type
-                                ? "border-primary-500 bg-primary-50 text-primary-700"
-                                : "border-border-light text-typography-700"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={`${formId}-type`}
-                              value={type}
-                              checked={selectedType === type}
-                              onChange={() => setSelectedType(type)}
-                              className="accent-primary-500"
-                            />
-                            {FIELD_TYPE_LABELS[type]}
-                          </label>
-                        ))}
-                    </div>
+                {/* Field type. AI fill only offers Text/Multiline (narrative
+                    content); Manual offers every enabled type. */}
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-typography-600">Select field type</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(fillMode === CustomFieldFillMode.AI
+                      ? [CustomFieldType.TEXT, CustomFieldType.MULTILINE_TEXT]
+                      : MANUAL_SELECTABLE_TYPES.filter(type => enabledTypes.includes(type))
+                    ).map(type => (
+                      <label
+                        key={type}
+                        className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer text-sm ${
+                          selectedType === type
+                            ? "border-primary-500 bg-primary-50 text-primary-700"
+                            : "border-border-light text-typography-700"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name={`${formId}-type`}
+                          value={type}
+                          checked={selectedType === type}
+                          onChange={() => setSelectedType(type)}
+                          className="accent-primary-500"
+                        />
+                        {FIELD_TYPE_LABELS[type]}
+                      </label>
+                    ))}
                   </div>
-                )}
+                </div>
 
                 <div className="flex justify-end mt-2">
                   <Button onClick={() => setModal(m => ({ ...m, step: 2 }))}>Next</Button>
@@ -467,7 +497,11 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                   </select>
                 </div>
 
-                {/* Who can edit */}
+                {/* Who can edit. READ_ONLY is excluded from selection here (see
+                    SELECTABLE_EDIT_PERMISSIONS) — it's shown as an option only
+                    when the field being edited already has it, so a migrated
+                    field's dropdown displays its real value instead of
+                    appearing blank. */}
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-medium text-typography-700">Who can edit</label>
                   <select
@@ -475,7 +509,10 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                     onChange={e => setEditPermission(e.target.value as CustomFieldEditPermission)}
                     className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 bg-white"
                   >
-                    {(Object.keys(EDIT_PERMISSION_LABELS) as CustomFieldEditPermission[]).map(p => (
+                    {(editPermission === CustomFieldEditPermission.READ_ONLY
+                      ? (Object.keys(EDIT_PERMISSION_LABELS) as CustomFieldEditPermission[])
+                      : SELECTABLE_EDIT_PERMISSIONS
+                    ).map(p => (
                       <option key={p} value={p}>
                         {EDIT_PERMISSION_LABELS[p]}
                       </option>
@@ -499,8 +536,9 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                 </div>
 
                 {/* AI fill mode toggle — shown in edit only; create flow picks
-                    this on step 1 so it's already locked in by here. */}
-                {isEditing && selectedType === CustomFieldType.TEXT && (
+                    this on step 1 so it's already locked in by here. Hidden
+                    for a migrated SYSTEM field (fillMode can't be changed). */}
+                {isEditing && !isEditingSystemField && isNarrativeType && (
                   <div className="flex items-center justify-between rounded-lg border border-border-light px-3 py-2">
                     <div>
                       <p className="text-sm font-medium text-typography-700">AI fill mode</p>
@@ -518,25 +556,43 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                   </div>
                 )}
 
-                {/* AI instruction */}
-                {selectedType === CustomFieldType.TEXT && fillMode === CustomFieldFillMode.AI && (
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-typography-700">
-                      AI instruction{" "}
-                      <span className="text-typography-400 font-normal">(optional)</span>
-                    </label>
-                    <textarea
-                      maxLength={500}
-                      rows={2}
-                      value={aiInstruction}
-                      onChange={e => setAiInstruction(e.target.value)}
-                      placeholder='e.g. "Extract the primary diagnosis mentioned in the call"'
-                      className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 resize-none"
-                    />
-                    <p className="text-xs text-typography-400 text-right">
-                      {aiInstruction.length}/500
-                    </p>
-                  </div>
+                {/* AI instruction + Enhance toggle */}
+                {isNarrativeType && fillMode === CustomFieldFillMode.AI && (
+                  <>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-typography-700">
+                        AI instruction{" "}
+                        <span className="text-typography-400 font-normal">(optional)</span>
+                      </label>
+                      <textarea
+                        maxLength={500}
+                        rows={2}
+                        value={aiInstruction}
+                        onChange={e => setAiInstruction(e.target.value)}
+                        placeholder='e.g. "Extract the primary diagnosis mentioned in the call"'
+                        className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 resize-none"
+                      />
+                      <p className="text-xs text-typography-400 text-right">
+                        {aiInstruction.length}/500
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border border-border-light px-3 py-2">
+                      <div>
+                        <p className="text-sm font-medium text-typography-700">
+                          Show "Enhance" button
+                        </p>
+                        <p className="text-xs text-typography-400">
+                          Lets counsellors ask AI to rewrite this field's text
+                        </p>
+                      </div>
+                      <ToggleSwitch
+                        enabled={enhanceable}
+                        onChange={setEnhanceable}
+                        label="Show Enhance button"
+                      />
+                    </div>
+                  </>
                 )}
 
                 <div className="flex justify-end gap-2 mt-2">

@@ -5,6 +5,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { DropdownField } from "@ally-ui-mono/ui-shared";
@@ -12,7 +13,7 @@ import { useGetCustomFieldValuesQuery } from "@api";
 import TextField from "@components/text-field";
 import { Permissions } from "@constants";
 import { carbonField } from "@constants/carbonFieldStyles";
-import { useCustomFieldsEnabled } from "@hooks";
+import { useCustomFieldsEnabled, useEnhance } from "@hooks";
 import { RootState } from "@store";
 import {
   CustomFieldEditPermission,
@@ -20,6 +21,11 @@ import {
   CustomFieldValue,
   SingleSelectOption,
 } from "@types";
+
+import {
+  formatSystemFieldDisplayValue,
+  isLocaleFormattedSeedKey,
+} from "./systemFieldDisplayFormatter";
 
 interface CustomFieldValuesPanelProps {
   chatId: number;
@@ -45,6 +51,8 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   onValueChange,
   variant = "default",
 }) => {
+  const { t } = useTranslation();
+  const { EnhanceButton } = useEnhance();
   const { permissions } = useSelector((state: RootState) => state.user);
   const isAdmin = permissions?.includes(Permissions.MANAGE_CUSTOM_FIELD_DEFINITIONS);
   const effectiveIsCounsellor = isCounsellor ?? !isAdmin;
@@ -114,18 +122,31 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   };
 
   const renderField = (field: CustomFieldValue, isEditable: boolean, value: string | null) => {
-    if (field.fieldType === CustomFieldType.TEXT || field.fieldType === CustomFieldType.NUMBER) {
+    if (
+      field.fieldType === CustomFieldType.TEXT ||
+      field.fieldType === CustomFieldType.MULTILINE_TEXT ||
+      field.fieldType === CustomFieldType.NUMBER
+    ) {
+      const isMultiline = field.fieldType === CustomFieldType.MULTILINE_TEXT;
+      // SYSTEM fields (Call Duration, Call Date, etc.) arrive as raw values —
+      // locale-sensitive formatting happens only here, for display.
+      const displayValue = isLocaleFormattedSeedKey(field.seedKey)
+        ? formatSystemFieldDisplayValue(field.seedKey as string, value ?? "", t)
+        : (value ?? "");
+      const showEnhance = field.enhanceable && isEditable && !!value?.trim();
       return (
         <div key={field.fieldDefinitionId}>
           <div className="flex items-center">
             <span className="font-medium text-lg text-typography-800 whitespace-nowrap">
               {`${field.name}: `}
             </span>
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <TextField
-                value={value ?? ""}
+                value={displayValue}
                 onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
                 type={field.fieldType === CustomFieldType.NUMBER ? "number" : "text"}
+                multiline={isMultiline}
+                rows={isMultiline ? 4 : 1}
                 inputStyles={{
                   color: isEditable ? "#1A1A1A" : "#9CA3AF",
                   fontSize: "16px",
@@ -134,6 +155,15 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
                 InputProps={{ readOnly: !isEditable }}
                 showBorder={false}
               />
+              {showEnhance && (
+                <span className="absolute bottom-2 right-2">
+                  <EnhanceButton
+                    fieldName={field.fieldDefinitionId}
+                    inputText={value ?? ""}
+                    updateValue={text => handleChange(field.fieldDefinitionId, text)}
+                  />
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -282,7 +312,28 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
   ) => {
     const labelEl = <label className={carbonField.label}>{field.name}</label>;
 
+    if (field.fieldType === CustomFieldType.MULTILINE_TEXT) {
+      const displayValue = isLocaleFormattedSeedKey(field.seedKey)
+        ? formatSystemFieldDisplayValue(field.seedKey as string, value ?? "", t)
+        : (value ?? "");
+      return (
+        <div key={field.fieldDefinitionId} className={carbonField.group}>
+          {labelEl}
+          <textarea
+            className={carbonField.input}
+            rows={4}
+            disabled={!isEditable}
+            value={displayValue}
+            onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+          />
+        </div>
+      );
+    }
+
     if (field.fieldType === CustomFieldType.TEXT || field.fieldType === CustomFieldType.NUMBER) {
+      const displayValue = isLocaleFormattedSeedKey(field.seedKey)
+        ? formatSystemFieldDisplayValue(field.seedKey as string, value ?? "", t)
+        : (value ?? "");
       return (
         <div key={field.fieldDefinitionId} className={carbonField.group}>
           {labelEl}
@@ -290,7 +341,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             className={carbonField.input}
             type={field.fieldType === CustomFieldType.NUMBER ? "number" : "text"}
             disabled={!isEditable}
-            value={value ?? ""}
+            value={displayValue}
             onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
             // Scrolling over a focused number input silently changes its value
             // in the browser — blur so the page scrolls instead of the value.

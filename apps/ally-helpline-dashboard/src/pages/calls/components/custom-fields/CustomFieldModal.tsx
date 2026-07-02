@@ -50,18 +50,29 @@ const EDIT_PERMISSION_LABELS: Record<CustomFieldEditPermission, string> = {
   [CustomFieldEditPermission.ADMIN_ONLY]: "Admin only",
   [CustomFieldEditPermission.COUNSELLOR_ONLY]: "Counsellor only",
   [CustomFieldEditPermission.BOTH]: "Admin and counsellor",
+  // Not offered as a choice here (see the "Who can edit" <Select> below) — a
+  // manually-entered field with no one allowed to edit it would be a
+  // permanent dead end, since this dialog has no AI-fill path either. Still
+  // needs a label in case an existing field somehow has it.
+  [CustomFieldEditPermission.READ_ONLY]: "Read only (system)",
 };
+
+const SELECTABLE_EDIT_PERMISSIONS = Object.entries(EDIT_PERMISSION_LABELS).filter(
+  ([value]) => value !== CustomFieldEditPermission.READ_ONLY,
+);
 
 const TYPE_LABELS: Record<CustomFieldType, string> = {
   [CustomFieldType.SINGLE_SELECT]: "Single Select",
   [CustomFieldType.MULTI_SELECT]: "Multi Select",
   [CustomFieldType.DATE]: "Date",
   [CustomFieldType.TEXT]: "Text",
+  [CustomFieldType.MULTILINE_TEXT]: "Multiline Text",
   [CustomFieldType.NUMBER]: "Number",
   [CustomFieldType.BOOLEAN]: "Yes / No",
 };
 
 const TYPES_WITH_OPTIONS = [CustomFieldType.SINGLE_SELECT, CustomFieldType.MULTI_SELECT];
+const NARRATIVE_TYPES = [CustomFieldType.TEXT, CustomFieldType.MULTILINE_TEXT];
 
 const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingField }) => {
   const isEditing = Boolean(editingField);
@@ -79,6 +90,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
     editingField?.options ?? [{ id: uuidv4(), label: "", order: 0 }],
   );
   const [showInTable, setShowInTable] = useState<boolean>(editingField?.showInTable ?? true);
+  const [enhanceable, setEnhanceable] = useState<boolean>(editingField?.enhanceable ?? false);
 
   const { t } = useTranslation();
   const sections = useMemo(() => getSummarySections(t), [t]);
@@ -149,6 +161,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
           editPermission,
           options: TYPES_WITH_OPTIONS.includes(selectedType) ? options : undefined,
           showInTable,
+          enhanceable: NARRATIVE_TYPES.includes(selectedType) ? enhanceable : false,
         }).unwrap();
         toast.success("Custom field updated");
       } else {
@@ -159,6 +172,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
           editPermission,
           options: TYPES_WITH_OPTIONS.includes(selectedType) ? options : undefined,
           showInTable,
+          enhanceable: NARRATIVE_TYPES.includes(selectedType) ? enhanceable : false,
         };
         await createDefinition(payload).unwrap();
         toast.success("Custom field created");
@@ -176,6 +190,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
     setEditPermission(CustomFieldEditPermission.BOTH);
     setOptions([{ id: uuidv4(), label: "", order: 0 }]);
     setShowInTable(true);
+    setEnhanceable(false);
     onClose();
   };
 
@@ -289,7 +304,10 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                 label="Who can edit"
                 onChange={e => setEditPermission(e.target.value as CustomFieldEditPermission)}
               >
-                {Object.entries(EDIT_PERMISSION_LABELS).map(([value, label]) => (
+                {(editPermission === CustomFieldEditPermission.READ_ONLY
+                  ? Object.entries(EDIT_PERMISSION_LABELS)
+                  : SELECTABLE_EDIT_PERMISSIONS
+                ).map(([value, label]) => (
                   <MenuItem key={value} value={value}>
                     {label}
                   </MenuItem>
@@ -310,6 +328,24 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                 size="small"
               />
             </div>
+
+            {NARRATIVE_TYPES.includes(selectedType) && (
+              <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
+                <div>
+                  <p className="text-sm font-medium text-typography-700">
+                    Show &quot;Enhance&quot; button
+                  </p>
+                  <p className="text-xs text-typography-400">
+                    Lets counsellors ask AI to rewrite this field&apos;s text
+                  </p>
+                </div>
+                <Switch
+                  checked={enhanceable}
+                  onChange={e => setEnhanceable(e.target.checked)}
+                  size="small"
+                />
+              </div>
+            )}
           </div>
         )}
       </DialogContent>

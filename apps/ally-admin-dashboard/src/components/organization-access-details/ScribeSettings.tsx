@@ -124,6 +124,7 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
     { key: "MULTI_SELECT", label: en.userManagement.multiSelectFieldType },
     { key: "DATE", label: en.userManagement.dateFieldType },
     { key: "TEXT", label: en.userManagement.textFieldType },
+    { key: "MULTILINE_TEXT", label: en.userManagement.multilineTextFieldType },
     { key: "NUMBER", label: en.userManagement.numberFieldType },
     { key: "BOOLEAN", label: en.userManagement.booleanFieldType },
   ];

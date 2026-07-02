@@ -3,6 +3,7 @@ export enum CustomFieldType {
   MULTI_SELECT = "MULTI_SELECT",
   DATE = "DATE",
   TEXT = "TEXT",
+  MULTILINE_TEXT = "MULTILINE_TEXT",
   NUMBER = "NUMBER",
   BOOLEAN = "BOOLEAN",
 }
@@ -11,11 +12,13 @@ export enum CustomFieldEditPermission {
   ADMIN_ONLY = "ADMIN_ONLY",
   COUNSELLOR_ONLY = "COUNSELLOR_ONLY",
   BOTH = "BOTH",
+  READ_ONLY = "READ_ONLY",
 }
 
 export enum CustomFieldFillMode {
   MANUAL = "MANUAL",
   AI = "AI",
+  SYSTEM = "SYSTEM",
 }
 
 export enum CustomFieldScope {
@@ -42,6 +45,8 @@ export interface CustomFieldDefinition {
   displayOrder: number;
   showInTable: boolean;
   isActive: boolean;
+  enhanceable: boolean;
+  seedKey?: string | null;
 }
 
 export interface CreateCustomFieldDefinitionInput {
@@ -53,6 +58,7 @@ export interface CreateCustomFieldDefinitionInput {
   aiInstruction?: string;
   options?: SingleSelectOption[];
   showInTable?: boolean;
+  enhanceable?: boolean;
   tenantId: string;
 }
 
@@ -65,5 +71,6 @@ export interface UpdateCustomFieldDefinitionInput {
   aiInstruction?: string;
   options?: SingleSelectOption[];
   showInTable?: boolean;
+  enhanceable?: boolean;
   tenantId: string;
 }

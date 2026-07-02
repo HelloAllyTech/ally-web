@@ -74,6 +74,7 @@ const TYPE_LABELS: Record<CustomFieldType, string> = {
   [CustomFieldType.MULTI_SELECT]: "Multi Select",
   [CustomFieldType.DATE]: "Date",
   [CustomFieldType.TEXT]: "Text",
+  [CustomFieldType.MULTILINE_TEXT]: "Multiline Text",
   [CustomFieldType.NUMBER]: "Number",
   [CustomFieldType.BOOLEAN]: "Yes / No",
 };

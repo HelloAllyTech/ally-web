@@ -145,15 +145,22 @@ vi.mock("@containers", () => ({
 // one level deeper than CallSummary.tsx's own "../utils" / "../constants"
 // imports (relative to components/) — so they must be "../../..." to actually
 // intercept the module CallSummary.tsx resolves, not a nonexistent sibling path.
+// A vi.fn() (not a plain arrow function) so individual tests can override it
+// via mockReturnValueOnce — needed to exercise the case where a section has
+// zero built-in fields left (all migrated) but still has a custom field.
+const mockGetSectionFields = vi.fn(() => [
+  { key: "callId", type: "text", label: "Call ID", isEditable: true },
+]);
 vi.mock("../../utils", async importOriginal => {
   const actual = await importOriginal<typeof import("../../utils")>();
   return {
     ...actual,
-    // Force exactly one built-in field so sections.map's `sectionFields.length
-    // === 0` guard doesn't skip the section entirely — CustomFieldValuesPanel
-    // renders only inside a section that has passed that guard. summaryHasChanges
-    // is kept real (via ...actual) since handleSave calls it unconditionally.
-    getSectionFields: () => [{ key: "callId", type: "text", label: "Call ID", isEditable: true }],
+    // Defaults to exactly one built-in field so sections.map's
+    // `sectionFields.length === 0` guard doesn't skip the section entirely —
+    // CustomFieldValuesPanel renders only inside a section that has passed
+    // that guard. summaryHasChanges is kept real (via ...actual) since
+    // handleSave calls it unconditionally.
+    getSectionFields: (...args: unknown[]) => mockGetSectionFields(...args),
   };
 });
 // SummaryLoading.tsx also resolves to this same real module (via its own
@@ -414,6 +421,40 @@ describe("CallSummary — custom field save button visibility", () => {
     );
 
     expect(screen.queryByRole("button", { name: "Save report" })).not.toBeInTheDocument();
+  });
+});
+
+describe("CallSummary — section renders when fully migrated (no built-in fields left)", () => {
+  const summaryCall = {
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 999,
+    details: { callInfo: { notes: "" }, summary: { callQuality: 85, tags: [] } },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetCustomFieldsEnabled.mockReturnValue(customFieldsActiveResult);
+    mockUseSelector.mockReturnValue({ user: { userId: 42 }, permissions: [] });
+  });
+
+  it("keeps rendering the CustomFieldValuesPanel even when getSectionFields returns none for that section", () => {
+    // Simulates a section whose one field (e.g. Key Concerns) was migrated:
+    // no built-in field left, but a custom field for the same sectionKey exists.
+    mockGetSectionFields.mockReturnValueOnce([]);
+    mockGetCustomFieldValues.mockReturnValue(adminFieldsResult);
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} canEditCustomFields={true} />);
+
+    expect(screen.getByLabelText(adminFieldResult.name)).toBeInTheDocument();
+  });
+
+  it("skips the section only when it has neither built-in fields nor custom fields", () => {
+    mockGetSectionFields.mockReturnValueOnce([]);
+    mockGetCustomFieldValues.mockReturnValue(customFieldValuesResult); // empty
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} canEditCustomFields={true} />);
+
+    expect(screen.queryByLabelText(adminFieldResult.name)).not.toBeInTheDocument();
   });
 });
 

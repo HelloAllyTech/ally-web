@@ -83,9 +83,25 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   // Built-in template metadata (translated). Memoised so the editable-key set is stable.
   const translatedFields = useMemo(() => getSummaryFields(t), [t]);
   const sections = useMemo(() => getSummarySections(t), [t]);
+
+  // A tenant is "migrated" once seedDefaultDefinitionsForTenant has run for
+  // it — every migrated field is seeded together, so the presence of any
+  // one seeded definition is a reliable signal for all of them. Without
+  // this, a migrated field's built-in input would render side-by-side with
+  // its own custom-field input below, and edits through the built-in one
+  // would write to CallDetails.summary, which nothing reads anymore for
+  // that field post-migration.
+  const migratedFieldKeys = useMemo(
+    () => new Set((definitions ?? []).filter(def => def.seedKey).map(def => def.seedKey as string)),
+    [definitions],
+  );
+  const visibleTranslatedFields = useMemo(
+    () => translatedFields.filter(field => !migratedFieldKeys.has(field.key)),
+    [translatedFields, migratedFieldKeys],
+  );
   const editableSummaryKeys = useMemo(
-    () => new Set(translatedFields.filter(f => f.isEditable).map(f => f.key)),
-    [translatedFields],
+    () => new Set(visibleTranslatedFields.filter(f => f.isEditable).map(f => f.key)),
+    [visibleTranslatedFields],
   );
 
   // Each time the panel opens, start a fresh note.
@@ -120,6 +136,8 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
           editPermission: def.editPermission,
           fillMode: def.fillMode,
           displayOrder: def.displayOrder,
+          enhanceable: def.enhanceable,
+          seedKey: def.seedKey,
           value: null,
         })),
     [definitions],
@@ -244,7 +262,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     const renderedSections = sections
       .map(section => ({
         section,
-        builtInFields: getSectionFields(section.key, visibleFields ?? [], translatedFields),
+        builtInFields: getSectionFields(section.key, visibleFields ?? [], visibleTranslatedFields),
         customCount: customFieldValues.filter(f => f.sectionKey === section.key).length,
       }))
       .filter(({ builtInFields, customCount }) => builtInFields.length > 0 || customCount > 0);

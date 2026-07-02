@@ -151,7 +151,12 @@ vi.mock("@pages/calls/components/custom-fields/CustomFieldValuesPanel", () => ({
   },
 }));
 
-const customDef = (id: string, name: string, sectionKey: string) => ({
+const customDef = (
+  id: string,
+  name: string,
+  sectionKey: string,
+  seedKey: string | null = null,
+) => ({
   id,
   name,
   isActive: true,
@@ -162,6 +167,7 @@ const customDef = (id: string, name: string, sectionKey: string) => ({
   sectionLabel: "Section",
   editPermission: "BOTH",
   fillMode: "MANUAL",
+  seedKey,
 });
 
 // --------------------- Tests --------------------- //
@@ -263,6 +269,38 @@ describe("CreateNoteDrawer", () => {
       }),
     );
     expect(mockUpdateCallSummary).not.toHaveBeenCalled();
+  });
+
+  it("hides a migrated built-in field's input, deferring entirely to its custom-field replacement", async () => {
+    // 'age' has been migrated: a seeded custom field with seedKey 'age' now
+    // exists for this tenant.
+    mockUseGetSummaryFields.mockReturnValue({
+      data: ["callId", "age", "sessionSummary"],
+      isLoading: false,
+    });
+    mockUseGetDefinitions.mockReturnValue({
+      data: [customDef("cf-age", "Age", "featuresAndDemographics", "age")],
+      isLoading: false,
+    });
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+
+    expect(screen.queryByTestId("builtin-age")).not.toBeInTheDocument();
+    expect(screen.getByTestId("custom-cf-age")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId("custom-cf-age"), { target: { value: "18-24" } });
+
+    await waitFor(() =>
+      expect(mockUpsertValues).toHaveBeenCalledWith({
+        chatId: 123,
+        values: [{ fieldDefinitionId: "cf-age", value: "18-24" }],
+      }),
+    );
+    // No stale write to the legacy blob-backed endpoint for the migrated key.
+    expect(mockUpdateCallSummary).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { summary: expect.objectContaining({ age: expect.anything() }) },
+      }),
+    );
   });
 
   it("converts the Tags field to the Tag[] shape before saving", async () => {

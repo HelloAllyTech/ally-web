@@ -8,6 +8,7 @@ export enum CustomFieldType {
   MULTI_SELECT = "MULTI_SELECT",
   DATE = "DATE",
   TEXT = "TEXT",
+  MULTILINE_TEXT = "MULTILINE_TEXT",
   NUMBER = "NUMBER",
   BOOLEAN = "BOOLEAN",
 }
@@ -20,6 +21,7 @@ export enum CustomFieldEditPermission {
   ADMIN_ONLY = "ADMIN_ONLY",
   COUNSELLOR_ONLY = "COUNSELLOR_ONLY",
   BOTH = "BOTH",
+  READ_ONLY = "READ_ONLY",
 }
 
 /**
@@ -29,6 +31,7 @@ export enum CustomFieldEditPermission {
 export enum CustomFieldFillMode {
   MANUAL = "MANUAL",
   AI = "AI",
+  SYSTEM = "SYSTEM",
 }
 
 /**
@@ -66,6 +69,8 @@ export interface CustomFieldDefinition {
   updatedBy: number;
   createdAt: string;
   updatedAt: string;
+  enhanceable: boolean;
+  seedKey?: string | null;
 }
 
 export interface CustomFieldValue {
@@ -78,6 +83,8 @@ export interface CustomFieldValue {
   editPermission: CustomFieldEditPermission;
   fillMode: CustomFieldFillMode;
   displayOrder: number;
+  enhanceable: boolean;
+  seedKey?: string | null;
   value: string | null;
 }
 
@@ -89,6 +96,7 @@ export interface CreateCustomFieldDefinitionInput {
   editPermission: CustomFieldEditPermission;
   displayOrder?: number;
   showInTable?: boolean;
+  enhanceable?: boolean;
 }
 
 export interface UpdateCustomFieldDefinitionInput {
@@ -99,6 +107,7 @@ export interface UpdateCustomFieldDefinitionInput {
   displayOrder?: number;
   showInTable?: boolean;
   isActive?: boolean;
+  enhanceable?: boolean;
 }
 
 export interface UpsertCustomFieldValuesInput {

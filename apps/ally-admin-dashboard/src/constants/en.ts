@@ -719,6 +719,7 @@ export const en = {
     multiSelectFieldType: "Multi select",
     dateFieldType: "Date",
     textFieldType: "Text",
+    multilineTextFieldType: "Multiline text",
     numberFieldType: "Number",
     booleanFieldType: "Yes / No",
     failedToUpdateScribeSettings: "Failed to update scribe settings",

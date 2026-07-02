@@ -89,6 +89,17 @@ const CallSummary: FC<CallSummaryProps> = ({
   const { data: customFieldValues } = useGetCustomFieldValuesQuery(chatId, {
     skip: !chatId || !customFieldsActive,
   });
+  // A tenant is "migrated" once seedDefaultDefinitionsForTenant has run for
+  // it — every migrated field is seeded together, so the presence of any
+  // one seeded custom field is a reliable signal for all of them. Existing
+  // tenants (not yet migrated) have none, so this is a no-op for them and
+  // every hardcoded field keeps rendering exactly as it does today.
+  const migratedFieldKeys = new Set(
+    (customFieldValues ?? []).filter(f => f.seedKey).map(f => f.seedKey as string),
+  );
+  const visibleTranslatedFields = translatedFields.filter(
+    field => !migratedFieldKeys.has(field.key),
+  );
   const [upsertCustomFieldValues] = useUpsertCustomFieldValuesMutation();
   const [customLocalValues, setCustomLocalValues] = useState<Record<string, string | null>>({});
   // Fields the user has actually edited in this visit. Saving must only ever
@@ -229,7 +240,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       case SummaryFieldKey.CallDuration: {
         const duration = callSummary?.details?.callDuration || summaryData.callDuration;
         return duration
-          ? `${Math.floor(Number(duration) / 60)} ${t("common.minutes_other", { count: Math.floor(Number(duration) / 60) })}`
+          ? t("common.minutes_other", { count: Math.floor(Number(duration) / 60) })
           : "--";
       }
       case SummaryFieldKey.CallDate:
@@ -441,8 +452,15 @@ const CallSummary: FC<CallSummaryProps> = ({
         {headerContent}
         <div className={`overflow-y-auto font-primary pb-[60px] ${className}`}>
           {sections.map(({ title, icon, key }, index) => {
-            const sectionFields = getSectionFields(key, visibleFields, translatedFields);
-            if (sectionFields?.length === 0) return null;
+            const sectionFields = getSectionFields(key, visibleFields, visibleTranslatedFields);
+            // A section with no remaining built-in fields (e.g. its one field
+            // was migrated to a custom field) must still render if it has a
+            // custom field to show — otherwise the whole accordion, and the
+            // CustomFieldValuesPanel inside it, would silently disappear.
+            const hasCustomFieldsForSection = (customFieldValues ?? []).some(
+              field => field.sectionKey === key,
+            );
+            if (sectionFields?.length === 0 && !hasCustomFieldsForSection) return null;
 
             return (
               <motion.div
