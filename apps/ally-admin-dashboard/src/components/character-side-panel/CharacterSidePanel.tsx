@@ -269,6 +269,9 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 min="0"
                 max="150"
                 className="min-w-[60px] px-0 py-2 text-base border-none focus:outline-none"
+                // Scrolling over a focused number input silently changes its
+                // value in the browser — blur so the page scrolls instead.
+                onWheel={e => e.currentTarget.blur()}
               />
             </Field>
 

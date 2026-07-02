@@ -242,6 +242,9 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                     }}
                     onBlur={() => updateStateBound(state.id, "scoreLower", state.scoreLower)}
                     className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
+                    // Scrolling over a focused number input silently changes its
+                    // value in the browser — blur so the page scrolls instead.
+                    onWheel={e => e.currentTarget.blur()}
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -269,6 +272,9 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                     }}
                     onBlur={() => updateStateBound(state.id, "scoreUpper", state.scoreUpper)}
                     className="rounded bg-transparent px-2 py-1 text-sm w-20 focus:outline-none border-b border-border-light"
+                    // Scrolling over a focused number input silently changes its
+                    // value in the browser — blur so the page scrolls instead.
+                    onWheel={e => e.currentTarget.blur()}
                   />
                 </div>
                 {(state.name?.trim() || state.guidelines?.trim()) && (

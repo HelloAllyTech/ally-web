@@ -430,6 +430,9 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
                   name={field.name}
                   ref={field.ref}
                   className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary"
+                  // Scrolling over a focused number input silently changes its
+                  // value in the browser — blur so the page scrolls instead.
+                  onWheel={e => e.currentTarget.blur()}
                 />
               )}
             />

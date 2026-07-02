@@ -108,6 +108,13 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
           placeholder={field.placeholder}
           value={value ?? ""}
           onChange={e => onChange(field.key, e.target.value)}
+          // Scrolling over a focused number input silently changes its value
+          // in the browser — blur so the page scrolls instead of the value.
+          onWheel={e => {
+            if (field.type === FieldType.Number) {
+              e.currentTarget.blur();
+            }
+          }}
         />
       </div>
     );

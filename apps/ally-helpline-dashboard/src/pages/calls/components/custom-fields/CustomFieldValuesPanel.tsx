@@ -292,6 +292,13 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             disabled={!isEditable}
             value={value ?? ""}
             onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+            // Scrolling over a focused number input silently changes its value
+            // in the browser — blur so the page scrolls instead of the value.
+            onWheel={e => {
+              if (field.fieldType === CustomFieldType.NUMBER) {
+                e.currentTarget.blur();
+              }
+            }}
           />
         </div>
       );

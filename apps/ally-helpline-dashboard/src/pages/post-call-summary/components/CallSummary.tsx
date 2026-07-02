@@ -91,6 +91,12 @@ const CallSummary: FC<CallSummaryProps> = ({
   });
   const [upsertCustomFieldValues] = useUpsertCustomFieldValuesMutation();
   const [customLocalValues, setCustomLocalValues] = useState<Record<string, string | null>>({});
+  // Fields the user has actually edited in this visit. Saving must only ever
+  // send these — diffing customLocalValues against the live customFieldValues
+  // cache instead would re-include any field whose server value drifted for a
+  // reason unrelated to this user (another editor, a background AI fill) and
+  // silently write the stale locally-seeded value back over it.
+  const [dirtyFieldIds, setDirtyFieldIds] = useState<Set<string>>(new Set());
   const seededChatIdRef = useRef<number | null>(null);
 
   // Seed local edit state once per chat. Re-seeding on every customFieldValues
@@ -104,20 +110,17 @@ const CallSummary: FC<CallSummaryProps> = ({
         initial[f.fieldDefinitionId] = f.value ?? null;
       });
       setCustomLocalValues(initial);
+      setDirtyFieldIds(new Set());
       seededChatIdRef.current = chatId;
     }
   }, [customFieldValues, chatId]);
 
   const handleCustomFieldChange = (fieldDefinitionId: string, value: string | null) => {
     setCustomLocalValues(prev => ({ ...prev, [fieldDefinitionId]: value }));
+    setDirtyFieldIds(prev => new Set(prev).add(fieldDefinitionId));
   };
 
-  const hasCustomFieldsChanged = () => {
-    if (!customFieldValues?.length) return false;
-    return customFieldValues.some(
-      (f: CustomFieldValue) => customLocalValues[f.fieldDefinitionId] !== (f.value ?? null),
-    );
-  };
+  const hasCustomFieldsChanged = () => dirtyFieldIds.size > 0;
 
   // Determine if editing should be allowed
   // If canEditSummary is explicitly false (from ConsolidatedLogs), respect that
@@ -329,21 +332,16 @@ const CallSummary: FC<CallSummaryProps> = ({
         logger.info(`Error updating call summary:, ${error}`);
       }
     }
-    if (hasCustomFieldsChanged() && customFieldValues?.length) {
-      const changedFields = customFieldValues
-        .filter(
-          (f: CustomFieldValue) => customLocalValues[f.fieldDefinitionId] !== (f.value ?? null),
-        )
-        .map((f: CustomFieldValue) => ({
-          fieldDefinitionId: f.fieldDefinitionId,
-          value: customLocalValues[f.fieldDefinitionId] ?? undefined,
-        }));
-      if (changedFields.length > 0) {
-        try {
-          await upsertCustomFieldValues({ chatId, values: changedFields }).unwrap();
-        } catch (error) {
-          logger.info(`Error saving custom field values: ${error}`);
-        }
+    if (hasCustomFieldsChanged()) {
+      const changedFields = Array.from(dirtyFieldIds).map(fieldDefinitionId => ({
+        fieldDefinitionId,
+        value: customLocalValues[fieldDefinitionId] ?? undefined,
+      }));
+      try {
+        await upsertCustomFieldValues({ chatId, values: changedFields }).unwrap();
+        setDirtyFieldIds(new Set());
+      } catch (error) {
+        logger.info(`Error saving custom field values: ${error}`);
       }
     }
     postProcess?.();

@@ -168,6 +168,9 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
               onBlur={event => handleMinimumScoreChange(index, event.target.value, event)}
               min={0}
               disabled={isDisabled}
+              // Scrolling over a focused number input silently changes its
+              // value in the browser — blur so the page scrolls instead.
+              onWheel={e => e.currentTarget.blur()}
             />
           </div>
         </div>
