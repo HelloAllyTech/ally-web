@@ -27,6 +27,9 @@ export const CreditField: React.FC<CreditFieldProps> = ({ onChange, userData, va
             value={value ?? 20}
             min={20}
             onChange={e => onChange(e.target.value === "" ? "" : Number(e.target.value))}
+            // Scrolling over a focused number input silently changes its value
+            // in the browser — blur so the page scrolls instead of the value.
+            onWheel={e => e.currentTarget.blur()}
           />
         </div>
       </div>

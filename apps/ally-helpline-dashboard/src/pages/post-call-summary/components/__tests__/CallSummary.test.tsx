@@ -37,7 +37,10 @@ const lazySearchLocationsResult = [mockSearchLocations, { isLoading: false }];
 const updateCallSummaryNotesResult = [mockUpdateCallSummaryNotes, { isLoading: false }];
 const customFieldsEnabledResult = { data: false };
 const customFieldValuesResult = { data: [] };
-const upsertCustomFieldValuesResult = [vi.fn()];
+const mockUpsertCustomFieldValues = vi.fn(() => ({
+  unwrap: () => Promise.resolve({ success: true }),
+}));
+const upsertCustomFieldValuesResult = [mockUpsertCustomFieldValues];
 
 // Configurable wrappers — use mockReturnValue(stableConst) in tests to avoid fresh objects per render
 const mockGetCustomFieldsEnabled = vi.fn(() => customFieldsEnabledResult);
@@ -138,18 +141,54 @@ vi.mock("@containers", () => ({
   FeedbackDialog: ({ open, onClose }: any) =>
     open ? <button onClick={onClose}>Submit Feedback</button> : null,
 }));
-vi.mock("../utils", () => ({
-  getSectionFields: () => [{ key: "callId", type: "text", label: "Call ID", isEditable: true }],
-}));
-vi.mock("../constants", () => ({
-  getSummarySections: () => [{ title: "Section", icon: null, key: "section" }],
-  getSummaryFields: () => [],
-  labelShownSections: ["section"],
-  summarySections: [{ title: "Section", icon: null, key: "section" }],
-}));
-// Prevent loading @mui/x-date-pickers and date-fns (36 MB) into the test worker heap
+// NOTE: these paths are relative to THIS file (components/__tests__/), which is
+// one level deeper than CallSummary.tsx's own "../utils" / "../constants"
+// imports (relative to components/) — so they must be "../../..." to actually
+// intercept the module CallSummary.tsx resolves, not a nonexistent sibling path.
+vi.mock("../../utils", async importOriginal => {
+  const actual = await importOriginal<typeof import("../../utils")>();
+  return {
+    ...actual,
+    // Force exactly one built-in field so sections.map's `sectionFields.length
+    // === 0` guard doesn't skip the section entirely — CustomFieldValuesPanel
+    // renders only inside a section that has passed that guard. summaryHasChanges
+    // is kept real (via ...actual) since handleSave calls it unconditionally.
+    getSectionFields: () => [{ key: "callId", type: "text", label: "Call ID", isEditable: true }],
+  };
+});
+// SummaryLoading.tsx also resolves to this same real module (via its own
+// "../constants"), so this must stay a partial override via importOriginal —
+// a full replacement breaks any export other consumers need that this test
+// file doesn't otherwise care about (e.g. getPostCallProcessingMessages).
+vi.mock("../../constants", async importOriginal => {
+  const actual = await importOriginal<typeof import("../../constants")>();
+  return {
+    ...actual,
+    getSummarySections: () => [{ title: "Section", icon: null, key: "section" }],
+    getSummaryFields: () => [],
+    labelShownSections: ["section"],
+  };
+});
+// Built-in field rendering isn't under test here; avoid pulling in its real
+// deps (date pickers etc.) for a field shape the tests don't otherwise need.
+vi.mock("../SummaryFieldInput", () => ({ default: () => null }));
+// Prevent loading @mui/x-date-pickers and date-fns (36 MB) into the test worker heap.
+// Renders a plain input per field (instead of the real panel's rich controls) so
+// tests can drive onValueChange the way a user typing would, and read back
+// externalLocalValues to see what CallSummary currently thinks the field holds.
 vi.mock("@pages/calls/components/custom-fields/CustomFieldValuesPanel", () => ({
-  default: () => null,
+  default: ({ externalFieldValues, externalLocalValues, onValueChange }: any) => (
+    <div>
+      {(externalFieldValues ?? []).map((f: any) => (
+        <input
+          key={f.fieldDefinitionId}
+          aria-label={f.name}
+          value={externalLocalValues?.[f.fieldDefinitionId] ?? ""}
+          onChange={e => onValueChange(f.fieldDefinitionId, e.target.value)}
+        />
+      ))}
+    </div>
+  ),
 }));
 
 // Mock heavy unmocked deps that previously caused 4GB OOM in this file:
@@ -375,5 +414,80 @@ describe("CallSummary — custom field save button visibility", () => {
     );
 
     expect(screen.queryByRole("button", { name: "Save report" })).not.toBeInTheDocument();
+  });
+});
+
+describe("CallSummary — custom field save does not revert fields the user didn't touch", () => {
+  const summaryCallAdminEdits = {
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 999,
+    details: { callInfo: { notes: "" }, summary: { callQuality: 85, tags: [] } },
+  };
+
+  const sessionNoField = (value: string | null) => ({
+    fieldDefinitionId: "cf-session-no",
+    name: "Session No",
+    fieldType: CustomFieldType.NUMBER,
+    sectionKey: "section",
+    sectionLabel: "Section",
+    editPermission: CustomFieldEditPermission.BOTH,
+    value,
+  });
+  const topicField = (value: string | null) => ({
+    fieldDefinitionId: "cf-topic",
+    name: "Topic",
+    fieldType: CustomFieldType.TEXT,
+    sectionKey: "section",
+    sectionLabel: "Section",
+    editPermission: CustomFieldEditPermission.BOTH,
+    value,
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    mockUpsertCustomFieldValues.mockImplementation(() => ({
+      unwrap: () => Promise.resolve({ success: true }),
+    }));
+    mockGetCustomFieldsEnabled.mockImplementation(() => customFieldsActiveResult);
+    mockUseSelector.mockReturnValue({
+      user: { userId: 42 },
+      permissions: ["manage:custom-field:definitions"],
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("only submits the field the user edited, even if another field's server value drifted afterwards", () => {
+    mockGetCustomFieldValues.mockReturnValue({
+      data: [sessionNoField("5"), topicField("Anxiety")],
+    });
+
+    const { rerender } = render(
+      <CallSummary chatId={1} callSummary={summaryCallAdminEdits} canEditCustomFields={true} />,
+    );
+
+    // User edits Topic only — Session No is never touched in this visit.
+    fireEvent.change(screen.getByLabelText("Topic"), { target: { value: "Depression" } });
+
+    // Simulate a background refetch (another editor's save, or the AI-fill
+    // path) surfacing a changed Session No that this tab never asked for.
+    mockGetCustomFieldValues.mockReturnValue({
+      data: [sessionNoField("6"), topicField("Anxiety")],
+    });
+    rerender(
+      <CallSummary chatId={1} callSummary={summaryCallAdminEdits} canEditCustomFields={true} />,
+    );
+
+    // handleSave calls upsertCustomFieldValues synchronously (before its first
+    // await) whenever hasDataChanged() is false, as it is here — no need to
+    // flush fake timers to observe the call.
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    expect(mockUpsertCustomFieldValues).toHaveBeenCalledTimes(1);
+    const [{ values }] = mockUpsertCustomFieldValues.mock.calls[0];
+    expect(values).toEqual([{ fieldDefinitionId: "cf-topic", value: "Depression" }]);
   });
 });

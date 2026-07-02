@@ -97,6 +97,9 @@ export const V2VTestModal: FC<V2VTestModalProps> = ({ open, onClose }) => {
             value={maxExchanges}
             onChange={e => setMaxExchanges(Number(e.target.value))}
             className="border rounded-md px-3 py-2 bg-white w-full outline-none font-primary text-base"
+            // Scrolling over a focused number input silently changes its
+            // value in the browser — blur so the page scrolls instead.
+            onWheel={e => e.currentTarget.blur()}
           />
         </div>
 

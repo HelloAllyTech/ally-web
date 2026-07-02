@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, WheelEventHandler } from "react";
 
 import { TextField as MuiTextField } from "@mui/material";
 
@@ -28,8 +28,20 @@ const TextField: FC<TextFieldProps> = ({
   showBorder = true,
   value,
   hideError = true,
+  type,
+  onWheel,
   ...props
 }) => {
+  // <input type="number"> silently increments/decrements on scroll when
+  // focused — a well-known browser quirk. Blurring on wheel lets the page
+  // keep scrolling normally instead of mutating the value the user typed.
+  const handleWheel: WheelEventHandler<HTMLDivElement> = e => {
+    if (type === "number") {
+      (e.target as HTMLElement).blur();
+    }
+    onWheel?.(e);
+  };
+
   return (
     <div className={`flex flex-col ${className}`}>
       {label && <span className="text-xs text-typography-700">{label}</span>}
@@ -42,6 +54,8 @@ const TextField: FC<TextFieldProps> = ({
         rows={rows}
         {...(onChange && { onChange })}
         value={value}
+        type={type}
+        onWheel={handleWheel}
         variant="outlined"
         sx={{
           "& .MuiInputBase-root": {

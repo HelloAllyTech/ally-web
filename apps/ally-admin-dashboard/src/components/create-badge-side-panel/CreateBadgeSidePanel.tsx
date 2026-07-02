@@ -539,6 +539,9 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
                     className={`border-none focus:outline-none text-base bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                       criteriaConfig.unit ? "w-8 text-right" : "w-6 text-center"
                     }`}
+                    // Scrolling over a focused number input silently changes its
+                    // value in the browser — blur so the page scrolls instead.
+                    onWheel={e => e.currentTarget.blur()}
                   />
                   {criteriaConfig.unit && (
                     <span className="text-base text-typography-600 ml-1 capitalize">

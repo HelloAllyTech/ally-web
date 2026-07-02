@@ -9,7 +9,7 @@ vi.mock("@mui/material", async importOriginal => {
   return {
     ...original,
     TextField: vi.fn(props => {
-      const { value, onChange, disabled, error, multiline, name, ...muiProps } = props;
+      const { value, onChange, disabled, error, multiline, name, type, onWheel } = props;
 
       return (
         <div data-testid="mui-textfield-root">
@@ -17,8 +17,10 @@ vi.mock("@mui/material", async importOriginal => {
           <input
             data-testid="input"
             name={name}
+            type={type}
             value={value || ""}
             onChange={onChange}
+            onWheel={onWheel}
             disabled={disabled}
             data-error={error}
             data-multiline={multiline}
@@ -82,6 +84,33 @@ describe("TextField", () => {
       }),
       expect.anything(),
     );
+  });
+
+  describe("Scroll-wheel value change guard", () => {
+    // <input type="number"> silently increments/decrements on scroll while
+    // focused (a browser default, not a React/MUI behavior) — reported as a
+    // saved custom field value drifting with no one editing it.
+    it("blurs a focused number input on wheel so scrolling can't change its value", () => {
+      render(<TextField {...defaultProps} type="number" />);
+      const input = screen.getByTestId("input");
+      input.focus();
+      expect(input).toHaveFocus();
+
+      fireEvent.wheel(input);
+
+      expect(input).not.toHaveFocus();
+    });
+
+    it("does not blur a non-number input on wheel", () => {
+      render(<TextField {...defaultProps} type="text" />);
+      const input = screen.getByTestId("input");
+      input.focus();
+      expect(input).toHaveFocus();
+
+      fireEvent.wheel(input);
+
+      expect(input).toHaveFocus();
+    });
   });
 
   describe("Error Handling", () => {
