@@ -7,6 +7,7 @@ import {
   DriftBackfillJob,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
+  StartLatencyResponse,
   TokenConsumptionResponse,
   VoiceLatencyResponse,
 } from "@types";
@@ -18,6 +19,11 @@ type AnalyticsRangeQuery = {
 };
 
 type VoiceLatencyQuery = AnalyticsRangeQuery & {
+  bucket?: AnalyticsBucket;
+  language?: string;
+};
+
+type StartLatencyQuery = AnalyticsRangeQuery & {
   bucket?: AnalyticsBucket;
   language?: string;
 };
@@ -43,6 +49,17 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     getVoiceLatency: builder.query<VoiceLatencyResponse, VoiceLatencyQuery>({
       query: ({ range, bucket, language } = {}) => ({
         url: ApiEndpoints.ANALYTICS.VOICE_LATENCY,
+        method: HttpMethod.GET,
+        params: {
+          ...(range ? { range } : {}),
+          ...(bucket ? { bucket } : {}),
+          ...(language ? { language } : {}),
+        },
+      }),
+    }),
+    getStartLatency: builder.query<StartLatencyResponse, StartLatencyQuery>({
+      query: ({ range, bucket, language } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.START_LATENCY,
         method: HttpMethod.GET,
         params: {
           ...(range ? { range } : {}),
@@ -116,6 +133,7 @@ export const analyticsAPI = baseAPI.injectEndpoints({
 export const {
   useGetAnalyticsOverviewQuery,
   useGetVoiceLatencyQuery,
+  useGetStartLatencyQuery,
   useGetConversationDriftQuery,
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,

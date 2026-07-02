@@ -1,13 +1,19 @@
 import { useMemo, useState } from "react";
 
-import { LineChart } from "@carbon/charts-react";
+import { LineChart, StackedBarChart } from "@carbon/charts-react";
 import { Dropdown } from "@carbon/react";
 
-import { useGetVoiceLatencyQuery } from "@api";
+import { useGetStartLatencyQuery, useGetVoiceLatencyQuery } from "@api";
 import { AnalyticsBucket, AnalyticsRange } from "@types";
 
-import { ChartCard, PALETTE, lineOpts } from "../chartKit";
-import { buildVoiceLatencySeries, latencyBucketTitle, LATENCY_GROUPS } from "../latencyChart";
+import { ChartCard, PALETTE, lineOpts, stackedBarOpts } from "../chartKit";
+import {
+  buildStartLatencySeries,
+  buildVoiceLatencySeries,
+  latencyBucketTitle,
+  LATENCY_GROUPS,
+  START_LATENCY_GROUPS,
+} from "../latencyChart";
 
 const BUCKET_ITEMS: { id: AnalyticsBucket; label: string }[] = [
   { id: "day", label: "Day-wise" },
@@ -15,15 +21,25 @@ const BUCKET_ITEMS: { id: AnalyticsBucket; label: string }[] = [
   { id: "month", label: "Month-wise" },
 ];
 
-/** Voice-to-voice latency (avg & p95), Live vs Historical. Uses the shared range
- * + language, plus its own granularity picker. */
+/** Voice-to-voice latency (avg & p95) plus simulation start latency ("time to
+ * first word", stacked by startup segment). Both use the shared range +
+ * language and a single granularity picker. */
 export const LatencyTab = ({ range, language }: { range: AnalyticsRange; language: string }) => {
   const [bucket, setBucket] = useState<AnalyticsBucket>("day");
+  const languageParam = language || undefined;
+
   const { data, isLoading, isError, refetch } = useGetVoiceLatencyQuery({
     range,
     bucket,
-    language: language || undefined,
+    language: languageParam,
   });
+
+  const {
+    data: startData,
+    isLoading: startLoading,
+    isError: startError,
+    refetch: refetchStart,
+  } = useGetStartLatencyQuery({ range, bucket, language: languageParam });
 
   const series = useMemo(() => buildVoiceLatencySeries(data?.points ?? []), [data]);
   const axisTitle = useMemo(() => latencyBucketTitle(data?.bucket), [data]);
@@ -61,6 +77,46 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
     [data, axisTitle],
   );
 
+  const startSeries = useMemo(
+    () => buildStartLatencySeries(startData?.points ?? []),
+    [startData],
+  );
+  const startAxisTitle = useMemo(() => latencyBucketTitle(startData?.bucket), [startData]);
+
+  const startOptions = useMemo(
+    () =>
+      stackedBarOpts({
+        leftTitle: "Seconds",
+        bottomTitle: startAxisTitle,
+        colorScale: {
+          [START_LATENCY_GROUPS.configure]: PALETTE.blue,
+          [START_LATENCY_GROUPS.initialize]: PALETTE.cyan,
+          [START_LATENCY_GROUPS.connect]: PALETTE.teal,
+          [START_LATENCY_GROUPS.prep]: PALETTE.purple,
+          [START_LATENCY_GROUPS.transcriptTotal]: PALETTE.magenta,
+        },
+        extra: {
+          axes: {
+            left: {
+              mapsTo: "value",
+              scaleType: "linear",
+              stacked: true,
+              title: "Seconds",
+              thresholds: [
+                {
+                  value: (startData?.targetMs ?? 4000) / 1000,
+                  label: "Target",
+                  fillColor: PALETTE.green,
+                },
+              ],
+            },
+            bottom: { mapsTo: "key", scaleType: "labels", title: startAxisTitle },
+          },
+        },
+      }),
+    [startData, startAxisTitle],
+  );
+
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="flex justify-end">
@@ -89,6 +145,16 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
         errorSubtitle="There was a problem fetching turn-latency metrics."
       >
         <LineChart data={series} options={options} />
+      </ChartCard>
+      <ChartCard
+        title="Simulation start latency — time to first word (by startup segment)"
+        loading={startLoading && !startData}
+        error={startError}
+        onRetry={refetchStart}
+        errorTitle="Couldn't load start latency"
+        errorSubtitle="There was a problem fetching start-latency metrics."
+      >
+        <StackedBarChart data={startSeries} options={startOptions} />
       </ChartCard>
     </div>
   );
