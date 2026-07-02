@@ -44,6 +44,16 @@ const CAPTURE_LABELS: Record<string, string> = {
   unknown: "Unknown",
 };
 
+/** Human labels for the pipeline drop-off funnel phases. */
+const PHASE_LABELS: Record<string, string> = {
+  created: "Created",
+  "audio-uploaded": "Audio uploaded",
+  transcribed: "Transcribed",
+  diarized: "Diarized",
+  summarized: "Summarized",
+  delivered: "Delivered (done)",
+};
+
 const SubHeading = ({ children }: { children: string }) => (
   <p className="text-xs font-medium uppercase tracking-wide text-typography-500 mt-8 mb-3">
     {children}
@@ -117,17 +127,39 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
   const failuresLoading = failures.isLoading && !failures.data;
   const failuresBucketTitle = BUCKET_TITLE[failures.data?.bucket ?? ""] ?? "Period";
 
-  const rateData = useMemo(
+  // Two series: "First attempt" (the true health signal, from the write-once
+  // first-attempt columns) and "Final" (post-backfill residual). The gap
+  // between them is exactly what the backfill recovers.
+  // A period with no terminal sessions has an undefined rate (0/0), not 0%.
+  // Rather than break the line (looks buggy) or plot 0 (falsely reads as
+  // "failures fixed"), CARRY THE LAST KNOWN RATE FORWARD, so an empty period
+  // renders as a flat horizontal continuation. Leading periods before any data
+  // stay null (nothing to hold yet).
+  const rateData = useMemo(() => {
+    const trend = failures.data?.failureRateTrend ?? [];
+    let lastFirst: number | null = null;
+    let lastFinal: number | null = null;
+    const points: { group: string; key: string; value: number | null }[] = [];
+    for (const p of trend) {
+      if (p.firstAttemptTerminal > 0) {
+        lastFirst = parseFloat((p.firstAttemptFailureRate * 100).toFixed(1));
+      }
+      if (p.terminal > 0) {
+        lastFinal = parseFloat((p.failureRate * 100).toFixed(1));
+      }
+      points.push({ group: "First attempt", key: p.bucket, value: lastFirst });
+      points.push({ group: "Final (after retries)", key: p.bucket, value: lastFinal });
+    }
+    return points;
+  }, [failures.data]);
+  const phaseFunnel = failures.data?.phaseFunnel ?? [];
+  const funnelMax = Math.max(...phaseFunnel.map(p => p.reached), 1);
+  const sttProviderStats = failures.data?.sttProviderStats ?? [];
+  const summaryModelData = useMemo(
     () =>
-      (failures.data?.failureRateTrend ?? []).map(p => ({
-        group: "Failure rate",
-        key: p.bucket,
-        // A day with no terminal sessions has an undefined rate (0/0), not 0%.
-        // Emit a gap (null) so the line breaks instead of dropping to the floor
-        // — a 0 there falsely reads as "failures improved". A real 0% (sessions
-        // ran, none failed) still plots as 0.
-        value: p.terminal > 0 ? parseFloat((p.failureRate * 100).toFixed(1)) : null,
-      })),
+      (failures.data?.summaryModelStats ?? [])
+        .filter(o => o.count > 0)
+        .map(o => ({ group: o.key, value: o.count })),
     [failures.data],
   );
   const noteModeData = useMemo(
@@ -144,9 +176,6 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
         .map(o => ({ group: CAPTURE_LABELS[o.key] ?? o.key, value: o.count })),
     [failures.data],
   );
-  const breakdown = failures.data?.failureBreakdown ?? [];
-  const breakdownMax = Math.max(...breakdown.map(b => b.count), 1);
-
   const failuresSummary = failures.data?.summary;
   const failuresKpis = [
     {
@@ -273,7 +302,7 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             <ChartCard
               title="Summary failure rate over time"
-              caption="Failed / (summarised + failed), per period — excludes no-audio and in-flight"
+              caption="First-attempt (health signal) vs final after retries/backfill — the gap is what backfill recovers"
               loading={failuresLoading}
               wide
               empty={!failures.data?.failureRateTrend?.length}
@@ -283,39 +312,42 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
                 options={lineOpts({
                   leftTitle: "Failure rate %",
                   bottomTitle: failuresBucketTitle,
-                  colorScale: { "Failure rate": PALETTE.red },
-                  legend: false,
+                  colorScale: {
+                    "First attempt": PALETTE.red,
+                    "Final (after retries)": PALETTE.blue,
+                  },
+                  legend: true,
                 })}
               />
             </ChartCard>
             <ChartCard
-              title="Failure breakdown"
-              caption="One bucket per failure — audio lifecycle state first, then pipeline reason"
+              title="Where sessions stop"
+              caption="Pipeline drop-off funnel — sessions that reached each phase (post-rollout sessions)"
               loading={failuresLoading}
               wide
-              empty={!breakdown.length}
+              empty={!phaseFunnel.some(p => p.reached > 0)}
             >
               <div className="flex flex-col gap-2">
-                {breakdown.map(r => (
-                  <div key={r.key} className="flex items-center gap-3">
+                {phaseFunnel.map(p => (
+                  <div key={p.phase} className="flex items-center gap-3">
                     <div
                       className="text-sm text-typography-900 truncate"
-                      style={{ flex: "0 0 55%" }}
-                      title={r.key}
+                      style={{ flex: "0 0 35%" }}
+                      title={p.phase}
                     >
-                      {r.key}
+                      {PHASE_LABELS[p.phase] ?? p.phase}
                     </div>
                     <div className="flex-1 h-3 rounded" style={{ background: "#f0f0f0" }}>
                       <div
                         className="h-3 rounded"
                         style={{
-                          width: `${Math.round((r.count / breakdownMax) * 100)}%`,
-                          background: PALETTE.red,
+                          width: `${Math.round((p.reached / funnelMax) * 100)}%`,
+                          background: p.phase === "delivered" ? PALETTE.teal : PALETTE.blue,
                         }}
                       />
                     </div>
-                    <div className="text-sm font-medium text-typography-900 w-10 text-right">
-                      {r.count}
+                    <div className="text-sm font-medium text-typography-900 w-12 text-right">
+                      {p.reached}
                     </div>
                   </div>
                 ))}
@@ -363,6 +395,64 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
                     },
                   },
                 })}
+              />
+            </ChartCard>
+            <ChartCard
+              title="STT provider reliability"
+              caption="Per-provider tries vs failures across the fallback chain (populated once the AI service reports it)"
+              loading={failuresLoading}
+              wide
+              empty={!sttProviderStats.length}
+            >
+              <div className="flex flex-col gap-2">
+                {sttProviderStats.map(s => {
+                  const failPct = s.tried > 0 ? Math.round((s.failed / s.tried) * 100) : 0;
+                  return (
+                    <div key={s.provider} className="flex items-center gap-3">
+                      <div
+                        className="text-sm text-typography-900 truncate capitalize"
+                        style={{ flex: "0 0 25%" }}
+                        title={s.provider}
+                      >
+                        {s.provider}
+                      </div>
+                      <div
+                        className="flex-1 h-3 rounded overflow-hidden flex"
+                        style={{ background: "#f0f0f0" }}
+                        title={`${s.ok} ok / ${s.failed} failed of ${s.tried} tries`}
+                      >
+                        <div
+                          className="h-3"
+                          style={{
+                            width: `${s.tried > 0 ? (s.ok / s.tried) * 100 : 0}%`,
+                            background: PALETTE.teal,
+                          }}
+                        />
+                        <div
+                          className="h-3"
+                          style={{
+                            width: `${failPct}%`,
+                            background: PALETTE.red,
+                          }}
+                        />
+                      </div>
+                      <div className="text-sm font-medium text-typography-900 w-20 text-right">
+                        {failPct}% fail
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ChartCard>
+            <ChartCard
+              title="Summaries by model"
+              caption="Which LLM produced successful summaries (populated once the AI service reports it)"
+              loading={failuresLoading}
+              empty={!summaryModelData.length}
+            >
+              <DonutChart
+                data={summaryModelData}
+                options={donutOpts({ centerLabel: "Summaries" })}
               />
             </ChartCard>
           </div>

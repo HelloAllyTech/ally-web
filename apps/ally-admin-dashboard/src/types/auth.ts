@@ -254,8 +254,30 @@ export interface ScribeFailureRatePoint {
   bucket: string;
   failed: number;
   terminal: number;
-  /** failed / terminal, 0..1. */
+  /** failed / terminal (final, post-backfill), 0..1. */
   failureRate: number;
+  /** Sessions whose FIRST attempt failed (write-once; post-rollout only). */
+  firstAttemptFailed: number;
+  firstAttemptTerminal: number;
+  /** first-attempt failed / first-attempt terminal, 0..1. */
+  firstAttemptFailureRate: number;
+}
+
+/** One phase on the pipeline drop-off funnel. */
+export interface ScribePhaseFunnelPoint {
+  phase: string;
+  /** Sessions that reached AT LEAST this phase. */
+  reached: number;
+  /** Sessions whose furthest phase was exactly this. */
+  stoppedHere: number;
+}
+
+/** Per-STT-provider try/success/fail over the per-attempt provider trail. */
+export interface ScribeProviderStat {
+  provider: string;
+  tried: number;
+  ok: number;
+  failed: number;
 }
 
 export interface ScribeFailureSummary {
@@ -274,6 +296,12 @@ export interface ScribeSummaryFailureResponse {
   failureBreakdown: ScribeCount[];
   failuresByMode: ScribeCount[];
   failuresByCaptureMethod: ScribeCount[];
+  /** Pipeline drop-off funnel (replaces the flat failure breakdown). */
+  phaseFunnel: ScribePhaseFunnelPoint[];
+  /** Per-STT-provider try/success/fail (populated once ally-ai emits it). */
+  sttProviderStats: ScribeProviderStat[];
+  /** Successful summaries by LLM model (populated once ally-ai emits it). */
+  summaryModelStats: ScribeCount[];
 }
 
 // VoiceLatencyResponseDto from GET /api/v1/analytics/voice-latency.
