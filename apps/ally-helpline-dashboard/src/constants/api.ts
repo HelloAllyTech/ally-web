@@ -211,6 +211,9 @@ export const ApiEndpoints = {
     GET_SCRIBE_NOTE_CREATION_ENABLED: "/v1/settings/scribe-note-creation-enabled",
     // GET + PUT boolean toggle share this path.
     SCRIBE_NOTE_CREATION_ENABLED: "/v1/settings/scribe-note-creation-enabled",
+    GET_SCRIBE_VOICE_NOTE_ENABLED: "/v1/settings/scribe-voice-note-enabled",
+    // GET + PUT boolean toggle share this path.
+    SCRIBE_VOICE_NOTE_ENABLED: "/v1/settings/scribe-voice-note-enabled",
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
   },

@@ -140,6 +140,7 @@ export const TAG_TYPES = {
   CUSTOM_FIELD_TYPES: "CustomFieldTypes",
   CUSTOM_FIELDS_ENABLED: "CustomFieldsEnabled",
   SCRIBE_NOTE_CREATION_ENABLED: "ScribeNoteCreationEnabled",
+  SCRIBE_VOICE_NOTE_ENABLED: "ScribeVoiceNoteEnabled",
   // Org. Settings access-management tabs (own tenant scenario/path/case/badge)
   ORG_SCENARIOS: "OrgScenarios",
   ORG_SCENARIO_PATHS: "OrgScenarioPaths",

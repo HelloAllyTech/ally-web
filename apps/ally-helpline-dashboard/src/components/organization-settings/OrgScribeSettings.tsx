@@ -14,6 +14,8 @@ import {
   useUpdateOwnCustomFieldsEnabledMutation,
   useGetOwnScribeNoteCreationEnabledQuery,
   useUpdateOwnScribeNoteCreationEnabledMutation,
+  useGetOwnScribeVoiceNoteEnabledQuery,
+  useUpdateOwnScribeVoiceNoteEnabledMutation,
 } from "@api";
 import { Button, ToggleSwitch } from "@components";
 import { SummarySection, SummarySectionField, UpdateOwnTenantSettingsBody } from "@types";
@@ -98,8 +100,12 @@ export const OrgScribeSettings: FC = () => {
   const { data: scribeNoteCreationEnabled } = useGetOwnScribeNoteCreationEnabledQuery();
   const [updateScribeNoteCreationEnabled] = useUpdateOwnScribeNoteCreationEnabledMutation();
 
+  const { data: scribeVoiceNoteEnabled } = useGetOwnScribeVoiceNoteEnabledQuery();
+  const [updateScribeVoiceNoteEnabled] = useUpdateOwnScribeVoiceNoteEnabledMutation();
+
   const [localCustomFieldsEnabled, setLocalCustomFieldsEnabled] = useState(false);
   const [localScribeNoteCreationEnabled, setLocalScribeNoteCreationEnabled] = useState(false);
+  const [localScribeVoiceNoteEnabled, setLocalScribeVoiceNoteEnabled] = useState(false);
   const [localEnabledTypes, setLocalEnabledTypes] = useState<string[]>(
     CUSTOM_FIELD_TYPE_ITEMS.map(t => t.key),
   );
@@ -113,6 +119,12 @@ export const OrgScribeSettings: FC = () => {
       setLocalScribeNoteCreationEnabled(scribeNoteCreationEnabled);
     }
   }, [scribeNoteCreationEnabled]);
+
+  useEffect(() => {
+    if (scribeVoiceNoteEnabled !== undefined) {
+      setLocalScribeVoiceNoteEnabled(scribeVoiceNoteEnabled);
+    }
+  }, [scribeVoiceNoteEnabled]);
 
   useEffect(() => {
     if (enabledCustomFieldTypes !== undefined) setLocalEnabledTypes(enabledCustomFieldTypes);
@@ -134,6 +146,16 @@ export const OrgScribeSettings: FC = () => {
       await updateScribeNoteCreationEnabled({ enabled }).unwrap();
     } catch (error: any) {
       setLocalScribeNoteCreationEnabled(!enabled);
+      toast.error(error?.data?.message || "Failed to update setting");
+    }
+  };
+
+  const handleScribeVoiceNoteEnabledToggle = async (enabled: boolean) => {
+    setLocalScribeVoiceNoteEnabled(enabled);
+    try {
+      await updateScribeVoiceNoteEnabled({ enabled }).unwrap();
+    } catch (error: any) {
+      setLocalScribeVoiceNoteEnabled(!enabled);
       toast.error(error?.data?.message || "Failed to update setting");
     }
   };
@@ -531,6 +553,23 @@ export const OrgScribeSettings: FC = () => {
             />
             <span className="text-sm text-typography-900 font-normal">
               {localScribeNoteCreationEnabled ? "Enabled" : "Disabled"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Scribe voice note (mic dictation) */}
+      <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary mt-2">
+        <div className="flex h-9 flex-row justify-between items-center">
+          <div className="text-sm text-typography-700 font-normal">Voice note (mic dictation)</div>
+          <div className="flex flex-row items-center gap-3">
+            <ToggleSwitch
+              enabled={localScribeVoiceNoteEnabled}
+              onChange={handleScribeVoiceNoteEnabledToggle}
+              label="Voice note (mic dictation)"
+            />
+            <span className="text-sm text-typography-900 font-normal">
+              {localScribeVoiceNoteEnabled ? "Enabled" : "Disabled"}
             </span>
           </div>
         </div>

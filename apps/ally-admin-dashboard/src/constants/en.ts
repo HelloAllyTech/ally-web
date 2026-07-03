@@ -634,6 +634,7 @@ export const en = {
     customFields: "Custom fields",
     customFieldsEnabled: "Enable custom fields",
     scribeNoteCreationEnabled: "Enable manual note creation",
+    voiceNoteEnabled: "Enable voice note (mic dictation)",
     customFieldTypes: "Custom field types",
     singleSelectFieldType: "Single select",
     multiSelectFieldType: "Multi select",

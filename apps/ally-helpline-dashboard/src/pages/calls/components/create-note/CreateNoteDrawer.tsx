@@ -18,7 +18,7 @@ import {
 import { Drawer } from "@components";
 import { Permissions } from "@constants";
 import { carbonField } from "@constants/carbonFieldStyles";
-import { useAudioRecorder, useDebounce, useUser } from "@hooks";
+import { useAudioRecorder, useDebounce, useScribeVoiceNoteEnabled, useUser } from "@hooks";
 import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import SummaryFieldInput from "@pages/post-call-summary/components/SummaryFieldInput";
 import {
@@ -54,14 +54,6 @@ type VoiceDecoder =
   | { kind: "custom"; fieldType: CustomFieldType; options?: SingleSelectOption[] };
 
 const SAVE_DEBOUNCE_MS = 600;
-
-// TEMPORARY: while the voice-dictation feature is in limited rollout, the mic is
-// shown only to these users (lower-cased for a case-insensitive match). Remove
-// this gate — or replace it with a per-tenant Preference toggle — once GA.
-const VOICE_NOTE_EMAIL_ALLOWLIST = [
-  "learner@example.com",
-  "sandeep.malhotra+internal@helloally.ai",
-];
 
 const mapBuiltinType = (type: FieldType): VoiceNoteFieldType => {
   if (type === FieldType.Dropdown) return "select";
@@ -147,7 +139,7 @@ type SaveState = "idle" | "saving" | "saved" | "error";
  */
 const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
-  const { permissions, user } = useUser();
+  const { permissions } = useUser();
   const isCounsellor = hasPermissions(permissions, Permissions.COUNSELOR_ACCESS);
   const canViewSummaryFields = Boolean(permissions?.includes(Permissions.VIEW_SUMMARY_FIELDS));
   const canEditCallDetails = Boolean(permissions?.includes(Permissions.EDIT_CALL_DETAILS));
@@ -515,14 +507,12 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     onClose();
   };
 
-  // Voice is offered only to counsellors who can edit call details and only
-  // when there are fields to fill. The drawer itself is already gated behind
-  // the tenant's scribe-note-creation preference. During limited rollout it is
-  // further restricted to the email allowlist above.
-  const isVoiceAllowlisted =
-    !!user?.email && VOICE_NOTE_EMAIL_ALLOWLIST.includes(user.email.trim().toLowerCase());
+  // Voice is offered only when the tenant has enabled it (super-admin / org-admin
+  // toggle, default OFF), to counsellors who can edit call details, and only when
+  // there are fields to fill. The hook skips its request for non-counsellors.
+  const { data: voiceNoteEnabled } = useScribeVoiceNoteEnabled({ skip: !open });
   const canUseVoice =
-    isVoiceAllowlisted && isCounsellor && canEditCallDetails && voiceFields.length > 0;
+    Boolean(voiceNoteEnabled) && isCounsellor && canEditCallDetails && voiceFields.length > 0;
   const voiceProcessingMessages = [
     t("calls.createNote.voice.processing.transcribing"),
     t("calls.createNote.voice.processing.extracting"),
