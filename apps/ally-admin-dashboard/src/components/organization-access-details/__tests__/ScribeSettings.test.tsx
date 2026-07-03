@@ -185,6 +185,11 @@ vi.mock("@api", () => {
     vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) }),
     { isLoading: false },
   ];
+  const scribeVoiceNoteEnabledResult = { data: false, isLoading: false };
+  const updateScribeVoiceNoteEnabledResult = [
+    vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) }),
+    { isLoading: false },
+  ];
 
   return {
     useGetSummarySectionsQuery: () => summarySectionsResult,
@@ -199,6 +204,8 @@ vi.mock("@api", () => {
     useUpdateCustomFieldsEnabledMutation: () => updateCustomFieldsEnabledResult,
     useGetScribeNoteCreationEnabledQuery: () => scribeNoteCreationEnabledResult,
     useUpdateScribeNoteCreationEnabledMutation: () => updateScribeNoteCreationEnabledResult,
+    useGetScribeVoiceNoteEnabledQuery: () => scribeVoiceNoteEnabledResult,
+    useUpdateScribeVoiceNoteEnabledMutation: () => updateScribeVoiceNoteEnabledResult,
     useGetCustomFieldDefinitionsQuery: () => ({ data: [], isLoading: false }),
     useCreateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
     useUpdateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],

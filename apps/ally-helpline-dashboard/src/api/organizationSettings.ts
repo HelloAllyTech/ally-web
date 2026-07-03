@@ -117,6 +117,24 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SCRIBE_NOTE_CREATION_ENABLED],
     }),
 
+    // --- Scribe voice note (mic dictation) enabled -------------------------
+    getOwnScribeVoiceNoteEnabled: builder.query<boolean, void>({
+      query: () => ApiEndpoints.SETTINGS.SCRIBE_VOICE_NOTE_ENABLED,
+      providesTags: [TAG_TYPES.SCRIBE_VOICE_NOTE_ENABLED],
+    }),
+
+    updateOwnScribeVoiceNoteEnabled: builder.mutation<
+      { success: boolean },
+      { enabled: boolean }
+    >({
+      query: ({ enabled }) => ({
+        url: ApiEndpoints.SETTINGS.SCRIBE_VOICE_NOTE_ENABLED,
+        method: HttpMethod.PUT,
+        body: { enabled },
+      }),
+      invalidatesTags: [TAG_TYPES.SCRIBE_VOICE_NOTE_ENABLED],
+    }),
+
     // --- Custom field definitions (org-scoped CRUD) ------------------------
     // Distinct hook names from ./customFields.ts so both can co-exist in the
     // @api barrel; these invalidate the same CUSTOM_FIELD_DEFINITIONS tag.
@@ -304,6 +322,8 @@ export const {
   useUpdateOwnCustomFieldsEnabledMutation,
   useGetOwnScribeNoteCreationEnabledQuery,
   useUpdateOwnScribeNoteCreationEnabledMutation,
+  useGetOwnScribeVoiceNoteEnabledQuery,
+  useUpdateOwnScribeVoiceNoteEnabledMutation,
   useGetOrgCustomFieldDefinitionsQuery,
   useCreateOrgCustomFieldDefinitionMutation,
   useUpdateOrgCustomFieldDefinitionMutation,

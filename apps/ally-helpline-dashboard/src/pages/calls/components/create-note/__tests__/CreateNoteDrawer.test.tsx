@@ -32,6 +32,9 @@ const recorderState: any = {
   reset: mockRecorderReset,
 };
 
+// Tenant voice-note toggle (default on in tests; flipped per-test).
+let mockVoiceNoteEnabled = true;
+
 vi.mock("@api", () => ({
   useCreateNoteMutation: () => [mockCreateNote],
   useGenerateNoteFromAudioMutation: () => [mockGenerateNoteFromAudio, { isLoading: false }],
@@ -100,6 +103,7 @@ vi.mock("@hooks", () => ({
   // Run the debounced persist synchronously so saves can be asserted.
   useDebounce: (fn: any) => fn,
   useAudioRecorder: () => recorderState,
+  useScribeVoiceNoteEnabled: () => ({ data: mockVoiceNoteEnabled }),
 }));
 
 vi.mock("@types", () => ({
@@ -238,7 +242,8 @@ describe("CreateNoteDrawer", () => {
       "edit:call:details",
       "counselor:access",
     ];
-    userResult.user = { role: "COUNSELLOR", email: "sandeep.malhotra+internal@helloally.ai" };
+    userResult.user = { role: "COUNSELLOR", email: "counsellor@example.com" };
+    mockVoiceNoteEnabled = true;
     mockCreateNote.mockReturnValue({
       unwrap: () => Promise.resolve({ chatId: 123, name: "CALL-123" }),
     });
@@ -373,8 +378,8 @@ describe("CreateNoteDrawer", () => {
     expect(screen.queryByTestId("drawer-header-button-voice-note")).not.toBeInTheDocument();
   });
 
-  it("hides the mic button for users not on the voice-note allowlist", () => {
-    userResult.user = { role: "COUNSELLOR", email: "someone.else@helloally.ai" };
+  it("hides the mic button when the tenant voice-note toggle is off", () => {
+    mockVoiceNoteEnabled = false;
     mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
     render(<CreateNoteDrawer open onClose={vi.fn()} />);
     expect(screen.queryByTestId("drawer-header-button-voice-note")).not.toBeInTheDocument();
