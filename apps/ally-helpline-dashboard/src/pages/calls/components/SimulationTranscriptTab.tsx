@@ -2,14 +2,22 @@ import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
+import { DropdownField } from "@ally-ui-mono/ui-shared";
 import { useGetAudioUrlQuery, useGetSimulationTranscriptQuery } from "@api";
 import { TranscriptListing } from "@components";
 import { RootState } from "@store";
 import { SimulationTranscriptMessage } from "@types";
 
-import { TRANSCRIPT_PAGE_SIZE } from "./constants";
+import { TRANSCRIPT_PAGE_SIZE, TRANSCRIPT_LANGUAGE_OPTIONS } from "./constants";
 import { SimulationTranscriptTabProps } from "./types";
+
+const getTranscriptLanguageLabel = (code: string): string =>
+  TRANSCRIPT_LANGUAGE_OPTIONS.find(option => option.code === code)?.label ?? "English (Original)";
+
+const getTranscriptLanguageCode = (label: string): string =>
+  TRANSCRIPT_LANGUAGE_OPTIONS.find(option => option.label === label)?.code ?? "en";
 
 const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   sessionId,
@@ -21,6 +29,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
+  const [transcriptLanguage, setTranscriptLanguage] = useState<string>("en"); // 'en' = original
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   /** Blocks stacking multiple load-more calls before the in-flight fetch finishes (prevents batched offset 0→40). */
   const pagingLockRef = useRef(false);
@@ -32,11 +41,13 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     data: transcriptData,
     isFetching: isTranscriptFetching,
     isLoading: isTranscriptLoading,
+    isError: isTranscriptError,
   } = useGetSimulationTranscriptQuery({
     sessionId,
     offset: transcriptOffset,
     limit: TRANSCRIPT_PAGE_SIZE,
     sortBy: "startSeconds",
+    languageCode: transcriptLanguage,
   });
 
   const { data: audioUrlData } = useGetAudioUrlQuery({ sessionId });
@@ -55,14 +66,22 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     }));
   }, [transcriptData]);
 
-  // Reset transcript list when sessionId changes
+  // Reset transcript list when sessionId or transcript language changes
   useEffect(() => {
     setTranscriptList([]);
     setTranscriptOffset(0);
     setHasMoreTranscripts(true);
     pagingLockRef.current = false;
     wasTranscriptFetchingRef.current = false;
-  }, [sessionId]);
+  }, [sessionId, transcriptLanguage]);
+
+  useEffect(() => {
+    if (isTranscriptError) {
+      toast.error(
+        t("postSim.tabs.transcriptTranslationFailed", "Failed to load transcript. Please retry."),
+      );
+    }
+  }, [isTranscriptError, t]);
 
   useEffect(() => {
     if (wasTranscriptFetchingRef.current && !transcriptQueryBusy) {
@@ -139,9 +158,21 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
       ref={scrollContainerRef}
       className={`relative flex h-full min-h-0 flex-col border border-gray-200 rounded-md p-2 custom-scrollbar ${className}`}
     >
-      <span className="text-typography-900 font-primary text-base font-medium">
-        {t("postSim.tabs.annotatedTranscript")}
-      </span>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-typography-900 font-primary text-base font-medium">
+          {t("postSim.tabs.annotatedTranscript")}
+        </span>
+        <div className="w-full max-w-[200px] min-w-[140px]">
+          <DropdownField
+            label={undefined}
+            value={getTranscriptLanguageLabel(transcriptLanguage)}
+            valueClassName="text-sm font-medium"
+            onChange={label => setTranscriptLanguage(getTranscriptLanguageCode(label))}
+            options={TRANSCRIPT_LANGUAGE_OPTIONS.map(option => option.label)}
+            hideSearch
+          />
+        </div>
+      </div>
       <hr className="mb-5 mt-2 border-border-light" />
       <TranscriptListing
         transcriptList={transcriptList}

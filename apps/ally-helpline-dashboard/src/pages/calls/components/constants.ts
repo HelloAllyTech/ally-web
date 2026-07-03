@@ -42,3 +42,11 @@ export const defaultAudioFormData: AudioUploadFormData = {
   time: null,
   timeZone: timezoneOptions[0].value,
 };
+
+export const TRANSCRIPT_LANGUAGE_OPTIONS: Array<{ code: string; label: string }> = [
+  { code: "en", label: "English (Original)" },
+  { code: "hi", label: "हिंदी" },
+  { code: "mr", label: "मराठी" },
+  { code: "ta", label: "தமிழ்" },
+  { code: "kn", label: "ಕನ್ನಡ" },
+];
