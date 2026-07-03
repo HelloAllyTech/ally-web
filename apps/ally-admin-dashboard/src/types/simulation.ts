@@ -570,27 +570,31 @@ export interface SetCompetencyBehavioursRequest {
   };
 }
 
-export interface OptimisationGoal {
+export interface AgentTestCase {
   id: string;
   title: string;
   category: string;
   description?: string;
+  condition?: string;
+  test?: string;
 }
 
-export interface OptimisationGoalsResponse {
-  data: OptimisationGoal[];
+export interface AgentTestCasesResponse {
+  data: AgentTestCase[];
   count: number;
 }
 
-export interface CreateOptimisationGoalRequest {
+export interface CreateAgentTestCaseRequest {
   title: string;
   category: string;
   description?: string;
+  condition?: string;
+  test?: string;
 }
 
-export interface UpdateOptimisationGoalRequest {
+export interface UpdateAgentTestCaseRequest {
   id: string;
-  data: CreateOptimisationGoalRequest;
+  data: CreateAgentTestCaseRequest;
 }
 
 export interface ScenarioContext {

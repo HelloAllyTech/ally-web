@@ -17,7 +17,7 @@ export * from "./GuardrailsManagement/GuardrailsManagement";
 export * from "./TranslationManagement/TranslationManagement";
 export * from "./Tooltips/Tooltips";
 export * from "./Settings/Settings";
-export * from "./OptimisationGoals/OptimisationGoals";
+export * from "./AgentTestCases/AgentTestCases";
 export * from "./Competencies/Competencies";
 export * from "./RoleplaySessionLogs/RoleplaySessionLogs";
 export * from "./RoleplaySessionLogs/RoleplaySessionLogDetail";

@@ -72,8 +72,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     translationTitle: data.translationTitle ?? {},
     profession: data?.metadata?.profession,
     sexualOrientation: data?.metadata?.sexualOrientation,
-    // Agent Builder Copilot V2 optimisation-goal selection (metadata JSONB).
-    optimisationGoalIds: (data?.metadata as any)?.optimisationGoalIds ?? [],
+    // Agent Builder Copilot V2 agent-test-case selection (metadata JSONB).
+    agentTestCaseIds: (data?.metadata as any)?.agentTestCaseIds ?? [],
     languageVoices: (data?.metadata as any)?.languageVoices,
     linguisticStyleSamples: (data?.metadata as any)?.linguisticStyleSamples,
     allowedFillerWords: (data?.metadata as any)?.allowedFillerWords,

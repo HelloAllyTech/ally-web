@@ -185,7 +185,7 @@ export const Sidebar: React.FC = () => {
         return <Info size={20} />;
       case SIDEBAR_ITEMS.ANALYTICS:
         return <BarChart3 size={20} />;
-      case SIDEBAR_ITEMS.OPTIMISATION_GOALS:
+      case SIDEBAR_ITEMS.AGENT_TEST_CASES:
         return <Flag size={20} />;
       case SIDEBAR_ITEMS.COMPETENCIES:
         return <SkillLevel size={20} />;

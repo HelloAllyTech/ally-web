@@ -112,8 +112,8 @@ export const ApiEndpoints = {
     COMPETENCIES: "/v1/learn/competencies",
     COMPETENCY_BY_ID: (id: string) => `/v1/learn/competencies/${id}`,
     COMPETENCY_BEHAVIOURS: (id: string) => `/v1/learn/competencies/${id}/behaviours`,
-    OPTIMISATION_GOALS: "/v1/learn/optimisation-goals",
-    OPTIMISATION_GOAL_BY_ID: (id: string) => `/v1/learn/optimisation-goals/${id}`,
+    AGENT_TEST_CASES: "/v1/learn/agent-test-cases",
+    AGENT_TEST_CASE_BY_ID: (id: string) => `/v1/learn/agent-test-cases/${id}`,
   },
 
   CHARACTERS: {
@@ -217,7 +217,7 @@ export const ROUTES = {
   MANAGE_TRANSLATIONS: "/manage-translations",
   MANAGE_TOOLTIPS: "/manage-tooltips",
   ANALYTICS: "/analytics",
-  OPTIMISATION_GOALS: "/optimisation-goals",
+  AGENT_TEST_CASES: "/agent-test-cases",
   COMPETENCIES: "/competencies",
   ROLEPLAY_SESSION_LOGS: "/roleplay-session-logs",
   ROLEPLAY_SESSION_LOG_DETAIL: (id: string | number) => `/roleplay-session-logs/${id}`,
@@ -301,7 +301,7 @@ export const TAG_TYPES = {
   FILLER_TAGS: "fillerTags",
   COMPETENCIES: "competencies",
   COMPETENCY_BEHAVIOURS: "competencyBehaviours",
-  OPTIMISATION_GOALS: "optimisationGoals",
+  AGENT_TEST_CASES: "agentTestCases",
   ADMIN_TENANTS: "adminTenants",
   SETTINGS: "settings",
   USER_PREFERENCES: "userPreferences",
