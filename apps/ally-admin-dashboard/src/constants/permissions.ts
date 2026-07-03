@@ -32,7 +32,7 @@ export const SIDEBAR_ITEMS = {
   TRANSLATIONS: "translations",
   TOOLTIPS: "tooltips",
   ANALYTICS: "analytics",
-  OPTIMISATION_GOALS: "optimisation-goals",
+  AGENT_TEST_CASES: "agent-test-cases",
   COMPETENCIES: "competencies",
   ROLEPLAY_SESSION_LOGS: "roleplay-session-logs",
   SETTINGS: "settings",

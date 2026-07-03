@@ -92,7 +92,7 @@ describe("deriveNavigationItems", () => {
     });
     expect(result.map(i => i.id)).toEqual([
       SIDEBAR_ITEMS.ANALYTICS,
-      SIDEBAR_ITEMS.OPTIMISATION_GOALS,
+      SIDEBAR_ITEMS.AGENT_TEST_CASES,
       SIDEBAR_ITEMS.COMPETENCIES,
       SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
       SIDEBAR_ITEMS.SETTINGS,

@@ -4,35 +4,43 @@ import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
 import {
-  useCreateOptimisationGoalMutation,
-  useDeleteOptimisationGoalMutation,
-  useGetOptimisationGoalsQuery,
-  useUpdateOptimisationGoalMutation,
+  useCreateAgentTestCaseMutation,
+  useDeleteAgentTestCaseMutation,
+  useGetAgentTestCasesQuery,
+  useUpdateAgentTestCaseMutation,
 } from "@api";
 import { ActionConfirmationPopup, Button, FormLabel } from "@components";
 import { ButtonVariant } from "@components/types";
-import { OptimisationGoal } from "@types";
+import { AgentTestCase } from "@types";
 
-interface GoalFormState {
+interface TestCaseFormState {
   title: string;
   category: string;
   description: string;
+  condition: string;
+  test: string;
 }
 
-const EMPTY_FORM: GoalFormState = { title: "", category: "", description: "" };
+const EMPTY_FORM: TestCaseFormState = {
+  title: "",
+  category: "",
+  description: "",
+  condition: "",
+  test: "",
+};
 
-export const OptimisationGoals: FC = () => {
-  const { data, isLoading } = useGetOptimisationGoalsQuery();
-  const [createGoal, { isLoading: isCreating }] = useCreateOptimisationGoalMutation();
-  const [updateGoal, { isLoading: isUpdating }] = useUpdateOptimisationGoalMutation();
-  const [deleteGoal] = useDeleteOptimisationGoalMutation();
+export const AgentTestCases: FC = () => {
+  const { data, isLoading } = useGetAgentTestCasesQuery();
+  const [createTestCase, { isLoading: isCreating }] = useCreateAgentTestCaseMutation();
+  const [updateTestCase, { isLoading: isUpdating }] = useUpdateAgentTestCaseMutation();
+  const [deleteTestCase] = useDeleteAgentTestCaseMutation();
 
   // Side-panel state: null = closed, otherwise create (no id) or edit.
-  const [editing, setEditing] = useState<OptimisationGoal | null | undefined>(undefined);
-  const [form, setForm] = useState<GoalFormState>(EMPTY_FORM);
-  const [goalPendingDelete, setGoalPendingDelete] = useState<OptimisationGoal | null>(null);
+  const [editing, setEditing] = useState<AgentTestCase | null | undefined>(undefined);
+  const [form, setForm] = useState<TestCaseFormState>(EMPTY_FORM);
+  const [testCasePendingDelete, setTestCasePendingDelete] = useState<AgentTestCase | null>(null);
 
-  const goals = data?.data ?? [];
+  const testCases = data?.data ?? [];
   const isPanelOpen = editing !== undefined;
   const isSaving = isCreating || isUpdating;
   const canSave = form.title.trim().length > 0 && form.category.trim().length > 0;
@@ -42,13 +50,15 @@ export const OptimisationGoals: FC = () => {
     setEditing(null);
   };
 
-  const openEdit = (goal: OptimisationGoal) => {
+  const openEdit = (testCase: AgentTestCase) => {
     setForm({
-      title: goal.title,
-      category: goal.category,
-      description: goal.description ?? "",
+      title: testCase.title,
+      category: testCase.category,
+      description: testCase.description ?? "",
+      condition: testCase.condition ?? "",
+      test: testCase.test ?? "",
     });
-    setEditing(goal);
+    setEditing(testCase);
   };
 
   const closePanel = () => setEditing(undefined);
@@ -59,81 +69,91 @@ export const OptimisationGoals: FC = () => {
       title: form.title.trim(),
       category: form.category.trim(),
       description: form.description.trim() || undefined,
+      condition: form.condition.trim() || undefined,
+      test: form.test.trim() || undefined,
     };
     try {
       if (editing) {
-        await updateGoal({ id: editing.id, data: payload }).unwrap();
-        toast.success("Optimisation goal updated");
+        await updateTestCase({ id: editing.id, data: payload }).unwrap();
+        toast.success("Agent test case updated");
       } else {
-        await createGoal(payload).unwrap();
-        toast.success("Optimisation goal created");
+        await createTestCase(payload).unwrap();
+        toast.success("Agent test case created");
       }
       closePanel();
     } catch {
-      toast.error("Failed to save optimisation goal");
+      toast.error("Failed to save agent test case");
     }
   };
 
   const handleDelete = async () => {
-    if (!goalPendingDelete) return;
+    if (!testCasePendingDelete) return;
     try {
-      await deleteGoal(goalPendingDelete.id).unwrap();
-      toast.success("Optimisation goal deleted");
+      await deleteTestCase(testCasePendingDelete.id).unwrap();
+      toast.success("Agent test case deleted");
     } catch {
-      toast.error("Failed to delete optimisation goal");
+      toast.error("Failed to delete agent test case");
     } finally {
-      setGoalPendingDelete(null);
+      setTestCasePendingDelete(null);
     }
   };
 
   return (
     <div className="h-full font-primary flex flex-col">
       <div className="flex justify-between items-center shrink-0">
-        <h1 className="text-2xl text-typography-900 font-secondary">Optimisation Goals</h1>
+        <h1 className="text-2xl text-typography-900 font-secondary">Agent Test Cases</h1>
         <Button variant={ButtonVariant.PRIMARY} onClick={openCreate} className="h-[40px] px-5">
-          Create goal
+          Create test case
         </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar mt-6">
         {isLoading ? (
           <p className="text-typography-700">Loading…</p>
-        ) : goals.length === 0 ? (
+        ) : testCases.length === 0 ? (
           <p className="text-typography-700">
-            No optimisation goals yet. Click “Create goal” to add one.
+            No agent test cases yet. Click “Create test case” to add one.
           </p>
         ) : (
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border-light text-sm text-typography-700">
-                <th className="py-3 pr-4 font-medium w-1/4">Title</th>
-                <th className="py-3 pr-4 font-medium w-1/5">Category</th>
+                <th className="py-3 pr-4 font-medium w-1/6">Title</th>
+                <th className="py-3 pr-4 font-medium w-1/12">Category</th>
+                <th className="py-3 pr-4 font-medium">Condition</th>
+                <th className="py-3 pr-4 font-medium">Test</th>
                 <th className="py-3 pr-4 font-medium">Description</th>
                 <th className="py-3 pr-4 font-medium w-[120px]">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {goals.map(goal => (
+              {testCases.map(testCase => (
                 <tr
-                  key={goal.id}
+                  key={testCase.id}
                   className="border-b border-border-light text-sm text-typography-900 align-top"
                 >
-                  <td className="py-3 pr-4">{goal.title}</td>
-                  <td className="py-3 pr-4">{goal.category}</td>
+                  <td className="py-3 pr-4">{testCase.title}</td>
+                  <td className="py-3 pr-4">{testCase.category}</td>
                   <td className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
-                    {goal.description || "—"}
+                    {testCase.condition || "—"}
+                  </td>
+                  <td className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
+                    {testCase.test || "—"}
+                  </td>
+                  <td className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
+                    {testCase.description || "—"}
                   </td>
                   <td className="py-3 pr-4">
                     <div className="flex gap-3">
                       <button
                         className="text-primary-500 hover:underline"
-                        onClick={() => openEdit(goal)}
+                        onClick={() => openEdit(testCase)}
                       >
                         Edit
                       </button>
                       <button
                         className="text-destructive-500 hover:underline"
-                        onClick={() => setGoalPendingDelete(goal)}
+                        onClick={() => setTestCasePendingDelete(testCase)}
                       >
                         Delete
                       </button>
@@ -152,7 +172,7 @@ export const OptimisationGoals: FC = () => {
           <div className="absolute inset-0 bg-black/30" onClick={closePanel} />
           <div className="relative z-50 h-full w-full max-w-[480px] bg-white shadow-xl flex flex-col p-6 gap-5 overflow-y-auto custom-scrollbar">
             <h2 className="text-xl font-secondary text-typography-900">
-              {editing ? "Edit optimisation goal" : "Create optimisation goal"}
+              {editing ? "Edit agent test case" : "Create agent test case"}
             </h2>
 
             <div className="flex flex-col gap-2">
@@ -178,11 +198,35 @@ export const OptimisationGoals: FC = () => {
             </div>
 
             <div className="flex flex-col gap-2">
+              <FormLabel>Condition</FormLabel>
+              <AutoExpandableTextarea
+                value={form.condition}
+                onChange={value => setForm(prev => ({ ...prev, condition: value }))}
+                placeholder="When does this test case apply? (the precondition to evaluate)"
+                minHeight={96}
+                maxLines={12}
+                className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <FormLabel>Test</FormLabel>
+              <AutoExpandableTextarea
+                value={form.test}
+                onChange={value => setForm(prev => ({ ...prev, test: value }))}
+                placeholder="What should the agent do to pass? (the assertion)"
+                minHeight={96}
+                maxLines={12}
+                className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
               <FormLabel>Description</FormLabel>
               <AutoExpandableTextarea
                 value={form.description}
                 onChange={value => setForm(prev => ({ ...prev, description: value }))}
-                placeholder="What does this goal mean and when should it apply?"
+                placeholder="What does this test case mean and when should it apply?"
                 minHeight={96}
                 maxLines={12}
                 className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
@@ -207,13 +251,13 @@ export const OptimisationGoals: FC = () => {
       )}
 
       <ActionConfirmationPopup
-        isOpen={Boolean(goalPendingDelete)}
-        onClose={() => setGoalPendingDelete(null)}
+        isOpen={Boolean(testCasePendingDelete)}
+        onClose={() => setTestCasePendingDelete(null)}
         title="Delete"
-        titleItalic="optimisation goal"
-        description={`Are you sure you want to delete **${goalPendingDelete?.title ?? ""}**? This cannot be undone.`}
+        titleItalic="agent test case"
+        description={`Are you sure you want to delete **${testCasePendingDelete?.title ?? ""}**? This cannot be undone.`}
         primaryButton={{ label: "Delete", onClick: handleDelete }}
-        secondaryButton={{ label: "Cancel", onClick: () => setGoalPendingDelete(null) }}
+        secondaryButton={{ label: "Cancel", onClick: () => setTestCasePendingDelete(null) }}
       />
     </div>
   );

@@ -23,7 +23,7 @@ import {
   TranslationManagement,
   TooltipManagement,
   Settings,
-  OptimisationGoals,
+  AgentTestCases,
   Competencies,
   RoleplaySessionLogs,
   RoleplaySessionLogDetail,
@@ -241,10 +241,10 @@ export const RouteLayout: React.FC = () => {
           }
         />
         <Route
-          path={ROUTES.OPTIMISATION_GOALS}
+          path={ROUTES.AGENT_TEST_CASES}
           element={
             <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
-              <OptimisationGoals />
+              <AgentTestCases />
             </PrivateLayout>
           }
         />

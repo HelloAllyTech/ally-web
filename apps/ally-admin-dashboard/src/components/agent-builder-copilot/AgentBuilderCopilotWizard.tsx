@@ -1,15 +1,19 @@
 import { useState } from "react";
 
+import { CheckCircle, FailIcon } from "@icons";
 import { UseFormReturn } from "react-hook-form";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { useGetOptimisationGoalsQuery } from "@api";
-import { CheckCircle, FailIcon } from "@icons";
+import { useGetAgentTestCasesQuery } from "@api";
 
 import { Button } from "../button";
 import { Competency } from "../competency";
 import { ButtonVariant } from "../types";
-import { GenerationTask, GenerationTaskStatus, useAgentBuilderGeneration } from "./useAgentBuilderGeneration";
+import {
+  GenerationTask,
+  GenerationTaskStatus,
+  useAgentBuilderGeneration,
+} from "./useAgentBuilderGeneration";
 
 /**
  * Chat-style wizard on the RIGHT half of the "Agent Builder Copilot" tab.
@@ -17,7 +21,7 @@ import { GenerationTask, GenerationTaskStatus, useAgentBuilderGeneration } from 
  * Flow:
  *   1. "Describe roleplay actor"   — long free-text input
  *   2. "Select one competency"     — the shared Basic Settings competency dropdown
- *   3. "Select optimisation goals" — multi-select from the live catalog
+ *   3. "Select agent test cases" — multi-select from the live catalog
  *   4. Generation                  — on submit, the copilot combines the three
  *      inputs and fires ONE LLM call per Basic Settings field IN PARALLEL. Each
  *      result is parsed and painted into the mirrored Basic Settings form on the
@@ -33,7 +37,7 @@ type WizardStepId = "describe" | "competency" | "goals" | "generate";
 const QUESTIONS: Record<Exclude<WizardStepId, "generate">, string> = {
   describe: "Describe roleplay actor",
   competency: "Select one competency",
-  goals: "Select optimisation goals",
+  goals: "Select agent test cases",
 };
 
 interface ChatEntry {
@@ -74,7 +78,7 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
   const [description, setDescription] = useState("");
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
-  const { data: goalsData, isLoading: isLoadingGoals } = useGetOptimisationGoalsQuery();
+  const { data: goalsData, isLoading: isLoadingGoals } = useGetAgentTestCasesQuery();
   const goalOptions = goalsData?.data ?? [];
 
   const { phase, tasks, start, abort, reset, doneCount, appliedCount } =
@@ -108,14 +112,14 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
     pushHistory(QUESTIONS.goals, goalTitles.join(", "));
 
     // Persist the selection on the scenario (rides the normal save payload →
-    // scenarios.metadata.optimisationGoalIds) and steer every field prompt.
-    formMethods.setValue("optimisationGoalIds", selectedGoals, { shouldDirty: true });
+    // scenarios.metadata.agentTestCaseIds) and steer every field prompt.
+    formMethods.setValue("agentTestCaseIds", selectedGoals, { shouldDirty: true });
 
     setStep("generate");
     start({
       actorDescription: description.trim(),
       competency: formMethods.getValues("competency")?.name,
-      optimisationGoals: goalTitles.join(", "),
+      agentTestCases: goalTitles.join(", "),
     });
   };
 
@@ -154,7 +158,11 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
             {/* Per-task progress block. */}
             <div className="rounded-md border border-border-light bg-neutral-50 p-3">
               <div className="flex items-center gap-2 text-sm font-medium text-typography-800">
-                {phase === "running" ? <Spinner /> : <CheckCircle size={16} className="text-[#43A047]" />}
+                {phase === "running" ? (
+                  <Spinner />
+                ) : (
+                  <CheckCircle size={16} className="text-[#43A047]" />
+                )}
                 Generating settings ({doneCount}/{tasks.length})
               </div>
               <div className="mt-2 flex flex-col gap-0.5 pl-1">
@@ -184,8 +192,8 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
             {/* Terminal banner. */}
             {phase === "done" && (
               <div className="rounded-md border border-success-200 bg-success-50 p-3 text-sm text-typography-900">
-                Filled {appliedCount} of {tasks.length} fields — review them in Basic Settings on the
-                left, then Save or Publish.
+                Filled {appliedCount} of {tasks.length} fields — review them in Basic Settings on
+                the left, then Save or Publish.
               </div>
             )}
             {phase === "aborted" && (
@@ -251,10 +259,10 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
             <h3 className="text-base font-medium text-typography-900">{QUESTIONS.goals}</h3>
             <div className="flex flex-col gap-2 max-h-[280px] overflow-y-auto custom-scrollbar">
               {isLoadingGoals ? (
-                <p className="text-sm text-typography-700">Loading optimisation goals…</p>
+                <p className="text-sm text-typography-700">Loading agent test cases…</p>
               ) : goalOptions.length === 0 ? (
                 <p className="text-sm text-typography-700">
-                  No optimisation goals configured yet. Add some under the Optimisation Goals tab.
+                  No agent test cases configured yet. Add some under the Agent Test Cases tab.
                 </p>
               ) : (
                 goalOptions.map(goal => {

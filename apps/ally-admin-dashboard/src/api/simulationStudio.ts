@@ -50,10 +50,10 @@ import {
   UpdateCompetencyRequest,
   CompetencyBehavioursResponse,
   SetCompetencyBehavioursRequest,
-  OptimisationGoal,
-  OptimisationGoalsResponse,
-  CreateOptimisationGoalRequest,
-  UpdateOptimisationGoalRequest,
+  AgentTestCase,
+  AgentTestCasesResponse,
+  CreateAgentTestCaseRequest,
+  UpdateAgentTestCaseRequest,
   AutofillModelOption,
   RegenerateFieldRequest,
   RegenerateFieldResponse,
@@ -929,45 +929,45 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Optimisation goals — superadmin-managed list, also consumed by the
+     * Agent test cases — superadmin-managed list, also consumed by the
      * Agent Builder Copilot V2 wizard.
      */
-    getOptimisationGoals: builder.query<OptimisationGoalsResponse, { search?: string } | void>({
+    getAgentTestCases: builder.query<AgentTestCasesResponse, { search?: string } | void>({
       query: arg => {
         const search = arg ? arg.search : undefined;
         return {
-          url: ApiEndpoints.SIMULATION_STUDIO.OPTIMISATION_GOALS,
+          url: ApiEndpoints.SIMULATION_STUDIO.AGENT_TEST_CASES,
           method: HttpMethod.GET,
           params: search ? { search } : undefined,
         };
       },
-      providesTags: [TAG_TYPES.OPTIMISATION_GOALS],
+      providesTags: [TAG_TYPES.AGENT_TEST_CASES],
     }),
 
-    createOptimisationGoal: builder.mutation<OptimisationGoal, CreateOptimisationGoalRequest>({
+    createAgentTestCase: builder.mutation<AgentTestCase, CreateAgentTestCaseRequest>({
       query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.OPTIMISATION_GOALS,
+        url: ApiEndpoints.SIMULATION_STUDIO.AGENT_TEST_CASES,
         method: HttpMethod.POST,
         body,
       }),
-      invalidatesTags: [TAG_TYPES.OPTIMISATION_GOALS],
+      invalidatesTags: [TAG_TYPES.AGENT_TEST_CASES],
     }),
 
-    updateOptimisationGoal: builder.mutation<OptimisationGoal, UpdateOptimisationGoalRequest>({
+    updateAgentTestCase: builder.mutation<AgentTestCase, UpdateAgentTestCaseRequest>({
       query: ({ id, data }) => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.OPTIMISATION_GOAL_BY_ID(id),
+        url: ApiEndpoints.SIMULATION_STUDIO.AGENT_TEST_CASE_BY_ID(id),
         method: HttpMethod.PUT,
         body: data,
       }),
-      invalidatesTags: [TAG_TYPES.OPTIMISATION_GOALS],
+      invalidatesTags: [TAG_TYPES.AGENT_TEST_CASES],
     }),
 
-    deleteOptimisationGoal: builder.mutation<void, string>({
+    deleteAgentTestCase: builder.mutation<void, string>({
       query: id => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.OPTIMISATION_GOAL_BY_ID(id),
+        url: ApiEndpoints.SIMULATION_STUDIO.AGENT_TEST_CASE_BY_ID(id),
         method: HttpMethod.DELETE,
       }),
-      invalidatesTags: [TAG_TYPES.OPTIMISATION_GOALS],
+      invalidatesTags: [TAG_TYPES.AGENT_TEST_CASES],
     }),
 
     /**
@@ -1077,10 +1077,10 @@ export const {
   useGetCompetencyBehavioursQuery,
   useLazyGetCompetencyBehavioursQuery,
   useSetCompetencyBehavioursMutation,
-  useGetOptimisationGoalsQuery,
-  useCreateOptimisationGoalMutation,
-  useUpdateOptimisationGoalMutation,
-  useDeleteOptimisationGoalMutation,
+  useGetAgentTestCasesQuery,
+  useCreateAgentTestCaseMutation,
+  useUpdateAgentTestCaseMutation,
+  useDeleteAgentTestCaseMutation,
   useGetReportTranscriptQuery,
   useLazyGetReportTranscriptQuery,
   useGetAutofillModelsQuery,
