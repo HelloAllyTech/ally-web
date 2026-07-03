@@ -277,12 +277,8 @@ export enum AppType {
 }
 
 /**
- * Emails allowed to see the Agent Builder Copilot tab on Create Simulation.
- * Temporary allowlist while the feature is piloted.
- * TODO: replace `canUseAgentBuilderCopilot` with a `user?.role === UserRole.SUPER_ADMIN`
- * check to open this to all superadmins.
+ * Whether the user can see the Agent Builder Copilot tab on Create Simulation.
+ * Now open to all superadmins (previously a piloted email allowlist).
  */
-export const AGENT_BUILDER_ALLOWED_EMAILS = ["sandeep.malhotra@helloally.ai", "admin@example.com"];
-
-export const canUseAgentBuilderCopilot = (user?: { email?: string } | null): boolean =>
-  !!user?.email && AGENT_BUILDER_ALLOWED_EMAILS.includes(user.email);
+export const canUseAgentBuilderCopilot = (user?: { role?: string } | null): boolean =>
+  user?.role === UserRole.SUPER_ADMIN;

@@ -155,7 +155,7 @@ export const CreateSimulation: FC = () => {
   const { user } = useUser();
   const canUseAgentBuilder = canUseAgentBuilderCopilot(user);
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
-  // Allowlisted authors land on the Agent Builder Copilot tab by default;
+  // Superadmins land on the Agent Builder Copilot tab by default;
   // everyone else opens on Basic Settings. Covers the common case where the
   // user record is already in the store on mount (in-app navigation), so the
   // tab is correct on first paint with no flash. The hard-refresh case — where
@@ -384,7 +384,7 @@ export const CreateSimulation: FC = () => {
 
   // Fallback for the hard-refresh / direct-URL case: PrivateLayout mounts this
   // page before the user query resolves, so `canUseAgentBuilder` is false at
-  // mount and the useState initializer above can't see the allowlisted author.
+  // mount and the useState initializer above can't see the superadmin.
   // Once the user record lands, promote them to the Agent Builder Copilot tab —
   // but only once, and never when a report-in-progress redirect has claimed the
   // initial step, so we don't fight that or the author's own tab clicks.
