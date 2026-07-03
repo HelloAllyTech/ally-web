@@ -96,10 +96,16 @@ export const CHECKLIST_TYPE_OPTIONS = [
 export const APP_TRANSLATION_LANGUAGE_CODES = ["hi", "mr", "kn", "ta"];
 
 export const SIMULATION_CREATOR_STEP_IDS = {
+  // `basicSettings` is no longer a standalone tab — the Basic Settings form now
+  // lives in the left pane of the Agent Builder Copilot tab. The id is retained
+  // as the lookup key for its field-group config (SIMULATION_CREATOR_FIELD_GROUPS,
+  // via getCreateSimulationSubSectionById).
   basicSettings: "basic-settings",
   advancedSettings: "advanced-settings",
   report: "report",
-  // Gated tab — only added to the visible tab list for allowlisted users.
+  // The canonical builder tab: left pane = the Basic Settings form, right pane =
+  // the generation wizard. Shown to everyone who can reach the Create/Edit
+  // Simulation route (which is gated on the edit:scenario permission).
   agentBuilderCopilot: "agent-builder-copilot",
 };
 
@@ -108,8 +114,9 @@ export const BEHAVIOURS_INSTRUCTION_CATEGORIES = [
   { value: "SHOULD_NOT_DO", label: "Helper should not do" },
 ];
 
+// Tabs that follow the canonical Agent Builder Copilot tab. Basic Settings is
+// intentionally absent — its form is the Copilot tab's left pane now.
 export const StepperList = [
-  { id: SIMULATION_CREATOR_STEP_IDS.basicSettings, title: "Basic Settings" },
   { id: SIMULATION_CREATOR_STEP_IDS.advancedSettings, title: "Advanced Settings" },
   { id: SIMULATION_CREATOR_STEP_IDS.report, title: "Report" },
 ];
