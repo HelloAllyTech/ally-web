@@ -198,8 +198,18 @@ export interface GenerateNoteFromAudioInput {
 }
 
 export interface GenerateNoteFromAudioResponse {
-  /** Plain-text transcript of the dictation (never persisted). */
+  /**
+   * Plain-text transcript of the dictation. The generate call itself does not
+   * persist it; the drawer saves it to the note via `saveNoteTranscript` so it
+   * shows in the Transcript view later.
+   */
   transcript: string;
   /** Values the model could fill (value is a human-readable string). */
   values: { id: string; value: string }[];
+}
+
+export interface SaveNoteTranscriptInput {
+  chatId: number;
+  /** The full (possibly accumulated) dictation transcript to store. */
+  transcript: string;
 }

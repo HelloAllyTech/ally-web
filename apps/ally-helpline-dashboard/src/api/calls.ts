@@ -23,6 +23,7 @@ import {
   CreateNoteResponse,
   GenerateNoteFromAudioInput,
   GenerateNoteFromAudioResponse,
+  SaveNoteTranscriptInput,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -159,6 +160,22 @@ const callsAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Saves a manual scribe note's dictated transcript so it appears in the
+     * note's Transcript view later. Replaces any previously stored transcript
+     * for the note (the drawer re-sends the full accumulated dictation), so it
+     * is safe to call after every generation.
+     * @param {SaveNoteTranscriptInput} params - chatId + full transcript text
+     * @returns {Promise<{ success: boolean }>} Save confirmation
+     */
+    saveNoteTranscript: builder.mutation<{ success: boolean }, SaveNoteTranscriptInput>({
+      query: ({ chatId, transcript }) => ({
+        url: ApiEndpoints.CALLS.SAVE_NOTE_TRANSCRIPT(chatId),
+        method: HttpMethod.PUT,
+        body: { transcript },
+      }),
+    }),
+
+    /**
      * Cancels a pending/active audio upload session by chat id.
      * Useful for aborting client-side uploads and cleaning server resources.
      * @param {CancelAudioUploadInput} params - Object with chatId to cancel
@@ -225,6 +242,7 @@ export const {
   useGetAudioUploadUrlMutation,
   useCreateNoteMutation,
   useGenerateNoteFromAudioMutation,
+  useSaveNoteTranscriptMutation,
   useCancelAudioUploadMutation,
   useDeleteCallLogMutation,
   useProcessAudioUploadMutation,

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import {
   useCreateNoteMutation,
   useGenerateNoteFromAudioMutation,
+  useSaveNoteTranscriptMutation,
   useGetCustomFieldDefinitionsQuery,
   useGetSummaryFieldsQuery,
   useGetTagsMutation,
@@ -167,6 +168,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const [getTags] = useGetTagsMutation();
   const [generateNoteFromAudio, { isLoading: isGeneratingNotes }] =
     useGenerateNoteFromAudioMutation();
+  const [saveNoteTranscript] = useSaveNoteTranscriptMutation();
 
   // Voice dictation. The recorder buffer is only sent to `generateNoteFromAudio`
   // and then discarded — audio is never persisted client- or server-side.
@@ -190,6 +192,10 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   // Refs survive re-renders and the in-flight create/save races.
   const noteIdRef = useRef<number | null>(null);
   const creatingRef = useRef<Promise<number> | null>(null);
+  // Accumulates the dictation transcript across recordings within this note
+  // session; the full text is saved to the note so it shows in the Transcript
+  // view later. (The audio itself is never persisted.)
+  const transcriptRef = useRef<string>("");
   const latestValuesRef = useRef<Record<string, string | null>>({});
   const latestSummaryRef = useRef<Record<string, string | null>>({});
   // True when there are edits not yet confirmed saved. Guards the close-flush so
@@ -214,6 +220,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       setSaveState("idle");
       noteIdRef.current = null;
       creatingRef.current = null;
+      transcriptRef.current = "";
       latestValuesRef.current = {};
       latestSummaryRef.current = {};
       dirtyRef.current = false;
@@ -457,6 +464,26 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
         fields: voiceFields,
       }).unwrap();
       const filled = applyGeneratedValues(result.values);
+
+      // Persist what was dictated so it shows in the note's Transcript view
+      // later. Accumulate across multiple recordings and re-send the full text
+      // (the endpoint replaces the stored transcript). We ensure the note exists
+      // even when no fields were extracted, so a pure dictation is still saved.
+      // Best-effort: a failure here must not fail the generation — the extracted
+      // field values have already been applied and saved.
+      const spoken = result.transcript?.trim();
+      if (spoken) {
+        transcriptRef.current = transcriptRef.current
+          ? `${transcriptRef.current}\n${spoken}`
+          : spoken;
+        try {
+          const chatId = await ensureNote();
+          await saveNoteTranscript({ chatId, transcript: transcriptRef.current }).unwrap();
+        } catch {
+          // Non-fatal: the note and any extracted values still saved.
+        }
+      }
+
       resetRecorder();
       setVoiceOpen(false);
       if (filled > 0) {

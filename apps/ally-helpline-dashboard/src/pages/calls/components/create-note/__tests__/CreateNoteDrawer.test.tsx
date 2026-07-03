@@ -11,6 +11,7 @@ const mockUpsertValues = vi.fn();
 const mockUpdateCallSummary = vi.fn();
 const mockGetTags = vi.fn();
 const mockGenerateNoteFromAudio = vi.fn();
+const mockSaveNoteTranscript = vi.fn();
 const mockUseGetSummaryFields = vi.fn();
 const mockUseGetDefinitions = vi.fn();
 
@@ -34,6 +35,7 @@ const recorderState: any = {
 vi.mock("@api", () => ({
   useCreateNoteMutation: () => [mockCreateNote],
   useGenerateNoteFromAudioMutation: () => [mockGenerateNoteFromAudio, { isLoading: false }],
+  useSaveNoteTranscriptMutation: () => [mockSaveNoteTranscript],
   useGetCustomFieldDefinitionsQuery: () => mockUseGetDefinitions(),
   useGetSummaryFieldsQuery: () => mockUseGetSummaryFields(),
   useGetTagsMutation: () => [mockGetTags],
@@ -44,9 +46,15 @@ vi.mock("@api", () => ({
 vi.mock("@assets/icons", () => ({ MicIcon: () => <svg data-testid="mic-icon" /> }));
 
 // The recording surface is exercised in its own scope; here just detect that it
-// opened when the mic is clicked.
+// opened when the mic is clicked and expose a button to trigger generation.
 vi.mock("../VoiceNotePanel", () => ({
-  default: () => <div data-testid="voice-panel" />,
+  default: ({ onGenerate }: any) => (
+    <div data-testid="voice-panel">
+      <button data-testid="voice-generate" onClick={onGenerate}>
+        generate
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock("@components", () => ({
@@ -235,6 +243,7 @@ describe("CreateNoteDrawer", () => {
       unwrap: () => Promise.resolve({ chatId: 123, name: "CALL-123" }),
     });
     mockUpsertValues.mockReturnValue({ unwrap: () => Promise.resolve({ success: true }) });
+    mockSaveNoteTranscript.mockReturnValue({ unwrap: () => Promise.resolve({ success: true }) });
     mockUpdateCallSummary.mockReturnValue({ unwrap: () => Promise.resolve({}) });
     mockGetTags.mockResolvedValue({ data: [{ tag: "x", priority_rating: 1 }] });
     mockUseGetSummaryFields.mockReturnValue({ data: [], isLoading: false });
@@ -377,5 +386,47 @@ describe("CreateNoteDrawer", () => {
     fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
     expect(mockRecorderStart).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId("voice-panel")).toBeInTheDocument();
+  });
+
+  it("saves the dictated transcript to the note after generating", async () => {
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    mockGenerateNoteFromAudio.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({ transcript: "Client felt anxious.", values: [{ id: "age", value: "18-24" }] }),
+    });
+    recorderState.status = "stopped";
+    recorderState.blob = new Blob(["x"], { type: "audio/webm" });
+
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+    fireEvent.click(screen.getByTestId("voice-generate"));
+
+    await waitFor(() =>
+      expect(mockSaveNoteTranscript).toHaveBeenCalledWith({
+        chatId: 123,
+        transcript: "Client felt anxious.",
+      }),
+    );
+  });
+
+  it("still creates the note and saves the transcript when no fields are extracted", async () => {
+    mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
+    mockGenerateNoteFromAudio.mockReturnValue({
+      unwrap: () => Promise.resolve({ transcript: "Just some dictation.", values: [] }),
+    });
+    recorderState.status = "stopped";
+    recorderState.blob = new Blob(["x"], { type: "audio/webm" });
+
+    render(<CreateNoteDrawer open onClose={vi.fn()} />);
+    fireEvent.click(screen.getByTestId("drawer-header-button-voice-note"));
+    fireEvent.click(screen.getByTestId("voice-generate"));
+
+    await waitFor(() => expect(mockCreateNote).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(mockSaveNoteTranscript).toHaveBeenCalledWith({
+        chatId: 123,
+        transcript: "Just some dictation.",
+      }),
+    );
   });
 });
