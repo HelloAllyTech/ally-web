@@ -33,7 +33,7 @@ export const SimulationScoreMeter: FC<SimulationScoreMeterProps> = ({
           <div
             key={level}
             data-testid={`simulation-score-meter-level-${level}`}
-            className={`w-16 h-1 rounded-[34px] ${meterClassname}`}
+            className={`w-10 sm:w-16 h-1 rounded-[34px] ${meterClassname}`}
           />
         ))}
         <motion.div

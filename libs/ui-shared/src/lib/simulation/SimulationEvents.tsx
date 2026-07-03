@@ -39,10 +39,10 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
       initial={{ width: 0 }}
       animate={{ width: hasEvents ? "100%" : 0 }}
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-      className="overflow-hidden rounded-sm bg-[#1D2020] "
+      className="overflow-hidden rounded-sm bg-[#1D2020] h-full flex flex-col"
       style={{ willChange: "width" }}
     >
-      <div className="text-white text-[14px] font-medium leading-[22px] tracking-[0.28px] bg-[#282B31] px-4 h-[48px] items-center flex">
+      <div className="shrink-0 text-white text-[14px] font-medium leading-[22px] tracking-[0.28px] bg-[#282B31] px-4 h-[48px] items-center flex">
         AI Feedback
       </div>
       <motion.div
@@ -50,7 +50,7 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
         initial={{ x: "100%", opacity: 0 }}
         animate={{ x: hasEvents ? "0%" : "100%", opacity: hasEvents ? 1 : 0 }}
         transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-        className="flex flex-col items-start gap-4 bg-[#1D2020] p-4 h-[calc(100%-50px)] custom-scrollbar overflow-y-auto"
+        className="flex flex-col items-start gap-4 bg-[#1D2020] p-4 flex-1 min-h-0 custom-scrollbar overflow-y-auto"
         ref={containerRef}
       >
         {filteredEvents.map(({ emoji, message, timestamp }, index) => {

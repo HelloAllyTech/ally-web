@@ -26,8 +26,8 @@ export const BottomSection: FC<BottomSectionProps> = ({
   translations,
 }) => {
   return (
-    <div data-testid="simulation-bottom-section" className="w-full flex items-center">
-      <div className="flex-1 flex justify-start">
+    <div data-testid="simulation-bottom-section" className="w-full flex items-center gap-2">
+      <div className="flex-1 flex justify-start min-w-0">
         <SimulationTimer
           isWarning={isWarning}
           onWarning={onTimeLimitWarning}
@@ -55,10 +55,10 @@ export const BottomSection: FC<BottomSectionProps> = ({
       />
       <div
         data-testid="simulation-bottom-section-data-safe"
-        className="flex-1 flex items-center justify-end gap-2"
+        className="hidden sm:flex flex-1 items-center justify-end gap-2"
       >
         <Warning />
-        <span className="text-[15px] text-[#fff] font-['Roboto']">
+        <span className="text-[13px] lg:text-[15px] text-[#fff] font-['Roboto'] whitespace-nowrap">
           {translations?.dataSafe ?? "Your data is safe"}
         </span>
       </div>

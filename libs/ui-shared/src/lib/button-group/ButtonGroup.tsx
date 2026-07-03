@@ -19,11 +19,13 @@ const ButtonGroup: FC<ButtonGroupProps> = ({ buttonList }) => (
             disabled={isDisabled}
             aria-pressed={isActive}
             aria-disabled={isDisabled}
-            className={`sm:w-[120px] md:w-[140px] lg:w-[196px] h-[56px] flex items-center justify-center px-4 py-3 rounded-none leading-[16px] text-wrap focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white disabled:opacity-50 disabled:cursor-not-allowed ${isActive ? "!bg-[#FDFDFD]" : ""}
+            className={`w-[44px] sm:w-[120px] md:w-[140px] lg:w-[196px] h-[48px] sm:h-[56px] flex items-center justify-center px-2 sm:px-4 py-3 rounded-none leading-[16px] text-wrap focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white disabled:opacity-50 disabled:cursor-not-allowed ${isActive ? "!bg-[#FDFDFD]" : ""}
               ${isLastButton ? "" : "!border-solid border-r-[0.5px] border-[#5A5F6A]"} ${className}`}
           >
             {leftIcon}
-            <span className={`text-[12px] ml-2 ${isActive ? "text-[#1E2025]" : "text-[#fff]"}`}>
+            <span
+              className={`hidden sm:block text-[12px] ml-2 ${isActive ? "text-[#1E2025]" : "text-[#fff]"}`}
+            >
               {text}
             </span>
           </button>

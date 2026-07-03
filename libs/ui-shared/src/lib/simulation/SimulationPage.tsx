@@ -371,16 +371,16 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   const content = (
     <div
       data-testid="simulation-page"
-      className="h-[100%] p-6 flex flex-col gap-6 justify-between items-center font-['IBM_Plex_Serif'] bg-[#171A1A]"
+      className="h-[100%] p-3 sm:p-6 flex flex-col gap-3 sm:gap-6 justify-between items-center font-['IBM_Plex_Serif'] bg-[#171A1A]"
     >
       <div
         data-testid="simulation-page-header"
-        className="flex justify-between w-full border-l border-l-3 border-blue-500 pl-2"
+        className="flex flex-wrap justify-between gap-y-1 w-full border-l border-l-3 border-blue-500 pl-2"
       >
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 min-w-0 flex-1">
           <div
             data-testid="simulation-page-title"
-            className="text-white text-[20px] flex self-start"
+            className="text-white text-[16px] sm:text-[20px] flex self-start"
           >
             {title}
           </div>
@@ -474,7 +474,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
 
   if (room) {
     return (
-      <div className="h-[100vh] w-full bg-black">
+      <div className="h-[100dvh] w-full bg-black">
         <RoomContext.Provider value={room}>{content}</RoomContext.Provider>
       </div>
     );

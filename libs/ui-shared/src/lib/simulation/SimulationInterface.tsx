@@ -145,7 +145,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const renderConnectedContent = () => (
     <>
       <RoomAudioRenderer />
-      <div className="flex md:flex-row flex-col justify-between max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-4 w-full h-full">
+      <div className="flex md:flex-row flex-col justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
         <UserCallCard
           userData={{
             name: roomData?.remoteParticipant?.name,
@@ -169,7 +169,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
           (showSessionProgress ||
             (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
             (checklistMode === ChecklistMode.OFF && events?.length > 0)) && (
-            <div className="flex flex-col gap-4 w-full h-full min-h-0">
+            <div className="flex flex-col gap-4 w-full h-full min-h-0 max-h-[40vh] md:max-h-none">
               {showSessionProgress && (
                 <SessionProgress
                   stateNames={stateNames}
