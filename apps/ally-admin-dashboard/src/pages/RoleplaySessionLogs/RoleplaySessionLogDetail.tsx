@@ -72,7 +72,7 @@ const scoreColor = (value: number): string => {
   return "#81C784";
 };
 
-/** A labelled 0-100 metric bar (per optimisation goal). */
+/** A labelled 0-100 metric bar (per agent test case). */
 const MetricBar: FC<{ label: string; score: number }> = ({ label, score }) => {
   const clamped = Math.max(0, Math.min(100, score));
   return (
@@ -151,8 +151,8 @@ export const RoleplaySessionLogDetail: FC = () => {
         ) : null}
       </div>
 
-      {/* Roleplay actor performance vs optimisation goals */}
-      {(data.actorEvaluation || data.optimisationGoals.length > 0) && (
+      {/* Roleplay actor performance vs agent test cases */}
+      {(data.actorEvaluation || data.agentTestCases.length > 0) && (
         <section className="mt-6">
           <h2 className="text-lg font-secondary text-typography-900 mb-2">Actor performance</h2>
           {data.actorEvaluation?.status === "IN_PROGRESS" ? (
@@ -213,13 +213,13 @@ export const RoleplaySessionLogDetail: FC = () => {
           ) : (
             <div className="rounded-lg border border-border-light bg-white p-4">
               <p className="text-sm text-typography-700 mb-2">
-                Not yet evaluated. The actor is scored against these optimisation goals:
+                Not yet evaluated. The actor is scored against these agent test cases:
               </p>
-              {data.optimisationGoals.length === 0 ? (
-                <p className="text-sm text-typography-700">No optimisation goals are configured.</p>
+              {data.agentTestCases.length === 0 ? (
+                <p className="text-sm text-typography-700">No agent test cases are configured.</p>
               ) : (
                 <ul className="list-disc pl-5 text-sm text-typography-900">
-                  {data.optimisationGoals.map(g => (
+                  {data.agentTestCases.map(g => (
                     <li key={g.id}>
                       <span className="font-medium">{g.title}</span>{" "}
                       <span className="text-typography-700">({g.category})</span>

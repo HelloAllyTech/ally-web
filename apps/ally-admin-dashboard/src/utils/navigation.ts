@@ -69,9 +69,9 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.ANALYTICS,
   },
   {
-    id: SIDEBAR_ITEMS.OPTIMISATION_GOALS,
-    label: "Optimisation Goals",
-    path: ROUTES.OPTIMISATION_GOALS,
+    id: SIDEBAR_ITEMS.AGENT_TEST_CASES,
+    label: "Agent Test Cases",
+    path: ROUTES.AGENT_TEST_CASES,
   },
   {
     id: SIDEBAR_ITEMS.COMPETENCIES,
@@ -135,7 +135,7 @@ export const deriveNavigationItems = ({
   const roleGatedItems = navigationItems.filter(item =>
     [
       SIDEBAR_ITEMS.ANALYTICS,
-      SIDEBAR_ITEMS.OPTIMISATION_GOALS,
+      SIDEBAR_ITEMS.AGENT_TEST_CASES,
       SIDEBAR_ITEMS.COMPETENCIES,
       SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
       SIDEBAR_ITEMS.SETTINGS,
@@ -175,7 +175,7 @@ export const deriveNavigationItems = ({
             case SIDEBAR_ITEMS.USER_BADGES:
               return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
             case SIDEBAR_ITEMS.ANALYTICS:
-            case SIDEBAR_ITEMS.OPTIMISATION_GOALS:
+            case SIDEBAR_ITEMS.AGENT_TEST_CASES:
             case SIDEBAR_ITEMS.COMPETENCIES:
             case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
             case SIDEBAR_ITEMS.SETTINGS:

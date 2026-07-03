@@ -101,15 +101,15 @@ export interface RoleplaySessionFeedback {
   tags: string[];
 }
 
-/** A superadmin-configured optimisation goal the actor is scored against. */
-export interface RoleplaySessionOptimisationGoal {
+/** A superadmin-configured agent test case the actor is scored against. */
+export interface RoleplaySessionAgentTestCase {
   id: string;
   title: string;
   category: string;
   description: string | null;
 }
 
-/** LLM-judge evaluation of the roleplay actor against the optimisation goals. */
+/** LLM-judge evaluation of the roleplay actor against the agent test cases. */
 export interface RoleplaySessionActorEvaluation {
   compositeScore: number | null;
   /** Goal/metric name -> 0-100 score. */
@@ -153,7 +153,7 @@ export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   recording: RoleplaySessionRecording | null;
   feedback: RoleplaySessionFeedback | null;
   actorEvaluation: RoleplaySessionActorEvaluation | null;
-  optimisationGoals: RoleplaySessionOptimisationGoal[];
+  agentTestCases: RoleplaySessionAgentTestCase[];
   events: RoleplaySessionLogEvent[];
   transcript: RoleplaySessionLogMessage[];
 }

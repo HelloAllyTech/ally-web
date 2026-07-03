@@ -14,7 +14,7 @@ export interface GenerateAgentBuilderFieldRequest {
   field: AgentBuilderField;
   actorDescription: string;
   competency?: string;
-  optimisationGoals?: string;
+  agentTestCases?: string;
   numKnowledgeSources?: number;
   model?: string;
   provider?: "openai" | "anthropic";
@@ -49,7 +49,7 @@ const agentBuilderAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
     /**
      * Agent Builder Copilot: generate ONE Basic Settings field from the wizard's
-     * actor brief + competency + optimisation goals. The wizard fires one of
+     * actor brief + competency + agent test cases. The wizard fires one of
      * these per target field concurrently; each returned trigger exposes
      * `.abort()` so the whole batch can be cancelled.
      */

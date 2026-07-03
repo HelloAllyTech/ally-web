@@ -208,7 +208,7 @@ describe("createSimulation utils", () => {
         translationTitle: {},
         profession: "Engineer",
         sexualOrientation: "Heterosexual",
-        optimisationGoalIds: [],
+        agentTestCaseIds: [],
         showScoreMeter: undefined,
         enableFeedback: true,
         pauseEnabled: false,

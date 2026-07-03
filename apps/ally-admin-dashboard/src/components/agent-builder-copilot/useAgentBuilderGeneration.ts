@@ -35,7 +35,7 @@ export type GenerationPhase = "idle" | "running" | "done" | "aborted";
 export interface GenerationInputs {
   actorDescription: string;
   competency?: string;
-  optimisationGoals?: string;
+  agentTestCases?: string;
 }
 
 /** The fields generated in parallel, in the order shown in the feed. */
@@ -88,7 +88,7 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
           field,
           actorDescription: inputs.actorDescription,
           competency: inputs.competency,
-          optimisationGoals: inputs.optimisationGoals,
+          agentTestCases: inputs.agentTestCases,
           ...(field === "knowledge_sources"
             ? { numKnowledgeSources: DEFAULT_KNOWLEDGE_SOURCES }
             : {}),
