@@ -34,6 +34,9 @@ const mockEn = vi.hoisted(() => ({
       published: "Version published",
       editingToast: (label: string) => `Editing ${label}`,
     },
+    agentBuilder: {
+      tabTitle: "Agent Builder Copilot",
+    },
   },
   errors: {
     failedToProceed: "Fill atleast title field to proceed to Event Configuration!",
@@ -155,6 +158,7 @@ vi.mock("@components", () => ({
   SimulationEventMapTable: ({ simulationId }: any) => (
     <div data-testid="event-map-table">Event Map Table for {simulationId}</div>
   ),
+  AgentBuilderCopilotWizard: () => <div data-testid="agent-builder-wizard" />,
   ReportSection: () => <div data-testid="report-section" />,
   ScenarioVersionPanel: () => <div data-testid="scenario-version-panel" />,
   TranslationProgressToast: () => null,
@@ -165,8 +169,6 @@ vi.mock("@constants", () => ({
   en: mockEn,
   ADVANCED_EVENTS_LATENCY_THRESHOLD: 10,
   TooltipLocation: { PUBLISH_SIMULATION_VERSION: "publish_simulation_version" },
-  // Agent Builder Copilot tab is gated; keep it hidden in these tests.
-  canUseAgentBuilderCopilot: () => false,
   ExperienceMode: {
     FEEDBACK: "FEEDBACK",
     CHECKLIST: "CHECKLIST",
@@ -189,10 +191,11 @@ vi.mock("@constants", () => ({
     SIMULATION_STUDIO: "/simulation-studio",
     EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
   },
+  // Basic Settings is no longer a standalone tab; the Agent Builder Copilot tab
+  // is prepended by the component itself. These tabs follow it.
   StepperList: [
-    { id: "overview", title: "Overview" },
-    { id: "basic-settings", title: "Character Identity" },
     { id: "advanced-settings", title: "Event Configuration" },
+    { id: "report", title: "Report" },
   ],
   StepperListOld: [
     { id: "basic-info", label: "Basic Information" },
@@ -202,9 +205,10 @@ vi.mock("@constants", () => ({
     { id: "event-configuration", label: "Event Configuration" },
   ],
   SIMULATION_CREATOR_STEP_IDS: {
-    overview: "overview",
     basicSettings: "basic-settings",
     advancedSettings: "advanced-settings",
+    report: "report",
+    agentBuilderCopilot: "agent-builder-copilot",
   },
   SIMULATION_CREATOR_STEP_IDS_OLD: {
     basicInfo: "basic-info",
@@ -340,23 +344,29 @@ describe("CreateSimulation", () => {
 
   describe("Navigation", () => {
     it("should navigate to a step when its tab is clicked", async () => {
+      // With an existing simulation, switching to Event Configuration needs no
+      // create round-trip, so the tab activates directly (mandatory Basic
+      // Settings fields are satisfied by the default watch() mock).
+      mockParams.id = "existing-id";
       renderCreateSimulation();
 
-      // Click "Overview" tab — no save required, switches directly
-      const overviewTab = screen.getByText("Overview");
-      fireEvent.click(overviewTab);
+      const eventConfigTab = screen.getByText("Event Configuration");
+      fireEvent.click(eventConfigTab);
 
       await waitFor(() => {
-        expect(overviewTab).toHaveAttribute("data-active", "true");
+        expect(eventConfigTab).toHaveAttribute("data-active", "true");
       });
     });
 
     it("should show all steps as tabs", () => {
       renderCreateSimulation();
 
-      expect(screen.getByText("Overview")).toBeInTheDocument();
-      expect(screen.getByText("Character Identity")).toBeInTheDocument();
+      // Agent Builder Copilot is the canonical builder tab (Basic Settings is
+      // its left pane, not a separate tab).
+      expect(screen.getByText("Agent Builder Copilot")).toBeInTheDocument();
       expect(screen.getByText("Event Configuration")).toBeInTheDocument();
+      expect(screen.getByText("Report")).toBeInTheDocument();
+      expect(screen.queryByText("Basic Settings")).not.toBeInTheDocument();
     });
   });
 
