@@ -276,9 +276,6 @@ export enum AppType {
   APP = "APP",
 }
 
-/**
- * Whether the user can see the Agent Builder Copilot tab on Create Simulation.
- * Now open to all superadmins (previously a piloted email allowlist).
- */
-export const canUseAgentBuilderCopilot = (user?: { role?: string } | null): boolean =>
-  user?.role === UserRole.SUPER_ADMIN;
+// The Agent Builder Copilot tab is no longer gated by role: it's the canonical
+// builder surface on Create/Edit Simulation, shown to everyone who can reach
+// that route (gated on the edit:scenario permission at the route layer).
