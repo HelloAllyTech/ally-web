@@ -643,6 +643,12 @@ export interface AutofillModelOption {
   value: string;
   label: string;
   provider: "openai" | "anthropic";
+  /**
+   * False for reasoning models (o-series, gpt-5) that reject a custom
+   * temperature. Sourced from the universal LLM registry (GET /v1/learn/models
+   * now returns the registry filtered to autofill-runnable providers).
+   */
+  supportsTemperature?: boolean;
 }
 
 export interface RegenerateFieldRequest {

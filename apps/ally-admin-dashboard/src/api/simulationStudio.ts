@@ -984,7 +984,10 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Get available OpenAI models for autofill/regenerate
+     * Models for the autofill/regenerate/improve dropdown. Served from the
+     * universal LLM registry (GET /v1/learn/models), filtered server-side to
+     * the providers autofill can execute (OpenAI + Anthropic). Includes
+     * `supportsTemperature` per model.
      */
     getAutofillModels: builder.query<AutofillModelOption[], void>({
       query: () => ({
