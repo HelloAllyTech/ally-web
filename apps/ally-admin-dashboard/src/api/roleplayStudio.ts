@@ -85,10 +85,20 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
      * expectedUpdatedAt) is handled by the autosave hook (refetch + toast).
      */
     saveRoleplayDraft: builder.mutation<SaveRoleplayDraftResponse, SaveRoleplayDraftInput>({
-      query: ({ specId, versionId, spec, expectedUpdatedAt }) => ({
-        url: ApiEndpoints.ROLEPLAY_STUDIO.SAVE_DRAFT(specId, versionId),
+      query: ({ specId, spec, expectedUpdatedAt }) => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.SAVE_DRAFT(specId),
         method: HttpMethod.PUT,
         body: { spec, expectedUpdatedAt },
+      }),
+      // Server returns { spec, specVersionId, validation } — the hook needs the
+      // fresh concurrency token and the id of the snapshot this save produced.
+      transformResponse: (raw: {
+        spec?: { updatedAt?: string };
+        specVersionId?: string;
+        updatedAt?: string;
+      }): SaveRoleplayDraftResponse => ({
+        updatedAt: raw.spec?.updatedAt ?? raw.updatedAt ?? "",
+        versionId: raw.specVersionId,
       }),
     }),
 
@@ -127,8 +137,9 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
     // ----- copilot sessions (non-streaming surface) -----
     createRoleplayCopilotSession: builder.mutation<RoleplayCopilotSession, string>({
       query: specId => ({
-        url: ApiEndpoints.ROLEPLAY_STUDIO.CREATE_COPILOT_SESSION(specId),
+        url: ApiEndpoints.ROLEPLAY_STUDIO.CREATE_COPILOT_SESSION,
         method: HttpMethod.POST,
+        body: { specId },
       }),
       invalidatesTags: [TAG_TYPES.ROLEPLAY_COPILOT_SESSIONS],
     }),

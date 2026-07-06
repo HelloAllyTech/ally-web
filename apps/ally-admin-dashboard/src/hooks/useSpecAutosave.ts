@@ -38,7 +38,9 @@ export const useSpecAutosave = ({ step }: { step?: string } = {}) => {
   const saveNow = useCallback(async (): Promise<boolean> => {
     const state = stateRef.current;
     if (savingRef.current) return false;
-    if (!state.spec || !state.specId || !state.versionId) return false;
+    // Note: no versionId requirement — a brand-new spec has no snapshot yet;
+    // the save itself creates one (returned as result.versionId).
+    if (!state.spec || !state.specId) return false;
     if (state.isStreaming) return false;
     if (state.revision <= state.savedRevision) return false;
 
@@ -49,11 +51,16 @@ export const useSpecAutosave = ({ step }: { step?: string } = {}) => {
     try {
       const result = await saveDraft({
         specId: state.specId,
-        versionId: state.versionId,
         spec: state.spec,
         expectedUpdatedAt: state.serverUpdatedAt,
       }).unwrap();
-      dispatch(markDraftSaved({ revision: revisionAtSave, updatedAt: result.updatedAt }));
+      dispatch(
+        markDraftSaved({
+          revision: revisionAtSave,
+          updatedAt: result.updatedAt,
+          versionId: result.versionId,
+        }),
+      );
       return true;
     } catch (error) {
       const status = (error as { status?: number | string })?.status;

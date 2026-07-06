@@ -215,7 +215,6 @@ export interface UpdateRoleplaySpecInput {
 
 export interface SaveRoleplayDraftInput {
   specId: string;
-  versionId: string;
   spec: RoleplaySpec;
   /** Optimistic-concurrency token; server replies 409 when it doesn't match. */
   expectedUpdatedAt: string | null;
@@ -223,6 +222,8 @@ export interface SaveRoleplayDraftInput {
 
 export interface SaveRoleplayDraftResponse {
   updatedAt: string;
+  /** Id of the immutable version snapshot this save appended server-side. */
+  versionId?: string;
 }
 
 export interface PublishRoleplayVersionInput {

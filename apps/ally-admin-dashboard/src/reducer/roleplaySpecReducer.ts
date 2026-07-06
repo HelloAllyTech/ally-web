@@ -115,9 +115,15 @@ const roleplaySpecSlice = createSlice({
       state.saveStatus = action.payload;
     },
     /** A draft save round-tripped: pin the saved revision + concurrency token. */
-    markDraftSaved(state, action: PayloadAction<{ revision: number; updatedAt: string }>) {
+    markDraftSaved(
+      state,
+      action: PayloadAction<{ revision: number; updatedAt: string; versionId?: string }>,
+    ) {
       state.savedRevision = Math.max(state.savedRevision, action.payload.revision);
       state.serverUpdatedAt = action.payload.updatedAt;
+      // Each save appends a server-side snapshot; track its id so publish and
+      // rehearsal always target the freshest version.
+      if (action.payload.versionId) state.versionId = action.payload.versionId;
       state.saveStatus = state.revision > state.savedRevision ? "idle" : "saved";
     },
 

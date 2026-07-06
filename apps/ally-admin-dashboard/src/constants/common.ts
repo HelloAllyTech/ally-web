@@ -196,12 +196,13 @@ export const ApiEndpoints = {
     SPECS: "/v1/roleplay-studio/specs",
     SPEC_BY_ID: (specId: string) => `/v1/roleplay-studio/specs/${specId}`,
     SPEC_VERSIONS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/versions`,
-    SAVE_DRAFT: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/draft`,
+    // Draft saves are spec-scoped: the draft lives on the spec row and the
+    // backend appends an immutable version snapshot on every save.
+    SAVE_DRAFT: (specId: string) => `/v1/roleplay-studio/specs/${specId}/draft`,
     PUBLISH_VERSION: (specId: string, versionId: string) =>
       `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/publish`,
-    CREATE_COPILOT_SESSION: (specId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/copilot/sessions`,
+    // specId travels in the POST body (backend DTO), not the URL.
+    CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
     COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
     COPILOT_SESSION_MESSAGES: (sessionId: string) =>
       `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
