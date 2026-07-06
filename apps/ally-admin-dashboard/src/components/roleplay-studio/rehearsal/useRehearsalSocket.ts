@@ -168,16 +168,22 @@ export const useRehearsalSocket = ({
     }
   }, [socketUrl, onConnected, onError, onRunStatus, onRehearsalCompleted, scheduleReconnect]);
 
-  connectSocketRef.current = connectSocket;
+  // Keep the reconnect timer pointed at the freshest connectSocket.
+  useEffect(() => {
+    connectSocketRef.current = connectSocket;
+  }, [connectSocket]);
 
   const isConnected = useCallback(() => socketRef.current?.connected || false, []);
 
   useEffect(() => {
     isUnmountedRef.current = false;
     logger.info(`${logPrefix} Initializing connection on mount`);
-    connectSocket();
+    // Deferred a tick so the (state-setting) connect never runs synchronously
+    // inside the effect body.
+    const connectTimeout = setTimeout(() => connectSocket(), 0);
 
     return () => {
+      clearTimeout(connectTimeout);
       logger.info(`${logPrefix} Cleaning up on unmount`);
       isUnmountedRef.current = true;
       if (reconnectTimeoutRef.current) {
