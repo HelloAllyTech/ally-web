@@ -16,8 +16,6 @@ import { logger } from "@utils";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessage } from "./ChatMessage";
 
-const strings = en.roleplayStudio.copilot;
-
 const sessionStorageKey = (specId: string) =>
   `${LOCAL_STORAGE_KEYS.ROLEPLAY_COPILOT_SESSION_PREFIX}:${specId}`;
 
@@ -28,6 +26,7 @@ const sessionStorageKey = (specId: string) =>
  * useCopilotStream, so the SpecPanel on the right updates live.
  */
 export const CopilotChatPanel: React.FC = () => {
+  const strings = en.roleplayStudio.copilot;
   const dispatch = useDispatch();
   const { specId, copilotSessionId, interviewPhase } = useSelector(selectRoleplaySpecState);
 

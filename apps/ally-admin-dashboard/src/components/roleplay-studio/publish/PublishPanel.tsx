@@ -25,15 +25,6 @@ import {
   RoleplayReadinessCheck,
 } from "@utils/roleplaySpec";
 
-const strings = en.roleplayStudio.publish;
-
-const CHECK_LABELS: Record<RoleplayReadinessCheck["id"], string> = {
-  states: strings.checkStates,
-  secret: strings.checkSecret,
-  rubric: strings.checkRubric,
-  voice: strings.checkVoice,
-};
-
 interface PublishPanelProps {
   /** Persists any dirty draft state before publish / try-live. */
   onSaveDraft: () => Promise<boolean>;
@@ -46,6 +37,13 @@ interface PublishPanelProps {
  * room-data handoff into localStorage, and opens the live preview.
  */
 export const PublishPanel: React.FC<PublishPanelProps> = ({ onSaveDraft }) => {
+  const strings = en.roleplayStudio.publish;
+  const checkLabels: Record<RoleplayReadinessCheck["id"], string> = {
+    states: strings.checkStates,
+    secret: strings.checkSecret,
+    rubric: strings.checkRubric,
+    voice: strings.checkVoice,
+  };
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useUser();
@@ -155,7 +153,7 @@ export const PublishPanel: React.FC<PublishPanelProps> = ({ onSaveDraft }) => {
                 <FailIcon size={16} className="shrink-0 text-[#FE6F64]" />
               )}
               <span className={check.passed ? "text-typography-900" : "text-typography-700"}>
-                {CHECK_LABELS[check.id]}
+                {checkLabels[check.id]}
               </span>
             </li>
           ))}

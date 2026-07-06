@@ -15,8 +15,6 @@ import { roleplayEntityId } from "@utils/roleplaySpec";
 
 import { SpecSectionCard } from "./SpecSectionCard";
 
-const strings = en.roleplayStudio.spec;
-
 interface RubricSectionProps {
   rubric: RoleplayRubric;
   readOnly?: boolean;
@@ -27,6 +25,7 @@ const PolarityChip: React.FC<{
   onToggle: () => void;
   disabled?: boolean;
 }> = ({ polarity, onToggle, disabled }) => {
+  const strings = en.roleplayStudio.spec;
   const isPositive = polarity === "positive";
   return (
     <button
@@ -48,6 +47,7 @@ const PolarityChip: React.FC<{
 
 /** Behavior rows with polarity chips + weights, plus inline editing. */
 export const RubricSection: React.FC<RubricSectionProps> = ({ rubric, readOnly = false }) => {
+  const strings = en.roleplayStudio.spec;
   const dispatch = useDispatch();
 
   const update = (behavior: RoleplayRubricBehavior, patch: Partial<RoleplayRubricBehavior>) =>

@@ -5,8 +5,6 @@ import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 
-const strings = en.roleplayStudio.copilot;
-
 interface ChatComposerProps {
   onSend: (message: string) => void;
   onStop: () => void;
@@ -22,6 +20,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   disabled = false,
 }) => {
   const [value, setValue] = useState("");
+  const strings = en.roleplayStudio.copilot;
 
   const send = () => {
     const trimmed = value.trim();

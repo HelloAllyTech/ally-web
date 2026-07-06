@@ -9,8 +9,6 @@ import { CopilotChatMessage } from "@src/types/roleplayStudio";
 import { roleplayMarkdownComponents } from "../markdownComponents";
 import { QuestionCard } from "./QuestionCard";
 
-const strings = en.roleplayStudio.copilot;
-
 interface ChatMessageProps {
   message: CopilotChatMessage;
   onAnswerQuestion: (answer: string) => void;
@@ -27,6 +25,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onAnswerQuestion,
   disabled = false,
 }) => {
+  const strings = en.roleplayStudio.copilot;
   if (message.role === "user") {
     return (
       <div className="flex justify-end">

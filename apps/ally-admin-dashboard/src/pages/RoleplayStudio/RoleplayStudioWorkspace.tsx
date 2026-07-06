@@ -19,8 +19,6 @@ import { useSpecAutosave } from "@hooks";
 import { hydrateSpec, resetRoleplayStudio, selectRoleplaySpecState, setSpecTitle } from "@reducer";
 import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 
-const strings = en.roleplayStudio;
-
 export const ROLEPLAY_STEP_IDS = {
   INTERVIEW: "interview",
   SPEC: "spec",
@@ -28,17 +26,20 @@ export const ROLEPLAY_STEP_IDS = {
   PUBLISH: "publish",
 } as const;
 
-const STEP_TABS = [
-  { id: ROLEPLAY_STEP_IDS.INTERVIEW, label: strings.steps.interview },
-  { id: ROLEPLAY_STEP_IDS.SPEC, label: strings.steps.spec },
-  { id: ROLEPLAY_STEP_IDS.REHEARSE, label: strings.steps.rehearse },
-  { id: ROLEPLAY_STEP_IDS.PUBLISH, label: strings.steps.publish },
+// Built lazily (not at module-eval time) so partial `@constants` mocks in
+// unrelated tests never trip on `en.roleplayStudio` (mirrors navigation.ts).
+const buildStepTabs = () => [
+  { id: ROLEPLAY_STEP_IDS.INTERVIEW, label: en.roleplayStudio.steps.interview },
+  { id: ROLEPLAY_STEP_IDS.SPEC, label: en.roleplayStudio.steps.spec },
+  { id: ROLEPLAY_STEP_IDS.REHEARSE, label: en.roleplayStudio.steps.rehearse },
+  { id: ROLEPLAY_STEP_IDS.PUBLISH, label: en.roleplayStudio.steps.publish },
 ];
 
 const VALID_STEPS = new Set<string>(Object.values(ROLEPLAY_STEP_IDS));
 
 /** Subtle inline save-state chip, mirroring CreateSimulation's autosave chip. */
 const AutosaveChip: React.FC = () => {
+  const strings = en.roleplayStudio;
   const { saveStatus, revision, savedRevision } = useSelector(selectRoleplaySpecState);
   const dirty = revision > savedRevision;
 
@@ -92,6 +93,7 @@ const WorkspaceSkeleton: React.FC = () => (
  * replaces the URL with the canonical `/:specId` route.
  */
 export const RoleplayStudioWorkspace: React.FC = () => {
+  const strings = en.roleplayStudio;
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { specId } = useParams();
@@ -224,7 +226,7 @@ export const RoleplayStudioWorkspace: React.FC = () => {
       </div>
 
       <Tabs
-        items={STEP_TABS}
+        items={buildStepTabs()}
         className="mb-2 mt-4 border-b border-border-light font-primary shrink-0"
         activeId={step}
         showCount={false}

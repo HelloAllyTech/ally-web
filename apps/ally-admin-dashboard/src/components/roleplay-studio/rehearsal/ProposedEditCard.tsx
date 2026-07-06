@@ -9,8 +9,6 @@ import { selectRoleplaySpec } from "@reducer";
 import { RoleplayCritiqueProposal } from "@src/types/roleplayStudio";
 import { getValueAtPointer } from "@utils/applyJsonPatch";
 
-const strings = en.roleplayStudio.rehearsal;
-
 const severityStyles: Record<string, string> = {
   high: "bg-destructive-50 text-destructive-500",
   medium: "bg-secondary-50 text-typography-900",
@@ -44,6 +42,7 @@ export const ProposedEditCard: React.FC<ProposedEditCardProps> = ({
   onAccept,
   onReject,
 }) => {
+  const strings = en.roleplayStudio.rehearsal;
   const spec = useSelector(selectRoleplaySpec);
   const severityClass =
     severityStyles[proposal.severity?.toLowerCase?.() ?? ""] ?? severityStyles.low;

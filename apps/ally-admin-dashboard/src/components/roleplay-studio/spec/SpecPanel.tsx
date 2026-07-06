@@ -17,8 +17,6 @@ import { RubricSection } from "./RubricSection";
 import { SpecSectionCard } from "./SpecSectionCard";
 import { VoiceLanguageSection } from "./VoiceLanguageSection";
 
-const strings = en.roleplayStudio.spec;
-
 interface SpecPanelProps {
   /** Read-only during the interview step; editable on the spec step. */
   readOnly?: boolean;
@@ -30,6 +28,7 @@ interface SpecPanelProps {
  * the spec they touched.
  */
 export const SpecPanel: React.FC<SpecPanelProps> = ({ readOnly = false }) => {
+  const strings = en.roleplayStudio.spec;
   const dispatch = useDispatch();
   const spec = useSelector(selectRoleplaySpec);
 

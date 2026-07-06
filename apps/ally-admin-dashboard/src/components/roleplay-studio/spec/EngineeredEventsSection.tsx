@@ -11,8 +11,6 @@ import { roleplayEntityId } from "@utils/roleplaySpec";
 
 import { SpecSectionCard } from "./SpecSectionCard";
 
-const strings = en.roleplayStudio.spec;
-
 interface EngineeredEventsSectionProps {
   events: RoleplayEngineeredEvent[];
   readOnly?: boolean;
@@ -27,6 +25,7 @@ export const EngineeredEventsSection: React.FC<EngineeredEventsSectionProps> = (
   events,
   readOnly = false,
 }) => {
+  const strings = en.roleplayStudio.spec;
   const dispatch = useDispatch();
 
   const update = (event: RoleplayEngineeredEvent, patch: Partial<RoleplayEngineeredEvent>) =>

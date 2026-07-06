@@ -6,8 +6,6 @@ import { en } from "@constants";
 
 import { RoleplayFlowNode } from "./graphMapping";
 
-const strings = en.roleplayStudio.stateMachine;
-
 const EXCERPT_LENGTH = 110;
 
 const excerpt = (text: string): string => {
@@ -20,6 +18,7 @@ const excerpt = (text: string): string => {
  * state-card excerpt. The initial state gets a highlighted ring + badge.
  */
 export const StateNode: React.FC<NodeProps<RoleplayFlowNode>> = ({ data, selected }) => {
+  const strings = en.roleplayStudio.stateMachine;
   const { state, isInitial } = data;
 
   return (

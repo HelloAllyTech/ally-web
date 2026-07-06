@@ -4,8 +4,6 @@ import { Tabs } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { RoleplayRehearsalTranscript } from "@src/types/roleplayStudio";
 
-const strings = en.roleplayStudio.rehearsal;
-
 interface RehearsalTranscriptViewerProps {
   transcripts: RoleplayRehearsalTranscript[];
 }
@@ -31,6 +29,7 @@ const formatNotes = (notes?: string | Record<string, string>): string => {
 export const RehearsalTranscriptViewer: React.FC<RehearsalTranscriptViewerProps> = ({
   transcripts,
 }) => {
+  const strings = en.roleplayStudio.rehearsal;
   const tabItems = useMemo(
     () =>
       transcripts.map(transcript => ({

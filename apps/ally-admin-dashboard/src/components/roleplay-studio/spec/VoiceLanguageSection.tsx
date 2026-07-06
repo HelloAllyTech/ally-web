@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
@@ -11,8 +11,6 @@ import { setLanguage, setLanguageVoice } from "@reducer";
 import { RoleplayLanguageConfig, RoleplayVoiceConfig } from "@src/types/roleplayStudio";
 
 import { SpecSectionCard } from "./SpecSectionCard";
-
-const strings = en.roleplayStudio.spec;
 
 interface VoiceLanguageSectionProps {
   voice: RoleplayVoiceConfig;
@@ -30,10 +28,11 @@ export const VoiceLanguageSection: React.FC<VoiceLanguageSectionProps> = ({
   language,
   readOnly = false,
 }) => {
+  const strings = en.roleplayStudio.spec;
   const dispatch = useDispatch();
   const { data: languages } = useGetScenarioLanguagesQuery({ active: true });
 
-  const languageList = languages ?? [];
+  const languageList = useMemo(() => languages ?? [], [languages]);
   const selectedLanguageId = language.languageId !== undefined ? String(language.languageId) : "";
   const selectedLanguage = languageList.find(
     option => String(option.language_id ?? option.value) === selectedLanguageId,

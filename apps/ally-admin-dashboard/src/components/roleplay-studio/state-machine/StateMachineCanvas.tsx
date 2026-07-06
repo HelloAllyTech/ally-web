@@ -48,8 +48,6 @@ import { StateNode } from "./StateNode";
 import { TransitionEdge } from "./TransitionEdge";
 import { TransitionEditorSidePanel } from "./TransitionEditorSidePanel";
 
-const strings = en.roleplayStudio.stateMachine;
-
 const nodeTypes = { [ROLEPLAY_STATE_NODE_TYPE]: StateNode };
 const edgeTypes = { [ROLEPLAY_TRANSITION_EDGE_TYPE]: TransitionEdge };
 
@@ -72,24 +70,28 @@ interface EditingTransition {
  * NOTE: default export — this module (and @xyflow/react) is lazy-loaded.
  */
 const StateMachineCanvas: React.FC<StateMachineCanvasProps> = ({ readOnly = false }) => {
+  const strings = en.roleplayStudio.stateMachine;
   const dispatch = useDispatch();
   const spec = useSelector(selectRoleplaySpec);
 
   const graph = useMemo(() => (spec ? specToGraph(spec) : { nodes: [], edges: [] }), [spec]);
 
   // Nodes live in local state so dragging is fluid; the spec stays the source
-  // of truth (re-derives on every spec change, preserving selection).
+  // of truth. Re-derived during render when the spec-derived nodes change
+  // (the sanctioned "adjust state when props change" pattern), preserving
+  // selection and any in-flight dragged position.
   const [nodes, setNodes] = useState<RoleplayFlowNode[]>(graph.nodes);
-  useEffect(() => {
+  const [prevGraphNodes, setPrevGraphNodes] = useState(graph.nodes);
+  if (graph.nodes !== prevGraphNodes) {
+    setPrevGraphNodes(graph.nodes);
     setNodes(previous =>
       graph.nodes.map(node => ({
         ...node,
         selected: previous.find(p => p.id === node.id)?.selected ?? false,
-        // Keep an in-flight dragged position over a stale spec-derived one.
         position: previous.find(p => p.id === node.id && p.dragging)?.position ?? node.position,
       })),
     );
-  }, [graph.nodes]);
+  }
 
   const [selection, setSelection] = useState<OnSelectionChangeParams>({ nodes: [], edges: [] });
   const [editingState, setEditingState] = useState<RoleplayStateNode | null>(null);

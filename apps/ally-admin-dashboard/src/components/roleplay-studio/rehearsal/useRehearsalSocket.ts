@@ -46,6 +46,9 @@ export const useRehearsalSocket = ({
   const connectionAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isUnmountedRef = useRef(false);
+  // scheduleReconnect and connectSocket are mutually recursive; the ref breaks
+  // the declaration cycle (populated below, before any timer can fire).
+  const connectSocketRef = useRef<() => void>(() => {});
   const [status, setStatus] = useState<RehearsalSocketStatus>("disconnected");
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -81,7 +84,7 @@ export const useRehearsalSocket = ({
 
     reconnectTimeoutRef.current = setTimeout(() => {
       if (isUnmountedRef.current) return;
-      connectSocket();
+      connectSocketRef.current();
     }, delay);
   }, [getReconnectDelay]);
 
@@ -164,6 +167,8 @@ export const useRehearsalSocket = ({
       scheduleReconnect();
     }
   }, [socketUrl, onConnected, onError, onRunStatus, onRehearsalCompleted, scheduleReconnect]);
+
+  connectSocketRef.current = connectSocket;
 
   const isConnected = useCallback(() => socketRef.current?.connected || false, []);
 

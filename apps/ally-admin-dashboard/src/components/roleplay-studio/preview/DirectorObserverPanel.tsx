@@ -7,8 +7,6 @@ import { en } from "@constants";
 import { RoleplayDirectorTurnPayload } from "@src/types/roleplayStudio";
 import { decodeUint8ToJson } from "@utils";
 
-const strings = en.roleplayStudio.preview;
-
 /** LiveKit data-channel topic carrying director turn payloads. */
 export const DIRECTOR_TOPIC = "director";
 
@@ -17,6 +15,7 @@ interface DirectorObserverPanelProps {
 }
 
 const TurnCard: React.FC<{ turn: RoleplayDirectorTurnPayload }> = ({ turn }) => {
+  const strings = en.roleplayStudio.preview;
   const observed = (turn.behaviors ?? []).filter(behavior => behavior.observed);
   const stateChanged = turn.state && turn.state.from !== turn.state.to;
 
@@ -84,6 +83,7 @@ const TurnCard: React.FC<{ turn: RoleplayDirectorTurnPayload }> = ({ turn }) => 
  * state transitions, observed behaviors, unlocks, scores, and feedback.
  */
 export const DirectorObserverPanel: React.FC<DirectorObserverPanelProps> = ({ room }) => {
+  const strings = en.roleplayStudio.preview;
   const [turns, setTurns] = useState<RoleplayDirectorTurnPayload[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);

@@ -8,8 +8,6 @@ import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { RoleplayTraineeProfile } from "@src/types/roleplayStudio";
 
-const strings = en.roleplayStudio.rehearsal;
-
 const ALL_PROFILES: RoleplayTraineeProfile[] = ["SKILLED", "POOR", "ADVERSARIAL"];
 const DEFAULT_TURNS = 8;
 const MAX_TURNS = 40;
@@ -21,6 +19,7 @@ interface RehearsalLaunchCardProps {
 
 /** Profile toggles + turns-per-profile input; POSTs a new rehearsal run. */
 export const RehearsalLaunchCard: React.FC<RehearsalLaunchCardProps> = ({ specId, versionId }) => {
+  const strings = en.roleplayStudio.rehearsal;
   const [createRehearsal, { isLoading }] = useCreateRoleplayRehearsalMutation();
   const [profiles, setProfiles] = useState<Record<RoleplayTraineeProfile, boolean>>({
     SKILLED: true,

@@ -5,9 +5,6 @@ import { useSelector } from "react-redux";
 
 import { selectRoleplaySpecState } from "@reducer";
 
-/** Only flash patches applied within this window (guards against remounts). */
-const FLASH_WINDOW_MS = 6_000;
-
 interface SpecPatchFlashProps {
   /** Top-level spec keys this wrapper watches (e.g. ["persona", "title"]). */
   sections: string[];
@@ -17,8 +14,9 @@ interface SpecPatchFlashProps {
 
 /**
  * Highlights its children with a brief background flash whenever a streamed
- * copilot patch touches one of the watched spec sections. Re-keyed on each
- * matching patch so the animation replays.
+ * copilot patch touches one of the watched spec sections. The wrapper is
+ * re-keyed per matching patch, so each new patch replays the animation
+ * (framer-motion runs initial -> animate once per key).
  */
 export const SpecPatchFlash: React.FC<SpecPatchFlashProps> = ({
   sections,
@@ -36,12 +34,10 @@ export const SpecPatchFlash: React.FC<SpecPatchFlashProps> = ({
     return null;
   }, [patchLog, sections]);
 
-  const shouldFlash = Boolean(lastTouch && Date.now() - lastTouch.appliedAt < FLASH_WINDOW_MS);
-
   return (
     <motion.div
-      key={shouldFlash && lastTouch ? `${lastTouch.patchId}-${lastTouch.appliedAt}` : "static"}
-      initial={shouldFlash ? { backgroundColor: "rgba(99, 102, 241, 0.12)" } : false}
+      key={lastTouch ? `${lastTouch.patchId}-${lastTouch.appliedAt}` : "static"}
+      initial={lastTouch ? { backgroundColor: "rgba(99, 102, 241, 0.12)" } : false}
       animate={{ backgroundColor: "rgba(99, 102, 241, 0)" }}
       transition={{ duration: 1.8, ease: "easeOut" }}
       className={`rounded-lg ${className}`}

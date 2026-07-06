@@ -9,8 +9,6 @@ import {
 } from "@src/types/roleplayStudio";
 import { formatDate } from "@utils";
 
-const strings = en.roleplayStudio.rehearsal;
-
 interface RehearsalRunRowProps {
   rehearsal: RoleplayRehearsal;
   /** Live socket progress overrides the fetched snapshot when present. */
@@ -33,6 +31,7 @@ export const RehearsalRunRow: React.FC<RehearsalRunRowProps> = ({
   onSelect,
   onCancel,
 }) => {
+  const strings = en.roleplayStudio.rehearsal;
   const status = liveStatus ?? String(rehearsal.status);
   const progress = liveProgress ?? rehearsal.progress;
   const percent =

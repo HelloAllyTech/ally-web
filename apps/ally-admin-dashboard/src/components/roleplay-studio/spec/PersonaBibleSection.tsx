@@ -12,8 +12,6 @@ import { roleplayEntityId } from "@utils/roleplaySpec";
 
 import { SpecSectionCard } from "./SpecSectionCard";
 
-const strings = en.roleplayStudio.spec;
-
 interface PersonaBibleSectionProps {
   persona: RoleplayPersona;
   readOnly?: boolean;
@@ -24,6 +22,7 @@ export const PersonaBibleSection: React.FC<PersonaBibleSectionProps> = ({
   persona,
   readOnly = false,
 }) => {
+  const strings = en.roleplayStudio.spec;
   const dispatch = useDispatch();
 
   const updateChunk = (chunk: RoleplayPersonaChunk, patch: Partial<RoleplayPersonaChunk>) =>

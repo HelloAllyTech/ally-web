@@ -10,8 +10,6 @@ import { RoleplayStateNode } from "@src/types/roleplayStudio";
 
 import { panelFieldClass, SidePanelShell } from "./SidePanelShell";
 
-const strings = en.roleplayStudio.stateMachine;
-
 interface StateEditorSidePanelProps {
   state: RoleplayStateNode;
   isInitial: boolean;
@@ -38,6 +36,7 @@ export const StateEditorSidePanel: React.FC<StateEditorSidePanelProps> = ({
   isInitial,
   onClose,
 }) => {
+  const strings = en.roleplayStudio.stateMachine;
   const dispatch = useDispatch();
 
   const { register, handleSubmit } = useForm<StateFormValues>({

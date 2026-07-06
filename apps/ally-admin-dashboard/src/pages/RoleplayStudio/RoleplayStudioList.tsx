@@ -12,13 +12,12 @@ import { en, ROUTES } from "@constants";
 import { RoleplaySpecListItem } from "@src/types/roleplayStudio";
 import { formatDate } from "@utils";
 
-const strings = en.roleplayStudio;
-
 /**
  * Roleplay Studio v2 landing list. Follows the Simulation Studio list pattern
  * (header + create action + table); rows open the workspace.
  */
 export const RoleplayStudioList: React.FC = () => {
+  const strings = en.roleplayStudio;
   const navigate = useNavigate();
   const { data, isLoading } = useGetRoleplaySpecsQuery();
   const [deleteSpec] = useDeleteRoleplaySpecMutation();

@@ -6,8 +6,6 @@ import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { CopilotQuestionEvent } from "@src/types/roleplayStudio";
 
-const strings = en.roleplayStudio.copilot;
-
 interface QuestionCardProps {
   question: CopilotQuestionEvent;
   /** Answering sends a normal next chat message. */
@@ -26,6 +24,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   disabled = false,
 }) => {
   const [freeText, setFreeText] = useState("");
+  const strings = en.roleplayStudio.copilot;
   const [submittedAnswer, setSubmittedAnswer] = useState<string | null>(null);
 
   const answered = submittedAnswer !== null;

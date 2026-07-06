@@ -10,8 +10,6 @@ import { RoleplayTransition } from "@src/types/roleplayStudio";
 
 import { panelFieldClass, SidePanelShell } from "./SidePanelShell";
 
-const strings = en.roleplayStudio.stateMachine;
-
 interface TransitionEditorSidePanelProps {
   fromStateId: string;
   transition: RoleplayTransition;
@@ -63,6 +61,7 @@ export const TransitionEditorSidePanel: React.FC<TransitionEditorSidePanelProps>
   transition,
   onClose,
 }) => {
+  const strings = en.roleplayStudio.stateMachine;
   const dispatch = useDispatch();
   const spec = useSelector(selectRoleplaySpec);
 

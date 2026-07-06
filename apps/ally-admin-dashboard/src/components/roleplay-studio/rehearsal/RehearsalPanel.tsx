@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import ReactMarkdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,8 +27,6 @@ import { RehearsalRunRow } from "./RehearsalRunRow";
 import { RehearsalTranscriptViewer } from "./RehearsalTranscriptViewer";
 import { useRehearsalSocket } from "./useRehearsalSocket";
 
-const strings = en.roleplayStudio.rehearsal;
-
 /**
  * The rehearse step: launch card, live run list (socket-driven progress from
  * namespace roleplay/rehearsals), and the selected run's results — judge
@@ -36,6 +34,7 @@ const strings = en.roleplayStudio.rehearsal;
  * proposals that accept/reject straight into the spec slice.
  */
 export const RehearsalPanel: React.FC = () => {
+  const strings = en.roleplayStudio.rehearsal;
   const dispatch = useDispatch();
   const { specId, versionId, pendingProposals } = useSelector(selectRoleplaySpecState);
 
@@ -68,17 +67,15 @@ export const RehearsalPanel: React.FC = () => {
 
   useRehearsalSocket({ onRunStatus, onRehearsalCompleted });
 
-  // Default the selection to the most recent completed run.
-  useEffect(() => {
-    if (selectedId || rehearsals.length === 0) return;
-    const firstCompleted = rehearsals.find(
-      run => String(run.status) === RoleplayRehearsalStatus.COMPLETED,
-    );
-    setSelectedId((firstCompleted ?? rehearsals[0]).id);
-  }, [rehearsals, selectedId]);
+  // No explicit pick yet -> default to the first completed run (else newest).
+  const defaultSelectedId =
+    rehearsals.find(run => String(run.status) === RoleplayRehearsalStatus.COMPLETED)?.id ??
+    rehearsals[0]?.id ??
+    null;
+  const effectiveSelectedId = selectedId ?? defaultSelectedId;
 
-  const { data: selectedRun } = useGetRoleplayRehearsalQuery(selectedId as string, {
-    skip: !selectedId,
+  const { data: selectedRun } = useGetRoleplayRehearsalQuery(effectiveSelectedId as string, {
+    skip: !effectiveSelectedId,
   });
 
   const selectedIsCompleted =
@@ -93,9 +90,9 @@ export const RehearsalPanel: React.FC = () => {
   };
 
   const handleCritique = async () => {
-    if (!selectedId) return;
+    if (!effectiveSelectedId) return;
     try {
-      const response = await critiqueRehearsal(selectedId).unwrap();
+      const response = await critiqueRehearsal(effectiveSelectedId).unwrap();
       dispatch(
         queueProposals(
           (response.proposals ?? []).map(proposal => ({
@@ -145,7 +142,7 @@ export const RehearsalPanel: React.FC = () => {
               liveStatus={
                 liveStatuses[rehearsal.id] ? String(liveStatuses[rehearsal.id].status) : undefined
               }
-              isSelected={rehearsal.id === selectedId}
+              isSelected={rehearsal.id === effectiveSelectedId}
               onSelect={() => setSelectedId(rehearsal.id)}
               onCancel={() => handleCancel(rehearsal.id)}
             />

@@ -26,8 +26,6 @@ import { roleplayEntityId } from "@utils/roleplaySpec";
 
 import { SpecSectionCard } from "./SpecSectionCard";
 
-const strings = en.roleplayStudio.spec;
-
 interface DisclosureLedgerSectionProps {
   ledger: RoleplayDisclosureLedger;
   readOnly?: boolean;
@@ -52,6 +50,7 @@ const SecretRow: React.FC<{
   onChange: (patch: Partial<RoleplaySecret>) => void;
   onRemove: () => void;
 }> = ({ secret, readOnly, onChange, onRemove }) => {
+  const strings = en.roleplayStudio.spec;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: secret.id,
     disabled: readOnly,
@@ -140,6 +139,7 @@ export const DisclosureLedgerSection: React.FC<DisclosureLedgerSectionProps> = (
   ledger,
   readOnly = false,
 }) => {
+  const strings = en.roleplayStudio.spec;
   const dispatch = useDispatch();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
