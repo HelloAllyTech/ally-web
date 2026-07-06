@@ -806,9 +806,7 @@ describe("PromptSidePanel Component", () => {
       renderPanel();
       expect(screen.getByRole("option", { name: "GPT-4o" })).toBeInTheDocument();
       expect(screen.getByRole("option", { name: "GPT-5" })).toBeInTheDocument();
-      expect(
-        screen.getByRole("option", { name: "Gemini 2.0 Flash" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "Gemini 2.0 Flash" })).toBeInTheDocument();
     });
 
     it("sends the explicit provider with the model on save", () => {
@@ -837,12 +835,8 @@ describe("PromptSidePanel Component", () => {
       // Switch to gpt-5 (supportsTemperature=false): control disables + note shows.
       const select = screen.getByRole("combobox") as HTMLSelectElement;
       fireEvent.change(select, { target: { value: "gpt-5" } });
-      expect(
-        screen.getByRole("checkbox", { name: /Override temperature/i }),
-      ).toBeDisabled();
-      expect(
-        screen.getByText(/doesn’t support a custom temperature/i),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("checkbox", { name: /Override temperature/i })).toBeDisabled();
+      expect(screen.getByText(/doesn’t support a custom temperature/i)).toBeInTheDocument();
 
       fireEvent.click(screen.getByText("Save"));
       expect(mockOnUpdate).toHaveBeenCalledWith(
