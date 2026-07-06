@@ -16,6 +16,12 @@ interface PrivateLayoutProps {
   requiredPermissions?: Permissions[];
   requiredRole?: UserRole;
   isPreview?: boolean;
+  /**
+   * Optional email allowlist (compared case-insensitively against the logged-in
+   * user's email). When present, access ALSO requires an email match; absent
+   * prop = no email gate (fully backward compatible).
+   */
+  allowedEmails?: string[];
 }
 
 export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
@@ -23,6 +29,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   isPreview,
   requiredPermissions = [],
   requiredRole,
+  allowedEmails,
 }) => {
   const isAuthenticated =
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
@@ -44,6 +51,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   // Check if user has permission to access current route
   let hasPermission = true;
   let hasRole = true;
+  let hasAllowedEmail = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
     hasPermission = hasPermissions(permissions, requiredPermissions);
@@ -56,7 +64,16 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     hasRole = !requiredRole || userData?.role === requiredRole;
   }
 
-  const hasAccess = hasPermission && hasRole;
+  // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive;
+  // only applies when the route passes an allowlist.
+  if (!isUserLoading && allowedEmails) {
+    const userEmail = userData?.email?.toLowerCase();
+    hasAllowedEmail = Boolean(
+      userEmail && allowedEmails.some(allowed => allowed.toLowerCase() === userEmail),
+    );
+  }
+
+  const hasAccess = hasPermission && hasRole && hasAllowedEmail;
 
   if (hasAccess && isPreview) return children;
 

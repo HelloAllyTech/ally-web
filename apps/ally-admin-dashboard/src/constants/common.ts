@@ -192,6 +192,37 @@ export const ApiEndpoints = {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
   },
+  ROLEPLAY_STUDIO: {
+    SPECS: "/v1/roleplay-studio/specs",
+    SPEC_BY_ID: (specId: string) => `/v1/roleplay-studio/specs/${specId}`,
+    SPEC_VERSIONS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/versions`,
+    // Draft saves are spec-scoped: the draft lives on the spec row and the
+    // backend appends an immutable version snapshot on every save.
+    SAVE_DRAFT: (specId: string) => `/v1/roleplay-studio/specs/${specId}/draft`,
+    PUBLISH_VERSION: (specId: string, versionId: string) =>
+      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/publish`,
+    // specId travels in the POST body (backend DTO), not the URL.
+    CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
+    COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
+    COPILOT_SESSION_MESSAGES: (sessionId: string) =>
+      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
+    COPILOT_SESSION_STREAM: (sessionId: string) =>
+      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages/stream`,
+    CREATE_REHEARSALS: (specId: string, versionId: string) =>
+      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/rehearsals`,
+    REHEARSALS_BY_SPEC: (specId: string) => `/v1/roleplay-studio/specs/${specId}/rehearsals`,
+    REHEARSAL_BY_ID: (rehearsalId: string) => `/v1/roleplay-studio/rehearsals/${rehearsalId}`,
+    CANCEL_REHEARSAL: (rehearsalId: string) =>
+      `/v1/roleplay-studio/rehearsals/${rehearsalId}/cancel`,
+    CRITIQUE_REHEARSAL: (rehearsalId: string) =>
+      `/v1/roleplay-studio/rehearsals/${rehearsalId}/critique`,
+    CREATE_SESSION: (specId: string, versionId: string) =>
+      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/sessions`,
+    SESSION_DIRECTOR_EVENTS: (sessionId: string) =>
+      `/v1/roleplay-studio/sessions/${sessionId}/director-events`,
+    SESSION_RUBRIC_SCORES: (sessionId: string) =>
+      `/v1/roleplay-studio/sessions/${sessionId}/rubric-scores`,
+  },
 };
 
 export const ROUTES = {
@@ -224,6 +255,10 @@ export const ROUTES = {
   SETTINGS: "/settings",
   TERMS: "/terms",
   PRIVACY: "/privacy",
+  ROLEPLAY_STUDIO: "/roleplay-studio",
+  ROLEPLAY_STUDIO_NEW: "/roleplay-studio/new",
+  ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
+  ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -232,6 +267,10 @@ export const LOCAL_STORAGE_KEYS = {
   ADMIN_USER_STATUS: "adminUserStatus",
   ADMIN_IS_AUTHENTICATED: "adminIsAuthenticated",
   PREVIEW_ROOM_DATA: "previewRoomData",
+  ROLEPLAY_PREVIEW_ROOM_DATA: "roleplayPreviewRoomData",
+  // Prefix — the copilot session id is stored per spec as `${prefix}:${specId}`
+  // so a page refresh can resume the same interview session.
+  ROLEPLAY_COPILOT_SESSION_PREFIX: "roleplayCopilotSession",
 };
 
 export enum KeyboardKeys {
@@ -306,6 +345,10 @@ export const TAG_TYPES = {
   SETTINGS: "settings",
   USER_PREFERENCES: "userPreferences",
   ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
+  ROLEPLAY_SPECS: "roleplaySpecs",
+  ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
+  ROLEPLAY_REHEARSALS: "roleplayRehearsals",
+  ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
 };
 
 /**

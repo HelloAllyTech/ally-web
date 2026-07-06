@@ -1,5 +1,13 @@
 import { NavigationItem } from "@components/types";
-import { ROUTES, en, SIDEBAR_ITEMS, Permissions, UserRole } from "@constants";
+import {
+  ROUTES,
+  en,
+  SIDEBAR_ITEMS,
+  Permissions,
+  UserRole,
+  isRoleplayStudioEmailAllowed,
+} from "@constants";
+import { store } from "@store";
 
 /**
  * Builds the full set of admin navigation tabs in their default order. Built
@@ -12,6 +20,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     id: SIDEBAR_ITEMS.SIMULATION_STUDIO,
     label: en.simulation.rolePlays,
     path: ROUTES.SIMULATION_STUDIO,
+  },
+  {
+    id: SIDEBAR_ITEMS.ROLEPLAY_STUDIO,
+    label: en.roleplayStudio.navLabel,
+    path: ROUTES.ROLEPLAY_STUDIO,
   },
   {
     id: SIDEBAR_ITEMS.EVENTS,
@@ -121,14 +134,22 @@ export const deriveNavigationItems = ({
   permissions,
   role,
   savedOrder,
+  email,
 }: {
   // Accepts `string[]` to match how permissions are stored in Redux; enum
   // members compare cleanly against the string entries.
   permissions: string[] | undefined;
   role: UserRole | undefined;
   savedOrder: string[] | undefined;
+  /**
+   * Logged-in user's email, used for allowlist-gated items (Roleplay Studio).
+   * Optional for backward compatibility: when omitted, falls back to the user
+   * slice in the store (read lazily at call time to avoid init-order issues).
+   */
+  email?: string;
 }): NavigationItem[] => {
   const navigationItems = buildNavigationItems();
+  const resolvedEmail = email ?? store.getState()?.user?.user?.email;
   const isSuperAdmin = role === UserRole.SUPER_ADMIN;
   // Role-gated (super-admin only) items, appended below independently of
   // permissions, in nav order: Analytics then Settings (last).
@@ -151,6 +172,12 @@ export const deriveNavigationItems = ({
           switch (item.id) {
             case SIDEBAR_ITEMS.SIMULATION_STUDIO:
               return permissions.includes(Permissions.EDIT_SCENARIO);
+            case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
+              // Rollout gate: permission AND the temporary email allowlist.
+              return (
+                permissions.includes(Permissions.VIEW_ROLEPLAY_SPECS) &&
+                isRoleplayStudioEmailAllowed(resolvedEmail)
+              );
             case SIDEBAR_ITEMS.EVENTS:
               return permissions.includes(Permissions.EDIT_EVENT);
             case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
