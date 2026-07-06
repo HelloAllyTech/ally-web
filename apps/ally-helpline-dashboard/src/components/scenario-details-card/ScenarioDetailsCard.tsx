@@ -152,9 +152,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
                 disabled={isDisabled}
                 aria-label={t("learn.scenario.startAria")}
               >
-                {isStarting && (
-                  <Loading withOverlay={false} small className="mr-2 !h-4 !w-4" />
-                )}
+                {isStarting && <Loading withOverlay={false} small className="mr-2 !h-4 !w-4" />}
                 {t("common.startSimulation")}
               </Button>
             </AppTooltip>

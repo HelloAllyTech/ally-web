@@ -791,7 +791,10 @@ describe("AchievementsViewAll Component", () => {
         </TestWrapper>,
       );
 
-      expect(container1.innerHTML).toBe(container2.innerHTML);
+      // Carbon's Tooltip generates a unique id per render (via useId) that shows
+      // up in `id`/`aria-labelledby`; normalize those so we compare structure.
+      const normalize = (html: string) => html.replace(/tooltip-:[^:"]+:/g, "tooltip-ID");
+      expect(normalize(container1.innerHTML)).toBe(normalize(container2.innerHTML));
     });
   });
 

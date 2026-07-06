@@ -1,7 +1,8 @@
 import { ChangeEvent, FC } from "react";
 
-import { TimePicker as CarbonTimePicker } from "@ally-ui-mono/ui-shared";
 import dayjs from "dayjs";
+
+import { TimePicker as CarbonTimePicker } from "@ally-ui-mono/ui-shared";
 
 import { TimePickerProps } from "./types";
 

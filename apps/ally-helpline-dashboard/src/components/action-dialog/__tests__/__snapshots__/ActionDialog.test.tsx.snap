@@ -1,7 +1,123 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`ActionDialog snapshot > matches the snapshot 1`] = `
-<div
-  aria-hidden="true"
-/>
+<div>
+  <div
+    aria-hidden="false"
+    class="cds--layer-one cds--modal is-visible font-primary"
+    role="presentation"
+  >
+    <div
+      aria-modal="true"
+      class="cds--modal-container cds--modal-container--sm"
+      role="dialog"
+    >
+      <button
+        class="cds--visually-hidden"
+        type="button"
+      >
+        Focus sentinel
+      </button>
+      <div
+        class="cds--modal-container-body"
+      >
+        <div
+          class="cds--modal-header"
+        >
+          <h2
+            class="cds--modal-header__heading cds--type-beta"
+            id="cds--modal-header__heading--id-:r1h:"
+          >
+            Snapshot Test
+          </h2>
+          <div
+            class="cds--modal-close-button"
+          >
+            <span
+              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--open cds--popover--left cds--tooltip cds--icon-tooltip"
+            >
+              <div
+                class="cds--tooltip-trigger__wrapper"
+              >
+                <button
+                  aria-label="Close"
+                  aria-labelledby="tooltip-:r1j:"
+                  class="cds--modal-close cds--btn cds--btn--primary cds--btn--icon-only"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="cds--modal-close__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.4141 16 24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <span
+                aria-hidden="false"
+                class="cds--popover"
+                id="tooltip-:r1j:"
+                role="tooltip"
+              >
+                <span
+                  class="cds--popover-content cds--tooltip-content"
+                >
+                  Close
+                </span>
+                <span
+                  class="cds--popover-caret"
+                />
+              </span>
+            </span>
+          </div>
+        </div>
+        <div
+          class="cds--layer-two cds--modal-content cds--modal-scroll-content--no-fade"
+        >
+          <span>
+            Snapshot Content
+          </span>
+        </div>
+        <div
+          aria-busy="false"
+          class="cds--modal-footer cds--btn-set"
+        >
+          <div
+            class="flex gap-4 items-center w-full"
+          >
+            <button
+              class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px]
+        transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
+        disabled:cursor-default disabled:opacity-50 border border-secondary hover:bg-accent hover:text-typography-900 disabled:bg-accent/50 text-typography-900 font-tertiary  flex-1"
+            >
+              Secondary
+            </button>
+            <button
+              class="h-10 flex items-center justify-center gap-2 py-2 px-4 whitespace-nowrap text-sm font-medium rounded-[100px]
+        transition-transform duration-150 ease-out hover:-translate-y-[1px] disabled:hover:translate-y-0
+        disabled:cursor-default disabled:opacity-50 text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary/50 font-tertiary  text-base flex-1"
+            >
+              Primary
+            </button>
+          </div>
+        </div>
+      </div>
+      <button
+        class="cds--visually-hidden"
+        type="button"
+      >
+        Focus sentinel
+      </button>
+    </div>
+  </div>
+</div>
 `;

@@ -35,9 +35,7 @@ export const OrgSettingsAccordion: FC<OrgSettingsAccordionProps> = ({
           aria-expanded={expanded}
         >
           <Play
-            className={`text-typography-900 transition-transform ${
-              expanded ? "rotate-90" : ""
-            }`}
+            className={`text-typography-900 transition-transform ${expanded ? "rotate-90" : ""}`}
             aria-label="expand icon"
           />
           <span className="text-base font-medium text-typography-900">{title}</span>

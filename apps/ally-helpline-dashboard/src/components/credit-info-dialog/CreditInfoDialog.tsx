@@ -1,7 +1,6 @@
 import { FC, useEffect } from "react";
 
 import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
-
 import { CloseIcon, NoCreditLeft } from "@assets";
 
 import { CreditInfoProps } from "./types";

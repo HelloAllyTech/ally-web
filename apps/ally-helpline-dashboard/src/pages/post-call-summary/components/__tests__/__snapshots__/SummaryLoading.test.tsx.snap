@@ -43,16 +43,17 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
             </label>
           </div>
           <div
-            class="b"
-            componentsprops="[object Object]"
             data-testid="tooltip"
             data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
-            placement="bottom-end"
           >
-            <svg
-              class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
-              data-testid="info-icon"
-            />
+            <span
+              class="inline-flex"
+            >
+              <svg
+                class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+                data-testid="info-icon"
+              />
+            </span>
           </div>
         </div>
         <textarea
@@ -137,16 +138,17 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
             </label>
           </div>
           <div
-            class="b"
-            componentsprops="[object Object]"
             data-testid="tooltip"
             data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
-            placement="bottom-end"
           >
-            <svg
-              class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
-              data-testid="info-icon"
-            />
+            <span
+              class="inline-flex"
+            >
+              <svg
+                class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+                data-testid="info-icon"
+              />
+            </span>
           </div>
         </div>
         <textarea
@@ -230,16 +232,17 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
             </label>
           </div>
           <div
-            class="b"
-            componentsprops="[object Object]"
             data-testid="tooltip"
             data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
-            placement="bottom-end"
           >
-            <svg
-              class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
-              data-testid="info-icon"
-            />
+            <span
+              class="inline-flex"
+            >
+              <svg
+                class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+                data-testid="info-icon"
+              />
+            </span>
           </div>
         </div>
         <textarea
@@ -313,16 +316,17 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
             </label>
           </div>
           <div
-            class="b"
-            componentsprops="[object Object]"
             data-testid="tooltip"
             data-title="Your notes are saved automatically and will appear under “Additional Notes” after the summary is created."
-            placement="bottom-end"
           >
-            <svg
-              class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
-              data-testid="info-icon"
-            />
+            <span
+              class="inline-flex"
+            >
+              <svg
+                class="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer"
+                data-testid="info-icon"
+              />
+            </span>
           </div>
         </div>
         <textarea
@@ -342,8 +346,7 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
           disabled=""
         >
           <div
-            data-size="16"
-            data-testid="circular-progress"
+            data-testid="loading"
           >
             Loading
           </div>

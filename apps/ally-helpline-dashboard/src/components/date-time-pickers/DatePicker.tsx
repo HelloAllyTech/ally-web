@@ -1,7 +1,8 @@
 import { FC } from "react";
 
-import { DatePicker as CarbonDatePicker, DatePickerInput } from "@ally-ui-mono/ui-shared";
 import dayjs from "dayjs";
+
+import { DatePicker as CarbonDatePicker, DatePickerInput } from "@ally-ui-mono/ui-shared";
 
 import { DatePickerProps } from "./types";
 

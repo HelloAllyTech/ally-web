@@ -605,7 +605,12 @@ describe("ListToolbar", () => {
 
       render(<ListToolbar {...defaultProps} filterChips={chips} />);
 
-      expect(screen.getByText("Active")).toBeInTheDocument();
+      // Carbon's Tooltip renders the label ("Active") in its popover too, so the
+      // chip value ("Active") appears twice; target the chip value span.
+      const chipValue = screen
+        .getAllByText("Active")
+        .find(el => el.className.includes("font-medium"));
+      expect(chipValue).toBeInTheDocument();
     });
 
     it("handles action without onClick handler", () => {

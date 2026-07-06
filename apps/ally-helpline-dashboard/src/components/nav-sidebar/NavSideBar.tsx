@@ -1,10 +1,10 @@
 import { FC, useEffect, useState } from "react";
 
-import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
@@ -108,15 +108,8 @@ const Tab: FC<TabProps> = ({
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { t } = useTranslation();
-  const {
-    permissions,
-    user,
-    logout,
-    getProfileUrl,
-    deleteProfile,
-    uploadProfile,
-    refetchUser,
-  } = useUser();
+  const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
+    useUser();
 
   const { data: unreadData } = useGetUnreadReviewCountQuery(
     { isScribe: false },

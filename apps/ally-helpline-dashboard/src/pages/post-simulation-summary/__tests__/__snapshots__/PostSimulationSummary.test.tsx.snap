@@ -286,51 +286,48 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="w-full shrink-0 normal-case border-b border-[#DBDBDB]"
-          data-testid="mui-tabs"
-          data-value="1"
-          role="tablist"
+          class="border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+          data-testid="tabs"
         >
-          <button
-            aria-selected="false"
-            data-testid="tab-1"
-            data-value="1"
-            role="tab"
+          <nav
+            aria-label="Tabs"
+            class="-mb-px flex space-x-8"
           >
-            Session Review
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-4"
-            data-value="4"
-            role="tab"
-          >
-            Ask AI
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-2"
-            data-value="2"
-            role="tab"
-          >
-            Annotated Transcript
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-5"
-            data-value="5"
-            role="tab"
-          >
-            Skills  Demonstrated
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-6"
-            data-value="6"
-            role="tab"
-          >
-            Deeper Reflection
-          </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-primary-500"
+              data-testid="tab-1"
+            >
+              Session Review 
+              <span
+                aria-hidden="true"
+                class="absolute bottom-[0px] left-1/2 -translate-x-1/2 h-[3px] w-full rounded-tl-lg rounded-tr-lg bg-primary-500"
+              />
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-4"
+            >
+              Ask AI 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-2"
+            >
+              Annotated Transcript 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-5"
+            >
+              Skills  Demonstrated 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-6"
+            >
+              Deeper Reflection 
+            </button>
+          </nav>
         </div>
         <div
           class="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
@@ -652,51 +649,48 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="w-full shrink-0 normal-case border-b border-[#DBDBDB]"
-          data-testid="mui-tabs"
-          data-value="1"
-          role="tablist"
+          class="border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+          data-testid="tabs"
         >
-          <button
-            aria-selected="false"
-            data-testid="tab-1"
-            data-value="1"
-            role="tab"
+          <nav
+            aria-label="Tabs"
+            class="-mb-px flex space-x-8"
           >
-            Session Review
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-4"
-            data-value="4"
-            role="tab"
-          >
-            Ask AI
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-2"
-            data-value="2"
-            role="tab"
-          >
-            Annotated Transcript
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-5"
-            data-value="5"
-            role="tab"
-          >
-            Skills  Demonstrated
-          </button>
-          <button
-            aria-selected="false"
-            data-testid="tab-6"
-            data-value="6"
-            role="tab"
-          >
-            Deeper Reflection
-          </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-primary-500"
+              data-testid="tab-1"
+            >
+              Session Review 
+              <span
+                aria-hidden="true"
+                class="absolute bottom-[0px] left-1/2 -translate-x-1/2 h-[3px] w-full rounded-tl-lg rounded-tr-lg bg-primary-500"
+              />
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-4"
+            >
+              Ask AI 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-2"
+            >
+              Annotated Transcript 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-5"
+            >
+              Skills  Demonstrated 
+            </button>
+            <button
+              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
+              data-testid="tab-6"
+            >
+              Deeper Reflection 
+            </button>
+          </nav>
         </div>
         <div
           class="flex min-h-0 w-full flex-1 flex-col overflow-hidden"

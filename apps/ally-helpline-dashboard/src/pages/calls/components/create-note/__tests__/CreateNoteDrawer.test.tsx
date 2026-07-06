@@ -67,11 +67,7 @@ vi.mock("@components", () => ({
       {(headerButtons ?? [])
         .filter((b: any) => b.show)
         .map((b: any) => (
-          <button
-            key={b.alt}
-            data-testid={`drawer-header-button-${b.alt}`}
-            onClick={b.onClick}
-          >
+          <button key={b.alt} data-testid={`drawer-header-button-${b.alt}`} onClick={b.onClick}>
             {b.icon}
           </button>
         ))}
@@ -122,10 +118,6 @@ vi.mock("@types", () => ({
     COUNSELLOR_ONLY: "COUNSELLOR_ONLY",
     BOTH: "BOTH",
   },
-}));
-
-vi.mock("@mui/material", () => ({
-  CircularProgress: () => <div role="progressbar" />,
 }));
 
 vi.mock("sonner", () => ({
@@ -397,7 +389,10 @@ describe("CreateNoteDrawer", () => {
     mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
     mockGenerateNoteFromAudio.mockReturnValue({
       unwrap: () =>
-        Promise.resolve({ transcript: "Client felt anxious.", values: [{ id: "age", value: "18-24" }] }),
+        Promise.resolve({
+          transcript: "Client felt anxious.",
+          values: [{ id: "age", value: "18-24" }],
+        }),
     });
     recorderState.status = "stopped";
     recorderState.blob = new Blob(["x"], { type: "audio/webm" });

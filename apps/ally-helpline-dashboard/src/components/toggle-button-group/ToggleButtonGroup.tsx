@@ -1,7 +1,6 @@
 import { FC } from "react";
 
 import { ContentSwitcher, Switch } from "@ally-ui-mono/ui-shared";
-
 import { cn } from "@utils";
 
 import { ToggleButtonGroupProps } from "./types";
@@ -35,12 +34,7 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
       )}
     >
       {items.map(({ value: itemValue, label }) => (
-        <Switch
-          key={itemValue}
-          name={itemValue}
-          text={label}
-          disabled={disabled}
-        />
+        <Switch key={itemValue} name={itemValue} text={label} disabled={disabled} />
       ))}
     </ContentSwitcher>
   );

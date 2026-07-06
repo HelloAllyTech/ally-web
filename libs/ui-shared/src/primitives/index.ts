@@ -115,8 +115,8 @@ export {
 // --- Navigation / switching ---------------------------------------------
 export { ContentSwitcher, Switch } from "@carbon/react";
 
-// --- Layout --------------------------------------------------------------
-export { Grid, Column, Stack, FlexGrid, Row } from "@carbon/react";
+// --- Layout / typography -------------------------------------------------
+export { Grid, Column, Stack, FlexGrid, Row, Heading, Section } from "@carbon/react";
 
 // --- Theme boundary ------------------------------------------------------
 export { GlobalTheme, Theme } from "@carbon/react";

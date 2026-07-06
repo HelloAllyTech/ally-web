@@ -44,13 +44,6 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// Mock @mui/material
-vi.mock("@mui/material", () => ({
-  Divider: ({ sx, ...props }: any) => (
-    <div data-testid="divider" data-sx={JSON.stringify(sx)} {...props} />
-  ),
-}));
-
 // Mock @api
 const mockAddFeedback = vi.fn();
 const mockUpdateFeedback = vi.fn();
@@ -331,10 +324,13 @@ describe("CallSidebar", () => {
     });
 
     it("should render divider with correct styling", () => {
-      render(<CallSidebar {...defaultProps} />);
+      // The MUI Divider was replaced with a plain <hr> that carries the same
+      // translucent-white separator colour via an inline style.
+      const { container } = render(<CallSidebar {...defaultProps} />);
 
-      const divider = screen.getByTestId("divider");
-      expect(divider).toHaveAttribute("data-sx", '{"backgroundColor":"rgba(255, 255, 255, 0.12)"}');
+      const divider = container.querySelector("hr");
+      expect(divider).toBeInTheDocument();
+      expect(divider).toHaveStyle({ borderColor: "rgba(255, 255, 255, 0.12)" });
     });
   });
 

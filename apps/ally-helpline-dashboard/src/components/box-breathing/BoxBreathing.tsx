@@ -1,9 +1,9 @@
 import { FC, useState, useRef, useEffect } from "react";
 
-import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import { X, Minimize, Maximize } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import {
   BoxBreathingBottomGradient,
   BoxBreathingTopGradient,
@@ -182,7 +182,12 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
   );
 
   return isMaximized ? (
-    <ComposedModal open onClose={onClose} size="lg" className="[&_.cds--modal-container]:h-screen [&_.cds--modal-container]:max-h-screen [&_.cds--modal-container]:w-screen [&_.cds--modal-container]:max-w-full">
+    <ComposedModal
+      open
+      onClose={onClose}
+      size="lg"
+      className="[&_.cds--modal-container]:h-screen [&_.cds--modal-container]:max-h-screen [&_.cds--modal-container]:w-screen [&_.cds--modal-container]:max-w-full"
+    >
       <ModalBody className="p-0 h-full">{BoxBreathingComponent}</ModalBody>
     </ComposedModal>
   ) : (

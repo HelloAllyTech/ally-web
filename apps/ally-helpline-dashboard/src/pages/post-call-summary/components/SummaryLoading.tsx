@@ -208,7 +208,8 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
       case ChatSummaryStatus.SUCCESS:
         return (
           <Button variant={ButtonVariant.SECONDARY} disabled={true} className="w-72">
-            <Loading small withOverlay={false} className="!h-4 !w-4" /> {t("summaryLoading.settingUp")}
+            <Loading small withOverlay={false} className="!h-4 !w-4" />{" "}
+            {t("summaryLoading.settingUp")}
           </Button>
         );
       case ChatSummaryStatus.IN_PROGRESS:

@@ -3,16 +3,30 @@
 exports[`TimePicker > should match snapshot when disabled 1`] = `
 <DocumentFragment>
   <div
-    data-disabled="true"
-    data-testid="mui-time-picker"
+    class="cds--form-item"
   >
-    <input
-      data-testid="time-input"
-      disabled=""
-      placeholder="HH:mm"
-      type="text"
-      value=""
+    <label
+      class="cds--label cds--visually-hidden cds--label--disabled"
+      for="time-picker-input"
     />
+    <div
+      class="cds--time-picker cds--time-picker--md"
+    >
+      <div
+        class="cds--time-picker__input"
+      >
+        <input
+          class="cds--time-picker__input-field cds--text-input"
+          disabled=""
+          id="time-picker-input"
+          maxlength="5"
+          pattern="(1[012]|[1-9]):[0-5][0-9](\\\\s)?"
+          placeholder="hh:mm"
+          type="text"
+          value=""
+        />
+      </div>
+    </div>
   </div>
 </DocumentFragment>
 `;
@@ -20,14 +34,29 @@ exports[`TimePicker > should match snapshot when disabled 1`] = `
 exports[`TimePicker > should match snapshot when fully rendered 1`] = `
 <DocumentFragment>
   <div
-    data-testid="mui-time-picker"
+    class="cds--form-item"
   >
-    <input
-      data-testid="time-input"
-      placeholder="HH:mm"
-      type="text"
-      value=""
+    <label
+      class="cds--label cds--visually-hidden"
+      for="time-picker-input"
     />
+    <div
+      class="cds--time-picker cds--time-picker--md"
+    >
+      <div
+        class="cds--time-picker__input"
+      >
+        <input
+          class="cds--time-picker__input-field cds--text-input"
+          id="time-picker-input"
+          maxlength="5"
+          pattern="(1[012]|[1-9]):[0-5][0-9](\\\\s)?"
+          placeholder="hh:mm"
+          type="text"
+          value=""
+        />
+      </div>
+    </div>
   </div>
 </DocumentFragment>
 `;
@@ -35,14 +64,29 @@ exports[`TimePicker > should match snapshot when fully rendered 1`] = `
 exports[`TimePicker > should match snapshot with value 1`] = `
 <DocumentFragment>
   <div
-    data-testid="mui-time-picker"
+    class="cds--form-item"
   >
-    <input
-      data-testid="time-input"
-      placeholder="HH:mm"
-      type="text"
-      value="Invalid Date"
+    <label
+      class="cds--label cds--visually-hidden"
+      for="time-picker-input"
     />
+    <div
+      class="cds--time-picker cds--time-picker--md"
+    >
+      <div
+        class="cds--time-picker__input"
+      >
+        <input
+          class="cds--time-picker__input-field cds--text-input"
+          id="time-picker-input"
+          maxlength="5"
+          pattern="(1[012]|[1-9]):[0-5][0-9](\\\\s)?"
+          placeholder="hh:mm"
+          type="text"
+          value="14:30"
+        />
+      </div>
+    </div>
   </div>
 </DocumentFragment>
 `;

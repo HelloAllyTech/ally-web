@@ -11,15 +11,13 @@ vi.mock("react-redux", () => ({
   useSelector: (callback: any) => mockUseSelector(callback),
 }));
 
-// Mock @mui/material
-vi.mock("@mui/material", () => ({
-  CircularProgress: ({ size }: any) => (
-    <div data-testid="circular-progress" data-size={size}>
-      Loading
-    </div>
-  ),
-  Tooltip: ({ children, title, ...props }: any) => (
-    <div data-testid="tooltip" data-title={title} {...props}>
+// Mock @ally-ui-mono/ui-shared (Carbon). SummaryLoading now uses the shared
+// `Loading` (replacing MUI CircularProgress) and `Tooltip` (whose content comes
+// from a `label` prop, not MUI's `title`).
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  Loading: () => <div data-testid="loading">Loading</div>,
+  Tooltip: ({ children, label }: any) => (
+    <div data-testid="tooltip" data-title={label}>
       {children}
     </div>
   ),
@@ -202,7 +200,7 @@ describe("SummaryLoading", () => {
     renderComponent({ summaryStatus: ChatSummaryStatus.SUCCESS });
     const button = screen.getByText(/Setting up your summary screen/i);
     expect(button).toBeDisabled();
-    expect(screen.getByTestId("circular-progress")).toBeInTheDocument();
+    expect(screen.getByTestId("loading")).toBeInTheDocument();
   });
 
   // --- Rendering Tests (IN_PROGRESS/PENDING State) ---

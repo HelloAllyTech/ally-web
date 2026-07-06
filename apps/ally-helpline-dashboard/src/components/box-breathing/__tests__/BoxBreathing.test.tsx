@@ -5,11 +5,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import BoxBreathing from "../BoxBreathing";
 
-vi.mock("@mui/material", () => ({
-  Modal: ({ open, children }: any) =>
-    open ? <div data-testid="modal-root">{children}</div> : null,
-}));
-
 vi.mock("@assets", () => ({
   BoxBreathingBottomGradient: (props: any) => <div data-testid="bbg" {...props} />,
   BoxBreathingTopGradient: (props: any) => <div data-testid="btg" {...props} />,

@@ -1,7 +1,6 @@
 import { FC } from "react";
 
 import { ComposedModal, ModalBody, ModalFooter, ModalHeader } from "@ally-ui-mono/ui-shared";
-
 import { Button } from "@components";
 
 import { ActionDialogProps } from "./types";

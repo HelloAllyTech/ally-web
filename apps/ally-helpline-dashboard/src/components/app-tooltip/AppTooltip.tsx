@@ -1,7 +1,6 @@
 import React from "react";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-
 import { useGetActiveTooltipsQuery } from "@api";
 import { TooltipLocation } from "@constants";
 

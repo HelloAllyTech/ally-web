@@ -1,6 +1,6 @@
-import { AllyThemeProvider } from "@ally-ui-mono/ui-shared";
 import { Toaster } from "sonner";
 
+import { AllyThemeProvider } from "@ally-ui-mono/ui-shared";
 import RouteLayout from "@routes/RouteLayout";
 
 const App = () => {

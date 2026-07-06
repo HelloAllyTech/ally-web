@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 
 import { ScaleTypes } from "@carbon/charts";
-import { Button, InlineNotification, SkeletonPlaceholder, Tile } from "@carbon/react";
+
+import { Button, InlineNotification, SkeletonPlaceholder, Tile } from "@ally-ui-mono/ui-shared";
 
 /**
  * Shared analytics chart kit — the single source of truth for how charts in the

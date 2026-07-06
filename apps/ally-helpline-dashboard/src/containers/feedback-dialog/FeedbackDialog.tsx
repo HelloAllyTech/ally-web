@@ -1,8 +1,8 @@
 import { FC } from "react";
 
-import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import { SessionType } from "@types";
 
 import { CallFeedback, SimulationFeedback } from "./components";

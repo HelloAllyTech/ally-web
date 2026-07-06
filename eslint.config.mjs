@@ -156,6 +156,28 @@ export default [
       "react/display-name": "off",
       "react/no-unescaped-entities": "off",
       "no-console": "error",
+
+      // Central design system: MUI/Emotion are removed, and Carbon components
+      // must be consumed through the single source of truth
+      // (@ally-ui-mono/ui-shared), never imported from @carbon/react directly.
+      // @carbon/icons-react and @carbon/charts(-react) are allowed directly.
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@mui", "@mui/*", "@emotion/*"],
+              message:
+                "MUI/Emotion are removed. Import UI primitives from @ally-ui-mono/ui-shared instead.",
+            },
+            {
+              group: ["@carbon/react", "@carbon/react/*"],
+              message:
+                "Import Carbon primitives from @ally-ui-mono/ui-shared (the central design system), not @carbon/react directly.",
+            },
+          ],
+        },
+      ],
     },
   },
 
@@ -164,6 +186,25 @@ export default [
     files: ["**/logger.ts"],
     rules: {
       "no-console": "off",
+    },
+  },
+
+  // 8️⃣ libs/ui-shared is the design-system package itself: it is the ONLY
+  // place allowed to import @carbon/react directly. MUI/Emotion stay banned.
+  {
+    files: ["libs/ui-shared/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@mui", "@mui/*", "@emotion/*"],
+              message: "MUI/Emotion are removed from the design system.",
+            },
+          ],
+        },
+      ],
     },
   },
 ];

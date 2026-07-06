@@ -89,9 +89,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -100,32 +99,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -134,9 +128,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -145,32 +138,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -179,9 +167,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -190,32 +177,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -224,9 +206,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -235,32 +216,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -269,9 +245,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -280,32 +255,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -314,9 +284,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -325,32 +294,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -359,9 +323,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -370,32 +333,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -404,9 +362,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -415,32 +372,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -449,9 +401,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -460,32 +411,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>
@@ -494,9 +440,8 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
           class="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
         >
           <div
-            class="w-full h-9"
+            class="!w-full h-9"
             data-testid="skeleton"
-            data-variant="rectangular"
           />
           <div
             class="w-full border-b-[0.5px] "
@@ -505,32 +450,27 @@ exports[`ReviewCommentsSidepanel Component > should match snapshot with loading 
             class="flex gap-2 h-[calc(100%-40px)]"
           >
             <div
-              class="w-8 h-8 rounded-full"
+              class="!w-8 h-8 rounded-full"
               data-testid="skeleton"
-              data-variant="rectangular"
             />
             <div
               class="w-[calc(100%-32px)] flex flex-col gap-2"
             >
               <div
-                class="w-full h-[15px] "
+                class="!w-full h-[15px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
               <div
-                class="w-full h-[10px] "
+                class="!w-full h-[10px] "
                 data-testid="skeleton"
-                data-variant="rectangular"
               />
             </div>
           </div>

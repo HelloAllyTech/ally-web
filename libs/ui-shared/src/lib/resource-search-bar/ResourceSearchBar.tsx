@@ -2,8 +2,8 @@
 
 import { FC, useState, useEffect } from "react";
 
-import { Search } from "@carbon/react";
 import { Search as SearchIcon } from "@carbon/icons-react";
+import { Search } from "@carbon/react";
 
 import { searchBarStyles } from "./constants";
 import { SearchVariant } from "../../types";
@@ -108,7 +108,11 @@ const SearchBar: FC<SearchBarProps> = ({
                   handleSelectOption(option);
                 }}
               >
-                <SearchIcon size={16} className="mr-2 text-[#888]" data-testid="search-bar-option-icon" />
+                <SearchIcon
+                  size={16}
+                  className="mr-2 text-[#888]"
+                  data-testid="search-bar-option-icon"
+                />
                 {option}
               </li>
             ))}

@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Tooltip } from "@ally-ui-mono/ui-shared";
-
 import {
   useCreateSimulationPathMutation,
   useDeleteCoverImageMutation,

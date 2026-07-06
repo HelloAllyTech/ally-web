@@ -22,12 +22,10 @@ import AdminLogsTable from "../AdminLogsTable";
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@mui/material", () => ({
-  CircularProgress: () => <div data-testid="circular-progress">Loading...</div>,
-  Tooltip: ({ children }: any) => <>{children}</>,
-}));
-
 vi.mock("@ally-ui-mono/ui-shared", () => ({
+  // Carbon Loading replaces MUI CircularProgress for the table spinner.
+  Loading: () => <div data-testid="loading">Loading...</div>,
+  Tooltip: ({ children }: any) => <>{children}</>,
   GenericTable: React.forwardRef(
     ({ columns, data, isLoading, handleLoadMore, fallbackUI, className }: any, ref: any) => (
       <div ref={ref} className={className} data-testid="generic-table">
@@ -387,7 +385,7 @@ describe("AdminLogsTable", () => {
       });
 
       renderComponent(SessionType.CALL);
-      expect(screen.getByTestId("circular-progress")).toBeInTheDocument();
+      expect(screen.getByTestId("loading")).toBeInTheDocument();
     });
 
     it("shows spinner while simulation logs are loading", () => {
@@ -398,7 +396,7 @@ describe("AdminLogsTable", () => {
       });
 
       renderComponent(SessionType.SIMULATION);
-      expect(screen.getByTestId("circular-progress")).toBeInTheDocument();
+      expect(screen.getByTestId("loading")).toBeInTheDocument();
     });
 
     it("does not show the spinner once call logs have loaded", async () => {
@@ -411,7 +409,7 @@ describe("AdminLogsTable", () => {
 
       renderComponent(SessionType.CALL);
       await waitFor(() => {
-        expect(screen.queryByTestId("circular-progress")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
       });
     });
   });

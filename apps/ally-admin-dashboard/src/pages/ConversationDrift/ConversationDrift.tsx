@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { LineChart, SimpleBarChart } from "@carbon/charts-react";
+
+import "@carbon/charts/styles.css";
+import "../Analytics/analytics-carbon.scss";
+
 import {
   Button,
-  Dropdown,
+  CarbonDropdown as Dropdown,
   Heading,
   InlineNotification,
   Section,
   SkeletonPlaceholder,
   Theme,
   Tile,
-} from "@carbon/react";
-
-import "@carbon/charts/styles.css";
-import "../Analytics/analytics-carbon.scss";
-
+} from "@ally-ui-mono/ui-shared";
 import {
   useGetConversationDriftQuery,
   useGetDriftBackfillStatusQuery,

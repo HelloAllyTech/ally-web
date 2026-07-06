@@ -66,7 +66,6 @@ const TextField: FC<TextFieldProps> = ({
     ...(props as Record<string, unknown>),
   };
 
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const carbonProps = sharedProps as any;
 
   const inputElement = multiline ? (
@@ -91,9 +90,7 @@ const TextField: FC<TextFieldProps> = ({
       ) : (
         inputElement
       )}
-      {!hideError && (
-        <span className="text-xs text-destructive-500 h-[16px]">{errorText}</span>
-      )}
+      {!hideError && <span className="text-xs text-destructive-500 h-[16px]">{errorText}</span>}
     </div>
   );
 };
