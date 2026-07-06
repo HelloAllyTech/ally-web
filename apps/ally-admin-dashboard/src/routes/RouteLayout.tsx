@@ -27,6 +27,7 @@ import {
   Competencies,
   RoleplaySessionLogs,
   RoleplaySessionLogDetail,
+  RoleplayLivePreview,
   RoleplayStudioList,
   RoleplayStudioWorkspace,
   Terms,
@@ -294,6 +295,18 @@ export const RouteLayout: React.FC = () => {
               allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
             >
               <RoleplayStudioWorkspace />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ROLEPLAY_STUDIO_PREVIEW(":id")}
+          element={
+            <PrivateLayout
+              isPreview={true}
+              requiredPermissions={[Permissions.VIEW_ROLEPLAY_SPECS]}
+              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
+            >
+              <RoleplayLivePreview />
             </PrivateLayout>
           }
         />

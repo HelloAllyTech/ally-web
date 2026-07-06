@@ -7,7 +7,13 @@ import { toast } from "sonner";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api";
 import { ArrowDown } from "@assets";
-import { CopilotChatPanel, RehearsalPanel, SpecPanel, StateMachineEditor } from "@components";
+import {
+  CopilotChatPanel,
+  PublishPanel,
+  RehearsalPanel,
+  SpecPanel,
+  StateMachineEditor,
+} from "@components";
 import { en, ROUTES } from "@constants";
 import { useSpecAutosave } from "@hooks";
 import { hydrateSpec, resetRoleplayStudio, selectRoleplaySpecState, setSpecTitle } from "@reducer";
@@ -139,7 +145,7 @@ export const RoleplayStudioWorkspace: React.FC = () => {
   useEffect(() => () => void dispatch(resetRoleplayStudio()), [dispatch]);
 
   // Background draft persistence (10s cadence + step change + beforeunload).
-  useSpecAutosave({ step });
+  const { saveNow } = useSpecAutosave({ step });
 
   const handleStepChange = (nextStep: string) => {
     setSearchParams(prev => {
@@ -167,11 +173,7 @@ export const RoleplayStudioWorkspace: React.FC = () => {
       case ROLEPLAY_STEP_IDS.REHEARSE:
         return <RehearsalPanel />;
       case ROLEPLAY_STEP_IDS.PUBLISH:
-        return (
-          <div className="flex items-center justify-center h-full text-sm text-typography-500">
-            {en.common.loading}
-          </div>
-        );
+        return <PublishPanel onSaveDraft={saveNow} />;
       case ROLEPLAY_STEP_IDS.INTERVIEW:
       default:
         return (
