@@ -7,7 +7,9 @@ import { toast } from "sonner";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api";
 import { ArrowDown } from "@assets";
+import { CopilotChatPanel, SpecPanel } from "@components";
 import { en, ROUTES } from "@constants";
+import { useSpecAutosave } from "@hooks";
 import { hydrateSpec, resetRoleplayStudio, selectRoleplaySpecState, setSpecTitle } from "@reducer";
 import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 
@@ -136,6 +138,9 @@ export const RoleplayStudioWorkspace: React.FC = () => {
   // Leave the studio clean for the next spec.
   useEffect(() => () => void dispatch(resetRoleplayStudio()), [dispatch]);
 
+  // Background draft persistence (10s cadence + step change + beforeunload).
+  useSpecAutosave({ step });
+
   const handleStepChange = (nextStep: string) => {
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
@@ -149,11 +154,24 @@ export const RoleplayStudioWorkspace: React.FC = () => {
       case ROLEPLAY_STEP_IDS.SPEC:
       case ROLEPLAY_STEP_IDS.REHEARSE:
       case ROLEPLAY_STEP_IDS.PUBLISH:
-      case ROLEPLAY_STEP_IDS.INTERVIEW:
-      default:
         return (
           <div className="flex items-center justify-center h-full text-sm text-typography-500">
             {en.common.loading}
+          </div>
+        );
+      case ROLEPLAY_STEP_IDS.INTERVIEW:
+      default:
+        return (
+          <div className="grid grid-cols-2 gap-6 h-full min-h-0">
+            {/* Left — copilot chat (scrolls its own feed, pinned composer). */}
+            <div className="min-h-0 h-full overflow-hidden">
+              <CopilotChatPanel />
+            </div>
+            {/* Right — live spec document, lit up section-by-section as
+                streamed patches land. Read-only during the interview. */}
+            <div className="min-h-0 h-full overflow-y-auto custom-scrollbar border-l border-border-light pl-6">
+              <SpecPanel readOnly />
+            </div>
           </div>
         );
     }

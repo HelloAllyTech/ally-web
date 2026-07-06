@@ -267,6 +267,9 @@ export const LOCAL_STORAGE_KEYS = {
   ADMIN_IS_AUTHENTICATED: "adminIsAuthenticated",
   PREVIEW_ROOM_DATA: "previewRoomData",
   ROLEPLAY_PREVIEW_ROOM_DATA: "roleplayPreviewRoomData",
+  // Prefix — the copilot session id is stored per spec as `${prefix}:${specId}`
+  // so a page refresh can resume the same interview session.
+  ROLEPLAY_COPILOT_SESSION_PREFIX: "roleplayCopilotSession",
 };
 
 export enum KeyboardKeys {
