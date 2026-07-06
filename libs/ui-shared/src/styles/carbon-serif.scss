@@ -1,16 +1,16 @@
-// Global IBM Carbon design language for the Admin dashboard.
+// The single, app-wide IBM Carbon design language for the whole monorepo.
 //
-// Carbon is now the app-wide design system (previously it was scoped to the
-// Analytics tab only — see the history in `pages/Analytics/analytics-carbon.scss`).
-// This file is imported once from `main.tsx`, so every route gets Carbon's
-// design tokens (`:root { --cds-* }`) and component styles (`.cds--*`), themed
-// White via the `<GlobalTheme theme="white">` wrapper in `App.tsx`.
+// Every app (ally-web, ally-helpline-dashboard, ally-admin-dashboard) imports
+// THIS file exactly once at its style entry, so Carbon's design tokens
+// (`:root { --cds-* }`) and component styles (`.cds--*`) are configured in one
+// place. Themed "White" via the `<GlobalTheme theme="white">` wrapper exposed
+// through `AllyThemeProvider`.
 //
 // Two things keep this from breaking the rest of the app:
 //
 // 1. SERIF, NOT SANS. Carbon ships with IBM Plex *Sans* as its UI font. We
 //    override the whole `$font-families` map so every Carbon type style
-//    computes with IBM Plex *Serif* instead — this app is serif-only. Code
+//    computes with IBM Plex *Serif* instead — the product is serif-only. Code
 //    text (`mono`) is intentionally left as IBM Plex Mono for legibility.
 //    (The values must be `string.unquote`d, otherwise Sass emits a single
 //    quoted CSS string and the browser treats the whole list as one bogus
@@ -22,7 +22,7 @@
 //      $css--reset        -> no `*/html/body` reset
 //      $css--body         -> no `body { background/color }` rule
 //      $css--font-face    -> no Plex @font-face imports (serif is self-hosted
-//                            in styles.css)
+//                            per app / loaded via next/font in ally-web)
 //      $css--default-type -> no bare-element (`h1`, `p`, ...) type styles;
 //                            the Tailwind type scale stays in charge.
 @use "sass:string";

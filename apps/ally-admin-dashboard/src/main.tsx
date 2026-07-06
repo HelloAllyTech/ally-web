@@ -10,7 +10,7 @@ import { store } from "./store";
 // Tailwind + global serif base rules first, then the Carbon design-language
 // layer (tokens + component styles) so it cascades on top of Tailwind's reset.
 import "./styles.css";
-import "./carbon-global.scss";
+import "@ally-ui-mono/ui-shared/styles/carbon-serif.scss";
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 

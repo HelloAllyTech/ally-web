@@ -1,5 +1,11 @@
 import "./global.css";
+// Centralised IBM Carbon serif design system (single source for all apps).
+// Tailwind (global.css) loads first, Carbon second — Carbon's reset is disabled
+// in the lib scss so the two don't fight.
+import "@ally-ui-mono/ui-shared/styles/carbon-serif.scss";
 import { IBM_Plex_Serif, Inter } from "next/font/google";
+
+import { Providers } from "./providers";
 
 const ibmPlexSerif = IBM_Plex_Serif({
   subsets: ["latin"],
@@ -26,7 +32,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${ibmPlexSerif.variable} ${inter.variable}`}>
-      <body className="min-h-screen bg-white font-sans">{children}</body>
+      <body className="min-h-screen bg-white font-sans">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
