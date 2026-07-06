@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api";
 import { ArrowDown } from "@assets";
-import { CopilotChatPanel, SpecPanel } from "@components";
+import { CopilotChatPanel, SpecPanel, StateMachineEditor } from "@components";
 import { en, ROUTES } from "@constants";
 import { useSpecAutosave } from "@hooks";
 import { hydrateSpec, resetRoleplayStudio, selectRoleplaySpecState, setSpecTitle } from "@reducer";
@@ -152,6 +152,18 @@ export const RoleplayStudioWorkspace: React.FC = () => {
   const renderStep = () => {
     switch (step) {
       case ROLEPLAY_STEP_IDS.SPEC:
+        return (
+          <div className="grid grid-cols-2 gap-6 h-full min-h-0">
+            {/* Left — editable spec sections. */}
+            <div className="min-h-0 h-full overflow-y-auto custom-scrollbar pr-1">
+              <SpecPanel />
+            </div>
+            {/* Right — state machine canvas (lazy-loaded @xyflow/react). */}
+            <div className="min-h-0 h-full">
+              <StateMachineEditor />
+            </div>
+          </div>
+        );
       case ROLEPLAY_STEP_IDS.REHEARSE:
       case ROLEPLAY_STEP_IDS.PUBLISH:
         return (
