@@ -21,7 +21,6 @@ import { LinguisticStyleSamples } from "../linguistic-style-samples";
 import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
 import { OpeningDialoguesPanel } from "../opening-dialogues";
 import { RadioButtonGroup } from "../radio-button-group";
-import { RegenerateButton } from "../regenerate-button";
 import { SliderField } from "../slider-field";
 import { StatesEditor } from "../states-editor";
 import { TagSelector } from "../tag-selector";
@@ -41,7 +40,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     isMandatory,
     defaultValue,
     note,
-    regenerateType,
     enhanceType,
     promptVariable,
     hideWhenUnused,
@@ -98,10 +96,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
   const updateTriggerWarnings = triggerWarning => {
     formMethods.setValue("triggerWarningIds", triggerWarning);
   };
-
-  const regenerateButton = regenerateType ? (
-    <RegenerateButton regenerateType={regenerateType} label={label} formMethods={formMethods} />
-  ) : null;
 
   // Field-level Enhance for simple TEXT inputs (e.g. Role instruction,
   // Character Backstory). Panels that manage their own per-language value
@@ -342,7 +336,6 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             formMethods={formMethods}
             id={id}
             isMandatory={isMandatory}
-            regenerateButton={regenerateButton}
           />
         );
       case FORM_FIELD_TYPES.COMPETENCY:

@@ -107,7 +107,6 @@ export const ApiEndpoints = {
     HELPER_TAGS: "/v1/learn/scenario-behaviors",
     FILLER_TAGS: "/v1/learn/filler-tags",
     GET_AUTOFILL_MODELS: "/v1/learn/models",
-    GENERATE_FIELD: "/v1/learn/scenarios/generate-field",
     ENHANCE_FIELD: "/v1/learn/scenarios/enhance-field",
     GENERATE_AGENT_BUILDER_FIELD: "/v1/learn/agent-builder/generate-field",
     COMPETENCIES: "/v1/learn/competencies",

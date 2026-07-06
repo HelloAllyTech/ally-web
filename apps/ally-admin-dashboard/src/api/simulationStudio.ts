@@ -56,8 +56,6 @@ import {
   CreateAgentTestCaseRequest,
   UpdateAgentTestCaseRequest,
   AutofillModelOption,
-  RegenerateFieldRequest,
-  RegenerateFieldResponse,
   EnhanceFieldRequest,
   EnhanceFieldResponse,
   GetReportTranscriptInput,
@@ -997,17 +995,6 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Regenerate a field using AI
-     */
-    regenerateField: builder.mutation<RegenerateFieldResponse, RegenerateFieldRequest>({
-      query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_FIELD,
-        method: HttpMethod.POST,
-        body,
-      }),
-    }),
-
-    /**
      * Enhance the existing content of a field using AI (preset/custom guidance)
      */
     enhanceField: builder.mutation<EnhanceFieldResponse, EnhanceFieldRequest>({
@@ -1101,6 +1088,5 @@ export const {
   useGetReportTranscriptQuery,
   useLazyGetReportTranscriptQuery,
   useGetAutofillModelsQuery,
-  useRegenerateFieldMutation,
   useEnhanceFieldMutation,
 } = simulationStudioAPI;

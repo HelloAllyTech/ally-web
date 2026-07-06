@@ -651,18 +651,6 @@ export interface AutofillModelOption {
   supportsTemperature?: boolean;
 }
 
-export interface RegenerateFieldRequest {
-  fieldName: string;
-  scenarioContext: ScenarioContext;
-  model?: string;
-  provider?: "openai" | "anthropic";
-}
-
-export interface RegenerateFieldResponse {
-  fieldName: string;
-  content: Record<string, any>;
-}
-
 export interface EnhanceFieldRequest {
   /** One of ENHANCE_TYPE — identifies the field being improved. */
   fieldName: string;

@@ -192,17 +192,6 @@ export const FORM_FIELD_IDS = {
   TEMPERATURE: "temperature",
 };
 
-export const REGENERATE_TYPE = {
-  OPENING_STATEMENTS: "openingStatements",
-  CHARACTER_PROFILE_TEXT: "characterProfileText",
-  DESCRIPTION: "description",
-  STATE_INSTRUCTIONS: "stateInstructions",
-  CHALLENGE_DESCRIPTION: "challengeDescription",
-  BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
-  STATES: "states",
-  KNOWLEDGE_SOURCES: "knowledgeSources",
-};
-
 /**
  * Identifies which scenario field a field-level Enhance action targets. Must
  * match the backend `EnhanceableField` enum. To add Enhance to a new field:
@@ -305,7 +294,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.DESCRIPTION,
         enhanceType: ENHANCE_TYPE.DESCRIPTION,
         promptVariable: "challenge_description",
       },
@@ -342,7 +330,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 2500,
         isMandatory: false,
-        regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
         enhanceType: ENHANCE_TYPE.CHARACTER_PROFILE_TEXT,
         promptVariable: "character_profile_text",
         hideWhenUnused: true,
