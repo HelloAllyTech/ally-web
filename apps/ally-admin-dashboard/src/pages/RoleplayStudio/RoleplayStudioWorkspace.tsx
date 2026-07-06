@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api";
 import { ArrowDown } from "@assets";
-import { CopilotChatPanel, SpecPanel, StateMachineEditor } from "@components";
+import { CopilotChatPanel, RehearsalPanel, SpecPanel, StateMachineEditor } from "@components";
 import { en, ROUTES } from "@constants";
 import { useSpecAutosave } from "@hooks";
 import { hydrateSpec, resetRoleplayStudio, selectRoleplaySpecState, setSpecTitle } from "@reducer";
@@ -165,6 +165,7 @@ export const RoleplayStudioWorkspace: React.FC = () => {
           </div>
         );
       case ROLEPLAY_STEP_IDS.REHEARSE:
+        return <RehearsalPanel />;
       case ROLEPLAY_STEP_IDS.PUBLISH:
         return (
           <div className="flex items-center justify-center h-full text-sm text-typography-500">

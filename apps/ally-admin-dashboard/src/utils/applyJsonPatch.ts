@@ -140,6 +140,32 @@ export const applyJsonPatch = <T>(doc: T, ops: JsonPatchOperation[]): T => {
   return result;
 };
 
+/**
+ * Reads the value at an RFC-6901 pointer, or `undefined` when the path does
+ * not resolve. Used to show "before" values for proposed edits.
+ */
+export const getValueAtPointer = (doc: unknown, pointer: string): unknown => {
+  let segments: string[];
+  try {
+    segments = parseJsonPointer(pointer);
+  } catch {
+    return undefined;
+  }
+  let current: unknown = doc;
+  for (const segment of segments) {
+    if (current === null || current === undefined) return undefined;
+    if (Array.isArray(current)) {
+      if (!/^\d+$/.test(segment)) return undefined;
+      current = current[Number(segment)];
+    } else if (typeof current === "object") {
+      current = (current as Record<string, unknown>)[segment];
+    } else {
+      return undefined;
+    }
+  }
+  return current;
+};
+
 /** First path segment of each op — used to attribute patches to spec sections. */
 export const patchTouchedSections = (ops: JsonPatchOperation[]): string[] => {
   const sections = new Set<string>();
