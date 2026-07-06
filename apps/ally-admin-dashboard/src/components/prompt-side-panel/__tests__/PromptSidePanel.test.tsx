@@ -91,8 +91,8 @@ vi.mock("@api", () => ({
       },
       {
         provider: "gemini",
-        model: "gemini-2.0-flash",
-        label: "Gemini 2.0 Flash",
+        model: "gemini-2.5-flash",
+        label: "Gemini 2.5 Flash",
         supportsTemperature: true,
         runtimes: ["ai-learn", "ally-ai", "ally-be"],
       },
@@ -806,17 +806,17 @@ describe("PromptSidePanel Component", () => {
       renderPanel();
       expect(screen.getByRole("option", { name: "GPT-4o" })).toBeInTheDocument();
       expect(screen.getByRole("option", { name: "GPT-5" })).toBeInTheDocument();
-      expect(screen.getByRole("option", { name: "Gemini 2.0 Flash" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "Gemini 2.5 Flash" })).toBeInTheDocument();
     });
 
     it("sends the explicit provider with the model on save", () => {
       renderPanel();
       const select = screen.getByRole("combobox") as HTMLSelectElement;
-      fireEvent.change(select, { target: { value: "gemini-2.0-flash" } });
+      fireEvent.change(select, { target: { value: "gemini-2.5-flash" } });
       fireEvent.click(screen.getByText("Save"));
       expect(mockOnUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash",
           provider: "gemini",
         }),
       );
