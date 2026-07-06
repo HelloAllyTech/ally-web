@@ -38,7 +38,6 @@ import {
 import { ButtonVariant } from "@components/types";
 import {
   ADVANCED_EVENTS_LATENCY_THRESHOLD,
-  canUseAgentBuilderCopilot,
   en,
   ROUTES,
   StepperList,
@@ -51,7 +50,7 @@ import {
   BEHAVIOUR_STATES,
   TooltipLocation,
 } from "@constants";
-import { useDebounce, useScenarioTranslationsSocket, useUser } from "@hooks";
+import { useDebounce, useScenarioTranslationsSocket } from "@hooks";
 import { selectUploadsInProgress } from "@reducer/reportUploadReducer";
 import {
   ScenarioTranslationStatus,
@@ -152,18 +151,11 @@ const getMissingOverviewMandatoryLabels = (values: Record<string, unknown>): str
 export const CreateSimulation: FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { user } = useUser();
-  const canUseAgentBuilder = canUseAgentBuilderCopilot(user);
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
-  // Superadmins land on the Agent Builder Copilot tab by default;
-  // everyone else opens on Basic Settings. Covers the common case where the
-  // user record is already in the store on mount (in-app navigation), so the
-  // tab is correct on first paint with no flash. The hard-refresh case — where
-  // PrivateLayout mounts this page before the user query resolves — is handled
-  // by the effect below.
-  const [currentStep, setCurrentStep] = useState(
-    canUseAgentBuilder ? stepIds.agentBuilderCopilot : stepIds.basicSettings,
-  );
+  // The Agent Builder Copilot tab is the canonical builder surface — its left
+  // pane is the Basic Settings form — so it's always the initial tab. (The
+  // report-in-progress effect below can still redirect to the Report tab.)
+  const [currentStep, setCurrentStep] = useState(stepIds.agentBuilderCopilot);
   const [showDiscardPopup, setShowDiscardPopup] = useState(false);
   const [showOptionalFieldsWarning, setShowOptionalFieldsWarning] = useState(false);
   const pendingActionRef = useRef<(() => Promise<void>) | null>(null);
@@ -381,21 +373,6 @@ export const CreateSimulation: FC = () => {
       hasSetInitialStepForReportInProgress.current = true;
     }
   }, [simulationId, isReportGenerationInProgress]);
-
-  // Fallback for the hard-refresh / direct-URL case: PrivateLayout mounts this
-  // page before the user query resolves, so `canUseAgentBuilder` is false at
-  // mount and the useState initializer above can't see the superadmin.
-  // Once the user record lands, promote them to the Agent Builder Copilot tab —
-  // but only once, and never when a report-in-progress redirect has claimed the
-  // initial step, so we don't fight that or the author's own tab clicks.
-  const hasSetInitialAgentBuilderStep = useRef(false);
-  useEffect(() => {
-    if (hasSetInitialAgentBuilderStep.current || !canUseAgentBuilder) return;
-    hasSetInitialAgentBuilderStep.current = true;
-    if (!hasSetInitialStepForReportInProgress.current) {
-      setCurrentStep(stepIds.agentBuilderCopilot);
-    }
-  }, [canUseAgentBuilder]);
 
   useEffect(() => {
     if (simulationId) getAdminSimulationByIdQuery(simulationId);
@@ -920,14 +897,17 @@ export const CreateSimulation: FC = () => {
     if (isReportGenerationInProgress) {
       return;
     }
-    // The Agent Builder Copilot tab is standalone — it doesn't require the
-    // simulation's mandatory fields or a saved draft to open.
+    // Entering the Agent Builder Copilot tab is unconditional — it's the builder
+    // itself, so it never requires mandatory fields or a saved draft to open.
     if (stepId === stepIds.agentBuilderCopilot) {
       setCurrentStep(stepId);
       containerRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    if (currentStep === stepIds.basicSettings) {
+    // Leaving the builder for Advanced Settings / Report requires the mandatory
+    // Basic Settings fields — the form lives in the builder's left pane now that
+    // Basic Settings is no longer a separate tab.
+    if (currentStep === stepIds.agentBuilderCopilot) {
       if (!areAllMandatoryFieldsFilledInOverview) {
         toast.error(
           overviewMissingMandatoryLabels.length > 0
@@ -955,15 +935,6 @@ export const CreateSimulation: FC = () => {
 
   const renderCurrentStep = () => {
     switch (currentStep) {
-      case stepIds.basicSettings: {
-        const simulationSubSectionData = getCreateSimulationSubSectionById(currentStep);
-        return renderStep(
-          <CreateSimulationSubSection
-            items={simulationSubSectionData.fields}
-            formMethods={formMethods}
-          />,
-        );
-      }
       case stepIds.advancedSettings:
         return renderStep(
           <SimulationEventMapTable
@@ -1247,14 +1218,10 @@ export const CreateSimulation: FC = () => {
           page tabs exactly, so the tab strip is seamless across both pages. */}
       <Tabs
         items={[
-          ...(canUseAgentBuilder
-            ? [
-                {
-                  id: stepIds.agentBuilderCopilot,
-                  title: en.simulation.agentBuilder.tabTitle,
-                },
-              ]
-            : []),
+          {
+            id: stepIds.agentBuilderCopilot,
+            title: en.simulation.agentBuilder.tabTitle,
+          },
           ...StepperList,
         ].map(s => ({ id: s.id, label: s.title }))}
         activeId={currentStep}
