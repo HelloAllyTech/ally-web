@@ -1,8 +1,5 @@
 import { Suspense } from "react";
 
-import { StyledEngineProvider } from "@mui/material/styles";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
@@ -10,6 +7,8 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
 import "./index.css";
+// Centralised IBM Carbon serif design system (single source for all apps).
+import "@ally-ui-mono/ui-shared/styles/carbon-serif.scss";
 import { initAnalytics } from "@utils/analytics";
 
 import { AnalyticsProvider } from "./analytics";
@@ -23,22 +22,18 @@ const GOOGLE_AUTH_CLIENT_ID = import.meta.env.VITE_GOOGLE_AUTH_CLIENT_ID || "";
 initAnalytics();
 
 createRoot(document.getElementById("root")!).render(
-  <StyledEngineProvider injectFirst>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <GoogleOAuthProvider clientId={GOOGLE_AUTH_CLIENT_ID}>
-            <I18nextProvider i18n={i18n}>
-              {/* AnalyticsProvider must be inside <Provider> to read Redux auth state */}
-              <AnalyticsProvider>
-                <Suspense fallback={null}>
-                  <App />
-                </Suspense>
-              </AnalyticsProvider>
-            </I18nextProvider>
-          </GoogleOAuthProvider>
-        </LocalizationProvider>
-      </PersistGate>
-    </Provider>
-  </StyledEngineProvider>,
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <GoogleOAuthProvider clientId={GOOGLE_AUTH_CLIENT_ID}>
+        <I18nextProvider i18n={i18n}>
+          {/* AnalyticsProvider must be inside <Provider> to read Redux auth state */}
+          <AnalyticsProvider>
+            <Suspense fallback={null}>
+              <App />
+            </Suspense>
+          </AnalyticsProvider>
+        </I18nextProvider>
+      </GoogleOAuthProvider>
+    </PersistGate>
+  </Provider>,
 );

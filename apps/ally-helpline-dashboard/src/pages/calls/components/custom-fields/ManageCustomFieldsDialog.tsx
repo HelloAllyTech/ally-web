@@ -1,23 +1,18 @@
 import { FC, useState } from "react";
 
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import TableChartIcon from "@mui/icons-material/TableChart";
-import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  CircularProgress,
-  Tooltip,
-} from "@mui/material";
+import { ArrowDown, ArrowUp, Edit, Table, TrashCan } from "@carbon/icons-react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
+import {
+  ComposedModal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  IconButton,
+  Loading,
+  InlineLoading,
+} from "@ally-ui-mono/ui-shared";
 import {
   useGetCustomFieldDefinitionsQuery,
   useDeleteCustomFieldDefinitionMutation,
@@ -45,23 +40,23 @@ const ConfirmDeleteDialog: FC<ConfirmDeleteDialogProps> = ({
   onCancel,
   isDeleting,
 }) => (
-  <Dialog open={Boolean(field)} onClose={onCancel} maxWidth="xs" fullWidth>
-    <DialogTitle>Delete custom field?</DialogTitle>
-    <DialogContent>
+  <ComposedModal open={Boolean(field)} onClose={onCancel} size="xs" danger>
+    <ModalHeader title="Delete custom field?" />
+    <ModalBody>
       <p className="text-sm text-typography-600">
         Deleting <span className="font-medium">"{field?.name}"</span> will hide it from all call
         logs. Existing values will not be removed.
       </p>
-    </DialogContent>
-    <DialogActions className="px-6 py-3 gap-2">
+    </ModalBody>
+    <ModalFooter>
       <Button variant="secondary" onClick={onCancel}>
         Cancel
       </Button>
       <Button onClick={onConfirm} disabled={isDeleting}>
-        {isDeleting ? <CircularProgress size={16} /> : "Delete"}
+        {isDeleting ? <InlineLoading /> : "Delete"}
       </Button>
-    </DialogActions>
-  </Dialog>
+    </ModalFooter>
+  </ComposedModal>
 );
 
 interface ManageCustomFieldsDialogProps {
@@ -138,12 +133,12 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Manage custom fields</DialogTitle>
-        <DialogContent dividers>
+      <ComposedModal open={open} onClose={onClose} size="sm">
+        <ModalHeader title="Manage custom fields" />
+        <ModalBody>
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <CircularProgress />
+              <Loading withOverlay={false} />
             </div>
           ) : definitions.length === 0 ? (
             <p className="text-sm text-typography-500 text-center py-6">No custom fields yet.</p>
@@ -160,56 +155,66 @@ const ManageCustomFieldsDialog: FC<ManageCustomFieldsDialogProps> = ({ open, onC
                   <div className="flex gap-1 items-center">
                     <div className="flex flex-col">
                       <IconButton
-                        size="small"
+                        label="Move up"
+                        kind="ghost"
+                        size="sm"
                         onClick={() => handleMove(index, "up")}
                         disabled={index === 0}
                       >
-                        <ArrowUpwardIcon sx={{ fontSize: 14 }} />
+                        <ArrowUp />
                       </IconButton>
                       <IconButton
-                        size="small"
+                        label="Move down"
+                        kind="ghost"
+                        size="sm"
                         onClick={() => handleMove(index, "down")}
                         disabled={index === definitions.length - 1}
                       >
-                        <ArrowDownwardIcon sx={{ fontSize: 14 }} />
+                        <ArrowDown />
                       </IconButton>
                     </div>
-                    <Tooltip
-                      title={field.showInTable ? "Hide from table" : "Show in table"}
-                      placement="top"
-                      arrow
+                    <IconButton
+                      label={field.showInTable ? "Hide from table" : "Show in table"}
+                      align="top"
+                      kind="ghost"
+                      size="sm"
+                      onClick={() => handleToggleShowInTable(field)}
                     >
-                      <IconButton
-                        size="small"
-                        onClick={() => handleToggleShowInTable(field)}
-                        sx={{ color: field.showInTable ? "primary.main" : "text.disabled" }}
-                      >
-                        {field.showInTable ? (
-                          <TableChartIcon fontSize="small" />
-                        ) : (
-                          <TableChartOutlinedIcon fontSize="small" />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                    <IconButton size="small" onClick={() => setFieldToEdit(field)}>
-                      <EditIcon fontSize="small" />
+                      <Table
+                        className={field.showInTable ? "text-primary-600" : "text-typography-400"}
+                      />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={() => setFieldToDelete(field)}>
-                      <DeleteIcon fontSize="small" />
+                    <IconButton
+                      label="Edit"
+                      kind="ghost"
+                      size="sm"
+                      onClick={() => setFieldToEdit(field)}
+                    >
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      label="Delete"
+                      kind="ghost"
+                      size="sm"
+                      onClick={() => setFieldToDelete(field)}
+                    >
+                      <TrashCan />
                     </IconButton>
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </DialogContent>
-        <DialogActions className="px-6 py-3 flex justify-between w-full">
-          <Button onClick={() => setIsAddOpen(true)}>+ Add field</Button>
-          <Button variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </ModalBody>
+        <ModalFooter>
+          <div className="flex justify-between w-full">
+            <Button onClick={() => setIsAddOpen(true)}>+ Add field</Button>
+            <Button variant="secondary" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </ModalFooter>
+      </ComposedModal>
 
       <ConfirmDeleteDialog
         field={fieldToDelete}

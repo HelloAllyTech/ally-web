@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { Dialog } from "@mui/material";
+import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import { motion } from "framer-motion";
 
 import { CloseIcon } from "@assets/icons";
@@ -24,17 +24,14 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
   onSecondaryButtonClick,
 }) => {
   return (
-    <Dialog
+    <ComposedModal
       open={isOpen}
       onClose={onClose}
-      aria-labelledby="confirmation-dialog-title"
-      aria-describedby="confirmation-dialog-description"
-      PaperProps={{
-        style: {
-          borderRadius: "8px",
-        },
-      }}
+      size="sm"
+      aria-label="confirmation-dialog"
+      className="font-primary"
     >
+      <ModalBody className="p-0">
       <motion.div
         className="max-w-[500px] min-w-[200px] flex flex-col gap-4 items-center p-4 sm:p-6 md:p-10 relative mx-4"
         initial={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -120,7 +117,8 @@ const ConfirmationDialog: FC<ConfirmationDialogProps> = ({
           </motion.span>
         )}
       </motion.div>
-    </Dialog>
+      </ModalBody>
+    </ComposedModal>
   );
 };
 

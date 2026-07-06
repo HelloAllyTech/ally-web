@@ -1,6 +1,5 @@
 import { FC, ReactNode } from "react";
 
-import { Divider } from "@mui/material";
 import { ChevronDown } from "lucide-react";
 
 import { DropdownField } from "@ally-ui-mono/ui-shared";
@@ -186,7 +185,9 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
               />
             </div>
           </div>
-          {field.key === "clientId" && <Divider sx={{ width: "90%", marginTop: "6px" }} />}
+          {field.key === "clientId" && (
+            <hr className="border-0 border-t" style={{ width: "90%", marginTop: "6px" }} />
+          )}
         </div>
       );
   }

@@ -1,9 +1,6 @@
 import React from "react";
 
-import { Tooltip } from "@mui/material";
-
-import { CustomImage, htmlToPlainText } from "@ally-ui-mono/ui-shared";
-import { toolTipStyles } from "@constants";
+import { CustomImage, htmlToPlainText, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Simulation, ScenarioPath } from "@types";
 
 // Generic type for items that can be displayed in the list
@@ -82,19 +79,14 @@ export function DataList<T extends DataListItem>({
             typeof action.tooltip === "function" ? action.tooltip(item) : action.tooltip;
 
           return (
-            <Tooltip
-              key={index}
-              title={tooltipText}
-              placement="top"
-              arrow
-              slotProps={toolTipStyles}
-            >
-              <div
+            <Tooltip key={index} label={tooltipText} align="top">
+              <button
+                type="button"
                 onClick={() => !isDisabled && action.onClick(item)}
                 className={isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
               >
                 {action.icon}
-              </div>
+              </button>
             </Tooltip>
           );
         })}

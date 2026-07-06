@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -11,11 +11,9 @@ import { DockToRight, LogoutIllustration } from "@assets";
 import { AppTooltip, ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
 import {
   navBarOptions,
-  TOOLTIP_LIGHT_PROPS,
   TabId,
   Permissions,
   TooltipLocation,
-  canPickUiTheme,
   canViewOrganizationSettings,
 } from "@constants";
 import { useUser } from "@hooks";
@@ -118,8 +116,6 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     deleteProfile,
     uploadProfile,
     refetchUser,
-    uiTheme,
-    setUiThemePreference,
   } = useUser();
 
   const { data: unreadData } = useGetUnreadReviewCountQuery(
@@ -271,12 +267,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
           <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md box-border overflow-hidden flex items-center justify-center">
             {/* Toggle button - covers logo when collapsed */}
-            <Tooltip
-              title={tenantData?.name}
-              placement="right"
-              arrow
-              slotProps={TOOLTIP_LIGHT_PROPS}
-            >
+            <Tooltip label={tenantData?.name ?? ""} align="right">
               <div className="w-14 h-14  group rounded-md box-border overflow-hidden flex items-center justify-center">
                 <CustomImage
                   src={tenantData?.logoUrl}
@@ -362,9 +353,6 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         formMethods={profileSettingsForm}
         onButtonClick={handleProfileUpload}
         getProfileUrl={getProfileUrl}
-        showThemePicker={canPickUiTheme(user)}
-        selectedTheme={uiTheme}
-        onSelectTheme={setUiThemePreference}
       />
     </>
   );

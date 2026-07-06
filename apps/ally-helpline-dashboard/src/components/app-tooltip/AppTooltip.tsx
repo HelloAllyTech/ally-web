@@ -1,9 +1,9 @@
 import React from "react";
 
-import { Tooltip } from "@mui/material";
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 
 import { useGetActiveTooltipsQuery } from "@api";
-import { TooltipLocation, toolTipStyles } from "@constants";
+import { TooltipLocation } from "@constants";
 
 interface AppTooltipProps {
   location: TooltipLocation;
@@ -22,7 +22,7 @@ const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
   const title = tooltip.icon ? `${tooltip.icon} ${tooltip.tipText}` : tooltip.tipText;
 
   return (
-    <Tooltip title={title} componentsProps={toolTipStyles} arrow>
+    <Tooltip label={title} align="top">
       <span style={{ display: "block" }}>{children}</span>
     </Tooltip>
   );

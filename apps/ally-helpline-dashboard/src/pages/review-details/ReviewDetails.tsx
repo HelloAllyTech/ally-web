@@ -116,7 +116,7 @@ export const ReviewDetails = () => {
   }, []);
 
   useEffect(() => {
-    if (!reviewId) return;
+    if (!reviewId) return undefined;
     const timer = setTimeout(() => {
       markReviewAsRead({ id: reviewId, isScribe: isScribeReview });
     }, 10000);

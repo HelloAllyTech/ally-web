@@ -1,6 +1,11 @@
-import { ButtonHTMLAttributes, ChangeEvent, CSSProperties, ReactNode } from "react";
+import {
+  ButtonHTMLAttributes,
+  ChangeEvent,
+  CSSProperties,
+  InputHTMLAttributes,
+  ReactNode,
+} from "react";
 
-import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
 import { UseFormRegister, UseFormReturn, FieldErrors } from "react-hook-form";
 
 export interface PopupButtonProps {
@@ -129,7 +134,10 @@ export interface OTPProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "on
 }
 
 // TextField
-export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
+export interface TextFieldProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "value" | "defaultValue" | "size"
+> {
   className?: string;
   disabled?: boolean;
   hideError?: boolean;

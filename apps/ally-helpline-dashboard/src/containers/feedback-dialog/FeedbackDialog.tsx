@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { Dialog } from "@mui/material";
+import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { SessionType } from "@types";
@@ -43,34 +43,25 @@ const FeedbackDialog: FC<FeedbackDialogProps> = ({
 
   return (
     <AnimatePresence>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        PaperProps={{
-          sx: {
-            borderRadius: "8px",
-            padding: "24px",
-            overflow: "hidden",
-            width: { xs: 360, sm: 480 },
-          },
-        }}
-      >
-        <motion.div
-          initial={motionVariants.initial}
-          animate={motionVariants.animate}
-          exit={motionVariants.exit}
-          transition={{
-            duration: 0.25,
-            ease: [0.4, 0, 0.2, 1],
-            layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
-          }}
-          layout
-          className="flex flex-col items-center gap-4 font-primary"
-          style={{ overflow: "hidden", width: "100%" }}
-        >
-          {getFeedbackContent()}
-        </motion.div>
-      </Dialog>
+      <ComposedModal open={open} onClose={onClose} size="sm" className="font-primary">
+        <ModalBody className="overflow-hidden p-6">
+          <motion.div
+            initial={motionVariants.initial}
+            animate={motionVariants.animate}
+            exit={motionVariants.exit}
+            transition={{
+              duration: 0.25,
+              ease: [0.4, 0, 0.2, 1],
+              layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
+            }}
+            layout
+            className="flex flex-col items-center gap-4 font-primary"
+            style={{ overflow: "hidden", width: "100%" }}
+          >
+            {getFeedbackContent()}
+          </motion.div>
+        </ModalBody>
+      </ComposedModal>
     </AnimatePresence>
   );
 };

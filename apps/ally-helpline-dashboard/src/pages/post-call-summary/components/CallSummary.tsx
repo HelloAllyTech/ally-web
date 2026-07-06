@@ -1,13 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { CircularProgress, Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { logger, Loading, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
@@ -21,7 +20,7 @@ import {
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, Button, InfoBanner, FallbackUI } from "@components";
-import { LanguageMap, Permissions, ROUTES, toolTipStyles } from "@constants";
+import { LanguageMap, Permissions, ROUTES } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce, useCustomFieldsEnabled } from "@hooks";
 import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
@@ -273,7 +272,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     const isEnhancing = enhancing === field.key;
     const enhanceEndAdornment =
       field.isEnhanceable && shouldAllowEdit && value && value.trim() ? (
-        <Tooltip title={t("summary.enhance")} placement="bottom" arrow slotProps={toolTipStyles}>
+        <Tooltip label={t("summary.enhance")} align="bottom">
           <span className="absolute bottom-2 right-2">
             <EnhanceButton
               fieldName={field.key}
@@ -390,7 +389,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   if (canShowSummary && isSummaryLoading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
-        <CircularProgress />
+        <Loading withOverlay={false} />
       </div>
     );
   }
@@ -424,7 +423,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               {t("summary.generationFailedEditable")}
             </span>
             <Button onClick={handleRetrySummary} disabled={isRetrying} className="shrink-0">
-              {isRetrying && <CircularProgress size={16} />}
+              {isRetrying && <Loading small withOverlay={false} className="mr-2 !h-4 !w-4" />}
               {t("summary.retrySummary")}
             </Button>
           </div>

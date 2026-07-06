@@ -1,6 +1,6 @@
 import { FC, ReactNode, useState } from "react";
 
-import PlayArrowRounded from "@mui/icons-material/PlayArrowRounded";
+import { Play } from "@carbon/icons-react";
 
 /**
  * Minimal expandable section with a header-actions slot.
@@ -34,7 +34,7 @@ export const OrgSettingsAccordion: FC<OrgSettingsAccordionProps> = ({
           className="flex items-center gap-2 text-left"
           aria-expanded={expanded}
         >
-          <PlayArrowRounded
+          <Play
             className={`text-typography-900 transition-transform ${
               expanded ? "rotate-90" : ""
             }`}

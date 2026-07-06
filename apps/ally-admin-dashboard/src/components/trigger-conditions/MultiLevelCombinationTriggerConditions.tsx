@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 
-import { Tooltip } from "@mui/material";
-
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetSessionEventsQuery } from "@api";
 import { Delete, GroupBranch, AddBlue } from "@assets";
 import { TriggerConditionDropdown, GeneratedExpressionView } from "@components";
@@ -283,7 +282,7 @@ export const MultiLevelCombinationTriggerConditions: React.FC<
           isInTable={false}
         />
 
-        <Tooltip title="Remove this event" placement="top" arrow>
+        <Tooltip label="Remove this event" align="top">
           <button
             onClick={() => handleDeleteCondition(path)}
             className="p-[2px] h-[25px] w-[25px] flex items-center justify-center hover:bg-neutral-100 border border-border-light rounded-[2px] transition-colors"
@@ -292,7 +291,7 @@ export const MultiLevelCombinationTriggerConditions: React.FC<
           </button>
         </Tooltip>
         {canAddBranch && (
-          <Tooltip title="Create a group and include a new condition" placement="top" arrow>
+          <Tooltip label="Create a group and include a new condition" align="top">
             <button
               onClick={() => handleAddCondition(path)}
               className="p-[5px] flex flex-row gap-1 min-w-[82px] items-center hover:bg-neutral-50 rounded-[2px] transition-colors text-primary-500 h-[25px] border-[0.5px] border-primary-500"
@@ -404,7 +403,7 @@ export const MultiLevelCombinationTriggerConditions: React.FC<
         <div className="flex flex-col gap-1 pl-3">
           <div className="flex flex-col gap-1">{renderExpressionTree(expression)}</div>
           {getTreeDepth(expression) < 5 && (
-            <Tooltip title="add new condition branch to this expression" placement="top" arrow>
+            <Tooltip label="add new condition branch to this expression" align="top">
               <button
                 onClick={() => handleAddCondition()}
                 className="flex items-center gap-1 text-primary-500 hover:text-primary-600 text-sm font-normal self-start border-[0.5px] border-primary-500 rounded-[2px] p-[5px]"

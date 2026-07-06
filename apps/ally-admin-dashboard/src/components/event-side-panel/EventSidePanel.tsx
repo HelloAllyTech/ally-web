@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 
-import { Tooltip } from "@mui/material";
-
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared/index";
+import { AutoExpandableTextarea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight, TooltipIcon, Trash } from "@assets";
 import {
   ActionConfirmationPopup,
@@ -16,7 +14,7 @@ import {
   TextareaWithTriggerDropdown,
   SimpleTagSelector,
 } from "@components";
-import { en, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
+import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam, isCombinationTriggerCondition, COMBINATION_OPERATOR } from "@types";
 import { isValidCombinationExpression } from "@utils";
@@ -50,10 +48,10 @@ const Field: React.FC<FieldProps> = ({
     <div className={`w-[40%] flex items-center gap-2 ${multiline && "mt-[8px]"}`}>
       <span className="text-base font-regular text-typography-800">{label}</span>
       {tooltip && (
-        <Tooltip title={tooltipTitle || label} placement="top" arrow slotProps={toolTipStyles}>
-          <span className="cursor-pointer items-center ">
+        <Tooltip label={tooltipTitle || label} align="top">
+          <button type="button" className="cursor-pointer inline-flex items-center">
             <TooltipIcon />
-          </span>
+          </button>
         </Tooltip>
       )}
     </div>

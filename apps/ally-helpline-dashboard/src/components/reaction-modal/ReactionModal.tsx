@@ -1,10 +1,9 @@
 import { FC } from "react";
 
-import { CircularProgress, Dialog } from "@mui/material";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { ComposedModal, InfiniteScroll, Loading, ModalBody } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled } from "@assets";
 import { NativeEmoji } from "@components";
 import { useReactionModal } from "@hooks";
@@ -85,7 +84,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
     if (isLoading && userReactions.length === 0) {
       return (
         <div className="flex items-center justify-center h-[300px]">
-          <CircularProgress size={32} />
+          <Loading withOverlay={false} />
         </div>
       );
     }
@@ -131,7 +130,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
         </InfiniteScroll>
         {isLoading && (
           <div className="flex items-center justify-center py-2">
-            <CircularProgress size={20} />
+            <Loading withOverlay={false} small />
           </div>
         )}
       </div>
@@ -139,17 +138,8 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      PaperProps={{
-        style: {
-          borderRadius: "8px",
-          padding: 0,
-          overflow: "hidden",
-        },
-      }}
-    >
+    <ComposedModal open={isOpen} onClose={handleClose} size="sm">
+      <ModalBody className="p-0">
       <div className="w-[400px] max-w-[calc(100vw-32px)] flex flex-col gap-2 p-4 bg-white relative">
         <button
           onClick={handleClose}
@@ -214,7 +204,8 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
           {renderContent()}
         </div>
       </div>
-    </Dialog>
+      </ModalBody>
+    </ComposedModal>
   );
 };
 

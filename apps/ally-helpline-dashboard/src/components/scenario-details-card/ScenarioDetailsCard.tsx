@@ -1,11 +1,10 @@
 import { FC, useState, type MouseEvent } from "react";
 
-import { CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { ChipGroup, CustomVideo, RichTextRenderer } from "@ally-ui-mono/ui-shared";
+import { ChipGroup, CustomVideo, Loading, RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { ShareIcon } from "@assets";
 import { AppTooltip, Button, ConfirmationDialog, ButtonVariant } from "@components";
 import { TooltipLocation } from "@constants";
@@ -153,7 +152,9 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
                 disabled={isDisabled}
                 aria-label={t("learn.scenario.startAria")}
               >
-                {isStarting && <CircularProgress size={16} className="mr-2" />}
+                {isStarting && (
+                  <Loading withOverlay={false} small className="mr-2 !h-4 !w-4" />
+                )}
                 {t("common.startSimulation")}
               </Button>
             </AppTooltip>

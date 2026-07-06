@@ -1,14 +1,13 @@
 import { FC, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft, Info, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
-import { toolTipStyles } from "@constants";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
@@ -134,7 +133,7 @@ export const AchievementsViewAll: FC = () => {
               {t("achievements.badges")}
             </div>
             <Tooltip
-              title={
+              label={
                 <div
                   style={{
                     fontWeight: 400,
@@ -145,9 +144,7 @@ export const AchievementsViewAll: FC = () => {
                   {t("achievements.badgesTooltip")}
                 </div>
               }
-              slotProps={toolTipStyles}
-              arrow
-              placement="bottom"
+              align="bottom"
             >
               <span className="cursor-pointer">
                 <Info className="w-5 h-5" />
@@ -197,7 +194,7 @@ export const AchievementsViewAll: FC = () => {
         <div className="font-primary text-xs leading-5 font-normal text-typography-600">
           {getBadgeTypeLabels(t)[category]}
         </div>
-        <Tooltip title={tooltipContent} arrow placement="top" slotProps={toolTipStyles}>
+        <Tooltip label={tooltipContent} align="top">
           <span className="cursor-pointer">
             <Info className="w-5 h-5" />
           </span>

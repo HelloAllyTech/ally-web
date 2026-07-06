@@ -1,6 +1,5 @@
 import React from "react";
-
-import { CSSProperties } from "@mui/material";
+import type { CSSProperties } from "react";
 
 export interface TabItem {
   id: string;

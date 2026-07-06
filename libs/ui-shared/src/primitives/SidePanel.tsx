@@ -48,7 +48,7 @@ export function SidePanel({
   children,
 }: SidePanelProps) {
   useEffect(() => {
-    if (!open) return;
+    if (!open) return undefined;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };

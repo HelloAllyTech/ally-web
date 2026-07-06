@@ -1,10 +1,8 @@
 import { ReactElement } from "react";
 
-import { Tooltip } from "@mui/material";
-
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetActiveTooltipsQuery } from "@api";
 import { TooltipIcon } from "@assets";
-import { toolTipStyles } from "@constants";
 
 /**
  * Resolve the display title for a data-driven tooltip `location`, or "" when no
@@ -29,10 +27,10 @@ export const TooltipHint = ({ location }: { location?: string }) => {
   const title = useActiveTooltipTitle(location);
   if (!title) return null;
   return (
-    <Tooltip title={title} placement="top" arrow slotProps={toolTipStyles}>
-      <span className="cursor-pointer inline-flex items-center">
+    <Tooltip label={title} align="top">
+      <button type="button" className="cursor-pointer inline-flex items-center">
         <TooltipIcon />
-      </span>
+      </button>
     </Tooltip>
   );
 };
@@ -53,7 +51,7 @@ export const AppTooltip = ({
   const title = useActiveTooltipTitle(location);
   if (!title) return children;
   return (
-    <Tooltip title={title} placement="top" arrow slotProps={toolTipStyles}>
+    <Tooltip label={title} align="top">
       <span style={{ display: "inline-flex" }}>{children}</span>
     </Tooltip>
   );

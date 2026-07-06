@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef, FC } from "react";
 
-import { CircularProgress } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { GenericTable, Loading } from "@ally-ui-mono/ui-shared";
 import { Column } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import { useGetAdminCallLogsQuery, useGetCallLogsQuery } from "@api";
 import {
@@ -149,7 +148,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   if (isLoading && offset === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-200px)]">
-        <CircularProgress />
+        <Loading withOverlay={false} />
       </div>
     );
   }

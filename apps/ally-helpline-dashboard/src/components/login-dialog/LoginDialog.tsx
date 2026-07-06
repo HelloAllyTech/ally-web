@@ -1,11 +1,11 @@
 import { FC, useCallback, useEffect, useState } from "react";
 
-import { Dialog } from "@mui/material";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import { useGenerateOTPMutation, useVerifyOTPMutation } from "@api";
 import { BackCircle, CloseIcon } from "@assets";
 import {
@@ -267,7 +267,8 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
     );
   };
   return (
-    <Dialog open={isOpen} onClose={onClose}>
+    <ComposedModal open={isOpen} onClose={onClose} size="sm" className="font-primary">
+      <ModalBody className="p-0">
       <motion.div
         className="max-w-[500px] min-w-[200px] flex flex-col gap-4 items-center p-4 sm:p-6 md:p-10 relative mx-4"
         initial={{ opacity: 0, scale: 0.8, y: 20 }}
@@ -290,7 +291,8 @@ const LoginDialog: FC<LoginPopupProps> = ({ isOpen, onClose, onSuccess }) => {
         </motion.div>
         {getLoginSection()}
       </motion.div>
-    </Dialog>
+      </ModalBody>
+    </ComposedModal>
   );
 };
 

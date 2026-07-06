@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from "react";
 
-import { Dialog } from "@mui/material";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -10,6 +9,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import {
   useGetAudioUploadUrlMutation,
   useGetCounsellorsQuery,
@@ -153,17 +153,13 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
   const disableTimePicker = !formData.date || !formData.timeZone;
 
   return (
-    <Dialog
+    <ComposedModal
       open={isOpen}
       onClose={onClose}
       data-testid="audio-upload-dialog"
-      PaperProps={{
-        style: {
-          borderRadius: "8px",
-          overflow: "hidden",
-        },
-      }}
+      size="lg"
     >
+      <ModalBody className="p-0">
       <motion.div
         data-testid="audio-upload-dialog-content"
         className="max-w-[760px] min-w-[600px] w-full flex flex-col gap-6 p-6 sm:p-8 md:p-10"
@@ -289,7 +285,8 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
           </Button>
         </motion.div>
       </motion.div>
-    </Dialog>
+      </ModalBody>
+    </ComposedModal>
   );
 };
 

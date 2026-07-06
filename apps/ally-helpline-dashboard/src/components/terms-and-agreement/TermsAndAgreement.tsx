@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { Dialog } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import { Button } from "@components";
 import { PRIVACY_POLICY_URL } from "@constants";
 import { parseContent } from "@utils";
@@ -10,13 +10,6 @@ import { parseContent } from "@utils";
 const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
   const { t } = useTranslation();
   const [agreeCheck, setAgreeCheck] = useState<boolean>(false);
-  const paperProps = {
-    style: {
-      borderRadius: "8px",
-      padding: "16px",
-      height: "550px",
-    },
-  };
 
   const sections = t("terms.sections", { returnObjects: true }) as Array<{
     heading: string;
@@ -24,7 +17,14 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
   }>;
 
   return (
-    <Dialog open={isOpen} disableEscapeKeyDown PaperProps={paperProps}>
+    <ComposedModal
+      open={isOpen}
+      onClose={() => {}}
+      preventCloseOnClickOutside
+      size="md"
+      className="font-primary"
+    >
+      <ModalBody className="h-[550px] p-4">
       <div className="flex items-center justify-center font-medium text-2xl font-secondary">
         {t("terms.title")}
       </div>
@@ -79,7 +79,8 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
           </Button>
         </div>
       </div>
-    </Dialog>
+      </ModalBody>
+    </ComposedModal>
   );
 };
 
