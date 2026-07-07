@@ -91,19 +91,19 @@ describe("StarRating", () => {
     renderComponent({ rating: 0 });
     const stars = screen.getAllByTestId("star-yellow-icon");
     stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#E0E0E0");
+      expect(star).toHaveAttribute("data-fill", "#8D8D8D");
     });
   });
 
   it("should render stars with correct fill colors when rating is 3", () => {
     renderComponent({ rating: 3 });
     const stars = screen.getAllByTestId("star-yellow-icon");
-    // First 3 stars should be filled (yellow), last 2 should be empty (white)
+    // First 3 stars should be filled (yellow), last 2 should be empty (grey)
     expect(stars[0]).toHaveAttribute("data-fill", "#F9CC49");
     expect(stars[1]).toHaveAttribute("data-fill", "#F9CC49");
     expect(stars[2]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[3]).toHaveAttribute("data-fill", "#E0E0E0");
-    expect(stars[4]).toHaveAttribute("data-fill", "#E0E0E0");
+    expect(stars[3]).toHaveAttribute("data-fill", "#8D8D8D");
+    expect(stars[4]).toHaveAttribute("data-fill", "#8D8D8D");
   });
 
   it("should render all stars filled when rating is 5", () => {
@@ -118,10 +118,10 @@ describe("StarRating", () => {
     renderComponent({ rating: 1 });
     const stars = screen.getAllByTestId("star-yellow-icon");
     expect(stars[0]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[1]).toHaveAttribute("data-fill", "#E0E0E0");
-    expect(stars[2]).toHaveAttribute("data-fill", "#E0E0E0");
-    expect(stars[3]).toHaveAttribute("data-fill", "#E0E0E0");
-    expect(stars[4]).toHaveAttribute("data-fill", "#E0E0E0");
+    expect(stars[1]).toHaveAttribute("data-fill", "#8D8D8D");
+    expect(stars[2]).toHaveAttribute("data-fill", "#8D8D8D");
+    expect(stars[3]).toHaveAttribute("data-fill", "#8D8D8D");
+    expect(stars[4]).toHaveAttribute("data-fill", "#8D8D8D");
   });
 
   // --- Interaction Tests ---
@@ -170,16 +170,16 @@ describe("StarRating", () => {
     const { rerender } = renderComponent({ rating: 0 });
     let stars = screen.getAllByTestId("star-yellow-icon");
     stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#E0E0E0");
+      expect(star).toHaveAttribute("data-fill", "#8D8D8D");
     });
 
     rerender(<StarRating rating={2} setRating={mockSetRating} />);
     stars = screen.getAllByTestId("star-yellow-icon");
     expect(stars[0]).toHaveAttribute("data-fill", "#F9CC49");
     expect(stars[1]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[2]).toHaveAttribute("data-fill", "#E0E0E0");
-    expect(stars[3]).toHaveAttribute("data-fill", "#E0E0E0");
-    expect(stars[4]).toHaveAttribute("data-fill", "#E0E0E0");
+    expect(stars[2]).toHaveAttribute("data-fill", "#8D8D8D");
+    expect(stars[3]).toHaveAttribute("data-fill", "#8D8D8D");
+    expect(stars[4]).toHaveAttribute("data-fill", "#8D8D8D");
   });
 
   // --- Edge Cases ---
@@ -194,7 +194,7 @@ describe("StarRating", () => {
     rerender(<StarRating rating={0} setRating={mockSetRating} />);
     stars = screen.getAllByTestId("star-yellow-icon");
     stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#E0E0E0");
+      expect(star).toHaveAttribute("data-fill", "#8D8D8D");
     });
   });
 
@@ -202,7 +202,7 @@ describe("StarRating", () => {
     const { rerender } = renderComponent({ rating: 0 });
     let stars = screen.getAllByTestId("star-yellow-icon");
     stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#E0E0E0");
+      expect(star).toHaveAttribute("data-fill", "#8D8D8D");
     });
 
     rerender(<StarRating rating={5} setRating={mockSetRating} />);
@@ -216,13 +216,13 @@ describe("StarRating", () => {
     const { rerender } = renderComponent({ rating: 4 });
     let stars = screen.getAllByTestId("star-yellow-icon");
     expect(stars[3]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[4]).toHaveAttribute("data-fill", "#E0E0E0");
+    expect(stars[4]).toHaveAttribute("data-fill", "#8D8D8D");
 
     rerender(<StarRating rating={2} setRating={mockSetRating} />);
     stars = screen.getAllByTestId("star-yellow-icon");
-    expect(stars[2]).toHaveAttribute("data-fill", "#E0E0E0");
-    expect(stars[3]).toHaveAttribute("data-fill", "#E0E0E0");
-    expect(stars[4]).toHaveAttribute("data-fill", "#E0E0E0");
+    expect(stars[2]).toHaveAttribute("data-fill", "#8D8D8D");
+    expect(stars[3]).toHaveAttribute("data-fill", "#8D8D8D");
+    expect(stars[4]).toHaveAttribute("data-fill", "#8D8D8D");
   });
 
   it("should maintain correct button structure across rating changes", () => {
