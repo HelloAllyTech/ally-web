@@ -100,6 +100,9 @@ export enum SocketEvent {
   AUDIO_CHAT_ENDED = "AUDIO_CHAT_ENDED",
   AUDIO_STREAM = "AUDIO_STREAM",
   DISCONNECT = "disconnect",
+  // socket.io fires "connect" on both the initial connection and every
+  // reconnect — used to resume a recording after a transient drop.
+  CONNECT = "connect",
 }
 
 export interface FeedbackInput {

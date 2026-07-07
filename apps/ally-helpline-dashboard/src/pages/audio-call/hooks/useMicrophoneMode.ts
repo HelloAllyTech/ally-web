@@ -28,7 +28,7 @@ import {
   QueueStatus,
 } from "@types";
 
-import { NetworkIssuesList } from "../components/constants";
+import { NetworkIssuesList, classifyDisconnect, RECONNECT_GRACE_MS } from "../components/constants";
 import { AUDIO_FILE_SIZE } from "../constants";
 import { Nudge } from "../types";
 
@@ -90,6 +90,10 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
 
   const microphoneStreamRef = useRef<MediaStream | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  // Fallback timer armed on a transient disconnect: if socket.io hasn't
+  // reconnected within the window, we give up and surface an error. Cleared on
+  // reconnect. Keeps a brief network blip from erroring the recording.
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeChatId = activeChat?.chatId;
   const userId = user?.userId;
   const isActiveMicrophoneSession = microphoneChatId && !activeChat?.chatId;
@@ -191,6 +195,13 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
   };
 
   const cleanupMediaRecorder = () => {
+    // Cancel any pending reconnect-grace timer so a torn-down session can't
+    // fire a late error.
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+
     // Stop and cleanup media recorder
     if (mediaRecorder && mediaRecorder.state !== MediaRecorderState.INACTIVE) {
       mediaRecorder.stop();
@@ -265,20 +276,50 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
       disconnect();
       confirmEndSession(false);
     },
+    [SocketEvent.CONNECT]: () => {
+      // Reconnected after a transient drop: cancel the pending failure timer.
+      // The recorder kept running and socket.io flushes the frames it buffered
+      // while offline, so the recording simply resumes — no error, no data gap.
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    },
     [SocketEvent.DISCONNECT]: (reason?: string) => {
-      cleanupMediaRecorder();
-      // Check if it's a network-related disconnection
-      const isNetworkIssue =
-        reason && NetworkIssuesList.some(networkReason => reason.includes(networkReason));
+      const action = classifyDisconnect(reason);
 
-      if (isNetworkIssue) {
+      // We disconnected on purpose (normal end) — the end handlers already tore
+      // down. Do nothing, and never show an error.
+      if (action === "ignore") return;
+
+      const showError = () => {
+        cleanupMediaRecorder();
+        const isNetworkIssue =
+          reason && NetworkIssuesList.some(networkReason => reason.includes(networkReason));
         setSocketDisconnectionReason(
-          isNonWebChat || isSharedMicrophoneMode
-            ? SocketDisconnectionReasons.NO_NETWORK_IN_SHARED_SESSION
-            : SocketDisconnectionReasons.NO_NETWORK,
+          isNetworkIssue
+            ? isNonWebChat || isSharedMicrophoneMode
+              ? SocketDisconnectionReasons.NO_NETWORK_IN_SHARED_SESSION
+              : SocketDisconnectionReasons.NO_NETWORK
+            : SocketDisconnectionReasons.SOMETHING_WENT_WRONG,
         );
-      } else {
-        setSocketDisconnectionReason(SocketDisconnectionReasons.SOMETHING_WENT_WRONG);
+      };
+
+      // Non-recoverable (e.g. server-forced): fail now.
+      if (action === "terminal") {
+        showError();
+        return;
+      }
+
+      // Transient drop socket.io will retry: KEEP the recorder running so its
+      // frames buffer and flush on reconnect, and only error if reconnection
+      // never comes back within the grace window. Don't stack timers if the
+      // connection flaps.
+      if (!reconnectTimerRef.current) {
+        reconnectTimerRef.current = setTimeout(() => {
+          reconnectTimerRef.current = null;
+          showError();
+        }, RECONNECT_GRACE_MS);
       }
     },
   };
@@ -329,6 +370,14 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
       if (totalSize < AUDIO_FILE_SIZE && totalSize > 0) {
         sendBufferedAudio();
       }
+    };
+
+    // Previously missing: a MediaRecorder error (e.g. the OS revoking mic
+    // access mid-recording) went unhandled, so capture silently stopped with no
+    // signal. Surface it so the session doesn't just quietly die.
+    recorder.onerror = () => {
+      cleanupMediaRecorder();
+      setSocketDisconnectionReason(SocketDisconnectionReasons.SOMETHING_WENT_WRONG);
     };
 
     recorder.start(500);
