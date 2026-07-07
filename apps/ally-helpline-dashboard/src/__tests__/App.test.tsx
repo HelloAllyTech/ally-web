@@ -8,22 +8,12 @@ vi.mock("@routes/RouteLayout", () => ({
   default: () => <div data-testid="route-layout">Route Layout</div>,
 }));
 
-// Mock the theme factory
-vi.mock("../theme", () => ({
-  buildTheme: () => ({
-    typography: {},
-  }),
-}));
-
-// Mock react-redux so App can read the (selected) UI theme without a store
-vi.mock("react-redux", () => ({
-  useSelector: () => "daylight",
-}));
-
-// Mock MUI components
-vi.mock("@mui/material/styles", () => ({
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="theme-provider">{children}</div>
+// Mock the shared Carbon design-system boundary. App now wraps its tree in
+// AllyThemeProvider (from @ally-ui-mono/ui-shared) instead of MUI's
+// ThemeProvider — there is no per-user theme switcher any more.
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  AllyThemeProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="ally-theme-provider">{children}</div>
   ),
 }));
 
@@ -44,13 +34,13 @@ vi.mock("sonner", () => ({
 describe("App", () => {
   it("renders without crashing", () => {
     render(<App />);
-    expect(screen.getByTestId("theme-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("ally-theme-provider")).toBeInTheDocument();
   });
 
-  it("renders ThemeProvider with theme", () => {
+  it("wraps the app in the shared AllyThemeProvider", () => {
     render(<App />);
 
-    const themeProvider = screen.getByTestId("theme-provider");
+    const themeProvider = screen.getByTestId("ally-theme-provider");
     expect(themeProvider).toBeInTheDocument();
   });
 
@@ -72,8 +62,8 @@ describe("App", () => {
   it("has correct component structure", () => {
     const { container } = render(<App />);
 
-    // Should have ThemeProvider as root
-    const themeProvider = screen.getByTestId("theme-provider");
+    // AllyThemeProvider should be the root boundary
+    const themeProvider = screen.getByTestId("ally-theme-provider");
     expect(container.firstChild).toBe(themeProvider);
 
     // Should contain Toaster and RouteLayout
@@ -101,19 +91,19 @@ describe("App", () => {
     render(<App />);
 
     // Check that all expected components are rendered
-    expect(screen.getByTestId("theme-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("ally-theme-provider")).toBeInTheDocument();
     expect(screen.getByTestId("toaster")).toBeInTheDocument();
     expect(screen.getByTestId("route-layout")).toBeInTheDocument();
   });
 
-  it("applies theme to the application", () => {
+  it("applies the theme boundary to the application", () => {
     render(<App />);
 
-    // ThemeProvider should wrap the entire app
-    const themeProvider = screen.getByTestId("theme-provider");
+    // AllyThemeProvider should wrap the entire app
+    const themeProvider = screen.getByTestId("ally-theme-provider");
     expect(themeProvider).toBeInTheDocument();
 
-    // RouteLayout should be inside ThemeProvider
+    // RouteLayout should be inside AllyThemeProvider
     const routeLayout = screen.getByTestId("route-layout");
     expect(themeProvider).toContainElement(routeLayout);
   });

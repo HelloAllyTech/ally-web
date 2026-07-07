@@ -1,12 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { Tab, Tabs } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
@@ -33,7 +33,6 @@ import { pageType, SessionType, ShareForReviewsInput } from "@types";
 
 import { UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
-import { tabStyles } from "../calls/constants";
 import { containerVariants } from "../learn/constants";
 
 export const PostSimulationSummary: FC = () => {
@@ -150,10 +149,6 @@ export const PostSimulationSummary: FC = () => {
       setFeedbackOpen(true);
     }
   }, [summary, feedbackEnabled, navigate]);
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue);
-  };
 
   const handleCreateReview = async (status: string, note?: string) => {
     const normalizedNote = note?.trim() || null;
@@ -330,20 +325,12 @@ export const PostSimulationSummary: FC = () => {
               tag={t("postSim.titlePrefix")}
             />
             <Tabs
-              value={selectedTab}
-              onChange={handleTabChange}
-              className="w-full shrink-0 normal-case border-b border-[#DBDBDB]"
-              sx={{
-                "& .MuiButtonBase-root": {
-                  fontFamily: "'IBM Plex Serif', serif",
-                  fontWeight: 400,
-                },
-              }}
-            >
-              {tabList?.map(tab => (
-                <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
-              ))}
-            </Tabs>
+              items={tabList.map(tab => ({ id: String(tab.id), label: tab.label }))}
+              activeId={String(selectedTab)}
+              onChange={id => setSelectedTab(Number(id))}
+              className="w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+              showCount={false}
+            />
             <div
               className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
               data-testid="post-sim-tab-panel"

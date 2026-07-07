@@ -1,40 +1,24 @@
 import { FC } from "react";
 
-import { DatePicker as MuiDatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+
+import { DatePicker as CarbonDatePicker, DatePickerInput } from "@ally-ui-mono/ui-shared";
 
 import { DatePickerProps } from "./types";
 
 const DatePicker: FC<DatePickerProps> = ({ value, onChange, disableFuture, maxDate }) => {
-  return (
-    <MuiDatePicker
-      value={value}
-      onChange={onChange}
-      disableFuture={disableFuture}
-      maxDate={maxDate}
-      format="DD/MM/YYYY"
-      slotProps={{
-        textField: {
-          sx: {
-            "& .MuiPickersInputBase-root, & .MuiInputBase-root": {
-              borderRadius: "4px",
-              padding: "8px",
-              backgroundColor: "#fff",
-              height: "36px",
+  const resolvedMax = maxDate ?? (disableFuture ? dayjs() : undefined);
 
-              "& .MuiPickersOutlinedInput-notchedOutline": {
-                border: "0.5px solid #D2D2D2",
-              },
-              "&:hover .MuiPickersOutlinedInput-notchedOutline": {
-                border: "0.5px solid #D2D2D2",
-              },
-              "&.Mui-focused .MuiPickersOutlinedInput-notchedOutline": {
-                border: "0.5px solid #0957D0",
-              },
-            },
-          },
-        },
-      }}
-    />
+  return (
+    <CarbonDatePicker
+      datePickerType="single"
+      dateFormat="d/m/Y"
+      value={value ? value.toDate() : undefined}
+      maxDate={resolvedMax ? resolvedMax.toDate() : undefined}
+      onChange={(dates: Date[]) => onChange(dates?.[0] ? dayjs(dates[0]) : null)}
+    >
+      <DatePickerInput id="date-picker-input" placeholder="dd/mm/yyyy" size="md" labelText="" />
+    </CarbonDatePicker>
   );
 };
 

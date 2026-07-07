@@ -1,8 +1,6 @@
 import { FC } from "react";
 
-import { Dialog } from "@mui/material";
-import { X } from "lucide-react";
-
+import { ComposedModal, ModalBody, ModalFooter, ModalHeader } from "@ally-ui-mono/ui-shared";
 import { Button } from "@components";
 
 import { ActionDialogProps } from "./types";
@@ -18,22 +16,11 @@ const ActionDialog: FC<ActionDialogProps> = ({
   title,
 }) => {
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        style: {
-          borderRadius: "8px",
-        },
-      }}
-    >
-      <div className="py-4 px-6 bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px]">
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-typography-800">{title}</span>
-          <X className="cursor-pointer" onClick={onClose} data-testid="dialog-close" />
-        </div>
-        {children}
-        <div className="flex gap-4 items-center">
+    <ComposedModal open={open} onClose={onClose} size="sm" className="font-primary">
+      <ModalHeader title={title} closeModal={onClose} />
+      <ModalBody>{children}</ModalBody>
+      <ModalFooter>
+        <div className="flex gap-4 items-center w-full">
           {showSecondaryButton && (
             <Button variant="secondary" className="flex-1" onClick={secondaryButton?.onClick}>
               {secondaryButton?.label}
@@ -49,8 +36,8 @@ const ActionDialog: FC<ActionDialogProps> = ({
             </Button>
           )}
         </div>
-      </div>
-    </Dialog>
+      </ModalFooter>
+    </ComposedModal>
   );
 };
 

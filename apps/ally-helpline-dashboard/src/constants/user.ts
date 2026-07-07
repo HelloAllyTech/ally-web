@@ -7,19 +7,6 @@ export const User = {
 };
 
 /**
- * Emails allowed to see the UI theme picker while the feature is in alpha.
- * Temporary allowlist — remove once the feature is rolled out to everyone.
- */
-export const THEME_PICKER_ALLOWED_EMAILS = [
-  "learner@example.com",
-  "sandeep.malhotra+1@helloally.ai",
-  "sandeep.malhotra+testing@helloally.ai",
-];
-
-export const canPickUiTheme = (user?: { email?: string } | null): boolean =>
-  !!user?.email && THEME_PICKER_ALLOWED_EMAILS.includes(user.email);
-
-/**
  * Emails allowed to see the Organization Settings tab while the feature is in
  * alpha. Temporary allowlist — remove it (and the allowlist check in
  * canViewOrganizationSettings) once it rolls out to all admins.

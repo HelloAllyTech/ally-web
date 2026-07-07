@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 
 import { LineChart, StackedBarChart } from "@carbon/charts-react";
-import { Dropdown } from "@carbon/react";
 
+import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import { useGetStartLatencyQuery, useGetVoiceLatencyQuery } from "@api";
 import { AnalyticsBucket, AnalyticsRange } from "@types";
 
@@ -77,10 +77,7 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
     [data, axisTitle],
   );
 
-  const startSeries = useMemo(
-    () => buildStartLatencySeries(startData?.points ?? []),
-    [startData],
-  );
+  const startSeries = useMemo(() => buildStartLatencySeries(startData?.points ?? []), [startData]);
   const startAxisTitle = useMemo(() => latencyBucketTitle(startData?.bucket), [startData]);
 
   const startOptions = useMemo(

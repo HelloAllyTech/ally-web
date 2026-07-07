@@ -2,10 +2,8 @@
 
 import { FC, useState, useEffect } from "react";
 
-import SearchIcon from "@mui/icons-material/Search";
-import { Autocomplete, TextField, InputAdornment } from "@mui/material";
-import type { AutocompleteRenderOptionState } from "@mui/material";
-import { X } from "lucide-react";
+import { Search as SearchIcon } from "@carbon/icons-react";
+import { Search } from "@carbon/react";
 
 import { searchBarStyles } from "./constants";
 import { SearchVariant } from "../../types";
@@ -38,6 +36,7 @@ const SearchBar: FC<SearchBarProps> = ({
 }) => {
   // Initialize with initialValue to match server render
   const [searchTerm, setSearchTerm] = useState(initialValue);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Only update after mount to prevent hydration mismatch
   useEffect(() => {
@@ -60,129 +59,66 @@ const SearchBar: FC<SearchBarProps> = ({
   };
 
   /**
-   * Renders a option card for the autocomplete dropdown.
+   * Handles selecting a suggestion from the dropdown.
+   * @param {string} option
    */
-  const renderOptionCard = (
-    props: React.HTMLAttributes<HTMLLIElement>,
-    option: string,
-    state: AutocompleteRenderOptionState,
-  ) => {
-    // Material-UI passes key in props but TypeScript doesn't include it in HTMLAttributes
-    const { key, ...restProps } = props as React.HTMLAttributes<HTMLLIElement> & {
-      key?: React.Key;
-    };
-    return (
-      <li
-        key={key}
-        {...restProps}
-        data-testid={`search-bar-option-${option.toLowerCase().replace(/\s+/g, "-")}`}
-        className={`flex items-center h-12 sm:text-[12px] text-[14px] md:text-[12px] lg:text-[16px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors 
-          ${state.selected ? "bg-[#fafafa]" : searchBarStyles[mode].optionCard}`}
-      >
-        <SearchIcon className="mr-2 text-[#888]" data-testid="search-bar-option-icon" />
-        {option}
-      </li>
-    );
+  const handleSelectOption = (option: string) => {
+    const limitedValue = option.slice(0, MAX_CHARACTER_LIMIT);
+    setSearchTerm(limitedValue);
+    setIsOpen(false);
+    if (limitedValue) onSearch(limitedValue);
   };
 
-  /**
-   * Renders the search input field.
-   */
-  const renderInput = (params: any) => {
-    return (
-      <TextField
-        {...params}
-        data-testid="search-bar-input"
-        variant="outlined"
-        placeholder={placeholder || "Need guidance? Search here.."}
-        value={searchTerm}
-        maxLength={MAX_CHARACTER_LIMIT}
-        onChange={e => setSearchTerm(e.target.value.slice(0, MAX_CHARACTER_LIMIT))}
-        className={`font-['IBM_Plex_Serif'] text-[16px] ${searchBarStyles[mode].textFieldHeight}`}
-        sx={{
-          borderRadius: "8px",
-          overflow: "hidden",
-          "& .MuiOutlinedInput-root": {
-            height: searchBarStyles[mode].rootHeight,
-            fontFamily: "IBM_Plex_Serif",
-            fontSize: { xs: "14px", md: "14px", lg: "18px" },
-            "& input": {
-              color: searchBarStyles[mode].color,
-            },
-            "& fieldset": {
-              border: searchBarStyles[mode].border,
-              borderRadius: "8px",
-            },
-            "&:hover fieldset": {
-              border: searchBarStyles[mode].border,
-            },
-            "&.Mui-focused fieldset": {
-              border: searchBarStyles[mode].border,
-            },
-          },
-          "& .MuiInputBase-input::placeholder": {
-            color: searchBarStyles[mode].placeholderColor,
-          },
-          backgroundColor: searchBarStyles[mode].backgroundColor,
-        }}
-        InputProps={{
-          ...params.InputProps,
-          maxLength: MAX_CHARACTER_LIMIT,
-          startAdornment: (
-            <>
-              <InputAdornment position="start">
-                <SearchIcon
-                  className={`ml-[6px] ${searchBarStyles[mode].searchIcon}`}
-                  data-testid="search-bar-search-icon"
-                />
-              </InputAdornment>
-              {params.InputProps.startAdornment}
-            </>
-          ),
-          endAdornment: searchTerm && params.InputProps.endAdornment,
-        }}
-      />
-    );
-  };
+  const filteredSuggestions = suggestions.filter(option =>
+    option.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <form onSubmit={handleSubmit} className="w-full" data-testid="search-bar-form">
-      <Autocomplete
-        freeSolo
-        id="free-solo-2-demo"
-        data-testid="search-bar-autocomplete"
-        options={suggestions}
-        className="w-full h-[36px] sm:h-[60px]"
-        clearIcon={
-          <X
-            width={16}
-            height={16}
-            stroke={searchBarStyles[mode].clearIcon}
-            data-testid="search-bar-clear-icon"
-          />
-        }
-        value={searchTerm}
-        onChange={(_, newValue) => {
-          const limitedValue = newValue ? newValue.slice(0, MAX_CHARACTER_LIMIT) : "";
-          setSearchTerm(limitedValue);
-          if (limitedValue) onSearch(limitedValue);
-        }}
-        renderOption={renderOptionCard}
-        renderInput={renderInput}
-        disablePortal
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: "0px 0px 8px 8px",
-              overflow: "hidden",
-              backgroundColor: searchBarStyles[mode].backgroundColor,
-              "& .MuiAutocomplete-listbox": {
-                padding: "0px !important",
-              },
-            },
-          },
-        }}
-      />
+      <div className="relative w-full h-[36px] sm:h-[60px]" data-testid="search-bar-autocomplete">
+        <Search
+          id="resource-search-bar-input"
+          labelText={placeholder || "Need guidance? Search here.."}
+          data-testid="search-bar-input"
+          placeholder={placeholder || "Need guidance? Search here.."}
+          value={searchTerm}
+          closeButtonLabelText="Clear search"
+          onChange={e => setSearchTerm(e.target.value.slice(0, MAX_CHARACTER_LIMIT))}
+          onClear={() => setSearchTerm("")}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => setIsOpen(false)}
+          className={`font-['IBM_Plex_Serif'] text-[16px] ${searchBarStyles[mode].searchIcon}`}
+          style={{
+            backgroundColor: searchBarStyles[mode].backgroundColor,
+            borderRadius: "8px",
+          }}
+        />
+        {isOpen && filteredSuggestions.length > 0 && (
+          <ul
+            className="absolute left-0 right-0 top-full z-50 max-h-[300px] overflow-y-auto rounded-b-[8px]"
+            style={{ backgroundColor: searchBarStyles[mode].backgroundColor }}
+          >
+            {filteredSuggestions.map(option => (
+              <li
+                key={option}
+                data-testid={`search-bar-option-${option.toLowerCase().replace(/\s+/g, "-")}`}
+                className={`flex items-center h-12 sm:text-[12px] text-[14px] md:text-[12px] lg:text-[16px] font-['IBM_Plex_Serif'] cursor-pointer pl-4 transition-colors ${searchBarStyles[mode].optionCard}`}
+                onMouseDown={e => {
+                  e.preventDefault();
+                  handleSelectOption(option);
+                }}
+              >
+                <SearchIcon
+                  size={16}
+                  className="mr-2 text-[#888]"
+                  data-testid="search-bar-option-icon"
+                />
+                {option}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </form>
   );
 };

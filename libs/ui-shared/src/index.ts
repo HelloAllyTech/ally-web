@@ -31,6 +31,15 @@ import { Tabs } from "./lib/tabs";
 import Toggle from "./lib/toggle";
 import { logger } from "./logger";
 
+// Central design system: canonical Carbon primitives, the single theme
+// boundary, and JS token constants. Apps import these from
+// `@ally-ui-mono/ui-shared` and never from `@carbon/react` directly.
+export * from "./primitives";
+export { AllyThemeProvider } from "./theme";
+export type { AllyThemeProviderProps } from "./theme";
+export { carbonTokens } from "./tokens";
+export type { CarbonTokens } from "./tokens";
+
 export type { Resource, SearchVariant, SimulationDetailsModalProps } from "./types";
 export type { ChipItem, ChipGroupProps } from "./lib/chip-group";
 export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";

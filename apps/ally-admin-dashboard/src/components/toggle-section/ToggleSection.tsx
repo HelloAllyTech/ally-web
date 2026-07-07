@@ -1,9 +1,9 @@
-import { Tooltip } from "@mui/material";
 import { UseFormReturn, useController } from "react-hook-form";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetActiveTooltipsQuery } from "@api";
 import { TooltipIcon } from "@assets";
-import { en, toolTipStyles } from "@constants";
+import { en } from "@constants";
 
 import { ToggleSwitch } from "../toggle-switch";
 
@@ -47,10 +47,10 @@ export const ToggleSection = ({
       <span className="flex items-center gap-2 font-regular text-base text-typography-900">
         {label}
         {tooltipTitle && (
-          <Tooltip title={tooltipTitle} placement="top" arrow slotProps={toolTipStyles}>
-            <span className="cursor-pointer flex items-center">
+          <Tooltip label={tooltipTitle} align="top">
+            <button type="button" className="cursor-pointer inline-flex items-center">
               <TooltipIcon />
-            </span>
+            </button>
           </Tooltip>
         )}
       </span>

@@ -1,13 +1,13 @@
 import { FC, useEffect, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { LiveAudioVisualizer } from "react-audio-visualize";
 import { useTranslation } from "react-i18next";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { Lock, WarningTriangle } from "@assets";
-import { CallProvider, TOOLTIP_LIGHT_PROPS } from "@constants";
+import { CallProvider } from "@constants";
 
 import { ErrorScreen } from ".";
 import { CallInterfaceProps } from "../types";
@@ -119,12 +119,7 @@ const CallInterface: FC<CallInterfaceProps> = ({
           )}
           <div className="text-white flex justify-center items-center flex-col gap-2">
             <div className="flex items-center gap-2 font-primary font-medium">
-              <Tooltip
-                title={<PrivacyTooltip />}
-                placement="top"
-                arrow
-                slotProps={TOOLTIP_LIGHT_PROPS}
-              >
+              <Tooltip label={<PrivacyTooltip />} align="top">
                 <span>
                   <Lock />
                 </span>

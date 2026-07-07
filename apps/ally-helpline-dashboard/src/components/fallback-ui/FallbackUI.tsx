@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import { CircularProgress } from "@mui/material";
+import { Loading } from "@ally-ui-mono/ui-shared";
 
 import { Button } from "../button";
 import { FallbackUIProps } from "./types";
@@ -20,7 +20,7 @@ const FallbackUI: FC<FallbackUIProps> = ({
       className={`flex flex-col h-full w-full items-center justify-center gap-9 ${isDarkTheme ? "text-white bg-typography-900" : "text-typography-700 bg-white"} ${className}`}
     >
       {isLoading ? (
-        <CircularProgress />
+        <Loading withOverlay={false} />
       ) : (
         <>
           <div className="flex flex-col items-center gap-2 text-center">

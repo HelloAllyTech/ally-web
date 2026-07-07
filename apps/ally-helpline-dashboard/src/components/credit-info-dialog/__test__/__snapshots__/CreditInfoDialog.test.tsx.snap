@@ -3,30 +3,56 @@
 exports[`CreditInfoDialog > should match snapshot when fully populated 1`] = `
 <DocumentFragment>
   <div
-    data-open="true"
-    data-testid="mock-dialog"
-    paperprops="[object Object]"
+    aria-hidden="false"
+    class="cds--layer-one cds--modal is-visible"
+    role="presentation"
   >
     <div
-      class="bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px] items-center justify-center pb-10"
+      aria-modal="true"
+      class="cds--modal-container cds--modal-container--sm"
+      role="dialog"
     >
-      <svg
-        class="cursor-pointer self-end"
-        data-testid="mock-close-icon"
-      />
-      <div
-        class="font-medium text-typography-800 text-2xl font-secondary"
+      <button
+        class="cds--visually-hidden"
+        type="button"
       >
-        No Credits Available
-      </div>
-      <svg
-        data-testid="mock-no-credit-left-icon"
-      />
+        Focus sentinel
+      </button>
       <div
-        class="w-[300px] flex  justify-center text-center font-primary text-xl"
+        class="cds--modal-container-body"
       >
-        You have run out of credits. Please purchase more to continue.
+        <div
+          class="cds--layer-two cds--modal-content cds--modal-scroll-content--no-fade p-0"
+        >
+          <div
+            class="bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px] items-center justify-center pb-10"
+          >
+            <svg
+              class="cursor-pointer self-end"
+              data-testid="mock-close-icon"
+            />
+            <div
+              class="font-medium text-typography-800 text-2xl font-secondary"
+            >
+              No Credits Available
+            </div>
+            <svg
+              data-testid="mock-no-credit-left-icon"
+            />
+            <div
+              class="w-[300px] flex  justify-center text-center font-primary text-xl"
+            >
+              You have run out of credits. Please purchase more to continue.
+            </div>
+          </div>
+        </div>
       </div>
+      <button
+        class="cds--visually-hidden"
+        type="button"
+      >
+        Focus sentinel
+      </button>
     </div>
   </div>
 </DocumentFragment>

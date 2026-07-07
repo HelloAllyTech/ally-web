@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 
-import { ArrowUpward, ArrowDownward, FilterAlt, Sort } from "@mui/icons-material";
-import { Popover } from "@mui/material";
+import { ArrowUp, ArrowDown, Filter, SortAscending } from "@carbon/icons-react";
+import { Popover, PopoverContent } from "@carbon/react";
 
 import FilterPopover from "./FilterPopover";
 import { Column, SortDirection, TableFilter } from "./types";
@@ -145,30 +145,31 @@ const TableHeader = <T extends Record<string, any>>({
   const renderSortPopover = () => (
     <Popover
       open={Boolean(sortAnchorEl)}
-      anchorEl={sortAnchorEl}
-      onClose={handleCloseAll}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      transformOrigin={{ vertical: "top", horizontal: "left" }}
-      PaperProps={{
-        className: "shadow-none border border-[#E0E0E0] mt-5 -ml-2.5 font-['IBM_Plex_Serif']",
-      }}
+      onRequestClose={handleCloseAll}
+      align="right-start"
+      dropShadow={false}
+      caret={false}
+      className="font-['IBM_Plex_Serif']"
     >
-      <div>
-        <div
-          className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
-          onClick={() => handleSortSelect("ASC")}
-        >
-          <ArrowUpward fontSize="small" className="mr-2" />
-          <div>Ascending</div>
+      <span aria-hidden className="block h-0 w-0" />
+      <PopoverContent className="border border-[#E0E0E0]">
+        <div>
+          <div
+            className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+            onClick={() => handleSortSelect("ASC")}
+          >
+            <ArrowUp size={16} className="mr-2" />
+            <div>Ascending</div>
+          </div>
+          <div
+            className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+            onClick={() => handleSortSelect("DESC")}
+          >
+            <ArrowDown size={16} className="mr-2" />
+            <div>Descending</div>
+          </div>
         </div>
-        <div
-          className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
-          onClick={() => handleSortSelect("DESC")}
-        >
-          <ArrowDownward fontSize="small" className="mr-2" />
-          <div>Descending</div>
-        </div>
-      </div>
+      </PopoverContent>
     </Popover>
   );
 
@@ -176,35 +177,35 @@ const TableHeader = <T extends Record<string, any>>({
     return (
       <Popover
         open={Boolean(mainAnchorEl) && activeCol?.key === col.key}
-        anchorEl={mainAnchorEl}
-        onClose={handleCloseAll}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        onRequestClose={handleCloseAll}
+        align="bottom-start"
+        dropShadow={false}
+        caret={false}
         className="font-['IBM_Plex_Serif']"
-        PaperProps={{
-          className: "shadow-none border border-[#E0E0E0] font-['IBM_Plex_Serif']",
-        }}
       >
-        <div>
-          {col.sortable && (
-            <div
-              className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
-              onClick={handleSortClick}
-            >
-              <Sort fontSize="small" className="mr-2" />
-              <div>Sort</div>
-            </div>
-          )}
-          {col.filterable && (
-            <div
-              className="text-[#6B7280] flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
-              onClick={handleFilterClick}
-            >
-              <FilterAlt fontSize="small" className="mr-2" />
-              <div>Filter</div>
-            </div>
-          )}
-        </div>
+        <span aria-hidden className="block h-0 w-0" />
+        <PopoverContent className="border border-[#E0E0E0] font-['IBM_Plex_Serif']">
+          <div>
+            {col.sortable && (
+              <div
+                className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+                onClick={handleSortClick}
+              >
+                <SortAscending size={16} className="mr-2" />
+                <div>Sort</div>
+              </div>
+            )}
+            {col.filterable && (
+              <div
+                className="text-[#6B7280] flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7]"
+                onClick={handleFilterClick}
+              >
+                <Filter size={16} className="mr-2" />
+                <div>Filter</div>
+              </div>
+            )}
+          </div>
+        </PopoverContent>
       </Popover>
     );
   };
@@ -236,8 +237,8 @@ const TableHeader = <T extends Record<string, any>>({
               </div>
             )}
             {renderMainPopover(col)}
-            {renderSortPopover()}
-            {col.filterable && renderFilterPopover()}
+            {activeCol?.key === col.key && renderSortPopover()}
+            {activeCol?.key === col.key && col.filterable && renderFilterPopover()}
           </th>
         ))}
       </tr>

@@ -30,7 +30,7 @@ const analyticsMiddleware = () => (next: (action: unknown) => unknown) => (actio
 const userPersistConfig = {
   key: "user",
   storage,
-  whitelist: ["isAuthenticated", "user", "permissions", "availableChatTypes", "uiTheme"], // Only persist these fields
+  whitelist: ["isAuthenticated", "user", "permissions", "availableChatTypes"], // Only persist these fields
 };
 
 // Create persisted reducer

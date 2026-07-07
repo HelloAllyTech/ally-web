@@ -1,12 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetSimulationSummaryQuery,
@@ -151,7 +151,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
-              <Tooltip title="Comments" arrow>
+              <Tooltip label="Comments" align="top">
                 <button
                   onClick={() =>
                     navigate(

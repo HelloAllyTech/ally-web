@@ -1,10 +1,10 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
-import { CircularProgress } from "@mui/material";
 import { Mic } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { Loading } from "@ally-ui-mono/ui-shared";
 import {
   useCreateNoteMutation,
   useGenerateNoteFromAudioMutation,
@@ -532,7 +532,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     if (isDefinitionsLoading || isSummaryFieldsLoading) {
       return (
         <div className="flex justify-center py-6" data-testid="create-note-loading">
-          <CircularProgress size={20} />
+          <Loading small withOverlay={false} />
         </div>
       );
     }

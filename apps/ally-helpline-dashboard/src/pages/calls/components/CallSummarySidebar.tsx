@@ -1,13 +1,12 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { logger, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useLazyExportCallSummaryQuery,
   useArchiveCallLogMutation,
@@ -29,7 +28,6 @@ import { CallProvider, Permissions, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from
 import { FeedbackDialog } from "@containers";
 import { useFileExport } from "@hooks";
 import CallSummary from "@pages/post-call-summary/components/CallSummary";
-import { toolTipStyles } from "@src/constants";
 import ArchiveDialog from "@src/pages/calls/components/ArchiveDialog";
 import { RootState } from "@store";
 import { ChatSummaryStatus, ShareForReviewsScribeInput, TranscriptMessage } from "@types";
@@ -338,13 +336,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         {extraHeaderList
           .filter(button => button.show)
           .map(button => (
-            <Tooltip
-              key={button.alt}
-              title={button.text ?? ""}
-              placement="top"
-              arrow
-              slotProps={toolTipStyles}
-            >
+            <Tooltip key={button.alt} label={button.text ?? ""} align="top">
               <span style={{ display: "inline-flex" }}>
                 <Button
                   data-testid={`drawer-header-button-${button.alt}`}
@@ -385,7 +377,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                 />
               </div>
               {individualCallSummary?.reviewId && (
-                <Tooltip title="Comments" arrow slotProps={toolTipStyles}>
+                <Tooltip label="Comments" align="top">
                   <button
                     onClick={() =>
                       navigate(

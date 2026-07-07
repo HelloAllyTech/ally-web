@@ -1,12 +1,12 @@
 import { FC } from "react";
 
-import { Tooltip } from "@mui/material";
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { ArrowDown } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, toolTipStyles } from "@constants";
+import { en } from "@constants";
 
 interface HeaderProps {
   isValid: boolean;
@@ -84,24 +84,14 @@ export const Header: FC<HeaderProps> = ({
             (isValid ? (
               previewButton
             ) : (
-              <Tooltip
-                title={en.simulation.previewTooltipMessage}
-                placement="top"
-                arrow
-                slotProps={toolTipStyles}
-              >
+              <Tooltip label={en.simulation.previewTooltipMessage} align="top">
                 <span>{previewButton}</span>
               </Tooltip>
             ))}
           {isValid ? (
             publishButton
           ) : (
-            <Tooltip
-              title={en.simulation.publishTooltipMessage}
-              placement="top"
-              arrow
-              slotProps={toolTipStyles}
-            >
+            <Tooltip label={en.simulation.publishTooltipMessage} align="top">
               <span>{publishButton}</span>
             </Tooltip>
           )}

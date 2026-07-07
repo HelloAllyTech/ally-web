@@ -127,16 +127,6 @@ vi.mock("@constants", () => ({
     ARCHIVED: "ARCHIVED",
     PUBLISHED: "PUBLISHED",
   },
-  toolTipStyles: {
-    tooltip: {
-      sx: {
-        bgcolor: "common.black",
-        "& .MuiTooltip-arrow": {
-          color: "common.black",
-        },
-      },
-    },
-  },
 }));
 
 // Mock utils

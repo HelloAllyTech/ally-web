@@ -1,7 +1,7 @@
 "use client";
 import { FC, useState, useRef, useEffect } from "react";
 
-import PlayArrow from "@mui/icons-material/PlayArrow";
+import { Play } from "@carbon/icons-react";
 
 import { Dropdown } from ".";
 import { DropdownFieldProps } from "./types";
@@ -84,7 +84,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
             onClick={() => setIsOpen(prev => !prev)}
             className="cursor-pointer bg-transparent border-0 p-0 flex items-center rounded-[4px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
-            <PlayArrow className="w-4 h-4 rotate-90" />
+            <Play size={16} className="w-4 h-4 rotate-90" />
           </button>
         )}
       </div>

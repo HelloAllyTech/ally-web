@@ -22,6 +22,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   FEATURE_FLAGS_MAP: {
     LANGUAGE_CAPABILITY_FLAG: false,
   },
+  // Carbon Tooltip wraps a trigger; render its children so the underlying
+  // buttons/testids remain queryable.
+  Tooltip: ({ children }: any) => <>{children}</>,
 }));
 
 // Mock CSS modules and font loading

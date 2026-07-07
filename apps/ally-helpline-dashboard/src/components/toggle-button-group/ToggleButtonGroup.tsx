@@ -1,7 +1,6 @@
-import React, { FC } from "react";
+import { FC } from "react";
 
-import { ToggleButton, ToggleButtonGroup as MuiToggleButtonGroup } from "@mui/material";
-
+import { ContentSwitcher, Switch } from "@ally-ui-mono/ui-shared";
 import { cn } from "@utils";
 
 import { ToggleButtonGroupProps } from "./types";
@@ -12,70 +11,32 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   onValueChange,
   items,
   className,
-  successValue,
   equalWidth,
-  inheritFontSize = false,
 }) => {
-  const handleChange = (_: React.MouseEvent<HTMLElement>, newValue: string) => {
-    if (newValue !== null) {
-      onValueChange(newValue);
-    }
-  };
+  const selectedIndex = Math.max(
+    0,
+    items.findIndex(item => item.value === value),
+  );
 
   return (
-    <MuiToggleButtonGroup
-      value={value}
-      exclusive
-      disabled={disabled}
-      onChange={handleChange}
+    <ContentSwitcher
+      selectedIndex={selectedIndex}
+      onChange={({ index }) => {
+        const next = items[index as number];
+        if (next && next.value !== value) {
+          onValueChange(next.value);
+        }
+      }}
       className={cn(
-        "h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium",
+        "!rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium font-tertiary",
+        equalWidth && "w-full",
         className,
       )}
-      sx={{
-        "& .MuiToggleButton-root": {
-          border: "none",
-          borderRadius: "4px",
-          padding: "16px 24px",
-          textTransform: "none",
-          fontSize: inheritFontSize ? "inherit" : "14px",
-          fontWeight: 500,
-          fontFamily: "'IBM Plex Serif', serif",
-          "&.Mui-selected": {
-            backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
-            color: "#4D4D4D",
-            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-            borderLeft: "0.5px solid #D2D2D2",
-            borderRight: "0.5px solid #D2D2D2",
-            "&:hover": {
-              backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
-            },
-          },
-          "&:hover": {
-            backgroundColor: "rgba(0, 0, 0, 0.04)",
-          },
-        },
-      }}
     >
-      {items.map(({ value, label }) => (
-        <ToggleButton
-          key={value}
-          value={value}
-          disabled={disabled}
-          sx={{
-            "&.Mui-disabled": {
-              border: "none",
-            },
-            ...(equalWidth && {
-              flex: 1,
-              minWidth: 0,
-            }),
-          }}
-        >
-          {label}
-        </ToggleButton>
+      {items.map(({ value: itemValue, label }) => (
+        <Switch key={itemValue} name={itemValue} text={label} disabled={disabled} />
       ))}
-    </MuiToggleButtonGroup>
+    </ContentSwitcher>
   );
 };
 

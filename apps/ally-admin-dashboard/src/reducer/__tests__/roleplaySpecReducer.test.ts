@@ -100,10 +100,7 @@ describe("roleplaySpecReducer", () => {
       expect(state.savedRevision).toBe(1);
       expect(state.versionId).toBe("v2");
       expect(state.patchLog).toHaveLength(1);
-      expect([...state.patchLog[0].touchedSections].sort()).toEqual([
-        "openingStatement",
-        "rubric",
-      ]);
+      expect([...state.patchLog[0].touchedSections].sort()).toEqual(["openingStatement", "rubric"]);
       expect(state.patchLog[0].failed).toBeUndefined();
     });
 

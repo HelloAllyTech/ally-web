@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSearchParams, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { FEATURE_FLAGS_MAP, Tabs } from "@ally-ui-mono/ui-shared";
+import { FEATURE_FLAGS_MAP, Tabs, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useCreateScribeReviewMutation,
   useGetCallSummaryQuery,
@@ -179,7 +178,7 @@ export const PostCallSummary = () => {
         {individualCallSummary?.reviewId && (
           <>
             <div className="border-l border-border h-5" />
-            <Tooltip title={t("postCallSummary.header.comments")} arrow>
+            <Tooltip label={t("postCallSummary.header.comments")} align="top">
               <button
                 onClick={() =>
                   navigate(

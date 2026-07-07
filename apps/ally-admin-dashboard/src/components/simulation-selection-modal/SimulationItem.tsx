@@ -2,13 +2,12 @@ import { FC } from "react";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Tooltip } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage, Tooltip } from "@ally-ui-mono/ui-shared";
 import { CloseRed, DragIndicator, TooltipIcon, Plus } from "@assets";
-import { en, toolTipStyles } from "@constants";
+import { en } from "@constants";
 import { SimulationCardItemProps } from "@types";
 import { normalizeScore } from "@utils";
 
@@ -146,15 +145,10 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
 
           {/* Minimum score section */}
           <div className="flex items-center gap-3 self-center">
-            <Tooltip
-              title={en.simulation.minScoreTooltip}
-              placement="top"
-              slotProps={toolTipStyles}
-              arrow
-            >
-              <span>
+            <Tooltip label={en.simulation.minScoreTooltip} align="top">
+              <button type="button" className="inline-flex items-center">
                 <TooltipIcon />
-              </span>
+              </button>
             </Tooltip>
 
             <span className="text-sm text-typography-800 font-primary whitespace-nowrap">

@@ -173,7 +173,7 @@ vi.mock("../../constants", async importOriginal => {
 // Built-in field rendering isn't under test here; avoid pulling in its real
 // deps (date pickers etc.) for a field shape the tests don't otherwise need.
 vi.mock("../SummaryFieldInput", () => ({ default: () => null }));
-// Prevent loading @mui/x-date-pickers and date-fns (36 MB) into the test worker heap.
+// Prevent loading the real date-picker deps and date-fns (36 MB) into the test worker heap.
 // Renders a plain input per field (instead of the real panel's rich controls) so
 // tests can drive onValueChange the way a user typing would, and read back
 // externalLocalValues to see what CallSummary currently thinks the field holds.
@@ -193,7 +193,7 @@ vi.mock("@pages/calls/components/custom-fields/CustomFieldValuesPanel", () => ({
 }));
 
 // Mock heavy unmocked deps that previously caused 4GB OOM in this file:
-// - framer-motion / @mui/material / @ally-ui-mono/ui-shared cascade into large module graphs
+// - framer-motion / @ally-ui-mono/ui-shared cascade into large module graphs
 // - The sibling barrel `from "."` (in CallSummary.tsx) creates a circular load path
 // - With useFakeTimers active, an unstable hook return + missing mocks can trigger
 //   an infinite render loop until heap exhaustion.
@@ -211,15 +211,13 @@ vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn() },
 }));
 
-vi.mock("@mui/material", () => ({
-  CircularProgress: () => <div role="progressbar" />,
-  Divider: () => <hr />,
-  Tooltip: ({ children }: any) => <>{children}</>,
-}));
-
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   DropdownField: (props: any) => <select {...props} />,
+  // Carbon Loading replaces MUI CircularProgress. Expose it with role
+  // "progressbar" so the loading-state test can keep querying by role.
+  Loading: () => <div role="progressbar" />,
+  Tooltip: ({ children }: any) => <>{children}</>,
 }));
 
 // --------------------- Tests --------------------- //

@@ -13,13 +13,6 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// Mock @mui/material CircularProgress
-vi.mock("@mui/material", () => ({
-  CircularProgress: ({ size, ...props }: any) => (
-    <div data-testid="circular-progress" data-size={size} {...props} />
-  ),
-}));
-
 // Mock sonner toast
 const mockToastSuccess = vi.fn();
 vi.mock("sonner", () => ({
@@ -79,6 +72,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   RichTextRenderer: ({ content }: { content?: string | null }) => (
     <div data-testid="rich-text-renderer">{content ?? ""}</div>
   ),
+  Loading: () => <div data-testid="loading-indicator" />,
   FEATURE_FLAGS_MAP: {},
 }));
 
@@ -217,15 +211,14 @@ describe("ScenarioDetailsCard", () => {
     expect(button).not.toBeDisabled();
   });
 
-  it("should show CircularProgress when isStarting is true", () => {
+  it("should show the loading indicator when isStarting is true", () => {
     renderComponent({ isStarting: true });
-    expect(screen.getByTestId("circular-progress")).toBeInTheDocument();
-    expect(screen.getByTestId("circular-progress")).toHaveAttribute("data-size", "16");
+    expect(screen.getByTestId("loading-indicator")).toBeInTheDocument();
   });
 
-  it("should not show CircularProgress when isStarting is false", () => {
+  it("should not show the loading indicator when isStarting is false", () => {
     renderComponent({ isStarting: false });
-    expect(screen.queryByTestId("circular-progress")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("loading-indicator")).not.toBeInTheDocument();
   });
 
   // --- Interaction Tests ---

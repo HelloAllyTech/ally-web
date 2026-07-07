@@ -9,6 +9,9 @@ import { useEnhance } from "../useEnhance";
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: { info: vi.fn() },
+  // The hook builds a loading skeleton with SkeletonText; stub it so the hook
+  // body can create the element without pulling in the real Carbon component.
+  SkeletonText: (props: any) => <div data-testid="skeleton-text" {...props} />,
 }));
 
 const mockEnhanceMutation = vi.fn();

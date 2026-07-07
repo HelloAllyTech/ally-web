@@ -1,10 +1,9 @@
 import React, { useCallback } from "react";
 
-import { Tooltip } from "@mui/material";
-
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { TooltipIcon } from "@assets";
 import { NumberInput, TimeInput } from "@components";
-import { DETECTION_CONFIG_FIELDS, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
+import { DETECTION_CONFIG_FIELDS, EVENT_DETECTION_TYPES } from "@constants";
 import { isInfinityValue, toggleInfinityValue, getInfinityDisplay } from "@utils";
 
 interface TimeWindowValues {
@@ -61,10 +60,10 @@ const FieldRow: React.FC<FieldRowProps> = ({ label, children, tooltip, tooltipTi
     <div className="w-[40%] flex items-center gap-2">
       <span className="text-base font-regular text-typography-800">{label}</span>
       {tooltip && (
-        <Tooltip title={tooltipTitle || label} placement="top" arrow slotProps={toolTipStyles}>
-          <span className="cursor-pointer items-center ">
+        <Tooltip label={tooltipTitle || label} align="top">
+          <button type="button" className="cursor-pointer inline-flex items-center">
             <TooltipIcon />
-          </span>
+          </button>
         </Tooltip>
       )}
     </div>

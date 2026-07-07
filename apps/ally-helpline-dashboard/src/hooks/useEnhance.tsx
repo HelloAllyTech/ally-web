@@ -1,8 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { Skeleton } from "@mui/material";
-
-import { logger } from "@ally-ui-mono/ui-shared";
+import { SkeletonText, logger } from "@ally-ui-mono/ui-shared";
 import { useEnhanceContentMutation } from "@api";
 import { WandStars } from "@assets";
 import { EnhanceButtonProps } from "@types";
@@ -121,9 +119,7 @@ export const useEnhance = () => {
    */
   const EnhancementLoadingSkeleton = (
     <div className="w-full">
-      <Skeleton />
-      <Skeleton />
-      <Skeleton />
+      <SkeletonText paragraph lineCount={3} />
     </div>
   );
 

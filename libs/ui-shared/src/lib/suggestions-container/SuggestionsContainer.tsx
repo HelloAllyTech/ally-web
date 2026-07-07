@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import SearchIcon from "@mui/icons-material/Search";
+import { Search } from "@carbon/icons-react";
 
 import { suggestionsStyles } from "./constants";
 import { SearchVariant } from "../../types";
@@ -56,7 +56,8 @@ const SuggestionsContainer: FC<SuggestionsContainerProps> = ({
             className={`w-auto flex items-center border-[0.5px] rounded-xl px-[10px] py-[6px] leading-[100%] tracking-[0] cursor-pointer hover:bg-gray-100 transition whitespace-nowrap ${suggestionsStyles[mode].suggestionButton}`}
             onClick={() => onSelect(chip)}
           >
-            <SearchIcon
+            <Search
+              size={16}
               className={`mr-2 w-4 h-4 shrink-0 ${suggestionsStyles[mode].searchIcon}`}
               data-testid="suggestion-chip-icon"
             />

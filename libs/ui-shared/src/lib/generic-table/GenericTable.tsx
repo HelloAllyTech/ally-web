@@ -9,7 +9,7 @@ import React, {
   useMemo,
 } from "react";
 
-import { Popover, CircularProgress } from "@mui/material";
+import { Popover, PopoverContent, Loading } from "@carbon/react";
 import { Plus } from "lucide-react";
 
 import FilterPopover from "./FilterPopover";
@@ -196,27 +196,27 @@ export const GenericTable = forwardRef(
       <>
         <Popover
           open={Boolean(filterAnchorEl)}
-          anchorEl={filterAnchorEl}
-          onClose={handleCloseFilterPopover}
-          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          onRequestClose={handleCloseFilterPopover}
+          align="bottom-start"
+          dropShadow={false}
+          caret={false}
           className="font-['IBM_Plex_Serif'] z-50"
-          PaperProps={{
-            className: "shadow-none border border-[#E0E0E0] mt-[2px]",
-          }}
         >
-          <div>
-            {filterableColumns.map(col => (
-              <div
-                key={col.key as string}
-                className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
-                onClick={e => handleSelectColumn(col, e)}
-              >
-                {col.icon && <span className="mr-2">{col.icon}</span>}
-                <div>{col.header}</div>
-              </div>
-            ))}
-          </div>
+          <span aria-hidden className="block h-0 w-0" />
+          <PopoverContent className="border border-[#E0E0E0] mt-[2px]">
+            <div>
+              {filterableColumns.map(col => (
+                <div
+                  key={col.key as string}
+                  className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+                  onClick={e => handleSelectColumn(col, e)}
+                >
+                  {col.icon && <span className="mr-2">{col.icon}</span>}
+                  <div>{col.header}</div>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
         </Popover>
         {/* Use shared FilterPopover for filter options */}
         <FilterPopover
@@ -285,9 +285,7 @@ export const GenericTable = forwardRef(
           >
             <Plus size={20} />
             <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">{loadMoreLabel}</span>
-            {isLoading && (
-              <CircularProgress color="primary" size={20} className="ml-2 mr-2 text-[#000]" />
-            )}
+            {isLoading && <Loading withOverlay={false} small className="ml-2 mr-2" />}
           </div>
         )}
       </div>

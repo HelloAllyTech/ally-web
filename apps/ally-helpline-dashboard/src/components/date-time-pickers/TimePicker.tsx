@@ -1,39 +1,56 @@
-import { FC } from "react";
+import { ChangeEvent, FC } from "react";
 
-import { TimePicker as MuiTimePicker } from "@mui/x-date-pickers/TimePicker";
+import dayjs from "dayjs";
+
+import { TimePicker as CarbonTimePicker } from "@ally-ui-mono/ui-shared";
 
 import { TimePickerProps } from "./types";
 
-const TimePicker: FC<TimePickerProps> = ({ value, onChange, maxTime, minTime, disabled }) => {
-  return (
-    <MuiTimePicker
-      value={value}
-      onChange={onChange}
-      disabled={disabled}
-      maxTime={maxTime}
-      minTime={minTime}
-      slotProps={{
-        textField: {
-          sx: {
-            "& .MuiPickersInputBase-root, & .MuiInputBase-root": {
-              borderRadius: "4px",
-              padding: "8px",
-              backgroundColor: "#fff",
-              height: "36px",
+const TIME_PATTERN = /^([01]?\d|2[0-3]):([0-5]\d)$/;
 
-              "& .MuiPickersOutlinedInput-notchedOutline": {
-                border: "0.5px solid #D2D2D2",
-              },
-              "&:hover .MuiPickersOutlinedInput-notchedOutline": {
-                border: "0.5px solid #D2D2D2",
-              },
-              "&.Mui-focused .MuiPickersOutlinedInput-notchedOutline": {
-                border: "0.5px solid #0957D0",
-              },
-            },
-          },
-        },
-      }}
+const TimePicker: FC<TimePickerProps> = ({ value, onChange, maxTime, minTime, disabled }) => {
+  const formatted = value ? value.format("HH:mm") : "";
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const text = event.target.value.trim();
+
+    if (!text) {
+      onChange(null);
+      return;
+    }
+
+    const match = TIME_PATTERN.exec(text);
+    if (!match) {
+      return;
+    }
+
+    let next = (value ?? dayjs())
+      .hour(Number(match[1]))
+      .minute(Number(match[2]))
+      .second(0)
+      .millisecond(0);
+
+    if (maxTime && next.isAfter(maxTime)) {
+      next = maxTime;
+    }
+    if (minTime && next.isBefore(minTime)) {
+      next = minTime;
+    }
+
+    onChange(next);
+  };
+
+  return (
+    <CarbonTimePicker
+      id="time-picker-input"
+      labelText=""
+      hideLabel
+      value={formatted}
+      onChange={handleChange}
+      disabled={disabled}
+      placeholder="hh:mm"
+      maxLength={5}
+      size="md"
     />
   );
 };

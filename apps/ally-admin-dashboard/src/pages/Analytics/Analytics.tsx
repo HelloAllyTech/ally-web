@@ -1,20 +1,19 @@
 import { ReactNode, useMemo, useState } from "react";
 
+import "@carbon/charts/styles.css";
+import "./analytics-carbon.scss";
+
 import {
-  Dropdown,
+  CarbonDropdown as Dropdown,
   Heading,
   Section,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
-  Tabs,
+  CarbonTabs as Tabs,
   Theme,
-} from "@carbon/react";
-
-import "@carbon/charts/styles.css";
-import "./analytics-carbon.scss";
-
+} from "@ally-ui-mono/ui-shared";
 import { useGetScenarioLanguagesQuery } from "@api";
 import { AnalyticsRange } from "@types";
 

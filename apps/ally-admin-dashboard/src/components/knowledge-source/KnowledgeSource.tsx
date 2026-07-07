@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { Controller } from "react-hook-form";
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { Close, Delete, Plus, Search } from "@assets";
 import { en, ENHANCE_TYPE } from "@constants";
 
@@ -120,7 +120,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
             <span className="text-typography-900 text-md">
               Documents ({knowledgeSources.length})
             </span>
-            <Tooltip title={en.knowledgeSource.addNewTab} placement="top" arrow>
+            <Tooltip label={en.knowledgeSource.addNewTab} align="top">
               <button
                 type="button"
                 onClick={handleAddTab}
@@ -175,7 +175,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
                     {item.title || "Untitled"}
                   </span>
 
-                  <Tooltip title={en.knowledgeSource.remove} placement="top" arrow>
+                  <Tooltip label={en.knowledgeSource.remove} align="top">
                     <button
                       type="button"
                       onClick={event => handleRemoveTab(event, item.id)}
@@ -222,7 +222,7 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
                 <span className="text-typography-500 text-sm">
                   {activeTab.content.length}/{MAX_CONTENT_LENGTH}
                 </span>
-                <Tooltip title={en.knowledgeSource.deleteContent} placement="top" arrow>
+                <Tooltip label={en.knowledgeSource.deleteContent} align="top">
                   <button
                     type="button"
                     onClick={handleDeleteAllContent}
