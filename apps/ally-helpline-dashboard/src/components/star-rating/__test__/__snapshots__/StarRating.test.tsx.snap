@@ -11,7 +11,7 @@ exports[`StarRating > should match snapshot when fully rendered 1`] = `
       data-variant="icon"
     >
       <svg
-        data-fill="#E0E0E0"
+        data-fill="#8D8D8D"
         data-testid="star-yellow-icon"
       />
     </button>
@@ -21,7 +21,7 @@ exports[`StarRating > should match snapshot when fully rendered 1`] = `
       data-variant="icon"
     >
       <svg
-        data-fill="#E0E0E0"
+        data-fill="#8D8D8D"
         data-testid="star-yellow-icon"
       />
     </button>
@@ -31,7 +31,7 @@ exports[`StarRating > should match snapshot when fully rendered 1`] = `
       data-variant="icon"
     >
       <svg
-        data-fill="#E0E0E0"
+        data-fill="#8D8D8D"
         data-testid="star-yellow-icon"
       />
     </button>
@@ -41,7 +41,7 @@ exports[`StarRating > should match snapshot when fully rendered 1`] = `
       data-variant="icon"
     >
       <svg
-        data-fill="#E0E0E0"
+        data-fill="#8D8D8D"
         data-testid="star-yellow-icon"
       />
     </button>
@@ -51,7 +51,7 @@ exports[`StarRating > should match snapshot when fully rendered 1`] = `
       data-variant="icon"
     >
       <svg
-        data-fill="#E0E0E0"
+        data-fill="#8D8D8D"
         data-testid="star-yellow-icon"
       />
     </button>
@@ -100,7 +100,7 @@ exports[`StarRating > should match snapshot when rating is 3 1`] = `
       data-variant="icon"
     >
       <svg
-        data-fill="#E0E0E0"
+        data-fill="#8D8D8D"
         data-testid="star-yellow-icon"
       />
     </button>
@@ -110,7 +110,7 @@ exports[`StarRating > should match snapshot when rating is 3 1`] = `
       data-variant="icon"
     >
       <svg
-        data-fill="#E0E0E0"
+        data-fill="#8D8D8D"
         data-testid="star-yellow-icon"
       />
     </button>

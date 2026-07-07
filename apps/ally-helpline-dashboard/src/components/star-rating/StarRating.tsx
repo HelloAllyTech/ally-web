@@ -18,9 +18,10 @@ export const StarRating: FC<StarRatingProps> = ({ rating, setRating }) => {
           variant={ButtonVariant.ICON}
           className={`text-2xl sm:text-3xl !p-0`}
         >
-          {/* Empty stars use a visible neutral grey (not white) so they don't
-              disappear against the light modal/background. */}
-          <StarYellowIcon fill={star <= rating ? "#F9CC49" : "#E0E0E0"} />
+          {/* Empty stars need a mid grey (Carbon gray-50) so they stay clearly
+              visible against the light modal/background — gray-20 (#E0E0E0) was
+              too faint to see. Selected stars are gold. */}
+          <StarYellowIcon fill={star <= rating ? "#F9CC49" : "#8D8D8D"} />
         </Button>
       ))}
     </div>
