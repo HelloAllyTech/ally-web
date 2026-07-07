@@ -50,9 +50,9 @@ describe("ToggleButtonGroup", () => {
     expect(optionB).toBeInTheDocument();
     expect(optionC).toBeInTheDocument();
 
-    // Carbon ContentSwitcher marks the active Switch with aria-selected="true".
-    expect(optionB.closest("button")).toHaveAttribute("aria-selected", "true");
-    expect(optionA.closest("button")).toHaveAttribute("aria-selected", "false");
+    // Carbon ContentSwitcher marks the active Switch with aria-checked="true".
+    expect(optionB.closest("button")).toHaveAttribute("aria-checked", "true");
+    expect(optionA.closest("button")).toHaveAttribute("aria-checked", "false");
   });
 
   it("should call onValueChange with the new value when an unselected button is clicked", () => {
@@ -101,7 +101,7 @@ describe("ToggleButtonGroup", () => {
     );
 
     const selectedButton = screen.getByText("Option B").closest("button");
-    expect(selectedButton).toHaveAttribute("aria-selected", "true");
+    expect(selectedButton).toHaveAttribute("aria-checked", "true");
   });
 
   it("only marks the button matching the current value as selected", () => {
@@ -109,10 +109,7 @@ describe("ToggleButtonGroup", () => {
       <ToggleButtonGroup value="optionA" onValueChange={mockOnValueChange} items={mockItems} />,
     );
 
-    expect(screen.getByText("Option A").closest("button")).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByText("Option C").closest("button")).toHaveAttribute(
-      "aria-selected",
-      "false",
-    );
+    expect(screen.getByText("Option A").closest("button")).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByText("Option C").closest("button")).toHaveAttribute("aria-checked", "false");
   });
 });

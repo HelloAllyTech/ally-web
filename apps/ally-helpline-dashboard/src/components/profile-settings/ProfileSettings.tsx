@@ -3,7 +3,7 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { ComposedModal, ModalBody, ImageUpload } from "@ally-ui-mono/ui-shared";
+import { ComposedModal, ModalBody, ModalFooter, ImageUpload } from "@ally-ui-mono/ui-shared";
 import { CloseIcon } from "@assets";
 
 import { profileSettingsProps } from "./types";
@@ -25,8 +25,8 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
 
   return (
     <ComposedModal open={isOpen} onClose={onClose} size="sm">
-      <ModalBody className="w-[400px] flex flex-col p-5 h-[440px]">
-        <CloseIcon className="cursor-pointer absolute right-0 top-0" onClick={onClose} />
+      <ModalBody className="flex flex-col p-5">
+        <CloseIcon className="cursor-pointer absolute right-4 top-4 z-10" onClick={onClose} />
         <div className="flex flex-col gap-3">
           <div className="flex item-center justify-center text-2xl font-secondary">
             {t("profile.settings.title")}
@@ -64,17 +64,19 @@ export const ProfileSettings: FC<profileSettingsProps> = ({
               />
             </div>
           </div>
-          <div className="w-full flex items-center justify-center gap-2 pt-4">
-            <Button fullWidth onClick={onClose} variant={ButtonVariant.SECONDARY}>
-              {t("profile.settings.cancel")}
-            </Button>
-
-            <Button fullWidth onClick={onButtonClick} variant={ButtonVariant.PRIMARY}>
-              {t("profile.settings.done")}
-            </Button>
-          </div>
         </div>
       </ModalBody>
+      <ModalFooter>
+        <div className="w-full flex items-center justify-center gap-2">
+          <Button fullWidth onClick={onClose} variant={ButtonVariant.SECONDARY}>
+            {t("profile.settings.cancel")}
+          </Button>
+
+          <Button fullWidth onClick={onButtonClick} variant={ButtonVariant.PRIMARY}>
+            {t("profile.settings.done")}
+          </Button>
+        </div>
+      </ModalFooter>
     </ComposedModal>
   );
 };

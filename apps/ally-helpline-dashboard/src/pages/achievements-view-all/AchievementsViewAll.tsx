@@ -145,10 +145,14 @@ export const AchievementsViewAll: FC = () => {
                 </div>
               }
               align="bottom"
+              autoAlign
             >
-              <span className="cursor-pointer">
+              <button
+                type="button"
+                className="inline-flex cursor-pointer border-0 bg-transparent p-0"
+              >
                 <Info className="w-5 h-5" />
-              </span>
+              </button>
             </Tooltip>
           </div>
           <ToggleButtonGroup
@@ -194,10 +198,10 @@ export const AchievementsViewAll: FC = () => {
         <div className="font-primary text-xs leading-5 font-normal text-typography-600">
           {getBadgeTypeLabels(t)[category]}
         </div>
-        <Tooltip label={tooltipContent} align="top">
-          <span className="cursor-pointer">
+        <Tooltip label={tooltipContent} align="top" autoAlign>
+          <button type="button" className="inline-flex cursor-pointer border-0 bg-transparent p-0">
             <Info className="w-5 h-5" />
-          </span>
+          </button>
         </Tooltip>
         <div className="border-t-[0.5px] ml-2 border-[#D2D2D2] w-full" />
       </div>

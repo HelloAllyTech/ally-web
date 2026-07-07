@@ -9,6 +9,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   // Carbon's ComposedModal keeps mounted but toggles `open`; the stub mirrors that.
   ComposedModal: ({ children, open }: any) => (open ? <div role="dialog">{children}</div> : null),
   ModalBody: ({ children, className }: any) => <div className={className}>{children}</div>,
+  ModalFooter: ({ children }: any) => <div>{children}</div>,
 }));
 
 vi.mock("@assets", () => ({

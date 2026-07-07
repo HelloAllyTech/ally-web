@@ -23,8 +23,9 @@ describe("Drawer", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("My Title")).toBeInTheDocument();
     expect(screen.getByTestId("content")).toBeInTheDocument();
-    // drawerClassName is applied to the content wrapper
-    expect(screen.getByTestId("drawer-content")).toHaveClass("custom-class");
+    // drawerClassName controls the panel width, so it is applied to the panel
+    // <aside> (role="dialog"), not an inner wrapper.
+    expect(screen.getByRole("dialog")).toHaveClass("custom-class");
   });
 
   it("does not render anything when closed", () => {

@@ -47,11 +47,16 @@ const Drawer: FC<DrawerProps> = ({
   );
 
   return (
-    <SidePanel open={open} onClose={onClose} side="right" title={header}>
-      <div
-        className={`flex flex-col gap-4 h-full ${drawerClassName ?? ""}`}
-        data-testid="drawer-content"
-      >
+    // drawerClassName carries the panel width (e.g. w-[50vw] min-w-[600px]); it
+    // must reach the panel <aside> so the panel is as wide as its content.
+    <SidePanel
+      open={open}
+      onClose={onClose}
+      side="right"
+      title={header}
+      className={drawerClassName}
+    >
+      <div className="flex flex-col gap-4 h-full" data-testid="drawer-content">
         <div className={`flex-1 ${bodyClassName ?? ""}`} data-testid="drawer-body">
           {children}
         </div>

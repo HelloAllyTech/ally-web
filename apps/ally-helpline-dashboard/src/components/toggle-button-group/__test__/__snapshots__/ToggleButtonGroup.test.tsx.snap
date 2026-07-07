@@ -3,53 +3,35 @@
 exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 <DocumentFragment>
   <div
-    class="cds--content-switcher !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium font-tertiary cds--layout-constraint--size__default-md cds--layout-constraint--size__min-sm cds--layout-constraint--size__max-lg"
-    role="tablist"
+    class="inline-flex h-9 items-stretch rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
+    role="group"
   >
     <button
-      aria-selected="false"
-      class="cds--content-switcher-btn"
+      aria-checked="false"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
       disabled=""
-      role="tab"
-      tabindex="-1"
+      role="radio"
       type="button"
     >
-      <span
-        class="cds--content-switcher__label"
-        title="Option A"
-      >
-        Option A
-      </span>
+      Option A
     </button>
     <button
-      aria-selected="true"
-      class="cds--content-switcher-btn cds--content-switcher--selected"
+      aria-checked="true"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm bg-white text-[#4D4D4D] shadow-sm"
       disabled=""
-      role="tab"
-      tabindex="0"
+      role="radio"
       type="button"
     >
-      <span
-        class="cds--content-switcher__label"
-        title="Option B"
-      >
-        Option B
-      </span>
+      Option B
     </button>
     <button
-      aria-selected="false"
-      class="cds--content-switcher-btn"
+      aria-checked="false"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
       disabled=""
-      role="tab"
-      tabindex="-1"
+      role="radio"
       type="button"
     >
-      <span
-        class="cds--content-switcher__label"
-        title="Option C"
-      >
-        Option C
-      </span>
+      Option C
     </button>
   </div>
 </DocumentFragment>
@@ -58,50 +40,32 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 exports[`ToggleButtonGroup > should match snapshot when rendered with default props 1`] = `
 <DocumentFragment>
   <div
-    class="cds--content-switcher !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium font-tertiary cds--layout-constraint--size__default-md cds--layout-constraint--size__min-sm cds--layout-constraint--size__max-lg"
-    role="tablist"
+    class="inline-flex h-9 items-stretch rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
+    role="group"
   >
     <button
-      aria-selected="true"
-      class="cds--content-switcher-btn cds--content-switcher--selected"
-      role="tab"
-      tabindex="0"
+      aria-checked="true"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm bg-white text-[#4D4D4D] shadow-sm"
+      role="radio"
       type="button"
     >
-      <span
-        class="cds--content-switcher__label"
-        title="Option A"
-      >
-        Option A
-      </span>
+      Option A
     </button>
     <button
-      aria-selected="false"
-      class="cds--content-switcher-btn"
-      role="tab"
-      tabindex="-1"
+      aria-checked="false"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
+      role="radio"
       type="button"
     >
-      <span
-        class="cds--content-switcher__label"
-        title="Option B"
-      >
-        Option B
-      </span>
+      Option B
     </button>
     <button
-      aria-selected="false"
-      class="cds--content-switcher-btn"
-      role="tab"
-      tabindex="-1"
+      aria-checked="false"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
+      role="radio"
       type="button"
     >
-      <span
-        class="cds--content-switcher__label"
-        title="Option C"
-      >
-        Option C
-      </span>
+      Option C
     </button>
   </div>
 </DocumentFragment>
