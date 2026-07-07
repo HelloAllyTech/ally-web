@@ -9,6 +9,8 @@ import { useCopilotStream, parseSseBuffer } from "@hooks/useCopilotStream";
 import roleplaySpecSlice, { hydrateSpec } from "@reducer/roleplaySpecReducer";
 import { createEmptyRoleplaySpec } from "@utils/roleplaySpec";
 
+vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+
 const sseFrame = (event: string, data: unknown) =>
   `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
@@ -35,6 +37,18 @@ const mockSseFetch = (frames: string[], { hang = false } = {}) =>
     });
     return { ok: true, status: 200, body } as unknown as Response;
   });
+
+/** A one-shot SSE response (closes after the scripted frames). */
+const streamResponse = (frames: string[]) => {
+  const encoder = new TextEncoder();
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      frames.forEach(frame => controller.enqueue(encoder.encode(frame)));
+      controller.close();
+    },
+  });
+  return { ok: true, status: 200, body } as unknown as Response;
+};
 
 const buildStore = () => configureStore({ reducer: { roleplaySpec: roleplaySpecSlice.reducer } });
 
@@ -233,5 +247,82 @@ describe("useCopilotStream", () => {
       const assistant = result.current.messages.find(message => message.role === "assistant");
       expect(assistant?.content).toBe("ok");
     });
+  });
+
+  it("recovers a missing session: re-creates one and replays the turn once", async () => {
+    // 1: turn fails with session_not_found. 2: replayed turn on the fresh session.
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        streamResponse([
+          sseFrame("error", {
+            code: "session_not_found",
+            message: "Copilot session not found: sess-1",
+          }),
+        ]),
+      )
+      .mockResolvedValueOnce(
+        streamResponse([
+          sseFrame("token", { delta: "Recovered" }),
+          sseFrame("done", { messageSeq: 1, specVersionId: "v1" }),
+        ]),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const onSessionInvalid = vi.fn(async () => "sess-2");
+    const store = buildStore();
+    const { result } = renderHook(
+      () => useCopilotStream({ sessionId: "sess-1", onSessionInvalid }),
+      {
+        wrapper: ({ children }: { children: React.ReactNode }) => (
+          <Provider store={store}>{children}</Provider>
+        ),
+      },
+    );
+
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+
+    // Recovered exactly once, replaying against the new session id.
+    expect(onSessionInvalid).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toContain("sess-2");
+
+    await waitFor(() => {
+      const assistant = result.current.messages.find(message => message.role === "assistant");
+      expect(assistant?.content).toBe("Recovered");
+      expect(assistant?.error).toBeUndefined();
+    });
+
+    // The failed pair was dropped — only the replayed user + assistant remain.
+    expect(result.current.messages.map(message => message.role)).toEqual(["user", "assistant"]);
+  });
+
+  it("surfaces the failure when no recovery is available (no onSessionInvalid)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        streamResponse([
+          sseFrame("error", {
+            code: "session_not_found",
+            message: "Copilot session not found: sess-1",
+          }),
+        ]),
+      ),
+    );
+
+    const store = buildStore();
+    const { result } = renderStream(store);
+
+    await act(async () => {
+      await result.current.sendMessage("hi");
+    });
+
+    // Without a recovery hook the pair is still dropped and streaming settles.
+    await waitFor(() => {
+      expect(result.current.isStreaming).toBe(false);
+    });
+    expect(result.current.messages).toEqual([]);
   });
 });
