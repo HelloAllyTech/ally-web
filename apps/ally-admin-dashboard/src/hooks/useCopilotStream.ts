@@ -67,6 +67,14 @@ const cancelFrame = (handle: number | ReturnType<typeof setTimeout>) => {
 interface UseCopilotStreamOptions {
   sessionId: string | null;
   onDone?: (done: CopilotDoneEvent) => void;
+  /**
+   * Called when a turn fails because the server session no longer exists (SSE
+   * `error` with code `session_not_found` — e.g. the DB was reset). Should
+   * create a fresh session (updating Redux + localStorage) and resolve with its
+   * id; the turn is then transparently replayed against it. Resolve `null` if a
+   * replacement can't be created.
+   */
+  onSessionInvalid?: () => Promise<string | null>;
 }
 
 /**
@@ -76,7 +84,11 @@ interface UseCopilotStreamOptions {
  * roleplaySpec slice (they're already persisted server-side, so autosave is
  * paused via `setStreaming` for the stream's duration).
  */
-export const useCopilotStream = ({ sessionId, onDone }: UseCopilotStreamOptions) => {
+export const useCopilotStream = ({
+  sessionId,
+  onDone,
+  onSessionInvalid,
+}: UseCopilotStreamOptions) => {
   const dispatch = useDispatch();
   const [messages, setMessages] = useState<CopilotChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -239,16 +251,28 @@ export const useCopilotStream = ({ sessionId, onDone }: UseCopilotStreamOptions)
     [],
   );
 
-  const sendMessage = useCallback(
-    async (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed || !sessionId || abortRef.current) return;
-
+  /**
+   * Streams one turn against `activeSessionId`, appending a user + assistant
+   * bubble. A `session_not_found` error frame is NOT surfaced to the user here
+   * (no toast, no error on the bubble) — it's reported back via the return so
+   * the caller can recover; every other failure is rendered inline as before.
+   */
+  const runStream = useCallback(
+    async (
+      text: string,
+      activeSessionId: string,
+    ): Promise<{
+      userMsgId: string;
+      assistantId: string;
+      sessionLost: boolean;
+      aborted: boolean;
+    }> => {
+      const userMsgId = nextMessageId();
       const assistantId = nextMessageId();
       currentAssistantIdRef.current = assistantId;
       setMessages(prev => [
         ...prev,
-        { id: nextMessageId(), role: "user", content: trimmed },
+        { id: userMsgId, role: "user", content: text },
         { id: assistantId, role: "assistant", content: "", streaming: true },
       ]);
 
@@ -257,9 +281,11 @@ export const useCopilotStream = ({ sessionId, onDone }: UseCopilotStreamOptions)
       setIsStreaming(true);
       dispatch(setStreaming(true));
 
+      let sessionLost = false;
+
       try {
-        const url = `${API_BASE_URL}/api${ApiEndpoints.ROLEPLAY_STUDIO.COPILOT_SESSION_STREAM(sessionId)}`;
-        const response = await fetchStreamWithReauth(url, { message: trimmed }, controller.signal);
+        const url = `${API_BASE_URL}/api${ApiEndpoints.ROLEPLAY_STUDIO.COPILOT_SESSION_STREAM(activeSessionId)}`;
+        const response = await fetchStreamWithReauth(url, { message: text }, controller.signal);
 
         if (!response.ok || !response.body) {
           throw new Error(`Stream request failed (${response.status})`);
@@ -275,7 +301,13 @@ export const useCopilotStream = ({ sessionId, onDone }: UseCopilotStreamOptions)
           buffer += decoder.decode(value, { stream: true });
           const { events, rest } = parseSseBuffer(buffer);
           buffer = rest;
-          events.forEach(handleEvent);
+          for (const event of events) {
+            if (event.type === "error" && event.data.code === "session_not_found") {
+              sessionLost = true; // handled by sendMessage; don't toast the raw error
+              continue;
+            }
+            handleEvent(event);
+          }
         }
         flushTokens();
         patchAssistantMessage(assistantId, { streaming: false });
@@ -287,7 +319,7 @@ export const useCopilotStream = ({ sessionId, onDone }: UseCopilotStreamOptions)
             streaming: false,
             interrupted: true,
           });
-        } else {
+        } else if (!sessionLost) {
           logger.error(`[Copilot Stream] ${error}`);
           patchAssistantMessage(assistantId, {
             streaming: false,
@@ -301,8 +333,42 @@ export const useCopilotStream = ({ sessionId, onDone }: UseCopilotStreamOptions)
         if (isMountedRef.current) setIsStreaming(false);
         dispatch(setStreaming(false));
       }
+
+      return { userMsgId, assistantId, sessionLost, aborted: controller.signal.aborted };
     },
-    [dispatch, fetchStreamWithReauth, flushTokens, handleEvent, patchAssistantMessage, sessionId],
+    [dispatch, fetchStreamWithReauth, flushTokens, handleEvent, patchAssistantMessage],
+  );
+
+  const sendMessage = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed || !sessionId || abortRef.current) return;
+
+      const first = await runStream(trimmed, sessionId);
+      if (!first.sessionLost || first.aborted) return;
+
+      // The server session is gone (e.g. a local DB reset dropped it). Re-create
+      // one and replay the turn once so the trainer never sees the raw error.
+      setMessages(prev =>
+        prev.filter(m => m.id !== first.userMsgId && m.id !== first.assistantId),
+      );
+      const freshId = onSessionInvalid ? await onSessionInvalid() : null;
+      if (!freshId) {
+        toast.error(en.roleplayStudio.copilot.streamFailed);
+        return;
+      }
+      const retry = await runStream(trimmed, freshId);
+      // The fresh session vanished too (or a code bug) — surface it rather than
+      // looping. One recovery attempt is the ceiling.
+      if (retry.sessionLost && !retry.aborted) {
+        patchAssistantMessage(retry.assistantId, {
+          streaming: false,
+          error: en.roleplayStudio.copilot.streamFailed,
+        });
+        toast.error(en.roleplayStudio.copilot.streamFailed);
+      }
+    },
+    [onSessionInvalid, patchAssistantMessage, runStream, sessionId],
   );
 
   const stop = useCallback(() => {

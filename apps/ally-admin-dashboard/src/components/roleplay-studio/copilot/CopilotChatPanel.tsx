@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
@@ -33,8 +33,25 @@ export const CopilotChatPanel: React.FC = () => {
   const [createSession] = useCreateRoleplayCopilotSessionMutation();
   const [getSession] = useLazyGetRoleplayCopilotSessionQuery();
 
+  // Create a fresh session for the current spec and pin it (Redux + localStorage).
+  // Used both to bootstrap and to recover when the server session disappears.
+  const recreateSession = useCallback(async (): Promise<string | null> => {
+    if (!specId) return null;
+    try {
+      const session = await createSession(specId).unwrap();
+      localStorage.setItem(sessionStorageKey(specId), session.id);
+      dispatch(setCopilotSessionId(session.id));
+      dispatch(setInterviewPhase(session.phase ?? null));
+      return session.id;
+    } catch {
+      toast.error(strings.startFailed);
+      return null;
+    }
+  }, [createSession, dispatch, specId, strings.startFailed]);
+
   const { messages, isStreaming, sendMessage, stop, hydrateMessages } = useCopilotStream({
     sessionId: copilotSessionId,
+    onSessionInvalid: recreateSession,
   });
 
   const [isBooting, setIsBooting] = useState(true);
@@ -64,18 +81,10 @@ export const CopilotChatPanel: React.FC = () => {
         }
       }
 
-      try {
-        const session = await createSession(specId).unwrap();
-        localStorage.setItem(sessionStorageKey(specId), session.id);
-        dispatch(setCopilotSessionId(session.id));
-        dispatch(setInterviewPhase(session.phase ?? null));
-      } catch {
-        toast.error(strings.startFailed);
-      } finally {
-        setIsBooting(false);
-      }
+      await recreateSession();
+      setIsBooting(false);
     })();
-  }, [specId, copilotSessionId, createSession, dispatch, getSession, hydrateMessages]);
+  }, [specId, copilotSessionId, dispatch, getSession, hydrateMessages, recreateSession]);
 
   // Keep the feed pinned to the latest message.
   useEffect(() => {
