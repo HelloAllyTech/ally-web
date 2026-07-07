@@ -71,6 +71,10 @@ export const GenericTable = forwardRef(
      * @param {React.MouseEvent<HTMLElement>} event
      */
     const handleOpenFilterPopover = (event: React.MouseEvent<HTMLElement>) => {
+      // Stop the opening click before Carbon Popover's window-level
+      // outside-click listener sees it and closes the popover as it opens
+      // (the trigger lives outside the Popover subtree).
+      event.stopPropagation();
       setFilterAnchorEl(event.currentTarget);
       setSelectedColumn(null);
       setOptionAnchorEl(null);
@@ -87,6 +91,10 @@ export const GenericTable = forwardRef(
       event: React.MouseEvent<HTMLElement>,
     ) => {
       if (!col || !col.filterable) return;
+      // See handleOpenFilterPopover; also close the column list or its
+      // outside-click listener would close the options popover on the next click.
+      event.stopPropagation();
+      setFilterAnchorEl(null);
       setSelectedColumn(col as Column<T> & { filterOptions: { label: string; value: string }[] });
       setOptionAnchorEl(event.currentTarget);
       setSearchText("");
