@@ -29,7 +29,10 @@ const Drawer: FC<DrawerProps> = ({
         {headerButtons
           ?.filter(button => button.show)
           .map(button => (
-            <Tooltip key={button.alt} label={button.text || ""} align="top">
+            // Header buttons are pinned to the top of the viewport, so a
+            // top-aligned tooltip renders off-screen and gets clipped. Open it
+            // downward instead. (Carbon's plain Tooltip has no autoAlign.)
+            <Tooltip key={button.alt} label={button.text || ""} align="bottom">
               <span style={{ display: "inline-flex" }}>
                 <Button
                   data-testid={`drawer-header-button-${button.alt}`}
