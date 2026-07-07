@@ -119,6 +119,39 @@ describe("GenericTable", () => {
     expect(onFilterChange).toHaveBeenCalled();
   });
 
+  it("lists text-only filterable columns (no filterOptions) in the add-filter picker", () => {
+    // Mirrors the counsellor call-logs "Call Name" column: filterable + text
+    // filter type, but no filterOptions. Regression test for a bug where the
+    // "+ Filter" button opened an empty column picker for such columns.
+    const columns = [
+      { key: "callName", header: "Call Name", filterable: true, filterType: "text" },
+    ];
+    const onFilterChange = vi.fn();
+    render(
+      <GenericTable
+        columns={columns as any}
+        data={[{ callName: "" }]}
+        showSelectedFilters
+        onFilterChange={onFilterChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /filter/i }));
+
+    // "Call Name" should now appear both as the table header and as an
+    // entry in the add-filter column picker.
+    const callNameEntries = screen.getAllByText("Call Name");
+    expect(callNameEntries.length).toBeGreaterThan(1);
+
+    fireEvent.click(callNameEntries[callNameEntries.length - 1]);
+    const singleButtons = screen.getAllByText("select-single");
+    fireEvent.click(singleButtons[singleButtons.length - 1]);
+
+    expect(onFilterChange).toHaveBeenCalledWith(
+      expect.objectContaining({ filter: [{ key: "callName", value: "v1" }] }),
+    );
+  });
+
   it("renders Load More and spinner when loading", () => {
     const handleLoadMore = vi.fn();
     render(
