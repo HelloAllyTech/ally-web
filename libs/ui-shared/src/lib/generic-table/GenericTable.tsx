@@ -64,10 +64,7 @@ export const GenericTable = forwardRef(
     useImperativeHandle(ref, () => scrollRef.current, []);
 
     // Memoize filterable columns for performance
-    const filterableColumns = useMemo(
-      () => columns.filter(c => c.filterable && c.filterOptions),
-      [columns],
-    );
+    const filterableColumns = useMemo(() => columns.filter(c => c.filterable), [columns]);
 
     /**
      * Opens the filter popover for column selection.
@@ -89,18 +86,16 @@ export const GenericTable = forwardRef(
       col: Column<T> | undefined,
       event: React.MouseEvent<HTMLElement>,
     ) => {
-      if (!col) return;
-      if (col.filterable && col.filterOptions) {
-        setSelectedColumn(col as Column<T> & { filterOptions: { label: string; value: string }[] });
-        setOptionAnchorEl(event.currentTarget);
-        setSearchText("");
-        // If multiselect, prefill with current filter values
-        if (col.filterType === "multiselect") {
-          const existing = filter.find(f => f.key === col.key);
-          setMultiSelectValues(Array.isArray(existing?.value) ? existing?.value : []);
-        } else {
-          setMultiSelectValues([]);
-        }
+      if (!col || !col.filterable) return;
+      setSelectedColumn(col as Column<T> & { filterOptions: { label: string; value: string }[] });
+      setOptionAnchorEl(event.currentTarget);
+      setSearchText("");
+      // If multiselect, prefill with current filter values
+      if (col.filterType === "multiselect") {
+        const existing = filter.find(f => f.key === col.key);
+        setMultiSelectValues(Array.isArray(existing?.value) ? existing?.value : []);
+      } else {
+        setMultiSelectValues([]);
       }
     };
 
