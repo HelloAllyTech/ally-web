@@ -258,7 +258,11 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         >
           {/* Logo */}
 
-          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md box-border overflow-hidden flex items-center justify-center">
+          {/* No `overflow-hidden` here: the org-name Tooltip renders its bubble
+              inline (Carbon Tooltip is not portaled), so an overflow-hidden
+              ancestor would clip it off-screen. The logo image is still clipped
+              to the rounded box by the inner wrapper's own overflow-hidden. */}
+          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md box-border flex items-center justify-center">
             {/* Toggle button - covers logo when collapsed */}
             <Tooltip label={tenantData?.name ?? ""} align="right">
               <div className="w-14 h-14  group rounded-md box-border overflow-hidden flex items-center justify-center">
