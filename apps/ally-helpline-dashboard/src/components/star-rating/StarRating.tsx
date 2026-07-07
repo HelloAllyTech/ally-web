@@ -18,7 +18,9 @@ export const StarRating: FC<StarRatingProps> = ({ rating, setRating }) => {
           variant={ButtonVariant.ICON}
           className={`text-2xl sm:text-3xl !p-0`}
         >
-          <StarYellowIcon fill={star <= rating ? "#F9CC49" : "#ffffff"} />
+          {/* Empty stars use a visible neutral grey (not white) so they don't
+              disappear against the light modal/background. */}
+          <StarYellowIcon fill={star <= rating ? "#F9CC49" : "#E0E0E0"} />
         </Button>
       ))}
     </div>

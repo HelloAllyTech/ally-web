@@ -15,8 +15,15 @@ export interface SidePanelProps {
   title?: ReactNode;
   /** Which edge the panel slides in from. */
   side?: "left" | "right";
-  /** Panel width (CSS length). Defaults to 24rem. */
+  /**
+   * Panel width (CSS length). Defaults to 24rem. Ignored when `className`
+   * carries its own width utility (the class then controls sizing).
+   */
   width?: string;
+  /** Extra classes for the panel `<aside>` (e.g. Tailwind width utilities). */
+  className?: string;
+  /** Extra classes for the scrollable body. */
+  bodyClassName?: string;
   /** Accessible label for the close button. */
   closeLabel?: string;
   children?: ReactNode;
@@ -33,10 +40,13 @@ const OVERLAY_STYLE: CSSProperties = {
  * Shared slide-over side panel.
  *
  * Carbon core (`@carbon/react`) ships no Drawer/side-panel, so this is the one
- * centralised implementation used across the apps in place of the various
- * per-app MUI `Drawer` / `*Sidebar` / `*Sidepanel` components. It is styled with
- * Carbon design tokens (`--cds-*`) only, so it inherits the serif Carbon look
- * everywhere and needs no app-level Tailwind config.
+ * centralised implementation used in place of the former per-app MUI `Drawer`.
+ * It is styled with Carbon design tokens (`--cds-*`) only, so it inherits the
+ * serif Carbon look everywhere and needs no app-level Tailwind config.
+ *
+ * Sizing: pass `width` for a simple fixed width, OR pass `className` with a
+ * width utility (e.g. `w-[50vw] min-w-[600px]`) — when `className` is provided
+ * the inline width is dropped so the class controls sizing.
  */
 export function SidePanel({
   open,
@@ -44,6 +54,8 @@ export function SidePanel({
   title,
   side = "right",
   width = "24rem",
+  className,
+  bodyClassName,
   closeLabel = "Close",
   children,
 }: SidePanelProps) {
@@ -63,7 +75,9 @@ export function SidePanel({
     top: 0,
     bottom: 0,
     [side]: 0,
-    width,
+    // When the caller supplies its own classes (which may include a width
+    // utility) let the class win — an inline width would override Tailwind.
+    ...(className ? {} : { width }),
     maxWidth: "100%",
     background: "var(--cds-layer, #ffffff)",
     color: "var(--cds-text-primary, #161616)",
@@ -81,22 +95,28 @@ export function SidePanel({
     alignItems: "center",
     justifyContent: "space-between",
     gap: "1rem",
-    padding: "1rem",
+    padding: "1rem 1.5rem",
     borderBottom: "1px solid var(--cds-border-subtle, #e0e0e0)",
     fontWeight: 600,
+    flexShrink: 0,
   };
 
   return (
     <>
       <div style={OVERLAY_STYLE} onClick={onClose} aria-hidden="true" />
-      <aside style={panelStyle} role="dialog" aria-modal="true">
+      <aside style={panelStyle} className={className} role="dialog" aria-modal="true">
         <div style={headerStyle}>
-          <span>{title}</span>
+          <div style={{ minWidth: 0, flex: 1 }}>{title}</div>
           <IconButton label={closeLabel} kind="ghost" size="sm" onClick={onClose}>
             <Close />
           </IconButton>
         </div>
-        <div style={{ flex: 1, overflow: "auto", padding: "1rem" }}>{children}</div>
+        <div
+          style={{ flex: 1, overflow: "auto", padding: "1rem 1.5rem" }}
+          className={bodyClassName}
+        >
+          {children}
+        </div>
       </aside>
     </>
   );
