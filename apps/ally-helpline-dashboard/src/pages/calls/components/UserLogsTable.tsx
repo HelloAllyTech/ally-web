@@ -434,6 +434,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           columns={isCall ? callColumns : simulationColumns}
           data={displayData}
           isLoading={isLoading}
+          showSelectedFilters={isCall}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           loadMoreLabel={t("common.loadMore")}
           fallbackUI={renderFallbackUI()}
