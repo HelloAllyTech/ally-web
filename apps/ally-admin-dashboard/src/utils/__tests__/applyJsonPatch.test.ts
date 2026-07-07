@@ -107,15 +107,16 @@ describe("applyJsonPatch", () => {
     expect(() =>
       applyJsonPatch(doc(), [{ op: "move" as never, path: "/title", value: 1 }]),
     ).toThrow(JsonPatchError);
-    expect(() => applyJsonPatch(doc(), [{ op: "replace", path: "/missing/deep", value: 1 }])).toThrow(
-      JsonPatchError,
-    );
+    expect(() =>
+      applyJsonPatch(doc(), [{ op: "replace", path: "/missing/deep", value: 1 }]),
+    ).toThrow(JsonPatchError);
     expect(() =>
       applyJsonPatch(doc(), [{ op: "replace", path: "/persona/chunks/9", value: 1 }]),
     ).toThrow(JsonPatchError);
     expect(() => applyJsonPatch(doc(), [{ op: "remove", path: "" }])).toThrow(JsonPatchError);
     expect(() => applyJsonPatch(doc(), [{ op: "remove", path: "/nope" }])).toThrow(JsonPatchError);
-    expect(() => applyJsonPatch(doc(), [{ op: "add", path: "/title" } as JsonPatchOperation]),
+    expect(() =>
+      applyJsonPatch(doc(), [{ op: "add", path: "/title" } as JsonPatchOperation]),
     ).toThrow(JsonPatchError);
   });
 });

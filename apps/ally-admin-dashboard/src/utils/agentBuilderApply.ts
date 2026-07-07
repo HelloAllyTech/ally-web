@@ -1,12 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 
+import type { AgentBuilderField, AgentBuilderKnowledgeSource, AgentBuilderPersona } from "@api";
 import { FORM_FIELD_IDS, GENDER_OPTIONS } from "@constants";
-
-import type {
-  AgentBuilderField,
-  AgentBuilderKnowledgeSource,
-  AgentBuilderPersona,
-} from "@api";
 
 /**
  * Applies ONE Agent Builder Copilot field result to the shared react-hook-form
@@ -32,8 +27,7 @@ const MAX_LENGTHS = {
 // in tests) where the consts can transiently be undefined.
 const genderValues = (): Set<string> => new Set((GENDER_OPTIONS ?? []).map(o => o.value));
 
-const isNonEmptyString = (v: unknown): v is string =>
-  typeof v === "string" && v.trim().length > 0;
+const isNonEmptyString = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
 
 const truncate = (value: string, max: number): string =>
   value.length > max ? value.slice(0, max) : value;

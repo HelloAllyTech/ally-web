@@ -23,7 +23,9 @@ const main = async () => {
 
   if (DRY_RUN) {
     const keyCount = Object.keys(locales.en ?? {}).length;
-    console.log(`[DRY RUN] Would POST /api/v1/i18n/ci-sync with ${LANGUAGES.length} locales (~${keyCount} top-level keys in en)`);
+    console.log(
+      `[DRY RUN] Would POST /api/v1/i18n/ci-sync with ${LANGUAGES.length} locales (~${keyCount} top-level keys in en)`,
+    );
     return;
   }
 

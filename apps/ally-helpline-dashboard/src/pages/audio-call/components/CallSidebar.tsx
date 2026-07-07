@@ -68,7 +68,10 @@ const CallSidebar: FC<CallSidebarProps> = ({
     return (
       <div className="border border-gray-200 text-white rounded-lg p-4 mb-2">
         <CustomMarkdown content={nudge.content} className="font-primary" />
-        <hr className="my-2 border-0 border-t" style={{ borderColor: "rgba(255, 255, 255, 0.12)" }} />
+        <hr
+          className="my-2 border-0 border-t"
+          style={{ borderColor: "rgba(255, 255, 255, 0.12)" }}
+        />
         <div className="flex text-sm items-center gap-2">
           <span>{t("audioCall.sidebar.isHelpful")}</span>
           <button

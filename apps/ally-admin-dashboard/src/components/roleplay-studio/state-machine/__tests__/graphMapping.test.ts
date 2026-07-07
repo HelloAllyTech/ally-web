@@ -72,9 +72,7 @@ describe("specToGraph", () => {
     // Nodes round-trip every state, carrying the state object itself.
     expect(nodes.map(node => node.id).sort()).toEqual(["a", "b", "c"]);
     for (const node of nodes) {
-      expect(node.data.state).toEqual(
-        spec.stateMachine.states.find(state => state.id === node.id),
-      );
+      expect(node.data.state).toEqual(spec.stateMachine.states.find(state => state.id === node.id));
     }
     expect(nodes.find(node => node.id === "a")?.data.isInitial).toBe(true);
     expect(nodes.find(node => node.id === "b")?.data.isInitial).toBe(false);
@@ -83,9 +81,7 @@ describe("specToGraph", () => {
     const expectedEdges = spec.stateMachine.states.flatMap(state =>
       state.transitions.map(t => ({ id: t.id, source: state.id, target: t.toStateId })),
     );
-    expect(edges.map(({ id, source, target }) => ({ id, source, target }))).toEqual(
-      expectedEdges,
-    );
+    expect(edges.map(({ id, source, target }) => ({ id, source, target }))).toEqual(expectedEdges);
   });
 
   it("prefers saved ui.layout positions over the auto layout", () => {

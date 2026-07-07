@@ -342,9 +342,15 @@ export const RoleplaySessionLogDetail: FC = () => {
             Recording &amp; feedback
           </h2>
           <SectionCard>
-            {data.recording && (
-              <Field label="Recording" value={`Available (egress ${data.recording.egressId})`} />
-            )}
+            {data.recording &&
+              (data.recording.url ? (
+                <div className="col-span-2 md:col-span-4 flex flex-col gap-1">
+                  <span className="text-xs text-typography-700">Recording</span>
+                  <audio controls preload="none" src={data.recording.url} className="w-full" />
+                </div>
+              ) : (
+                <Field label="Recording" value={`Available (egress ${data.recording.egressId})`} />
+              ))}
             {data.feedback && (
               <Field label="Learner rating" value={`${data.feedback.rating} / 5`} />
             )}

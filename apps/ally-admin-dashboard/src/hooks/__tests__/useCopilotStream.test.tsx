@@ -36,8 +36,7 @@ const mockSseFetch = (frames: string[], { hang = false } = {}) =>
     return { ok: true, status: 200, body } as unknown as Response;
   });
 
-const buildStore = () =>
-  configureStore({ reducer: { roleplaySpec: roleplaySpecSlice.reducer } });
+const buildStore = () => configureStore({ reducer: { roleplaySpec: roleplaySpecSlice.reducer } });
 
 const renderStream = (store: ReturnType<typeof buildStore>) =>
   renderHook(() => useCopilotStream({ sessionId: "sess-1" }), {
@@ -48,15 +47,14 @@ const renderStream = (store: ReturnType<typeof buildStore>) =>
 
 describe("parseSseBuffer", () => {
   it("parses complete frames and returns the unconsumed remainder", () => {
-    const buffer =
-      sseFrame("token", { delta: "Hi" }) + "event: token\ndata: {\"delta\":\"part";
+    const buffer = sseFrame("token", { delta: "Hi" }) + 'event: token\ndata: {"delta":"part';
     const { events, rest } = parseSseBuffer(buffer);
     expect(events).toEqual([{ type: "token", data: { delta: "Hi" } }]);
     expect(rest).toContain("part");
   });
 
   it("drops malformed frames and frames without event names", () => {
-    const buffer = "event: token\ndata: {not-json}\n\n" + "data: {\"delta\":\"x\"}\n\n";
+    const buffer = "event: token\ndata: {not-json}\n\n" + 'data: {"delta":"x"}\n\n';
     const { events } = parseSseBuffer(buffer);
     expect(events).toEqual([]);
   });
@@ -128,9 +126,7 @@ describe("useCopilotStream", () => {
     expect(slice.isStreaming).toBe(false);
     expect(result.current.isStreaming).toBe(false);
 
-    expect(
-      result.current.messages.map(message => message.role),
-    ).toEqual(["user", "assistant"]);
+    expect(result.current.messages.map(message => message.role)).toEqual(["user", "assistant"]);
   });
 
   it("renders question events as structured messages", async () => {
@@ -200,7 +196,9 @@ describe("useCopilotStream", () => {
       new ReadableStream<Uint8Array>({
         start(controller) {
           controller.enqueue(encoder.encode(sseFrame("token", { delta: "ok" })));
-          controller.enqueue(encoder.encode(sseFrame("done", { messageSeq: 1, specVersionId: "v1" })));
+          controller.enqueue(
+            encoder.encode(sseFrame("done", { messageSeq: 1, specVersionId: "v1" })),
+          );
           controller.close();
         },
       });

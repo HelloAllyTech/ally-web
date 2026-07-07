@@ -2,11 +2,10 @@ import { ChangeEvent, CSSProperties, InputHTMLAttributes, ReactNode, Ref } from 
 
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 
-export interface TextFieldProps
-  extends Omit<
-    InputHTMLAttributes<HTMLInputElement>,
-    "onChange" | "value" | "size" | "width" | "height" | "color" | "ref"
-  > {
+export interface TextFieldProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "value" | "size" | "width" | "height" | "color" | "ref"
+> {
   className?: string;
   disabled?: boolean;
   hideError?: boolean;

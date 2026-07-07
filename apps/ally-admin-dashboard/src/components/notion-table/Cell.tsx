@@ -151,9 +151,7 @@ export const Cell = ({
       if (id === "location" && row?.locationSlug) {
         element = (
           <div className="flex flex-col overflow-hidden">
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-              {value.value}
-            </span>
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap">{value.value}</span>
             <span className="text-xs text-typography-500 overflow-hidden text-ellipsis whitespace-nowrap">
               {row.locationSlug}
             </span>

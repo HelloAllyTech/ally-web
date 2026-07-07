@@ -93,6 +93,8 @@ export interface RoleplaySessionLatency {
 export interface RoleplaySessionRecording {
   storageKey: string;
   egressId: string;
+  /** Short-lived presigned S3 playback URL; null when the bucket isn't configured. */
+  url: string | null;
 }
 
 export interface RoleplaySessionFeedback {

@@ -20,7 +20,6 @@ import {
   OrgAccessListResponse,
   OrgScenario,
   OrgScenarioPath,
-  OrgTenantBadge,
   OrgTenantBadgesParams,
   OrgTenantBadgesResponse,
   OrgBadgeTenantVisibilityBody,
@@ -123,10 +122,7 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.SCRIBE_VOICE_NOTE_ENABLED],
     }),
 
-    updateOwnScribeVoiceNoteEnabled: builder.mutation<
-      { success: boolean },
-      { enabled: boolean }
-    >({
+    updateOwnScribeVoiceNoteEnabled: builder.mutation<{ success: boolean }, { enabled: boolean }>({
       query: ({ enabled }) => ({
         url: ApiEndpoints.SETTINGS.SCRIBE_VOICE_NOTE_ENABLED,
         method: HttpMethod.PUT,
@@ -210,16 +206,15 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
     }),
 
     // --- Access management: Scenario paths ---------------------------------
-    getOrgScenarioPaths: builder.query<
-      OrgAccessListResponse<OrgScenarioPath>,
-      OrgAccessListParams
-    >({
-      query: params => ({
-        url: ApiEndpoints.ORG_ACCESS.GET_SCENARIO_PATHS,
-        params,
-      }),
-      providesTags: [TAG_TYPES.ORG_SCENARIO_PATHS],
-    }),
+    getOrgScenarioPaths: builder.query<OrgAccessListResponse<OrgScenarioPath>, OrgAccessListParams>(
+      {
+        query: params => ({
+          url: ApiEndpoints.ORG_ACCESS.GET_SCENARIO_PATHS,
+          params,
+        }),
+        providesTags: [TAG_TYPES.ORG_SCENARIO_PATHS],
+      },
+    ),
 
     enableOrgScenarioPaths: builder.mutation<
       { success: boolean },
@@ -255,17 +250,16 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.ORG_CASES],
     }),
 
-    enableOrgCases: builder.mutation<
-      { success: boolean },
-      { tenantId: string; caseIds: number[] }
-    >({
-      query: ({ tenantId, caseIds }) => ({
-        url: ApiEndpoints.ORG_ACCESS.CASE_TENANT_VISIBILITY(tenantId),
-        method: HttpMethod.POST,
-        body: { caseIds },
-      }),
-      invalidatesTags: [TAG_TYPES.ORG_CASES],
-    }),
+    enableOrgCases: builder.mutation<{ success: boolean }, { tenantId: string; caseIds: number[] }>(
+      {
+        query: ({ tenantId, caseIds }) => ({
+          url: ApiEndpoints.ORG_ACCESS.CASE_TENANT_VISIBILITY(tenantId),
+          method: HttpMethod.POST,
+          body: { caseIds },
+        }),
+        invalidatesTags: [TAG_TYPES.ORG_CASES],
+      },
+    ),
 
     disableOrgCases: builder.mutation<
       { success: boolean },
