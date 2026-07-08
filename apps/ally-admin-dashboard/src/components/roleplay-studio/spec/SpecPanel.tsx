@@ -12,6 +12,7 @@ import { selectRoleplaySpec, setDifficulty, setOpeningStatement } from "@reducer
 
 import { DisclosureLedgerSection } from "./DisclosureLedgerSection";
 import { EngineeredEventsSection } from "./EngineeredEventsSection";
+import { NaturalnessSettingsSection } from "./NaturalnessSettingsSection";
 import { PersonaBibleSection } from "./PersonaBibleSection";
 import { RubricSection } from "./RubricSection";
 import { SpecSectionCard } from "./SpecSectionCard";
@@ -79,6 +80,7 @@ export const SpecPanel: React.FC<SpecPanelProps> = ({ readOnly = false }) => {
       <RubricSection rubric={spec.rubric} readOnly={readOnly} />
       <EngineeredEventsSection events={spec.engineeredEvents} readOnly={readOnly} />
       <VoiceLanguageSection voice={spec.voice} language={spec.language} readOnly={readOnly} />
+      <NaturalnessSettingsSection readOnly={readOnly} />
     </div>
   );
 };
