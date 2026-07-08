@@ -24,6 +24,10 @@ export const createEmptyRoleplaySpec = (title: string): RoleplaySpec => ({
   agentTestCaseIds: [],
   openingStatement: "",
   difficulty: "",
+  fillerEnabled: false,
+  comfortAudioEnabled: false,
+  continuousBackchanneling: false,
+  interimReplyEnabled: true,
   ui: { layout: {} },
 });
 
