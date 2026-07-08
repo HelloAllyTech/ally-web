@@ -20,7 +20,7 @@ const getStatusBadge = (status: PathwayScenarioStatus, index: number, t: any) =>
     case PathwayScenarioStatus.UNLOCKED:
       if (index === 0) return null;
       return (
-        <span className="ml-2 px-[8px] py-[2px] text-xs font-semibold rounded-full bg-blue-100 text-blue-700">
+        <span className="ml-2 px-[8px] py-[2px] text-xs font-semibold rounded-full bg-primary-100 text-primary-700">
           {t("common.next")}
         </span>
       );

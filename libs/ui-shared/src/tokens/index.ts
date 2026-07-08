@@ -4,13 +4,13 @@
  * rather than via CSS `--cds-*` variables or Tailwind utilities.
  *
  * These values match the `carbon` preset that the apps have standardised on
- * (Carbon Blue interactive colour, 2px corners, IBM Plex Serif). This replaces
+ * (brand blue interactive colour, 2px corners, IBM Plex Serif). This replaces
  * the former per-theme `THEME_TOKENS` map in the helpline app.
  */
 export const carbonTokens = {
   mode: "light" as const,
-  /** Carbon interactive-01 (Blue 60). */
-  primary: "#0f62fe",
+  /** Brand blue (interactive). Replaces Carbon Blue 60 (#0f62fe). */
+  primary: "#264D8E",
   danger: "#da1e28",
   success: "#24a148",
   warning: "#ff832b",

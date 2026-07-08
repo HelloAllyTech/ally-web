@@ -6,8 +6,8 @@
  * - IBM Plex Serif everywhere (`font-primary`), per the serif-only requirement.
  * - Sharp corners (no border radius), 8px spacing grid, 40px field height.
  * - Fields: gray fill (#f4f4f4 `field-01`) + a single bottom border
- *   (#8d8d8d `border-strong`); focus thickens the bottom border to 2px blue
- *   (#0f62fe `focus`). Labels sit above the field in 12px secondary text
+ *   (#8d8d8d `border-strong`); focus thickens the bottom border to 2px brand
+ *   blue (#264D8E). Labels sit above the field in 12px secondary text
  *   (#525252 `text-secondary`).
  *
  * Scoped to the drawer only — the post-call summary page keeps its existing look.
@@ -18,13 +18,13 @@ export const carbonField = {
   group: "flex flex-col gap-1.5",
   label: "font-primary text-xs leading-4 text-[#525252]",
   input:
-    "w-full h-10 bg-[#f4f4f4] text-[#161616] font-primary text-sm px-4 rounded-none border-0 border-b border-[#8d8d8d] outline-none transition-colors placeholder:text-[#a8a8a8] focus:border-b-2 focus:border-[#0f62fe] disabled:text-[#c6c6c6] disabled:cursor-not-allowed",
+    "w-full h-10 bg-[#f4f4f4] text-[#161616] font-primary text-sm px-4 rounded-none border-0 border-b border-[#8d8d8d] outline-none transition-colors placeholder:text-[#a8a8a8] focus:border-b-2 focus:border-[#264D8E] disabled:text-[#c6c6c6] disabled:cursor-not-allowed",
   textarea:
-    "w-full bg-[#f4f4f4] text-[#161616] font-primary text-sm p-4 rounded-none border-0 border-b border-[#8d8d8d] outline-none transition-colors placeholder:text-[#a8a8a8] focus:border-b-2 focus:border-[#0f62fe] disabled:text-[#c6c6c6] resize-y min-h-[6rem]",
+    "w-full bg-[#f4f4f4] text-[#161616] font-primary text-sm p-4 rounded-none border-0 border-b border-[#8d8d8d] outline-none transition-colors placeholder:text-[#a8a8a8] focus:border-b-2 focus:border-[#264D8E] disabled:text-[#c6c6c6] resize-y min-h-[6rem]",
   select:
-    "w-full h-10 bg-[#f4f4f4] text-[#161616] font-primary text-sm pl-4 pr-9 rounded-none border-0 border-b border-[#8d8d8d] outline-none focus:border-b-2 focus:border-[#0f62fe] disabled:text-[#c6c6c6] disabled:cursor-not-allowed appearance-none",
+    "w-full h-10 bg-[#f4f4f4] text-[#161616] font-primary text-sm pl-4 pr-9 rounded-none border-0 border-b border-[#8d8d8d] outline-none focus:border-b-2 focus:border-[#264D8E] disabled:text-[#c6c6c6] disabled:cursor-not-allowed appearance-none",
   selectChevron:
     "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#161616]",
-  checkbox: "h-4 w-4 rounded-none accent-[#0f62fe]",
+  checkbox: "h-4 w-4 rounded-none accent-[#264D8E]",
   checkboxRow: "flex items-center gap-2 font-primary text-sm text-[#161616]",
 } as const;

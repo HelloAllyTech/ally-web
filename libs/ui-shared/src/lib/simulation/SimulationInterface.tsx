@@ -224,7 +224,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
       <button
         type="button"
         onClick={onEnableMicrophone}
-        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+        className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg transition-colors"
       >
         {translations?.allowMicrophone ?? "Allow microphone permission"}
       </button>

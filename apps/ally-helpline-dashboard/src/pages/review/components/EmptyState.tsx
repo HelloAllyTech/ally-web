@@ -22,7 +22,7 @@ const EmptyState: FC<EmptyStateProps> = ({ onRefresh }) => {
         </p>
         <button
           onClick={onRefresh}
-          className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
         >
           {t("review.empty.refresh")}
         </button>

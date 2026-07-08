@@ -150,7 +150,7 @@ const DateFilterUI: React.FC<DateFilterUIProps> = ({ selectedValues, onChange, o
       )}
       <div className="flex justify-end mt-2">
         <button
-          className="bg-blue-600 disabled:bg-blue-300 text-white px-4 py-1 rounded hover:bg-blue-700"
+          className="bg-primary-600 disabled:bg-primary-300 text-white px-4 py-1 rounded hover:bg-primary-700"
           onClick={handleSave}
           disabled={!range || !Array.isArray(range) || range.length !== 2}
         >

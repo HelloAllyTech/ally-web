@@ -643,7 +643,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
                   ? "bg-[#da1e28]"
                   : saveState === "saved"
                     ? "bg-[#24a148]"
-                    : "bg-[#0f62fe]"
+                    : "bg-[#264D8E]"
               }`}
             />
             {saveLabel}

@@ -41,20 +41,21 @@ module.exports = {
         "4xl": ["32px", { lineHeight: "44px" }], // 4X large - hero titles, main headers
       },
       colors: {
-        // Primary Colors — IBM Carbon Blue. Interactive default is Blue 60
-        // (#0f62fe); 500/600 (used for button bg/hover) map to Blue 60/70.
+        // Primary Colors — Brand Blue (#264D8E), a harmonious ramp anchored on
+        // the brand navy at 500/DEFAULT (interactive); 600 is the hover shade,
+        // 700 the active shade. Replaces the former Carbon Blue 60 ramp.
         primary: {
-          DEFAULT: "#0f62fe",
-          50: "#edf5ff", // blue-10
-          100: "#d0e2ff", // blue-20
-          200: "#a6c8ff", // blue-30
-          300: "#78a9ff", // blue-40
-          400: "#4589ff", // blue-50
-          500: "#0f62fe", // blue-60 (interactive)
-          600: "#0043ce", // blue-70 (hover)
-          700: "#002d9c", // blue-80
-          800: "#001d6c", // blue-90
-          900: "#001141", // blue-100
+          DEFAULT: "#264D8E",
+          50: "#EBF0FA", // lightest tint
+          100: "#D7E2F4",
+          200: "#AEC5EA",
+          300: "#7EA2DD",
+          400: "#4A7DCF",
+          500: "#264D8E", // brand blue (interactive)
+          600: "#1F3F75", // hover
+          700: "#183059", // active
+          800: "#10213C",
+          900: "#0A1424",
         },
         // Secondary Colors — IBM Carbon Gray (secondary buttons use Gray 80).
         secondary: {
@@ -154,7 +155,7 @@ module.exports = {
           light: "#e0e0e0",
           medium: "#c6c6c6", // gray-30
           dark: "#8d8d8d", // gray-50
-          blue: "#0f62fe", // focus / interactive (blue-60)
+          blue: "#264D8E", // focus / interactive (brand blue)
           amber400: "#FFCA28",
         },
         // Text Colors

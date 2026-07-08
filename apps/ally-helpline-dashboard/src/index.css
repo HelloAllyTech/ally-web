@@ -10,7 +10,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 218 58% 35%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 218 58% 35%;
     --radius: 0.75rem;
   }
 }
@@ -39,17 +39,18 @@
  */
 @layer base {
   :root {
-    --color-primary-DEFAULT: 15 98 254;
-    --color-primary-50: 237 245 255;
-    --color-primary-100: 208 226 255;
-    --color-primary-200: 166 200 255;
-    --color-primary-300: 120 169 255;
-    --color-primary-400: 69 137 255;
-    --color-primary-500: 15 98 254;
-    --color-primary-600: 0 67 206;
-    --color-primary-700: 0 45 156;
-    --color-primary-800: 0 29 108;
-    --color-primary-900: 0 17 65;
+    /* Primary — Brand Blue (#264D8E ramp), replaces the former Carbon Blue 60. */
+    --color-primary-DEFAULT: 38 77 142; /* #264D8E */
+    --color-primary-50: 235 240 250; /* #EBF0FA */
+    --color-primary-100: 215 226 244; /* #D7E2F4 */
+    --color-primary-200: 174 197 234; /* #AEC5EA */
+    --color-primary-300: 126 162 221; /* #7EA2DD */
+    --color-primary-400: 74 125 207; /* #4A7DCF */
+    --color-primary-500: 38 77 142; /* #264D8E (interactive) */
+    --color-primary-600: 31 63 117; /* #1F3F75 (hover) */
+    --color-primary-700: 24 48 89; /* #183059 (active) */
+    --color-primary-800: 16 33 60; /* #10213C */
+    --color-primary-900: 10 20 36; /* #0A1424 */
 
     --color-secondary-DEFAULT: 57 57 57;
     --color-secondary-50: 244 244 244;

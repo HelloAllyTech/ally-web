@@ -375,7 +375,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     >
       <div
         data-testid="simulation-page-header"
-        className="flex flex-wrap justify-between gap-y-1 w-full border-l border-l-3 border-blue-500 pl-2"
+        className="flex flex-wrap justify-between gap-y-1 w-full border-l border-l-3 border-primary-500 pl-2"
       >
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <div
@@ -405,7 +405,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         {isPreview && (
           <button
             data-testid="simulation-page-close-preview-button"
-            className="text-blue-300 font-['Roboto']"
+            className="text-primary-300 font-['Roboto']"
             onClick={handleEndSimulation}
           >
             {translations?.closePreview ?? "Close Preview"}

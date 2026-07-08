@@ -123,7 +123,7 @@ export const Learn: FC = () => {
         <div className="text-typography-700 text-lg mb-4">{t(`learn.empty.${type}` as any)}</div>
         <button
           onClick={() => refetchFunction()}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
         >
           {t("learn.empty.refresh")}
         </button>

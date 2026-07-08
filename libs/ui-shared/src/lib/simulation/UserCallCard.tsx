@@ -49,7 +49,7 @@ export const UserCallCard: React.FC<UserCallCardProps> = ({
   const renderOverlay = () => (
     <div
       className={`absolute bottom-0 left-0 right-0 top-0 p-2 rounded-xl flex flex-col justify-end border-4 ${
-        isSpeaking ? "border-blue-500" : "border-transparent"
+        isSpeaking ? "border-primary-500" : "border-transparent"
       }`}
     >
       <div className="flex flex-row gap-2 items-center">
