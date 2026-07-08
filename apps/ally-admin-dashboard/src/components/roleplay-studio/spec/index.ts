@@ -6,3 +6,4 @@ export * from "./RubricSection";
 export * from "./DisclosureLedgerSection";
 export * from "./EngineeredEventsSection";
 export * from "./VoiceLanguageSection";
+export * from "./NaturalnessSettingsSection";

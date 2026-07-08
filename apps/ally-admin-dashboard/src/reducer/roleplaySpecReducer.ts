@@ -5,6 +5,7 @@ import {
   JsonPatchOperation,
   RoleplayCritiqueProposal,
   RoleplayEngineeredEvent,
+  RoleplayNaturalnessFlag,
   RoleplayNodePosition,
   RoleplayPersonaChunk,
   RoleplayRubricBehavior,
@@ -180,6 +181,13 @@ const roleplaySpecSlice = createSlice({
       const spec = requireSpec(state);
       if (!spec) return;
       spec.difficulty = action.payload;
+      touch(state);
+    },
+    /** Toggles one of the voice-naturalness runtime flags on the spec. */
+    setNaturalnessFlag(state, action: PayloadAction<{ key: RoleplayNaturalnessFlag; value: boolean }>) {
+      const spec = requireSpec(state);
+      if (!spec) return;
+      spec[action.payload.key] = action.payload.value;
       touch(state);
     },
     updatePersona(
@@ -388,6 +396,7 @@ export const {
   setSpecTitle,
   setOpeningStatement,
   setDifficulty,
+  setNaturalnessFlag,
   updatePersona,
   upsertPersonaChunk,
   removePersonaChunk,

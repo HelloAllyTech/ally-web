@@ -120,8 +120,20 @@ export interface RoleplaySpec {
   agentTestCaseIds: string[];
   openingStatement: string;
   difficulty: string;
+  /** Voice-naturalness / latency-masking runtime toggles (honored by worker_v2). */
+  fillerEnabled: boolean;
+  comfortAudioEnabled: boolean;
+  continuousBackchanneling: boolean;
+  interimReplyEnabled: boolean;
   ui: RoleplaySpecUi;
 }
+
+/** The voice-naturalness runtime toggle keys on the spec. */
+export type RoleplayNaturalnessFlag =
+  | "fillerEnabled"
+  | "comfortAudioEnabled"
+  | "continuousBackchanneling"
+  | "interimReplyEnabled";
 
 /** Top-level spec sections, used for patch attribution + flash highlighting. */
 export type RoleplaySpecSection =
@@ -137,6 +149,10 @@ export type RoleplaySpecSection =
   | "agentTestCaseIds"
   | "openingStatement"
   | "difficulty"
+  | "fillerEnabled"
+  | "comfortAudioEnabled"
+  | "continuousBackchanneling"
+  | "interimReplyEnabled"
   | "ui"
   | "specSchemaVersion";
 

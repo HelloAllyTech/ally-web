@@ -832,6 +832,19 @@ export const en = {
       voiceAndLanguage: "Voice & Language",
       openingStatement: "Opening statement",
       difficulty: "Difficulty",
+      voiceNaturalness: "Voice Naturalness",
+      thinkingFiller: "Thinking Filler",
+      thinkingFillerHelp:
+        "Play a brief 'thinking' sound the instant the learner stops speaking, masking reply latency.",
+      comfortAudio: "Comfort Audio",
+      comfortAudioHelp:
+        "Loop a faint ambient room tone so the line never sounds dead between turns.",
+      continuousBackchanneling: "Continuous Back-channeling",
+      continuousBackchannelingHelp:
+        'Play brief listener affirmations ("mm-hmm") while the learner speaks on long turns.',
+      interimReply: "Interim Reply",
+      interimReplyHelp:
+        "Speak a short holding reply from the partial transcript while the learner finishes, then cut to the real reply.",
       emptySection: "Nothing here yet — the copilot fills this in during the interview.",
       remove: "Remove",
     },
