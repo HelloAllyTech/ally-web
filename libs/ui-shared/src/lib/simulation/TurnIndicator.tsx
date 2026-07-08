@@ -53,12 +53,12 @@ const getTurnMessage = (turnState: TurnState, t: TurnIndicatorTranslations): str
 const getBackgroundColor = (turnState: TurnState): string => {
   switch (turnState) {
     case TurnState.USER_TURN_TO_SPEAK:
-      return "bg-blue-500";
+      return "bg-primary-500";
     case TurnState.AI_SPEAKING:
     case TurnState.THINKING:
     case TurnState.AI_LISTENING:
     case TurnState.USER_TURN_TO_LISTEN:
-      return "bg-blue-600";
+      return "bg-primary-600";
     case TurnState.PAUSED:
       return "bg-gray-500";
     case TurnState.IDLE:

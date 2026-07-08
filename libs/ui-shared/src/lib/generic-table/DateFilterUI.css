@@ -81,19 +81,19 @@
 }
 
 .react-calendar-wrapper .react-calendar__tile--active {
-  background: #2563eb;
+  background: #264d8e;
   color: white;
   border-radius: 4px;
 }
 
 .react-calendar-wrapper .react-calendar__tile--active:enabled:hover,
 .react-calendar-wrapper .react-calendar__tile--active:enabled:focus {
-  background: #1d4ed8;
+  background: #1f3f75;
 }
 
 .react-calendar-wrapper .react-calendar__tile--rangeStart,
 .react-calendar-wrapper .react-calendar__tile--rangeEnd {
-  background: #2563eb;
+  background: #264d8e;
   color: white;
   border-radius: 4px;
 }

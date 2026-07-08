@@ -293,7 +293,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
                   />
                   <button
                     onClick={() => setShowCustomProvider(false)}
-                    className="text-blue-600 hover:text-blue-800 text-sm whitespace-nowrap"
+                    className="text-primary-600 hover:text-primary-700 text-sm whitespace-nowrap"
                   >
                     Back
                   </button>

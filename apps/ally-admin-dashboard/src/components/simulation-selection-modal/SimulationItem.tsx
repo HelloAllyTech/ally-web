@@ -96,7 +96,7 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
         ref={setNodeRef}
         style={style}
         className={`flex p-3 pr-12 relative group rounded-md shadow-sm hover:shadow-lg  min-w-[800px] w-full border items-center ${
-          isDragging ? "border-blue-500 border-2" : "border-gray-300"
+          isDragging ? "border-primary-500 border-2" : "border-gray-300"
         }`}
       >
         {/* Remove Button */}

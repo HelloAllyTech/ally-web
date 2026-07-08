@@ -146,7 +146,7 @@ const BlockEditorPopup: React.FC<{
                 value={text}
                 onChange={setText}
                 placeholder="Enter block content..."
-                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"
+                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
               />
             </div>
           </div>

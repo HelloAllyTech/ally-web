@@ -84,7 +84,7 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
         </div>
         <div className="flex justify-end p-2">
           <button
-            className="bg-blue-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="bg-primary-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
             onClick={onSaveMultiSelect}
           >
             Apply
@@ -137,7 +137,7 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
             ) : column.filterType === FilterType.TEXT ? (
               <div className="flex justify-end p-2">
                 <button
-                  className="bg-blue-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="bg-primary-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                   onClick={() => onSelectSingle(column.key as string, searchText)}
                 >
                   Apply

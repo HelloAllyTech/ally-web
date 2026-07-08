@@ -55,7 +55,7 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
               href={PRIVACY_POLICY_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline ml-1"
+              className="text-primary-600 underline ml-1"
             >
               {t("terms.footerLinkText")}
             </a>

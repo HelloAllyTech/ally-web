@@ -48,3 +48,40 @@
   $css--font-face: false,
   $css--default-type: false
 );
+
+// ===== Brand blue override =====
+// Carbon's interactive colour is Blue 60 (#0f62fe). The product brand blue is
+// #264D8E, so every Carbon component (Button, Link, Tabs, focus rings, selected
+// states, ...) is repointed to the brand ramp here. Carbon declares these
+// tokens ONLY on its theme-zone classes (`.cds--white` etc.), not `:root`, and
+// `<GlobalTheme theme="white">` wraps the app in `.cds--white` — so we must
+// override the same zone selectors. This block is emitted AFTER `@carbon/styles`
+// above, so at equal specificity source order makes the brand values win.
+//
+// Ramp (matches the Tailwind `primary` scale + helpline `--color-primary-*`):
+//   500 #264D8E (interactive) · 600 #1F3F75 (hover) · 700 #183059 (active)
+:root,
+.cds--white,
+.cds--g10,
+.cds--g90,
+.cds--g100 {
+  --cds-interactive: #264d8e;
+  --cds-link-primary: #264d8e;
+  --cds-link-primary-hover: #1f3f75;
+  --cds-button-primary: #264d8e;
+  --cds-button-primary-hover: #1f3f75;
+  --cds-button-primary-active: #183059;
+  --cds-focus: #264d8e;
+  --cds-background-brand: #264d8e;
+  --cds-border-interactive: #264d8e;
+  --cds-support-info: #264d8e;
+  // Tertiary buttons + interactive icons also key off Carbon blue — repoint them
+  // so they match brand-navy primaries. (Ghost buttons use --cds-link-primary,
+  // already covered above. The Carbon <Link> component and blue <Tag> aren't
+  // used in these apps, so --cds-link-secondary / --cds-tag-*-blue are left as
+  // Carbon defaults.)
+  --cds-button-tertiary: #264d8e;
+  --cds-button-tertiary-hover: #1f3f75;
+  --cds-button-tertiary-active: #183059;
+  --cds-icon-interactive: #264d8e;
+}
