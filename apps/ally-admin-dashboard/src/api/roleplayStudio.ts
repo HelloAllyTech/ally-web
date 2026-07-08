@@ -12,6 +12,7 @@ import {
   RoleplayCritiqueResponse,
   RoleplayDirectorTurnPayload,
   RoleplayRehearsal,
+  RoleplayRehearsalTranscript,
   RoleplaySpecDetail,
   RoleplaySpecListItem,
   RoleplaySpecVersionSummary,
@@ -21,6 +22,20 @@ import {
 } from "@src/types/roleplayStudio";
 
 import { baseAPI } from "./baseApi";
+
+/** Raw transcript row as stored: entry fields camelCase, nested turns snake_case. */
+interface RawRehearsalTranscriptRow extends Omit<RoleplayRehearsalTranscript, "transcript"> {
+  transcript?: Array<{
+    role: string;
+    content: string;
+    turn_index?: number;
+    turnIndex?: number;
+    state_id?: string;
+    stateId?: string;
+    stage_direction?: string;
+    stageDirection?: string;
+  }>;
+}
 
 /**
  * Roleplay Studio v2 endpoints (controller prefix `v1/roleplay-studio`).
@@ -167,10 +182,24 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
 
     // ----- rehearsals -----
     createRoleplayRehearsal: builder.mutation<RoleplayRehearsal, CreateRoleplayRehearsalInput>({
-      query: ({ specId, versionId, traineeProfiles, turnsPerProfile }) => ({
+      query: ({
+        specId,
+        versionId,
+        traineeProfiles,
+        turnsPerProfile,
+        agentTestCaseIds,
+        languageId,
+      }) => ({
         url: ApiEndpoints.ROLEPLAY_STUDIO.CREATE_REHEARSALS(specId, versionId),
         method: HttpMethod.POST,
-        body: { traineeProfiles, turnsPerProfile },
+        body: {
+          traineeProfiles,
+          turnsPerProfile,
+          // Optional keys are omitted (not sent as undefined/null) so the BE
+          // DTO defaults apply.
+          ...(agentTestCaseIds !== undefined ? { agentTestCaseIds } : {}),
+          ...(languageId !== undefined ? { languageId } : {}),
+        },
       }),
       invalidatesTags: [TAG_TYPES.ROLEPLAY_REHEARSALS],
     }),
@@ -180,6 +209,31 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ROLEPLAY_STUDIO.REHEARSAL_BY_ID(rehearsalId),
         method: HttpMethod.GET,
       }),
+      providesTags: (_result, _error, rehearsalId) => [
+        { type: TAG_TYPES.ROLEPLAY_REHEARSALS, id: rehearsalId },
+      ],
+    }),
+
+    // Transcripts live on a dedicated endpoint (NOT on the rehearsal entity
+    // that getRoleplayRehearsal returns). Turns are stored snake_case verbatim
+    // from ai-learn; camelize them here so the viewer's turnIndex/stateId/
+    // stageDirection reads resolve.
+    getRoleplayRehearsalTranscripts: builder.query<RoleplayRehearsalTranscript[], string>({
+      query: rehearsalId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.REHEARSAL_TRANSCRIPTS(rehearsalId),
+        method: HttpMethod.GET,
+      }),
+      transformResponse: (rows: RawRehearsalTranscriptRow[]) =>
+        (Array.isArray(rows) ? rows : []).map(row => ({
+          ...row,
+          transcript: (row.transcript ?? []).map(turn => ({
+            role: turn.role,
+            content: turn.content,
+            turnIndex: turn.turn_index ?? turn.turnIndex ?? 0,
+            stateId: turn.state_id ?? turn.stateId,
+            stageDirection: turn.stage_direction ?? turn.stageDirection,
+          })),
+        })),
       providesTags: (_result, _error, rehearsalId) => [
         { type: TAG_TYPES.ROLEPLAY_REHEARSALS, id: rehearsalId },
       ],
@@ -262,6 +316,7 @@ export const {
   useCreateRoleplayRehearsalMutation,
   useGetRoleplayRehearsalQuery,
   useLazyGetRoleplayRehearsalQuery,
+  useGetRoleplayRehearsalTranscriptsQuery,
   useGetRoleplayRehearsalsBySpecQuery,
   useCancelRoleplayRehearsalMutation,
   useCritiqueRoleplayRehearsalMutation,

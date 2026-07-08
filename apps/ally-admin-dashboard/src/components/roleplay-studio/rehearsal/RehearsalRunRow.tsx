@@ -22,7 +22,7 @@ interface RehearsalRunRowProps {
 const isActiveStatus = (status: string) =>
   status === RoleplayRehearsalStatus.PENDING || status === RoleplayRehearsalStatus.RUNNING;
 
-/** One rehearsal run: status badge, profiles, live progress bar, cancel. */
+/** One rehearsal run: status badge, units, live progress bar, cancel. */
 export const RehearsalRunRow: React.FC<RehearsalRunRowProps> = ({
   rehearsal,
   liveProgress,
@@ -39,6 +39,31 @@ export const RehearsalRunRow: React.FC<RehearsalRunRowProps> = ({
       ? Math.min(100, Math.round((progress.completed / progress.total) * 100))
       : null;
 
+  // The BE returns the raw entity (profiles live under config); fall back to
+  // the legacy top-level field for older payload shapes.
+  const traineeProfiles = rehearsal.config?.traineeProfiles ?? rehearsal.traineeProfiles ?? [];
+  const testCaseCount = rehearsal.config?.testCases?.length ?? 0;
+  const unitSummary = [
+    traineeProfiles.length > 0
+      ? traineeProfiles.map(profile => strings.profiles[profile] ?? profile).join(", ")
+      : null,
+    testCaseCount > 0 ? strings.testCaseCount(testCaseCount) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const testCaseResults =
+    status === RoleplayRehearsalStatus.COMPLETED
+      ? (rehearsal.results?.test_case_results ?? [])
+      : [];
+  const passedCount = testCaseResults.filter(result => result.verdict === "PASSED").length;
+  const passSummaryColor =
+    passedCount === testCaseResults.length
+      ? "text-success-500"
+      : testCaseResults.some(result => result.verdict === "FAILED")
+        ? "text-destructive-500"
+        : "text-typography-600";
+
   return (
     <button
       type="button"
@@ -51,11 +76,12 @@ export const RehearsalRunRow: React.FC<RehearsalRunRowProps> = ({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <StatusBadge status={status} />
-          <span className="truncate text-sm text-typography-800">
-            {(rehearsal.traineeProfiles ?? [])
-              .map(profile => strings.profiles[profile] ?? profile)
-              .join(", ")}
-          </span>
+          <span className="truncate text-sm text-typography-800">{unitSummary}</span>
+          {testCaseResults.length > 0 && (
+            <span className={`shrink-0 text-sm ${passSummaryColor}`}>
+              {strings.passedSummary(passedCount, testCaseResults.length)}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3 shrink-0">
           {rehearsal.createdAt && (
