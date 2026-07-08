@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import ReactMarkdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,7 @@ import {
   useCritiqueRoleplayRehearsalMutation,
   useGetRoleplayRehearsalQuery,
   useGetRoleplayRehearsalsBySpecQuery,
+  useGetRoleplayRehearsalTranscriptsQuery,
 } from "@api";
 import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -25,6 +26,7 @@ import { ProposedEditCard } from "./ProposedEditCard";
 import { RehearsalLaunchCard } from "./RehearsalLaunchCard";
 import { RehearsalRunRow } from "./RehearsalRunRow";
 import { RehearsalTranscriptViewer } from "./RehearsalTranscriptViewer";
+import { TestCaseResultsCard } from "./TestCaseResultsCard";
 import { useRehearsalSocket } from "./useRehearsalSocket";
 
 /**
@@ -47,6 +49,9 @@ export const RehearsalPanel: React.FC = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [liveStatuses, setLiveStatuses] = useState<Record<string, RehearsalRunStatusPayload>>({});
+  // "View transcript" focus: which transcript tab to show + scroll target.
+  const [transcriptFocusId, setTranscriptFocusId] = useState<string | null>(null);
+  const transcriptViewerRef = useRef<HTMLDivElement>(null);
 
   const onRunStatus = useCallback((data: RehearsalRunStatusPayload) => {
     setLiveStatuses(previous => ({ ...previous, [data.rehearsalId]: data }));
@@ -77,6 +82,22 @@ export const RehearsalPanel: React.FC = () => {
   const { data: selectedRun } = useGetRoleplayRehearsalQuery(effectiveSelectedId as string, {
     skip: !effectiveSelectedId,
   });
+
+  // Transcripts come from their own endpoint (the rehearsal entity carries none).
+  const { data: transcripts = [] } = useGetRoleplayRehearsalTranscriptsQuery(
+    effectiveSelectedId as string,
+    { skip: !effectiveSelectedId },
+  );
+
+  // Switching runs must not carry a stale transcript focus across.
+  useEffect(() => {
+    setTranscriptFocusId(null);
+  }, [effectiveSelectedId]);
+
+  const handleViewTranscript = useCallback((testCaseId: string) => {
+    setTranscriptFocusId(testCaseId);
+    transcriptViewerRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   const selectedIsCompleted =
     String(selectedRun?.status ?? "") === RoleplayRehearsalStatus.COMPLETED;
@@ -168,6 +189,14 @@ export const RehearsalPanel: React.FC = () => {
 
           <JudgeScorecard results={selectedRun.results} />
 
+          {(selectedRun.results.test_case_results?.length ?? 0) > 0 && (
+            <TestCaseResultsCard
+              results={selectedRun.results.test_case_results ?? []}
+              testCases={selectedRun.config?.testCases}
+              onViewTranscript={handleViewTranscript}
+            />
+          )}
+
           {pendingProposals.length > 0 && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
@@ -202,8 +231,16 @@ export const RehearsalPanel: React.FC = () => {
             </div>
           )}
 
-          {(selectedRun.transcripts?.length ?? 0) > 0 && (
-            <RehearsalTranscriptViewer transcripts={selectedRun.transcripts ?? []} />
+          {transcripts.length > 0 && (
+            <div ref={transcriptViewerRef}>
+              <RehearsalTranscriptViewer
+                transcripts={transcripts}
+                testCases={selectedRun.config?.testCases}
+                testCaseResults={selectedRun.results.test_case_results}
+                activeId={transcriptFocusId ?? undefined}
+                onActiveIdChange={setTranscriptFocusId}
+              />
+            </div>
           )}
         </div>
       )}

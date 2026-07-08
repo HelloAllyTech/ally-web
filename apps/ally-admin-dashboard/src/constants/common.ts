@@ -217,6 +217,8 @@ export const ApiEndpoints = {
       `/v1/roleplay-studio/rehearsals/${rehearsalId}/cancel`,
     CRITIQUE_REHEARSAL: (rehearsalId: string) =>
       `/v1/roleplay-studio/rehearsals/${rehearsalId}/critique`,
+    REHEARSAL_TRANSCRIPTS: (rehearsalId: string) =>
+      `/v1/roleplay-studio/rehearsals/${rehearsalId}/transcripts`,
     CREATE_SESSION: (specId: string, versionId: string) =>
       `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/sessions`,
     SESSION_DIRECTOR_EVENTS: (sessionId: string) =>

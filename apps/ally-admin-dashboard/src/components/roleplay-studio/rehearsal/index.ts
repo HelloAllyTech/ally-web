@@ -4,4 +4,7 @@ export * from "./RehearsalRunRow";
 export * from "./RehearsalTranscriptViewer";
 export * from "./JudgeScorecard";
 export * from "./ProposedEditCard";
+export * from "./TestCaseSelect";
+export * from "./TestCaseResultsCard";
+export * from "./VerdictBadge";
 export * from "./useRehearsalSocket";

@@ -345,11 +345,38 @@ export enum RoleplayRehearsalStatus {
   CANCELLED = "CANCELLED",
 }
 
+/**
+ * Launch-time snapshot of an agent test case. The library is global and
+ * hard-deleted, so completed runs carry their own copy (`config.testCases`).
+ */
+export interface RoleplayRehearsalTestCaseSnapshot {
+  id: string;
+  title: string;
+  category?: string;
+  condition?: string;
+  test?: string;
+}
+
+export type RoleplayTestCaseVerdict = "PASSED" | "FAILED" | "INCONCLUSIVE";
+
+/** One entry of `results.test_case_results` (snake_case: BE webhook contract). */
+export interface RoleplayTestCaseResult {
+  test_case_id: string;
+  title?: string;
+  verdict: RoleplayTestCaseVerdict | string;
+  evidence?: string;
+  reasoning?: string;
+  condition_recreated?: boolean;
+}
+
 export interface CreateRoleplayRehearsalInput {
   specId: string;
   versionId: string;
   traineeProfiles: RoleplayTraineeProfile[];
   turnsPerProfile: number;
+  /** Agent test cases to run as dedicated condition-driven sessions. */
+  agentTestCaseIds?: string[];
+  languageId?: number;
 }
 
 export type RoleplayJudgeDimension =
@@ -362,6 +389,10 @@ export interface RoleplayRehearsalResults {
   overall: number;
   dimensions: Record<RoleplayJudgeDimension, number>;
   per_profile?: Record<string, Record<string, number>>;
+  test_case_results?: RoleplayTestCaseResult[];
+  test_counts?: { passed: number; failed: number; inconclusive: number };
+  /** Percent 0-100; null when the run had no test cases. */
+  test_pass_rate?: number | null;
 }
 
 export interface RoleplayRehearsalTranscriptTurn {
@@ -373,7 +404,13 @@ export interface RoleplayRehearsalTranscriptTurn {
 }
 
 export interface RoleplayRehearsalTranscript {
-  traineeProfile: RoleplayTraineeProfile | string;
+  /**
+   * Profile sessions carry a real profile; test-case sessions carry the
+   * 'CONDITION_DRIVEN' label (not an enum member) plus `agentTestCaseId`.
+   */
+  traineeProfile?: RoleplayTraineeProfile | string;
+  /** Set on test-case sessions; keys the verdict/snapshot lookups. */
+  agentTestCaseId?: string;
   transcript: RoleplayRehearsalTranscriptTurn[];
   judgeScores?: Record<string, number>;
   judgeNotes?: string | Record<string, string>;
@@ -387,8 +424,15 @@ export interface RoleplayRehearsal {
   status: RoleplayRehearsalStatus | string;
   createdAt?: string;
   updatedAt?: string;
+  /** @deprecated legacy top-level shape — the BE returns the raw entity, so read `config` first. */
   traineeProfiles?: RoleplayTraineeProfile[];
   turnsPerProfile?: number;
+  /** Raw entity config as stored by the BE (profiles + launch-time snapshots). */
+  config?: {
+    traineeProfiles?: RoleplayTraineeProfile[];
+    testCases?: RoleplayRehearsalTestCaseSnapshot[];
+    turnsPerProfile?: number;
+  };
   progress?: RoleplayRehearsalProgress;
   results?: RoleplayRehearsalResults | null;
   reportMarkdown?: string | null;

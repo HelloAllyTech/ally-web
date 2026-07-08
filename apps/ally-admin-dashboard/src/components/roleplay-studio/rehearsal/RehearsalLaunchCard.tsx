@@ -1,38 +1,83 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
+import { ArrowDown } from "@icons";
+import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { useCreateRoleplayRehearsalMutation } from "@api";
+import { useCreateRoleplayRehearsalMutation, useGetAgentTestCasesQuery } from "@api";
 import { Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
+import { selectRoleplaySpecState } from "@reducer";
 import { RoleplayTraineeProfile } from "@src/types/roleplayStudio";
+
+import { TestCaseSelect } from "./TestCaseSelect";
 
 const ALL_PROFILES: RoleplayTraineeProfile[] = ["SKILLED", "POOR", "ADVERSARIAL"];
 const DEFAULT_TURNS = 8;
-const MAX_TURNS = 40;
+const MIN_TURNS = 2;
+const MAX_TURNS = 30;
+/** Mirrors the BE's REHEARSAL_MAX_UNITS (profiles + test cases per run). */
+const MAX_TOTAL_UNITS = 12;
+
+/**
+ * Clamp the raw input to [MIN_TURNS, MAX_TURNS]. Applied on blur + at submit,
+ * NOT per-keystroke — clamping every keystroke to MIN would rewrite the '1' in
+ * "15" to "2", making every value 10-19 impossible to type.
+ */
+const clampTurns = (raw: string): number => {
+  const parsed = Math.floor(Number(raw));
+  if (Number.isNaN(parsed)) return DEFAULT_TURNS;
+  return Math.min(MAX_TURNS, Math.max(MIN_TURNS, parsed));
+};
 
 interface RehearsalLaunchCardProps {
   specId: string;
   versionId: string;
 }
 
-/** Profile toggles + turns-per-profile input; POSTs a new rehearsal run. */
+/**
+ * Profile toggles + turns-per-profile input + agent test-case multi-select;
+ * POSTs a new rehearsal run. A run needs at least one unit (profile OR test
+ * case) and at most MAX_TOTAL_UNITS in total.
+ */
 export const RehearsalLaunchCard: React.FC<RehearsalLaunchCardProps> = ({ specId, versionId }) => {
   const strings = en.roleplayStudio.rehearsal;
+  const { spec } = useSelector(selectRoleplaySpecState);
   const [createRehearsal, { isLoading }] = useCreateRoleplayRehearsalMutation();
+  const { data: testCasesData, isLoading: isLoadingTestCases } = useGetAgentTestCasesQuery();
+  const testCases = testCasesData?.data ?? [];
+
   const [profiles, setProfiles] = useState<Record<RoleplayTraineeProfile, boolean>>({
     SKILLED: true,
     POOR: true,
     ADVERSARIAL: true,
   });
-  const [turnsPerProfile, setTurnsPerProfile] = useState(DEFAULT_TURNS);
+  const [turnsInput, setTurnsInput] = useState(String(DEFAULT_TURNS));
+  const [selectedTestCaseIds, setSelectedTestCaseIds] = useState<string[]>([]);
+  const [testCasesExpanded, setTestCasesExpanded] = useState(false);
+
+  // Pre-seed the selection ONCE from the spec's agentTestCaseIds, dropping ids
+  // no longer in the live library (it is hard-deleted). Never re-seed after —
+  // user edits must win over later spec/library refetches.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current || !testCasesData || !spec) return;
+    seededRef.current = true;
+    const specIds = spec.agentTestCaseIds ?? [];
+    if (specIds.length === 0) return;
+    const libraryIds = new Set(testCasesData.data.map(testCase => testCase.id));
+    const seeded = specIds.filter(id => libraryIds.has(id));
+    if (seeded.length > 0) setSelectedTestCaseIds(seeded);
+  }, [testCasesData, spec]);
 
   const selectedProfiles = ALL_PROFILES.filter(profile => profiles[profile]);
+  const totalUnits = selectedProfiles.length + selectedTestCaseIds.length;
+  const canStart = totalUnits >= 1 && totalUnits <= MAX_TOTAL_UNITS;
 
   const handleStart = async () => {
-    if (selectedProfiles.length === 0) {
-      toast.error(strings.selectProfile);
+    if (totalUnits === 0) {
+      toast.error(strings.selectAtLeastOneUnit);
       return;
     }
     try {
@@ -40,7 +85,10 @@ export const RehearsalLaunchCard: React.FC<RehearsalLaunchCardProps> = ({ specId
         specId,
         versionId,
         traineeProfiles: selectedProfiles,
-        turnsPerProfile,
+        turnsPerProfile: clampTurns(turnsInput),
+        agentTestCaseIds: selectedTestCaseIds,
+        languageId:
+          spec?.language?.languageId != null ? Number(spec.language.languageId) : undefined,
       }).unwrap();
     } catch {
       toast.error(strings.launchFailed);
@@ -74,13 +122,12 @@ export const RehearsalLaunchCard: React.FC<RehearsalLaunchCardProps> = ({ specId
           {strings.turnsPerProfile}
           <input
             type="number"
-            min={1}
+            min={MIN_TURNS}
             max={MAX_TURNS}
-            value={turnsPerProfile}
+            value={turnsInput}
             disabled={isLoading}
-            onChange={event =>
-              setTurnsPerProfile(Math.max(1, Math.min(MAX_TURNS, Number(event.target.value) || 1)))
-            }
+            onChange={event => setTurnsInput(event.target.value)}
+            onBlur={() => setTurnsInput(String(clampTurns(turnsInput)))}
             className="w-24 rounded-md border border-border-light px-3 py-2 text-sm outline-none focus:border-primary-500"
           />
         </label>
@@ -89,10 +136,46 @@ export const RehearsalLaunchCard: React.FC<RehearsalLaunchCardProps> = ({ specId
           variant={ButtonVariant.PRIMARY}
           className="h-[40px] px-5"
           onClick={handleStart}
-          disabled={isLoading || selectedProfiles.length === 0}
+          disabled={isLoading || !canStart}
         >
           {isLoading ? strings.starting : strings.start}
         </Button>
+      </div>
+
+      <div className="mt-4 border-t border-border-light pt-3">
+        <button
+          type="button"
+          onClick={() => setTestCasesExpanded(expanded => !expanded)}
+          aria-expanded={testCasesExpanded}
+          data-testid="test-cases-toggle"
+          className="flex w-full items-center gap-2 text-left"
+        >
+          <ArrowDown
+            size={16}
+            className={`shrink-0 text-typography-600 transition-transform ${
+              testCasesExpanded ? "rotate-180" : ""
+            }`}
+          />
+          <span className="text-sm text-typography-900">{strings.testCases}</span>
+          {!testCasesExpanded && selectedTestCaseIds.length > 0 && (
+            <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs text-primary-500">
+              {strings.testCasesSelected(selectedTestCaseIds.length)}
+            </span>
+          )}
+        </button>
+
+        {testCasesExpanded && (
+          <div className="mt-3 flex flex-col gap-2">
+            <p className="text-xs text-typography-600">{strings.testCasesHint}</p>
+            <TestCaseSelect
+              testCases={testCases}
+              selectedIds={selectedTestCaseIds}
+              onChange={setSelectedTestCaseIds}
+              isLoading={isLoadingTestCases}
+              disabled={isLoading}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
