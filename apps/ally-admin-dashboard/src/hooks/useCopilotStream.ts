@@ -349,9 +349,7 @@ export const useCopilotStream = ({
 
       // The server session is gone (e.g. a local DB reset dropped it). Re-create
       // one and replay the turn once so the trainer never sees the raw error.
-      setMessages(prev =>
-        prev.filter(m => m.id !== first.userMsgId && m.id !== first.assistantId),
-      );
+      setMessages(prev => prev.filter(m => m.id !== first.userMsgId && m.id !== first.assistantId));
       const freshId = onSessionInvalid ? await onSessionInvalid() : null;
       if (!freshId) {
         toast.error(en.roleplayStudio.copilot.streamFailed);

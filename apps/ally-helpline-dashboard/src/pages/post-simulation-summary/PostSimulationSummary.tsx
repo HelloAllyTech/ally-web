@@ -16,6 +16,7 @@ import { BackCircle, Comment } from "@assets";
 import {
   AskAiTab,
   Button,
+  NextChallengeCard,
   ReflectionTab,
   SessionRatingTrigger,
   ShareForReview,
@@ -29,6 +30,7 @@ import {
   SimulationSummary,
   useSimulationSummaryPolling,
 } from "@containers";
+import { useNextChallenge } from "@hooks";
 import { pageType, SessionType, ShareForReviewsInput } from "@types";
 
 import { UpNextTab } from "./components";
@@ -54,6 +56,7 @@ export const PostSimulationSummary: FC = () => {
   );
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
+  const nextChallenge = useNextChallenge(summary);
 
   const tabList = [
     {
@@ -338,7 +341,12 @@ export const PostSimulationSummary: FC = () => {
               {getTabContent()}
             </div>
             {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
-              <div className="flex justify-center items-center fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+              <div className="flex flex-col items-center gap-3 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                {nextChallenge && (
+                  <div className="w-full max-w-4xl px-4 sm:px-6">
+                    <NextChallengeCard recommendation={nextChallenge} />
+                  </div>
+                )}
                 <Button onClick={() => navigate(ROUTES.LEARN)}>
                   {t("postSim.common.tryAnother")}
                 </Button>

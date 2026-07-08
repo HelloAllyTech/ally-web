@@ -37,6 +37,7 @@ import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
 import LoginDialog from "./login-dialog";
 import { NativeEmoji } from "./native-emoji";
 import NavSideBar from "./nav-sidebar";
+import { NextChallengeCard } from "./next-challenge-card";
 import OTP from "./otp";
 import OverallScoreMeter from "./overall-score-meter";
 import { PathwayScenarioCard } from "./pathway-scenario-card";
@@ -144,6 +145,7 @@ export {
   Transcription,
   TranscriptListing,
   UpNextSimulationCard,
+  NextChallengeCard,
   AskAiTab,
   ReflectionTab,
   Checklist,

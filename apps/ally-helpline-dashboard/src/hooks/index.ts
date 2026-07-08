@@ -18,3 +18,4 @@ export * from "./useCustomFieldsEnabled";
 export * from "./useScribeNoteCreationEnabled";
 export * from "./useScribeVoiceNoteEnabled";
 export * from "./useAudioRecorder";
+export * from "./useNextChallenge";

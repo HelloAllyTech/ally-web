@@ -444,6 +444,20 @@
       "details": "Details",
       "scenario": "Scenario:",
       "shareForReview": "Share for review"
+    },
+    "nextChallenge": {
+      "title": "Next challenge",
+      "start": "Start",
+      "difficulty": {
+        "EASY": "Easy",
+        "MEDIUM": "Medium",
+        "HARD": "Hard"
+      },
+      "reason": {
+        "levelUp": "Great work! You're ready to level up with a {{difficulty}} scenario.",
+        "keepPracticing": "Keep sharpening your skills with another {{difficulty}} scenario.",
+        "buildConfidence": "Rebuild confidence with a {{difficulty}} scenario, then climb back up."
+      }
     }
   },
   "review": {
