@@ -1,4 +1,5 @@
 import { configureStore, isRejectedWithValue } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
@@ -53,6 +54,10 @@ export const store = configureStore({
       .concat(baseAPI.middleware)
       .concat(analyticsMiddleware),
 });
+
+// Enables refetchOnFocus / refetchOnReconnect for queries that opt in (e.g. the
+// active-tooltips query), so superadmin changes propagate without a hard reload.
+setupListeners(store.dispatch);
 
 // Create persistor
 export const persistor = persistStore(store);

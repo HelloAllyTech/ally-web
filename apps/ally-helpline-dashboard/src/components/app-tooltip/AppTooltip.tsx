@@ -10,7 +10,15 @@ interface AppTooltipProps {
 }
 
 const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
-  const { data: tooltips = [], isLoading } = useGetActiveTooltipsQuery();
+  // Refresh the active-tooltip list so a superadmin toggling a tooltip off (or on)
+  // reaches users without a hard reload — otherwise the list is fetched once and
+  // cached for the whole session (this is a separate RTK cache from the admin app,
+  // so the admin's own invalidation never reaches here).
+  const { data: tooltips = [], isLoading } = useGetActiveTooltipsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
 
   if (isLoading) return children;
 
