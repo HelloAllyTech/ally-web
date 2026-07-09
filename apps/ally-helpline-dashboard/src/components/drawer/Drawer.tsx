@@ -29,10 +29,11 @@ const Drawer: FC<DrawerProps> = ({
         {headerButtons
           ?.filter(button => button.show)
           .map(button => (
-            // Header buttons are pinned to the top of the viewport, so a
-            // top-aligned tooltip renders off-screen and gets clipped. Open it
-            // downward instead. (Carbon's plain Tooltip has no autoAlign.)
-            <Tooltip key={button.alt} label={button.text || ""} align="bottom">
+            // Header buttons are pinned to the top of the viewport. The shared
+            // Tooltip enables Carbon's autoAlign by default, so the default
+            // top-alignment flips downward into the drawer body instead of
+            // clipping off-screen — no manual align override needed.
+            <Tooltip key={button.alt} label={button.text || ""}>
               <span style={{ display: "inline-flex" }}>
                 <Button
                   data-testid={`drawer-header-button-${button.alt}`}

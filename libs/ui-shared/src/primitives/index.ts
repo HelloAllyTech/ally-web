@@ -47,7 +47,6 @@ export {
   ModalFooter,
   Popover,
   PopoverContent,
-  Tooltip,
   DefinitionTooltip,
   Toggletip,
   ToggletipButton,
@@ -124,3 +123,9 @@ export { GlobalTheme, Theme } from "@carbon/react";
 // --- Custom primitives (no Carbon core equivalent) ----------------------
 export { SidePanel } from "./SidePanel";
 export type { SidePanelProps } from "./SidePanel";
+
+// `Tooltip` is a thin wrapper (not a plain re-export) so the whole monorepo
+// gets `autoAlign` on by default — top-of-viewport tooltips flip into view
+// instead of clipping off-screen. See ./Tooltip.
+export { Tooltip } from "./Tooltip";
+export type { TooltipProps } from "./Tooltip";
