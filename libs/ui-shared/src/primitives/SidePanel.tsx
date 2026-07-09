@@ -107,7 +107,11 @@ export function SidePanel({
       <aside style={panelStyle} className={className} role="dialog" aria-modal="true">
         <div style={headerStyle}>
           <div style={{ minWidth: 0, flex: 1 }}>{title}</div>
-          <IconButton label={closeLabel} kind="ghost" size="sm" onClick={onClose}>
+          {/* The close button is pinned to the top of the viewport, so its
+              built-in tooltip's default top-alignment would clip off-screen.
+              autoAlign flips it back into view (Carbon's IconButton defaults
+              autoAlign to false, unlike the shared Tooltip). */}
+          <IconButton label={closeLabel} kind="ghost" size="sm" autoAlign onClick={onClose}>
             <Close />
           </IconButton>
         </div>
