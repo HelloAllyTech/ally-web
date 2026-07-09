@@ -3,6 +3,7 @@ import { FC, KeyboardEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { StarYellowIcon } from "@assets";
+import { STAR_COLOR_EMPTY, STAR_COLOR_FILLED } from "@constants/rating";
 
 interface SessionRatingTriggerProps {
   value: number;
@@ -61,10 +62,9 @@ export const SessionRatingTrigger: FC<SessionRatingTriggerProps> = ({
             onKeyDown={e => handleKeyDown(e, star)}
             className={`${iconSize} flex items-center justify-center transition-transform cursor-pointer hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded`}
           >
-            {/* Empty stars use a mid grey (Carbon gray-50) so they stay clearly
-                visible on the light summary background — the previous #D8D8D8
-                was too faint. Matches StarRating. Filled stars are gold. */}
-            <StarYellowIcon fill={filled ? "#F9CC49" : "#8D8D8D"} />
+            {/* The icon paints the whole star in this colour: gold when filled,
+                a clearly-visible mid grey when empty. Shared with StarRating. */}
+            <StarYellowIcon fill={filled ? STAR_COLOR_FILLED : STAR_COLOR_EMPTY} />
           </button>
         );
       })}
