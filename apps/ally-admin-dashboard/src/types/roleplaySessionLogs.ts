@@ -175,6 +175,7 @@ export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   agentTestCases: RoleplaySessionAgentTestCase[];
   events: RoleplaySessionLogEvent[];
   lifecycle: RoleplaySessionLifecycleEvent[];
+  suspectedFreeze: boolean;
   transcript: RoleplaySessionLogMessage[];
 }
 

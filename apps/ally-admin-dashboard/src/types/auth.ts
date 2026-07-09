@@ -335,6 +335,9 @@ export interface AgentJoinReliabilityPoint {
   midSessionDrops: number;
   joinLatencyP50Sec: number | null;
   joinLatencyP95Sec: number | null;
+  conversations: number;
+  suspectedFreezes: number;
+  freezeRatePct: number;
 }
 
 export interface SessionOutcomeMix {
