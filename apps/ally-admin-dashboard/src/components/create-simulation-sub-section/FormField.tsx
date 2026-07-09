@@ -9,6 +9,7 @@ import { AutoTerminationRuleField } from "../auto-termination-rule-field";
 import { BehavioursAndStatesInstruction } from "../behaviours-and-states-instruction";
 import { ChallengeDescriptionPanel } from "../challenge-description";
 import { CharacterProfileSelector } from "../character-profile-selector";
+import { ComfortAudioDropdown } from "../comfort-audio-dropdown";
 import { Competency } from "../competency";
 import { CustomFieldGroup } from "../custom-field-group";
 import { DropdownField } from "../dropdown-field";
@@ -229,6 +230,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
       case FORM_FIELD_TYPES.CUSTOM.LANGUAGE_VOICE_MAPPING:
         return (
           <LanguageVoiceMapping
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
+        );
+      case FORM_FIELD_TYPES.CUSTOM.COMFORT_AUDIO_TRACK:
+        return (
+          <ComfortAudioDropdown
             id={id}
             label={label}
             formMethods={formMethods}

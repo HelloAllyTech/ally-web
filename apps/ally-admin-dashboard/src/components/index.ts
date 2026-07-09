@@ -41,6 +41,8 @@ export * from "./emoji-picker";
 export * from "./auto-termination-rule-field";
 export * from "./create-simulation-sub-section";
 export * from "./voice-dropdown";
+export * from "./comfort-audio-dropdown";
+export * from "./comfort-audio-settings";
 export * from "./language-voice-mapping";
 export * from "./linguistic-style-samples";
 export * from "./opening-dialogues";

@@ -123,6 +123,9 @@ export interface RoleplaySpec {
   /** Voice-naturalness / latency-masking runtime toggles (honored by worker_v2). */
   fillerEnabled: boolean;
   comfortAudioEnabled: boolean;
+  /** Selected comfort-audio track URL + volume (0..1); used when comfortAudioEnabled. */
+  comfortAudioUrl?: string;
+  comfortAudioVolume?: number;
   continuousBackchanneling: boolean;
   interimReplyEnabled: boolean;
   ui: RoleplaySpecUi;

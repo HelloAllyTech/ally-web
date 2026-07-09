@@ -103,6 +103,9 @@ export const ApiEndpoints = {
     GET_REPORT_TRANSCRIPT: (reportId: string) =>
       `/v1/learn/scenarios/reports/${reportId}/transcripts`,
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
+    COMFORT_AUDIO_LIBRARY: "/v1/comfort-audio",
+    COMFORT_AUDIO_UPLOAD_URL: "/v1/comfort-audio/upload-url",
+    COMFORT_AUDIO_BY_ID: (id: string) => `/v1/comfort-audio/${id}`,
     CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
     HELPER_TAGS: "/v1/learn/scenario-behaviors",
     FILLER_TAGS: "/v1/learn/filler-tags",
@@ -353,6 +356,7 @@ export const TAG_TYPES = {
   ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
   ROLEPLAY_REHEARSALS: "roleplayRehearsals",
   ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
+  COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
 };
 
 /**
