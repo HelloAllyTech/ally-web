@@ -26,6 +26,8 @@ export const createEmptyRoleplaySpec = (title: string): RoleplaySpec => ({
   difficulty: "",
   fillerEnabled: false,
   comfortAudioEnabled: false,
+  comfortAudioUrl: undefined,
+  comfortAudioVolume: undefined,
   continuousBackchanneling: false,
   interimReplyEnabled: true,
   ui: { layout: {} },

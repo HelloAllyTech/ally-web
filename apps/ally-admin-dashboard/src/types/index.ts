@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./comfortAudio";
 export * from "./createSimulation";
 export * from "./detectionConfig";
 export * from "./simulation";
