@@ -80,15 +80,15 @@ describe("SessionRatingTrigger", () => {
       expect(icons[0]).toHaveAttribute("data-fill", "#F9CC49");
       expect(icons[1]).toHaveAttribute("data-fill", "#F9CC49");
       expect(icons[2]).toHaveAttribute("data-fill", "#F9CC49");
-      expect(icons[3]).toHaveAttribute("data-fill", "#D8D8D8");
-      expect(icons[4]).toHaveAttribute("data-fill", "#D8D8D8");
+      expect(icons[3]).toHaveAttribute("data-fill", "#8D8D8D");
+      expect(icons[4]).toHaveAttribute("data-fill", "#8D8D8D");
     });
 
     it("should show all stars unfilled when value is 0", () => {
       render(<SessionRatingTrigger {...defaultProps} value={0} />);
 
       screen.getAllByTestId("star-icon").forEach(icon => {
-        expect(icon).toHaveAttribute("data-fill", "#D8D8D8");
+        expect(icon).toHaveAttribute("data-fill", "#8D8D8D");
       });
     });
 
@@ -169,7 +169,7 @@ describe("SessionRatingTrigger", () => {
       expect(icons[1]).toHaveAttribute("data-fill", "#F9CC49");
       expect(icons[2]).toHaveAttribute("data-fill", "#F9CC49");
       expect(icons[3]).toHaveAttribute("data-fill", "#F9CC49");
-      expect(icons[4]).toHaveAttribute("data-fill", "#D8D8D8");
+      expect(icons[4]).toHaveAttribute("data-fill", "#8D8D8D");
     });
 
     it("should revert to value fill on mouse leave", () => {
@@ -182,7 +182,7 @@ describe("SessionRatingTrigger", () => {
       const icons = screen.getAllByTestId("star-icon");
       expect(icons[0]).toHaveAttribute("data-fill", "#F9CC49");
       expect(icons[1]).toHaveAttribute("data-fill", "#F9CC49");
-      expect(icons[2]).toHaveAttribute("data-fill", "#D8D8D8");
+      expect(icons[2]).toHaveAttribute("data-fill", "#8D8D8D");
     });
   });
 
