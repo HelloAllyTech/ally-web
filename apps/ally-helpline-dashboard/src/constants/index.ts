@@ -14,3 +14,4 @@ export * from "./api";
 export * from "./user.ts";
 export * from "./review";
 export * from "./aiChat";
+export * from "./rating";

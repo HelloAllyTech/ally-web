@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { StarYellowIcon } from "@assets";
 import { Button, ButtonVariant } from "@components";
+import { STAR_COLOR_EMPTY, STAR_COLOR_FILLED } from "@constants/rating";
 
 interface StarRatingProps {
   rating: number;
@@ -18,10 +19,10 @@ export const StarRating: FC<StarRatingProps> = ({ rating, setRating }) => {
           variant={ButtonVariant.ICON}
           className={`text-2xl sm:text-3xl !p-0`}
         >
-          {/* Empty stars need a mid grey (Carbon gray-50) so they stay clearly
-              visible against the light modal/background — gray-20 (#E0E0E0) was
-              too faint to see. Selected stars are gold. */}
-          <StarYellowIcon fill={star <= rating ? "#F9CC49" : "#8D8D8D"} />
+          {/* The icon paints the whole star in this colour: gold when selected,
+              a clearly-visible mid grey when empty. Colours are shared with
+              SessionRatingTrigger so the filled/empty pair can't drift apart. */}
+          <StarYellowIcon fill={star <= rating ? STAR_COLOR_FILLED : STAR_COLOR_EMPTY} />
         </Button>
       ))}
     </div>
