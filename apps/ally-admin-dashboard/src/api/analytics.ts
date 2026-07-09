@@ -1,5 +1,6 @@
 import { ApiEndpoints, HttpMethod } from "@constants";
 import {
+  AgentJoinReliabilityResponse,
   AnalyticsBucket,
   AnalyticsOverviewResponse,
   AnalyticsRange,
@@ -21,6 +22,10 @@ type AnalyticsRangeQuery = {
 type VoiceLatencyQuery = AnalyticsRangeQuery & {
   bucket?: AnalyticsBucket;
   language?: string;
+};
+
+type AgentJoinReliabilityQuery = AnalyticsRangeQuery & {
+  bucket?: AnalyticsBucket;
 };
 
 type StartLatencyQuery = AnalyticsRangeQuery & {
@@ -57,6 +62,18 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    getAgentJoinReliability: builder.query<AgentJoinReliabilityResponse, AgentJoinReliabilityQuery>(
+      {
+        query: ({ range, bucket } = {}) => ({
+          url: ApiEndpoints.ANALYTICS.AGENT_JOIN_RELIABILITY,
+          method: HttpMethod.GET,
+          params: {
+            ...(range ? { range } : {}),
+            ...(bucket ? { bucket } : {}),
+          },
+        }),
+      },
+    ),
     getStartLatency: builder.query<StartLatencyResponse, StartLatencyQuery>({
       query: ({ range, bucket, language } = {}) => ({
         url: ApiEndpoints.ANALYTICS.START_LATENCY,
@@ -133,6 +150,7 @@ export const analyticsAPI = baseAPI.injectEndpoints({
 export const {
   useGetAnalyticsOverviewQuery,
   useGetVoiceLatencyQuery,
+  useGetAgentJoinReliabilityQuery,
   useGetStartLatencyQuery,
   useGetConversationDriftQuery,
   useStartDriftBackfillMutation,

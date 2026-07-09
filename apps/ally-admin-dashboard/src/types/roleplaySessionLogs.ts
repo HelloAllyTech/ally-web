@@ -148,6 +148,7 @@ export type RoleplaySessionLifecycleType =
   | "AGENT_DISPATCHED"
   | "PARTICIPANT_JOINED"
   | "AGENT_JOINED"
+  | "AGENT_LEFT"
   | "RECORDING_STARTED"
   | "ROOM_FINISHED";
 

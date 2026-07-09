@@ -20,6 +20,7 @@ import { AnalyticsRange } from "@types";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { ScribeTab } from "./tabs/ScribeTab";
+import { SessionHealthTab } from "./tabs/SessionHealthTab";
 import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
 
@@ -60,6 +61,12 @@ const TABS: TabDef[] = [
     label: "Latency",
     uses: { language: true },
     render: f => <LatencyTab range={f.range} language={f.language} />,
+  },
+  {
+    id: "session-health",
+    label: "Session health",
+    uses: { language: false },
+    render: f => <SessionHealthTab range={f.range} />,
   },
   {
     id: "drift",

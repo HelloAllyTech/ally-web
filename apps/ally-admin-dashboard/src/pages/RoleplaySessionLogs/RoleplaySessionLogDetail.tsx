@@ -58,6 +58,7 @@ const LIFECYCLE_LABELS: Record<string, string> = {
   AGENT_DISPATCHED: "Agent dispatched",
   PARTICIPANT_JOINED: "Participant joined",
   AGENT_JOINED: "Agent joined",
+  AGENT_LEFT: "Agent left",
   RECORDING_STARTED: "Recording started",
   ROOM_FINISHED: "Room finished",
 };
