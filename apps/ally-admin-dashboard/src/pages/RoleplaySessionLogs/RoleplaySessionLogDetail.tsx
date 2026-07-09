@@ -52,6 +52,26 @@ const formatCost = (n: number | null, priced = true): string => {
 const formatModelRefs = (refs?: { provider: string; model: string }[]): string =>
   refs && refs.length ? refs.map(r => `${r.provider} · ${r.model}`).join(", ") : "—";
 
+/** Human-readable labels for session lifecycle milestones. */
+const LIFECYCLE_LABELS: Record<string, string> = {
+  ROOM_CREATED: "Room created",
+  AGENT_DISPATCHED: "Agent dispatched",
+  PARTICIPANT_JOINED: "Participant joined",
+  AGENT_JOINED: "Agent joined",
+  RECORDING_STARTED: "Recording started",
+  ROOM_FINISHED: "Room finished",
+};
+const lifecycleLabel = (type: string): string => LIFECYCLE_LABELS[type] ?? type;
+
+/** Compact one-line rendering of a lifecycle event's detail payload. */
+const formatLifecycleDetail = (detail: Record<string, unknown> | null): string => {
+  if (!detail) return "—";
+  const entries = Object.entries(detail).filter(
+    ([, v]) => v !== null && v !== undefined && v !== "",
+  );
+  return entries.length ? entries.map(([k, v]) => `${k}: ${String(v)}`).join(", ") : "—";
+};
+
 const Field: FC<{ label: string; value: ReactNode }> = ({ label, value }) => (
   <div className="flex flex-col gap-1">
     <span className="text-xs text-typography-700">{label}</span>
@@ -363,6 +383,51 @@ export const RoleplaySessionLogDetail: FC = () => {
           </SectionCard>
         </section>
       )}
+
+      {/* Session lifecycle timeline (room/agent/participant milestones) */}
+      <section className="mt-6">
+        <h2 className="text-lg font-secondary text-typography-900 mb-2">
+          Session Timeline ({(data.lifecycle ?? []).length})
+        </h2>
+        {(data.lifecycle ?? []).length === 0 ? (
+          <p className="text-sm text-typography-700">
+            No lifecycle events recorded for this session.
+          </p>
+        ) : (
+          <>
+            {!(data.lifecycle ?? []).some(item => item.type === "AGENT_JOINED") && (
+              <p className="text-sm text-destructive-500 mb-2">
+                ⚠ The agent never joined this session.
+              </p>
+            )}
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border-light text-sm text-typography-700">
+                  <th className="py-2 pr-4 font-medium">Time</th>
+                  <th className="py-2 pr-4 font-medium">Event</th>
+                  <th className="py-2 pr-4 font-medium">Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data.lifecycle ?? []).map(item => (
+                  <tr
+                    key={item.id}
+                    className="border-b border-border-light text-sm text-typography-900 align-top"
+                  >
+                    <td className="py-2 pr-4 whitespace-nowrap text-typography-700">
+                      {formatDate(item.occurredAt)}
+                    </td>
+                    <td className="py-2 pr-4">{lifecycleLabel(item.type)}</td>
+                    <td className="py-2 pr-4 text-typography-700">
+                      {formatLifecycleDetail(item.detail)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </section>
 
       {/* Events / score breakdown */}
       <section className="mt-6">
