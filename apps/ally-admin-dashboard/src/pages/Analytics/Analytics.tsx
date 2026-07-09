@@ -57,7 +57,7 @@ const TABS: TabDef[] = [
   },
   {
     id: "latency",
-    label: "Latency",
+    label: "Latency & reliability",
     uses: { language: true },
     render: f => <LatencyTab range={f.range} language={f.language} />,
   },

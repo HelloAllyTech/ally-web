@@ -190,6 +190,20 @@ const roleplaySpecSlice = createSlice({
       spec[action.payload.key] = action.payload.value;
       touch(state);
     },
+    /** Sets the selected comfort-audio track URL (empty string clears it). */
+    setComfortAudioUrl(state, action: PayloadAction<string>) {
+      const spec = requireSpec(state);
+      if (!spec) return;
+      spec.comfortAudioUrl = action.payload || undefined;
+      touch(state);
+    },
+    /** Sets the comfort-audio playback volume (0..1). */
+    setComfortAudioVolume(state, action: PayloadAction<number>) {
+      const spec = requireSpec(state);
+      if (!spec) return;
+      spec.comfortAudioVolume = action.payload;
+      touch(state);
+    },
     updatePersona(
       state,
       action: PayloadAction<
@@ -397,6 +411,8 @@ export const {
   setOpeningStatement,
   setDifficulty,
   setNaturalnessFlag,
+  setComfortAudioUrl,
+  setComfortAudioVolume,
   updatePersona,
   upsertPersonaChunk,
   removePersonaChunk,

@@ -140,6 +140,7 @@ export const FORM_FIELD_TYPES = {
     MAIN_AGENT_PROMPT_PICKER: "main_agent_prompt_picker",
     STATES_EDITOR: "states_editor",
     TITLE_PANEL: "title_panel",
+    COMFORT_AUDIO_TRACK: "comfort_audio_track",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -183,6 +184,8 @@ export const FORM_FIELD_IDS = {
   STATE_NAMES: "stateNames",
   FILLER_ENABLED: "fillerEnabled",
   COMFORT_AUDIO_ENABLED: "comfortAudioEnabled",
+  COMFORT_AUDIO_URL: "comfortAudioUrl",
+  COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
@@ -221,6 +224,12 @@ export const TEMPERATURE_DEFAULT = 0.7;
 export const TEMPERATURE_MIN = 0;
 export const TEMPERATURE_MAX = 2;
 export const TEMPERATURE_STEP = 0.1;
+
+// Comfort-audio volume slider (0..1), shown when the Comfort Audio toggle is on.
+export const COMFORT_AUDIO_VOLUME_DEFAULT = 0.3;
+export const COMFORT_AUDIO_VOLUME_MIN = 0;
+export const COMFORT_AUDIO_VOLUME_MAX = 1;
+export const COMFORT_AUDIO_VOLUME_STEP = 0.1;
 
 export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
 export const DEFAULT_MAIN_AGENT_PROMPT_CODE = "ally_ai_learn_system_main_agent_prompt";
@@ -577,6 +586,28 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: false,
         tooltipLocation: TooltipLocation.COMFORT_AUDIO,
+      },
+      {
+        id: "comfortAudioUrl",
+        label: "Comfort Audio Track",
+        type: FORM_FIELD_TYPES.CUSTOM.COMFORT_AUDIO_TRACK,
+        fullWidth: true,
+        dependsOn: "comfortAudioEnabled",
+        visibleWhen: (formValues: any) => formValues.comfortAudioEnabled === true,
+        note: "Select an uploaded track to play as this roleplay's comfort audio. Leave unset to use the default room tone.",
+      },
+      {
+        id: "comfortAudioVolume",
+        label: "Comfort Audio Volume",
+        type: FORM_FIELD_TYPES.SLIDER,
+        fullWidth: true,
+        min: COMFORT_AUDIO_VOLUME_MIN,
+        max: COMFORT_AUDIO_VOLUME_MAX,
+        step: COMFORT_AUDIO_VOLUME_STEP,
+        defaultValue: COMFORT_AUDIO_VOLUME_DEFAULT,
+        dependsOn: "comfortAudioEnabled",
+        visibleWhen: (formValues: any) => formValues.comfortAudioEnabled === true,
+        note: "How loud the comfort audio plays under the conversation (0 = silent, 1 = full).",
       },
       {
         id: "historyTrimEnabled",

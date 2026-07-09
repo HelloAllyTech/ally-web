@@ -325,6 +325,31 @@ export interface VoiceLatencyResponse {
   points: VoiceLatencyPoint[];
 }
 
+// AgentJoinReliabilityResponseDto from GET /api/v1/analytics/agent-join-reliability.
+export interface AgentJoinReliabilityPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  totalSessions: number;
+  joinFailures: number;
+  failureRatePct: number;
+  midSessionDrops: number;
+  joinLatencyP50Sec: number | null;
+  joinLatencyP95Sec: number | null;
+}
+
+export interface SessionOutcomeMix {
+  completed: number;
+  noConversation: number;
+  inProgress: number;
+}
+
+export interface AgentJoinReliabilityResponse {
+  range: AnalyticsRange;
+  bucket: string;
+  points: AgentJoinReliabilityPoint[];
+  outcomeMix: SessionOutcomeMix;
+}
+
 // StartLatencyResponseDto from GET /api/v1/analytics/start-latency.
 // "Time to first word": agent job start -> the agent begins its opening dialogue.
 export interface StartLatencyPoint {

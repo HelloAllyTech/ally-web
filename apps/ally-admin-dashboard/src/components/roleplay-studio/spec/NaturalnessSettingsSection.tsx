@@ -2,12 +2,20 @@ import React from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 
+import { ComfortAudioDropdown } from "@components";
 import { en } from "@constants";
-import { selectRoleplaySpec, setNaturalnessFlag } from "@reducer";
+import {
+  selectRoleplaySpec,
+  setComfortAudioUrl,
+  setComfortAudioVolume,
+  setNaturalnessFlag,
+} from "@reducer";
 import { ToggleSwitch } from "@src/components/toggle-switch";
 import { RoleplayNaturalnessFlag } from "@src/types/roleplayStudio";
 
 import { SpecSectionCard } from "./SpecSectionCard";
+
+const COMFORT_AUDIO_VOLUME_FALLBACK = 0.3;
 
 interface NaturalnessSettingsSectionProps {
   readOnly?: boolean;
@@ -75,6 +83,39 @@ export const NaturalnessSettingsSection: React.FC<NaturalnessSettingsSectionProp
             </div>
           );
         })}
+
+        {spec.comfortAudioEnabled && (
+          <div className="flex flex-col gap-3 border-t border-border-light pt-4">
+            <ComfortAudioDropdown
+              value={spec.comfortAudioUrl ?? ""}
+              onChange={url => {
+                if (!readOnly) dispatch(setComfortAudioUrl(url));
+              }}
+            />
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-typography-900">
+                  {en.comfortAudio.volumeLabel}
+                </span>
+                <span className="text-sm text-primary-600 tabular-nums">
+                  {(spec.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_FALLBACK).toFixed(1)}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.1}
+                value={spec.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_FALLBACK}
+                onChange={e => dispatch(setComfortAudioVolume(parseFloat(e.target.value)))}
+                disabled={readOnly}
+                aria-label={en.comfortAudio.volumeLabel}
+                className="w-full accent-primary-500 cursor-pointer"
+              />
+              <span className="text-xs text-typography-600">{en.comfortAudio.volumeHelp}</span>
+            </div>
+          </div>
+        )}
       </div>
     </SpecSectionCard>
   );

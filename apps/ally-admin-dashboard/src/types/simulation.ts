@@ -99,6 +99,8 @@ export interface SimulationInput {
   optGuardrails?: boolean;
   fillerEnabled?: boolean;
   comfortAudioEnabled?: boolean;
+  comfortAudioUrl?: string;
+  comfortAudioVolume?: number;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
@@ -198,6 +200,8 @@ export interface GetSimulationByIdResponse {
     optGuardrails?: boolean;
     fillerEnabled?: boolean;
     comfortAudioEnabled?: boolean;
+    comfortAudioUrl?: string;
+    comfortAudioVolume?: number;
     historyTrimEnabled?: boolean;
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;

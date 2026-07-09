@@ -143,6 +143,23 @@ export interface RoleplaySessionLogMessage {
   createdAt: string;
 }
 
+export type RoleplaySessionLifecycleType =
+  | "ROOM_CREATED"
+  | "AGENT_DISPATCHED"
+  | "PARTICIPANT_JOINED"
+  | "AGENT_JOINED"
+  | "AGENT_LEFT"
+  | "RECORDING_STARTED"
+  | "ROOM_FINISHED";
+
+export interface RoleplaySessionLifecycleEvent {
+  id: string;
+  // Server may add new types over time, so keep it open but hint the known set.
+  type: RoleplaySessionLifecycleType | string;
+  occurredAt: string;
+  detail: Record<string, unknown> | null;
+}
+
 export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   summary: Record<string, unknown> | null;
   scenarioVersionId: string | null;
@@ -157,6 +174,7 @@ export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   actorEvaluation: RoleplaySessionActorEvaluation | null;
   agentTestCases: RoleplaySessionAgentTestCase[];
   events: RoleplaySessionLogEvent[];
+  lifecycle: RoleplaySessionLifecycleEvent[];
   transcript: RoleplaySessionLogMessage[];
 }
 
