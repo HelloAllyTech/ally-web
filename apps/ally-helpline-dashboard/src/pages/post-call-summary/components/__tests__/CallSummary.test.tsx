@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useGetCallSummaryQuery } from "@api";
@@ -263,7 +264,11 @@ describe("CallSummary Component", () => {
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 
-  it("renders summary fields and notes", () => {
+  it("renders the editable summary form for a resolved note even when no AI summary was generated", () => {
+    // A manual note (Create Note, no audio) has summaryStatus SUCCESS but no
+    // details.summary. It must render the editable form so the counsellor can
+    // fill/edit fields — NOT get stuck on SummaryLoading's "Setting up your
+    // summary screen". Regression guard for the audio-less-note bug.
     const callSummaryWithSuccess = {
       summaryStatus: ChatSummaryStatus.SUCCESS,
       details: {
@@ -281,11 +286,11 @@ describe("CallSummary Component", () => {
         isSummaryLoading={false}
       />,
     );
-    // SummaryLoading component renders the generated state when summaryStatus is SUCCESS and details.summary is absent
-    expect(screen.getByText("Summary is generated")).toBeInTheDocument();
-    expect(screen.getByText("You can review the session now.")).toBeInTheDocument();
-    // Notes section is rendered in the SummaryLoading component
-    expect(screen.getByText("Add Notes (optional)")).toBeInTheDocument();
+    // The stuck loading screen must NOT be shown for a resolved note...
+    expect(screen.queryByText("Summary is generated")).not.toBeInTheDocument();
+    expect(screen.queryByText("You can review the session now.")).not.toBeInTheDocument();
+    // ...the editable form renders instead (AI disclaimer banner + notes value).
+    expect(screen.getByText("Initial notes")).toBeInTheDocument();
   });
 
   it("shows a Retry summary action on a failed summary and triggers retry", async () => {
@@ -488,5 +493,57 @@ describe("CallSummary — custom field save does not revert fields the user didn
     expect(mockUpsertCustomFieldValues).toHaveBeenCalledTimes(1);
     const [{ values }] = mockUpsertCustomFieldValues.mock.calls[0];
     expect(values).toEqual([{ fieldDefinitionId: "cf-topic", value: "Depression" }]);
+  });
+});
+
+describe("CallSummary — a failed custom field save surfaces an error instead of faking success", () => {
+  const summaryCall = {
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 1,
+    details: { callInfo: { notes: "" }, summary: { callQuality: 85, tags: [] } },
+  };
+  const topicField = (value: string | null) => ({
+    fieldDefinitionId: "cf-topic",
+    name: "Topic",
+    fieldType: CustomFieldType.TEXT,
+    sectionKey: "section",
+    sectionLabel: "Section",
+    editPermission: CustomFieldEditPermission.BOTH,
+    value,
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Real timers so the awaited (rejected) upsert promise settles before we assert.
+    mockGetCustomFieldsEnabled.mockImplementation(() => customFieldsActiveResult);
+    mockGetCustomFieldValues.mockReturnValue({ data: [topicField("Anxiety")] });
+    mockUseSelector.mockReturnValue({ user: { userId: 1 }, permissions: [] });
+  });
+
+  it("shows an error toast when the custom field upsert rejects", async () => {
+    mockUpsertCustomFieldValues.mockImplementation(() => ({
+      unwrap: () => Promise.reject(new Error("boom")),
+    }));
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} canEditCustomFields={true} />);
+
+    fireEvent.change(screen.getByLabelText("Topic"), { target: { value: "Depression" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
+  });
+
+  it("does not show an error toast when the upsert succeeds", async () => {
+    mockUpsertCustomFieldValues.mockImplementation(() => ({
+      unwrap: () => Promise.resolve({ success: true }),
+    }));
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} canEditCustomFields={true} />);
+
+    fireEvent.change(screen.getByLabelText("Topic"), { target: { value: "Depression" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    await waitFor(() => expect(mockUpsertCustomFieldValues).toHaveBeenCalledTimes(1));
+    expect(toast.error).not.toHaveBeenCalled();
   });
 });
