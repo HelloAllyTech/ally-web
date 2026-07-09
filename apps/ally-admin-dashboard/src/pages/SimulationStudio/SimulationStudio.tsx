@@ -20,7 +20,7 @@ import {
   en,
   PATH_STATUS_OPTIONS,
   SimulationStatus,
-  UserRole,
+  isSuperAdminRole,
 } from "@constants";
 import { useSimulations, useSimulationPathways, useSimulationCases, useUser } from "@hooks";
 
@@ -53,7 +53,7 @@ export const SimulationStudio: React.FC = () => {
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useUser();
-  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
+  const isSuperAdmin = isSuperAdminRole(user?.role);
 
   // Get active tab from URL params, default to SIMULATIONS
   const activeTab = searchParams.get("tab") || TAB_KEYS.SIMULATIONS;

@@ -265,11 +265,27 @@ export enum UserRole {
   ADMIN = "ADMIN",
   LEARNER = "LEARNER",
   SUPER_ADMIN = "SUPER_ADMIN",
+  SUPER_DUPER_ADMIN = "SUPER_DUPER_ADMIN",
   CLIENT = "CLIENT",
   SIMULATION_REVIEWER = "SIMULATION_REVIEWER",
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
 }
+
+/**
+ * Platform-level super-admin roles. SUPER_DUPER_ADMIN is a peer of SUPER_ADMIN
+ * today (identical access; may gain extra capabilities later). Gate super-admin
+ * UI on this list — via isSuperAdminRole — instead of an exact SUPER_ADMIN check
+ * so both roles behave identically.
+ */
+export const SUPER_ADMIN_ROLES: UserRole[] = [
+  UserRole.SUPER_ADMIN,
+  UserRole.SUPER_DUPER_ADMIN,
+];
+
+export const isSuperAdminRole = (
+  role?: UserRole | string | null,
+): boolean => role != null && (SUPER_ADMIN_ROLES as string[]).includes(role);
 
 export enum AppType {
   ADMIN = "ADMIN",

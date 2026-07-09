@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from "react";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { Permissions, ROLEPLAY_STUDIO_ALLOWED_EMAILS, ROUTES, UserRole } from "@constants";
+import { Permissions, ROLEPLAY_STUDIO_ALLOWED_EMAILS, ROUTES, SUPER_ADMIN_ROLES } from "@constants";
 import {
   CreateSimulation,
   Login,
@@ -228,7 +228,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ANALYTICS}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <Suspense fallback={null}>
                 <Analytics />
               </Suspense>
@@ -238,7 +238,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.SETTINGS}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <Settings />
             </PrivateLayout>
           }
@@ -246,7 +246,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.AGENT_TEST_CASES}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <AgentTestCases />
             </PrivateLayout>
           }
@@ -254,7 +254,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.COMPETENCIES}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <Competencies />
             </PrivateLayout>
           }
@@ -262,7 +262,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOGS}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <RoleplaySessionLogs />
             </PrivateLayout>
           }
@@ -270,7 +270,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(":id")}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <RoleplaySessionLogDetail />
             </PrivateLayout>
           }

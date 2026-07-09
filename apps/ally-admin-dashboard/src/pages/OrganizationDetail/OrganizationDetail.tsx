@@ -24,7 +24,7 @@ import {
   CasesTab,
   BadgesTab,
 } from "@components";
-import { en, ROUTES, UserRole } from "@constants";
+import { en, ROUTES, isSuperAdminRole } from "@constants";
 import { RootState } from "@store";
 import { Tenant } from "@types";
 
@@ -53,7 +53,7 @@ export const OrganizationDetail: FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user.user);
-  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
+  const isSuperAdmin = isSuperAdminRole(user?.role);
 
   const filteredTabs = useMemo(() => {
     return defaultTabs.filter(tab => {

@@ -14,7 +14,7 @@ import { hasPermissions } from "@utils";
 interface PrivateLayoutProps {
   children: React.ReactNode;
   requiredPermissions?: Permissions[];
-  requiredRole?: UserRole;
+  requiredRole?: UserRole | UserRole[];
   isPreview?: boolean;
   /**
    * Optional email allowlist (compared case-insensitively against the logged-in
@@ -58,10 +58,15 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   }
 
   // Role gating is independent of permissions: routes can require a specific
-  // role (e.g. SUPER_ADMIN) regardless of the permission set. Routes that pass
-  // no requiredRole stay backward compatible (hasRole stays true).
+  // role (e.g. SUPER_ADMIN) — or any one of a set of roles (e.g. the super-admin
+  // tier: [SUPER_ADMIN, SUPER_DUPER_ADMIN]) — regardless of the permission set.
+  // Routes that pass no requiredRole stay backward compatible (hasRole stays true).
   if (!isUserLoading) {
-    hasRole = !requiredRole || userData?.role === requiredRole;
+    hasRole =
+      !requiredRole ||
+      (Array.isArray(requiredRole)
+        ? requiredRole.includes(userData?.role as UserRole)
+        : userData?.role === requiredRole);
   }
 
   // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive;
