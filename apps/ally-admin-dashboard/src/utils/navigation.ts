@@ -5,6 +5,7 @@ import {
   SIDEBAR_ITEMS,
   Permissions,
   UserRole,
+  isSuperAdminRole,
   isRoleplayStudioEmailAllowed,
 } from "@constants";
 import { store } from "@store";
@@ -150,7 +151,7 @@ export const deriveNavigationItems = ({
 }): NavigationItem[] => {
   const navigationItems = buildNavigationItems();
   const resolvedEmail = email ?? store.getState()?.user?.user?.email;
-  const isSuperAdmin = role === UserRole.SUPER_ADMIN;
+  const isSuperAdmin = isSuperAdminRole(role);
   // Role-gated (super-admin only) items, appended below independently of
   // permissions, in nav order: Analytics then Settings (last).
   const roleGatedItems = navigationItems.filter(item =>

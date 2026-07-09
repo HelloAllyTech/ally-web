@@ -16,7 +16,7 @@ import {
   useLazyGetUserPreferencesQuery,
   useUpdateUserPreferencesMutation,
 } from "@api";
-import { LOCAL_STORAGE_KEYS, UserRole } from "@constants";
+import { LOCAL_STORAGE_KEYS, isSuperAdminRole } from "@constants";
 import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
 import { deriveNavigationItems } from "@utils";
@@ -131,7 +131,7 @@ export const useUser = () => {
   );
 
   // Only super admins may personalize their sidebar order.
-  const canReorder = user?.role === UserRole.SUPER_ADMIN;
+  const canReorder = isSuperAdminRole(user?.role);
 
   /**
    * Persists a new sidebar order to the current user's preferences.

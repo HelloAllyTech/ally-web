@@ -79,7 +79,10 @@ vi.mock("@store", () => ({}));
 
 // Mock constants
 vi.mock("@constants", () => ({
-  UserRole: { SUPER_ADMIN: "SUPER_ADMIN" },
+  UserRole: { SUPER_ADMIN: "SUPER_ADMIN", SUPER_DUPER_ADMIN: "SUPER_DUPER_ADMIN" },
+  SUPER_ADMIN_ROLES: ["SUPER_ADMIN", "SUPER_DUPER_ADMIN"],
+  isSuperAdminRole: (role?: string | null) =>
+    role === "SUPER_ADMIN" || role === "SUPER_DUPER_ADMIN",
   en: {
     common: {
       cancel: "Cancel",
