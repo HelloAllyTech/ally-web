@@ -3,11 +3,19 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+import { Permissions } from "@constants";
+import { setPermissions } from "@reducer/userReducer";
 import { store } from "@store";
 import { UserRole } from "@types";
 
 import { SUMMARY_FEEDBACK_TIMEOUT } from "../constants";
 import SimulationSummarySidebar from "../SimulationSummarySidebar";
+
+// Overridable per-test so we can drive the short-session branch. Default mirrors
+// the previous fixed mock (a normal, in-progress session).
+const mockPolling = vi.hoisted(() =>
+  vi.fn(() => ({ summaryData: undefined, retryMaxReached: false, isShortSession: false })),
+);
 
 // Mock feature flags
 vi.mock("@ally-ui-mono/ui-shared", async () => {
@@ -38,7 +46,7 @@ vi.mock("@containers", () => ({
       <div data-testid="simulation-summary-retry-max">{String(retryMaxReached)}</div>
     </div>
   ),
-  useSimulationSummaryPolling: () => ({ summaryData: undefined, retryMaxReached: false }),
+  useSimulationSummaryPolling: mockPolling,
 }));
 
 // Mock hooks
@@ -128,10 +136,18 @@ describe("SimulationSummarySidebar Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    // clearAllMocks keeps mockReturnValue, so restore the default explicitly.
+    mockPolling.mockReturnValue({
+      summaryData: undefined,
+      retryMaxReached: false,
+      isShortSession: false,
+    });
+    store.dispatch(setPermissions([]));
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    store.dispatch(setPermissions([]));
   });
 
   describe("Component Rendering", () => {
@@ -249,6 +265,40 @@ describe("SimulationSummarySidebar Component", () => {
 
       expect(screen.queryByTestId("feedback-dialog")).not.toBeVisible();
       expect(mockCloseSummarySidebar).toHaveBeenCalled();
+    });
+
+    it("fires the feedback close-guard for a normal session with edit permission and no feedback", () => {
+      mockPolling.mockReturnValue({
+        summaryData: undefined,
+        retryMaxReached: false,
+        isShortSession: false,
+      });
+      store.dispatch(setPermissions([Permissions.EDIT_SCENARIO_SESSION]));
+
+      const { mockCloseSummarySidebar } = renderComponent();
+      fireEvent.click(screen.getByTestId("close-sidebar"));
+
+      // Guard intercepts the close and opens the rating dialog instead.
+      expect(screen.getByTestId("feedback-dialog")).toBeVisible();
+      expect(mockCloseSummarySidebar).not.toHaveBeenCalled();
+    });
+
+    it("closes a short session directly instead of getting stuck on the feedback guard", () => {
+      // Regression: the close-guard used to fire for short sessions too, opening
+      // a FeedbackDialog that SummarySidebarWrapper never mounts in the
+      // short-session branch — so the drawer's X / outside-click did nothing.
+      mockPolling.mockReturnValue({
+        summaryData: undefined,
+        retryMaxReached: false,
+        isShortSession: true,
+      });
+      store.dispatch(setPermissions([Permissions.EDIT_SCENARIO_SESSION]));
+
+      const { mockCloseSummarySidebar } = renderComponent();
+      fireEvent.click(screen.getByTestId("close-sidebar"));
+
+      expect(mockCloseSummarySidebar).toHaveBeenCalled();
+      expect(screen.queryByTestId("feedback-dialog")).not.toBeVisible();
     });
 
     it.skip("should close feedback dialog and call closeSummarySidebar", async () => {
