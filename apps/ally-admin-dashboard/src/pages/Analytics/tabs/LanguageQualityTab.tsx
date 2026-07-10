@@ -87,9 +87,11 @@ const UnmeasuredTag: FC<{ children?: ReactNode }> = ({ children }) => (
 interface Props {
   range: AnalyticsRange;
   language: string;
+  /** Drives the page-level language picker (drill-in from an overview row). */
+  onSelectLanguage?: (language: string) => void;
 }
 
-export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
+export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguage }) => {
   const { data, isFetching, isError, refetch } = useGetLanguageQualityQuery({
     range,
     language: language || undefined,
@@ -366,8 +368,17 @@ export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
               </thead>
               <tbody>
                 {overview.map(row => (
-                  <tr key={row.language} className="border-b border-border-light last:border-b-0">
-                    <td className="px-3 py-2 font-medium text-typography-900">{row.language}</td>
+                  <tr
+                    key={row.language}
+                    className={`border-b border-border-light last:border-b-0 ${
+                      onSelectLanguage ? "cursor-pointer hover:bg-neutral-50" : ""
+                    }`}
+                    onClick={() => onSelectLanguage?.(row.language)}
+                    title={onSelectLanguage ? `View ${row.language} diagnostics` : undefined}
+                  >
+                    <td className="px-3 py-2 font-medium text-primary-600 underline">
+                      {row.language}
+                    </td>
                     <td className="px-3 py-2">{row.sessionsJudged}</td>
                     <td className="px-3 py-2">{row.nTurns}</td>
                     <td className="px-3 py-2 font-medium text-typography-900">

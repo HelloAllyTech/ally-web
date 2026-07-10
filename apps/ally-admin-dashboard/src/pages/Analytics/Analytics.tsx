@@ -34,6 +34,9 @@ const RANGE_ITEMS: { id: AnalyticsRange; label: string }[] = [
 interface TabFilters {
   range: AnalyticsRange;
   language: string;
+  /** Lets a tab drive the page-level language picker (e.g. drill-in from a
+   *  per-language overview row). */
+  onSelectLanguage: (language: string) => void;
 }
 
 /**
@@ -72,7 +75,13 @@ const TABS: TabDef[] = [
     id: "language",
     label: "Language",
     uses: { language: true },
-    render: f => <LanguageQualityTab range={f.range} language={f.language} />,
+    render: f => (
+      <LanguageQualityTab
+        range={f.range}
+        language={f.language}
+        onSelectLanguage={f.onSelectLanguage}
+      />
+    ),
   },
   {
     id: "tokens",
@@ -107,7 +116,7 @@ export const Analytics = () => {
   const selectedRange = RANGE_ITEMS.find(i => i.id === range) ?? RANGE_ITEMS[0];
   const selectedLanguage = languageItems.find(i => i.id === language) ?? languageItems[0];
   const activeTab = TABS[tabIndex] ?? TABS[0];
-  const filters: TabFilters = { range, language };
+  const filters: TabFilters = { range, language, onSelectLanguage: setLanguage };
 
   return (
     <div className="font-primary pr-1">
