@@ -236,6 +236,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const onSidebarClose = () => {
     if (
+      // Short sessions never render the feedback UI (SummarySidebarWrapper drops
+      // {children} — the FeedbackDialog — in the short-session branch), so the
+      // close guard must skip them; otherwise it opens a dialog that isn't
+      // mounted and the drawer can never be closed.
+      !isShortSession &&
       canShowFeedback &&
       !hasFeedback.current &&
       permissions?.includes(Permissions.EDIT_SCENARIO_SESSION)
