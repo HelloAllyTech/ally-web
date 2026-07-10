@@ -1,9 +1,8 @@
-import { FC, KeyboardEvent, useState } from "react";
+import { FC } from "react";
 
 import { useTranslation } from "react-i18next";
 
-import { StarYellowIcon } from "@assets";
-import { STAR_COLOR_EMPTY, STAR_COLOR_FILLED } from "@constants/rating";
+import { StarRating } from "../star-rating";
 
 interface SessionRatingTriggerProps {
   value: number;
@@ -11,63 +10,25 @@ interface SessionRatingTriggerProps {
   size?: "sm" | "md";
 }
 
+/**
+ * Inline star rating shown next to the summary title. Thin wrapper over the
+ * shared {@link StarRating} so the header and the feedback modal draw the exact
+ * same (always-visible) stars and can't drift apart.
+ */
 export const SessionRatingTrigger: FC<SessionRatingTriggerProps> = ({
   value,
   onSelect,
   size = "md",
 }) => {
   const { t } = useTranslation();
-  const [hovered, setHovered] = useState<number>(0);
-
-  const iconSize = size === "sm" ? "w-5 h-5" : "w-6 h-6";
-  const displayValue = hovered || value;
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>, star: number) => {
-    if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-      e.preventDefault();
-      const next = Math.min(5, star + 1);
-      onSelect?.(next);
-      (document.querySelector(`[data-star="${next}"]`) as HTMLElement)?.focus();
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-      e.preventDefault();
-      const prev = Math.max(1, star - 1);
-      onSelect?.(prev);
-      (document.querySelector(`[data-star="${prev}"]`) as HTMLElement)?.focus();
-    } else if (e.key === " " || e.key === "Enter") {
-      e.preventDefault();
-      onSelect?.(star);
-    }
-  };
 
   return (
-    <span
-      role="radiogroup"
-      aria-label={t("simulationFeedback.rateTitle")}
-      className="flex items-center gap-1"
-    >
-      {[1, 2, 3, 4, 5].map(star => {
-        const filled = star <= displayValue;
-        const isCurrent = star === (value || 1);
-        return (
-          <button
-            key={star}
-            role="radio"
-            aria-checked={star === value}
-            aria-label={t("simulationFeedback.starLabel", { star, total: 5 })}
-            data-star={star}
-            tabIndex={isCurrent ? 0 : -1}
-            onClick={() => onSelect?.(star)}
-            onMouseEnter={() => setHovered(star)}
-            onMouseLeave={() => setHovered(0)}
-            onKeyDown={e => handleKeyDown(e, star)}
-            className={`${iconSize} flex items-center justify-center transition-transform cursor-pointer hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded`}
-          >
-            {/* The icon paints the whole star in this colour: gold when filled,
-                a clearly-visible mid grey when empty. Shared with StarRating. */}
-            <StarYellowIcon fill={filled ? STAR_COLOR_FILLED : STAR_COLOR_EMPTY} />
-          </button>
-        );
-      })}
-    </span>
+    <StarRating
+      rating={value}
+      setRating={rating => onSelect?.(rating)}
+      size={size}
+      ariaLabel={t("simulationFeedback.rateTitle")}
+      starLabel={(star, total) => t("simulationFeedback.starLabel", { star, total })}
+    />
   );
 };
