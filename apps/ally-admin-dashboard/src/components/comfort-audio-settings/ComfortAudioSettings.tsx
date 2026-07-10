@@ -22,7 +22,7 @@ const ACCEPTED_AUDIO_TYPES = new Set([
   "audio/mp4",
   "audio/x-m4a",
 ]);
-const MAX_AUDIO_BYTES = 50 * 1024 * 1024; // 50 MB
+const MAX_AUDIO_BYTES = 20 * 1024 * 1024; // 20 MB
 
 /**
  * Superadmin-only management of the shared comfort-audio library: upload named
