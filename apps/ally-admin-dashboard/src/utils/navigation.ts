@@ -68,6 +68,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.MANAGE_TOOLTIPS,
   },
   {
+    id: SIDEBAR_ITEMS.BLOG,
+    label: "Blog",
+    path: ROUTES.BLOG,
+  },
+  {
     id: SIDEBAR_ITEMS.USERS,
     label: en.userManagement.users,
     path: ROUTES.USER_MANAGEMENT,
@@ -200,6 +205,8 @@ export const deriveNavigationItems = ({
               return permissions.includes(Permissions.VIEW_I18N_TRANSLATIONS);
             case SIDEBAR_ITEMS.TOOLTIPS:
               return permissions.includes(Permissions.VIEW_TOOLTIPS);
+            case SIDEBAR_ITEMS.BLOG:
+              return permissions.includes(Permissions.VIEW_BLOGS);
             case SIDEBAR_ITEMS.USER_BADGES:
               return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
             case SIDEBAR_ITEMS.ANALYTICS:
