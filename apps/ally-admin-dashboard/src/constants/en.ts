@@ -1003,7 +1003,7 @@ export const en = {
     nameRequired: "Enter a name for the track",
     fileRequired: "Choose an audio file to upload",
     invalidFileType: "File must be an MP3, WAV, or M4A audio file",
-    fileTooLarge: "Audio file must be under 50 MB",
+    fileTooLarge: "Audio file must be under 20 MB",
     uploadSuccess: "Comfort audio track uploaded",
     uploadFailed: "Failed to upload comfort audio track",
     deleteSuccess: "Comfort audio track deleted",
