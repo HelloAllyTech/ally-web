@@ -150,6 +150,9 @@ vi.mock("@components", () => ({
       ))}
     </div>
   ),
+  PracticeStreakHeatmap: ({ className }: { className?: string }) => (
+    <div data-testid="practice-streak-heatmap" className={className} />
+  ),
   CreditsDisplay: ({ className }: { className?: string }) => {
     const mockData = getMockCredits();
     const credits = mockData?.credits || { consumedCredits: 0, creditLimit: 0 };
