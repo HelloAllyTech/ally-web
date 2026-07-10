@@ -94,6 +94,7 @@ export const BlogManagement: React.FC = () => {
         body: emptyToUndefined(values.body),
         tags: values.tags,
         category: emptyToUndefined(values.category),
+        authorName: emptyToUndefined(values.authorName),
         headerImageUrl: emptyToUndefined(values.headerImageUrl),
         status: (publish ? "PUBLISHED" : "DRAFT") as BlogStatus,
       };

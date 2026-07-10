@@ -11,6 +11,7 @@ export type BlogPost = {
   body?: string | null; // sanitized HTML
   tags: string[];
   category?: string | null;
+  authorName?: string | null;
   headerImageUrl?: string | null;
   status: "DRAFT" | "PUBLISHED";
   publishedAt?: string | null;

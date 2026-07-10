@@ -6,6 +6,8 @@ import { RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { useGetPublicBlogBySlugQuery } from "@api";
 import { Ally } from "@assets";
 
+import { ShareActions } from "./ShareActions";
+
 const formatDate = (value?: string | null) =>
   value
     ? new Date(value).toLocaleDateString(undefined, {
@@ -43,18 +45,23 @@ export const BlogPost: FC = () => {
         ) : (
           <article className="mt-6">
             <header className="mb-8">
-              <div className="mb-3 flex items-center gap-2 text-sm text-typography-500">
+              <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-typography-500">
                 {post.category && (
                   <span className="rounded-full bg-background-secondary px-2 py-0.5 font-medium text-typography-700">
                     {post.category}
                   </span>
                 )}
                 <span>{formatDate(post.publishedAt ?? post.createdAt)}</span>
+                {post.authorName && <span>· By {post.authorName}</span>}
               </div>
               <h1 className="font-secondary text-3xl leading-tight text-typography-900">
                 {post.title}
               </h1>
               {post.tldr && <p className="mt-4 text-lg text-typography-600">{post.tldr}</p>}
+              <div className="mt-6 flex items-center gap-3 border-t border-border-light pt-4">
+                <span className="text-sm text-typography-500">Share</span>
+                <ShareActions slug={post.slug} title={post.title} />
+              </div>
             </header>
 
             {post.headerImageUrl && (

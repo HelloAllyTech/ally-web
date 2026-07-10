@@ -12,6 +12,7 @@ export interface BlogPost {
   body?: string | null;
   tags: string[];
   category?: string | null;
+  authorName?: string | null;
   headerImageUrl?: string | null;
   status: BlogStatus;
   publishedAt?: string | null;
@@ -41,6 +42,7 @@ export interface UpsertBlogRequest {
   body?: string;
   tags?: string[];
   category?: string;
+  authorName?: string;
   headerImageUrl?: string;
   status?: BlogStatus;
 }
