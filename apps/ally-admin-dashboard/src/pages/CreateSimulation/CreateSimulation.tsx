@@ -18,7 +18,7 @@ import {
   usePublishScenarioVersionMutation,
   useGetScenarioVersionsQuery,
 } from "@api";
-import { ArrowDown, WarningAlt } from "@assets";
+import { ArrowDown, DoubleArrowRight, WarningAlt } from "@assets";
 import {
   ActionConfirmationPopup,
   AgentBuilderCopilotWizard,
@@ -161,6 +161,10 @@ export const CreateSimulation: FC = () => {
   const pendingActionRef = useRef<(() => Promise<void>) | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSimulation, setPreviewSimulation] = useState<SimulationPreviewType | null>(null);
+  // Agent Builder Copilot tab: whether the right-half chat pane is collapsed.
+  // Default expanded; collapsing hands the full canvas to the Basic Settings
+  // mirror on the left.
+  const [isCopilotCollapsed, setIsCopilotCollapsed] = useState(false);
 
   // Version management. `activeVersionId` is the version subsequent test
   // reports/previews run against; editing a version's isolated config is the
@@ -952,27 +956,64 @@ export const CreateSimulation: FC = () => {
           />,
         );
       case stepIds.agentBuilderCopilot: {
-        // Split the canvas into two equal halves. The left half is a live
-        // mirror of the Basic Settings tab: it renders the EXACT same
-        // CreateSimulationSubSection bound to the SAME shared `formMethods`
-        // instance, so it's the same form surfaced in two places. react-hook-
-        // form holds a single source of truth, so edits here and on the Basic
-        // Settings tab stay in sync both ways with no extra wiring.
+        // Split the canvas into two halves (collapsible — see the toggle
+        // below). The left half is a live mirror of the Basic Settings tab: it
+        // renders the EXACT same CreateSimulationSubSection bound to the SAME
+        // shared `formMethods` instance, so it's the same form surfaced in two
+        // places. react-hook-form holds a single source of truth, so edits here
+        // and on the Basic Settings tab stay in sync both ways with no extra
+        // wiring. The right-half Copilot can be collapsed to hand the whole
+        // canvas to the mirror; it re-opens from the floating button.
         const basicSettingsSection = getCreateSimulationSubSectionById(stepIds.basicSettings);
         return renderStep(
-          <div className="grid grid-cols-2 gap-6 h-full min-h-0">
-            {/* Left half — mirror of Basic Settings, independent vertical scroll. */}
+          <div
+            className={`grid ${
+              isCopilotCollapsed ? "grid-cols-1" : "grid-cols-2 gap-6"
+            } h-full min-h-0 relative`}
+          >
+            {/* Left half — mirror of Basic Settings, independent vertical scroll.
+                Spans the full canvas when the Copilot is collapsed. */}
             <div className="min-h-0 h-full overflow-y-auto custom-scrollbar">
               <CreateSimulationSubSection
                 items={basicSettingsSection?.fields ?? []}
                 formMethods={formMethods}
               />
             </div>
+            {/* Floating re-open control, shown only while the Copilot is
+                collapsed so the pane can always be brought back. */}
+            {isCopilotCollapsed && (
+              <button
+                type="button"
+                onClick={() => setIsCopilotCollapsed(false)}
+                title="Show Copilot"
+                aria-label="Show Copilot"
+                className="absolute top-2 right-2 z-10 flex items-center gap-1.5 h-[36px] px-3 rounded border border-border-light bg-white shadow-sm text-typography-900 hover:bg-secondary-50 transition-colors"
+              >
+                <DoubleArrowRight className="rotate-180" size={18} />
+                <span className="text-sm">Copilot</span>
+              </button>
+            )}
             {/* Right half — chat-style agent-builder wizard. Scrolls on its own
-                (the wizard pins its composer and scrolls the chat internally). */}
-            <div className="min-h-0 h-full overflow-hidden border-l border-border-light pl-6">
-              <AgentBuilderCopilotWizard formMethods={formMethods} />
-            </div>
+                (the wizard pins its composer and scrolls the chat internally).
+                Hidden when collapsed. */}
+            {!isCopilotCollapsed && (
+              <div className="min-h-0 h-full overflow-hidden border-l border-border-light pl-6 flex flex-col">
+                <div className="shrink-0 flex justify-end pb-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCopilotCollapsed(true)}
+                    title="Hide Copilot"
+                    aria-label="Hide Copilot"
+                    className="flex items-center justify-center h-[32px] w-[32px] rounded text-typography-700 hover:bg-secondary-50 transition-colors"
+                  >
+                    <DoubleArrowRight size={18} />
+                  </button>
+                </div>
+                <div className="flex-1 min-h-0">
+                  <AgentBuilderCopilotWizard formMethods={formMethods} />
+                </div>
+              </div>
+            )}
           </div>,
         );
       }
