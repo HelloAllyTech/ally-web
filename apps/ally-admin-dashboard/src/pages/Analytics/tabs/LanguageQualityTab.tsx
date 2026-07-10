@@ -305,6 +305,121 @@ export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
     },
   ];
 
+  // ---- ALL-LANGUAGES OVERVIEW (the tab's default view) ---------------------
+  // Aggregate per-language performance only. Choosing a language in the
+  // page-level picker opens that language's full diagnostic view; per-session
+  // evidence lives in Roleplay Session Logs.
+  if (!language) {
+    const overview = data?.languageOverview ?? [];
+    const fidelityClass = (v: number | null) =>
+      v === null
+        ? "text-gray-500"
+        : v < 85
+          ? "text-red-700 font-medium"
+          : v < 95
+            ? "text-orange-700 font-medium"
+            : "text-typography-900";
+    const werClass = (v: number | null) =>
+      v === null
+        ? "text-gray-500"
+        : v > 30
+          ? "text-red-700 font-medium"
+          : v > 20
+            ? "text-orange-700 font-medium"
+            : "text-typography-900";
+    return (
+      <div className="flex flex-col">
+        <p className="text-xs text-typography-500 mt-2">
+          Judge: {data?.judgeModel ?? "—"} · rubric {data?.judgePromptVersion ?? "—"}. How each
+          language is performing — pick a language above for its full diagnostic view (ladder,
+          dimensions, trends, experiments). Categorized weighted errors only — no 1–5 scores.
+        </p>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+          {kpis.map(kpi => (
+            <Tile key={kpi.label} className="analytics-kpi">
+              <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
+              <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
+            </Tile>
+          ))}
+        </div>
+
+        {/* Per-language performance table */}
+        <SubHeading>Language performance</SubHeading>
+        {!overview.length ? (
+          <p className="text-sm text-typography-700 mb-8">No judged sessions in this window.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-border-light bg-white">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-typography-700 border-b border-border-light">
+                  <th className="px-3 py-2">Language</th>
+                  <th className="px-3 py-2">Sessions</th>
+                  <th className="px-3 py-2">Turns</th>
+                  <th className="px-3 py-2">Weighted errors / 100 turns</th>
+                  <th className="px-3 py-2">Worst dimension</th>
+                  <th className="px-3 py-2">Script fidelity</th>
+                  <th className="px-3 py-2">Round-trip WER</th>
+                  <th className="px-3 py-2">Garbled input</th>
+                </tr>
+              </thead>
+              <tbody>
+                {overview.map(row => (
+                  <tr key={row.language} className="border-b border-border-light last:border-b-0">
+                    <td className="px-3 py-2 font-medium text-typography-900">{row.language}</td>
+                    <td className="px-3 py-2">{row.sessionsJudged}</td>
+                    <td className="px-3 py-2">{row.nTurns}</td>
+                    <td className="px-3 py-2 font-medium text-typography-900">
+                      {row.weightedRatePer100}
+                    </td>
+                    <td className="px-3 py-2">
+                      {row.worstDimension ? (
+                        <span className="rounded bg-neutral-100 px-2 py-0.5 text-xs">
+                          {DIMENSION_LABEL[row.worstDimension] ?? row.worstDimension} ·{" "}
+                          {row.worstDimensionRatePer100}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-typography-500">no errors</span>
+                      )}
+                    </td>
+                    <td className={`px-3 py-2 ${fidelityClass(row.scriptFidelityPct)}`}>
+                      {row.scriptFidelityPct === null ? "—" : `${row.scriptFidelityPct}%`}
+                    </td>
+                    <td className={`px-3 py-2 ${werClass(row.roundTripWerPct)}`}>
+                      {row.roundTripWerPct === null ? "—" : `${row.roundTripWerPct}%`}
+                    </td>
+                    <td className="px-3 py-2">{row.garbledInputPct}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Comparison chart */}
+        <SubHeading>Weighted error rate by language</SubHeading>
+        <div className="grid grid-cols-1 gap-6 mb-8">
+          <ChartCard
+            bare
+            title="Weighted error rate by language"
+            caption="Slice per language — never a single global score. Pick a language above to drill in."
+            loading={isFetching}
+            error={isError}
+            onRetry={refetch}
+            empty={!languageBars.length}
+          >
+            <SimpleBarChart
+              data={languageBars}
+              options={barOpts({ leftTitle: "Weighted errors / 100 turns" })}
+            />
+          </ChartCard>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- SINGLE-LANGUAGE DIAGNOSTIC VIEW -------------------------------------
   return (
     <div className="flex flex-col">
       <p className="text-xs text-typography-500 mt-2">
@@ -547,24 +662,6 @@ export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
               </div>
             </div>
           )}
-      </div>
-
-      {/* PER LANGUAGE (NFR4) */}
-      <SubHeading>Per language</SubHeading>
-      <div className="grid grid-cols-1 gap-6">
-        <ChartCard
-          bare
-          title="Weighted error rate by language"
-          caption="Slice per language — never a single global score."
-          loading={isFetching}
-          error={isError}
-          empty={!languageBars.length}
-        >
-          <SimpleBarChart
-            data={languageBars}
-            options={barOpts({ leftTitle: "Weighted errors / 100 turns" })}
-          />
-        </ChartCard>
       </div>
 
       {/* CATEGORIES + ATTRIBUTION */}

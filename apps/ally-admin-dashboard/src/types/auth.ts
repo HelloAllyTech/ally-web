@@ -561,6 +561,19 @@ export interface LanguageRateByLanguage {
   weightedRatePer100: number;
 }
 
+/** One row of the per-language performance overview (all-languages view). */
+export interface LanguageOverviewRow {
+  language: string;
+  sessionsJudged: number;
+  nTurns: number;
+  weightedRatePer100: number;
+  scriptFidelityPct: number | null;
+  roundTripWerPct: number | null;
+  garbledInputPct: number;
+  worstDimension: string | null;
+  worstDimensionRatePer100: number;
+}
+
 export interface LanguageCategoryCount {
   dimension: string;
   category: string;
@@ -631,6 +644,7 @@ export interface LanguageQualityResponse {
   totalWeightedRatePer100: number;
   errorRateByDimension: LanguageDimensionErrorRate[];
   rateByLanguage: LanguageRateByLanguage[];
+  languageOverview: LanguageOverviewRow[];
   categoryBreakdown: LanguageCategoryCount[];
   isolationBasisBreakdown: LanguageIsolationBasisCount[];
   errorLog: LanguageErrorLogRow[];
