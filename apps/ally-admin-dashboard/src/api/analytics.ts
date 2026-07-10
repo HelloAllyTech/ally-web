@@ -6,6 +6,7 @@ import {
   AnalyticsRange,
   ConversationDriftResponse,
   DriftBackfillJob,
+  LanguageEvalReference,
   LanguageQualityResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
@@ -160,6 +161,17 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    // Pin the reference experiment all language-quality deltas read against.
+    setLanguageReference: builder.mutation<
+      LanguageEvalReference | null,
+      { name?: string; filters?: Record<string, string | undefined> }
+    >({
+      query: body => ({
+        url: ApiEndpoints.ANALYTICS.LANGUAGE_QUALITY_REFERENCE,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -172,6 +184,7 @@ export const {
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
   useGetLanguageQualityQuery,
+  useSetLanguageReferenceMutation,
   useGetTokenConsumptionQuery,
   useGetScribeOverviewQuery,
   useGetScribeSummaryFailuresQuery,

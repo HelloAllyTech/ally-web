@@ -6,8 +6,8 @@ import { Link } from "react-router-dom";
 import "@carbon/charts/styles.css";
 import "../analytics-carbon.scss";
 
-import { CarbonDropdown as Dropdown, Tile } from "@ally-ui-mono/ui-shared";
-import { useGetLanguageQualityQuery } from "@api";
+import { Button, CarbonDropdown as Dropdown, Tile } from "@ally-ui-mono/ui-shared";
+import { useGetLanguageQualityQuery, useSetLanguageReferenceMutation } from "@api";
 import { ROUTES } from "@constants";
 import { AnalyticsRange, LanguageRateByExperiment } from "@types";
 
@@ -97,6 +97,26 @@ export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
   const [experimentDim, setExperimentDim] = useState<(typeof EXPERIMENT_DIMS)[number]>(
     EXPERIMENT_DIMS[0],
   );
+  const [setReference, { isLoading: pinning }] = useSetLanguageReferenceMutation();
+
+  // FR13: pin the current view (its language slice) as THE reference all
+  // deltas are read against.
+  const handlePinReference = async () => {
+    try {
+      await setReference({
+        filters: language ? { language } : {},
+        name: language ? `reference — ${language}` : "reference — all sessions",
+      }).unwrap();
+      refetch();
+    } catch {
+      /* button re-enables; error surfaces on next fetch */
+    }
+  };
+
+  const deltaFor = (dimension: string): number | null => {
+    const d = (data?.deltaByDimension ?? []).find(x => x.dimension === dimension);
+    return d ? d.delta : null;
+  };
 
   // Per-layer rate = Σ of its dimensions' rates (each already correctly
   // denominated — comprehension/adequacy on clean-input turns only).
@@ -237,12 +257,22 @@ export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
       step: "4",
       layer: "Speech realization — naturalness · prosody · affect · accent",
       measuredBy: "Human listening (session recordings)",
-      value: (
-        <UnmeasuredTag>
-          masked — intelligibility gate unmeasured · manual listening only
-        </UnmeasuredTag>
-      ),
-      masked: true,
+      // Masked while the gate is unmeasured or failing (>30%); with a passing
+      // gate these dims are judgeable — by ear, since the rater track is
+      // descoped to manual listening.
+      value:
+        roundTripWer === null ? (
+          <UnmeasuredTag>
+            masked — intelligibility gate unmeasured · manual listening only
+          </UnmeasuredTag>
+        ) : roundTripWer > 30 ? (
+          <UnmeasuredTag>
+            masked — gate FAILING ({roundTripWer}% &gt; 30%) · fix intelligibility first
+          </UnmeasuredTag>
+        ) : (
+          <UnmeasuredTag>gate passing — manual listening only</UnmeasuredTag>
+        ),
+      masked: roundTripWer === null || roundTripWer > 30,
     },
     {
       step: "GATE",
@@ -282,6 +312,18 @@ export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
         {data?.turnsGarbled ?? 0} garbled-input turns excluded from understanding/adequacy rates.
         Categorized weighted errors only — no 1–5 scores.
       </p>
+
+      {/* FR13: pinned reference — deltas below are read against it */}
+      <div className="flex flex-wrap items-center gap-2 mt-2">
+        {data?.reference && (
+          <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-900">
+            Reference: {data.reference.name}
+          </span>
+        )}
+        <Button kind="tertiary" size="sm" disabled={pinning} onClick={handlePinReference}>
+          Pin current view as reference
+        </Button>
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
@@ -392,6 +434,33 @@ export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
             })}
           />
         </ChartCard>
+        {/* FR16: improvement / regression / stale vs the pinned reference */}
+        {data?.reference && (data?.deltaByDimension?.length ?? 0) > 0 && (
+          <div className="flex flex-wrap items-center gap-2 text-xs -mt-2">
+            <span className="text-typography-500">Δ vs reference:</span>
+            {(data?.errorRateByDimension ?? []).map(d => {
+              const delta = deltaFor(d.dimension);
+              if (delta === null) return null;
+              const cls =
+                delta > 0
+                  ? "bg-red-100 text-red-900"
+                  : delta < 0
+                    ? "bg-green-100 text-green-900"
+                    : "bg-neutral-100 text-typography-700";
+              const sign = delta > 0 ? "+" : "";
+              return (
+                <span
+                  key={d.dimension}
+                  className={`rounded px-2 py-0.5 font-medium ${cls}`}
+                  title="current − reference, weighted errors / 100 turns; valid only within one judge version"
+                >
+                  {DIMENSION_LABEL[d.dimension] ?? d.dimension}: {sign}
+                  {delta}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* FR10 — PER-LAYER TREND (isolation check) */}
@@ -445,6 +514,39 @@ export const LanguageQualityTab: FC<Props> = ({ range, language }) => {
             options={barOpts({ leftTitle: "Weighted errors / 100 turns" })}
           />
         </ChartCard>
+        {/* FR18: changed_from_prev — which config element each scenario
+            version changed vs its parent (the one-variable attribution). */}
+        {experimentDim.id === "scenarioVersion" &&
+          experimentRows.some(r => r.changedFromPrev?.length) && (
+            <div className="rounded-lg border border-border-light bg-white p-3 -mt-2 text-xs">
+              <p className="text-typography-500 mb-2">
+                Changed vs parent version (&gt;1 element = not a valid one-variable experiment):
+              </p>
+              <div className="flex flex-col gap-1">
+                {experimentRows.map(r =>
+                  r.changedFromPrev?.length ? (
+                    <div key={r.value ?? "unknown"} className="flex flex-wrap gap-1 items-center">
+                      <span className="font-mono text-typography-700">
+                        {(r.value ?? "unknown").slice(0, 8)}…
+                      </span>
+                      {r.changedFromPrev.map(el => (
+                        <span
+                          key={el}
+                          className={`rounded px-1.5 py-0.5 ${
+                            (r.changedFromPrev?.length ?? 0) > 1
+                              ? "bg-orange-100 text-orange-900"
+                              : "bg-neutral-100 text-typography-700"
+                          }`}
+                        >
+                          {el}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null,
+                )}
+              </div>
+            </div>
+          )}
       </div>
 
       {/* PER LANGUAGE (NFR4) */}

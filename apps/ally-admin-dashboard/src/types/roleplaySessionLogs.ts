@@ -238,6 +238,10 @@ export interface RoleplaySessionLanguageQuality {
   turnsJudged: number;
   turnsGarbled: number;
   errorCount: number;
+  /** % of turns rendered cleanly in the target script; null = unmeasured. */
+  scriptFidelityPct: number | null;
+  /** Round-trip WER/CER % over a sample of this session's turns; null = unmeasured. */
+  roundTripWerPct: number | null;
   annotations: RoleplaySessionLanguageAnnotation[];
 }
 

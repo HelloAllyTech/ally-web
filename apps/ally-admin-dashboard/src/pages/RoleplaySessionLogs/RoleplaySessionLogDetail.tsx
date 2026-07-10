@@ -399,6 +399,22 @@ export const RoleplaySessionLogDetail: FC = () => {
             />
             <Field label="Errors found" value={formatNumber(data.languageQuality.errorCount)} />
             <Field
+              label="Script fidelity"
+              value={
+                data.languageQuality.scriptFidelityPct === null
+                  ? "not yet measured"
+                  : `${data.languageQuality.scriptFidelityPct}%`
+              }
+            />
+            <Field
+              label="Round-trip WER"
+              value={
+                data.languageQuality.roundTripWerPct === null
+                  ? "not yet measured"
+                  : `${data.languageQuality.roundTripWerPct}%`
+              }
+            />
+            <Field
               label="Weighted errors / 100 turns"
               value={
                 data.languageQuality.turnsJudged > 0

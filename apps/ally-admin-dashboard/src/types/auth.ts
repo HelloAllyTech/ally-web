@@ -592,6 +592,21 @@ export interface LanguageRateByExperiment {
   sessionsJudged: number;
   nTurns: number;
   weightedRatePer100: number;
+  /** changed_from_prev (scenario versions only): config elements that differ
+   *  from the parent version. >1 = not a one-variable experiment. */
+  changedFromPrev?: string[];
+}
+
+export interface LanguageEvalReference {
+  name: string;
+  filters: Record<string, string | null | undefined>;
+  pinnedAt: string;
+}
+
+export interface LanguageDimensionDelta {
+  dimension: string;
+  delta: number;
+  referenceRatePer100: number;
 }
 
 export interface LanguageLayerTrendPoint {
@@ -624,4 +639,6 @@ export interface LanguageQualityResponse {
   rateByScenarioVersion: LanguageRateByExperiment[];
   rateByPromptVersion: LanguageRateByExperiment[];
   rateByModel: LanguageRateByExperiment[];
+  reference: LanguageEvalReference | null;
+  deltaByDimension: LanguageDimensionDelta[];
 }
