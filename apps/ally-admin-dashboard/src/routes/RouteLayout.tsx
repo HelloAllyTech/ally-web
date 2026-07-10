@@ -23,6 +23,7 @@ import {
   UserBadges,
   TranslationManagement,
   TooltipManagement,
+  BlogManagement,
   Settings,
   AgentTestCases,
   Competencies,
@@ -239,6 +240,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.VIEW_TOOLTIPS]}>
               <TooltipManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BLOG}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_BLOGS]}>
+              <BlogManagement />
             </PrivateLayout>
           }
         />

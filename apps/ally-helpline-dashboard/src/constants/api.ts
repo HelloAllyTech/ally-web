@@ -235,6 +235,11 @@ export const ApiEndpoints = {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
   },
+  BLOG: {
+    // Public (ungated) blog reads for the /blog pages.
+    GET_PUBLIC_BLOGS: "/v1/blog/public",
+    GET_PUBLIC_BLOG_BY_SLUG: (slug: string) => `/v1/blog/public/${slug}`,
+  },
   TENANT: {
     // Own-tenant endpoints — scoped server-side to the caller's JWT tenant.
     // Never pass a tenantId; the backend resolves it from the token.

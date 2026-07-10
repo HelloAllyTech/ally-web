@@ -22,6 +22,8 @@ export const ROUTES = {
   IMPERSONATE: "/impersonate",
   TERMS: "/terms",
   PRIVACY: "/privacy",
+  BLOG: "/blog",
+  BLOG_POST: "/blog/:slug",
 
   // Private Routes
   HOME: "/",

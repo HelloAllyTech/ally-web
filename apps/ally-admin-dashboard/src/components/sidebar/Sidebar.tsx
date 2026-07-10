@@ -12,6 +12,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import {
   BarChart3,
   Close,
+  Document,
   Flag,
   Info,
   Languages,
@@ -183,6 +184,8 @@ export const Sidebar: React.FC = () => {
         return <Languages size={20} />;
       case SIDEBAR_ITEMS.TOOLTIPS:
         return <Info size={20} />;
+      case SIDEBAR_ITEMS.BLOG:
+        return <Document size={20} />;
       case SIDEBAR_ITEMS.ANALYTICS:
         return <BarChart3 size={20} />;
       case SIDEBAR_ITEMS.AGENT_TEST_CASES:
@@ -225,6 +228,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_TRANSLATIONS);
       case ROUTES.MANAGE_TOOLTIPS:
         return location.pathname.includes(ROUTES.MANAGE_TOOLTIPS);
+      case ROUTES.BLOG:
+        return location.pathname.includes(ROUTES.BLOG);
       case ROUTES.ANALYTICS:
         return location.pathname.includes(ROUTES.ANALYTICS);
       case ROUTES.ROLEPLAY_SESSION_LOGS:

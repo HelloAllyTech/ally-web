@@ -27,3 +27,5 @@ export * from "./achievements-view-all/AchievementsViewAll";
 export * from "./impersonate/impersonate";
 export * from "./legal/Terms";
 export * from "./legal/Privacy";
+export * from "./blog/Blog";
+export * from "./blog/BlogPost";

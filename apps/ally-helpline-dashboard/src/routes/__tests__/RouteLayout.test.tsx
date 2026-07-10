@@ -12,10 +12,14 @@ vi.mock("@pages", () => ({
   Learn: () => <div data-testid="learn-page">Learn Page</div>,
   Scenario: () => <div data-testid="scenario-page">Scenario Page</div>,
   CaseTrackDetails: () => <div data-testid="case-track-details-page">Case Track Details Page</div>,
+  TrackOverview: () => <div data-testid="track-overview-page">Track Overview Page</div>,
+  TrackPlayer: () => <div data-testid="track-player-page">Track Player Page</div>,
   SuspendedUser: () => <div data-testid="suspended-user-page">Suspended User Page</div>,
   ImpersonateHandler: () => <div data-testid="impersonate-page">Impersonate Page</div>,
   Terms: () => <div data-testid="terms-page">Terms Page</div>,
   Privacy: () => <div data-testid="privacy-page">Privacy Page</div>,
+  Blog: () => <div data-testid="blog-page">Blog Page</div>,
+  BlogPost: () => <div data-testid="blog-post-page">Blog Post Page</div>,
 }));
 
 // Mock useAnalytics to avoid context error in PageviewTracker
@@ -60,6 +64,8 @@ vi.mock("@constants", () => ({
     IMPERSONATE: "/impersonate",
     TERMS: "/terms",
     PRIVACY: "/privacy",
+    BLOG: "/blog",
+    BLOG_POST: "/blog/:slug",
   },
 }));
 

@@ -14,6 +14,8 @@ import {
   ImpersonateHandler,
   Terms,
   Privacy,
+  Blog,
+  BlogPost,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -41,6 +43,9 @@ const RouteLayout = () => {
           {/* Legal pages — public, accessible whether or not signed in */}
           <Route path={ROUTES.TERMS} element={<Terms />} />
           <Route path={ROUTES.PRIVACY} element={<Privacy />} />
+          {/* Blog — public, accessible whether or not signed in */}
+          <Route path={ROUTES.BLOG} element={<Blog />} />
+          <Route path={ROUTES.BLOG_POST} element={<BlogPost />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}

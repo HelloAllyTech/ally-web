@@ -184,6 +184,16 @@ export const ApiEndpoints = {
     CREATE_TOOLTIP: "/v1/tooltips",
     UPDATE_TOOLTIP: (id: string) => `/v1/tooltips/${id}`,
   },
+  BLOG: {
+    GET_BLOGS: "/v1/blog",
+    GET_BLOG: (id: string) => `/v1/blog/${id}`,
+    CREATE_BLOG: "/v1/blog",
+    UPDATE_BLOG: (id: string) => `/v1/blog/${id}`,
+    DELETE_BLOG: (id: string) => `/v1/blog/${id}`,
+    PUBLISH_BLOG: (id: string) => `/v1/blog/${id}/publish`,
+    UNPUBLISH_BLOG: (id: string) => `/v1/blog/${id}/unpublish`,
+    UPLOAD_IMAGE_URL: "/v1/blog/upload-url",
+  },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
     GET_ROLES: "/v1/authorization/roles",
@@ -281,6 +291,7 @@ export const ROUTES = {
   ROLEPLAY_STUDIO_NEW: "/roleplay-studio/new",
   ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
   ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
+  BLOG: "/blog",
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -374,6 +385,7 @@ export const TAG_TYPES = {
   ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
   TRACKS_V2: "tracksV2",
+  BLOGS: "blogs",
 };
 
 /**

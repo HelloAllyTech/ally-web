@@ -22,6 +22,9 @@ export enum Permissions {
   EDIT_ROLEPLAY_COPILOT = "edit:roleplay-copilot",
   VIEW_ROLEPLAY_REHEARSALS = "view:roleplay-rehearsals",
   EDIT_ROLEPLAY_REHEARSALS = "edit:roleplay-rehearsals",
+  VIEW_BLOGS = "view:blogs",
+  EDIT_BLOG = "edit:blog",
+  DELETE_BLOG = "delete:blog",
 }
 
 export const SIDEBAR_ITEMS = {
@@ -41,6 +44,7 @@ export const SIDEBAR_ITEMS = {
   COMPETENCIES: "competencies",
   ROLEPLAY_SESSION_LOGS: "roleplay-session-logs",
   ROLEPLAY_STUDIO: "roleplay-studio",
+  BLOG: "blog",
   SETTINGS: "settings",
 };
 
