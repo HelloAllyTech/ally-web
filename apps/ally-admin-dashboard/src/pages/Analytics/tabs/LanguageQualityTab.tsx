@@ -408,9 +408,8 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
           </div>
         )}
 
-        {/* Comparison chart */}
-        <SubHeading>Weighted error rate by language</SubHeading>
-        <div className="grid grid-cols-1 gap-6 mb-8">
+        {/* Comparison chart (the ChartCard carries its own title) */}
+        <div className="grid grid-cols-1 gap-6 mb-8 mt-6">
           <ChartCard
             bare
             title="Weighted error rate by language"
