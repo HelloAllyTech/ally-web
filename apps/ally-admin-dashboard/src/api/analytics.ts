@@ -6,6 +6,8 @@ import {
   AnalyticsRange,
   ConversationDriftResponse,
   DriftBackfillJob,
+  LanguageEvalReference,
+  LanguageQualityResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
   StartLatencyResponse,
@@ -144,6 +146,32 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    // Language-quality eval dashboard: categorized weighted error rates
+    // aggregated from the same per-session rows shown in session logs.
+    getLanguageQuality: builder.query<
+      LanguageQualityResponse,
+      { range?: AnalyticsRange; language?: string }
+    >({
+      query: ({ range, language } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.LANGUAGE_QUALITY,
+        method: HttpMethod.GET,
+        params: {
+          ...(range ? { range } : {}),
+          ...(language ? { language } : {}),
+        },
+      }),
+    }),
+    // Pin the reference experiment all language-quality deltas read against.
+    setLanguageReference: builder.mutation<
+      LanguageEvalReference | null,
+      { name?: string; filters?: Record<string, string | undefined> }
+    >({
+      query: body => ({
+        url: ApiEndpoints.ANALYTICS.LANGUAGE_QUALITY_REFERENCE,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -155,6 +183,8 @@ export const {
   useGetConversationDriftQuery,
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
+  useGetLanguageQualityQuery,
+  useSetLanguageReferenceMutation,
   useGetTokenConsumptionQuery,
   useGetScribeOverviewQuery,
   useGetScribeSummaryFailuresQuery,

@@ -86,6 +86,23 @@ const SectionCard: FC<{ children: ReactNode }> = ({ children }) => (
   </div>
 );
 
+/** Severity chip classes for language-quality annotations. */
+const LANGUAGE_SEVERITY_CLASS: Record<string, string> = {
+  minor: "bg-yellow-100 text-yellow-900",
+  major: "bg-orange-100 text-orange-900",
+  critical: "bg-red-100 text-red-900",
+};
+
+const SEVERITY_WEIGHT: Record<string, number> = { minor: 1, major: 5, critical: 10 };
+
+/** Coherence chip classes for drift-judged turns (degrading and worse). */
+const COHERENCE_CLASS: Record<string, string> = {
+  minor_disfluency: "bg-yellow-100 text-yellow-900",
+  degrading: "bg-orange-100 text-orange-900",
+  mostly_incoherent: "bg-red-100 text-red-900",
+  gibberish: "bg-red-100 text-red-900",
+};
+
 /** Score-to-colour scale, matching the scenario-report metric bars. */
 const scoreColor = (value: number): string => {
   if (value < 33) return "#FE6F64";
@@ -365,6 +382,165 @@ export const RoleplaySessionLogDetail: FC = () => {
         </section>
       )}
 
+      {/* Language quality (LLM-judge error annotations — latest judge run) */}
+      {data.languageQuality && (
+        <section className="mt-6">
+          <h2 className="text-lg font-secondary text-typography-900 mb-2">Language quality</h2>
+          <p className="text-xs text-typography-500 mb-2">
+            Judge: {data.languageQuality.judgeModel} · rubric{" "}
+            {data.languageQuality.judgePromptVersion}. Same rows the Analytics Language tab
+            aggregates — categorized errors only, no scores.
+          </p>
+          <SectionCard>
+            <Field label="Turns judged" value={formatNumber(data.languageQuality.turnsJudged)} />
+            <Field
+              label="Garbled-input turns"
+              value={formatNumber(data.languageQuality.turnsGarbled)}
+            />
+            <Field label="Errors found" value={formatNumber(data.languageQuality.errorCount)} />
+            <Field
+              label="Script fidelity"
+              value={
+                data.languageQuality.scriptFidelityPct === null
+                  ? "not yet measured"
+                  : `${data.languageQuality.scriptFidelityPct}%`
+              }
+            />
+            <Field
+              label="Round-trip WER"
+              value={
+                data.languageQuality.roundTripWerPct === null
+                  ? "not yet measured"
+                  : `${data.languageQuality.roundTripWerPct}%`
+              }
+            />
+            <Field
+              label="Weighted errors / 100 turns"
+              value={
+                data.languageQuality.turnsJudged > 0
+                  ? (
+                      (data.languageQuality.annotations
+                        .filter(a => !a.conditionedOut)
+                        .reduce((n, a) => n + (SEVERITY_WEIGHT[a.severity] ?? 1), 0) /
+                        data.languageQuality.turnsJudged) *
+                      100
+                    ).toFixed(1)
+                  : "—"
+              }
+            />
+          </SectionCard>
+          {/* Per-dimension breakdown + prompt-vs-model verdict (this session) */}
+          {data.languageQuality.annotations.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              {Object.entries(
+                data.languageQuality.annotations.reduce<Record<string, number>>((acc, a) => {
+                  const key = `${a.layer} · ${a.dimension}`;
+                  acc[key] = (acc[key] ?? 0) + 1;
+                  return acc;
+                }, {}),
+              ).map(([key, count]) => (
+                <span key={key} className="rounded bg-neutral-100 px-2 py-0.5 text-typography-700">
+                  {key}: {count}
+                </span>
+              ))}
+              {(() => {
+                const configGap = data.languageQuality.annotations.filter(
+                  a => a.isolationBasis === "persona_unspecified",
+                ).length;
+                const modelFault = data.languageQuality.annotations.filter(
+                  a => a.isolationBasis === "persona_specified",
+                ).length;
+                if (configGap === 0 && modelFault === 0) return null;
+                return (
+                  <span className="rounded bg-blue-50 px-2 py-0.5 text-blue-900">
+                    Verdict:{" "}
+                    {configGap > 0 &&
+                      `${configGap} from config gaps (populate language style fields)`}
+                    {configGap > 0 && modelFault > 0 && " · "}
+                    {modelFault > 0 && `${modelFault} instructed-but-ignored (model)`}
+                  </span>
+                );
+              })()}
+            </div>
+          )}
+          {data.languageQuality.annotations.length > 0 && (
+            <div className="mt-3 flex flex-col gap-2">
+              {data.languageQuality.annotations.map((a, i) => (
+                <div
+                  key={`${a.turnIndex}-${a.dimension}-${a.category}-${i}`}
+                  className="rounded-lg border border-border-light bg-white p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-medium text-typography-900">Turn {a.turnIndex}</span>
+                    <span
+                      className={`rounded px-2 py-0.5 font-medium ${
+                        LANGUAGE_SEVERITY_CLASS[a.severity] ?? "bg-gray-100 text-gray-900"
+                      }`}
+                    >
+                      {a.severity}
+                    </span>
+                    <span className="rounded bg-neutral-100 px-2 py-0.5 text-typography-700">
+                      {a.dimension} · {a.category}
+                    </span>
+                    {a.isolationBasis && (
+                      <span className="text-typography-500">{a.isolationBasis}</span>
+                    )}
+                    {a.conditionedOut && (
+                      <span className="text-typography-500">(conditioned out — garbled input)</span>
+                    )}
+                  </div>
+                  {a.evidenceQuote && (
+                    <p className="mt-1 text-sm text-typography-900 whitespace-pre-wrap">
+                      “{a.evidenceQuote}”
+                    </p>
+                  )}
+                  {a.reasoning && <p className="mt-1 text-xs text-typography-500">{a.reasoning}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Conversation drift (LLM-judge, latest run) — session view of the Drift tab */}
+      {data.drift && (
+        <section className="mt-6">
+          <h2 className="text-lg font-secondary text-typography-900 mb-2">Conversation drift</h2>
+          <p className="text-xs text-typography-500 mb-2">
+            Judge: {data.drift.judgeModel} · rubric {data.drift.judgePromptVersion}. Same rows the
+            Analytics Drift tab aggregates.
+          </p>
+          <SectionCard>
+            <Field
+              label="Session drifted"
+              value={
+                data.drift.sessionDrifted === null ? "—" : data.drift.sessionDrifted ? "Yes" : "No"
+              }
+            />
+            <Field
+              label="First drift turn"
+              value={data.drift.firstDriftTurn === null ? "—" : `Turn ${data.drift.firstDriftTurn}`}
+            />
+            <Field
+              label="Garbled counselor inputs"
+              value={formatNumber(
+                data.drift.turns.filter(
+                  t => t.counselorUtteranceGarbled && t.counselorUtteranceGarbled !== "none",
+                ).length,
+              )}
+            />
+            <Field
+              label="Turns with failure modes"
+              value={formatNumber(
+                data.drift.turns.filter(
+                  t => t.aiReplyFailureMode && t.aiReplyFailureMode !== "none",
+                ).length,
+              )}
+            />
+          </SectionCard>
+        </section>
+      )}
+
       {/* Recording & learner feedback */}
       {(data.recording || data.feedback) && (
         <section className="mt-6">
@@ -489,6 +665,14 @@ export const RoleplaySessionLogDetail: FC = () => {
           <div className="flex flex-col gap-3">
             {data.transcript.map(turn => {
               const isUser = turn.senderId === data.counselorId;
+              // Language-quality annotations anchored to this AI message
+              // (matched by message id — resolved server-side, judge ordering).
+              const annotations = (data.languageQuality?.annotations ?? []).filter(
+                a => a.messageId === turn.id,
+              );
+              // Drift judgment for this AI message: chip only when noteworthy
+              // (coherence below fully_coherent, a failure mode, or garbled input).
+              const driftTurn = (data.drift?.turns ?? []).find(t => t.messageId === turn.id);
               return (
                 <div
                   key={turn.id}
@@ -501,6 +685,44 @@ export const RoleplaySessionLogDetail: FC = () => {
                   <div className="flex items-center gap-2 text-xs text-typography-700 mb-1">
                     <span className="font-medium">{isUser ? "User" : "Ally"}</span>
                     {turn.startSeconds !== null && <span>{formatOffset(turn.startSeconds)}</span>}
+                    {annotations.map((a, i) => (
+                      <span
+                        key={`${a.dimension}-${a.category}-${i}`}
+                        title={`${a.dimension} · ${a.category}${a.reasoning ? ` — ${a.reasoning}` : ""}`}
+                        className={`rounded px-1.5 py-0.5 font-medium ${
+                          LANGUAGE_SEVERITY_CLASS[a.severity] ?? "bg-gray-100 text-gray-900"
+                        }`}
+                      >
+                        {a.category}
+                      </span>
+                    ))}
+                    {driftTurn?.coherence && driftTurn.coherence !== "fully_coherent" && (
+                      <span
+                        title={`drift · coherence: ${driftTurn.coherence}${driftTurn.reasoning ? ` — ${driftTurn.reasoning}` : ""}`}
+                        className={`rounded px-1.5 py-0.5 font-medium ${
+                          COHERENCE_CLASS[driftTurn.coherence] ?? "bg-gray-100 text-gray-900"
+                        }`}
+                      >
+                        {driftTurn.coherence.replace(/_/g, " ")}
+                      </span>
+                    )}
+                    {driftTurn?.aiReplyFailureMode && driftTurn.aiReplyFailureMode !== "none" && (
+                      <span
+                        title={`drift · failure mode${driftTurn.rootAttribution ? ` — root: ${driftTurn.rootAttribution}` : ""}`}
+                        className="rounded px-1.5 py-0.5 font-medium bg-purple-100 text-purple-900"
+                      >
+                        {driftTurn.aiReplyFailureMode.replace(/_/g, " ")}
+                      </span>
+                    )}
+                    {driftTurn?.counselorUtteranceGarbled &&
+                      driftTurn.counselorUtteranceGarbled !== "none" && (
+                        <span
+                          title={`STT garble on the preceding counselor input${driftTurn.sttErrorType && driftTurn.sttErrorType !== "none" ? ` — ${driftTurn.sttErrorType}` : ""}`}
+                          className="rounded px-1.5 py-0.5 font-medium bg-gray-200 text-gray-700"
+                        >
+                          input garbled ({driftTurn.counselorUtteranceGarbled})
+                        </span>
+                      )}
                   </div>
                   <div className="text-sm whitespace-pre-wrap">{turn.content}</div>
                 </div>
