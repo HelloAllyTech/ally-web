@@ -17,6 +17,7 @@ import {
 import { useGetScenarioLanguagesQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
+import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { ScribeTab } from "./tabs/ScribeTab";
@@ -66,6 +67,12 @@ const TABS: TabDef[] = [
     label: "Drift",
     uses: { language: true },
     render: f => <ConversationDrift range={f.range} language={f.language} />,
+  },
+  {
+    id: "language",
+    label: "Language",
+    uses: { language: true },
+    render: f => <LanguageQualityTab range={f.range} language={f.language} />,
   },
   {
     id: "tokens",

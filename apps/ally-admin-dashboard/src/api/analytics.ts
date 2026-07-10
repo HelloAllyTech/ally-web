@@ -6,6 +6,7 @@ import {
   AnalyticsRange,
   ConversationDriftResponse,
   DriftBackfillJob,
+  LanguageQualityResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
   StartLatencyResponse,
@@ -144,6 +145,21 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    // Language-quality eval dashboard: categorized weighted error rates
+    // aggregated from the same per-session rows shown in session logs.
+    getLanguageQuality: builder.query<
+      LanguageQualityResponse,
+      { range?: AnalyticsRange; language?: string }
+    >({
+      query: ({ range, language } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.LANGUAGE_QUALITY,
+        method: HttpMethod.GET,
+        params: {
+          ...(range ? { range } : {}),
+          ...(language ? { language } : {}),
+        },
+      }),
+    }),
   }),
 });
 
@@ -155,6 +171,7 @@ export const {
   useGetConversationDriftQuery,
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
+  useGetLanguageQualityQuery,
   useGetTokenConsumptionQuery,
   useGetScribeOverviewQuery,
   useGetScribeSummaryFailuresQuery,

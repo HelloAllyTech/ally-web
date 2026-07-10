@@ -196,6 +196,7 @@ export const ApiEndpoints = {
     START_LATENCY: "/v1/analytics/start-latency",
     CONVERSATION_DRIFT: "/v1/analytics/conversation-drift",
     CONVERSATION_DRIFT_BACKFILL: "/v1/analytics/conversation-drift/backfill",
+    LANGUAGE_QUALITY: "/v1/analytics/language-quality",
     TOKEN_CONSUMPTION: "/v1/analytics/token-consumption",
     SCRIBE_OVERVIEW: "/v1/analytics/scribe/overview",
     SCRIBE_SUMMARY_FAILURES: "/v1/analytics/scribe/summary-failures",

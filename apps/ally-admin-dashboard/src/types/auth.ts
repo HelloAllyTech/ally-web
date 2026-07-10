@@ -536,3 +536,92 @@ export interface GetProfileUrlResponse {
 export interface profileUrlRequest {
   profileImageUrl: string;
 }
+
+// ---------------------------------------------------------------------------
+// Language-quality evaluation — LanguageQualityResponseDto from
+// GET /v1/analytics/language-quality. Categorized, severity-weighted error
+// rates only; there is deliberately NO scalar quality score anywhere.
+// ---------------------------------------------------------------------------
+
+export interface LanguageDimensionErrorRate {
+  dimension: string;
+  layer: string; // comprehension | content | appropriateness
+  nTurns: number;
+  minorCount: number;
+  majorCount: number;
+  criticalCount: number;
+  weightedRatePer100: number;
+  dominantCategory: string | null;
+}
+
+export interface LanguageRateByLanguage {
+  language: string;
+  sessionsJudged: number;
+  nTurns: number;
+  weightedRatePer100: number;
+}
+
+export interface LanguageCategoryCount {
+  dimension: string;
+  category: string;
+  count: number;
+  weighted: number;
+}
+
+export interface LanguageIsolationBasisCount {
+  basis: string;
+  count: number;
+}
+
+export interface LanguageErrorLogRow {
+  scenarioSessionId: string;
+  turnIndex: number;
+  language: string | null;
+  dimension: string;
+  category: string;
+  severity: string;
+  isolationBasis: string | null;
+  evidenceQuote: string | null;
+  reasoning: string | null;
+  aiText: string | null;
+  occurredAt: string | null;
+}
+
+export interface LanguageRateByExperiment {
+  value: string | null;
+  sessionsJudged: number;
+  nTurns: number;
+  weightedRatePer100: number;
+}
+
+export interface LanguageLayerTrendPoint {
+  bucket: string;
+  layer: string;
+  nTurns: number;
+  weightedRatePer100: number;
+}
+
+export interface LanguageObjectiveMetrics {
+  /** null = not yet measured (Phase 2) — render as masked, never as 0. */
+  scriptFidelityPct: number | null;
+  roundTripWerPct: number | null;
+}
+
+export interface LanguageQualityResponse {
+  judgeModel: string | null;
+  judgePromptVersion: string | null;
+  sessionsJudged: number;
+  turnsJudged: number;
+  turnsGarbled: number;
+  totalWeightedRatePer100: number;
+  errorRateByDimension: LanguageDimensionErrorRate[];
+  rateByLanguage: LanguageRateByLanguage[];
+  categoryBreakdown: LanguageCategoryCount[];
+  isolationBasisBreakdown: LanguageIsolationBasisCount[];
+  errorLog: LanguageErrorLogRow[];
+  objectiveMetrics: LanguageObjectiveMetrics;
+  layerTrend: LanguageLayerTrendPoint[];
+  rateByScenarioVersion: LanguageRateByExperiment[];
+  rateByPromptVersion: LanguageRateByExperiment[];
+  rateByModel: LanguageRateByExperiment[];
+}

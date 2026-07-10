@@ -177,6 +177,10 @@ export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   lifecycle: RoleplaySessionLifecycleEvent[];
   suspectedFreeze: boolean;
   transcript: RoleplaySessionLogMessage[];
+  /** Language-quality judge result (latest run); null when not judged yet. */
+  languageQuality: RoleplaySessionLanguageQuality | null;
+  /** Conversation-drift judgment (latest run); null when not drift-judged. */
+  drift: RoleplaySessionDrift | null;
 }
 
 export interface RoleplaySessionLogsResponse {
@@ -210,4 +214,51 @@ export interface StartV2VTestResponse {
   scenarioSession?: { roomId?: string };
   isTestSession?: boolean;
   simulatedUserAgent?: string;
+}
+
+/** One language-quality error annotation on an AI turn (latest judge run). */
+export interface RoleplaySessionLanguageAnnotation {
+  turnIndex: number;
+  /** scenario_session_messages.id of the AI turn — the transcript badge anchor. */
+  messageId: number | null;
+  layer: string;
+  dimension: string;
+  category: string;
+  severity: string; // minor | major | critical
+  isolationBasis: string | null;
+  inputGarbled: string | null;
+  conditionedOut: boolean;
+  evidenceQuote: string | null;
+  reasoning: string | null;
+}
+
+export interface RoleplaySessionLanguageQuality {
+  judgeModel: string;
+  judgePromptVersion: string;
+  turnsJudged: number;
+  turnsGarbled: number;
+  errorCount: number;
+  annotations: RoleplaySessionLanguageAnnotation[];
+}
+
+/** One drift-judged AI turn (latest drift judge run). */
+export interface RoleplaySessionDriftTurn {
+  turnIndex: number;
+  messageId: number | null;
+  coherence: string | null;
+  topicLabel: string | null;
+  inCharacter: boolean | null;
+  counselorUtteranceGarbled: string | null;
+  sttErrorType: string | null;
+  aiReplyFailureMode: string | null;
+  rootAttribution: string | null;
+  reasoning: string | null;
+}
+
+export interface RoleplaySessionDrift {
+  judgeModel: string;
+  judgePromptVersion: string;
+  sessionDrifted: boolean | null;
+  firstDriftTurn: number | null;
+  turns: RoleplaySessionDriftTurn[];
 }
