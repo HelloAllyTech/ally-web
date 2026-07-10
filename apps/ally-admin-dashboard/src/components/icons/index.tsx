@@ -49,6 +49,7 @@ import {
   FlowConnection as CFlowConnection,
   Globe as CGlobe,
   Group as CGroup,
+  Image as CImage,
   Information as CInformation,
   ListBulleted as CListBulleted,
   ListNumbered as CListNumbered,
@@ -159,6 +160,7 @@ export const FocusLens = createCarbonIcon(CZoomIn);
 export const Globe = createCarbonIcon(CGlobe);
 export const GroupBranch = createCarbonIcon(CFlowConnection);
 export const HappyEmoji = createCarbonIcon(CFaceSatisfied);
+export const ImageIcon = createCarbonIcon(CImage);
 export const InfoIcon = createCarbonIcon(CInformation);
 export const Logout = createCarbonIcon(CLogout);
 export const ManageAccounts = createCarbonIcon(CUserMultiple);

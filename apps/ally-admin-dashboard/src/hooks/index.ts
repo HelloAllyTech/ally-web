@@ -11,6 +11,7 @@ import { useSimulationCases } from "./useSimulationCases";
 import { useSimulationPathways } from "./useSimulationPathways";
 import { useSimulations } from "./useSimulations";
 import { useSpecAutosave } from "./useSpecAutosave";
+import { useTracks } from "./useTracks";
 import { useUser } from "./useUser";
 
 export {
@@ -28,4 +29,5 @@ export {
   useResolvedPrimaryLanguageId,
   useCopilotStream,
   useSpecAutosave,
+  useTracks,
 };

@@ -146,6 +146,10 @@ export const TAG_TYPES = {
   ORG_SCENARIO_PATHS: "OrgScenarioPaths",
   ORG_CASES: "OrgCases",
   ORG_BADGES: "OrgBadges",
+  // Track 2.0 learner resources
+  LEARN_TRACKS: "LearnTracks",
+  LEARN_TRACK_DETAIL: "LearnTrackDetail",
+  LEARN_TRACK_NEXT: "LearnTrackNext",
 };
 
 export const SORT_ORDER = {

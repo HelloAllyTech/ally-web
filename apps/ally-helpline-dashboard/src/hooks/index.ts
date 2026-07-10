@@ -19,3 +19,4 @@ export * from "./useScribeNoteCreationEnabled";
 export * from "./useScribeVoiceNoteEnabled";
 export * from "./useAudioRecorder";
 export * from "./useNextChallenge";
+export * from "./useVideoWatchProgress";

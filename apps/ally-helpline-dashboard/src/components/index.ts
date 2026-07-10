@@ -54,6 +54,8 @@ import {
 } from "./review-comments-sidepanel";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
+import { ContinueLearningCard } from "./continue-learning-card";
+import { TrackTypeIcon, getTrackItemMeta } from "./track-visuals";
 import SearchResources from "./search-resources";
 import SelectableText from "./selectable-text/SelectableText";
 import { SessionRatingTrigger } from "./session-rating-trigger";
@@ -159,4 +161,7 @@ export {
   GeneralCommentsToShow,
   ThreadsToShow,
   AddReviewNote,
+  ContinueLearningCard,
+  TrackTypeIcon,
+  getTrackItemMeta,
 };

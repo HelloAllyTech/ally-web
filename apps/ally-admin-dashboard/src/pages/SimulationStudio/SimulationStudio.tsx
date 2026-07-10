@@ -3,7 +3,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-import { Add, Close, Filter, Search, Simulation as SimulationIcon, Pathway, Case } from "@assets";
+import {
+  Add,
+  Book,
+  Close,
+  Filter,
+  Search,
+  Simulation as SimulationIcon,
+  Pathway,
+  Case,
+} from "@assets";
 import {
   ActionConfirmationPopup,
   DeletePopup,
@@ -22,19 +31,23 @@ import {
   SimulationStatus,
   isSuperAdminRole,
 } from "@constants";
-import { useSimulations, useSimulationPathways, useSimulationCases, useUser } from "@hooks";
+import { useSimulations, useSimulationPathways, useSimulationCases, useTracks, useUser } from "@hooks";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
   TRACKS: "tracks",
   CASES: "cases",
+  COURSES: "courses",
 };
 
 const TABS_CONFIG = [
   { id: TAB_KEYS.SIMULATIONS, label: "Simulations" },
   { id: TAB_KEYS.TRACKS, label: "Tracks" },
   { id: TAB_KEYS.CASES, label: "Cases" },
+  { id: TAB_KEYS.COURSES, label: "Courses" },
 ];
+
+const SUPER_ADMIN_TAB_KEYS = [TAB_KEYS.TRACKS, TAB_KEYS.CASES, TAB_KEYS.COURSES];
 
 export const SimulationStudio: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -60,13 +73,13 @@ export const SimulationStudio: React.FC = () => {
 
   // Effect to redirect unauthorized users from restricted tabs
   React.useEffect(() => {
-    if (!isSuperAdmin && (activeTab === TAB_KEYS.TRACKS || activeTab === TAB_KEYS.CASES)) {
+    if (!isSuperAdmin && SUPER_ADMIN_TAB_KEYS.includes(activeTab)) {
       setSearchParams({ tab: TAB_KEYS.SIMULATIONS });
     }
   }, [isSuperAdmin, activeTab, setSearchParams]);
 
   const filteredTabs = TABS_CONFIG.filter(tab => {
-    if (tab.id === TAB_KEYS.TRACKS || tab.id === TAB_KEYS.CASES) {
+    if (SUPER_ADMIN_TAB_KEYS.includes(tab.id)) {
       return isSuperAdmin;
     }
     return true;
@@ -135,6 +148,33 @@ export const SimulationStudio: React.FC = () => {
     setIsPathEditPopupOpen,
     handleEditPathway,
   } = useSimulationPathways({ selectedFilters, enabled: isSuperAdmin });
+
+  // Use the custom hook for Track 2.0 ("Courses")
+  const {
+    tracks,
+    hasMore: hasMoreTracks,
+    isTracksLoading,
+    isTracksFetching,
+    currentTrack,
+    isDuplicateTrackPopupOpen,
+    isUnpublishTrackPopupOpen,
+    isDeleteTrackPopupOpen,
+    isTrackEditPopupOpen,
+    setIsDuplicateTrackPopupOpen,
+    setIsUnpublishTrackPopupOpen,
+    setIsDeleteTrackPopupOpen,
+    setIsTrackEditPopupOpen,
+    loadTracks,
+    handleNewTrack,
+    onEditTrack,
+    handleEditTrack,
+    handleDeleteTrack,
+    onDeleteTrack,
+    handleUnpublishTrack,
+    handleChangeTrackStatus,
+    handleDuplicateTrack,
+    onDuplicateTrack,
+  } = useTracks({ selectedFilters, enabled: isSuperAdmin });
 
   // Use the custom hook for cases
   const {
@@ -211,13 +251,24 @@ export const SimulationStudio: React.FC = () => {
         icon: <Case className="w-5 h-5" />,
         onClick: handleNewCase,
       },
+
+      {
+        id: "New Course",
+        label: "New Course",
+        icon: <Pathway className="w-5 h-5" />,
+        onClick: handleNewTrack,
+      },
     ],
-    [handleNewSimulation, handleNewPathway, handleNewCase],
+    [handleNewSimulation, handleNewPathway, handleNewCase, handleNewTrack],
   );
 
   const filteredCreateOptions = React.useMemo(() => {
     return createOptions.filter(option => {
-      if (option.id === en.simulation.newTrack || option.id === "New Case") {
+      if (
+        option.id === en.simulation.newTrack ||
+        option.id === "New Case" ||
+        option.id === "New Course"
+      ) {
         return isSuperAdmin;
       }
       return true;
@@ -227,6 +278,7 @@ export const SimulationStudio: React.FC = () => {
   const renderFooter = () => {
     const isCasesTab = activeTab === TAB_KEYS.CASES;
     const isPathwaysTab = activeTab === TAB_KEYS.TRACKS;
+    const isCoursesTab = activeTab === TAB_KEYS.COURSES;
 
     let hasMoreItems = hasMore;
     let isFetching = isSimulationsFetching;
@@ -240,6 +292,10 @@ export const SimulationStudio: React.FC = () => {
       hasMoreItems = hasMorePathways;
       isFetching = isPathwaysFetching;
       loadMore = loadPathways;
+    } else if (isCoursesTab) {
+      hasMoreItems = hasMoreTracks;
+      isFetching = isTracksFetching;
+      loadMore = loadTracks;
     }
 
     if (!hasMoreItems) return null;
@@ -354,6 +410,20 @@ export const SimulationStudio: React.FC = () => {
             onDuplicate={handleDuplicatePathway}
             onUnpublishPathway={handleUnpublishPathway}
             onCreatePathway={handleNewPathway}
+            footer={renderFooter()}
+          />
+        );
+      case TAB_KEYS.COURSES:
+        return (
+          <PathwayList
+            pathways={tracks}
+            isLoading={isTracksLoading}
+            hasFilters={selectedFilters.length > 0}
+            onEdit={onEditTrack}
+            onDelete={handleDeleteTrack}
+            onDuplicate={handleDuplicateTrack}
+            onUnpublishPathway={handleUnpublishTrack}
+            onCreatePathway={handleNewTrack}
             footer={renderFooter()}
           />
         );
@@ -641,6 +711,77 @@ export const SimulationStudio: React.FC = () => {
           secondaryButton={{
             label: en.simulation.cancel,
             onClick: () => setIsCaseEditPopupOpen(false),
+            variant: ButtonVariant.SECONDARY,
+          }}
+        />
+      )}
+
+      {/* Course (Track 2.0) Popups */}
+      <ActionConfirmationPopup
+        isOpen={isUnpublishTrackPopupOpen}
+        onClose={() => setIsUnpublishTrackPopupOpen(false)}
+        title={en.simulation.unpublish}
+        titleItalic="Course?"
+        description={en.simulation.unpublishDescription}
+        primaryButton={{
+          label: en.simulation.unpublish,
+          onClick: () => handleChangeTrackStatus(SimulationStatus.DRAFT),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsUnpublishTrackPopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      />
+
+      <DeletePopup
+        isOpen={isDeleteTrackPopupOpen}
+        onClose={() => setIsDeleteTrackPopupOpen(false)}
+        cardData={currentTrack}
+        onConfirmDelete={onDeleteTrack}
+        title={
+          <h2 className="text-2xl font-medium font-primary">
+            {en.simulation.deleteDescription}
+            <span className="italic font-semibold ml-1">Course?</span>
+          </h2>
+        }
+        description={en.simulation.deletePathwayDescription}
+      />
+
+      <ActionConfirmationPopup
+        isOpen={isDuplicateTrackPopupOpen}
+        onClose={() => setIsDuplicateTrackPopupOpen(false)}
+        title={en.simulation.duplicate}
+        titleItalic="Course"
+        description={en.simulation.duplicatePathwayDescription}
+        primaryButton={{
+          label: en.simulation.duplicate,
+          onClick: () => onDuplicateTrack(currentTrack),
+          variant: ButtonVariant.PRIMARY,
+        }}
+        secondaryButton={{
+          label: en.simulation.cancel,
+          onClick: () => setIsDuplicateTrackPopupOpen(false),
+          variant: ButtonVariant.SECONDARY,
+        }}
+      />
+
+      {currentTrack && (
+        <ActionConfirmationPopup
+          isOpen={isTrackEditPopupOpen}
+          onClose={() => setIsTrackEditPopupOpen(false)}
+          title={en.simulation.edit}
+          titleItalic="Course"
+          description={en.simulation.editPathwayDescription}
+          primaryButton={{
+            label: en.simulation.edit,
+            onClick: () => handleEditTrack(currentTrack),
+            variant: ButtonVariant.PRIMARY,
+          }}
+          secondaryButton={{
+            label: en.simulation.cancel,
+            onClick: () => setIsTrackEditPopupOpen(false),
             variant: ButtonVariant.SECONDARY,
           }}
         />

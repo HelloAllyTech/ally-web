@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useRef, useState } from "react";
 
 import {
   Bold,
@@ -8,6 +8,7 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  ImageIcon,
   List,
   ListOrdered,
   Quote,
@@ -49,12 +50,30 @@ const ToolbarDivider: FC = () => <div className="w-px h-5 bg-border-light mx-1 s
 
 interface RichTextToolbarProps {
   editor: Editor | null;
+  /** When provided, renders an image button that uploads then inserts the image. */
+  onInsertImage?: (file: File) => Promise<void> | void;
 }
 
-export const RichTextToolbar: FC<RichTextToolbarProps> = ({ editor }) => {
+export const RichTextToolbar: FC<RichTextToolbarProps> = ({ editor, onInsertImage }) => {
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
   if (!editor) return null;
 
   const iconSize = 16;
+
+  const handleImageFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Allow re-selecting the same file later
+    event.target.value = "";
+    if (!file || !onInsertImage) return;
+    try {
+      setIsUploadingImage(true);
+      await onInsertImage(file);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   return (
     <div
@@ -151,6 +170,26 @@ export const RichTextToolbar: FC<RichTextToolbarProps> = ({ editor }) => {
       >
         <Minus size={iconSize} />
       </ToolbarButton>
+
+      {onInsertImage && (
+        <>
+          <ToolbarDivider />
+          <ToolbarButton
+            onClick={() => imageInputRef.current?.click()}
+            disabled={isUploadingImage}
+            title={isUploadingImage ? "Uploading image..." : "Insert image"}
+          >
+            <ImageIcon size={iconSize} />
+          </ToolbarButton>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            onChange={handleImageFileChange}
+          />
+        </>
+      )}
     </div>
   );
 };

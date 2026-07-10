@@ -14,6 +14,7 @@ import {
   EventManagement,
   CharacterLibrary,
   CreatePath,
+  CreateTrack,
   CreateCase,
   ScenarioVoices,
   ScenarioLanguages,
@@ -182,6 +183,22 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
               <CreatePath />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.CREATE_TRACK}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+              <CreateTrack />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.EDIT_TRACK(":id")}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+              <CreateTrack />
             </PrivateLayout>
           }
         />
