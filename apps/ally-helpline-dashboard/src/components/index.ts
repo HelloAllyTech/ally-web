@@ -42,6 +42,7 @@ import OTP from "./otp";
 import OverallScoreMeter from "./overall-score-meter";
 import { PathwayScenarioCard } from "./pathway-scenario-card";
 import PermissionGuard from "./permission-guard";
+import PracticeStreakHeatmap from "./practice-streak-heatmap";
 import ProfileSettings from "./profile-settings";
 import ReactionsModal from "./reaction-modal/ReactionModal";
 import ReactionSelector from "./reaction-selector";
@@ -111,6 +112,7 @@ export {
   Carousel,
   FallbackUI,
   PermissionGuard,
+  PracticeStreakHeatmap,
   InfoBanner,
   Input,
   LoginDialog,

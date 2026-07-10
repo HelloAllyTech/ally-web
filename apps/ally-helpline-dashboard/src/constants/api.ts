@@ -134,6 +134,9 @@ export const ApiEndpoints = {
     GET_LEADERBOARD: "/v1/community/leaderboard",
     GET_CURRENT_USER: "/v1/community/leaderboard/my-rank",
   },
+  PRACTICE_STREAK: {
+    GET_PRACTICE_STREAK: "/v1/community/practice-streak",
+  },
   REVIEWS: {
     GET_REVIEWS: "/v1/scenario-session-reviews",
     GET_SCRIBE_REVIEWS: "/v1/scribe-session-reviews",

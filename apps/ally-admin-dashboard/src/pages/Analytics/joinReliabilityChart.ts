@@ -7,6 +7,7 @@ export type DonutDatum = { group: string; value: number };
 export const RELIABILITY_GROUPS = {
   joinFailure: "Join failure %",
   midDrop: "Mid-session drop %",
+  freeze: "Suspected freeze %",
 };
 
 export const JOIN_LATENCY_GROUPS = {
@@ -33,6 +34,11 @@ export function buildReliabilitySeries(points: AgentJoinReliabilityPoint[]): Cha
       group: RELIABILITY_GROUPS.midDrop,
       key: p.bucket,
       value: pct(p.midSessionDrops, p.totalSessions),
+    },
+    {
+      group: RELIABILITY_GROUPS.freeze,
+      key: p.bucket,
+      value: p.freezeRatePct,
     },
   ]);
 }

@@ -10,6 +10,7 @@ export * from "./simulationCredits";
 export * from "./termsAndAgreement";
 export * from "./user";
 export * from "./leaderBoard";
+export * from "./practiceStreak";
 export * from "./reviews";
 export * from "./customFields";
 export * from "./tooltips";

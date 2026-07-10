@@ -306,6 +306,27 @@
     },
     "evaluationChecklist": "Evaluation Checklist"
   },
+  "practiceStreak": {
+    "title": "Practice streak",
+    "ariaLabel": "Practice minutes heatmap",
+    "minutesValue": "{{count}} min",
+    "empty": "No practice sessions yet. Start a role play to build your streak!",
+    "error": "Couldn't load your practice streak. Please try again.",
+    "groupBy": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "stats": {
+      "currentStreak": "day streak",
+      "longestStreak": "Longest",
+      "total": "Total"
+    },
+    "legend": {
+      "less": "Less",
+      "more": "More"
+    }
+  },
   "analytics": {
     "title": "Session Metrics",
     "dashboardTitle": "Metabase dashboard",

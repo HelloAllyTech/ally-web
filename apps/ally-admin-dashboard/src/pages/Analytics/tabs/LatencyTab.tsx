@@ -159,6 +159,7 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
         colorScale: {
           [RELIABILITY_GROUPS.joinFailure]: PALETTE.red,
           [RELIABILITY_GROUPS.midDrop]: PALETTE.orange,
+          [RELIABILITY_GROUPS.freeze]: PALETTE.magenta,
         },
         extra: {
           axes: {

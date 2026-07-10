@@ -172,6 +172,15 @@ export const RoleplaySessionLogDetail: FC = () => {
         ) : null}
       </div>
 
+      {data.suspectedFreeze && (
+        <div className="mt-4 rounded-lg border border-destructive-500 bg-destructive-50 px-4 py-3">
+          <p className="text-sm text-destructive-500">
+            ⚠ Suspected mid-session freeze — the agent stopped responding (it left the last learner
+            turn unanswered, or an LLM call timed out).
+          </p>
+        </div>
+      )}
+
       {/* Roleplay actor performance vs agent test cases */}
       {(data.actorEvaluation || data.agentTestCases.length > 0) && (
         <section className="mt-6">
