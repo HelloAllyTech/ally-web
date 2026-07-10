@@ -16,6 +16,7 @@ export interface BlogFormValues {
   body: string;
   tags: string[];
   category: string;
+  authorName: string;
   headerImageUrl: string;
 }
 
@@ -44,6 +45,7 @@ const EMPTY_FORM: BlogFormValues = {
   body: "",
   tags: [],
   category: "",
+  authorName: "",
   headerImageUrl: "",
 };
 
@@ -56,6 +58,7 @@ const toForm = (blog: BlogPost | null): BlogFormValues =>
         body: blog.body ?? "",
         tags: blog.tags ?? [],
         category: blog.category ?? "",
+        authorName: blog.authorName ?? "",
         headerImageUrl: blog.headerImageUrl ?? "",
       }
     : { ...EMPTY_FORM };
@@ -249,6 +252,16 @@ export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
               value={form.category}
               onChange={e => setField("category", e.target.value)}
               placeholder="e.g. Product Updates"
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Author name" hint="Shown as the byline on the public post.">
+            <input
+              type="text"
+              value={form.authorName}
+              onChange={e => setField("authorName", e.target.value)}
+              placeholder="e.g. Jane Doe"
               className={inputClass}
             />
           </Field>
