@@ -122,6 +122,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 vi.mock("@assets", () => ({
   ArrowDown: () => <span data-testid="arrow-down" />,
+  DoubleArrowRight: () => <span data-testid="double-arrow-right" />,
   WarningAlt: () => <span data-testid="warning-alt" />,
 }));
 
