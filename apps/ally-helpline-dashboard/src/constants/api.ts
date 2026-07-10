@@ -108,6 +108,21 @@ export const ApiEndpoints = {
     CHAT_HISTORY: (sessionId: string) => `/v1/learn/scenario-sessions/${sessionId}/chat/history`,
     GET_AUDIO_URL: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/recording`,
   },
+  // Track 2.0 learner endpoints (multi-component learning tracks)
+  TRACKS: {
+    GET_TRACKS: "/v1/learn/tracks",
+    GET_TRACK_DETAIL: (trackId: string) => `/v1/learn/tracks/${trackId}`,
+    ENROLL: (trackId: string) => `/v1/learn/tracks/${trackId}/enroll`,
+    GET_NEXT_ITEM: (trackId: string) => `/v1/learn/tracks/${trackId}/next-item`,
+    START_ITEM: (itemId: string) => `/v1/learn/tracks/items/${itemId}/start`,
+    ARTICLE_READ: (itemId: string) => `/v1/learn/tracks/items/${itemId}/article-read`,
+    VIDEO_PROGRESS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/video-progress`,
+    QUIZ_ATTEMPTS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/quiz-attempts`,
+    QUIZ_REGRADE: (itemId: string, attemptId: string) =>
+      `/v1/learn/tracks/items/${itemId}/quiz-attempts/${attemptId}/regrade`,
+    JOURNAL_DRAFT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal`,
+    JOURNAL_SUBMIT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal/submit`,
+  },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",
   },

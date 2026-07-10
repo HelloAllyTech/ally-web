@@ -129,6 +129,7 @@ export const baseAPI = createApi({
     TAG_TYPES.ROLEPLAY_REHEARSALS,
     TAG_TYPES.ROLEPLAY_COPILOT_SESSIONS,
     TAG_TYPES.COMFORT_AUDIO_LIBRARY,
+    TAG_TYPES.TRACKS_V2,
   ],
   endpoints: () => ({}),
 });

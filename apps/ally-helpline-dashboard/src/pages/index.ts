@@ -10,6 +10,8 @@ export * from "./calendar/Calendar";
 export * from "./health-check/Health";
 export * from "./learn/Learn";
 export * from "./case-track-details";
+export * from "./track-overview";
+export * from "./track-player";
 export * from "./post-call-summary/PostCallSummary";
 export * from "./scenario/Scenario";
 export * from "./search/Search";

@@ -157,6 +157,10 @@ export const baseAPI = createApi({
     TAG_TYPES.ORG_SCENARIO_PATHS,
     TAG_TYPES.ORG_CASES,
     TAG_TYPES.ORG_BADGES,
+    // Track 2.0 learner resources
+    TAG_TYPES.LEARN_TRACKS,
+    TAG_TYPES.LEARN_TRACK_DETAIL,
+    TAG_TYPES.LEARN_TRACK_NEXT,
   ],
   endpoints: () => ({}),
 });

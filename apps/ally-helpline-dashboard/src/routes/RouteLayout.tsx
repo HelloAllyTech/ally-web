@@ -8,6 +8,8 @@ import {
   MagicLinkVerify,
   Scenario,
   CaseTrackDetails,
+  TrackOverview,
+  TrackPlayer,
   SuspendedUser,
   ImpersonateHandler,
   Terms,
@@ -47,6 +49,9 @@ const RouteLayout = () => {
           <Route path={ROUTES.SCENARIO} element={<Scenario />} />
           <Route path={ROUTES.PATHWAY} element={<CaseTrackDetails type="track" />} />
           <Route path={ROUTES.CASE} element={<CaseTrackDetails type="case" />} />
+          {/* Track 2.0 (multi-component learning tracks) */}
+          <Route path={ROUTES.TRACK} element={<TrackOverview />} />
+          <Route path={ROUTES.TRACK_ITEM} element={<TrackPlayer />} />
         </Route>
 
         {/* Private Routes */}

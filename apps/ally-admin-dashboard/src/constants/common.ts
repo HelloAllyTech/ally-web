@@ -119,6 +119,17 @@ export const ApiEndpoints = {
     AGENT_TEST_CASE_BY_ID: (id: string) => `/v1/learn/agent-test-cases/${id}`,
   },
 
+  // Track 2.0 ("Courses") — multi-component learning tracks
+  TRACKS: {
+    LIST: "/v1/learn/admin/tracks",
+    BY_ID: (id: string) => `/v1/learn/admin/tracks/${id}`,
+    STRUCTURE: (id: string) => `/v1/learn/admin/tracks/${id}/structure`,
+    DUPLICATE: (id: string) => `/v1/learn/admin/tracks/${id}/duplicate`,
+    TENANT_VISIBILITY: (tenantId: string) => `/v1/learn/admin/tracks/tenant/${tenantId}`,
+    MEDIA_UPLOAD_URL: "/v1/learn/admin/tracks/media/upload-url",
+    MEDIA: "/v1/learn/admin/tracks/media",
+  },
+
   CHARACTERS: {
     GET_CHARACTERS: "/v1/scenario-characters",
     CREATE_CHARACTER: "/v1/scenario-characters",
@@ -249,6 +260,8 @@ export const ROUTES = {
   CREATE_PATH: "/create-path",
   EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
   CREATE_CASE: "/create-case",
+  CREATE_TRACK: "/create-track",
+  EDIT_TRACK: (id: string | number) => `/edit-track/${id}`,
   USER_BADGES: "/user-badges",
   MANAGE_GUARDRAILS: "/manage-guardrails",
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
@@ -358,6 +371,7 @@ export const TAG_TYPES = {
   ROLEPLAY_REHEARSALS: "roleplayRehearsals",
   ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
+  TRACKS_V2: "tracksV2",
 };
 
 /**
