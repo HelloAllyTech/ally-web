@@ -6,19 +6,26 @@ import { SimulationStatus } from "@constants";
 import type { Simulation } from "@types";
 
 // Hoist mocks to avoid initialization errors
-const { mockUseSimulations, mockUseSimulationPathways, mockUseSimulationCases, mockUseUser } =
-  vi.hoisted(() => ({
-    mockUseSimulations: vi.fn(),
-    mockUseSimulationPathways: vi.fn(),
-    mockUseSimulationCases: vi.fn(),
-    mockUseUser: vi.fn(),
-  }));
+const {
+  mockUseSimulations,
+  mockUseSimulationPathways,
+  mockUseSimulationCases,
+  mockUseTracks,
+  mockUseUser,
+} = vi.hoisted(() => ({
+  mockUseSimulations: vi.fn(),
+  mockUseSimulationPathways: vi.fn(),
+  mockUseSimulationCases: vi.fn(),
+  mockUseTracks: vi.fn(),
+  mockUseUser: vi.fn(),
+}));
 
 // Mock the custom hooks
 vi.mock("@hooks", () => ({
   useSimulations: mockUseSimulations,
   useSimulationPathways: mockUseSimulationPathways,
   useSimulationCases: mockUseSimulationCases,
+  useTracks: mockUseTracks,
   useUser: mockUseUser,
 }));
 
@@ -455,6 +462,32 @@ describe("SimulationStudio", () => {
     handleEditCase: vi.fn(),
   };
 
+  const defaultTracksHookReturn = {
+    tracks: [],
+    hasMore: false,
+    isTracksLoading: false,
+    isTracksFetching: false,
+    currentTrack: null,
+    isDuplicateTrackPopupOpen: false,
+    isUnpublishTrackPopupOpen: false,
+    isDeleteTrackPopupOpen: false,
+    isTrackEditPopupOpen: false,
+    setIsDuplicateTrackPopupOpen: vi.fn(),
+    setIsUnpublishTrackPopupOpen: vi.fn(),
+    setIsDeleteTrackPopupOpen: vi.fn(),
+    setIsTrackEditPopupOpen: vi.fn(),
+    loadTracks: vi.fn(),
+    handleNewTrack: vi.fn(),
+    onEditTrack: vi.fn(),
+    handleEditTrack: vi.fn(),
+    handleDeleteTrack: vi.fn(),
+    onDeleteTrack: vi.fn(),
+    handleUnpublishTrack: vi.fn(),
+    handleChangeTrackStatus: vi.fn(),
+    handleDuplicateTrack: vi.fn(),
+    onDuplicateTrack: vi.fn(),
+  };
+
   const defaultUserHookReturn = {
     user: {
       role: "SUPER_ADMIN",
@@ -466,6 +499,7 @@ describe("SimulationStudio", () => {
     mockUseSimulations.mockReturnValue(defaultSimulationsHookReturn);
     mockUseSimulationPathways.mockReturnValue(defaultPathwaysHookReturn);
     mockUseSimulationCases.mockReturnValue(defaultCasesHookReturn);
+    mockUseTracks.mockReturnValue(defaultTracksHookReturn);
     mockUseUser.mockReturnValue(defaultUserHookReturn);
   });
 

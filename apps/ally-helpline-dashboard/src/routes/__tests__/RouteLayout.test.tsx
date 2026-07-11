@@ -60,6 +60,8 @@ vi.mock("@constants", () => ({
     SCENARIO: "/scenario/:scenarioId",
     PATHWAY: "/pathway/:pathwayId",
     CASE: "/case/:caseId",
+    TRACK: "/track/:trackId",
+    TRACK_ITEM: "/track/:trackId/item/:itemId",
     SUSPENDED_USER: "/suspended-user",
     IMPERSONATE: "/impersonate",
     TERMS: "/terms",
