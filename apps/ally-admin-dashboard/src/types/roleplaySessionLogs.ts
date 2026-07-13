@@ -172,6 +172,8 @@ export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   recording: RoleplaySessionRecording | null;
   feedback: RoleplaySessionFeedback | null;
   actorEvaluation: RoleplaySessionActorEvaluation | null;
+  /** The config this session ran under (prompt/scenario version, LLM settings). */
+  runConfig: RoleplaySessionRunConfig | null;
   agentTestCases: RoleplaySessionAgentTestCase[];
   events: RoleplaySessionLogEvent[];
   lifecycle: RoleplaySessionLifecycleEvent[];
@@ -265,4 +267,22 @@ export interface RoleplaySessionDrift {
   sessionDrifted: boolean | null;
   firstDriftTurn: number | null;
   turns: RoleplaySessionDriftTurn[];
+}
+
+export interface RoleplaySessionScenarioVersion {
+  id: string;
+  versionNumber: number | null;
+  name: string | null;
+}
+
+/** The configuration a session ran under (prompt/scenario version + LLM settings). */
+export interface RoleplaySessionRunConfig {
+  scenarioVersion: RoleplaySessionScenarioVersion | null;
+  /** {promptCode: version} captured at session start; null when not recorded. */
+  promptVersions: Record<string, string | number> | null;
+  llmProvider: string | null;
+  llmModel: string | null;
+  temperature: number | null;
+  topP: number | null;
+  maxTokens: number | null;
 }

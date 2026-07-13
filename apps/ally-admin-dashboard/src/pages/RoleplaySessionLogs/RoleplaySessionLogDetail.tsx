@@ -350,6 +350,71 @@ export const RoleplaySessionLogDetail: FC = () => {
           </section>
         )}
 
+      {/* Run configuration — the prompt/scenario version + LLM settings this
+          session actually ran under (PRD FR15 experiment config). */}
+      {data.runConfig &&
+        (data.runConfig.scenarioVersion ||
+          data.runConfig.promptVersions ||
+          data.runConfig.llmModel ||
+          data.runConfig.temperature !== null) && (
+          <section className="mt-6">
+            <h2 className="text-lg font-secondary text-typography-900 mb-2">Run configuration</h2>
+            <SectionCard>
+              <Field
+                label="Scenario version"
+                value={
+                  data.runConfig.scenarioVersion
+                    ? `v${data.runConfig.scenarioVersion.versionNumber ?? "?"}${
+                        data.runConfig.scenarioVersion.name
+                          ? ` · ${data.runConfig.scenarioVersion.name}`
+                          : ""
+                      }`
+                    : "—"
+                }
+              />
+              <Field
+                label="LLM"
+                value={
+                  data.runConfig.llmModel
+                    ? `${
+                        data.runConfig.llmProvider ? `${data.runConfig.llmProvider} · ` : ""
+                      }${data.runConfig.llmModel}`
+                    : "—"
+                }
+              />
+              <Field
+                label="Temperature"
+                value={
+                  data.runConfig.temperature === null ? "—" : String(data.runConfig.temperature)
+                }
+              />
+              <Field
+                label="Top-p / max tokens"
+                value={
+                  data.runConfig.topP === null && data.runConfig.maxTokens === null
+                    ? "—"
+                    : `${data.runConfig.topP ?? "—"} / ${data.runConfig.maxTokens ?? "—"}`
+                }
+              />
+            </SectionCard>
+            {data.runConfig.promptVersions &&
+              Object.keys(data.runConfig.promptVersions).length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-typography-700">Prompts:</span>
+                  {Object.entries(data.runConfig.promptVersions).map(([code, version]) => (
+                    <span
+                      key={code}
+                      className="rounded bg-neutral-100 px-2 py-0.5 text-typography-700"
+                      title={`${code} @ v${version}`}
+                    >
+                      {code} · v{version}
+                    </span>
+                  ))}
+                </div>
+              )}
+          </section>
+        )}
+
       {/* Voice-pipeline latency & quality */}
       {data.latency && (
         <section className="mt-6">
