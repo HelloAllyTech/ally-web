@@ -629,6 +629,13 @@ export interface LanguageLayerTrendPoint {
   weightedRatePer100: number;
 }
 
+export interface LanguageWerByVoice {
+  voiceId: string | null;
+  voiceName: string | null;
+  sessions: number;
+  avgRoundTripWerPct: number;
+}
+
 export interface LanguageObjectiveMetrics {
   /** null = not yet measured (Phase 2) — render as masked, never as 0. */
   scriptFidelityPct: number | null;
@@ -653,6 +660,7 @@ export interface LanguageQualityResponse {
   rateByScenarioVersion: LanguageRateByExperiment[];
   rateByPromptVersion: LanguageRateByExperiment[];
   rateByModel: LanguageRateByExperiment[];
+  werByVoice: LanguageWerByVoice[];
   reference: LanguageEvalReference | null;
   deltaByDimension: LanguageDimensionDelta[];
 }

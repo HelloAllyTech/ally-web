@@ -513,6 +513,32 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
         </Tile>
       </div>
 
+      {/* Round-trip WER by voice — the TTS experiment axis (voice is what
+          round-trip WER isolates; text-error rate doesn't vary by voice). */}
+      {(data?.werByVoice?.length ?? 0) > 0 && (
+        <>
+          <SubHeading>Round-trip WER by voice (TTS)</SubHeading>
+          <div className="grid grid-cols-1 gap-6">
+            <ChartCard
+              bare
+              title="Round-trip WER by voice"
+              caption="Compare TTS voices on pronunciation/intelligibility (lower is better). ≤20 good · 20–30 warn · >30 critical. Text-error dimensions don't vary by voice — this is the TTS axis."
+              loading={isFetching}
+              error={isError}
+              empty={!data?.werByVoice?.length}
+            >
+              <SimpleBarChart
+                data={(data?.werByVoice ?? []).map(v => ({
+                  group: v.voiceName ?? v.voiceId ?? "unknown",
+                  value: v.avgRoundTripWerPct,
+                }))}
+                options={barOpts({ leftTitle: "Round-trip WER %" })}
+              />
+            </ChartCard>
+          </div>
+        </>
+      )}
+
       {/* FR8 — ENTANGLEMENT BROKEN */}
       <SubHeading>Entanglement broken</SubHeading>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
