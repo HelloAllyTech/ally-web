@@ -36,18 +36,19 @@ describe("PracticeStreakHeatmap", () => {
     mockUseGetPracticeStreakQuery.mockReturnValue(successResult);
   });
 
-  it("renders the title, streak stats and a cell per bucket", () => {
+  it("renders the title, streak stats and the current-period progress ring", () => {
     render(<PracticeStreakHeatmap />);
 
     expect(screen.getByText("Practice streak")).toBeInTheDocument();
     // current + longest streak values
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("9")).toBeInTheDocument();
-    // rounded minutes rendered in cells (12.4 -> 12, 40 -> 40, 0 -> 0)
-    expect(screen.getByText("12")).toBeInTheDocument();
+    // rounded total minutes (52.4 -> 52) shown in the Total stat
+    expect(screen.getByText("52")).toBeInTheDocument();
+    // ring shows the most recent period's rounded minutes (last cell = 40) ...
     expect(screen.getByText("40")).toBeInTheDocument();
-    // total minutes formatted via i18n "{{count}} min"
-    expect(screen.getByText("52 min")).toBeInTheDocument();
+    // ... against the Day goal caption ("of {{count}} min today", goal = 15)
+    expect(screen.getByText("of 15 min today")).toBeInTheDocument();
   });
 
   it("defaults to the Day grouping and requests it from the API", () => {

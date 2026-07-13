@@ -20,6 +20,19 @@ export const HEATMAP_THRESHOLDS: Record<PracticeStreakGroupBy, number[]> = {
   [PracticeStreakGroupBy.MONTH]: [0, 120, 240, 480],
 };
 
+/**
+ * Per-grouping practice goal, in minutes, used to fill the progress ring for
+ * the current (most recent) period. These are product-chosen targets — tune
+ * them here without touching the component. They intentionally sit a little
+ * below the top heatmap threshold so a good session comfortably closes the
+ * ring rather than making it feel unreachable.
+ */
+export const PRACTICE_GOAL_MINUTES: Record<PracticeStreakGroupBy, number> = {
+  [PracticeStreakGroupBy.DAY]: 15,
+  [PracticeStreakGroupBy.WEEK]: 60,
+  [PracticeStreakGroupBy.MONTH]: 240,
+};
+
 /** Tailwind classes per intensity level (0 = empty ... 4 = most). */
 export const HEATMAP_LEVEL_CLASSES: string[] = [
   "bg-neutral-100 text-typography-400 border border-border-light", // 0 – empty
