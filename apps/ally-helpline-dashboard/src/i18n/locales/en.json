@@ -322,6 +322,15 @@
       "longestStreak": "Longest",
       "total": "Total"
     },
+    "units": {
+      "days": "days",
+      "min": "min"
+    },
+    "goal": {
+      "day": "of {{count}} min today",
+      "week": "of {{count}} min this week",
+      "month": "of {{count}} min this month"
+    },
     "legend": {
       "less": "Less",
       "more": "More"
@@ -454,41 +463,11 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": [
-              "Poor",
-              "Not helpful",
-              "Very bad",
-              "Disappointing",
-              "Unhelpful"
-            ],
-            "2": [
-              "Below average",
-              "Lacking",
-              "Unsatisfying",
-              "Weak",
-              "Needs improvement"
-            ],
-            "3": [
-              "Neutral",
-              "Okay",
-              "Average",
-              "Moderate",
-              "Acceptable"
-            ],
-            "4": [
-              "Good",
-              "Helpful",
-              "Satisfying",
-              "Effective",
-              "Worthwhile"
-            ],
-            "5": [
-              "Excellent",
-              "Amazing",
-              "Highly useful",
-              "Outstanding",
-              "Very effective"
-            ]
+            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
+            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
+            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
+            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
+            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
           }
         }
       }
