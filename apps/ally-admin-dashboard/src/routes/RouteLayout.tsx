@@ -2,7 +2,13 @@ import React, { lazy, Suspense } from "react";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { Permissions, ROLEPLAY_STUDIO_ALLOWED_EMAILS, ROUTES, SUPER_ADMIN_ROLES } from "@constants";
+import {
+  Permissions,
+  ROLEPLAY_STUDIO_ALLOWED_EMAILS,
+  ROUTES,
+  SUPER_ADMIN_ROLES,
+  SUPER_DUPER_ADMIN_ROLES,
+} from "@constants";
 import {
   CreateSimulation,
   Login,
@@ -134,7 +140,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.USER_BADGES}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_BADGE]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <UserBadges />
             </PrivateLayout>
           }
@@ -142,7 +148,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CHARACTER_LIBRARY}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_CHARACTER_LIBRARY]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <CharacterLibrary />
             </PrivateLayout>
           }
@@ -158,7 +164,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_SCENARIO_LANGUAGES}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <ScenarioLanguages />
             </PrivateLayout>
           }
@@ -222,7 +228,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_GUARDRAILS}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <GuardrailsManagement />
             </PrivateLayout>
           }
@@ -238,7 +244,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_TOOLTIPS}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.VIEW_TOOLTIPS]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <TooltipManagement />
             </PrivateLayout>
           }
@@ -264,7 +270,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.SETTINGS}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <Settings />
             </PrivateLayout>
           }
@@ -272,7 +278,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.AGENT_TEST_CASES}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <AgentTestCases />
             </PrivateLayout>
           }
