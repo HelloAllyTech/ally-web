@@ -9,6 +9,7 @@ import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api
 import { ArrowDown } from "@assets";
 import {
   CopilotChatPanel,
+  ImprovementPanel,
   PublishPanel,
   RehearsalPanel,
   SpecPanel,
@@ -23,6 +24,7 @@ export const ROLEPLAY_STEP_IDS = {
   INTERVIEW: "interview",
   SPEC: "spec",
   REHEARSE: "rehearse",
+  IMPROVE: "improve",
   PUBLISH: "publish",
 } as const;
 
@@ -32,6 +34,7 @@ const buildStepTabs = () => [
   { id: ROLEPLAY_STEP_IDS.INTERVIEW, label: en.roleplayStudio.steps.interview },
   { id: ROLEPLAY_STEP_IDS.SPEC, label: en.roleplayStudio.steps.spec },
   { id: ROLEPLAY_STEP_IDS.REHEARSE, label: en.roleplayStudio.steps.rehearse },
+  { id: ROLEPLAY_STEP_IDS.IMPROVE, label: en.roleplayStudio.steps.improve },
   { id: ROLEPLAY_STEP_IDS.PUBLISH, label: en.roleplayStudio.steps.publish },
 ];
 
@@ -174,6 +177,8 @@ export const RoleplayStudioWorkspace: React.FC = () => {
         );
       case ROLEPLAY_STEP_IDS.REHEARSE:
         return <RehearsalPanel />;
+      case ROLEPLAY_STEP_IDS.IMPROVE:
+        return <ImprovementPanel />;
       case ROLEPLAY_STEP_IDS.PUBLISH:
         return <PublishPanel onSaveDraft={saveNow} />;
       case ROLEPLAY_STEP_IDS.INTERVIEW:

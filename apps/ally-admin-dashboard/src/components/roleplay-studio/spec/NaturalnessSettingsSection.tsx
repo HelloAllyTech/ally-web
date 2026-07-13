@@ -70,9 +70,7 @@ export const NaturalnessSettingsSection: React.FC<NaturalnessSettingsSectionProp
               <div className="flex shrink-0 items-center gap-2">
                 <ToggleSwitch
                   enabled={enabled}
-                  onChange={value =>
-                    dispatch(setNaturalnessFlag({ key: row.key, value }))
-                  }
+                  onChange={value => dispatch(setNaturalnessFlag({ key: row.key, value }))}
                   label={row.label}
                   disabled={readOnly}
                 />

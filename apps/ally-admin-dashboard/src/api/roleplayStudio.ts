@@ -9,15 +9,21 @@ import {
   GetRoleplaySpecsResponse,
   PublishRoleplayVersionInput,
   RoleplayCopilotSession,
+  RoleplayCritiqueProposal,
   RoleplayCritiqueResponse,
   RoleplayDirectorTurnPayload,
+  RoleplayImprovementDiff,
+  RoleplayImprovementRun,
+  RoleplayImprovementRunDetail,
   RoleplayRehearsal,
+  RoleplayRehearsalComparisonResponse,
   RoleplayRehearsalTranscript,
   RoleplaySpecDetail,
   RoleplaySpecListItem,
   RoleplaySpecVersionSummary,
   SaveRoleplayDraftInput,
   SaveRoleplayDraftResponse,
+  StartImprovementRunInput,
   UpdateRoleplaySpecInput,
 } from "@src/types/roleplayStudio";
 
@@ -267,6 +273,113 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
       }),
     }),
 
+    /** Records the trainer's accept/reject decision on a persisted proposal. */
+    updateCritiqueProposalStatus: builder.mutation<
+      RoleplayCritiqueProposal,
+      { proposalId: string; status: "applied" | "rejected"; appliedInVersionId?: string }
+    >({
+      query: ({ proposalId, ...body }) => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.CRITIQUE_PROPOSAL(proposalId),
+        method: HttpMethod.PATCH,
+        body,
+      }),
+    }),
+
+    /** Score deltas vs another run (?against=<rehearsalId>|previous). */
+    getRoleplayRehearsalComparison: builder.query<
+      RoleplayRehearsalComparisonResponse,
+      { rehearsalId: string; against?: string }
+    >({
+      query: ({ rehearsalId, against = "previous" }) => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.REHEARSAL_COMPARISON(rehearsalId),
+        method: HttpMethod.GET,
+        params: { against },
+      }),
+      providesTags: (_result, _error, { rehearsalId }) => [
+        { type: TAG_TYPES.ROLEPLAY_REHEARSALS, id: rehearsalId },
+      ],
+    }),
+
+    // ----- auto-improve -----
+    startImprovementRun: builder.mutation<RoleplayImprovementRun, StartImprovementRunInput>({
+      query: ({ specId, versionId, ...body }) => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.CREATE_IMPROVEMENT_RUN(specId, versionId),
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.ROLEPLAY_IMPROVEMENTS],
+    }),
+
+    getImprovementRunsBySpec: builder.query<RoleplayImprovementRun[], string>({
+      query: specId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.IMPROVEMENT_RUNS_BY_SPEC(specId),
+        method: HttpMethod.GET,
+      }),
+      transformResponse: (
+        response: RoleplayImprovementRun[] | { data: RoleplayImprovementRun[] },
+      ) => (Array.isArray(response) ? response : (response?.data ?? [])),
+      providesTags: [TAG_TYPES.ROLEPLAY_IMPROVEMENTS],
+    }),
+
+    getImprovementRun: builder.query<RoleplayImprovementRunDetail, string>({
+      query: runId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.IMPROVEMENT_RUN_BY_ID(runId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (_result, _error, runId) => [
+        { type: TAG_TYPES.ROLEPLAY_IMPROVEMENTS, id: runId },
+      ],
+    }),
+
+    getImprovementRunDiff: builder.query<RoleplayImprovementDiff, string>({
+      query: runId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.IMPROVEMENT_RUN_DIFF(runId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (_result, _error, runId) => [
+        { type: TAG_TYPES.ROLEPLAY_IMPROVEMENTS, id: runId },
+      ],
+    }),
+
+    acceptImprovementRun: builder.mutation<
+      RoleplayImprovementRun,
+      { runId: string; expectedDraftUpdatedAt?: string }
+    >({
+      query: ({ runId, expectedDraftUpdatedAt }) => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.ACCEPT_IMPROVEMENT_RUN(runId),
+        method: HttpMethod.POST,
+        body: expectedDraftUpdatedAt ? { expectedDraftUpdatedAt } : {},
+      }),
+      invalidatesTags: (_result, _error, { runId }) => [
+        TAG_TYPES.ROLEPLAY_IMPROVEMENTS,
+        { type: TAG_TYPES.ROLEPLAY_IMPROVEMENTS, id: runId },
+        TAG_TYPES.ROLEPLAY_SPECS,
+        TAG_TYPES.ROLEPLAY_SPEC_VERSIONS,
+      ],
+    }),
+
+    discardImprovementRun: builder.mutation<RoleplayImprovementRun, string>({
+      query: runId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.DISCARD_IMPROVEMENT_RUN(runId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (_result, _error, runId) => [
+        TAG_TYPES.ROLEPLAY_IMPROVEMENTS,
+        { type: TAG_TYPES.ROLEPLAY_IMPROVEMENTS, id: runId },
+      ],
+    }),
+
+    cancelImprovementRun: builder.mutation<void, string>({
+      query: runId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.CANCEL_IMPROVEMENT_RUN(runId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (_result, _error, runId) => [
+        TAG_TYPES.ROLEPLAY_IMPROVEMENTS,
+        { type: TAG_TYPES.ROLEPLAY_IMPROVEMENTS, id: runId },
+      ],
+    }),
+
     // ----- live sessions / preview -----
     createRoleplaySession: builder.mutation<
       CreateRoleplaySessionResponse,
@@ -320,6 +433,15 @@ export const {
   useGetRoleplayRehearsalsBySpecQuery,
   useCancelRoleplayRehearsalMutation,
   useCritiqueRoleplayRehearsalMutation,
+  useUpdateCritiqueProposalStatusMutation,
+  useGetRoleplayRehearsalComparisonQuery,
+  useStartImprovementRunMutation,
+  useGetImprovementRunsBySpecQuery,
+  useGetImprovementRunQuery,
+  useGetImprovementRunDiffQuery,
+  useAcceptImprovementRunMutation,
+  useDiscardImprovementRunMutation,
+  useCancelImprovementRunMutation,
   useCreateRoleplaySessionMutation,
   useGetRoleplayDirectorEventsQuery,
   useGetRoleplayRubricScoresQuery,
