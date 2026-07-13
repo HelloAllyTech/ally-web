@@ -285,4 +285,7 @@ export interface RoleplaySessionRunConfig {
   temperature: number | null;
   topP: number | null;
   maxTokens: number | null;
+  /** STT provider/model configured for the session's language (config source). */
+  sttProvider: string | null;
+  sttModel: string | null;
 }

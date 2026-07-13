@@ -383,6 +383,16 @@ export const RoleplaySessionLogDetail: FC = () => {
                 }
               />
               <Field
+                label="STT (configured)"
+                value={
+                  data.runConfig.sttModel
+                    ? `${
+                        data.runConfig.sttProvider ? `${data.runConfig.sttProvider} · ` : ""
+                      }${data.runConfig.sttModel}`
+                    : "—"
+                }
+              />
+              <Field
                 label="Temperature"
                 value={
                   data.runConfig.temperature === null ? "—" : String(data.runConfig.temperature)
