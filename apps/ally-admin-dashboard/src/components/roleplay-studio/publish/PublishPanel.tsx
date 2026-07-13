@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
-  useCreateRoleplaySessionMutation,
   useCreateRoleplaySpecVersionMutation,
   useGetRoleplaySpecVersionsQuery,
   useLazyGetRoleplaySpecByIdQuery,
@@ -14,10 +12,9 @@ import {
 import { CheckCircle, FailIcon, Play } from "@assets";
 import { ActionConfirmationPopup, Button, EmptyState, StatusBadge } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
-import { useUser } from "@hooks";
+import { en } from "@constants";
+import { useTryRoleplayLive } from "@hooks";
 import { hydrateSpec, selectRoleplaySpecState } from "@reducer";
-import { RoleplayPreviewRoomData } from "@src/types/roleplayStudio";
 import { formatDate } from "@utils";
 import {
   deriveRoleplayReadiness,
@@ -45,8 +42,6 @@ export const PublishPanel: React.FC<PublishPanelProps> = ({ onSaveDraft }) => {
     voice: strings.checkVoice,
   };
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { user } = useUser();
   const { specId, versionId, spec } = useSelector(selectRoleplaySpecState);
 
   const { data: versions = [], isLoading: isLoadingVersions } = useGetRoleplaySpecVersionsQuery(
@@ -55,7 +50,7 @@ export const PublishPanel: React.FC<PublishPanelProps> = ({ onSaveDraft }) => {
   );
   const [publishVersion, { isLoading: isPublishing }] = usePublishRoleplayVersionMutation();
   const [createVersion] = useCreateRoleplaySpecVersionMutation();
-  const [createSession, { isLoading: isStartingSession }] = useCreateRoleplaySessionMutation();
+  const { tryLive, isStartingSession } = useTryRoleplayLive({ onSaveDraft });
   const [fetchSpec] = useLazyGetRoleplaySpecByIdQuery();
 
   const [forceConfirmVersionId, setForceConfirmVersionId] = useState<string | null>(null);
@@ -102,42 +97,7 @@ export const PublishPanel: React.FC<PublishPanelProps> = ({ onSaveDraft }) => {
     }
   };
 
-  const handleTryLive = async (targetVersionId: string) => {
-    if (!specId || !spec) return;
-    try {
-      if (targetVersionId === versionId) await onSaveDraft();
-      const session = await createSession({ specId, versionId: targetVersionId }).unwrap();
-
-      // Mirrors SimulationPreview's room-data handoff (localStorage -> the
-      // live preview route reads it back via useLiveKitRoom).
-      const roomData: RoleplayPreviewRoomData = {
-        sessionId: session.sessionId,
-        specId,
-        versionId: targetVersionId,
-        roomId: session.roomId || session.accessToken?.roomName,
-        title: spec.title,
-        localParticipant: {
-          name: user?.name,
-          coverImageUrl: user?.profileImageUrl,
-        },
-        remoteParticipant: {
-          name: spec.title,
-          coverImageUrl: undefined,
-        },
-        accessToken: session.accessToken.token,
-        roomName: session.accessToken.roomName,
-        createdAt: new Date().toISOString(),
-        serverUrl: session.accessToken.serverUrl,
-        useDirectAgentDispatch: session.useDirectAgentDispatch ?? false,
-        stateNames: spec.stateMachine.states.map(state => state.name),
-        difficultyLevel: spec.difficulty || "",
-      };
-      localStorage.setItem(LOCAL_STORAGE_KEYS.ROLEPLAY_PREVIEW_ROOM_DATA, JSON.stringify(roomData));
-      navigate(ROUTES.ROLEPLAY_STUDIO_PREVIEW(session.accessToken.roomName));
-    } catch {
-      toast.error(strings.sessionFailed);
-    }
-  };
+  const handleTryLive = (targetVersionId: string) => void tryLive(targetVersionId);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto custom-scrollbar pb-6 max-w-[880px]">

@@ -326,3 +326,97 @@ describe("useCopilotStream", () => {
     expect(result.current.messages).toEqual([]);
   });
 });
+
+describe("mapServerMessagesToFeed", () => {
+  const rows = [
+    { id: "m1", seq: 1, role: "user" as const, content: "Build me a roleplay" },
+    {
+      id: "m2",
+      seq: 2,
+      role: "assistant" as const,
+      content: "Let's start.",
+      metadata: {
+        questions: [{ id: "q-1", prompt: "Which skill?", kind: "freeText" as const }],
+        testCaseSuggestions: [
+          { id: "s-1", title: "Leak check", condition: "probe", test: "no leak" },
+          { id: "s-2", title: "Escalation", condition: "escalate", test: "holds" },
+        ],
+      },
+      toolResults: [{ name: "compile_spec", result: { summary: "Spec compiles cleanly" } }],
+    },
+    {
+      id: "m3",
+      seq: 3,
+      role: "user" as const,
+      content: "[answers question q-1] Reflective listening",
+      metadata: { questionId: "q-1" },
+    },
+    {
+      id: "m4",
+      seq: 4,
+      role: "user" as const,
+      content: "[accepted 1 suggested test case(s): Leak check]",
+      metadata: { kind: "test_cases_accepted" as const, suggestionIds: ["s-1"] },
+    },
+    {
+      id: "m5",
+      seq: 5,
+      role: "assistant" as const,
+      content: "**Round 1 rehearsed** — overall **65**",
+      metadata: {
+        kind: "improvement_update" as const,
+        subkind: "round_scored",
+        improvementRunId: "run-1",
+        roundNumber: 1,
+        scores: { overall: 65, testCounts: { passed: 1, failed: 1, inconclusive: 0 } },
+      },
+    },
+    {
+      id: "m6",
+      seq: 6,
+      role: "assistant" as const,
+      content: "Ready to test live & publish.",
+      metadata: {
+        kind: "improvement_ready" as const,
+        improvementRunId: "run-1",
+        specId: "spec-1",
+        bestVersionId: "v-best",
+        acceptedVersionId: "v-accepted",
+      },
+    },
+  ];
+
+  it("reconstructs the full card fidelity from persisted rows", async () => {
+    const { mapServerMessagesToFeed } = await import("@hooks/useCopilotStream");
+    const feed = mapServerMessagesToFeed(rows as never);
+
+    // m2 expands into: text bubble (+ tool note), question card, suggestions card.
+    const textBubble = feed.find(m => m.content === "Let's start.");
+    expect(textBubble?.toolNotes).toEqual(["compile_spec: Spec compiles cleanly"]);
+
+    const questionCard = feed.find(m => m.question?.id === "q-1");
+    expect(questionCard?.answeredWith).toBe("Reflective listening");
+
+    const suggestionsCard = feed.find(m => (m.testCaseSuggestions?.length ?? 0) > 0);
+    expect(suggestionsCard?.acceptedSuggestionIds).toEqual(["s-1"]);
+
+    // The answer row strips its bracket prefix; the marker row is a system note.
+    const answerBubble = feed.find(m => m.content === "Reflective listening" && m.role === "user");
+    expect(answerBubble).toBeDefined();
+    const markerNote = feed.find(m => m.systemNote);
+    expect(markerNote?.content).toContain("accepted 1 suggested");
+
+    // Loop rows become dedicated cards.
+    const progress = feed.find(m => m.improvementUpdate);
+    expect(progress?.improvementUpdate?.scores?.overall).toBe(65);
+    const ready = feed.find(m => m.improvementReady);
+    expect(ready?.improvementReady?.bestVersionId).toBe("v-best");
+  });
+
+  it("leaves unanswered questions interactive", async () => {
+    const { mapServerMessagesToFeed } = await import("@hooks/useCopilotStream");
+    const feed = mapServerMessagesToFeed([rows[1]] as never);
+    const questionCard = feed.find(m => m.question?.id === "q-1");
+    expect(questionCard?.answeredWith).toBeUndefined();
+  });
+});

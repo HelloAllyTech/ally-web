@@ -231,7 +231,10 @@ export const ApiEndpoints = {
       `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/publish`,
     // specId travels in the POST body (backend DTO), not the URL.
     CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
+    COPILOT_SESSIONS: `/v1/roleplay-studio/copilot/sessions`,
     COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
+    COPILOT_SESSION_TEST_CASES: (sessionId: string) =>
+      `/v1/roleplay-studio/copilot/sessions/${sessionId}/test-cases`,
     COPILOT_SESSION_MESSAGES: (sessionId: string) =>
       `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
     COPILOT_SESSION_STREAM: (sessionId: string) =>

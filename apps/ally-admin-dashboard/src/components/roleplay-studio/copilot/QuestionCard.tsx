@@ -8,24 +8,27 @@ import { CopilotQuestionEvent } from "@src/types/roleplayStudio";
 
 interface QuestionCardProps {
   question: CopilotQuestionEvent;
-  /** Answering sends a normal next chat message. */
-  onAnswer: (answer: string) => void;
+  /** On resume: the answer the trainer already gave (locks the card). */
+  answeredWith?: string;
+  /** Answering sends a normal next chat message, tagged with the question id. */
+  onAnswer: (answer: string, questionId: string) => void;
   disabled?: boolean;
 }
 
 /**
  * Structured `question` SSE events render as an answer card: choice questions
  * get one button per option, free-text questions get a small inline composer.
- * Once answered the card locks, showing the chosen answer.
+ * Once answered the card locks, showing the chosen answer (also on resume).
  */
 export const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
+  answeredWith,
   onAnswer,
   disabled = false,
 }) => {
   const [freeText, setFreeText] = useState("");
   const strings = en.roleplayStudio.copilot;
-  const [submittedAnswer, setSubmittedAnswer] = useState<string | null>(null);
+  const [submittedAnswer, setSubmittedAnswer] = useState<string | null>(answeredWith ?? null);
 
   const answered = submittedAnswer !== null;
 
@@ -33,7 +36,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     const trimmed = answer.trim();
     if (!trimmed || answered || disabled) return;
     setSubmittedAnswer(trimmed);
-    onAnswer(trimmed);
+    onAnswer(trimmed, question.id);
   };
 
   return (

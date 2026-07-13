@@ -7,12 +7,16 @@ import { en } from "@constants";
 import { CopilotChatMessage } from "@src/types/roleplayStudio";
 
 import { roleplayMarkdownComponents } from "../markdownComponents";
+import { ImprovementProgressCard } from "./ImprovementProgressCard";
+import { ImprovementReadyCard } from "./ImprovementReadyCard";
 import { QuestionCard } from "./QuestionCard";
 import { TestCaseSuggestionCard } from "./TestCaseSuggestionCard";
 
 interface ChatMessageProps {
   message: CopilotChatMessage;
-  onAnswerQuestion: (answer: string) => void;
+  /** Copilot session the message belongs to (test-case acceptance target). */
+  sessionId: string | null;
+  onAnswerQuestion: (answer: string, questionId: string) => void;
   disabled?: boolean;
 }
 
@@ -23,10 +27,23 @@ interface ChatMessageProps {
  */
 export const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
+  sessionId,
   onAnswerQuestion,
   disabled = false,
 }) => {
   const strings = en.roleplayStudio.copilot;
+
+  // Marker rows (e.g. accepted test cases) render as a subtle centered note.
+  if (message.systemNote) {
+    return (
+      <div className="flex justify-center">
+        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs text-typography-600">
+          {message.content}
+        </span>
+      </div>
+    );
+  }
+
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
@@ -37,9 +54,23 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     );
   }
 
+  if (message.improvementReady) {
+    return <ImprovementReadyCard content={message.content} payload={message.improvementReady} />;
+  }
+  if (message.improvementUpdate) {
+    return (
+      <ImprovementProgressCard content={message.content} payload={message.improvementUpdate} />
+    );
+  }
+
   if (message.question) {
     return (
-      <QuestionCard question={message.question} onAnswer={onAnswerQuestion} disabled={disabled} />
+      <QuestionCard
+        question={message.question}
+        answeredWith={message.answeredWith}
+        onAnswer={onAnswerQuestion}
+        disabled={disabled}
+      />
     );
   }
 
@@ -79,7 +110,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         {message.testCaseSuggestions && message.testCaseSuggestions.length > 0 && (
           <div className="mt-2 flex flex-col gap-2">
             {message.testCaseSuggestions.map(suggestion => (
-              <TestCaseSuggestionCard key={suggestion.id} suggestion={suggestion} />
+              <TestCaseSuggestionCard
+                key={suggestion.id}
+                suggestion={suggestion}
+                sessionId={sessionId}
+                initiallyAccepted={message.acceptedSuggestionIds?.includes(suggestion.id)}
+              />
             ))}
           </div>
         )}

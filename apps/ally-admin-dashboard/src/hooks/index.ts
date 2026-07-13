@@ -1,3 +1,4 @@
+import { useActiveImprovementRun } from "./useActiveImprovementRun";
 import { useClickOutside } from "./useClickOutside";
 import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
@@ -12,6 +13,7 @@ import { useSimulationPathways } from "./useSimulationPathways";
 import { useSimulations } from "./useSimulations";
 import { useSpecAutosave } from "./useSpecAutosave";
 import { useTracks } from "./useTracks";
+import { useTryRoleplayLive } from "./useTryRoleplayLive";
 import { useUser } from "./useUser";
 
 export {
@@ -28,6 +30,8 @@ export {
   useScenarioTranslationsSocket,
   useResolvedPrimaryLanguageId,
   useCopilotStream,
+  useTryRoleplayLive,
+  useActiveImprovementRun,
   useSpecAutosave,
   useTracks,
 };

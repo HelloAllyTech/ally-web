@@ -7,34 +7,31 @@ import { toast } from "sonner";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api";
 import { ArrowDown } from "@assets";
-import {
-  CopilotChatPanel,
-  ImprovementPanel,
-  PublishPanel,
-  RehearsalPanel,
-  SpecPanel,
-  StateMachineEditor,
-} from "@components";
+import { CopilotChatPanel, PublishPanel, SpecWorkbench } from "@components";
 import { en, ROUTES } from "@constants";
-import { useSpecAutosave } from "@hooks";
-import { hydrateSpec, resetRoleplayStudio, selectRoleplaySpecState, setSpecTitle } from "@reducer";
+import { useActiveImprovementRun, useSpecAutosave } from "@hooks";
+import {
+  hydrateSpec,
+  resetRoleplayStudio,
+  selectRoleplaySpecState,
+  setImprovementRunning,
+  setSpecTitle,
+} from "@reducer";
 import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 
+// The studio is chat-first: everything from interview through auto-improve
+// happens in the chat (spec editable on the right); Publish keeps version
+// history + republish. Legacy `?step=` values (interview/spec/rehearse/
+// improve) fall back to chat via the VALID_STEPS guard.
 export const ROLEPLAY_STEP_IDS = {
-  INTERVIEW: "interview",
-  SPEC: "spec",
-  REHEARSE: "rehearse",
-  IMPROVE: "improve",
+  CHAT: "chat",
   PUBLISH: "publish",
 } as const;
 
 // Built lazily (not at module-eval time) so partial `@constants` mocks in
 // unrelated tests never trip on `en.roleplayStudio` (mirrors navigation.ts).
 const buildStepTabs = () => [
-  { id: ROLEPLAY_STEP_IDS.INTERVIEW, label: en.roleplayStudio.steps.interview },
-  { id: ROLEPLAY_STEP_IDS.SPEC, label: en.roleplayStudio.steps.spec },
-  { id: ROLEPLAY_STEP_IDS.REHEARSE, label: en.roleplayStudio.steps.rehearse },
-  { id: ROLEPLAY_STEP_IDS.IMPROVE, label: en.roleplayStudio.steps.improve },
+  { id: ROLEPLAY_STEP_IDS.CHAT, label: en.roleplayStudio.steps.chat },
   { id: ROLEPLAY_STEP_IDS.PUBLISH, label: en.roleplayStudio.steps.publish },
 ];
 
@@ -102,7 +99,7 @@ export const RoleplayStudioWorkspace: React.FC = () => {
   const { specId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const stepParam = searchParams.get("step") ?? "";
-  const step = VALID_STEPS.has(stepParam) ? stepParam : ROLEPLAY_STEP_IDS.INTERVIEW;
+  const step = VALID_STEPS.has(stepParam) ? stepParam : ROLEPLAY_STEP_IDS.CHAT;
 
   const isNew = !specId;
   const [createSpec] = useCreateRoleplaySpecMutation();
@@ -149,6 +146,13 @@ export const RoleplayStudioWorkspace: React.FC = () => {
   // Leave the studio clean for the next spec.
   useEffect(() => () => void dispatch(resetRoleplayStudio()), [dispatch]);
 
+  // Auto-improve awareness: lock spec editing + pause autosave while a loop
+  // is rewriting versions (it may auto-accept into the draft).
+  const { improvementRunning } = useActiveImprovementRun(specId ?? null);
+  useEffect(() => {
+    dispatch(setImprovementRunning(improvementRunning));
+  }, [dispatch, improvementRunning]);
+
   // Background draft persistence (10s cadence + step change + beforeunload).
   const { saveNow } = useSpecAutosave({ step });
 
@@ -162,26 +166,9 @@ export const RoleplayStudioWorkspace: React.FC = () => {
 
   const renderStep = () => {
     switch (step) {
-      case ROLEPLAY_STEP_IDS.SPEC:
-        return (
-          <div className="grid grid-cols-2 gap-6 h-full min-h-0">
-            {/* Left — editable spec sections. */}
-            <div className="min-h-0 h-full overflow-y-auto custom-scrollbar pr-1">
-              <SpecPanel />
-            </div>
-            {/* Right — state machine canvas (lazy-loaded @xyflow/react). */}
-            <div className="min-h-0 h-full">
-              <StateMachineEditor />
-            </div>
-          </div>
-        );
-      case ROLEPLAY_STEP_IDS.REHEARSE:
-        return <RehearsalPanel />;
-      case ROLEPLAY_STEP_IDS.IMPROVE:
-        return <ImprovementPanel />;
       case ROLEPLAY_STEP_IDS.PUBLISH:
         return <PublishPanel onSaveDraft={saveNow} />;
-      case ROLEPLAY_STEP_IDS.INTERVIEW:
+      case ROLEPLAY_STEP_IDS.CHAT:
       default:
         return (
           <div className="grid grid-cols-2 gap-6 h-full min-h-0">
@@ -189,10 +176,10 @@ export const RoleplayStudioWorkspace: React.FC = () => {
             <div className="min-h-0 h-full overflow-hidden">
               <CopilotChatPanel />
             </div>
-            {/* Right — live spec document, lit up section-by-section as
-                streamed patches land. Read-only during the interview. */}
-            <div className="min-h-0 h-full overflow-y-auto custom-scrollbar border-l border-border-light pl-6">
-              <SpecPanel readOnly />
+            {/* Right — editable spec / state-machine workbench, locked while
+                the copilot streams or an auto-improve loop is running. */}
+            <div className="min-h-0 h-full border-l border-border-light pl-6">
+              <SpecWorkbench />
             </div>
           </div>
         );
