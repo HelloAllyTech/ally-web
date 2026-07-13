@@ -6,6 +6,7 @@ import {
   Permissions,
   UserRole,
   isSuperAdminRole,
+  isSuperDuperAdminRole,
   isRoleplayStudioEmailAllowed,
 } from "@constants";
 import { store } from "@store";
@@ -130,11 +131,19 @@ export const applySavedOrder = (
 };
 
 /**
- * Resolves the navigation tabs visible to a user, in their effective order:
- * permission-gated items (require permissions to be loaded), plus role-gated
- * items (Analytics, Settings) for super-admins, then reordered by the user's
- * saved sidebar order. The first element is the user's "first tab" — used both
- * to render the sidebar and to pick the default landing route after login.
+ * Resolves the navigation tabs visible to a user, in their effective order,
+ * then reordered by the user's saved sidebar order. The first element is the
+ * user's "first tab" — used both to render the sidebar and to pick the default
+ * landing route after login. Tabs fall into three gating tiers:
+ *  - Super-duper-admin only (Characters, Languages, Guardrails, Tooltips,
+ *    Badges, Agent Test Cases, Settings): shown solely to SUPER_DUPER_ADMIN,
+ *    independent of permissions.
+ *  - Super-admin tier (Analytics, Competencies, Roleplay Session Logs): shown
+ *    to both super-admin roles, independent of permissions.
+ *  - Permission-gated (everything else): shown once permissions are loaded and
+ *    the user holds the required permission.
+ * The single-pass filter preserves each tab's natural order from
+ * buildNavigationItems (Settings stays last).
  */
 export const deriveNavigationItems = ({
   permissions,
@@ -157,70 +166,61 @@ export const deriveNavigationItems = ({
   const navigationItems = buildNavigationItems();
   const resolvedEmail = email ?? store.getState()?.user?.user?.email;
   const isSuperAdmin = isSuperAdminRole(role);
-  // Role-gated (super-admin only) items, appended below independently of
-  // permissions, in nav order: Analytics then Settings (last).
-  const roleGatedItems = navigationItems.filter(item =>
-    [
-      SIDEBAR_ITEMS.ANALYTICS,
-      SIDEBAR_ITEMS.AGENT_TEST_CASES,
-      SIDEBAR_ITEMS.COMPETENCIES,
-      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-      SIDEBAR_ITEMS.SETTINGS,
-    ].includes(item.id),
-  );
+  const isSuperDuperAdmin = isSuperDuperAdminRole(role);
+  const hasPermissions = Boolean(permissions && permissions.length > 0);
 
-  // Permission-gated items require permissions to be loaded; until then show
-  // nothing for them. Role-gated items are appended below.
-  const base =
-    !permissions || permissions.length === 0
-      ? []
-      : navigationItems.filter(item => {
-          switch (item.id) {
-            case SIDEBAR_ITEMS.SIMULATION_STUDIO:
-              return permissions.includes(Permissions.EDIT_SCENARIO);
-            case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
-              // Rollout gate: permission AND the temporary email allowlist.
-              return (
-                permissions.includes(Permissions.VIEW_ROLEPLAY_SPECS) &&
-                isRoleplayStudioEmailAllowed(resolvedEmail)
-              );
-            case SIDEBAR_ITEMS.EVENTS:
-              return permissions.includes(Permissions.EDIT_EVENT);
-            case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
-              return permissions.includes(Permissions.EDIT_CHARACTER_LIBRARY);
-            case SIDEBAR_ITEMS.SCENARIO_VOICES:
-              return permissions.includes(Permissions.EDIT_SCENARIO_VOICE);
-            case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
-              return permissions.includes(Permissions.EDIT_SCENARIO_LANGUAGE);
-            case SIDEBAR_ITEMS.PROMPTS:
-              return permissions.includes(Permissions.EDIT_PROMPT);
-            case SIDEBAR_ITEMS.USERS:
-              return (
-                permissions.includes(Permissions.EDIT_USER) ||
-                permissions.includes(Permissions.VIEW_USERS)
-              );
-            case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
-              return permissions.includes(Permissions.EDIT_GUARDRAIL);
-            case SIDEBAR_ITEMS.TRANSLATIONS:
-              return permissions.includes(Permissions.VIEW_I18N_TRANSLATIONS);
-            case SIDEBAR_ITEMS.TOOLTIPS:
-              return permissions.includes(Permissions.VIEW_TOOLTIPS);
-            case SIDEBAR_ITEMS.BLOG:
-              return permissions.includes(Permissions.VIEW_BLOGS);
-            case SIDEBAR_ITEMS.USER_BADGES:
-              return permissions.includes(Permissions.VIEW_ADMIN_BADGE);
-            case SIDEBAR_ITEMS.ANALYTICS:
-            case SIDEBAR_ITEMS.AGENT_TEST_CASES:
-            case SIDEBAR_ITEMS.COMPETENCIES:
-            case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
-            case SIDEBAR_ITEMS.SETTINGS:
-              // Role-gated, not permission-gated; appended below for super-admins.
-              return false;
-            default:
-              return true;
-          }
-        });
+  const visible = navigationItems.filter(item => {
+    switch (item.id) {
+      // Super-duper-admin-only tabs. Role-gated (no permission required); a
+      // plain SUPER_ADMIN no longer sees these.
+      case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
+      case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
+      case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
+      case SIDEBAR_ITEMS.TOOLTIPS:
+      case SIDEBAR_ITEMS.USER_BADGES:
+      case SIDEBAR_ITEMS.AGENT_TEST_CASES:
+      case SIDEBAR_ITEMS.SETTINGS:
+        return isSuperDuperAdmin;
 
-  const visible = isSuperAdmin ? [...base, ...roleGatedItems] : base;
+      // Super-admin-tier tabs (both super-admin roles). Role-gated.
+      case SIDEBAR_ITEMS.ANALYTICS:
+      case SIDEBAR_ITEMS.COMPETENCIES:
+      case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
+        return isSuperAdmin;
+
+      // Permission-gated tabs require permissions to be loaded; until then
+      // show nothing for them.
+      default:
+        if (!hasPermissions) return false;
+        switch (item.id) {
+          case SIDEBAR_ITEMS.SIMULATION_STUDIO:
+            return permissions!.includes(Permissions.EDIT_SCENARIO);
+          case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
+            // Rollout gate: permission AND the temporary email allowlist.
+            return (
+              permissions!.includes(Permissions.VIEW_ROLEPLAY_SPECS) &&
+              isRoleplayStudioEmailAllowed(resolvedEmail)
+            );
+          case SIDEBAR_ITEMS.EVENTS:
+            return permissions!.includes(Permissions.EDIT_EVENT);
+          case SIDEBAR_ITEMS.SCENARIO_VOICES:
+            return permissions!.includes(Permissions.EDIT_SCENARIO_VOICE);
+          case SIDEBAR_ITEMS.PROMPTS:
+            return permissions!.includes(Permissions.EDIT_PROMPT);
+          case SIDEBAR_ITEMS.USERS:
+            return (
+              permissions!.includes(Permissions.EDIT_USER) ||
+              permissions!.includes(Permissions.VIEW_USERS)
+            );
+          case SIDEBAR_ITEMS.TRANSLATIONS:
+            return permissions!.includes(Permissions.VIEW_I18N_TRANSLATIONS);
+          case SIDEBAR_ITEMS.BLOG:
+            return permissions!.includes(Permissions.VIEW_BLOGS);
+          default:
+            return true;
+        }
+    }
+  });
+
   return applySavedOrder(visible, savedOrder);
 };
