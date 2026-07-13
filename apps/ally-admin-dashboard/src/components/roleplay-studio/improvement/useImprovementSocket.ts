@@ -24,7 +24,7 @@ interface UseImprovementSocketProps {
 /**
  * Live auto-improve progress over socket.io namespace
  * `roleplay-studio/improvements` (event IMPROVEMENTS_UPDATED). Simplified
- * clone of useRehearsalSocket: bearer auth from localStorage, capped
+ * clone of useScenarioReportsSocket: bearer auth from localStorage, capped
  * exponential-backoff reconnection, rooms re-joined on every (re)connect.
  */
 export const useImprovementSocket = ({

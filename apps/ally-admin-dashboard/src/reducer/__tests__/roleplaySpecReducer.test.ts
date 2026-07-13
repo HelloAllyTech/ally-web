@@ -9,6 +9,7 @@ import roleplaySpecSlice, {
   rejectProposal,
   removeState,
   RoleplaySpecState,
+  setImprovementRunning,
   setSpecTitle,
   setStreaming,
   upsertTransition,
@@ -177,6 +178,13 @@ describe("roleplaySpecReducer", () => {
       expect(state.spec).toEqual(specBefore);
       expect(state.pendingProposals).toHaveLength(0);
     });
+  });
+
+  it("setImprovementRunning toggles the loop lock flag", () => {
+    let state = roleplaySpecSlice.reducer(hydratedState(), setImprovementRunning(true));
+    expect(state.improvementRunning).toBe(true);
+    state = roleplaySpecSlice.reducer(state, setImprovementRunning(false));
+    expect(state.improvementRunning).toBe(false);
   });
 
   it("removeState strips inbound transitions, layout, and re-picks the initial state", () => {

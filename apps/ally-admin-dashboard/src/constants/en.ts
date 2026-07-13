@@ -771,11 +771,14 @@ export const en = {
       actions: "",
     },
     steps: {
-      interview: "Interview",
-      spec: "Spec",
-      rehearse: "Rehearse",
-      improve: "Improve",
+      chat: "Chat",
       publish: "Publish",
+    },
+    workbench: {
+      specView: "Spec",
+      stateMachineView: "State machine",
+      lockedStreaming: "Editing paused while the copilot is working",
+      lockedImproving: "Editing paused while auto-improve is running",
     },
     autosave: {
       saving: "Saving…",
@@ -808,6 +811,15 @@ export const en = {
       testCaseAccepted: "Saved",
       testCaseSaved: "Test case saved to the library",
       testCaseSaveFailed: "Couldn’t save the test case",
+      improvement: {
+        loopLabel: "Auto-improve",
+        vsPreviousRound: "vs previous round",
+        testsPassing: (fraction: string) => `tests ${fraction} passing`,
+        testLive: "Test live",
+        publish: "Publish",
+        viewChanges: "View changes",
+        hideChanges: "Hide changes",
+      },
     },
     spec: {
       personaBible: "Persona Bible",

@@ -257,19 +257,61 @@ export interface PublishRoleplayVersionInput {
 
 export interface RoleplayCopilotSession {
   id: string;
-  phase: string;
-  interviewState?: Record<string, unknown> | null;
-  specVersionId: string;
-  /** Present on session resume (GET). */
+  specId?: string;
+  status?: string;
+  /** Present on session resume (GET sessions/:id). */
   messages?: RoleplayCopilotServerMessage[];
-  spec?: RoleplaySpec;
+  createdAt?: string;
+}
+
+/** Structured payload of a loop progress row (metadata.kind=improvement_update). */
+export interface CopilotImprovementUpdatePayload {
+  kind: "improvement_update";
+  subkind: "round_scored" | "proposals_applied" | "finished" | "failed";
+  improvementRunId: string;
+  roundNumber?: number;
+  roundKind?: string;
+  scores?: { overall: number | null; testCounts: Record<string, number> | null } | null;
+  deltas?: { overallVsPrevious: number | null; overallVsBaseline: number | null };
+  proposals?: Array<{ summary: string; targetSection: string; severity: string }>;
+  outcome?: string | null;
+  trajectory?: Array<{
+    roundNumber: number;
+    kind: string;
+    overall: number | null;
+    testCounts: Record<string, number> | null;
+  }>;
+}
+
+/** Structured payload of the "ready" row (metadata.kind=improvement_ready). */
+export interface CopilotImprovementReadyPayload {
+  kind: "improvement_ready";
+  improvementRunId: string;
+  specId: string;
+  bestVersionId: string | null;
+  acceptedVersionId: string | null;
+  scores?: { overall: number | null; testCounts: Record<string, number> | null } | null;
+}
+
+export interface RoleplayCopilotMessageMetadata {
+  /** On user rows answering an ask_trainer question. */
+  questionId?: string;
+  /** On assistant rows: structured cards emitted during that turn. */
+  questions?: CopilotQuestionEvent[];
+  testCaseSuggestions?: CopilotTestCaseSuggestion[];
+  /** Loop narration / marker rows. */
+  kind?: "improvement_update" | "improvement_ready" | "test_cases_accepted";
+  suggestionIds?: string[];
+  [key: string]: unknown;
 }
 
 export interface RoleplayCopilotServerMessage {
   id?: string;
   seq?: number;
   role: "user" | "assistant";
-  content: string;
+  content: string | null;
+  metadata?: RoleplayCopilotMessageMetadata | null;
+  toolResults?: Array<{ name?: string; result?: unknown }> | null;
   createdAt?: string;
 }
 
@@ -342,8 +384,18 @@ export interface CopilotChatMessage {
   content: string;
   /** Present when the assistant asked a structured question. */
   question?: CopilotQuestionEvent;
+  /** On resumed questions: the answer the trainer already gave. */
+  answeredWith?: string;
   /** Present when the assistant suggested agent test cases (accept-to-persist cards). */
   testCaseSuggestions?: CopilotTestCaseSuggestion[];
+  /** Resumed suggestion cards already accepted (by suggestion id). */
+  acceptedSuggestionIds?: string[];
+  /** Auto-improve loop progress row. */
+  improvementUpdate?: CopilotImprovementUpdatePayload;
+  /** The "ready to test live & publish" row (renders action buttons). */
+  improvementReady?: CopilotImprovementReadyPayload;
+  /** Subtle system-style note (e.g. accepted-test-cases marker). */
+  systemNote?: boolean;
   /** Tool activity annotations shown inline. */
   toolNotes?: string[];
   /** True when a stream was aborted mid-message. */

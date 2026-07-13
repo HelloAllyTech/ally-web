@@ -35,7 +35,6 @@ export interface RoleplaySpecState {
   specId: string | null;
   versionId: string | null;
   copilotSessionId: string | null;
-  interviewPhase: string | null;
   spec: RoleplaySpec | null;
   /** Monotonic local edit counter. */
   revision: number;
@@ -46,6 +45,9 @@ export interface RoleplaySpecState {
   saveStatus: RoleplaySaveStatus;
   /** True while a copilot stream is in flight — autosave must pause. */
   isStreaming: boolean;
+  /** True while an auto-improve loop is RUNNING for this spec — editing is
+   *  locked and autosave paused (the loop may auto-accept into the draft). */
+  improvementRunning: boolean;
   patchLog: SpecPatchLogEntry[];
   pendingProposals: RoleplayCritiqueProposal[];
 }
@@ -54,13 +56,13 @@ const initialState: RoleplaySpecState = {
   specId: null,
   versionId: null,
   copilotSessionId: null,
-  interviewPhase: null,
   spec: null,
   revision: 0,
   savedRevision: 0,
   serverUpdatedAt: null,
   saveStatus: "idle",
   isStreaming: false,
+  improvementRunning: false,
   patchLog: [],
   pendingProposals: [],
 };
@@ -106,11 +108,11 @@ const roleplaySpecSlice = createSlice({
     setCopilotSessionId(state, action: PayloadAction<string | null>) {
       state.copilotSessionId = action.payload;
     },
-    setInterviewPhase(state, action: PayloadAction<string | null>) {
-      state.interviewPhase = action.payload;
-    },
     setStreaming(state, action: PayloadAction<boolean>) {
       state.isStreaming = action.payload;
+    },
+    setImprovementRunning(state, action: PayloadAction<boolean>) {
+      state.improvementRunning = action.payload;
     },
     setSaveStatus(state, action: PayloadAction<RoleplaySaveStatus>) {
       state.saveStatus = action.payload;
@@ -405,8 +407,8 @@ export const {
   hydrateSpec,
   resetRoleplayStudio,
   setCopilotSessionId,
-  setInterviewPhase,
   setStreaming,
+  setImprovementRunning,
   setSaveStatus,
   markDraftSaved,
   applySpecPatches,

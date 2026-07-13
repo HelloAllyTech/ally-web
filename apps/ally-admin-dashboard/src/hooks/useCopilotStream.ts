@@ -4,10 +4,12 @@ import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 import { ApiEndpoints, en, HttpMethod, LOCAL_STORAGE_KEYS } from "@constants";
-import { applySpecPatches, setInterviewPhase, setStreaming } from "@reducer";
+import { applySpecPatches, setStreaming } from "@reducer";
 import {
   CopilotChatMessage,
   CopilotDoneEvent,
+  CopilotImprovementReadyPayload,
+  CopilotImprovementUpdatePayload,
   CopilotQuestionEvent,
   CopilotSpecPatchEvent,
   CopilotStreamEvent,
@@ -49,6 +51,112 @@ export const parseSseBuffer = (buffer: string): { events: CopilotStreamEvent[]; 
   }
 
   return { events, rest };
+};
+
+const ANSWER_PREFIX_RE = /^\[answers question [^\]]+\]\s*/i;
+
+/**
+ * Rebuilds the full chat feed from persisted copilot_messages rows — the
+ * resume path. Reconstructs question cards (marked answered via later user
+ * rows' metadata.questionId), test-case suggestion cards (marked accepted via
+ * test_cases_accepted marker rows), loop progress/ready cards, and tool notes.
+ * Pure; exported for unit tests.
+ */
+export const mapServerMessagesToFeed = (
+  rows: RoleplayCopilotServerMessage[],
+): CopilotChatMessage[] => {
+  const answeredQuestions = new Map<string, string>();
+  const acceptedSuggestionIds = new Set<string>();
+  for (const row of rows) {
+    if (row.role !== "user") continue;
+    const questionId = row.metadata?.questionId;
+    if (questionId) {
+      answeredQuestions.set(String(questionId), (row.content ?? "").replace(ANSWER_PREFIX_RE, ""));
+    }
+    if (row.metadata?.kind === "test_cases_accepted") {
+      for (const suggestionId of row.metadata.suggestionIds ?? []) {
+        acceptedSuggestionIds.add(String(suggestionId));
+      }
+    }
+  }
+
+  const feed: CopilotChatMessage[] = [];
+  rows.forEach((row, index) => {
+    const baseId = row.id ?? `srv_${row.seq ?? index}`;
+    const metadata = row.metadata ?? {};
+    const content = row.content ?? "";
+
+    if (row.role === "user") {
+      if (metadata.kind === "test_cases_accepted") {
+        feed.push({ id: baseId, role: "user", content, systemNote: true });
+        return;
+      }
+      feed.push({
+        id: baseId,
+        role: "user",
+        content: content.replace(ANSWER_PREFIX_RE, ""),
+      });
+      return;
+    }
+
+    // Assistant rows: loop narration rows are dedicated cards.
+    if (metadata.kind === "improvement_update") {
+      feed.push({
+        id: baseId,
+        role: "assistant",
+        content,
+        improvementUpdate: metadata as unknown as CopilotImprovementUpdatePayload,
+      });
+      return;
+    }
+    if (metadata.kind === "improvement_ready") {
+      feed.push({
+        id: baseId,
+        role: "assistant",
+        content,
+        improvementReady: metadata as unknown as CopilotImprovementReadyPayload,
+      });
+      return;
+    }
+
+    // Ordinary turn row: text bubble (+ tool notes), then its structured cards.
+    const toolNotes = (row.toolResults ?? [])
+      .map(result => {
+        const summary = (result as { result?: { summary?: string } })?.result?.summary;
+        return result?.name && typeof summary === "string" ? `${result.name}: ${summary}` : null;
+      })
+      .filter((note): note is string => Boolean(note));
+    if (content || toolNotes.length > 0) {
+      feed.push({
+        id: baseId,
+        role: "assistant",
+        content,
+        ...(toolNotes.length > 0 ? { toolNotes } : {}),
+      });
+    }
+    for (const question of metadata.questions ?? []) {
+      feed.push({
+        id: `${baseId}_q_${question.id}`,
+        role: "assistant",
+        content: question.prompt,
+        question,
+        answeredWith: answeredQuestions.get(question.id),
+      });
+    }
+    const suggestions = metadata.testCaseSuggestions ?? [];
+    if (suggestions.length > 0) {
+      feed.push({
+        id: `${baseId}_suggestions`,
+        role: "assistant",
+        content: "",
+        testCaseSuggestions: suggestions,
+        acceptedSuggestionIds: suggestions
+          .map(suggestion => suggestion.id)
+          .filter(id => acceptedSuggestionIds.has(id)),
+      });
+    }
+  });
+  return feed;
 };
 
 const scheduleFrame: (cb: () => void) => number | ReturnType<typeof setTimeout> =
@@ -284,6 +392,7 @@ export const useCopilotStream = ({
     async (
       text: string,
       activeSessionId: string,
+      questionId?: string,
     ): Promise<{
       userMsgId: string;
       assistantId: string;
@@ -308,7 +417,11 @@ export const useCopilotStream = ({
 
       try {
         const url = `${API_BASE_URL}/api${ApiEndpoints.ROLEPLAY_STUDIO.COPILOT_SESSION_STREAM(activeSessionId)}`;
-        const response = await fetchStreamWithReauth(url, { message: text }, controller.signal);
+        const response = await fetchStreamWithReauth(
+          url,
+          { message: text, ...(questionId ? { questionId } : {}) },
+          controller.signal,
+        );
 
         if (!response.ok || !response.body) {
           throw new Error(`Stream request failed (${response.status})`);
@@ -363,11 +476,11 @@ export const useCopilotStream = ({
   );
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, opts?: { questionId?: string }) => {
       const trimmed = text.trim();
       if (!trimmed || !sessionId || abortRef.current) return;
 
-      const first = await runStream(trimmed, sessionId);
+      const first = await runStream(trimmed, sessionId, opts?.questionId);
       if (!first.sessionLost || first.aborted) return;
 
       // The server session is gone (e.g. a local DB reset dropped it). Re-create
@@ -378,7 +491,7 @@ export const useCopilotStream = ({
         toast.error(en.roleplayStudio.copilot.streamFailed);
         return;
       }
-      const retry = await runStream(trimmed, freshId);
+      const retry = await runStream(trimmed, freshId, opts?.questionId);
       // The fresh session vanished too (or a code bug) — surface it rather than
       // looping. One recovery attempt is the ceiling.
       if (retry.sessionLost && !retry.aborted) {
@@ -397,19 +510,19 @@ export const useCopilotStream = ({
   }, []);
 
   /** Seeds the feed from a resumed session (GET .../copilot/sessions/:id). */
-  const hydrateMessages = useCallback(
-    (serverMessages: RoleplayCopilotServerMessage[], phase?: string) => {
-      setMessages(
-        serverMessages.map(message => ({
-          id: message.id ?? `srv_${message.seq ?? nextMessageId()}`,
-          role: message.role,
-          content: message.content,
-        })),
-      );
-      if (phase) dispatch(setInterviewPhase(phase));
-    },
-    [dispatch],
-  );
+  const hydrateMessages = useCallback((serverMessages: RoleplayCopilotServerMessage[]) => {
+    setMessages(mapServerMessagesToFeed(serverMessages));
+  }, []);
 
-  return { messages, isStreaming, sendMessage, stop, hydrateMessages };
+  /**
+   * Full-replace refresh from the server transcript — used when the
+   * improvement loop appends narration rows out-of-band. Skipped while a
+   * stream is in flight (the post-`done` refetch picks the rows up instead).
+   */
+  const replaceFeed = useCallback((serverMessages: RoleplayCopilotServerMessage[]) => {
+    if (abortRef.current) return;
+    setMessages(mapServerMessagesToFeed(serverMessages));
+  }, []);
+
+  return { messages, isStreaming, sendMessage, stop, hydrateMessages, replaceFeed };
 };

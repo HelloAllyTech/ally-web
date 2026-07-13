@@ -175,6 +175,42 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
       ],
     }),
 
+    /** The caller's ACTIVE sessions for a spec, newest first — cross-browser resume. */
+    getRoleplayCopilotSessionsBySpec: builder.query<RoleplayCopilotSession[], string>({
+      query: specId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.COPILOT_SESSIONS,
+        method: HttpMethod.GET,
+        params: { specId },
+      }),
+      transformResponse: (
+        response: RoleplayCopilotSession[] | { data: RoleplayCopilotSession[] },
+      ) => (Array.isArray(response) ? response : (response?.data ?? [])),
+      providesTags: [TAG_TYPES.ROLEPLAY_COPILOT_SESSIONS],
+    }),
+
+    /** Persist accepted suggest_test_cases cards (also wires spec.agentTestCaseIds). */
+    acceptCopilotTestCases: builder.mutation<
+      { testCaseIds: string[]; specVersionId: string },
+      {
+        sessionId: string;
+        testCases: Array<{
+          suggestionId?: string;
+          title: string;
+          category: string;
+          description?: string;
+          condition?: string;
+          test?: string;
+        }>;
+      }
+    >({
+      query: ({ sessionId, testCases }) => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.COPILOT_SESSION_TEST_CASES(sessionId),
+        method: HttpMethod.POST,
+        body: { testCases },
+      }),
+      invalidatesTags: [TAG_TYPES.AGENT_TEST_CASES],
+    }),
+
     getRoleplayCopilotMessages: builder.query<
       GetRoleplayCopilotMessagesResponse,
       GetRoleplayCopilotMessagesParams
@@ -424,6 +460,8 @@ export const {
   useCreateRoleplayCopilotSessionMutation,
   useGetRoleplayCopilotSessionQuery,
   useLazyGetRoleplayCopilotSessionQuery,
+  useLazyGetRoleplayCopilotSessionsBySpecQuery,
+  useAcceptCopilotTestCasesMutation,
   useGetRoleplayCopilotMessagesQuery,
   useLazyGetRoleplayCopilotMessagesQuery,
   useCreateRoleplayRehearsalMutation,
