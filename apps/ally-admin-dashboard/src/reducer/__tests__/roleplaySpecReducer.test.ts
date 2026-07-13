@@ -139,10 +139,11 @@ describe("roleplaySpecReducer", () => {
   describe("proposals", () => {
     const proposal = {
       id: "prop-1",
+      summary: "Sharpen the opening line",
       rationale: "Sharpen the opening",
       targetSection: "openingStatement",
-      severity: "medium",
-      patch: [{ op: "replace" as const, path: "/openingStatement", value: "Better opening" }],
+      severity: "major",
+      ops: [{ op: "replace" as const, path: "/openingStatement", value: "Better opening" }],
     };
 
     it("acceptProposal applies the patch, dirties the draft, and dequeues", () => {
@@ -167,7 +168,7 @@ describe("roleplaySpecReducer", () => {
       const broken = {
         ...proposal,
         id: "prop-2",
-        patch: [{ op: "replace" as const, path: "/missing/path", value: 1 }],
+        ops: [{ op: "replace" as const, path: "/missing/path", value: 1 }],
       };
       let state = roleplaySpecSlice.reducer(hydratedState(), queueProposals([broken]));
       const specBefore = state.spec;

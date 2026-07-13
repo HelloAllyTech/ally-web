@@ -194,6 +194,29 @@ export const useCopilotStream = ({
           ]);
           break;
         }
+        case "test_case_suggestions": {
+          flushTokens();
+          const suggestions = event.data.suggestions ?? [];
+          if (suggestions.length === 0) break;
+          const id = currentAssistantIdRef.current;
+          if (id) {
+            patchAssistantMessage(id, message => ({
+              ...message,
+              testCaseSuggestions: [...(message.testCaseSuggestions ?? []), ...suggestions],
+            }));
+          } else {
+            setMessages(prev => [
+              ...prev,
+              {
+                id: nextMessageId(),
+                role: "assistant",
+                content: "",
+                testCaseSuggestions: suggestions,
+              },
+            ]);
+          }
+          break;
+        }
         case "error": {
           flushTokens();
           const id = currentAssistantIdRef.current;

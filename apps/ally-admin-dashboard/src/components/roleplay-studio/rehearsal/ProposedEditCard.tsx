@@ -10,9 +10,9 @@ import { RoleplayCritiqueProposal } from "@src/types/roleplayStudio";
 import { getValueAtPointer } from "@utils/applyJsonPatch";
 
 const severityStyles: Record<string, string> = {
-  high: "bg-destructive-50 text-destructive-500",
-  medium: "bg-secondary-50 text-typography-900",
-  low: "bg-neutral-100 text-typography-700",
+  critical: "bg-destructive-50 text-destructive-500",
+  major: "bg-secondary-50 text-typography-900",
+  minor: "bg-neutral-100 text-typography-700",
 };
 
 const previewValue = (value: unknown): string => {
@@ -45,7 +45,7 @@ export const ProposedEditCard: React.FC<ProposedEditCardProps> = ({
   const strings = en.roleplayStudio.rehearsal;
   const spec = useSelector(selectRoleplaySpec);
   const severityClass =
-    severityStyles[proposal.severity?.toLowerCase?.() ?? ""] ?? severityStyles.low;
+    severityStyles[proposal.severity?.toLowerCase?.() ?? ""] ?? severityStyles.minor;
 
   return (
     <div className="rounded-lg border border-border-light bg-white p-4">
@@ -59,6 +59,9 @@ export const ProposedEditCard: React.FC<ProposedEditCardProps> = ({
               {strings.severity}: {proposal.severity}
             </span>
           </div>
+          {proposal.summary ? (
+            <p className="mt-2 text-sm font-medium text-typography-900">{proposal.summary}</p>
+          ) : null}
           <p className="mt-2 text-sm text-typography-900">{proposal.rationale}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -80,7 +83,7 @@ export const ProposedEditCard: React.FC<ProposedEditCardProps> = ({
       </div>
 
       <div className="mt-3 flex flex-col gap-2">
-        {proposal.patch.map((op, index) => {
+        {proposal.ops.map((op, index) => {
           const before = spec ? getValueAtPointer(spec, op.path) : undefined;
           return (
             <div

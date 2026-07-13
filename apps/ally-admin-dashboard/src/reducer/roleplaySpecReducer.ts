@@ -184,7 +184,10 @@ const roleplaySpecSlice = createSlice({
       touch(state);
     },
     /** Toggles one of the voice-naturalness runtime flags on the spec. */
-    setNaturalnessFlag(state, action: PayloadAction<{ key: RoleplayNaturalnessFlag; value: boolean }>) {
+    setNaturalnessFlag(
+      state,
+      action: PayloadAction<{ key: RoleplayNaturalnessFlag; value: boolean }>,
+    ) {
       const spec = requireSpec(state);
       if (!spec) return;
       spec[action.payload.key] = action.payload.value;
@@ -382,7 +385,7 @@ const roleplaySpecSlice = createSlice({
       const proposal = state.pendingProposals.find(p => p.id === action.payload);
       if (!proposal || !state.spec) return;
       try {
-        state.spec = applyJsonPatch(current(state.spec) as RoleplaySpec, proposal.patch);
+        state.spec = applyJsonPatch(current(state.spec) as RoleplaySpec, proposal.ops);
         touch(state);
       } catch {
         // Leave the spec untouched if the proposal no longer applies cleanly.

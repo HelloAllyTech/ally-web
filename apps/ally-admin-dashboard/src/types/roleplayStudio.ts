@@ -331,6 +331,7 @@ export type CopilotStreamEvent =
   | { type: "tool_result"; data: CopilotToolResultEvent }
   | { type: "spec_patch"; data: CopilotSpecPatchEvent }
   | { type: "question"; data: CopilotQuestionEvent }
+  | { type: "test_case_suggestions"; data: { suggestions: CopilotTestCaseSuggestion[] } }
   | { type: "error"; data: CopilotErrorEvent }
   | { type: "done"; data: CopilotDoneEvent };
 
@@ -341,6 +342,8 @@ export interface CopilotChatMessage {
   content: string;
   /** Present when the assistant asked a structured question. */
   question?: CopilotQuestionEvent;
+  /** Present when the assistant suggested agent test cases (accept-to-persist cards). */
+  testCaseSuggestions?: CopilotTestCaseSuggestion[];
   /** Tool activity annotations shown inline. */
   toolNotes?: string[];
   /** True when a stream was aborted mid-message. */
@@ -458,17 +461,200 @@ export interface RoleplayRehearsal {
   transcripts?: RoleplayRehearsalTranscript[];
 }
 
+export type RoleplayCritiqueSeverity = "critical" | "major" | "minor";
+
+export type RoleplayCritiqueProposalStatus =
+  | "proposed"
+  | "applied"
+  | "rejected"
+  | "skipped_invalid"
+  | "verified"
+  | "failed_verification";
+
+/** Which metrics a proposal is expected to move — checked after re-rehearsal. */
+export interface RoleplayExpectedEffect {
+  dimensions?: Array<{ name: string; direction: "increase" | "decrease" }>;
+  testCases?: Array<{ id: string; expectedVerdict: RoleplayTestCaseVerdict | string }>;
+}
+
 export interface RoleplayCritiqueProposal {
-  /** Client-assigned identity so accept/reject can address a proposal. */
+  /** Server-assigned id (persisted roleplay_critique_proposals row). */
   id: string;
-  patch: JsonPatchOperation[];
+  /** Canonical flat RFC-6902 ops — the BE normalizes whatever the LLM emitted. */
+  ops: JsonPatchOperation[];
+  summary: string;
   rationale: string;
   targetSection: RoleplaySpecSection | string;
-  severity: string;
+  severity: RoleplayCritiqueSeverity | string;
+  expectedEffect?: RoleplayExpectedEffect | null;
+  status?: RoleplayCritiqueProposalStatus | string;
 }
 
 export interface RoleplayCritiqueResponse {
   proposals: Array<Omit<RoleplayCritiqueProposal, "id"> & { id?: string }>;
+}
+
+// ---------------------------------------------------------------------------
+// Rehearsal comparison (score deltas between two runs)
+// ---------------------------------------------------------------------------
+
+export interface RoleplayDimensionDelta {
+  before: number | null;
+  after: number | null;
+  delta: number | null;
+}
+
+export type RoleplayTestCaseFlip = "FIXED" | "REGRESSED" | "UNCHANGED" | "NEW" | "DROPPED";
+
+export interface RoleplayRehearsalComparison {
+  overall: RoleplayDimensionDelta;
+  dimensions: Record<string, RoleplayDimensionDelta>;
+  testCases: Array<{
+    id: string;
+    title: string;
+    before: string | null;
+    after: string | null;
+    flip: RoleplayTestCaseFlip;
+  }>;
+  testPassRate: RoleplayDimensionDelta;
+  regressed: boolean;
+}
+
+export interface RoleplayRehearsalComparisonResponse {
+  against: {
+    rehearsalId: string;
+    specVersionId?: string;
+    createdAt?: string;
+  } | null;
+  comparison: RoleplayRehearsalComparison | null;
+}
+
+// ---------------------------------------------------------------------------
+// Auto-improve (improvement runs)
+// ---------------------------------------------------------------------------
+
+export type RoleplayImprovementRunStatus =
+  | "RUNNING"
+  | "AWAITING_REVIEW"
+  | "ACCEPTED"
+  | "DISCARDED"
+  | "FAILED"
+  | "CANCELLED";
+
+export type RoleplayImprovementOutcome =
+  | "TARGETS_MET"
+  | "NO_PROPOSALS"
+  | "MAX_ROUNDS"
+  | "NO_IMPROVEMENT"
+  | "TIMED_OUT"
+  | "REHEARSAL_FAILED";
+
+export type RoleplayImprovementRoundKind = "BASELINE" | "ITERATION" | "FINAL_VERIFICATION";
+
+export type RoleplayImprovementRoundStatus =
+  | "REHEARSING"
+  | "CRITIQUING"
+  | "APPLYING"
+  | "DONE"
+  | "FAILED";
+
+export interface RoleplayImprovementRound {
+  id: string;
+  improvementRunId: string;
+  roundNumber: number;
+  kind: RoleplayImprovementRoundKind | string;
+  candidateVersionId: string;
+  rehearsalRunId?: string | null;
+  status: RoleplayImprovementRoundStatus | string;
+  fullScope: boolean;
+  scores?: RoleplayRehearsalResults | null;
+  deltas?: {
+    vsPrevious?: RoleplayRehearsalComparison | null;
+    vsBaseline?: RoleplayRehearsalComparison | null;
+  } | null;
+  proposalsAppliedCount: number;
+}
+
+export interface RoleplayImprovementTargets {
+  minOverall?: number;
+  minDimensions?: Record<string, number>;
+  requireAllTestCasesPass?: boolean;
+}
+
+export interface RoleplayImprovementRun {
+  id: string;
+  specId: string;
+  baseVersionId: string;
+  status: RoleplayImprovementRunStatus | string;
+  outcome?: RoleplayImprovementOutcome | string | null;
+  config: {
+    maxRounds?: number;
+    targets?: RoleplayImprovementTargets;
+    agentTestCaseIds?: string[];
+    traineeProfiles?: RoleplayTraineeProfile[];
+    turnsPerProfile?: number;
+    languageId?: number;
+    judgeModel?: string | null;
+    cheapIntermediateRounds?: boolean;
+    timeoutMinutes?: number;
+  };
+  currentRound: number;
+  bestVersionId?: string | null;
+  bestRehearsalId?: string | null;
+  acceptedVersionId?: string | null;
+  metadata?: Record<string, unknown> | null;
+  endedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface RoleplayImprovementRunDetail extends RoleplayImprovementRun {
+  rounds: RoleplayImprovementRound[];
+  proposals: RoleplayCritiqueProposal[];
+}
+
+export interface RoleplayImprovementDiffEntry {
+  path: string;
+  before: unknown;
+  after: unknown;
+}
+
+export interface RoleplayImprovementDiff {
+  baseVersionId: string;
+  bestVersionId: string | null;
+  changes: RoleplayImprovementDiffEntry[];
+}
+
+export interface StartImprovementRunInput {
+  specId: string;
+  versionId: string;
+  maxRounds?: number;
+  targets?: RoleplayImprovementTargets;
+  agentTestCaseIds?: string[];
+  traineeProfiles?: RoleplayTraineeProfile[];
+  turnsPerProfile?: number;
+  languageId?: number;
+  cheapIntermediateRounds?: boolean;
+}
+
+export enum RoleplayImprovementSocketEvent {
+  CONNECTED = "CONNECTED",
+  JOIN_USER_IMPROVEMENTS_ROOM = "JOIN_USER_IMPROVEMENTS_ROOM",
+  JOIN_IMPROVEMENT_ROOM = "JOIN_IMPROVEMENT_ROOM",
+  IMPROVEMENTS_UPDATED = "IMPROVEMENTS_UPDATED",
+}
+
+// ---------------------------------------------------------------------------
+// Copilot test-case suggestions (SSE frame `test_case_suggestions`)
+// ---------------------------------------------------------------------------
+
+export interface CopilotTestCaseSuggestion {
+  id: string;
+  title: string;
+  category?: string | null;
+  description?: string | null;
+  condition?: string | null;
+  test?: string | null;
 }
 
 // Socket payloads (namespace roleplay/rehearsals)

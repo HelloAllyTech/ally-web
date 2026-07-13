@@ -8,6 +8,7 @@ import { CopilotChatMessage } from "@src/types/roleplayStudio";
 
 import { roleplayMarkdownComponents } from "../markdownComponents";
 import { QuestionCard } from "./QuestionCard";
+import { TestCaseSuggestionCard } from "./TestCaseSuggestionCard";
 
 interface ChatMessageProps {
   message: CopilotChatMessage;
@@ -75,6 +76,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </span>
           </div>
         ) : null}
+        {message.testCaseSuggestions && message.testCaseSuggestions.length > 0 && (
+          <div className="mt-2 flex flex-col gap-2">
+            {message.testCaseSuggestions.map(suggestion => (
+              <TestCaseSuggestionCard key={suggestion.id} suggestion={suggestion} />
+            ))}
+          </div>
+        )}
         {message.error && <p className="mt-1 text-xs text-destructive-500">{message.error}</p>}
       </div>
     </div>

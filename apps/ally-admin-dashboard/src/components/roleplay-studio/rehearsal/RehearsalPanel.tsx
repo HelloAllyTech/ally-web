@@ -9,9 +9,11 @@ import {
   baseAPI,
   useCancelRoleplayRehearsalMutation,
   useCritiqueRoleplayRehearsalMutation,
+  useGetRoleplayRehearsalComparisonQuery,
   useGetRoleplayRehearsalQuery,
   useGetRoleplayRehearsalsBySpecQuery,
   useGetRoleplayRehearsalTranscriptsQuery,
+  useUpdateCritiqueProposalStatusMutation,
 } from "@api";
 import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -46,6 +48,7 @@ export const RehearsalPanel: React.FC = () => {
   );
   const [cancelRehearsal] = useCancelRoleplayRehearsalMutation();
   const [critiqueRehearsal, { isLoading: isCritiquing }] = useCritiqueRoleplayRehearsalMutation();
+  const [updateProposalStatus] = useUpdateCritiqueProposalStatusMutation();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [liveStatuses, setLiveStatuses] = useState<Record<string, RehearsalRunStatusPayload>>({});
@@ -102,6 +105,12 @@ export const RehearsalPanel: React.FC = () => {
   const selectedIsCompleted =
     String(selectedRun?.status ?? "") === RoleplayRehearsalStatus.COMPLETED;
 
+  // Score deltas vs the previous completed rehearsal of this spec.
+  const { data: comparisonData } = useGetRoleplayRehearsalComparisonQuery(
+    { rehearsalId: effectiveSelectedId as string },
+    { skip: !effectiveSelectedId || !selectedIsCompleted },
+  );
+
   const handleCancel = async (rehearsalId: string) => {
     try {
       await cancelRehearsal(rehearsalId).unwrap();
@@ -127,8 +136,16 @@ export const RehearsalPanel: React.FC = () => {
     }
   };
 
+  // Apply locally, then record the decision server-side (audit trail + the
+  // critique history's oscillation guard). Best-effort: a failed PATCH never
+  // blocks the local edit.
+  const decideProposal = (proposalId: string, decision: "applied" | "rejected") => {
+    dispatch(decision === "applied" ? acceptProposal(proposalId) : rejectProposal(proposalId));
+    updateProposalStatus({ proposalId, status: decision }).catch(() => undefined);
+  };
+
   const handleAcceptAll = () => {
-    pendingProposals.forEach(proposal => dispatch(acceptProposal(proposal.id)));
+    pendingProposals.forEach(proposal => decideProposal(proposal.id, "applied"));
   };
 
   const sortedRehearsals = useMemo(
@@ -187,7 +204,10 @@ export const RehearsalPanel: React.FC = () => {
             )}
           </div>
 
-          <JudgeScorecard results={selectedRun.results} />
+          <JudgeScorecard
+            results={selectedRun.results}
+            comparison={comparisonData?.comparison ?? undefined}
+          />
 
           {(selectedRun.results.test_case_results?.length ?? 0) > 0 && (
             <TestCaseResultsCard
@@ -213,8 +233,8 @@ export const RehearsalPanel: React.FC = () => {
                 <ProposedEditCard
                   key={proposal.id}
                   proposal={proposal}
-                  onAccept={() => dispatch(acceptProposal(proposal.id))}
-                  onReject={() => dispatch(rejectProposal(proposal.id))}
+                  onAccept={() => decideProposal(proposal.id, "applied")}
+                  onReject={() => decideProposal(proposal.id, "rejected")}
                 />
               ))}
             </div>
