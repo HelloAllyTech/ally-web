@@ -80,8 +80,8 @@ describe("deriveNavigationItems", () => {
     // Super-admin-tier tabs remain visible to a plain super-admin.
     expect(ids).toContain(SIDEBAR_ITEMS.ANALYTICS);
     expect(ids).toContain(SIDEBAR_ITEMS.COMPETENCIES);
-    expect(ids).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
     // Super-duper-admin-only tabs are hidden from a plain super-admin.
+    expect(ids).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.SETTINGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.AGENT_TEST_CASES);
     expect(ids).not.toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
@@ -100,7 +100,6 @@ describe("deriveNavigationItems", () => {
     expect(result.map(i => i.id)).toEqual([
       SIDEBAR_ITEMS.ANALYTICS,
       SIDEBAR_ITEMS.COMPETENCIES,
-      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
     ]);
   });
 
@@ -167,20 +166,34 @@ describe("deriveNavigationItems", () => {
     expect(ids).not.toContain(SIDEBAR_ITEMS.USER_BADGES);
   });
 
-  it("exposes Roleplay Session Logs only to super-admins", () => {
+  it("exposes Roleplay Session Logs only to super-duper-admins", () => {
+    const superDuperAdmin = deriveNavigationItems({
+      permissions: [Permissions.EDIT_SCENARIO],
+      role: UserRole.SUPER_DUPER_ADMIN,
+      savedOrder: undefined,
+    });
+    expect(superDuperAdmin.map(i => i.id)).toContain(
+      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+    );
+
+    // A plain super-admin no longer sees Roleplay Session Logs.
     const superAdmin = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(superAdmin.map(i => i.id)).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
+    expect(superAdmin.map(i => i.id)).not.toContain(
+      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+    );
 
     const admin = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
       role: UserRole.ADMIN,
       savedOrder: undefined,
     });
-    expect(admin.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
+    expect(admin.map(i => i.id)).not.toContain(
+      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+    );
   });
 
   it("applies the user's saved order so their chosen tab is first", () => {
