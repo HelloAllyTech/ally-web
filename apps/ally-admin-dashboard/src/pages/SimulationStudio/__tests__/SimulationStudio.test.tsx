@@ -1355,4 +1355,38 @@ describe("SimulationStudio", () => {
       expect(screen.getByTestId("preview-sim-1")).toBeInTheDocument();
     });
   });
+
+  describe("Old tracks Create button gating", () => {
+    beforeEach(() => {
+      mockUseSimulationPathways.mockReturnValue({
+        ...defaultPathwaysHookReturn,
+        pathways: mockPathways,
+      });
+    });
+
+    it("hides the Create button on the Tracks tab for a plain super admin", () => {
+      mockUseUser.mockReturnValue({ user: { role: "SUPER_ADMIN" } });
+
+      renderComponent(["/?tab=tracks"]);
+
+      expect(screen.getByTestId("pathway-list")).toBeInTheDocument();
+      expect(screen.queryByText("Create")).not.toBeInTheDocument();
+    });
+
+    it("shows the Create button on the Tracks tab for a super-duper admin", () => {
+      mockUseUser.mockReturnValue({ user: { role: "SUPER_DUPER_ADMIN" } });
+
+      renderComponent(["/?tab=tracks"]);
+
+      expect(screen.getByText("Create")).toBeInTheDocument();
+    });
+
+    it("still shows the Create button on the Simulations tab for a plain super admin", () => {
+      mockUseUser.mockReturnValue({ user: { role: "SUPER_ADMIN" } });
+
+      renderComponent(["/?tab=simulations"]);
+
+      expect(screen.getByText("Create")).toBeInTheDocument();
+    });
+  });
 });
