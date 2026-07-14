@@ -53,6 +53,7 @@ export interface GetReviewsInput {
   sortOrder?: "ASC" | "DESC";
   languageCode?: string;
   readFilter?: string;
+  scenarioId?: number;
 }
 
 export interface GetReviewsResponse {
