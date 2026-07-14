@@ -1,6 +1,7 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { format, parseISO } from "date-fns";
+import { ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useGetPracticeStreakQuery } from "@api";
@@ -17,10 +18,10 @@ const GROUP_BY_ORDER: PracticeStreakGroupBy[] = [
   PracticeStreakGroupBy.MONTH,
 ];
 
-// Progress-ring geometry.
-const RING_SIZE = 124;
-const RING_RADIUS = 54;
-const RING_STROKE = 11;
+// Compact goal-ring geometry (header size).
+const RING_SIZE = 52;
+const RING_STROKE = 5;
+const RING_RADIUS = 21;
 const RING_CENTER = RING_SIZE / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
@@ -28,24 +29,28 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 const DOT_STRIDE = 18; // 14px dot + 4px gap
 const MIN_LABEL_GAP = 30; // drop month labels closer than this to avoid overlap
 
+// How many recent cells the collapsed header previews (older ones clip off the left).
+const PREVIEW_CELLS = 60;
+
 const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
   className,
   defaultGroupBy = PracticeStreakGroupBy.DAY,
 }) => {
   const { t } = useTranslation();
   const [groupBy, setGroupBy] = useState<PracticeStreakGroupBy>(defaultGroupBy);
+  const [expanded, setExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, isFetching, isError } = useGetPracticeStreakQuery({ groupBy });
 
   const cells = data?.cells ?? [];
 
-  // Keep the most recent cells in view when the data or grouping changes.
+  // Keep the most recent cells in view when the panel opens or the data/grouping changes.
   useEffect(() => {
-    if (scrollRef.current) {
+    if (expanded && scrollRef.current) {
       scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
     }
-  }, [cells.length, groupBy]);
+  }, [cells.length, groupBy, expanded]);
 
   const groupByItems = useMemo(
     () =>
@@ -100,6 +105,10 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
     count: goalMinutes,
   });
 
+  const currentStreak = data?.currentStreak ?? 0;
+  const longestStreak = data?.longestStreak ?? 0;
+  const totalMinutes = Math.round(data?.totalMinutes ?? 0);
+
   const renderRing = () => (
     <div
       className="relative shrink-0"
@@ -109,7 +118,7 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
     >
       <svg width={RING_SIZE} height={RING_SIZE} viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}>
         <defs>
-          <linearGradient id="practiceStreakRing" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id="practiceStreakRingCompact" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="rgb(var(--color-primary-500))" />
             <stop offset="100%" stopColor="rgb(var(--color-primary-300))" />
           </linearGradient>
@@ -127,7 +136,7 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
           cy={RING_CENTER}
           r={RING_RADIUS}
           fill="none"
-          stroke="url(#practiceStreakRing)"
+          stroke="url(#practiceStreakRingCompact)"
           strokeWidth={RING_STROKE}
           strokeLinecap="round"
           strokeDasharray={RING_CIRCUMFERENCE}
@@ -136,46 +145,37 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
           className="transition-[stroke-dashoffset] duration-500 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-        <span className="font-secondary text-[26px] leading-none tabular-nums text-typography-900">
-          {currentPeriodMinutes}
-        </span>
-        <span className="mt-1 max-w-[84px] text-center text-[10px] leading-tight text-typography-500">
-          {goalCaption}
-        </span>
+      <span className="absolute inset-0 flex items-center justify-center font-secondary text-[13px] leading-none tabular-nums text-typography-900">
+        {currentPeriodMinutes}
+      </span>
+    </div>
+  );
+
+  // Compact recent-history strip shown in the collapsed header. The full,
+  // scrollable timeline lives in the expandable panel below.
+  const renderPreviewStrip = () => (
+    <div className="hidden min-w-0 flex-1 justify-end overflow-hidden md:flex" aria-hidden>
+      <div className="flex gap-[3px]">
+        {cells.slice(-PREVIEW_CELLS).map(cell => {
+          const level = getHeatmapLevel(cell.minutes, groupBy);
+          return (
+            <span
+              key={cell.periodStart}
+              className={cn("h-3 w-3 shrink-0 rounded-[2px]", HEATMAP_LEVEL_CLASSES[level])}
+            />
+          );
+        })}
       </div>
     </div>
   );
 
-  const renderStat = (value: number, label: string, unit?: string, emoji?: string) => (
-    <div>
-      <div className="flex items-baseline gap-1 font-secondary text-[20px] leading-none tabular-nums text-typography-900">
-        <span>{value}</span>
-        {unit && <span className="text-[12px] font-normal text-typography-600">{unit}</span>}
-        {emoji && <span className="text-[15px] leading-none">{emoji}</span>}
-      </div>
-      <div className="mt-1 text-[10px] uppercase tracking-wide text-typography-500">{label}</div>
-    </div>
-  );
-
-  const renderStats = () => (
-    <div className="flex flex-wrap gap-x-8 gap-y-3">
-      {renderStat(
-        data?.currentStreak ?? 0,
-        t("practiceStreak.stats.currentStreak"),
-        undefined,
-        "🔥",
-      )}
-      {renderStat(
-        data?.longestStreak ?? 0,
-        t("practiceStreak.stats.longestStreak"),
-        t("practiceStreak.units.days"),
-      )}
-      {renderStat(
-        Math.round(data?.totalMinutes ?? 0),
-        t("practiceStreak.stats.total"),
-        t("practiceStreak.units.min"),
-      )}
+  const renderLegend = () => (
+    <div className="mt-3 flex items-center gap-1.5 text-[10px] text-typography-500">
+      <span>{t("practiceStreak.legend.less")}</span>
+      {HEATMAP_LEVEL_CLASSES.map((cls, level) => (
+        <span key={level} className={cn("h-3 w-3 rounded-[2px]", cls)} />
+      ))}
+      <span>{t("practiceStreak.legend.more")}</span>
     </div>
   );
 
@@ -213,73 +213,121 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
     </div>
   );
 
-  const renderBody = () => {
+  const renderHeader = () => {
     if (isLoading) {
       return (
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center" aria-hidden>
+        <div className="flex items-center gap-3" aria-hidden>
           <div
             className="shrink-0 animate-pulse rounded-full bg-neutral-100"
             style={{ width: RING_SIZE, height: RING_SIZE }}
           />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap gap-x-8 gap-y-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="flex flex-col gap-2">
-                  <div className="h-5 w-10 animate-pulse rounded bg-neutral-100" />
-                  <div className="h-2 w-14 animate-pulse rounded bg-neutral-100" />
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 flex gap-1">
-              {Array.from({ length: 20 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-3.5 w-3.5 animate-pulse rounded-[3px] bg-neutral-100"
-                />
-              ))}
-            </div>
+          <div className="flex flex-col gap-2">
+            <div className="h-5 w-28 animate-pulse rounded bg-neutral-100" />
+            <div className="h-3 w-40 animate-pulse rounded bg-neutral-100" />
+          </div>
+          <div className="ml-auto hidden gap-[3px] md:flex">
+            {Array.from({ length: 24 }).map((_, index) => (
+              <div key={index} className="h-3 w-3 animate-pulse rounded-[2px] bg-neutral-100" />
+            ))}
           </div>
         </div>
       );
     }
 
     if (isError) {
-      return <div className="py-4 text-sm text-typography-600">{t("practiceStreak.error")}</div>;
+      return <div className="text-sm text-typography-600">{t("practiceStreak.error")}</div>;
     }
 
     if (!cells.length) {
-      return <div className="py-4 text-sm text-typography-600">{t("practiceStreak.empty")}</div>;
+      return (
+        <div className="flex items-center gap-2 text-sm text-typography-600">
+          <span aria-hidden>🔥</span>
+          <span>{t("practiceStreak.empty")}</span>
+        </div>
+      );
     }
 
     return (
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+      <button
+        type="button"
+        onClick={() => setExpanded(prev => !prev)}
+        aria-expanded={expanded}
+        aria-controls="practice-streak-detail"
+        className="group flex min-w-0 flex-1 items-center gap-3 rounded-[2px] text-left outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+      >
         {renderRing()}
-        <div className="min-w-0 flex-1">
-          {renderStats()}
-          <div className="mt-5">{renderTimeline()}</div>
+
+        <div className="flex min-w-0 flex-col">
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-secondary text-[24px] leading-none tabular-nums text-typography-900">
+              {currentStreak}
+            </span>
+            <span className="text-[13px] text-typography-700">
+              {t("practiceStreak.stats.currentStreak")}
+            </span>
+            <span className="text-[14px] leading-none" aria-hidden>
+              🔥
+            </span>
+          </div>
+          <div className="mt-1 truncate text-[11px] text-typography-500">
+            {t("practiceStreak.stats.longestStreak")} {longestStreak}{" "}
+            {t("practiceStreak.units.days")}
+            <span className="mx-1.5">·</span>
+            {t("practiceStreak.stats.total")} {totalMinutes} {t("practiceStreak.units.min")}
+          </div>
         </div>
-      </div>
+
+        {renderPreviewStrip()}
+
+        <ChevronDown
+          className={cn(
+            "ml-1 h-4 w-4 shrink-0 text-typography-500 transition-transform duration-200",
+            expanded && "rotate-180",
+          )}
+          aria-hidden
+        />
+      </button>
     );
   };
 
   return (
     <section
-      className={cn("w-full rounded-[8px] border border-border-light bg-white p-4", className)}
+      className={cn(
+        "w-full rounded-[8px] border border-border-light bg-white px-4 py-3",
+        className,
+      )}
       aria-label={t("practiceStreak.title")}
     >
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="font-secondary text-lg text-typography-900">{t("practiceStreak.title")}</h2>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        {renderHeader()}
 
-        <ToggleButtonGroup
-          value={groupBy}
-          onValueChange={value => setGroupBy(value as PracticeStreakGroupBy)}
-          items={groupByItems}
-          disabled={isFetching}
-          className="self-start sm:self-auto"
-        />
+        {!isError && (
+          <ToggleButtonGroup
+            value={groupBy}
+            onValueChange={value => setGroupBy(value as PracticeStreakGroupBy)}
+            items={groupByItems}
+            disabled={isFetching || !cells.length}
+            className="ml-auto shrink-0"
+          />
+        )}
       </div>
 
-      {renderBody()}
+      {!!cells.length && (
+        <div
+          id="practice-streak-detail"
+          className={cn(
+            "grid transition-[grid-template-rows] duration-300 ease-out",
+            expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+          )}
+        >
+          <div className="min-h-0 overflow-hidden" aria-hidden={!expanded}>
+            <div className="pt-4">
+              {renderTimeline()}
+              {renderLegend()}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
