@@ -507,22 +507,27 @@ export const FileUpload = ({
         </div>
 
         {showAiGeneration && (
-          <div className="flex items-center gap-3 mt-2">
+          // The tile is only ~48% of the panel wide (paired with Cover
+          // Video), so the controls must wrap instead of overflowing into
+          // the neighbouring tile, which would paint over the button and
+          // swallow its clicks.
+          <div className="relative z-10 flex flex-wrap items-center gap-2 mt-2 w-full">
             <CustomDropdownField
-              customStyle={{ border: "none", paddingLeft: "0", minWidth: 110 }}
+              customStyle={{ border: "none", paddingLeft: "0", minWidth: 90 }}
               options={IMAGE_PROVIDER_OPTIONS}
               placeholder="Provider"
               defaultOption={IMAGE_PROVIDER_OPTIONS.find(opt => opt.value === aiProvider)}
               onHandleSelect={option => setAiProvider(option.value as CoverImageProvider)}
             />
             <CustomDropdownField
-              customStyle={{ border: "none", paddingLeft: "0", minWidth: 140 }}
+              customStyle={{ border: "none", paddingLeft: "0", minWidth: 120 }}
               options={IMAGE_STYLE_OPTIONS}
               placeholder="Style"
               defaultOption={IMAGE_STYLE_OPTIONS.find(opt => opt.value === aiStyleHint)}
               onHandleSelect={option => setAiStyleHint(option.value)}
             />
             <Button
+              type="button"
               variant={ButtonVariant.SECONDARY}
               onClick={handleGenerateImage}
               disabled={!canGenerate || isGeneratingImage}
