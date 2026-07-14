@@ -31,12 +31,23 @@ export const ComfortAudioDropdown: React.FC<ComfortAudioDropdownProps> = ({
   value,
   onChange,
 }) => {
-  const { data, isLoading } = useGetComfortAudioTracksQuery();
+  // includeArchived so a scenario that already points at an archived track can
+  // still show and keep that selection (see options filter below).
+  const { data, isLoading } = useGetComfortAudioTracksQuery({ includeArchived: true });
   const tracks = data?.tracks ?? [];
-  const options = tracks.map(track => ({ value: track.audioUrl, label: track.name }));
 
   const isControlled = typeof onChange === "function";
   const selectedUrl = isControlled ? value : (formMethods?.watch(id) as string | undefined);
+
+  // Archived tracks can't be newly selected, but the currently-selected one
+  // stays in the list (labelled) so existing roleplays keep working until the
+  // author picks something else.
+  const options = tracks
+    .filter(track => !track.isArchived || track.audioUrl === selectedUrl)
+    .map(track => ({
+      value: track.audioUrl,
+      label: track.isArchived ? `${track.name}${en.comfortAudio.archivedOptionSuffix}` : track.name,
+    }));
 
   return (
     <div className="flex flex-col gap-2">

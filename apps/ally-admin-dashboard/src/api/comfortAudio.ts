@@ -6,6 +6,7 @@ import {
   CreateComfortAudioUploadUrlResponse,
   GetComfortAudioTracksQueryParams,
   GetComfortAudioTracksResponse,
+  UpdateComfortAudioTrackRequest,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -28,6 +29,7 @@ const comfortAudioAPI = baseAPI.injectEndpoints({
           offset: params?.offset ?? 0,
           sortBy: params?.sortBy || "createdAt",
           sortOrder: params?.sortOrder || "desc",
+          includeArchived: params?.includeArchived ?? false,
         },
       }),
       providesTags: [TAG_TYPES.COMFORT_AUDIO_LIBRARY],
@@ -46,13 +48,20 @@ const comfortAudioAPI = baseAPI.injectEndpoints({
     }),
 
     /** Superadmin: persist an uploaded track (name + S3 URL) into the library. */
-    addComfortAudioTrack: builder.mutation<
-      ComfortAudioTrack,
-      AddComfortAudioTrackRequest
-    >({
+    addComfortAudioTrack: builder.mutation<ComfortAudioTrack, AddComfortAudioTrackRequest>({
       query: body => ({
         url: ApiEndpoints.SIMULATION_STUDIO.COMFORT_AUDIO_LIBRARY,
         method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.COMFORT_AUDIO_LIBRARY],
+    }),
+
+    /** Superadmin: rename and/or archive-toggle an existing track. */
+    updateComfortAudioTrack: builder.mutation<ComfortAudioTrack, UpdateComfortAudioTrackRequest>({
+      query: ({ id, ...body }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.COMFORT_AUDIO_BY_ID(id),
+        method: HttpMethod.PATCH,
         body,
       }),
       invalidatesTags: [TAG_TYPES.COMFORT_AUDIO_LIBRARY],
@@ -73,6 +82,7 @@ export const {
   useGetComfortAudioTracksQuery,
   useCreateComfortAudioUploadUrlMutation,
   useAddComfortAudioTrackMutation,
+  useUpdateComfortAudioTrackMutation,
   useDeleteComfortAudioTrackMutation,
 } = comfortAudioAPI;
 
