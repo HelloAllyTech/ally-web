@@ -365,8 +365,7 @@ describe("Scenario Component", () => {
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("w-full");
       expect(mainContainer?.className).toContain("flex");
-      expect(mainContainer?.className).toContain("justify-center");
-      expect(mainContainer?.className).toContain("items-center");
+      expect(mainContainer?.className).toContain("flex-col");
       expect(mainContainer?.className).toContain("bg-white");
     });
 
@@ -393,7 +392,7 @@ describe("Scenario Component", () => {
       expect(motionDiv.className).toContain("flex-col");
       expect(motionDiv.className).toContain("gap-6");
       expect(motionDiv.className).toContain("w-full");
-      expect(motionDiv.className).toContain("m-auto");
+      expect(motionDiv.className).toContain("mx-auto");
     });
   });
 

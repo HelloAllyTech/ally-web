@@ -9,76 +9,45 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
       data-testid="animate-presence"
     >
       <div
-        class="h-screen w-full flex justify-center items-center bg-white"
+        class="h-screen w-full flex flex-col bg-white"
         data-testid="scenario-page"
       >
         <div
-          class="flex flex-col gap-6 w-full max-w-[600px] m-auto px-4"
+          class="flex items-center gap-2 font-secondary text-3xl text-typography-900 px-6 pt-6 shrink-0"
+          data-testid="scenario-title"
+        >
+          <button
+            animate="[object Object]"
+            aria-label="Close scenario details"
+            class="hover:scale-105 transition-transform"
+            data-testid="scenario-back-button"
+            exit="[object Object]"
+            initial="[object Object]"
+            transition="[object Object]"
+          >
+            <div
+              data-testid="back-circle"
+            >
+              BackCircle
+            </div>
+          </button>
+          <span>
+            Start
+          </span>
+          <span
+            class="font-bold italic"
+          >
+             Role play
+          </span>
+        </div>
+        <div
+          class="flex flex-1 min-h-0 flex-col justify-center gap-6 w-full max-w-[600px] mx-auto px-4"
           data-animate="visible"
           data-exit="exit"
           data-initial="hidden"
           data-testid="scenario-content"
           variants="[object Object]"
         >
-          <div
-            class="flex justify-between w-full max-w-[600px]"
-            data-testid="scenario-header"
-          >
-            <div
-              class="flex items-center gap-2 font-secondary text-3xl"
-              data-testid="scenario-title"
-            >
-              <button
-                animate="[object Object]"
-                aria-label="Close scenario details"
-                class="hover:scale-105 transition-transform"
-                data-testid="scenario-back-button"
-                exit="[object Object]"
-                initial="[object Object]"
-                transition="[object Object]"
-              >
-                <div
-                  data-testid="back-circle"
-                >
-                  BackCircle
-                </div>
-              </button>
-              <span>
-                Start
-              </span>
-              <span
-                class="font-bold italic"
-              >
-                 Role play
-              </span>
-            </div>
-            <div
-              data-testid="credits-display"
-            >
-              <div
-                class="font-primary text-base text-typography-700 whitespace-nowrap"
-              >
-                Credits used:
-              </div>
-              <div
-                data-testid="credits-icon"
-              >
-                ⚡
-              </div>
-              <span
-                class="font-primary font-bold text-lg"
-                data-testid="credits-consumed"
-              >
-                0
-              </span>
-              <span
-                class="font-primary text-base text-typography-700"
-                data-testid="credits-limit"
-              >
-                /100
-              </span>
-            </div>
-          </div>
           <div
             data-testid="scenario-details-card"
           >
@@ -197,39 +166,43 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
       data-testid="animate-presence"
     >
       <div
-        class="h-screen w-full flex justify-center items-center bg-white"
+        class="h-screen w-full flex flex-col bg-white"
         data-testid="scenario-page"
       >
         <div
-          data-testid="fallback-ui"
+          class="flex flex-1 items-center justify-center"
         >
           <div
-            data-testid="fallback-image"
+            data-testid="fallback-ui"
           >
             <div
-              data-testid="page-not-found"
+              data-testid="fallback-image"
             >
-              PageNotFound
+              <div
+                data-testid="page-not-found"
+              >
+                PageNotFound
+              </div>
             </div>
+            <div
+              data-testid="fallback-loading"
+            >
+              false
+            </div>
+            <div
+              data-testid="fallback-message"
+            >
+              Scenario not found
+            </div>
+            <div
+              data-testid="fallback-description"
+            >
+              The scenario you are looking for does not exist.
+            </div>
+            <button
+              data-testid="fallback-button"
+            />
           </div>
-          <div
-            data-testid="fallback-loading"
-          >
-            false
-          </div>
-          <div
-            data-testid="fallback-message"
-          >
-            Scenario not found
-          </div>
-          <div
-            data-testid="fallback-description"
-          >
-            The scenario you are looking for does not exist.
-          </div>
-          <button
-            data-testid="fallback-button"
-          />
         </div>
       </div>
     </div>
