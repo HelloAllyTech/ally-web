@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 
 import { EventDetectionConfig } from "@types";
 
+import { AssignmentStatus } from "./organizationAccess";
 import {
   SessionEventDetectionData,
   triggerWarning,
@@ -168,6 +169,7 @@ export interface GetSimulationsQueryParams {
   order?: string;
   search?: string;
   tenantId?: string;
+  assignmentStatus?: AssignmentStatus;
 }
 export interface GetSimulationsResponse {
   data: Simulation[];

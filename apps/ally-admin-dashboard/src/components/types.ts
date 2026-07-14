@@ -253,6 +253,7 @@ export interface ListToolbarProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
   placeholder?: string;
+  filter?: React.ReactNode;
   filterChips?: FilterChipProps[];
   addFilterCta?: AddFilterCtaProps;
   action?: ActionProps;

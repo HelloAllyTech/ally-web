@@ -2,7 +2,14 @@ import { matchPath } from "react-router-dom";
 
 import { ButtonProps, ButtonVariant } from "@components/types";
 import { EMAIL_REGEX, FORM_FIELD_TYPES } from "@constants";
-import { CreatorFieldGroups, Simulation, SimulationStatus, UserRoles } from "@types";
+import {
+  AccessFilterValue,
+  AssignmentStatus,
+  CreatorFieldGroups,
+  Simulation,
+  SimulationStatus,
+  UserRoles,
+} from "@types";
 
 export const validateEmail = (email: string): boolean => {
   return Boolean(email && EMAIL_REGEX.test(email));
@@ -187,6 +194,12 @@ export const isNonEmptyString = (value: unknown): value is string => {
 
 export const isArray = (value: unknown): value is unknown[] => {
   return Array.isArray(value);
+};
+
+export const toAssignmentStatus = (filter: AccessFilterValue): AssignmentStatus | undefined => {
+  if (filter === AccessFilterValue.ENABLED) return AssignmentStatus.ASSIGNED;
+  if (filter === AccessFilterValue.DISABLED) return AssignmentStatus.UNASSIGNED;
+  return undefined;
 };
 
 export const isNonEmptyArray = <T>(value: unknown): value is T[] => {
