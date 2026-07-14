@@ -11,6 +11,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   searchValue,
   onSearchChange,
   placeholder = en.common.search,
+  filter,
   filterChips,
   addFilterCta,
   action,
@@ -93,6 +94,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     <div className={`flex items-center justify-between gap-4 min-h-[50px] ${className ?? ""}`}>
       <div className="flex items-center gap-1 flex-1 min-w-0">
         {searchInput}
+        {filter}
         {addFilterButton}
         {filterChips?.length > 0 && (
           <div className="flex items-center gap-1 flex-wrap px-2">

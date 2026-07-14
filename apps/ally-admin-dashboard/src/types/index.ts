@@ -17,3 +17,4 @@ export * from "./dynamicI18n";
 export * from "./tooltip";
 export * from "./roleplaySessionLogs";
 export * from "./tracks";
+export * from "./organizationAccess";

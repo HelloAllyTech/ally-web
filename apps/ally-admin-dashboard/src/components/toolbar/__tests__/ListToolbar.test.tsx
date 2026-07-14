@@ -147,6 +147,52 @@ describe("ListToolbar", () => {
     });
   });
 
+  describe("Filter Slot", () => {
+    it("renders filter content when provided", () => {
+      render(
+        <ListToolbar {...defaultProps} filter={<div data-testid="access-filter">Filter</div>} />,
+      );
+
+      expect(screen.getByTestId("access-filter")).toBeInTheDocument();
+    });
+
+    it("does not render filter content when not provided", () => {
+      render(<ListToolbar {...defaultProps} />);
+
+      expect(screen.queryByTestId("access-filter")).not.toBeInTheDocument();
+    });
+
+    it("renders the filter in the same group as the search input", () => {
+      render(
+        <ListToolbar {...defaultProps} filter={<div data-testid="access-filter">Filter</div>} />,
+      );
+
+      const searchInput = screen.getByPlaceholderText("Search...");
+      const filter = screen.getByTestId("access-filter");
+      const searchGroup = searchInput.closest("div")?.parentElement;
+      expect(searchGroup).toContainElement(filter);
+    });
+
+    it("composes with the search input", async () => {
+      const user = userEvent.setup();
+      const mockOnSearchChange = vi.fn();
+
+      render(
+        <ListToolbar
+          {...defaultProps}
+          onSearchChange={mockOnSearchChange}
+          filter={<div data-testid="access-filter">Filter</div>}
+        />,
+      );
+
+      const searchInput = screen.getByPlaceholderText("Search...");
+      await user.type(searchInput, "a");
+
+      expect(mockOnSearchChange).toHaveBeenCalledWith("a");
+      expect(screen.getByTestId("access-filter")).toBeInTheDocument();
+    });
+  });
+
   describe("Filter Chips", () => {
     const mockFilterChips: FilterChipProps[] = [
       {
