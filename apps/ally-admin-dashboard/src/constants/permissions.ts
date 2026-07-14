@@ -4,6 +4,7 @@ export enum Permissions {
   VIEW_USERS = "view:users",
   EDIT_LIVEKIT = "edit:livekit",
   EDIT_EVENT = "edit:session-events",
+  DELETE_EVENT = "delete:session-events",
   VIEW_ADMIN_SCENARIO = "view:admin:scenario",
   EDIT_SCENARIO_VOICE = "edit:scenario-voice",
   EDIT_SCENARIO_LANGUAGE = "edit:admin:language",

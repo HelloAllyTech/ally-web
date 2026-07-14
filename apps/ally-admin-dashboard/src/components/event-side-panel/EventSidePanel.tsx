@@ -25,6 +25,7 @@ interface EventSidePanelProps {
   onClose: () => void;
   onDelete: (eventId: string) => void;
   onUpdate: (event: UpdateEventDataParam) => void;
+  canDelete?: boolean;
 }
 
 interface FieldProps {
@@ -64,16 +65,20 @@ const PanelHeader: React.FC<{
   onClose: () => void;
   onDelete: (eventId: string) => void;
   hasEvent: boolean;
-}> = ({ eventId, onClose, onDelete, hasEvent }) => (
+  isReadOnly: boolean;
+  canDelete: boolean;
+}> = ({ eventId, onClose, onDelete, hasEvent, isReadOnly, canDelete }) => (
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
       className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
     >
       <DoubleArrowRight width={14} height={14} />
-      <span className="text-base font-tertiary font-[500]">{en.simulation.editEvent}</span>
+      <span className="text-base font-tertiary font-[500]">
+        {isReadOnly ? en.simulation.viewEvent : en.simulation.editEvent}
+      </span>
     </button>
-    {hasEvent && (
+    {hasEvent && !isReadOnly && canDelete && (
       <button onClick={() => onDelete(eventId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
         <span className="text-base font-tertiary font-medium text-typography-900">
@@ -90,9 +95,11 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   onClose,
   onDelete,
   onUpdate,
+  canDelete = true,
 }) => {
   const [formData, setFormData] = useState(selectedEvent);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const isReadOnly = selectedEvent?.isEditable === false;
 
   useEffect(() => {
     if (selectedEvent) {
@@ -123,6 +130,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   const debouncedUpdate = useDebounce(() => onUpdate(formData), 500);
 
   useEffect(() => {
+    if (isReadOnly) return;
     debouncedUpdate();
   }, [formData]);
 
@@ -225,9 +233,16 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           onClose={handleClose}
           onDelete={handleDelete}
           hasEvent={!!selectedEvent}
+          isReadOnly={isReadOnly}
+          canDelete={canDelete}
         />
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
+          {isReadOnly && (
+            <div className="mb-4 rounded-md bg-neutral-100 px-4 py-3 text-base text-typography-700">
+              {en.simulation.eventReadOnly}
+            </div>
+          )}
           <div className="mb-4">
             <input
               type="text"
@@ -235,10 +250,11 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               onChange={event => handleFieldChange("name", event.target.value)}
               placeholder="New Event"
               className="border-none focus:outline-none text-2xl font-light w-full"
+              disabled={isReadOnly}
             />
           </div>
 
-          <div className="space-y-3">
+          <div className={`space-y-3 ${isReadOnly ? "pointer-events-none opacity-60" : ""}`}>
             <div>
               <Field label="Event code">
                 <div className="text-base text-neutral-800">{formData.eventCode || "—"}</div>

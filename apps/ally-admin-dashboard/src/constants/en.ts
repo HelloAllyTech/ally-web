@@ -269,6 +269,9 @@ export const en = {
     createEvent: "Create event",
     createBadge: "Create badge",
     editEvent: "Edit event",
+    viewEvent: "View event",
+    eventReadOnly:
+      "This event is read-only. You can view its configuration but cannot make changes.",
     voices: "Voices",
     scenarioVoices: "Voices",
     searchVoices: "Search voices...",
