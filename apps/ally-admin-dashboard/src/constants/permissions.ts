@@ -69,7 +69,7 @@ export const ROLEPLAY_STUDIO_ALLOWED_EMAILS = [
  * normalizeEmailForAllowlist (ally-be roleplay-v2-access.util) so both gates
  * agree on who is allowlisted.
  */
-const normalizeEmailForAllowlist = (raw?: string | null): string => {
+export const normalizeEmailForAllowlist = (raw?: string | null): string => {
   const email = (raw ?? "").trim().toLowerCase();
   const at = email.indexOf("@");
   if (at <= 0) return email;
