@@ -158,10 +158,9 @@ describe("ScenarioDetailsCard", () => {
     expect(screen.getByTestId("share-icon")).toBeInTheDocument();
   });
 
-  it("should render the Share button text", () => {
+  it("should render the Share button", () => {
     renderComponent();
-    expect(screen.getByText("Share")).toBeInTheDocument();
-    expect(screen.getByText("Share")).toHaveClass("text-base");
+    expect(screen.getByRole("button", { name: /Share scenario/i })).toBeInTheDocument();
   });
 
   it("should render the Start session button", () => {
