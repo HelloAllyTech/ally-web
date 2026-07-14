@@ -30,6 +30,7 @@ import {
   PATH_STATUS_OPTIONS,
   SimulationStatus,
   isSuperAdminRole,
+  isSuperDuperAdminRole,
 } from "@constants";
 import { useSimulations, useSimulationPathways, useSimulationCases, useTracks, useUser } from "@hooks";
 
@@ -67,9 +68,15 @@ export const SimulationStudio: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useUser();
   const isSuperAdmin = isSuperAdminRole(user?.role);
+  const isSuperDuperAdmin = isSuperDuperAdminRole(user?.role);
 
   // Get active tab from URL params, default to SIMULATIONS
   const activeTab = searchParams.get("tab") || TAB_KEYS.SIMULATIONS;
+
+  // The legacy "Tracks" (old tracks) screen is being wound down: creating new
+  // old tracks is reserved for super-duper-admins. Hide the Create button on
+  // that tab for everyone else (a plain super-admin included).
+  const hideCreateButton = activeTab === TAB_KEYS.TRACKS && !isSuperDuperAdmin;
 
   // Effect to redirect unauthorized users from restricted tabs
   React.useEffect(() => {
@@ -316,15 +323,17 @@ export const SimulationStudio: React.FC = () => {
     return (
       <div className="flex justify-between items-center">
         <h1 className="text-2xl text-typography-900 font-secondary">{en.simulation.rolePlays}</h1>
-        <Button
-          variant={ButtonVariant.PRIMARY}
-          onClick={openCreatePopup}
-          ref={createButtonRef}
-          className="transition-colors h-[40px] pr-[20px]"
-        >
-          <Add />
-          {en.common.create}
-        </Button>
+        {!hideCreateButton && (
+          <Button
+            variant={ButtonVariant.PRIMARY}
+            onClick={openCreatePopup}
+            ref={createButtonRef}
+            className="transition-colors h-[40px] pr-[20px]"
+          >
+            <Add />
+            {en.common.create}
+          </Button>
+        )}
       </div>
     );
   };
