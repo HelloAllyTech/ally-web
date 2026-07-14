@@ -36,19 +36,19 @@ describe("PracticeStreakHeatmap", () => {
     mockUseGetPracticeStreakQuery.mockReturnValue(successResult);
   });
 
-  it("renders the title, streak stats and the current-period progress ring", () => {
+  it("renders the compact header: current streak, longest, total and the goal ring", () => {
     render(<PracticeStreakHeatmap />);
 
-    expect(screen.getByText("Practice streak")).toBeInTheDocument();
-    // current + longest streak values
+    const region = screen.getByRole("region", { name: "Practice streak" });
+
+    // Hero current-streak number.
     expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.getByText("9")).toBeInTheDocument();
-    // rounded total minutes (52.4 -> 52) shown in the Total stat
-    expect(screen.getByText("52")).toBeInTheDocument();
-    // ring shows the most recent period's rounded minutes (last cell = 40) ...
-    expect(screen.getByText("40")).toBeInTheDocument();
-    // ... against the Day goal caption ("of {{count}} min today", goal = 15)
-    expect(screen.getByText("of 15 min today")).toBeInTheDocument();
+    // Longest + total live in the sub-line.
+    expect(region).toHaveTextContent("Longest 9 days");
+    expect(region).toHaveTextContent("Total 52 min");
+    // Ring shows the most recent period's rounded minutes (last cell = 40) against
+    // the Day goal caption ("of {{count}} min today", goal = 15).
+    expect(screen.getByRole("img", { name: "40 of 15 min today" })).toBeInTheDocument();
   });
 
   it("defaults to the Day grouping and requests it from the API", () => {
@@ -67,11 +67,25 @@ describe("PracticeStreakHeatmap", () => {
 
     fireEvent.click(screen.getByText("Week"));
 
-    // latest call reflects the new grouping
     expect(mockUseGetPracticeStreakQuery).toHaveBeenLastCalledWith({
       groupBy: PracticeStreakGroupBy.WEEK,
     });
     expect(screen.getByText("Week").closest("button")).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("keeps the full timeline collapsed until the header is clicked", () => {
+    render(<PracticeStreakHeatmap />);
+
+    const header = screen.getByRole("button", { expanded: false });
+    // The full, scrollable timeline is hidden (aria-hidden) while collapsed.
+    expect(
+      screen.queryByRole("list", { name: "Practice minutes heatmap" }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(header);
+
+    expect(header).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("list", { name: "Practice minutes heatmap" })).toBeInTheDocument();
   });
 
   it("shows an empty state when there are no cells", () => {
