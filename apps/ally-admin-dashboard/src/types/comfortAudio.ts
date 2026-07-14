@@ -5,6 +5,11 @@ export interface ComfortAudioTrack {
   audioUrl: string;
   contentType?: string | null;
   sizeBytes?: number | null;
+  /**
+   * Archived tracks can no longer be newly selected for a roleplay, but keep
+   * working for scenarios that already reference them.
+   */
+  isArchived: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -14,6 +19,8 @@ export interface GetComfortAudioTracksQueryParams {
   offset?: number;
   sortBy?: string;
   sortOrder?: string;
+  /** Include archived tracks (superadmin library screen). Defaults to false. */
+  includeArchived?: boolean;
 }
 
 export interface GetComfortAudioTracksResponse {
@@ -37,4 +44,11 @@ export interface AddComfortAudioTrackRequest {
   audioUrl: string;
   contentType?: string;
   sizeBytes?: number;
+}
+
+/** Rename and/or archive-toggle an existing track. */
+export interface UpdateComfortAudioTrackRequest {
+  id: string;
+  name?: string;
+  isArchived?: boolean;
 }

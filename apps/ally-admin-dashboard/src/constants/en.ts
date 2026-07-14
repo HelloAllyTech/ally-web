@@ -1117,6 +1117,23 @@ export const en = {
     deleteFailed: "Failed to delete comfort audio track",
     empty: "No comfort audio tracks uploaded yet",
     listError: "Failed to load comfort audio tracks",
+    // Manage existing tracks (Settings)
+    rename: "Rename",
+    renamePlaceholder: "Track name",
+    save: "Save",
+    cancel: "Cancel",
+    renameSuccess: "Comfort audio track renamed",
+    renameFailed: "Failed to rename comfort audio track",
+    archive: "Archive",
+    unarchive: "Unarchive",
+    archivedBadge: "Archived",
+    archivedHelp:
+      "Archived tracks can't be selected for new roleplays but keep playing for roleplays already using them.",
+    archiveSuccess: "Comfort audio track archived",
+    archiveFailed: "Failed to archive comfort audio track",
+    unarchiveSuccess: "Comfort audio track unarchived",
+    unarchiveFailed: "Failed to unarchive comfort audio track",
+    archivedOptionSuffix: " (archived)",
     // Basic Settings picker
     trackLabel: "Comfort Audio Track",
     trackPlaceholder: "Select a track (default room tone if unset)",
