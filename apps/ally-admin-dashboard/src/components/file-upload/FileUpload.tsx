@@ -10,9 +10,11 @@ import {
   useDeleteCoverImageMutation,
   useGetCoverVideoUrlMutation,
   useDeleteCoverVideoMutation,
+  useGenerateCoverImageMutation,
 } from "@api";
 import { DragUpload, Trash, VideoCamera } from "@assets";
-import { ImageLibrary } from "@components";
+import { Button, CustomDropdownField, ImageLibrary } from "@components";
+import { ButtonVariant } from "@components/types";
 import {
   en,
   imageTypes,
@@ -23,10 +25,23 @@ import {
   ASPECT_RATIO,
   ASPECT_RATIO_TOLERANCE,
 } from "@constants";
+import { CoverImageProvider } from "@types";
 import { isNonEmptyString } from "@utils";
 
 /** Local/dev only: set `VITE_BYPASS_COVER_IMAGE_VALIDATION=true` in `.env` to skip 16:9 checks. */
 const bypassCoverImageAspectCheck = import.meta.env.VITE_BYPASS_COVER_IMAGE_VALIDATION === "true";
+
+const IMAGE_PROVIDER_OPTIONS: { value: CoverImageProvider; label: string }[] = [
+  { value: "openai", label: "OpenAI" },
+  { value: "gemini", label: "Gemini" },
+];
+
+const IMAGE_STYLE_OPTIONS = [
+  { value: "", label: "Default style" },
+  { value: "Photorealistic", label: "Photorealistic" },
+  { value: "Illustration", label: "Illustration" },
+  { value: "3D render", label: "3D render" },
+];
 
 interface FileUploadProps {
   id: string;
@@ -36,6 +51,12 @@ interface FileUploadProps {
   header?: React.ReactNode;
   fileType?: string;
   hideHeader?: boolean;
+  /**
+   * Render "Generate with AI" controls under the tile (image slots only).
+   * Generation reads the form's `title`/`description` values and substitutes
+   * them into the backend's managed `cover_image_generation` prompt.
+   */
+  enableAiGeneration?: boolean;
 }
 
 export const FileUpload = ({
@@ -46,6 +67,7 @@ export const FileUpload = ({
   header,
   fileType = FILE_TYPE.IMAGE,
   hideHeader = false,
+  enableAiGeneration = false,
 }: FileUploadProps) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -55,6 +77,10 @@ export const FileUpload = ({
   const [deleteCoverImage] = useDeleteCoverImageMutation();
   const [getCoverVideoUrl] = useGetCoverVideoUrlMutation();
   const [deleteCoverVideo] = useDeleteCoverVideoMutation();
+  const [generateCoverImage, { isLoading: isGeneratingImage }] = useGenerateCoverImageMutation();
+
+  const [aiProvider, setAiProvider] = useState<CoverImageProvider>("openai");
+  const [aiStyleHint, setAiStyleHint] = useState("");
 
   const uploadedFileUrl = watch(id);
   const initialFileUrlRef = useRef("");
@@ -287,6 +313,53 @@ export const FileUpload = ({
     setIsImageLibraryOpen(true);
   };
 
+  // AI generation reads the scenario form's title/description and persona
+  // fields (name, age, gender, profession, currentLocation); the backend
+  // substitutes them into the managed `cover_image_generation` prompt.
+  const showAiGeneration = enableAiGeneration && fileType === FILE_TYPE.IMAGE;
+  const scenarioTitle = showAiGeneration ? watch("title") : undefined;
+  const personaName = showAiGeneration ? watch("name") : undefined;
+  // The default template is a portrait of the scenario persona, so require
+  // the persona name as well as the title (used for the stored filename).
+  const canGenerate =
+    typeof scenarioTitle === "string" &&
+    scenarioTitle.trim() !== "" &&
+    typeof personaName === "string" &&
+    personaName.trim() !== "";
+
+  const handleGenerateImage = async () => {
+    if (!canGenerate || isGeneratingImage) return;
+    const description = watch("description");
+    const age = watch("age");
+    const gender = watch("gender");
+    const profession = watch("profession");
+    const currentLocation = watch("currentLocation");
+
+    try {
+      const result = await generateCoverImage({
+        title: scenarioTitle.trim(),
+        name: personaName.trim(),
+        ...(typeof description === "string" &&
+          description.trim() && { description: description.trim() }),
+        ...(age !== "" && age != null && !Number.isNaN(Number(age)) && { age: Number(age) }),
+        ...(typeof gender === "string" && gender.trim() && { gender: gender.trim() }),
+        ...(typeof profession === "string" &&
+          profession.trim() && { profession: profession.trim() }),
+        ...(typeof currentLocation === "string" &&
+          currentLocation.trim() && { currentLocation: currentLocation.trim() }),
+        ...(aiStyleHint && { styleHints: aiStyleHint }),
+        provider: aiProvider,
+      }).unwrap();
+
+      clearErrors(id);
+      setUploadedFile(null);
+      setValue(id, result.imageUrl, { shouldValidate: true, shouldDirty: true });
+      toast.success(en.simulation.imageGeneratedSuccessfully);
+    } catch (error) {
+      toast.error((error as any)?.data?.message || en.simulation.imageGenerationFailed);
+    }
+  };
+
   // Dropzone setup
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
@@ -422,7 +495,43 @@ export const FileUpload = ({
           {!isNonEmptyString(uploadedFileUrl) && !isUploading && renderUploadPlaceholder()}
           {isUploading && renderUploadPlaceholder()}
           {renderFilePreview()}
+
+          {isGeneratingImage && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/80">
+              <div className="flex items-center gap-2 text-typography-600">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                {en.simulation.generatingImage}
+              </div>
+            </div>
+          )}
         </div>
+
+        {showAiGeneration && (
+          <div className="flex items-center gap-3 mt-2">
+            <CustomDropdownField
+              customStyle={{ border: "none", paddingLeft: "0", minWidth: 110 }}
+              options={IMAGE_PROVIDER_OPTIONS}
+              placeholder="Provider"
+              defaultOption={IMAGE_PROVIDER_OPTIONS.find(opt => opt.value === aiProvider)}
+              onHandleSelect={option => setAiProvider(option.value as CoverImageProvider)}
+            />
+            <CustomDropdownField
+              customStyle={{ border: "none", paddingLeft: "0", minWidth: 140 }}
+              options={IMAGE_STYLE_OPTIONS}
+              placeholder="Style"
+              defaultOption={IMAGE_STYLE_OPTIONS.find(opt => opt.value === aiStyleHint)}
+              onHandleSelect={option => setAiStyleHint(option.value)}
+            />
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={handleGenerateImage}
+              disabled={!canGenerate || isGeneratingImage}
+              className="whitespace-nowrap"
+            >
+              {isGeneratingImage ? en.simulation.generatingImage : en.simulation.generateWithAi}
+            </Button>
+          </div>
+        )}
 
         {renderFileInfo()}
 

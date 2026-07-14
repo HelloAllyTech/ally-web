@@ -480,6 +480,26 @@ export interface DeleteCharacterRequest {
   scenarioCharacterIds: string[];
 }
 
+export type CoverImageProvider = "openai" | "gemini";
+
+export interface GenerateCoverImageRequest {
+  title: string;
+  description?: string;
+  /** Scenario persona fields — substituted into the managed prompt. */
+  name?: string;
+  age?: number;
+  gender?: string;
+  profession?: string;
+  currentLocation?: string;
+  styleHints?: string;
+  provider?: CoverImageProvider;
+}
+
+export interface GenerateCoverImageResponse {
+  imageUrl: string;
+  provider: string;
+}
+
 export interface CoverImageLibraryItem {
   id: string;
   imageUrl: string;

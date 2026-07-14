@@ -376,6 +376,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         // Cover Image + Cover Video sit side by side as two upload tiles
         // rather than two full-width tiles stacked vertically.
         fullWidth: false,
+        aiGenerate: true,
       },
       {
         id: "coverVideoUrl",

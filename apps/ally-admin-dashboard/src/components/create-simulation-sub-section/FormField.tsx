@@ -46,6 +46,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     hideWhenUnused,
     accordion,
     tooltipLocation,
+    aiGenerate,
   } = config;
   const {
     formState: { errors },
@@ -172,6 +173,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               label={label}
               header={en.simulation.coverImage}
               fileType={FILE_TYPE.IMAGE}
+              enableAiGeneration={aiGenerate}
             />
           </div>
         );

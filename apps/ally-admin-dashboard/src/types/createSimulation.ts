@@ -117,6 +117,12 @@ export interface FormFieldConfig {
   /** When true, wrap the field in a collapsed accordion. */
   accordion?: boolean;
   /**
+   * IMAGE_UPLOAD only: render the "Generate with AI" controls under the
+   * upload tile. Generation uses the scenario's title/description form
+   * values via the managed `cover_image_generation` prompt.
+   */
+  aiGenerate?: boolean;
+  /**
    * `location` slug of a data-driven tooltip (see TooltipLocation). When set,
    * the field renders an info-icon tooltip whose text superadmins author under
    * Manage Tooltips. Currently consumed by toggle fields (ToggleSection).

@@ -103,6 +103,7 @@ export const ApiEndpoints = {
     GET_REPORT_TRANSCRIPT: (reportId: string) =>
       `/v1/learn/scenarios/reports/${reportId}/transcripts`,
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
+    GENERATE_COVER_IMAGE: "/v1/scenario-cover-image-library/generate",
     COMFORT_AUDIO_LIBRARY: "/v1/comfort-audio",
     COMFORT_AUDIO_UPLOAD_URL: "/v1/comfort-audio/upload-url",
     COMFORT_AUDIO_BY_ID: (id: string) => `/v1/comfort-audio/${id}`,
@@ -384,6 +385,7 @@ export const TAG_TYPES = {
   SCRIBE_VOICE_NOTE_ENABLED: "scribeVoiceNoteEnabled",
   CUSTOM_FIELD_DEFINITIONS: "customFieldDefinitions",
   CHARACTERS: "characters",
+  IMAGE_LIBRARY: "imageLibrary",
   PROMPTS: "prompts",
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
   USER_BADGES: "userBadges",
