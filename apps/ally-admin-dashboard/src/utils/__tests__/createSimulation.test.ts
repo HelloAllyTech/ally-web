@@ -214,6 +214,8 @@ describe("createSimulation utils", () => {
         pauseEnabled: false,
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
+        category: "",
+        partnerOrgName: "",
         terminationEvents: undefined,
         languageVoices: {
           1: "voice-123",

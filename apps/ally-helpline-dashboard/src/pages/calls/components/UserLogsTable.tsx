@@ -36,7 +36,14 @@ import CallSummarySidebar from "./CallSummarySidebar";
 import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
-import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
+import {
+  getSourceChipConfig,
+  getStatusChipConfig,
+  getModeChipConfig,
+  reconcileLogsById,
+  patchRowCustomFieldValues,
+  DenormalizedCustomFieldValue,
+} from "./utils";
 
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
@@ -85,7 +92,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       archive: false,
       ...(callNameFilter ? { callName: callNameFilter } : {}),
     },
-    { skip: !isCall },
+    { skip: !isCall, refetchOnFocus: true, refetchOnReconnect: true },
   );
 
   const {
@@ -127,9 +134,11 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     const sourceLogs = isCall ? callLogs : simulationLogs || [];
     if (sourceLogs?.length > 0) {
       setLogs(prev => {
-        // Avoid duplicate entries if page is reset
+        // On page 0 the list is a fresh snapshot; otherwise upsert by id so a
+        // refetched page replaces its rows in place (no duplicates) and edited
+        // values are reflected instead of a stale copy lingering.
         if (offset === 0) return [...sourceLogs];
-        return [...prev, ...sourceLogs];
+        return reconcileLogsById(prev, sourceLogs);
       });
       setIsLoadingMore(false);
       // If less than limit, no more data
@@ -397,6 +406,13 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     setSummary(selectedCallLog);
   };
 
+  // Reflect a custom-field edit on the exact row immediately, regardless of
+  // which loaded page it sits on. The list only refetches the current page, so
+  // relying on invalidation alone leaves rows on other pages stale.
+  const handleCustomFieldValuesSaved = (chatId: number, values: DenormalizedCustomFieldValue[]) => {
+    setLogs(prev => patchRowCustomFieldValues(prev, chatId, values));
+  };
+
   const closeSummarySidebar = () => {
     setSummary(null);
   };
@@ -410,6 +426,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
             refetchCallLogs={onSummarySubmit}
             setCallSummary={setSummary}
             sessionType={sessionType}
+            onCustomFieldValuesSaved={handleCustomFieldValuesSaved}
           />
         );
       case SessionType.SIMULATION:

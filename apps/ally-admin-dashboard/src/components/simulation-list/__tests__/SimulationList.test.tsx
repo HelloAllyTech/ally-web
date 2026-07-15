@@ -25,6 +25,7 @@ const renderWithStore = (ui: React.ReactElement, store = createTestStore()) =>
 vi.mock("@assets", () => ({
   Add: () => <div data-testid="add-icon">Add</div>,
   Edit: () => <div data-testid="edit-icon">Edit</div>,
+  Eye: () => <div data-testid="eye-icon">Eye</div>,
   Unpublish: () => <div data-testid="unpublish-icon">Unpublish</div>,
   Archive: () => <div data-testid="archive-icon">Archive</div>,
   Delete: () => <div data-testid="delete-icon">Delete</div>,
@@ -116,6 +117,8 @@ vi.mock("@constants", () => ({
       newSimulationDescription: "Create a new simulation to get started",
       noResultFound: "No results found",
       adjustFilter: "Adjust your filters and try again",
+      category: "Category",
+      viewDetails: "View Details",
     },
     common: {
       delete: "Delete",
@@ -127,6 +130,12 @@ vi.mock("@constants", () => ({
     ARCHIVED: "ARCHIVED",
     PUBLISHED: "PUBLISHED",
   },
+  getSimulationCategoryLabel: (category?: string | null) =>
+    category
+      ? { ORIGINALS: "Originals", DEMO: "Demo", PARTNER_SIM: "Partner Sim", OTHER: "Other" }[
+          category
+        ]
+      : undefined,
 }));
 
 // Mock utils
@@ -185,6 +194,7 @@ describe("SimulationList", () => {
 
   const mockCallbacks = {
     onEdit: vi.fn(),
+    onView: vi.fn(),
     onDelete: vi.fn(),
     onPreview: vi.fn(),
     onArchive: vi.fn(),
@@ -319,6 +329,32 @@ describe("SimulationList", () => {
       expect(screen.queryByTestId("unpublish-icon")).not.toBeInTheDocument();
     });
 
+    it("renders view-details button for ACTIVE simulations", () => {
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByTestId("eye-icon")).toBeInTheDocument();
+    });
+
+    it("renders view-details button for ARCHIVED simulations", () => {
+      renderWithStore(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
+
+      expect(screen.getByTestId("eye-icon")).toBeInTheDocument();
+    });
+
+    it("does not render view-details button for DRAFT simulations", () => {
+      renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+
+      expect(screen.queryByTestId("eye-icon")).not.toBeInTheDocument();
+    });
+
+    it("calls onView when view-details button is clicked", () => {
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      fireEvent.click(screen.getByTestId("eye-icon"));
+      expect(mockCallbacks.onView).toHaveBeenCalledTimes(1);
+      expect(mockCallbacks.onView).toHaveBeenCalledWith(mockSimulations[0]);
+    });
+
     it("calls onUnpublish when unpublish button is clicked", () => {
       renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
 
@@ -440,7 +476,8 @@ describe("SimulationList", () => {
       renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
 
       expect(screen.queryByText("Preview")).not.toBeInTheDocument();
-      expect(screen.getByText("-")).toBeInTheDocument();
+      // Both the preview and the (empty) category cells render a "-".
+      expect(screen.getAllByText("-").length).toBeGreaterThan(0);
     });
 
     it("calls onPreview when preview button is clicked", () => {

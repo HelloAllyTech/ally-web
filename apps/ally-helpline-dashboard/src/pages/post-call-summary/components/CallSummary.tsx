@@ -49,6 +49,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   onRefetchSummary,
   isSummaryLoading,
   summaryLoadingError,
+  onCustomFieldValuesSaved,
 }) => {
   const { t } = useTranslation();
   const { permissions, user } = useSelector((state: RootState) => state.user);
@@ -347,6 +348,9 @@ const CallSummary: FC<CallSummaryProps> = ({
       try {
         await upsertCustomFieldValues({ chatId, values: changedFields }).unwrap();
         setDirtyFieldIds(new Set());
+        // Let a parent list reflect the edit on its row immediately; the list
+        // only refetches its current page, so rows elsewhere would stay stale.
+        onCustomFieldValuesSaved?.(chatId, changedFields);
       } catch (error) {
         logger.info(`Error saving custom field values: ${error}`);
         saveFailed = true;

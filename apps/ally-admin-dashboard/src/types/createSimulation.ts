@@ -17,6 +17,8 @@ import { TriggerCondition } from "./triggerConditions";
 export type FormData = {
   title: string;
   competency?: Competency;
+  category?: string;
+  partnerOrgName?: string;
   difficultyLevel: string;
   characterProfileSelector?: string;
   characterProfileText: string;
@@ -74,6 +76,8 @@ export interface FormFieldConfig {
   isMandatory?: boolean;
   isDashedLineAbove?: boolean;
   fullWidth?: boolean;
+  /** SELECT only: show a clear (×) control that resets the value to "". */
+  allowDeselect?: boolean;
   maxLength?: number;
   multiline?: boolean;
   defaultValue?: string;
@@ -117,6 +121,12 @@ export interface FormFieldConfig {
   /** When true, wrap the field in a collapsed accordion. */
   accordion?: boolean;
   /**
+   * IMAGE_UPLOAD only: render the "Generate with AI" controls under the
+   * upload tile. Generation uses the scenario's title/description form
+   * values via the managed `cover_image_generation` prompt.
+   */
+  aiGenerate?: boolean;
+  /**
    * `location` slug of a data-driven tooltip (see TooltipLocation). When set,
    * the field renders an info-icon tooltip whose text superadmins author under
    * Manage Tooltips. Currently consumed by toggle fields (ToggleSection).
@@ -132,6 +142,8 @@ export interface FieldGroupType {
 export interface FormFieldProps {
   config: FormFieldConfig;
   formMethods: any;
+  /** Render the field inert (View Details mode) — content visible, inputs untouchable. */
+  readOnly?: boolean;
 }
 
 export interface FieldGroupProps {
@@ -154,6 +166,8 @@ export interface Simulation {
   createdBy: string;
   updatedAt: string;
   status: SimulationStatus;
+  category?: string | null;
+  partnerOrgName?: string | null;
   isPreviewEnabled: boolean;
   isAssignedToTenant: boolean;
   usage: string;
@@ -168,6 +182,12 @@ export interface GetSimulationsQueryParams {
   sortBy?: string;
   order?: string;
   search?: string;
+  /** Comma-separated SimulationStatus values. */
+  status?: string;
+  /** Comma-separated ScenarioCategory values (ORIGINALS, DEMO, PARTNER_SIM…). */
+  category?: string;
+  /** Substring match on the partner organisation tag. */
+  partnerOrgName?: string;
   tenantId?: string;
   assignmentStatus?: AssignmentStatus;
 }

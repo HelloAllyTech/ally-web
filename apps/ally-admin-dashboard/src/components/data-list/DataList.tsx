@@ -69,7 +69,11 @@ export function DataList<T extends DataListItem>({
 
   const renderActionButtons = (item: T) => {
     return (
-      <div className="flex flex-row items-center justify-end gap-[7px] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+      // flex-wrap: the cell clips left-side overflow (justify-end +
+      // overflow-x-hidden), so on rows with many actions the leftmost icon
+      // silently disappeared. Wrapping to a second line keeps every action
+      // reachable at any column width.
+      <div className="flex flex-row flex-wrap items-center justify-end gap-[7px] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
         {actions.map((action, index) => {
           const shouldShow = action.show ? action.show(item) : true;
           if (!shouldShow) return null;

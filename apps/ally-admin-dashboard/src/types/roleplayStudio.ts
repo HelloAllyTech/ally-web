@@ -412,8 +412,8 @@ export interface CopilotChatMessage {
 export type RoleplayTraineeProfile = "SKILLED" | "POOR" | "ADVERSARIAL";
 
 export enum RoleplayRehearsalStatus {
-  PENDING = "PENDING",
-  RUNNING = "RUNNING",
+  STARTED = "STARTED",
+  IN_PROGRESS = "IN_PROGRESS",
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
   CANCELLED = "CANCELLED",
@@ -709,25 +709,26 @@ export interface CopilotTestCaseSuggestion {
   test?: string | null;
 }
 
-// Socket payloads (namespace roleplay/rehearsals)
+// { completed, total } snapshot reported by the rehearsal webhook and pushed
+// live over the rehearsals socket. Ticks once per fully-finished-and-judged
+// unit (trainee profile or test case), so `completed` counts settled units.
 export interface RoleplayRehearsalProgress {
   completed: number;
   total: number;
 }
 
-export interface RehearsalRunStatusPayload {
-  rehearsalId: string;
-  status: RoleplayRehearsalStatus | string;
-  progress: RoleplayRehearsalProgress;
-}
-
-export interface RehearsalCompletedPayload {
-  rehearsalId: string;
-}
-
+/**
+ * Rehearsals socket (namespace `roleplay-studio/rehearsals`, event
+ * `REHEARSALS_UPDATED`). Mirrors the backend `RehearsalEvents` enum. Each
+ * `REHEARSALS_UPDATED` carries the whole `RoleplayRehearsal` (single object for
+ * a `rehearsal:<id>` room, an array for the user room) — the `progress` field
+ * on it is the live sub-progress source.
+ */
 export enum RoleplayRehearsalSocketEvent {
-  RUN_STATUS = "run_status",
-  REHEARSAL_COMPLETED = "rehearsal_completed",
+  CONNECTED = "CONNECTED",
+  JOIN_USER_REHEARSALS_ROOM = "JOIN_USER_REHEARSALS_ROOM",
+  JOIN_REHEARSAL_ROOM = "JOIN_REHEARSAL_ROOM",
+  REHEARSALS_UPDATED = "REHEARSALS_UPDATED",
 }
 
 // ---------------------------------------------------------------------------

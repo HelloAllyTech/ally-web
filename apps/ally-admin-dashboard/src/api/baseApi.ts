@@ -132,6 +132,7 @@ export const baseAPI = createApi({
     TAG_TYPES.COMFORT_AUDIO_LIBRARY,
     TAG_TYPES.TRACKS_V2,
     TAG_TYPES.BLOGS,
+    TAG_TYPES.IMAGE_LIBRARY,
   ],
   endpoints: () => ({}),
 });

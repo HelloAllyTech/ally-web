@@ -97,10 +97,7 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(result.map(i => i.id)).toEqual([
-      SIDEBAR_ITEMS.ANALYTICS,
-      SIDEBAR_ITEMS.COMPETENCIES,
-    ]);
+    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.COMPETENCIES]);
   });
 
   it("exposes the super-duper-only tabs (and super-admin-tier tabs) to a super-duper-admin, Settings last", () => {
@@ -172,9 +169,7 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_DUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(superDuperAdmin.map(i => i.id)).toContain(
-      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-    );
+    expect(superDuperAdmin.map(i => i.id)).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
 
     // A plain super-admin no longer sees Roleplay Session Logs.
     const superAdmin = deriveNavigationItems({
@@ -182,18 +177,43 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(superAdmin.map(i => i.id)).not.toContain(
-      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-    );
+    expect(superAdmin.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
 
     const admin = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
       role: UserRole.ADMIN,
       savedOrder: undefined,
     });
-    expect(admin.map(i => i.id)).not.toContain(
-      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+    expect(admin.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
+  });
+
+  it("flags super-duper-only tabs with superDuperAdminOnly and leaves other tabs unflagged", () => {
+    const result = deriveNavigationItems({
+      permissions: [Permissions.EDIT_SCENARIO],
+      role: UserRole.SUPER_DUPER_ADMIN,
+      savedOrder: undefined,
+    });
+    const flagged = new Set(
+      result.filter(i => i.superDuperAdminOnly).map(i => i.id),
     );
+    // The super-duper-only tabs carry the flag (drives the sidebar's blue dot).
+    expect(flagged).toEqual(
+      new Set([
+        SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+        SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
+        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+        SIDEBAR_ITEMS.TOOLTIPS,
+        SIDEBAR_ITEMS.USER_BADGES,
+        SIDEBAR_ITEMS.AGENT_TEST_CASES,
+        SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+        SIDEBAR_ITEMS.SETTINGS,
+      ]),
+    );
+    // Super-admin-tier and permission-gated tabs stay unflagged (no dot).
+    const byId = new Map(result.map(i => [i.id, i]));
+    expect(byId.get(SIDEBAR_ITEMS.ANALYTICS)?.superDuperAdminOnly).toBeFalsy();
+    expect(byId.get(SIDEBAR_ITEMS.COMPETENCIES)?.superDuperAdminOnly).toBeFalsy();
+    expect(byId.get(SIDEBAR_ITEMS.SIMULATION_STUDIO)?.superDuperAdminOnly).toBeFalsy();
   });
 
   it("applies the user's saved order so their chosen tab is first", () => {
