@@ -122,6 +122,8 @@ export interface StartSimulationInput {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
   caseSessionItemId?: string;
+  /** Track 2.0: link this session to a track item progress row. */
+  trackItemProgressId?: string;
   languageCode?: string;
   platform?: SessionPlatform;
 }

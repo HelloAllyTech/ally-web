@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef, FC } from "react";
 
-import { CircularProgress } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
-import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { GenericTable, Loading } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   useGetCallLogsQuery,
@@ -181,7 +180,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   if (isLoading && offset === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
-        <CircularProgress />
+        <Loading withOverlay={false} />
       </div>
     );
   }
@@ -434,6 +433,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           columns={isCall ? callColumns : simulationColumns}
           data={displayData}
           isLoading={isLoading}
+          showSelectedFilters={isCall}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           loadMoreLabel={t("common.loadMore")}
           fallbackUI={renderFallbackUI()}

@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef, FC } from "react";
 
-import { CircularProgress, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { GenericTable, Loading, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   useGetAdminCallLogsQuery,
@@ -196,7 +195,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   if (isLoading && offset === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
-        <CircularProgress />
+        <Loading withOverlay={false} />
       </div>
     );
   }
@@ -351,7 +350,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             key: "addCustomField",
             header: "",
             headerNode: (
-              <Tooltip title="Add custom field" placement="top" arrow>
+              <Tooltip label="Add custom field" align="top">
                 <button
                   type="button"
                   onClick={() => setIsManageFieldsOpen(true)}

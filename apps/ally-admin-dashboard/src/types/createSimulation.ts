@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 
 import { EventDetectionConfig } from "@types";
 
+import { AssignmentStatus } from "./organizationAccess";
 import {
   SessionEventDetectionData,
   triggerWarning,
@@ -16,6 +17,8 @@ import { TriggerCondition } from "./triggerConditions";
 export type FormData = {
   title: string;
   competency?: Competency;
+  category?: string;
+  partnerOrgName?: string;
   difficultyLevel: string;
   characterProfileSelector?: string;
   characterProfileText: string;
@@ -29,6 +32,8 @@ export type FormData = {
   languageCharacteristics?: Record<string, string>;
   fillerEnabled?: boolean;
   comfortAudioEnabled?: boolean;
+  comfortAudioUrl?: string;
+  comfortAudioVolume?: number;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
@@ -71,6 +76,8 @@ export interface FormFieldConfig {
   isMandatory?: boolean;
   isDashedLineAbove?: boolean;
   fullWidth?: boolean;
+  /** SELECT only: show a clear (×) control that resets the value to "". */
+  allowDeselect?: boolean;
   maxLength?: number;
   multiline?: boolean;
   defaultValue?: string;
@@ -81,11 +88,9 @@ export interface FormFieldConfig {
   component?: React.ReactNode;
   dependsOn?: keyof FormData;
   note?: string;
-  regenerateType?: string;
   /**
    * When set, render a field-level "Improve" (Enhance) control for this field.
    * The value is one of ENHANCE_TYPE and identifies the field to the backend.
-   * Independent of `regenerateType`; either, both, or neither may be set.
    */
   enhanceType?: string;
   visibleWhen?: (formValues: Partial<FormData>) => boolean;
@@ -116,6 +121,12 @@ export interface FormFieldConfig {
   /** When true, wrap the field in a collapsed accordion. */
   accordion?: boolean;
   /**
+   * IMAGE_UPLOAD only: render the "Generate with AI" controls under the
+   * upload tile. Generation uses the scenario's title/description form
+   * values via the managed `cover_image_generation` prompt.
+   */
+  aiGenerate?: boolean;
+  /**
    * `location` slug of a data-driven tooltip (see TooltipLocation). When set,
    * the field renders an info-icon tooltip whose text superadmins author under
    * Manage Tooltips. Currently consumed by toggle fields (ToggleSection).
@@ -131,6 +142,8 @@ export interface FieldGroupType {
 export interface FormFieldProps {
   config: FormFieldConfig;
   formMethods: any;
+  /** Render the field inert (View Details mode) — content visible, inputs untouchable. */
+  readOnly?: boolean;
 }
 
 export interface FieldGroupProps {
@@ -153,6 +166,8 @@ export interface Simulation {
   createdBy: string;
   updatedAt: string;
   status: SimulationStatus;
+  category?: string | null;
+  partnerOrgName?: string | null;
   isPreviewEnabled: boolean;
   isAssignedToTenant: boolean;
   usage: string;
@@ -167,7 +182,14 @@ export interface GetSimulationsQueryParams {
   sortBy?: string;
   order?: string;
   search?: string;
+  /** Comma-separated SimulationStatus values. */
+  status?: string;
+  /** Comma-separated ScenarioCategory values (ORIGINALS, DEMO, PARTNER_SIM…). */
+  category?: string;
+  /** Substring match on the partner organisation tag. */
+  partnerOrgName?: string;
   tenantId?: string;
+  assignmentStatus?: AssignmentStatus;
 }
 export interface GetSimulationsResponse {
   data: Simulation[];
@@ -341,6 +363,44 @@ export interface Prompt {
    */
   hasStates?: boolean;
   usesBlocks?: string[];
+  /**
+   * Prompt-level LLM provider override ('openai' | 'gemini' | 'anthropic'),
+   * sent alongside `model` so runtimes don't infer it from the model name.
+   */
+  provider?: string;
+  /**
+   * Prompt-level LLM model override (OpenAI/Gemini). Sits between the
+   * code/language defaults and any simulation-level value. Undefined =
+   * inherit the code/language default.
+   */
+  model?: string;
+  /**
+   * Prompt-level LLM sampling temperature override (0–2). Undefined = inherit
+   * the code/language default; a simulation-level temperature still wins.
+   */
+  temperature?: number;
+}
+
+export type LlmProviderName = "openai" | "gemini" | "anthropic";
+
+/** Runtimes that execute LLM calls (mirrors the ally-be LlmRuntime enum). */
+export type LlmRuntime = "ai-learn" | "ally-ai" | "ally-be";
+
+/**
+ * One selectable LLM model from the backend registry
+ * (GET /api/v1/llm/models). Single source of truth for the Prompt Management
+ * model picker — see prompt-llm-config-standardization-adr.md.
+ */
+export interface LlmModelInfo {
+  provider: LlmProviderName;
+  /** Model id passed to the provider (e.g. 'gpt-4o', 'gemini-2.5-pro'). */
+  model: string;
+  /** Human-readable label for the picker. */
+  label: string;
+  /** False for reasoning models (o-series, gpt-5) that reject a custom temperature. */
+  supportsTemperature: boolean;
+  /** Runtimes that can actually run this model today. */
+  runtimes: LlmRuntime[];
 }
 
 export interface GetPromptsQuery {

@@ -6,13 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { Archive, MoreVertIcon, Refresh, StartSession, UploadIcon } from "@assets";
-import {
-  AppTooltip,
-  Button,
-  ButtonVariant,
-  CustomMenu,
-  PermissionGuard,
-} from "@components";
+import { AppTooltip, Button, ButtonVariant, CustomMenu, PermissionGuard } from "@components";
 import { CallType, Permissions, ROUTES, TooltipLocation } from "@constants";
 import { useScribeNoteCreationEnabled, useUser } from "@hooks";
 import { SessionType } from "@types";
@@ -126,55 +120,58 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
             />
           </div>
           {isScribe && (
-          <div className="flex gap-2 items-center font-tertiary" data-testid="calls-action-buttons">
-            <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
-              {availableChatTypes?.includes(CallType.AUDIO_UPLOAD) && (
-                <AppTooltip location={TooltipLocation.UPLOAD_AUDIO_BUTTON}>
-                  <Button
-                    data-testid="calls-upload-audio-button"
-                    variant={
-                      hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
-                      availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
-                        ? ButtonVariant.SECONDARY
-                        : ButtonVariant.PRIMARY
-                    }
-                    onClick={() => setIsAudioUploadDialogOpen(true)}
-                  >
-                    <UploadIcon
-                      data-testid="calls-upload-icon"
-                      className={
+            <div
+              className="flex gap-2 items-center font-tertiary"
+              data-testid="calls-action-buttons"
+            >
+              <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
+                {availableChatTypes?.includes(CallType.AUDIO_UPLOAD) && (
+                  <AppTooltip location={TooltipLocation.UPLOAD_AUDIO_BUTTON}>
+                    <Button
+                      data-testid="calls-upload-audio-button"
+                      variant={
                         hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
                         availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
-                          ? "text-neutral-500 path-fill-current"
-                          : "text-white path-fill-current"
+                          ? ButtonVariant.SECONDARY
+                          : ButtonVariant.PRIMARY
                       }
-                    />
-                    {t("calls.actions.uploadAudio")}
-                  </Button>
-                </AppTooltip>
+                      onClick={() => setIsAudioUploadDialogOpen(true)}
+                    >
+                      <UploadIcon
+                        data-testid="calls-upload-icon"
+                        className={
+                          hasPermissions(permissions, Permissions.START_MICROPHONE_CHAT) &&
+                          availableChatTypes?.includes(CallType.MICROPHONE_CHAT)
+                            ? "text-neutral-500 path-fill-current"
+                            : "text-white path-fill-current"
+                        }
+                      />
+                      {t("calls.actions.uploadAudio")}
+                    </Button>
+                  </AppTooltip>
+                )}
+              </PermissionGuard>
+              {canCreateNote && (
+                <Button
+                  data-testid="calls-create-note-button"
+                  variant={ButtonVariant.SECONDARY}
+                  onClick={handleCreateNote}
+                >
+                  {`+ ${t("calls.actions.createNote")}`}
+                </Button>
               )}
-            </PermissionGuard>
-            {canCreateNote && (
-              <Button
-                data-testid="calls-create-note-button"
-                variant={ButtonVariant.SECONDARY}
-                onClick={handleCreateNote}
-              >
-                {`+ ${t("calls.actions.createNote")}`}
-              </Button>
-            )}
-            <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
-              {(availableChatTypes?.includes(CallType.MICROPHONE_CHAT) ||
-                availableChatTypes?.includes(CallType.DICTATION_MODE)) && (
-                <AppTooltip location={TooltipLocation.START_SESSION_BUTTON}>
-                  <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
-                    <StartSession data-testid="calls-start-session-icon" />
-                    {t("calls.actions.startSession")}
-                  </Button>
-                </AppTooltip>
-              )}
-            </PermissionGuard>
-          </div>
+              <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
+                {(availableChatTypes?.includes(CallType.MICROPHONE_CHAT) ||
+                  availableChatTypes?.includes(CallType.DICTATION_MODE)) && (
+                  <AppTooltip location={TooltipLocation.START_SESSION_BUTTON}>
+                    <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
+                      <StartSession data-testid="calls-start-session-icon" />
+                      {t("calls.actions.startSession")}
+                    </Button>
+                  </AppTooltip>
+                )}
+              </PermissionGuard>
+            </div>
           )}
         </div>
         {userGroupList?.length > 1 && (
@@ -216,10 +213,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
       </PermissionGuard>
 
       {canCreateNote && (
-        <CreateNoteDrawer
-          open={isCreateNoteOpen}
-          onClose={() => setIsCreateNoteOpen(false)}
-        />
+        <CreateNoteDrawer open={isCreateNoteOpen} onClose={() => setIsCreateNoteOpen(false)} />
       )}
 
       <CustomMenu

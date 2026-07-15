@@ -1,10 +1,10 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useDeleteCoverImageMutation,
   useLazyGetScenarioCaseByIdQuery,
@@ -29,7 +29,6 @@ import {
   SimulationStatus,
   PathStepperList,
   getCreatePathSubSectionById,
-  viewOnlyToolTipStyles,
 } from "@constants";
 import { useDebounce } from "@hooks";
 import { GetScenarioType } from "@types";
@@ -249,12 +248,7 @@ export const CreateCase: FC = () => {
                 {en.simulation.addSimulation}
               </Button>
             ) : (
-              <Tooltip
-                title={en.simulation.viewOnlyTooltipCase}
-                placement="left"
-                arrow
-                slotProps={viewOnlyToolTipStyles}
-              >
+              <Tooltip label={en.simulation.viewOnlyTooltipCase} align="left">
                 <Button variant={ButtonVariant.SECONDARY}>
                   <Eye />
                   {en.simulation.viewOnly}

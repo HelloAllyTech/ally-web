@@ -2,6 +2,7 @@
 export * from "./baseApi";
 export * from "./auth";
 export * from "./simulationStudio";
+export * from "./comfortAudio";
 export * from "./agentBuilder";
 export * from "./userManagement";
 export * from "./scenarioPath";
@@ -13,3 +14,6 @@ export * from "./tooltips";
 export * from "./analytics";
 export * from "./legalContent";
 export * from "./roleplaySessionLogs";
+export * from "./roleplayStudio";
+export * from "./tracks";
+export * from "./blog";

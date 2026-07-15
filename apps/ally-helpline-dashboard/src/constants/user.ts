@@ -7,19 +7,6 @@ export const User = {
 };
 
 /**
- * Emails allowed to see the UI theme picker while the feature is in alpha.
- * Temporary allowlist — remove once the feature is rolled out to everyone.
- */
-export const THEME_PICKER_ALLOWED_EMAILS = [
-  "learner@example.com",
-  "sandeep.malhotra+1@helloally.ai",
-  "sandeep.malhotra+testing@helloally.ai",
-];
-
-export const canPickUiTheme = (user?: { email?: string } | null): boolean =>
-  !!user?.email && THEME_PICKER_ALLOWED_EMAILS.includes(user.email);
-
-/**
  * Emails allowed to see the Organization Settings tab while the feature is in
  * alpha. Temporary allowlist — remove it (and the allowlist check in
  * canViewOrganizationSettings) once it rolls out to all admins.
@@ -40,6 +27,19 @@ export const canViewOrganizationSettings = (
   user?.role === UserRole.ADMIN &&
   !!user?.email &&
   ORG_SETTINGS_ALLOWED_EMAILS.includes(user.email);
+
+/**
+ * Emails allowed to see the "Watch how peers handled this" peer-sessions drawer
+ * on the scenario detail page while the feature is in limited rollout. Temporary
+ * allowlist — remove it (and the allowlist check in Scenario.tsx) once it rolls
+ * out to all reviewers. The permission gate (reviewer + learner) still applies
+ * on top of this list.
+ */
+export const PEER_SESSIONS_ALLOWED_EMAILS = [
+  "learner@example.com",
+  "sandeep.malhotra+1@helloally.ai",
+  "sandeep.malhotra+internal@helloally.ai",
+];
 
 // In-app privacy page (ROUTES.PRIVACY), opened in a new tab via openLinkInNewTab.
 export const PRIVACY_POLICY_URL = "/privacy";

@@ -2,20 +2,20 @@ import { useMemo, useState } from "react";
 
 import { ScaleTypes } from "@carbon/charts";
 import { StackedBarChart } from "@carbon/charts-react";
+
+import "@carbon/charts/styles.css";
+import "./analytics-carbon.scss";
+
 import {
   Button,
-  Dropdown,
+  CarbonDropdown as Dropdown,
   Heading,
   InlineNotification,
   Section,
   SkeletonPlaceholder,
   Theme,
   Tile,
-} from "@carbon/react";
-
-import "@carbon/charts/styles.css";
-import "./analytics-carbon.scss";
-
+} from "@ally-ui-mono/ui-shared";
 import { useGetTokenConsumptionQuery } from "@api";
 import { AnalyticsRange } from "@types";
 

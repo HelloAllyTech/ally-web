@@ -1,5 +1,4 @@
 import { CallType, Permissions, SocketConnectionTypes } from "@constants";
-import { UiTheme } from "@theme/themes";
 
 import { AudioUpload } from "./calls";
 import { SocketEvent } from "./message";
@@ -53,7 +52,6 @@ export interface UserState {
   user: User;
   permissions: Permissions[];
   availableChatTypes: CallType[];
-  uiTheme: UiTheme;
 }
 export interface LanguageOption {
   value: string;

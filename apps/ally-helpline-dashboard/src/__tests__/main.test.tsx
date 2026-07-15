@@ -1,10 +1,16 @@
-import { StyledEngineProvider } from "@mui/material/styles";
+import { Suspense } from "react";
+
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { render, screen } from "@testing-library/react";
+import { I18nextProvider } from "react-i18next";
 import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+import { AnalyticsProvider } from "../analytics";
 import App from "../App.tsx";
-import { store } from "../store";
+import i18n from "../i18n";
+import { store, persistor } from "../store";
 
 // Mock React DOM
 const mockRender = vi.fn();
@@ -25,42 +31,83 @@ vi.mock("react-redux", () => ({
   ),
 }));
 
-// Mock MUI
-vi.mock("@mui/material/styles", () => ({
-  StyledEngineProvider: ({
-    children,
-    injectFirst,
-  }: {
-    children: React.ReactNode;
-    injectFirst: boolean;
-  }) => (
-    <div data-testid="styled-engine-provider" data-inject-first={injectFirst}>
+// Mock redux-persist gate
+vi.mock("redux-persist/integration/react", () => ({
+  PersistGate: ({ children, persistor }: { children: React.ReactNode; persistor: any }) => (
+    <div data-testid="persist-gate" data-persistor={persistor ? "present" : "absent"}>
       {children}
     </div>
   ),
 }));
 
-// Mock CSS import
+// Mock Google OAuth provider
+vi.mock("@react-oauth/google", () => ({
+  GoogleOAuthProvider: ({
+    children,
+    clientId,
+  }: {
+    children: React.ReactNode;
+    clientId: string;
+  }) => (
+    <div data-testid="google-oauth-provider" data-client-id={clientId}>
+      {children}
+    </div>
+  ),
+}));
+
+// Mock i18n provider
+vi.mock("react-i18next", () => ({
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="i18next-provider">{children}</div>
+  ),
+}));
+
+// Mock analytics provider
+vi.mock("../analytics", () => ({
+  AnalyticsProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="analytics-provider">{children}</div>
+  ),
+}));
+
+// Mock CSS / SCSS imports
 vi.mock("../index.css", () => ({}));
+vi.mock("@ally-ui-mono/ui-shared/styles/carbon-serif.scss", () => ({}));
 
 // Mock App component
 vi.mock("../App.tsx", () => ({
   default: () => <div data-testid="app-component">App Component</div>,
 }));
 
-// Mock store
+// Mock store + persistor
 vi.mock("../store", () => ({
   store: { dispatch: vi.fn(), getState: vi.fn() },
+  persistor: { persist: vi.fn() },
 }));
 
-// Create a test component that mimics the main.tsx structure
+// Mock i18n instance
+vi.mock("../i18n", () => ({
+  default: { language: "en" },
+}));
+
+// A component that mirrors main.tsx's new provider hierarchy (post Carbon
+// migration): Provider > PersistGate > GoogleOAuthProvider > I18nextProvider >
+// AnalyticsProvider > Suspense > App. The previous StyledEngineProvider /
+// LocalizationProvider (MUI) wrappers have been removed.
 const TestMainComponent = () => {
   return (
-    <StyledEngineProvider injectFirst>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </StyledEngineProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <GoogleOAuthProvider clientId="test-client-id">
+          <I18nextProvider i18n={i18n}>
+            <AnalyticsProvider>
+              <Suspense fallback={null}>
+                <App />
+              </Suspense>
+            </AnalyticsProvider>
+          </I18nextProvider>
+        </GoogleOAuthProvider>
+      </PersistGate>
+    </Provider>
   );
 };
 
@@ -78,37 +125,34 @@ describe("main.tsx", () => {
     vi.restoreAllMocks();
   });
 
-  it("creates root with correct element", () => {
+  it("renders with the Redux Provider at the root", () => {
     render(<TestMainComponent />);
-
-    // The TestMainComponent doesn't actually call createRoot, it just renders the structure
-    // This test verifies the component structure is correct
-    expect(screen.getByTestId("styled-engine-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("redux-provider")).toBeInTheDocument();
   });
 
   it("renders the app with correct providers", () => {
     render(<TestMainComponent />);
 
-    // Check that StyledEngineProvider is the root
-    const styledEngineProvider = screen.getByTestId("styled-engine-provider");
-    expect(styledEngineProvider).toBeInTheDocument();
-    expect(styledEngineProvider).toHaveAttribute("data-inject-first", "true");
-
-    // Check that Redux Provider is inside StyledEngineProvider
+    // Redux Provider is the root and receives the store
     const reduxProvider = screen.getByTestId("redux-provider");
     expect(reduxProvider).toBeInTheDocument();
     expect(reduxProvider).toHaveAttribute("data-store", "store-present");
 
-    // Check that App component is inside Redux Provider
+    // PersistGate wraps the rest of the tree
+    const persistGate = screen.getByTestId("persist-gate");
+    expect(persistGate).toBeInTheDocument();
+    expect(persistGate).toHaveAttribute("data-persistor", "present");
+
+    // App component is rendered inside the providers
     const appComponent = screen.getByTestId("app-component");
     expect(appComponent).toBeInTheDocument();
   });
 
-  it("configures StyledEngineProvider with injectFirst", () => {
+  it("configures GoogleOAuthProvider with a client id", () => {
     render(<TestMainComponent />);
 
-    const styledEngineProvider = screen.getByTestId("styled-engine-provider");
-    expect(styledEngineProvider).toHaveAttribute("data-inject-first", "true");
+    const googleProvider = screen.getByTestId("google-oauth-provider");
+    expect(googleProvider).toHaveAttribute("data-client-id", "test-client-id");
   });
 
   it("passes store to Redux Provider", () => {
@@ -128,13 +172,18 @@ describe("main.tsx", () => {
   it("has correct component hierarchy", () => {
     render(<TestMainComponent />);
 
-    // Check the hierarchy: StyledEngineProvider -> Redux Provider -> App
-    const styledEngineProvider = screen.getByTestId("styled-engine-provider");
     const reduxProvider = screen.getByTestId("redux-provider");
+    const persistGate = screen.getByTestId("persist-gate");
+    const googleProvider = screen.getByTestId("google-oauth-provider");
+    const i18nProvider = screen.getByTestId("i18next-provider");
+    const analyticsProvider = screen.getByTestId("analytics-provider");
     const appComponent = screen.getByTestId("app-component");
 
-    expect(styledEngineProvider).toContainElement(reduxProvider);
-    expect(reduxProvider).toContainElement(appComponent);
+    expect(reduxProvider).toContainElement(persistGate);
+    expect(persistGate).toContainElement(googleProvider);
+    expect(googleProvider).toContainElement(i18nProvider);
+    expect(i18nProvider).toContainElement(analyticsProvider);
+    expect(analyticsProvider).toContainElement(appComponent);
   });
 
   it("handles missing root element gracefully", () => {
@@ -148,8 +197,8 @@ describe("main.tsx", () => {
     }).not.toThrow();
   });
 
-  it("imports CSS file", () => {
-    // The CSS import is mocked, so we just need to ensure the module loads
+  it("imports style files without throwing", () => {
+    // The CSS/SCSS imports are mocked, so we just need to ensure the module loads
     expect(() => {
       render(<TestMainComponent />);
     }).not.toThrow();
@@ -166,23 +215,25 @@ describe("main.tsx", () => {
   it("wraps App with all necessary providers", () => {
     render(<TestMainComponent />);
 
-    // Should have all three main components
-    expect(screen.getByTestId("styled-engine-provider")).toBeInTheDocument();
     expect(screen.getByTestId("redux-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("persist-gate")).toBeInTheDocument();
+    expect(screen.getByTestId("google-oauth-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("i18next-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("analytics-provider")).toBeInTheDocument();
     expect(screen.getByTestId("app-component")).toBeInTheDocument();
   });
 
   it("maintains proper nesting order", () => {
     render(<TestMainComponent />);
 
-    const styledEngineProvider = screen.getByTestId("styled-engine-provider");
     const reduxProvider = screen.getByTestId("redux-provider");
+    const persistGate = screen.getByTestId("persist-gate");
     const appComponent = screen.getByTestId("app-component");
 
-    // StyledEngineProvider should contain Redux Provider
-    expect(styledEngineProvider).toContainElement(reduxProvider);
+    // Redux Provider should contain PersistGate
+    expect(reduxProvider).toContainElement(persistGate);
 
-    // Redux Provider should contain App
+    // The provider chain should ultimately contain App
     expect(reduxProvider).toContainElement(appComponent);
   });
 });

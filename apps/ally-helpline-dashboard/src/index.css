@@ -10,7 +10,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 218 58% 35%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -22,183 +22,35 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 218 58% 35%;
     --radius: 0.75rem;
   }
 }
 
 /*
- * ===== Themes =====
- * Each theme is a bundle of tokens (colour + fonts + corner radius) selected
- * via the `data-theme` attribute on <html>. Tailwind tokens (see
- * tailwind.config.ts) resolve from these `--color-*` / `--font-*` / `--radius`
- * variables. Opaque colour scales are space-separated RGB triplets ("R G B")
- * consumed via rgb(var(...) / <alpha-value>); the typography scale bakes its
- * alpha into a full rgba() value; fonts/radius hold their full value.
- *
- * `:root` (unconditional) carries the "current" theme verbatim, so the default
- * look is byte-for-byte unchanged and any value a theme leaves unset cascades
- * from it. Legacy ids (daylight/forest/sunset) map to "current" at the read
- * boundary — see normalizeUiTheme in theme/themes.ts + the index.html script.
+ * ===== Design tokens — single IBM Carbon (serif-only) theme =====
+ * The previous multi-theme switcher (current/claude/carbon selected via a
+ * `data-theme` attribute) has been removed. There is now ONE locked theme: the
+ * IBM Carbon palette with IBM Plex Serif and sharp (2px) corners. Tailwind
+ * tokens (see tailwind.config.ts) resolve from these `--color-*` / `--font-*` /
+ * `--radius` variables. Opaque colour scales are space-separated RGB triplets
+ * ("R G B") consumed via rgb(var(...) / <alpha-value>); the typography scale
+ * bakes its alpha into a full rgba() value; fonts/radius hold their full value.
  */
 @layer base {
-  :root,
-  [data-theme="current"] {
-    --color-primary-DEFAULT: 16 38 76;
-    --color-primary-50: 226 242 255;
-    --color-primary-100: 183 215 255;
-    --color-primary-200: 134 184 255;
-    --color-primary-300: 95 153 252;
-    --color-primary-400: 97 136 201;
-    --color-primary-500: 9 87 208;
-    --color-primary-600: 9 87 208;
-    --color-primary-700: 1 67 168;
-    --color-primary-800: 18 50 104;
-    --color-primary-900: 16 38 76;
-
-    --color-secondary-DEFAULT: 200 197 208;
-    --color-secondary-50: 245 245 247;
-    --color-secondary-100: 235 234 239;
-    --color-secondary-200: 215 213 223;
-    --color-secondary-300: 200 197 208;
-    --color-secondary-400: 176 173 192;
-    --color-secondary-500: 152 149 168;
-    --color-secondary-600: 122 119 136;
-    --color-secondary-700: 92 89 104;
-    --color-secondary-800: 62 59 72;
-    --color-secondary-900: 32 29 40;
-
-    --color-neutral-DEFAULT: 66 66 66;
-    --color-neutral-50: 250 250 250;
-    --color-neutral-100: 245 245 245;
-    --color-neutral-200: 238 238 238;
-    --color-neutral-300: 224 224 224;
-    --color-neutral-400: 189 189 189;
-    --color-neutral-500: 158 158 158;
-    --color-neutral-600: 117 117 117;
-    --color-neutral-700: 97 97 97;
-    --color-neutral-800: 66 66 66;
-    --color-neutral-900: 51 51 51;
-
-    --color-scrollbar-track: 241 241 241;
-    --color-scrollbar-thumb: 136 136 136;
-    --color-scrollbar-thumbHover: 85 85 85;
-
-    --color-background-DEFAULT: 255 255 255;
-    --color-background-secondary: 249 250 251;
-    --color-background-tertiary: 243 244 246;
-
-    --color-border-DEFAULT: 210 210 210;
-    --color-border-light: 229 231 235;
-    --color-border-medium: 209 213 219;
-    --color-border-dark: 156 163 175;
-
-    --color-typography-Default: rgba(0, 0, 0, 0.87);
-    --color-typography-50: rgba(0, 0, 0, 0.04);
-    --color-typography-100: rgba(0, 0, 0, 0.08);
-    --color-typography-200: rgba(0, 0, 0, 0.12);
-    --color-typography-300: rgba(0, 0, 0, 0.16);
-    --color-typography-400: rgba(0, 0, 0, 0.24);
-    --color-typography-500: rgba(0, 0, 0, 0.32);
-    --color-typography-600: rgba(0, 0, 0, 0.38);
-    --color-typography-700: rgba(0, 0, 0, 0.54);
-    --color-typography-800: rgba(0, 0, 0, 0.6);
-    --color-typography-900: rgba(0, 0, 0, 0.87);
-
-    /* Non-colour design tokens (see tailwind.config.ts). Current = today's exact values. */
-    --font-primary: "IBM Plex Serif", serif;
-    --font-secondary: "Replay Pro", serif;
-    --font-tertiary: "IBM Plex Serif", serif;
-    --font-sans: "IBM Plex Serif", serif;
-    --radius: 0.75rem;
-  }
-
-  /* Claude — warm paper, coral accent, serif display + system-sans body (approximated from brand). */
-  [data-theme="claude"] {
-    --color-primary-DEFAULT: 204 120 92;
-    --color-primary-50: 247 236 231;
-    --color-primary-100: 240 218 208;
-    --color-primary-200: 230 191 175;
-    --color-primary-300: 221 159 137;
-    --color-primary-400: 218 119 86;
-    --color-primary-500: 204 120 92;
-    --color-primary-600: 181 100 74;
-    --color-primary-700: 150 79 57;
-    --color-primary-800: 112 60 44;
-    --color-primary-900: 74 41 31;
-
-    --color-secondary-DEFAULT: 61 58 52;
-    --color-secondary-50: 245 244 238;
-    --color-secondary-100: 234 231 222;
-    --color-secondary-200: 216 210 197;
-    --color-secondary-300: 188 180 164;
-    --color-secondary-400: 150 142 126;
-    --color-secondary-500: 120 112 98;
-    --color-secondary-600: 94 87 76;
-    --color-secondary-700: 71 66 57;
-    --color-secondary-800: 52 48 42;
-    --color-secondary-900: 41 38 31;
-
-    --color-neutral-DEFAULT: 94 87 76;
-    --color-neutral-50: 247 246 240;
-    --color-neutral-100: 240 238 231;
-    --color-neutral-200: 230 227 218;
-    --color-neutral-300: 214 209 197;
-    --color-neutral-400: 181 175 161;
-    --color-neutral-500: 146 139 124;
-    --color-neutral-600: 113 106 92;
-    --color-neutral-700: 86 80 69;
-    --color-neutral-800: 61 57 48;
-    --color-neutral-900: 41 38 31;
-
-    --color-scrollbar-track: 234 231 222;
-    --color-scrollbar-thumb: 181 172 156;
-    --color-scrollbar-thumbHover: 146 139 124;
-
-    --color-background-DEFAULT: 245 244 238;
-    --color-background-secondary: 240 238 231;
-    --color-background-tertiary: 234 231 222;
-
-    --color-border-DEFAULT: 227 219 206;
-    --color-border-light: 234 228 218;
-    --color-border-medium: 214 205 190;
-    --color-border-dark: 181 172 156;
-
-    --color-typography-Default: rgba(41, 38, 31, 0.9);
-    --color-typography-50: rgba(41, 38, 31, 0.04);
-    --color-typography-100: rgba(41, 38, 31, 0.08);
-    --color-typography-200: rgba(41, 38, 31, 0.12);
-    --color-typography-300: rgba(41, 38, 31, 0.16);
-    --color-typography-400: rgba(41, 38, 31, 0.24);
-    --color-typography-500: rgba(41, 38, 31, 0.32);
-    --color-typography-600: rgba(41, 38, 31, 0.38);
-    --color-typography-700: rgba(41, 38, 31, 0.56);
-    --color-typography-800: rgba(41, 38, 31, 0.64);
-    --color-typography-900: rgba(41, 38, 31, 0.9);
-
-    --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-      sans-serif;
-    --font-secondary: Georgia, "Times New Roman", "Iowan Old Style", serif;
-    --font-tertiary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-      sans-serif;
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
-      sans-serif;
-    --radius: 0.625rem;
-  }
-
-  /* Carbon — IBM Carbon palette + serif fonts, sharp corners (values from the admin Carbon config). */
-  [data-theme="carbon"] {
-    --color-primary-DEFAULT: 15 98 254;
-    --color-primary-50: 237 245 255;
-    --color-primary-100: 208 226 255;
-    --color-primary-200: 166 200 255;
-    --color-primary-300: 120 169 255;
-    --color-primary-400: 69 137 255;
-    --color-primary-500: 15 98 254;
-    --color-primary-600: 0 67 206;
-    --color-primary-700: 0 45 156;
-    --color-primary-800: 0 29 108;
-    --color-primary-900: 0 17 65;
+  :root {
+    /* Primary — Brand Blue (#264D8E ramp), replaces the former Carbon Blue 60. */
+    --color-primary-DEFAULT: 38 77 142; /* #264D8E */
+    --color-primary-50: 235 240 250; /* #EBF0FA */
+    --color-primary-100: 215 226 244; /* #D7E2F4 */
+    --color-primary-200: 174 197 234; /* #AEC5EA */
+    --color-primary-300: 126 162 221; /* #7EA2DD */
+    --color-primary-400: 74 125 207; /* #4A7DCF */
+    --color-primary-500: 38 77 142; /* #264D8E (interactive) */
+    --color-primary-600: 31 63 117; /* #1F3F75 (hover) */
+    --color-primary-700: 24 48 89; /* #183059 (active) */
+    --color-primary-800: 16 33 60; /* #10213C */
+    --color-primary-900: 10 20 36; /* #0A1424 */
 
     --color-secondary-DEFAULT: 57 57 57;
     --color-secondary-50: 244 244 244;

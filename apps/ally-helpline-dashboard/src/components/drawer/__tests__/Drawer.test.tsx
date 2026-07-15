@@ -5,46 +5,40 @@ import { describe, it, expect, vi } from "vitest";
 
 import Drawer from "../Drawer";
 
-vi.mock("@mui/material", () => ({
-  Drawer: ({ anchor, open, onClose, className, children }: any) => (
-    <div
-      data-testid="mui-drawer"
-      data-anchor={anchor}
-      data-open={open ? "true" : "false"}
-      className={className}
-    >
-      <button data-testid="mock-onclose" onClick={onClose} />
-      {children}
-    </div>
-  ),
-  Tooltip: ({ children, title }: any) => (
-    <div data-testid="tooltip" title={title}>
-      {children}
-    </div>
-  ),
-}));
-
-vi.mock("lucide-react", () => ({
-  ChevronsRight: (props: any) => <button data-testid="chevrons" {...props} />,
-}));
-
 describe("Drawer", () => {
-  it("passes props to MUI Drawer and renders children", () => {
+  it("renders as a dialog with title and children when open", () => {
     render(
-      <Drawer open className="custom-class" onClose={vi.fn()} title="My Title" headerButtons={[]}>
+      <Drawer
+        open
+        drawerClassName="custom-class"
+        onClose={vi.fn()}
+        title="My Title"
+        headerButtons={[]}
+      >
         <div data-testid="content">Child</div>
       </Drawer>,
     );
 
-    const mui = screen.getByTestId("mui-drawer");
-    expect(mui).toHaveAttribute("data-anchor", "right");
-    expect(mui).toHaveAttribute("data-open", "true");
-    expect(mui).toHaveClass("custom-class");
-    expect(screen.getByTestId("content")).toBeInTheDocument();
+    // SidePanel renders an aside with role="dialog"
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("My Title")).toBeInTheDocument();
+    expect(screen.getByTestId("content")).toBeInTheDocument();
+    // drawerClassName controls the panel width, so it is applied to the panel
+    // <aside> (role="dialog"), not an inner wrapper.
+    expect(screen.getByRole("dialog")).toHaveClass("custom-class");
   });
 
-  it("clicking chevrons calls onClose", () => {
+  it("does not render anything when closed", () => {
+    render(
+      <Drawer open={false} onClose={vi.fn()} title="Hidden" headerButtons={[]}>
+        <div data-testid="content">Child</div>
+      </Drawer>,
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("content")).not.toBeInTheDocument();
+  });
+
+  it("clicking the SidePanel close button calls onClose", () => {
     const onClose = vi.fn();
     render(
       <Drawer open onClose={onClose} title="" headerButtons={[]}>
@@ -52,7 +46,7 @@ describe("Drawer", () => {
       </Drawer>,
     );
 
-    fireEvent.click(screen.getByTestId("drawer-close-button"));
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -90,14 +84,14 @@ describe("Drawer", () => {
     expect(onHidden).not.toHaveBeenCalled();
   });
 
-  it("mock onClose button inside MUI wrapper triggers onClose too", () => {
+  it("pressing Escape triggers onClose", () => {
     const onClose = vi.fn();
     render(
       <Drawer open onClose={onClose} title="X" headerButtons={[]}>
         test
       </Drawer>,
     );
-    fireEvent.click(screen.getByTestId("mock-onclose"));
+    fireEvent.keyDown(document, { key: "Escape" });
     expect(onClose).toHaveBeenCalled();
   });
 });

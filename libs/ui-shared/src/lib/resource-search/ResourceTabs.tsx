@@ -2,7 +2,7 @@
 
 import { FC, useMemo } from "react";
 
-import { Tab, Tabs } from "@mui/material";
+import { Tabs, TabList, Tab } from "@carbon/react";
 
 import { resourceTabsStyles } from "./constants";
 import { Resource, SearchVariant } from "../../types";
@@ -69,6 +69,8 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
     return ["All"];
   }, [categoryCountList]);
 
+  const selectedIndex = Math.max(categoryList.indexOf(selectedCategory), 0);
+
   return (
     <div className="relative w-full">
       <div
@@ -80,36 +82,23 @@ const ResourceTabs: FC<ResourceTabsProps> = ({
         }}
       >
         <Tabs
-          className={`w-full border-b-[0.5px] min-w-max ${resourceTabsStyles[mode].tabs}`}
-          value={selectedCategory}
-          onChange={(_, value) => setSelectedCategory(value)}
-          sx={{
-            "& .MuiTabs-indicator": {
-              backgroundColor: resourceTabsStyles[mode].indicator,
-              height: "2px",
-            },
-            "& .MuiTabs-flexContainer": {
-              gap: "8px",
-            },
-          }}
+          selectedIndex={selectedIndex}
+          onChange={({ selectedIndex: index }) => setSelectedCategory(categoryList[index])}
         >
-          {categoryList.map(category => (
-            <Tab
-              key={category}
-              value={category}
-              label={getCategoryLabel(category)}
-              className={`sm:text-[12px] md:text-[13px] lg:text-[16px] ${resourceTabsStyles[mode].tab}`}
-              sx={{
-                color: resourceTabsStyles[mode].tabColor,
-                textTransform: "capitalize",
-                fontFamily: "IBM Plex Serif",
-                "&.Mui-selected": {
-                  color: resourceTabsStyles[mode].selectedTabColor,
-                  fontWeight: 500,
-                },
-              }}
-            />
-          ))}
+          <TabList
+            aria-label="Resource categories"
+            className={`w-full border-b-[0.5px] min-w-max ${resourceTabsStyles[mode].tabs}`}
+          >
+            {categoryList.map(category => (
+              <Tab
+                key={category}
+                className={`capitalize font-['IBM_Plex_Serif'] sm:text-[12px] md:text-[13px] lg:text-[16px] ${resourceTabsStyles[mode].tab}`}
+                style={{ color: resourceTabsStyles[mode].tabColor }}
+              >
+                {getCategoryLabel(category)}
+              </Tab>
+            ))}
+          </TabList>
         </Tabs>
       </div>
     </div>

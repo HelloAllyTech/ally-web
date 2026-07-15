@@ -3,36 +3,33 @@
 exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 <DocumentFragment>
   <div
-    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium css-vlyjib-MuiToggleButtonGroup-root"
+    class="inline-flex h-9 items-stretch rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
     role="group"
   >
     <button
-      aria-pressed="false"
-      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-firstButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      aria-checked="false"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
       disabled=""
-      tabindex="-1"
+      role="radio"
       type="button"
-      value="optionA"
     >
       Option A
     </button>
     <button
-      aria-pressed="true"
-      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-selected Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-middleButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      aria-checked="true"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm bg-white text-[#4D4D4D] shadow-sm"
       disabled=""
-      tabindex="-1"
+      role="radio"
       type="button"
-      value="optionB"
     >
       Option B
     </button>
     <button
-      aria-pressed="false"
-      class="MuiButtonBase-root Mui-disabled MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButton-root Mui-disabled MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-disabled MuiToggleButtonGroup-lastButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
+      aria-checked="false"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
       disabled=""
-      tabindex="-1"
+      role="radio"
       type="button"
-      value="optionC"
     >
       Option C
     </button>
@@ -43,44 +40,32 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 exports[`ToggleButtonGroup > should match snapshot when rendered with default props 1`] = `
 <DocumentFragment>
   <div
-    class="MuiToggleButtonGroup-root h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium css-vlyjib-MuiToggleButtonGroup-root"
+    class="inline-flex h-9 items-stretch rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
     role="group"
   >
     <button
-      aria-pressed="true"
-      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-firstButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
-      tabindex="0"
+      aria-checked="true"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm bg-white text-[#4D4D4D] shadow-sm"
+      role="radio"
       type="button"
-      value="optionA"
     >
       Option A
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
     </button>
     <button
-      aria-pressed="false"
-      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-middleButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
-      tabindex="0"
+      aria-checked="false"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
+      role="radio"
       type="button"
-      value="optionB"
     >
       Option B
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
     </button>
     <button
-      aria-pressed="false"
-      class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButtonGroup-lastButton css-mswh2k-MuiButtonBase-root-MuiToggleButton-root"
-      tabindex="0"
+      aria-checked="false"
+      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
+      role="radio"
       type="button"
-      value="optionC"
     >
       Option C
-      <span
-        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-      />
     </button>
   </div>
 </DocumentFragment>

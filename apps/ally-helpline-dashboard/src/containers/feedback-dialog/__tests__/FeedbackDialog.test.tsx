@@ -150,7 +150,8 @@ describe("FeedbackDialog", () => {
     it("should render with motion div wrapper", () => {
       render(<FeedbackDialog {...defaultProps} />);
 
-      const motionDiv = screen.getByRole("dialog").querySelector("div");
+      // The motion.div now lives inside Carbon's ModalBody (`.cds--modal-content`).
+      const motionDiv = screen.getByRole("dialog").querySelector(".cds--modal-content > div");
       expect(motionDiv).toHaveClass("flex", "flex-col", "items-center", "gap-4");
       expect(motionDiv).toHaveClass("font-primary");
     });
@@ -203,7 +204,8 @@ describe("FeedbackDialog", () => {
     it("should render motion div with correct props", () => {
       render(<FeedbackDialog {...defaultProps} />);
 
-      const motionDiv = screen.getByRole("dialog").querySelector("div");
+      // The motion.div now lives inside Carbon's ModalBody (`.cds--modal-content`).
+      const motionDiv = screen.getByRole("dialog").querySelector(".cds--modal-content > div");
       expect(motionDiv).toHaveStyle({
         overflow: "hidden",
         width: "100%",

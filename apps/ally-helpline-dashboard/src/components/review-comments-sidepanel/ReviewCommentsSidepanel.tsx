@@ -1,9 +1,8 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 
-import { Skeleton } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-import { Tabs } from "@ally-ui-mono/ui-shared";
+import { SkeletonPlaceholder, Tabs } from "@ally-ui-mono/ui-shared";
 import { GeneralCommentsToShow, ThreadsToShow } from "@components";
 import { CommentItem, Thread } from "@types";
 
@@ -124,15 +123,15 @@ const ReviewCommentsSidepanel = ({
                 className="w-full h-[140px] border-[0.5px] rounded-lg px-4 py-2 flex flex-col gap-2"
                 key={index}
               >
-                <Skeleton variant="rectangular" className="w-full h-9" />
+                <SkeletonPlaceholder className="!w-full h-9" />
                 <div className="w-full border-b-[0.5px] " />
                 <div className="flex gap-2 h-[calc(100%-40px)]">
-                  <Skeleton variant="rectangular" className="w-8 h-8 rounded-full" />
+                  <SkeletonPlaceholder className="!w-8 h-8 rounded-full" />
                   <div className="w-[calc(100%-32px)] flex flex-col gap-2">
-                    <Skeleton variant="rectangular" className="w-full h-[15px] " />
-                    <Skeleton variant="rectangular" className="w-full h-[10px] " />
-                    <Skeleton variant="rectangular" className="w-full h-[10px] " />
-                    <Skeleton variant="rectangular" className="w-full h-[10px] " />
+                    <SkeletonPlaceholder className="!w-full h-[15px] " />
+                    <SkeletonPlaceholder className="!w-full h-[10px] " />
+                    <SkeletonPlaceholder className="!w-full h-[10px] " />
+                    <SkeletonPlaceholder className="!w-full h-[10px] " />
                   </div>
                 </div>
               </div>

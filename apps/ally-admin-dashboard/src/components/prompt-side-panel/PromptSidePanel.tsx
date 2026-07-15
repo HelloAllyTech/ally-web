@@ -3,12 +3,18 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { useGetPromptUsageQuery } from "@api";
+import { useGetPromptUsageQuery, useGetLlmModelsQuery } from "@api";
 import { Refresh, DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, MAIN_AGENT_PROMPT_VARIABLE_CATALOG } from "@constants";
-import { Prompt } from "@types";
+import {
+  en,
+  MAIN_AGENT_PROMPT_VARIABLE_CATALOG,
+  PROMPT_LLM_MODEL_OPTIONS,
+  PROMPT_TEMPERATURE_DEFAULT,
+  providerForModel,
+} from "@constants";
+import { Prompt, LlmProviderName } from "@types";
 
 import {
   getAvailableVariableName,
@@ -140,7 +146,7 @@ const BlockEditorPopup: React.FC<{
                 value={text}
                 onChange={setText}
                 placeholder="Enter block content..."
-                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"
+                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
               />
             </div>
           </div>
@@ -218,6 +224,64 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       [field]: value,
     }));
   }, []);
+
+  // The LLM model picker is driven by the backend registry (single source of
+  // truth) so adding a model server-side surfaces here without an FE change.
+  // Falls back to the static constant while the request is in flight / on error.
+  const { data: llmModels } = useGetLlmModelsQuery();
+
+  // Per-prompt overrides only route to OpenAI/Gemini in every runtime today
+  // (Anthropic is autofill/copilot-only, not a per-prompt path), so the picker
+  // is scoped to those providers. Widen here once a runtime consumes Anthropic
+  // via a prompt-management prompt.
+  const modelGroups = useMemo(() => {
+    const PROVIDER_ORDER: { provider: LlmProviderName; label: string }[] = [
+      { provider: "openai", label: "OpenAI" },
+      { provider: "gemini", label: "Gemini" },
+    ];
+    if (!llmModels?.length) {
+      return PROMPT_LLM_MODEL_OPTIONS.map(group => ({
+        provider: group.provider,
+        label: group.label,
+        models: group.models.map(m => ({ ...m, supportsTemperature: true })),
+      }));
+    }
+    return PROVIDER_ORDER.map(({ provider, label }) => ({
+      provider,
+      label,
+      models: llmModels
+        .filter(m => m.provider === provider)
+        .map(m => ({
+          value: m.model,
+          label: m.label,
+          supportsTemperature: m.supportsTemperature,
+        })),
+    })).filter(group => group.models.length > 0);
+  }, [llmModels]);
+
+  // Flat lookups for the selected model: its provider and whether it accepts a
+  // custom temperature (reasoning models like gpt-5 don't).
+  const { providerByModel, tempSupportByModel } = useMemo(() => {
+    const providerMap = new Map<string, LlmProviderName>();
+    const tempMap = new Map<string, boolean>();
+    for (const group of modelGroups) {
+      for (const m of group.models) {
+        providerMap.set(m.value, group.provider);
+        tempMap.set(m.value, m.supportsTemperature);
+      }
+    }
+    return { providerByModel: providerMap, tempSupportByModel: tempMap };
+  }, [modelGroups]);
+
+  const resolveProvider = useCallback(
+    (model?: string): string | undefined =>
+      model ? (providerByModel.get(model) ?? providerForModel(model)) : undefined,
+    [providerByModel],
+  );
+
+  // No model selected (inherit) leaves the temperature override available.
+  const selectedModelSupportsTemperature =
+    !formData.model || (tempSupportByModel.get(formData.model) ?? true);
 
   useEffect(() => {
     if (selectedPrompt) {
@@ -351,14 +415,24 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       // time by either the file-sync (meta JSON) or the duplicate endpoint,
       // and prompt management edits should not flip it.
       promptType: formData.promptType ?? selectedPrompt?.promptType,
+      // Prompt-level LLM overrides. Empty model / non-numeric temperature are
+      // sent as explicit clears ("" / null) so the runtime falls back to the
+      // code/language default. Provider is derived from the model. Temperature
+      // is cleared for models that reject a custom one (e.g. gpt-5).
+      provider: formData.model ? (resolveProvider(formData.model) ?? "") : "",
+      model: formData.model ?? "",
+      temperature:
+        selectedModelSupportsTemperature && typeof formData.temperature === "number"
+          ? formData.temperature
+          : null,
       ...(selectedPrompt?.id && {
         id: selectedPrompt.id,
         createdAt: selectedPrompt.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }),
-    };
+    } as unknown as Prompt;
     onUpdate(updatedPrompt);
-  }, [formData, selectedPrompt, onUpdate]);
+  }, [formData, selectedPrompt, onUpdate, resolveProvider, selectedModelSupportsTemperature]);
 
   const handleDuplicate = useCallback(async () => {
     if (!selectedPrompt?.id || !onDuplicate || isDuplicating) return;
@@ -530,6 +604,90 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                   placeholder={en.simulation.enterPrompt}
                   className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
                 />
+              </div>
+            </Field>
+
+            <Field label="LLM Model">
+              <select
+                value={formData.model ?? ""}
+                onChange={event => {
+                  const value = event.target.value || undefined;
+                  handleFieldChange("model", value);
+                  // Send the explicit provider alongside the model so runtimes
+                  // don't infer it from the model name.
+                  handleFieldChange("provider", resolveProvider(value));
+                  // A model that rejects a custom temperature (e.g. gpt-5)
+                  // clears any existing override so we don't send an invalid value.
+                  const supportsTemp = !value || (tempSupportByModel.get(value) ?? true);
+                  if (!supportsTemp && typeof formData.temperature === "number") {
+                    handleFieldChange("temperature", undefined);
+                  }
+                }}
+                className="border-none focus:outline-none text-base w-full px-0 bg-transparent cursor-pointer"
+              >
+                <option value="">Default (inherit)</option>
+                {modelGroups.map(group => (
+                  <optgroup key={group.provider} label={group.label}>
+                    {group.models.map(model => (
+                      <option key={model.value} value={model.value}>
+                        {model.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="LLM Temperature" multiline>
+              <div className="w-full flex flex-col gap-3 py-1">
+                <label
+                  className={
+                    "flex items-center gap-2 text-base " +
+                    (selectedModelSupportsTemperature
+                      ? "text-typography-900 cursor-pointer"
+                      : "text-typography-400 cursor-not-allowed")
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    disabled={!selectedModelSupportsTemperature}
+                    checked={typeof formData.temperature === "number"}
+                    onChange={event =>
+                      handleFieldChange(
+                        "temperature",
+                        event.target.checked ? PROMPT_TEMPERATURE_DEFAULT : undefined,
+                      )
+                    }
+                  />
+                  Override temperature for this prompt
+                </label>
+                {!selectedModelSupportsTemperature && (
+                  <span className="text-typography-500 text-sm">
+                    {formData.model} doesn’t support a custom temperature.
+                  </span>
+                )}
+                {selectedModelSupportsTemperature && typeof formData.temperature === "number" && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-typography-500 text-sm">0 – 2</span>
+                      <span className="text-primary-600 text-base font-medium tabular-nums">
+                        {formData.temperature.toFixed(1)}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={2}
+                      step={0.1}
+                      value={formData.temperature}
+                      onChange={event =>
+                        handleFieldChange("temperature", parseFloat(event.target.value))
+                      }
+                      aria-label="LLM Temperature"
+                      className="w-full accent-primary-500 cursor-pointer"
+                    />
+                  </div>
+                )}
               </div>
             </Field>
 

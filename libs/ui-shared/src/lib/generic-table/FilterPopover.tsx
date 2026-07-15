@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-import { Popover, TextField } from "@mui/material";
+import { Popover, PopoverContent, TextInput } from "@carbon/react";
 
 import DateFilterUI from "./DateFilterUI";
 import { FilterPopoverProps, FilterType } from "./types";
@@ -12,7 +12,6 @@ import { FilterPopoverProps, FilterType } from "./types";
  */
 
 const FilterPopover: React.FC<FilterPopoverProps> = ({
-  anchorEl,
   open,
   onClose,
   column,
@@ -85,7 +84,7 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
         </div>
         <div className="flex justify-end p-2">
           <button
-            className="bg-blue-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="bg-primary-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
             onClick={onSaveMultiSelect}
           >
             Apply
@@ -95,57 +94,61 @@ const FilterPopover: React.FC<FilterPopoverProps> = ({
     );
   };
 
+  const align = anchorOrigin?.vertical === "bottom" ? "bottom-start" : "right-start";
+
   return (
     <Popover
       open={open}
-      anchorEl={anchorEl}
-      onClose={onClose}
-      anchorOrigin={anchorOrigin || { vertical: "top", horizontal: "right" }}
-      transformOrigin={{ vertical: "top", horizontal: "left" }}
+      onRequestClose={onClose}
+      align={align}
+      dropShadow={false}
+      caret={false}
       className="font-['IBM_Plex_Serif']"
-      PaperProps={{
-        className: "shadow-none border border-[#E0E0E0] -ml-[15px] mt-[15px]",
-      }}
     >
-      <div className="min-w-[200px]">
-        <div className="text-[14px]  text-[#6B7280] font-[500] m-[12px] mb-[0px]">
-          {column?.header}
-        </div>
-        {column?.filterType !== FilterType.DATE && (
-          <div className="p-[12px] pb-[8px] text-[#6B7280]">
-            <TextField
-              size="small"
-              fullWidth
-              placeholder="Search..."
-              value={searchText}
-              onChange={e => onSearchTextChange(e.target.value)}
-              className="focus:outline-none border-none highlight-none"
-            />
+      <span aria-hidden className="block h-0 w-0" />
+      <PopoverContent className="border border-[#E0E0E0]">
+        <div className="min-w-[200px]">
+          <div className="text-[14px]  text-[#6B7280] font-[500] m-[12px] mb-[0px]">
+            {column?.header}
           </div>
-        )}
-        <div>
-          {column.filterType === FilterType.MULTISELECT ? (
-            renderMultiSelect()
-          ) : column.filterType === FilterType.DATE ? (
-            <DateFilterUI
-              selectedValues={selectedValues}
-              onChange={arr => onToggleOption(JSON.stringify(arr))}
-              onDateSelect={value => onDateSelect?.(column.key as string, value)}
-            />
-          ) : column.filterType === FilterType.TEXT ? (
-            <div className="flex justify-end p-2">
-              <button
-                className="bg-blue-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                onClick={() => onSelectSingle(column.key as string, searchText)}
-              >
-                Apply
-              </button>
+          {column?.filterType !== FilterType.DATE && (
+            <div className="p-[12px] pb-[8px] text-[#6B7280]">
+              <TextInput
+                id="filter-popover-search"
+                labelText="Search"
+                hideLabel
+                size="sm"
+                placeholder="Search..."
+                value={searchText}
+                onChange={e => onSearchTextChange(e.target.value)}
+                className="focus:outline-none border-none highlight-none"
+              />
             </div>
-          ) : (
-            column.filterType === FilterType.SINGLESELECT && renderSingleSelect()
           )}
+          <div>
+            {column.filterType === FilterType.MULTISELECT ? (
+              renderMultiSelect()
+            ) : column.filterType === FilterType.DATE ? (
+              <DateFilterUI
+                selectedValues={selectedValues}
+                onChange={arr => onToggleOption(JSON.stringify(arr))}
+                onDateSelect={value => onDateSelect?.(column.key as string, value)}
+              />
+            ) : column.filterType === FilterType.TEXT ? (
+              <div className="flex justify-end p-2">
+                <button
+                  className="bg-primary-600 text-white px-4 py-1 mb-[4px] mr-[4px] rounded hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  onClick={() => onSelectSingle(column.key as string, searchText)}
+                >
+                  Apply
+                </button>
+              </div>
+            ) : (
+              column.filterType === FilterType.SINGLESELECT && renderSingleSelect()
+            )}
+          </div>
         </div>
-      </div>
+      </PopoverContent>
     </Popover>
   );
 };

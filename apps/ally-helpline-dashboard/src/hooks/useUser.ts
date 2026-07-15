@@ -7,54 +7,22 @@ import {
   useGetProfileImageUrlMutation,
   useDeleteProfileImageMutation,
   useUploadProfileImageMutation,
-  useLazyGetUserPreferencesQuery,
-  useUpdateUserPreferencesMutation,
 } from "@api";
 import { baseAPI } from "@api/baseAPI";
 import { LOCAL_STORAGE_KEYS } from "@constants";
-import { setUser, authenticate, unauthenticate, setPermissions, setUiTheme } from "@reducer";
+import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
 import { RootState, store } from "@store";
-import { DEFAULT_UI_THEME, normalizeUiTheme, UiTheme } from "@theme/themes";
 
 export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
   const { availableChatTypes, user } = useSelector((state: RootState) => state.user);
   const permissions = useSelector((state: RootState) => state.user.permissions);
-  const uiTheme = useSelector((state: RootState) => state.user.uiTheme);
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
   const [getProfileUrl] = useGetProfileImageUrlMutation();
   const [deleteProfile] = useDeleteProfileImageMutation();
   const [uploadProfile] = useUploadProfileImageMutation();
-  const [getPreferences] = useLazyGetUserPreferencesQuery();
-  const [updateUserPreferences] = useUpdateUserPreferencesMutation();
-
-  /**
-   * Loads the user's saved UI theme preference into the store. Non-fatal: on
-   * any failure we keep the persisted/default theme rather than disrupting auth.
-   */
-  const loadUiThemePreference = async () => {
-    try {
-      const prefs = await getPreferences();
-      // Double unwrap: RTK Query result wrapper + the API's { data } envelope.
-      const storedTheme = prefs?.data?.data?.ui_theme;
-      // normalizeUiTheme maps legacy colour-theme ids (daylight/forest/sunset)
-      // to "current" and falls back to the default for anything unrecognised.
-      store.dispatch(setUiTheme(normalizeUiTheme(storedTheme)));
-    } catch (error) {
-      logger.info(`Error loading UI theme preference: ${error}`);
-    }
-  };
-
-  /**
-   * Applies a UI theme instantly (optimistic Redux update) and persists it to
-   * the backend so it follows the user across sessions and devices.
-   */
-  const setUiThemePreference = (theme: UiTheme) => {
-    store.dispatch(setUiTheme(theme));
-    updateUserPreferences({ ui_theme: theme });
-  };
 
   /**
    * Refetches user data and updates Redux store
@@ -95,7 +63,6 @@ export const useUser = () => {
           store.dispatch(setUser(userData?.data));
           store.dispatch(setPermissions(permissionsData?.data));
           store.dispatch(authenticate());
-          await loadUiThemePreference();
           return userData?.data;
         } catch (error) {
           logger.info(`Error fetching user or permissions:, ${error}`);
@@ -128,7 +95,6 @@ export const useUser = () => {
     // Clear user state
     store.dispatch(setUser(null));
     store.dispatch(setPermissions([]));
-    store.dispatch(setUiTheme(DEFAULT_UI_THEME));
     store.dispatch(unauthenticate());
 
     // Clear tokens
@@ -152,7 +118,5 @@ export const useUser = () => {
     getProfileUrl,
     deleteProfile,
     uploadProfile,
-    uiTheme,
-    setUiThemePreference,
   };
 };

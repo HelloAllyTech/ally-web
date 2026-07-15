@@ -1,0 +1,87 @@
+// The single, app-wide IBM Carbon design language for the whole monorepo.
+//
+// Every app (ally-web, ally-helpline-dashboard, ally-admin-dashboard) imports
+// THIS file exactly once at its style entry, so Carbon's design tokens
+// (`:root { --cds-* }`) and component styles (`.cds--*`) are configured in one
+// place. Themed "White" via the `<GlobalTheme theme="white">` wrapper exposed
+// through `AllyThemeProvider`.
+//
+// Two things keep this from breaking the rest of the app:
+//
+// 1. SERIF, NOT SANS. Carbon ships with IBM Plex *Sans* as its UI font. We
+//    override the whole `$font-families` map so every Carbon type style
+//    computes with IBM Plex *Serif* instead — the product is serif-only. Code
+//    text (`mono`) is intentionally left as IBM Plex Mono for legibility.
+//    (The values must be `string.unquote`d, otherwise Sass emits a single
+//    quoted CSS string and the browser treats the whole list as one bogus
+//    family name.)
+//
+// 2. NO DOUBLE RESET. Tailwind's preflight already owns the global reset and
+//    base `<body>` styles, so we disable Carbon's equivalents to avoid two
+//    resets fighting:
+//      $css--reset        -> no `*/html/body` reset
+//      $css--body         -> no `body { background/color }` rule
+//      $css--font-face    -> no Plex @font-face imports (serif is self-hosted
+//                            per app / loaded via next/font in ally-web)
+//      $css--default-type -> no bare-element (`h1`, `p`, ...) type styles;
+//                            the Tailwind type scale stays in charge.
+@use "sass:string";
+
+@use "@carbon/styles" with (
+  $font-families: (
+    "mono": string.unquote(
+        "'IBM Plex Mono', system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular', monospace"
+      ),
+    "sans": string.unquote("'IBM Plex Serif', serif"),
+    "sans-condensed": string.unquote("'IBM Plex Serif', serif"),
+    "sans-arabic": string.unquote("'IBM Plex Serif', serif"),
+    "sans-devanagari": string.unquote("'IBM Plex Serif', serif"),
+    "sans-hebrew": string.unquote("'IBM Plex Serif', serif"),
+    "sans-jp": string.unquote("'IBM Plex Serif', serif"),
+    "sans-kr": string.unquote("'IBM Plex Serif', serif"),
+    "sans-thai-looped": string.unquote("'IBM Plex Serif', serif"),
+    "sans-thai": string.unquote("'IBM Plex Serif', serif"),
+    "serif": string.unquote("'IBM Plex Serif', serif"),
+  ),
+  $css--reset: false,
+  $css--body: false,
+  $css--font-face: false,
+  $css--default-type: false
+);
+
+// ===== Brand blue override =====
+// Carbon's interactive colour is Blue 60 (#0f62fe). The product brand blue is
+// #264D8E, so every Carbon component (Button, Link, Tabs, focus rings, selected
+// states, ...) is repointed to the brand ramp here. Carbon declares these
+// tokens ONLY on its theme-zone classes (`.cds--white` etc.), not `:root`, and
+// `<GlobalTheme theme="white">` wraps the app in `.cds--white` — so we must
+// override the same zone selectors. This block is emitted AFTER `@carbon/styles`
+// above, so at equal specificity source order makes the brand values win.
+//
+// Ramp (matches the Tailwind `primary` scale + helpline `--color-primary-*`):
+//   500 #264D8E (interactive) · 600 #1F3F75 (hover) · 700 #183059 (active)
+:root,
+.cds--white,
+.cds--g10,
+.cds--g90,
+.cds--g100 {
+  --cds-interactive: #264d8e;
+  --cds-link-primary: #264d8e;
+  --cds-link-primary-hover: #1f3f75;
+  --cds-button-primary: #264d8e;
+  --cds-button-primary-hover: #1f3f75;
+  --cds-button-primary-active: #183059;
+  --cds-focus: #264d8e;
+  --cds-background-brand: #264d8e;
+  --cds-border-interactive: #264d8e;
+  --cds-support-info: #264d8e;
+  // Tertiary buttons + interactive icons also key off Carbon blue — repoint them
+  // so they match brand-navy primaries. (Ghost buttons use --cds-link-primary,
+  // already covered above. The Carbon <Link> component and blue <Tag> aren't
+  // used in these apps, so --cds-link-secondary / --cds-tag-*-blue are left as
+  // Carbon defaults.)
+  --cds-button-tertiary: #264d8e;
+  --cds-button-tertiary-hover: #1f3f75;
+  --cds-button-tertiary-active: #183059;
+  --cds-icon-interactive: #264d8e;
+}

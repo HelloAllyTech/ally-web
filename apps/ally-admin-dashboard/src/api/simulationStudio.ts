@@ -29,6 +29,7 @@ import {
   DeleteCharacterRequest,
   Prompt,
   GetPromptsQuery,
+  LlmModelInfo,
   GetReportsInput,
   ReportData,
   GenerateReportInput,
@@ -55,12 +56,12 @@ import {
   CreateAgentTestCaseRequest,
   UpdateAgentTestCaseRequest,
   AutofillModelOption,
-  RegenerateFieldRequest,
-  RegenerateFieldResponse,
   EnhanceFieldRequest,
   EnhanceFieldResponse,
   GetReportTranscriptInput,
   GetReportTranscriptResponse,
+  GenerateCoverImageRequest,
+  GenerateCoverImageResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -479,6 +480,18 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Canonical LLM model registry (single source of truth for the
+     * Prompt Management model picker). Optionally filtered to a runtime.
+     */
+    getLlmModels: builder.query<LlmModelInfo[], string | void>({
+      query: runtime => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_LLM_MODELS,
+        method: HttpMethod.GET,
+        ...(runtime ? { params: { runtime } } : {}),
+      }),
+    }),
+
+    /**
      * List prompt variants by promptType (e.g. 'main_agent').
      * Powers the studio prompt picker and the prompt-management Type filter.
      */
@@ -650,6 +663,23 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CHARACTERS],
     }),
 
+    /**
+     * Generate a scenario cover image with AI. Stateless: the backend renders
+     * the managed `cover_image_generation` prompt (editable via Prompt
+     * Management) with the given title/description, returns the image URL
+     * (already stored in S3 and the shared image library); the client saves
+     * it on the scenario through the normal update flow.
+     */
+    generateCoverImage: builder.mutation<GenerateCoverImageResponse, GenerateCoverImageRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_COVER_IMAGE,
+        method: HttpMethod.POST,
+        body,
+      }),
+      // Generated images land in the shared library — refresh the picker.
+      invalidatesTags: [TAG_TYPES.IMAGE_LIBRARY],
+    }),
+
     getHelperTags: builder.query<HelperTagInput, GetHelperTagsQueryParams>({
       query: (params: GetHelperTagsQueryParams) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.HELPER_TAGS,
@@ -698,6 +728,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           ...(params.searchName && { searchName: params.searchName }),
         },
       }),
+      providesTags: [TAG_TYPES.IMAGE_LIBRARY],
     }),
 
     /**
@@ -971,23 +1002,15 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * Get available OpenAI models for autofill/regenerate
+     * Models for the autofill/regenerate/improve dropdown. Served from the
+     * universal LLM registry (GET /v1/learn/models), filtered server-side to
+     * the providers autofill can execute (OpenAI + Anthropic). Includes
+     * `supportsTemperature` per model.
      */
     getAutofillModels: builder.query<AutofillModelOption[], void>({
       query: () => ({
         url: ApiEndpoints.SIMULATION_STUDIO.GET_AUTOFILL_MODELS,
         method: HttpMethod.GET,
-      }),
-    }),
-
-    /**
-     * Regenerate a field using AI
-     */
-    regenerateField: builder.mutation<RegenerateFieldResponse, RegenerateFieldRequest>({
-      query: body => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_FIELD,
-        method: HttpMethod.POST,
-        body,
       }),
     }),
 
@@ -1040,6 +1063,7 @@ export const {
   useCreateLanguageMutation,
   useUpdateLanguageMutation,
   useGetPromptsQuery,
+  useGetLlmModelsQuery,
   useGetPromptsByTypeQuery,
   useCreatePromptMutation,
   useUpdatePromptMutation,
@@ -1053,6 +1077,7 @@ export const {
   useCreateCharacterMutation,
   useUpdateCharacterMutation,
   useDeleteCharacterMutation,
+  useGenerateCoverImageMutation,
   useGetHelperTagsQuery,
   useCreateHelperTagMutation,
   useGetFillerTagsQuery,
@@ -1084,6 +1109,5 @@ export const {
   useGetReportTranscriptQuery,
   useLazyGetReportTranscriptQuery,
   useGetAutofillModelsQuery,
-  useRegenerateFieldMutation,
   useEnhanceFieldMutation,
 } = simulationStudioAPI;

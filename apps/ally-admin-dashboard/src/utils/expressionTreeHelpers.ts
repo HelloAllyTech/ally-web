@@ -462,9 +462,9 @@ export const renderOperatorColor = (depth: number) => {
     case 1:
       return "bg-[#E8F5E9] border-green-500";
     case 0:
-      return "bg-blue-100  border-blue-500";
+      return "bg-primary-100  border-primary-500";
     default:
-      return "bg-blue-50  border-blue-500";
+      return "bg-primary-50  border-primary-500";
   }
 };
 
@@ -479,8 +479,8 @@ export const getBorderColor = (depth: number) => {
     case 1:
       return "border-l-green-500";
     case 0:
-      return "border-l-blue-300";
+      return "border-l-primary-300";
     default:
-      return "border-l-blue-300";
+      return "border-l-primary-300";
   }
 };

@@ -5,7 +5,8 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
 import { baseAPI } from "@api";
 import eventsSlice from "@reducer/eventsReducer";
-import userSlice from "@reducer/userReducer";
+import userSlice, { setPermissions } from "@reducer/userReducer";
+import { Permissions } from "@constants/permissions";
 
 // Hoist mocks to avoid initialization errors
 const {
@@ -327,6 +328,8 @@ describe("EventManagement", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Delete affordances are permission-gated (multi-tenant admins lack this).
+    testStore.dispatch(setPermissions([Permissions.EDIT_EVENT, Permissions.DELETE_EVENT]));
     mockUseGetSessionEventsQuery.mockReturnValue({
       data: { data: mockEvents },
       isFetching: false,
@@ -670,6 +673,19 @@ describe("EventManagement", () => {
       // Check that delete button appears in toolbar
       expect(screen.getByTestId("toolbar-action")).toHaveTextContent("Delete");
       expect(screen.getByTestId("trash-icon")).toBeInTheDocument();
+    });
+
+    it("hides delete button without delete permission (e.g. multi-tenant admin)", async () => {
+      testStore.dispatch(setPermissions([Permissions.EDIT_EVENT]));
+      renderComponent();
+
+      await waitFor(() => {
+        const selectButton = screen.getByTestId("select-row-0");
+        fireEvent.click(selectButton);
+      });
+
+      expect(screen.getByTestId("toolbar-action")).toHaveTextContent("Create New Event");
+      expect(screen.queryByTestId("trash-icon")).not.toBeInTheDocument();
     });
 
     it("opens confirmation popup when delete button is clicked", async () => {

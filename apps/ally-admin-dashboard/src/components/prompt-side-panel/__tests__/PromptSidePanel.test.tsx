@@ -71,6 +71,34 @@ vi.mock("@api", () => ({
   // Side panel queries an in-use count for duplicates to gate the
   // "Delete variant" button. Tests mount with no in-use scenarios.
   useGetPromptUsageQuery: () => ({ data: { count: 0, scenarios: [] }, isFetching: false }),
+  // Model picker is driven by the backend registry. Provide a small OpenAI +
+  // Gemini set including a no-temperature model (gpt-5) to exercise gating.
+  useGetLlmModelsQuery: () => ({
+    data: [
+      {
+        provider: "openai",
+        model: "gpt-4o",
+        label: "GPT-4o",
+        supportsTemperature: true,
+        runtimes: ["ai-learn", "ally-ai", "ally-be"],
+      },
+      {
+        provider: "openai",
+        model: "gpt-5",
+        label: "GPT-5",
+        supportsTemperature: false,
+        runtimes: ["ai-learn", "ally-ai", "ally-be"],
+      },
+      {
+        provider: "gemini",
+        model: "gemini-2.5-flash",
+        label: "Gemini 2.5 Flash",
+        supportsTemperature: true,
+        runtimes: ["ai-learn", "ally-ai", "ally-be"],
+      },
+    ],
+    isFetching: false,
+  }),
 }));
 
 // Stub @hooks so the component renders without a Redux provider. The
@@ -82,6 +110,15 @@ vi.mock("@hooks", () => ({}));
 // Mock constants
 vi.mock("@constants", () => ({
   MAIN_AGENT_PROMPT_VARIABLE_CATALOG: [],
+  PROMPT_LLM_MODEL_OPTIONS: [
+    {
+      provider: "openai",
+      label: "OpenAI",
+      models: [{ value: "gpt-4o", label: "gpt-4o" }],
+    },
+  ],
+  PROMPT_TEMPERATURE_DEFAULT: 0.7,
+  providerForModel: (model?: string) => (model === "gpt-4o" ? "openai" : undefined),
   en: {
     simulation: {
       editPrompt: "Edit Prompt",
@@ -751,6 +788,64 @@ describe("PromptSidePanel Component", () => {
       // Form data should be preserved
       const updatedNameInput = screen.getByDisplayValue("Modified") as HTMLInputElement;
       expect(updatedNameInput.value).toBe("Modified");
+    });
+  });
+
+  describe("LLM model picker (registry-driven)", () => {
+    const renderPanel = () =>
+      render(
+        <PromptSidePanel
+          selectedPrompt={mockPrompt}
+          isOpen={true}
+          onClose={mockOnClose}
+          onUpdate={mockOnUpdate}
+        />,
+      );
+
+    it("offers models from the registry (OpenAI + Gemini)", () => {
+      renderPanel();
+      expect(screen.getByRole("option", { name: "GPT-4o" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "GPT-5" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "Gemini 2.5 Flash" })).toBeInTheDocument();
+    });
+
+    it("sends the explicit provider with the model on save", () => {
+      renderPanel();
+      const select = screen.getByRole("combobox") as HTMLSelectElement;
+      fireEvent.change(select, { target: { value: "gemini-2.5-flash" } });
+      fireEvent.click(screen.getByText("Save"));
+      expect(mockOnUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: "gemini-2.5-flash",
+          provider: "gemini",
+        }),
+      );
+    });
+
+    it("disables the temperature override for a no-temperature model and clears it on save", () => {
+      renderPanel();
+
+      // Enable a temperature override on a temp-capable model first.
+      const tempCheckbox = screen.getByRole("checkbox", {
+        name: /Override temperature/i,
+      }) as HTMLInputElement;
+      fireEvent.click(tempCheckbox);
+      expect(tempCheckbox.checked).toBe(true);
+
+      // Switch to gpt-5 (supportsTemperature=false): control disables + note shows.
+      const select = screen.getByRole("combobox") as HTMLSelectElement;
+      fireEvent.change(select, { target: { value: "gpt-5" } });
+      expect(screen.getByRole("checkbox", { name: /Override temperature/i })).toBeDisabled();
+      expect(screen.getByText(/doesn’t support a custom temperature/i)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText("Save"));
+      expect(mockOnUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: "gpt-5",
+          provider: "openai",
+          temperature: null,
+        }),
+      );
     });
   });
 });

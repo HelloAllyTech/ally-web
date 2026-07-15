@@ -142,11 +142,7 @@ export const OrgBadgesAccess: FC = () => {
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded bg-neutral-100">
                     {badge.imageUrl ? (
-                      <img
-                        src={badge.imageUrl}
-                        alt=""
-                        className="h-full w-full object-contain"
-                      />
+                      <img src={badge.imageUrl} alt="" className="h-full w-full object-contain" />
                     ) : null}
                   </div>
                   <div className="flex min-w-0 flex-col">

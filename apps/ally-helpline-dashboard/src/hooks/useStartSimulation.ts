@@ -12,6 +12,8 @@ interface StartSimulationParams {
   scenarioId: number;
   scenarioPathSessionItemId?: string;
   caseSessionItemId?: string;
+  /** Track 2.0: link this session to a track item progress row. */
+  trackItemProgressId?: string;
   languageId?: number;
 }
 
@@ -61,11 +63,18 @@ export const useStartSimulation = (
     if (isStarting) return;
     setIsStarting(true);
     try {
-      const { scenarioId, scenarioPathSessionItemId, caseSessionItemId, languageId } = params;
+      const {
+        scenarioId,
+        scenarioPathSessionItemId,
+        caseSessionItemId,
+        trackItemProgressId,
+        languageId,
+      } = params;
       const dataParams: {
         scenarioId: number;
         scenarioPathSessionItemId?: string;
         caseSessionItemId?: string;
+        trackItemProgressId?: string;
         languageId?: number;
         platform: "web" | "mobile-ios" | "mobile-android";
       } = {
@@ -80,6 +89,10 @@ export const useStartSimulation = (
 
       if (caseSessionItemId?.length > 0) {
         dataParams.caseSessionItemId = caseSessionItemId;
+      }
+
+      if (trackItemProgressId?.length > 0) {
+        dataParams.trackItemProgressId = trackItemProgressId;
       }
 
       const { data, error } = await startSimulationMutation(dataParams);

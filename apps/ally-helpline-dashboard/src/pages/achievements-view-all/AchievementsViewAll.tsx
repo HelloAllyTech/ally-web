@@ -1,14 +1,13 @@
 import { FC, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetAvailableBadgesQuery } from "@api";
 import { ArrowLeft, Info, NoResults } from "@assets";
 import { AchievementItem, FallbackUI, ToggleButtonGroup } from "@components";
-import { toolTipStyles } from "@constants";
 import { AchievementItemData, BadgeCategory, LockedStatus } from "@types";
 
 // Badge type display labels
@@ -134,7 +133,7 @@ export const AchievementsViewAll: FC = () => {
               {t("achievements.badges")}
             </div>
             <Tooltip
-              title={
+              label={
                 <div
                   style={{
                     fontWeight: 400,
@@ -145,13 +144,15 @@ export const AchievementsViewAll: FC = () => {
                   {t("achievements.badgesTooltip")}
                 </div>
               }
-              slotProps={toolTipStyles}
-              arrow
-              placement="bottom"
+              align="bottom"
+              autoAlign
             >
-              <span className="cursor-pointer">
+              <button
+                type="button"
+                className="inline-flex cursor-pointer border-0 bg-transparent p-0"
+              >
                 <Info className="w-5 h-5" />
-              </span>
+              </button>
             </Tooltip>
           </div>
           <ToggleButtonGroup
@@ -197,10 +198,10 @@ export const AchievementsViewAll: FC = () => {
         <div className="font-primary text-xs leading-5 font-normal text-typography-600">
           {getBadgeTypeLabels(t)[category]}
         </div>
-        <Tooltip title={tooltipContent} arrow placement="top" slotProps={toolTipStyles}>
-          <span className="cursor-pointer">
+        <Tooltip label={tooltipContent} align="top" autoAlign>
+          <button type="button" className="inline-flex cursor-pointer border-0 bg-transparent p-0">
             <Info className="w-5 h-5" />
-          </span>
+          </button>
         </Tooltip>
         <div className="border-t-[0.5px] ml-2 border-[#D2D2D2] w-full" />
       </div>

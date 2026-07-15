@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Add, Edit, Unpublish, Archive, Delete, Play, Unarchive, Copy } from "@assets";
+import { Add, Edit, Eye, Unpublish, Archive, Delete, Play, Unarchive, Copy } from "@assets";
 import {
   DataList,
   ActionButton,
@@ -8,7 +8,7 @@ import {
   SimulationListSkeleton,
   EmptyState,
 } from "@components";
-import { en } from "@constants";
+import { en, getSimulationCategoryLabel } from "@constants";
 import { Simulation, SimulationStatus } from "@types";
 import {
   formatDate,
@@ -24,6 +24,7 @@ interface SimulationListProps {
   isLoading?: boolean;
   hasFilters?: boolean;
   onEdit?: (simulation: Simulation) => void;
+  onView?: (simulation: Simulation) => void;
   onDelete?: (simulation: Simulation) => void;
   onPreview?: (simulation: Simulation) => void;
   onArchive?: (simulation: Simulation) => void;
@@ -41,6 +42,7 @@ export const SimulationList: React.FC<SimulationListProps> = ({
   isLoading = false,
   hasFilters = false,
   onEdit,
+  onView,
   onDelete,
   onPreview,
   onArchive,
@@ -129,6 +131,25 @@ export const SimulationList: React.FC<SimulationListProps> = ({
       render: simulation => <span>{formatDate(simulation.updatedAt)}</span>,
     },
     {
+      key: "category",
+      label: en.simulation.category,
+      width: "w-[12%] lg:w-[10%]",
+      render: simulation => {
+        const categoryLabel = getSimulationCategoryLabel(simulation.category);
+        if (!categoryLabel) return <span className="text-typography-600">-</span>;
+        return (
+          <div className="flex flex-col">
+            <span className="text-sm text-typography-900">{categoryLabel}</span>
+            {simulation.partnerOrgName && (
+              <span className="text-xs text-typography-600 truncate">
+                {simulation.partnerOrgName}
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       key: "status",
       label: en.simulation.status,
       width: "w-[12%] lg:w-[10%]",
@@ -172,6 +193,16 @@ export const SimulationList: React.FC<SimulationListProps> = ({
 
   // Define actions configuration
   const actions: ActionButton<Simulation>[] = [
+    {
+      // Read-only inspection — opens the editor surface without any save
+      // path, so a published simulation stays published. Only offered for
+      // published/archived rows: a draft has nothing to protect (Edit opens
+      // it directly, no status change involved).
+      icon: <Eye />,
+      tooltip: en.simulation.viewDetails,
+      onClick: simulation => onView?.(simulation),
+      show: simulation => simulation.status !== SimulationStatus.DRAFT,
+    },
     {
       icon: <Edit />,
       tooltip: en.simulation.edit,

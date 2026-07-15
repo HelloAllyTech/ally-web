@@ -1,14 +1,21 @@
-import PlayArrowRounded from "@mui/icons-material/PlayArrowRounded";
+import React from "react";
+
 import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
 
 import Accordion from "../Accordion";
 
+// Simple stand-in for the icon component the consumer passes in. The Accordion
+// renders it as `<TitleIcon className="h-6 w-6" />`, so it must accept props.
+const ExpandIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg data-testid="expand-icon" aria-label="expand icon" {...props} />
+);
+
 describe("Accordion", () => {
   const mockTitle = "Test Accordion";
   const mockContent = "Test Content";
   const mockTitleIcon = {
-    icon: PlayArrowRounded,
+    icon: ExpandIcon,
     alt: "expand icon",
   };
 
@@ -31,16 +38,16 @@ describe("Accordion", () => {
   it("expands and collapses when clicked", () => {
     render(<Accordion title={mockTitle}>{mockContent}</Accordion>);
 
-    const accordionHeader = screen.getByText(mockTitle);
-    const accordionElement = accordionHeader.closest(".MuiAccordion-root");
+    // Carbon AccordionItem renders its header as a button with aria-expanded.
+    const headerButton = screen.getByRole("button");
 
-    expect(accordionElement).not.toHaveClass("Mui-expanded");
+    expect(headerButton).toHaveAttribute("aria-expanded", "false");
 
-    fireEvent.click(accordionHeader);
-    expect(accordionElement).toHaveClass("Mui-expanded");
+    fireEvent.click(headerButton);
+    expect(headerButton).toHaveAttribute("aria-expanded", "true");
 
-    fireEvent.click(accordionHeader);
-    expect(accordionElement).not.toHaveClass("Mui-expanded");
+    fireEvent.click(headerButton);
+    expect(headerButton).toHaveAttribute("aria-expanded", "false");
   });
 
   it("renders expanded by default when defaultExpanded is true", () => {
@@ -49,7 +56,7 @@ describe("Accordion", () => {
         {mockContent}
       </Accordion>,
     );
-    const accordionElement = screen.getByText(mockTitle).closest(".MuiAccordion-root");
-    expect(accordionElement).toHaveClass("Mui-expanded");
+    const headerButton = screen.getByRole("button");
+    expect(headerButton).toHaveAttribute("aria-expanded", "true");
   });
 });

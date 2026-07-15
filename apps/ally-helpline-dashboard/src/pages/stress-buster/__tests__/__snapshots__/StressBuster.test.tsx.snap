@@ -32,7 +32,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot after
         </span>
         <span>
           <span
-            class="bg-blue-500 capitalize px-6 py-2 rounded-full italic"
+            class="bg-primary-500 capitalize px-6 py-2 rounded-full italic"
           >
             best
           </span>
@@ -93,7 +93,7 @@ exports[`StressBuster Component > Snapshot Testing > should match snapshot in in
         </span>
         <span>
           <span
-            class="bg-blue-500 capitalize px-6 py-2 rounded-full italic"
+            class="bg-primary-500 capitalize px-6 py-2 rounded-full italic"
           >
             best
           </span>

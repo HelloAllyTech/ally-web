@@ -19,16 +19,37 @@ const STRICT_MODE_GUARD_MS = 100;
 // isn't stuck on a ringing UI waiting for a sound that won't come.
 const AGENT_SILENT_GRACE_MS = 1500;
 
+/**
+ * Optional behavior overrides so non-simulation flows (e.g. Roleplay Studio
+ * live preview) can reuse this hook. Every field defaults to the original
+ * simulation-preview behavior, so existing call sites are unchanged.
+ */
+export interface UseLiveKitRoomConfig {
+  /** localStorage key holding the room data payload. */
+  storageKey?: string;
+  /** Route to bail to when no id/room data is present. */
+  fallbackRoute?: string;
+  /** Ends the session server-side; defaults to endScenarioPreview. */
+  endSession?: (roomName: string) => Promise<unknown>;
+  /** Dispatches the agent; defaults to dispatchPreviewAgent. */
+  dispatchAgent?: (roomName: string) => Promise<unknown>;
+  /** Whether direct agent dispatch applies to this room id. */
+  isPreviewRoom?: (id: string) => boolean;
+}
+
 export const useLiveKitRoom = (
   handleDisconnect: () => void,
   endSessionButtonRef: any,
+  config: UseLiveKitRoomConfig = {},
 ): UseLiveKitRoomReturn => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [endScenarioPreview] = useEndScenarioPreviewMutation();
   const [dispatchPreviewAgent] = useDispatchPreviewAgentMutation();
 
-  const roomDataString = localStorage.getItem(LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA);
+  const roomDataString = localStorage.getItem(
+    config.storageKey ?? LOCAL_STORAGE_KEYS.PREVIEW_ROOM_DATA,
+  );
   const roomData = roomDataString ? JSON.parse(roomDataString) : null;
 
   const [room] = useState(() => new Room(LIVEKIT_CONFIG));
@@ -168,7 +189,7 @@ export const useLiveKitRoom = (
   const connectToRoom = async () => {
     try {
       if (!id || !roomData) {
-        navigate(ROUTES.SIMULATION_STUDIO);
+        navigate(config.fallbackRoute ?? ROUTES.SIMULATION_STUDIO);
         return;
       }
 
@@ -201,12 +222,14 @@ export const useLiveKitRoom = (
 
         await room.localParticipant.setMicrophoneEnabled(true);
 
-        const isPreviewRoom = id && typeof id === "string" && id.startsWith("preview-");
+        const isPreviewRoom =
+          id && typeof id === "string" && (config.isPreviewRoom?.(id) ?? id.startsWith("preview-"));
         const shouldDispatch = Boolean(roomData?.useDirectAgentDispatch) && isPreviewRoom;
         if (shouldDispatch) {
           try {
             logger.info(`[LiveKit] Dispatching agent to preview room: ${id}`);
-            await dispatchPreviewAgent({ roomName: id }).unwrap();
+            if (config.dispatchAgent) await config.dispatchAgent(id);
+            else await dispatchPreviewAgent({ roomName: id }).unwrap();
             logger.info(`[LiveKit] Agent dispatch request sent successfully`);
           } catch (dispatchError) {
             logger.warn(
@@ -238,7 +261,8 @@ export const useLiveKitRoom = (
     if (room.localParticipant) {
       room.localParticipant.setMicrophoneEnabled(false);
     }
-    await endScenarioPreview({ roomName: id || "" });
+    if (config.endSession) await config.endSession(id || "");
+    else await endScenarioPreview({ roomName: id || "" });
     setRoomStatus(RoomStatus.DISCONNECTED);
     room.disconnect();
   };

@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 
-import { Tooltip } from "@mui/material";
-
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared/index";
+import { AutoExpandableTextarea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight, TooltipIcon, Trash } from "@assets";
 import {
   ActionConfirmationPopup,
@@ -16,7 +14,7 @@ import {
   TextareaWithTriggerDropdown,
   SimpleTagSelector,
 } from "@components";
-import { en, EVENT_DETECTION_TYPES, toolTipStyles } from "@constants";
+import { en, EVENT_DETECTION_TYPES } from "@constants";
 import { useDebounce } from "@hooks";
 import { UpdateEventDataParam, isCombinationTriggerCondition, COMBINATION_OPERATOR } from "@types";
 import { isValidCombinationExpression } from "@utils";
@@ -27,6 +25,7 @@ interface EventSidePanelProps {
   onClose: () => void;
   onDelete: (eventId: string) => void;
   onUpdate: (event: UpdateEventDataParam) => void;
+  canDelete?: boolean;
 }
 
 interface FieldProps {
@@ -50,10 +49,10 @@ const Field: React.FC<FieldProps> = ({
     <div className={`w-[40%] flex items-center gap-2 ${multiline && "mt-[8px]"}`}>
       <span className="text-base font-regular text-typography-800">{label}</span>
       {tooltip && (
-        <Tooltip title={tooltipTitle || label} placement="top" arrow slotProps={toolTipStyles}>
-          <span className="cursor-pointer items-center ">
+        <Tooltip label={tooltipTitle || label} align="top">
+          <button type="button" className="cursor-pointer inline-flex items-center">
             <TooltipIcon />
-          </span>
+          </button>
         </Tooltip>
       )}
     </div>
@@ -66,16 +65,20 @@ const PanelHeader: React.FC<{
   onClose: () => void;
   onDelete: (eventId: string) => void;
   hasEvent: boolean;
-}> = ({ eventId, onClose, onDelete, hasEvent }) => (
+  isReadOnly: boolean;
+  canDelete: boolean;
+}> = ({ eventId, onClose, onDelete, hasEvent, isReadOnly, canDelete }) => (
   <div className="flex items-center justify-between p-6">
     <button
       onClick={onClose}
       className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
     >
       <DoubleArrowRight width={14} height={14} />
-      <span className="text-base font-tertiary font-[500]">{en.simulation.editEvent}</span>
+      <span className="text-base font-tertiary font-[500]">
+        {isReadOnly ? en.simulation.viewEvent : en.simulation.editEvent}
+      </span>
     </button>
-    {hasEvent && (
+    {hasEvent && !isReadOnly && canDelete && (
       <button onClick={() => onDelete(eventId)} className="flex items-center gap-2">
         <Trash width={14} height={14} />
         <span className="text-base font-tertiary font-medium text-typography-900">
@@ -92,9 +95,11 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   onClose,
   onDelete,
   onUpdate,
+  canDelete = true,
 }) => {
   const [formData, setFormData] = useState(selectedEvent);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const isReadOnly = selectedEvent?.isEditable === false;
 
   useEffect(() => {
     if (selectedEvent) {
@@ -125,6 +130,7 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
   const debouncedUpdate = useDebounce(() => onUpdate(formData), 500);
 
   useEffect(() => {
+    if (isReadOnly) return;
     debouncedUpdate();
   }, [formData]);
 
@@ -227,9 +233,16 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
           onClose={handleClose}
           onDelete={handleDelete}
           hasEvent={!!selectedEvent}
+          isReadOnly={isReadOnly}
+          canDelete={canDelete}
         />
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
+          {isReadOnly && (
+            <div className="mb-4 rounded-md bg-neutral-100 px-4 py-3 text-base text-typography-700">
+              {en.simulation.eventReadOnly}
+            </div>
+          )}
           <div className="mb-4">
             <input
               type="text"
@@ -237,10 +250,11 @@ export const EventSidePanel: React.FC<EventSidePanelProps> = ({
               onChange={event => handleFieldChange("name", event.target.value)}
               placeholder="New Event"
               className="border-none focus:outline-none text-2xl font-light w-full"
+              disabled={isReadOnly}
             />
           </div>
 
-          <div className="space-y-3">
+          <div className={`space-y-3 ${isReadOnly ? "pointer-events-none opacity-60" : ""}`}>
             <div>
               <Field label="Event code">
                 <div className="text-base text-neutral-800">{formData.eventCode || "—"}</div>

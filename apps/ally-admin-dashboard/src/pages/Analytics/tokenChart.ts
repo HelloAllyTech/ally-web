@@ -27,7 +27,7 @@ export const formatUsdCompact = (n: number) => usdCompact.format(n);
 // given task/model keeps the same colour across renders and across both toggle
 // states. Wraps with modulo when there are more groups than colours.
 export const TOKEN_PALETTE = [
-  "#0f62fe", // blue
+  "#264D8E", // blue (brand)
   "#8a3ffc", // purple
   "#08bdba", // teal
   "#42be65", // green

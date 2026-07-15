@@ -1,12 +1,11 @@
 import { FC, useMemo } from "react";
 
-import { Tooltip } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { AddIcon, PencilIcon } from "@src/assets";
 import { AddReviewNoteProps } from "@src/components/add-review-note/types";
-import { toolTipStyles } from "@src/constants";
 
 const AddReviewNote: FC<AddReviewNoteProps> = ({
   note,
@@ -24,12 +23,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
   const getActionComponent = () => {
     if (!note || note.length === 0) {
       return (
-        <Tooltip
-          title={t("review.details.addNote")}
-          placement="top"
-          arrow
-          slotProps={toolTipStyles}
-        >
+        <Tooltip label={t("review.details.addNote")} align="top">
           <div
             onClick={onAddNote}
             className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#D2D2D2] text-center items-center justify-center flex cursor-pointer"
@@ -41,12 +35,7 @@ const AddReviewNote: FC<AddReviewNoteProps> = ({
     }
     if (isEditable) {
       return (
-        <Tooltip
-          title={t("review.details.editNote")}
-          placement="top"
-          arrow
-          slotProps={toolTipStyles}
-        >
+        <Tooltip label={t("review.details.editNote")} align="top">
           <div
             onClick={onEditNote}
             className="w-4 h-4 bg-white rounded-[1.33px] border-[0.5px] border-[#D2D2D2] text-center items-center justify-center flex cursor-pointer"

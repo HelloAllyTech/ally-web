@@ -108,6 +108,21 @@ export const ApiEndpoints = {
     CHAT_HISTORY: (sessionId: string) => `/v1/learn/scenario-sessions/${sessionId}/chat/history`,
     GET_AUDIO_URL: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/recording`,
   },
+  // Track 2.0 learner endpoints (multi-component learning tracks)
+  TRACKS: {
+    GET_TRACKS: "/v1/learn/tracks",
+    GET_TRACK_DETAIL: (trackId: string) => `/v1/learn/tracks/${trackId}`,
+    ENROLL: (trackId: string) => `/v1/learn/tracks/${trackId}/enroll`,
+    GET_NEXT_ITEM: (trackId: string) => `/v1/learn/tracks/${trackId}/next-item`,
+    START_ITEM: (itemId: string) => `/v1/learn/tracks/items/${itemId}/start`,
+    ARTICLE_READ: (itemId: string) => `/v1/learn/tracks/items/${itemId}/article-read`,
+    VIDEO_PROGRESS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/video-progress`,
+    QUIZ_ATTEMPTS: (itemId: string) => `/v1/learn/tracks/items/${itemId}/quiz-attempts`,
+    QUIZ_REGRADE: (itemId: string, attemptId: string) =>
+      `/v1/learn/tracks/items/${itemId}/quiz-attempts/${attemptId}/regrade`,
+    JOURNAL_DRAFT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal`,
+    JOURNAL_SUBMIT: (itemId: string) => `/v1/learn/tracks/items/${itemId}/journal/submit`,
+  },
   SIMULATION: {
     SIMULATION_CREDITS: "/v1/simulation-credits",
   },
@@ -118,6 +133,9 @@ export const ApiEndpoints = {
   LEADERBOARD: {
     GET_LEADERBOARD: "/v1/community/leaderboard",
     GET_CURRENT_USER: "/v1/community/leaderboard/my-rank",
+  },
+  PRACTICE_STREAK: {
+    GET_PRACTICE_STREAK: "/v1/community/practice-streak",
   },
   REVIEWS: {
     GET_REVIEWS: "/v1/scenario-session-reviews",
@@ -211,8 +229,16 @@ export const ApiEndpoints = {
     GET_SCRIBE_NOTE_CREATION_ENABLED: "/v1/settings/scribe-note-creation-enabled",
     // GET + PUT boolean toggle share this path.
     SCRIBE_NOTE_CREATION_ENABLED: "/v1/settings/scribe-note-creation-enabled",
+    GET_SCRIBE_VOICE_NOTE_ENABLED: "/v1/settings/scribe-voice-note-enabled",
+    // GET + PUT boolean toggle share this path.
+    SCRIBE_VOICE_NOTE_ENABLED: "/v1/settings/scribe-voice-note-enabled",
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
+  },
+  BLOG: {
+    // Public (ungated) blog reads for the /blog pages.
+    GET_PUBLIC_BLOGS: "/v1/blog/public",
+    GET_PUBLIC_BLOG_BY_SLUG: (slug: string) => `/v1/blog/public/${slug}`,
   },
   TENANT: {
     // Own-tenant endpoints — scoped server-side to the caller's JWT tenant.

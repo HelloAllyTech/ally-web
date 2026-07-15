@@ -214,6 +214,8 @@ describe("createSimulation utils", () => {
         pauseEnabled: false,
         coverImageUrl: "https://example.com/image.jpg",
         coverVideoUrl: undefined,
+        category: "",
+        partnerOrgName: "",
         terminationEvents: undefined,
         languageVoices: {
           1: "voice-123",
@@ -227,6 +229,8 @@ describe("createSimulation utils", () => {
         temperature: 0.7,
         fillerEnabled: false,
         comfortAudioEnabled: false,
+        comfortAudioUrl: "",
+        comfortAudioVolume: 0.3,
         historyTrimEnabled: true,
         continuousBackchanneling: false,
         currentState: false,

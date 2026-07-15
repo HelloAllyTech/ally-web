@@ -1,6 +1,7 @@
 import { FC, useEffect } from "react";
 
 import CharacterCount from "@tiptap/extension-character-count";
+import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -17,6 +18,10 @@ interface RichTextEditorProps {
   disabled?: boolean;
   className?: string;
   borderless?: boolean;
+  /** Opt-in inline image support (track article builder). Default false. */
+  allowImages?: boolean;
+  /** Upload handler for the toolbar image button; resolves to the public URL. */
+  onImageUpload?: (file: File) => Promise<string | null>;
 }
 
 export const RichTextEditor: FC<RichTextEditorProps> = ({
@@ -27,6 +32,8 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
   disabled = false,
   className = "",
   borderless = false,
+  allowImages = false,
+  onImageUpload,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -39,6 +46,13 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
         emptyEditorClass:
           "before:content-[attr(data-placeholder)] before:text-typography-400 before:float-left before:h-0 before:pointer-events-none",
       }),
+      ...(allowImages
+        ? [
+            Image.configure({
+              HTMLAttributes: { class: "rounded-md max-w-full" },
+            }),
+          ]
+        : []),
       ...(maxLength != null
         ? [
             CharacterCount.configure({
@@ -57,7 +71,7 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
     },
     onUpdate: ({ editor: updatedEditor }) => {
       const html = updatedEditor.getHTML();
-      const sanitized = sanitizeHtml(html);
+      const sanitized = sanitizeHtml(html, { allowImages });
       onChange(sanitized);
     },
   });
@@ -66,13 +80,13 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
   useEffect(() => {
     if (!editor) return;
     const currentHtml = editor.getHTML();
-    const sanitizedValue = sanitizeHtml(value || "");
+    const sanitizedValue = sanitizeHtml(value || "", { allowImages });
 
     // Avoid infinite loop: only update if content actually differs
     if (currentHtml !== sanitizedValue && sanitizedValue !== currentHtml) {
       editor.commands.setContent(sanitizedValue, { emitUpdate: false });
     }
-  }, [editor, value]);
+  }, [editor, value, allowImages]);
 
   // Sync editable state
   useEffect(() => {
@@ -82,6 +96,16 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
 
   const characterCount = editor?.storage.characterCount?.characters() ?? 0;
 
+  const handleInsertImage =
+    allowImages && onImageUpload
+      ? async (file: File) => {
+          const url = await onImageUpload(file);
+          if (url && editor) {
+            editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+          }
+        }
+      : undefined;
+
   return (
     <div
       className={`${borderless ? "" : "border border-border-light rounded-md"} overflow-hidden bg-white ${
@@ -89,7 +113,7 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
       } ${className}`}
       data-testid="rich-text-editor"
     >
-      <RichTextToolbar editor={editor} />
+      <RichTextToolbar editor={editor} onInsertImage={handleInsertImage} />
       <EditorContent editor={editor} />
       {maxLength != null && (
         <div className="flex justify-end px-3 py-1.5 border-t border-border-light bg-gray-50/30">

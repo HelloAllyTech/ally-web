@@ -23,18 +23,21 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({
   const [submitSimulationFeedback, { isLoading }] = useSubmitSimulationFeedbackMutation();
   const isFirstRender = useRef(true);
 
-  const isSubmitDisabled = rating === 0 || isLoading;
+  const hasRating = rating >= 1 && rating <= 5;
+  const isSubmitDisabled = !hasRating || isLoading;
 
-  const getSimulationRatingText = (rating: number) => {
-    if (rating < 1 || rating > 5) return "";
-    return t(`postSim.feedback.dialog.rating.${rating}`);
+  const getSimulationRatingText = (value: number) => {
+    if (value < 1 || value > 5) return "";
+    return t(`postSim.feedback.dialog.rating.${value}`);
   };
 
-  const getSimulationRatingTags = (rating: number): string[] => {
-    if (rating < 1 || rating > 5) return [];
-    return t(`postSim.feedback.dialog.rating.tags.${rating}`, { returnObjects: true }) as string[];
+  const getSimulationRatingTags = (value: number): string[] => {
+    if (value < 1 || value > 5) return [];
+    return t(`postSim.feedback.dialog.rating.tags.${value}`, { returnObjects: true }) as string[];
   };
 
+  // Tags are rating-specific, so a fresh rating starts with a clean slate —
+  // except on the very first render, where we honour any pre-selected tags.
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -61,18 +64,31 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({
   };
 
   return (
-    <>
-      <span className="text-typography-800 font-medium">{t("postSim.feedback.dialog.header")}</span>
-      <StarRating rating={rating} setRating={setRating} />
-      <span className="h-6">{getSimulationRatingText(rating)}</span>
-      {rating >= 1 && rating <= 5 && (
-        <div className="flex flex-wrap gap-2 justify-center">
+    <div className="flex w-full flex-col items-center gap-5 text-center">
+      <h2 className="max-w-sm text-lg font-medium leading-snug text-typography-900">
+        {t("postSim.feedback.dialog.header")}
+      </h2>
+
+      <StarRating
+        rating={rating}
+        setRating={setRating}
+        size="lg"
+        ariaLabel={t("postSim.feedback.dialog.header")}
+      />
+
+      {/* Reserve the row height so selecting a rating doesn't shift the layout. */}
+      <span className="flex h-6 items-center text-sm font-medium text-typography-700">
+        {getSimulationRatingText(rating)}
+      </span>
+
+      {hasRating && (
+        <div className="flex flex-wrap justify-center gap-2">
           {getSimulationRatingTags(rating).map(tag => (
             <button
               key={tag}
               type="button"
               onClick={() => toggleTag(tag)}
-              className={`px-2 py-1 rounded-full text-sm font-medium border transition-all duration-150 cursor-pointer select-none
+              className={`cursor-pointer select-none rounded-full border px-3 py-1 text-sm font-medium transition-all duration-150
                 ${
                   selectedTags.includes(tag)
                     ? "bg-primary-600 text-white border-primary-600"
@@ -84,6 +100,7 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({
           ))}
         </div>
       )}
+
       <TextField
         value={comment}
         onChange={e => setComment(e.target.value)}
@@ -93,9 +110,10 @@ export const SimulationFeedback: FC<FeedbackSectionProps> = ({
         fullWidth
         className="w-full"
       />
-      <Button onClick={onSubmit} disabled={isSubmitDisabled}>
+
+      <Button onClick={onSubmit} disabled={isSubmitDisabled} fullWidth>
         {isLoading ? "Submitting..." : "Submit"}
       </Button>
-    </>
+    </div>
   );
 };

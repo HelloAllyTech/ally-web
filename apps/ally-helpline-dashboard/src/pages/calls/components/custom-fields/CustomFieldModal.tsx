@@ -1,30 +1,24 @@
 import { FC, useState, useEffect, useMemo } from "react";
 
-import AddIcon from "@mui/icons-material/Add";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  TextField,
-  Select,
-  MenuItem,
-  InputLabel,
-  IconButton,
-  CircularProgress,
-  Switch,
-} from "@mui/material";
+import { Add, ArrowDown, ArrowUp, TrashCan } from "@carbon/icons-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 
+import {
+  ComposedModal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  TextInput,
+  Select,
+  SelectItem,
+  RadioButton,
+  RadioButtonGroup,
+  IconButton,
+  InlineLoading,
+  CarbonToggle,
+} from "@ally-ui-mono/ui-shared";
 import {
   useCreateCustomFieldDefinitionMutation,
   useUpdateCustomFieldDefinitionMutation,
@@ -180,41 +174,39 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{isEditing ? "Edit custom field" : "Add custom field"}</DialogTitle>
+    <ComposedModal open={open} onClose={handleClose} size="sm">
+      <ModalHeader title={isEditing ? "Edit custom field" : "Add custom field"} />
 
-      <DialogContent dividers>
+      <ModalBody>
         {step === 1 && (
           <div className="py-2">
-            <p className="text-sm font-medium text-typography-600 mb-4">Select field type</p>
-            <FormControl component="fieldset">
-              <RadioGroup
-                value={selectedType}
-                onChange={e => setSelectedType(e.target.value as CustomFieldType)}
-              >
-                {(enabledTypes ?? Object.values(CustomFieldType)).map(type => (
-                  <FormControlLabel
-                    key={type}
-                    value={type}
-                    control={<Radio />}
-                    label={TYPE_LABELS[type as CustomFieldType] ?? type}
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
+            <RadioButtonGroup
+              name="custom-field-type"
+              orientation="vertical"
+              legendText="Select field type"
+              valueSelected={selectedType}
+              onChange={value => setSelectedType(value as CustomFieldType)}
+            >
+              {(enabledTypes ?? Object.values(CustomFieldType)).map(type => (
+                <RadioButton
+                  key={type}
+                  value={type}
+                  labelText={TYPE_LABELS[type as CustomFieldType] ?? type}
+                />
+              ))}
+            </RadioButtonGroup>
           </div>
         )}
 
         {step === 2 && (
           <div className="flex flex-col gap-4 py-2">
-            <TextField
-              label="Field name"
+            <TextInput
+              id="cf-name"
+              labelText="Field name"
               value={name}
               onChange={e => setName(e.target.value)}
-              inputProps={{ maxLength: 100 }}
-              fullWidth
-              size="small"
-              required
+              maxLength={100}
+              placeholder="Field name"
             />
 
             {TYPES_WITH_OPTIONS.includes(selectedType) && (
@@ -223,35 +215,43 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                 <div className="flex flex-col gap-2">
                   {options.map((opt, idx) => (
                     <div key={opt.id} className="flex items-center gap-2">
-                      <TextField
-                        value={opt.label}
-                        onChange={e => handleOptionLabelChange(opt.id, e.target.value)}
-                        placeholder={`Option ${idx + 1}`}
-                        size="small"
-                        fullWidth
-                        inputProps={{ maxLength: 100 }}
-                      />
+                      <div className="flex-1">
+                        <TextInput
+                          id={`cf-option-${opt.id}`}
+                          labelText={`Option ${idx + 1}`}
+                          hideLabel
+                          value={opt.label}
+                          onChange={e => handleOptionLabelChange(opt.id, e.target.value)}
+                          placeholder={`Option ${idx + 1}`}
+                          maxLength={100}
+                        />
+                      </div>
                       <IconButton
-                        size="small"
+                        label="Move up"
+                        kind="ghost"
+                        size="sm"
                         onClick={() => handleMoveOption(idx, "up")}
                         disabled={idx === 0}
                       >
-                        <ArrowUpwardIcon fontSize="small" />
+                        <ArrowUp />
                       </IconButton>
                       <IconButton
-                        size="small"
+                        label="Move down"
+                        kind="ghost"
+                        size="sm"
                         onClick={() => handleMoveOption(idx, "down")}
                         disabled={idx === options.length - 1}
                       >
-                        <ArrowDownwardIcon fontSize="small" />
+                        <ArrowDown />
                       </IconButton>
                       <IconButton
-                        size="small"
+                        label="Delete option"
+                        kind="ghost"
+                        size="sm"
                         onClick={() => handleDeleteOption(opt.id)}
                         disabled={options.length === 1}
-                        color="error"
                       >
-                        <DeleteIcon fontSize="small" />
+                        <TrashCan />
                       </IconButton>
                     </div>
                   ))}
@@ -261,41 +261,34 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                   onClick={handleAddOption}
                   className="mt-2 flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700"
                 >
-                  <AddIcon fontSize="small" />
+                  <Add />
                   Add option
                 </button>
               </div>
             )}
 
-            <FormControl fullWidth size="small" required>
-              <InputLabel>Section</InputLabel>
-              <Select
-                value={sectionKey}
-                label="Section"
-                onChange={e => setSectionKey(e.target.value)}
-              >
-                {sections.map(section => (
-                  <MenuItem key={section.key} value={section.key}>
-                    {section.title}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Select
+              id="cf-section"
+              labelText="Section"
+              value={sectionKey}
+              onChange={e => setSectionKey(e.target.value)}
+            >
+              <SelectItem value="" text="Select section" />
+              {sections.map(section => (
+                <SelectItem key={section.key} value={section.key} text={section.title} />
+              ))}
+            </Select>
 
-            <FormControl fullWidth size="small" required>
-              <InputLabel>Who can edit</InputLabel>
-              <Select
-                value={editPermission}
-                label="Who can edit"
-                onChange={e => setEditPermission(e.target.value as CustomFieldEditPermission)}
-              >
-                {Object.entries(EDIT_PERMISSION_LABELS).map(([value, label]) => (
-                  <MenuItem key={value} value={value}>
-                    {label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Select
+              id="cf-edit-permission"
+              labelText="Who can edit"
+              value={editPermission}
+              onChange={e => setEditPermission(e.target.value as CustomFieldEditPermission)}
+            >
+              {Object.entries(EDIT_PERMISSION_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value} text={label} />
+              ))}
+            </Select>
 
             <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
               <div>
@@ -304,28 +297,31 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                   Field will appear as a column in session logs
                 </p>
               </div>
-              <Switch
-                checked={showInTable}
-                onChange={e => setShowInTable(e.target.checked)}
-                size="small"
+              <CarbonToggle
+                id="cf-show-in-table"
+                size="sm"
+                hideLabel
+                labelText="Show as table column"
+                toggled={showInTable}
+                onToggle={checked => setShowInTable(checked)}
               />
             </div>
           </div>
         )}
-      </DialogContent>
+      </ModalBody>
 
-      <DialogActions className="px-6 py-3 gap-2">
+      <ModalFooter>
         <Button variant="secondary" onClick={handleClose}>
           Cancel
         </Button>
         {step === 1 && !isEditing && <Button onClick={() => setStep(2)}>Next</Button>}
         {step === 2 && (
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <CircularProgress size={16} /> : "Save"}
+            {isSaving ? <InlineLoading /> : "Save"}
           </Button>
         )}
-      </DialogActions>
-    </Dialog>
+      </ModalFooter>
+    </ComposedModal>
   );
 };
 

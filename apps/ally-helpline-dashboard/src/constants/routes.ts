@@ -22,6 +22,8 @@ export const ROUTES = {
   IMPERSONATE: "/impersonate",
   TERMS: "/terms",
   PRIVACY: "/privacy",
+  BLOG: "/blog",
+  BLOG_POST: "/blog/:slug",
 
   // Private Routes
   HOME: "/",
@@ -40,6 +42,9 @@ export const ROUTES = {
   SCENARIO: "/scenario/:scenarioId",
   PATHWAY: "/pathway/:pathwayId",
   CASE: "/case/:caseId",
+  // Track 2.0 (multi-component learning tracks)
+  TRACK: "/track/:trackId",
+  TRACK_ITEM: "/track/:trackId/item/:itemId",
   SIMULATION: "/simulation/:id/:scenarioTitle",
   SIMULATION_SUMMARY: "/simulation-summary",
   SIMULATION_SUMMARY_FULL: "/simulation-summary/:sessionId",
@@ -51,12 +56,20 @@ export const ROUTES = {
   ARCHIVES: "/archives",
 } as const;
 
+// Route builders for the Track 2.0 parameterised routes (string-only — this
+// file must not gain component/icon imports, see @assets mock note below).
+export const buildTrackRoute = (trackId: string) => `/track/${trackId}`;
+export const buildTrackItemRoute = (trackId: string, itemId: string) =>
+  `/track/${trackId}/item/${itemId}`;
+
 export const excludeNavBar = [
   ROUTES.AUDIO_CALL,
   ROUTES.SUMMARY,
   ROUTES.STRESS_BUSTER,
   ROUTES.SIMULATION,
   ROUTES.SIMULATION_SUMMARY_FULL,
+  // Full-screen track player (page-turner) hides the nav bar
+  ROUTES.TRACK_ITEM,
 ] as string[];
 
 export const navBarOptions = [
@@ -66,7 +79,7 @@ export const navBarOptions = [
     key: "nav.tabs.learn",
     Icon: LearnIcon,
     path: ROUTES.LEARN,
-    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY, ROUTES.CASE],
+    activePages: [ROUTES.SCENARIO, ROUTES.PATHWAY, ROUTES.CASE, ROUTES.TRACK, ROUTES.TRACK_ITEM],
     permissions: [Permissions.EDIT_SCENARIO_SESSION],
   },
   {

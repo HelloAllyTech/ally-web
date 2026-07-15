@@ -5,8 +5,10 @@ import { useGetScenarioPathsQuery } from "@api";
 import { BookWhite } from "@assets";
 import { ListToolbar, EmptyState, ToggleSwitch } from "@components";
 import { en } from "@constants";
-import { ScenarioPath, SimulationStatus } from "@types";
-import { isNonEmptyArray } from "@utils";
+import { AccessFilterValue, ScenarioPath, SimulationStatus } from "@types";
+import { isNonEmptyArray, toAssignmentStatus } from "@utils";
+
+import { AccessFilter } from "./AccessFilter";
 
 const PATHS_PAGE_SIZE = 30;
 
@@ -25,6 +27,7 @@ export const PathTab: FC<PathTabProps> = ({
 }) => {
   const [pathsOffset, setPathsOffset] = useState(0);
   const [paths, setPaths] = useState<ScenarioPath[]>([]);
+  const [accessFilter, setAccessFilter] = useState<AccessFilterValue>(AccessFilterValue.ALL);
 
   const handleToggleAccess = async (pathId: number, enabled: boolean) => {
     setPaths(prev =>
@@ -32,6 +35,12 @@ export const PathTab: FC<PathTabProps> = ({
     );
     try {
       await onToggleAccess(pathId, enabled);
+      const matchesFilter =
+        accessFilter === AccessFilterValue.ALL ||
+        (accessFilter === AccessFilterValue.ENABLED) === enabled;
+      if (!matchesFilter) {
+        setPaths(prev => prev.filter(path => path.id !== pathId));
+      }
     } catch {
       setPaths(prev =>
         prev.map(path => (path.id === pathId ? { ...path, isAssignedToTenant: !enabled } : path)),
@@ -45,6 +54,7 @@ export const PathTab: FC<PathTabProps> = ({
     search: searchValue,
     tenantId: organizationId,
     status: SimulationStatus.ACTIVE,
+    assignmentStatus: toAssignmentStatus(accessFilter),
   };
 
   const {
@@ -68,7 +78,7 @@ export const PathTab: FC<PathTabProps> = ({
 
   useEffect(() => {
     setPathsOffset(0);
-  }, [searchValue]);
+  }, [searchValue, accessFilter]);
 
   const loadMore = () => {
     setPathsOffset(prev => prev + PATHS_PAGE_SIZE);
@@ -141,6 +151,7 @@ export const PathTab: FC<PathTabProps> = ({
           searchValue={searchValue}
           onSearchChange={onSearchChange}
           placeholder={en.common.search}
+          filter={<AccessFilter value={accessFilter} onChange={setAccessFilter} />}
         />
       </div>
       {!isNonEmptyArray(paths) && isPathsLoading ? (

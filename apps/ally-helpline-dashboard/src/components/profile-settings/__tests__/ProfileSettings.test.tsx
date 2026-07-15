@@ -6,6 +6,10 @@ import { ProfileSettings } from "../ProfileSettings";
 // Keep the test focused on the component's own markup — stub the heavy children.
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   ImageUpload: () => <div data-testid="image-upload" />,
+  // Carbon's ComposedModal keeps mounted but toggles `open`; the stub mirrors that.
+  ComposedModal: ({ children, open }: any) => (open ? <div role="dialog">{children}</div> : null),
+  ModalBody: ({ children, className }: any) => <div className={className}>{children}</div>,
+  ModalFooter: ({ children }: any) => <div>{children}</div>,
 }));
 
 vi.mock("@assets", () => ({
@@ -24,50 +28,39 @@ const baseProps = {
   onButtonClick: vi.fn(),
 };
 
-describe("ProfileSettings theme picker", () => {
-  it("does not render the appearance picker when showThemePicker is false", () => {
-    render(<ProfileSettings {...baseProps} showThemePicker={false} />);
-    expect(screen.queryByRole("radiogroup")).not.toBeInTheDocument();
-    expect(screen.queryAllByRole("radio")).toHaveLength(0);
+describe("ProfileSettings", () => {
+  it("renders the dialog with title and action buttons when open", () => {
+    render(<ProfileSettings {...baseProps} />);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Profile Settings")).toBeInTheDocument();
+    expect(screen.getByText("Cancel")).toBeInTheDocument();
+    expect(screen.getByText("Done")).toBeInTheDocument();
   });
 
-  it("renders a swatch for each of the five themes when enabled", () => {
-    render(
-      <ProfileSettings
-        {...baseProps}
-        showThemePicker
-        selectedTheme="daylight"
-        onSelectTheme={vi.fn()}
-      />,
-    );
-    expect(screen.getByRole("radiogroup")).toBeInTheDocument();
-    expect(screen.getAllByRole("radio")).toHaveLength(3);
+  it("does not render the dialog content when isOpen is false", () => {
+    render(<ProfileSettings {...baseProps} isOpen={false} />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByText("Profile Settings")).not.toBeInTheDocument();
   });
 
-  it("marks the selected theme as checked", () => {
-    render(
-      <ProfileSettings
-        {...baseProps}
-        showThemePicker
-        selectedTheme="claude"
-        onSelectTheme={vi.fn()}
-      />,
-    );
-    const claude = screen.getByRole("radio", { name: "Claude" });
-    expect(claude).toHaveAttribute("aria-checked", "true");
+  it("calls onClose when the cancel button is clicked", () => {
+    const onClose = vi.fn();
+    render(<ProfileSettings {...baseProps} onClose={onClose} />);
+    fireEvent.click(screen.getByText("Cancel"));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onSelectTheme with the chosen theme id", () => {
-    const onSelectTheme = vi.fn();
-    render(
-      <ProfileSettings
-        {...baseProps}
-        showThemePicker
-        selectedTheme="daylight"
-        onSelectTheme={onSelectTheme}
-      />,
-    );
-    fireEvent.click(screen.getByRole("radio", { name: "Carbon" }));
-    expect(onSelectTheme).toHaveBeenCalledWith("carbon");
+  it("calls onClose when the close icon is clicked", () => {
+    const onClose = vi.fn();
+    render(<ProfileSettings {...baseProps} onClose={onClose} />);
+    fireEvent.click(screen.getByTestId("close-icon"));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onButtonClick when the done button is clicked", () => {
+    const onButtonClick = vi.fn();
+    render(<ProfileSettings {...baseProps} onButtonClick={onButtonClick} />);
+    fireEvent.click(screen.getByText("Done"));
+    expect(onButtonClick).toHaveBeenCalledTimes(1);
   });
 });

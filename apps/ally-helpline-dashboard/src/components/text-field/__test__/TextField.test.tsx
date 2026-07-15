@@ -1,35 +1,7 @@
-import { TextField as MuiTextField } from "@mui/material";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import TextField from "../TextField";
-
-vi.mock("@mui/material", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    TextField: vi.fn(props => {
-      const { value, onChange, disabled, error, multiline, name, type, onWheel } = props;
-
-      return (
-        <div data-testid="mui-textfield-root">
-          {props.label && <label>{props.label}</label>}
-          <input
-            data-testid="input"
-            name={name}
-            type={type}
-            value={value || ""}
-            onChange={onChange}
-            onWheel={onWheel}
-            disabled={disabled}
-            data-error={error}
-            data-multiline={multiline}
-          />
-        </div>
-      );
-    }),
-  };
-});
 
 describe("TextField", () => {
   const mockOnChange = vi.fn();
@@ -46,12 +18,13 @@ describe("TextField", () => {
   it("should render the label correctly", () => {
     const labelText = "User Name";
     render(<TextField {...defaultProps} label={labelText} hideError={true} />);
-    expect(screen.getByText(labelText)).toBeInTheDocument();
+    // The Carbon input is wired to the label text
+    expect(screen.getByLabelText(labelText)).toBeInTheDocument();
   });
 
   it("should update value and call onChange on input", () => {
     render(<TextField {...defaultProps} />);
-    const input = screen.getByTestId("input");
+    const input = screen.getByRole("textbox");
 
     expect(input).toHaveValue("initial value");
 
@@ -60,30 +33,34 @@ describe("TextField", () => {
     expect(mockOnChange).toHaveBeenCalledTimes(1);
   });
 
-  it("should pass disabled prop to MuiTextField", () => {
+  it("should pass disabled prop to the Carbon input", () => {
     render(<TextField {...defaultProps} disabled={true} />);
-    const input = screen.getByTestId("input");
+    const input = screen.getByRole("textbox");
     expect(input).toBeDisabled();
   });
 
-  it("should pass showBorder prop logic via MuiTextField sx prop", () => {
-    render(<TextField {...defaultProps} showBorder={false} />);
-
-    expect(MuiTextField).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sx: expect.objectContaining({
-          "& .MuiInputBase-root": expect.objectContaining({
-            border: "none",
-          }),
-          "& .MuiOutlinedInput-root": expect.objectContaining({
-            "& fieldset": expect.objectContaining({
-              border: "none",
-            }),
-          }),
-        }),
-      }),
-      expect.anything(),
+  it("should not draw a border around adornments when showBorder is false", () => {
+    render(
+      <TextField
+        {...defaultProps}
+        showBorder={false}
+        InputProps={{ startAdornment: <span data-testid="adorn" /> }}
+      />,
     );
+    const wrapper = screen.getByTestId("adorn").parentElement as HTMLElement;
+    expect(wrapper).not.toHaveClass("border");
+  });
+
+  it("should draw a border around adornments when showBorder is true", () => {
+    render(
+      <TextField
+        {...defaultProps}
+        showBorder={true}
+        InputProps={{ startAdornment: <span data-testid="adorn" /> }}
+      />,
+    );
+    const wrapper = screen.getByTestId("adorn").parentElement as HTMLElement;
+    expect(wrapper).toHaveClass("border");
   });
 
   describe("Scroll-wheel value change guard", () => {
@@ -92,7 +69,7 @@ describe("TextField", () => {
     // saved custom field value drifting with no one editing it.
     it("blurs a focused number input on wheel so scrolling can't change its value", () => {
       render(<TextField {...defaultProps} type="number" />);
-      const input = screen.getByTestId("input");
+      const input = screen.getByRole("spinbutton");
       input.focus();
       expect(input).toHaveFocus();
 
@@ -103,7 +80,7 @@ describe("TextField", () => {
 
     it("does not blur a non-number input on wheel", () => {
       render(<TextField {...defaultProps} type="text" />);
-      const input = screen.getByTestId("input");
+      const input = screen.getByRole("textbox");
       input.focus();
       expect(input).toHaveFocus();
 
@@ -120,10 +97,10 @@ describe("TextField", () => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
 
-    it("should pass error=true to MuiTextField when errorMessage is present", () => {
+    it("should mark the input invalid when errorMessage is present", () => {
       render(<TextField {...defaultProps} errorMessage="Error" hideError={true} />);
-      const input = screen.getByTestId("input");
-      expect(input).toHaveAttribute("data-error", "true");
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveAttribute("data-invalid", "true");
     });
 
     it("should display react-hook-form error message when hideError is false", () => {
@@ -143,36 +120,25 @@ describe("TextField", () => {
   });
 
   describe("Size and Multiline", () => {
-    it("should pass multiline=true and rows prop to MuiTextField", () => {
+    it("should render a textarea with the given rows when multiline is true", () => {
       const mockRows = 5;
-      render(<TextField {...defaultProps} multiline={true} rows={mockRows} />);
-
-      expect(MuiTextField).toHaveBeenCalledWith(
-        expect.objectContaining({
-          multiline: true,
-          rows: mockRows,
-        }),
-        expect.anything(),
+      const { container } = render(
+        <TextField {...defaultProps} multiline={true} rows={mockRows} />,
       );
+
+      const textarea = container.querySelector("textarea");
+      expect(textarea).toBeInTheDocument();
+      expect(textarea).toHaveAttribute("rows", String(mockRows));
     });
 
     it.each([
-      ["small", "30px"],
-      ["medium", "40px"],
-      ["large", "48px"],
-    ])('should apply correct height for fieldSize="%s"', (size, expectedHeight) => {
+      ["small", "cds--text-input--sm"],
+      ["medium", "cds--text-input--md"],
+      ["large", "cds--text-input--lg"],
+    ])('should apply the Carbon size class for fieldSize="%s"', (size, expectedClass) => {
       render(<TextField {...defaultProps} fieldSize={size as "small" | "medium" | "large"} />);
-
-      expect(MuiTextField).toHaveBeenCalledWith(
-        expect.objectContaining({
-          sx: expect.objectContaining({
-            "& .MuiOutlinedInput-root": expect.objectContaining({
-              height: expectedHeight,
-            }),
-          }),
-        }),
-        expect.anything(),
-      );
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveClass(expectedClass);
     });
   });
 });

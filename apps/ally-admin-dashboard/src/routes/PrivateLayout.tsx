@@ -7,15 +7,27 @@ import { useGetUserQuery, useGetPermissionsQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
 import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
 import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
-import { LOCAL_STORAGE_KEYS, ROUTES, Permissions, UserRole } from "@constants";
+import {
+  LOCAL_STORAGE_KEYS,
+  ROUTES,
+  Permissions,
+  UserRole,
+  normalizeEmailForAllowlist,
+} from "@constants";
 import { setUser, setPermissions } from "@reducer";
 import { hasPermissions } from "@utils";
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
   requiredPermissions?: Permissions[];
-  requiredRole?: UserRole;
+  requiredRole?: UserRole | UserRole[];
   isPreview?: boolean;
+  /**
+   * Optional email allowlist (compared case-insensitively against the logged-in
+   * user's email). When present, access ALSO requires an email match; absent
+   * prop = no email gate (fully backward compatible).
+   */
+  allowedEmails?: string[];
 }
 
 export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
@@ -23,6 +35,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   isPreview,
   requiredPermissions = [],
   requiredRole,
+  allowedEmails,
 }) => {
   const isAuthenticated =
     localStorage.getItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED) === "true";
@@ -44,19 +57,35 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   // Check if user has permission to access current route
   let hasPermission = true;
   let hasRole = true;
+  let hasAllowedEmail = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
     hasPermission = hasPermissions(permissions, requiredPermissions);
   }
 
   // Role gating is independent of permissions: routes can require a specific
-  // role (e.g. SUPER_ADMIN) regardless of the permission set. Routes that pass
-  // no requiredRole stay backward compatible (hasRole stays true).
+  // role (e.g. SUPER_ADMIN) — or any one of a set of roles (e.g. the super-admin
+  // tier: [SUPER_ADMIN, SUPER_DUPER_ADMIN]) — regardless of the permission set.
+  // Routes that pass no requiredRole stay backward compatible (hasRole stays true).
   if (!isUserLoading) {
-    hasRole = !requiredRole || userData?.role === requiredRole;
+    hasRole =
+      !requiredRole ||
+      (Array.isArray(requiredRole)
+        ? requiredRole.includes(userData?.role as UserRole)
+        : userData?.role === requiredRole);
   }
 
-  const hasAccess = hasPermission && hasRole;
+  // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive and
+  // +tag-tolerant (a +tag sub-address matches its base email, via
+  // normalizeEmailForAllowlist); only applies when the route passes an allowlist.
+  if (!isUserLoading && allowedEmails) {
+    const userEmail = normalizeEmailForAllowlist(userData?.email);
+    hasAllowedEmail = Boolean(
+      userEmail && allowedEmails.some(allowed => normalizeEmailForAllowlist(allowed) === userEmail),
+    );
+  }
+
+  const hasAccess = hasPermission && hasRole && hasAllowedEmail;
 
   if (hasAccess && isPreview) return children;
 

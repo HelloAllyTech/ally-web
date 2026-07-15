@@ -39,17 +39,14 @@ vi.mock("react-audio-visualize", () => ({
   ),
 }));
 
-// Mock @mui/material
-vi.mock("@mui/material", () => ({
-  Tooltip: ({ children, title, placement, arrow, slotProps }: any) => (
-    <div
-      data-testid="tooltip"
-      data-placement={placement}
-      data-arrow={arrow}
-      data-slot-props={JSON.stringify(slotProps)}
-    >
+// Mock @ally-ui-mono/ui-shared. The Carbon Tooltip takes its content via a
+// `label` prop and its position via `align` (replacing MUI's `title` /
+// `placement` / `arrow`).
+vi.mock("@ally-ui-mono/ui-shared", () => ({
+  Tooltip: ({ children, label, align }: any) => (
+    <div data-testid="tooltip" data-align={align}>
       {children}
-      <div data-testid="tooltip-content">{title}</div>
+      <div data-testid="tooltip-content">{label}</div>
     </div>
   ),
 }));
@@ -198,8 +195,7 @@ describe("CallInterface Component", () => {
 
       const tooltip = screen.getByTestId("tooltip");
       expect(tooltip).toBeInTheDocument();
-      expect(tooltip).toHaveAttribute("data-placement", "top");
-      expect(tooltip).toHaveAttribute("data-arrow", "true");
+      expect(tooltip).toHaveAttribute("data-align", "top");
     });
 
     it("should render tooltip content with privacy information", () => {

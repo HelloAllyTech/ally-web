@@ -6,8 +6,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { DropdownField, MaxActiveUsersDialog } from "@ally-ui-mono/ui-shared";
-import { useEndSimulationMutation, useGetScenarioQuery, useGetScenariosQuery } from "@api";
-import { BackCircle, ExistingCall, PageNotFoundIllustration } from "@assets";
+import {
+  useEndSimulationMutation,
+  useGetReviewsQuery,
+  useGetScenarioQuery,
+  useGetScenariosQuery,
+} from "@api";
+import { BackCircle, ExistingCall, PageNotFoundIllustration, PlayIcon } from "@assets";
 import {
   AppTooltip,
   LoginDialog,
@@ -16,27 +21,44 @@ import {
   ButtonVariant,
   FallbackUI,
   CreditInfo,
-  CreditsDisplay,
 } from "@components";
 import {
   AUTO_CLOSE_DIALOG_DURATION,
   LOCAL_STORAGE_KEYS,
+  PEER_SESSIONS_ALLOWED_EMAILS,
+  Permissions,
   ROUTES,
   TooltipLocation,
 } from "@constants";
-import { useSimulationCredits, useStartSimulation } from "@hooks";
+import { useSimulationCredits, useStartSimulation, useUser } from "@hooks";
 import { LanguageOption } from "@types";
+import { hasPermissions } from "@utils";
 
 import i18n from "../../i18n";
 import { learnPageExpandedVariants } from "../learn/constants";
+import PeerSessionsDrawer from "./components/PeerSessionsDrawer";
 
 export const Scenario: FC = () => {
   const { t } = useTranslation();
   const { scenarioId } = useParams();
   const navigate = useNavigate();
   const { credits, limitReached, refetchCredits } = useSimulationCredits();
+  const { permissions, user } = useUser();
 
   const id = Number(scenarioId);
+
+  // Peer "shared for review" sessions are visible on the case card only to
+  // users who are both a reviewer (can read the tenant-wide review feed) and a
+  // learner (actually play scenarios). Reviewers already have read access to
+  // every IN_REVIEW review in their tenant, so no new authorization is needed.
+  // While the feature is in limited rollout it is further gated to an email
+  // allowlist (PEER_SESSIONS_ALLOWED_EMAILS) — drop that clause to roll out to
+  // all reviewers.
+  const canSeeSharedReviews =
+    hasPermissions(permissions, Permissions.EDIT_SCENARIO_SESSION) &&
+    hasPermissions(permissions, Permissions.VIEW_SIMULATION_REVIEWS) &&
+    !!user?.email &&
+    PEER_SESSIONS_ALLOWED_EMAILS.includes(user.email);
 
   const isAuthenticated = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
 
@@ -48,6 +70,7 @@ export const Scenario: FC = () => {
   const [buttonDisable, setButtonDisable] = useState<boolean>(false);
   const [isMaxActiveUsersPopupOpen, setIsMaxActiveUsersPopupOpen] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption | null>(null);
+  const [isPeerDrawerOpen, setIsPeerDrawerOpen] = useState<boolean>(false);
 
   const {
     data: scenario,
@@ -68,6 +91,17 @@ export const Scenario: FC = () => {
       }),
     },
   );
+  // Cheap count-only probe: decides whether to surface the "watch peers" entry
+  // point. The drawer fetches the full list on open. Tenant + IN_REVIEW filtering
+  // is applied server-side, so this only counts shared sessions for this scenario.
+  const { peerSessionCount } = useGetReviewsQuery(
+    { scenarioId: id, limit: 1, offset: 0 },
+    {
+      skip: !canSeeSharedReviews || !id,
+      selectFromResult: ({ data }) => ({ peerSessionCount: data?.count ?? 0 }),
+    },
+  );
+
   const [endSimulation] = useEndSimulationMutation();
 
   const [startSimulationError, setStartSimulationError] = useState<unknown>(null);
@@ -191,119 +225,133 @@ export const Scenario: FC = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <div
-        className="h-screen w-full flex justify-center items-center bg-white"
-        data-testid="scenario-page"
-      >
+      <div className="h-screen w-full flex flex-col bg-white" data-testid="scenario-page">
         {scenario && isScenarioSuccess ? (
-          <motion.div
-            data-testid="scenario-content"
-            variants={learnPageExpandedVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="flex flex-col gap-6 w-full max-w-[600px] m-auto px-4"
-          >
+          <>
             {isAuthenticated() && (
               <div
-                className="flex justify-between w-full max-w-[600px]"
-                data-testid="scenario-header"
+                className="flex items-center gap-2 font-secondary text-3xl text-typography-900 px-6 pt-6 shrink-0"
+                data-testid="scenario-title"
               >
-                <div
-                  className="flex items-center gap-2 font-secondary text-3xl"
-                  data-testid="scenario-title"
+                {renderBackButton()}
+                <span>{t("learn.scenario.pageTitlePrefix")}</span>
+                <span className="font-bold italic"> {t("learn.scenario.pageTitleEmphasis")}</span>
+              </div>
+            )}
+            <motion.div
+              data-testid="scenario-content"
+              variants={learnPageExpandedVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="flex flex-1 min-h-0 flex-col justify-center gap-6 w-full max-w-[600px] mx-auto px-4"
+            >
+              {/* Language dropdown — shown when scenario has languages from the API */}
+              {(availableLanguages?.length ?? 0) > 0 && (
+                <div className="w-full sm:w-48 self-start">
+                  <div className="relative w-48">
+                    <DropdownField
+                      data-testid="language-dropdown"
+                      options={availableLanguages.map(lang => lang.label)}
+                      value={selectedLanguage?.label || ""}
+                      onChange={handleLanguageChange}
+                      valueClassName="text-typography-900 font-primary"
+                    />
+                  </div>
+                </div>
+              )}
+              <ScenarioDetailsCard
+                data-testid="scenario-details-card"
+                coverImage={scenario?.coverImageUrl || ""}
+                coverVideo={scenario?.coverVideoUrl || ""}
+                difficultyLevel={scenario?.difficultyLevel}
+                isStarting={isStartingSimulation}
+                title={scenario?.title || ""}
+                longDescription={scenario?.description || ""}
+                maxTimeValue={scenario?.maxTimeValue}
+                onStart={onStartSimulationClick}
+                noCredits={buttonDisable}
+                triggerWarnings={scenario?.triggerWarnings}
+              />
+              {canSeeSharedReviews && peerSessionCount > 0 && (
+                <button
+                  type="button"
+                  data-testid="watch-peer-sessions-button"
+                  onClick={() => setIsPeerDrawerOpen(true)}
+                  className="flex w-full max-w-[600px] items-center justify-center gap-2 rounded-lg border border-primary-500 py-3 font-tertiary text-base text-primary-500 transition-colors hover:bg-primary-50"
                 >
-                  {renderBackButton()}
-                  <span>{t("learn.scenario.pageTitlePrefix")}</span>
-                  <span className="font-bold italic"> {t("learn.scenario.pageTitleEmphasis")}</span>
-                </div>
-                <CreditsDisplay />
-              </div>
-            )}
-            {/* Language dropdown — shown when scenario has languages from the API */}
-            {(availableLanguages?.length ?? 0) > 0 && (
-              <div className="w-full sm:w-48 self-start">
-                <div className="relative w-48">
-                  <DropdownField
-                    data-testid="language-dropdown"
-                    options={availableLanguages.map(lang => lang.label)}
-                    value={selectedLanguage?.label || ""}
-                    onChange={handleLanguageChange}
-                    valueClassName="text-typography-900 font-primary"
-                  />
-                </div>
-              </div>
-            )}
-            <ScenarioDetailsCard
-              data-testid="scenario-details-card"
-              coverImage={scenario?.coverImageUrl || ""}
-              coverVideo={scenario?.coverVideoUrl || ""}
-              isStarting={isStartingSimulation}
-              title={scenario?.title || ""}
-              longDescription={scenario?.description || ""}
-              onStart={onStartSimulationClick}
-              noCredits={buttonDisable}
-              triggerWarnings={scenario?.triggerWarnings}
-            />
-            <LoginDialog
-              data-testid="scenario-login-dialog"
-              isOpen={isLoginDialogOpen}
-              onClose={() => setIsLoginDialogOpen(false)}
-              onSuccess={handleStartSimulation}
-            />
-            <ConfirmationDialog
-              data-testid="scenario-existing-simulation-dialog"
-              title={{
-                normal: t("learn.scenario.existing.titleNormal"),
-                italic: t("learn.scenario.existing.titleItalic"),
-              }}
-              isOpen={isExistingSimulationConfirmOpen}
-              onClose={() => setIsExistingSimulationConfirmOpen(false)}
-              content={t("learn.scenario.existing.content")}
-              buttonVariant={ButtonVariant.PRIMARY}
-              onButtonClick={endExistingSimulation}
-              buttonText={t("learn.scenario.existing.primary")}
-              secondaryButtonText={t("common.cancel")}
-              onSecondaryButtonClick={onSecondaryButtonClick}
-              icon={ExistingCall}
-            />
-            <CreditInfo
-              data-testid="scenario-no-credits-dialog"
-              open={noCreditsLeft}
-              onClose={() => handleCreditClose("noCredits")}
-              title={t("learn.scenario.noCredits.title")}
-              description={t("learn.scenario.noCredits.desc")}
-              autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
-            />
-            <CreditInfo
-              data-testid="scenario-not-enough-credits-dialog"
-              open={notEnoughCredits}
-              onClose={() => handleCreditClose("notEnough")}
-              title={t("learn.scenario.notEnough.title")}
-              description={t("learn.scenario.notEnough.desc")}
-              autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
-            />
-            <MaxActiveUsersDialog
-              open={isMaxActiveUsersPopupOpen}
-              onClose={() => setIsMaxActiveUsersPopupOpen(false)}
-              onRetry={handleMaxActiveUsersRetry}
-              translations={{
-                title: t("common.maxActiveUsers.title"),
-                description: t("common.maxActiveUsers.description"),
-                retry: t("common.maxActiveUsers.retry"),
-                manualRetry: t("common.maxActiveUsers.manualRetry"),
-                autoRetry: t("common.maxActiveUsers.autoRetry"),
-              }}
-            />
-          </motion.div>
+                  <PlayIcon className="h-5 w-5" />
+                  <span>
+                    {t("learn.scenario.peerSessions.button", "Watch how peers handled this")} (
+                    {peerSessionCount})
+                  </span>
+                </button>
+              )}
+              {canSeeSharedReviews && isPeerDrawerOpen && (
+                <PeerSessionsDrawer scenarioId={id} onClose={() => setIsPeerDrawerOpen(false)} />
+              )}
+              <LoginDialog
+                data-testid="scenario-login-dialog"
+                isOpen={isLoginDialogOpen}
+                onClose={() => setIsLoginDialogOpen(false)}
+                onSuccess={handleStartSimulation}
+              />
+              <ConfirmationDialog
+                data-testid="scenario-existing-simulation-dialog"
+                title={{
+                  normal: t("learn.scenario.existing.titleNormal"),
+                  italic: t("learn.scenario.existing.titleItalic"),
+                }}
+                isOpen={isExistingSimulationConfirmOpen}
+                onClose={() => setIsExistingSimulationConfirmOpen(false)}
+                content={t("learn.scenario.existing.content")}
+                buttonVariant={ButtonVariant.PRIMARY}
+                onButtonClick={endExistingSimulation}
+                buttonText={t("learn.scenario.existing.primary")}
+                secondaryButtonText={t("common.cancel")}
+                onSecondaryButtonClick={onSecondaryButtonClick}
+                icon={ExistingCall}
+              />
+              <CreditInfo
+                data-testid="scenario-no-credits-dialog"
+                open={noCreditsLeft}
+                onClose={() => handleCreditClose("noCredits")}
+                title={t("learn.scenario.noCredits.title")}
+                description={t("learn.scenario.noCredits.desc")}
+                autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
+              />
+              <CreditInfo
+                data-testid="scenario-not-enough-credits-dialog"
+                open={notEnoughCredits}
+                onClose={() => handleCreditClose("notEnough")}
+                title={t("learn.scenario.notEnough.title")}
+                description={t("learn.scenario.notEnough.desc")}
+                autoCloseDuration={AUTO_CLOSE_DIALOG_DURATION}
+              />
+              <MaxActiveUsersDialog
+                open={isMaxActiveUsersPopupOpen}
+                onClose={() => setIsMaxActiveUsersPopupOpen(false)}
+                onRetry={handleMaxActiveUsersRetry}
+                translations={{
+                  title: t("common.maxActiveUsers.title"),
+                  description: t("common.maxActiveUsers.description"),
+                  retry: t("common.maxActiveUsers.retry"),
+                  manualRetry: t("common.maxActiveUsers.manualRetry"),
+                  autoRetry: t("common.maxActiveUsers.autoRetry"),
+                }}
+              />
+            </motion.div>
+          </>
         ) : (
-          <FallbackUI
-            data-testid="scenario-not-found"
-            icon={<PageNotFoundIllustration />}
-            isLoading={isScenarioLoading}
-            mainMessage={t("learn.scenario.notFound.title")}
-            description={t("learn.scenario.notFound.desc")}
-          />
+          <div className="flex flex-1 items-center justify-center">
+            <FallbackUI
+              data-testid="scenario-not-found"
+              icon={<PageNotFoundIllustration />}
+              isLoading={isScenarioLoading}
+              mainMessage={t("learn.scenario.notFound.title")}
+              description={t("learn.scenario.notFound.desc")}
+            />
+          </div>
         )}
       </div>
     </AnimatePresence>

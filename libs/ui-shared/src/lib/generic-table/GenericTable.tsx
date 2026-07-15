@@ -9,7 +9,7 @@ import React, {
   useMemo,
 } from "react";
 
-import { Popover, CircularProgress } from "@mui/material";
+import { Popover, PopoverContent, Loading } from "@carbon/react";
 import { Plus } from "lucide-react";
 
 import FilterPopover from "./FilterPopover";
@@ -64,16 +64,17 @@ export const GenericTable = forwardRef(
     useImperativeHandle(ref, () => scrollRef.current, []);
 
     // Memoize filterable columns for performance
-    const filterableColumns = useMemo(
-      () => columns.filter(c => c.filterable && c.filterOptions),
-      [columns],
-    );
+    const filterableColumns = useMemo(() => columns.filter(c => c.filterable), [columns]);
 
     /**
      * Opens the filter popover for column selection.
      * @param {React.MouseEvent<HTMLElement>} event
      */
     const handleOpenFilterPopover = (event: React.MouseEvent<HTMLElement>) => {
+      // Stop the opening click before Carbon Popover's window-level
+      // outside-click listener sees it and closes the popover as it opens
+      // (the trigger lives outside the Popover subtree).
+      event.stopPropagation();
       setFilterAnchorEl(event.currentTarget);
       setSelectedColumn(null);
       setOptionAnchorEl(null);
@@ -89,18 +90,20 @@ export const GenericTable = forwardRef(
       col: Column<T> | undefined,
       event: React.MouseEvent<HTMLElement>,
     ) => {
-      if (!col) return;
-      if (col.filterable && col.filterOptions) {
-        setSelectedColumn(col as Column<T> & { filterOptions: { label: string; value: string }[] });
-        setOptionAnchorEl(event.currentTarget);
-        setSearchText("");
-        // If multiselect, prefill with current filter values
-        if (col.filterType === "multiselect") {
-          const existing = filter.find(f => f.key === col.key);
-          setMultiSelectValues(Array.isArray(existing?.value) ? existing?.value : []);
-        } else {
-          setMultiSelectValues([]);
-        }
+      if (!col || !col.filterable) return;
+      // See handleOpenFilterPopover; also close the column list or its
+      // outside-click listener would close the options popover on the next click.
+      event.stopPropagation();
+      setFilterAnchorEl(null);
+      setSelectedColumn(col as Column<T> & { filterOptions: { label: string; value: string }[] });
+      setOptionAnchorEl(event.currentTarget);
+      setSearchText("");
+      // If multiselect, prefill with current filter values
+      if (col.filterType === "multiselect") {
+        const existing = filter.find(f => f.key === col.key);
+        setMultiSelectValues(Array.isArray(existing?.value) ? existing?.value : []);
+      } else {
+        setMultiSelectValues([]);
       }
     };
 
@@ -196,27 +199,27 @@ export const GenericTable = forwardRef(
       <>
         <Popover
           open={Boolean(filterAnchorEl)}
-          anchorEl={filterAnchorEl}
-          onClose={handleCloseFilterPopover}
-          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          onRequestClose={handleCloseFilterPopover}
+          align="bottom-start"
+          dropShadow={false}
+          caret={false}
           className="font-['IBM_Plex_Serif'] z-50"
-          PaperProps={{
-            className: "shadow-none border border-[#E0E0E0] mt-[2px]",
-          }}
         >
-          <div>
-            {filterableColumns.map(col => (
-              <div
-                key={col.key as string}
-                className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
-                onClick={e => handleSelectColumn(col, e)}
-              >
-                {col.icon && <span className="mr-2">{col.icon}</span>}
-                <div>{col.header}</div>
-              </div>
-            ))}
-          </div>
+          <span aria-hidden className="block h-0 w-0" />
+          <PopoverContent className="border border-[#E0E0E0] mt-[2px]">
+            <div>
+              {filterableColumns.map(col => (
+                <div
+                  key={col.key as string}
+                  className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
+                  onClick={e => handleSelectColumn(col, e)}
+                >
+                  {col.icon && <span className="mr-2">{col.icon}</span>}
+                  <div>{col.header}</div>
+                </div>
+              ))}
+            </div>
+          </PopoverContent>
         </Popover>
         {/* Use shared FilterPopover for filter options */}
         <FilterPopover
@@ -285,9 +288,7 @@ export const GenericTable = forwardRef(
           >
             <Plus size={20} />
             <span className="font-['IBM_Plex_Serif'] text-[16px] ml-[5px]">{loadMoreLabel}</span>
-            {isLoading && (
-              <CircularProgress color="primary" size={20} className="ml-2 mr-2 text-[#000]" />
-            )}
+            {isLoading && <Loading withOverlay={false} small className="ml-2 mr-2" />}
           </div>
         )}
       </div>

@@ -93,6 +93,8 @@ export interface RoleplaySessionLatency {
 export interface RoleplaySessionRecording {
   storageKey: string;
   egressId: string;
+  /** Short-lived presigned S3 playback URL; null when the bucket isn't configured. */
+  url: string | null;
 }
 
 export interface RoleplaySessionFeedback {
@@ -141,6 +143,23 @@ export interface RoleplaySessionLogMessage {
   createdAt: string;
 }
 
+export type RoleplaySessionLifecycleType =
+  | "ROOM_CREATED"
+  | "AGENT_DISPATCHED"
+  | "PARTICIPANT_JOINED"
+  | "AGENT_JOINED"
+  | "AGENT_LEFT"
+  | "RECORDING_STARTED"
+  | "ROOM_FINISHED";
+
+export interface RoleplaySessionLifecycleEvent {
+  id: string;
+  // Server may add new types over time, so keep it open but hint the known set.
+  type: RoleplaySessionLifecycleType | string;
+  occurredAt: string;
+  detail: Record<string, unknown> | null;
+}
+
 export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   summary: Record<string, unknown> | null;
   scenarioVersionId: string | null;
@@ -153,9 +172,17 @@ export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   recording: RoleplaySessionRecording | null;
   feedback: RoleplaySessionFeedback | null;
   actorEvaluation: RoleplaySessionActorEvaluation | null;
+  /** The config this session ran under (prompt/scenario version, LLM settings). */
+  runConfig: RoleplaySessionRunConfig | null;
   agentTestCases: RoleplaySessionAgentTestCase[];
   events: RoleplaySessionLogEvent[];
+  lifecycle: RoleplaySessionLifecycleEvent[];
+  suspectedFreeze: boolean;
   transcript: RoleplaySessionLogMessage[];
+  /** Language-quality judge result (latest run); null when not judged yet. */
+  languageQuality: RoleplaySessionLanguageQuality | null;
+  /** Conversation-drift judgment (latest run); null when not drift-judged. */
+  drift: RoleplaySessionDrift | null;
 }
 
 export interface RoleplaySessionLogsResponse {
@@ -189,4 +216,76 @@ export interface StartV2VTestResponse {
   scenarioSession?: { roomId?: string };
   isTestSession?: boolean;
   simulatedUserAgent?: string;
+}
+
+/** One language-quality error annotation on an AI turn (latest judge run). */
+export interface RoleplaySessionLanguageAnnotation {
+  turnIndex: number;
+  /** scenario_session_messages.id of the AI turn — the transcript badge anchor. */
+  messageId: number | null;
+  layer: string;
+  dimension: string;
+  category: string;
+  severity: string; // minor | major | critical
+  isolationBasis: string | null;
+  inputGarbled: string | null;
+  conditionedOut: boolean;
+  evidenceQuote: string | null;
+  reasoning: string | null;
+}
+
+export interface RoleplaySessionLanguageQuality {
+  judgeModel: string;
+  judgePromptVersion: string;
+  turnsJudged: number;
+  turnsGarbled: number;
+  errorCount: number;
+  /** % of turns rendered cleanly in the target script; null = unmeasured. */
+  scriptFidelityPct: number | null;
+  /** Round-trip WER/CER % over a sample of this session's turns; null = unmeasured. */
+  roundTripWerPct: number | null;
+  annotations: RoleplaySessionLanguageAnnotation[];
+}
+
+/** One drift-judged AI turn (latest drift judge run). */
+export interface RoleplaySessionDriftTurn {
+  turnIndex: number;
+  messageId: number | null;
+  coherence: string | null;
+  topicLabel: string | null;
+  inCharacter: boolean | null;
+  counselorUtteranceGarbled: string | null;
+  sttErrorType: string | null;
+  aiReplyFailureMode: string | null;
+  rootAttribution: string | null;
+  reasoning: string | null;
+}
+
+export interface RoleplaySessionDrift {
+  judgeModel: string;
+  judgePromptVersion: string;
+  sessionDrifted: boolean | null;
+  firstDriftTurn: number | null;
+  turns: RoleplaySessionDriftTurn[];
+}
+
+export interface RoleplaySessionScenarioVersion {
+  id: string;
+  versionNumber: number | null;
+  name: string | null;
+}
+
+/** The configuration a session ran under (prompt/scenario version + LLM settings). */
+export interface RoleplaySessionRunConfig {
+  scenarioVersion: RoleplaySessionScenarioVersion | null;
+  /** {promptCode: version} captured at session start; null when not recorded. */
+  promptVersions: Record<string, string | number> | null;
+  llmProvider: string | null;
+  llmModel: string | null;
+  temperature: number | null;
+  topP: number | null;
+  maxTokens: number | null;
+  /** STT provider/model configured for the session's language (config source). */
+  sttProvider: string | null;
+  sttModel: string | null;
 }

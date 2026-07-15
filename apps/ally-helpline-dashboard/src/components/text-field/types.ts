@@ -1,9 +1,11 @@
-import { ChangeEvent, CSSProperties } from "react";
+import { ChangeEvent, CSSProperties, InputHTMLAttributes, ReactNode, Ref } from "react";
 
-import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 
-export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
+export interface TextFieldProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "value" | "size" | "width" | "height" | "color" | "ref"
+> {
   className?: string;
   disabled?: boolean;
   hideError?: boolean;
@@ -12,6 +14,17 @@ export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
   fieldSize?: "small" | "medium" | "large";
   fullWidth?: boolean;
   inputStyles?: CSSProperties;
+  inputRef?: Ref<HTMLInputElement | HTMLTextAreaElement>;
+  /**
+   * Kept for backwards compatibility with existing call sites that used the
+   * MUI `InputProps` API. Only the fields the app actually relies on are
+   * honoured (`readOnly` and start/end adornments).
+   */
+  InputProps?: {
+    readOnly?: boolean;
+    startAdornment?: ReactNode;
+    endAdornment?: ReactNode;
+  };
   label?: string;
   multiline?: boolean;
   name?: string;

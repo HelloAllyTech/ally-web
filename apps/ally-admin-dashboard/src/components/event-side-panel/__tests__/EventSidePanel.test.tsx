@@ -23,6 +23,11 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       className={className}
     />
   ),
+  Tooltip: ({ children, label }: any) => (
+    <span data-testid="tooltip" aria-label={label}>
+      {children}
+    </span>
+  ),
   FEATURE_FLAGS_MAP: {},
 }));
 
@@ -152,16 +157,6 @@ vi.mock("@constants", () => ({
     SCORE_BASED: "SCORE_BASED",
     SENTENCE_SIMILARITY: "SENTENCE_SIMILARITY",
     COMBINATION: "COMBINATION",
-  },
-  toolTipStyles: {
-    tooltip: {
-      sx: {
-        bgcolor: "common.black",
-        "& .MuiTooltip-arrow": {
-          color: "common.black",
-        },
-      },
-    },
   },
 }));
 

@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
 import { DonutChart, LineChart } from "@carbon/charts-react";
-import { Tile } from "@carbon/react";
 
+import { Tile } from "@ally-ui-mono/ui-shared";
 import { useGetScribeOverviewQuery, useGetScribeSummaryFailuresQuery } from "@api";
 import { AnalyticsRange } from "@types";
 

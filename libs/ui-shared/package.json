@@ -14,6 +14,17 @@
       "import": "./src/assets/index.ts",
       "default": "./src/assets/index.ts"
     },
+    "./theme": {
+      "types": "./src/theme/index.ts",
+      "import": "./src/theme/index.ts",
+      "default": "./src/theme/index.ts"
+    },
+    "./tokens": {
+      "types": "./src/tokens/index.ts",
+      "import": "./src/tokens/index.ts",
+      "default": "./src/tokens/index.ts"
+    },
+    "./styles/carbon-serif.scss": "./src/styles/carbon-serif.scss",
     "./package.json": "./package.json"
   },
   "dependencies": {
@@ -23,6 +34,12 @@
     "react-calendar": "^6.0.0",
     "@livekit/components-react": "^2.6.3",
     "livekit-client": "^2.8.0"
+  },
+  "peerDependencies": {
+    "@carbon/react": "^1.109.0",
+    "@carbon/icons-react": "^11.82.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.4",

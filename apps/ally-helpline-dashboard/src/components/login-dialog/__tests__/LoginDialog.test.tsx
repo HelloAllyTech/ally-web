@@ -5,16 +5,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import LoginDialog from "../LoginDialog";
 
-vi.mock("@mui/material", () => ({
-  Dialog: ({ open, onClose, children }: any) =>
-    open ? (
-      <div data-testid="dialog-root">
-        <button data-testid="dialog-onclose" onClick={onClose} />
-        {children}
-      </div>
-    ) : null,
-}));
-
 // Simplify motion wrappers
 vi.mock("framer-motion", () => ({
   motion: {
@@ -135,14 +125,15 @@ describe("LoginDialog", () => {
     expect(openLinkSpy).toHaveBeenCalledWith("https://example.com/privacy");
   });
 
-  it("close icon and dialog onClose trigger onClose callback", () => {
+  it("close icon and Escape both trigger onClose callback", () => {
     const onClose = vi.fn();
     render(<LoginDialog isOpen onClose={onClose} onSuccess={vi.fn()} />);
 
     fireEvent.click(screen.getByTestId("close"));
     expect(onClose).toHaveBeenCalled();
 
-    fireEvent.click(screen.getByTestId("dialog-onclose"));
+    // Carbon ComposedModal closes on Escape.
+    fireEvent.keyDown(document, { key: "Escape", code: "Escape" });
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 });

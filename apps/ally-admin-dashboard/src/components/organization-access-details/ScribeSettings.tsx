@@ -15,6 +15,8 @@ import {
   useUpdateCustomFieldsEnabledMutation,
   useGetScribeNoteCreationEnabledQuery,
   useUpdateScribeNoteCreationEnabledMutation,
+  useGetScribeVoiceNoteEnabledQuery,
+  useUpdateScribeVoiceNoteEnabledMutation,
 } from "@api";
 import { ArrowSolid } from "@assets";
 import { ToggleSwitch, Accordion, Button } from "@components";
@@ -118,6 +120,8 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
   const [updateCustomFieldsEnabled] = useUpdateCustomFieldsEnabledMutation();
   const { data: scribeNoteCreationEnabled } = useGetScribeNoteCreationEnabledQuery(tenantId);
   const [updateScribeNoteCreationEnabled] = useUpdateScribeNoteCreationEnabledMutation();
+  const { data: scribeVoiceNoteEnabled } = useGetScribeVoiceNoteEnabledQuery(tenantId);
+  const [updateScribeVoiceNoteEnabled] = useUpdateScribeVoiceNoteEnabledMutation();
 
   const allCustomFieldTypes = [
     { key: "SINGLE_SELECT", label: en.userManagement.singleSelectFieldType },
@@ -131,6 +135,7 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
   const [localCustomFieldsEnabled, setLocalCustomFieldsEnabled] = useState<boolean>(false);
   const [localScribeNoteCreationEnabled, setLocalScribeNoteCreationEnabled] =
     useState<boolean>(false);
+  const [localScribeVoiceNoteEnabled, setLocalScribeVoiceNoteEnabled] = useState<boolean>(false);
   const [localEnabledTypes, setLocalEnabledTypes] = useState<string[]>(
     allCustomFieldTypes.map(t => t.key),
   );
@@ -146,6 +151,12 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
       setLocalScribeNoteCreationEnabled(scribeNoteCreationEnabled);
     }
   }, [scribeNoteCreationEnabled]);
+
+  useEffect(() => {
+    if (scribeVoiceNoteEnabled !== undefined) {
+      setLocalScribeVoiceNoteEnabled(scribeVoiceNoteEnabled);
+    }
+  }, [scribeVoiceNoteEnabled]);
 
   useEffect(() => {
     if (enabledCustomFieldTypes !== undefined) {
@@ -169,6 +180,16 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
       await updateScribeNoteCreationEnabled({ tenantId, enabled }).unwrap();
     } catch (error: any) {
       setLocalScribeNoteCreationEnabled(!enabled);
+      toast.error(error?.data?.message || en.errors.failedUpdateAccess);
+    }
+  };
+
+  const handleScribeVoiceNoteEnabledToggle = async (enabled: boolean) => {
+    setLocalScribeVoiceNoteEnabled(enabled);
+    try {
+      await updateScribeVoiceNoteEnabled({ tenantId, enabled }).unwrap();
+    } catch (error: any) {
+      setLocalScribeVoiceNoteEnabled(!enabled);
       toast.error(error?.data?.message || en.errors.failedUpdateAccess);
     }
   };
@@ -682,6 +703,24 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
             />
             <span className="text-sm text-typography-900 font-normal">
               {localScribeNoteCreationEnabled ? en.common.enabled : en.common.disabled}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col pr-[16px] pl-[5px] gap-2 font-primary mt-2">
+        <div className="flex h-9 flex-row justify-between items-center">
+          <div className="text-sm text-typography-700 font-normal">
+            {en.userManagement.voiceNoteEnabled}
+          </div>
+          <div className="flex flex-row items-center gap-3">
+            <ToggleSwitch
+              enabled={localScribeVoiceNoteEnabled}
+              onChange={handleScribeVoiceNoteEnabledToggle}
+              label={en.userManagement.voiceNoteEnabled}
+            />
+            <span className="text-sm text-typography-900 font-normal">
+              {localScribeVoiceNoteEnabled ? en.common.enabled : en.common.disabled}
             </span>
           </div>
         </div>

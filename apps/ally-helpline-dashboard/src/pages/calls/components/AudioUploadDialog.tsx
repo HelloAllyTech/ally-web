@@ -1,6 +1,5 @@
 import { FC, useEffect, useState } from "react";
 
-import { Dialog } from "@mui/material";
 import axios from "axios";
 import dayjs, { Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -10,6 +9,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import {
   useGetAudioUploadUrlMutation,
   useGetCounsellorsQuery,
@@ -153,143 +153,135 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
   const disableTimePicker = !formData.date || !formData.timeZone;
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      data-testid="audio-upload-dialog"
-      PaperProps={{
-        style: {
-          borderRadius: "8px",
-          overflow: "hidden",
-        },
-      }}
-    >
-      <motion.div
-        data-testid="audio-upload-dialog-content"
-        className="max-w-[760px] min-w-[600px] w-full flex flex-col gap-6 p-6 sm:p-8 md:p-10"
-        initial={{ opacity: 0, scale: 0.98, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
-      >
-        {/* Title */}
+    <ComposedModal open={isOpen} onClose={onClose} data-testid="audio-upload-dialog" size="lg">
+      <ModalBody className="p-0">
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.2 }}
-          className="flex items-center justify-between"
+          data-testid="audio-upload-dialog-content"
+          className="max-w-[760px] min-w-[600px] w-full flex flex-col gap-6 p-6 sm:p-8 md:p-10"
+          initial={{ opacity: 0, scale: 0.98, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
         >
-          <span
-            className="text-2xl font-secondary text-typography-900"
-            data-testid="audio-upload-dialog-title"
+          {/* Title */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.2 }}
+            className="flex items-center justify-between"
           >
-            {t("calls.audioUpload.title")}
-          </span>
-        </motion.div>
+            <span
+              className="text-2xl font-secondary text-typography-900"
+              data-testid="audio-upload-dialog-title"
+            >
+              {t("calls.audioUpload.title")}
+            </span>
+          </motion.div>
 
-        {/* Dropzone placeholder */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.2 }}
-          data-testid="audio-upload-dropzone-container"
-        >
-          <AudioUploadInterface
-            duration={duration}
-            setDuration={setDuration}
-            files={files}
-            onDropSuccess={onDropAccepted}
-            onDeleteClick={() => setFiles([])}
-          />
-        </motion.div>
-
-        {/* Form grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-primary text-typography-900"
-          data-testid="audio-upload-form"
-        >
-          {/* Counsellor */}
-          <div className="flex flex-col gap-2" data-testid="audio-upload-counsellor-field">
-            <label>{t("calls.audioUpload.fields.counsellor.label")}</label>
-            <Dropdown
-              data-testid="audio-upload-counsellor-dropdown"
-              value={formData.counsellorId}
-              options={counsellors.map(({ id, name }) => ({
-                label: name,
-                value: id,
-              }))}
-              onChange={value => setFormData({ ...formData, counsellorId: value })}
-              placeholder={t("calls.audioUpload.fields.counsellor.placeholder")}
-            />
-          </div>
-
-          {/* Date */}
-          <div className="flex flex-col gap-2" data-testid="audio-upload-date-field">
-            <label>{t("calls.audioUpload.fields.sessionDate")}</label>
-            <DatePicker
-              data-testid="audio-upload-date-picker"
-              value={formData.date}
-              onChange={value => setFormData({ ...formData, date: value })}
-              maxDate={maxDateForTz}
-            />
-          </div>
-
-          {/* Time zone */}
-          <div className="flex flex-col gap-2" data-testid="audio-upload-timezone-field">
-            <label>{t("calls.audioUpload.fields.timeZone.label")}</label>
-            <Dropdown
-              data-testid="audio-upload-timezone-dropdown"
-              value={formData.timeZone}
-              options={timezoneOptions}
-              onChange={value => setFormData({ ...formData, timeZone: value })}
-              placeholder={t("calls.audioUpload.fields.timeZone.placeholder")}
-            />
-          </div>
-
-          {/* Time */}
-          <div className="flex flex-col gap-2" data-testid="audio-upload-time-field">
-            <label>{t("calls.audioUpload.fields.sessionTime")}</label>
-            <TimePicker
-              data-testid="audio-upload-time-picker"
-              value={formData.time}
-              onChange={value => setFormData({ ...formData, time: value })}
-              maxTime={maxTimeForPicker}
-              disabled={disableTimePicker}
-            />
-          </div>
-        </motion.div>
-
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.2 }}
-          className="flex items-center justify-between gap-4"
-          data-testid="audio-upload-actions"
-        >
-          <Button
-            fullWidth
-            variant={ButtonVariant.SECONDARY}
-            onClick={handleCancel}
-            data-testid="audio-upload-cancel-button"
+          {/* Dropzone placeholder */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.2 }}
+            data-testid="audio-upload-dropzone-container"
           >
-            {t("common.cancel")}
-          </Button>
-          <Button
-            fullWidth
-            onClick={onUpload}
-            disabled={isUploadButtonDisabled}
-            data-testid="audio-upload-submit-button"
+            <AudioUploadInterface
+              duration={duration}
+              setDuration={setDuration}
+              files={files}
+              onDropSuccess={onDropAccepted}
+              onDeleteClick={() => setFiles([])}
+            />
+          </motion.div>
+
+          {/* Form grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm font-primary text-typography-900"
+            data-testid="audio-upload-form"
           >
-            {isGetAudioUploadUrlLoading
-              ? t("common.uploading")
-              : t("calls.audioUpload.actions.upload")}
-          </Button>
+            {/* Counsellor */}
+            <div className="flex flex-col gap-2" data-testid="audio-upload-counsellor-field">
+              <label>{t("calls.audioUpload.fields.counsellor.label")}</label>
+              <Dropdown
+                data-testid="audio-upload-counsellor-dropdown"
+                value={formData.counsellorId}
+                options={counsellors.map(({ id, name }) => ({
+                  label: name,
+                  value: id,
+                }))}
+                onChange={value => setFormData({ ...formData, counsellorId: value })}
+                placeholder={t("calls.audioUpload.fields.counsellor.placeholder")}
+              />
+            </div>
+
+            {/* Date */}
+            <div className="flex flex-col gap-2" data-testid="audio-upload-date-field">
+              <label>{t("calls.audioUpload.fields.sessionDate")}</label>
+              <DatePicker
+                data-testid="audio-upload-date-picker"
+                value={formData.date}
+                onChange={value => setFormData({ ...formData, date: value })}
+                maxDate={maxDateForTz}
+              />
+            </div>
+
+            {/* Time zone */}
+            <div className="flex flex-col gap-2" data-testid="audio-upload-timezone-field">
+              <label>{t("calls.audioUpload.fields.timeZone.label")}</label>
+              <Dropdown
+                data-testid="audio-upload-timezone-dropdown"
+                value={formData.timeZone}
+                options={timezoneOptions}
+                onChange={value => setFormData({ ...formData, timeZone: value })}
+                placeholder={t("calls.audioUpload.fields.timeZone.placeholder")}
+              />
+            </div>
+
+            {/* Time */}
+            <div className="flex flex-col gap-2" data-testid="audio-upload-time-field">
+              <label>{t("calls.audioUpload.fields.sessionTime")}</label>
+              <TimePicker
+                data-testid="audio-upload-time-picker"
+                value={formData.time}
+                onChange={value => setFormData({ ...formData, time: value })}
+                maxTime={maxTimeForPicker}
+                disabled={disableTimePicker}
+              />
+            </div>
+          </motion.div>
+
+          {/* Footer */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.2 }}
+            className="flex items-center justify-between gap-4"
+            data-testid="audio-upload-actions"
+          >
+            <Button
+              fullWidth
+              variant={ButtonVariant.SECONDARY}
+              onClick={handleCancel}
+              data-testid="audio-upload-cancel-button"
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              fullWidth
+              onClick={onUpload}
+              disabled={isUploadButtonDisabled}
+              data-testid="audio-upload-submit-button"
+            >
+              {isGetAudioUploadUrlLoading
+                ? t("common.uploading")
+                : t("calls.audioUpload.actions.upload")}
+            </Button>
+          </motion.div>
         </motion.div>
-      </motion.div>
-    </Dialog>
+      </ModalBody>
+    </ComposedModal>
   );
 };
 

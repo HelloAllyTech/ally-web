@@ -88,6 +88,7 @@ export const ApiEndpoints = {
     DUPLICATE_PROMPT: (id: string | number) => `/v1/prompts/${id}/duplicate`,
     REVERT_PROMPT: (id: string | number) => `/v1/prompts/${id}/revert`,
     GET_PROMPT_USAGE: (id: string | number) => `/v1/prompts/${id}/usage`,
+    GET_LLM_MODELS: "/v1/llm/models",
     GET_REPORT_BY_ID: (reportId: string) => `/v1/learn/scenarios/reports/${reportId}`,
     GET_REPORTS: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
     GENERATE_REPORT: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
@@ -102,11 +103,14 @@ export const ApiEndpoints = {
     GET_REPORT_TRANSCRIPT: (reportId: string) =>
       `/v1/learn/scenarios/reports/${reportId}/transcripts`,
     SCENARIO_COVER_IMAGE_LIBRARY: "/v1/scenario-cover-image-library",
+    GENERATE_COVER_IMAGE: "/v1/scenario-cover-image-library/generate",
+    COMFORT_AUDIO_LIBRARY: "/v1/comfort-audio",
+    COMFORT_AUDIO_UPLOAD_URL: "/v1/comfort-audio/upload-url",
+    COMFORT_AUDIO_BY_ID: (id: string) => `/v1/comfort-audio/${id}`,
     CONVERSATIONAL_GUARDRAILS: "/v1/learn/conversational-guardrails",
     HELPER_TAGS: "/v1/learn/scenario-behaviors",
     FILLER_TAGS: "/v1/learn/filler-tags",
     GET_AUTOFILL_MODELS: "/v1/learn/models",
-    GENERATE_FIELD: "/v1/learn/scenarios/generate-field",
     ENHANCE_FIELD: "/v1/learn/scenarios/enhance-field",
     GENERATE_AGENT_BUILDER_FIELD: "/v1/learn/agent-builder/generate-field",
     COMPETENCIES: "/v1/learn/competencies",
@@ -114,6 +118,17 @@ export const ApiEndpoints = {
     COMPETENCY_BEHAVIOURS: (id: string) => `/v1/learn/competencies/${id}/behaviours`,
     AGENT_TEST_CASES: "/v1/learn/agent-test-cases",
     AGENT_TEST_CASE_BY_ID: (id: string) => `/v1/learn/agent-test-cases/${id}`,
+  },
+
+  // Track 2.0 ("Courses") — multi-component learning tracks
+  TRACKS: {
+    LIST: "/v1/learn/admin/tracks",
+    BY_ID: (id: string) => `/v1/learn/admin/tracks/${id}`,
+    STRUCTURE: (id: string) => `/v1/learn/admin/tracks/${id}/structure`,
+    DUPLICATE: (id: string) => `/v1/learn/admin/tracks/${id}/duplicate`,
+    TENANT_VISIBILITY: (tenantId: string) => `/v1/learn/admin/tracks/tenant/${tenantId}`,
+    MEDIA_UPLOAD_URL: "/v1/learn/admin/tracks/media/upload-url",
+    MEDIA: "/v1/learn/admin/tracks/media",
   },
 
   CHARACTERS: {
@@ -138,6 +153,7 @@ export const ApiEndpoints = {
     CUSTOM_FIELD_TYPES: `/v1/settings/custom-field-types`,
     CUSTOM_FIELDS_ENABLED: `/v1/settings/custom-fields-enabled`,
     SCRIBE_NOTE_CREATION_ENABLED: `/v1/settings/scribe-note-creation-enabled`,
+    SCRIBE_VOICE_NOTE_ENABLED: `/v1/settings/scribe-voice-note-enabled`,
     CUSTOM_FIELD_DEFINITIONS: `/v1/custom-fields/definitions`,
     CUSTOM_FIELD_DEFINITION_BY_ID: (id: string) => `/v1/custom-fields/definitions/${id}`,
     USER_ADMIN_TENANTS: (userId: number) => `/v1/users/${userId}/admin-tenants`,
@@ -169,6 +185,16 @@ export const ApiEndpoints = {
     CREATE_TOOLTIP: "/v1/tooltips",
     UPDATE_TOOLTIP: (id: string) => `/v1/tooltips/${id}`,
   },
+  BLOG: {
+    GET_BLOGS: "/v1/blog",
+    GET_BLOG: (id: string) => `/v1/blog/${id}`,
+    CREATE_BLOG: "/v1/blog",
+    UPDATE_BLOG: (id: string) => `/v1/blog/${id}`,
+    DELETE_BLOG: (id: string) => `/v1/blog/${id}`,
+    PUBLISH_BLOG: (id: string) => `/v1/blog/${id}/publish`,
+    UNPUBLISH_BLOG: (id: string) => `/v1/blog/${id}/unpublish`,
+    UPLOAD_IMAGE_URL: "/v1/blog/upload-url",
+  },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
     GET_ROLES: "/v1/authorization/roles",
@@ -177,9 +203,12 @@ export const ApiEndpoints = {
   ANALYTICS: {
     OVERVIEW: "/v1/analytics/overview",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
+    AGENT_JOIN_RELIABILITY: "/v1/analytics/agent-join-reliability",
     START_LATENCY: "/v1/analytics/start-latency",
     CONVERSATION_DRIFT: "/v1/analytics/conversation-drift",
     CONVERSATION_DRIFT_BACKFILL: "/v1/analytics/conversation-drift/backfill",
+    LANGUAGE_QUALITY: "/v1/analytics/language-quality",
+    LANGUAGE_QUALITY_REFERENCE: "/v1/analytics/language-quality/reference",
     TOKEN_CONSUMPTION: "/v1/analytics/token-consumption",
     SCRIBE_OVERVIEW: "/v1/analytics/scribe/overview",
     SCRIBE_SUMMARY_FAILURES: "/v1/analytics/scribe/summary-failures",
@@ -191,6 +220,58 @@ export const ApiEndpoints = {
   SETTINGS: {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
+  },
+  ROLEPLAY_STUDIO: {
+    SPECS: "/v1/roleplay-studio/specs",
+    SPEC_BY_ID: (specId: string) => `/v1/roleplay-studio/specs/${specId}`,
+    SPEC_VERSIONS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/versions`,
+    // Draft saves are spec-scoped: the draft lives on the spec row and the
+    // backend appends an immutable version snapshot on every save.
+    SAVE_DRAFT: (specId: string) => `/v1/roleplay-studio/specs/${specId}/draft`,
+    PUBLISH_VERSION: (specId: string, versionId: string) =>
+      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/publish`,
+    // specId travels in the POST body (backend DTO), not the URL.
+    CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
+    COPILOT_SESSIONS: `/v1/roleplay-studio/copilot/sessions`,
+    COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
+    COPILOT_SESSION_TEST_CASES: (sessionId: string) =>
+      `/v1/roleplay-studio/copilot/sessions/${sessionId}/test-cases`,
+    COPILOT_SESSION_MESSAGES: (sessionId: string) =>
+      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
+    COPILOT_SESSION_STREAM: (sessionId: string) =>
+      `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages/stream`,
+    CREATE_REHEARSALS: (specId: string, versionId: string) =>
+      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/rehearsals`,
+    REHEARSALS_BY_SPEC: (specId: string) => `/v1/roleplay-studio/specs/${specId}/rehearsals`,
+    REHEARSAL_BY_ID: (rehearsalId: string) => `/v1/roleplay-studio/rehearsals/${rehearsalId}`,
+    CANCEL_REHEARSAL: (rehearsalId: string) =>
+      `/v1/roleplay-studio/rehearsals/${rehearsalId}/cancel`,
+    CRITIQUE_REHEARSAL: (rehearsalId: string) =>
+      `/v1/roleplay-studio/rehearsals/${rehearsalId}/critique`,
+    CRITIQUE_PROPOSAL: (proposalId: string) =>
+      `/v1/roleplay-studio/rehearsals/critique-proposals/${proposalId}`,
+    REHEARSAL_COMPARISON: (rehearsalId: string) =>
+      `/v1/roleplay-studio/rehearsals/${rehearsalId}/comparison`,
+    REHEARSAL_TRANSCRIPTS: (rehearsalId: string) =>
+      `/v1/roleplay-studio/rehearsals/${rehearsalId}/transcripts`,
+    CREATE_IMPROVEMENT_RUN: (specId: string, versionId: string) =>
+      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/improvement-runs`,
+    IMPROVEMENT_RUNS_BY_SPEC: (specId: string) =>
+      `/v1/roleplay-studio/specs/${specId}/improvement-runs`,
+    IMPROVEMENT_RUN_BY_ID: (runId: string) => `/v1/roleplay-studio/improvement-runs/${runId}`,
+    IMPROVEMENT_RUN_DIFF: (runId: string) => `/v1/roleplay-studio/improvement-runs/${runId}/diff`,
+    ACCEPT_IMPROVEMENT_RUN: (runId: string) =>
+      `/v1/roleplay-studio/improvement-runs/${runId}/accept`,
+    DISCARD_IMPROVEMENT_RUN: (runId: string) =>
+      `/v1/roleplay-studio/improvement-runs/${runId}/discard`,
+    CANCEL_IMPROVEMENT_RUN: (runId: string) =>
+      `/v1/roleplay-studio/improvement-runs/${runId}/cancel`,
+    CREATE_SESSION: (specId: string, versionId: string) =>
+      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/sessions`,
+    SESSION_DIRECTOR_EVENTS: (sessionId: string) =>
+      `/v1/roleplay-studio/sessions/${sessionId}/director-events`,
+    SESSION_RUBRIC_SCORES: (sessionId: string) =>
+      `/v1/roleplay-studio/sessions/${sessionId}/rubric-scores`,
   },
 };
 
@@ -207,10 +288,13 @@ export const ROUTES = {
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
   EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
+  VIEW_SIMULATION: (id: string | number) => `/create-simulation/view/${id}`,
   ORGANIZATION_DETAIL: (id: string | number) => `/user-management/organization/${id}`,
   CREATE_PATH: "/create-path",
   EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
   CREATE_CASE: "/create-case",
+  CREATE_TRACK: "/create-track",
+  EDIT_TRACK: (id: string | number) => `/edit-track/${id}`,
   USER_BADGES: "/user-badges",
   MANAGE_GUARDRAILS: "/manage-guardrails",
   EDIT_CASE: (id: string | number) => `/create-case/edit/${id}`,
@@ -224,6 +308,11 @@ export const ROUTES = {
   SETTINGS: "/settings",
   TERMS: "/terms",
   PRIVACY: "/privacy",
+  ROLEPLAY_STUDIO: "/roleplay-studio",
+  ROLEPLAY_STUDIO_NEW: "/roleplay-studio/new",
+  ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
+  ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
+  BLOG: "/blog",
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -232,6 +321,10 @@ export const LOCAL_STORAGE_KEYS = {
   ADMIN_USER_STATUS: "adminUserStatus",
   ADMIN_IS_AUTHENTICATED: "adminIsAuthenticated",
   PREVIEW_ROOM_DATA: "previewRoomData",
+  ROLEPLAY_PREVIEW_ROOM_DATA: "roleplayPreviewRoomData",
+  // Prefix — the copilot session id is stored per spec as `${prefix}:${specId}`
+  // so a page refresh can resume the same interview session.
+  ROLEPLAY_COPILOT_SESSION_PREFIX: "roleplayCopilotSession",
 };
 
 export enum KeyboardKeys {
@@ -290,8 +383,10 @@ export const TAG_TYPES = {
   CUSTOM_FIELD_TYPES: "customFieldTypes",
   CUSTOM_FIELDS_ENABLED: "customFieldsEnabled",
   SCRIBE_NOTE_CREATION_ENABLED: "scribeNoteCreationEnabled",
+  SCRIBE_VOICE_NOTE_ENABLED: "scribeVoiceNoteEnabled",
   CUSTOM_FIELD_DEFINITIONS: "customFieldDefinitions",
   CHARACTERS: "characters",
+  IMAGE_LIBRARY: "imageLibrary",
   PROMPTS: "prompts",
   CONVERSATIONAL_GUARDRAILS: "conversationalGuardrails",
   USER_BADGES: "userBadges",
@@ -306,6 +401,14 @@ export const TAG_TYPES = {
   SETTINGS: "settings",
   USER_PREFERENCES: "userPreferences",
   ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
+  ROLEPLAY_SPECS: "roleplaySpecs",
+  ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
+  ROLEPLAY_REHEARSALS: "roleplayRehearsals",
+  ROLEPLAY_IMPROVEMENTS: "roleplayImprovements",
+  ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
+  COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
+  TRACKS_V2: "tracksV2",
+  BLOGS: "blogs",
 };
 
 /**

@@ -23,6 +23,8 @@ interface TitleTranslationsPanelProps {
   isMandatory?: boolean;
   /** When set, render a field-level Enhance control (primary tab only). */
   enhanceType?: string;
+  /** View Details mode: language tabs stay navigable, title isn't editable. */
+  readOnly?: boolean;
 }
 
 export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
@@ -30,6 +32,7 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
   label = "Title",
   isMandatory = false,
   enhanceType,
+  readOnly = false,
 }) => {
   const { setValue, control, getValues, watch } = formMethods;
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
@@ -174,7 +177,7 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
             English title is required, other languages will be auto generated if left blank.
           </span>
         </div>
-        {enhanceType && isPrimaryTab && (
+        {enhanceType && isPrimaryTab && !readOnly && (
           <EnhanceButton
             enhanceType={enhanceType}
             label={label}
@@ -194,8 +197,9 @@ export const TitleTranslationsPanel: FC<TitleTranslationsPanelProps> = ({
             type="text"
             value={valueForActiveTab}
             onChange={e => handleChange(e.target.value)}
-            placeholder="Enter title"
+            placeholder={readOnly ? "" : "Enter title"}
             maxLength={TITLE_MAX_LENGTH}
+            readOnly={readOnly}
             className="w-full px-3 py-2 text-sm text-typography-800 bg-transparent focus:outline-none"
           />
         </div>

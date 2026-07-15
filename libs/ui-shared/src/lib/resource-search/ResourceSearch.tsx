@@ -1,7 +1,7 @@
 "use client";
 import { FC, useRef, useCallback, useEffect, useState } from "react";
 
-import { CircularProgress } from "@mui/material";
+import { Loading } from "@carbon/react";
 
 import {
   ResourceSearchBar,
@@ -221,7 +221,7 @@ const ResourceSearch: FC<ResourceSearchProps> = ({
             ) : (
               !isLoading && renderNoResults()
             )}
-            {isLoading && <CircularProgress color="inherit" size={20} />}
+            {isLoading && <Loading withOverlay={false} small />}
           </div>
         </>
       );

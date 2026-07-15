@@ -1,39 +1,10 @@
-import { SxProps, Theme } from "@mui/material";
+// Carbon migration: these were MUI `sx` objects for the MUI Accordion. The
+// component is now a plain (MUI-free) disclosure, so the styling is expressed
+// as Tailwind className strings applied to the root / summary / details nodes.
+export const accordionClassName =
+  "shadow-none rounded-[4px] border-[0.5px] border-[#dbdbdb] bg-white";
 
-export const accordionSx: SxProps<Theme> = {
-  boxShadow: "none",
-  borderRadius: "4px",
-  border: "0.5px solid #dbdbdb",
-  "&::before": {
-    opacity: 0,
-    content: "none",
-  },
-  "&.Mui-expanded": {
-    margin: 0,
-  },
-};
+export const accordionSummaryClassName =
+  "flex flex-row items-center gap-[18px] px-4 py-[10px] w-full text-left";
 
-export const accordionSummarySx: SxProps<Theme> = {
-  minHeight: "auto",
-  padding: "10px 16px",
-  flexDirection: "row-reverse",
-  "&.Mui-expanded": {
-    minHeight: "auto",
-  },
-  "& .MuiAccordionSummary-content": {
-    margin: 0,
-    marginLeft: "18px",
-    "&.Mui-expanded": {
-      margin: 0,
-      marginLeft: "18px",
-    },
-  },
-  "& .MuiAccordionSummary-expandIconWrapper": {
-    marginRight: 0,
-    marginLeft: 0,
-  },
-};
-
-export const accordionDetailsSx: SxProps<Theme> = {
-  padding: 0,
-};
+export const accordionDetailsClassName = "p-0";
