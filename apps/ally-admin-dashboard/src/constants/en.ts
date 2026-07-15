@@ -386,8 +386,6 @@ export const en = {
     createdBy: "Created By",
     lastModified: "Last Modified",
     usage: "Usage",
-    progress: "Progress",
-    participants: "Participants",
     save: "Save",
     preview: "Preview",
     status: "Status",

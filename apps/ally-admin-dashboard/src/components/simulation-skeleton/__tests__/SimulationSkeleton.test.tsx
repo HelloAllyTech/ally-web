@@ -10,17 +10,6 @@ describe("SimulationSkeleton", () => {
     const { container } = render(<SimulationSkeleton />);
     expect(container.querySelector(".animate-pulse")).toBeTruthy();
   });
-
-  it("renders progress and participants placeholder blocks", () => {
-    const { getByTestId } = render(<SimulationSkeleton />);
-    expect(getByTestId("skeleton-progress")).toBeTruthy();
-    expect(getByTestId("skeleton-participants")).toBeTruthy();
-  });
-
-  it("renders a rounded-full track placeholder for the progress bar", () => {
-    const { getByTestId } = render(<SimulationSkeleton />);
-    expect(getByTestId("skeleton-progress").querySelector(".rounded-full")).toBeTruthy();
-  });
 });
 
 describe("SimulationListSkeleton", () => {

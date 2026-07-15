@@ -54,23 +54,16 @@ export function DataList<T extends DataListItem>({
   thumbnailConfig,
   titleConfig,
 }: DataListProps<T>) {
-  // Header only shows at lg+, where cards render as a flat row. Below lg each
-  // metadata cell carries its own label, so a detached header would be noise.
-  // Structure mirrors renderCard (first column + flex-1 metadata region) so
-  // the percentage widths resolve identically and columns stay aligned.
   const tableHeader = (
-    <div className="hidden lg:flex flex-row items-center w-full text-sm text-typography-800 border-b border-border-light px-4 py-2">
-      <div className={`${columns[0].width} shrink-0`}>{columns[0].label}</div>
-      <div className="flex flex-row flex-1 items-center justify-between">
-        {columns.slice(1).map(column => (
-          <div
-            key={column.key}
-            className={`${column.width} shrink-0 px-4 ${column.hidden ? "hidden lg:block" : ""}`}
-          >
-            {column.label}
-          </div>
-        ))}
-      </div>
+    <div className="hidden md:flex flex-row items-center justify-between w-full text-sm text-typography-800 border-b border-border-light px-4 py-2">
+      {columns.map(column => (
+        <div
+          key={column.key}
+          className={`${column.width} shrink-0 ${column.key !== columns[0].key ? "px-4" : ""} ${column.hidden ? "hidden lg:block" : ""}`}
+        >
+          {column.label}
+        </div>
+      ))}
     </div>
   );
 
@@ -132,12 +125,10 @@ export function DataList<T extends DataListItem>({
     return (
       <div
         key={item.id}
-        className="group flex flex-col lg:flex-row text-sm lg:items-center w-full text-typography-900 border-b border-border-light px-4 py-3 gap-3 lg:gap-0 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
+        className="group flex flex-row text-sm items-center justify-between w-full text-typography-900 border-b border-border-light px-4 py-3 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
       >
         {/* First Column - Thumbnail + Title/Description */}
-        <div
-          className={`flex flex-row items-center ${firstColumn.width} max-lg:w-full shrink-0 gap-3`}
-        >
+        <div className={`flex flex-row items-center ${firstColumn.width} shrink-0 gap-3`}>
           {thumbnailConfig && (
             <div
               onClick={handleThumbnailClick}
@@ -162,24 +153,15 @@ export function DataList<T extends DataListItem>({
           </div>
         </div>
 
-        {/* Metadata Columns — always visible: labelled 2-up grid on mobile,
-            3-up at sm, single header-aligned row at lg. Column widths only
-            apply at lg (max-lg:w-auto lets the grid tracks size the cells). */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-row gap-x-4 gap-y-3 lg:gap-0 lg:flex-1 lg:items-center lg:justify-between">
-          {otherColumns.map(column => (
-            <div
-              key={column.key}
-              className={`${column.width} max-lg:w-auto shrink-0 lg:px-4 min-w-0 ${column.hidden ? "hidden lg:block" : ""} overflow-x-hidden`}
-            >
-              {column.label ? (
-                <div className="text-xs uppercase tracking-wide text-typography-600 mb-1 lg:hidden">
-                  {column.label}
-                </div>
-              ) : null}
-              {renderColumnContent(column, item)}
-            </div>
-          ))}
-        </div>
+        {/* Other Columns */}
+        {otherColumns.map(column => (
+          <div
+            key={column.key}
+            className={`${column.width} shrink-0 px-4 ${column.hidden ? "hidden lg:block" : ""} overflow-x-hidden`}
+          >
+            {renderColumnContent(column, item)}
+          </div>
+        ))}
       </div>
     );
   };
