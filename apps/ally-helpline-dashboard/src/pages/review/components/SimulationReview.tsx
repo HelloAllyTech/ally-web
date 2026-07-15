@@ -26,7 +26,12 @@ const SkeletonList: FC = () => (
   </>
 );
 
-const SimulationReview: FC<SimulationReviewProps> = ({ readFilter, sortBy, scenarioId }) => {
+const SimulationReview: FC<SimulationReviewProps> = ({
+  readFilter,
+  sortBy,
+  scenarioId,
+  excludeOwn,
+}) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
@@ -46,12 +51,13 @@ const SimulationReview: FC<SimulationReviewProps> = ({ readFilter, sortBy, scena
     readFilter,
     languageCode: i18n.language,
     ...(scenarioId ? { scenarioId } : {}),
+    ...(excludeOwn ? { excludeOwn: true } : {}),
   });
 
   useEffect(() => {
     setOffset(0);
     setFeedData([]);
-  }, [readFilter, sortBy, i18n.language, scenarioId]);
+  }, [readFilter, sortBy, i18n.language, scenarioId, excludeOwn]);
 
   useEffect(() => {
     if (!simulationReviewsData?.data) return;

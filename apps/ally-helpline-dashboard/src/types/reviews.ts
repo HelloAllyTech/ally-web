@@ -54,6 +54,7 @@ export interface GetReviewsInput {
   languageCode?: string;
   readFilter?: string;
   scenarioId?: number;
+  excludeOwn?: boolean;
 }
 
 export interface GetReviewsResponse {
