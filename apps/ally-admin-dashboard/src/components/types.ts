@@ -214,6 +214,12 @@ export interface NavigationItem {
   label: string;
   path: string;
   icon?: React.ReactNode;
+  /**
+   * True for tabs a SUPER_DUPER_ADMIN can reach but a plain SUPER_ADMIN cannot.
+   * The sidebar renders a small blue dot beside these labels so it's clear the
+   * surface isn't available to the super-admin tier.
+   */
+  superDuperAdminOnly?: boolean;
 }
 
 export interface FilterValues {
