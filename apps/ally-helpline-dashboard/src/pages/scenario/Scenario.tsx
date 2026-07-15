@@ -25,7 +25,6 @@ import {
 import {
   AUTO_CLOSE_DIALOG_DURATION,
   LOCAL_STORAGE_KEYS,
-  PEER_SESSIONS_ALLOWED_EMAILS,
   Permissions,
   ROUTES,
   TooltipLocation,
@@ -43,7 +42,7 @@ export const Scenario: FC = () => {
   const { scenarioId } = useParams();
   const navigate = useNavigate();
   const { credits, limitReached, refetchCredits } = useSimulationCredits();
-  const { permissions, user } = useUser();
+  const { permissions } = useUser();
 
   const id = Number(scenarioId);
 
@@ -51,14 +50,9 @@ export const Scenario: FC = () => {
   // users who are both a reviewer (can read the tenant-wide review feed) and a
   // learner (actually play scenarios). Reviewers already have read access to
   // every IN_REVIEW review in their tenant, so no new authorization is needed.
-  // While the feature is in limited rollout it is further gated to an email
-  // allowlist (PEER_SESSIONS_ALLOWED_EMAILS) — drop that clause to roll out to
-  // all reviewers.
   const canSeeSharedReviews =
     hasPermissions(permissions, Permissions.EDIT_SCENARIO_SESSION) &&
-    hasPermissions(permissions, Permissions.VIEW_SIMULATION_REVIEWS) &&
-    !!user?.email &&
-    PEER_SESSIONS_ALLOWED_EMAILS.includes(user.email);
+    hasPermissions(permissions, Permissions.VIEW_SIMULATION_REVIEWS);
 
   const isAuthenticated = () => Boolean(localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN));
 
@@ -95,7 +89,7 @@ export const Scenario: FC = () => {
   // point. The drawer fetches the full list on open. Tenant + IN_REVIEW filtering
   // is applied server-side, so this only counts shared sessions for this scenario.
   const { peerSessionCount } = useGetReviewsQuery(
-    { scenarioId: id, limit: 1, offset: 0 },
+    { scenarioId: id, limit: 1, offset: 0, excludeOwn: true },
     {
       skip: !canSeeSharedReviews || !id,
       selectFromResult: ({ data }) => ({ peerSessionCount: data?.count ?? 0 }),

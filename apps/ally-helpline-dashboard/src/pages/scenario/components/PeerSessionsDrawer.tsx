@@ -11,11 +11,12 @@ interface PeerSessionsDrawerProps {
 }
 
 /**
- * Right-side drawer that lists the shared-for-review sessions for a single
- * scenario (roleplay agent) in the viewer's tenant. Reuses the existing
+ * Right-side drawer that lists other people's shared-for-review sessions for a
+ * single scenario (roleplay agent) in the viewer's tenant. Reuses the existing
  * SimulationReview feed (full FeedCards + infinite scroll + "Review
- * transcript" → review viewer), scoped by scenarioId. Rendered only while
- * open, so the feed query fires on open, not on scenario page load.
+ * transcript" → review viewer), scoped by scenarioId and excluding the viewer's
+ * own sessions. Rendered only while open, so the feed query fires on open, not
+ * on scenario page load.
  */
 const PeerSessionsDrawer: FC<PeerSessionsDrawerProps> = ({ onClose, scenarioId }) => {
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ const PeerSessionsDrawer: FC<PeerSessionsDrawerProps> = ({ onClose, scenarioId }
       bodyClassName="h-full overflow-y-auto"
     >
       <div className="flex w-full flex-col items-center gap-4 px-4 py-4 sm:px-6">
-        <SimulationReview readFilter="ALL" sortBy="LATEST" scenarioId={scenarioId} />
+        <SimulationReview readFilter="ALL" sortBy="LATEST" scenarioId={scenarioId} excludeOwn />
       </div>
     </Drawer>
   );

@@ -28,19 +28,6 @@ export const canViewOrganizationSettings = (
   !!user?.email &&
   ORG_SETTINGS_ALLOWED_EMAILS.includes(user.email);
 
-/**
- * Emails allowed to see the "Watch how peers handled this" peer-sessions drawer
- * on the scenario detail page while the feature is in limited rollout. Temporary
- * allowlist — remove it (and the allowlist check in Scenario.tsx) once it rolls
- * out to all reviewers. The permission gate (reviewer + learner) still applies
- * on top of this list.
- */
-export const PEER_SESSIONS_ALLOWED_EMAILS = [
-  "learner@example.com",
-  "sandeep.malhotra+1@helloally.ai",
-  "sandeep.malhotra+internal@helloally.ai",
-];
-
 // In-app privacy page (ROUTES.PRIVACY), opened in a new tab via openLinkInNewTab.
 export const PRIVACY_POLICY_URL = "/privacy";
 
