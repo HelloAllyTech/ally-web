@@ -110,3 +110,45 @@ export const getMaxSelectableTimeForDate = (
   // Today in timezone: cap at current time in tz
   return nowInTz;
 };
+
+export type DenormalizedCustomFieldValue = {
+  fieldDefinitionId: string;
+  value?: string | null;
+};
+
+/**
+ * The calls/logs tables accumulate paginated rows in local React state rather
+ * than rendering straight off the RTK cache. Merge a freshly fetched page into
+ * the accumulated list keyed by row id: existing rows are replaced in place
+ * (position preserved), genuinely new rows are appended. This replaces the old
+ * blind append, which duplicated rows on refetch and left an edited row's stale
+ * copy in place until a full reload reset pagination to offset 0. Idempotent.
+ */
+export const reconcileLogsById = <T extends { id: number }>(prev: T[], incoming: T[]): T[] => {
+  if (incoming.length === 0) return prev;
+  const byId = new Map<number, T>(prev.map(row => [row.id, row]));
+  incoming.forEach(row => byId.set(row.id, row));
+  return Array.from(byId.values());
+};
+
+/**
+ * Patch a single row's denormalized `customFieldValues` after an in-place edit,
+ * so the table cell updates immediately without waiting for a list refetch
+ * (which only covers the currently-subscribed page). Changed fields are
+ * upserted by `fieldDefinitionId`.
+ */
+export const patchRowCustomFieldValues = <
+  T extends { id: number; customFieldValues?: DenormalizedCustomFieldValue[] },
+>(
+  logs: T[],
+  chatId: number,
+  changed: DenormalizedCustomFieldValue[],
+): T[] =>
+  logs.map(row => {
+    if (row.id !== chatId) return row;
+    const byField = new Map<string, DenormalizedCustomFieldValue>(
+      (row.customFieldValues ?? []).map(v => [v.fieldDefinitionId, v]),
+    );
+    changed.forEach(v => byField.set(v.fieldDefinitionId, v));
+    return { ...row, customFieldValues: Array.from(byField.values()) };
+  });
