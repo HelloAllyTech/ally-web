@@ -1055,6 +1055,27 @@ export const en = {
         VERIFIED: "Verified",
         FAILED_VERIFICATION: "Failed verification",
       },
+      // Live progress card shown in the copilot chat while a run is RUNNING.
+      live: {
+        heading: "Auto-improve running",
+        running: "Running",
+        roundOf: (n: number, total: number) => `Round ${n} of ${total}`,
+        rehearsalsComplete: (completed: number, total: number) =>
+          `${completed} of ${total} rehearsals complete`,
+        startingRehearsals: "Starting rehearsals…",
+        bestVsTarget: (best: number, target: number) => `Best so far ${best} · target ${target}`,
+        noScoreYet: "Scoring in progress…",
+        pending: "Pending",
+        activityLabel: "Progress",
+        phaseRehearse: "Rehearse",
+        phaseCritique: "Critique",
+        phaseApply: "Apply",
+        cancel: "Cancel run",
+        confirmCancel: "Confirm cancel",
+        cancelling: "Cancelling…",
+        starting: "Starting auto-improve…",
+        leaveHint: "You can leave and come back — this keeps running.",
+      },
     },
     publish: {
       title: "Publish",
