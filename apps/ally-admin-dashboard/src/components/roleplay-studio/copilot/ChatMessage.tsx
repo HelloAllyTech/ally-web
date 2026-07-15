@@ -8,16 +8,17 @@ import { en } from "@constants";
 import { CopilotChatMessage } from "@src/types/roleplayStudio";
 
 import { roleplayMarkdownComponents } from "../markdownComponents";
+import { BehaviourReviewCard } from "./BehaviourReviewCard";
 import { ImprovementProgressCard } from "./ImprovementProgressCard";
 import { ImprovementReadyCard } from "./ImprovementReadyCard";
-import { QuestionCard } from "./QuestionCard";
+import { CopilotAnswerPayload, QuestionCard } from "./QuestionCard";
 import { TestCaseSuggestionCard } from "./TestCaseSuggestionCard";
 
 interface ChatMessageProps {
   message: CopilotChatMessage;
   /** Copilot session the message belongs to (test-case acceptance target). */
   sessionId: string | null;
-  onAnswerQuestion: (answer: string, questionId: string) => void;
+  onAnswerQuestion: (payload: CopilotAnswerPayload) => void;
   disabled?: boolean;
 }
 
@@ -69,6 +70,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       <QuestionCard
         question={message.question}
         answeredWith={message.answeredWith}
+        answeredAnswer={message.answeredAnswer}
+        onAnswer={onAnswerQuestion}
+        disabled={disabled}
+      />
+    );
+  }
+
+  if (message.behaviourReview) {
+    return (
+      <BehaviourReviewCard
+        review={message.behaviourReview}
+        answeredAnswer={message.answeredAnswer}
         onAnswer={onAnswerQuestion}
         disabled={disabled}
       />

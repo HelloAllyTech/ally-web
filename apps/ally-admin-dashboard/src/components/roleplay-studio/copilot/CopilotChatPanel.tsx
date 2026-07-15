@@ -23,6 +23,7 @@ import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessage } from "./ChatMessage";
 import { ImprovementLiveCard } from "./ImprovementLiveCard";
+import { CopilotAnswerPayload } from "./QuestionCard";
 import { useImprovementSocket } from "../improvement/useImprovementSocket";
 
 const sessionStorageKey = (specId: string) =>
@@ -224,8 +225,11 @@ export const CopilotChatPanel: React.FC = () => {
   }, [messages, activeRun?.id, currentRound?.status]);
 
   const handleSend = (text: string) => void sendMessage(text);
-  const handleAnswerQuestion = (answer: string, questionId: string) =>
-    void sendMessage(answer, { questionId });
+  const handleAnswerQuestion = (payload: CopilotAnswerPayload) =>
+    void sendMessage(payload.message, {
+      questionId: payload.questionId,
+      answer: payload.answer,
+    });
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -291,9 +295,7 @@ export const CopilotChatPanel: React.FC = () => {
               <span className="text-sm font-medium text-primary-700">
                 {strings.improvement.running}
               </span>
-              <span className="text-xs text-typography-600">
-                {strings.improvement.runningHint}
-              </span>
+              <span className="text-xs text-typography-600">{strings.improvement.runningHint}</span>
             </div>
           </div>
         )}
