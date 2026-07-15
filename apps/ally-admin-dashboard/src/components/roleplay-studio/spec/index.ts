@@ -1,6 +1,7 @@
 export * from "./SpecPanel";
 export * from "./SpecPatchFlash";
 export * from "./SpecSectionCard";
+export * from "./AgentTestCasesSection";
 export * from "./PersonaBibleSection";
 export * from "./RubricSection";
 export * from "./DisclosureLedgerSection";

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { Button } from "@components";
-import { ButtonVariant } from "@components/types";
+import { Send, StopFilled } from "@carbon/icons-react";
+
+import { Button, TextArea } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 
 interface ChatComposerProps {
@@ -32,14 +32,15 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   return (
     <div className="flex items-end gap-2 border-t border-border-light pt-3">
       <div className="flex-1 min-w-0">
-        <AutoExpandableTextarea
+        <TextArea
+          id="copilot-chat-composer"
+          labelText={strings.placeholder}
+          hideLabel
           value={value}
-          onChange={setValue}
+          onChange={event => setValue(event.target.value)}
           placeholder={strings.placeholder}
           disabled={disabled}
-          minHeight={44}
-          maxLines={8}
-          className="w-full rounded-lg border border-border-light bg-white px-3 py-2.5 text-sm outline-none focus:border-primary-500"
+          rows={2}
           onKeyDown={event => {
             if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();
@@ -50,16 +51,20 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
       </div>
       {isStreaming ? (
         <Button
-          variant={ButtonVariant.SECONDARY}
-          className="h-[40px] px-4 shrink-0"
+          kind="secondary"
+          size="md"
+          className="shrink-0"
+          renderIcon={StopFilled}
           onClick={onStop}
         >
           {strings.stop}
         </Button>
       ) : (
         <Button
-          variant={ButtonVariant.PRIMARY}
-          className="h-[40px] px-4 shrink-0"
+          kind="primary"
+          size="md"
+          className="shrink-0"
+          renderIcon={Send}
           disabled={disabled || !value.trim()}
           onClick={send}
         >

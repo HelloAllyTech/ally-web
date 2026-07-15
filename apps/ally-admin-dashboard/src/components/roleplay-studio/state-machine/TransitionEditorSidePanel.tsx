@@ -1,14 +1,24 @@
 import React from "react";
 
+import { TrashCan } from "@carbon/icons-react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 
-import { FormLabel } from "@components";
+import {
+  Button,
+  Checkbox,
+  CheckboxGroup,
+  Select,
+  SelectItem,
+  TextArea,
+  TextInput,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { removeTransition, selectRoleplaySpec, upsertTransition } from "@reducer";
 import { RoleplayTransition } from "@src/types/roleplayStudio";
 
-import { panelFieldClass, SidePanelShell } from "./SidePanelShell";
+import { SidePanelShell } from "./SidePanelShell";
 
 interface TransitionEditorSidePanelProps {
   fromStateId: string;
@@ -26,29 +36,30 @@ interface TransitionFormValues {
 }
 
 const BehaviorChecklist: React.FC<{
+  legend: string;
+  idPrefix: string;
   value: string[];
   onChange: (next: string[]) => void;
   options: Array<{ id: string; name: string }>;
-}> = ({ value, onChange, options }) => (
-  <div className="flex flex-col gap-1.5 rounded-md border border-border-light p-3 max-h-44 overflow-y-auto custom-scrollbar">
-    {options.length === 0 && (
-      <span className="text-xs text-typography-500">{en.common.noOptionsAvailable}</span>
-    )}
-    {options.map(option => (
-      <label key={option.id} className="flex items-center gap-2 text-sm text-typography-900">
-        <input
-          type="checkbox"
+}> = ({ legend, idPrefix, value, onChange, options }) => (
+  <CheckboxGroup legendText={legend}>
+    <Tile className="mt-1 flex max-h-44 flex-col gap-1.5 overflow-y-auto custom-scrollbar">
+      {options.length === 0 && (
+        <span className="text-xs text-typography-500">{en.common.noOptionsAvailable}</span>
+      )}
+      {options.map(option => (
+        <Checkbox
+          key={option.id}
+          id={`${idPrefix}-${option.id}`}
+          labelText={option.name || option.id}
           checked={value.includes(option.id)}
-          onChange={event =>
-            onChange(
-              event.target.checked ? [...value, option.id] : value.filter(id => id !== option.id),
-            )
+          onChange={(_event, { checked }) =>
+            onChange(checked ? [...value, option.id] : value.filter(id => id !== option.id))
           }
         />
-        <span className="truncate">{option.name || option.id}</span>
-      </label>
-    ))}
-  </div>
+      ))}
+    </Tile>
+  </CheckboxGroup>
 );
 
 /**
@@ -115,80 +126,73 @@ export const TransitionEditorSidePanel: React.FC<TransitionEditorSidePanelProps>
       onCancel={onClose}
       onSave={handleSubmit(onSubmit)}
       headerExtra={
-        <button
-          type="button"
+        <Button
+          kind="danger--ghost"
+          size="sm"
+          renderIcon={TrashCan}
           onClick={handleDelete}
-          className="text-sm text-typography-600 hover:text-destructive-500"
+          type="button"
         >
           {en.common.delete}
-        </button>
+        </Button>
       }
     >
       <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col gap-2">
-          <FormLabel>{strings.toState}</FormLabel>
-          <select {...register("toStateId")} className={panelFieldClass}>
-            {states.map(state => (
-              <option key={state.id} value={state.id}>
-                {state.name || state.id}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Select id="rp-transition-to" labelText={strings.toState} {...register("toStateId")}>
+          {states.map(state => (
+            <SelectItem key={state.id} value={state.id} text={state.name || state.id} />
+          ))}
+        </Select>
 
-        <div className="flex flex-col gap-2">
-          <FormLabel>{strings.transitionDescription}</FormLabel>
-          <textarea
-            {...register("description")}
-            rows={3}
-            className={`${panelFieldClass} resize-y`}
-          />
-        </div>
+        <TextArea
+          id="rp-transition-description"
+          labelText={strings.transitionDescription}
+          rows={3}
+          {...register("description")}
+        />
 
-        <div className="flex flex-col gap-2">
-          <FormLabel>{strings.whenBehaviorsAny}</FormLabel>
-          <Controller
-            control={control}
-            name="whenBehaviorsAny"
-            render={({ field }) => (
-              <BehaviorChecklist
-                value={field.value}
-                onChange={field.onChange}
-                options={behaviors}
-              />
-            )}
-          />
-        </div>
+        <Controller
+          control={control}
+          name="whenBehaviorsAny"
+          render={({ field }) => (
+            <BehaviorChecklist
+              legend={strings.whenBehaviorsAny}
+              idPrefix={field.name}
+              value={field.value}
+              onChange={field.onChange}
+              options={behaviors}
+            />
+          )}
+        />
 
-        <div className="flex flex-col gap-2">
-          <FormLabel>{strings.whenBehaviorsAll}</FormLabel>
-          <Controller
-            control={control}
-            name="whenBehaviorsAll"
-            render={({ field }) => (
-              <BehaviorChecklist
-                value={field.value}
-                onChange={field.onChange}
-                options={behaviors}
-              />
-            )}
-          />
-        </div>
+        <Controller
+          control={control}
+          name="whenBehaviorsAll"
+          render={({ field }) => (
+            <BehaviorChecklist
+              legend={strings.whenBehaviorsAll}
+              idPrefix={field.name}
+              value={field.value}
+              onChange={field.onChange}
+              options={behaviors}
+            />
+          )}
+        />
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <FormLabel>{strings.minTurnsInState}</FormLabel>
-            <input
-              type="number"
-              min={0}
-              {...register("minTurnsInState")}
-              className={panelFieldClass}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <FormLabel>{strings.minCumulativeScore}</FormLabel>
-            <input type="number" {...register("minCumulativeScore")} className={panelFieldClass} />
-          </div>
+          <TextInput
+            id="rp-transition-min-turns"
+            type="number"
+            min={0}
+            labelText={strings.minTurnsInState}
+            {...register("minTurnsInState")}
+          />
+          <TextInput
+            id="rp-transition-min-score"
+            type="number"
+            labelText={strings.minCumulativeScore}
+            {...register("minCumulativeScore")}
+          />
         </div>
       </form>
     </SidePanelShell>

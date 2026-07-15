@@ -2,24 +2,25 @@ import React from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-  AutoExpandableTextarea,
-  DropdownField as SharedDropdownField,
-} from "@ally-ui-mono/ui-shared";
-import { FormLabel } from "@components";
+import { CarbonDropdown, Stack, Tag, TextArea } from "@ally-ui-mono/ui-shared";
 import { DIFFICULTY_LEVEL_OPTIONS, en } from "@constants";
 import { selectRoleplaySpec, setDifficulty, setOpeningStatement } from "@reducer";
 
+import { AgentTestCasesSection } from "./AgentTestCasesSection";
 import { DisclosureLedgerSection } from "./DisclosureLedgerSection";
 import { EngineeredEventsSection } from "./EngineeredEventsSection";
 import { NaturalnessSettingsSection } from "./NaturalnessSettingsSection";
 import { PersonaBibleSection } from "./PersonaBibleSection";
 import { RubricSection } from "./RubricSection";
 import { SpecSectionCard } from "./SpecSectionCard";
+import { SpecValue } from "./SpecField";
 import { VoiceLanguageSection } from "./VoiceLanguageSection";
 
 interface SpecPanelProps {
-  /** Read-only during the interview step; editable on the spec step. */
+  /**
+   * When true, every field renders disabled (the spec is copilot-driven) —
+   * except the voice-naturalness toggles, which stay trainer-editable.
+   */
   readOnly?: boolean;
 }
 
@@ -46,41 +47,56 @@ export const SpecPanel: React.FC<SpecPanelProps> = ({ readOnly = false }) => {
         title={strings.openingStatement}
         sections={["openingStatement", "difficulty", "title"]}
       >
-        <div className="flex flex-col gap-4">
-          <AutoExpandableTextarea
-            value={spec.openingStatement}
-            onChange={value => dispatch(setOpeningStatement(value))}
-            placeholder={strings.openingStatement}
-            disabled={readOnly}
-            minHeight={48}
-            maxLines={8}
-            className="w-full rounded-md border border-border-light px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:bg-neutral-50"
-          />
-          <div className="flex flex-col gap-2">
-            <FormLabel>{strings.difficulty}</FormLabel>
+        <Stack gap={5}>
+          {readOnly ? (
+            <SpecValue label={strings.openingStatement} value={spec.openingStatement} />
+          ) : (
+            <TextArea
+              id="roleplay-opening-statement"
+              labelText={strings.openingStatement}
+              value={spec.openingStatement}
+              onChange={event => dispatch(setOpeningStatement(event.target.value))}
+              rows={3}
+            />
+          )}
+
+          {readOnly ? (
+            <SpecValue
+              label={strings.difficulty}
+              value={difficultyLabel ? <Tag type="cool-gray">{difficultyLabel}</Tag> : undefined}
+              isEmpty={!difficultyLabel}
+            />
+          ) : (
             <div className="w-48">
-              <SharedDropdownField
-                options={DIFFICULTY_LEVEL_OPTIONS.map(option => option.label)}
-                value={difficultyLabel}
-                onChange={label => {
-                  const option = DIFFICULTY_LEVEL_OPTIONS.find(item => item.label === label);
+              <CarbonDropdown
+                id="roleplay-difficulty"
+                titleText={strings.difficulty}
+                label={strings.difficulty}
+                items={DIFFICULTY_LEVEL_OPTIONS.map(option => option.label)}
+                selectedItem={difficultyLabel}
+                onChange={({ selectedItem }) => {
+                  const option = DIFFICULTY_LEVEL_OPTIONS.find(item => item.label === selectedItem);
                   if (option) dispatch(setDifficulty(option.value));
                 }}
-                label=""
-                disabled={readOnly}
-                valueClassName="font-primary text-base text-typography-700"
               />
             </div>
-          </div>
-        </div>
+          )}
+        </Stack>
       </SpecSectionCard>
 
       <PersonaBibleSection persona={spec.persona} readOnly={readOnly} />
       <DisclosureLedgerSection ledger={spec.disclosureLedger} readOnly={readOnly} />
       <RubricSection rubric={spec.rubric} readOnly={readOnly} />
+      {/* Agent test cases are the trainer's to choose (which behavioral checks
+          the rehearsal runs against), so this stays editable even when the rest
+          of the spec is read-only. */}
+      <AgentTestCasesSection agentTestCaseIds={spec.agentTestCaseIds} />
       <EngineeredEventsSection events={spec.engineeredEvents} readOnly={readOnly} />
       <VoiceLanguageSection voice={spec.voice} language={spec.language} readOnly={readOnly} />
-      <NaturalnessSettingsSection readOnly={readOnly} />
+      {/* Voice-naturalness toggles stay trainer-editable even when the rest of
+          the spec is view-only — these are realism levers the trainer tunes
+          directly rather than through the copilot. */}
+      <NaturalnessSettingsSection />
     </div>
   );
 };

@@ -1,14 +1,13 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 
-import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 
-import { DropdownField as SharedDropdownField } from "@ally-ui-mono/ui-shared";
-import { useGetScenarioLanguagesQuery } from "@api";
-import { FormLabel, VoiceDropdown } from "@components";
+import { FilterableMultiSelect, Tag } from "@ally-ui-mono/ui-shared";
+import { useGetScenarioLanguagesQuery, useGetScenarioVoicesQuery } from "@api";
 import { en } from "@constants";
-import { setLanguage, setLanguageVoice } from "@reducer";
+import { setConfiguredLanguages } from "@reducer";
 import { RoleplayLanguageConfig, RoleplayVoiceConfig } from "@src/types/roleplayStudio";
+import { getSimulationVoiceOptions } from "@utils";
 
 import { SpecSectionCard } from "./SpecSectionCard";
 
@@ -18,93 +17,110 @@ interface VoiceLanguageSectionProps {
   readOnly?: boolean;
 }
 
+interface LanguageItem {
+  id: string;
+  label: string;
+  languageCode?: string;
+}
+
 /**
- * Language + voice picker. Reuses the shared VoiceDropdown (react-hook-form
- * bound, backed by useGetScenarioVoicesQuery); a tiny local form bridges it to
- * the roleplaySpec slice, writing `voice.languageVoices[languageId]`.
+ * Language + voice configuration.
+ *
+ * The trainer picks WHICH languages the actor can be played in (a multi-select
+ * that stays editable even though the rest of the spec is copilot-driven /
+ * read-only). The copilot then assigns one voice per configured language; those
+ * voices are shown here read-only. The set of configured languages is stored as
+ * the keys of `voice.languageVoices`; the trainer picks one of them at preview.
  */
-export const VoiceLanguageSection: React.FC<VoiceLanguageSectionProps> = ({
-  voice,
-  language,
-  readOnly = false,
-}) => {
+export const VoiceLanguageSection: React.FC<VoiceLanguageSectionProps> = ({ voice }) => {
   const strings = en.roleplayStudio.spec;
   const dispatch = useDispatch();
-  const { data: languages } = useGetScenarioLanguagesQuery({ active: true });
+  const { data: languages = [] } = useGetScenarioLanguagesQuery({ active: true });
+  const { data: voices = [] } = useGetScenarioVoicesQuery({});
 
-  const languageList = useMemo(() => languages ?? [], [languages]);
-  const selectedLanguageId = language.languageId !== undefined ? String(language.languageId) : "";
-  const selectedLanguage = languageList.find(
-    option => String(option.language_id ?? option.value) === selectedLanguageId,
-  );
-  const currentVoiceId = voice.languageVoices[selectedLanguageId] ?? "";
-
-  // Default the language to the first available one so the voice mapping has
-  // a key to write under (mirrors how simulations always have a language).
-  useEffect(() => {
-    if (readOnly || selectedLanguageId || languageList.length === 0) return;
-    const first = languageList[0];
-    dispatch(
-      setLanguage({
-        languageId: first.language_id ?? first.value,
-        languageCode: first.translationCode ?? first.value,
-      }),
-    );
-  }, [dispatch, languageList, readOnly, selectedLanguageId]);
-
-  const formMethods = useForm<{ voiceId: string }>({
-    defaultValues: { voiceId: currentVoiceId },
-  });
-
-  // External changes (e.g. streamed copilot patches) -> local form.
-  useEffect(() => {
-    if (formMethods.getValues("voiceId") !== currentVoiceId) {
-      formMethods.setValue("voiceId", currentVoiceId);
-    }
-  }, [currentVoiceId, formMethods]);
-
-  // Local form -> slice.
-  useEffect(() => {
-    const subscription = formMethods.watch((values, { name }) => {
-      const voiceId = values.voiceId ?? "";
-      if (name !== "voiceId" && voiceId === "") return;
-      if (!selectedLanguageId || readOnly) return;
-      if (voiceId && voiceId !== currentVoiceId) {
-        dispatch(setLanguageVoice({ languageId: selectedLanguageId, voiceId }));
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [currentVoiceId, dispatch, formMethods, readOnly, selectedLanguageId]);
-
-  const handleLanguageChange = (label: string) => {
-    if (readOnly) return;
-    const option = languageList.find(item => item.label === label);
-    if (!option) return;
-    dispatch(
-      setLanguage({
-        languageId: option.language_id ?? option.value,
+  const languageItems = useMemo<LanguageItem[]>(
+    () =>
+      languages.map(option => ({
+        id: String(option.language_id ?? option.value),
+        label: option.label,
         languageCode: option.translationCode ?? option.value,
-      }),
+      })),
+    [languages],
+  );
+
+  const configuredIds = useMemo(
+    () => Object.keys(voice.languageVoices ?? {}),
+    [voice.languageVoices],
+  );
+
+  const selectedItems = useMemo(
+    () => languageItems.filter(item => configuredIds.includes(item.id)),
+    [languageItems, configuredIds],
+  );
+
+  // voiceId -> display name, and languageId -> label, for the read-only display.
+  const voiceNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    getSimulationVoiceOptions(voices).forEach(option => {
+      map[option.value] = option.label;
+    });
+    return map;
+  }, [voices]);
+
+  const languageLabelById = useMemo(() => {
+    const map: Record<string, string> = {};
+    languageItems.forEach(item => {
+      map[item.id] = item.label;
+    });
+    return map;
+  }, [languageItems]);
+
+  const handleChange = (items: LanguageItem[]) =>
+    dispatch(
+      setConfiguredLanguages(
+        items.map(item => ({ languageId: item.id, languageCode: item.languageCode })),
+      ),
     );
-  };
 
   return (
     <SpecSectionCard title={strings.voiceAndLanguage} sections={["voice", "language"]}>
       <div className="flex flex-col gap-4">
+        <FilterableMultiSelect
+          id="roleplay-languages"
+          titleText={strings.languages}
+          placeholder={strings.languagesPlaceholder}
+          items={languageItems}
+          itemToString={(item: LanguageItem | null) => item?.label ?? ""}
+          selectedItems={selectedItems}
+          onChange={({ selectedItems: next }) => handleChange((next ?? []) as LanguageItem[])}
+        />
+
         <div className="flex flex-col gap-2">
-          <FormLabel>{en.simulation.languages}</FormLabel>
-          <div className="w-64">
-            <SharedDropdownField
-              options={languageList.map(option => option.label)}
-              value={selectedLanguage?.label ?? ""}
-              onChange={handleLanguageChange}
-              label=""
-              disabled={readOnly}
-              valueClassName="font-primary text-base text-typography-700"
-            />
-          </div>
+          <p className="cds--label" style={{ marginBottom: 0 }}>
+            {strings.voicesPerLanguage}
+          </p>
+          {configuredIds.length === 0 ? (
+            <p className="text-typography-500">{strings.emptySection}</p>
+          ) : (
+            configuredIds.map(id => {
+              const voiceId = voice.languageVoices[id];
+              return (
+                <div key={id} className="flex items-center justify-between gap-2">
+                  <span className="text-typography-800">{languageLabelById[id] ?? id}</span>
+                  {voiceId ? (
+                    <Tag type="teal" size="sm">
+                      {voiceNameById[voiceId] ?? voiceId}
+                    </Tag>
+                  ) : (
+                    <span className="text-xs italic text-typography-500">
+                      {strings.voicePending}
+                    </span>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
-        <VoiceDropdown formMethods={formMethods} />
       </div>
     </SpecSectionCard>
   );

@@ -737,6 +737,8 @@ export enum RoleplayRehearsalSocketEvent {
 export interface CreateRoleplaySessionInput {
   specId: string;
   versionId: string;
+  /** Chosen language for this session; defaults server-side to the spec's default. */
+  languageId?: number;
 }
 
 export interface CreateRoleplaySessionResponse {

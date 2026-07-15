@@ -15,9 +15,10 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Draggable, TrashCan } from "@carbon/icons-react";
 import { useDispatch } from "react-redux";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { Button, NumberInput, Stack, Tag, TextArea, TextInput, Tile } from "@ally-ui-mono/ui-shared";
 import { AddItemButton } from "@components";
 import { en } from "@constants";
 import { removeSecret, reorderSecrets, upsertSecret } from "@reducer";
@@ -25,35 +26,42 @@ import { RoleplayDisclosureLedger, RoleplaySecret } from "@src/types/roleplayStu
 import { roleplayEntityId } from "@utils/roleplaySpec";
 
 import { SpecSectionCard } from "./SpecSectionCard";
+import { SpecValue } from "./SpecField";
 
 interface DisclosureLedgerSectionProps {
   ledger: RoleplayDisclosureLedger;
   readOnly?: boolean;
 }
 
-const DragHandle: React.FC<Record<string, unknown>> = props => (
-  <button
-    type="button"
-    aria-label="Reorder"
-    className="cursor-grab active:cursor-grabbing text-typography-400 hover:text-typography-700 px-1 shrink-0"
-    {...props}
-  >
-    <span aria-hidden className="tracking-tighter select-none leading-none">
-      ⋮⋮
-    </span>
-  </button>
-);
+/** Read-only display of a single secret. */
+const SecretView: React.FC<{ secret: RoleplaySecret }> = ({ secret }) => {
+  const strings = en.roleplayStudio.spec;
+  return (
+    <Tile>
+      <Stack gap={3}>
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium text-typography-900 break-words">
+            {secret.topic || "—"}
+          </span>
+          <Tag type="purple" size="sm">{`${strings.secretTier} ${secret.tier}`}</Tag>
+        </div>
+        <SpecValue label={strings.secretContent} value={secret.content} />
+        <SpecValue label={strings.secretUnlockConditions} value={secret.unlockConditions} />
+        <SpecValue label={strings.secretLockedDeflection} value={secret.lockedDeflection} />
+      </Stack>
+    </Tile>
+  );
+};
 
+/** Editable, draggable secret row. */
 const SecretRow: React.FC<{
   secret: RoleplaySecret;
-  readOnly: boolean;
   onChange: (patch: Partial<RoleplaySecret>) => void;
   onRemove: () => void;
-}> = ({ secret, readOnly, onChange, onRemove }) => {
+}> = ({ secret, onChange, onRemove }) => {
   const strings = en.roleplayStudio.spec;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: secret.id,
-    disabled: readOnly,
   });
 
   const style = {
@@ -62,74 +70,72 @@ const SecretRow: React.FC<{
     opacity: isDragging ? 0.6 : 1,
   };
 
-  const fieldClass =
-    "w-full rounded-md border border-border-light px-3 py-1.5 text-sm outline-none focus:border-primary-500 disabled:bg-neutral-50";
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="rounded-md border border-border-light bg-white p-3 flex gap-2"
-    >
-      {!readOnly && <DragHandle {...attributes} {...listeners} />}
-      <div className="flex flex-col gap-2 flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <input
-            value={secret.topic}
-            disabled={readOnly}
-            placeholder={strings.secretTopic}
-            onChange={event => onChange({ topic: event.target.value })}
-            className={`${fieldClass} font-medium`}
-          />
-          <label className="flex items-center gap-1.5 text-xs text-typography-700 shrink-0">
-            {strings.secretTier}
-            <input
-              type="number"
-              min={0}
-              value={secret.tier}
-              disabled={readOnly}
-              onChange={event => onChange({ tier: Number(event.target.value) || 0 })}
-              className="w-14 rounded-md border border-border-light px-2 py-1 text-sm outline-none focus:border-primary-500 disabled:bg-neutral-50"
+    <div ref={setNodeRef} style={style}>
+      <Tile>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            aria-label="Reorder"
+            className="cursor-grab active:cursor-grabbing text-typography-400 hover:text-typography-700 shrink-0 pt-2"
+            {...attributes}
+            {...listeners}
+          >
+            <Draggable size={16} />
+          </button>
+          <div className="flex flex-col gap-3 flex-1 min-w-0">
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <TextInput
+                  id={`secret-topic-${secret.id}`}
+                  labelText={strings.secretTopic}
+                  value={secret.topic}
+                  onChange={event => onChange({ topic: event.target.value })}
+                />
+              </div>
+              <div className="w-24">
+                <NumberInput
+                  id={`secret-tier-${secret.id}`}
+                  label={strings.secretTier}
+                  min={0}
+                  value={secret.tier}
+                  onChange={(_event, { value }) => onChange({ tier: Number(value) || 0 })}
+                />
+              </div>
+              <Button
+                kind="ghost"
+                size="md"
+                hasIconOnly
+                renderIcon={TrashCan}
+                iconDescription={strings.remove}
+                tooltipPosition="left"
+                onClick={onRemove}
+              />
+            </div>
+            <TextArea
+              id={`secret-content-${secret.id}`}
+              labelText={strings.secretContent}
+              value={secret.content}
+              onChange={event => onChange({ content: event.target.value })}
+              rows={2}
             />
-          </label>
-          {!readOnly && (
-            <button
-              type="button"
-              onClick={onRemove}
-              className="text-xs text-typography-600 hover:text-destructive-500 shrink-0"
-            >
-              {strings.remove}
-            </button>
-          )}
+            <TextArea
+              id={`secret-unlock-${secret.id}`}
+              labelText={strings.secretUnlockConditions}
+              value={secret.unlockConditions}
+              onChange={event => onChange({ unlockConditions: event.target.value })}
+              rows={2}
+            />
+            <TextArea
+              id={`secret-deflection-${secret.id}`}
+              labelText={strings.secretLockedDeflection}
+              value={secret.lockedDeflection}
+              onChange={event => onChange({ lockedDeflection: event.target.value })}
+              rows={2}
+            />
+          </div>
         </div>
-        <AutoExpandableTextarea
-          value={secret.content}
-          onChange={content => onChange({ content })}
-          placeholder={strings.secretContent}
-          disabled={readOnly}
-          minHeight={40}
-          maxLines={8}
-          className={fieldClass}
-        />
-        <AutoExpandableTextarea
-          value={secret.unlockConditions}
-          onChange={unlockConditions => onChange({ unlockConditions })}
-          placeholder={strings.secretUnlockConditions}
-          disabled={readOnly}
-          minHeight={40}
-          maxLines={6}
-          className={fieldClass}
-        />
-        <AutoExpandableTextarea
-          value={secret.lockedDeflection}
-          onChange={lockedDeflection => onChange({ lockedDeflection })}
-          placeholder={strings.secretLockedDeflection}
-          disabled={readOnly}
-          minHeight={40}
-          maxLines={6}
-          className={fieldClass}
-        />
-      </div>
+      </Tile>
     </div>
   );
 };
@@ -158,40 +164,52 @@ export const DisclosureLedgerSection: React.FC<DisclosureLedgerSectionProps> = (
     <SpecSectionCard title={strings.disclosureLedger} sections={["disclosureLedger"]}>
       <div className="flex flex-col gap-3">
         {ledger.secrets.length === 0 && (
-          <p className="text-sm text-typography-500">{strings.emptySection}</p>
+          <p className="text-typography-500">{strings.emptySection}</p>
         )}
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={secretIds} strategy={verticalListSortingStrategy}>
-            <div className="flex flex-col gap-3">
-              {ledger.secrets.map(secret => (
-                <SecretRow
-                  key={secret.id}
-                  secret={secret}
-                  readOnly={readOnly}
-                  onChange={patch => dispatch(upsertSecret({ ...secret, ...patch }))}
-                  onRemove={() => dispatch(removeSecret(secret.id))}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-        {!readOnly && (
-          <AddItemButton
-            label={strings.addSecret}
-            onClick={() =>
-              dispatch(
-                upsertSecret({
-                  id: roleplayEntityId("secret"),
-                  topic: "",
-                  content: "",
-                  unlockConditions: "",
-                  minStateIds: [],
-                  lockedDeflection: "",
-                  tier: 1,
-                }),
-              )
-            }
-          />
+
+        {readOnly ? (
+          <div className="flex flex-col gap-3">
+            {ledger.secrets.map(secret => (
+              <SecretView key={secret.id} secret={secret} />
+            ))}
+          </div>
+        ) : (
+          <>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={secretIds} strategy={verticalListSortingStrategy}>
+                <div className="flex flex-col gap-3">
+                  {ledger.secrets.map(secret => (
+                    <SecretRow
+                      key={secret.id}
+                      secret={secret}
+                      onChange={patch => dispatch(upsertSecret({ ...secret, ...patch }))}
+                      onRemove={() => dispatch(removeSecret(secret.id))}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            <AddItemButton
+              label={strings.addSecret}
+              onClick={() =>
+                dispatch(
+                  upsertSecret({
+                    id: roleplayEntityId("secret"),
+                    topic: "",
+                    content: "",
+                    unlockConditions: "",
+                    minStateIds: [],
+                    lockedDeflection: "",
+                    tier: 1,
+                  }),
+                )
+              }
+            />
+          </>
         )}
       </div>
     </SpecSectionCard>
