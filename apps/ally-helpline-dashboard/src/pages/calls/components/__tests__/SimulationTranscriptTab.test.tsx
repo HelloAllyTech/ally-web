@@ -97,6 +97,16 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       </button>
     </div>
   ),
+  DropdownField: ({ value, onChange, options }: any) => (
+    <div data-testid="dropdown-field">
+      <span>{value}</span>
+      {options?.map((option: string) => (
+        <button key={option} onClick={() => onChange(option)}>
+          {option}
+        </button>
+      ))}
+    </div>
+  ),
 }));
 
 // Mock constants - partially mock to keep other exports

@@ -8,9 +8,6 @@ import {
   RoleplayRehearsal,
 } from "@src/types/roleplayStudio";
 
-const strings = en.roleplayStudio.improvement;
-const live = strings.live;
-
 const Spinner: React.FC<{ className?: string }> = ({ className }) => (
   <span
     className={`inline-block shrink-0 animate-spin rounded-full border-2 border-dashed border-primary-300 border-t-transparent ${className ?? "h-3.5 w-3.5"}`}
@@ -28,8 +25,10 @@ const DeltaChip: React.FC<{ delta: number | null }> = ({ delta }) => {
   );
 };
 
-const kindLabel = (kind: string | undefined): string =>
-  (kind && strings.kind[kind as keyof typeof strings.kind]) || kind || "";
+const kindLabel = (kind: string | undefined): string => {
+  const strings = en.roleplayStudio.improvement;
+  return (kind && strings.kind[kind as keyof typeof strings.kind]) || kind || "";
+};
 
 const overallOf = (round: RoleplayImprovementRound | undefined): number | null => {
   const value = round?.scores?.overall;
@@ -48,10 +47,10 @@ const testsLabel = (round: RoleplayImprovementRound | undefined): string | null 
 // The three backend round phases, in order. "Scoring" is folded into Rehearse
 // because judging happens inside the rehearsal — there is no separate event.
 const PHASES = [
-  { key: "REHEARSING", label: live.phaseRehearse },
-  { key: "CRITIQUING", label: live.phaseCritique },
-  { key: "APPLYING", label: live.phaseApply },
-];
+  { key: "REHEARSING", labelKey: "phaseRehearse" },
+  { key: "CRITIQUING", labelKey: "phaseCritique" },
+  { key: "APPLYING", labelKey: "phaseApply" },
+] as const;
 
 interface ImprovementLiveCardProps {
   run: RoleplayImprovementRun;
@@ -78,6 +77,9 @@ export const ImprovementLiveCard: React.FC<ImprovementLiveCardProps> = ({
   cancelling,
 }) => {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+
+  const strings = en.roleplayStudio.improvement;
+  const live = strings.live;
 
   const maxRounds = run.config?.maxRounds ?? 3;
   const targetOverall = run.config?.targets?.minOverall ?? null;
@@ -201,7 +203,7 @@ export const ImprovementLiveCard: React.FC<ImprovementLiveCardProps> = ({
                   ) : (
                     <span className="text-typography-300">○</span>
                   )}
-                  {phase.label}
+                  {live[phase.labelKey]}
                 </span>
               </React.Fragment>
             );
