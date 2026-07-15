@@ -286,9 +286,9 @@ export const isSuperAdminRole = (role?: UserRole | string | null): boolean =>
 /**
  * The elevated super-admin tier. SUPER_DUPER_ADMIN sits above SUPER_ADMIN: gate
  * the most privileged admin surfaces (Settings, Guardrails, Characters,
- * Languages, Tooltips, Badges, Agent Test Cases) on this — via
- * isSuperDuperAdminRole — so a plain SUPER_ADMIN is excluded. Kept as an array
- * to mirror SUPER_ADMIN_ROLES and to leave room for future peer roles.
+ * Languages, Tooltips, Badges, Agent Test Cases, Super Duper Admins) on this —
+ * via isSuperDuperAdminRole — so a plain SUPER_ADMIN is excluded. Kept as an
+ * array to mirror SUPER_ADMIN_ROLES and to leave room for future peer roles.
  */
 export const SUPER_DUPER_ADMIN_ROLES: UserRole[] = [UserRole.SUPER_DUPER_ADMIN];
 

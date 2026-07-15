@@ -193,9 +193,7 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_DUPER_ADMIN,
       savedOrder: undefined,
     });
-    const flagged = new Set(
-      result.filter(i => i.superDuperAdminOnly).map(i => i.id),
-    );
+    const flagged = new Set(result.filter(i => i.superDuperAdminOnly).map(i => i.id));
     // The super-duper-only tabs carry the flag (drives the sidebar's blue dot).
     expect(flagged).toEqual(
       new Set([

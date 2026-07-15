@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Draggable, TrashCan } from "@carbon/icons-react";
 import {
   closestCenter,
   DndContext,
@@ -15,18 +16,25 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Draggable, TrashCan } from "@carbon/icons-react";
 import { useDispatch } from "react-redux";
 
-import { Button, NumberInput, Stack, Tag, TextArea, TextInput, Tile } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  NumberInput,
+  Stack,
+  Tag,
+  TextArea,
+  TextInput,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
 import { AddItemButton } from "@components";
 import { en } from "@constants";
 import { removeSecret, reorderSecrets, upsertSecret } from "@reducer";
 import { RoleplayDisclosureLedger, RoleplaySecret } from "@src/types/roleplayStudio";
 import { roleplayEntityId } from "@utils/roleplaySpec";
 
-import { SpecSectionCard } from "./SpecSectionCard";
 import { SpecValue } from "./SpecField";
+import { SpecSectionCard } from "./SpecSectionCard";
 
 interface DisclosureLedgerSectionProps {
   ledger: RoleplayDisclosureLedger;
@@ -40,9 +48,7 @@ const SecretView: React.FC<{ secret: RoleplaySecret }> = ({ secret }) => {
     <Tile>
       <Stack gap={3}>
         <div className="flex items-center justify-between gap-2">
-          <span className="font-medium text-typography-900 break-words">
-            {secret.topic || "—"}
-          </span>
+          <span className="font-medium text-typography-900 break-words">{secret.topic || "—"}</span>
           <Tag type="purple" size="sm">{`${strings.secretTier} ${secret.tier}`}</Tag>
         </div>
         <SpecValue label={strings.secretContent} value={secret.content} />

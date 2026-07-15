@@ -18,6 +18,20 @@ vi.mock("react-redux", () => ({
   useDispatch: vi.fn(),
 }));
 
+// UserManagement (tab counts) and the SuperAdmins tab call RTK Query hooks,
+// which need a Redux store even when skipped — stub the hooks but keep the
+// rest of @api real (@store imports baseAPI from it).
+vi.mock("@api", async importOriginal => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  useGetSuperAdminsQuery: () => ({ data: undefined, isLoading: false }),
+  useGetSuperDuperAdminsQuery: () => ({ data: undefined, isLoading: false }),
+  useGetSuperAdminCandidatesQuery: () => ({ data: undefined, isFetching: false }),
+  usePromoteSuperAdminMutation: () => [vi.fn()],
+  usePromoteSuperDuperAdminMutation: () => [vi.fn()],
+  useDemoteSuperDuperAdminMutation: () => [vi.fn()],
+  useRemoveSuperAdminMutation: () => [vi.fn()],
+}));
+
 // Mock components
 vi.mock("@components", () => ({
   cellTypes: {

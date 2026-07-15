@@ -10,8 +10,8 @@ import { removeEngineeredEvent, upsertEngineeredEvent } from "@reducer";
 import { RoleplayEngineeredEvent } from "@src/types/roleplayStudio";
 import { roleplayEntityId } from "@utils/roleplaySpec";
 
-import { SpecSectionCard } from "./SpecSectionCard";
 import { SpecValue } from "./SpecField";
+import { SpecSectionCard } from "./SpecSectionCard";
 
 interface EngineeredEventsSectionProps {
   events: RoleplayEngineeredEvent[];
@@ -40,9 +40,7 @@ export const EngineeredEventsSection: React.FC<EngineeredEventsSectionProps> = (
       defaultExpanded={false}
     >
       <div className="flex flex-col gap-3">
-        {events.length === 0 && (
-          <p className="text-typography-500">{strings.emptySection}</p>
-        )}
+        {events.length === 0 && <p className="text-typography-500">{strings.emptySection}</p>}
         {events.map(event =>
           readOnly ? (
             <Tile key={event.id}>

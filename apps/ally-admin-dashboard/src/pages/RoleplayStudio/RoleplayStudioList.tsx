@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
+import { Add, TrashCan } from "@carbon/icons-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { Add, TrashCan } from "@carbon/icons-react";
 import {
   Button,
   DataTable,
@@ -77,7 +77,12 @@ export const RoleplayStudioList: React.FC = () => {
     actions: "",
   }));
 
-  const renderCell = (cellId: string, headerKey: string, value: string, spec?: RoleplaySpecListItem) => {
+  const renderCell = (
+    cellId: string,
+    headerKey: string,
+    value: string,
+    spec?: RoleplaySpecListItem,
+  ) => {
     switch (headerKey) {
       case "title":
         return (
@@ -209,7 +214,9 @@ export const RoleplayStudioList: React.FC = () => {
                         if (spec) openSpec(spec);
                       }}
                     >
-                      {row.cells.map(cell => renderCell(cell.id, cell.info.header, cell.value, spec))}
+                      {row.cells.map(cell =>
+                        renderCell(cell.id, cell.info.header, cell.value, spec),
+                      )}
                     </TableRow>
                   );
                 })}
@@ -228,7 +235,11 @@ export const RoleplayStudioList: React.FC = () => {
           <h1 className="text-2xl text-typography-900">{strings.title}</h1>
           <p className="text-sm text-typography-700 mt-1">{strings.subtitle}</p>
         </div>
-        <Button kind="primary" renderIcon={Add} onClick={() => navigate(ROUTES.ROLEPLAY_STUDIO_NEW)}>
+        <Button
+          kind="primary"
+          renderIcon={Add}
+          onClick={() => navigate(ROUTES.ROLEPLAY_STUDIO_NEW)}
+        >
           {strings.newRoleplay}
         </Button>
       </div>

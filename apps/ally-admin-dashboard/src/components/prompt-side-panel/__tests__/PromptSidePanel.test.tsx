@@ -1,6 +1,6 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { PromptSidePanel } from "../PromptSidePanel";
 import { Prompt } from "@types";
@@ -38,6 +38,11 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 // Mock assets
 vi.mock("@assets", () => ({
   DoubleArrowRight: () => <div data-testid="double-arrow-right" />,
+  Refresh: () => <div data-testid="icon-refresh" />,
+  Copy: () => <div data-testid="icon-copy" />,
+  Delete: () => <div data-testid="icon-delete" />,
+  CheckCircle: () => <div data-testid="icon-check-circle" />,
+  ArrowDown: () => <div data-testid="icon-arrow-down" />,
 }));
 
 // Mock components
@@ -105,7 +110,11 @@ vi.mock("@api", () => ({
 // allowlist gate has been removed (variant actions are GA now), so no
 // hooks from this barrel are read by PromptSidePanel anymore — empty
 // stub keeps the resolver from failing at import time.
-vi.mock("@hooks", () => ({}));
+vi.mock("@hooks", () => ({
+  // The LLM model dropdown portals its menu via useCreatePortal; a fixed
+  // position is enough for jsdom.
+  useCreatePortal: () => ({ top: 0, left: 0, width: 200 }),
+}));
 
 // Mock constants
 vi.mock("@constants", () => ({
@@ -158,13 +167,36 @@ const mockPrompt: Prompt = {
   updatedAt: "2024-01-01T00:00:00Z",
 };
 
+// Matches AUTO_SAVE_DEBOUNCE_MS in the component (700ms) with headroom.
+const DEBOUNCE_MS = 750;
+
 describe("PromptSidePanel Component", () => {
   const mockOnClose = vi.fn();
   const mockOnUpdate = vi.fn();
+  const mockOnAutoSave = vi.fn().mockResolvedValue(undefined);
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockOnAutoSave.mockResolvedValue(undefined);
   });
+
+  /** Panel with auto-save wired up (the shape PromptManagement renders). */
+  const renderAutoSavePanel = (prompt: Prompt = mockPrompt) =>
+    render(
+      <PromptSidePanel
+        selectedPrompt={prompt}
+        isOpen={true}
+        onClose={mockOnClose}
+        onUpdate={mockOnUpdate}
+        onAutoSave={mockOnAutoSave}
+      />,
+    );
+
+  const advancePastDebounce = async () => {
+    await act(async () => {
+      vi.advanceTimersByTime(DEBOUNCE_MS);
+    });
+  };
 
   describe("Rendering", () => {
     it("should not render when isOpen is false", () => {
@@ -222,7 +254,7 @@ describe("PromptSidePanel Component", () => {
       expect(screen.getByPlaceholderText("Enter prompt text")).toBeInTheDocument();
     });
 
-    it("should render Save and Cancel buttons", () => {
+    it("shows the auto-save status pill instead of Save/Cancel buttons", () => {
       render(
         <PromptSidePanel
           selectedPrompt={mockPrompt}
@@ -232,8 +264,10 @@ describe("PromptSidePanel Component", () => {
         />,
       );
 
-      expect(screen.getByText("Save")).toBeInTheDocument();
-      expect(screen.getByText("Cancel")).toBeInTheDocument();
+      // Everything persists automatically — no explicit Save/Cancel anymore.
+      expect(screen.getByText("Saved")).toBeInTheDocument();
+      expect(screen.queryByText("Save")).not.toBeInTheDocument();
+      expect(screen.queryByText("Cancel")).not.toBeInTheDocument();
     });
   });
 
@@ -379,232 +413,101 @@ describe("PromptSidePanel Component", () => {
     });
   });
 
-  describe("Form Validation", () => {
-    it("should disable Save button when form is invalid (empty fields)", () => {
-      const invalidPrompt = { ...mockPrompt, name: "" };
-      render(
-        <PromptSidePanel
-          selectedPrompt={invalidPrompt as Prompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
-
-      const saveButton = screen.getByText("Save") as HTMLButtonElement;
-      expect(saveButton.disabled).toBe(true);
+  describe("Auto-save", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
     });
 
-    it("should enable Save button when all required fields are filled", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
-
-      // mockPrompt has all required fields (name, description, promptCode, prompt)
-      const saveButton = screen.getByText("Save") as HTMLButtonElement;
-      expect(saveButton.disabled).toBe(false);
+    afterEach(() => {
+      vi.useRealTimers();
     });
 
-    it("should show error toast when saving with empty required fields", async () => {
-      const invalidPrompt = { ...mockPrompt, name: "", prompt: "" };
-      render(
-        <PromptSidePanel
-          selectedPrompt={invalidPrompt as Prompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
+    it("persists an edit after the debounce with the full payload", async () => {
+      renderAutoSavePanel();
 
-      const saveButton = screen.getByText("Save");
-      expect(saveButton).toBeDisabled();
-      expect(saveButton).toHaveAttribute(
-        "title",
-        "Prompt name, description, prompt code and prompt text are required",
-      );
-    });
-  });
+      fireEvent.change(screen.getByPlaceholderText("Enter prompt name"), {
+        target: { value: "New Name" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter description"), {
+        target: { value: "New Desc" },
+      });
+      fireEvent.change(screen.getByPlaceholderText("Enter prompt text"), {
+        target: { value: "New Prompt" },
+      });
 
-  describe("Save Functionality", () => {
-    it("should call onUpdate with correct data when saving", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
+      // Inside the debounce window nothing has been sent yet.
+      expect(screen.getByText("Unsaved changes…")).toBeInTheDocument();
+      expect(mockOnAutoSave).not.toHaveBeenCalled();
 
-      const nameInput = screen.getByPlaceholderText("Enter prompt name");
-      const descriptionInput = screen.getByPlaceholderText("Enter description");
-      const promptInput = screen.getByPlaceholderText("Enter prompt text");
+      await advancePastDebounce();
 
-      fireEvent.change(nameInput, { target: { value: "New Name" } });
-      fireEvent.change(descriptionInput, { target: { value: "New Desc" } });
-      fireEvent.change(promptInput, { target: { value: "New Prompt" } });
-
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
-
-      // promptCode comes from selectedPrompt (read-only), not from form input
-      expect(mockOnUpdate).toHaveBeenCalledWith(
+      // promptCode comes from selectedPrompt (read-only), not from form input.
+      expect(mockOnAutoSave).toHaveBeenCalledTimes(1);
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
         expect.objectContaining({
+          id: "1",
           name: "New Name",
           description: "New Desc",
           promptCode: "test_prompt_code",
           prompt: "New Prompt",
         }),
       );
+      expect(screen.getByText("Saved")).toBeInTheDocument();
     });
 
-    it("should call onUpdate with id when saving existing prompt", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
+    it("collapses rapid edits into a single save", async () => {
+      renderAutoSavePanel();
 
-      const nameInput = screen.getByDisplayValue("Test Prompt") as HTMLInputElement;
-      fireEvent.change(nameInput, { target: { value: "Updated Name" } });
+      const nameInput = screen.getByPlaceholderText("Enter prompt name");
+      fireEvent.change(nameInput, { target: { value: "A" } });
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+      fireEvent.change(nameInput, { target: { value: "AB" } });
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
+      fireEvent.change(nameInput, { target: { value: "ABC" } });
 
-      const saveButton = screen.getByText("Save");
-      fireEvent.click(saveButton);
+      await advancePastDebounce();
 
-      expect(mockOnUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: "1",
-          name: "Updated Name",
-        }),
-      );
+      expect(mockOnAutoSave).toHaveBeenCalledTimes(1);
+      expect(mockOnAutoSave).toHaveBeenCalledWith(expect.objectContaining({ name: "ABC" }));
     });
 
-    it("should not call onUpdate when Save button is disabled", () => {
-      const invalidPrompt = { ...mockPrompt, name: "" };
-      render(
-        <PromptSidePanel
-          selectedPrompt={invalidPrompt as Prompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
+    it("blocks persisting while required fields are empty and says why", async () => {
+      renderAutoSavePanel();
 
-      const saveButton = screen.getByText("Save") as HTMLButtonElement;
-      expect(saveButton.disabled).toBe(true);
+      fireEvent.change(screen.getByPlaceholderText("Enter prompt name"), {
+        target: { value: "" },
+      });
 
-      fireEvent.click(saveButton);
+      await advancePastDebounce();
 
-      expect(mockOnUpdate).not.toHaveBeenCalled();
+      expect(mockOnAutoSave).not.toHaveBeenCalled();
+      expect(screen.getByText(/Name, description & prompt required/)).toBeInTheDocument();
+    });
+
+    it("offers a retry when the save fails", async () => {
+      mockOnAutoSave.mockRejectedValueOnce(new Error("boom"));
+      renderAutoSavePanel();
+
+      fireEvent.change(screen.getByPlaceholderText("Enter prompt name"), {
+        target: { value: "New Name" },
+      });
+      await advancePastDebounce();
+
+      expect(screen.getByText(/Couldn’t save — retry/)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText(/Couldn’t save — retry/));
+      await act(async () => {});
+      expect(mockOnAutoSave).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("Saved")).toBeInTheDocument();
     });
   });
 
   describe("Close Functionality", () => {
-    it("should call onClose when Cancel button is clicked without changes", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
-
-      const cancelButton = screen.getByText("Cancel");
-      fireEvent.click(cancelButton);
-
-      expect(mockOnClose).toHaveBeenCalled();
-    });
-
-    it("should show confirmation popup when closing with unsaved changes", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
-
-      const nameInput = screen.getByDisplayValue("Test Prompt");
-      fireEvent.change(nameInput, { target: { value: "Modified Name" } });
-
-      const cancelButton = screen.getByText("Cancel");
-      fireEvent.click(cancelButton);
-
-      expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
-    });
-
-    it("should not show confirmation popup when closing without changes", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
-
-      const cancelButton = screen.getByText("Cancel");
-      fireEvent.click(cancelButton);
-
-      expect(screen.queryByTestId("confirmation-popup")).not.toBeInTheDocument();
-    });
-
-    it("should close panel when confirming close anyway", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
-
-      const nameInput = screen.getByDisplayValue("Test Prompt");
-      fireEvent.change(nameInput, { target: { value: "Modified Name" } });
-
-      const cancelButton = screen.getByText("Cancel");
-      fireEvent.click(cancelButton);
-
-      const confirmButton = screen.getByTestId("confirm-close-anyway");
-      fireEvent.click(confirmButton);
-
-      expect(mockOnClose).toHaveBeenCalled();
-    });
-
-    it("should keep panel open when choosing to keep editing", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
-
-      const nameInput = screen.getByDisplayValue("Test Prompt");
-      fireEvent.change(nameInput, { target: { value: "Modified Name" } });
-
-      const cancelButton = screen.getByText("Cancel");
-      fireEvent.click(cancelButton);
-
-      const keepEditingButton = screen.getByTestId("confirm-keep-editing");
-      fireEvent.click(keepEditingButton);
-
-      expect(mockOnClose).not.toHaveBeenCalled();
-      expect(screen.queryByTestId("confirmation-popup")).not.toBeInTheDocument();
-    });
-
-    it("should close side panel overlay when clicking on backdrop", () => {
+    it("closes immediately on backdrop click — auto-save means no discard prompt", () => {
       const { container } = render(
         <PromptSidePanel
           selectedPrompt={mockPrompt}
@@ -614,63 +517,69 @@ describe("PromptSidePanel Component", () => {
         />,
       );
 
-      const backdrop = container.querySelector(".bg-black");
-      if (backdrop) {
-        fireEvent.click(backdrop);
-      }
+      fireEvent.change(screen.getByDisplayValue("Test Prompt"), {
+        target: { value: "Modified Name" },
+      });
 
+      const backdrop = container.querySelector(".bg-black");
+      expect(backdrop).not.toBeNull();
+      fireEvent.click(backdrop!);
+
+      expect(screen.queryByTestId("confirmation-popup")).not.toBeInTheDocument();
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it("flushes a pending edit before closing", () => {
+      renderAutoSavePanel();
+
+      fireEvent.change(screen.getByDisplayValue("Test Prompt"), {
+        target: { value: "Modified Name" },
+      });
+
+      // Close during the debounce window — the edit must not be lost.
+      const headerButton = screen.getByText("Edit Prompt").closest("button");
+      fireEvent.click(headerButton!);
+
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "Modified Name" }),
+      );
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
 
   describe("Keyboard Shortcuts", () => {
-    it("should save on Ctrl+Enter when form is valid", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
+    it("saves immediately on Ctrl+Enter when there is a valid pending edit", () => {
+      renderAutoSavePanel();
 
       const promptInput = screen.getByPlaceholderText("Enter prompt text");
+      fireEvent.change(promptInput, { target: { value: "New prompt text" } });
       fireEvent.keyDown(promptInput, { key: "Enter", ctrlKey: true });
 
-      expect(mockOnUpdate).toHaveBeenCalled();
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
+        expect.objectContaining({ prompt: "New prompt text" }),
+      );
     });
 
-    it("should save on Cmd+Enter (Mac) when form is valid", () => {
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
+    it("saves immediately on Cmd+Enter (Mac) when there is a valid pending edit", () => {
+      renderAutoSavePanel();
 
       const promptInput = screen.getByPlaceholderText("Enter prompt text");
+      fireEvent.change(promptInput, { target: { value: "New prompt text" } });
       fireEvent.keyDown(promptInput, { key: "Enter", metaKey: true });
 
-      expect(mockOnUpdate).toHaveBeenCalled();
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
+        expect.objectContaining({ prompt: "New prompt text" }),
+      );
     });
 
-    it("should not save on Ctrl+Enter when form is invalid", () => {
-      const invalidPrompt = { ...mockPrompt, name: "" };
-      render(
-        <PromptSidePanel
-          selectedPrompt={invalidPrompt as Prompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
+    it("does not save on Ctrl+Enter when the form is invalid", () => {
+      renderAutoSavePanel({ ...mockPrompt, name: "" } as Prompt);
 
       const promptInput = screen.getByPlaceholderText("Enter prompt text");
+      fireEvent.change(promptInput, { target: { value: "Edited" } });
       fireEvent.keyDown(promptInput, { key: "Enter", ctrlKey: true });
 
-      expect(mockOnUpdate).not.toHaveBeenCalled();
+      expect(mockOnAutoSave).not.toHaveBeenCalled();
     });
   });
 
@@ -763,7 +672,7 @@ describe("PromptSidePanel Component", () => {
       expect((promptInput as HTMLTextAreaElement).value).toBe(longText);
     });
 
-    it("should preserve form data when toggling confirmation modal", () => {
+    it("does not mark a no-op edit as unsaved", () => {
       render(
         <PromptSidePanel
           selectedPrompt={mockPrompt}
@@ -774,47 +683,45 @@ describe("PromptSidePanel Component", () => {
       );
 
       const nameInput = screen.getByDisplayValue("Test Prompt") as HTMLInputElement;
-      const originalValue = nameInput.value;
+      // Retype the identical value — serialized state matches the baseline.
+      fireEvent.change(nameInput, { target: { value: "Test Prompt" } });
 
-      fireEvent.change(nameInput, { target: { value: "Modified" } });
-      expect(nameInput.value).toBe("Modified");
-
-      const cancelButton = screen.getByText("Cancel");
-      fireEvent.click(cancelButton);
-
-      const keepEditingButton = screen.getByTestId("confirm-keep-editing");
-      fireEvent.click(keepEditingButton);
-
-      // Form data should be preserved
-      const updatedNameInput = screen.getByDisplayValue("Modified") as HTMLInputElement;
-      expect(updatedNameInput.value).toBe("Modified");
+      expect(screen.getByText("Saved")).toBeInTheDocument();
+      expect(screen.queryByText("Unsaved changes…")).not.toBeInTheDocument();
     });
   });
 
   describe("LLM model picker (registry-driven)", () => {
-    const renderPanel = () =>
-      render(
-        <PromptSidePanel
-          selectedPrompt={mockPrompt}
-          isOpen={true}
-          onClose={mockOnClose}
-          onUpdate={mockOnUpdate}
-        />,
-      );
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    // The picker is a custom dropdown; its listbox is portalled and only
+    // rendered while open, so every interaction starts from the trigger.
+    const openPicker = () => {
+      fireEvent.click(screen.getByRole("button", { name: /Default \(inherit\)/ }));
+    };
 
     it("offers models from the registry (OpenAI + Gemini)", () => {
-      renderPanel();
+      renderAutoSavePanel();
+      openPicker();
       expect(screen.getByRole("option", { name: "GPT-4o" })).toBeInTheDocument();
       expect(screen.getByRole("option", { name: "GPT-5" })).toBeInTheDocument();
       expect(screen.getByRole("option", { name: "Gemini 2.5 Flash" })).toBeInTheDocument();
     });
 
-    it("sends the explicit provider with the model on save", () => {
-      renderPanel();
-      const select = screen.getByRole("combobox") as HTMLSelectElement;
-      fireEvent.change(select, { target: { value: "gemini-2.5-flash" } });
-      fireEvent.click(screen.getByText("Save"));
-      expect(mockOnUpdate).toHaveBeenCalledWith(
+    it("sends the explicit provider with the model on save", async () => {
+      renderAutoSavePanel();
+      openPicker();
+      fireEvent.click(screen.getByRole("option", { name: "Gemini 2.5 Flash" }));
+
+      await advancePastDebounce();
+
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "gemini-2.5-flash",
           provider: "gemini",
@@ -822,8 +729,8 @@ describe("PromptSidePanel Component", () => {
       );
     });
 
-    it("disables the temperature override for a no-temperature model and clears it on save", () => {
-      renderPanel();
+    it("disables the temperature override for a no-temperature model and clears it on save", async () => {
+      renderAutoSavePanel();
 
       // Enable a temperature override on a temp-capable model first.
       const tempCheckbox = screen.getByRole("checkbox", {
@@ -833,13 +740,14 @@ describe("PromptSidePanel Component", () => {
       expect(tempCheckbox.checked).toBe(true);
 
       // Switch to gpt-5 (supportsTemperature=false): control disables + note shows.
-      const select = screen.getByRole("combobox") as HTMLSelectElement;
-      fireEvent.change(select, { target: { value: "gpt-5" } });
+      openPicker();
+      fireEvent.click(screen.getByRole("option", { name: "GPT-5" }));
       expect(screen.getByRole("checkbox", { name: /Override temperature/i })).toBeDisabled();
       expect(screen.getByText(/doesn’t support a custom temperature/i)).toBeInTheDocument();
 
-      fireEvent.click(screen.getByText("Save"));
-      expect(mockOnUpdate).toHaveBeenCalledWith(
+      await advancePastDebounce();
+
+      expect(mockOnAutoSave).toHaveBeenCalledWith(
         expect.objectContaining({
           model: "gpt-5",
           provider: "openai",

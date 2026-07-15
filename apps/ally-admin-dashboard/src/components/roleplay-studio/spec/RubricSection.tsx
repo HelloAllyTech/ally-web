@@ -3,7 +3,15 @@ import React from "react";
 import { TrashCan } from "@carbon/icons-react";
 import { useDispatch } from "react-redux";
 
-import { Button, NumberInput, Stack, Tag, TextArea, TextInput, Tile } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  NumberInput,
+  Stack,
+  Tag,
+  TextArea,
+  TextInput,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
 import { AddItemButton } from "@components";
 import { en } from "@constants";
 import { removeRubricBehavior, upsertRubricBehavior } from "@reducer";
@@ -83,8 +91,15 @@ export const RubricSection: React.FC<RubricSectionProps> = ({ rubric, readOnly =
                       {behavior.name || "—"}
                     </span>
                     <div className="flex items-center gap-2 shrink-0">
-                      <PolarityControl polarity={behavior.polarity} onToggle={() => undefined} readOnly />
-                      <Tag type="cool-gray" size="sm">{`${strings.behaviorWeight} ${behavior.weight}`}</Tag>
+                      <PolarityControl
+                        polarity={behavior.polarity}
+                        onToggle={() => undefined}
+                        readOnly
+                      />
+                      <Tag
+                        type="cool-gray"
+                        size="sm"
+                      >{`${strings.behaviorWeight} ${behavior.weight}`}</Tag>
                     </div>
                   </div>
                   {behavior.description && (
@@ -117,7 +132,9 @@ export const RubricSection: React.FC<RubricSectionProps> = ({ rubric, readOnly =
                         id={`behavior-weight-${behavior.id}`}
                         label={strings.behaviorWeight}
                         value={behavior.weight}
-                        onChange={(_event, { value }) => update(behavior, { weight: Number(value) || 0 })}
+                        onChange={(_event, { value }) =>
+                          update(behavior, { weight: Number(value) || 0 })
+                        }
                       />
                     </div>
                     <Button

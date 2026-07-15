@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
+import { useGetSuperAdminsQuery, useGetSuperDuperAdminsQuery } from "@api";
 import {
   ListToolbar,
   FilterDropdown,
@@ -37,6 +38,7 @@ import {
   USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_2,
   UserRole,
   Permissions,
+  isSuperDuperAdminRole,
 } from "@constants";
 import { RootState } from "@store";
 import { TabType } from "@types";
@@ -44,6 +46,7 @@ import { formatCapitalizedEnum } from "@utils";
 
 import { useOrganizationManagement } from "./useOrganizationManagement";
 import { useUserManagement } from "./useUserManagement";
+import { SuperAdmins } from "../SuperAdmins/SuperAdmins";
 
 const formatDate = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString(undefined, {
@@ -55,10 +58,28 @@ const formatDate = (isoDate: string) =>
 export const UserManagement: FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get("tab") as TabType) || TabType.USERS;
   const permissions = useSelector((state: RootState) => state.user.permissions);
+  const currentUser = useSelector((state: RootState) => state.user.user);
   const canEditMultiTenantAdmins = permissions.includes(Permissions.EDIT_MULTI_TENANT_ADMINS);
   const canEditUser = permissions.includes(Permissions.EDIT_USER);
+  const isSuperDuperAdmin = isSuperDuperAdminRole(currentUser?.role);
+
+  // Tier counts for the tab strip. RTK Query shares these cache entries with
+  // the SuperAdmins tab itself, so no duplicate requests are made.
+  const { data: superAdminsForCount } = useGetSuperAdminsQuery(undefined, {
+    skip: !isSuperDuperAdmin,
+  });
+  const { data: superDuperAdminsForCount } = useGetSuperDuperAdminsQuery(undefined, {
+    skip: !isSuperDuperAdmin,
+  });
+  const superAdminTierCount =
+    (superAdminsForCount?.count ?? 0) + (superDuperAdminsForCount?.count ?? 0);
+
+  const requestedTab = (searchParams.get("tab") as TabType) || TabType.USERS;
+  // The Super Admins tab is role-gated; a deep link to it from any other
+  // role falls back to Users (the backing endpoints would 403 anyway).
+  const activeTab =
+    requestedTab === TabType.SUPER_ADMINS && !isSuperDuperAdmin ? TabType.USERS : requestedTab;
 
   // Organization management hook
   const {
@@ -128,6 +149,9 @@ export const UserManagement: FC = () => {
   const TABS = [
     { id: TabType.USERS, label: en.userManagement.users, count: usersCount },
     { id: TabType.ORGANIZATIONS, label: en.userManagement.organizations, count: tenantsCount },
+    ...(isSuperDuperAdmin
+      ? [{ id: TabType.SUPER_ADMINS, label: en.superAdmins.title, count: superAdminTierCount }]
+      : []),
   ];
 
   const logoValue = tenantMethods.watch("logoUrl");
@@ -532,6 +556,8 @@ export const UserManagement: FC = () => {
             )}
           </div>
         );
+      case TabType.SUPER_ADMINS:
+        return isSuperDuperAdmin ? <SuperAdmins /> : null;
     }
   };
 

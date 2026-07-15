@@ -14,6 +14,10 @@ export enum Permissions {
   VIEW_ADMIN_BADGE = "view:admin:badges",
   EDIT_GUARDRAIL = "edit:admin:guardrails",
   EDIT_MULTI_TENANT_ADMINS = "edit:multi-tenant-admins",
+  // Granted only to SUPER_DUPER_ADMIN (never SUPER_ADMIN) — gates the
+  // Super Duper Admins management page.
+  VIEW_SUPER_DUPER_ADMINS = "view:super-duper-admins",
+  EDIT_SUPER_DUPER_ADMINS = "edit:super-duper-admins",
   VIEW_I18N_TRANSLATIONS = "view:admin:i18n-translations",
   EDIT_I18N_TRANSLATIONS = "edit:admin:i18n-translations",
   VIEW_TOOLTIPS = "view:admin:tooltips",

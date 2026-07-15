@@ -159,6 +159,18 @@ export const ApiEndpoints = {
     USER_ADMIN_TENANTS: (userId: number) => `/v1/users/${userId}/admin-tenants`,
     ADMIN_TENANTS: "/v1/users/admin-tenants",
   },
+  SUPER_DUPER_ADMINS: {
+    LIST: "/v1/super-duper-admins",
+    ELIGIBLE: "/v1/super-duper-admins/eligible",
+    PROMOTE: "/v1/super-duper-admins",
+    DEMOTE: (userId: number) => `/v1/super-duper-admins/${userId}`,
+    // Super-admin management (same SDA-only surface): list/add/remove
+    // SUPER_ADMINs and list candidates eligible to become one.
+    SUPER_ADMINS_LIST: "/v1/super-duper-admins/super-admins",
+    SUPER_ADMINS_ELIGIBLE: "/v1/super-duper-admins/super-admins/eligible",
+    SUPER_ADMINS_PROMOTE: "/v1/super-duper-admins/super-admins",
+    SUPER_ADMINS_REMOVE: (userId: number) => `/v1/super-duper-admins/super-admins/${userId}`,
+  },
   USER_BADGES: {
     GET_BADGES: "/v1/badges",
     UPLOAD_BADGE_ICON: "/v1/badges/badge-image-url",
@@ -409,6 +421,7 @@ export const TAG_TYPES = {
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
   TRACKS_V2: "tracksV2",
   BLOGS: "blogs",
+  SUPER_DUPER_ADMINS: "superDuperAdmins",
 };
 
 /**
