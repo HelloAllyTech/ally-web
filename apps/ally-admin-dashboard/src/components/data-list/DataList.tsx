@@ -59,7 +59,7 @@ export function DataList<T extends DataListItem>({
       {columns.map(column => (
         <div
           key={column.key}
-          className={`${column.width} ${column.key !== columns[0].key ? "px-4" : ""} ${column.hidden ? "hidden lg:block" : ""}`}
+          className={`${column.width} shrink-0 ${column.key !== columns[0].key ? "px-4" : ""} ${column.hidden ? "hidden lg:block" : ""}`}
         >
           {column.label}
         </div>
@@ -128,7 +128,7 @@ export function DataList<T extends DataListItem>({
         className="group flex flex-row text-sm items-center justify-between w-full text-typography-900 border-b border-border-light px-4 py-3 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
       >
         {/* First Column - Thumbnail + Title/Description */}
-        <div className={`flex flex-row items-center ${firstColumn.width} gap-3`}>
+        <div className={`flex flex-row items-center ${firstColumn.width} shrink-0 gap-3`}>
           {thumbnailConfig && (
             <div
               onClick={handleThumbnailClick}
@@ -157,7 +157,7 @@ export function DataList<T extends DataListItem>({
         {otherColumns.map(column => (
           <div
             key={column.key}
-            className={`${column.width} px-4 ${column.hidden ? "hidden lg:block" : ""} overflow-x-hidden`}
+            className={`${column.width} shrink-0 px-4 ${column.hidden ? "hidden lg:block" : ""} overflow-x-hidden`}
           >
             {renderColumnContent(column, item)}
           </div>
