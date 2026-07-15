@@ -3,7 +3,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import CommentThread from "../CommentThread";
 
@@ -203,6 +203,12 @@ describe("CommentThread Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockStore = createMockStore();
+  });
+
+  afterEach(() => {
+    // The API mock returns this shared object; reset so per-test mutations
+    // (used by the reseed-guard tests) don't leak into other tests.
+    stableApiResponse.data = [];
   });
 
   const renderWithProvider = (component: React.ReactElement) => {
@@ -499,6 +505,69 @@ describe("CommentThread Component", () => {
       renderWithProvider(<CommentThread {...defaultProps} threadsOffset={10} />);
       // Component renders correctly with offset
       expect(screen.getByText("Comment Thread")).toBeInTheDocument();
+    });
+  });
+
+  // --- Reseed guard: a locally-deleted comment must not reappear when the
+  // force-refetching REVIEW query reseeds the list before the backend is
+  // consistent (regression for "deleted comment still shows"). ---
+  describe("Deleted-comment reseed guard", () => {
+    it("excludes a locally-deleted comment when the thread list is reseeded", () => {
+      // Server refetch still returns the just-deleted comment (read-after-delete lag).
+      stableApiResponse.data = [mockComments[0]];
+      const setComments = vi.fn();
+      const deletedCommentIds = { current: new Set<string>([mockComments[0].id]) };
+
+      renderWithProvider(
+        <CommentThread
+          {...defaultProps}
+          comments={[]}
+          setComments={setComments}
+          deletedCommentIds={deletedCommentIds}
+          threadsOffset={0}
+        />,
+      );
+
+      // Reseed ran, but the deleted comment was filtered out.
+      expect(setComments).toHaveBeenCalledWith([]);
+    });
+
+    it("reseeds normally when nothing was deleted", () => {
+      stableApiResponse.data = [mockComments[0]];
+      const setComments = vi.fn();
+      const deletedCommentIds = { current: new Set<string>() };
+
+      renderWithProvider(
+        <CommentThread
+          {...defaultProps}
+          comments={[]}
+          setComments={setComments}
+          deletedCommentIds={deletedCommentIds}
+          threadsOffset={0}
+        />,
+      );
+
+      expect(setComments).toHaveBeenCalledWith([mockComments[0]]);
+    });
+
+    it("registers the id and removes it optimistically when a comment is deleted", () => {
+      const setComments = vi.fn();
+      const deletedCommentIds = { current: new Set<string>() };
+
+      renderWithProvider(
+        <CommentThread
+          {...defaultProps}
+          comments={mockComments}
+          setComments={setComments}
+          deletedCommentIds={deletedCommentIds}
+        />,
+      );
+
+      // CommentCard mock exposes a delete button that calls onDelete(comment.id).
+      fireEvent.click(screen.getAllByTestId("delete-comment")[0]);
+
+      expect(deletedCommentIds.current.has(mockComments[0].id)).toBe(true);
+      expect(setComments).toHaveBeenCalled();
     });
   });
 });

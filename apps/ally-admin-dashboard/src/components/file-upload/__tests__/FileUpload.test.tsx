@@ -112,6 +112,7 @@ const getCoverImageUrlMock = vi.fn();
 const deleteCoverImageMock = vi.fn();
 const getCoverVideoUrlMock = vi.fn();
 const deleteCoverVideoMock = vi.fn();
+const generateCoverImageMock = vi.fn();
 vi.mock("@api", async importOriginal => {
   const actual: any = await importOriginal();
   return {
@@ -136,6 +137,12 @@ vi.mock("@api", async importOriginal => {
       () => ({
         unwrap: () => deleteCoverVideoMock(),
       }),
+    ],
+    useGenerateCoverImageMutation: () => [
+      () => ({
+        unwrap: () => generateCoverImageMock(),
+      }),
+      { isLoading: false },
     ],
   };
 });

@@ -100,6 +100,11 @@ const SelectableText = ({
   const addCommentDialogRef = useRef<HTMLDivElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const selectedCommentCalloutRef = useRef<HTMLDivElement | null>(null);
+  // Ids of comments deleted locally this session. The list is reseeded from
+  // force-refetching REVIEW queries (this component's `commentsList` and the
+  // thread's own query), which can briefly return a just-deleted comment and
+  // clobber the optimistic removal. Both reseeds exclude these ids.
+  const deletedCommentIdsRef = useRef<Set<string>>(new Set());
   const [comments, setComments] = useState<CommentItem[]>(commentsList ?? []);
   const [dialogPosition, setDialogPosition] = useState<{ top: number; left: number }>({
     top: 0,
@@ -111,7 +116,7 @@ const SelectableText = ({
   }>({ top: 0, left: 0 });
 
   useEffect(() => {
-    setComments(commentsList ?? []);
+    setComments((commentsList ?? []).filter(c => !deletedCommentIdsRef.current.has(c.id)));
   }, [commentsList]);
 
   useEffect(() => {
@@ -424,6 +429,7 @@ const SelectableText = ({
             onAddComment={onAddComment}
             threadsOffset={threadsOffset}
             setThreadsOffset={setThreadsOffset}
+            deletedCommentIds={deletedCommentIdsRef}
           />
         </div>
       )}

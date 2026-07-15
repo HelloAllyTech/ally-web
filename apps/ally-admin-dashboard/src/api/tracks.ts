@@ -95,16 +95,15 @@ const tracksApi = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.TRACKS_V2],
     }),
 
-    getTrackMediaUploadUrl: builder.mutation<
-      TrackMediaUploadUrlResponse,
-      TrackMediaUploadUrlInput
-    >({
-      query: body => ({
-        url: ApiEndpoints.TRACKS.MEDIA_UPLOAD_URL,
-        method: HttpMethod.POST,
-        body,
-      }),
-    }),
+    getTrackMediaUploadUrl: builder.mutation<TrackMediaUploadUrlResponse, TrackMediaUploadUrlInput>(
+      {
+        query: body => ({
+          url: ApiEndpoints.TRACKS.MEDIA_UPLOAD_URL,
+          method: HttpMethod.POST,
+          body,
+        }),
+      },
+    ),
 
     deleteTrackMedia: builder.mutation<{ success: boolean }, { url: string }>({
       query: body => ({
