@@ -19,9 +19,14 @@ import { useScenarioLanguagesToShow } from "./useScenarioLanguagesToShow";
 
 interface AllowedFillerWordsPanelProps {
   formMethods: any;
+  /** View Details mode: language tabs stay navigable, tags aren't editable. */
+  readOnly?: boolean;
 }
 
-export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({ formMethods }) => {
+export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({
+  formMethods,
+  readOnly = false,
+}) => {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
   /** Accumulated filler names per language (AI + user) so removed items stay searchable in the picker. */
   const [fillerHintNamesByLang, setFillerHintNamesByLang] = useState<Record<string, string[]>>({});
@@ -115,7 +120,7 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({ form
         <span className="font-regular text-base text-typography-900">
           {en.simulation.allowedFillersSectionTitle}
         </span>
-        {activeLanguageId && (
+        {activeLanguageId && !readOnly && (
           <EnhanceButton
             enhanceType={ENHANCE_TYPE.ALLOWED_FILLER_WORDS}
             label={en.simulation.allowedFillersSectionTitle}
@@ -134,7 +139,9 @@ export const AllowedFillerWordsPanel: FC<AllowedFillerWordsPanelProps> = ({ form
       >
         {activeLanguageId && (
           <div className="p-4">
-            <div className="min-h-[40px]">
+            {/* Tag add/remove is the only interaction; inert wrapper keeps the
+                tags readable per language while the tabs above stay clickable. */}
+            <div className={`min-h-[40px] ${readOnly ? "pointer-events-none" : ""}`}>
               <FillerTagPicker
                 tags={fillerTagsForActiveLanguage}
                 updateTags={handleFillerTagsChange}

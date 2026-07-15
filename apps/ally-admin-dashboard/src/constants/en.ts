@@ -439,6 +439,10 @@ export const en = {
     simulationstudio: "Simulation Studio",
     rolePlays: "Roleplays",
     editSimulation: "Edit Simulation",
+    viewSimulation: "View Simulation",
+    viewDetails: "View Details",
+    partnerOrg: "Partner Org",
+    readOnlyViewNote: "Read-only view — this simulation stays published.",
     publishTooltipMessage: "Publish becomes available after required details are filled and saved.",
     previewTooltipMessage: "Preview becomes available after required details are filled and saved.",
     generateReportTooltipMessage:

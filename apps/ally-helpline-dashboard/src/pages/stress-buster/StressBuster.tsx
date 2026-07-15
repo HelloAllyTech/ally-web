@@ -69,7 +69,9 @@ export const StressBuster = () => {
         {words.map((word, wordIndex) => (
           <span key={getKeyFromIndex(wordIndex, "word")}>
             {word === highlight ? (
-              <span className="bg-primary-500 capitalize px-6 py-2 rounded-full italic">{word}</span>
+              <span className="bg-primary-500 capitalize px-6 py-2 rounded-full italic">
+                {word}
+              </span>
             ) : (
               word
             )}

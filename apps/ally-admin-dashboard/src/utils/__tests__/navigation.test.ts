@@ -97,10 +97,7 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(result.map(i => i.id)).toEqual([
-      SIDEBAR_ITEMS.ANALYTICS,
-      SIDEBAR_ITEMS.COMPETENCIES,
-    ]);
+    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.COMPETENCIES]);
   });
 
   it("exposes the super-duper-only tabs (and super-admin-tier tabs) to a super-duper-admin, Settings last", () => {
@@ -172,9 +169,7 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_DUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(superDuperAdmin.map(i => i.id)).toContain(
-      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-    );
+    expect(superDuperAdmin.map(i => i.id)).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
 
     // A plain super-admin no longer sees Roleplay Session Logs.
     const superAdmin = deriveNavigationItems({
@@ -182,18 +177,14 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(superAdmin.map(i => i.id)).not.toContain(
-      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-    );
+    expect(superAdmin.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
 
     const admin = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
       role: UserRole.ADMIN,
       savedOrder: undefined,
     });
-    expect(admin.map(i => i.id)).not.toContain(
-      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-    );
+    expect(admin.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
   });
 
   it("applies the user's saved order so their chosen tab is first", () => {

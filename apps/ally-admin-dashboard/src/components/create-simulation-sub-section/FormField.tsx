@@ -29,7 +29,7 @@ import { TimeInput } from "../time-input";
 import { TitleTranslationsPanel } from "../title-translations";
 import { ToggleSection } from "../toggle-section";
 
-export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
+export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = false }) => {
   const {
     label,
     placeholder,
@@ -129,6 +129,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
               formMethods={formMethods}
               options={options ?? []}
               isMandatory={isMandatory}
+              allowDeselect={config.allowDeselect}
             />
             {errors && (
               <p className="text-destructive-500 text-sm mt-1">{errors[config.id]?.message}</p>
@@ -254,6 +255,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             label={label}
             formMethods={formMethods}
             isMandatory={isMandatory}
+            readOnly={readOnly}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES:
@@ -262,6 +264,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             formMethods={formMethods}
             isMandatory={isMandatory}
             enhanceType={enhanceType}
+            readOnly={readOnly}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER:
@@ -278,7 +281,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
           <StatesEditor id={id} label={label} formMethods={formMethods} isMandatory={isMandatory} />
         );
       case FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS:
-        return <TitleTranslationsPanel formMethods={formMethods} />;
+        return <TitleTranslationsPanel formMethods={formMethods} readOnly={readOnly} />;
       case FORM_FIELD_TYPES.CUSTOM.TITLE_PANEL:
         return (
           <TitleTranslationsPanel
@@ -286,6 +289,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             label={label}
             isMandatory={isMandatory}
             enhanceType={enhanceType}
+            readOnly={readOnly}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION:
@@ -297,6 +301,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
             placeholder={placeholder}
             maxLength={maxLength}
             enhanceType={enhanceType}
+            readOnly={readOnly}
           />
         );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
@@ -368,6 +373,31 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     }
   };
 
+  // Panels that understand `readOnly` themselves — all the per-language
+  // tabbed editors. They keep their language tabs clickable in View Details
+  // (so translations for every language stay inspectable) and make only
+  // their inputs inert, so they must NOT get the blanket wrapper below.
+  const READONLY_AWARE_TYPES: string[] = [
+    FORM_FIELD_TYPES.CUSTOM.OPENING_DIALOGUES,
+    FORM_FIELD_TYPES.CUSTOM.TITLE_PANEL,
+    FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS,
+    FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION,
+    FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
+  ];
+
+  // View Details mode: the field content stays visible (accordions above
+  // remain expandable) but every input inside is inert. pointer-events-none
+  // is deliberately preferred over per-component `disabled` threading — the
+  // ~20 custom field editors here don't share a disabled prop.
+  const renderFieldElement = () =>
+    readOnly && !READONLY_AWARE_TYPES.includes(type) ? (
+      <div className="pointer-events-none select-text opacity-80" aria-disabled="true">
+        {getFieldElement()}
+      </div>
+    ) : (
+      getFieldElement()
+    );
+
   if (accordion) {
     // A mandatory field rendered inside an accordion passes an empty label
     // to its inner input (see the TEXT case), so surface the required
@@ -381,10 +411,10 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods }) => {
     ) : undefined;
     return (
       <Accordion title={label} headerTitle={headerTitle} defaultExpanded={false}>
-        {getFieldElement()}
+        {renderFieldElement()}
       </Accordion>
     );
   }
 
-  return <div>{getFieldElement()}</div>;
+  return <div>{renderFieldElement()}</div>;
 };

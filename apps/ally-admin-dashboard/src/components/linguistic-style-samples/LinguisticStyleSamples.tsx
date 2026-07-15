@@ -10,6 +10,8 @@ interface LinguisticStyleSamplesProps {
   label?: string;
   formMethods: any;
   isMandatory?: boolean;
+  /** View Details mode: forwarded to both sub-panels. */
+  readOnly?: boolean;
 }
 
 export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
@@ -17,6 +19,7 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
   label = "Linguistic Style Samples",
   formMethods,
   isMandatory = false,
+  readOnly = false,
 }) => {
   // Body-driven gates per sub-panel. Each renders iff its own placeholder
   // is referenced by the picked main-agent variant — authors who remove
@@ -46,9 +49,12 @@ export const LinguisticStyleSamples: FC<LinguisticStyleSamplesProps> = ({
           label={label}
           formMethods={formMethods}
           isMandatory={isMandatory}
+          readOnly={readOnly}
         />
       )}
-      {showFillersPanel && <AllowedFillerWordsPanel formMethods={formMethods} />}
+      {showFillersPanel && (
+        <AllowedFillerWordsPanel formMethods={formMethods} readOnly={readOnly} />
+      )}
     </div>
   );
 };

@@ -51,6 +51,13 @@ export interface FilterListProps {
   onApply: (selectedStatuses: Array<{ id: string; label: string }>) => void;
   selectedFilters: Array<{ id: string; label: string }>;
   options?: { id: string; label: string }[];
+  /**
+   * Multi-dimension mode: render one checkbox group per section (e.g. Status
+   * + Category). Takes precedence over `options`; the selection still flows
+   * through the single `selectedFilters` array, so option ids must be unique
+   * across sections.
+   */
+  sections?: Array<{ title: string; options: { id: string; label: string }[] }>;
 }
 
 export interface FooterProps {

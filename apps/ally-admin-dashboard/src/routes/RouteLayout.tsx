@@ -128,6 +128,17 @@ export const RouteLayout: React.FC = () => {
             </PrivateLayout>
           }
         />
+        {/* Read-only View Details: same editor surface, but nothing is ever
+            saved, so a published simulation stays published. View permission
+            only — no edit:scenario required. */}
+        <Route
+          path={ROUTES.VIEW_SIMULATION(":id")}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_SCENARIO]}>
+              <CreateSimulation viewMode />
+            </PrivateLayout>
+          }
+        />
 
         <Route
           path={ROUTES.MANAGE_EVENTS}

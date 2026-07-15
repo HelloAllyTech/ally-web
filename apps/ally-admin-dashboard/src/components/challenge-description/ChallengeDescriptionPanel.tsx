@@ -26,6 +26,8 @@ interface ChallengeDescriptionPanelProps {
   maxLength?: number;
   /** When set, render a field-level Enhance control for the active tab. */
   enhanceType?: string;
+  /** View Details mode: language tabs stay navigable, text isn't editable. */
+  readOnly?: boolean;
 }
 
 export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
@@ -35,6 +37,7 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
   placeholder,
   maxLength = DESCRIPTION_MAX_LENGTH,
   enhanceType,
+  readOnly = false,
 }) => {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
 
@@ -177,7 +180,7 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
     <div className="w-full flex flex-col gap-3" data-testid="challenge-description-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FormLabel isMandatory={isMandatory}>{label}</FormLabel>
-        {enhanceType && isPrimaryTab && (
+        {enhanceType && isPrimaryTab && !readOnly && (
           <EnhanceButton
             enhanceType={enhanceType}
             label={label}
@@ -197,9 +200,10 @@ export const ChallengeDescriptionPanel: FC<ChallengeDescriptionPanelProps> = ({
             <RichTextEditor
               value={valueForActiveTab}
               onChange={handleChange}
-              placeholder={placeholder}
+              placeholder={readOnly ? "" : placeholder}
               maxLength={maxLength}
               borderless
+              disabled={readOnly}
             />
           </div>
         )}

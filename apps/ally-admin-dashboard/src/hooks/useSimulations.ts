@@ -9,10 +9,25 @@ import {
   useUpdateSimulationByIdMutation,
   useDuplicateSimulationMutation,
 } from "@api";
-import { en, ROUTES, SimulationStatus, SORT_BY, SORT_ORDER } from "@constants";
+import {
+  en,
+  ROUTES,
+  SIMULATION_CATEGORY_FILTER_OPTIONS,
+  SimulationStatus,
+  SORT_BY,
+  SORT_ORDER,
+} from "@constants";
 import { Simulation } from "@types";
 
 const SIMULATIONS_PAGE_SIZE = 30;
+
+// The filter dropdown mixes Status and Category checkboxes into one selected
+// array; the ids are disjoint (ACTIVE/DRAFT/ARCHIVED vs ORIGINALS/DEMO/…), so
+// membership here routes an id to the right query param. Resolved at call
+// time (not module scope): the @constants barrel is circular with
+// SimulationCreator, so its bindings aren't safe to read during module eval.
+const isCategoryFilterId = (id: string) =>
+  SIMULATION_CATEGORY_FILTER_OPTIONS.some(option => option.id === id);
 
 interface UseSimulationsProps {
   selectedFilters?: Array<{ id: string; label: string }>;
@@ -35,15 +50,20 @@ export const useSimulations = ({ selectedFilters, search }: UseSimulationsProps)
   const [simulationLimit, setSimulationLimit] = useState(SIMULATIONS_PAGE_SIZE);
   const [IsDuplicateSimulationPopupOpen, setIsDuplicateSimulationPopupOpen] = useState(false);
 
+  const statusFilterIds = (selectedFilters ?? [])
+    .filter(filter => !isCategoryFilterId(filter.id))
+    .map(filter => filter.id);
+  const categoryFilterIds = (selectedFilters ?? [])
+    .filter(filter => isCategoryFilterId(filter.id))
+    .map(filter => filter.id);
+
   const simulationParams = {
     limit: simulationLimit,
     offset: simulationsOffset,
     sortBy: SORT_BY.UPDATED_AT,
     order: SORT_ORDER.DESC,
-    status:
-      selectedFilters?.length > 0
-        ? selectedFilters?.map(filter => filter.id)?.join(",")
-        : undefined,
+    status: statusFilterIds.length > 0 ? statusFilterIds.join(",") : undefined,
+    category: categoryFilterIds.length > 0 ? categoryFilterIds.join(",") : undefined,
     search: search || undefined,
   };
 
@@ -105,6 +125,12 @@ export const useSimulations = ({ selectedFilters, search }: UseSimulationsProps)
 
   const handleEditSimulation = (simulation: Simulation) => {
     navigate(ROUTES.EDIT_SIMULATION(simulation.id));
+  };
+
+  // Read-only inspection: never touches the scenario, so a published sim
+  // stays published (no draft-confirmation popup, unlike onEditIconClick).
+  const handleViewSimulation = (simulation: Simulation) => {
+    navigate(ROUTES.VIEW_SIMULATION(simulation.id));
   };
 
   const handleDeleteSimulation = (simulation: Simulation) => {
@@ -221,6 +247,7 @@ export const useSimulations = ({ selectedFilters, search }: UseSimulationsProps)
     handleCreateSimulation,
     onEditIconClick,
     handleEditSimulation,
+    handleViewSimulation,
     handleDeleteSimulation,
     onDeleteSimulation,
     handleChangeSimulationStatus,

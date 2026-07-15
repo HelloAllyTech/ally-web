@@ -33,9 +33,7 @@ describe("splitFillBlankTemplate", () => {
   });
 
   it("returns a single text segment when there are no blanks", () => {
-    expect(splitFillBlankTemplate("just text")).toEqual([
-      { kind: "text", value: "just text" },
-    ]);
+    expect(splitFillBlankTemplate("just text")).toEqual([{ kind: "text", value: "just text" }]);
   });
 });
 

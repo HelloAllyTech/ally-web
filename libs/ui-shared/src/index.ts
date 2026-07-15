@@ -46,10 +46,7 @@ export type { ChipItem, ChipGroupProps } from "./lib/chip-group";
 export type { GoogleSignInButtonProps } from "./lib/google-sign-in-button";
 export type { MaxActiveUsersDialogProps } from "./lib/max-active-users-dialog";
 export type { SimulationTranslations, TurnIndicatorTranslations } from "./lib/simulation";
-export type {
-  ProgressVideoPlayerProps,
-  ProgressVideoPlayerProgress,
-} from "./lib/progress-video";
+export type { ProgressVideoPlayerProps, ProgressVideoPlayerProgress } from "./lib/progress-video";
 
 export {
   Badge,

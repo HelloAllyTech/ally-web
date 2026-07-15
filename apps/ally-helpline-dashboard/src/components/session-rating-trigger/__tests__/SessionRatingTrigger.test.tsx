@@ -10,9 +10,7 @@ import { SessionRatingTrigger } from "../SessionRatingTrigger";
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) =>
-      key === "simulationFeedback.starLabel"
-        ? `Star ${options?.star} of ${options?.total}`
-        : key,
+      key === "simulationFeedback.starLabel" ? `Star ${options?.star} of ${options?.total}` : key,
   }),
 }));
 
@@ -62,8 +60,6 @@ describe("SessionRatingTrigger", () => {
 
   it("does not throw when onSelect is omitted", async () => {
     render(<SessionRatingTrigger value={0} />);
-    await expect(
-      userEvent.click(screen.getByLabelText("Star 1 of 5")),
-    ).resolves.not.toThrow();
+    await expect(userEvent.click(screen.getByLabelText("Star 1 of 5"))).resolves.not.toThrow();
   });
 });

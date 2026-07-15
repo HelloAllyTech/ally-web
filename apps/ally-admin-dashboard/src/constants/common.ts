@@ -288,6 +288,7 @@ export const ROUTES = {
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
   EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
+  VIEW_SIMULATION: (id: string | number) => `/create-simulation/view/${id}`,
   ORGANIZATION_DETAIL: (id: string | number) => `/user-management/organization/${id}`,
   CREATE_PATH: "/create-path",
   EDIT_PATH: (id: string | number) => `/create-path/edit/${id}`,
