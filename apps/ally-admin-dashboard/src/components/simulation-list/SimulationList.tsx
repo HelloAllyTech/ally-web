@@ -10,13 +10,10 @@ import {
 } from "@components";
 import { en, getSimulationCategoryLabel } from "@constants";
 import { Simulation, SimulationStatus } from "@types";
-import {
-  formatDate,
-  getStatusColor,
-  formatSimulationUsage,
-  formatCapitalizedEnum,
-  isNonEmptyArray,
-} from "@utils";
+import { formatDate, formatSimulationUsage, isNonEmptyArray } from "@utils";
+
+import { ProgressBar } from "../progress-bar";
+import { StatusPill } from "../status-pill";
 
 interface SimulationListProps {
   simulations: Simulation[];
@@ -107,33 +104,31 @@ export const SimulationList: React.FC<SimulationListProps> = ({
     {
       key: "simulation",
       label: en.simulation.simulation,
-      width: "w-[50%] lg:w-[37%]",
+      width: "w-[50%] lg:w-[22%]",
       render: () => null,
     },
     {
       key: "actions",
       label: "",
-      width: "w-[12%] lg:w-[11%]",
+      width: "w-[12%] lg:w-[10%]",
       render: () => null,
     },
     {
       key: "createdBy",
       label: en.simulation.createdBy,
-      width: "w-[12%]",
-      hidden: true,
+      width: "w-[12%] lg:w-[8%]",
       render: simulation => <span>{simulation.createdBy || "--"}</span>,
     },
     {
       key: "lastModified",
       label: en.simulation.lastModified,
-      width: "w-[12%] lg:w-[10%]",
-      hidden: true,
+      width: "w-[12%] lg:w-[8%]",
       render: simulation => <span>{formatDate(simulation.updatedAt)}</span>,
     },
     {
       key: "category",
       label: en.simulation.category,
-      width: "w-[12%] lg:w-[10%]",
+      width: "w-[12%] lg:w-[9%]",
       render: simulation => {
         const categoryLabel = getSimulationCategoryLabel(simulation.category);
         if (!categoryLabel) return <span className="text-typography-600">-</span>;
@@ -152,30 +147,33 @@ export const SimulationList: React.FC<SimulationListProps> = ({
     {
       key: "status",
       label: en.simulation.status,
-      width: "w-[12%] lg:w-[10%]",
+      width: "w-[12%] lg:w-[8%]",
+      render: simulation => <StatusPill status={simulation.status} />,
+    },
+    {
+      key: "progress",
+      label: en.simulation.progress,
+      width: "w-[12%]",
+      render: simulation => <ProgressBar value={simulation.progress} />,
+    },
+    {
+      key: "participants",
+      label: en.simulation.participants,
+      width: "w-[12%] lg:w-[8%]",
       render: simulation => (
-        <div className="flex items-center">
-          <div
-            className={`w-auto py-1 rounded-[4px] px-2 text-sm ${getStatusColor(simulation.status)}`}
-          >
-            {simulation.status === SimulationStatus.ACTIVE
-              ? formatCapitalizedEnum(SimulationStatus.PUBLISHED)
-              : formatCapitalizedEnum(simulation.status) || "--"}
-          </div>
-        </div>
+        <span>{simulation.participantsCount != null ? simulation.participantsCount : "--"}</span>
       ),
     },
     {
       key: "usage",
       label: en.simulation.usage,
-      width: "w-[10%]",
-      hidden: true,
+      width: "w-[10%] lg:w-[8%]",
       render: simulation => <span>{formatSimulationUsage(Number(simulation.usage))}</span>,
     },
     {
       key: "preview",
       label: "",
-      width: "w-[14%] lg:w-[10%]",
+      width: "w-[14%] lg:w-[8%]",
       render: simulation =>
         showPreview(simulation) ? (
           <button

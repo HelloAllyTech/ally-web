@@ -105,6 +105,8 @@ vi.mock("@constants", () => ({
       lastModified: "Last Modified",
       status: "Status",
       usage: "Usage",
+      progress: "Progress",
+      participants: "Participants",
       edit: "Edit",
       unpublish: "Unpublish",
       archive: "Archive",
@@ -163,6 +165,8 @@ describe("SimulationList", () => {
       usage: "10",
       isPreviewEnabled: true,
       isAssignedToTenant: true,
+      progress: 75,
+      participantsCount: 12,
     },
     {
       id: 2,
@@ -216,6 +220,8 @@ describe("SimulationList", () => {
       expect(screen.getByText("Last Modified")).toBeInTheDocument();
       expect(screen.getByText("Status")).toBeInTheDocument();
       expect(screen.getByText("Usage")).toBeInTheDocument();
+      expect(screen.getByText("Progress")).toBeInTheDocument();
+      expect(screen.getByText("Participants")).toBeInTheDocument();
     });
 
     it("renders all simulations", () => {
@@ -276,6 +282,12 @@ describe("SimulationList", () => {
       expect(screen.getByText("Published")).toBeInTheDocument();
     });
 
+    it("applies the status color classes through StatusPill", () => {
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("Published")).toHaveClass("bg-green-100", "text-green-800");
+    });
+
     it("displays correct status for DRAFT simulations", () => {
       renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
 
@@ -286,6 +298,54 @@ describe("SimulationList", () => {
       renderWithStore(<SimulationList simulations={[mockSimulations[2]]} {...mockCallbacks} />);
 
       expect(screen.getByText("Archived")).toBeInTheDocument();
+    });
+  });
+
+  describe("Progress and Participants", () => {
+    it("renders the progress bar for a simulation with progress data", () => {
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "75");
+      expect(screen.getByTestId("progress-bar-fill")).toHaveStyle({ width: "75%" });
+      expect(screen.getByText("75%")).toBeInTheDocument();
+    });
+
+    it("renders the participants count when present", () => {
+      renderWithStore(<SimulationList simulations={[mockSimulations[0]]} {...mockCallbacks} />);
+
+      expect(screen.getByText("12")).toBeInTheDocument();
+    });
+
+    it("renders a participants count of 0 instead of the fallback", () => {
+      const simulationWithZeroParticipants = { ...mockSimulations[0], participantsCount: 0 };
+      renderWithStore(
+        <SimulationList simulations={[simulationWithZeroParticipants]} {...mockCallbacks} />,
+      );
+
+      expect(screen.getByText("0")).toBeInTheDocument();
+    });
+
+    it("renders the -- fallback when progress and participants are absent", () => {
+      // mockSimulations[1] has no progress/participantsCount fields.
+      renderWithStore(<SimulationList simulations={[mockSimulations[1]]} {...mockCallbacks} />);
+
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+      // One "--" for progress, one for participants.
+      expect(screen.getAllByText("--")).toHaveLength(2);
+    });
+
+    it("renders the -- fallback when progress and participants are null", () => {
+      const simulationWithNullFields = {
+        ...mockSimulations[0],
+        progress: null,
+        participantsCount: null,
+      };
+      renderWithStore(
+        <SimulationList simulations={[simulationWithNullFields]} {...mockCallbacks} />,
+      );
+
+      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+      expect(screen.getAllByText("--")).toHaveLength(2);
     });
   });
 
@@ -595,7 +655,8 @@ describe("SimulationList", () => {
       );
 
       expect(screen.getByText("Minimal Simulation")).toBeInTheDocument();
-      expect(screen.getByText("--")).toBeInTheDocument();
+      // "--" fallbacks for created-by, progress, and participants.
+      expect(screen.getAllByText("--")).toHaveLength(3);
     });
 
     it("handles callbacks being undefined", () => {

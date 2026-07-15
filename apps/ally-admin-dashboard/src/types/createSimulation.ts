@@ -168,6 +168,10 @@ export interface Simulation {
   status: SimulationStatus;
   category?: string | null;
   partnerOrgName?: string | null;
+  /** Completion percentage (0-100). Optional until backend support lands. */
+  progress?: number | null;
+  /** Number of participants. Optional until backend support lands. */
+  participantsCount?: number | null;
   isPreviewEnabled: boolean;
   isAssignedToTenant: boolean;
   usage: string;
