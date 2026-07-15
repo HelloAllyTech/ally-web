@@ -109,7 +109,12 @@ export interface RoleplaySpecUi {
 export interface RoleplaySpec {
   specSchemaVersion: number;
   title: string;
+  /** Primary competency (derived from competencyIds[0]); kept for back-compat. */
   competencyId?: string;
+  /** All competencies this spec trains (first-class multi-select). */
+  competencyIds?: string[];
+  /** Competency display names, index-aligned with competencyIds. */
+  competencyNames?: string[];
   persona: RoleplayPersona;
   stateMachine: RoleplayStateMachine;
   disclosureLedger: RoleplayDisclosureLedger;
@@ -142,6 +147,8 @@ export type RoleplayNaturalnessFlag =
 export type RoleplaySpecSection =
   | "title"
   | "competencyId"
+  | "competencyIds"
+  | "competencyNames"
   | "persona"
   | "stateMachine"
   | "disclosureLedger"
@@ -296,8 +303,11 @@ export interface CopilotImprovementReadyPayload {
 export interface RoleplayCopilotMessageMetadata {
   /** On user rows answering an ask_trainer question. */
   questionId?: string;
+  /** On user rows: the structured answer for a select/dropdown/behaviour card. */
+  answer?: CopilotStructuredAnswer;
   /** On assistant rows: structured cards emitted during that turn. */
   questions?: CopilotQuestionEvent[];
+  behaviourReviews?: CopilotBehaviourReviewEvent[];
   testCaseSuggestions?: CopilotTestCaseSuggestion[];
   /** Loop narration / marker rows. */
   kind?: "improvement_update" | "improvement_ready" | "test_cases_accepted";
@@ -348,13 +358,58 @@ export interface CopilotSpecPatchEvent {
   specVersionId: string;
 }
 
-export type CopilotQuestionKind = "freeText" | "choice";
+/** `choice` is a legacy alias for `singleSelect` (older persisted messages). */
+export type CopilotQuestionKind =
+  | "freeText"
+  | "singleSelect"
+  | "multiSelect"
+  | "dropdown"
+  | "choice";
+
+export interface CopilotQuestionOption {
+  id: string;
+  label: string;
+  description?: string;
+}
 
 export interface CopilotQuestionEvent {
   id: string;
   prompt: string;
   kind: CopilotQuestionKind;
-  options?: string[];
+  /** Structured options; legacy `choice` questions may carry bare strings. */
+  options?: CopilotQuestionOption[] | string[];
+  /** Show an "add your own" free-text entry alongside the options. */
+  allowCustom?: boolean;
+  /** Render a synthetic "None of these" choice. */
+  allowNone?: boolean;
+  /** Minimum selections before the trainer can confirm (e.g. 1 for languages). */
+  minSelections?: number;
+  /** Maximum selections allowed (omit for unlimited). */
+  maxSelections?: number;
+}
+
+export interface CopilotBehaviourReviewItem {
+  id: string;
+  name: string;
+  checked: boolean;
+}
+
+/** behaviour_review SSE payload — two polarity groups, pre-checked + tunable. */
+export interface CopilotBehaviourReviewEvent {
+  id: string;
+  prompt: string;
+  helpful: CopilotBehaviourReviewItem[];
+  unhelpful: CopilotBehaviourReviewItem[];
+  allowCustom?: boolean;
+}
+
+/** Structured answer the FE posts for select / dropdown / behaviour-review cards. */
+export interface CopilotStructuredAnswer {
+  selectedOptionIds?: string[];
+  customValues?: string[];
+  none?: boolean;
+  helpful?: string[];
+  unhelpful?: string[];
 }
 
 export interface CopilotErrorEvent {
@@ -373,6 +428,7 @@ export type CopilotStreamEvent =
   | { type: "tool_result"; data: CopilotToolResultEvent }
   | { type: "spec_patch"; data: CopilotSpecPatchEvent }
   | { type: "question"; data: CopilotQuestionEvent }
+  | { type: "behaviour_review"; data: CopilotBehaviourReviewEvent }
   | { type: "test_case_suggestions"; data: { suggestions: CopilotTestCaseSuggestion[] } }
   | { type: "error"; data: CopilotErrorEvent }
   | { type: "done"; data: CopilotDoneEvent };
@@ -384,8 +440,12 @@ export interface CopilotChatMessage {
   content: string;
   /** Present when the assistant asked a structured question. */
   question?: CopilotQuestionEvent;
-  /** On resumed questions: the answer the trainer already gave. */
+  /** Present when the assistant asked the trainer to review behaviours. */
+  behaviourReview?: CopilotBehaviourReviewEvent;
+  /** On resumed freeText/singleSelect questions: the answer already given. */
   answeredWith?: string;
+  /** On resumed multi-select / dropdown / behaviour cards: the structured answer. */
+  answeredAnswer?: CopilotStructuredAnswer;
   /** Present when the assistant suggested agent test cases (accept-to-persist cards). */
   testCaseSuggestions?: CopilotTestCaseSuggestion[];
   /** Resumed suggestion cards already accepted (by suggestion id). */

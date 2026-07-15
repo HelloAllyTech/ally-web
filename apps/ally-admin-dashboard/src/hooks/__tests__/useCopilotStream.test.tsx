@@ -172,6 +172,58 @@ describe("useCopilotStream", () => {
     });
   });
 
+  it("renders behaviour_review events as structured messages", async () => {
+    const review = {
+      id: "r1",
+      prompt: "Review behaviours",
+      helpful: [{ id: "h1", name: "Reflect feelings", checked: true }],
+      unhelpful: [{ id: "u1", name: "Give advice", checked: true }],
+      allowCustom: true,
+    };
+    vi.stubGlobal(
+      "fetch",
+      mockSseFetch([
+        sseFrame("behaviour_review", review),
+        sseFrame("done", { messageSeq: 2, specVersionId: "v1" }),
+      ]),
+    );
+
+    const store = buildStore();
+    const { result } = renderStream(store);
+
+    await act(async () => {
+      await result.current.sendMessage("hello");
+    });
+
+    await waitFor(() => {
+      const message = result.current.messages.find(m => m.behaviourReview);
+      expect(message?.behaviourReview).toEqual(review);
+      expect(message?.content).toBe("Review behaviours");
+    });
+  });
+
+  it("posts a structured answer for select/behaviour cards", async () => {
+    const fetchMock = mockSseFetch([sseFrame("done", { messageSeq: 3, specVersionId: "v1" })]);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const store = buildStore();
+    const { result } = renderStream(store);
+
+    await act(async () => {
+      await result.current.sendMessage("Empathy, Active Listening", {
+        questionId: "q-comp",
+        answer: { selectedOptionIds: ["c1", "c2"] },
+      });
+    });
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(JSON.parse(init.body as string)).toEqual({
+      message: "Empathy, Active Listening",
+      questionId: "q-comp",
+      answer: { selectedOptionIds: ["c1", "c2"] },
+    });
+  });
+
   it("keeps partial text marked interrupted on abort", async () => {
     vi.stubGlobal("fetch", mockSseFetch([sseFrame("token", { delta: "Partial" })], { hang: true }));
 
@@ -418,5 +470,59 @@ describe("mapServerMessagesToFeed", () => {
     const feed = mapServerMessagesToFeed([rows[1]] as never);
     const questionCard = feed.find(m => m.question?.id === "q-1");
     expect(questionCard?.answeredWith).toBeUndefined();
+  });
+
+  it("reconstructs structured multi-select answers and behaviour-review cards", async () => {
+    const { mapServerMessagesToFeed } = await import("@hooks/useCopilotStream");
+    const resumeRows = [
+      {
+        id: "a1",
+        seq: 1,
+        role: "assistant" as const,
+        content: "Pick competencies",
+        metadata: {
+          questions: [
+            {
+              id: "q-c",
+              prompt: "Pick competencies",
+              kind: "multiSelect" as const,
+              options: [{ id: "c1", label: "Empathy" }],
+              allowNone: true,
+            },
+          ],
+          behaviourReviews: [
+            {
+              id: "r-1",
+              prompt: "Review behaviours",
+              helpful: [{ id: "h1", name: "Reflect", checked: true }],
+              unhelpful: [{ id: "u1", name: "Advise", checked: true }],
+            },
+          ],
+        },
+      },
+      {
+        id: "u1",
+        seq: 2,
+        role: "user" as const,
+        content: "[answers question q-c] Empathy [selected ids: c1]",
+        metadata: { questionId: "q-c", answer: { selectedOptionIds: ["c1"] } },
+      },
+      {
+        id: "u2",
+        seq: 3,
+        role: "user" as const,
+        content: "[answers question r-1] helpful: Reflect",
+        metadata: { questionId: "r-1", answer: { helpful: ["Reflect"], unhelpful: ["Advise"] } },
+      },
+    ];
+
+    const feed = mapServerMessagesToFeed(resumeRows as never);
+
+    const questionCard = feed.find(m => m.question?.id === "q-c");
+    expect(questionCard?.answeredAnswer).toEqual({ selectedOptionIds: ["c1"] });
+
+    const behaviourCard = feed.find(m => m.behaviourReview?.id === "r-1");
+    expect(behaviourCard?.behaviourReview?.helpful[0].name).toBe("Reflect");
+    expect(behaviourCard?.answeredAnswer).toEqual({ helpful: ["Reflect"], unhelpful: ["Advise"] });
   });
 });

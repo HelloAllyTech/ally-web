@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ApiEndpoints, en, HttpMethod, LOCAL_STORAGE_KEYS } from "@constants";
 import { applySpecPatches, setStreaming } from "@reducer";
 import {
+  CopilotBehaviourReviewEvent,
   CopilotChatMessage,
   CopilotDoneEvent,
   CopilotImprovementReadyPayload,
@@ -13,6 +14,7 @@ import {
   CopilotQuestionEvent,
   CopilotSpecPatchEvent,
   CopilotStreamEvent,
+  CopilotStructuredAnswer,
   RoleplayCopilotServerMessage,
 } from "@src/types/roleplayStudio";
 import { RefreshResponse } from "@types";
@@ -66,12 +68,16 @@ export const mapServerMessagesToFeed = (
   rows: RoleplayCopilotServerMessage[],
 ): CopilotChatMessage[] => {
   const answeredQuestions = new Map<string, string>();
+  const answeredAnswers = new Map<string, CopilotStructuredAnswer>();
   const acceptedSuggestionIds = new Set<string>();
   for (const row of rows) {
     if (row.role !== "user") continue;
     const questionId = row.metadata?.questionId;
     if (questionId) {
       answeredQuestions.set(String(questionId), (row.content ?? "").replace(ANSWER_PREFIX_RE, ""));
+      if (row.metadata?.answer) {
+        answeredAnswers.set(String(questionId), row.metadata.answer);
+      }
     }
     if (row.metadata?.kind === "test_cases_accepted") {
       for (const suggestionId of row.metadata.suggestionIds ?? []) {
@@ -141,6 +147,16 @@ export const mapServerMessagesToFeed = (
         content: question.prompt,
         question,
         answeredWith: answeredQuestions.get(question.id),
+        answeredAnswer: answeredAnswers.get(question.id),
+      });
+    }
+    for (const review of metadata.behaviourReviews ?? []) {
+      feed.push({
+        id: `${baseId}_bhv_${review.id}`,
+        role: "assistant",
+        content: review.prompt,
+        behaviourReview: review,
+        answeredAnswer: answeredAnswers.get(review.id),
       });
     }
     const suggestions = metadata.testCaseSuggestions ?? [];
@@ -302,6 +318,20 @@ export const useCopilotStream = ({
           ]);
           break;
         }
+        case "behaviour_review": {
+          flushTokens();
+          const review = event.data as CopilotBehaviourReviewEvent;
+          setMessages(prev => [
+            ...prev,
+            {
+              id: nextMessageId(),
+              role: "assistant",
+              content: review.prompt,
+              behaviourReview: review,
+            },
+          ]);
+          break;
+        }
         case "test_case_suggestions": {
           flushTokens();
           const suggestions = event.data.suggestions ?? [];
@@ -393,6 +423,7 @@ export const useCopilotStream = ({
       text: string,
       activeSessionId: string,
       questionId?: string,
+      answer?: CopilotStructuredAnswer,
     ): Promise<{
       userMsgId: string;
       assistantId: string;
@@ -419,7 +450,11 @@ export const useCopilotStream = ({
         const url = `${API_BASE_URL}/api${ApiEndpoints.ROLEPLAY_STUDIO.COPILOT_SESSION_STREAM(activeSessionId)}`;
         const response = await fetchStreamWithReauth(
           url,
-          { message: text, ...(questionId ? { questionId } : {}) },
+          {
+            message: text,
+            ...(questionId ? { questionId } : {}),
+            ...(answer ? { answer } : {}),
+          },
           controller.signal,
         );
 
@@ -476,11 +511,11 @@ export const useCopilotStream = ({
   );
 
   const sendMessage = useCallback(
-    async (text: string, opts?: { questionId?: string }) => {
+    async (text: string, opts?: { questionId?: string; answer?: CopilotStructuredAnswer }) => {
       const trimmed = text.trim();
       if (!trimmed || !sessionId || abortRef.current) return;
 
-      const first = await runStream(trimmed, sessionId, opts?.questionId);
+      const first = await runStream(trimmed, sessionId, opts?.questionId, opts?.answer);
       if (!first.sessionLost || first.aborted) return;
 
       // The server session is gone (e.g. a local DB reset dropped it). Re-create
@@ -491,7 +526,7 @@ export const useCopilotStream = ({
         toast.error(en.roleplayStudio.copilot.streamFailed);
         return;
       }
-      const retry = await runStream(trimmed, freshId, opts?.questionId);
+      const retry = await runStream(trimmed, freshId, opts?.questionId, opts?.answer);
       // The fresh session vanished too (or a code bug) — surface it rather than
       // looping. One recovery attempt is the ceiling.
       if (retry.sessionLost && !retry.aborted) {

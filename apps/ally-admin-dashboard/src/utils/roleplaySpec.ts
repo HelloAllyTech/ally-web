@@ -14,6 +14,8 @@ export const createEmptyRoleplaySpec = (title: string): RoleplaySpec => ({
   specSchemaVersion: ROLEPLAY_SPEC_SCHEMA_VERSION,
   title,
   competencyId: undefined,
+  competencyIds: undefined,
+  competencyNames: undefined,
   persona: { identityCore: "", scenarioContext: "", chunks: [] },
   stateMachine: { initialStateId: "", states: [] },
   disclosureLedger: { secrets: [] },
