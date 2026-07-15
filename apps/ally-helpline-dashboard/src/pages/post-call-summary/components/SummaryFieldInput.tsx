@@ -123,7 +123,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
     case FieldType.Dropdown:
       return (
         <div className="flex gap-1">
-          <span className="font-medium text-lg text-typography-800 whitespace-nowrap bg-green">{`${field.label}: `}</span>
+          <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
           <DropdownField
             disabled={disabled}
             value={value ?? field.placeholder ?? "--"}
