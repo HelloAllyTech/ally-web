@@ -1,4 +1,5 @@
 import { useActiveImprovementRun } from "./useActiveImprovementRun";
+import { useImprovementLiveProgress } from "./useImprovementLiveProgress";
 import { useClickOutside } from "./useClickOutside";
 import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
@@ -32,6 +33,7 @@ export {
   useCopilotStream,
   useTryRoleplayLive,
   useActiveImprovementRun,
+  useImprovementLiveProgress,
   useSpecAutosave,
   useTracks,
 };
