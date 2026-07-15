@@ -13,11 +13,14 @@ import { getAvailableVariableName } from "../../utils/availableVariables";
 export interface CreateSimulationSubSectionProps {
   items: FormFieldConfig[];
   formMethods: UseFormReturn<any>;
+  /** View Details mode: render every field inert (see FormField). */
+  readOnly?: boolean;
 }
 
 export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = ({
   items,
   formMethods,
+  readOnly = false,
 }) => {
   const timerMode = formMethods.watch(FORM_FIELD_IDS.TIMER_MODE);
   const checklistTypeRef = useRef<HTMLDivElement>(null);
@@ -108,7 +111,7 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
               ref={item.id === "checklistType" ? checklistTypeRef : null}
               className={item.fullWidth ? "w-full" : "w-[48%]"}
             >
-              <FormField config={item} formMethods={formMethods} />
+              <FormField config={item} formMethods={formMethods} readOnly={readOnly} />
             </div>
           </Fragment>
         );

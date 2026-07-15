@@ -60,6 +60,8 @@ import {
   EnhanceFieldResponse,
   GetReportTranscriptInput,
   GetReportTranscriptResponse,
+  GenerateCoverImageRequest,
+  GenerateCoverImageResponse,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -661,6 +663,23 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.CHARACTERS],
     }),
 
+    /**
+     * Generate a scenario cover image with AI. Stateless: the backend renders
+     * the managed `cover_image_generation` prompt (editable via Prompt
+     * Management) with the given title/description, returns the image URL
+     * (already stored in S3 and the shared image library); the client saves
+     * it on the scenario through the normal update flow.
+     */
+    generateCoverImage: builder.mutation<GenerateCoverImageResponse, GenerateCoverImageRequest>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_COVER_IMAGE,
+        method: HttpMethod.POST,
+        body,
+      }),
+      // Generated images land in the shared library — refresh the picker.
+      invalidatesTags: [TAG_TYPES.IMAGE_LIBRARY],
+    }),
+
     getHelperTags: builder.query<HelperTagInput, GetHelperTagsQueryParams>({
       query: (params: GetHelperTagsQueryParams) => ({
         url: ApiEndpoints.SIMULATION_STUDIO.HELPER_TAGS,
@@ -709,6 +728,7 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
           ...(params.searchName && { searchName: params.searchName }),
         },
       }),
+      providesTags: [TAG_TYPES.IMAGE_LIBRARY],
     }),
 
     /**
@@ -1057,6 +1077,7 @@ export const {
   useCreateCharacterMutation,
   useUpdateCharacterMutation,
   useDeleteCharacterMutation,
+  useGenerateCoverImageMutation,
   useGetHelperTagsQuery,
   useCreateHelperTagMutation,
   useGetFillerTagsQuery,

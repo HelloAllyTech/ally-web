@@ -7,7 +7,13 @@ import { useGetUserQuery, useGetPermissionsQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
 import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
 import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
-import { LOCAL_STORAGE_KEYS, ROUTES, Permissions, UserRole } from "@constants";
+import {
+  LOCAL_STORAGE_KEYS,
+  ROUTES,
+  Permissions,
+  UserRole,
+  normalizeEmailForAllowlist,
+} from "@constants";
 import { setUser, setPermissions } from "@reducer";
 import { hasPermissions } from "@utils";
 
@@ -69,12 +75,13 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
         : userData?.role === requiredRole);
   }
 
-  // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive;
-  // only applies when the route passes an allowlist.
+  // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive and
+  // +tag-tolerant (a +tag sub-address matches its base email, via
+  // normalizeEmailForAllowlist); only applies when the route passes an allowlist.
   if (!isUserLoading && allowedEmails) {
-    const userEmail = userData?.email?.toLowerCase();
+    const userEmail = normalizeEmailForAllowlist(userData?.email);
     hasAllowedEmail = Boolean(
-      userEmail && allowedEmails.some(allowed => allowed.toLowerCase() === userEmail),
+      userEmail && allowedEmails.some(allowed => normalizeEmailForAllowlist(allowed) === userEmail),
     );
   }
 

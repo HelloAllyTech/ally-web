@@ -69,6 +69,14 @@ export interface CallSummaryProps {
   canEditCustomFields?: boolean;
   isSummaryLoading?: boolean;
   summaryLoadingError?: any;
+  /**
+   * Called after custom-field values are saved, with the changed values, so a
+   * parent list can reflect the edit on its row without a full refetch.
+   */
+  onCustomFieldValuesSaved?: (
+    chatId: number,
+    values: { fieldDefinitionId: string; value?: string | null }[],
+  ) => void;
 }
 
 export interface SummaryLoadingProps {

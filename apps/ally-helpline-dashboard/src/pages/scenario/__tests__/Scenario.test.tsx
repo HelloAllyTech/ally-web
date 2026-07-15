@@ -74,6 +74,7 @@ const mockUseGetScenarioQuery = vi.fn();
 const mockUseEndSimulationMutation = vi.fn();
 const mockUseStartSimulationMutation = vi.fn();
 const mockUseGetScenariosQuery = vi.fn();
+const mockUseGetReviewsQuery = vi.fn();
 
 vi.mock("@api", () => ({
   useGetScenarioQuery: (args: any) => mockUseGetScenarioQuery(args),
@@ -84,6 +85,13 @@ vi.mock("@api", () => ({
     // Support selectFromResult option
     if (opts?.selectFromResult) {
       return opts.selectFromResult(result);
+    }
+    return result;
+  },
+  useGetReviewsQuery: (args: any, opts: any) => {
+    const result = mockUseGetReviewsQuery(args);
+    if (opts?.selectFromResult) {
+      return opts.selectFromResult(result ?? {});
     }
     return result;
   },
@@ -133,6 +141,10 @@ vi.mock("@hooks", () => ({
     startSimulation: mockStartSimulation,
     isStarting: false,
   }),
+  useUser: () => ({
+    permissions: [],
+    user: undefined,
+  }),
 }));
 
 // Mock @ally-ui-mono/ui-shared
@@ -148,6 +160,19 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
         Close
       </button>
     </div>
+  )),
+  DropdownField: vi.fn(({ options, value, onChange }: any) => (
+    <select
+      data-testid="language-dropdown"
+      value={value}
+      onChange={e => onChange?.(e.target.value)}
+    >
+      {options?.map((option: string) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
   )),
 }));
 
@@ -233,6 +258,11 @@ vi.mock("@components", () => ({
     SECONDARY: "secondary",
   },
   CreditInfo: vi.fn(() => null),
+}));
+
+// Mock the peer sessions drawer — only rendered for allowlisted reviewers
+vi.mock("../components/PeerSessionsDrawer", () => ({
+  default: vi.fn(() => <div data-testid="peer-sessions-drawer" />),
 }));
 
 // Mock learn constants

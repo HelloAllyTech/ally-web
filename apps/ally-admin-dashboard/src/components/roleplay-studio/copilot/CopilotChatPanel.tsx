@@ -5,20 +5,24 @@ import { toast } from "sonner";
 
 import { SkeletonPlaceholder } from "@ally-ui-mono/ui-shared";
 import {
+  baseAPI,
+  useCancelImprovementRunMutation,
   useCreateRoleplayCopilotSessionMutation,
   useLazyGetRoleplayCopilotSessionQuery,
   useLazyGetRoleplayCopilotSessionsBySpecQuery,
   useLazyGetRoleplaySpecByIdQuery,
 } from "@api";
 import { EmptyState } from "@components";
-import { en, LOCAL_STORAGE_KEYS } from "@constants";
+import { en, LOCAL_STORAGE_KEYS, TAG_TYPES } from "@constants";
 import { useCopilotStream } from "@hooks/useCopilotStream";
+import { useImprovementLiveProgress } from "@hooks/useImprovementLiveProgress";
 import { hydrateSpec, selectRoleplaySpecState, setCopilotSessionId } from "@reducer";
 import { logger } from "@utils";
 import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessage } from "./ChatMessage";
+import { ImprovementLiveCard } from "./ImprovementLiveCard";
 import { useImprovementSocket } from "../improvement/useImprovementSocket";
 
 const sessionStorageKey = (specId: string) =>
@@ -67,6 +71,22 @@ export const CopilotChatPanel: React.FC = () => {
       sessionId: copilotSessionId,
       onSessionInvalid: recreateSession,
     });
+
+  // Live auto-improve progress for the ephemeral in-feed card (only while a run
+  // is RUNNING). Data is kept fresh by the improvements socket below + a
+  // dedicated rehearsals socket inside the hook.
+  const { activeRun, detail, currentRound, rehearsal } = useImprovementLiveProgress(specId);
+  const [cancelRun, { isLoading: cancellingRun }] = useCancelImprovementRunMutation();
+  const showLiveCard = Boolean(activeRun);
+
+  const handleCancelRun = useCallback(async () => {
+    if (!activeRun) return;
+    try {
+      await cancelRun(activeRun.id).unwrap();
+    } catch {
+      toast.error(en.roleplayStudio.improvement.cancelFailed);
+    }
+  }, [activeRun, cancelRun]);
 
   const [isBooting, setIsBooting] = useState(true);
   const bootedForSpecRef = useRef<string | null>(null);
@@ -170,6 +190,9 @@ export const CopilotChatPanel: React.FC = () => {
   // Loop progress lands out-of-band; the improvements socket is the doorbell.
   const onImprovementUpdate = useCallback(
     (data: unknown) => {
+      // Refetch the runs list + active-run detail (drives the live card), then
+      // pull any freshly-appended narration rows into the feed.
+      dispatch(baseAPI.util.invalidateTags([TAG_TYPES.ROLEPLAY_IMPROVEMENTS]));
       void refreshTranscript();
       const entries = Array.isArray(data) ? data : [data];
       const hasResolvedRun = entries.some(entry => {
@@ -178,7 +201,7 @@ export const CopilotChatPanel: React.FC = () => {
       });
       if (hasResolvedRun) void refreshSpecIfClean();
     },
-    [refreshSpecIfClean, refreshTranscript],
+    [dispatch, refreshSpecIfClean, refreshTranscript],
   );
 
   useImprovementSocket({ specId, onUpdate: onImprovementUpdate });
@@ -192,11 +215,13 @@ export const CopilotChatPanel: React.FC = () => {
     }
   }, [isStreaming, refreshTranscript]);
 
-  // Keep the feed pinned to the latest message.
+  // Keep the feed pinned to the latest message. Also scroll when the live card
+  // appears or the current round's phase advances (not on every rehearsal tick,
+  // to avoid yanking the view while the user reads).
   useEffect(() => {
     const node = scrollRef.current;
     if (node) node.scrollTop = node.scrollHeight;
-  }, [messages]);
+  }, [messages, activeRun?.id, currentRound?.status]);
 
   const handleSend = (text: string) => void sendMessage(text);
   const handleAnswerQuestion = (answer: string, questionId: string) =>
@@ -219,7 +244,7 @@ export const CopilotChatPanel: React.FC = () => {
             <SkeletonPlaceholder className="!h-12 !w-1/2 self-end rounded-2xl" />
             <SkeletonPlaceholder className="!h-12 !w-3/4 rounded-2xl" />
           </div>
-        ) : messages.length === 0 ? (
+        ) : messages.length === 0 && !showLiveCard ? (
           <EmptyState
             title={strings.emptyTitle}
             subtitle={strings.emptySubtitle}
@@ -236,6 +261,16 @@ export const CopilotChatPanel: React.FC = () => {
                 disabled={isStreaming}
               />
             ))}
+            {showLiveCard && activeRun && (
+              <ImprovementLiveCard
+                run={activeRun}
+                detail={detail}
+                currentRound={currentRound}
+                rehearsal={rehearsal}
+                onCancel={handleCancelRun}
+                cancelling={cancellingRun}
+              />
+            )}
           </div>
         )}
       </div>

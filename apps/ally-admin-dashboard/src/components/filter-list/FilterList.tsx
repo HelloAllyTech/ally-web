@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, Fragment, useEffect, useRef, useState } from "react";
 
 import { Close } from "@assets";
 import { FilterListProps } from "@components/types";
@@ -11,6 +11,7 @@ export const FilterList: FC<FilterListProps> = ({
   onApply,
   selectedFilters,
   options,
+  sections,
 }) => {
   const [selectedStatuses, setSelectedStatuses] = useState<Array<{ id: string; label: string }>>(
     [],
@@ -38,6 +39,10 @@ export const FilterList: FC<FilterListProps> = ({
     onApply(selectedStatuses);
   };
 
+  // Single-group (legacy) callers pass `options`; multi-dimension callers
+  // pass `sections`. Both render through the same checkbox-group markup.
+  const filterSections = sections ?? [{ title: en.simulation.status, options: options ?? [] }];
+
   return (
     <div
       ref={containerRef}
@@ -48,20 +53,26 @@ export const FilterList: FC<FilterListProps> = ({
         <Close />
       </button>
       <div className="space-y-3">
-        <div className="text-typography-600 font-regular text-base">{en.simulation.status}</div>
-        <div className="space-y-3 border-b pb-2">
-          {options.map(option => (
-            <label key={option.id} className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                onChange={() => handleStatusChange(option)}
-                checked={selectedStatuses.some(status => status.id === option.id)}
-                className="w-4 h-4 border-border-dark focus:ring-primary accent-neutral-100"
-              />
-              <span className="text-base leading-relaxed text-typography-900">{option.label}</span>
-            </label>
-          ))}
-        </div>
+        {filterSections.map(section => (
+          <Fragment key={section.title}>
+            <div className="text-typography-600 font-regular text-base">{section.title}</div>
+            <div className="space-y-3 border-b pb-2">
+              {section.options.map(option => (
+                <label key={option.id} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    onChange={() => handleStatusChange(option)}
+                    checked={selectedStatuses.some(status => status.id === option.id)}
+                    className="w-4 h-4 border-border-dark focus:ring-primary accent-neutral-100"
+                  />
+                  <span className="text-base leading-relaxed text-typography-900">
+                    {option.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </Fragment>
+        ))}
         <div className="flex justify-end">
           <button
             onClick={onApplyFilters}

@@ -278,14 +278,10 @@ export enum UserRole {
  * UI on this list — via isSuperAdminRole — instead of an exact SUPER_ADMIN check
  * so both roles behave identically.
  */
-export const SUPER_ADMIN_ROLES: UserRole[] = [
-  UserRole.SUPER_ADMIN,
-  UserRole.SUPER_DUPER_ADMIN,
-];
+export const SUPER_ADMIN_ROLES: UserRole[] = [UserRole.SUPER_ADMIN, UserRole.SUPER_DUPER_ADMIN];
 
-export const isSuperAdminRole = (
-  role?: UserRole | string | null,
-): boolean => role != null && (SUPER_ADMIN_ROLES as string[]).includes(role);
+export const isSuperAdminRole = (role?: UserRole | string | null): boolean =>
+  role != null && (SUPER_ADMIN_ROLES as string[]).includes(role);
 
 /**
  * The elevated super-admin tier. SUPER_DUPER_ADMIN sits above SUPER_ADMIN: gate
@@ -296,9 +292,7 @@ export const isSuperAdminRole = (
  */
 export const SUPER_DUPER_ADMIN_ROLES: UserRole[] = [UserRole.SUPER_DUPER_ADMIN];
 
-export const isSuperDuperAdminRole = (
-  role?: UserRole | string | null,
-): boolean =>
+export const isSuperDuperAdminRole = (role?: UserRole | string | null): boolean =>
   role != null && (SUPER_DUPER_ADMIN_ROLES as string[]).includes(role);
 
 export enum AppType {

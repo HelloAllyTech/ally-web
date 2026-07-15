@@ -59,11 +59,33 @@ export const SIDEBAR_ITEMS = {
 export const ROLEPLAY_STUDIO_ALLOWED_EMAILS = [
   "admin@example.com",
   "sandeep.malhotra@helloally.ai",
+  "gopikrishnan.sasikumar@helloally.ai",
 ];
 
-/** Case-insensitive membership test against ROLEPLAY_STUDIO_ALLOWED_EMAILS. */
+/**
+ * Canonicalize an email for allowlist matching: lower-case, trim, and drop any
+ * `+tag` sub-address, so gopikrishnan.sasikumar+admin@… matches the single
+ * gopikrishnan.sasikumar@… allowlist entry. Mirrors the backend's
+ * normalizeEmailForAllowlist (ally-be roleplay-v2-access.util) so both gates
+ * agree on who is allowlisted.
+ */
+export const normalizeEmailForAllowlist = (raw?: string | null): string => {
+  const email = (raw ?? "").trim().toLowerCase();
+  const at = email.indexOf("@");
+  if (at <= 0) return email;
+  const local = email.slice(0, at);
+  const domain = email.slice(at); // includes '@'
+  const plus = local.indexOf("+");
+  const baseLocal = plus === -1 ? local : local.slice(0, plus);
+  return `${baseLocal}${domain}`;
+};
+
+/**
+ * Membership test against ROLEPLAY_STUDIO_ALLOWED_EMAILS. Case-insensitive and
+ * `+tag`-tolerant: any sub-address of an allowlisted email matches too.
+ */
 export const isRoleplayStudioEmailAllowed = (email?: string | null): boolean => {
-  if (!email) return false;
-  const normalized = email.toLowerCase();
-  return ROLEPLAY_STUDIO_ALLOWED_EMAILS.some(allowed => allowed.toLowerCase() === normalized);
+  const normalized = normalizeEmailForAllowlist(email);
+  if (!normalized) return false;
+  return ROLEPLAY_STUDIO_ALLOWED_EMAILS.map(normalizeEmailForAllowlist).includes(normalized);
 };

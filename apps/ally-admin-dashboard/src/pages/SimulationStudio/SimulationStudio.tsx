@@ -3,16 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-import {
-  Add,
-  Book,
-  Close,
-  Filter,
-  Search,
-  Simulation as SimulationIcon,
-  Pathway,
-  Case,
-} from "@assets";
+import { Add, Close, Filter, Search, Simulation as SimulationIcon, Pathway, Case } from "@assets";
 import {
   ActionConfirmationPopup,
   DeletePopup,
@@ -28,11 +19,18 @@ import {
   DEFAULT_SIMULATION_STATUS_OPTIONS,
   en,
   PATH_STATUS_OPTIONS,
+  SIMULATION_CATEGORY_FILTER_OPTIONS,
   SimulationStatus,
   isSuperAdminRole,
   isSuperDuperAdminRole,
 } from "@constants";
-import { useSimulations, useSimulationPathways, useSimulationCases, useTracks, useUser } from "@hooks";
+import {
+  useSimulations,
+  useSimulationPathways,
+  useSimulationCases,
+  useTracks,
+  useUser,
+} from "@hooks";
 
 const TAB_KEYS = {
   SIMULATIONS: "simulations",
@@ -118,6 +116,7 @@ export const SimulationStudio: React.FC = () => {
     handleCreateSimulation,
     onEditIconClick,
     handleEditSimulation,
+    handleViewSimulation,
     handleDeleteSimulation,
     onDeleteSimulation,
     handleChangeSimulationStatus,
@@ -386,6 +385,16 @@ export const SimulationStudio: React.FC = () => {
           options={
             activeTab === TAB_KEYS.TRACKS ? PATH_STATUS_OPTIONS : DEFAULT_SIMULATION_STATUS_OPTIONS
           }
+          // Simulations filter by Category as well as Status; useSimulations
+          // splits the mixed selection back into the two query params.
+          sections={
+            activeTab === TAB_KEYS.SIMULATIONS
+              ? [
+                  { title: en.simulation.status, options: DEFAULT_SIMULATION_STATUS_OPTIONS },
+                  { title: en.simulation.category, options: SIMULATION_CATEGORY_FILTER_OPTIONS },
+                ]
+              : undefined
+          }
         />
       </div>
     );
@@ -443,6 +452,7 @@ export const SimulationStudio: React.FC = () => {
             isLoading={isSimulationsLoading}
             hasFilters={selectedFilters.length > 0 || debouncedSearch.length > 0}
             onEdit={onEditIconClick}
+            onView={handleViewSimulation}
             onDelete={handleDeleteSimulation}
             onPreview={onPreviewSimulation}
             onArchive={onArchiveSimulation}

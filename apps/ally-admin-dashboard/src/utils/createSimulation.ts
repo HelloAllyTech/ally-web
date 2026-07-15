@@ -81,6 +81,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     languageCharacteristics: (data?.metadata as any)?.languageCharacteristics,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
+    category: data?.category ?? "",
+    partnerOrgName: data?.partnerOrgName ?? "",
     difficultyLevel: data?.difficultyLevel,
     terminationEvents: data?.terminationEvents?.map(event => ({
       id: event.eventId,

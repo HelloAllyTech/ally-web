@@ -48,6 +48,7 @@ import {
   isValidStateInstructionId,
   ROLE_INSTRUCTION_PROMPT_CODE,
   BEHAVIOUR_STATES,
+  SIMULATION_CATEGORY,
   TooltipLocation,
 } from "@constants";
 import { useDebounce, useScenarioTranslationsSocket } from "@hooks";
@@ -148,7 +149,16 @@ const getMissingOverviewMandatoryLabels = (values: Record<string, unknown>): str
   return missing;
 };
 
-export const CreateSimulation: FC = () => {
+export interface CreateSimulationProps {
+  /**
+   * Read-only "View Details" mode (route /create-simulation/view/:id): the
+   * whole editor renders inert and NOTHING is ever saved — no autosave, no
+   * draft flush, no publish — so a published simulation stays published.
+   */
+  viewMode?: boolean;
+}
+
+export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [simulationId, setSimulationId] = useState<string | undefined>(id);
@@ -184,7 +194,9 @@ export const CreateSimulation: FC = () => {
   // header trigger with the version currently in the editor.
   const { data: scenarioVersions = [] } = useGetScenarioVersionsQuery(
     { scenarioId: simulationId as string },
-    { skip: !simulationId },
+    // Skipped in view mode: listing versions lazily seeds a v1 row server-side
+    // (a write), and the version panel is hidden there anyway.
+    { skip: !simulationId || viewMode },
   );
   const currentVersion =
     scenarioVersions.find(v => v.id === activeVersionId) ??
@@ -470,7 +482,7 @@ export const CreateSimulation: FC = () => {
   }, [formValues]);
 
   const handlePageBack = () => {
-    if (Object.keys(dirtyFields).length > 0) {
+    if (!viewMode && Object.keys(dirtyFields).length > 0) {
       setShowDiscardPopup(true);
     } else {
       navigate(-1);
@@ -485,6 +497,10 @@ export const CreateSimulation: FC = () => {
     status: SimulationStatus,
     options?: { silent?: boolean },
   ) => {
+    // Hard guard: View Details must never write. Every save entry point is
+    // already gated, but this keeps a future call site from silently
+    // demoting a published sim to draft.
+    if (viewMode) return null;
     const silent = options?.silent ?? false;
     const formData = formMethods.getValues();
     if (!formData.title?.trim()) {
@@ -702,6 +718,13 @@ export const CreateSimulation: FC = () => {
       (simulationData as any).states = filledStates.length > 0 ? filledStates : undefined;
     }
 
+    // The partner-org tag only means something for Partner Sim entries; when
+    // the category is anything else the field is hidden in the form, so clear
+    // the stale value instead of persisting it invisibly.
+    if ((simulationData as any).category !== SIMULATION_CATEGORY.PARTNER_SIM) {
+      (simulationData as any).partnerOrgName = null;
+    }
+
     // Normalize empty-string selectedMainPromptCode to undefined.
     // DropdownField's `allowDeselect` writes "" on clear, but downstream
     // (ai-learn / scenario metadata) treats `undefined` and `""` differently
@@ -756,6 +779,7 @@ export const CreateSimulation: FC = () => {
   // any field changes (e.g. Skill version) made since the last tick when the
   // form is reset to the incoming version.
   const flushPendingEdits = async () => {
+    if (viewMode) return;
     if (Object.keys(dirtyFields).length === 0) return;
     if (isActiveVersionReadOnly) return; // archived snapshot — nothing to save
     try {
@@ -802,6 +826,7 @@ export const CreateSimulation: FC = () => {
   const [autosaveState, setAutosaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const autosaveRef = useRef<() => void>(() => {});
   autosaveRef.current = () => {
+    if (viewMode) return; // View Details never saves
     if (isAutosavingRef.current) return; // an autosave is already running
     if (isCreatingSimulation) return; // a create/publish is in flight
     if (isReportGenerationInProgress) return; // don't fight report generation
@@ -941,19 +966,25 @@ export const CreateSimulation: FC = () => {
     switch (currentStep) {
       case stepIds.advancedSettings:
         return renderStep(
-          <SimulationEventMapTable
-            simulationId={simulationId}
-            versionId={activeVersionId}
-            versionEvents={versionEvents}
-            onVersionEventsChange={events => {
-              draftMappedEventsRef.current = events;
-              const json = JSON.stringify(events ?? null);
-              // Skip the table's initial hydration report; persist real edits.
-              if (json === lastEventsJsonRef.current) return;
-              lastEventsJsonRef.current = json;
-              saveSimulationChanges(SimulationStatus.DRAFT, { silent: true });
-            }}
-          />,
+          // View mode: the event table has no readOnly prop of its own, so the
+          // whole tab is rendered inert (saveSimulationChangesCore also
+          // hard-refuses to write in view mode, as defense-in-depth).
+          <div className={viewMode ? "pointer-events-none select-text opacity-80" : undefined}>
+            <SimulationEventMapTable
+              simulationId={simulationId}
+              versionId={activeVersionId}
+              versionEvents={versionEvents}
+              onVersionEventsChange={events => {
+                if (viewMode) return;
+                draftMappedEventsRef.current = events;
+                const json = JSON.stringify(events ?? null);
+                // Skip the table's initial hydration report; persist real edits.
+                if (json === lastEventsJsonRef.current) return;
+                lastEventsJsonRef.current = json;
+                saveSimulationChanges(SimulationStatus.DRAFT, { silent: true });
+              }}
+            />
+          </div>,
         );
       case stepIds.agentBuilderCopilot: {
         // Split the canvas into two halves (collapsible — see the toggle
@@ -965,10 +996,13 @@ export const CreateSimulation: FC = () => {
         // wiring. The right-half Copilot can be collapsed to hand the whole
         // canvas to the mirror; it re-opens from the floating button.
         const basicSettingsSection = getCreateSimulationSubSectionById(stepIds.basicSettings);
+        // View mode hands the whole canvas to the (inert) Basic Settings
+        // mirror — the Copilot is an editing tool, so it's never shown there.
+        const copilotCollapsed = viewMode || isCopilotCollapsed;
         return renderStep(
           <div
             className={`grid ${
-              isCopilotCollapsed ? "grid-cols-1" : "grid-cols-2 gap-6"
+              copilotCollapsed ? "grid-cols-1" : "grid-cols-2 gap-6"
             } h-full min-h-0 relative`}
           >
             {/* Left half — mirror of Basic Settings, independent vertical scroll.
@@ -977,11 +1011,12 @@ export const CreateSimulation: FC = () => {
               <CreateSimulationSubSection
                 items={basicSettingsSection?.fields ?? []}
                 formMethods={formMethods}
+                readOnly={viewMode}
               />
             </div>
             {/* Floating re-open control, shown only while the Copilot is
                 collapsed so the pane can always be brought back. */}
-            {isCopilotCollapsed && (
+            {copilotCollapsed && !viewMode && (
               <button
                 type="button"
                 onClick={() => setIsCopilotCollapsed(false)}
@@ -996,7 +1031,7 @@ export const CreateSimulation: FC = () => {
             {/* Right half — chat-style agent-builder wizard. Scrolls on its own
                 (the wizard pins its composer and scrolls the chat internally).
                 Hidden when collapsed. */}
-            {!isCopilotCollapsed && (
+            {!copilotCollapsed && (
               <div className="min-h-0 h-full overflow-hidden border-l border-border-light pl-6 flex flex-col">
                 <div className="shrink-0 flex justify-end pb-2">
                   <button
@@ -1057,9 +1092,11 @@ export const CreateSimulation: FC = () => {
   };
 
   const doPreview = async () => {
-    const response = await saveSimulationChanges(
-      adminSimulationByIdData?.status || SimulationStatus.DRAFT,
-    );
+    // View mode previews the saved scenario as-is; the form can't have edits,
+    // so skip the save entirely (it would be a pointless PUT).
+    const response = viewMode
+      ? null
+      : await saveSimulationChanges(adminSimulationByIdData?.status || SimulationStatus.DRAFT);
     const id = simulationId || (response && response?.data?.[0]?.id);
     if (id) {
       const formData = formMethods.getValues();
@@ -1086,7 +1123,7 @@ export const CreateSimulation: FC = () => {
   };
 
   const handlePreview = () => {
-    if (emptyOptionalFields.length > 0) {
+    if (!viewMode && emptyOptionalFields.length > 0) {
       pendingActionRef.current = doPreview;
       setShowOptionalFieldsWarning(true);
     } else {
@@ -1094,7 +1131,11 @@ export const CreateSimulation: FC = () => {
     }
   };
 
-  const pageTitle = simulationId ? en.simulation.editSimulation : en.simulation.createNewSimulation;
+  const pageTitle = viewMode
+    ? en.simulation.viewSimulation
+    : simulationId
+      ? en.simulation.editSimulation
+      : en.simulation.createNewSimulation;
 
   return (
     // h-full (not h-[100vh]): the page already lives inside PrivateLayout's
@@ -1118,7 +1159,13 @@ export const CreateSimulation: FC = () => {
           <h1 className="text-2xl text-typography-900 font-secondary">{pageTitle}</h1>
         </div>
         <div className="flex items-center gap-3">
-          {autosaveState !== "idle" && (
+          {viewMode && (
+            <span className="flex items-center gap-1.5 text-xs text-typography-500">
+              <span className="h-1.5 w-1.5 rounded-full bg-typography-500" />
+              {en.simulation.readOnlyViewNote}
+            </span>
+          )}
+          {!viewMode && autosaveState !== "idle" && (
             <span
               className={`flex items-center gap-1.5 text-xs transition-opacity ${
                 autosaveState === "error" ? "text-destructive-500" : "text-typography-500"
@@ -1140,7 +1187,7 @@ export const CreateSimulation: FC = () => {
               )}
             </span>
           )}
-          {simulationId && (
+          {simulationId && !viewMode && (
             <div className="relative">
               <button
                 type="button"
@@ -1212,13 +1259,15 @@ export const CreateSimulation: FC = () => {
               />
             </div>
           )}
-          <Button
-            variant={ButtonVariant.TEXT}
-            onClick={() => handleSaveDraft()}
-            className="px-4 h-[40px] text-typography-900"
-          >
-            {en.simulation.save}
-          </Button>
+          {!viewMode && (
+            <Button
+              variant={ButtonVariant.TEXT}
+              onClick={() => handleSaveDraft()}
+              className="px-4 h-[40px] text-typography-900"
+            >
+              {en.simulation.save}
+            </Button>
+          )}
           <Button
             variant={ButtonVariant.TEXT}
             onClick={handlePreview}
@@ -1227,18 +1276,30 @@ export const CreateSimulation: FC = () => {
           >
             {en.simulation.preview}
           </Button>
-          <AppTooltip location={TooltipLocation.PUBLISH_SIMULATION_VERSION}>
+          {viewMode ? (
             <Button
               variant={ButtonVariant.PRIMARY}
-              onClick={handlePublish}
-              disabled={!areAllMandatoryFieldsFilled || isCreatingSimulation || isPublishingVersion}
+              onClick={() => simulationId && navigate(ROUTES.EDIT_SIMULATION(simulationId))}
               className="transition-colors h-[40px] pr-[20px]"
             >
-              {isCreatingSimulation || isPublishingVersion
-                ? en.simulation.publishing
-                : en.simulation.publish}
+              {en.simulation.edit}
             </Button>
-          </AppTooltip>
+          ) : (
+            <AppTooltip location={TooltipLocation.PUBLISH_SIMULATION_VERSION}>
+              <Button
+                variant={ButtonVariant.PRIMARY}
+                onClick={handlePublish}
+                disabled={
+                  !areAllMandatoryFieldsFilled || isCreatingSimulation || isPublishingVersion
+                }
+                className="transition-colors h-[40px] pr-[20px]"
+              >
+                {isCreatingSimulation || isPublishingVersion
+                  ? en.simulation.publishing
+                  : en.simulation.publish}
+              </Button>
+            </AppTooltip>
+          )}
         </div>
       </div>
 

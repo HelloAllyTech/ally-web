@@ -49,7 +49,10 @@ export const recordWatchSample = (
 /** Percentage (0-100, rounded) of unique watched seconds vs duration. */
 export const watchedPctFromSeconds = (uniqueSeconds: number, durationSeconds: number): number => {
   if (!durationSeconds || durationSeconds <= 0) return 0;
-  return Math.max(0, Math.min(100, Math.round((uniqueSeconds / Math.floor(durationSeconds)) * 100)));
+  return Math.max(
+    0,
+    Math.min(100, Math.round((uniqueSeconds / Math.floor(durationSeconds)) * 100)),
+  );
 };
 
 /**

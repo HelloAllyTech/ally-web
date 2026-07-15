@@ -23,6 +23,27 @@ export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
   { id: "DRAFT", label: "Draft" },
 ];
 
+// Editorial category of a simulation (mirrors ally-be's ScenarioCategory).
+// Used by the Basic Settings dropdown (value/label) and, in id/label shape
+// below, by the Studio list filter.
+export const SIMULATION_CATEGORY_OPTIONS = [
+  { value: "ORIGINALS", label: "Originals" },
+  { value: "DEMO", label: "Demo" },
+  { value: "PARTNER_SIM", label: "Partner Sim" },
+  { value: "OTHER", label: "Other" },
+];
+
+export const SIMULATION_CATEGORY_FILTER_OPTIONS = SIMULATION_CATEGORY_OPTIONS.map(
+  ({ value, label }) => ({ id: value, label }),
+);
+
+export const getSimulationCategoryLabel = (category?: string | null): string | undefined =>
+  SIMULATION_CATEGORY_OPTIONS.find(option => option.value === category)?.label ?? undefined;
+
+export const SIMULATION_CATEGORY = {
+  PARTNER_SIM: "PARTNER_SIM",
+} as const;
+
 export const EVENT_TYPE_OPTIONS = [
   { value: "TIME_BASED", label: "Time Based" },
   { value: "SCORE_BASED", label: "Score Based" },
@@ -154,6 +175,8 @@ export const FORM_FIELD_TYPES = {
 export const FORM_FIELD_IDS = {
   TITLE: "title",
   COMPETENCY: "competency",
+  CATEGORY: "category",
+  PARTNER_ORG_NAME: "partnerOrgName",
   DIFFICULTY_LEVEL: "difficultyLevel",
   CHARACTER_PROFILE_SELECTOR: "characterProfileSelector",
   CHARACTER_PROFILE_TEXT: "characterProfileText",
@@ -306,6 +329,31 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         enhanceType: ENHANCE_TYPE.DESCRIPTION,
         promptVariable: "challenge_description",
       },
+      // Editorial organisation of the Studio list: category groups sims as
+      // Originals / Demo / Partner Sim / Other; the partner-org tag names the
+      // partner and only shows when the category is Partner Sim. Both are
+      // optional, stored as dedicated `scenarios` columns, and drive the
+      // Studio list filter.
+      {
+        id: "category",
+        label: "Category",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: SIMULATION_CATEGORY_OPTIONS,
+        isMandatory: false,
+        fullWidth: false,
+        allowDeselect: true,
+      },
+      {
+        id: "partnerOrgName",
+        label: "Partner Organisation",
+        placeholder: "Name of the partner org",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: false,
+        fullWidth: false,
+        maxLength: 255,
+        dependsOn: "category",
+        visibleWhen: (formValues: any) => formValues.category === SIMULATION_CATEGORY.PARTNER_SIM,
+      },
       {
         id: "triggerWarningIds",
         label: "Trigger warnings",
@@ -376,6 +424,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         // Cover Image + Cover Video sit side by side as two upload tiles
         // rather than two full-width tiles stacked vertically.
         fullWidth: false,
+        aiGenerate: true,
       },
       {
         id: "coverVideoUrl",

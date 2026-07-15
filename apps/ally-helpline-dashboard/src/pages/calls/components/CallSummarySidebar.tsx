@@ -44,6 +44,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
   canEditSummary = true,
   canShowFeedback = true,
   showArchiveButton = true,
+  onCustomFieldValuesSaved,
 }) => {
   const { t } = useTranslation();
   const { permissions, user } = useSelector((state: RootState) => state.user);
@@ -438,6 +439,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               callSummary={individualCallSummary}
               onRefetchSummary={refetchCallSummary}
               postProcess={refetchCallLogs}
+              onCustomFieldValuesSaved={onCustomFieldValuesSaved}
               isInSidebar={true}
               canEditSummary={canEditSummary}
               canEditCustomFields={

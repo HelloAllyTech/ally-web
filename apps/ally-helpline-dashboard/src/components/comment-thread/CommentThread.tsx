@@ -28,6 +28,13 @@ interface CommentThreadProps {
   setThreadsOffset: React.Dispatch<React.SetStateAction<number>>;
   onAddComment: () => void;
   isScribeReview?: boolean;
+  /**
+   * Ids of comments deleted locally in this session. The list is reseeded from
+   * a force-refetching REVIEW query, which can briefly return a just-deleted
+   * comment (read-after-delete lag) and clobber the optimistic removal. The
+   * reseed excludes these ids so a deleted comment cannot reappear.
+   */
+  deletedCommentIds?: React.MutableRefObject<Set<string>>;
 }
 const CommentThread = ({
   comments,
@@ -43,6 +50,7 @@ const CommentThread = ({
   setThreadsOffset,
   onAddComment,
   isScribeReview,
+  deletedCommentIds,
 }: CommentThreadProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const [comment, setComment] = useState("");
@@ -61,7 +69,10 @@ const CommentThread = ({
 
   useEffect(() => {
     if (!threadComments || threadComments.data.length === 0) return;
-    const nextData = threadComments.data ?? [];
+    // Exclude locally-deleted comments so a lagging refetch cannot re-add one.
+    const nextData = (threadComments.data ?? []).filter(
+      comment => !deletedCommentIds?.current.has(comment.id),
+    );
     if (threadsOffset === 0) {
       setComments?.(nextData);
       onCommentChange?.({ comments: nextData, threadId: id });
@@ -174,6 +185,9 @@ const CommentThread = ({
     const currentComment = comments.find(comment => comment.id === commentId);
     const replyCount = currentComment?.replyCount ?? 0;
     const currentLength = (comments ?? []).length;
+    // Remember this deletion so the reseed effects don't re-add it before the
+    // backend is consistent.
+    deletedCommentIds?.current.add(commentId);
     setComments?.(prev => {
       const filteredComments = prev.filter(comment => comment.id !== commentId);
       onCommentChange?.({ comments: filteredComments, threadId: id });

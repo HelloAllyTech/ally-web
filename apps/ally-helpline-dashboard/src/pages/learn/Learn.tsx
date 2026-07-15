@@ -11,7 +11,12 @@ import {
   useGetScenarioCasesQuery,
   useGetLearnTracksQuery,
 } from "@api";
-import { ContinueLearningCard, CreditsDisplay, PracticeStreakHeatmap, ScenarioCard } from "@components";
+import {
+  ContinueLearningCard,
+  CreditsDisplay,
+  PracticeStreakHeatmap,
+  ScenarioCard,
+} from "@components";
 import { Permissions, buildTrackRoute } from "@constants";
 import { useUser } from "@hooks";
 import { ScenarioStatus } from "@types";
