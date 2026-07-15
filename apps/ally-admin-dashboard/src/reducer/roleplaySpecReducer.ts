@@ -307,6 +307,44 @@ const roleplaySpecSlice = createSlice({
       spec.language = { ...spec.language, ...action.payload };
       touch(state);
     },
+    /**
+     * Trainer-chosen set of languages the actor can be played in. Reconciles the
+     * `voice.languageVoices` map (whose keys ARE the configured languages):
+     * retained languages keep their copilot-assigned voice, newly added ones get
+     * an empty voice (the copilot fills it), deselected ones are dropped. Keeps a
+     * valid default `language` (used when a preview doesn't pick one).
+     */
+    setConfiguredLanguages(
+      state,
+      action: PayloadAction<Array<{ languageId: string | number; languageCode?: string }>>,
+    ) {
+      const spec = requireSpec(state);
+      if (!spec) return;
+      const selected = action.payload;
+      const nextVoices: Record<string, string> = {};
+      selected.forEach(lang => {
+        const key = String(lang.languageId);
+        nextVoices[key] = spec.voice.languageVoices[key] ?? "";
+      });
+      spec.voice.languageVoices = nextVoices;
+
+      const selectedIds = new Set(selected.map(lang => String(lang.languageId)));
+      const currentDefault = spec.language?.languageId;
+      if (currentDefault === undefined || !selectedIds.has(String(currentDefault))) {
+        const first = selected[0];
+        spec.language = first
+          ? { languageId: first.languageId, languageCode: first.languageCode }
+          : {};
+      }
+      touch(state);
+    },
+    /** Trainer-chosen agent test cases (library ids) wired into the rehearsal. */
+    setAgentTestCaseIds(state, action: PayloadAction<string[]>) {
+      const spec = requireSpec(state);
+      if (!spec) return;
+      spec.agentTestCaseIds = action.payload;
+      touch(state);
+    },
 
     // ----- state machine -----
     upsertState(state, action: PayloadAction<RoleplayStateNode>) {
@@ -430,6 +468,8 @@ export const {
   removeEngineeredEvent,
   setLanguageVoice,
   setLanguage,
+  setConfiguredLanguages,
+  setAgentTestCaseIds,
   upsertState,
   removeState,
   setInitialState,

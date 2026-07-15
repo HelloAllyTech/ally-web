@@ -1,8 +1,10 @@
 import React from "react";
 
+import { ArrowDown, ArrowUp } from "@carbon/icons-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { ProgressBar, Tag, Tile } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { CopilotImprovementUpdatePayload } from "@src/types/roleplayStudio";
 
@@ -15,12 +17,10 @@ const DeltaChip: React.FC<{ delta: number | null | undefined; label: string }> =
   if (delta === null || delta === undefined || delta === 0) return null;
   const up = delta > 0;
   return (
-    <span
-      className={`text-xs font-medium ${up ? "text-success-500" : "text-destructive-500"}`}
-      title={label}
-    >
-      {up ? "▲" : "▼"}
-      {Math.abs(delta)}
+    <span title={label}>
+      <Tag type={up ? "green" : "red"} size="sm" renderIcon={up ? ArrowUp : ArrowDown}>
+        {Math.abs(delta)}
+      </Tag>
     </span>
   );
 };
@@ -54,17 +54,11 @@ export const ImprovementProgressCard: React.FC<ImprovementProgressCardProps> = (
 
   return (
     <div className="flex justify-start">
-      <div
-        className={`max-w-[92%] w-full rounded-xl border px-4 py-3 ${
-          payload.subkind === "failed"
-            ? "border-destructive-200 bg-destructive-50/30"
-            : "border-secondary-200 bg-secondary-50/30"
-        }`}
-      >
+      <Tile className="max-w-[92%] w-full">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-typography-800 border border-border-light">
+          <Tag type="cool-gray" size="sm">
             {strings.loopLabel}
-          </span>
+          </Tag>
           {payload.roundNumber !== undefined && (
             <span className="text-xs text-typography-600">
               {improvementStrings.round} {payload.roundNumber}
@@ -78,8 +72,17 @@ export const ImprovementProgressCard: React.FC<ImprovementProgressCardProps> = (
             </span>
           )}
           {payload.scores?.overall !== null && payload.scores?.overall !== undefined && (
-            <span className="flex items-center gap-1 text-xs text-typography-800">
-              <span className="font-semibold">{payload.scores.overall}</span>
+            <span className="flex items-center gap-2 text-xs text-typography-800">
+              <div className="w-28">
+                <ProgressBar
+                  label={strings.loopLabel}
+                  hideLabel
+                  size="small"
+                  max={100}
+                  value={payload.scores.overall}
+                  helperText={String(payload.scores.overall)}
+                />
+              </div>
               <DeltaChip
                 delta={payload.deltas?.overallVsPrevious}
                 label={strings.vsPreviousRound}
@@ -87,14 +90,16 @@ export const ImprovementProgressCard: React.FC<ImprovementProgressCardProps> = (
             </span>
           )}
           {tests && (
-            <span className="text-xs text-typography-600">{strings.testsPassing(tests)}</span>
+            <Tag type="cool-gray" size="sm">
+              {strings.testsPassing(tests)}
+            </Tag>
           )}
           {isTerminal && payload.outcome && (
-            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-typography-700">
+            <Tag type={payload.subkind === "failed" ? "red" : "green"} size="sm">
               {improvementStrings.outcome[
                 payload.outcome as keyof typeof improvementStrings.outcome
               ] ?? payload.outcome}
-            </span>
+            </Tag>
           )}
         </div>
 
@@ -122,7 +127,7 @@ export const ImprovementProgressCard: React.FC<ImprovementProgressCardProps> = (
             ))}
           </div>
         )}
-      </div>
+      </Tile>
     </div>
   );
 };

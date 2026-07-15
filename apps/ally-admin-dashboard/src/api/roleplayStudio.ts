@@ -421,9 +421,10 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
       CreateRoleplaySessionResponse,
       CreateRoleplaySessionInput
     >({
-      query: ({ specId, versionId }) => ({
+      query: ({ specId, versionId, languageId }) => ({
         url: ApiEndpoints.ROLEPLAY_STUDIO.CREATE_SESSION(specId, versionId),
         method: HttpMethod.POST,
+        ...(languageId !== undefined ? { body: { languageId } } : {}),
       }),
     }),
 

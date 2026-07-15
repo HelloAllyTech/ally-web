@@ -4,10 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import { Tabs } from "@ally-ui-mono/ui-shared";
+import { CarbonTabs, Tab, TabList } from "@ally-ui-mono/ui-shared";
 import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api";
 import { ArrowDown } from "@assets";
-import { CopilotChatPanel, PublishPanel, SpecWorkbench } from "@components";
+import { CopilotChatPanel, SpecWorkbench } from "@components";
 import { en, ROUTES } from "@constants";
 import { useActiveImprovementRun, useSpecAutosave } from "@hooks";
 import {
@@ -19,20 +19,24 @@ import {
 } from "@reducer";
 import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 
-// The studio is chat-first: everything from interview through auto-improve
-// happens in the chat (spec editable on the right); Publish keeps version
-// history + republish. Legacy `?step=` values (interview/spec/rehearse/
-// improve) fall back to chat via the VALID_STEPS guard.
+import { RoleplayStudioActions } from "./RoleplayStudioActions";
+
+// The studio is chat-first: building happens by talking to the copilot (Chat).
+// The spec document lives in its own Spec tab so the trainer isn't staring at
+// it the whole time — they open it to review what the copilot produced. Preview
+// and Publish are actions in the tab row (see RoleplayStudioActions), not a tab.
+// Legacy `?step=` values (interview/rehearse/improve/publish) fall back to chat
+// via the VALID_STEPS guard.
 export const ROLEPLAY_STEP_IDS = {
   CHAT: "chat",
-  PUBLISH: "publish",
+  SPEC: "spec",
 } as const;
 
 // Built lazily (not at module-eval time) so partial `@constants` mocks in
 // unrelated tests never trip on `en.roleplayStudio` (mirrors navigation.ts).
 const buildStepTabs = () => [
   { id: ROLEPLAY_STEP_IDS.CHAT, label: en.roleplayStudio.steps.chat },
-  { id: ROLEPLAY_STEP_IDS.PUBLISH, label: en.roleplayStudio.steps.publish },
+  { id: ROLEPLAY_STEP_IDS.SPEC, label: en.roleplayStudio.steps.spec },
 ];
 
 const VALID_STEPS = new Set<string>(Object.values(ROLEPLAY_STEP_IDS));
@@ -79,18 +83,16 @@ const WorkspaceSkeleton: React.FC = () => (
   <div className="flex flex-col gap-4 animate-pulse mt-6" data-testid="roleplay-workspace-skeleton">
     <div className="h-8 w-1/3 bg-neutral-100 rounded" />
     <div className="h-10 w-full bg-neutral-100 rounded" />
-    <div className="grid grid-cols-2 gap-6 flex-1">
-      <div className="h-[420px] bg-neutral-100 rounded" />
-      <div className="h-[420px] bg-neutral-100 rounded" />
-    </div>
+    <div className="h-[420px] w-full bg-neutral-100 rounded flex-1" />
   </div>
 );
 
 /**
  * Roleplay Studio workspace shell: header (breadcrumb + inline title +
- * autosave chip) and the interview | spec | rehearse | publish steps driven by
- * the `?step=` search param. `/roleplay-studio/new` creates the spec first and
- * replaces the URL with the canonical `/:specId` route.
+ * autosave chip), the chat | spec steps driven by the `?step=` search param,
+ * and the Preview / Publish actions in the tab row.
+ * `/roleplay-studio/new` creates the spec first and replaces the URL with the
+ * canonical `/:specId` route.
  */
 export const RoleplayStudioWorkspace: React.FC = () => {
   const strings = en.roleplayStudio;
@@ -156,6 +158,8 @@ export const RoleplayStudioWorkspace: React.FC = () => {
   // Background draft persistence (10s cadence + step change + beforeunload).
   const { saveNow } = useSpecAutosave({ step });
 
+  const stepTabs = buildStepTabs();
+
   const handleStepChange = (nextStep: string) => {
     setSearchParams(prev => {
       const next = new URLSearchParams(prev);
@@ -166,21 +170,20 @@ export const RoleplayStudioWorkspace: React.FC = () => {
 
   const renderStep = () => {
     switch (step) {
-      case ROLEPLAY_STEP_IDS.PUBLISH:
-        return <PublishPanel onSaveDraft={saveNow} />;
+      case ROLEPLAY_STEP_IDS.SPEC:
+        // Editable spec / state-machine workbench on its own tab, locked while
+        // the copilot streams or an auto-improve loop is running.
+        return (
+          <div className="min-h-0 h-full">
+            <SpecWorkbench />
+          </div>
+        );
       case ROLEPLAY_STEP_IDS.CHAT:
       default:
+        // Full-width copilot chat (scrolls its own feed, pinned composer).
         return (
-          <div className="grid grid-cols-2 gap-6 h-full min-h-0">
-            {/* Left — copilot chat (scrolls its own feed, pinned composer). */}
-            <div className="min-h-0 h-full overflow-hidden">
-              <CopilotChatPanel />
-            </div>
-            {/* Right — editable spec / state-machine workbench, locked while
-                the copilot streams or an auto-improve loop is running. */}
-            <div className="min-h-0 h-full border-l border-border-light pl-6">
-              <SpecWorkbench />
-            </div>
+          <div className="min-h-0 h-full overflow-hidden">
+            <CopilotChatPanel />
           </div>
         );
     }
@@ -217,13 +220,22 @@ export const RoleplayStudioWorkspace: React.FC = () => {
         </div>
       </div>
 
-      <Tabs
-        items={buildStepTabs()}
-        className="mb-2 mt-4 border-b border-border-light font-primary shrink-0"
-        activeId={step}
-        showCount={false}
-        onChange={handleStepChange}
-      />
+      <div className="mb-2 mt-4 shrink-0 flex items-center justify-between gap-4">
+        <CarbonTabs
+          selectedIndex={Math.max(
+            0,
+            stepTabs.findIndex(tab => tab.id === step),
+          )}
+          onChange={({ selectedIndex }) => handleStepChange(stepTabs[selectedIndex].id)}
+        >
+          <TabList aria-label={strings.title}>
+            {stepTabs.map(tab => (
+              <Tab key={tab.id}>{tab.label}</Tab>
+            ))}
+          </TabList>
+        </CarbonTabs>
+        <RoleplayStudioActions onSaveDraft={saveNow} />
+      </div>
 
       <div className="flex-1 min-h-0 pt-2">{renderStep()}</div>
     </div>

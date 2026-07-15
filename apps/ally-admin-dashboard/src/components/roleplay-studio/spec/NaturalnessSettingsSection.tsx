@@ -2,6 +2,7 @@ import React from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 
+import { CarbonToggle, Slider } from "@ally-ui-mono/ui-shared";
 import { ComfortAudioDropdown } from "@components";
 import { en } from "@constants";
 import {
@@ -10,7 +11,6 @@ import {
   setComfortAudioVolume,
   setNaturalnessFlag,
 } from "@reducer";
-import { ToggleSwitch } from "@src/components/toggle-switch";
 import { RoleplayNaturalnessFlag } from "@src/types/roleplayStudio";
 
 import { SpecSectionCard } from "./SpecSectionCard";
@@ -25,8 +25,8 @@ interface NaturalnessSettingsSectionProps {
  * Voice-naturalness / latency-masking runtime toggles (Thinking Filler, Comfort
  * Audio, Continuous Back-channeling, Interim Reply). These mirror the Roleplay
  * Studio 1 metadata flags; they live as top-level spec keys and are honored by
- * the v2 voice worker. Redux-driven (unlike the react-hook-form ToggleSection),
- * so it uses the raw ToggleSwitch primitive.
+ * the v2 voice worker. Trainer-editable even in the otherwise read-only Spec
+ * tab, rendered with Carbon Toggle + Slider.
  */
 export const NaturalnessSettingsSection: React.FC<NaturalnessSettingsSectionProps> = ({
   readOnly = false,
@@ -67,16 +67,18 @@ export const NaturalnessSettingsSection: React.FC<NaturalnessSettingsSectionProp
                 <span className="text-sm font-medium text-typography-900">{row.label}</span>
                 <span className="text-xs text-typography-600">{row.help}</span>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <ToggleSwitch
-                  enabled={enabled}
-                  onChange={value => dispatch(setNaturalnessFlag({ key: row.key, value }))}
-                  label={row.label}
+              <div className="shrink-0">
+                <CarbonToggle
+                  id={`naturalness-${row.key}`}
+                  size="sm"
+                  hideLabel
+                  labelText={row.label}
+                  labelA={en.common.disabled}
+                  labelB={en.common.enabled}
+                  toggled={enabled}
                   disabled={readOnly}
+                  onToggle={value => dispatch(setNaturalnessFlag({ key: row.key, value }))}
                 />
-                <span className="w-16 text-sm text-typography-700">
-                  {enabled ? en.common.enabled : en.common.disabled}
-                </span>
               </div>
             </div>
           );
@@ -90,28 +92,18 @@ export const NaturalnessSettingsSection: React.FC<NaturalnessSettingsSectionProp
                 if (!readOnly) dispatch(setComfortAudioUrl(url));
               }}
             />
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-typography-900">
-                  {en.comfortAudio.volumeLabel}
-                </span>
-                <span className="text-sm text-primary-600 tabular-nums">
-                  {(spec.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_FALLBACK).toFixed(1)}
-                </span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.1}
-                value={spec.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_FALLBACK}
-                onChange={e => dispatch(setComfortAudioVolume(parseFloat(e.target.value)))}
-                disabled={readOnly}
-                aria-label={en.comfortAudio.volumeLabel}
-                className="w-full accent-primary-500 cursor-pointer"
-              />
-              <span className="text-xs text-typography-600">{en.comfortAudio.volumeHelp}</span>
-            </div>
+            <Slider
+              id="comfort-audio-volume"
+              labelText={en.comfortAudio.volumeLabel}
+              min={0}
+              max={1}
+              step={0.1}
+              value={spec.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_FALLBACK}
+              disabled={readOnly}
+              hideTextInput
+              onChange={({ value }) => dispatch(setComfortAudioVolume(value))}
+            />
+            <span className="text-xs text-typography-600">{en.comfortAudio.volumeHelp}</span>
           </div>
         )}
       </div>

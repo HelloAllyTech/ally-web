@@ -28,11 +28,15 @@ export const useTryRoleplayLive = ({ onSaveDraft }: UseTryRoleplayLiveOptions = 
   const [createSession, { isLoading: isStartingSession }] = useCreateRoleplaySessionMutation();
 
   const tryLive = useCallback(
-    async (targetVersionId: string) => {
+    async (targetVersionId: string, languageId?: number) => {
       if (!specId || !spec) return;
       try {
         if (targetVersionId === versionId && onSaveDraft) await onSaveDraft();
-        const session = await createSession({ specId, versionId: targetVersionId }).unwrap();
+        const session = await createSession({
+          specId,
+          versionId: targetVersionId,
+          languageId,
+        }).unwrap();
 
         // Mirrors SimulationPreview's room-data handoff (localStorage -> the
         // live preview route reads it back via useLiveKitRoom).

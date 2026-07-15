@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { Button } from "@components";
-import { ButtonVariant } from "@components/types";
+import { Button, TextArea, Tile } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { CopilotQuestionEvent } from "@src/types/roleplayStudio";
 
@@ -41,7 +39,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[92%] w-full rounded-xl border border-primary-200 bg-primary-50/40 px-4 py-3">
+      <Tile className="max-w-[92%] w-full">
         <p className="text-sm font-medium text-typography-900">{question.prompt}</p>
 
         {question.kind === "choice" && (question.options?.length ?? 0) > 0 ? (
@@ -49,19 +47,15 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             {question.options?.map(option => {
               const isChosen = submittedAnswer === option;
               return (
-                <button
+                <Button
                   key={option}
-                  type="button"
+                  kind={isChosen ? "primary" : "tertiary"}
+                  size="sm"
                   disabled={answered || disabled}
                   onClick={() => submit(option)}
-                  className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                    isChosen
-                      ? "border-primary-500 bg-primary-500 text-white"
-                      : "border-border-light bg-white text-typography-900 hover:border-primary-300"
-                  } ${answered && !isChosen ? "opacity-50" : ""} disabled:cursor-not-allowed`}
                 >
                   {option}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -69,14 +63,15 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           <p className="mt-2 text-sm italic text-typography-700">{submittedAnswer}</p>
         ) : (
           <div className="mt-3 flex flex-col gap-2">
-            <AutoExpandableTextarea
+            <TextArea
+              id={`copilot-question-${question.id}`}
+              labelText={strings.freeTextPlaceholder}
+              hideLabel
               value={freeText}
-              onChange={setFreeText}
+              onChange={event => setFreeText(event.target.value)}
               placeholder={strings.freeTextPlaceholder}
               disabled={disabled}
-              minHeight={40}
-              maxLines={6}
-              className="w-full rounded-md border border-border-light bg-white px-3 py-2 text-sm outline-none focus:border-primary-500"
+              rows={2}
               onKeyDown={event => {
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault();
@@ -86,8 +81,8 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             />
             <div className="flex justify-end">
               <Button
-                variant={ButtonVariant.PRIMARY}
-                className="h-[32px] px-3 text-sm"
+                kind="primary"
+                size="sm"
                 disabled={disabled || !freeText.trim()}
                 onClick={() => submit(freeText)}
               >
@@ -96,7 +91,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             </div>
           </div>
         )}
-      </div>
+      </Tile>
     </div>
   );
 };

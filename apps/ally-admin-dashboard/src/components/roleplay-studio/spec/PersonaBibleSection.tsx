@@ -1,9 +1,10 @@
 import React from "react";
 
+import { TrashCan } from "@carbon/icons-react";
 import { useDispatch } from "react-redux";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { AddItemButton, FormLabel } from "@components";
+import { Button, Stack, TextArea, TextInput, Tile } from "@ally-ui-mono/ui-shared";
+import { AddItemButton } from "@components";
 import { RichTextEditor } from "@components/rich-text-editor";
 import { en } from "@constants";
 import { removePersonaChunk, updatePersona, upsertPersonaChunk } from "@reducer";
@@ -11,6 +12,7 @@ import { RoleplayPersona, RoleplayPersonaChunk } from "@src/types/roleplayStudio
 import { roleplayEntityId } from "@utils/roleplaySpec";
 
 import { SpecSectionCard } from "./SpecSectionCard";
+import { SpecTagList, SpecValue } from "./SpecField";
 
 interface PersonaBibleSectionProps {
   persona: RoleplayPersona;
@@ -30,9 +32,11 @@ export const PersonaBibleSection: React.FC<PersonaBibleSectionProps> = ({
 
   return (
     <SpecSectionCard title={strings.personaBible} sections={["persona"]}>
-      <div className="flex flex-col gap-4">
+      <Stack gap={5}>
         <div className="flex flex-col gap-2">
-          <FormLabel>{strings.identityCore}</FormLabel>
+          <p className="cds--label" style={{ marginBottom: 0 }}>
+            {strings.identityCore}
+          </p>
           <RichTextEditor
             value={persona.identityCore}
             onChange={html => dispatch(updatePersona({ identityCore: html }))}
@@ -41,7 +45,9 @@ export const PersonaBibleSection: React.FC<PersonaBibleSectionProps> = ({
         </div>
 
         <div className="flex flex-col gap-2">
-          <FormLabel>{strings.scenarioContext}</FormLabel>
+          <p className="cds--label" style={{ marginBottom: 0 }}>
+            {strings.scenarioContext}
+          </p>
           <RichTextEditor
             value={persona.scenarioContext}
             onChange={html => dispatch(updatePersona({ scenarioContext: html }))}
@@ -50,52 +56,65 @@ export const PersonaBibleSection: React.FC<PersonaBibleSectionProps> = ({
         </div>
 
         <div className="flex flex-col gap-2">
-          <FormLabel>{strings.chunks}</FormLabel>
+          <p className="cds--label" style={{ marginBottom: 0 }}>
+            {strings.chunks}
+          </p>
           {persona.chunks.length === 0 && (
-            <p className="text-sm text-typography-500">{strings.emptySection}</p>
+            <p className="text-typography-500">{strings.emptySection}</p>
           )}
           <div className="flex flex-col gap-3">
-            {persona.chunks.map(chunk => (
-              <div
-                key={chunk.id}
-                className="rounded-md border border-border-light p-3 flex flex-col gap-2"
-              >
-                <div className="flex items-start gap-2">
-                  <input
-                    value={chunk.topics.join(", ")}
-                    disabled={readOnly}
-                    placeholder={strings.chunkTopics}
-                    onChange={event =>
-                      updateChunk(chunk, {
-                        topics: event.target.value
-                          .split(",")
-                          .map(topic => topic.trim())
-                          .filter(Boolean),
-                      })
-                    }
-                    className="flex-1 rounded-md border border-border-light px-3 py-1.5 text-sm outline-none focus:border-primary-500 disabled:bg-neutral-50"
-                  />
-                  {!readOnly && (
-                    <button
-                      type="button"
-                      onClick={() => dispatch(removePersonaChunk(chunk.id))}
-                      className="text-xs text-typography-600 hover:text-destructive-500 py-1.5 shrink-0"
-                    >
-                      {strings.remove}
-                    </button>
-                  )}
-                </div>
-                <AutoExpandableTextarea
-                  value={chunk.content}
-                  onChange={content => updateChunk(chunk, { content })}
-                  placeholder={strings.chunkContent}
-                  disabled={readOnly}
-                  minHeight={48}
-                  maxLines={10}
-                  className="w-full rounded-md border border-border-light px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:bg-neutral-50"
-                />
-              </div>
-            ))}
+            {persona.chunks.map(chunk =>
+              readOnly ? (
+                <Tile key={chunk.id}>
+                  <Stack gap={3}>
+                    <SpecValue
+                      label={strings.chunkTopics}
+                      value={<SpecTagList items={chunk.topics} type="blue" />}
+                      isEmpty={chunk.topics.length === 0}
+                    />
+                    <SpecValue label={strings.chunkContent} value={chunk.content} />
+                  </Stack>
+                </Tile>
+              ) : (
+                <Tile key={chunk.id}>
+                  <Stack gap={3}>
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1">
+                        <TextInput
+                          id={`chunk-topics-${chunk.id}`}
+                          labelText={strings.chunkTopics}
+                          value={chunk.topics.join(", ")}
+                          onChange={event =>
+                            updateChunk(chunk, {
+                              topics: event.target.value
+                                .split(",")
+                                .map(topic => topic.trim())
+                                .filter(Boolean),
+                            })
+                          }
+                        />
+                      </div>
+                      <Button
+                        kind="ghost"
+                        size="md"
+                        hasIconOnly
+                        renderIcon={TrashCan}
+                        iconDescription={strings.remove}
+                        tooltipPosition="left"
+                        onClick={() => dispatch(removePersonaChunk(chunk.id))}
+                      />
+                    </div>
+                    <TextArea
+                      id={`chunk-content-${chunk.id}`}
+                      labelText={strings.chunkContent}
+                      value={chunk.content}
+                      onChange={event => updateChunk(chunk, { content: event.target.value })}
+                      rows={3}
+                    />
+                  </Stack>
+                </Tile>
+              ),
+            )}
           </div>
           {!readOnly && (
             <AddItemButton
@@ -108,7 +127,7 @@ export const PersonaBibleSection: React.FC<PersonaBibleSectionProps> = ({
             />
           )}
         </div>
-      </div>
+      </Stack>
     </SpecSectionCard>
   );
 };

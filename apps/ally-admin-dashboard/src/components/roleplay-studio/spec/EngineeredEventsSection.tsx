@@ -1,8 +1,9 @@
 import React from "react";
 
+import { TrashCan } from "@carbon/icons-react";
 import { useDispatch } from "react-redux";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { Button, Stack, TextArea, TextInput, Tile } from "@ally-ui-mono/ui-shared";
 import { AddItemButton } from "@components";
 import { en } from "@constants";
 import { removeEngineeredEvent, upsertEngineeredEvent } from "@reducer";
@@ -10,6 +11,7 @@ import { RoleplayEngineeredEvent } from "@src/types/roleplayStudio";
 import { roleplayEntityId } from "@utils/roleplaySpec";
 
 import { SpecSectionCard } from "./SpecSectionCard";
+import { SpecValue } from "./SpecField";
 
 interface EngineeredEventsSectionProps {
   events: RoleplayEngineeredEvent[];
@@ -39,42 +41,51 @@ export const EngineeredEventsSection: React.FC<EngineeredEventsSectionProps> = (
     >
       <div className="flex flex-col gap-3">
         {events.length === 0 && (
-          <p className="text-sm text-typography-500">{strings.emptySection}</p>
+          <p className="text-typography-500">{strings.emptySection}</p>
         )}
-        {events.map(event => (
-          <div
-            key={event.id}
-            className="rounded-md border border-border-light p-3 flex flex-col gap-2"
-          >
-            <div className="flex items-center gap-2">
-              <input
-                value={event.name ?? ""}
-                disabled={readOnly}
-                placeholder={strings.eventName}
-                onChange={changeEvent => update(event, { name: changeEvent.target.value })}
-                className="flex-1 rounded-md border border-border-light px-3 py-1.5 text-sm font-medium outline-none focus:border-primary-500 disabled:bg-neutral-50"
-              />
-              {!readOnly && (
-                <button
-                  type="button"
-                  onClick={() => dispatch(removeEngineeredEvent(event.id))}
-                  className="text-xs text-typography-600 hover:text-destructive-500 shrink-0"
-                >
-                  {strings.remove}
-                </button>
-              )}
-            </div>
-            <AutoExpandableTextarea
-              value={event.description ?? ""}
-              onChange={description => update(event, { description })}
-              placeholder={strings.eventDescription}
-              disabled={readOnly}
-              minHeight={40}
-              maxLines={8}
-              className="w-full rounded-md border border-border-light px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:bg-neutral-50"
-            />
-          </div>
-        ))}
+        {events.map(event =>
+          readOnly ? (
+            <Tile key={event.id}>
+              <Stack gap={3}>
+                <span className="font-medium text-typography-900 break-words">
+                  {event.name || "—"}
+                </span>
+                <SpecValue label={strings.eventDescription} value={event.description ?? ""} />
+              </Stack>
+            </Tile>
+          ) : (
+            <Tile key={event.id}>
+              <Stack gap={3}>
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <TextInput
+                      id={`event-name-${event.id}`}
+                      labelText={strings.eventName}
+                      value={event.name ?? ""}
+                      onChange={changeEvent => update(event, { name: changeEvent.target.value })}
+                    />
+                  </div>
+                  <Button
+                    kind="ghost"
+                    size="md"
+                    hasIconOnly
+                    renderIcon={TrashCan}
+                    iconDescription={strings.remove}
+                    tooltipPosition="left"
+                    onClick={() => dispatch(removeEngineeredEvent(event.id))}
+                  />
+                </div>
+                <TextArea
+                  id={`event-description-${event.id}`}
+                  labelText={strings.eventDescription}
+                  value={event.description ?? ""}
+                  onChange={changeEvent => update(event, { description: changeEvent.target.value })}
+                  rows={2}
+                />
+              </Stack>
+            </Tile>
+          ),
+        )}
         {!readOnly && (
           <AddItemButton
             label={strings.addEvent}

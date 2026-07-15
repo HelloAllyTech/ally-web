@@ -2,9 +2,8 @@ import React, { useState } from "react";
 
 import { toast } from "sonner";
 
+import { Button, Tag, Tile } from "@ally-ui-mono/ui-shared";
 import { useAcceptCopilotTestCasesMutation } from "@api";
-import { Button } from "@components";
-import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { CopilotTestCaseSuggestion } from "@src/types/roleplayStudio";
 
@@ -60,15 +59,15 @@ export const TestCaseSuggestionCard: React.FC<TestCaseSuggestionCardProps> = ({
   };
 
   return (
-    <div className="rounded-lg border border-border-light bg-white p-3">
+    <Tile>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-typography-900">{suggestion.title}</span>
             {suggestion.category && (
-              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-typography-700">
+              <Tag type="gray" size="sm">
                 {suggestion.category}
-              </span>
+              </Tag>
             )}
           </div>
           {suggestion.condition && (
@@ -86,22 +85,22 @@ export const TestCaseSuggestionCard: React.FC<TestCaseSuggestionCardProps> = ({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {state === "accepted" ? (
-            <span className="rounded-full bg-primary-50 px-2.5 py-0.5 text-xs text-primary-600">
+            <Tag type="green" size="sm">
               {strings.testCaseAccepted}
-            </span>
+            </Tag>
           ) : (
             <>
               <Button
-                variant={ButtonVariant.SECONDARY}
-                className="h-[28px] px-2.5 text-xs"
+                kind="secondary"
+                size="sm"
                 onClick={() => setState("dismissed")}
                 disabled={isLoading}
               >
                 {strings.testCaseDismiss}
               </Button>
               <Button
-                variant={ButtonVariant.PRIMARY}
-                className="h-[28px] px-2.5 text-xs"
+                kind="primary"
+                size="sm"
                 onClick={handleAccept}
                 disabled={isLoading || !sessionId}
               >
@@ -111,6 +110,6 @@ export const TestCaseSuggestionCard: React.FC<TestCaseSuggestionCardProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </Tile>
   );
 };

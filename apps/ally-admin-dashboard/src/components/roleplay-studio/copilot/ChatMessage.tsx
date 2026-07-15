@@ -3,6 +3,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { InlineLoading, InlineNotification, Tag, Tile } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 import { CopilotChatMessage } from "@src/types/roleplayStudio";
 
@@ -37,9 +38,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   if (message.systemNote) {
     return (
       <div className="flex justify-center">
-        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs text-typography-600">
+        <Tag type="gray" size="sm">
           {message.content}
-        </span>
+        </Tag>
       </div>
     );
   }
@@ -78,34 +79,27 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     <div className="flex justify-start">
       <div className="max-w-[92%] min-w-0">
         {message.toolNotes && message.toolNotes.length > 0 && (
-          <div className="flex flex-col gap-1 mb-1.5">
+          <div className="flex flex-col items-start gap-1 mb-1.5">
             {message.toolNotes.map((note, index) => (
-              <span
-                key={`${message.id}-tool-${index}`}
-                className="inline-flex w-fit items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs text-typography-700"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-primary-300" />
+              <Tag key={`${message.id}-tool-${index}`} type="cool-gray" size="sm">
                 {note}
-              </span>
+              </Tag>
             ))}
           </div>
         )}
         {message.content ? (
-          <div className="rounded-2xl rounded-bl-sm border border-border-light bg-white px-4 py-2.5">
+          <Tile className="rounded-2xl rounded-bl-sm">
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
               {message.content}
             </ReactMarkdown>
             {message.interrupted && (
               <span className="text-xs italic text-typography-500">{strings.interrupted}</span>
             )}
-          </div>
+          </Tile>
         ) : message.streaming ? (
-          <div className="rounded-2xl rounded-bl-sm border border-border-light bg-white px-4 py-2.5">
-            <span className="flex items-center gap-2 text-xs text-typography-500">
-              <span className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-dashed border-primary-300 border-t-transparent" />
-              {strings.thinking}
-            </span>
-          </div>
+          <Tile className="rounded-2xl rounded-bl-sm">
+            <InlineLoading description={strings.thinking} />
+          </Tile>
         ) : null}
         {message.testCaseSuggestions && message.testCaseSuggestions.length > 0 && (
           <div className="mt-2 flex flex-col gap-2">
@@ -119,7 +113,15 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             ))}
           </div>
         )}
-        {message.error && <p className="mt-1 text-xs text-destructive-500">{message.error}</p>}
+        {message.error && (
+          <InlineNotification
+            className="mt-1"
+            kind="error"
+            lowContrast
+            hideCloseButton
+            title={message.error}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Accordion } from "@components";
+import { Accordion, AccordionItem } from "@ally-ui-mono/ui-shared";
 
 import { SpecPatchFlash } from "./SpecPatchFlash";
 
@@ -13,7 +13,11 @@ interface SpecSectionCardProps {
   children: React.ReactNode;
 }
 
-/** Stacked spec section: accordion card wrapped in the patch-flash halo. */
+/**
+ * Stacked spec section: a Carbon Accordion item wrapped in the patch-flash
+ * halo. The whole studio is on Carbon, so the collapsible chrome comes from
+ * Carbon's Accordion rather than a bespoke bordered card.
+ */
 export const SpecSectionCard: React.FC<SpecSectionCardProps> = ({
   title,
   sections,
@@ -22,10 +26,22 @@ export const SpecSectionCard: React.FC<SpecSectionCardProps> = ({
   children,
 }) => (
   <SpecPatchFlash sections={sections}>
-    <div className="rounded-lg border border-border-light bg-white overflow-hidden">
-      <Accordion title={title} headerActions={headerActions} defaultExpanded={defaultExpanded}>
-        <div className="px-1 pb-1">{children}</div>
-      </Accordion>
-    </div>
+    <Accordion>
+      <AccordionItem
+        open={defaultExpanded}
+        title={
+          headerActions ? (
+            <span className="flex w-full items-center justify-between gap-2 pr-2">
+              <span>{title}</span>
+              {headerActions}
+            </span>
+          ) : (
+            title
+          )
+        }
+      >
+        <div className="pt-1">{children}</div>
+      </AccordionItem>
+    </Accordion>
   </SpecPatchFlash>
 );

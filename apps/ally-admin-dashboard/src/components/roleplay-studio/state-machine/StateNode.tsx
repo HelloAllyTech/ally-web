@@ -2,6 +2,7 @@ import React from "react";
 
 import { Handle, NodeProps, Position } from "@xyflow/react";
 
+import { Tag } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 
 import { RoleplayFlowNode } from "./graphMapping";
@@ -34,21 +35,21 @@ export const StateNode: React.FC<NodeProps<RoleplayFlowNode>> = ({ data, selecte
           {state.name || state.id}
         </span>
         {isInitial && (
-          <span className="shrink-0 rounded-full bg-primary-500 px-2 py-0.5 text-[10px] font-medium text-white">
+          <Tag type="blue" size="sm" className="shrink-0">
             {strings.initialState}
-          </span>
+          </Tag>
         )}
       </div>
       <div className="mt-1.5 flex flex-wrap gap-1">
         {state.emotionalRegister && (
-          <span className="rounded-full bg-secondary-50 px-2 py-0.5 text-[10px] text-typography-800">
+          <Tag type="teal" size="sm">
             {state.emotionalRegister}
-          </span>
+          </Tag>
         )}
         {state.resistanceLevel && (
-          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] text-typography-800">
+          <Tag type="gray" size="sm">
             {strings.resistanceLevel}: {state.resistanceLevel}
-          </span>
+          </Tag>
         )}
       </div>
       {state.stateCard && (

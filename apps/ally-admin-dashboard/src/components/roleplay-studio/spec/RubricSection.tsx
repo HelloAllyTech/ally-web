@@ -1,8 +1,9 @@
 import React from "react";
 
+import { TrashCan } from "@carbon/icons-react";
 import { useDispatch } from "react-redux";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { Button, NumberInput, Stack, Tag, TextArea, TextInput, Tile } from "@ally-ui-mono/ui-shared";
 import { AddItemButton } from "@components";
 import { en } from "@constants";
 import { removeRubricBehavior, upsertRubricBehavior } from "@reducer";
@@ -20,32 +21,29 @@ interface RubricSectionProps {
   readOnly?: boolean;
 }
 
-const PolarityChip: React.FC<{
+/** Read-only polarity indicator; clickable to flip when editing. */
+const PolarityControl: React.FC<{
   polarity: RoleplayBehaviorPolarity;
   onToggle: () => void;
-  disabled?: boolean;
-}> = ({ polarity, onToggle, disabled }) => {
+  readOnly?: boolean;
+}> = ({ polarity, onToggle, readOnly }) => {
   const strings = en.roleplayStudio.spec;
   const isPositive = polarity === "positive";
+  const label = isPositive ? strings.polarityPositive : strings.polarityNegative;
+  const tag = (
+    <Tag type={isPositive ? "green" : "red"} size="sm">
+      {label}
+    </Tag>
+  );
+  if (readOnly) return tag;
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      disabled={disabled}
-      title={isPositive ? strings.polarityPositive : strings.polarityNegative}
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs shrink-0 transition-colors disabled:cursor-not-allowed ${
-        isPositive ? "bg-success-100 text-typography-900" : "bg-destructive-50 text-typography-900"
-      }`}
-    >
-      <span
-        className={`h-2 w-2 rounded-full ${isPositive ? "bg-success-400" : "bg-destructive-400"}`}
-      />
-      {isPositive ? strings.polarityPositive : strings.polarityNegative}
+    <button type="button" onClick={onToggle} title={label} className="shrink-0">
+      {tag}
     </button>
   );
 };
 
-/** Behavior rows with polarity chips + weights, plus inline editing. */
+/** Behavior rows with polarity + weights, read-only display or inline editing. */
 export const RubricSection: React.FC<RubricSectionProps> = ({ rubric, readOnly = false }) => {
   const strings = en.roleplayStudio.spec;
   const dispatch = useDispatch();
@@ -53,79 +51,97 @@ export const RubricSection: React.FC<RubricSectionProps> = ({ rubric, readOnly =
   const update = (behavior: RoleplayRubricBehavior, patch: Partial<RoleplayRubricBehavior>) =>
     dispatch(upsertRubricBehavior({ ...behavior, ...patch }));
 
+  const renderExamples = (behavior: RoleplayRubricBehavior) =>
+    behavior.examples?.length > 0 ? (
+      <div className="flex flex-col gap-1">
+        <p className="cds--label" style={{ marginBottom: 0 }}>
+          {strings.behaviorExamples}
+        </p>
+        <ul className="list-disc list-inside">
+          {behavior.examples.map((example, index) => (
+            <li key={`${behavior.id}-example-${index}`} className="text-typography-700">
+              {example}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : null;
+
   return (
     <SpecSectionCard title={strings.rubric} sections={["rubric"]}>
       <div className="flex flex-col gap-3">
         {rubric.behaviors.length === 0 && (
-          <p className="text-sm text-typography-500">{strings.emptySection}</p>
+          <p className="text-typography-500">{strings.emptySection}</p>
         )}
         {rubric.behaviors.map(behavior => (
-          <div
-            key={behavior.id}
-            className="rounded-md border border-border-light p-3 flex flex-col gap-2"
-          >
-            <div className="flex items-center gap-2">
-              <input
-                value={behavior.name}
-                disabled={readOnly}
-                placeholder={strings.behaviorName}
-                onChange={event => update(behavior, { name: event.target.value })}
-                className="flex-1 min-w-0 rounded-md border border-border-light px-3 py-1.5 text-sm font-medium outline-none focus:border-primary-500 disabled:bg-neutral-50"
-              />
-              <PolarityChip
-                polarity={behavior.polarity}
-                disabled={readOnly}
-                onToggle={() =>
-                  update(behavior, {
-                    polarity: behavior.polarity === "positive" ? "negative" : "positive",
-                  })
-                }
-              />
-              <label className="flex items-center gap-1.5 text-xs text-typography-700 shrink-0">
-                {strings.behaviorWeight}
-                <input
-                  type="number"
-                  value={behavior.weight}
-                  disabled={readOnly}
-                  onChange={event => update(behavior, { weight: Number(event.target.value) || 0 })}
-                  className="w-16 rounded-md border border-border-light px-2 py-1 text-sm outline-none focus:border-primary-500 disabled:bg-neutral-50"
-                />
-              </label>
-              {!readOnly && (
-                <button
-                  type="button"
-                  onClick={() => dispatch(removeRubricBehavior(behavior.id))}
-                  className="text-xs text-typography-600 hover:text-destructive-500 shrink-0"
-                >
-                  {strings.remove}
-                </button>
+          <Tile key={behavior.id}>
+            <Stack gap={3}>
+              {readOnly ? (
+                <>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="font-medium text-typography-900 break-words">
+                      {behavior.name || "—"}
+                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <PolarityControl polarity={behavior.polarity} onToggle={() => undefined} readOnly />
+                      <Tag type="cool-gray" size="sm">{`${strings.behaviorWeight} ${behavior.weight}`}</Tag>
+                    </div>
+                  </div>
+                  {behavior.description && (
+                    <p className="text-typography-800 whitespace-pre-wrap break-words">
+                      {behavior.description}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <TextInput
+                        id={`behavior-name-${behavior.id}`}
+                        labelText={strings.behaviorName}
+                        value={behavior.name}
+                        onChange={event => update(behavior, { name: event.target.value })}
+                      />
+                    </div>
+                    <PolarityControl
+                      polarity={behavior.polarity}
+                      onToggle={() =>
+                        update(behavior, {
+                          polarity: behavior.polarity === "positive" ? "negative" : "positive",
+                        })
+                      }
+                    />
+                    <div className="w-24">
+                      <NumberInput
+                        id={`behavior-weight-${behavior.id}`}
+                        label={strings.behaviorWeight}
+                        value={behavior.weight}
+                        onChange={(_event, { value }) => update(behavior, { weight: Number(value) || 0 })}
+                      />
+                    </div>
+                    <Button
+                      kind="ghost"
+                      size="md"
+                      hasIconOnly
+                      renderIcon={TrashCan}
+                      iconDescription={strings.remove}
+                      tooltipPosition="left"
+                      onClick={() => dispatch(removeRubricBehavior(behavior.id))}
+                    />
+                  </div>
+                  <TextArea
+                    id={`behavior-description-${behavior.id}`}
+                    labelText={strings.behaviorDescription}
+                    value={behavior.description}
+                    onChange={event => update(behavior, { description: event.target.value })}
+                    rows={2}
+                  />
+                </>
               )}
-            </div>
-            <AutoExpandableTextarea
-              value={behavior.description}
-              onChange={description => update(behavior, { description })}
-              placeholder={strings.behaviorDescription}
-              disabled={readOnly}
-              minHeight={40}
-              maxLines={8}
-              className="w-full rounded-md border border-border-light px-3 py-2 text-sm outline-none focus:border-primary-500 disabled:bg-neutral-50"
-            />
-            {behavior.examples?.length > 0 && (
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-typography-700">{strings.behaviorExamples}</span>
-                <ul className="list-disc list-inside">
-                  {behavior.examples.map((example, index) => (
-                    <li
-                      key={`${behavior.id}-example-${index}`}
-                      className="text-xs text-typography-700"
-                    >
-                      {example}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+              {renderExamples(behavior)}
+            </Stack>
+          </Tile>
         ))}
         {!readOnly && (
           <AddItemButton

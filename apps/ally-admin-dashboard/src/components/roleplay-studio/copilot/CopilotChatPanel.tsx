@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
+import { SkeletonPlaceholder } from "@ally-ui-mono/ui-shared";
 import {
   baseAPI,
   useCancelImprovementRunMutation,
@@ -42,7 +43,7 @@ const sessionStorageKey = (specId: string) =>
 export const CopilotChatPanel: React.FC = () => {
   const strings = en.roleplayStudio.copilot;
   const dispatch = useDispatch();
-  const { specId, copilotSessionId, revision, savedRevision } =
+  const { specId, copilotSessionId, revision, savedRevision, improvementRunning } =
     useSelector(selectRoleplaySpecState);
 
   const [createSession] = useCreateRoleplayCopilotSessionMutation();
@@ -238,10 +239,10 @@ export const CopilotChatPanel: React.FC = () => {
         data-testid="copilot-chat-feed"
       >
         {isBooting ? (
-          <div className="flex flex-col gap-3 animate-pulse pt-2">
-            <div className="h-12 w-2/3 rounded-2xl bg-neutral-100" />
-            <div className="h-12 w-1/2 self-end rounded-2xl bg-neutral-100" />
-            <div className="h-12 w-3/4 rounded-2xl bg-neutral-100" />
+          <div className="flex flex-col gap-3 pt-2">
+            <SkeletonPlaceholder className="!h-12 !w-2/3 rounded-2xl" />
+            <SkeletonPlaceholder className="!h-12 !w-1/2 self-end rounded-2xl" />
+            <SkeletonPlaceholder className="!h-12 !w-3/4 rounded-2xl" />
           </div>
         ) : messages.length === 0 && !showLiveCard ? (
           <EmptyState
@@ -275,6 +276,27 @@ export const CopilotChatPanel: React.FC = () => {
       </div>
 
       <div className="shrink-0 pt-1">
+        {improvementRunning && (
+          <div
+            className="mb-2 flex items-center gap-3 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2.5"
+            role="status"
+            aria-live="polite"
+            data-testid="improvement-running-banner"
+          >
+            <span
+              className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"
+              aria-hidden
+            />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-primary-700">
+                {strings.improvement.running}
+              </span>
+              <span className="text-xs text-typography-600">
+                {strings.improvement.runningHint}
+              </span>
+            </div>
+          </div>
+        )}
         <ChatComposer
           onSend={handleSend}
           onStop={stop}

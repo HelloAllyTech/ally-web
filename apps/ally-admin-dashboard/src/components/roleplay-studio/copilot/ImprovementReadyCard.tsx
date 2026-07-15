@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 
+import { Play } from "@carbon/icons-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
+import { Button, Tile } from "@ally-ui-mono/ui-shared";
 import { usePublishRoleplayVersionMutation } from "@api";
-import { Play } from "@assets";
-import { ActionConfirmationPopup, Button } from "@components";
+import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { useTryRoleplayLive } from "@hooks";
@@ -59,7 +60,7 @@ export const ImprovementReadyCard: React.FC<ImprovementReadyCardProps> = ({ cont
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[92%] w-full rounded-xl border border-success-300 bg-success-50/30 px-4 py-3">
+      <Tile className="max-w-[92%] w-full">
         <div className="text-sm">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={roleplayMarkdownComponents}>
             {content}
@@ -69,17 +70,17 @@ export const ImprovementReadyCard: React.FC<ImprovementReadyCardProps> = ({ cont
         {targetVersionId && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button
-              variant={ButtonVariant.SECONDARY}
-              className="h-[34px] px-3 text-sm"
+              kind="secondary"
+              size="sm"
+              renderIcon={Play}
               onClick={() => void tryLive(targetVersionId)}
               disabled={isStartingSession}
             >
-              <Play className="w-4 h-4" />
               {isStartingSession ? publishStrings.startingSession : strings.testLive}
             </Button>
             <Button
-              variant={ButtonVariant.PRIMARY}
-              className="h-[34px] px-3 text-sm"
+              kind="primary"
+              size="sm"
               onClick={() => void doPublish(false)}
               disabled={isPublishing || published}
             >
@@ -89,13 +90,9 @@ export const ImprovementReadyCard: React.FC<ImprovementReadyCardProps> = ({ cont
                   ? publishStrings.publishing
                   : strings.publish}
             </Button>
-            <button
-              type="button"
-              className="text-xs text-primary-500 hover:underline"
-              onClick={() => setShowDiff(previous => !previous)}
-            >
+            <Button kind="ghost" size="sm" onClick={() => setShowDiff(previous => !previous)}>
               {showDiff ? strings.hideChanges : strings.viewChanges}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -125,7 +122,7 @@ export const ImprovementReadyCard: React.FC<ImprovementReadyCardProps> = ({ cont
             variant: ButtonVariant.SECONDARY,
           }}
         />
-      </div>
+      </Tile>
     </div>
   );
 };

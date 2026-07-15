@@ -1,8 +1,7 @@
 import React from "react";
 
+import { Button, IconButton } from "@ally-ui-mono/ui-shared";
 import { Close } from "@assets";
-import { Button } from "@components";
-import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 
 interface SidePanelShellProps {
@@ -15,7 +14,8 @@ interface SidePanelShellProps {
 
 /**
  * Right-hand overlay panel shell (visual pattern borrowed from
- * character-side-panel): dimmed backdrop, white panel, pinned footer.
+ * character-side-panel): dimmed backdrop, white panel, pinned footer. Chrome is
+ * built from Carbon actions (IconButton close, primary/secondary Buttons).
  */
 export const SidePanelShell: React.FC<SidePanelShellProps> = ({
   title,
@@ -31,33 +31,26 @@ export const SidePanelShell: React.FC<SidePanelShellProps> = ({
         <h2 className="text-xl font-medium text-typography-900">{title}</h2>
         <div className="flex items-center gap-3">
           {headerExtra}
-          <button type="button" onClick={onCancel} aria-label={en.common.cancel}>
+          <IconButton
+            label={en.common.cancel}
+            kind="ghost"
+            size="sm"
+            align="bottom"
+            onClick={onCancel}
+          >
             <Close />
-          </button>
+          </IconButton>
         </div>
       </div>
       <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-6 pb-6">{children}</div>
       <div className="relative z-10 mt-auto flex w-full shrink-0 items-center justify-center gap-4 bg-white p-4 border-t border-border-light">
-        <Button
-          variant={ButtonVariant.SECONDARY}
-          className="min-w-[120px]"
-          onClick={onCancel}
-          type="button"
-        >
+        <Button kind="secondary" className="min-w-[120px]" onClick={onCancel} type="button">
           {en.common.cancel}
         </Button>
-        <Button
-          variant={ButtonVariant.PRIMARY}
-          className="min-w-[120px]"
-          onClick={onSave}
-          type="button"
-        >
+        <Button kind="primary" className="min-w-[120px]" onClick={onSave} type="button">
           {en.common.save}
         </Button>
       </div>
     </div>
   </div>
 );
-
-export const panelFieldClass =
-  "w-full rounded-md border border-border-light px-3 py-2 text-sm outline-none focus:border-primary-500";
