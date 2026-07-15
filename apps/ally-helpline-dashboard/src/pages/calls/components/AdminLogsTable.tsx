@@ -50,7 +50,14 @@ import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants
 import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
 import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
 import { LogsTableProps } from "./types";
-import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
+import {
+  getSourceChipConfig,
+  getStatusChipConfig,
+  getModeChipConfig,
+  reconcileLogsById,
+  patchRowCustomFieldValues,
+  DenormalizedCustomFieldValue,
+} from "./utils";
 
 const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
@@ -94,7 +101,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     error: callLogsError,
   } = useGetAdminCallLogsQuery(
     { ...filters, sortBy: "createdAt", order: "DESC", archive: false },
-    { skip: !isCall },
+    { skip: !isCall, refetchOnFocus: true, refetchOnReconnect: true },
   );
 
   const {
@@ -137,9 +144,11 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     const sourceLogs = isCall ? callLogs : simulationLogs;
     if (sourceLogs?.length > 0) {
       setLogs(prev => {
-        // Avoid duplicate entries if page is reset
+        // On page 0 the list is a fresh snapshot; otherwise upsert by id so a
+        // refetched page replaces its rows in place (no duplicates) and edited
+        // values are reflected instead of a stale copy lingering.
         if (offset === 0) return [...sourceLogs];
-        return [...prev, ...sourceLogs];
+        return reconcileLogsById(prev, sourceLogs);
       });
       setIsLoadingMore(false);
       // If less than limit, no more data
@@ -536,6 +545,13 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     setSummary(null);
   };
 
+  // Reflect a custom-field edit on the exact row immediately, regardless of
+  // which loaded page it sits on. The list only refetches the current page, so
+  // relying on invalidation alone leaves rows on other pages stale.
+  const handleCustomFieldValuesSaved = (chatId: number, values: DenormalizedCustomFieldValue[]) => {
+    setLogs(prev => patchRowCustomFieldValues(prev, chatId, values));
+  };
+
   const getSummarySideBar = () => {
     switch (sessionType) {
       case SessionType.CALL:
@@ -548,6 +564,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             canEditSummary={false}
             canShowFeedback={false}
             showArchiveButton={currentUser?.id === summary?.counselorId}
+            onCustomFieldValuesSaved={handleCustomFieldValuesSaved}
           />
         );
       case SessionType.SIMULATION:
