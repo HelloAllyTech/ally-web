@@ -12,6 +12,25 @@ import {
 import { store } from "@store";
 
 /**
+ * Tabs a SUPER_DUPER_ADMIN can reach but a plain SUPER_ADMIN cannot. Single
+ * source of truth for both the role gate and the "superDuperAdminOnly" flag the
+ * sidebar uses to render a small blue dot beside these labels. Built lazily
+ * (like `buildNavigationItems`) so it doesn't read `@constants` at module-eval
+ * time, which would break under circular imports.
+ */
+const buildSuperDuperAdminOnlyItems = (): Set<string> =>
+  new Set<string>([
+    SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+    SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
+    SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
+    SIDEBAR_ITEMS.TOOLTIPS,
+    SIDEBAR_ITEMS.USER_BADGES,
+    SIDEBAR_ITEMS.AGENT_TEST_CASES,
+    SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+    SIDEBAR_ITEMS.SETTINGS,
+  ]);
+
+/**
  * Builds the full set of admin navigation tabs in their default order. Built
  * lazily (not at module-eval time) to avoid reading `@constants` exports before
  * they are initialized under circular imports. Permission/role gating is applied
@@ -164,25 +183,18 @@ export const deriveNavigationItems = ({
   email?: string;
 }): NavigationItem[] => {
   const navigationItems = buildNavigationItems();
+  const superDuperAdminOnlyItems = buildSuperDuperAdminOnlyItems();
   const resolvedEmail = email ?? store.getState()?.user?.user?.email;
   const isSuperAdmin = isSuperAdminRole(role);
   const isSuperDuperAdmin = isSuperDuperAdminRole(role);
   const hasPermissions = Boolean(permissions && permissions.length > 0);
 
   const visible = navigationItems.filter(item => {
-    switch (item.id) {
-      // Super-duper-admin-only tabs. Role-gated (no permission required); a
-      // plain SUPER_ADMIN no longer sees these.
-      case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
-      case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
-      case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
-      case SIDEBAR_ITEMS.TOOLTIPS:
-      case SIDEBAR_ITEMS.USER_BADGES:
-      case SIDEBAR_ITEMS.AGENT_TEST_CASES:
-      case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
-      case SIDEBAR_ITEMS.SETTINGS:
-        return isSuperDuperAdmin;
+    // Super-duper-admin-only tabs. Role-gated (no permission required); a plain
+    // SUPER_ADMIN no longer sees these.
+    if (superDuperAdminOnlyItems.has(item.id)) return isSuperDuperAdmin;
 
+    switch (item.id) {
       // Super-admin-tier tabs (both super-admin roles). Role-gated.
       case SIDEBAR_ITEMS.ANALYTICS:
       case SIDEBAR_ITEMS.COMPETENCIES:
@@ -222,5 +234,12 @@ export const deriveNavigationItems = ({
     }
   });
 
-  return applySavedOrder(visible, savedOrder);
+  // Tag the super-duper-admin-only tabs so the sidebar can render a blue dot
+  // beside them. Only a SUPER_DUPER_ADMIN ever sees these tabs, so the flag is
+  // unconditional on membership in the set.
+  const flagged = visible.map(item =>
+    superDuperAdminOnlyItems.has(item.id) ? { ...item, superDuperAdminOnly: true } : item,
+  );
+
+  return applySavedOrder(flagged, savedOrder);
 };
