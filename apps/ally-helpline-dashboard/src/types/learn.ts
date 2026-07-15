@@ -262,6 +262,7 @@ export interface GetSimulationTranscriptRequest {
   offset: number;
   limit: number;
   sortBy: string;
+  languageCode?: string;
 }
 
 export interface GetSimulationTranscriptResponse {
