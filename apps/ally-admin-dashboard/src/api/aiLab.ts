@@ -3,6 +3,7 @@ import {
   LabSkill,
   LabVariable,
   LabValue,
+  LabRun,
   LabListResponse,
   LabListQuery,
   LabValueListQuery,
@@ -12,6 +13,7 @@ import {
   UpdateLabVariableRequest,
   CreateLabValueRequest,
   UpdateLabValueRequest,
+  CreateLabRunRequest,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -35,10 +37,7 @@ export const aiLabAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.AI_LAB_SKILLS],
     }),
-    updateLabSkill: builder.mutation<
-      LabSkill,
-      { id: string; data: UpdateLabSkillRequest }
-    >({
+    updateLabSkill: builder.mutation<LabSkill, { id: string; data: UpdateLabSkillRequest }>({
       query: ({ id, data }) => ({
         url: ApiEndpoints.AI_LAB.SKILL_BY_ID(id),
         method: HttpMethod.PATCH,
@@ -55,10 +54,7 @@ export const aiLabAPI = baseAPI.injectEndpoints({
     }),
 
     // ---- Variables ----
-    getLabVariables: builder.query<
-      LabListResponse<LabVariable>,
-      LabListQuery | void
-    >({
+    getLabVariables: builder.query<LabListResponse<LabVariable>, LabListQuery | void>({
       query: params => ({
         url: ApiEndpoints.AI_LAB.VARIABLES,
         method: HttpMethod.GET,
@@ -95,10 +91,7 @@ export const aiLabAPI = baseAPI.injectEndpoints({
     }),
 
     // ---- Values ----
-    getLabValues: builder.query<
-      LabListResponse<LabValue>,
-      LabValueListQuery | void
-    >({
+    getLabValues: builder.query<LabListResponse<LabValue>, LabValueListQuery | void>({
       query: params => ({
         url: ApiEndpoints.AI_LAB.VALUES,
         method: HttpMethod.GET,
@@ -114,10 +107,7 @@ export const aiLabAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.AI_LAB_VALUES],
     }),
-    updateLabValue: builder.mutation<
-      LabValue,
-      { id: string; data: UpdateLabValueRequest }
-    >({
+    updateLabValue: builder.mutation<LabValue, { id: string; data: UpdateLabValueRequest }>({
       query: ({ id, data }) => ({
         url: ApiEndpoints.AI_LAB.VALUE_BY_ID(id),
         method: HttpMethod.PATCH,
@@ -131,6 +121,33 @@ export const aiLabAPI = baseAPI.injectEndpoints({
         method: HttpMethod.DELETE,
       }),
       invalidatesTags: [TAG_TYPES.AI_LAB_VALUES],
+    }),
+
+    // ---- Runs ----
+    getLabRuns: builder.query<LabListResponse<LabRun>, LabListQuery | void>({
+      query: params => ({
+        url: ApiEndpoints.AI_LAB.RUNS,
+        method: HttpMethod.GET,
+        params: params || undefined,
+      }),
+      providesTags: [TAG_TYPES.AI_LAB_RUNS],
+    }),
+    // Executes ONE skill. A multi-skill run fires this once per skill (the
+    // caller shows progress + refetches the log when all settle), so the
+    // mutation itself does not invalidate — the caller refetches on completion.
+    createLabRun: builder.mutation<LabRun, CreateLabRunRequest>({
+      query: body => ({
+        url: ApiEndpoints.AI_LAB.RUNS,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
+    deleteLabRun: builder.mutation<{ success: boolean }, string>({
+      query: id => ({
+        url: ApiEndpoints.AI_LAB.RUN_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.AI_LAB_RUNS],
     }),
   }),
 });
@@ -148,4 +165,7 @@ export const {
   useCreateLabValueMutation,
   useUpdateLabValueMutation,
   useDeleteLabValueMutation,
+  useGetLabRunsQuery,
+  useCreateLabRunMutation,
+  useDeleteLabRunMutation,
 } = aiLabAPI;

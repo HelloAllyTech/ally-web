@@ -214,6 +214,8 @@ export const ApiEndpoints = {
     VARIABLE_BY_ID: (id: string) => `/v1/lab/variables/${id}`,
     VALUES: "/v1/lab/values",
     VALUE_BY_ID: (id: string) => `/v1/lab/values/${id}`,
+    RUNS: "/v1/lab/runs",
+    RUN_BY_ID: (id: string) => `/v1/lab/runs/${id}`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -434,6 +436,7 @@ export const TAG_TYPES = {
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",
+  AI_LAB_RUNS: "aiLabRuns",
 };
 
 /**
