@@ -7,16 +7,17 @@ import {
   useCreateLabSkillMutation,
   useUpdateLabSkillMutation,
   useDeleteLabSkillMutation,
+  useGetAutofillModelsQuery,
 } from "@api";
 import { ActionConfirmationPopup, EmptyState, ListToolbar } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en } from "@constants";
+import { en, DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS } from "@constants";
 import { LabSkill } from "@types";
 
 import { LabSidePanel, LabField } from "./LabSidePanel";
 import { LabTable, LabTableColumn } from "./LabTable";
 
-const EMPTY_FORM = { name: "", description: "", content: "" };
+const EMPTY_FORM = { name: "", description: "", content: "", model: DEFAULT_AUTOFILL_MODEL };
 
 export const SkillsTab: React.FC = () => {
   const [search, setSearch] = useState("");
@@ -26,6 +27,13 @@ export const SkillsTab: React.FC = () => {
   const [createSkill] = useCreateLabSkillMutation();
   const [updateSkill] = useUpdateLabSkillMutation();
   const [deleteSkill] = useDeleteLabSkillMutation();
+
+  // Model options from the LLM registry (OpenAI + Anthropic), with a static
+  // fallback if the endpoint is unavailable.
+  const { data: models } = useGetAutofillModelsQuery();
+  const modelOptions = models?.length ? models : FALLBACK_AUTOFILL_MODEL_OPTIONS;
+  const openaiModels = modelOptions.filter(m => m.provider === "openai");
+  const anthropicModels = modelOptions.filter(m => m.provider === "anthropic");
 
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selected, setSelected] = useState<LabSkill | null>(null);
@@ -44,6 +52,7 @@ export const SkillsTab: React.FC = () => {
       name: skill.name,
       description: skill.description ?? "",
       content: skill.content,
+      model: skill.model || DEFAULT_AUTOFILL_MODEL,
     });
     setIsPanelOpen(true);
   }, []);
@@ -61,6 +70,7 @@ export const SkillsTab: React.FC = () => {
           name: selected.name,
           description: selected.description ?? "",
           content: selected.content,
+          model: selected.model || DEFAULT_AUTOFILL_MODEL,
         }
       : EMPTY_FORM;
     return JSON.stringify(form) !== JSON.stringify(original);
@@ -72,6 +82,7 @@ export const SkillsTab: React.FC = () => {
       name: form.name.trim(),
       description: form.description.trim() || undefined,
       content: form.content,
+      model: form.model,
     };
     const response = selected
       ? await updateSkill({ id: selected.id, data: payload })
@@ -99,7 +110,17 @@ export const SkillsTab: React.FC = () => {
     {
       key: "name",
       label: en.aiLab.skills.nameLabel,
-      className: "font-medium w-[24%]",
+      className: "font-medium w-[22%]",
+    },
+    {
+      key: "model",
+      label: en.aiLab.skills.modelLabel,
+      render: row => (
+        <span className="font-mono text-xs text-typography-700">
+          {row.model || DEFAULT_AUTOFILL_MODEL}
+        </span>
+      ),
+      className: "w-[16%]",
     },
     {
       key: "description",
@@ -107,7 +128,7 @@ export const SkillsTab: React.FC = () => {
       render: row => (
         <span className="text-typography-700 line-clamp-2">{row.description || "—"}</span>
       ),
-      className: "w-[30%]",
+      className: "w-[26%]",
     },
     {
       key: "content",
@@ -143,12 +164,7 @@ export const SkillsTab: React.FC = () => {
             onAction={openCreate}
           />
         ) : (
-          <LabTable
-            columns={columns}
-            rows={skills}
-            onEdit={openEdit}
-            onDelete={setDeleteTarget}
-          />
+          <LabTable columns={columns} rows={skills} onEdit={openEdit} onDelete={setDeleteTarget} />
         )}
       </div>
 
@@ -179,12 +195,38 @@ export const SkillsTab: React.FC = () => {
             className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base resize-none"
           />
         </LabField>
+        <LabField label={en.aiLab.skills.modelLabel} required help={en.aiLab.skills.modelHelp}>
+          <select
+            value={form.model}
+            onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
+            className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base bg-white"
+          >
+            {openaiModels.length > 0 && (
+              <optgroup label="OpenAI">
+                {openaiModels.map(m => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {anthropicModels.length > 0 && (
+              <optgroup label="Anthropic">
+                {anthropicModels.map(m => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        </LabField>
         <LabField label={en.aiLab.skills.contentLabel} required>
           <textarea
             value={form.content}
             onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
             placeholder={en.aiLab.skills.contentPlaceholder}
-            rows={14}
+            rows={12}
             className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-sm font-mono resize-y"
           />
         </LabField>
