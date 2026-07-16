@@ -49,36 +49,39 @@ export const RunDetailDrawer: React.FC<RunDetailDrawerProps> = ({ run, onClose }
 
           {run.variableValues.length > 0 && (
             <Section label={en.aiLab.runs.detailVariables}>
-              <div className="flex flex-wrap gap-2">
+              <div className="space-y-2">
                 {run.variableValues.map(v => (
-                  <span
+                  <div
                     key={v.name}
-                    className="text-sm bg-background-secondary border border-border-light rounded-full px-3 py-1"
+                    className="border border-border-light rounded-md bg-background-secondary px-3 py-2"
                   >
-                    <span className="font-mono">{`{{${v.name}}}`}</span>
-                    <span className="text-typography-500"> = </span>
-                    {v.value}
-                  </span>
+                    <div className="font-mono text-sm text-typography-700 mb-1 break-all">
+                      {`{{${v.name}}}`}
+                    </div>
+                    <div className="text-sm text-typography-900 whitespace-pre-wrap break-words max-h-40 overflow-y-auto custom-scrollbar">
+                      {v.value}
+                    </div>
+                  </div>
                 ))}
               </div>
             </Section>
           )}
 
           <Section label={en.aiLab.runs.detailPrompt}>
-            <pre className="whitespace-pre-wrap font-mono text-sm bg-background-secondary border border-border-light rounded-md p-3 max-h-[220px] overflow-y-auto custom-scrollbar">
+            <pre className="whitespace-pre-wrap break-words font-mono text-sm bg-background-secondary border border-border-light rounded-md p-3 max-h-[240px] overflow-y-auto custom-scrollbar">
               {run.resolvedPrompt}
             </pre>
           </Section>
 
           {run.status === "FAILED" ? (
             <Section label={en.aiLab.runs.detailError}>
-              <pre className="whitespace-pre-wrap font-mono text-sm text-destructive-700 bg-destructive-50 border border-destructive-200 rounded-md p-3">
+              <pre className="whitespace-pre-wrap break-words font-mono text-sm text-destructive-700 bg-destructive-50 border border-destructive-200 rounded-md p-3">
                 {run.error || "Unknown error"}
               </pre>
             </Section>
           ) : (
             <Section label={en.aiLab.runs.detailOutput}>
-              <pre className="whitespace-pre-wrap text-base bg-white border border-border-light rounded-md p-3">
+              <pre className="whitespace-pre-wrap break-words text-base bg-white border border-border-light rounded-md p-3 max-h-[360px] overflow-y-auto custom-scrollbar">
                 {run.output || ""}
               </pre>
             </Section>
