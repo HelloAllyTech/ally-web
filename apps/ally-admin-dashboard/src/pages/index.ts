@@ -19,6 +19,7 @@ export * from "./TranslationManagement/TranslationManagement";
 export * from "./Tooltips/Tooltips";
 export * from "./Blog/Blog";
 export * from "./AILab";
+export * from "./Evaluate";
 export * from "./Settings/Settings";
 export * from "./AgentTestCases/AgentTestCases";
 export * from "./Competencies/Competencies";

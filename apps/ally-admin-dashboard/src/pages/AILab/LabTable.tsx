@@ -52,7 +52,9 @@ export function LabTable<T extends { id: string }>({
                   key={col.key}
                   className={`px-4 py-3 text-typography-900 align-top ${col.className ?? ""}`}
                 >
-                  {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? "")}
+                  {col.render
+                    ? col.render(row)
+                    : String((row as Record<string, unknown>)[col.key] ?? "")}
                 </td>
               ))}
               <td className="px-4 py-3 align-top">

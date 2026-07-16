@@ -106,9 +106,7 @@ export const ValuesTab: React.FC = () => {
       key: "variable",
       label: en.aiLab.values.columnVariable,
       render: row => (
-        <span className="font-mono text-sm">
-          {row.variable ? `{{${row.variable.name}}}` : "—"}
-        </span>
+        <span className="font-mono text-sm">{row.variable ? `{{${row.variable.name}}}` : "—"}</span>
       ),
       className: "w-[24%]",
     },

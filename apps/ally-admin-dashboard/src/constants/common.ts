@@ -216,6 +216,21 @@ export const ApiEndpoints = {
     VALUE_BY_ID: (id: string) => `/v1/lab/values/${id}`,
     RUNS: "/v1/lab/runs",
     RUN_BY_ID: (id: string) => `/v1/lab/runs/${id}`,
+    RUN_PUBLISH: (id: string) => `/v1/lab/runs/${id}/publish`,
+    RUN_QUESTIONS: (id: string) => `/v1/lab/runs/${id}/questions`,
+    RUN_ASSIGNMENTS: (id: string) => `/v1/lab/runs/${id}/assignments`,
+    RUN_RESULTS: (id: string) => `/v1/lab/runs/${id}/results`,
+    ASSIGNMENT_BY_ID: (id: string) => `/v1/lab/runs/assignments/${id}`,
+    EVALUATORS: "/v1/lab/evaluators",
+    EVALUATOR_BY_ID: (id: string) => `/v1/lab/evaluators/${id}`,
+    EVALUATOR_REGENERATE_PASSWORD: (id: string) =>
+      `/v1/lab/evaluators/${id}/regenerate-password`,
+    // Evaluator portal (the /evaluate micro-app; evaluator JWT, not admin)
+    EVAL_LOGIN: "/v1/lab/eval/login",
+    EVAL_ASSIGNMENTS: "/v1/lab/eval/assignments",
+    EVAL_ASSIGNMENT_BY_ID: (id: string) => `/v1/lab/eval/assignments/${id}`,
+    EVAL_ASSIGNMENT_SUBMIT: (id: string) =>
+      `/v1/lab/eval/assignments/${id}/submit`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -336,6 +351,10 @@ export const ROUTES = {
   ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
   BLOG: "/blog",
   AI_LAB: "/ai-lab",
+  // Evaluator micro-app (public routes; evaluator email+password auth)
+  EVALUATE: "/evaluate",
+  EVALUATE_RECORDS: "/evaluate/records",
+  EVALUATE_RECORD: (assignmentId: string | number) => `/evaluate/records/${assignmentId}`,
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -345,6 +364,9 @@ export const LOCAL_STORAGE_KEYS = {
   ADMIN_IS_AUTHENTICATED: "adminIsAuthenticated",
   PREVIEW_ROOM_DATA: "previewRoomData",
   ROLEPLAY_PREVIEW_ROOM_DATA: "roleplayPreviewRoomData",
+  // Evaluator micro-app session (separate from the admin session)
+  EVALUATOR_ACCESS_TOKEN: "evaluatorAccessToken",
+  EVALUATOR_EMAIL: "evaluatorEmail",
   // Prefix — the copilot session id is stored per spec as `${prefix}:${specId}`
   // so a page refresh can resume the same interview session.
   ROLEPLAY_COPILOT_SESSION_PREFIX: "roleplayCopilotSession",
@@ -437,6 +459,10 @@ export const TAG_TYPES = {
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",
   AI_LAB_RUNS: "aiLabRuns",
+  AI_LAB_EVALUATORS: "aiLabEvaluators",
+  AI_LAB_ASSIGNMENTS: "aiLabAssignments",
+  // Evaluator portal (separate evaluatorAPI)
+  EVAL_ASSIGNMENTS: "evalAssignments",
 };
 
 /**

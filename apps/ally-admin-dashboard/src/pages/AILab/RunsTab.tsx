@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { Delete } from "@icons";
+import { BarChart3, Delete, Upload, Users } from "@icons";
 import { toast } from "sonner";
 
 import { useGetLabRunsQuery, useDeleteLabRunMutation } from "@api";
@@ -9,8 +9,11 @@ import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { LabRun } from "@types";
 
+import { AssignRunDrawer } from "./AssignRunDrawer";
 import { CreateRunDrawer } from "./CreateRunDrawer";
+import { PublishRunDrawer } from "./PublishRunDrawer";
 import { RunDetailDrawer } from "./RunDetailDrawer";
+import { RunResultsDrawer } from "./RunResultsDrawer";
 import { RunStatusBadge } from "./RunStatusBadge";
 
 const VariableSummary: React.FC<{ run: LabRun }> = ({ run }) => {
@@ -40,6 +43,9 @@ export const RunsTab: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [detailRun, setDetailRun] = useState<LabRun | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<LabRun | null>(null);
+  const [publishRun, setPublishRun] = useState<LabRun | null>(null);
+  const [assignRun, setAssignRun] = useState<LabRun | null>(null);
+  const [resultsRun, setResultsRun] = useState<LabRun | null>(null);
 
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
@@ -103,7 +109,22 @@ export const RunsTab: React.FC = () => {
                       <VariableSummary run={run} />
                     </td>
                     <td className="px-4 py-3 align-top">
-                      <RunStatusBadge status={run.status} />
+                      <div className="flex flex-col items-start gap-1">
+                        <RunStatusBadge status={run.status} />
+                        {run.publishedAt && (
+                          <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full border bg-primary-50 text-primary-700 border-primary-200">
+                            {en.aiLab.publish.publishedBadge}
+                          </span>
+                        )}
+                        {run.publishedAt && run.evalStats && run.evalStats.assigned > 0 && (
+                          <span className="text-xs text-typography-500">
+                            {en.aiLab.assign.responses(
+                              run.evalStats.submitted,
+                              run.evalStats.assigned,
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 align-top text-typography-700">
                       <span className="line-clamp-2">
@@ -114,7 +135,46 @@ export const RunsTab: React.FC = () => {
                       {new Date(run.createdAt).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 align-top">
-                      <div className="flex items-center justify-end text-typography-600">
+                      <div className="flex items-center justify-end gap-3 text-typography-600">
+                        {run.status === "COMPLETED" && !run.publishedAt && (
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              setPublishRun(run);
+                            }}
+                            className="hover:text-primary-600"
+                            aria-label={en.aiLab.publish.action}
+                            title={en.aiLab.publish.action}
+                          >
+                            <Upload size={18} />
+                          </button>
+                        )}
+                        {run.publishedAt && (
+                          <>
+                            <button
+                              onClick={e => {
+                                e.stopPropagation();
+                                setAssignRun(run);
+                              }}
+                              className="hover:text-primary-600"
+                              aria-label={en.aiLab.assign.action}
+                              title={en.aiLab.assign.action}
+                            >
+                              <Users size={18} />
+                            </button>
+                            <button
+                              onClick={e => {
+                                e.stopPropagation();
+                                setResultsRun(run);
+                              }}
+                              className="hover:text-primary-600"
+                              aria-label={en.aiLab.results.action}
+                              title={en.aiLab.results.action}
+                            >
+                              <BarChart3 size={18} />
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={e => {
                             e.stopPropagation();
@@ -143,6 +203,12 @@ export const RunsTab: React.FC = () => {
       />
 
       <RunDetailDrawer run={detailRun} onClose={() => setDetailRun(null)} />
+
+      <PublishRunDrawer run={publishRun} onClose={() => setPublishRun(null)} />
+
+      <AssignRunDrawer run={assignRun} onClose={() => setAssignRun(null)} />
+
+      <RunResultsDrawer run={resultsRun} onClose={() => setResultsRun(null)} />
 
       <ActionConfirmationPopup
         isOpen={!!deleteTarget}
