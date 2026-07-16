@@ -138,6 +138,8 @@ export const baseAPI = createApi({
     TAG_TYPES.AI_LAB_VARIABLES,
     TAG_TYPES.AI_LAB_VALUES,
     TAG_TYPES.AI_LAB_RUNS,
+    TAG_TYPES.AI_LAB_EVALUATORS,
+    TAG_TYPES.AI_LAB_ASSIGNMENTS,
   ],
   endpoints: () => ({}),
 });

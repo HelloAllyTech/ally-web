@@ -5,16 +5,18 @@ import { useSearchParams } from "react-router-dom";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 
-import { SkillsTab } from "./SkillsTab";
-import { VariablesTab } from "./VariablesTab";
-import { ValuesTab } from "./ValuesTab";
+import { EvaluatorsTab } from "./EvaluatorsTab";
 import { RunsTab } from "./RunsTab";
+import { SkillsTab } from "./SkillsTab";
+import { ValuesTab } from "./ValuesTab";
+import { VariablesTab } from "./VariablesTab";
 
 enum AILabTab {
   SKILLS = "skills",
   VARIABLES = "variables",
   VALUES = "values",
   RUNS = "runs",
+  EVALUATORS = "evaluators",
 }
 
 const TAB_ITEMS = [
@@ -22,6 +24,7 @@ const TAB_ITEMS = [
   { id: AILabTab.VARIABLES, label: en.aiLab.tabs.variables },
   { id: AILabTab.VALUES, label: en.aiLab.tabs.values },
   { id: AILabTab.RUNS, label: en.aiLab.tabs.runs },
+  { id: AILabTab.EVALUATORS, label: en.aiLab.tabs.evaluators },
 ];
 
 const VALID_TABS = new Set<string>(TAB_ITEMS.map(t => t.id));
@@ -42,6 +45,8 @@ export const AILab: React.FC = () => {
         return <ValuesTab />;
       case AILabTab.RUNS:
         return <RunsTab />;
+      case AILabTab.EVALUATORS:
+        return <EvaluatorsTab />;
       case AILabTab.SKILLS:
       default:
         return <SkillsTab />;

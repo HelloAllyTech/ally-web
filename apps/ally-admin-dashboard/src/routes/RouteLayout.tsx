@@ -41,6 +41,9 @@ import {
   RoleplayStudioWorkspace,
   Terms,
   Privacy,
+  EvaluateLogin,
+  EvaluateRecords,
+  EvaluateRecordDetail,
 } from "@pages";
 
 import { DefaultRedirect } from "./DefaultRedirect";
@@ -79,6 +82,12 @@ export const RouteLayout: React.FC = () => {
         {/* Legal pages — fully public, accessible whether or not signed in */}
         <Route path={ROUTES.TERMS} element={<Terms />} />
         <Route path={ROUTES.PRIVACY} element={<Privacy />} />
+
+        {/* Evaluator micro-app — its own email+password session (NOT admin
+            auth); the pages gate themselves on the evaluator token. */}
+        <Route path={ROUTES.EVALUATE} element={<EvaluateLogin />} />
+        <Route path={ROUTES.EVALUATE_RECORDS} element={<EvaluateRecords />} />
+        <Route path={ROUTES.EVALUATE_RECORD(":assignmentId")} element={<EvaluateRecordDetail />} />
 
         {/* Private Routes */}
         <Route

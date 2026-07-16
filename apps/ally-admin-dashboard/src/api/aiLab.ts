@@ -14,6 +14,12 @@ import {
   CreateLabValueRequest,
   UpdateLabValueRequest,
   CreateLabRunRequest,
+  PublishRunRequest,
+  LabEvalQuestion,
+  LabEvaluator,
+  CreateEvaluatorResponse,
+  LabRunAssignmentItem,
+  LabRunResults,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -149,6 +155,93 @@ export const aiLabAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.AI_LAB_RUNS],
     }),
+
+    // ---- Human evaluation: publish / assign / results ----
+    publishLabRun: builder.mutation<
+      { run: LabRun; questions: LabEvalQuestion[] },
+      PublishRunRequest
+    >({
+      query: ({ runId, questions }) => ({
+        url: ApiEndpoints.AI_LAB.RUN_PUBLISH(runId),
+        method: HttpMethod.POST,
+        body: { questions },
+      }),
+      invalidatesTags: [TAG_TYPES.AI_LAB_RUNS],
+    }),
+    getRunAssignments: builder.query<{ items: LabRunAssignmentItem[] }, string>({
+      query: runId => ({
+        url: ApiEndpoints.AI_LAB.RUN_ASSIGNMENTS(runId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (result, error, runId) => [{ type: TAG_TYPES.AI_LAB_ASSIGNMENTS, id: runId }],
+    }),
+    assignLabRun: builder.mutation<
+      { items: LabRunAssignmentItem[] },
+      { runId: string; evaluatorIds: string[] }
+    >({
+      query: ({ runId, evaluatorIds }) => ({
+        url: ApiEndpoints.AI_LAB.RUN_ASSIGNMENTS(runId),
+        method: HttpMethod.POST,
+        body: { evaluatorIds },
+      }),
+      invalidatesTags: (result, error, { runId }) => [
+        { type: TAG_TYPES.AI_LAB_ASSIGNMENTS, id: runId },
+        TAG_TYPES.AI_LAB_RUNS,
+        TAG_TYPES.AI_LAB_EVALUATORS,
+      ],
+    }),
+    unassignLabRun: builder.mutation<{ success: boolean }, { assignmentId: string; runId: string }>(
+      {
+        query: ({ assignmentId }) => ({
+          url: ApiEndpoints.AI_LAB.ASSIGNMENT_BY_ID(assignmentId),
+          method: HttpMethod.DELETE,
+        }),
+        invalidatesTags: (result, error, { runId }) => [
+          { type: TAG_TYPES.AI_LAB_ASSIGNMENTS, id: runId },
+          TAG_TYPES.AI_LAB_RUNS,
+          TAG_TYPES.AI_LAB_EVALUATORS,
+        ],
+      },
+    ),
+    getRunResults: builder.query<LabRunResults, string>({
+      query: runId => ({
+        url: ApiEndpoints.AI_LAB.RUN_RESULTS(runId),
+        method: HttpMethod.GET,
+      }),
+      // Results change as evaluators submit; refetch whenever the drawer opens.
+      providesTags: (result, error, runId) => [{ type: TAG_TYPES.AI_LAB_ASSIGNMENTS, id: runId }],
+    }),
+
+    // ---- Evaluators ----
+    getLabEvaluators: builder.query<LabListResponse<LabEvaluator>, LabListQuery | void>({
+      query: params => ({
+        url: ApiEndpoints.AI_LAB.EVALUATORS,
+        method: HttpMethod.GET,
+        params: params || undefined,
+      }),
+      providesTags: [TAG_TYPES.AI_LAB_EVALUATORS],
+    }),
+    createLabEvaluator: builder.mutation<CreateEvaluatorResponse, { email: string }>({
+      query: body => ({
+        url: ApiEndpoints.AI_LAB.EVALUATORS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.AI_LAB_EVALUATORS],
+    }),
+    regenerateEvaluatorPassword: builder.mutation<{ password: string }, string>({
+      query: id => ({
+        url: ApiEndpoints.AI_LAB.EVALUATOR_REGENERATE_PASSWORD(id),
+        method: HttpMethod.POST,
+      }),
+    }),
+    deleteLabEvaluator: builder.mutation<{ success: boolean }, string>({
+      query: id => ({
+        url: ApiEndpoints.AI_LAB.EVALUATOR_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.AI_LAB_EVALUATORS, TAG_TYPES.AI_LAB_RUNS],
+    }),
   }),
 });
 
@@ -168,4 +261,13 @@ export const {
   useGetLabRunsQuery,
   useCreateLabRunMutation,
   useDeleteLabRunMutation,
+  usePublishLabRunMutation,
+  useGetRunAssignmentsQuery,
+  useAssignLabRunMutation,
+  useUnassignLabRunMutation,
+  useGetRunResultsQuery,
+  useGetLabEvaluatorsQuery,
+  useCreateLabEvaluatorMutation,
+  useRegenerateEvaluatorPasswordMutation,
+  useDeleteLabEvaluatorMutation,
 } = aiLabAPI;
