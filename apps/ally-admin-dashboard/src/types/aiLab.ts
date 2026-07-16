@@ -66,3 +66,33 @@ export interface CreateLabValueRequest {
   value: string;
 }
 export type UpdateLabValueRequest = Partial<CreateLabValueRequest>;
+
+export type LabRunStatus = "RUNNING" | "COMPLETED" | "FAILED";
+
+export interface LabRunVariableValue {
+  name: string;
+  value: string;
+}
+
+export interface LabRun {
+  id: string;
+  batchId?: string | null;
+  skillId?: string | null;
+  skillName: string;
+  resolvedPrompt: string;
+  variableValues: LabRunVariableValue[];
+  model: string;
+  status: LabRunStatus;
+  output?: string | null;
+  error?: string | null;
+  createdBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Runs a single skill. A multi-skill run submits one of these per skill. */
+export interface CreateLabRunRequest {
+  skillId: string;
+  batchId?: string;
+  variableValues?: LabRunVariableValue[];
+}
