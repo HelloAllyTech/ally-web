@@ -52,6 +52,10 @@ vi.mock("@pages", () => ({
   Settings: () => <div>SettingsPage</div>,
   Terms: () => <div>TermsPage</div>,
   Privacy: () => <div>PrivacyPage</div>,
+  AILab: () => <div>AILabPage</div>,
+  EvaluateLogin: () => <div>EvaluateLoginPage</div>,
+  EvaluateRecords: () => <div>EvaluateRecordsPage</div>,
+  EvaluateRecordDetail: () => <div>EvaluateRecordDetailPage</div>,
 }));
 
 describe("RouteLayout", () => {

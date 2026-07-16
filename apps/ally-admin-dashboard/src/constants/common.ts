@@ -223,14 +223,12 @@ export const ApiEndpoints = {
     ASSIGNMENT_BY_ID: (id: string) => `/v1/lab/runs/assignments/${id}`,
     EVALUATORS: "/v1/lab/evaluators",
     EVALUATOR_BY_ID: (id: string) => `/v1/lab/evaluators/${id}`,
-    EVALUATOR_REGENERATE_PASSWORD: (id: string) =>
-      `/v1/lab/evaluators/${id}/regenerate-password`,
+    EVALUATOR_REGENERATE_PASSWORD: (id: string) => `/v1/lab/evaluators/${id}/regenerate-password`,
     // Evaluator portal (the /evaluate micro-app; evaluator JWT, not admin)
     EVAL_LOGIN: "/v1/lab/eval/login",
     EVAL_ASSIGNMENTS: "/v1/lab/eval/assignments",
     EVAL_ASSIGNMENT_BY_ID: (id: string) => `/v1/lab/eval/assignments/${id}`,
-    EVAL_ASSIGNMENT_SUBMIT: (id: string) =>
-      `/v1/lab/eval/assignments/${id}/submit`,
+    EVAL_ASSIGNMENT_SUBMIT: (id: string) => `/v1/lab/eval/assignments/${id}/submit`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",

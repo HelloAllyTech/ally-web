@@ -188,6 +188,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const tabList = [
     {
+      id: 5,
+      label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
+      content: <SkillsTab sessionId={summaryId} />,
+    },
+    {
       id: 1,
       label: t("postSim.tabs.sessionReview", "Session Review"),
       content: (
@@ -221,11 +226,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           className=" px-4 pt-[10px]"
         />
       ),
-    },
-    {
-      id: 5,
-      label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
-      content: <SkillsTab sessionId={summaryId} />,
     },
     // {
     //   id: 4,

@@ -1417,8 +1417,7 @@ export const en = {
       save: "Save assignments",
       saved: "Assignments updated",
       saveFailed: "Failed to update assignments",
-      responses: (submitted: number, assigned: number) =>
-        `${submitted}/${assigned} responses`,
+      responses: (submitted: number, assigned: number) => `${submitted}/${assigned} responses`,
     },
     // Aggregated results
     results: {
