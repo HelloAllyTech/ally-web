@@ -30,6 +30,7 @@ import {
   Calendar as CCalendar,
   ChartBar as CChartBar,
   Chat as CChat,
+  Chemistry as CChemistry,
   Checkmark as CCheckmark,
   CheckmarkFilled as CCheckmarkFilled,
   CheckmarkOutline as CCheckmarkOutline,
@@ -141,6 +142,7 @@ export const Branch = createCarbonIcon(CBranch);
 export const Calendar = createCarbonIcon(CCalendar);
 export const Cancel = createCarbonIcon(CClose);
 export const Chat = createCarbonIcon(CChat);
+export const Chemistry = createCarbonIcon(CChemistry);
 export const CheckCircle = createCarbonIcon(CCheckmarkOutline);
 export const Close = createCarbonIcon(CClose);
 export const Compress = createCarbonIcon(CMinimize);

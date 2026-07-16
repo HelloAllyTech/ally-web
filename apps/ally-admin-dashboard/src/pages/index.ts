@@ -18,6 +18,7 @@ export * from "./GuardrailsManagement/GuardrailsManagement";
 export * from "./TranslationManagement/TranslationManagement";
 export * from "./Tooltips/Tooltips";
 export * from "./Blog/Blog";
+export * from "./AILab";
 export * from "./Settings/Settings";
 export * from "./AgentTestCases/AgentTestCases";
 export * from "./Competencies/Competencies";

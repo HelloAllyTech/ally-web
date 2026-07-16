@@ -30,6 +30,9 @@ export enum Permissions {
   VIEW_BLOGS = "view:blogs",
   EDIT_BLOG = "edit:blog",
   DELETE_BLOG = "delete:blog",
+  VIEW_AI_LAB = "view:admin:ai-lab",
+  EDIT_AI_LAB = "edit:admin:ai-lab",
+  DELETE_AI_LAB = "delete:admin:ai-lab",
 }
 
 export const SIDEBAR_ITEMS = {
@@ -50,6 +53,7 @@ export const SIDEBAR_ITEMS = {
   ROLEPLAY_SESSION_LOGS: "roleplay-session-logs",
   ROLEPLAY_STUDIO: "roleplay-studio",
   BLOG: "blog",
+  AI_LAB: "ai-lab",
   SETTINGS: "settings",
 };
 

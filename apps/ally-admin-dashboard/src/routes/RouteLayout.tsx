@@ -30,6 +30,7 @@ import {
   TranslationManagement,
   TooltipManagement,
   BlogManagement,
+  AILab,
   Settings,
   AgentTestCases,
   Competencies,
@@ -265,6 +266,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.VIEW_BLOGS]}>
               <BlogManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.AI_LAB}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <AILab />
             </PrivateLayout>
           }
         />
