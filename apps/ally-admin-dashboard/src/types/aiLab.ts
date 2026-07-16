@@ -6,6 +6,8 @@ export interface LabSkill {
   name: string;
   description?: string | null;
   content: string;
+  /** LLM model id this skill runs on (from the LLM model registry). */
+  model?: string | null;
   createdBy: number;
   createdAt: string;
   updatedAt: string;
@@ -51,6 +53,7 @@ export interface CreateLabSkillRequest {
   name: string;
   description?: string;
   content: string;
+  model?: string;
 }
 export type UpdateLabSkillRequest = Partial<CreateLabSkillRequest>;
 

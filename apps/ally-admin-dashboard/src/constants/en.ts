@@ -1270,6 +1270,8 @@ export const en = {
       descriptionPlaceholder: "What does this skill do?",
       contentLabel: "System Prompt",
       contentPlaceholder: "You are a helpful assistant. Use {{variable}} placeholders…",
+      modelLabel: "Model",
+      modelHelp: "The AI model this skill runs on.",
       empty: "No skills yet",
       emptySubtitle: "Create a system-prompt template to reuse across runs.",
       created: "Skill created",
