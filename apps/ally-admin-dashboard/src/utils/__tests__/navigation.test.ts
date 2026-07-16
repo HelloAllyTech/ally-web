@@ -139,6 +139,7 @@ describe("deriveNavigationItems", () => {
       SIDEBAR_ITEMS.AGENT_TEST_CASES,
       SIDEBAR_ITEMS.COMPETENCIES,
       SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+      SIDEBAR_ITEMS.AI_LAB,
       SIDEBAR_ITEMS.SETTINGS,
     ]);
   });
@@ -204,6 +205,7 @@ describe("deriveNavigationItems", () => {
         SIDEBAR_ITEMS.USER_BADGES,
         SIDEBAR_ITEMS.AGENT_TEST_CASES,
         SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+        SIDEBAR_ITEMS.AI_LAB,
         SIDEBAR_ITEMS.SETTINGS,
       ]),
     );

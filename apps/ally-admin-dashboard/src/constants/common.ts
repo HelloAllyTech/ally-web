@@ -207,6 +207,14 @@ export const ApiEndpoints = {
     UNPUBLISH_BLOG: (id: string) => `/v1/blog/${id}/unpublish`,
     UPLOAD_IMAGE_URL: "/v1/blog/upload-url",
   },
+  AI_LAB: {
+    SKILLS: "/v1/lab/skills",
+    SKILL_BY_ID: (id: string) => `/v1/lab/skills/${id}`,
+    VARIABLES: "/v1/lab/variables",
+    VARIABLE_BY_ID: (id: string) => `/v1/lab/variables/${id}`,
+    VALUES: "/v1/lab/values",
+    VALUE_BY_ID: (id: string) => `/v1/lab/values/${id}`,
+  },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
     GET_ROLES: "/v1/authorization/roles",
@@ -325,6 +333,7 @@ export const ROUTES = {
   ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
   ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
   BLOG: "/blog",
+  AI_LAB: "/ai-lab",
 };
 
 export const LOCAL_STORAGE_KEYS = {
@@ -422,6 +431,9 @@ export const TAG_TYPES = {
   TRACKS_V2: "tracksV2",
   BLOGS: "blogs",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
+  AI_LAB_SKILLS: "aiLabSkills",
+  AI_LAB_VARIABLES: "aiLabVariables",
+  AI_LAB_VALUES: "aiLabValues",
 };
 
 /**

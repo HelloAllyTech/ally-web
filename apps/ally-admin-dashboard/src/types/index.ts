@@ -19,3 +19,4 @@ export * from "./roleplaySessionLogs";
 export * from "./tracks";
 export * from "./organizationAccess";
 export * from "./superDuperAdmins";
+export * from "./aiLab";

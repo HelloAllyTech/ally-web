@@ -134,6 +134,9 @@ export const baseAPI = createApi({
     TAG_TYPES.BLOGS,
     TAG_TYPES.IMAGE_LIBRARY,
     TAG_TYPES.SUPER_DUPER_ADMINS,
+    TAG_TYPES.AI_LAB_SKILLS,
+    TAG_TYPES.AI_LAB_VARIABLES,
+    TAG_TYPES.AI_LAB_VALUES,
   ],
   endpoints: () => ({}),
 });

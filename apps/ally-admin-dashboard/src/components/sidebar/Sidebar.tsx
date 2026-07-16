@@ -11,6 +11,7 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
   BarChart3,
+  Chemistry,
   Close,
   Document,
   Flag,
@@ -194,6 +195,8 @@ export const Sidebar: React.FC = () => {
         return <SkillLevel size={20} />;
       case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
         return <List size={20} />;
+      case SIDEBAR_ITEMS.AI_LAB:
+        return <Chemistry size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
         return <Settings size={20} />;
       default:
@@ -234,6 +237,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.ANALYTICS);
       case ROUTES.ROLEPLAY_SESSION_LOGS:
         return location.pathname.includes(ROUTES.ROLEPLAY_SESSION_LOGS);
+      case ROUTES.AI_LAB:
+        return location.pathname.includes(ROUTES.AI_LAB);
       case ROUTES.SETTINGS:
         return location.pathname.includes(ROUTES.SETTINGS);
       default:
