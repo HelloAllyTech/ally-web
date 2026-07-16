@@ -28,6 +28,13 @@ const referencedVariableNames = (skills: LabSkill[]): string[] => {
   return Array.from(names);
 };
 
+// A value can be a long block (e.g. a whole transcript); keep the <option>
+// label to one readable line — the full text is still stored in `value`.
+const optionLabel = (opt: LabValue): string => {
+  const text = opt.label ? `${opt.label} — ${opt.value}` : opt.value;
+  return text.length > 90 ? `${text.slice(0, 90)}…` : text;
+};
+
 export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
   isOpen,
   onClose,
@@ -220,7 +227,7 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
                         </option>
                         {opts.map(opt => (
                           <option key={opt.id} value={opt.value}>
-                            {opt.label ? `${opt.label} — ${opt.value}` : opt.value}
+                            {optionLabel(opt)}
                           </option>
                         ))}
                       </select>
