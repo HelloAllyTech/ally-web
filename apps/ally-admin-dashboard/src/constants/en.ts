@@ -1406,6 +1406,9 @@ export const en = {
       deleteFailed: "Failed to delete run",
       deleteTitle: "Delete run?",
       deleteDescription: "This permanently removes the run from the log. This cannot be undone.",
+      paginationRange: "Showing {start}–{end} of {total}",
+      prev: "Previous",
+      next: "Next",
     },
     // Automated (LLM-as-judge) evaluation
     autoEval: {
