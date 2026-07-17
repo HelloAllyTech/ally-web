@@ -8,6 +8,14 @@ import { store, RootState, AppDispatch } from "../index";
 
 // Mock the API
 vi.mock("@api", () => ({
+  // evaluatorAPI is wired into the store alongside baseAPI; stub it too so
+  // store init (reducerPath/reducer/middleware) does not throw.
+  evaluatorAPI: {
+    reducerPath: "evaluatorAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+    util: { resetApiState: () => ({ type: "reset" }) },
+  },
   baseAPI: {
     reducerPath: "baseAPI",
     reducer: vi.fn((state = {}) => state),

@@ -115,6 +115,14 @@ const mockGetReportTranscriptQuery = vi.fn();
 const mockRefetchReportsHistory = vi.fn();
 
 vi.mock("@api", () => ({
+  // evaluatorAPI is wired into the store alongside baseAPI; stub it too so
+  // store init (reducerPath/reducer/middleware) does not throw.
+  evaluatorAPI: {
+    reducerPath: "evaluatorAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+    util: { resetApiState: () => ({ type: "reset" }) },
+  },
   // src/store/index.ts imports baseAPI from "@api" (not "@api/baseApi"), so the barrel
   // mock must include it or store loading throws on baseAPI.reducerPath.
   baseAPI: {
