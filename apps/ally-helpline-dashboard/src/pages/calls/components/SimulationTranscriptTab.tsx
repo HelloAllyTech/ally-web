@@ -13,29 +13,55 @@ import { SimulationTranscriptMessage } from "@types";
 import { TRANSCRIPT_PAGE_SIZE, TRANSCRIPT_LANGUAGE_OPTIONS } from "./constants";
 import { SimulationTranscriptTabProps } from "./types";
 
-const getTranscriptLanguageLabel = (code: string): string =>
-  TRANSCRIPT_LANGUAGE_OPTIONS.find(option => option.code === code)?.label ?? "English (Original)";
+const getTranscriptLanguageLabel = (code: string, originalLanguageCode: string): string => {
+  const option = TRANSCRIPT_LANGUAGE_OPTIONS.find(item => item.code === code);
+  if (!option) return "English";
+  return code === originalLanguageCode ? `${option.label} (Original)` : option.label;
+};
 
-const getTranscriptLanguageCode = (label: string): string =>
-  TRANSCRIPT_LANGUAGE_OPTIONS.find(option => option.label === label)?.code ?? "en";
+const getTranscriptLanguageCode = (
+  label: string,
+  originalLanguageCode: string,
+  stripped = false,
+): string => {
+  if (!stripped) {
+    // Options are rendered with "(Original)" appended for the detected original
+    // language, so strip it back off before matching against the raw labels.
+    const bareLabel = label.replace(/\s*\(Original\)$/, "");
+    return getTranscriptLanguageCode(bareLabel, originalLanguageCode, true);
+  }
+  return (
+    TRANSCRIPT_LANGUAGE_OPTIONS.find(option => option.label === label)?.code ?? originalLanguageCode
+  );
+};
 
 const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   sessionId,
   className,
   councellorName,
   agentName,
+  originalLanguageCode = "en",
 }) => {
   const { t } = useTranslation();
   const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
   const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
-  const [transcriptLanguage, setTranscriptLanguage] = useState<string>("en"); // 'en' = original
+  const [transcriptLanguage, setTranscriptLanguage] = useState<string>(originalLanguageCode);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   /** Blocks stacking multiple load-more calls before the in-flight fetch finishes (prevents batched offset 0→40). */
   const pagingLockRef = useRef(false);
   const wasTranscriptFetchingRef = useRef(false);
+  /** originalLanguageCode can resolve after mount (parent's language lookup is async);
+   * once the user picks a language manually, stop syncing to it. */
+  const hasUserSelectedLanguageRef = useRef(false);
 
   const { user } = useSelector((state: RootState) => state.user);
+
+  useEffect(() => {
+    if (!hasUserSelectedLanguageRef.current) {
+      setTranscriptLanguage(originalLanguageCode);
+    }
+  }, [originalLanguageCode]);
 
   const {
     data: transcriptData,
@@ -47,7 +73,9 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     offset: transcriptOffset,
     limit: TRANSCRIPT_PAGE_SIZE,
     sortBy: "startSeconds",
-    languageCode: transcriptLanguage,
+    // Omit languageCode when viewing the original language so the backend returns
+    // source text without attempting a translation pass.
+    languageCode: transcriptLanguage === originalLanguageCode ? undefined : transcriptLanguage,
   });
 
   const { data: audioUrlData } = useGetAudioUrlQuery({ sessionId });
@@ -165,10 +193,15 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         <div className="w-full max-w-[200px] min-w-[140px]">
           <DropdownField
             label={undefined}
-            value={getTranscriptLanguageLabel(transcriptLanguage)}
+            value={getTranscriptLanguageLabel(transcriptLanguage, originalLanguageCode)}
             valueClassName="text-sm font-medium"
-            onChange={label => setTranscriptLanguage(getTranscriptLanguageCode(label))}
-            options={TRANSCRIPT_LANGUAGE_OPTIONS.map(option => option.label)}
+            onChange={label => {
+              hasUserSelectedLanguageRef.current = true;
+              setTranscriptLanguage(getTranscriptLanguageCode(label, originalLanguageCode));
+            }}
+            options={TRANSCRIPT_LANGUAGE_OPTIONS.map(option =>
+              getTranscriptLanguageLabel(option.code, originalLanguageCode),
+            )}
             hideSearch
           />
         </div>
