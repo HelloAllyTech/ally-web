@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
-import { TextArea } from "@ally-ui-mono/ui-shared";
+import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
 import { BlogPost, useGetBlogImageUploadUrlMutation } from "@api";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
@@ -81,9 +81,6 @@ const Field: React.FC<FieldProps> = ({ label, required, children, hint }) => (
     {hint && <span className="text-xs text-typography-400">{hint}</span>}
   </div>
 );
-
-const inputClass =
-  "border border-border-light rounded-md focus:outline-none focus:border-primary-400 text-base w-full p-2";
 
 export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
   selectedBlog,
@@ -238,32 +235,38 @@ export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
           </div>
 
           <Field label="Slug" hint="Leave blank to auto-generate from the title.">
-            <input
-              type="text"
+            <TextInput
+              id="blog-slug"
+              labelText="Slug"
+              hideLabel
               value={form.slug}
               onChange={e => setField("slug", e.target.value)}
               placeholder="my-post-slug"
-              className={inputClass}
+              className="w-full"
             />
           </Field>
 
           <Field label="Category">
-            <input
-              type="text"
+            <TextInput
+              id="blog-category"
+              labelText="Category"
+              hideLabel
               value={form.category}
               onChange={e => setField("category", e.target.value)}
               placeholder="e.g. Product Updates"
-              className={inputClass}
+              className="w-full"
             />
           </Field>
 
           <Field label="Author name" hint="Shown as the byline on the public post.">
-            <input
-              type="text"
+            <TextInput
+              id="blog-author-name"
+              labelText="Author name"
+              hideLabel
               value={form.authorName}
               onChange={e => setField("authorName", e.target.value)}
               placeholder="e.g. Jane Doe"
-              className={inputClass}
+              className="w-full"
             />
           </Field>
 
@@ -281,8 +284,10 @@ export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
 
           <Field label="Tags" hint="Press Enter or comma to add a tag.">
             <div>
-              <input
-                type="text"
+              <TextInput
+                id="blog-tags"
+                labelText="Tags"
+                hideLabel
                 value={tagInput}
                 onChange={e => setTagInput(e.target.value)}
                 onKeyDown={e => {
@@ -293,7 +298,7 @@ export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
                 }}
                 onBlur={commitTag}
                 placeholder="Add a tag..."
-                className={inputClass}
+                className="w-full"
               />
               {form.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">

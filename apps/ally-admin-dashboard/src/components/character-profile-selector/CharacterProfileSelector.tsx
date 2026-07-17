@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Controller } from "react-hook-form";
 
+import { TextInput } from "@ally-ui-mono/ui-shared";
 import { useGetCharactersQuery } from "@api";
 import { ArrowSolid } from "@assets";
 import { CustomDropdownField, InputField } from "@components";
@@ -482,15 +483,17 @@ export const CharacterProfileSelector: React.FC<CharacterProfileSelectorProps> =
               control={formMethods.control}
               defaultValue=""
               render={({ field }) => (
-                <input
-                  type="text"
+                <TextInput
+                  id={formFieldIds.PROFESSION}
+                  labelText={formFieldNames.PROFESSION}
+                  hideLabel
                   placeholder="Enter profession"
                   value={field.value === null || field.value === undefined ? "" : field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   name={field.name}
                   ref={field.ref}
-                  className="w-full rounded border border-border-light px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-typography-400"
+                  className="w-full"
                 />
               )}
             />

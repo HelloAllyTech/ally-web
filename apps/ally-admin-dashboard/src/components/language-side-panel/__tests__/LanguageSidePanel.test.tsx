@@ -17,6 +17,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       data-testid="textarea"
     />
   ),
+  TextInput: ({ labelText, hideLabel, ...props }: any) => (
+    <input aria-label={labelText} {...props} />
+  ),
 }));
 
 vi.mock("@components", () => ({
