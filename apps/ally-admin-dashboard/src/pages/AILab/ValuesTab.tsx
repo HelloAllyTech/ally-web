@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
-import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
+import { Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
 import {
   useGetLabValuesQuery,
   useGetLabVariablesQuery,
@@ -197,12 +197,15 @@ export const ValuesTab: React.FC = () => {
           />
         </LabField>
         <LabField label={en.aiLab.values.valueLabel} required>
-          <textarea
+          <TextArea
+            id="ailab-value-value"
+            labelText={en.aiLab.values.valueLabel}
+            hideLabel
             value={form.value}
             onChange={e => setForm(f => ({ ...f, value: e.target.value }))}
             placeholder={en.aiLab.values.valuePlaceholder}
             rows={6}
-            className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base resize-y"
+            className="w-full"
           />
         </LabField>
       </LabSidePanel>

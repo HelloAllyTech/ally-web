@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { useEnhanceFieldMutation, useGetAutofillModelsQuery } from "@api";
 import { AutofillModelSelect } from "@components/autofill-model-select";
 import { DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS, en } from "@constants";
@@ -152,12 +153,15 @@ export const EnhanceButton: FC<EnhanceButtonProps> = ({
             />
           </div>
 
-          <textarea
+          <TextArea
+            id="enhance-custom-guidance"
+            labelText={en.simulation.enhance.customPlaceholder}
+            hideLabel
             value={customText}
             onChange={e => setCustomText(e.target.value)}
             placeholder={en.simulation.enhance.customPlaceholder}
             rows={3}
-            className="w-full text-sm border border-border-light rounded-md p-2 text-typography-800 focus:outline-none focus:border-primary-500 resize-none"
+            className="w-full"
           />
 
           {/* One action: blank box = auto-improve, typed = custom instruction. */}

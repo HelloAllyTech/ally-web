@@ -3,7 +3,7 @@ import { FC, useState, useId } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
+import { Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
 import {
   useGetCustomFieldDefinitionsQuery,
   useCreateCustomFieldDefinitionMutation,
@@ -524,13 +524,15 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                       AI instruction{" "}
                       <span className="text-typography-400 font-normal">(optional)</span>
                     </label>
-                    <textarea
+                    <TextArea
+                      id="custom-field-ai-instruction"
+                      labelText="AI instruction (optional)"
+                      hideLabel
                       maxLength={500}
                       rows={2}
                       value={aiInstruction}
                       onChange={e => setAiInstruction(e.target.value)}
                       placeholder='e.g. "Extract the primary diagnosis mentioned in the call"'
-                      className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 resize-none"
                     />
                     <p className="text-xs text-typography-400 text-right">
                       {aiInstruction.length}/500

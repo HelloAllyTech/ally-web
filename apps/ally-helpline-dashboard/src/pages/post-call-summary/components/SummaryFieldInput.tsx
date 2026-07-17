@@ -1,6 +1,6 @@
 import { FC, ReactNode } from "react";
 
-import { DropdownField, Select, SelectItem } from "@ally-ui-mono/ui-shared";
+import { DropdownField, Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
 import { TextField } from "@components";
 import { carbonField } from "@constants/carbonFieldStyles";
 import { SummaryFieldKey } from "@types";
@@ -80,8 +80,10 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
       return (
         <div className={carbonField.group}>
           {labelEl}
-          <textarea
-            className={carbonField.textarea}
+          <TextArea
+            id={`summary-field-${field.key}`}
+            labelText={field.label}
+            hideLabel
             disabled={disabled}
             rows={field.key === SummaryFieldKey.SessionSummary ? 8 : 4}
             placeholder={field.placeholder}

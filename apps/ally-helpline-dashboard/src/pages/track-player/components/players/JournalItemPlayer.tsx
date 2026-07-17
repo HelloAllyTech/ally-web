@@ -3,6 +3,7 @@ import { FC, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { useSaveJournalDraftMutation, useSubmitJournalMutation } from "@api";
 import { Cloud, RoundCheckmark, CrossRedBackground, TickGreenBackground } from "@assets";
 import { useDebounce } from "@hooks";
@@ -142,13 +143,16 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
                   )}
                 </p>
               </div>
-              <textarea
+              <TextArea
+                id={`journal-response-${prompt.id}`}
+                labelText={prompt.prompt}
+                hideLabel
                 value={responses[index] ?? ""}
                 onChange={e => updateResponse(index, e.target.value)}
                 placeholder={prompt.placeholder ?? t("tracks2.journal.placeholder")}
                 disabled={submitted}
                 rows={4}
-                className="w-full resize-y rounded-[10px] border border-border-light bg-neutral-50 px-3 py-2 text-base text-typography-900 outline-none transition-colors focus:border-primary-400 disabled:opacity-70"
+                className="w-full"
               />
             </div>
           ))}

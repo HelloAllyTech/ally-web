@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 import { Info, Plus, RefreshCw, RotateCcw, UploadCloud } from "@icons";
 import { toast } from "sonner";
 
-import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
+import { Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
 import {
   useAutoTranslateI18nMutation,
   useGetAllI18nTranslationsQuery,
@@ -506,7 +506,10 @@ export const TranslationManagement: React.FC = () => {
                               dirty ? "bg-amber-50" : ""
                             }`}
                           >
-                            <textarea
+                            <TextArea
+                              id={`i18n-cell-${row.fullKey}-${lang}`}
+                              labelText={`${labelForLanguage(lang)} translation`}
+                              hideLabel
                               value={value}
                               onChange={event => setEdit(row.fullKey, lang, event.target.value)}
                               onBlur={() => {
@@ -517,7 +520,7 @@ export const TranslationManagement: React.FC = () => {
                                 lang === "en" ? "" : `Translate to ${labelForLanguage(lang)}`
                               }
                               rows={2}
-                              className="min-h-[56px] w-full resize-y rounded-md border border-neutral-200 bg-white p-2 text-sm leading-5 outline-none focus:border-primary-500 disabled:bg-neutral-50"
+                              className="min-h-[56px] w-full"
                             />
                             {placeholderMismatch && (
                               <div className="mt-1 text-xs text-red-600">Placeholder mismatch</div>
@@ -624,7 +627,10 @@ export const TranslationManagement: React.FC = () => {
                         {labelForLanguage(lang)}
                         {lang === "en" && <span className="ml-1 text-red-600">*</span>}
                       </label>
-                      <textarea
+                      <TextArea
+                        id={`add-key-value-${lang}`}
+                        labelText={labelForLanguage(lang)}
+                        hideLabel
                         value={addKeyValues[lang] ?? ""}
                         onChange={event =>
                           setAddKeyValues(prev => ({ ...prev, [lang]: event.target.value }))
@@ -635,7 +641,7 @@ export const TranslationManagement: React.FC = () => {
                             : `Optional — leave blank to skip ${labelForLanguage(lang)}`
                         }
                         rows={2}
-                        className="mt-1 min-h-[56px] w-full resize-y rounded-md border border-neutral-300 p-2 text-sm leading-5 outline-none focus:border-primary-500"
+                        className="mt-1 min-h-[56px] w-full"
                         disabled={addingKey}
                       />
                     </div>

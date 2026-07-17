@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea, TextArea } from "@ally-ui-mono/ui-shared";
 import { NumberInput, TimeInput } from "@components";
 import { TRIGGER_FIELD_TYPES } from "@constants";
 
@@ -27,20 +27,18 @@ const TableSentenceInput: React.FC<{
   placeholder?: string;
   onChange: (value: string[]) => void;
   isInTable?: boolean;
-}> = ({ value, placeholder, isInTable = false }) => {
+}> = ({ value, placeholder }) => {
   return (
     <div className="flex-1 w-full flex items-center">
-      <textarea
+      <TextArea
+        id="trigger-condition-sentence-display"
+        labelText={placeholder || "Trigger condition"}
+        hideLabel
         value={value}
         readOnly
         placeholder={placeholder}
-        className={`px-3 py-2 text-sm rounded-sm w-full min-w-[230px] resize-none overflow-hidden cursor-pointer focus:outline-none placeholder:text-typography-500 ${isInTable ? "bg-neutral-100" : "bg-neutral-50 border"}`}
-        style={{
-          height: "24px",
-          lineHeight: "20px",
-          paddingTop: "2px",
-          paddingBottom: "2px",
-        }}
+        rows={1}
+        className="w-full min-w-[230px] cursor-pointer"
       />
     </div>
   );

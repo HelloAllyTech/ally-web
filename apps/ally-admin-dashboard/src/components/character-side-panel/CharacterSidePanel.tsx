@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 
 import { toast } from "sonner";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { useCreateCharacterMutation, useUpdateCharacterMutation } from "@api";
 import { DoubleArrowRight, Trash } from "@assets";
 import { ActionConfirmationPopup, Button, CustomDropdownField, FileUpload } from "@components";
@@ -338,12 +339,15 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
             </Field>
 
             <Field label="Character Backstory">
-              <textarea
+              <TextArea
+                id="character-backstory"
+                labelText="Character Backstory"
+                hideLabel
                 value={formData.characterProfileText || ""}
                 onChange={e => handleFieldChange("characterProfileText", e.target.value)}
                 maxLength={2500}
                 placeholder="Enter character backstory"
-                className="w-full px-3 py-2 text-base border border-border-light rounded-md focus:outline-none min-h-[100px] resize-y"
+                rows={3}
               />
             </Field>
 

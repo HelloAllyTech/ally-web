@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Controller } from "react-hook-form";
 
-import { ImageUpload, Tabs } from "@ally-ui-mono/ui-shared";
+import { ImageUpload, Tabs, TextArea } from "@ally-ui-mono/ui-shared";
 import {
   Button,
   DropdownwithTag,
@@ -241,12 +241,13 @@ export const UserModal: React.FC<UserModalProps> = ({
               {field.label}
               {field.required && <span className="text-destructive-500">*</span>}
             </label>
-            <textarea
+            <TextArea
               {...controllerField}
               value={controllerField.value ?? ""}
               id={field.id}
+              labelText={field.label}
+              hideLabel
               placeholder={field.placeholder}
-              className="border rounded-md px-2 py-2 font-primary outline-none placeholder:text-typography-600"
               rows={4}
             />
             {fieldState.error?.type === "maxLength" && (
