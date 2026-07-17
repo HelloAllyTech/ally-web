@@ -19,6 +19,8 @@ vi.mock("@constants", () => ({
         variablesHelp: "Choose a value for every variable.",
         noVariablesNeeded: "The selected skills use no variables.",
         missingValues: "Some variables have no values yet.",
+        matrixSummary: "{runs} run(s) will be created.",
+        tooManyRuns: "That's {runs} runs — reduce to {max} or fewer.",
         run: "Run",
         runningProgress: "Running {done} of {total}…",
         validationSkills: "Select at least one skill",
@@ -38,6 +40,25 @@ vi.mock("@constants", () => ({
 
 // Resolves to the mocked module above (vi.mock is hoisted before imports).
 import { en } from "@constants";
+import { cartesian } from "../CreateRunDrawer";
+
+describe("cartesian", () => {
+  it("returns a single empty combo for no variables", () => {
+    expect(cartesian([], {})).toEqual([{}]);
+  });
+
+  it("expands the product across variables", () => {
+    const combos = cartesian(["a", "b"], { a: ["1", "2"], b: ["x"] });
+    expect(combos).toEqual([
+      { a: "1", b: "x" },
+      { a: "2", b: "x" },
+    ]);
+  });
+
+  it("collapses to zero combos when a variable has no chosen values", () => {
+    expect(cartesian(["a", "b"], { a: ["1"], b: [] })).toEqual([]);
+  });
+});
 
 // One variable-free skill so a run needs only a skill selection (no values).
 vi.mock("@api", () => ({

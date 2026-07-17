@@ -1365,9 +1365,12 @@ export const en = {
       selectSkillsHelp: "Pick one or more skills to run.",
       noSkills: "Create a skill first — runs execute skills.",
       variablesHeading: "Variable values",
-      variablesHelp: "Choose a value for every variable used by the selected skills.",
+      variablesHelp:
+        "Choose one or more values for each variable — every combination is run (a matrix).",
       noVariablesNeeded: "The selected skills use no variables.",
       missingValues: "Some variables have no values yet — add values in the Values tab.",
+      matrixSummary: "{runs} run(s) will be created.",
+      tooManyRuns: "That's {runs} runs — reduce selections to {max} or fewer.",
       run: "Run",
       running: "Running…",
       runningProgress: "Running {done} of {total}…",

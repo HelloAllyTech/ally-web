@@ -28,11 +28,47 @@ const referencedVariableNames = (skills: LabSkill[]): string[] => {
   return Array.from(names);
 };
 
-// A value can be a long block (e.g. a whole transcript); keep the <option>
-// label to one readable line — the full text is still stored in `value`.
+// A value can be a long block (e.g. a whole transcript); keep the label to one
+// readable line — the full text is still stored in `value`.
 const optionLabel = (opt: LabValue): string => {
   const text = opt.label ? `${opt.label} — ${opt.value}` : opt.value;
   return text.length > 90 ? `${text.slice(0, 90)}…` : text;
+};
+
+// Upper bound on runs a single matrix submission can fan out to.
+const MAX_MATRIX_RUNS = 200;
+// How many run creations to fire concurrently (bounds load on the sync path).
+const RUN_CONCURRENCY = 8;
+
+/** Cartesian product of the chosen values for each variable name. Exported for tests. */
+export const cartesian = (
+  names: string[],
+  valuesByName: Record<string, string[]>,
+): Record<string, string>[] => {
+  let combos: Record<string, string>[] = [{}];
+  for (const name of names) {
+    const vals = valuesByName[name] ?? [];
+    const next: Record<string, string>[] = [];
+    for (const combo of combos) for (const v of vals) next.push({ ...combo, [name]: v });
+    combos = next;
+  }
+  return combos;
+};
+
+/** Run async tasks with a bounded concurrency. */
+const runWithConcurrency = async (
+  count: number,
+  limit: number,
+  task: (index: number) => Promise<void>,
+): Promise<void> => {
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < count) {
+      const i = cursor++;
+      await task(i);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, count) }, worker));
 };
 
 export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
@@ -49,8 +85,8 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
   const [createRun] = useCreateLabRunMutation();
 
   const [selectedSkillIds, setSelectedSkillIds] = useState<Set<string>>(new Set());
-  // variable name -> chosen value text
-  const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
+  // variable name -> chosen value texts (a matrix run picks several per variable)
+  const [selectedValues, setSelectedValues] = useState<Record<string, string[]>>({});
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(0);
   // Per-skill failures from the last run attempt (HTTP/network errors — a
@@ -94,9 +130,35 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
     [refVarNames, valuesByVar],
   );
 
-  const allValuesChosen = refVarNames.every(n => !!selectedValues[n]);
+  const allValuesChosen = refVarNames.every(n => (selectedValues[n]?.length ?? 0) > 0);
+
+  // Expand the selections into concrete runs: for each skill, the cartesian
+  // product of the chosen values for the variables IT references. A skill with
+  // no variables contributes a single run.
+  const plannedRuns = useMemo(() => {
+    const runs: { skill: LabSkill; variableValues: { name: string; value: string }[] }[] = [];
+    for (const skill of selectedSkills) {
+      const names = referencedVariableNames([skill]);
+      if (names.length === 0) {
+        runs.push({ skill, variableValues: [] });
+        continue;
+      }
+      for (const combo of cartesian(names, selectedValues)) {
+        runs.push({ skill, variableValues: names.map(name => ({ name, value: combo[name] })) });
+      }
+    }
+    return runs;
+  }, [selectedSkills, selectedValues]);
+
+  const total = plannedRuns.length;
+  const tooManyRuns = total > MAX_MATRIX_RUNS;
   const canRun =
-    !running && selectedSkillIds.size > 0 && missingValueVars.length === 0 && allValuesChosen;
+    !running &&
+    selectedSkillIds.size > 0 &&
+    missingValueVars.length === 0 &&
+    allValuesChosen &&
+    total > 0 &&
+    !tooManyRuns;
 
   const toggleSkill = useCallback((id: string) => {
     setSelectedSkillIds(prev => {
@@ -107,7 +169,13 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
     });
   }, []);
 
-  const total = selectedSkillIds.size;
+  const toggleValue = useCallback((name: string, value: string) => {
+    setSelectedValues(prev => {
+      const current = prev[name] ?? [];
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+      return { ...prev, [name]: next };
+    });
+  }, []);
 
   const handleRun = useCallback(async () => {
     if (!canRun) return;
@@ -118,31 +186,27 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
     setDone(0);
     setFailures([]);
 
-    // Fan out one run per skill (each becomes its own log row). Each skill only
-    // gets the variables IT references, so a variable-free skill's row records
-    // no variables. A FAILED LLM call still resolves (the row records the
-    // failure); only HTTP errors throw — those are collected per-skill below.
+    // Fan out one run per (skill × value-combination), each its own log row,
+    // sharing a batchId. A FAILED LLM call still resolves (the row records the
+    // failure); only HTTP errors throw — those are collected below.
     const failed: { skillName: string; error: string }[] = [];
-    await Promise.all(
-      selectedSkills.map(async skill => {
-        const names = referencedVariableNames([skill]);
-        const variableValues = names.map(name => ({ name, value: selectedValues[name] }));
-        try {
-          await createRun({ skillId: skill.id, batchId, variableValues }).unwrap();
-        } catch (error) {
-          const message =
-            (error as { data?: { message?: string } })?.data?.message ??
-            (error as { error?: string })?.error ??
-            en.aiLab.runs.runsFailed;
-          failed.push({ skillName: skill.name, error: message });
-        } finally {
-          setDone(d => d + 1);
-        }
-      }),
-    );
+    await runWithConcurrency(plannedRuns.length, RUN_CONCURRENCY, async i => {
+      const { skill, variableValues } = plannedRuns[i];
+      try {
+        await createRun({ skillId: skill.id, batchId, variableValues }).unwrap();
+      } catch (error) {
+        const message =
+          (error as { data?: { message?: string } })?.data?.message ??
+          (error as { error?: string })?.error ??
+          en.aiLab.runs.runsFailed;
+        failed.push({ skillName: skill.name, error: message });
+      } finally {
+        setDone(d => d + 1);
+      }
+    });
 
     setRunning(false);
-    // Refresh the log regardless — skills that succeeded now have rows.
+    // Refresh the log regardless — runs that succeeded now have rows.
     onComplete();
 
     if (failed.length === 0) {
@@ -151,14 +215,14 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
       return;
     }
 
-    // Keep the drawer open and show exactly which skills failed.
+    // Keep the drawer open and show exactly which runs failed.
     toast.error(
       en.aiLab.runs.runsPartial
         .replace("{failed}", String(failed.length))
         .replace("{total}", String(total)),
     );
     setFailures(failed);
-  }, [canRun, selectedSkills, selectedValues, createRun, onComplete, onClose, total]);
+  }, [canRun, plannedRuns, createRun, onComplete, onClose, total]);
 
   if (!isOpen) return null;
 
@@ -248,34 +312,52 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
                 )}
                 {refVarNames.map(name => {
                   const opts = valuesByVar.get(name) ?? [];
+                  const chosen = selectedValues[name] ?? [];
                   return (
                     <div key={name} className="flex flex-col gap-1.5">
                       <label className="text-sm font-mono text-typography-900">{`{{${name}}}`}</label>
-                      <select
-                        value={selectedValues[name] ?? ""}
-                        onChange={e =>
-                          setSelectedValues(prev => ({ ...prev, [name]: e.target.value }))
-                        }
-                        disabled={running || opts.length === 0}
-                        className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base bg-white disabled:bg-background-secondary"
-                      >
-                        <option value="" disabled>
-                          {opts.length === 0
-                            ? en.aiLab.values.noVariables
-                            : en.aiLab.values.variablePlaceholder}
-                        </option>
-                        {opts.map(opt => (
-                          <option key={opt.id} value={opt.value}>
-                            {optionLabel(opt)}
-                          </option>
-                        ))}
-                      </select>
+                      {opts.length === 0 ? (
+                        <p className="text-sm text-typography-500">{en.aiLab.values.noVariables}</p>
+                      ) : (
+                        <div className="border border-border-light rounded-md divide-y divide-border-light max-h-[160px] overflow-y-auto custom-scrollbar">
+                          {opts.map(opt => (
+                            <label
+                              key={opt.id}
+                              className="flex items-start gap-3 px-3 py-2 cursor-pointer hover:bg-background-secondary/50"
+                            >
+                              <input
+                                type="checkbox"
+                                className="mt-1 w-4 h-4"
+                                checked={chosen.includes(opt.value)}
+                                onChange={() => toggleValue(name, opt.value)}
+                                disabled={running}
+                              />
+                              <span className="text-sm text-typography-900 min-w-0 break-words">
+                                {optionLabel(opt)}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
             )}
           </div>
+
+          {/* Matrix summary */}
+          {selectedSkillIds.size > 0 && (
+            <p
+              className={`text-sm ${tooManyRuns ? "text-destructive-600" : "text-typography-600"}`}
+            >
+              {tooManyRuns
+                ? en.aiLab.runs.tooManyRuns
+                    .replace("{runs}", String(total))
+                    .replace("{max}", String(MAX_MATRIX_RUNS))
+                : en.aiLab.runs.matrixSummary.replace("{runs}", String(total))}
+            </p>
+          )}
         </div>
 
         {/* Footer: progress bar while running, else actions */}
