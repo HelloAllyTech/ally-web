@@ -53,6 +53,10 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(0);
+  // Per-skill failures from the last run attempt (HTTP/network errors — a
+  // FAILED LLM call still creates a row and is not counted here). When
+  // non-empty we keep the drawer open so the admin sees which skills failed.
+  const [failures, setFailures] = useState<{ skillName: string; error: string }[]>([]);
 
   // Reset the form whenever the drawer is (re)opened.
   useEffect(() => {
@@ -61,6 +65,7 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
       setSelectedValues({});
       setRunning(false);
       setDone(0);
+      setFailures([]);
     }
   }, [isOpen]);
 
@@ -111,20 +116,25 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
 
     setRunning(true);
     setDone(0);
+    setFailures([]);
 
     // Fan out one run per skill (each becomes its own log row). Each skill only
     // gets the variables IT references, so a variable-free skill's row records
     // no variables. A FAILED LLM call still resolves (the row records the
-    // failure); only HTTP errors throw.
-    let hadError = false;
+    // failure); only HTTP errors throw — those are collected per-skill below.
+    const failed: { skillName: string; error: string }[] = [];
     await Promise.all(
       selectedSkills.map(async skill => {
         const names = referencedVariableNames([skill]);
         const variableValues = names.map(name => ({ name, value: selectedValues[name] }));
         try {
           await createRun({ skillId: skill.id, batchId, variableValues }).unwrap();
-        } catch {
-          hadError = true;
+        } catch (error) {
+          const message =
+            (error as { data?: { message?: string } })?.data?.message ??
+            (error as { error?: string })?.error ??
+            en.aiLab.runs.runsFailed;
+          failed.push({ skillName: skill.name, error: message });
         } finally {
           setDone(d => d + 1);
         }
@@ -132,11 +142,23 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
     );
 
     setRunning(false);
-    if (hadError) toast.error(en.aiLab.runs.runsFailed);
-    else toast.success(en.aiLab.runs.runsComplete);
+    // Refresh the log regardless — skills that succeeded now have rows.
     onComplete();
-    onClose();
-  }, [canRun, selectedSkills, selectedValues, createRun, onComplete, onClose]);
+
+    if (failed.length === 0) {
+      toast.success(en.aiLab.runs.runsComplete);
+      onClose();
+      return;
+    }
+
+    // Keep the drawer open and show exactly which skills failed.
+    toast.error(
+      en.aiLab.runs.runsPartial
+        .replace("{failed}", String(failed.length))
+        .replace("{total}", String(total)),
+    );
+    setFailures(failed);
+  }, [canRun, selectedSkills, selectedValues, createRun, onComplete, onClose, total]);
 
   if (!isOpen) return null;
 
@@ -151,6 +173,23 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
         </div>
 
         <div className="flex-1 min-h-0 px-10 pt-2 overflow-y-auto custom-scrollbar space-y-6">
+          {/* Per-skill failures from the last attempt */}
+          {failures.length > 0 && (
+            <div className="border border-destructive-200 bg-destructive-50 rounded-md px-4 py-3">
+              <h3 className="text-sm font-medium text-destructive-700 mb-1">
+                {en.aiLab.runs.failuresTitle}
+              </h3>
+              <p className="text-xs text-destructive-600 mb-2">{en.aiLab.runs.failuresHelp}</p>
+              <ul className="space-y-1">
+                {failures.map((f, i) => (
+                  <li key={`${f.skillName}-${i}`} className="text-xs text-destructive-700">
+                    <span className="font-medium">{f.skillName}</span>: {f.error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Skills */}
           <div>
             <h3 className="text-sm font-medium text-typography-900 mb-1">
@@ -257,6 +296,15 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
+            </div>
+          ) : failures.length > 0 ? (
+            <div className="flex gap-3 justify-end">
+              <Button variant={ButtonVariant.SECONDARY} onClick={() => setFailures([])}>
+                {en.aiLab.runs.dismissFailures}
+              </Button>
+              <Button variant={ButtonVariant.PRIMARY} onClick={onClose}>
+                {en.aiLab.runs.close}
+              </Button>
             </div>
           ) : (
             <div className="flex gap-3 justify-end">
