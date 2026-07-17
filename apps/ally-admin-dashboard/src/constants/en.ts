@@ -261,6 +261,7 @@ export const en = {
       "Are you sure you want to unarchive this simulation? This will make it visible to active simulations.",
     voice: "Voice",
     selectVoice: "Select voice",
+    removeVoiceDisableLanguage: "Remove voice (disable language)",
     simulationEvents: "Simulation Events",
     createNewEvent: "Create new event",
     createNewBadge: "Create New Badge",
@@ -823,6 +824,10 @@ export const en = {
     loadFailed: "Failed to load roleplays",
     createFailed: "Failed to create roleplay",
     deleteFailed: "Failed to delete roleplay",
+    duplicate: "Duplicate",
+    duplicating: "Duplicating…",
+    duplicateFailed: "Failed to duplicate roleplay",
+    copyOfPrefix: "Copy of ",
     columns: {
       title: "Title",
       status: "Status",
@@ -838,6 +843,9 @@ export const en = {
       specView: "Spec",
       stateMachineView: "State machine",
       copilotManaged: "Copilot-managed — only voice toggles are editable",
+      editToggle: "Edit spec directly",
+      editingHint: "Direct edits autosave and are picked up by the next rehearsal",
+      editLockedHint: "Editing is paused while the copilot or an improvement run is active",
     },
     autosave: {
       saving: "Saving…",

@@ -21,6 +21,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       {children}
     </div>
   ),
+  TextArea: ({ labelText, hideLabel, ...props }: any) => (
+    <textarea aria-label={labelText} {...props} />
+  ),
 }));
 
 // Mock lucide-react

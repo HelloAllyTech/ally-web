@@ -3,6 +3,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { useGetReflectionPromptsQuery, useUpdateReflectionPromptMutation } from "@api";
 import { Cloud, RoundCheckmark, CrossRedBackground } from "@assets";
 import { useDebounce } from "@hooks";
@@ -139,11 +140,14 @@ export const ReflectionTab: FC<ReflectionTabProps> = ({ sessionId, className = "
         </p>
 
         <div className="relative min-h-0 flex-1">
-          <textarea
+          <TextArea
+            id={`reflection-response-${text?.id}`}
+            labelText={t("reflection.writeThoughts")}
+            hideLabel
             value={responses[index] ?? ""}
             onChange={e => updateResponse(index, e.target.value)}
             placeholder={t("reflection.writeThoughts")}
-            className="absolute inset-0 box-border w-full resize-none overflow-y-auto bg-transparent px-0 py-2 pb-3 font-primary text-base leading-normal text-typography-900 outline-none custom-scrollbar"
+            className="absolute inset-0 h-full w-full custom-scrollbar [&>div]:h-full [&_textarea]:h-full [&_textarea]:resize-none"
           />
         </div>
       </div>

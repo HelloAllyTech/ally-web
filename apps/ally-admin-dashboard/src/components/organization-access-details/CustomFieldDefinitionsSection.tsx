@@ -3,6 +3,7 @@ import { FC, useState, useId } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
+import { Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
 import {
   useGetCustomFieldDefinitionsQuery,
   useCreateCustomFieldDefinitionMutation,
@@ -451,36 +452,34 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                   <label className="text-xs font-medium text-typography-700">
                     Section <span className="text-error-500">*</span>
                   </label>
-                  <select
+                  <Select
+                    id="custom-field-section"
+                    labelText="Section"
+                    hideLabel
                     value={sectionKey}
                     onChange={e => setSectionKey(e.target.value)}
-                    className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 bg-white"
                   >
-                    <option value="" disabled>
-                      Select section
-                    </option>
+                    <SelectItem value="" text="Select section" disabled />
                     {SCRIBE_SECTIONS.map(s => (
-                      <option key={s.key} value={s.key}>
-                        {s.label}
-                      </option>
+                      <SelectItem key={s.key} value={s.key} text={s.label} />
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Who can edit */}
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-medium text-typography-700">Who can edit</label>
-                  <select
+                  <Select
+                    id="custom-field-edit-permission"
+                    labelText="Who can edit"
+                    hideLabel
                     value={editPermission}
                     onChange={e => setEditPermission(e.target.value as CustomFieldEditPermission)}
-                    className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 bg-white"
                   >
                     {(Object.keys(EDIT_PERMISSION_LABELS) as CustomFieldEditPermission[]).map(p => (
-                      <option key={p} value={p}>
-                        {EDIT_PERMISSION_LABELS[p]}
-                      </option>
+                      <SelectItem key={p} value={p} text={EDIT_PERMISSION_LABELS[p]} />
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Show in table */}
@@ -525,13 +524,15 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                       AI instruction{" "}
                       <span className="text-typography-400 font-normal">(optional)</span>
                     </label>
-                    <textarea
+                    <TextArea
+                      id="custom-field-ai-instruction"
+                      labelText="AI instruction (optional)"
+                      hideLabel
                       maxLength={500}
                       rows={2}
                       value={aiInstruction}
                       onChange={e => setAiInstruction(e.target.value)}
                       placeholder='e.g. "Extract the primary diagnosis mentioned in the call"'
-                      className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 resize-none"
                     />
                     <p className="text-xs text-typography-400 text-right">
                       {aiInstruction.length}/500

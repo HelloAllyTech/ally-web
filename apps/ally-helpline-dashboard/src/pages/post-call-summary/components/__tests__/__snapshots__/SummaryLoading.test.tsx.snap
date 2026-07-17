@@ -57,7 +57,8 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
           </div>
         </div>
         <textarea
-          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
+          aria-label="Add Notes (optional)"
+          class="w-full font-primary"
           disabled=""
           id="notes"
           placeholder="write down your thoughts"
@@ -152,7 +153,8 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
           </div>
         </div>
         <textarea
-          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
+          aria-label="Add Notes (optional)"
+          class="w-full font-primary"
           disabled=""
           id="notes"
           placeholder="write down your thoughts"
@@ -246,7 +248,8 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
           </div>
         </div>
         <textarea
-          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
+          aria-label="Add Notes (optional)"
+          class="w-full font-primary"
           disabled=""
           id="notes"
           placeholder="write down your thoughts"
@@ -330,7 +333,8 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
           </div>
         </div>
         <textarea
-          class="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
+          aria-label="Add Notes (optional)"
+          class="w-full font-primary"
           disabled=""
           id="notes"
           placeholder="write down your thoughts"

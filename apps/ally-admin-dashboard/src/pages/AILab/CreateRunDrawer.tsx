@@ -316,6 +316,9 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
                   return (
                     <div key={name} className="flex flex-col gap-1.5">
                       <label className="text-sm font-mono text-typography-900">{`{{${name}}}`}</label>
+                      {/* Multi-select (matrix runs pick several values per
+                          variable); the shared Select is single-value, so a
+                          checkbox list is used here intentionally. */}
                       {opts.length === 0 ? (
                         <p className="text-sm text-typography-500">{en.aiLab.values.noVariables}</p>
                       ) : (

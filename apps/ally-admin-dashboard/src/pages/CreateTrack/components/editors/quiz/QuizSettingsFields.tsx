@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { Controller, useFormContext } from "react-hook-form";
 
+import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import { ToggleSwitch } from "@components";
 import { QUIZ_SHOW_EXPLANATIONS_OPTIONS } from "@constants";
 import { QuizShowExplanations, TrackFormValues } from "@types";
@@ -103,17 +104,17 @@ export const QuizSettingsFields: FC<QuizSettingsFieldsProps> = ({ sectionIndex, 
           control={control}
           name={`${base}.showExplanations`}
           render={({ field }) => (
-            <select
-              className="border border-border-light rounded-md px-2 py-1 text-sm outline-none focus:border-primary-400"
+            <Select
+              id={`${base}.showExplanations`}
+              labelText="Show explanations"
+              hideLabel
               value={field.value ?? "after_submit"}
               onChange={event => field.onChange(event.target.value as QuizShowExplanations)}
             >
               {QUIZ_SHOW_EXPLANATIONS_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+                <SelectItem key={option.value} value={option.value} text={option.label} />
               ))}
-            </select>
+            </Select>
           )}
         />
       </div>

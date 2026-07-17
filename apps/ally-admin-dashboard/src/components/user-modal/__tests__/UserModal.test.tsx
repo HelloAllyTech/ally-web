@@ -28,6 +28,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       ))}
     </div>
   ),
+  TextArea: ({ labelText, hideLabel, ...props }: any) => (
+    <textarea aria-label={labelText} {...props} />
+  ),
 }));
 
 // Mock @components barrel import

@@ -3,7 +3,7 @@ import { FC, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import { CustomImage } from "@ally-ui-mono/ui-shared";
+import { CustomImage, TextArea } from "@ally-ui-mono/ui-shared";
 import { Trash } from "@assets";
 import { Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -58,11 +58,14 @@ export const TrackSettingsEditor: FC = () => {
           control={control}
           name="description"
           render={({ field }) => (
-            <textarea
+            <TextArea
+              id="track-description"
+              labelText="Description"
+              hideLabel
               {...field}
               rows={3}
               placeholder="What will the learner get out of this track?"
-              className={`${inputClass} resize-y`}
+              className="w-full"
             />
           )}
         />

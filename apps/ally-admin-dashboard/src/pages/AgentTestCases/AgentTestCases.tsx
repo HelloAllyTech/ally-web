@@ -2,7 +2,15 @@ import { FC, useState } from "react";
 
 import { toast } from "sonner";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import {
+  AutoExpandableTextarea,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@ally-ui-mono/ui-shared";
 import {
   useCreateAgentTestCaseMutation,
   useDeleteAgentTestCaseMutation,
@@ -115,35 +123,35 @@ export const AgentTestCases: FC = () => {
             No agent test cases yet. Click “Create test case” to add one.
           </p>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-border-light text-sm text-typography-700">
-                <th className="py-3 pr-4 font-medium w-1/6">Title</th>
-                <th className="py-3 pr-4 font-medium w-1/12">Category</th>
-                <th className="py-3 pr-4 font-medium">Condition</th>
-                <th className="py-3 pr-4 font-medium">Test</th>
-                <th className="py-3 pr-4 font-medium">Description</th>
-                <th className="py-3 pr-4 font-medium w-[120px]">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="w-full text-left border-collapse">
+            <TableHead>
+              <TableRow className="border-b border-border-light text-sm text-typography-700">
+                <TableHeader className="py-3 pr-4 font-medium w-1/6">Title</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium w-1/12">Category</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Condition</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Test</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Description</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium w-[120px]">Actions</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {testCases.map(testCase => (
-                <tr
+                <TableRow
                   key={testCase.id}
                   className="border-b border-border-light text-sm text-typography-900 align-top"
                 >
-                  <td className="py-3 pr-4">{testCase.title}</td>
-                  <td className="py-3 pr-4">{testCase.category}</td>
-                  <td className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
+                  <TableCell className="py-3 pr-4">{testCase.title}</TableCell>
+                  <TableCell className="py-3 pr-4">{testCase.category}</TableCell>
+                  <TableCell className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
                     {testCase.condition || "—"}
-                  </td>
-                  <td className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
+                  </TableCell>
+                  <TableCell className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
                     {testCase.test || "—"}
-                  </td>
-                  <td className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
+                  </TableCell>
+                  <TableCell className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
                     {testCase.description || "—"}
-                  </td>
-                  <td className="py-3 pr-4">
+                  </TableCell>
+                  <TableCell className="py-3 pr-4">
                     <div className="flex gap-3">
                       <button
                         className="text-primary-500 hover:underline"
@@ -158,11 +166,11 @@ export const AgentTestCases: FC = () => {
                         Delete
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </div>
 
