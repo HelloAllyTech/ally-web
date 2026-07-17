@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { Add, TrashCan } from "@carbon/icons-react";
+import { Add, Copy, TrashCan } from "@carbon/icons-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -19,7 +19,13 @@ import {
   Tag,
   Tile,
 } from "@ally-ui-mono/ui-shared";
-import { useDeleteRoleplaySpecMutation, useGetRoleplaySpecsQuery } from "@api";
+import {
+  useCreateRoleplaySpecMutation,
+  useDeleteRoleplaySpecMutation,
+  useGetRoleplaySpecsQuery,
+  useLazyGetRoleplaySpecByIdQuery,
+  useSaveRoleplayDraftMutation,
+} from "@api";
 import { ActionConfirmationPopup } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en, ROUTES } from "@constants";
@@ -42,11 +48,42 @@ export const RoleplayStudioList: React.FC = () => {
   const navigate = useNavigate();
   const { data, isLoading } = useGetRoleplaySpecsQuery();
   const [deleteSpec] = useDeleteRoleplaySpecMutation();
+  const [fetchSpecById] = useLazyGetRoleplaySpecByIdQuery();
+  const [createSpec] = useCreateRoleplaySpecMutation();
+  const [saveDraft] = useSaveRoleplayDraftMutation();
   const [specToDelete, setSpecToDelete] = useState<RoleplaySpecListItem | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const specs = data?.data ?? [];
 
   const openSpec = (spec: RoleplaySpecListItem) => navigate(ROUTES.ROLEPLAY_STUDIO_SPEC(spec.id));
+
+  /**
+   * Duplicate a spec: fetch the source's full draft, create a fresh spec, and
+   * seed its draft with the copied document. Reuses the existing CRUD endpoints
+   * (no new backend) so the copy is an independent DRAFT the trainer can edit or
+   * hand to the copilot from scratch.
+   */
+  const handleDuplicate = async (source: RoleplaySpecListItem) => {
+    if (duplicatingId) return;
+    setDuplicatingId(source.id);
+    try {
+      const detail = await fetchSpecById(source.id).unwrap();
+      const created = await createSpec({
+        title: `${strings.copyOfPrefix}${source.title || strings.untitledRoleplay}`,
+      }).unwrap();
+      await saveDraft({
+        specId: created.id,
+        spec: detail.activeVersion.spec,
+        expectedUpdatedAt: created.updatedAt,
+      }).unwrap();
+      navigate(ROUTES.ROLEPLAY_STUDIO_SPEC(created.id));
+    } catch {
+      toast.error(strings.duplicateFailed);
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
 
   const handleConfirmDelete = async () => {
     if (!specToDelete) return;
@@ -120,6 +157,19 @@ export const RoleplayStudioList: React.FC = () => {
               >
                 {strings.open}
               </Button>
+              <IconButton
+                label={strings.duplicate}
+                kind="ghost"
+                size="sm"
+                align="left"
+                disabled={duplicatingId === spec?.id}
+                onClick={e => {
+                  e.stopPropagation();
+                  if (spec) handleDuplicate(spec);
+                }}
+              >
+                <Copy />
+              </IconButton>
               <IconButton
                 label={strings.delete}
                 kind="ghost"
