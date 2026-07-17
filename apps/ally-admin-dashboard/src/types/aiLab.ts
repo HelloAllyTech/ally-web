@@ -117,6 +117,25 @@ export interface CreateLabRunRequest {
   variableValues?: LabRunVariableValue[];
 }
 
+// ---- Automated (LLM-as-judge) evaluation ----
+
+export interface LabAutoEvaluation {
+  id: string;
+  runId: string;
+  model: string;
+  criteria: string;
+  score?: number | null;
+  reasoning?: string | null;
+  error?: string | null;
+  createdAt: string;
+}
+
+export interface CreateAutoEvalRequest {
+  runId: string;
+  criteria: string;
+  model?: string;
+}
+
 // ---- Human evaluation ----
 
 export type LabEvalQuestionType = "RATING" | "YES_NO" | "TEXT";

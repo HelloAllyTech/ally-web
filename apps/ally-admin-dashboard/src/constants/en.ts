@@ -1407,6 +1407,25 @@ export const en = {
       deleteTitle: "Delete run?",
       deleteDescription: "This permanently removes the run from the log. This cannot be undone.",
     },
+    // Automated (LLM-as-judge) evaluation
+    autoEval: {
+      action: "Auto-evaluate",
+      drawerTitle: "Automated Evaluation",
+      subtitle:
+        "Score this run's output against a rubric using an LLM judge. Fast, cheap, repeatable — complements human evaluation.",
+      criteriaLabel: "Criteria / rubric",
+      criteriaPlaceholder:
+        "e.g. The response must be valid JSON, cite a source, and stay under 100 words.",
+      modelLabel: "Judge model",
+      run: "Run evaluation",
+      running: "Evaluating…",
+      empty: "No automated evaluations yet.",
+      priorHeading: "Previous evaluations",
+      scoreLabel: "Score",
+      failed: "Evaluation failed",
+      success: "Evaluation complete",
+      validation: "Enter the criteria to score against",
+    },
     // Publish for human evaluation
     publish: {
       action: "Publish",

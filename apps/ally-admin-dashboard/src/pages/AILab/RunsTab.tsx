@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { BarChart3, Delete, Upload, Users } from "@icons";
+import { BarChart3, Delete, Upload, Users, WandStars } from "@icons";
 import { toast } from "sonner";
 
 import { useGetLabRunsQuery, useDeleteLabRunMutation } from "@api";
@@ -10,6 +10,7 @@ import { en } from "@constants";
 import { LabRun } from "@types";
 
 import { AssignRunDrawer } from "./AssignRunDrawer";
+import { AutoEvalDrawer } from "./AutoEvalDrawer";
 import { CreateRunDrawer } from "./CreateRunDrawer";
 import { PublishRunDrawer } from "./PublishRunDrawer";
 import { RunDetailDrawer } from "./RunDetailDrawer";
@@ -59,6 +60,7 @@ export const RunsTab: React.FC = () => {
   const [publishRun, setPublishRun] = useState<LabRun | null>(null);
   const [assignRun, setAssignRun] = useState<LabRun | null>(null);
   const [resultsRun, setResultsRun] = useState<LabRun | null>(null);
+  const [autoEvalRun, setAutoEvalRun] = useState<LabRun | null>(null);
 
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
@@ -149,6 +151,19 @@ export const RunsTab: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 align-top">
                       <div className="flex items-center justify-end gap-3 text-typography-600">
+                        {run.status === "COMPLETED" && (
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              setAutoEvalRun(run);
+                            }}
+                            className="hover:text-primary-600"
+                            aria-label={en.aiLab.autoEval.action}
+                            title={en.aiLab.autoEval.action}
+                          >
+                            <WandStars width={18} height={18} />
+                          </button>
+                        )}
                         {run.status === "COMPLETED" && !run.publishedAt && (
                           <button
                             onClick={e => {
@@ -222,6 +237,8 @@ export const RunsTab: React.FC = () => {
       <AssignRunDrawer run={assignRun} onClose={() => setAssignRun(null)} />
 
       <RunResultsDrawer run={resultsRun} onClose={() => setResultsRun(null)} />
+
+      <AutoEvalDrawer run={autoEvalRun} onClose={() => setAutoEvalRun(null)} />
 
       <ActionConfirmationPopup
         isOpen={!!deleteTarget}
