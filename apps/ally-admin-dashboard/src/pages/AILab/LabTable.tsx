@@ -2,6 +2,15 @@ import React from "react";
 
 import { Delete, Edit } from "@icons";
 
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@ally-ui-mono/ui-shared";
+
 export interface LabTableColumn<T> {
   key: string;
   label: string;
@@ -30,34 +39,36 @@ export function LabTable<T extends { id: string }>({
 }: LabTableProps<T>) {
   return (
     <div className="border border-border-light rounded-md overflow-hidden">
-      <table className="w-full text-left font-primary text-base">
-        <thead>
-          <tr className="bg-background-secondary text-typography-700 text-sm">
+      <Table className="w-full text-left font-primary text-base">
+        <TableHead>
+          <TableRow className="bg-background-secondary text-typography-700 text-sm">
             {columns.map(col => (
-              <th key={col.key} className={`px-4 py-3 font-medium ${col.className ?? ""}`}>
+              <TableHeader key={col.key} className={`px-4 py-3 font-medium ${col.className ?? ""}`}>
                 {col.label}
-              </th>
+              </TableHeader>
             ))}
-            <th className="px-4 py-3 font-medium text-right w-[100px]">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+            <TableHeader className="px-4 py-3 font-medium text-right w-[100px]">
+              Actions
+            </TableHeader>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {rows.map(row => (
-            <tr
+            <TableRow
               key={row.id}
               className="border-t border-border-light hover:bg-background-secondary/50 transition-colors"
             >
               {columns.map(col => (
-                <td
+                <TableCell
                   key={col.key}
                   className={`px-4 py-3 text-typography-900 align-top ${col.className ?? ""}`}
                 >
                   {col.render
                     ? col.render(row)
                     : String((row as Record<string, unknown>)[col.key] ?? "")}
-                </td>
+                </TableCell>
               ))}
-              <td className="px-4 py-3 align-top">
+              <TableCell className="px-4 py-3 align-top">
                 <div className="flex items-center justify-end gap-3 text-typography-600">
                   <button
                     onClick={() => onEdit(row)}
@@ -76,11 +87,11 @@ export function LabTable<T extends { id: string }>({
                     <Delete size={18} />
                   </button>
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

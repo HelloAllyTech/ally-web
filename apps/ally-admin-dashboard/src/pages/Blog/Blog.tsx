@@ -3,6 +3,14 @@ import React, { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@ally-ui-mono/ui-shared";
+import {
   BlogPost,
   BlogStatus,
   useCreateBlogMutation,
@@ -172,24 +180,24 @@ export const BlogManagement: React.FC = () => {
       </div>
 
       <div className="mt-5 border border-border-light rounded-md overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-background-secondary text-typography-600">
-            <tr>
-              <th className="px-4 py-3 font-medium">Title</th>
-              <th className="px-4 py-3 font-medium">Category</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Published</th>
-              <th className="px-4 py-3 font-medium">Updated</th>
-              <th className="px-4 py-3 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="w-full text-left text-sm">
+          <TableHead className="bg-background-secondary text-typography-600">
+            <TableRow>
+              <TableHeader className="px-4 py-3 font-medium">Title</TableHeader>
+              <TableHeader className="px-4 py-3 font-medium">Category</TableHeader>
+              <TableHeader className="px-4 py-3 font-medium">Status</TableHeader>
+              <TableHeader className="px-4 py-3 font-medium">Published</TableHeader>
+              <TableHeader className="px-4 py-3 font-medium">Updated</TableHeader>
+              <TableHeader className="px-4 py-3 font-medium text-right">Actions</TableHeader>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {blogs.map(blog => (
-              <tr
+              <TableRow
                 key={blog.id}
                 className="border-t border-border-light hover:bg-background-secondary/50"
               >
-                <td
+                <TableCell
                   className="px-4 py-3 text-typography-900 cursor-pointer"
                   onClick={() => openEdit(blog)}
                 >
@@ -199,9 +207,11 @@ export const BlogManagement: React.FC = () => {
                       {blog.tldr}
                     </div>
                   )}
-                </td>
-                <td className="px-4 py-3 text-typography-700">{blog.category || "—"}</td>
-                <td className="px-4 py-3">
+                </TableCell>
+                <TableCell className="px-4 py-3 text-typography-700">
+                  {blog.category || "—"}
+                </TableCell>
+                <TableCell className="px-4 py-3">
                   <span
                     className={`text-xs px-2 py-1 rounded-full ${
                       blog.status === "PUBLISHED"
@@ -211,10 +221,14 @@ export const BlogManagement: React.FC = () => {
                   >
                     {blog.status === "PUBLISHED" ? "Published" : "Draft"}
                   </span>
-                </td>
-                <td className="px-4 py-3 text-typography-600">{formatDate(blog.publishedAt)}</td>
-                <td className="px-4 py-3 text-typography-600">{formatDate(blog.updatedAt)}</td>
-                <td className="px-4 py-3">
+                </TableCell>
+                <TableCell className="px-4 py-3 text-typography-600">
+                  {formatDate(blog.publishedAt)}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-typography-600">
+                  {formatDate(blog.updatedAt)}
+                </TableCell>
+                <TableCell className="px-4 py-3">
                   <div className="flex items-center justify-end gap-3">
                     <button
                       onClick={() => openEdit(blog)}
@@ -235,25 +249,25 @@ export const BlogManagement: React.FC = () => {
                       Delete
                     </button>
                   </div>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {!isFetching && blogs.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-typography-500">
+              <TableRow>
+                <TableCell colSpan={6} className="px-4 py-10 text-center text-typography-500">
                   No posts yet. Create your first post to get started.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
             {isFetching && blogs.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-typography-500">
+              <TableRow>
+                <TableCell colSpan={6} className="px-4 py-10 text-center text-typography-500">
                   Loading...
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {data && data.count > blogs.length && limit < 100 && (
