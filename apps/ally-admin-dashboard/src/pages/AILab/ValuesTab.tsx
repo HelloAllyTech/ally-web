@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
+import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import {
   useGetLabValuesQuery,
   useGetLabVariablesQuery,
@@ -173,20 +174,18 @@ export const ValuesTab: React.FC = () => {
         onSave={handleSave}
       >
         <LabField label={en.aiLab.values.variableLabel} required>
-          <select
+          <Select
+            id="ailab-values-variable"
+            labelText={en.aiLab.values.variableLabel}
+            hideLabel
             value={form.variableId}
             onChange={e => setForm(f => ({ ...f, variableId: e.target.value }))}
-            className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base bg-white"
           >
-            <option value="" disabled>
-              {en.aiLab.values.variablePlaceholder}
-            </option>
+            <SelectItem value="" text={en.aiLab.values.variablePlaceholder} disabled />
             {variables.map(variable => (
-              <option key={variable.id} value={variable.id}>
-                {`{{${variable.name}}}`}
-              </option>
+              <SelectItem key={variable.id} value={variable.id} text={`{{${variable.name}}}`} />
             ))}
-          </select>
+          </Select>
         </LabField>
         <LabField label={en.aiLab.values.labelLabel}>
           <input

@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
@@ -118,27 +119,31 @@ export const RoleplaySessionLogs: FC = () => {
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-typography-700">Status</label>
-          <select
+          <Select
+            id="roleplay-status-filter"
+            labelText="Status"
+            hideLabel
             value={status}
             onChange={e => onStatusChange(e.target.value as RoleplaySessionStatus | "")}
-            className="rounded border border-border-light px-3 py-2 bg-white text-sm outline-none focus:border-primary-500"
           >
-            <option value="">All statuses</option>
-            <option value="ENDED">Ended</option>
-            <option value="ACTIVE">In progress</option>
-          </select>
+            <SelectItem value="" text="All statuses" />
+            <SelectItem value="ENDED" text="Ended" />
+            <SelectItem value="ACTIVE" text="In progress" />
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-typography-700">Session type</label>
-          <select
+          <Select
+            id="roleplay-session-type-filter"
+            labelText="Session type"
+            hideLabel
             value={sessionType}
             onChange={e => onSessionTypeChange(e.target.value as "all" | "test" | "real")}
-            className="rounded border border-border-light px-3 py-2 bg-white text-sm outline-none focus:border-primary-500"
           >
-            <option value="all">All sessions</option>
-            <option value="real">Real only</option>
-            <option value="test">V2V test only</option>
-          </select>
+            <SelectItem value="all" text="All sessions" />
+            <SelectItem value="real" text="Real only" />
+            <SelectItem value="test" text="V2V test only" />
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-typography-700">From</label>

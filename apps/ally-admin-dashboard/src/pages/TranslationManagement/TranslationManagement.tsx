@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import { Info, Plus, RefreshCw, RotateCcw, UploadCloud } from "@icons";
 import { toast } from "sonner";
 
+import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import {
   useAutoTranslateI18nMutation,
   useGetAllI18nTranslationsQuery,
@@ -350,22 +351,25 @@ export const TranslationManagement: React.FC = () => {
               <RefreshCw size={16} />
               Refresh
             </Button>
-            <select
+            <Select
+              id="i18n-rollback-version"
+              labelText="Version"
+              hideLabel
               value={rollbackVersion}
               onChange={event =>
                 setRollbackVersion(event.target.value ? Number(event.target.value) : "")
               }
-              className="h-9 rounded-md border border-neutral-300 bg-white px-3 text-sm"
               disabled={!canEdit || isRollingBack}
             >
-              <option value="">Versions</option>
+              <SelectItem value="" text="Versions" />
               {status?.versions?.map(version => (
-                <option key={version.name} value={version.version}>
-                  {version.name}
-                  {version.current ? " (live)" : ""}
-                </option>
+                <SelectItem
+                  key={version.name}
+                  value={version.version}
+                  text={`${version.name}${version.current ? " (live)" : ""}`}
+                />
               ))}
-            </select>
+            </Select>
             <Button
               variant={ButtonVariant.SECONDARY}
               onClick={rollback}
@@ -420,18 +424,19 @@ export const TranslationManagement: React.FC = () => {
                   </tr>
                   <tr className="bg-white">
                     <th className="sticky left-0 z-30 w-[160px] min-w-[160px] border-b border-neutral-200 bg-white px-2 py-2">
-                      <select
+                      <Select
+                        id="i18n-section-filter"
+                        labelText="Section"
+                        hideLabel
                         value={filters[SECTION_FILTER_KEY] ?? ""}
                         onChange={event => setFilter(SECTION_FILTER_KEY, event.target.value)}
-                        className="h-8 w-full rounded-md border border-neutral-300 bg-white px-2 text-xs outline-none focus:border-primary-500"
+                        className="w-full"
                       >
-                        <option value="">All sections</option>
+                        <SelectItem value="" text="All sections" />
                         {sections.map(section => (
-                          <option key={section} value={section}>
-                            {section}
-                          </option>
+                          <SelectItem key={section} value={section} text={section} />
                         ))}
-                      </select>
+                      </Select>
                     </th>
                     <th className="sticky left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-white px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                       <input

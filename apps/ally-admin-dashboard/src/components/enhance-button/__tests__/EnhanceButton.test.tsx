@@ -8,6 +8,14 @@ const mockEnhance = vi.fn();
 // @api ↔ store form a circular import, so fully replace @api (cutting the
 // chain) and provide a minimal baseAPI stub for any store init.
 vi.mock("@api", () => ({
+  // evaluatorAPI is wired into the store alongside baseAPI; stub it too so
+  // store init (reducerPath/reducer/middleware) does not throw.
+  evaluatorAPI: {
+    reducerPath: "evaluatorAPI",
+    reducer: (state = {}) => state,
+    middleware: () => (next: any) => (action: any) => next(action),
+    util: { resetApiState: () => ({ type: "reset" }) },
+  },
   useEnhanceFieldMutation: () => [mockEnhance, { isLoading: false }],
   useGetAutofillModelsQuery: () => ({ data: [], isLoading: false }),
   baseAPI: {
