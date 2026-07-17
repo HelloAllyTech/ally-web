@@ -159,12 +159,18 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       const languageId = String(language.language_id);
       const selectedVoiceId = languageVoices?.[languageId] ?? "";
       const voiceOptions = getVoiceOptions(language);
+      // When a voice is already selected, offer a way to clear it and thereby
+      // disable (remove) the language from the simulation. The sentinel empty
+      // value is handled in handleRowChange by deleting the mapping key.
+      const voiceOptionsWithClear = selectedVoiceId
+        ? [{ value: "", label: en.simulation.removeVoiceDisableLanguage }, ...voiceOptions]
+        : voiceOptions;
 
       return {
         language: { value: language.label, disabled: true, rowId: languageId },
         voice: {
           value: selectedVoiceId,
-          options: voiceOptions,
+          options: voiceOptionsWithClear,
           playingVoiceId: playingVoice,
           isAudioLoading,
           onPlay: handlePlay,
@@ -198,7 +204,15 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       if (!rowId || !columnId) return;
 
       if (columnId === "voice") {
-        setValue(id, { ...languageVoices, [rowId]: value }, { shouldDirty: true });
+        const nextLanguageVoices = { ...languageVoices };
+        if (value) {
+          nextLanguageVoices[rowId] = value;
+        } else {
+          // Empty value = "Remove voice"; drop the mapping so the language is
+          // no longer enabled for this simulation.
+          delete nextLanguageVoices[rowId];
+        }
+        setValue(id, nextLanguageVoices, { shouldDirty: true });
       } else if (columnId === "label") {
         setValue(
           "languageCharacteristics",

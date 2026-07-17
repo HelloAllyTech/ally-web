@@ -354,6 +354,9 @@ export const Cell = ({
         const isLoading = isCurrentVoice && isVoiceAudioLoading;
         const isPlaying = isCurrentVoice && !isVoiceAudioLoading;
         const isSelected = (value.value ?? "") === option.value;
+        // The empty-value option is a "clear/remove" action, not a real voice,
+        // so it has nothing to preview.
+        const isClearOption = !option.value;
 
         return (
           <div
@@ -362,22 +365,24 @@ export const Cell = ({
             onClick={() => onSelect(option.value)}
           >
             <span className={isSelected ? "text-primary-700 font-medium" : ""}>{option.label}</span>
-            <div
-              className="flex items-center gap-1 flex-shrink-0"
-              onClick={e => e.stopPropagation()}
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-typography-800 rounded-full animate-spin" />
-              ) : isPlaying ? (
-                <button type="button" onClick={() => onPause?.()}>
-                  <PauseIcon className="w-5 h-5" />
-                </button>
-              ) : (
-                <button type="button" onClick={() => onPlay?.(option.value)}>
-                  <PlayIcon className="w-5 h-5" />
-                </button>
-              )}
-            </div>
+            {!isClearOption && (
+              <div
+                className="flex items-center gap-1 flex-shrink-0"
+                onClick={e => e.stopPropagation()}
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-typography-800 rounded-full animate-spin" />
+                ) : isPlaying ? (
+                  <button type="button" onClick={() => onPause?.()}>
+                    <PauseIcon className="w-5 h-5" />
+                  </button>
+                ) : (
+                  <button type="button" onClick={() => onPlay?.(option.value)}>
+                    <PlayIcon className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         );
       };

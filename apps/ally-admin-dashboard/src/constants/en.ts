@@ -261,6 +261,7 @@ export const en = {
       "Are you sure you want to unarchive this simulation? This will make it visible to active simulations.",
     voice: "Voice",
     selectVoice: "Select voice",
+    removeVoiceDisableLanguage: "Remove voice (disable language)",
     simulationEvents: "Simulation Events",
     createNewEvent: "Create new event",
     createNewBadge: "Create New Badge",
