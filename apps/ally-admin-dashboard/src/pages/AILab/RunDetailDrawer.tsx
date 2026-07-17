@@ -18,6 +18,16 @@ const Section: React.FC<{ label: string; children: React.ReactNode }> = ({ label
   </div>
 );
 
+/** Format an estimated USD cost, trimming trailing zeros (min 2 dp). */
+const formatCost = (cost: string | number): string => {
+  const n = Number(cost);
+  if (Number.isNaN(n)) return "—";
+  return `$${n
+    .toFixed(n < 0.01 ? 6 : 4)
+    .replace(/0+$/, "")
+    .replace(/\.$/, ".00")}`;
+};
+
 export const RunDetailDrawer: React.FC<RunDetailDrawerProps> = ({ run, onClose }) => {
   if (!run) return null;
 
@@ -45,6 +55,23 @@ export const RunDetailDrawer: React.FC<RunDetailDrawerProps> = ({ run, onClose }
             <Section label={en.aiLab.runs.detailModel}>
               <span className="font-mono text-sm">{run.model}</span>
             </Section>
+            {run.totalTokens != null && (
+              <Section label={en.aiLab.runs.detailTokens}>
+                <span className="text-sm">
+                  {run.totalTokens}
+                  {run.promptTokens != null && run.completionTokens != null && (
+                    <span className="text-typography-500">
+                      {` (${run.promptTokens} + ${run.completionTokens})`}
+                    </span>
+                  )}
+                </span>
+              </Section>
+            )}
+            {run.costUsd != null && (
+              <Section label={en.aiLab.runs.detailCost}>
+                <span className="text-sm">{formatCost(run.costUsd)}</span>
+              </Section>
+            )}
           </div>
 
           {run.variableValues.length > 0 && (
