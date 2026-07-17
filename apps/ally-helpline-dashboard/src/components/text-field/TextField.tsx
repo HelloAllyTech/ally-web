@@ -66,9 +66,21 @@ const TextField: FC<TextFieldProps> = ({
     style: inputStyles,
     ref: inputRef,
     onWheel: handleWheel,
-    // Suppress browser autofill/password-manager overlays that can steal focus.
-    // Callers can still override via `props`.
+    // Opt these fields out of browser/extension form helpers that inject into
+    // inputs and can steal focus mid-typing (observed on Edge: focus lost after
+    // one keystroke, gone in InPrivate where extensions are disabled). There is
+    // no single universal opt-out, so we set the hints each common family
+    // honors. Callers can still override via `props`.
     autoComplete: "off",
+    // Password managers
+    "data-lpignore": "true", // LastPass
+    "data-1p-ignore": "true", // 1Password
+    "data-bwignore": "true", // Bitwarden
+    "data-form-type": "other", // Dashlane / generic
+    // Writing assistants (Grammarly, Microsoft Editor, etc.)
+    "data-gramm": "false",
+    "data-gramm_editor": "false",
+    "data-enable-grammarly": "false",
     ...registerProps,
     ...(onChange ? { onChange } : {}),
     ...(props as Record<string, unknown>),
