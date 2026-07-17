@@ -3,7 +3,7 @@ import { FC, useState, useId } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
+import { Select, SelectItem, TextArea, TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useGetCustomFieldDefinitionsQuery,
   useCreateCustomFieldDefinitionMutation,
@@ -400,13 +400,14 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                   <label className="text-xs font-medium text-typography-700">
                     Field name <span className="text-error-500">*</span>
                   </label>
-                  <input
-                    type="text"
+                  <TextInput
+                    id="custom-field-name"
+                    labelText="Field name"
+                    hideLabel
                     maxLength={100}
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="e.g. Primary Diagnosis"
-                    className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400"
                   />
                 </div>
 
@@ -417,13 +418,15 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                     <div className="flex flex-col gap-1.5">
                       {options.map((opt, idx) => (
                         <div key={opt.id} className="flex items-center gap-2">
-                          <input
-                            type="text"
+                          <TextInput
+                            id={`custom-field-option-${opt.id}`}
+                            labelText={`Option ${idx + 1}`}
+                            hideLabel
                             maxLength={100}
                             value={opt.label}
                             onChange={e => updateOption(idx, e.target.value)}
                             placeholder={`Option ${idx + 1}`}
-                            className="flex-1 border border-border-light rounded-lg px-3 py-1.5 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400"
+                            className="flex-1"
                           />
                           {options.length > 1 && (
                             <button

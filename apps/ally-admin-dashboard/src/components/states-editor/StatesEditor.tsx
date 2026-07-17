@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
-import { TextArea } from "@ally-ui-mono/ui-shared";
+import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
 import { TrashRed } from "@assets";
 import { ENHANCE_TYPE } from "@constants";
 import { useIsPlaceholderUsed } from "@hooks";
@@ -311,12 +311,14 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
                 </button>
               </div>
 
-              <input
-                type="text"
+              <TextInput
+                id={`state-name-${state.id}`}
+                labelText="State name"
+                hideLabel
                 value={state.name}
                 onChange={event => updateState(state.id, { name: event.target.value })}
                 placeholder="State name (e.g. Withdrawn, Engaged, Reflective)"
-                className="w-full bg-transparent px-2 py-1 text-sm border-b border-border-light focus:outline-none focus:border-primary-500"
+                className="w-full"
               />
 
               <TextArea
