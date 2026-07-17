@@ -23,8 +23,23 @@ export default defineConfig({
         assetFileNames: "assets/[name]-[hash].[ext]",
         manualChunks: {
           vendor: ["react", "react-dom"],
-          ui: ["@mui/material", "@mui/icons-material"],
+          ui: ["@carbon/react", "@carbon/icons-react"],
         },
+      },
+    },
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: "modern-compiler",
+        quietDeps: true,
+        silenceDeprecations: [
+          "global-builtin",
+          "import",
+          "color-functions",
+          "legacy-js-api",
+          "mixed-decls",
+        ],
       },
     },
   },

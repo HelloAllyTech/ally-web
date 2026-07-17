@@ -23,6 +23,27 @@ export const DEFAULT_SIMULATION_STATUS_OPTIONS = [
   { id: "DRAFT", label: "Draft" },
 ];
 
+// Editorial category of a simulation (mirrors ally-be's ScenarioCategory).
+// Used by the Basic Settings dropdown (value/label) and, in id/label shape
+// below, by the Studio list filter.
+export const SIMULATION_CATEGORY_OPTIONS = [
+  { value: "ORIGINALS", label: "Originals" },
+  { value: "DEMO", label: "Demo" },
+  { value: "PARTNER_SIM", label: "Partner Sim" },
+  { value: "OTHER", label: "Other" },
+];
+
+export const SIMULATION_CATEGORY_FILTER_OPTIONS = SIMULATION_CATEGORY_OPTIONS.map(
+  ({ value, label }) => ({ id: value, label }),
+);
+
+export const getSimulationCategoryLabel = (category?: string | null): string | undefined =>
+  SIMULATION_CATEGORY_OPTIONS.find(option => option.value === category)?.label ?? undefined;
+
+export const SIMULATION_CATEGORY = {
+  PARTNER_SIM: "PARTNER_SIM",
+} as const;
+
 export const EVENT_TYPE_OPTIONS = [
   { value: "TIME_BASED", label: "Time Based" },
   { value: "SCORE_BASED", label: "Score Based" },
@@ -140,6 +161,7 @@ export const FORM_FIELD_TYPES = {
     MAIN_AGENT_PROMPT_PICKER: "main_agent_prompt_picker",
     STATES_EDITOR: "states_editor",
     TITLE_PANEL: "title_panel",
+    COMFORT_AUDIO_TRACK: "comfort_audio_track",
   },
   TOGGLE_BUTTON: "toggle_button",
   TAG_AND_DROPDOWN: "tag_and_dropdown",
@@ -153,6 +175,8 @@ export const FORM_FIELD_TYPES = {
 export const FORM_FIELD_IDS = {
   TITLE: "title",
   COMPETENCY: "competency",
+  CATEGORY: "category",
+  PARTNER_ORG_NAME: "partnerOrgName",
   DIFFICULTY_LEVEL: "difficultyLevel",
   CHARACTER_PROFILE_SELECTOR: "characterProfileSelector",
   CHARACTER_PROFILE_TEXT: "characterProfileText",
@@ -183,6 +207,8 @@ export const FORM_FIELD_IDS = {
   STATE_NAMES: "stateNames",
   FILLER_ENABLED: "fillerEnabled",
   COMFORT_AUDIO_ENABLED: "comfortAudioEnabled",
+  COMFORT_AUDIO_URL: "comfortAudioUrl",
+  COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
@@ -190,17 +216,6 @@ export const FORM_FIELD_IDS = {
   SELECTED_EVALUATOR_PROMPT_CODE: "selectedEvaluatorPromptCode",
   STATES: "states",
   TEMPERATURE: "temperature",
-};
-
-export const REGENERATE_TYPE = {
-  OPENING_STATEMENTS: "openingStatements",
-  CHARACTER_PROFILE_TEXT: "characterProfileText",
-  DESCRIPTION: "description",
-  STATE_INSTRUCTIONS: "stateInstructions",
-  CHALLENGE_DESCRIPTION: "challengeDescription",
-  BEHAVIOR_INSTRUCTIONS: "behaviorInstructions",
-  STATES: "states",
-  KNOWLEDGE_SOURCES: "knowledgeSources",
 };
 
 /**
@@ -232,6 +247,12 @@ export const TEMPERATURE_DEFAULT = 0.7;
 export const TEMPERATURE_MIN = 0;
 export const TEMPERATURE_MAX = 2;
 export const TEMPERATURE_STEP = 0.1;
+
+// Comfort-audio volume slider (0..1), shown when the Comfort Audio toggle is on.
+export const COMFORT_AUDIO_VOLUME_DEFAULT = 0.3;
+export const COMFORT_AUDIO_VOLUME_MIN = 0;
+export const COMFORT_AUDIO_VOLUME_MAX = 1;
+export const COMFORT_AUDIO_VOLUME_STEP = 0.1;
 
 export const ROLE_INSTRUCTION_PROMPT_CODE = "openai_simulation_role_instruction_default";
 export const DEFAULT_MAIN_AGENT_PROMPT_CODE = "ally_ai_learn_system_main_agent_prompt";
@@ -305,9 +326,33 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         multiline: true,
         fullWidth: true,
         maxLength: 1000,
-        regenerateType: REGENERATE_TYPE.DESCRIPTION,
         enhanceType: ENHANCE_TYPE.DESCRIPTION,
         promptVariable: "challenge_description",
+      },
+      // Editorial organisation of the Studio list: category groups sims as
+      // Originals / Demo / Partner Sim / Other; the partner-org tag names the
+      // partner and only shows when the category is Partner Sim. Both are
+      // optional, stored as dedicated `scenarios` columns, and drive the
+      // Studio list filter.
+      {
+        id: "category",
+        label: "Category",
+        type: FORM_FIELD_TYPES.SELECT,
+        options: SIMULATION_CATEGORY_OPTIONS,
+        isMandatory: false,
+        fullWidth: false,
+        allowDeselect: true,
+      },
+      {
+        id: "partnerOrgName",
+        label: "Partner Organisation",
+        placeholder: "Name of the partner org",
+        type: FORM_FIELD_TYPES.TEXT,
+        isMandatory: false,
+        fullWidth: false,
+        maxLength: 255,
+        dependsOn: "category",
+        visibleWhen: (formValues: any) => formValues.category === SIMULATION_CATEGORY.PARTNER_SIM,
       },
       {
         id: "triggerWarningIds",
@@ -342,7 +387,6 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         maxLength: 2500,
         isMandatory: false,
-        regenerateType: REGENERATE_TYPE.CHARACTER_PROFILE_TEXT,
         enhanceType: ENHANCE_TYPE.CHARACTER_PROFILE_TEXT,
         promptVariable: "character_profile_text",
         hideWhenUnused: true,
@@ -380,6 +424,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         // Cover Image + Cover Video sit side by side as two upload tiles
         // rather than two full-width tiles stacked vertically.
         fullWidth: false,
+        aiGenerate: true,
       },
       {
         id: "coverVideoUrl",
@@ -590,6 +635,28 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: false,
         tooltipLocation: TooltipLocation.COMFORT_AUDIO,
+      },
+      {
+        id: "comfortAudioUrl",
+        label: "Comfort Audio Track",
+        type: FORM_FIELD_TYPES.CUSTOM.COMFORT_AUDIO_TRACK,
+        fullWidth: true,
+        dependsOn: "comfortAudioEnabled",
+        visibleWhen: (formValues: any) => formValues.comfortAudioEnabled === true,
+        note: "Select an uploaded track to play as this roleplay's comfort audio. Leave unset to use the default room tone.",
+      },
+      {
+        id: "comfortAudioVolume",
+        label: "Comfort Audio Volume",
+        type: FORM_FIELD_TYPES.SLIDER,
+        fullWidth: true,
+        min: COMFORT_AUDIO_VOLUME_MIN,
+        max: COMFORT_AUDIO_VOLUME_MAX,
+        step: COMFORT_AUDIO_VOLUME_STEP,
+        defaultValue: COMFORT_AUDIO_VOLUME_DEFAULT,
+        dependsOn: "comfortAudioEnabled",
+        visibleWhen: (formValues: any) => formValues.comfortAudioEnabled === true,
+        note: "How loud the comfort audio plays under the conversation (0 = silent, 1 = full).",
       },
       {
         id: "historyTrimEnabled",

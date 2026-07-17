@@ -32,10 +32,7 @@ const PREFERRED_MIME_TYPES = [
 ];
 
 const pickMimeType = (): string => {
-  if (
-    typeof MediaRecorder === "undefined" ||
-    typeof MediaRecorder.isTypeSupported !== "function"
-  ) {
+  if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") {
     return "";
   }
   return PREFERRED_MIME_TYPES.find(type => MediaRecorder.isTypeSupported(type)) ?? "";

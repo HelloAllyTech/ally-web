@@ -20,7 +20,6 @@ import {
   OrgAccessListResponse,
   OrgScenario,
   OrgScenarioPath,
-  OrgTenantBadge,
   OrgTenantBadgesParams,
   OrgTenantBadgesResponse,
   OrgBadgeTenantVisibilityBody,
@@ -117,6 +116,21 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.SCRIBE_NOTE_CREATION_ENABLED],
     }),
 
+    // --- Scribe voice note (mic dictation) enabled -------------------------
+    getOwnScribeVoiceNoteEnabled: builder.query<boolean, void>({
+      query: () => ApiEndpoints.SETTINGS.SCRIBE_VOICE_NOTE_ENABLED,
+      providesTags: [TAG_TYPES.SCRIBE_VOICE_NOTE_ENABLED],
+    }),
+
+    updateOwnScribeVoiceNoteEnabled: builder.mutation<{ success: boolean }, { enabled: boolean }>({
+      query: ({ enabled }) => ({
+        url: ApiEndpoints.SETTINGS.SCRIBE_VOICE_NOTE_ENABLED,
+        method: HttpMethod.PUT,
+        body: { enabled },
+      }),
+      invalidatesTags: [TAG_TYPES.SCRIBE_VOICE_NOTE_ENABLED],
+    }),
+
     // --- Custom field definitions (org-scoped CRUD) ------------------------
     // Distinct hook names from ./customFields.ts so both can co-exist in the
     // @api barrel; these invalidate the same CUSTOM_FIELD_DEFINITIONS tag.
@@ -192,16 +206,15 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
     }),
 
     // --- Access management: Scenario paths ---------------------------------
-    getOrgScenarioPaths: builder.query<
-      OrgAccessListResponse<OrgScenarioPath>,
-      OrgAccessListParams
-    >({
-      query: params => ({
-        url: ApiEndpoints.ORG_ACCESS.GET_SCENARIO_PATHS,
-        params,
-      }),
-      providesTags: [TAG_TYPES.ORG_SCENARIO_PATHS],
-    }),
+    getOrgScenarioPaths: builder.query<OrgAccessListResponse<OrgScenarioPath>, OrgAccessListParams>(
+      {
+        query: params => ({
+          url: ApiEndpoints.ORG_ACCESS.GET_SCENARIO_PATHS,
+          params,
+        }),
+        providesTags: [TAG_TYPES.ORG_SCENARIO_PATHS],
+      },
+    ),
 
     enableOrgScenarioPaths: builder.mutation<
       { success: boolean },
@@ -237,17 +250,16 @@ const organizationSettingsAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.ORG_CASES],
     }),
 
-    enableOrgCases: builder.mutation<
-      { success: boolean },
-      { tenantId: string; caseIds: number[] }
-    >({
-      query: ({ tenantId, caseIds }) => ({
-        url: ApiEndpoints.ORG_ACCESS.CASE_TENANT_VISIBILITY(tenantId),
-        method: HttpMethod.POST,
-        body: { caseIds },
-      }),
-      invalidatesTags: [TAG_TYPES.ORG_CASES],
-    }),
+    enableOrgCases: builder.mutation<{ success: boolean }, { tenantId: string; caseIds: number[] }>(
+      {
+        query: ({ tenantId, caseIds }) => ({
+          url: ApiEndpoints.ORG_ACCESS.CASE_TENANT_VISIBILITY(tenantId),
+          method: HttpMethod.POST,
+          body: { caseIds },
+        }),
+        invalidatesTags: [TAG_TYPES.ORG_CASES],
+      },
+    ),
 
     disableOrgCases: builder.mutation<
       { success: boolean },
@@ -304,6 +316,8 @@ export const {
   useUpdateOwnCustomFieldsEnabledMutation,
   useGetOwnScribeNoteCreationEnabledQuery,
   useUpdateOwnScribeNoteCreationEnabledMutation,
+  useGetOwnScribeVoiceNoteEnabledQuery,
+  useUpdateOwnScribeVoiceNoteEnabledMutation,
   useGetOrgCustomFieldDefinitionsQuery,
   useCreateOrgCustomFieldDefinitionMutation,
   useUpdateOrgCustomFieldDefinitionMutation,

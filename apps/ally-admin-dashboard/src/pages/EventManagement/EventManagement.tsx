@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
@@ -25,8 +25,10 @@ import {
   en,
   SESSION_EVENT_STATUS_OPTIONS,
   EVENT_DETECTION_TYPES,
+  Permissions,
 } from "@constants";
 import { setAvailableEvents } from "@reducer";
+import { RootState } from "@store";
 import { UpdateEventDataParam } from "@types";
 import {
   convertEventToApiPayload,
@@ -37,6 +39,9 @@ import {
 export const EventManagement: React.FC = () => {
   const limit = 30;
   const dispatch = useDispatch();
+  const permissions = useSelector((state: RootState) => state.user.permissions);
+  // Multi-tenant admins can create and edit (their own) events but not delete any.
+  const canDeleteEvents = !!permissions?.includes(Permissions.DELETE_EVENT);
 
   const [offset, setOffset] = useState<number>(0);
   const [events, setEvents] = useState<any[]>([]);
@@ -329,7 +334,7 @@ export const EventManagement: React.FC = () => {
   };
 
   const listToolbarAction = useMemo(() => {
-    return selectedEvents.length > 0
+    return selectedEvents.length > 0 && canDeleteEvents
       ? {
           label: en.common.delete,
           variant: ButtonVariant.SECONDARY,
@@ -345,7 +350,7 @@ export const EventManagement: React.FC = () => {
           variant: ButtonVariant.PRIMARY,
           onClick: handleNewEventClick,
         };
-  }, [selectedEvents, handleNewEventClick]);
+  }, [selectedEvents, canDeleteEvents, handleNewEventClick]);
 
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
@@ -372,6 +377,7 @@ export const EventManagement: React.FC = () => {
             onClose={handleSidePanelClose}
             onDelete={(eventId: string) => handleDeleteEvents([eventId])}
             onUpdate={onUpdateEvent}
+            canDelete={canDeleteEvents}
           />
         )}
         {showDeleteConfirmationPopup && (

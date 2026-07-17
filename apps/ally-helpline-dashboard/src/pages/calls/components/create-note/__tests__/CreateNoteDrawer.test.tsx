@@ -32,6 +32,9 @@ const recorderState: any = {
   reset: mockRecorderReset,
 };
 
+// Tenant voice-note toggle (default on in tests; flipped per-test).
+let mockVoiceNoteEnabled = true;
+
 vi.mock("@api", () => ({
   useCreateNoteMutation: () => [mockCreateNote],
   useGenerateNoteFromAudioMutation: () => [mockGenerateNoteFromAudio, { isLoading: false }],
@@ -64,11 +67,7 @@ vi.mock("@components", () => ({
       {(headerButtons ?? [])
         .filter((b: any) => b.show)
         .map((b: any) => (
-          <button
-            key={b.alt}
-            data-testid={`drawer-header-button-${b.alt}`}
-            onClick={b.onClick}
-          >
+          <button key={b.alt} data-testid={`drawer-header-button-${b.alt}`} onClick={b.onClick}>
             {b.icon}
           </button>
         ))}
@@ -100,6 +99,7 @@ vi.mock("@hooks", () => ({
   // Run the debounced persist synchronously so saves can be asserted.
   useDebounce: (fn: any) => fn,
   useAudioRecorder: () => recorderState,
+  useScribeVoiceNoteEnabled: () => ({ data: mockVoiceNoteEnabled }),
 }));
 
 vi.mock("@types", () => ({
@@ -118,10 +118,6 @@ vi.mock("@types", () => ({
     COUNSELLOR_ONLY: "COUNSELLOR_ONLY",
     BOTH: "BOTH",
   },
-}));
-
-vi.mock("@mui/material", () => ({
-  CircularProgress: () => <div role="progressbar" />,
 }));
 
 vi.mock("sonner", () => ({
@@ -238,7 +234,8 @@ describe("CreateNoteDrawer", () => {
       "edit:call:details",
       "counselor:access",
     ];
-    userResult.user = { role: "COUNSELLOR", email: "sandeep.malhotra+internal@helloally.ai" };
+    userResult.user = { role: "COUNSELLOR", email: "counsellor@example.com" };
+    mockVoiceNoteEnabled = true;
     mockCreateNote.mockReturnValue({
       unwrap: () => Promise.resolve({ chatId: 123, name: "CALL-123" }),
     });
@@ -373,8 +370,8 @@ describe("CreateNoteDrawer", () => {
     expect(screen.queryByTestId("drawer-header-button-voice-note")).not.toBeInTheDocument();
   });
 
-  it("hides the mic button for users not on the voice-note allowlist", () => {
-    userResult.user = { role: "COUNSELLOR", email: "someone.else@helloally.ai" };
+  it("hides the mic button when the tenant voice-note toggle is off", () => {
+    mockVoiceNoteEnabled = false;
     mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
     render(<CreateNoteDrawer open onClose={vi.fn()} />);
     expect(screen.queryByTestId("drawer-header-button-voice-note")).not.toBeInTheDocument();
@@ -392,7 +389,10 @@ describe("CreateNoteDrawer", () => {
     mockUseGetSummaryFields.mockReturnValue({ data: ["age"], isLoading: false });
     mockGenerateNoteFromAudio.mockReturnValue({
       unwrap: () =>
-        Promise.resolve({ transcript: "Client felt anxious.", values: [{ id: "age", value: "18-24" }] }),
+        Promise.resolve({
+          transcript: "Client felt anxious.",
+          values: [{ id: "age", value: "18-24" }],
+        }),
     });
     recorderState.status = "stopped";
     recorderState.blob = new Blob(["x"], { type: "audio/webm" });

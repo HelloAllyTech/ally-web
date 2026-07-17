@@ -143,12 +143,6 @@ export const StatesEditor: React.FC<StatesEditorProps> = ({
     }
   }, [selectedHasStates, watchedStates.length, formMethods, id]);
 
-  // ---- Autofill (Generate / Regenerate) ----------------------------------
-  // Mirrors the RegenerateButton pattern but local to StatesEditor because
-  // states need custom request context (numStates, existingStates) and a
-  // bespoke merge step on response.
-  // ------------------------------------------------------------------------
-
   if (!selectedHasStates) {
     // The simulation hasn't picked a `hasStates: true` variant. Hide the
     // editor entirely so the form stays focused on relevant fields.

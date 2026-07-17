@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef, FC } from "react";
 
-import { CircularProgress } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
-import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { GenericTable, Loading } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   useGetCallLogsQuery,
@@ -37,7 +36,14 @@ import CallSummarySidebar from "./CallSummarySidebar";
 import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
-import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
+import {
+  getSourceChipConfig,
+  getStatusChipConfig,
+  getModeChipConfig,
+  reconcileLogsById,
+  patchRowCustomFieldValues,
+  DenormalizedCustomFieldValue,
+} from "./utils";
 
 const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
@@ -86,7 +92,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       archive: false,
       ...(callNameFilter ? { callName: callNameFilter } : {}),
     },
-    { skip: !isCall },
+    { skip: !isCall, refetchOnFocus: true, refetchOnReconnect: true },
   );
 
   const {
@@ -127,15 +133,22 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   useEffect(() => {
     const sourceLogs = isCall ? callLogs : simulationLogs || [];
     if (sourceLogs?.length > 0) {
+      // Only auto-scroll when this update came from an explicit "Load more".
+      // A background refetch (e.g. after saving a custom field, which
+      // invalidates CallLogs) must not move the user's scroll position and
+      // jump them to another session.
+      const triggeredByLoadMore = isLoadingMore;
       setLogs(prev => {
-        // Avoid duplicate entries if page is reset
+        // On page 0 the list is a fresh snapshot; otherwise upsert by id so a
+        // refetched page replaces its rows in place (no duplicates) and edited
+        // values are reflected instead of a stale copy lingering.
         if (offset === 0) return [...sourceLogs];
-        return [...prev, ...sourceLogs];
+        return reconcileLogsById(prev, sourceLogs);
       });
       setIsLoadingMore(false);
       // If less than limit, no more data
       setHasMore(sourceLogs.length >= CALL_LOGS_PAGINATION_LIMIT);
-      if (offset > 0) {
+      if (offset > 0 && triggeredByLoadMore) {
         handleScroll();
       }
     } else if (offset === 0) {
@@ -181,7 +194,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   if (isLoading && offset === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
-        <CircularProgress />
+        <Loading withOverlay={false} />
       </div>
     );
   }
@@ -395,7 +408,16 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     const response = await refetchCallLogs();
 
     const selectedCallLog = response.data?.data?.find(log => log.id === chatId);
-    setSummary(selectedCallLog);
+    // The refetch only covers the current page; if the edited session isn't on
+    // it, keep the open summary rather than clearing the sidebar.
+    if (selectedCallLog) setSummary(selectedCallLog);
+  };
+
+  // Reflect a custom-field edit on the exact row immediately, regardless of
+  // which loaded page it sits on. The list only refetches the current page, so
+  // relying on invalidation alone leaves rows on other pages stale.
+  const handleCustomFieldValuesSaved = (chatId: number, values: DenormalizedCustomFieldValue[]) => {
+    setLogs(prev => patchRowCustomFieldValues(prev, chatId, values));
   };
 
   const closeSummarySidebar = () => {
@@ -411,6 +433,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
             refetchCallLogs={onSummarySubmit}
             setCallSummary={setSummary}
             sessionType={sessionType}
+            onCustomFieldValuesSaved={handleCustomFieldValuesSaved}
           />
         );
       case SessionType.SIMULATION:
@@ -434,6 +457,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
           columns={isCall ? callColumns : simulationColumns}
           data={displayData}
           isLoading={isLoading}
+          showSelectedFilters={isCall}
           handleLoadMore={logs?.length > 0 && hasMore && handleLoadMore}
           loadMoreLabel={t("common.loadMore")}
           fallbackUI={renderFallbackUI()}

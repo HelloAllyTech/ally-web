@@ -2,10 +2,11 @@ import { useMemo } from "react";
 
 import { DonutChart, LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 
-import { useGetAnalyticsOverviewQuery } from "@api";
+import { useGetAgentJoinReliabilityQuery, useGetAnalyticsOverviewQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
 import { ChartCard, PALETTE, barOpts, donutOpts, lineOpts, stackedBarOpts } from "../chartKit";
+import { buildOutcomeMixData } from "../joinReliabilityChart";
 
 /** Platform overview — users, activity, simulations, retention, roles. Not
  * language-scoped, so it only takes the shared time range. */
@@ -13,6 +14,20 @@ export const OverviewTab = ({ range }: { range: AnalyticsRange }) => {
   const { data, isLoading, isError, refetch } = useGetAnalyticsOverviewQuery({ range });
   const loading = isLoading && !data;
   const bucketTitle = range === "12m" ? "Month" : "Week";
+
+  // Session outcomes headline — a range-total mix (bucket-independent), surfaced
+  // here as a platform-health KPI. The reliability time-series live on the
+  // Latency & reliability tab.
+  const {
+    data: reliabilityData,
+    isLoading: outcomeLoading,
+    isError: outcomeError,
+    refetch: refetchOutcomes,
+  } = useGetAgentJoinReliabilityQuery({ range, bucket: "week" });
+  const outcomeData = useMemo(
+    () => buildOutcomeMixData(reliabilityData?.outcomeMix),
+    [reliabilityData],
+  );
 
   const growthData = useMemo(
     () =>
@@ -111,6 +126,17 @@ export const OverviewTab = ({ range }: { range: AnalyticsRange }) => {
       </ChartCard>
       <ChartCard title="Users by role" loading={loading}>
         <DonutChart data={rolesData} options={donutOpts({ centerLabel: "Users" })} />
+      </ChartCard>
+      <ChartCard
+        title="Session outcomes"
+        caption="COMPLETED = ended with a transcript · NO_CONVERSATION = ended empty (includes agent-never-joined)"
+        loading={outcomeLoading && !reliabilityData}
+        error={outcomeError}
+        onRetry={refetchOutcomes}
+        errorTitle="Couldn't load session outcomes"
+        errorSubtitle="There was a problem fetching reliability metrics."
+      >
+        <DonutChart data={outcomeData} options={donutOpts({ centerLabel: "Sessions" })} />
       </ChartCard>
     </div>
   );

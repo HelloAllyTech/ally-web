@@ -1,13 +1,16 @@
 import { FC, useState, useEffect, useRef } from "react";
 
-import { CircularProgress, Autocomplete, Checkbox, TextField as MuiTextField } from "@mui/material";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { format } from "date-fns";
 import { ChevronDown } from "lucide-react";
 import { useSelector } from "react-redux";
 
-import { DropdownField } from "@ally-ui-mono/ui-shared";
+import {
+  DropdownField,
+  Loading,
+  FilterableMultiSelect,
+  DatePicker,
+  DatePickerInput,
+} from "@ally-ui-mono/ui-shared";
 import { useGetCustomFieldValuesQuery } from "@api";
 import TextField from "@components/text-field";
 import { Permissions } from "@constants";
@@ -83,7 +86,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
     if (filterSectionKey) return null;
     return (
       <div className="flex justify-center py-4">
-        <CircularProgress size={20} />
+        <Loading small withOverlay={false} />
       </div>
     );
   }
@@ -172,37 +175,17 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             </span>
             {isEditable ? (
               <div className="flex-1">
-                <Autocomplete
-                  multiple
-                  size="small"
-                  options={field.options ?? []}
-                  getOptionLabel={(opt: SingleSelectOption) => opt.label}
-                  isOptionEqualToValue={(opt, val) => opt.id === val.id}
-                  value={selectedOptions}
-                  onChange={(_e, newSelection) => {
-                    const ids = newSelection.map((o: SingleSelectOption) => o.id);
+                <FilterableMultiSelect
+                  id={`cf-multi-${field.fieldDefinitionId}`}
+                  items={field.options ?? []}
+                  itemToString={(item: SingleSelectOption | null) => item?.label ?? ""}
+                  selectedItems={selectedOptions}
+                  placeholder="Select"
+                  onChange={({ selectedItems }) => {
+                    const ids = (selectedItems ?? []).map((o: SingleSelectOption) => o.id);
                     const stored = ids.length === 0 ? null : JSON.stringify(ids);
                     handleChange(field.fieldDefinitionId, stored);
                   }}
-                  renderOption={(props, option, { selected }) => (
-                    <li {...props}>
-                      <Checkbox checked={selected} size="small" sx={{ mr: 1 }} />
-                      {option.label}
-                    </li>
-                  )}
-                  renderInput={params => (
-                    <MuiTextField
-                      {...params}
-                      variant="standard"
-                      size="small"
-                      sx={{
-                        "& .MuiInput-root::before": { borderBottom: "none" },
-                        "& .MuiInput-root::after": { borderBottom: "none" },
-                        fontSize: "16px",
-                        fontFamily: "IBM_Plex_Serif",
-                      }}
-                    />
-                  )}
                 />
               </div>
             ) : (
@@ -222,28 +205,24 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             {`${field.name}: `}
           </span>
           {isEditable ? (
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                value={value ? new Date(value) : null}
-                onChange={date => {
-                  handleChange(field.fieldDefinitionId, date ? date.toISOString() : null);
-                }}
-                slotProps={{
-                  textField: {
-                    variant: "standard",
-                    size: "small",
-                    sx: {
-                      "& .MuiInput-root::before": { borderBottom: "none" },
-                      "& .MuiInput-root::after": { borderBottom: "none" },
-                      "& input": { fontSize: "16px", fontFamily: "IBM_Plex_Serif" },
-                    },
-                  },
-                }}
+            <DatePicker
+              datePickerType="single"
+              value={value ? [new Date(value)] : []}
+              onChange={(dates: Date[]) => {
+                const date = dates?.[0];
+                handleChange(field.fieldDefinitionId, date ? date.toISOString() : null);
+              }}
+            >
+              <DatePickerInput
+                id={`cf-date-${field.fieldDefinitionId}`}
+                labelText={field.name}
+                hideLabel
+                placeholder="mm/dd/yyyy"
               />
-            </LocalizationProvider>
+            </DatePicker>
           ) : (
             <span className="text-lg font-primary text-typography-800">
-              {value ? new Date(value).toLocaleDateString() : "—"}
+              {value ? format(new Date(value), "MM/dd/yyyy") : "—"}
             </span>
           )}
         </div>

@@ -5,11 +5,41 @@ exports[`SimulationTranscriptTab > should match snapshot when rendered 1`] = `
   <div
     class="relative flex h-full min-h-0 flex-col border border-gray-200 rounded-md p-2 custom-scrollbar undefined"
   >
-    <span
-      class="text-typography-900 font-primary text-base font-medium"
+    <div
+      class="flex items-center justify-between gap-2"
     >
-      Annotated Transcript
-    </span>
+      <span
+        class="text-typography-900 font-primary text-base font-medium"
+      >
+        Annotated Transcript
+      </span>
+      <div
+        class="w-full max-w-[200px] min-w-[140px]"
+      >
+        <div
+          data-testid="dropdown-field"
+        >
+          <span>
+            English (Original)
+          </span>
+          <button>
+            English (Original)
+          </button>
+          <button>
+            हिंदी
+          </button>
+          <button>
+            मराठी
+          </button>
+          <button>
+            தமிழ்
+          </button>
+          <button>
+            ಕನ್ನಡ
+          </button>
+        </div>
+      </div>
+    </div>
     <hr
       class="mb-5 mt-2 border-border-light"
     />

@@ -1,38 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import StarRating from "../StarRating";
-
-// --- Mocks Setup ---
-
-vi.mock("@assets", () => ({
-  StarYellowIcon: ({ fill, ...props }: any) => (
-    <svg data-testid="star-yellow-icon" data-fill={fill} {...props} />
-  ),
-}));
-
-vi.mock("@components", () => ({
-  Button: ({ children, onClick, variant, className, ...props }: any) => (
-    <button
-      data-testid="mock-button"
-      onClick={onClick}
-      data-variant={variant}
-      className={className}
-      {...props}
-    >
-      {children}
-    </button>
-  ),
-  ButtonVariant: {
-    PRIMARY: "primary",
-    DESTRUCTIVE: "destructive",
-    SECONDARY: "secondary",
-    ICON: "icon",
-    TEXT: "text",
-  },
-}));
-
-// --- Test Setup ---
 
 const mockSetRating = vi.fn();
 
@@ -41,198 +11,182 @@ const defaultProps = {
   setRating: mockSetRating,
 };
 
-const renderComponent = (props: Partial<typeof defaultProps> = {}) => {
-  return render(<StarRating {...defaultProps} {...props} />);
-};
+const renderComponent = (props: Partial<typeof defaultProps> & Record<string, unknown> = {}) =>
+  render(<StarRating {...defaultProps} {...props} />);
+
+const stars = () => screen.getAllByRole("radio");
 
 describe("StarRating", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  // --- Snapshot Test ---
+  describe("Rendering", () => {
+    it("renders a radiogroup with 5 star buttons", () => {
+      renderComponent();
+      expect(screen.getByRole("radiogroup")).toBeInTheDocument();
+      expect(stars()).toHaveLength(5);
+    });
 
-  it("should match snapshot when fully rendered", () => {
-    const { asFragment } = renderComponent();
-    expect(asFragment()).toMatchSnapshot();
-  });
+    it("renders an inline svg star inside every button (never an <img>/asset)", () => {
+      const { container } = renderComponent();
+      expect(container.querySelectorAll("button svg")).toHaveLength(5);
+    });
 
-  it("should match snapshot when rating is 3", () => {
-    const { asFragment } = renderComponent({ rating: 3 });
-    expect(asFragment()).toMatchSnapshot();
-  });
+    it("uses the provided aria-label on the group", () => {
+      renderComponent({ ariaLabel: "Rate this session" });
+      expect(screen.getByRole("radiogroup")).toHaveAttribute("aria-label", "Rate this session");
+    });
 
-  it("should match snapshot when rating is 5", () => {
-    const { asFragment } = renderComponent({ rating: 5 });
-    expect(asFragment()).toMatchSnapshot();
-  });
-
-  // --- Rendering Tests ---
-
-  it("should render the container div", () => {
-    const { container } = renderComponent();
-    const containerDiv = container.querySelector(".flex");
-    expect(containerDiv).toBeInTheDocument();
-  });
-
-  it("should render exactly 5 star buttons", () => {
-    renderComponent();
-    const buttons = screen.getAllByTestId("mock-button");
-    expect(buttons).toHaveLength(5);
-  });
-
-  it("should render 5 StarYellowIcon components", () => {
-    renderComponent();
-    const stars = screen.getAllByTestId("star-yellow-icon");
-    expect(stars).toHaveLength(5);
-  });
-
-  it("should render stars with correct fill colors when rating is 0", () => {
-    renderComponent({ rating: 0 });
-    const stars = screen.getAllByTestId("star-yellow-icon");
-    stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#ffffff");
+    it("labels each star via the starLabel callback", () => {
+      renderComponent({ starLabel: (s: number, total: number) => `Star ${s} of ${total}` });
+      for (let i = 1; i <= 5; i++) {
+        expect(screen.getByLabelText(`Star ${i} of 5`)).toBeInTheDocument();
+      }
     });
   });
 
-  it("should render stars with correct fill colors when rating is 3", () => {
-    renderComponent({ rating: 3 });
-    const stars = screen.getAllByTestId("star-yellow-icon");
-    // First 3 stars should be filled (yellow), last 2 should be empty (white)
-    expect(stars[0]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[1]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[2]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[3]).toHaveAttribute("data-fill", "#ffffff");
-    expect(stars[4]).toHaveAttribute("data-fill", "#ffffff");
-  });
+  describe("Filled state", () => {
+    it("marks empty stars when rating is 0", () => {
+      renderComponent({ rating: 0 });
+      stars().forEach(star => expect(star).toHaveAttribute("data-state", "empty"));
+    });
 
-  it("should render all stars filled when rating is 5", () => {
-    renderComponent({ rating: 5 });
-    const stars = screen.getAllByTestId("star-yellow-icon");
-    stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#F9CC49");
+    it("fills stars up to the current rating", () => {
+      renderComponent({ rating: 3 });
+      const [s1, s2, s3, s4, s5] = stars();
+      expect(s1).toHaveAttribute("data-state", "filled");
+      expect(s2).toHaveAttribute("data-state", "filled");
+      expect(s3).toHaveAttribute("data-state", "filled");
+      expect(s4).toHaveAttribute("data-state", "empty");
+      expect(s5).toHaveAttribute("data-state", "empty");
+    });
+
+    it("fills all stars when rating is 5", () => {
+      renderComponent({ rating: 5 });
+      stars().forEach(star => expect(star).toHaveAttribute("data-state", "filled"));
+    });
+
+    it("treats a null rating as empty", () => {
+      renderComponent({ rating: null });
+      stars().forEach(star => expect(star).toHaveAttribute("data-state", "empty"));
+    });
+
+    it("reflects rating prop changes", () => {
+      const { rerender } = renderComponent({ rating: 0 });
+      rerender(<StarRating rating={2} setRating={mockSetRating} />);
+      const [s1, s2, s3] = stars();
+      expect(s1).toHaveAttribute("data-state", "filled");
+      expect(s2).toHaveAttribute("data-state", "filled");
+      expect(s3).toHaveAttribute("data-state", "empty");
     });
   });
 
-  it("should render stars with correct fill colors when rating is 1", () => {
-    renderComponent({ rating: 1 });
-    const stars = screen.getAllByTestId("star-yellow-icon");
-    expect(stars[0]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[1]).toHaveAttribute("data-fill", "#ffffff");
-    expect(stars[2]).toHaveAttribute("data-fill", "#ffffff");
-    expect(stars[3]).toHaveAttribute("data-fill", "#ffffff");
-    expect(stars[4]).toHaveAttribute("data-fill", "#ffffff");
-  });
-
-  // --- Interaction Tests ---
-
-  it("should call setRating with 1 when first star is clicked", () => {
-    renderComponent({ rating: 0 });
-    const buttons = screen.getAllByTestId("mock-button");
-    fireEvent.click(buttons[0]);
-    expect(mockSetRating).toHaveBeenCalledTimes(1);
-    expect(mockSetRating).toHaveBeenCalledWith(1);
-  });
-
-  it("should call setRating with 3 when third star is clicked", () => {
-    renderComponent({ rating: 0 });
-    const buttons = screen.getAllByTestId("mock-button");
-    fireEvent.click(buttons[2]);
-    expect(mockSetRating).toHaveBeenCalledTimes(1);
-    expect(mockSetRating).toHaveBeenCalledWith(3);
-  });
-
-  it("should call setRating with 5 when fifth star is clicked", () => {
-    renderComponent({ rating: 0 });
-    const buttons = screen.getAllByTestId("mock-button");
-    fireEvent.click(buttons[4]);
-    expect(mockSetRating).toHaveBeenCalledTimes(1);
-    expect(mockSetRating).toHaveBeenCalledWith(5);
-  });
-
-  it("should call setRating with correct rating when multiple stars are clicked", () => {
-    renderComponent({ rating: 0 });
-    const buttons = screen.getAllByTestId("mock-button");
-
-    fireEvent.click(buttons[1]);
-    expect(mockSetRating).toHaveBeenCalledWith(2);
-
-    fireEvent.click(buttons[3]);
-    expect(mockSetRating).toHaveBeenCalledWith(4);
-
-    fireEvent.click(buttons[0]);
-    expect(mockSetRating).toHaveBeenCalledWith(1);
-
-    expect(mockSetRating).toHaveBeenCalledTimes(3);
-  });
-
-  it("should update rating display when rating prop changes", () => {
-    const { rerender } = renderComponent({ rating: 0 });
-    let stars = screen.getAllByTestId("star-yellow-icon");
-    stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#ffffff");
+  describe("Accessibility", () => {
+    it("checks only the currently selected star", () => {
+      renderComponent({ rating: 3 });
+      const [s1, , s3, , s5] = stars();
+      expect(s3).toHaveAttribute("aria-checked", "true");
+      expect(s1).toHaveAttribute("aria-checked", "false");
+      expect(s5).toHaveAttribute("aria-checked", "false");
     });
 
-    rerender(<StarRating rating={2} setRating={mockSetRating} />);
-    stars = screen.getAllByTestId("star-yellow-icon");
-    expect(stars[0]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[1]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[2]).toHaveAttribute("data-fill", "#ffffff");
-    expect(stars[3]).toHaveAttribute("data-fill", "#ffffff");
-    expect(stars[4]).toHaveAttribute("data-fill", "#ffffff");
-  });
-
-  // --- Edge Cases ---
-
-  it("should handle rating change from 5 to 0", () => {
-    const { rerender } = renderComponent({ rating: 5 });
-    let stars = screen.getAllByTestId("star-yellow-icon");
-    stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#F9CC49");
+    it("puts tabIndex 0 on the current star and -1 on the rest", () => {
+      renderComponent({ rating: 3 });
+      const [s1, , s3, , s5] = stars();
+      expect(s3).toHaveAttribute("tabindex", "0");
+      expect(s1).toHaveAttribute("tabindex", "-1");
+      expect(s5).toHaveAttribute("tabindex", "-1");
     });
 
-    rerender(<StarRating rating={0} setRating={mockSetRating} />);
-    stars = screen.getAllByTestId("star-yellow-icon");
-    stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#ffffff");
+    it("falls back to star 1 for tab focus when rating is 0", () => {
+      renderComponent({ rating: 0 });
+      expect(stars()[0]).toHaveAttribute("tabindex", "0");
     });
   });
 
-  it("should handle rating change from 0 to 5", () => {
-    const { rerender } = renderComponent({ rating: 0 });
-    let stars = screen.getAllByTestId("star-yellow-icon");
-    stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#ffffff");
-    });
-
-    rerender(<StarRating rating={5} setRating={mockSetRating} />);
-    stars = screen.getAllByTestId("star-yellow-icon");
-    stars.forEach(star => {
-      expect(star).toHaveAttribute("data-fill", "#F9CC49");
+  describe("Click interaction", () => {
+    it.each([
+      [0, 1],
+      [2, 3],
+      [4, 5],
+    ])("calls setRating(%i+1) when that star is clicked", async (index, expected) => {
+      renderComponent({ rating: 0 });
+      await userEvent.click(stars()[index]);
+      expect(mockSetRating).toHaveBeenCalledWith(expected);
     });
   });
 
-  it("should handle rating change from 4 to 2", () => {
-    const { rerender } = renderComponent({ rating: 4 });
-    let stars = screen.getAllByTestId("star-yellow-icon");
-    expect(stars[3]).toHaveAttribute("data-fill", "#F9CC49");
-    expect(stars[4]).toHaveAttribute("data-fill", "#ffffff");
+  describe("Hover preview", () => {
+    it("previews stars up to the hovered one", () => {
+      renderComponent({ rating: 0 });
+      fireEvent.mouseEnter(stars()[3]); // hover 4th star
+      const [s1, s2, s3, s4, s5] = stars();
+      expect(s1).toHaveAttribute("data-state", "hover");
+      expect(s4).toHaveAttribute("data-state", "hover");
+      expect(s5).toHaveAttribute("data-state", "empty");
+    });
 
-    rerender(<StarRating rating={2} setRating={mockSetRating} />);
-    stars = screen.getAllByTestId("star-yellow-icon");
-    expect(stars[2]).toHaveAttribute("data-fill", "#ffffff");
-    expect(stars[3]).toHaveAttribute("data-fill", "#ffffff");
-    expect(stars[4]).toHaveAttribute("data-fill", "#ffffff");
+    it("reverts to the committed rating on mouse leave", () => {
+      renderComponent({ rating: 2 });
+      const fourth = stars()[3];
+      fireEvent.mouseEnter(fourth);
+      fireEvent.mouseLeave(fourth);
+      const [s1, s2, s3] = stars();
+      expect(s1).toHaveAttribute("data-state", "filled");
+      expect(s2).toHaveAttribute("data-state", "filled");
+      expect(s3).toHaveAttribute("data-state", "empty");
+    });
   });
 
-  it("should maintain correct button structure across rating changes", () => {
-    const { rerender } = renderComponent({ rating: 0 });
-    expect(screen.getAllByTestId("mock-button")).toHaveLength(5);
+  describe("Keyboard navigation", () => {
+    it("moves right/up to the next star", () => {
+      renderComponent({ rating: 2 });
+      fireEvent.keyDown(stars()[1], { key: "ArrowRight" });
+      expect(mockSetRating).toHaveBeenCalledWith(3);
+      fireEvent.keyDown(stars()[1], { key: "ArrowUp" });
+      expect(mockSetRating).toHaveBeenCalledWith(3);
+    });
 
-    rerender(<StarRating rating={3} setRating={mockSetRating} />);
-    expect(screen.getAllByTestId("mock-button")).toHaveLength(5);
+    it("moves left/down to the previous star", () => {
+      renderComponent({ rating: 3 });
+      fireEvent.keyDown(stars()[2], { key: "ArrowLeft" });
+      expect(mockSetRating).toHaveBeenCalledWith(2);
+      fireEvent.keyDown(stars()[2], { key: "ArrowDown" });
+      expect(mockSetRating).toHaveBeenCalledWith(2);
+    });
 
-    rerender(<StarRating rating={5} setRating={mockSetRating} />);
-    expect(screen.getAllByTestId("mock-button")).toHaveLength(5);
+    it("clamps at the ends", () => {
+      const { rerender } = renderComponent({ rating: 5 });
+      fireEvent.keyDown(stars()[4], { key: "ArrowRight" });
+      expect(mockSetRating).toHaveBeenCalledWith(5);
+
+      rerender(<StarRating rating={1} setRating={mockSetRating} />);
+      fireEvent.keyDown(stars()[0], { key: "ArrowLeft" });
+      expect(mockSetRating).toHaveBeenCalledWith(1);
+    });
+
+    it("selects on Space and Enter", () => {
+      renderComponent({ rating: 0 });
+      fireEvent.keyDown(stars()[2], { key: " " });
+      expect(mockSetRating).toHaveBeenCalledWith(3);
+      fireEvent.keyDown(stars()[3], { key: "Enter" });
+      expect(mockSetRating).toHaveBeenCalledWith(4);
+    });
+
+    it("ignores unrelated keys", () => {
+      renderComponent({ rating: 3 });
+      fireEvent.keyDown(stars()[2], { key: "Tab" });
+      expect(mockSetRating).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("readOnly", () => {
+    it("disables the buttons and does not call setRating", async () => {
+      renderComponent({ rating: 3, readOnly: true });
+      stars().forEach(star => expect(star).toBeDisabled());
+      await userEvent.click(stars()[0]);
+      expect(mockSetRating).not.toHaveBeenCalled();
+    });
   });
 });

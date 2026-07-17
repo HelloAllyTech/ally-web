@@ -1,14 +1,22 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { useGetPromptUsageQuery } from "@api";
-import { Refresh, DoubleArrowRight } from "@assets";
+import { useGetPromptUsageQuery, useGetLlmModelsQuery } from "@api";
+import { Refresh, DoubleArrowRight, Copy, Delete, CheckCircle, ArrowDown } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, MAIN_AGENT_PROMPT_VARIABLE_CATALOG } from "@constants";
-import { Prompt } from "@types";
+import { useCreatePortal } from "@hooks";
+import {
+  en,
+  MAIN_AGENT_PROMPT_VARIABLE_CATALOG,
+  PROMPT_LLM_MODEL_OPTIONS,
+  PROMPT_TEMPERATURE_DEFAULT,
+  providerForModel,
+} from "@constants";
+import { Prompt, LlmProviderName } from "@types";
 
 import {
   getAvailableVariableName,
@@ -30,6 +38,9 @@ import {
  */
 const HIDDEN_PLACEHOLDERS = new Set<string>(["language_characteristics"]);
 
+/** Idle time after the last edit before an auto-save is persisted. */
+const AUTO_SAVE_DEBOUNCE_MS = 700;
+
 interface PromptSidePanelProps {
   selectedPrompt: Prompt | null;
   allPrompts: Prompt[];
@@ -37,8 +48,17 @@ interface PromptSidePanelProps {
   onClose: () => void;
   onUpdate: (prompt: Prompt) => void;
   /**
+   * Silent persistence path used by the panel's auto-save. Unlike `onUpdate`
+   * (which toasts and closes the panel — kept for the block editor and the
+   * revert-to-default action), this MUST NOT toast or close: the panel drives
+   * a debounced save on every edit and reflects the result in its own inline
+   * status indicator. Implementations should let errors propagate (throw /
+   * reject) so the panel can surface a "couldn't save" state.
+   */
+  onAutoSave?: (prompt: Prompt) => Promise<void>;
+  /**
    * Optional duplicate action. When provided, a "Duplicate as variant"
-   * button appears in the panel header for prompts that have a promptType
+   * icon button appears in the panel header for prompts that have a promptType
    * set. The parent owns the mutation and is expected to refresh the list
    * and open the new variant in the panel.
    */
@@ -55,47 +75,261 @@ interface PromptSidePanelProps {
 interface FieldProps {
   label: string;
   children: React.ReactNode;
-  multiline?: boolean;
 }
 
-const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => (
-  <div
-    className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
-  >
-    <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-base font-regular text-typography-800">{label}</span>
-    </div>
-    <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
+/**
+ * Carbon "productive" text-input shape reused across every editable control
+ * in the panel: gray-10 field fill (`$field-01`), a single bottom border that
+ * thickens to the brand blue on focus (`$focus`), square corners, no rounding.
+ * Applied to native <input>/<select> and the auto-expanding textarea so they
+ * all read as one Carbon form. `w-full` because the panel is single-column now
+ * — the label sits above the control, both spanning the full drawer width.
+ */
+const CARBON_FIELD =
+  "w-full h-10 rounded-none border-0 border-b border-border-dark bg-secondary-50 px-3 text-base text-neutral-800 placeholder:text-typography-600 focus:outline-none focus:border-b-2 focus:border-primary-500 transition-colors";
+
+// AutoExpandableTextarea bakes in `px-0 py-0` and a negative `mt-[-8px]`
+// (leftovers from the old borderless inline layout); `!` overrides are needed
+// for the Carbon padding/margin to win — the component already uses `!text-md`,
+// so this matches its own precedence strategy.
+const CARBON_FIELD_TEXTAREA =
+  "w-full rounded-none border-0 border-b border-border-dark bg-secondary-50 !px-3 !py-2 !mt-0 text-neutral-800 placeholder:text-typography-600 focus:outline-none focus:border-b-2 focus:border-primary-500 resize-none overflow-y-auto custom-scrollbar transition-colors";
+
+/**
+ * Single-column field: Carbon-style label (12px, secondary text) stacked
+ * directly above its control, both full width. Replaces the former 40/60
+ * two-column row that wasted horizontal space and truncated long values.
+ */
+const Field: React.FC<FieldProps> = ({ label, children }) => (
+  <div className="flex flex-col gap-2">
+    <label className="text-xs tracking-[0.32px] text-neutral-600">{label}</label>
+    <div className="text-base text-neutral-800">{children}</div>
   </div>
 );
 
-const PanelHeader: React.FC<{
-  onClose: () => void;
-  onRestore: () => void;
-  showRestore: boolean;
-}> = ({ onClose, onRestore, showRestore }) => (
-  <div className="flex items-center justify-between p-6">
-    <button
-      onClick={onClose}
-      className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800"
-    >
-      <DoubleArrowRight width={14} height={14} />
-      <span className="text-base font-tertiary font-[500] text-typography-900">
-        {en.simulation.editPrompt}
+/** Auto-save lifecycle surfaced inline in the panel header. */
+type SaveState = "saved" | "unsaved" | "saving" | "error";
+
+/**
+ * Compact, self-explanatory save-status pill shown next to the panel title.
+ * Everything the user types is persisted automatically, so this is the only
+ * feedback that a change landed — hence it distinguishes the debounce window
+ * ("Unsaved changes"), the in-flight request ("Saving…"), success ("Saved"),
+ * failure (with a retry affordance), and the blocked-by-validation case.
+ */
+const SaveStatusIndicator: React.FC<{
+  state: SaveState;
+  isDirty: boolean;
+  isValid: boolean;
+  onRetry: () => void;
+}> = ({ state, isDirty, isValid, onRetry }) => {
+  if (state === "saving") {
+    return (
+      <span className="flex items-center gap-1.5 text-sm text-typography-700">
+        <span className="w-3 h-3 rounded-full border-2 border-primary-500 border-t-transparent animate-spin" />
+        Saving…
       </span>
-    </button>
-    {showRestore && (
+    );
+  }
+  if (state === "error") {
+    return (
       <button
-        onClick={onRestore}
-        className="flex items-center gap-1.5 text-typography-600 hover:text-neutral-800 transition-colors"
-        title={en.simulation.restoreDefault}
+        type="button"
+        onClick={onRetry}
+        className="flex items-center gap-1.5 text-sm text-destructive-500 hover:text-destructive-600 transition-colors"
+        title="Retry saving"
       >
-        <Refresh width={16} height={16} />
-        <span className="text-sm font-medium">{en.simulation.restoreDefault}</span>
+        <Refresh width={14} height={14} />
+        Couldn’t save — retry
       </button>
-    )}
-  </div>
+    );
+  }
+  if (isDirty && !isValid) {
+    return (
+      <span className="text-sm text-warning-text">Name, description &amp; prompt required</span>
+    );
+  }
+  if (isDirty) {
+    return <span className="text-sm text-typography-600">Unsaved changes…</span>;
+  }
+  return (
+    <span className="flex items-center gap-1.5 text-sm text-typography-600">
+      <CheckCircle width={14} height={14} className="text-success-500" />
+      Saved
+    </span>
+  );
+};
+
+/** Carbon ghost icon button (square, no radius) for the header actions. */
+const IconButton: React.FC<{
+  title: string;
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}> = ({ title, onClick, disabled = false, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    aria-label={title}
+    className="flex items-center justify-center w-9 h-9 rounded-none text-typography-700 hover:bg-secondary-50 hover:text-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+  >
+    {children}
+  </button>
 );
+
+interface LlmModelGroup {
+  provider: string;
+  label: string;
+  models: { value: string; label: string }[];
+}
+
+/** One selectable row in the LLM-model menu. */
+const LlmModelOption: React.FC<{
+  label: string;
+  selected: boolean;
+  onSelect: () => void;
+}> = ({ label, selected, onSelect }) => (
+  <button
+    type="button"
+    role="option"
+    aria-selected={selected}
+    onClick={onSelect}
+    className={
+      "w-full text-left px-3 py-2 text-base transition-colors " +
+      (selected
+        ? "bg-primary-50 text-primary-600 font-medium"
+        : "text-neutral-800 hover:bg-secondary-50")
+    }
+  >
+    {label}
+  </button>
+);
+
+/**
+ * Custom LLM-model picker matching the panel's Carbon fields (gray-10 fill,
+ * bottom border, brand-blue focus underline) instead of a native <select>.
+ * The menu is portalled to <body> and positioned by useCreatePortal so the
+ * drawer's `overflow-y-auto` can't clip it (see the drawer-tooltip-clip
+ * gotcha); it flips/clamps to the viewport. Options are grouped by provider
+ * with a leading "Default (inherit)" row.
+ */
+const LlmModelDropdown: React.FC<{
+  value: string; // "" → inherit
+  groups: LlmModelGroup[];
+  onSelect: (value: string) => void;
+}> = ({ value, groups, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const position = useCreatePortal(triggerRef, isOpen, {
+    matchTriggerWidth: true,
+    dropdownRef: menuRef,
+    dropdownHeight: 288,
+  });
+
+  const selectedLabel = useMemo(() => {
+    if (!value) return "Default (inherit)";
+    for (const group of groups) {
+      const match = group.models.find(model => model.value === value);
+      if (match) return match.label;
+    }
+    return value; // unknown/legacy model — show the raw id rather than blank
+  }, [value, groups]);
+
+  const close = useCallback(() => setIsOpen(false), []);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (triggerRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      close();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, close]);
+
+  const handleSelect = useCallback(
+    (next: string) => {
+      onSelect(next);
+      close();
+    },
+    [onSelect, close],
+  );
+
+  return (
+    <div className="relative w-full" ref={triggerRef}>
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen(open => !open)}
+        className={
+          CARBON_FIELD +
+          " flex items-center justify-between gap-2 text-left cursor-pointer" +
+          (isOpen ? " !border-b-2 !border-primary-500" : "")
+        }
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <ArrowDown
+          width={16}
+          height={16}
+          className={
+            "shrink-0 text-typography-700 transition-transform duration-200" +
+            (isOpen ? " rotate-180" : "")
+          }
+        />
+      </button>
+
+      {isOpen &&
+        position &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="listbox"
+            className="fixed z-[9999] bg-white border border-border-light shadow-lg animate-fadeIn overflow-auto custom-scrollbar py-1"
+            style={{
+              top: position.top,
+              left: position.left,
+              width: position.width,
+              maxHeight: 288,
+            }}
+          >
+            <LlmModelOption
+              label="Default (inherit)"
+              selected={!value}
+              onSelect={() => handleSelect("")}
+            />
+            {groups.map(group => (
+              <div key={group.provider}>
+                <div className="px-3 pt-2 pb-1 text-xs tracking-[0.32px] uppercase text-neutral-500">
+                  {group.label}
+                </div>
+                {group.models.map(model => (
+                  <LlmModelOption
+                    key={model.value}
+                    label={model.label}
+                    selected={model.value === value}
+                    onSelect={() => handleSelect(model.value)}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>,
+          document.body,
+        )}
+    </div>
+  );
+};
 
 const BlockEditorPopup: React.FC<{
   block: Prompt | null;
@@ -140,7 +374,7 @@ const BlockEditorPopup: React.FC<{
                 value={text}
                 onChange={setText}
                 placeholder="Enter block content..."
-                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm"
+                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
               />
             </div>
           </div>
@@ -167,6 +401,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   isOpen,
   onClose,
   onUpdate,
+  onAutoSave,
   onDuplicate,
   onDelete,
 }) => {
@@ -180,10 +415,44 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showRevertConfirmModal, setShowRevertConfirmModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [editingBlock, setEditingBlock] = useState<Prompt | null>(null);
+
+  // ── Auto-save ────────────────────────────────────────────────────────────
+  // Every field edit is debounced and persisted silently via `onAutoSave`;
+  // `saveState` drives the inline header indicator. `lastSavedRef` holds the
+  // serialized editable fields of the last-persisted state so we can tell a
+  // real edit from a no-op (and from the initial load, which must not save).
+  const [saveState, setSaveState] = useState<SaveState>("saved");
+  const lastSavedRef = useRef<string>("");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const doSaveRef = useRef<() => void>(() => {});
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
+
+  // Only the fields this panel can edit — used both for change detection and
+  // as the shape the parent persists. Model/temperature are normalized so a
+  // no-op reselect of the same value doesn't register as a change.
+  const serializeEditable = useCallback(
+    (d: Partial<Prompt>) =>
+      JSON.stringify({
+        name: d.name ?? "",
+        description: d.description ?? "",
+        prompt: d.prompt ?? "",
+        model: d.model ?? "",
+        temperature: typeof d.temperature === "number" ? d.temperature : null,
+      }),
+    [],
+  );
 
   const getBlockByCode = useCallback(
     (code: string) => {
@@ -219,19 +488,84 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     }));
   }, []);
 
+  // The LLM model picker is driven by the backend registry (single source of
+  // truth) so adding a model server-side surfaces here without an FE change.
+  // Falls back to the static constant while the request is in flight / on error.
+  const { data: llmModels } = useGetLlmModelsQuery();
+
+  // Per-prompt overrides only route to OpenAI/Gemini in every runtime today
+  // (Anthropic is autofill/copilot-only, not a per-prompt path), so the picker
+  // is scoped to those providers. Widen here once a runtime consumes Anthropic
+  // via a prompt-management prompt.
+  const modelGroups = useMemo(() => {
+    const PROVIDER_ORDER: { provider: LlmProviderName; label: string }[] = [
+      { provider: "openai", label: "OpenAI" },
+      { provider: "gemini", label: "Gemini" },
+    ];
+    if (!llmModels?.length) {
+      return PROMPT_LLM_MODEL_OPTIONS.map(group => ({
+        provider: group.provider,
+        label: group.label,
+        models: group.models.map(m => ({ ...m, supportsTemperature: true })),
+      }));
+    }
+    return PROVIDER_ORDER.map(({ provider, label }) => ({
+      provider,
+      label,
+      models: llmModels
+        .filter(m => m.provider === provider)
+        .map(m => ({
+          value: m.model,
+          label: m.label,
+          supportsTemperature: m.supportsTemperature,
+        })),
+    })).filter(group => group.models.length > 0);
+  }, [llmModels]);
+
+  // Flat lookups for the selected model: its provider and whether it accepts a
+  // custom temperature (reasoning models like gpt-5 don't).
+  const { providerByModel, tempSupportByModel } = useMemo(() => {
+    const providerMap = new Map<string, LlmProviderName>();
+    const tempMap = new Map<string, boolean>();
+    for (const group of modelGroups) {
+      for (const m of group.models) {
+        providerMap.set(m.value, group.provider);
+        tempMap.set(m.value, m.supportsTemperature);
+      }
+    }
+    return { providerByModel: providerMap, tempSupportByModel: tempMap };
+  }, [modelGroups]);
+
+  const resolveProvider = useCallback(
+    (model?: string): string | undefined =>
+      model ? (providerByModel.get(model) ?? providerForModel(model)) : undefined,
+    [providerByModel],
+  );
+
+  // No model selected (inherit) leaves the temperature override available.
+  const selectedModelSupportsTemperature =
+    !formData.model || (tempSupportByModel.get(formData.model) ?? true);
+
   useEffect(() => {
+    // A new prompt loaded (or the panel reopened): reset the form and treat the
+    // loaded values as the saved baseline so auto-save doesn't fire on open.
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     if (selectedPrompt) {
       setFormData(selectedPrompt);
+      lastSavedRef.current = serializeEditable(selectedPrompt);
     } else {
-      setFormData({
+      const empty = {
         name: "",
         description: "",
         promptCode: "",
         prompt: "",
         useDashboardOverride: false,
-      });
+      };
+      setFormData(empty);
+      lastSavedRef.current = serializeEditable(empty);
     }
-  }, [selectedPrompt]);
+    setSaveState("saved");
+  }, [selectedPrompt, serializeEditable]);
 
   // Live parse the current textarea content for `{name}` placeholders.
   // Mirrors the regex used server-side in parseVariablesFromPrompt; the
@@ -333,14 +667,16 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     );
   }, [selectedPrompt?.usesBlocks, selectedPrompt?.availableVariables]);
 
-  const handleSave = useCallback(() => {
+  // Assemble the persisted payload from the current form. Returns null when a
+  // required field is missing (auto-save then simply waits). Mirrors what the
+  // old explicit Save button sent — including auto-enabling the dashboard
+  // override the moment an admin edits.
+  const buildPayload = useCallback((): Prompt | null => {
     const promptCode = selectedPrompt?.promptCode ?? formData.promptCode ?? "";
     if (!formData.name || !formData.description || !promptCode || !formData.prompt) {
-      toast.error(en.simulation.promptRequired);
-      return;
+      return null;
     }
-
-    const updatedPrompt: Prompt = {
+    return {
       name: formData.name || "",
       description: formData.description || "",
       promptCode,
@@ -351,14 +687,100 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       // time by either the file-sync (meta JSON) or the duplicate endpoint,
       // and prompt management edits should not flip it.
       promptType: formData.promptType ?? selectedPrompt?.promptType,
+      // Prompt-level LLM overrides. Empty model / non-numeric temperature are
+      // sent as explicit clears ("" / null) so the runtime falls back to the
+      // code/language default. Provider is derived from the model. Temperature
+      // is cleared for models that reject a custom one (e.g. gpt-5).
+      provider: formData.model ? (resolveProvider(formData.model) ?? "") : "",
+      model: formData.model ?? "",
+      temperature:
+        selectedModelSupportsTemperature && typeof formData.temperature === "number"
+          ? formData.temperature
+          : null,
       ...(selectedPrompt?.id && {
         id: selectedPrompt.id,
         createdAt: selectedPrompt.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }),
-    };
-    onUpdate(updatedPrompt);
-  }, [formData, selectedPrompt, onUpdate]);
+    } as unknown as Prompt;
+  }, [formData, selectedPrompt, resolveProvider, selectedModelSupportsTemperature]);
+
+  // Required-field gate — the same rule the old Save button enforced.
+  const isFormValid = useMemo(() => {
+    const promptCode = selectedPrompt?.promptCode ?? formData.promptCode;
+    return !!(formData.name && formData.description && promptCode && formData.prompt);
+  }, [
+    formData.name,
+    formData.description,
+    formData.promptCode,
+    formData.prompt,
+    selectedPrompt?.promptCode,
+  ]);
+
+  // Serialized editable state vs the last-persisted baseline → is there an
+  // unsaved edit right now?
+  const currentSerialized = useMemo(
+    () => serializeEditable(formData),
+    [formData, serializeEditable],
+  );
+  const isDirty = currentSerialized !== lastSavedRef.current;
+
+  // Latest-ref save closure: reassigned every render so the debounce timer and
+  // the flush-on-close path always persist the newest values (no stale reads).
+  doSaveRef.current = () => {
+    if (!onAutoSave) return;
+    const payload = buildPayload();
+    if (!payload) return;
+    const snapshot = currentSerialized;
+    setSaveState("saving");
+    onAutoSave(payload)
+      .then(() => {
+        if (!mountedRef.current) return;
+        lastSavedRef.current = snapshot;
+        // If the user kept typing during the request, stay "unsaved" so the
+        // follow-up debounce persists the newer content.
+        setSaveState(
+          serializeEditable(formDataRef.current) === lastSavedRef.current ? "saved" : "unsaved",
+        );
+      })
+      .catch(() => {
+        if (mountedRef.current) setSaveState("error");
+      });
+  };
+
+  // Debounce: persist ~700ms after the last edit. Re-runs only when the
+  // serialized content, its validity, or the target prompt changes. A single
+  // return (cleanup | undefined) keeps every code path returning the same
+  // shape — avoids TS7030 "not all code paths return a value".
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    if (selectedPrompt?.id && onAutoSave && isDirty) {
+      if (isFormValid) {
+        setSaveState("unsaved");
+        const timer = setTimeout(() => doSaveRef.current(), AUTO_SAVE_DEBOUNCE_MS);
+        saveTimerRef.current = timer;
+        cleanup = () => clearTimeout(timer);
+      } else {
+        setSaveState("unsaved"); // blocked on required fields — don't persist
+      }
+    }
+    return cleanup;
+    // doSaveRef is a stable ref; isDirty derives from currentSerialized.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSerialized, isDirty, isFormValid, selectedPrompt?.id, onAutoSave]);
+
+  // Persist any pending edit immediately (used on close and Cmd/Ctrl+Enter).
+  const flushSave = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    if (
+      selectedPrompt?.id &&
+      onAutoSave &&
+      isFormValid &&
+      serializeEditable(formDataRef.current) !== lastSavedRef.current
+    ) {
+      doSaveRef.current();
+    }
+  }, [selectedPrompt?.id, onAutoSave, isFormValid, serializeEditable]);
 
   const handleDuplicate = useCallback(async () => {
     if (!selectedPrompt?.id || !onDuplicate || isDuplicating) return;
@@ -409,22 +831,11 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
   }, []);
 
   const handleClose = useCallback(() => {
-    // Check if there are unsaved changes
-    if (selectedPrompt && JSON.stringify(formData) !== JSON.stringify(selectedPrompt)) {
-      setShowConfirmationModal(true);
-    } else {
-      onClose();
-    }
-  }, [formData, selectedPrompt, onClose]);
-
-  const handleConfirmClose = useCallback(() => {
-    setShowConfirmationModal(false);
+    // Everything is auto-saved, so there's no "discard?" prompt anymore — just
+    // flush any edit still inside the debounce window before the panel closes.
+    flushSave();
     onClose();
-  }, [onClose]);
-
-  const handleCancelClose = useCallback(() => {
-    setShowConfirmationModal(false);
-  }, []);
+  }, [flushSave, onClose]);
 
   const handleRevertClick = useCallback(() => {
     setShowRevertConfirmModal(true);
@@ -450,27 +861,16 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     setShowRevertConfirmModal(false);
   }, []);
 
-  // Check if form is valid for saving
-  const isFormValid = useMemo(() => {
-    const promptCode = selectedPrompt?.promptCode ?? formData.promptCode;
-    return !!(formData.name && formData.description && promptCode && formData.prompt);
-  }, [
-    formData.name,
-    formData.description,
-    formData.promptCode,
-    formData.prompt,
-    selectedPrompt?.promptCode,
-  ]);
-
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      // Handle Ctrl+Enter (Windows/Linux) or Cmd+Enter (Mac) to save
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter" && isFormValid) {
+      // Ctrl+Enter (Windows/Linux) or Cmd+Enter (Mac) forces an immediate save
+      // instead of waiting out the debounce.
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
         event.preventDefault();
-        handleSave();
+        flushSave();
       }
     },
-    [isFormValid, handleSave],
+    [flushSave],
   );
 
   if (!isOpen || !selectedPrompt) return null;
@@ -479,24 +879,82 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black bg-opacity-50" onClick={handleClose} />
       <div className="w-[50%] min-w-[700px] bg-white shadow-xl border-l-[1px] border-border-light overflow-y-auto custom-scrollbar">
-        <PanelHeader
-          onClose={handleClose}
-          onRestore={handleRevertClick}
-          showRestore={Boolean(selectedPrompt?.useDashboardOverride)}
-        />
-
-        <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
-          <div className="space-y-3">
-            <Field label="UUID">
-              <span className="font-mono text-base text-typography-800 break-all">
-                {selectedPrompt?.id ?? "—"}
+        <div className="flex items-center justify-between p-6">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={handleClose}
+              className="flex flex-row items-center justify-center gap-2 text-typography-600 hover:text-neutral-800 shrink-0"
+            >
+              <DoubleArrowRight width={14} height={14} />
+              <span className="text-base font-tertiary font-[500] text-typography-900">
+                {en.simulation.editPrompt}
               </span>
+            </button>
+            <span className="h-4 w-px bg-border-light shrink-0" aria-hidden />
+            <SaveStatusIndicator
+              state={saveState}
+              isDirty={isDirty}
+              isValid={isFormValid}
+              onRetry={flushSave}
+            />
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            {onDuplicate && selectedPrompt?.id && selectedPrompt?.promptType && (
+              <IconButton
+                title={isDuplicating ? "Duplicating…" : "Duplicate as variant"}
+                onClick={handleDuplicate}
+                disabled={isDuplicating}
+              >
+                <Copy width={18} height={18} />
+              </IconButton>
+            )}
+            {onDelete && selectedPrompt?.id && isDuplicate && (
+              <IconButton
+                title={
+                  isUsageLoading
+                    ? "Checking usage…"
+                    : isInUse
+                      ? `Used by ${inUseCount} simulation${inUseCount === 1 ? "" : "s"} — switch ${inUseCount === 1 ? "it" : "them"} to another prompt before deleting`
+                      : "Delete variant"
+                }
+                onClick={handleDeleteClick}
+                disabled={isDeleting || isUsageLoading || isInUse}
+              >
+                <span className="relative flex">
+                  <Delete width={18} height={18} />
+                  {isInUse && (
+                    <span className="absolute -top-2 -right-2 min-w-[15px] h-[15px] px-1 flex items-center justify-center rounded-full bg-neutral-500 text-white text-[10px] leading-none tabular-nums">
+                      {inUseCount}
+                    </span>
+                  )}
+                </span>
+              </IconButton>
+            )}
+            {Boolean(selectedPrompt?.useDashboardOverride) && (
+              <button
+                onClick={handleRevertClick}
+                className="flex items-center gap-1.5 pl-2 pr-1 h-9 text-typography-600 hover:text-neutral-800 transition-colors"
+                title={en.simulation.restoreDefault}
+              >
+                <Refresh width={16} height={16} />
+                <span className="text-sm font-medium">{en.simulation.restoreDefault}</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="h-[calc(100vh-100px)] px-8 pt-2 overflow-y-auto custom-scrollbar">
+          <div className="space-y-6">
+            <Field label="UUID">
+              <div className="w-full select-all border-b border-border-light bg-secondary-50 px-3 py-2 font-mono text-base text-neutral-700 break-all">
+                {selectedPrompt?.id ?? "—"}
+              </div>
             </Field>
 
             <Field label="Prompt Code">
-              <span className="font-mono text-base text-typography-800">
+              <div className="w-full select-all border-b border-border-light bg-secondary-50 px-3 py-2 font-mono text-base text-neutral-700 break-all">
                 {selectedPrompt?.promptCode ?? formData.promptCode ?? "—"}
-              </span>
+              </div>
             </Field>
 
             <Field label={en.simulation.promptName}>
@@ -505,7 +963,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                 value={formData.name || ""}
                 onChange={event => handleFieldChange("name", event.target.value)}
                 placeholder={en.simulation.enterPromptName}
-                className="border-none focus:outline-none text-base w-full px-0"
+                className={CARBON_FIELD}
               />
             </Field>
 
@@ -515,26 +973,97 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                 value={formData.description || ""}
                 onChange={event => handleFieldChange("description", event.target.value)}
                 placeholder={en.simulation.enterPromptDescription}
-                className="border-none focus:outline-none text-base w-full px-0"
+                className={CARBON_FIELD}
               />
             </Field>
 
-            <Field label={en.simulation.promptText} multiline={true}>
-              <div className="w-full">
-                <AutoExpandableTextarea
-                  maxLines={15}
-                  minHeight={20}
-                  value={formData.prompt || ""}
-                  onChange={value => handleFieldChange("prompt", value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={en.simulation.enterPrompt}
-                  className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
-                />
+            <Field label={en.simulation.promptText}>
+              <AutoExpandableTextarea
+                maxLines={15}
+                minHeight={120}
+                value={formData.prompt || ""}
+                onChange={value => handleFieldChange("prompt", value)}
+                onKeyDown={handleKeyDown}
+                placeholder={en.simulation.enterPrompt}
+                className={CARBON_FIELD_TEXTAREA}
+              />
+            </Field>
+
+            <Field label="LLM Model">
+              <LlmModelDropdown
+                value={formData.model ?? ""}
+                groups={modelGroups}
+                onSelect={selected => {
+                  const value = selected || undefined;
+                  handleFieldChange("model", value);
+                  // Send the explicit provider alongside the model so runtimes
+                  // don't infer it from the model name.
+                  handleFieldChange("provider", resolveProvider(value));
+                  // A model that rejects a custom temperature (e.g. gpt-5)
+                  // clears any existing override so we don't send an invalid value.
+                  const supportsTemp = !value || (tempSupportByModel.get(value) ?? true);
+                  if (!supportsTemp && typeof formData.temperature === "number") {
+                    handleFieldChange("temperature", undefined);
+                  }
+                }}
+              />
+            </Field>
+
+            <Field label="LLM Temperature">
+              <div className="w-full flex flex-col gap-3 py-1">
+                <label
+                  className={
+                    "flex items-center gap-2 text-base " +
+                    (selectedModelSupportsTemperature
+                      ? "text-typography-900 cursor-pointer"
+                      : "text-typography-400 cursor-not-allowed")
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    disabled={!selectedModelSupportsTemperature}
+                    checked={typeof formData.temperature === "number"}
+                    onChange={event =>
+                      handleFieldChange(
+                        "temperature",
+                        event.target.checked ? PROMPT_TEMPERATURE_DEFAULT : undefined,
+                      )
+                    }
+                  />
+                  Override temperature for this prompt
+                </label>
+                {!selectedModelSupportsTemperature && (
+                  <span className="text-typography-500 text-sm">
+                    {formData.model} doesn’t support a custom temperature.
+                  </span>
+                )}
+                {selectedModelSupportsTemperature && typeof formData.temperature === "number" && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-typography-500 text-sm">0 – 2</span>
+                      <span className="text-primary-600 text-base font-medium tabular-nums">
+                        {formData.temperature.toFixed(1)}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={2}
+                      step={0.1}
+                      value={formData.temperature}
+                      onChange={event =>
+                        handleFieldChange("temperature", parseFloat(event.target.value))
+                      }
+                      aria-label="LLM Temperature"
+                      className="w-full accent-primary-500 cursor-pointer"
+                    />
+                  </div>
+                )}
               </div>
             </Field>
 
             {(availableVariables.length > 0 || unusedVariables.length > 0) && (
-              <Field label="Available variables" multiline>
+              <Field label="Available variables">
                 {/*
                   Single chip cluster covering BOTH "used in this prompt"
                   and "available but not used" variables. Used chips
@@ -578,7 +1107,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
             )}
 
             {hasAnyBlocks && (
-              <Field label={en.simulation.usedBlocks} multiline={true}>
+              <Field label={en.simulation.usedBlocks}>
                 <div className="w-full space-y-3 pt-2">
                   <div className="rounded-md border border-border-light bg-neutral-50 px-3 py-3">
                     <div className="text-sm font-medium text-typography-900">
@@ -608,70 +1137,10 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
             )}
           </div>
 
-          <div className="flex flex-row items-center justify-between mt-8 pb-6">
-            <div className="w-[40%]" />
-            <div className="w-[60%] flex gap-3 justify-start items-center">
-              <Button variant={ButtonVariant.SECONDARY} onClick={handleClose}>
-                Cancel
-              </Button>
-              <Button
-                variant={ButtonVariant.PRIMARY}
-                onClick={handleSave}
-                disabled={!isFormValid}
-                title={!isFormValid ? en.simulation.promptRequired : ""}
-              >
-                Save
-              </Button>
-              {/*
-                Variant-creation actions. Available to everyone now that
-                the selectable-prompts feature is GA — was previously
-                gated by a testing-phase email allowlist.
-              */}
-              {onDuplicate && selectedPrompt?.id && selectedPrompt?.promptType && (
-                <Button
-                  variant={ButtonVariant.SECONDARY}
-                  onClick={handleDuplicate}
-                  disabled={isDuplicating}
-                  title="Create a new variant from this prompt"
-                >
-                  {isDuplicating ? "Duplicating…" : "Duplicate as variant"}
-                </Button>
-              )}
-              {onDelete && selectedPrompt?.id && isDuplicate && (
-                <Button
-                  variant={ButtonVariant.SECONDARY}
-                  onClick={handleDeleteClick}
-                  disabled={isDeleting || isUsageLoading || isInUse}
-                  title={
-                    isUsageLoading
-                      ? "Checking usage…"
-                      : isInUse
-                        ? `Used by ${inUseCount} simulation${inUseCount === 1 ? "" : "s"} — switch ${inUseCount === 1 ? "it" : "them"} to another prompt before deleting`
-                        : "Permanently delete this duplicated variant"
-                  }
-                >
-                  {isDeleting ? "Deleting…" : isInUse ? `In use (${inUseCount})` : "Delete variant"}
-                </Button>
-              )}
-            </div>
-          </div>
+          <div className="pb-6" />
         </div>
       </div>
 
-      <ActionConfirmationPopup
-        isOpen={showConfirmationModal}
-        onClose={handleCancelClose}
-        title="Unsaved Changes"
-        description={en.simulation.unsavedChangesWarning}
-        primaryButton={{
-          label: "Close Anyway",
-          onClick: handleConfirmClose,
-        }}
-        secondaryButton={{
-          label: "Keep Editing",
-          onClick: handleCancelClose,
-        }}
-      />
       <ActionConfirmationPopup
         isOpen={showRevertConfirmModal}
         onClose={handleRevertCancel}

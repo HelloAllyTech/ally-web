@@ -140,11 +140,16 @@ export const TAG_TYPES = {
   CUSTOM_FIELD_TYPES: "CustomFieldTypes",
   CUSTOM_FIELDS_ENABLED: "CustomFieldsEnabled",
   SCRIBE_NOTE_CREATION_ENABLED: "ScribeNoteCreationEnabled",
+  SCRIBE_VOICE_NOTE_ENABLED: "ScribeVoiceNoteEnabled",
   // Org. Settings access-management tabs (own tenant scenario/path/case/badge)
   ORG_SCENARIOS: "OrgScenarios",
   ORG_SCENARIO_PATHS: "OrgScenarioPaths",
   ORG_CASES: "OrgCases",
   ORG_BADGES: "OrgBadges",
+  // Track 2.0 learner resources
+  LEARN_TRACKS: "LearnTracks",
+  LEARN_TRACK_DETAIL: "LearnTrackDetail",
+  LEARN_TRACK_NEXT: "LearnTrackNext",
 };
 
 export const SORT_ORDER = {

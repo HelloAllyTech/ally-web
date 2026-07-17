@@ -14,13 +14,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.3",
-    "@emotion/styled": "^11.11.0",
     "@livekit/components-react": "^2.9.13",
     "@livekit/components-styles": "^1.1.6",
-    "@mui/icons-material": "^5.15.11",
-    "@mui/material": "^5.15.11",
-    "@mui/x-date-pickers": "^8.11.3",
     "@reduxjs/toolkit": "^2.6.0",
     "@wavesurfer/react": "^1.0.11",
     "aria-hidden": "^1.2.6",

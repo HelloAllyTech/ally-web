@@ -61,7 +61,11 @@ export function buildStartLatencySeries(points: StartLatencyPoint[]): LatencyDat
     if (point.source === "pipeline") {
       return [
         { group: START_LATENCY_GROUPS.configure, key: point.bucket, value: toS(point.configureMs) },
-        { group: START_LATENCY_GROUPS.initialize, key: point.bucket, value: toS(point.initializeMs) },
+        {
+          group: START_LATENCY_GROUPS.initialize,
+          key: point.bucket,
+          value: toS(point.initializeMs),
+        },
         { group: START_LATENCY_GROUPS.connect, key: point.bucket, value: toS(point.connectMs) },
         { group: START_LATENCY_GROUPS.prep, key: point.bucket, value: toS(point.prepMs) },
       ];

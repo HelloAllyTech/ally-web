@@ -35,7 +35,7 @@ const ListeningBars: FC<{ active: boolean }> = ({ active }) => (
     {BAR_HEIGHTS.map((peak, i) => (
       <motion.span
         key={i}
-        className="w-1 rounded-full bg-[#0f62fe]"
+        className="w-1 rounded-full bg-[#264D8E]"
         style={{ height: `${peak}%` }}
         animate={active ? { scaleY: [0.4, 1, 0.4] } : { scaleY: 0.4 }}
         transition={
@@ -93,7 +93,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
         className="flex flex-col items-center gap-3 border border-[#e0e0e0] bg-[#f4f4f4] p-5"
         data-testid="voice-note-generating"
       >
-        <Loader2 className="h-6 w-6 animate-spin text-[#0f62fe]" />
+        <Loader2 className="h-6 w-6 animate-spin text-[#264D8E]" />
         <motion.p
           key={messageIndex}
           initial={{ opacity: 0 }}
@@ -201,7 +201,7 @@ const VoiceNotePanel: FC<VoiceNotePanelProps> = ({
           <button
             type="button"
             onClick={onGenerate}
-            className={`${ctrlButton} border-[#0f62fe] bg-[#0f62fe] text-white hover:bg-[#0353e9]`}
+            className={`${ctrlButton} border-[#264D8E] bg-[#264D8E] text-white hover:bg-[#1F3F75]`}
             data-testid="voice-note-generate"
           >
             <Sparkles className="h-4 w-4" />

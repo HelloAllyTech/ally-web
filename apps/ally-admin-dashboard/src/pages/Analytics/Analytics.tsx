@@ -1,23 +1,23 @@
 import { ReactNode, useMemo, useState } from "react";
 
+import "@carbon/charts/styles.css";
+import "./analytics-carbon.scss";
+
 import {
-  Dropdown,
+  CarbonDropdown as Dropdown,
   Heading,
   Section,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
-  Tabs,
+  CarbonTabs as Tabs,
   Theme,
-} from "@carbon/react";
-
-import "@carbon/charts/styles.css";
-import "./analytics-carbon.scss";
-
+} from "@ally-ui-mono/ui-shared";
 import { useGetScenarioLanguagesQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
+import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { ScribeTab } from "./tabs/ScribeTab";
@@ -34,6 +34,9 @@ const RANGE_ITEMS: { id: AnalyticsRange; label: string }[] = [
 interface TabFilters {
   range: AnalyticsRange;
   language: string;
+  /** Lets a tab drive the page-level language picker (e.g. drill-in from a
+   *  per-language overview row). */
+  onSelectLanguage: (language: string) => void;
 }
 
 /**
@@ -58,7 +61,7 @@ const TABS: TabDef[] = [
   },
   {
     id: "latency",
-    label: "Latency",
+    label: "Latency & reliability",
     uses: { language: true },
     render: f => <LatencyTab range={f.range} language={f.language} />,
   },
@@ -67,6 +70,18 @@ const TABS: TabDef[] = [
     label: "Drift",
     uses: { language: true },
     render: f => <ConversationDrift range={f.range} language={f.language} />,
+  },
+  {
+    id: "language",
+    label: "Language",
+    uses: { language: true },
+    render: f => (
+      <LanguageQualityTab
+        range={f.range}
+        language={f.language}
+        onSelectLanguage={f.onSelectLanguage}
+      />
+    ),
   },
   {
     id: "tokens",
@@ -101,7 +116,7 @@ export const Analytics = () => {
   const selectedRange = RANGE_ITEMS.find(i => i.id === range) ?? RANGE_ITEMS[0];
   const selectedLanguage = languageItems.find(i => i.id === language) ?? languageItems[0];
   const activeTab = TABS[tabIndex] ?? TABS[0];
-  const filters: TabFilters = { range, language };
+  const filters: TabFilters = { range, language, onSelectLanguage: setLanguage };
 
   return (
     <div className="font-primary pr-1">

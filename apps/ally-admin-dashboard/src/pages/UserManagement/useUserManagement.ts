@@ -25,6 +25,7 @@ import {
   FilterDropdownOptions,
   userStatus,
   UserRole,
+  isSuperAdminRole,
 } from "@constants";
 import {
   AddUserFormData,
@@ -138,7 +139,7 @@ export function useUserManagement(tenants: Tenant[]) {
     if (!userRoles) return;
 
     const filteredRoles = userRoles.filter(
-      role => role.name !== UserRole.SUPER_ADMIN && role.name !== UserRole.CLIENT,
+      role => !isSuperAdminRole(role.name) && role.name !== UserRole.CLIENT,
     );
     setRoles(filteredRoles);
   }, [userRoles]);

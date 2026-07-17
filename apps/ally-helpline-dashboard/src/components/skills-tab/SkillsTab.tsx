@@ -479,14 +479,14 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
       </h2>
       <hr className="mb-5 mt-2 border-gray-200" />
 
-      {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}
-      {hasEmotionalData && <EmotionalMovementChart data={emotionalData} timeTicks={timeTicks} />}
       {summary && isChecklistMode && (
         <>
           <StrengthAndSkills summary={summary} />
           <AreasForGrowth summary={summary} />
         </>
       )}
+      {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}
+      {hasEmotionalData && <EmotionalMovementChart data={emotionalData} timeTicks={timeTicks} />}
       {hasNoData && <EmptyState />}
     </div>
   );

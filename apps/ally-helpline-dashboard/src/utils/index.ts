@@ -4,6 +4,7 @@ export * from "./socket";
 export * from "./date";
 export * from "./tailwind";
 export * from "./simulation";
+export * from "./nextChallenge";
 export * from "./summary";
 export * from "./call";
 export * from "./audio-upload";

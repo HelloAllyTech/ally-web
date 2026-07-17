@@ -1,21 +1,19 @@
 import { FC, useEffect, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
 import { DockToRight, LogoutIllustration } from "@assets";
 import { AppTooltip, ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
 import {
   navBarOptions,
-  TOOLTIP_LIGHT_PROPS,
   TabId,
   Permissions,
   TooltipLocation,
-  canPickUiTheme,
   canViewOrganizationSettings,
 } from "@constants";
 import { useUser } from "@hooks";
@@ -110,17 +108,8 @@ const Tab: FC<TabProps> = ({
 
 const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClose }) => {
   const { t } = useTranslation();
-  const {
-    permissions,
-    user,
-    logout,
-    getProfileUrl,
-    deleteProfile,
-    uploadProfile,
-    refetchUser,
-    uiTheme,
-    setUiThemePreference,
-  } = useUser();
+  const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
+    useUser();
 
   const { data: unreadData } = useGetUnreadReviewCountQuery(
     { isScribe: false },
@@ -269,14 +258,13 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         >
           {/* Logo */}
 
-          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md box-border overflow-hidden flex items-center justify-center">
+          {/* No `overflow-hidden` here: the org-name Tooltip renders its bubble
+              inline (Carbon Tooltip is not portaled), so an overflow-hidden
+              ancestor would clip it off-screen. The logo image is still clipped
+              to the rounded box by the inner wrapper's own overflow-hidden. */}
+          <div className="relative w-14 h-14 border-[0.5px] group ml-2 rounded-md box-border flex items-center justify-center">
             {/* Toggle button - covers logo when collapsed */}
-            <Tooltip
-              title={tenantData?.name}
-              placement="right"
-              arrow
-              slotProps={TOOLTIP_LIGHT_PROPS}
-            >
+            <Tooltip label={tenantData?.name ?? ""} align="right">
               <div className="w-14 h-14  group rounded-md box-border overflow-hidden flex items-center justify-center">
                 <CustomImage
                   src={tenantData?.logoUrl}
@@ -362,9 +350,6 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
         formMethods={profileSettingsForm}
         onButtonClick={handleProfileUpload}
         getProfileUrl={getProfileUrl}
-        showThemePicker={canPickUiTheme(user)}
-        selectedTheme={uiTheme}
-        onSelectTheme={setUiThemePreference}
       />
     </>
   );

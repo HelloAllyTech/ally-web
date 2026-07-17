@@ -1,7 +1,6 @@
 import { FC } from "react";
 
-import { CircularProgress } from "@mui/material";
-
+import { Loading } from "@ally-ui-mono/ui-shared";
 import { Plus } from "@assets";
 import { UserRole } from "@src/constants";
 import { TranscriptMessage } from "@types";
@@ -87,7 +86,9 @@ const TranscriptSection: FC<TranscriptSectionProps> = ({
           >
             <Plus className="w-4 h-4" />
             <span className="font-primary text-base ml-[5px]">Load More</span>
-            {isLoadingMore && <CircularProgress color="primary" size={20} className="mx-2" />}
+            {isLoadingMore && (
+              <Loading small withOverlay={false} description="Loading more" className="mx-2" />
+            )}
           </button>
         </div>
       )}

@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { CallType, Permissions } from "@constants";
-import { DEFAULT_UI_THEME, UiTheme } from "@theme/themes";
 import { UserState } from "@types";
 
 /*
@@ -16,7 +15,6 @@ const initialState = {
   user: null,
   permissions: [],
   availableChatTypes: [],
-  uiTheme: DEFAULT_UI_THEME,
 } satisfies UserState as UserState;
 
 const userSlice = createSlice({
@@ -38,18 +36,9 @@ const userSlice = createSlice({
     setAvailableChatTypes(state, action: PayloadAction<CallType[]>) {
       state.availableChatTypes = action.payload;
     },
-    setUiTheme(state, action: PayloadAction<UiTheme>) {
-      state.uiTheme = action.payload;
-    },
   },
 });
 
-export const {
-  setUser,
-  authenticate,
-  unauthenticate,
-  setPermissions,
-  setAvailableChatTypes,
-  setUiTheme,
-} = userSlice.actions;
+export const { setUser, authenticate, unauthenticate, setPermissions, setAvailableChatTypes } =
+  userSlice.actions;
 export default userSlice;

@@ -1,10 +1,10 @@
 import { FC, useEffect, useState } from "react";
 
-import { CircularProgress, Tooltip } from "@mui/material";
 import { Check, Info, CircleX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import { Loading, Tooltip } from "@ally-ui-mono/ui-shared";
 import { SummaryGenenerationVideo } from "@assets";
 import {
   NotesIcon,
@@ -14,7 +14,7 @@ import {
   SummaryFailed,
 } from "@assets/icons";
 import { Button, ButtonVariant, InfoBanner, ShinyText } from "@components";
-import { Permissions, SESSION_STORAGE_KEYS, TOOLTIP_DARK_PROPS } from "@constants";
+import { Permissions, SESSION_STORAGE_KEYS } from "@constants";
 import { RootState } from "@store";
 import { ChatSummaryStatus } from "@types";
 
@@ -176,14 +176,10 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               )}
             </label>
           </div>
-          <Tooltip
-            title={t("summaryLoading.notesTooltip")}
-            placement="bottom-end"
-            className="b"
-            componentsProps={TOOLTIP_DARK_PROPS}
-            arrow
-          >
-            <Info className="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer" />
+          <Tooltip label={t("summaryLoading.notesTooltip")} align="bottom-end">
+            <span className="inline-flex">
+              <Info className="w-[12px] h-[12px] text-[#1C1B1F] cursor-pointer" />
+            </span>
           </Tooltip>
         </div>
         <textarea
@@ -212,7 +208,8 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
       case ChatSummaryStatus.SUCCESS:
         return (
           <Button variant={ButtonVariant.SECONDARY} disabled={true} className="w-72">
-            <CircularProgress size={16} /> {t("summaryLoading.settingUp")}
+            <Loading small withOverlay={false} className="!h-4 !w-4" />{" "}
+            {t("summaryLoading.settingUp")}
           </Button>
         );
       case ChatSummaryStatus.IN_PROGRESS:
@@ -233,7 +230,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
               onClick={onReadyButtonClick}
               className=" w-40 font-primary"
             >
-              {isSummaryRefetching && <CircularProgress size={16} />}
+              {isSummaryRefetching && <Loading small withOverlay={false} className="!h-4 !w-4" />}
               {t("summaryLoading.seeIfReady")}
             </Button>
           </>

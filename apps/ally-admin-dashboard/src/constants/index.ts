@@ -10,6 +10,7 @@ export * from "./models";
 export * from "./permissions";
 export * from "./file";
 export * from "./CreatePath";
+export * from "./CreateTrack";
 export * from "./detectionConfig";
 export * from "./eventTypes";
 export * from "./TriggerConditionsConfig";

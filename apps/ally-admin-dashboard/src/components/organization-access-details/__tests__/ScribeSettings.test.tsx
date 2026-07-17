@@ -79,7 +79,10 @@ vi.mock("@store", () => ({}));
 
 // Mock constants
 vi.mock("@constants", () => ({
-  UserRole: { SUPER_ADMIN: "SUPER_ADMIN" },
+  UserRole: { SUPER_ADMIN: "SUPER_ADMIN", SUPER_DUPER_ADMIN: "SUPER_DUPER_ADMIN" },
+  SUPER_ADMIN_ROLES: ["SUPER_ADMIN", "SUPER_DUPER_ADMIN"],
+  isSuperAdminRole: (role?: string | null) =>
+    role === "SUPER_ADMIN" || role === "SUPER_DUPER_ADMIN",
   en: {
     common: {
       cancel: "Cancel",
@@ -185,6 +188,11 @@ vi.mock("@api", () => {
     vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) }),
     { isLoading: false },
   ];
+  const scribeVoiceNoteEnabledResult = { data: false, isLoading: false };
+  const updateScribeVoiceNoteEnabledResult = [
+    vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) }),
+    { isLoading: false },
+  ];
 
   return {
     useGetSummarySectionsQuery: () => summarySectionsResult,
@@ -199,6 +207,8 @@ vi.mock("@api", () => {
     useUpdateCustomFieldsEnabledMutation: () => updateCustomFieldsEnabledResult,
     useGetScribeNoteCreationEnabledQuery: () => scribeNoteCreationEnabledResult,
     useUpdateScribeNoteCreationEnabledMutation: () => updateScribeNoteCreationEnabledResult,
+    useGetScribeVoiceNoteEnabledQuery: () => scribeVoiceNoteEnabledResult,
+    useUpdateScribeVoiceNoteEnabledMutation: () => updateScribeVoiceNoteEnabledResult,
     useGetCustomFieldDefinitionsQuery: () => ({ data: [], isLoading: false }),
     useCreateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],
     useUpdateCustomFieldDefinitionMutation: () => [vi.fn(), { isLoading: false }],

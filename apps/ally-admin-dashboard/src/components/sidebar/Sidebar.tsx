@@ -11,7 +11,9 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
   BarChart3,
+  Chemistry,
   Close,
+  Document,
   Flag,
   Info,
   Languages,
@@ -183,6 +185,8 @@ export const Sidebar: React.FC = () => {
         return <Languages size={20} />;
       case SIDEBAR_ITEMS.TOOLTIPS:
         return <Info size={20} />;
+      case SIDEBAR_ITEMS.BLOG:
+        return <Document size={20} />;
       case SIDEBAR_ITEMS.ANALYTICS:
         return <BarChart3 size={20} />;
       case SIDEBAR_ITEMS.AGENT_TEST_CASES:
@@ -191,6 +195,8 @@ export const Sidebar: React.FC = () => {
         return <SkillLevel size={20} />;
       case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
         return <List size={20} />;
+      case SIDEBAR_ITEMS.AI_LAB:
+        return <Chemistry size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
         return <Settings size={20} />;
       default:
@@ -225,10 +231,14 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_TRANSLATIONS);
       case ROUTES.MANAGE_TOOLTIPS:
         return location.pathname.includes(ROUTES.MANAGE_TOOLTIPS);
+      case ROUTES.BLOG:
+        return location.pathname.includes(ROUTES.BLOG);
       case ROUTES.ANALYTICS:
         return location.pathname.includes(ROUTES.ANALYTICS);
       case ROUTES.ROLEPLAY_SESSION_LOGS:
         return location.pathname.includes(ROUTES.ROLEPLAY_SESSION_LOGS);
+      case ROUTES.AI_LAB:
+        return location.pathname.includes(ROUTES.AI_LAB);
       case ROUTES.SETTINGS:
         return location.pathname.includes(ROUTES.SETTINGS);
       default:

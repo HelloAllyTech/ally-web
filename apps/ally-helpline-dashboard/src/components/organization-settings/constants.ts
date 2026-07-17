@@ -17,10 +17,7 @@ export const SCRIBE_TOGGLE_ITEMS: { id: ScribeToggleId; label: string }[] = [
   { id: "enableAudioUpload", label: "Upload Call Recording" },
 ];
 
-export type ScribeToggleId =
-  | "enableMicrophoneMode"
-  | "enableDictationMode"
-  | "enableAudioUpload";
+export type ScribeToggleId = "enableMicrophoneMode" | "enableDictationMode" | "enableAudioUpload";
 
 /** All custom-field types the org can enable, mirroring the admin screen. */
 export const CUSTOM_FIELD_TYPE_ITEMS: { key: string; label: string }[] = [

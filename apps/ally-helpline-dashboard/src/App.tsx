@@ -1,27 +1,14 @@
-import { useEffect, useMemo } from "react";
-
-import { ThemeProvider } from "@mui/material/styles";
-import { useSelector } from "react-redux";
 import { Toaster } from "sonner";
 
+import { AllyThemeProvider } from "@ally-ui-mono/ui-shared";
 import RouteLayout from "@routes/RouteLayout";
-import { RootState } from "@store";
-
-import { buildTheme } from "./theme";
 
 const App = () => {
-  const uiTheme = useSelector((state: RootState) => state.user.uiTheme);
-  const muiTheme = useMemo(() => buildTheme(uiTheme), [uiTheme]);
-
-  // Keep the root data-theme attribute (which drives the Tailwind CSS variables)
-  // in sync with the selected theme after login / theme changes. The initial
-  // value is set pre-hydration by the inline script in index.html.
-  useEffect(() => {
-    document.documentElement.dataset.theme = uiTheme;
-  }, [uiTheme]);
-
   return (
-    <ThemeProvider theme={muiTheme}>
+    // Single centralised Carbon "White" design-system boundary (serif), shared
+    // by every app via @ally-ui-mono/ui-shared. The previous per-user theme
+    // switcher (current/claude/carbon) has been removed in favour of one theme.
+    <AllyThemeProvider>
       <Toaster
         position="bottom-right"
         closeButton
@@ -35,7 +22,7 @@ const App = () => {
         }}
       />
       <RouteLayout />
-    </ThemeProvider>
+    </AllyThemeProvider>
   );
 };
 

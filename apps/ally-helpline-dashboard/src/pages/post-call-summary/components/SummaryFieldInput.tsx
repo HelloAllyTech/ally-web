@@ -1,6 +1,5 @@
 import { FC, ReactNode } from "react";
 
-import { Divider } from "@mui/material";
 import { ChevronDown } from "lucide-react";
 
 import { DropdownField } from "@ally-ui-mono/ui-shared";
@@ -124,7 +123,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
     case FieldType.Dropdown:
       return (
         <div className="flex gap-1">
-          <span className="font-medium text-lg text-typography-800 whitespace-nowrap bg-green">{`${field.label}: `}</span>
+          <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
           <DropdownField
             disabled={disabled}
             value={value ?? field.placeholder ?? "--"}
@@ -169,24 +168,44 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
     default:
       return (
         <div>
-          <div className="flex items-center">
+          {/* items-start so the label stays aligned to the first line when a
+              long value wraps to multiple lines. */}
+          <div className="flex items-start">
             <span className="font-medium text-lg text-typography-800">{`${field.label}: `}</span>
             <div className="flex-1">
-              <TextField
-                value={value ?? "--"}
-                onChange={e => onChange(field.key, e.target.value)}
-                placeholder={field.placeholder}
-                inputStyles={{
-                  color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
-                  fontSize: "16px",
-                  fontFamily: "IBM_Plex_Serif",
-                }}
-                InputProps={{ readOnly: disabled }}
-                showBorder={false}
-              />
+              {disabled ? (
+                // Read-only display: render the value as wrapping text. A
+                // single-line input truncates/scrolls long values (e.g. Intake
+                // notes) sideways instead of wrapping.
+                <span
+                  className="font-primary whitespace-pre-wrap break-words"
+                  style={{
+                    color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                    fontSize: "16px",
+                    fontFamily: "IBM_Plex_Serif",
+                  }}
+                >
+                  {value ?? "--"}
+                </span>
+              ) : (
+                <TextField
+                  value={value ?? "--"}
+                  onChange={e => onChange(field.key, e.target.value)}
+                  placeholder={field.placeholder}
+                  inputStyles={{
+                    color: field.isEditable ? "#1A1A1A" : "#9CA3AF",
+                    fontSize: "16px",
+                    fontFamily: "IBM_Plex_Serif",
+                  }}
+                  InputProps={{ readOnly: disabled }}
+                  showBorder={false}
+                />
+              )}
             </div>
           </div>
-          {field.key === "clientId" && <Divider sx={{ width: "90%", marginTop: "6px" }} />}
+          {field.key === "clientId" && (
+            <hr className="border-0 border-t" style={{ width: "90%", marginTop: "6px" }} />
+          )}
         </div>
       );
   }

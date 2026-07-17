@@ -1,16 +1,12 @@
 import { FC, ReactNode, useState } from "react";
 
-import {
-  Accordion as MuiAccordion,
-  AccordionDetails,
-  AccordionSummary,
-  SxProps,
-  Theme,
-} from "@mui/material";
-
 import { ArrowSolid } from "@assets";
 
-import { accordionSx, accordionSummarySx, accordionDetailsSx } from "./accordian.styles";
+import {
+  accordionClassName,
+  accordionSummaryClassName,
+  accordionDetailsClassName,
+} from "./accordian.styles";
 
 export interface AccordionProps {
   children?: ReactNode;
@@ -20,9 +16,9 @@ export interface AccordionProps {
   onChange?: (expanded: boolean) => void;
   expandIcon?: ReactNode;
   headerTitle?: ReactNode;
-  customAccordionSx?: SxProps<Theme>;
-  customAccordionSummarySx?: SxProps<Theme>;
-  customAccordionDetailsSx?: SxProps<Theme>;
+  customAccordionClassName?: string;
+  customAccordionSummaryClassName?: string;
+  customAccordionDetailsClassName?: string;
 }
 
 export const Accordion: FC<AccordionProps> = ({
@@ -32,47 +28,41 @@ export const Accordion: FC<AccordionProps> = ({
   headerActions,
   onChange,
   expandIcon,
-  customAccordionSx,
-  customAccordionSummarySx,
-  customAccordionDetailsSx,
+  customAccordionClassName,
+  customAccordionSummaryClassName,
+  customAccordionDetailsClassName,
   headerTitle,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
-  const handleChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpanded(isExpanded);
-    onChange?.(isExpanded);
+  const handleToggle = () => {
+    const next = !expanded;
+    setExpanded(next);
+    onChange?.(next);
   };
 
   return (
-    <MuiAccordion
-      defaultExpanded={defaultExpanded}
-      expanded={expanded}
-      onChange={handleChange}
-      sx={customAccordionSx ?? accordionSx}
-    >
-      <AccordionSummary
-        expandIcon={
-          expandIcon ? (
-            <span
-              className={`transition-transform duration-200 [&_path]:fill-[#212121] ${
-                expanded ? "" : "-rotate-90"
-              }`}
-            >
-              {expandIcon}
-            </span>
-          ) : (
-            <span
-              className={`transition-transform duration-200 [&_path]:fill-[#212121] ${
-                expanded ? "" : "-rotate-90"
-              }`}
-            >
-              <ArrowSolid />
-            </span>
-          )
-        }
-        sx={customAccordionSummarySx ?? accordionSummarySx}
+    <div className={customAccordionClassName ?? accordionClassName}>
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        onClick={handleToggle}
+        onKeyDown={event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleToggle();
+          }
+        }}
+        className={`cursor-pointer ${customAccordionSummaryClassName ?? accordionSummaryClassName}`}
       >
+        <span
+          className={`transition-transform duration-200 [&_path]:fill-[#212121] ${
+            expanded ? "" : "-rotate-90"
+          }`}
+        >
+          {expandIcon ?? <ArrowSolid />}
+        </span>
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-row gap-[18px] items-center">
             {headerTitle ?? (
@@ -88,10 +78,12 @@ export const Accordion: FC<AccordionProps> = ({
             </div>
           )}
         </div>
-      </AccordionSummary>
-      <AccordionDetails sx={customAccordionDetailsSx ?? accordionDetailsSx}>
-        {children}
-      </AccordionDetails>
-    </MuiAccordion>
+      </div>
+      {expanded && (
+        <div className={customAccordionDetailsClassName ?? accordionDetailsClassName}>
+          {children}
+        </div>
+      )}
+    </div>
   );
 };

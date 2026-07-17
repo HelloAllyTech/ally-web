@@ -122,6 +122,7 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
 
 vi.mock("@assets", () => ({
   ArrowDown: () => <span data-testid="arrow-down" />,
+  DoubleArrowRight: () => <span data-testid="double-arrow-right" />,
   WarningAlt: () => <span data-testid="warning-alt" />,
 }));
 
@@ -187,9 +188,11 @@ vi.mock("@constants", () => ({
   },
   isValidStateInstructionId: (id: any) => ["-1", "1", "2", "3"].includes(String(id)),
   ROLE_INSTRUCTION_PROMPT_CODE: "openai_simulation_role_instruction",
+  SIMULATION_CATEGORY: { PARTNER_SIM: "PARTNER_SIM" },
   ROUTES: {
     SIMULATION_STUDIO: "/simulation-studio",
     EDIT_SIMULATION: (id: string | number) => `/create-simulation/edit/${id}`,
+    VIEW_SIMULATION: (id: string | number) => `/create-simulation/view/${id}`,
   },
   // Basic Settings is no longer a standalone tab; the Agent Builder Copilot tab
   // is prepended by the component itself. These tabs follow it.

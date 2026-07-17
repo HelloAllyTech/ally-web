@@ -1,12 +1,23 @@
 import { useMemo, useState } from "react";
 
 import { LineChart, StackedBarChart } from "@carbon/charts-react";
-import { Dropdown } from "@carbon/react";
 
-import { useGetStartLatencyQuery, useGetVoiceLatencyQuery } from "@api";
+import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
+import {
+  useGetAgentJoinReliabilityQuery,
+  useGetStartLatencyQuery,
+  useGetVoiceLatencyQuery,
+} from "@api";
 import { AnalyticsBucket, AnalyticsRange } from "@types";
 
 import { ChartCard, PALETTE, lineOpts, stackedBarOpts } from "../chartKit";
+import {
+  buildJoinLatencySeries,
+  buildReliabilitySeries,
+  JOIN_LATENCY_GROUPS,
+  reliabilityBucketTitle,
+  RELIABILITY_GROUPS,
+} from "../joinReliabilityChart";
 import {
   buildStartLatencySeries,
   buildVoiceLatencySeries,
@@ -21,9 +32,16 @@ const BUCKET_ITEMS: { id: AnalyticsBucket; label: string }[] = [
   { id: "month", label: "Month-wise" },
 ];
 
-/** Voice-to-voice latency (avg & p95) plus simulation start latency ("time to
- * first word", stacked by startup segment). Both use the shared range +
- * language and a single granularity picker. */
+/** Reference ceiling for the join-failure rate (%). */
+const FAILURE_RATE_TARGET_PCT = 2;
+
+/**
+ * Latency & reliability. Voice-to-voice latency (avg & p95) and simulation start
+ * latency ("time to first word", stacked by startup segment) are language-scoped;
+ * agent-join latency (dispatch->join p50/p95) and join failure/mid-session drop
+ * rate are agent-infra reliability metrics and are not language-scoped. All share
+ * the page time range and a single granularity picker.
+ */
 export const LatencyTab = ({ range, language }: { range: AnalyticsRange; language: string }) => {
   const [bucket, setBucket] = useState<AnalyticsBucket>("day");
   const languageParam = language || undefined;
@@ -40,6 +58,13 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
     isError: startError,
     refetch: refetchStart,
   } = useGetStartLatencyQuery({ range, bucket, language: languageParam });
+
+  const {
+    data: reliabilityData,
+    isLoading: reliabilityLoading,
+    isError: reliabilityError,
+    refetch: refetchReliability,
+  } = useGetAgentJoinReliabilityQuery({ range, bucket });
 
   const series = useMemo(() => buildVoiceLatencySeries(data?.points ?? []), [data]);
   const axisTitle = useMemo(() => latencyBucketTitle(data?.bucket), [data]);
@@ -77,10 +102,7 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
     [data, axisTitle],
   );
 
-  const startSeries = useMemo(
-    () => buildStartLatencySeries(startData?.points ?? []),
-    [startData],
-  );
+  const startSeries = useMemo(() => buildStartLatencySeries(startData?.points ?? []), [startData]);
   const startAxisTitle = useMemo(() => latencyBucketTitle(startData?.bucket), [startData]);
 
   const startOptions = useMemo(
@@ -115,6 +137,62 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
         },
       }),
     [startData, startAxisTitle],
+  );
+
+  const reliabilityPoints = reliabilityData?.points ?? [];
+  const reliabilityAxisTitle = useMemo(
+    () => reliabilityBucketTitle(reliabilityData?.bucket),
+    [reliabilityData],
+  );
+
+  const rateSeries = useMemo(() => buildReliabilitySeries(reliabilityPoints), [reliabilityPoints]);
+  const joinLatencySeries = useMemo(
+    () => buildJoinLatencySeries(reliabilityPoints),
+    [reliabilityPoints],
+  );
+
+  const rateOptions = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Percent",
+        bottomTitle: reliabilityAxisTitle,
+        colorScale: {
+          [RELIABILITY_GROUPS.joinFailure]: PALETTE.red,
+          [RELIABILITY_GROUPS.midDrop]: PALETTE.orange,
+          [RELIABILITY_GROUPS.freeze]: PALETTE.magenta,
+        },
+        extra: {
+          axes: {
+            left: {
+              mapsTo: "value",
+              scaleType: "linear",
+              title: "Percent",
+              thresholds: [
+                {
+                  value: FAILURE_RATE_TARGET_PCT,
+                  label: "Target",
+                  fillColor: PALETTE.green,
+                },
+              ],
+            },
+            bottom: { mapsTo: "key", scaleType: "labels", title: reliabilityAxisTitle },
+          },
+        },
+      }),
+    [reliabilityAxisTitle],
+  );
+
+  const joinLatencyOptions = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Seconds",
+        bottomTitle: reliabilityAxisTitle,
+        colorScale: {
+          [JOIN_LATENCY_GROUPS.p50]: PALETTE.blue,
+          [JOIN_LATENCY_GROUPS.p95]: PALETTE.cyan,
+        },
+      }),
+    [reliabilityAxisTitle],
   );
 
   return (
@@ -155,6 +233,28 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
         errorSubtitle="There was a problem fetching start-latency metrics."
       >
         <StackedBarChart data={startSeries} options={startOptions} />
+      </ChartCard>
+      <ChartCard
+        title="Agent-join latency (dispatch → join, p50 & p95)"
+        caption="Agent-infra reliability — not filtered by language"
+        loading={reliabilityLoading && !reliabilityData}
+        error={reliabilityError}
+        onRetry={refetchReliability}
+        errorTitle="Couldn't load join latency"
+        errorSubtitle="There was a problem fetching reliability metrics."
+      >
+        <LineChart data={joinLatencySeries} options={joinLatencyOptions} />
+      </ChartCard>
+      <ChartCard
+        title="Agent-join failure & mid-session drop rate"
+        caption="Join failure = agent never joined · Mid-session drop = agent joined then left · not filtered by language"
+        loading={reliabilityLoading && !reliabilityData}
+        error={reliabilityError}
+        onRetry={refetchReliability}
+        errorTitle="Couldn't load join reliability"
+        errorSubtitle="There was a problem fetching reliability metrics."
+      >
+        <LineChart data={rateSeries} options={rateOptions} />
       </ChartCard>
     </div>
   );

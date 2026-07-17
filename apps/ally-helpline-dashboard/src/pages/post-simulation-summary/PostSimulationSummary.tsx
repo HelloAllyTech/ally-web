@@ -1,12 +1,12 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
-import { Tab, Tabs } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetAvailableLanguagesQuery,
@@ -17,6 +17,7 @@ import { BackCircle, Comment } from "@assets";
 import {
   AskAiTab,
   Button,
+  NextChallengeCard,
   ReflectionTab,
   SessionRatingTrigger,
   ShareForReview,
@@ -30,11 +31,11 @@ import {
   SimulationSummary,
   useSimulationSummaryPolling,
 } from "@containers";
+import { useNextChallenge } from "@hooks";
 import { pageType, SessionType, ShareForReviewsInput } from "@types";
 
 import { UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
-import { tabStyles } from "../calls/constants";
 import { containerVariants } from "../learn/constants";
 
 export const PostSimulationSummary: FC = () => {
@@ -56,6 +57,7 @@ export const PostSimulationSummary: FC = () => {
   );
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
+  const nextChallenge = useNextChallenge(summary);
 
   const { data: availableLanguages } = useGetAvailableLanguagesQuery({});
   const originalLanguageCode = useMemo(() => {
@@ -162,10 +164,6 @@ export const PostSimulationSummary: FC = () => {
       setFeedbackOpen(true);
     }
   }, [summary, feedbackEnabled, navigate]);
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue);
-  };
 
   const handleCreateReview = async (status: string, note?: string) => {
     const normalizedNote = note?.trim() || null;
@@ -342,20 +340,12 @@ export const PostSimulationSummary: FC = () => {
               tag={t("postSim.titlePrefix")}
             />
             <Tabs
-              value={selectedTab}
-              onChange={handleTabChange}
-              className="w-full shrink-0 normal-case border-b border-[#DBDBDB]"
-              sx={{
-                "& .MuiButtonBase-root": {
-                  fontFamily: "'IBM Plex Serif', serif",
-                  fontWeight: 400,
-                },
-              }}
-            >
-              {tabList?.map(tab => (
-                <Tab key={tab.id} label={tab.label} value={tab.id} sx={tabStyles} />
-              ))}
-            </Tabs>
+              items={tabList.map(tab => ({ id: String(tab.id), label: tab.label }))}
+              activeId={String(selectedTab)}
+              onChange={id => setSelectedTab(Number(id))}
+              className="w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+              showCount={false}
+            />
             <div
               className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
               data-testid="post-sim-tab-panel"
@@ -363,7 +353,12 @@ export const PostSimulationSummary: FC = () => {
               {getTabContent()}
             </div>
             {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
-              <div className="flex justify-center items-center fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+              <div className="flex flex-col items-center gap-3 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                {nextChallenge && (
+                  <div className="w-full max-w-4xl px-4 sm:px-6">
+                    <NextChallengeCard recommendation={nextChallenge} />
+                  </div>
+                )}
                 <Button onClick={() => navigate(ROUTES.LEARN)}>
                   {t("postSim.common.tryAnother")}
                 </Button>

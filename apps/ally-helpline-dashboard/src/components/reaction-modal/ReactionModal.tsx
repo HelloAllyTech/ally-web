@@ -1,10 +1,9 @@
 import { FC } from "react";
 
-import { CircularProgress, Dialog } from "@mui/material";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { InfiniteScroll } from "@ally-ui-mono/ui-shared";
+import { ComposedModal, InfiniteScroll, Loading, ModalBody } from "@ally-ui-mono/ui-shared";
 import { ArrowDownFilled } from "@assets";
 import { NativeEmoji } from "@components";
 import { useReactionModal } from "@hooks";
@@ -85,7 +84,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
     if (isLoading && userReactions.length === 0) {
       return (
         <div className="flex items-center justify-center h-[300px]">
-          <CircularProgress size={32} />
+          <Loading withOverlay={false} />
         </div>
       );
     }
@@ -131,7 +130,7 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
         </InfiniteScroll>
         {isLoading && (
           <div className="flex items-center justify-center py-2">
-            <CircularProgress size={20} />
+            <Loading withOverlay={false} small />
           </div>
         )}
       </div>
@@ -139,82 +138,74 @@ const ReactionsModal: FC<ReactionsModalProps> = ({ isOpen, onClose, reviewId, is
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      PaperProps={{
-        style: {
-          borderRadius: "8px",
-          padding: 0,
-          overflow: "hidden",
-        },
-      }}
-    >
-      <div className="w-[400px] max-w-[calc(100vw-32px)] flex flex-col gap-2 p-4 bg-white relative">
-        <button
-          onClick={handleClose}
-          className="absolute top-3 right-3 p-1 rounded-full hover:bg-neutral-100 transition-colors"
-        >
-          <X className="w-5 h-5 text-typography-700" />
-        </button>
+    <ComposedModal open={isOpen} onClose={handleClose} size="sm">
+      <ModalBody className="p-0">
+        <div className="w-[400px] max-w-[calc(100vw-32px)] flex flex-col gap-2 p-4 bg-white relative">
+          <button
+            onClick={handleClose}
+            className="absolute top-3 right-3 p-1 rounded-full hover:bg-neutral-100 transition-colors"
+          >
+            <X className="w-5 h-5 text-typography-700" />
+          </button>
 
-        <div className="font-primary font-medium text-base leading-5 text-[#1A1A1A] pr-8">
-          {t("review.reactionsModal.title")}
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col">
-            <div className="flex">
-              {renderTabButton({
-                tabId: "all",
-                label: t("review.reactionsModal.all", { count: totalCount }),
-                isActive: activeTab === "all",
-                onClick: () => handleTabChange("all"),
-              })}
-
-              {visibleReactions.map(([code, count]) =>
-                renderEmojiTab(code, count, activeTab === code),
-              )}
-
-              {hiddenReactions.length > 0 && (
-                <div className="relative">
-                  <button
-                    onClick={handleToggleMoreEmojis}
-                    className="flex text-center items-center justify-center gap-0.5 px-1.5 py-3.5 text-[#1A1A1A] font-primary text-base leading-5"
-                  >
-                    {t("review.reactionsModal.more")}
-                    <div className="flex items-center justify-center text-typography-600 w-4 h-4">
-                      <ArrowDownFilled />
-                    </div>
-                  </button>
-
-                  {showMoreEmojis && (
-                    <div className="absolute top-full left-0 z-10 bg-white border border-border rounded-lg shadow-lg py-2 min-w-[120px]">
-                      {hiddenReactions.map(([code, count]) => (
-                        <button
-                          key={code}
-                          onClick={() => handleSelectHiddenReaction(code)}
-                          className="flex items-center gap-2 w-full px-3 py-2 hover:bg-neutral-50"
-                        >
-                          <div className="flex items-center gap-1 py-0.5 px-1 rounded-[18px] bg-white border-[0.5px] border-border">
-                            <NativeEmoji unified={code} size={16} />
-                          </div>
-                          <span className="font-primary text-sm text-black/87">{count}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="w-full h-[1px] bg-border-light" />
+          <div className="font-primary font-medium text-base leading-5 text-[#1A1A1A] pr-8">
+            {t("review.reactionsModal.title")}
           </div>
 
-          {renderContent()}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col">
+              <div className="flex">
+                {renderTabButton({
+                  tabId: "all",
+                  label: t("review.reactionsModal.all", { count: totalCount }),
+                  isActive: activeTab === "all",
+                  onClick: () => handleTabChange("all"),
+                })}
+
+                {visibleReactions.map(([code, count]) =>
+                  renderEmojiTab(code, count, activeTab === code),
+                )}
+
+                {hiddenReactions.length > 0 && (
+                  <div className="relative">
+                    <button
+                      onClick={handleToggleMoreEmojis}
+                      className="flex text-center items-center justify-center gap-0.5 px-1.5 py-3.5 text-[#1A1A1A] font-primary text-base leading-5"
+                    >
+                      {t("review.reactionsModal.more")}
+                      <div className="flex items-center justify-center text-typography-600 w-4 h-4">
+                        <ArrowDownFilled />
+                      </div>
+                    </button>
+
+                    {showMoreEmojis && (
+                      <div className="absolute top-full left-0 z-10 bg-white border border-border rounded-lg shadow-lg py-2 min-w-[120px]">
+                        {hiddenReactions.map(([code, count]) => (
+                          <button
+                            key={code}
+                            onClick={() => handleSelectHiddenReaction(code)}
+                            className="flex items-center gap-2 w-full px-3 py-2 hover:bg-neutral-50"
+                          >
+                            <div className="flex items-center gap-1 py-0.5 px-1 rounded-[18px] bg-white border-[0.5px] border-border">
+                              <NativeEmoji unified={code} size={16} />
+                            </div>
+                            <span className="font-primary text-sm text-black/87">{count}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="w-full h-[1px] bg-border-light" />
+            </div>
+
+            {renderContent()}
+          </div>
         </div>
-      </div>
-    </Dialog>
+      </ModalBody>
+    </ComposedModal>
   );
 };
 

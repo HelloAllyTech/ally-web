@@ -55,37 +55,11 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// Store onChange handler for Tab mock to access
-let tabsOnChange: ((event: any, value: number) => void) | null = null;
-
-// Mock @mui/material
-vi.mock("@mui/material", () => ({
-  Tabs: ({ children, value, onChange, className, sx }: any) => {
-    // Store onChange so Tab components can call it
-    tabsOnChange = onChange;
-    return (
-      <div data-testid="mui-tabs" data-value={value} className={className} role="tablist">
-        {children}
-      </div>
-    );
-  },
-  Tab: ({ label, value, sx }: any) => (
-    <button
-      data-testid={`tab-${value}`}
-      data-value={value}
-      role="tab"
-      aria-selected={false}
-      onClick={e => {
-        // Call the stored onChange handler
-        if (tabsOnChange) {
-          tabsOnChange(e, value);
-        }
-      }}
-    >
-      {label}
-    </button>
-  ),
-}));
+// The MUI Tabs/Tab were replaced by the shared Carbon `Tabs` from
+// @ally-ui-mono/ui-shared. That component is rendered for real here (no mock):
+// it exposes a `data-testid="tabs"` container and one `data-testid="tab-${id}"`
+// button per item (driven by items/activeId/onChange). The assertions below
+// query those testids and the active-tab styling rather than MUI roles/attrs.
 
 // Mock containers
 vi.mock("@containers", () => ({
@@ -474,7 +448,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
+      expect(screen.getByTestId("tabs")).toBeInTheDocument();
     });
 
     it("should render Summary tab", () => {
@@ -506,8 +480,10 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const tabs = screen.getByTestId("mui-tabs");
-      expect(tabs).toHaveAttribute("data-value", "1");
+      // Carbon Tabs marks the active tab via styling rather than a data-value
+      // attribute; the Summary tab (id 1) is highlighted by default.
+      const summaryTab = screen.getByTestId("tab-1");
+      expect(summaryTab.className).toContain("text-primary-500");
     });
 
     it("should display SimulationSummary content by default", () => {
@@ -579,9 +555,9 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const tabs = screen.getByTestId("mui-tabs");
+      const tabs = screen.getByTestId("tabs");
       expect(tabs).toHaveClass("w-full");
-      expect(tabs).toHaveClass("normal-case");
+      expect(tabs).toHaveClass("shrink-0");
       expect(tabs).toHaveClass("border-b");
       expect(tabs).toHaveClass("border-[#DBDBDB]");
     });
@@ -593,7 +569,8 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      const tabButtons = screen.getAllByRole("tab");
+      // Carbon Tabs renders each item as a `tab-${id}` button (no ARIA tab role).
+      const tabButtons = screen.getAllByTestId(/^tab-\d+$/);
       expect(tabButtons).toHaveLength(5);
     });
   });
@@ -699,7 +676,6 @@ describe("PostSimulationSummary Component", () => {
 
       const summaryTab = screen.getByTestId("tab-1");
       expect(summaryTab).toHaveTextContent("Session Review");
-      expect(summaryTab).toHaveAttribute("data-value", "1");
     });
 
     it("should have Transcription as second tab with id 2", () => {
@@ -711,7 +687,6 @@ describe("PostSimulationSummary Component", () => {
 
       const transcriptionTab = screen.getByTestId("tab-2");
       expect(transcriptionTab).toHaveTextContent("Annotated Transcript");
-      expect(transcriptionTab).toHaveAttribute("data-value", "2");
     });
 
     it("should have Ask AI as third tab with id 4", () => {
@@ -723,7 +698,6 @@ describe("PostSimulationSummary Component", () => {
 
       const askAiTab = screen.getByTestId("tab-4");
       expect(askAiTab).toHaveTextContent("Ask AI");
-      expect(askAiTab).toHaveAttribute("data-value", "4");
     });
 
     it("should have Skills as fourth tab with id 5", () => {
@@ -735,7 +709,6 @@ describe("PostSimulationSummary Component", () => {
 
       const skillsTab = screen.getByTestId("tab-5");
       expect(skillsTab).toHaveTextContent("Skills");
-      expect(skillsTab).toHaveAttribute("data-value", "5");
     });
 
     it("should have Reflection as fifth tab with id 6", () => {
@@ -747,7 +720,6 @@ describe("PostSimulationSummary Component", () => {
 
       const reflectionTab = screen.getByTestId("tab-6");
       expect(reflectionTab).toHaveTextContent("Reflection");
-      expect(reflectionTab).toHaveAttribute("data-value", "6");
     });
   });
 
@@ -878,7 +850,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.queryByTestId("simulation-summary")).toBeNull();
-      expect(screen.queryByTestId("mui-tabs")).toBeNull();
+      expect(screen.queryByTestId("tabs")).toBeNull();
       expect(screen.queryByTestId("feedback-dialog")).toBeNull();
     });
 
@@ -896,7 +868,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
+      expect(screen.getByTestId("tabs")).toBeInTheDocument();
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
     });
 
@@ -911,7 +883,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
+      expect(screen.getByTestId("tabs")).toBeInTheDocument();
     });
 
     it("hides the evaluation summary and only prompts for a rating when feedback is disabled", () => {
@@ -928,7 +900,7 @@ describe("PostSimulationSummary Component", () => {
         </TestWrapper>,
       );
 
-      expect(screen.queryByTestId("mui-tabs")).toBeNull();
+      expect(screen.queryByTestId("tabs")).toBeNull();
       expect(screen.queryByTestId("simulation-summary")).toBeNull();
       expect(screen.getByTestId("feedback-dialog")).toBeInTheDocument();
     });
@@ -968,7 +940,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(mockNavigate).toHaveBeenCalledWith(ROUTES.LEARN);
-      expect(screen.queryByTestId("mui-tabs")).toBeNull();
+      expect(screen.queryByTestId("tabs")).toBeNull();
     });
   });
 
@@ -1056,7 +1028,7 @@ describe("PostSimulationSummary Component", () => {
       );
 
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(screen.getByTestId("mui-tabs")).toBeInTheDocument();
+      expect(screen.getByTestId("tabs")).toBeInTheDocument();
     });
   });
 

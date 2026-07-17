@@ -208,7 +208,8 @@
     "tabs": {
       "simulations": "Simulations",
       "tracks": "Learning Pathways",
-      "cases": "Cases"
+      "cases": "Cases",
+      "courses": "Courses"
     },
     "header": {
       "prefix": "Use",
@@ -272,7 +273,8 @@
       "scenarios": "No scenarios available at the moment",
       "pathways": "No pathways available at the moment",
       "cases": "No cases available at the moment",
-      "refresh": "Refresh Page"
+      "refresh": "Refresh Page",
+      "courses": "No courses available at the moment"
     },
     "aria": {
       "availableCases": "Available cases",
@@ -283,7 +285,8 @@
       "prefix": "Choose your",
       "case": "Case",
       "track": "Track",
-      "scenario": "situation"
+      "scenario": "situation",
+      "course": "course"
     },
     "details": {
       "progress": "{{completed}} of {{total}} completed",
@@ -302,6 +305,36 @@
       }
     },
     "evaluationChecklist": "Evaluation Checklist"
+  },
+  "practiceStreak": {
+    "title": "Practice streak",
+    "ariaLabel": "Practice minutes heatmap",
+    "minutesValue": "{{count}} min",
+    "empty": "No practice sessions yet. Start a role play to build your streak!",
+    "error": "Couldn't load your practice streak. Please try again.",
+    "groupBy": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "stats": {
+      "currentStreak": "day streak",
+      "longestStreak": "Longest",
+      "total": "Total"
+    },
+    "units": {
+      "days": "days",
+      "min": "min"
+    },
+    "goal": {
+      "day": "of {{count}} min today",
+      "week": "of {{count}} min this week",
+      "month": "of {{count}} min this month"
+    },
+    "legend": {
+      "less": "Less",
+      "more": "More"
+    }
   },
   "analytics": {
     "title": "Session Metrics",
@@ -444,6 +477,20 @@
       "details": "Details",
       "scenario": "Scenario:",
       "shareForReview": "Share for review"
+    },
+    "nextChallenge": {
+      "title": "Next challenge",
+      "start": "Start",
+      "difficulty": {
+        "EASY": "Easy",
+        "MEDIUM": "Medium",
+        "HARD": "Hard"
+      },
+      "reason": {
+        "levelUp": "Great work! You're ready to level up with a {{difficulty}} scenario.",
+        "keepPracticing": "Keep sharpening your skills with another {{difficulty}} scenario.",
+        "buildConfidence": "Rebuild confidence with a {{difficulty}} scenario, then climb back up."
+      }
     }
   },
   "review": {
@@ -1143,5 +1190,124 @@
     "inhale": "Inhale now",
     "hold": "Hold breathe",
     "exhale": "Exhale"
+  },
+  "tracks2": {
+    "breadcrumb": "Learn",
+    "coursesTitle": "Courses",
+    "progress": "{{completed}} of {{total}}",
+    "trackCompleted": "Track completed",
+    "lockedTooltip": "Complete the previous items to unlock this",
+    "notFound": "This track could not be found",
+    "backToLearn": "Back to Learn",
+    "status": {
+      "completed": "Completed",
+      "inProgress": "In progress"
+    },
+    "meta": {
+      "quiz": "Quiz",
+      "questions": "{{count}} question",
+      "questions_other": "{{count}} questions",
+      "passScore": "pass {{score}}%",
+      "video": "Video",
+      "videoDuration": "{{minutes}} min video",
+      "article": "Article",
+      "journal": "Journal",
+      "prompts": "{{count}} prompt",
+      "prompts_other": "{{count}} prompts",
+      "roleplay": "Roleplay",
+      "minScore": "score {{score}}+",
+      "case": "Case study"
+    },
+    "continueLearning": {
+      "label": "Continue learning"
+    },
+    "player": {
+      "exit": "Exit",
+      "prev": "Previous",
+      "next": "Next",
+      "finish": "Finish",
+      "overallProgress": "{{pct}}% complete",
+      "loadFailed": "Could not load this item. Please try again.",
+      "retry": "Retry"
+    },
+    "celebration": {
+      "sectionCompleteTitle": "Section complete!",
+      "sectionCompleteBody": "Great work — keep the momentum going.",
+      "trackCompleteTitle": "Course complete!",
+      "trackCompleteBody": "You've finished every item in this course.",
+      "continue": "Continue",
+      "backToLearn": "Back to Learn",
+      "itemsCompleted": "{{count}} items completed"
+    },
+    "article": {
+      "markRead": "Mark as read",
+      "read": "Read",
+      "keepReading": "Keep reading to continue"
+    },
+    "video": {
+      "markWatched": "Mark as watched",
+      "watched": "Watched",
+      "watchToUnlock": "Watch {{pct}}% to continue"
+    },
+    "journal": {
+      "submit": "Submit",
+      "submitted": "Submitted",
+      "placeholder": "Write your thoughts...",
+      "required": "Required",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "saveFailed": "Save failed"
+    },
+    "roleplay": {
+      "intro": "Practice this scenario in a live roleplay.",
+      "start": "Start roleplay",
+      "openCase": "Open case",
+      "replay": "Replay",
+      "completed": "Completed"
+    },
+    "quiz": {
+      "intro": {
+        "title": "Quiz",
+        "questionCount": "{{count}} question",
+        "questionCount_other": "{{count}} questions",
+        "passScore": "Pass score: {{score}}%",
+        "attemptsLeft": "{{count}} attempt left",
+        "attemptsLeft_other": "{{count}} attempts left",
+        "unlimitedAttempts": "Unlimited attempts",
+        "start": "Start quiz",
+        "noAttemptsLeft": "No attempts remaining"
+      },
+      "question": {
+        "progress": "Question {{current}} of {{total}}",
+        "next": "Next",
+        "back": "Back",
+        "submit": "Submit quiz",
+        "selectPrompt": "Select an answer",
+        "selectMultiple": "Select all that apply",
+        "true": "True",
+        "false": "False",
+        "orderPrompt": "Put these in the correct order",
+        "matchPrompt": "Tap a left item, then its match on the right",
+        "wordCount": "{{count}} / {{min}} words",
+        "aiGraded": "This answer is graded by AI"
+      },
+      "results": {
+        "title": "Your results",
+        "passed": "Passed",
+        "failed": "Not passed",
+        "scoreLabel": "Score",
+        "yourAnswer": "Your answer",
+        "correct": "Correct",
+        "incorrect": "Incorrect",
+        "explanation": "Explanation",
+        "feedback": "Feedback",
+        "pendingGrading": "Some answers are still being graded.",
+        "finishGrading": "Finish grading",
+        "grading": "Grading...",
+        "retry": "Retry quiz",
+        "next": "Next",
+        "attemptsUsed": "Attempt {{used}} of {{max}}"
+      }
+    }
   }
 }

@@ -1,10 +1,13 @@
 import { ApiEndpoints, HttpMethod } from "@constants";
 import {
+  AgentJoinReliabilityResponse,
   AnalyticsBucket,
   AnalyticsOverviewResponse,
   AnalyticsRange,
   ConversationDriftResponse,
   DriftBackfillJob,
+  LanguageEvalReference,
+  LanguageQualityResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
   StartLatencyResponse,
@@ -21,6 +24,10 @@ type AnalyticsRangeQuery = {
 type VoiceLatencyQuery = AnalyticsRangeQuery & {
   bucket?: AnalyticsBucket;
   language?: string;
+};
+
+type AgentJoinReliabilityQuery = AnalyticsRangeQuery & {
+  bucket?: AnalyticsBucket;
 };
 
 type StartLatencyQuery = AnalyticsRangeQuery & {
@@ -57,6 +64,18 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         },
       }),
     }),
+    getAgentJoinReliability: builder.query<AgentJoinReliabilityResponse, AgentJoinReliabilityQuery>(
+      {
+        query: ({ range, bucket } = {}) => ({
+          url: ApiEndpoints.ANALYTICS.AGENT_JOIN_RELIABILITY,
+          method: HttpMethod.GET,
+          params: {
+            ...(range ? { range } : {}),
+            ...(bucket ? { bucket } : {}),
+          },
+        }),
+      },
+    ),
     getStartLatency: builder.query<StartLatencyResponse, StartLatencyQuery>({
       query: ({ range, bucket, language } = {}) => ({
         url: ApiEndpoints.ANALYTICS.START_LATENCY,
@@ -127,16 +146,45 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+    // Language-quality eval dashboard: categorized weighted error rates
+    // aggregated from the same per-session rows shown in session logs.
+    getLanguageQuality: builder.query<
+      LanguageQualityResponse,
+      { range?: AnalyticsRange; language?: string }
+    >({
+      query: ({ range, language } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.LANGUAGE_QUALITY,
+        method: HttpMethod.GET,
+        params: {
+          ...(range ? { range } : {}),
+          ...(language ? { language } : {}),
+        },
+      }),
+    }),
+    // Pin the reference experiment all language-quality deltas read against.
+    setLanguageReference: builder.mutation<
+      LanguageEvalReference | null,
+      { name?: string; filters?: Record<string, string | undefined> }
+    >({
+      query: body => ({
+        url: ApiEndpoints.ANALYTICS.LANGUAGE_QUALITY_REFERENCE,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
   }),
 });
 
 export const {
   useGetAnalyticsOverviewQuery,
   useGetVoiceLatencyQuery,
+  useGetAgentJoinReliabilityQuery,
   useGetStartLatencyQuery,
   useGetConversationDriftQuery,
   useStartDriftBackfillMutation,
   useGetDriftBackfillStatusQuery,
+  useGetLanguageQualityQuery,
+  useSetLanguageReferenceMutation,
   useGetTokenConsumptionQuery,
   useGetScribeOverviewQuery,
   useGetScribeSummaryFailuresQuery,

@@ -3,10 +3,6 @@ import { vi, describe, it, expect } from "vitest";
 
 import FallbackUI from "../FallbackUI";
 
-vi.mock("@mui/material/CircularProgress", () => ({
-  CircularProgress: props => <div data-testid="mock-circular-progress" {...props} />,
-}));
-
 // Mocking the relative import for the Button component
 vi.mock("../button", () => ({
   Button: ({ children, onClick, ...props }) => (

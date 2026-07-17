@@ -2,7 +2,7 @@
 
 import { FC } from "react";
 
-import { CircularProgress } from "@mui/material";
+import { Loading } from "@carbon/react";
 
 import { MicOff, MicOn, Stop, Focus, Pause, Play } from "@ally-ui-mono/ui-shared/assets";
 
@@ -61,7 +61,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
       action: onEndSessionClick,
       isActive: false,
       isDisabled: isEndingSession,
-      leftIcon: isEndingSession ? <CircularProgress size={16} /> : <Stop />,
+      leftIcon: isEndingSession ? <Loading withOverlay={false} small /> : <Stop />,
       className: "hover:!bg-[#7e7e7e]",
       show: true,
       text: translations?.endSession ?? "End session",

@@ -364,10 +364,11 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(3);
+      // Guardrails is gated to SUPER_DUPER_ADMIN by role, so EDIT_GUARDRAIL
+      // alone no longer surfaces it.
+      expect(result.current.filteredNavigationItems).toHaveLength(2);
       expect(result.current.filteredNavigationItems[0].id).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
       expect(result.current.filteredNavigationItems[1].id).toBe(SIDEBAR_ITEMS.SCENARIO_VOICES);
-      expect(result.current.filteredNavigationItems[2].id).toBe(SIDEBAR_ITEMS.MANAGE_GUARDRAILS);
     });
 
     it("applies the saved sidebar order from the preferences cache on first render", () => {
@@ -395,8 +396,9 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
+      // Guardrails is SUPER_DUPER_ADMIN-only, so its saved-order entry is
+      // ignored; the remaining visible items still follow the saved order.
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
-        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
       ]);
@@ -487,18 +489,16 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={store}>{children}</Provider>,
       });
 
-      expect(result.current.filteredNavigationItems).toHaveLength(10);
+      // Characters, Languages, Guardrails, and Badges are SUPER_DUPER_ADMIN-only
+      // by role, so only the permission-gated tabs remain.
+      expect(result.current.filteredNavigationItems).toHaveLength(6);
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENTS,
-        SIDEBAR_ITEMS.CHARACTER_LIBRARY,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
-        SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.PROMPTS,
-        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.TRANSLATIONS,
         SIDEBAR_ITEMS.USERS,
-        SIDEBAR_ITEMS.USER_BADGES,
       ]);
     });
 
@@ -521,7 +521,6 @@ describe("useUser", () => {
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
         SIDEBAR_ITEMS.PROMPTS,
-        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.USERS,
       ]);
     });
@@ -554,7 +553,6 @@ describe("useUser", () => {
       expect(result.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
-        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       ]);
 
       // Create new store with updated permissions and render new hook
@@ -571,12 +569,11 @@ describe("useUser", () => {
         wrapper: ({ children }: any) => <Provider store={updatedStore}>{children}</Provider>,
       });
 
-      expect(newResult.current.filteredNavigationItems).toHaveLength(4);
+      expect(newResult.current.filteredNavigationItems).toHaveLength(3);
       expect(newResult.current.filteredNavigationItems.map(item => item.id)).toEqual([
         SIDEBAR_ITEMS.SIMULATION_STUDIO,
         SIDEBAR_ITEMS.EVENTS,
         SIDEBAR_ITEMS.SCENARIO_VOICES,
-        SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       ]);
     });
   });

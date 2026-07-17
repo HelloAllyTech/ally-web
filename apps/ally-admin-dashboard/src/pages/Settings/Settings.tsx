@@ -8,7 +8,7 @@ import {
   useUpdateTermsMutation,
   useUpdatePrivacyMutation,
 } from "@api";
-import { Button } from "@components";
+import { Button, ComfortAudioSettings } from "@components";
 import { RichTextEditor } from "@components/rich-text-editor";
 import { ButtonVariant } from "@components/types";
 
@@ -109,6 +109,7 @@ export const Settings: React.FC = () => {
             isSaving={isSavingPrivacy}
             isLoading={isPrivacyLoading}
           />
+          <ComfortAudioSettings />
         </div>
       </div>
     </div>

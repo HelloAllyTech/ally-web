@@ -91,13 +91,13 @@ describe("Dropdown Component", () => {
   // --- Style Prop Tests ---
   it("should apply the custom minWidth style", () => {
     const { container } = renderComponent({ minWidth: 300 });
-    const rootDiv = container.querySelector(".MuiAutocomplete-root") as HTMLElement;
+    const rootDiv = container.firstChild as HTMLElement;
     expect(rootDiv).toHaveStyle("min-width: 300px");
   });
 
   it("should apply the default minWidth when none is provided", () => {
     const { container } = renderComponent({ minWidth: undefined });
-    const rootDiv = container.querySelector(".MuiAutocomplete-root") as HTMLElement;
+    const rootDiv = container.firstChild as HTMLElement;
     // Default in component is 200
     expect(rootDiv).toHaveStyle("min-width: 200px");
   });

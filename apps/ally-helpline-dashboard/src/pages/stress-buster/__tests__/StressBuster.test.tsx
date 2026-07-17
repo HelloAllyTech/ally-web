@@ -292,7 +292,7 @@ describe("StressBuster Component", () => {
 
       const highlightedWord = screen.getByText("best");
       expect(highlightedWord).toHaveClass(
-        "bg-blue-500",
+        "bg-primary-500",
         "capitalize",
         "px-6",
         "py-2",

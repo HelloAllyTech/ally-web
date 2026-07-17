@@ -247,6 +247,19 @@ export const PromptManagement: React.FC = () => {
     }
   };
 
+  // Silent persistence for the panel's auto-save: no toast, no close (the
+  // panel shows its own inline "Saving…/Saved" indicator). Errors propagate so
+  // the panel can flip to its "couldn't save — retry" state.
+  const handlePromptAutoSave = async (promptData: Prompt) => {
+    if (!promptData.id) return;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, createdAt, updatedAt, ...rest } = promptData;
+    await updatePrompt({
+      id: promptData.id,
+      prompt: rest,
+    }).unwrap();
+  };
+
   const handlePromptDuplicate = async (sourceId: string) => {
     try {
       const created = await duplicatePrompt(sourceId).unwrap();
@@ -357,6 +370,7 @@ export const PromptManagement: React.FC = () => {
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           onUpdate={handlePromptUpdate}
+          onAutoSave={handlePromptAutoSave}
           onDuplicate={handlePromptDuplicate}
           onDelete={handlePromptDelete}
         />

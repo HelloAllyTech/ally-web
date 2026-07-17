@@ -50,6 +50,8 @@ export interface GetTenantResponse {
 export enum TabType {
   USERS = "users",
   ORGANIZATIONS = "organizations",
+  // Super-admin-tier management tab, visible to super duper admins only.
+  SUPER_ADMINS = "super-admins",
 }
 
 export interface UserListUser {

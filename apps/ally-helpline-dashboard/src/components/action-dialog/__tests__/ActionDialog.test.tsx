@@ -71,15 +71,17 @@ describe("ActionDialog", () => {
   it("calls onClose when X button is clicked", () => {
     const onClose = vi.fn();
     render(<ActionDialog {...defaultProps} onClose={onClose} />);
-    const closeButton = screen.getByTestId("dialog-close");
+    // Carbon ModalHeader renders the close control as a button labelled "Close".
+    const closeButton = screen.getByRole("button", { name: "Close" });
     fireEvent.click(closeButton);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it("does not render dialog when open is false", () => {
     render(<ActionDialog {...defaultProps} open={false} />);
-    // Check that title is not in DOM
-    expect(screen.queryByText("Test Title")).toBeNull();
+    // Carbon's ComposedModal stays mounted but the dialog is hidden (aria-hidden)
+    // when closed, so it is absent from the accessibility tree.
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
 

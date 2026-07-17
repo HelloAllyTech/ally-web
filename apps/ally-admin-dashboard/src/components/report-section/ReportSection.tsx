@@ -8,10 +8,10 @@ import {
   useCallback,
 } from "react";
 
-import { CircularProgress } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
+import { Loading } from "@ally-ui-mono/ui-shared";
 import {
   useGetReportsQuery,
   useLazyGetReportsQuery,
@@ -693,7 +693,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
 
     const renderGeneratingPlaceholder = () => (
       <div className="flex items-center gap-3 border border-gray-200 rounded-lg px-4 py-3">
-        <CircularProgress size={16} />
+        <Loading small withOverlay={false} description="Generating report" />
         <span className="font-medium text-base text-typography-900">
           {REPORT_GENERATION_MESSAGES.GENERATING_REPORT}
         </span>
@@ -868,7 +868,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
               <Accordion
                 key={item.id}
                 onChange={handleAccordionChange}
-                customAccordionSx={REPORT_ACCORDION_SX}
+                customAccordionClassName={REPORT_ACCORDION_SX}
                 headerTitle={historyItemHeader}
               >
                 {item.config?.helperAgentPrompt && (
@@ -945,7 +945,7 @@ export const ReportSection = forwardRef<ReportSectionHandle, ReportSectionProps>
               <Plus className="w-4 h-4" />
               <span className="font-primary text-base ml-[5px]">Load More</span>
               {isHistoryLoadingMore && (
-                <CircularProgress color="primary" size={20} className="mx-2" />
+                <Loading small withOverlay={false} description="Loading more" className="mx-2" />
               )}
             </div>
           )}

@@ -22,12 +22,15 @@ interface OpeningDialoguesPanelProps {
   isMandatory?: boolean;
   /** When set, render a field-level Enhance control for the active tab. */
   enhanceType?: string;
+  /** View Details mode: language tabs stay navigable, lines aren't editable. */
+  readOnly?: boolean;
 }
 
 export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
   formMethods,
   isMandatory = false,
   enhanceType,
+  readOnly = false,
 }) => {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
 
@@ -186,7 +189,7 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
     <div className="w-full flex flex-col gap-3" data-testid="opening-dialogues-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <FormLabel isMandatory={isMandatory}>Opening Dialogues</FormLabel>
-        {enhanceType && isPrimaryTab && (
+        {enhanceType && isPrimaryTab && !readOnly && (
           <EnhanceButton
             enhanceType={enhanceType}
             label="Opening Dialogues"
@@ -209,7 +212,8 @@ export const OpeningDialoguesPanel: FC<OpeningDialoguesPanelProps> = ({
                 type="text"
                 value={linesForActiveTab[i] ?? ""}
                 onChange={e => handleLineChange(i, e.target.value)}
-                placeholder={`Opening line ${i + 1}`}
+                placeholder={readOnly ? "" : `Opening line ${i + 1}`}
+                readOnly={readOnly}
                 className="w-full px-3 py-2 text-sm text-typography-800 bg-transparent border-b border-border-light focus:outline-none focus:border-primary-500 last:border-b-0"
               />
             ))}

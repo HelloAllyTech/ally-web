@@ -28,7 +28,7 @@ vi.mock("@assets", () => ({
   Eye: () => <span data-testid="eye-icon" />,
 }));
 
-vi.mock("@mui/material", () => ({
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   Tooltip: ({ children }: any) => <span data-testid="tooltip">{children}</span>,
 }));
 

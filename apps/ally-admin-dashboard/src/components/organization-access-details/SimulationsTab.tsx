@@ -3,8 +3,10 @@ import { useEffect, useState, FC } from "react";
 import { useGetSimulationsQuery } from "@api";
 import { ListToolbar, EmptyState, EntityToggleCard } from "@components";
 import { en, SORT_BY, SORT_ORDER } from "@constants";
-import { Simulation, SimulationStatus } from "@types";
-import { isNonEmptyArray } from "@utils";
+import { AccessFilterValue, Simulation, SimulationStatus } from "@types";
+import { isNonEmptyArray, toAssignmentStatus } from "@utils";
+
+import { AccessFilter } from "./AccessFilter";
 
 const SIMULATIONS_PAGE_SIZE = 30;
 
@@ -23,6 +25,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
 }) => {
   const [simulationsOffset, setSimulationsOffset] = useState(0);
   const [simulations, setSimulations] = useState<Simulation[]>([]);
+  const [accessFilter, setAccessFilter] = useState<AccessFilterValue>(AccessFilterValue.ALL);
 
   const handleToggleAccess = async (simulationId: number, enabled: boolean) => {
     setSimulations(prev =>
@@ -34,6 +37,12 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
     );
     try {
       await onToggleAccess(simulationId, enabled);
+      const matchesFilter =
+        accessFilter === AccessFilterValue.ALL ||
+        (accessFilter === AccessFilterValue.ENABLED) === enabled;
+      if (!matchesFilter) {
+        setSimulations(prev => prev.filter(simulation => simulation.id !== simulationId));
+      }
     } catch {
       setSimulations(prev =>
         prev.map(simulation =>
@@ -53,6 +62,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
     search: searchValue,
     tenantId: organizationId,
     status: SimulationStatus.ACTIVE,
+    assignmentStatus: toAssignmentStatus(accessFilter),
   };
 
   const {
@@ -79,7 +89,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
 
   useEffect(() => {
     setSimulationsOffset(0);
-  }, [searchValue]);
+  }, [searchValue, accessFilter]);
 
   const loadMore = () => {
     setSimulationsOffset(prev => prev + SIMULATIONS_PAGE_SIZE);
@@ -102,6 +112,7 @@ export const SimulationsTab: FC<SimulationsTabProps> = ({
           searchValue={searchValue}
           onSearchChange={onSearchChange}
           placeholder={en.common.search}
+          filter={<AccessFilter value={accessFilter} onChange={setAccessFilter} />}
         />
       </div>
       {!isNonEmptyArray(simulations) && isSimulationsLoading ? (

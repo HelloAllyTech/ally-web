@@ -5,8 +5,10 @@ import { useGetScenarioCasesQuery } from "@api";
 import { BookWhite } from "@assets";
 import { ListToolbar, EmptyState, ToggleSwitch } from "@components";
 import { en } from "@constants";
-import { ScenarioPath, SimulationStatus } from "@types";
-import { isNonEmptyArray } from "@utils";
+import { AccessFilterValue, ScenarioPath, SimulationStatus } from "@types";
+import { isNonEmptyArray, toAssignmentStatus } from "@utils";
+
+import { AccessFilter } from "./AccessFilter";
 
 const CASES_PAGE_SIZE = 30;
 
@@ -25,6 +27,7 @@ export const CasesTab: FC<CasesTabProps> = ({
 }) => {
   const [casesOffset, setCasesOffset] = useState(0);
   const [cases, setCases] = useState<ScenarioPath[]>([]);
+  const [accessFilter, setAccessFilter] = useState<AccessFilterValue>(AccessFilterValue.ALL);
 
   const handleToggleAccess = async (caseId: number, enabled: boolean) => {
     setCases(prev =>
@@ -34,6 +37,12 @@ export const CasesTab: FC<CasesTabProps> = ({
     );
     try {
       await onToggleAccess(caseId, enabled);
+      const matchesFilter =
+        accessFilter === AccessFilterValue.ALL ||
+        (accessFilter === AccessFilterValue.ENABLED) === enabled;
+      if (!matchesFilter) {
+        setCases(prev => prev.filter(caseItem => caseItem.id !== caseId));
+      }
     } catch {
       setCases(prev =>
         prev.map(caseItem =>
@@ -49,6 +58,7 @@ export const CasesTab: FC<CasesTabProps> = ({
     search: searchValue,
     tenantId: organizationId,
     status: SimulationStatus.ACTIVE,
+    assignmentStatus: toAssignmentStatus(accessFilter),
   };
 
   const {
@@ -72,7 +82,7 @@ export const CasesTab: FC<CasesTabProps> = ({
 
   useEffect(() => {
     setCasesOffset(0);
-  }, [searchValue]);
+  }, [searchValue, accessFilter]);
 
   const loadMore = () => {
     setCasesOffset(prev => prev + CASES_PAGE_SIZE);
@@ -145,6 +155,7 @@ export const CasesTab: FC<CasesTabProps> = ({
           searchValue={searchValue}
           onSearchChange={onSearchChange}
           placeholder={en.common.search}
+          filter={<AccessFilter value={accessFilter} onChange={setAccessFilter} />}
         />
       </div>
       {!isNonEmptyArray(cases) && isCasesLoading ? (

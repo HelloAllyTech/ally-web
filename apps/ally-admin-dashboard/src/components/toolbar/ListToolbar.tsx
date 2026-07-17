@@ -1,7 +1,6 @@
 import React from "react";
 
-import { Tooltip } from "@mui/material";
-
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { Add, Close, Plus, Search } from "@assets";
 import { Button } from "@components";
 import { ListToolbarProps, FilterChipProps } from "@components/types";
@@ -12,6 +11,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   searchValue,
   onSearchChange,
   placeholder = en.common.search,
+  filter,
   filterChips,
   addFilterCta,
   action,
@@ -50,7 +50,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
       >
         <span className="mr-1 text-xs">{chip.label}:</span>
         <div className="flex">
-          <Tooltip title={formatCapitalizedEnum(chip.allValue.join(", "))} placement="top" arrow>
+          <Tooltip label={formatCapitalizedEnum(chip.allValue.join(", "))} align="top">
             <span className="font-medium mr-1 text-xs">{formatCapitalizedEnum(chip.value)}</span>
           </Tooltip>
           <button onClick={chip.onClear} className="text-typography-800 hover:text-typography-900">
@@ -94,6 +94,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
     <div className={`flex items-center justify-between gap-4 min-h-[50px] ${className ?? ""}`}>
       <div className="flex items-center gap-1 flex-1 min-w-0">
         {searchInput}
+        {filter}
         {addFilterButton}
         {filterChips?.length > 0 && (
           <div className="flex items-center gap-1 flex-wrap px-2">

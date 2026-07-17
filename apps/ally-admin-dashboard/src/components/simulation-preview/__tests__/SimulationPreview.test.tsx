@@ -91,8 +91,8 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
         <span className={valueClassName}>{value}</span>
         <svg
           aria-hidden="true"
-          className="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium w-4 h-4 cursor-pointer rotate-90 css-1umw9bq-MuiSvgIcon-root"
-          data-testid="PlayArrowIcon"
+          className="w-4 h-4 cursor-pointer rotate-90"
+          data-testid="dropdown-arrow-icon"
           focusable="false"
           viewBox="0 0 24 24"
         >

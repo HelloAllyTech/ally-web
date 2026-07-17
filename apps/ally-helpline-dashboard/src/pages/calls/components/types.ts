@@ -101,6 +101,14 @@ export interface CallSummarySidebarProps {
   canEditSummary?: boolean;
   canShowFeedback?: boolean;
   showArchiveButton?: boolean;
+  /**
+   * Called after custom-field values are saved, so the parent table can patch
+   * the edited row's denormalized values locally without waiting for a refetch.
+   */
+  onCustomFieldValuesSaved?: (
+    chatId: number,
+    values: { fieldDefinitionId: string; value?: string | null }[],
+  ) => void;
 }
 
 export interface TranscriptTabProps {

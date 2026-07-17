@@ -2,7 +2,13 @@ import React, { lazy, Suspense } from "react";
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { Permissions, ROUTES, UserRole } from "@constants";
+import {
+  Permissions,
+  ROLEPLAY_STUDIO_ALLOWED_EMAILS,
+  ROUTES,
+  SUPER_ADMIN_ROLES,
+  SUPER_DUPER_ADMIN_ROLES,
+} from "@constants";
 import {
   CreateSimulation,
   Login,
@@ -14,6 +20,7 @@ import {
   EventManagement,
   CharacterLibrary,
   CreatePath,
+  CreateTrack,
   CreateCase,
   ScenarioVoices,
   ScenarioLanguages,
@@ -22,13 +29,21 @@ import {
   UserBadges,
   TranslationManagement,
   TooltipManagement,
+  BlogManagement,
+  AILab,
   Settings,
   AgentTestCases,
   Competencies,
   RoleplaySessionLogs,
   RoleplaySessionLogDetail,
+  RoleplayLivePreview,
+  RoleplayStudioList,
+  RoleplayStudioWorkspace,
   Terms,
   Privacy,
+  EvaluateLogin,
+  EvaluateRecords,
+  EvaluateRecordDetail,
 } from "@pages";
 
 import { DefaultRedirect } from "./DefaultRedirect";
@@ -67,6 +82,12 @@ export const RouteLayout: React.FC = () => {
         {/* Legal pages — fully public, accessible whether or not signed in */}
         <Route path={ROUTES.TERMS} element={<Terms />} />
         <Route path={ROUTES.PRIVACY} element={<Privacy />} />
+
+        {/* Evaluator micro-app — its own email+password session (NOT admin
+            auth); the pages gate themselves on the evaluator token. */}
+        <Route path={ROUTES.EVALUATE} element={<EvaluateLogin />} />
+        <Route path={ROUTES.EVALUATE_RECORDS} element={<EvaluateRecords />} />
+        <Route path={ROUTES.EVALUATE_RECORD(":assignmentId")} element={<EvaluateRecordDetail />} />
 
         {/* Private Routes */}
         <Route
@@ -117,6 +138,17 @@ export const RouteLayout: React.FC = () => {
             </PrivateLayout>
           }
         />
+        {/* Read-only View Details: same editor surface, but nothing is ever
+            saved, so a published simulation stays published. View permission
+            only — no edit:scenario required. */}
+        <Route
+          path={ROUTES.VIEW_SIMULATION(":id")}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_SCENARIO]}>
+              <CreateSimulation viewMode />
+            </PrivateLayout>
+          }
+        />
 
         <Route
           path={ROUTES.MANAGE_EVENTS}
@@ -129,7 +161,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.USER_BADGES}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.VIEW_ADMIN_BADGE]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <UserBadges />
             </PrivateLayout>
           }
@@ -137,7 +169,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CHARACTER_LIBRARY}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_CHARACTER_LIBRARY]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <CharacterLibrary />
             </PrivateLayout>
           }
@@ -153,7 +185,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_SCENARIO_LANGUAGES}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <ScenarioLanguages />
             </PrivateLayout>
           }
@@ -183,6 +215,22 @@ export const RouteLayout: React.FC = () => {
           }
         />
         <Route
+          path={ROUTES.CREATE_TRACK}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+              <CreateTrack />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.EDIT_TRACK(":id")}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
+              <CreateTrack />
+            </PrivateLayout>
+          }
+        />
+        <Route
           path={ROUTES.CREATE_CASE}
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_EVENT]}>
@@ -201,7 +249,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_GUARDRAILS}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <GuardrailsManagement />
             </PrivateLayout>
           }
@@ -217,15 +265,31 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_TOOLTIPS}
           element={
-            <PrivateLayout requiredPermissions={[Permissions.VIEW_TOOLTIPS]}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <TooltipManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BLOG}
+          element={
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_BLOGS]}>
+              <BlogManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.AI_LAB}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <AILab />
             </PrivateLayout>
           }
         />
         <Route
           path={ROUTES.ANALYTICS}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <Suspense fallback={null}>
                 <Analytics />
               </Suspense>
@@ -235,7 +299,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.SETTINGS}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <Settings />
             </PrivateLayout>
           }
@@ -243,7 +307,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.AGENT_TEST_CASES}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <AgentTestCases />
             </PrivateLayout>
           }
@@ -251,7 +315,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.COMPETENCIES}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <Competencies />
             </PrivateLayout>
           }
@@ -259,7 +323,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOGS}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <RoleplaySessionLogs />
             </PrivateLayout>
           }
@@ -267,11 +331,61 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(":id")}
           element={
-            <PrivateLayout requiredRole={UserRole.SUPER_ADMIN}>
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <RoleplaySessionLogDetail />
             </PrivateLayout>
           }
         />
+        {/* Roleplay Studio v2 — permission + email-allowlist gated rollout */}
+        <Route
+          path={ROUTES.ROLEPLAY_STUDIO}
+          element={
+            <PrivateLayout
+              requiredPermissions={[Permissions.VIEW_ROLEPLAY_SPECS]}
+              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
+            >
+              <RoleplayStudioList />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ROLEPLAY_STUDIO_NEW}
+          element={
+            <PrivateLayout
+              requiredPermissions={[Permissions.EDIT_ROLEPLAY_SPEC]}
+              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
+            >
+              <RoleplayStudioWorkspace />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ROLEPLAY_STUDIO_PREVIEW(":id")}
+          element={
+            <PrivateLayout
+              isPreview={true}
+              requiredPermissions={[Permissions.VIEW_ROLEPLAY_SPECS]}
+              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
+            >
+              <RoleplayLivePreview />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ROLEPLAY_STUDIO_SPEC(":specId")}
+          element={
+            <PrivateLayout
+              requiredPermissions={[
+                Permissions.VIEW_ROLEPLAY_SPECS,
+                Permissions.EDIT_ROLEPLAY_SPEC,
+              ]}
+              allowedEmails={ROLEPLAY_STUDIO_ALLOWED_EMAILS}
+            >
+              <RoleplayStudioWorkspace />
+            </PrivateLayout>
+          }
+        />
+
         <Route path="/" element={<DefaultRedirect />} />
 
         <Route path="*" element={<Navigate to={ROUTES.SIMULATION_STUDIO} replace />} />

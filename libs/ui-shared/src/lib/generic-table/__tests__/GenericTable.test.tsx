@@ -106,8 +106,13 @@ describe("GenericTable", () => {
       />,
     );
 
-    // Open main popover for filterable column
-    const headerCell = screen.getByText("Status").closest("th") as HTMLElement;
+    // Open main popover for filterable column. Carbon's Popover renders its
+    // content inline (even when closed), so "Status" also appears in the
+    // add-filter column list — pick the occurrence inside the table header cell.
+    const headerCell = screen
+      .getAllByText("Status")
+      .map(el => el.closest("th"))
+      .find((th): th is HTMLElement => th !== null) as HTMLElement;
     fireEvent.click(within(headerCell).getByText("Status"));
     const filterOptions = screen.getAllByText("Filter");
     fireEvent.click(filterOptions[filterOptions.length - 1]);
@@ -119,9 +124,42 @@ describe("GenericTable", () => {
     expect(onFilterChange).toHaveBeenCalled();
   });
 
+  it("lists text-only filterable columns (no filterOptions) in the add-filter picker", () => {
+    // Mirrors the counsellor call-logs "Call Name" column: filterable + text
+    // filter type, but no filterOptions. Regression test for a bug where the
+    // "+ Filter" button opened an empty column picker for such columns.
+    const columns = [
+      { key: "callName", header: "Call Name", filterable: true, filterType: "text" },
+    ];
+    const onFilterChange = vi.fn();
+    render(
+      <GenericTable
+        columns={columns as any}
+        data={[{ callName: "" }]}
+        showSelectedFilters
+        onFilterChange={onFilterChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /filter/i }));
+
+    // "Call Name" should now appear both as the table header and as an
+    // entry in the add-filter column picker.
+    const callNameEntries = screen.getAllByText("Call Name");
+    expect(callNameEntries.length).toBeGreaterThan(1);
+
+    fireEvent.click(callNameEntries[callNameEntries.length - 1]);
+    const singleButtons = screen.getAllByText("select-single");
+    fireEvent.click(singleButtons[singleButtons.length - 1]);
+
+    expect(onFilterChange).toHaveBeenCalledWith(
+      expect.objectContaining({ filter: [{ key: "callName", value: "v1" }] }),
+    );
+  });
+
   it("renders Load More and spinner when loading", () => {
     const handleLoadMore = vi.fn();
-    render(
+    const { container } = render(
       <GenericTable
         columns={[{ key: "name", header: "Name" }] as any}
         data={[{ name: "A" }]}
@@ -132,6 +170,7 @@ describe("GenericTable", () => {
 
     fireEvent.click(screen.getByText("Load More"));
     expect(handleLoadMore).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    // Carbon's Loading spinner renders as `.cds--loading` (no progressbar role).
+    expect(container.querySelector(".cds--loading")).toBeInTheDocument();
   });
 });

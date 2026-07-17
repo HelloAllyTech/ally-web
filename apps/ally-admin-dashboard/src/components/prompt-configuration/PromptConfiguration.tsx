@@ -1,11 +1,10 @@
 import { FC, useState } from "react";
 
-import { Divider, Tooltip } from "@mui/material";
-
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetScenarioLanguagesQuery } from "@api";
 import { CustomDropdownField, Button, EvaluatorPromptPicker } from "@components";
 import { ButtonVariant } from "@components/types";
-import { REPORT_GENERATION_MESSAGES, TURNS_OPTIONS, toolTipStyles } from "@constants";
+import { REPORT_GENERATION_MESSAGES, TURNS_OPTIONS } from "@constants";
 import { ScenarioLanguage } from "@types";
 
 import { PromptConfigurationProps } from "./types";
@@ -84,7 +83,7 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
         {showError && (
           <p className="text-red-500 text-sm px-4 pb-2">Helper Agent prompt is required</p>
         )}
-        <Divider className="py-0 my-0" />
+        <hr className="border-t border-border-light py-0 my-0" />
         {/* Language, Turns, and Button */}
         <div className="flex gap-4 items-end px-4 py-3 bg-neutral-50 rounded-bl-lg rounded-br-lg">
           <div className="flex-1">
@@ -112,7 +111,7 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
 
           <div className="flex-shrink-0">
             {buttonDisabled && buttonTooltip ? (
-              <Tooltip title={buttonTooltip} placement="top" arrow slotProps={toolTipStyles}>
+              <Tooltip label={buttonTooltip} align="top">
                 <span>
                   <Button
                     variant={ButtonVariant.PRIMARY}

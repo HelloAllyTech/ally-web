@@ -5,9 +5,19 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-import { useGetScenariosQuery, useGetScenarioPathwaysQuery, useGetScenarioCasesQuery } from "@api";
-import { CreditsDisplay, ScenarioCard } from "@components";
-import { Permissions } from "@constants";
+import {
+  useGetScenariosQuery,
+  useGetScenarioPathwaysQuery,
+  useGetScenarioCasesQuery,
+  useGetLearnTracksQuery,
+} from "@api";
+import {
+  ContinueLearningCard,
+  CreditsDisplay,
+  PracticeStreakHeatmap,
+  ScenarioCard,
+} from "@components";
+import { Permissions, buildTrackRoute } from "@constants";
 import { useUser } from "@hooks";
 import { ScenarioStatus } from "@types";
 import { hasPermissions } from "@utils";
@@ -18,12 +28,8 @@ enum TabId {
   SIMULATIONS = "simulations",
   TRACKS = "tracks",
   CASES = "cases",
+  COURSES = "courses",
 }
-const LEARN_TABS = (t: any) => [
-  { id: TabId.SIMULATIONS, label: t("learn.tabs.simulations") },
-  { id: TabId.TRACKS, label: t("learn.tabs.tracks") },
-  { id: TabId.CASES, label: t("learn.tabs.cases") },
-];
 
 type LearnTabId = TabId;
 
@@ -34,7 +40,22 @@ export const Learn: FC = () => {
   const hasPathPermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS);
   const hasCasePermissions = hasPermissions(permissions, Permissions.VIEW_SCENARIO_PATHS); // TODO: remove this skip when the feature flag is enabled
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabs = LEARN_TABS(t).filter(Boolean) as Array<{ id: TabId; label: string }>;
+
+  const {
+    data: tracksData,
+    isLoading: isTracksLoading,
+    refetch: refetchTracks,
+  } = useGetLearnTracksQuery();
+  const tracks = tracksData?.data ?? [];
+  // Hide the Courses tab entirely when there are no tracks (and not loading).
+  const showCoursesTab = isTracksLoading || tracks.length > 0;
+
+  const tabs = [
+    { id: TabId.SIMULATIONS, label: t("learn.tabs.simulations") },
+    { id: TabId.TRACKS, label: t("learn.tabs.tracks") },
+    { id: TabId.CASES, label: t("learn.tabs.cases") },
+    ...(showCoursesTab ? [{ id: TabId.COURSES, label: t("learn.tabs.courses") }] : []),
+  ] as Array<{ id: TabId; label: string }>;
 
   const isValidTabId = (tab: string | null): tab is LearnTabId => {
     return tabs.some(t => t.id === tab);
@@ -81,6 +102,8 @@ export const Learn: FC = () => {
     navigate(isPathway ? `/pathway/${itemId}` : isCase ? `/case/${itemId}` : `/scenario/${itemId}`);
   };
 
+  const onTrackCardClick = (trackId: string) => navigate(buildTrackRoute(trackId));
+
   const renderPageHeader = () => {
     const emphasisStyles = "font-bold text-primary-500";
     return (
@@ -114,16 +137,22 @@ export const Learn: FC = () => {
     );
   };
 
-  const renderEmptyGrid = (type: "scenarios" | "pathways" | "cases" = "scenarios") => {
+  const renderEmptyGrid = (type: "scenarios" | "pathways" | "cases" | "courses" = "scenarios") => {
     const refetchFunction =
-      type === "pathways" ? refetchPathways : type === "cases" ? refetchCases : refetchScenarios;
+      type === "pathways"
+        ? refetchPathways
+        : type === "cases"
+          ? refetchCases
+          : type === "courses"
+            ? refetchTracks
+            : refetchScenarios;
 
     return (
       <div className="flex flex-col items-center justify-center w-full py-8 min-h-[30vh]">
         <div className="text-typography-700 text-lg mb-4">{t(`learn.empty.${type}` as any)}</div>
         <button
           onClick={() => refetchFunction()}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
         >
           {t("learn.empty.refresh")}
         </button>
@@ -147,7 +176,43 @@ export const Learn: FC = () => {
     </div>
   );
 
+  const renderCoursesGrid = () => {
+    if (isTracksLoading) return renderLoadingSkeleton();
+    if (tracks.length === 0) return renderEmptyGrid("courses");
+
+    return (
+      <>
+        <ContinueLearningCard tracks={tracks} />
+        <div
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[6px] sm:gap-[12px] mx-auto pb-10"
+          role="list"
+          aria-label={t("learn.tabs.courses")}
+        >
+          {tracks.map(track => (
+            <motion.div
+              key={track.id}
+              variants={learnPageItemVariants}
+              role="listitem"
+              className="h-full"
+            >
+              <ScenarioCard
+                coverImage={track.coverImageUrl || ""}
+                title={track.title || ""}
+                description={track.description || ""}
+                onClick={() => onTrackCardClick(track.id)}
+                totalScenarios={track.totalItems}
+                completedScenarios={track.completedItems}
+              />
+            </motion.div>
+          ))}
+        </div>
+      </>
+    );
+  };
+
   const renderContentGrid = () => {
+    if (activeTab === TabId.COURSES) return renderCoursesGrid();
+
     const tabConfig = {
       [TabId.CASES]: {
         isLoading: isCasesLoading,
@@ -169,7 +234,7 @@ export const Learn: FC = () => {
       },
     };
 
-    const config = tabConfig[activeTab];
+    const config = tabConfig[activeTab as keyof typeof tabConfig] ?? tabConfig[TabId.SIMULATIONS];
     const hasData = config.data && config.data.length > 0;
 
     if (config.isLoading) return renderLoadingSkeleton();
@@ -212,11 +277,14 @@ export const Learn: FC = () => {
   const renderContent = () => {
     const isCaseTab = activeTab === TabId.CASES;
     const isPathwayTab = activeTab === TabId.TRACKS;
-    const title = isCaseTab
-      ? t("learn.choose.case")
-      : isPathwayTab
-        ? t("learn.choose.track")
-        : t("learn.choose.scenario");
+    const isCoursesTab = activeTab === TabId.COURSES;
+    const title = isCoursesTab
+      ? t("learn.choose.course")
+      : isCaseTab
+        ? t("learn.choose.case")
+        : isPathwayTab
+          ? t("learn.choose.track")
+          : t("learn.choose.scenario");
 
     return (
       <>
@@ -237,7 +305,7 @@ export const Learn: FC = () => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="max-h-[calc(100vh-200px)] pt-4 overflow-y-scroll px-[10px] custom-scrollbar"
+          className="max-h-[calc(100vh-380px)] pt-4 overflow-y-scroll px-[10px] custom-scrollbar"
         >
           {renderContentGrid()}
         </motion.div>
@@ -246,7 +314,8 @@ export const Learn: FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] pl-0 sm:p-[24px] justify-center font-tertiary">
+    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] pl-0 sm:p-[24px] font-tertiary">
+      <PracticeStreakHeatmap className="mb-[24px]" />
       {renderPageHeader()}
       <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
     </div>

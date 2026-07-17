@@ -1,9 +1,6 @@
 import React from "react";
 
-import { Tooltip } from "@mui/material";
-
-import { CustomImage, htmlToPlainText } from "@ally-ui-mono/ui-shared";
-import { toolTipStyles } from "@constants";
+import { CustomImage, htmlToPlainText, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Simulation, ScenarioPath } from "@types";
 
 // Generic type for items that can be displayed in the list
@@ -62,7 +59,7 @@ export function DataList<T extends DataListItem>({
       {columns.map(column => (
         <div
           key={column.key}
-          className={`${column.width} ${column.key !== columns[0].key ? "px-4" : ""} ${column.hidden ? "hidden lg:block" : ""}`}
+          className={`${column.width} shrink-0 ${column.key !== columns[0].key ? "px-4" : ""} ${column.hidden ? "hidden lg:block" : ""}`}
         >
           {column.label}
         </div>
@@ -72,7 +69,11 @@ export function DataList<T extends DataListItem>({
 
   const renderActionButtons = (item: T) => {
     return (
-      <div className="flex flex-row items-center justify-end gap-[7px] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
+      // flex-wrap: the cell clips left-side overflow (justify-end +
+      // overflow-x-hidden), so on rows with many actions the leftmost icon
+      // silently disappeared. Wrapping to a second line keeps every action
+      // reachable at any column width.
+      <div className="flex flex-row flex-wrap items-center justify-end gap-[7px] opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
         {actions.map((action, index) => {
           const shouldShow = action.show ? action.show(item) : true;
           if (!shouldShow) return null;
@@ -82,19 +83,14 @@ export function DataList<T extends DataListItem>({
             typeof action.tooltip === "function" ? action.tooltip(item) : action.tooltip;
 
           return (
-            <Tooltip
-              key={index}
-              title={tooltipText}
-              placement="top"
-              arrow
-              slotProps={toolTipStyles}
-            >
-              <div
+            <Tooltip key={index} label={tooltipText} align="top">
+              <button
+                type="button"
                 onClick={() => !isDisabled && action.onClick(item)}
                 className={isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
               >
                 {action.icon}
-              </div>
+              </button>
             </Tooltip>
           );
         })}
@@ -132,7 +128,7 @@ export function DataList<T extends DataListItem>({
         className="group flex flex-row text-sm items-center justify-between w-full text-typography-900 border-b border-border-light px-4 py-3 hover:shadow-sm hover:bg-neutral-100 transition-shadow"
       >
         {/* First Column - Thumbnail + Title/Description */}
-        <div className={`flex flex-row items-center ${firstColumn.width} gap-3`}>
+        <div className={`flex flex-row items-center ${firstColumn.width} shrink-0 gap-3`}>
           {thumbnailConfig && (
             <div
               onClick={handleThumbnailClick}
@@ -161,7 +157,7 @@ export function DataList<T extends DataListItem>({
         {otherColumns.map(column => (
           <div
             key={column.key}
-            className={`${column.width} px-4 ${column.hidden ? "hidden lg:block" : ""} overflow-x-hidden`}
+            className={`${column.width} shrink-0 px-4 ${column.hidden ? "hidden lg:block" : ""} overflow-x-hidden`}
           >
             {renderColumnContent(column, item)}
           </div>

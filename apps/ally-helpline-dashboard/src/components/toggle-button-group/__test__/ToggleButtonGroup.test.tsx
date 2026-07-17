@@ -50,8 +50,9 @@ describe("ToggleButtonGroup", () => {
     expect(optionB).toBeInTheDocument();
     expect(optionC).toBeInTheDocument();
 
-    expect(optionB.closest(".MuiToggleButton-root")).toHaveClass("Mui-selected");
-    expect(optionA.closest(".MuiToggleButton-root")).not.toHaveClass("Mui-selected");
+    // Carbon ContentSwitcher marks the active Switch with aria-checked="true".
+    expect(optionB.closest("button")).toHaveAttribute("aria-checked", "true");
+    expect(optionA.closest("button")).toHaveAttribute("aria-checked", "false");
   });
 
   it("should call onValueChange with the new value when an unselected button is clicked", () => {
@@ -91,36 +92,24 @@ describe("ToggleButtonGroup", () => {
     fireEvent.click(optionC);
 
     expect(mockOnValueChange).not.toHaveBeenCalled();
-    expect(optionC.closest(".MuiToggleButton-root")).toBeDisabled();
+    expect(optionC.closest("button")).toBeDisabled();
   });
 
-  it("should apply success background color when the selected value matches successValue", () => {
-    const successValue = "optionB";
+  it("marks the button matching the selected value as selected", () => {
     render(
-      <ToggleButtonGroup
-        value={successValue}
-        onValueChange={mockOnValueChange}
-        items={mockItems}
-        successValue={successValue}
-      />,
+      <ToggleButtonGroup value="optionB" onValueChange={mockOnValueChange} items={mockItems} />,
     );
 
-    const selectedButton = screen.getByText("Option B").closest(".MuiToggleButton-root");
-    expect(selectedButton).toHaveClass("Mui-selected");
+    const selectedButton = screen.getByText("Option B").closest("button");
+    expect(selectedButton).toHaveAttribute("aria-checked", "true");
   });
 
-  it("should apply default background color when the selected value does NOT match successValue", () => {
-    const successValue = "optionC";
+  it("only marks the button matching the current value as selected", () => {
     render(
-      <ToggleButtonGroup
-        value="optionA"
-        onValueChange={mockOnValueChange}
-        items={mockItems}
-        successValue={successValue}
-      />,
+      <ToggleButtonGroup value="optionA" onValueChange={mockOnValueChange} items={mockItems} />,
     );
 
-    const selectedButton = screen.getByText("Option A").closest(".MuiToggleButton-root");
-    expect(selectedButton).toHaveClass("Mui-selected");
+    expect(screen.getByText("Option A").closest("button")).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByText("Option C").closest("button")).toHaveAttribute("aria-checked", "false");
   });
 });

@@ -1,13 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
 
-import { CircularProgress, Tooltip } from "@mui/material";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import { logger } from "@ally-ui-mono/ui-shared";
+import { logger, Loading, Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
@@ -21,7 +20,7 @@ import {
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
 import { Accordion, Button, InfoBanner, FallbackUI } from "@components";
-import { LanguageMap, Permissions, ROUTES, toolTipStyles } from "@constants";
+import { LanguageMap, Permissions, ROUTES } from "@constants";
 import { FeedbackDialog } from "@containers";
 import { useEnhance, useDebounce, useCustomFieldsEnabled } from "@hooks";
 import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
@@ -50,6 +49,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   onRefetchSummary,
   isSummaryLoading,
   summaryLoadingError,
+  onCustomFieldValuesSaved,
 }) => {
   const { t } = useTranslation();
   const { permissions, user } = useSelector((state: RootState) => state.user);
@@ -273,7 +273,7 @@ const CallSummary: FC<CallSummaryProps> = ({
     const isEnhancing = enhancing === field.key;
     const enhanceEndAdornment =
       field.isEnhanceable && shouldAllowEdit && value && value.trim() ? (
-        <Tooltip title={t("summary.enhance")} placement="bottom" arrow slotProps={toolTipStyles}>
+        <Tooltip label={t("summary.enhance")} align="bottom">
           <span className="absolute bottom-2 right-2">
             <EnhanceButton
               fieldName={field.key}
@@ -312,6 +312,13 @@ const CallSummary: FC<CallSummaryProps> = ({
   };
 
   const handleSave = async () => {
+    // Track whether any persistence step failed. A failed save must NOT fall
+    // through to postProcess/navigate as if it succeeded — otherwise the edit
+    // only lives in local component state (the field still *looks* updated on
+    // screen) while the DB, and anything that reads it like the call-logs
+    // table column, keep the old value with no error shown. See handleSave's
+    // two catch blocks below.
+    let saveFailed = false;
     if (hasDataChanged()) {
       const tags = summaryData?.tags?.split(", ");
       let tagsInput: Tag[] = [];
@@ -327,9 +334,10 @@ const CallSummary: FC<CallSummaryProps> = ({
         await updateCallSummary({
           chatId,
           data: { summary: { ...summaryData, tags: tagsInput } },
-        });
+        }).unwrap();
       } catch (error) {
         logger.info(`Error updating call summary:, ${error}`);
+        saveFailed = true;
       }
     }
     if (hasCustomFieldsChanged()) {
@@ -340,9 +348,19 @@ const CallSummary: FC<CallSummaryProps> = ({
       try {
         await upsertCustomFieldValues({ chatId, values: changedFields }).unwrap();
         setDirtyFieldIds(new Set());
+        // Let a parent list reflect the edit on its row immediately; the list
+        // only refetches its current page, so rows elsewhere would stay stale.
+        onCustomFieldValuesSaved?.(chatId, changedFields);
       } catch (error) {
         logger.info(`Error saving custom field values: ${error}`);
+        saveFailed = true;
       }
+    }
+    if (saveFailed) {
+      // Surface the failure and keep the (still-dirty) edits so the user can
+      // retry, instead of silently navigating away as though the save worked.
+      toast.error(t("summary.saveFailed", "Couldn't save your changes. Please try again."));
+      return;
     }
     postProcess?.();
     if (!isInSidebar && shouldAllowEdit) {
@@ -390,7 +408,7 @@ const CallSummary: FC<CallSummaryProps> = ({
   if (canShowSummary && isSummaryLoading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
-        <CircularProgress />
+        <Loading withOverlay={false} />
       </div>
     );
   }
@@ -413,7 +431,18 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const isFailedSummary = callSummary?.summaryStatus === ChatSummaryStatus.FAILED;
 
-  if (canShowSummary && (callSummary?.details?.summary || isFailedSummary)) {
+  // A manual note (created via "Create Note") has summaryStatus SUCCESS but no
+  // AI-generated `details.summary` — there was no audio to summarise. Treat that
+  // as ready-to-edit too, otherwise the panel is stuck forever on SummaryLoading's
+  // "Setting up your summary screen" and the fields (incl. custom fields) never
+  // render. FAILED already renders the form for manual entry; SUCCESS-with-empty
+  // -summary must as well.
+  const isResolvedEmptySummary = callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS;
+
+  if (
+    canShowSummary &&
+    (callSummary?.details?.summary || isFailedSummary || isResolvedEmptySummary)
+  ) {
     return (
       <>
         {isFailedSummary ? (
@@ -424,7 +453,7 @@ const CallSummary: FC<CallSummaryProps> = ({
               {t("summary.generationFailedEditable")}
             </span>
             <Button onClick={handleRetrySummary} disabled={isRetrying} className="shrink-0">
-              {isRetrying && <CircularProgress size={16} />}
+              {isRetrying && <Loading small withOverlay={false} className="mr-2 !h-4 !w-4" />}
               {t("summary.retrySummary")}
             </Button>
           </div>

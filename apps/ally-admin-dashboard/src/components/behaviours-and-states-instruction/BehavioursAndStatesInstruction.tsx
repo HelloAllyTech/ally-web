@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -29,7 +29,6 @@ interface BehavioursAndStatesInstructionProps {
   formMethods: any;
   id: string;
   isMandatory: boolean;
-  regenerateButton?: ReactNode;
 }
 
 const STATE_NAMES_ROW_ID = "state-names-row";
@@ -54,7 +53,6 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
   formMethods,
   id,
   isMandatory,
-  regenerateButton,
 }) => {
   const formData: BehaviourRow[] = formMethods.watch(id) ?? [];
   const stateNames: { stateId: string; name: string }[] =
@@ -477,7 +475,6 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
               {en.common.delete}
             </Button>
           )}
-          {regenerateButton}
         </div>
       </div>
       {showLegacyStateColumns ? (

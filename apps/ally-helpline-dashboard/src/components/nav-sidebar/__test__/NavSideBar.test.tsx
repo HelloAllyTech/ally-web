@@ -63,14 +63,6 @@ vi.mock("@assets", () => ({
   LogoutIllustration: (props: any) => <svg data-testid="logout-illustration" {...props} />,
 }));
 
-// Mock @mui/icons-material/OpenInNew
-vi.mock("@mui/icons-material/OpenInNew", () => ({
-  __esModule: true,
-  default: ({ className, ...props }: any) => (
-    <svg data-testid="open-in-new-icon" className={className} {...props} />
-  ),
-}));
-
 vi.mock("@components", () => ({
   AppTooltip: ({ children }: any) => children,
   ConfirmationDialog: vi.fn(
@@ -192,7 +184,6 @@ vi.mock("@constants", () => {
       MANAGE_CUSTOM_FIELD_DEFINITIONS: "manage:custom-field:definitions",
       EDIT_CUSTOM_FIELD_VALUES: "edit:custom-field:values",
     },
-    canPickUiTheme: () => false,
   };
 });
 
@@ -210,19 +201,6 @@ vi.mock("../button", () => ({
   },
 }));
 
-vi.mock("@mui/material", () => ({
-  Tooltip: ({ children, title, placement, arrow, slotProps }: any) => (
-    <div
-      data-testid="tooltip"
-      data-placement={placement}
-      data-arrow={arrow}
-      data-slot-props={JSON.stringify(slotProps)}
-    >
-      {children}
-      <div data-testid="tooltip-content">{title}</div>
-    </div>
-  ),
-}));
 // --- Test Setup ---
 
 // Define TabId enum locally to match the real one

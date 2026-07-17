@@ -1,12 +1,12 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
-import { Tooltip } from "@mui/material";
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetAvailableLanguagesQuery,
@@ -162,7 +162,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           {summary?.reviewId && (
             <>
               <div className="border-l border-border h-5" />
-              <Tooltip title="Comments" arrow>
+              <Tooltip label="Comments" align="top">
                 <button
                   onClick={() =>
                     navigate(
@@ -199,6 +199,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const tabList = [
     {
+      id: 5,
+      label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
+      content: <SkillsTab sessionId={summaryId} />,
+    },
+    {
       id: 1,
       label: t("postSim.tabs.sessionReview", "Session Review"),
       content: (
@@ -234,11 +239,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         />
       ),
     },
-    {
-      id: 5,
-      label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
-      content: <SkillsTab sessionId={summaryId} />,
-    },
     // {
     //   id: 4,
     //   label: t("postSim.tabs.deeperReflection", "Deeper Reflection"),
@@ -248,6 +248,11 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
 
   const onSidebarClose = () => {
     if (
+      // Short sessions never render the feedback UI (SummarySidebarWrapper drops
+      // {children} — the FeedbackDialog — in the short-session branch), so the
+      // close guard must skip them; otherwise it opens a dialog that isn't
+      // mounted and the drawer can never be closed.
+      !isShortSession &&
       canShowFeedback &&
       !hasFeedback.current &&
       permissions?.includes(Permissions.EDIT_SCENARIO_SESSION)

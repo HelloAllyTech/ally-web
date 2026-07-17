@@ -9,11 +9,7 @@ import {
   useDeleteOrgCustomFieldDefinitionMutation,
 } from "@api";
 import { Button, ButtonVariant } from "@components";
-import {
-  CustomFieldDefinition,
-  CustomFieldEditPermission,
-  CustomFieldType,
-} from "@types";
+import { CustomFieldDefinition, CustomFieldEditPermission, CustomFieldType } from "@types";
 
 const FIELD_TYPE_LABELS: Record<CustomFieldType, string> = {
   [CustomFieldType.SINGLE_SELECT]: "Single select",
@@ -86,12 +82,9 @@ const OrgCustomFieldDefinitionsSection: FC<OrgCustomFieldDefinitionsSectionProps
   const formId = useId();
 
   const { data: definitions = [], isLoading } = useGetOrgCustomFieldDefinitionsQuery();
-  const [createDefinition, { isLoading: isCreating }] =
-    useCreateOrgCustomFieldDefinitionMutation();
-  const [updateDefinition, { isLoading: isUpdating }] =
-    useUpdateOrgCustomFieldDefinitionMutation();
-  const [deleteDefinition, { isLoading: isDeleting }] =
-    useDeleteOrgCustomFieldDefinitionMutation();
+  const [createDefinition, { isLoading: isCreating }] = useCreateOrgCustomFieldDefinitionMutation();
+  const [updateDefinition, { isLoading: isUpdating }] = useUpdateOrgCustomFieldDefinitionMutation();
+  const [deleteDefinition, { isLoading: isDeleting }] = useDeleteOrgCustomFieldDefinitionMutation();
 
   const [modal, setModal] = useState<ModalState>({ open: false, editing: null, step: 1 });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);

@@ -107,7 +107,7 @@ export default {
           200: "#A5D6A7",
           300: "#81C784",
           400: "#66BB6A",
-          500: "bgCAF50", // pre-existing typo (invalid colour); preserved verbatim to avoid behaviour change — fix in a follow-up
+          500: "#4CAF50", // Material Green 500 (fixed from invalid "bgCAF50" typo)
           600: "#43A047",
           700: "#388E3C",
           800: "#2E7D32",

@@ -37,10 +37,12 @@ import { LeaderboardList, type LeaderboardUser } from "./leaderboard-list";
 import LoginDialog from "./login-dialog";
 import { NativeEmoji } from "./native-emoji";
 import NavSideBar from "./nav-sidebar";
+import { NextChallengeCard } from "./next-challenge-card";
 import OTP from "./otp";
 import OverallScoreMeter from "./overall-score-meter";
 import { PathwayScenarioCard } from "./pathway-scenario-card";
 import PermissionGuard from "./permission-guard";
+import PracticeStreakHeatmap from "./practice-streak-heatmap";
 import ProfileSettings from "./profile-settings";
 import ReactionsModal from "./reaction-modal/ReactionModal";
 import ReactionSelector from "./reaction-selector";
@@ -52,6 +54,8 @@ import {
 } from "./review-comments-sidepanel";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
+import { ContinueLearningCard } from "./continue-learning-card";
+import { TrackTypeIcon, getTrackItemMeta } from "./track-visuals";
 import SearchResources from "./search-resources";
 import SelectableText from "./selectable-text/SelectableText";
 import { SessionRatingTrigger } from "./session-rating-trigger";
@@ -108,6 +112,7 @@ export {
   Carousel,
   FallbackUI,
   PermissionGuard,
+  PracticeStreakHeatmap,
   InfoBanner,
   Input,
   LoginDialog,
@@ -144,6 +149,7 @@ export {
   Transcription,
   TranscriptListing,
   UpNextSimulationCard,
+  NextChallengeCard,
   AskAiTab,
   ReflectionTab,
   Checklist,
@@ -155,4 +161,7 @@ export {
   GeneralCommentsToShow,
   ThreadsToShow,
   AddReviewNote,
+  ContinueLearningCard,
+  TrackTypeIcon,
+  getTrackItemMeta,
 };

@@ -8,10 +8,14 @@ import {
   MagicLinkVerify,
   Scenario,
   CaseTrackDetails,
+  TrackOverview,
+  TrackPlayer,
   SuspendedUser,
   ImpersonateHandler,
   Terms,
   Privacy,
+  Blog,
+  BlogPost,
 } from "@pages";
 
 import { PageviewTracker } from "../analytics";
@@ -39,6 +43,9 @@ const RouteLayout = () => {
           {/* Legal pages — public, accessible whether or not signed in */}
           <Route path={ROUTES.TERMS} element={<Terms />} />
           <Route path={ROUTES.PRIVACY} element={<Privacy />} />
+          {/* Blog — public, accessible whether or not signed in */}
+          <Route path={ROUTES.BLOG} element={<Blog />} />
+          <Route path={ROUTES.BLOG_POST} element={<BlogPost />} />
         </Route>
 
         {/* Hybrid routes - routes which are public but have navbar upon login */}
@@ -47,6 +54,9 @@ const RouteLayout = () => {
           <Route path={ROUTES.SCENARIO} element={<Scenario />} />
           <Route path={ROUTES.PATHWAY} element={<CaseTrackDetails type="track" />} />
           <Route path={ROUTES.CASE} element={<CaseTrackDetails type="case" />} />
+          {/* Track 2.0 (multi-component learning tracks) */}
+          <Route path={ROUTES.TRACK} element={<TrackOverview />} />
+          <Route path={ROUTES.TRACK_ITEM} element={<TrackPlayer />} />
         </Route>
 
         {/* Private Routes */}

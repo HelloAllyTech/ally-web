@@ -1,11 +1,18 @@
-import React, { FC } from "react";
-
-import { ToggleButton, ToggleButtonGroup as MuiToggleButtonGroup } from "@mui/material";
+import { FC } from "react";
 
 import { cn } from "@utils";
 
 import { ToggleButtonGroupProps } from "./types";
 
+/**
+ * Segmented single-select control (light selected pill on a neutral track).
+ *
+ * Carbon's `ContentSwitcher` uses a dark, full-bleed selected segment that does
+ * not match this product's toggle, so — like `SidePanel` — this is a small
+ * MUI-free control styled with the app's Tailwind tokens. `equalWidth` makes the
+ * options share width equally (the group still sizes to its content); a
+ * `successValue` renders that option's selected state green.
+ */
 const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   disabled,
   value,
@@ -16,66 +23,43 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
   equalWidth,
   inheritFontSize = false,
 }) => {
-  const handleChange = (_: React.MouseEvent<HTMLElement>, newValue: string) => {
-    if (newValue !== null) {
-      onValueChange(newValue);
-    }
-  };
-
   return (
-    <MuiToggleButtonGroup
-      value={value}
-      exclusive
-      disabled={disabled}
-      onChange={handleChange}
+    <div
+      role="group"
       className={cn(
-        "h-9 !rounded-[4px] bg-neutral-100 border-[0.5px] border-border-medium",
+        "inline-flex h-9 items-stretch rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary",
         className,
       )}
-      sx={{
-        "& .MuiToggleButton-root": {
-          border: "none",
-          borderRadius: "4px",
-          padding: "16px 24px",
-          textTransform: "none",
-          fontSize: inheritFontSize ? "inherit" : "14px",
-          fontWeight: 500,
-          fontFamily: "'IBM Plex Serif', serif",
-          "&.Mui-selected": {
-            backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
-            color: "#4D4D4D",
-            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-            borderLeft: "0.5px solid #D2D2D2",
-            borderRight: "0.5px solid #D2D2D2",
-            "&:hover": {
-              backgroundColor: value === successValue ? "#33BA60" : "#FFFFFF",
-            },
-          },
-          "&:hover": {
-            backgroundColor: "rgba(0, 0, 0, 0.04)",
-          },
-        },
-      }}
     >
-      {items.map(({ value, label }) => (
-        <ToggleButton
-          key={value}
-          value={value}
-          disabled={disabled}
-          sx={{
-            "&.Mui-disabled": {
-              border: "none",
-            },
-            ...(equalWidth && {
-              flex: 1,
-              minWidth: 0,
-            }),
-          }}
-        >
-          {label}
-        </ToggleButton>
-      ))}
-    </MuiToggleButtonGroup>
+      {items.map(({ value: itemValue, label }) => {
+        const isSelected = itemValue === value;
+        const isSuccess = isSelected && itemValue === successValue;
+        return (
+          <button
+            key={itemValue}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            disabled={disabled}
+            onClick={() => {
+              if (!disabled && itemValue !== value) onValueChange(itemValue);
+            }}
+            className={cn(
+              "rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+              inheritFontSize ? "text-inherit" : "text-sm",
+              equalWidth && "min-w-0 flex-1",
+              isSelected
+                ? isSuccess
+                  ? "bg-[#33BA60] text-white shadow-sm"
+                  : "bg-white text-[#4D4D4D] shadow-sm"
+                : "text-typography-700 hover:bg-black/5",
+            )}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
   );
 };
 

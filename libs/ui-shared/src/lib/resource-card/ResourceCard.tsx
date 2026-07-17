@@ -1,7 +1,7 @@
 "use client";
 import { FC, useState, useRef, useEffect } from "react";
 
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { ChevronDown } from "@carbon/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { SearchVariant } from "../../types";
@@ -127,12 +127,12 @@ const ResourceCard: FC<ResourceCardProps> = ({
             {isExpanded ? (
               <div className="flex items-center" data-testid="resource-card-view-less">
                 {viewLessLabel || "View less"}
-                <ArrowDropDownIcon className="rotate-180" />
+                <ChevronDown size={16} className="rotate-180" />
               </div>
             ) : (
               <div className="flex items-center" data-testid="resource-card-view-more">
                 {viewMoreLabel || "View more"}
-                <ArrowDropDownIcon />
+                <ChevronDown size={16} />
               </div>
             )}
           </button>

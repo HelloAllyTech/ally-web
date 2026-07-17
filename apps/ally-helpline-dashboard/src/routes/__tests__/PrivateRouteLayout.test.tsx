@@ -137,6 +137,11 @@ vi.mock("@types", () => ({
     CALL: "call",
     SIMULATION: "simulation",
   },
+  PracticeStreakGroupBy: {
+    DAY: "DAY",
+    WEEK: "WEEK",
+    MONTH: "MONTH",
+  },
 }));
 
 // Mock react-router-dom

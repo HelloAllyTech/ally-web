@@ -1,4 +1,5 @@
 import {
+  COMFORT_AUDIO_VOLUME_DEFAULT,
   FORM_FIELD_IDS,
   isValidStateInstructionId,
   SIMULATION_CREATOR_FIELD_GROUPS,
@@ -80,6 +81,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     languageCharacteristics: (data?.metadata as any)?.languageCharacteristics,
     coverImageUrl: data?.coverImageUrl,
     coverVideoUrl: data?.coverVideoUrl,
+    category: data?.category ?? "",
+    partnerOrgName: data?.partnerOrgName ?? "",
     difficultyLevel: data?.difficultyLevel,
     terminationEvents: data?.terminationEvents?.map(event => ({
       id: event.eventId,
@@ -110,6 +113,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     temperature: (data?.metadata as any)?.temperature ?? TEMPERATURE_DEFAULT,
     fillerEnabled: data?.metadata?.fillerEnabled ?? false,
     comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? false,
+    comfortAudioUrl: (data?.metadata as any)?.comfortAudioUrl ?? "",
+    comfortAudioVolume: (data?.metadata as any)?.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_DEFAULT,
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? true,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,

@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 
 import { ScaleTypes } from "@carbon/charts";
-import { Button, InlineNotification, SkeletonPlaceholder, Tile } from "@carbon/react";
+
+import { Button, InlineNotification, SkeletonPlaceholder, Tile } from "@ally-ui-mono/ui-shared";
 
 /**
  * Shared analytics chart kit — the single source of truth for how charts in the
@@ -15,7 +16,7 @@ export const CHART_HEIGHT = "300px";
 
 /** Central Carbon-palette hexes. Reuse these instead of inline hex literals. */
 export const PALETTE = {
-  blue: "#0f62fe",
+  blue: "#264D8E",
   cyan: "#33b1ff",
   teal: "#08bdba",
   green: "#42be65",

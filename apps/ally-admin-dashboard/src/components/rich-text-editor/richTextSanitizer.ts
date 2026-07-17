@@ -24,13 +24,28 @@ const PURIFY_CONFIG = {
   KEEP_CONTENT: true,
 };
 
+// Opt-in variant for editors that support inline images (track article
+// builder). Only `img[src, alt]` is added on top of the default allowlist.
+const PURIFY_CONFIG_WITH_IMAGES = {
+  ...PURIFY_CONFIG,
+  ALLOWED_TAGS: [...ALLOWED_TAGS, "img"],
+  ALLOWED_ATTR: ["src", "alt"],
+};
+
+export interface SanitizeHtmlOptions {
+  /** Allow `img[src, alt]` tags. Default false — existing callers unchanged. */
+  allowImages?: boolean;
+}
+
 /**
  * Sanitize HTML content to allow only safe formatting tags.
- * Strips all attributes, scripts, images, links, iframes, and embeds.
+ * Strips all attributes, scripts, images, links, iframes, and embeds
+ * (images survive only when `allowImages` is set).
  */
-export function sanitizeHtml(html: string): string {
+export function sanitizeHtml(html: string, options?: SanitizeHtmlOptions): string {
   if (!html) return "";
-  return DOMPurify.sanitize(html, PURIFY_CONFIG) as unknown as string;
+  const config = options?.allowImages ? PURIFY_CONFIG_WITH_IMAGES : PURIFY_CONFIG;
+  return DOMPurify.sanitize(html, config) as unknown as string;
 }
 
 /**

@@ -6,22 +6,6 @@ import { CreditInfoProps } from "../types";
 
 // --- Mocks Setup ---
 
-// Mock MUI Dialog
-vi.mock("@mui/material", async importOriginal => {
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    Dialog: vi.fn(({ children, open, onClose, ...props }: any) => {
-      if (!open) return null;
-      return (
-        <div data-testid="mock-dialog" data-open={open} onClick={onClose} {...props}>
-          {children}
-        </div>
-      );
-    }),
-  };
-});
-
 // Mock @assets icons
 vi.mock("@assets", () => ({
   CloseIcon: ({ onClick, className, ...props }: any) => (
@@ -68,13 +52,14 @@ describe("CreditInfoDialog", () => {
 
   it("should render the dialog when open is true", () => {
     renderComponent({ open: true });
-    expect(screen.getByTestId("mock-dialog")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-dialog")).toHaveAttribute("data-open", "true");
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
   it("should not render the dialog when open is false", () => {
     renderComponent({ open: false });
-    expect(screen.queryByTestId("mock-dialog")).not.toBeInTheDocument();
+    // Carbon keeps the modal mounted but marks it aria-hidden when closed,
+    // so it is absent from the accessibility tree.
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("should render the title correctly", () => {
@@ -101,10 +86,11 @@ describe("CreditInfoDialog", () => {
     expect(screen.getByTestId("mock-no-credit-left-icon")).toBeInTheDocument();
   });
 
-  it("should pass correct props to Dialog component", () => {
+  it("should render the dialog content inside a modal dialog", () => {
     renderComponent();
-    const dialog = screen.getByTestId("mock-dialog");
-    expect(dialog).toHaveAttribute("data-open", "true");
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveTextContent(defaultProps.title);
   });
 
   // --- Auto-close Tests ---

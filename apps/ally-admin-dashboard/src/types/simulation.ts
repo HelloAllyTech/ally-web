@@ -71,6 +71,10 @@ export interface SimulationInput {
   coverImageUrl?: string;
   coverVideoUrl?: string;
   status?: SimulationStatus;
+  /** Studio grouping (ORIGINALS, DEMO, PARTNER_SIM…); null clears it. */
+  category?: string | null;
+  /** Partner organisation tag (used with category PARTNER_SIM); null clears it. */
+  partnerOrgName?: string | null;
   prompt?: string;
   name?: string;
   age?: number;
@@ -99,6 +103,8 @@ export interface SimulationInput {
   optGuardrails?: boolean;
   fillerEnabled?: boolean;
   comfortAudioEnabled?: boolean;
+  comfortAudioUrl?: string;
+  comfortAudioVolume?: number;
   historyTrimEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
@@ -172,6 +178,8 @@ export interface GetSimulationByIdResponse {
   isGlobal: boolean;
   isPublic?: boolean;
   status: SimulationStatus;
+  category?: string | null;
+  partnerOrgName?: string | null;
   prompt?: string;
   metadata: {
     age?: number;
@@ -198,6 +206,8 @@ export interface GetSimulationByIdResponse {
     optGuardrails?: boolean;
     fillerEnabled?: boolean;
     comfortAudioEnabled?: boolean;
+    comfortAudioUrl?: string;
+    comfortAudioVolume?: number;
     historyTrimEnabled?: boolean;
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;
@@ -476,6 +486,26 @@ export interface DeleteCharacterRequest {
   scenarioCharacterIds: string[];
 }
 
+export type CoverImageProvider = "openai" | "gemini";
+
+export interface GenerateCoverImageRequest {
+  title: string;
+  description?: string;
+  /** Scenario persona fields — substituted into the managed prompt. */
+  name?: string;
+  age?: number;
+  gender?: string;
+  profession?: string;
+  currentLocation?: string;
+  styleHints?: string;
+  provider?: CoverImageProvider;
+}
+
+export interface GenerateCoverImageResponse {
+  imageUrl: string;
+  provider: string;
+}
+
 export interface CoverImageLibraryItem {
   id: string;
   imageUrl: string;
@@ -643,18 +673,12 @@ export interface AutofillModelOption {
   value: string;
   label: string;
   provider: "openai" | "anthropic";
-}
-
-export interface RegenerateFieldRequest {
-  fieldName: string;
-  scenarioContext: ScenarioContext;
-  model?: string;
-  provider?: "openai" | "anthropic";
-}
-
-export interface RegenerateFieldResponse {
-  fieldName: string;
-  content: Record<string, any>;
+  /**
+   * False for reasoning models (o-series, gpt-5) that reject a custom
+   * temperature. Sourced from the universal LLM registry (GET /v1/learn/models
+   * now returns the registry filtered to autofill-runnable providers).
+   */
+  supportsTemperature?: boolean;
 }
 
 export interface EnhanceFieldRequest {

@@ -1,5 +1,3 @@
-import { SxProps, Theme } from "@mui/material";
-
 export const REPORT_GENERATION_MESSAGES = {
   GENERATING: "Report generating...",
   GENERATING_REPORT: "Generating Report...",
@@ -54,20 +52,11 @@ export enum ReportGenerationStatus {
   FAILED = "FAILED",
 }
 
-export const REPORT_ACCORDION_SX: SxProps<Theme> = {
-  boxShadow: "none",
-  borderBottom: "0.5px solid #dbdbdb",
-  "&::before": {
-    opacity: 0,
-    content: "none",
-  },
-  "&.Mui-expanded": {
-    margin: 0,
-  },
-  "&.Mui-expanded .MuiAccordionSummary-root": {
-    backgroundColor: "rgba(0, 0, 0, 0.04)",
-  },
-};
+// Carbon migration: the accordion no longer takes an MUI `sx` object. The
+// custom Accordion component accepts a className string for its root container
+// instead. This keeps the report-history look (bottom divider only, no shadow,
+// square corners) that the MUI sx previously produced.
+export const REPORT_ACCORDION_SX = "shadow-none border-b-[0.5px] border-[#dbdbdb] bg-white";
 
 export enum ReportGenerationMetrics {
   COLLOQUIALISM = "colloquialism",

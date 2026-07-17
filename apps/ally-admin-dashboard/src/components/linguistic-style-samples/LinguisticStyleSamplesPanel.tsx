@@ -14,6 +14,8 @@ interface LinguisticStyleSamplesPanelProps {
   label?: string;
   formMethods: any;
   isMandatory?: boolean;
+  /** View Details mode: language tabs stay navigable, samples aren't editable. */
+  readOnly?: boolean;
 }
 
 export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> = ({
@@ -21,6 +23,7 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
   label = "Linguistic Style Samples",
   formMethods,
   isMandatory = false,
+  readOnly = false,
 }) => {
   const [selectedLanguageId, setSelectedLanguageId] = useState<string | null>(null);
 
@@ -85,7 +88,7 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
           {label}
           {isMandatory && <span className="text-destructive-500"> *</span>}
         </span>
-        {activeLanguageId && (
+        {activeLanguageId && !readOnly && (
           <EnhanceButton
             enhanceType={ENHANCE_TYPE.LINGUISTIC_STYLE_SAMPLES}
             label={label}
@@ -117,7 +120,8 @@ export const LinguisticStyleSamplesPanel: FC<LinguisticStyleSamplesPanelProps> =
                     type="text"
                     value={samples[i] ?? ""}
                     onChange={e => handleSampleChange(activeLanguageId, i, e.target.value)}
-                    placeholder={`Sample ${i + 1}`}
+                    placeholder={readOnly ? "" : `Sample ${i + 1}`}
+                    readOnly={readOnly}
                     className="w-full px-3 py-2 text-sm text-typography-800 bg-transparent border-b border-border-light focus:outline-none focus:border-primary-500 last:border-b-0"
                   />
                 ))}

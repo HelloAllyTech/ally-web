@@ -1,4 +1,5 @@
 import { SimulationStatus } from "./createSimulation";
+import { AssignmentStatus } from "./organizationAccess";
 
 export interface ScenarioPath {
   id: number;
@@ -18,6 +19,7 @@ export interface GetScenarioPathsQueryParams {
   limit?: number;
   search?: string;
   tenantId?: string;
+  assignmentStatus?: AssignmentStatus;
 }
 
 export interface GetScenarioPathsResponse {

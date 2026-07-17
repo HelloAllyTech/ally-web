@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef, FC } from "react";
 
-import { CircularProgress, Tooltip } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { GenericTable } from "@ally-ui-mono/ui-shared";
+import { GenericTable, Loading, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Column, FilterType } from "@ally-ui-mono/ui-shared/lib/generic-table/types";
 import {
   useGetAdminCallLogsQuery,
@@ -51,7 +50,14 @@ import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants
 import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
 import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
 import { LogsTableProps } from "./types";
-import { getSourceChipConfig, getStatusChipConfig, getModeChipConfig } from "./utils";
+import {
+  getSourceChipConfig,
+  getStatusChipConfig,
+  getModeChipConfig,
+  reconcileLogsById,
+  patchRowCustomFieldValues,
+  DenormalizedCustomFieldValue,
+} from "./utils";
 
 const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className }) => {
   const dispatch = useDispatch();
@@ -95,7 +101,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     error: callLogsError,
   } = useGetAdminCallLogsQuery(
     { ...filters, sortBy: "createdAt", order: "DESC", archive: false },
-    { skip: !isCall },
+    { skip: !isCall, refetchOnFocus: true, refetchOnReconnect: true },
   );
 
   const {
@@ -137,15 +143,22 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   useEffect(() => {
     const sourceLogs = isCall ? callLogs : simulationLogs;
     if (sourceLogs?.length > 0) {
+      // Only auto-scroll when this update came from an explicit "Load more".
+      // A background refetch (e.g. after saving a custom field, which
+      // invalidates CallLogs) must not move the user's scroll position and
+      // jump them to another session.
+      const triggeredByLoadMore = isLoadingMore;
       setLogs(prev => {
-        // Avoid duplicate entries if page is reset
+        // On page 0 the list is a fresh snapshot; otherwise upsert by id so a
+        // refetched page replaces its rows in place (no duplicates) and edited
+        // values are reflected instead of a stale copy lingering.
         if (offset === 0) return [...sourceLogs];
-        return [...prev, ...sourceLogs];
+        return reconcileLogsById(prev, sourceLogs);
       });
       setIsLoadingMore(false);
       // If less than limit, no more data
       setHasMore(sourceLogs.length >= CALL_LOGS_PAGINATION_LIMIT);
-      if (offset > 0) {
+      if (offset > 0 && triggeredByLoadMore) {
         handleScroll();
       }
     } else if (offset === 0) {
@@ -196,7 +209,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   if (isLoading && offset === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-80px)]">
-        <CircularProgress />
+        <Loading withOverlay={false} />
       </div>
     );
   }
@@ -351,7 +364,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             key: "addCustomField",
             header: "",
             headerNode: (
-              <Tooltip title="Add custom field" placement="top" arrow>
+              <Tooltip label="Add custom field" align="top">
                 <button
                   type="button"
                   onClick={() => setIsManageFieldsOpen(true)}
@@ -530,11 +543,20 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     const response = await refetchCallLogs();
 
     const selectedCallLog = response.data?.data?.find(log => log.id === chatId);
-    setSummary(selectedCallLog);
+    // The refetch only covers the current page; if the edited session isn't on
+    // it, keep the open summary rather than clearing the sidebar.
+    if (selectedCallLog) setSummary(selectedCallLog);
   };
 
   const closeSummarySidebar = () => {
     setSummary(null);
+  };
+
+  // Reflect a custom-field edit on the exact row immediately, regardless of
+  // which loaded page it sits on. The list only refetches the current page, so
+  // relying on invalidation alone leaves rows on other pages stale.
+  const handleCustomFieldValuesSaved = (chatId: number, values: DenormalizedCustomFieldValue[]) => {
+    setLogs(prev => patchRowCustomFieldValues(prev, chatId, values));
   };
 
   const getSummarySideBar = () => {
@@ -549,6 +571,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
             canEditSummary={false}
             canShowFeedback={false}
             showArchiveButton={currentUser?.id === summary?.counselorId}
+            onCustomFieldValuesSaved={handleCustomFieldValuesSaved}
           />
         );
       case SessionType.SIMULATION:

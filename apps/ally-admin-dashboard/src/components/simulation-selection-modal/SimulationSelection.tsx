@@ -4,7 +4,7 @@ import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
-import { useGetSimulationsQuery } from "@api";
+import { useGetScenarioCasesQuery, useGetSimulationsQuery } from "@api";
 import { Search } from "@assets";
 import { en } from "@constants";
 import { GetScenarioType, Simulation, SimulationStatus } from "@types";
@@ -15,6 +15,14 @@ import { EmptyState } from "../empty-state";
 import { SimulationCardItem } from "./SimulationItem";
 import { ButtonVariant } from "../types";
 
+/** Minimal shape the picker list needs — satisfied by Simulation and ScenarioPath (cases). */
+interface PickerRow {
+  id: number | string;
+  title: string;
+  description?: string;
+  coverImageUrl: string;
+}
+
 interface SimulationProps {
   showSimulation: boolean;
   toggleSimulationModal: () => void;
@@ -23,6 +31,14 @@ interface SimulationProps {
   setSelectedSimulations: (simulations: GetScenarioType[]) => void;
   isDisabled?: boolean;
   isCase?: boolean;
+  /**
+   * "multi" (default) keeps the historical checkbox + inline sortable list
+   * behavior. "single" renders the picker modal only, with radio semantics —
+   * used by the track builder's roleplay/case editors.
+   */
+  selectionMode?: "single" | "multi";
+  /** Data source for the picker list: simulations (default) or library cases. */
+  entityType?: "simulation" | "case";
 }
 
 const SIMULATIONS_PAGE_SIZE = 20;
@@ -35,18 +51,23 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   setSelectedSimulations,
   isDisabled = false,
   isCase = false,
+  selectionMode = "multi",
+  entityType = "simulation",
 }) => {
   const [checkedSimulation, setCheckedSimulation] = useState<GetScenarioType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openMessageIndex, setOpenMessageIndex] = useState<number | null>(null);
   const [page, setPage] = useState(1);
-  const [allSimulations, setAllSimulations] = useState<Simulation[]>([]);
+  const [allSimulations, setAllSimulations] = useState<PickerRow[]>([]);
   const [hasMore, setHasMore] = useState(true);
 
   const messageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
+
+  const isSingleSelect = selectionMode === "single";
+  const isCasePicker = entityType === "case";
 
   const simulationParams = {
     limit: SIMULATIONS_PAGE_SIZE,
@@ -55,16 +76,25 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
     status: SimulationStatus.ACTIVE,
   };
 
-  const { data: simulationsResponse, isFetching } = useGetSimulationsQuery(simulationParams);
+  const { data: simulationsResponse, isFetching: isFetchingSimulations } = useGetSimulationsQuery(
+    simulationParams,
+    { skip: isCasePicker },
+  );
+  const { data: casesResponse, isFetching: isFetchingCases } = useGetScenarioCasesQuery(
+    simulationParams,
+    { skip: !isCasePicker },
+  );
+  const listResponse = isCasePicker ? casesResponse : simulationsResponse;
+  const isFetching = isCasePicker ? isFetchingCases : isFetchingSimulations;
   const simulationList = allSimulations;
 
-  const mapToGetScenarioType = (simulation: Simulation, order: number) => {
+  const mapToGetScenarioType = (simulation: PickerRow, order: number): GetScenarioType => {
     return {
-      scenarioId: simulation.id,
+      scenarioId: simulation.id as number,
       order,
       coverImageUrl: simulation.coverImageUrl,
       title: simulation.title,
-      description: simulation.description,
+      description: simulation.description ?? "",
       minimumScore: 0,
       messageTitle: "",
       messageContent: "",
@@ -84,6 +114,11 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
   const handleCheckBoxClick = (simulation: GetScenarioType) => {
     setCheckedSimulation(prev => {
       const exists = prev.some(item => item.scenarioId === simulation.scenarioId);
+
+      // Radio semantics in single-select mode: clicking replaces the selection.
+      if (isSingleSelect) {
+        return exists ? [] : [{ ...simulation, order: 1 }];
+      }
 
       if (exists) {
         const filtered = prev.filter(item => item.scenarioId !== simulation.scenarioId);
@@ -142,8 +177,8 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
 
   // Load simulations data
   useEffect(() => {
-    if (simulationsResponse?.data) {
-      const newSimulations = simulationsResponse.data;
+    if (listResponse?.data) {
+      const newSimulations = listResponse.data;
 
       if (page === 1) {
         setAllSimulations(newSimulations);
@@ -160,7 +195,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
         setHasMore(false);
       }
     }
-  }, [simulationsResponse, page]);
+  }, [listResponse, page]);
 
   // Intersection Observer for infinite scroll
   const handleObserver = (entries: IntersectionObserverEntry[]) => {
@@ -276,14 +311,18 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
           onClick={event => event.stopPropagation()}
         >
           <h1 className="text-lg">
-            {isCase ? en.simulation.addSimulationToCase : en.simulation.addSimulationToPath}
+            {isSingleSelect
+              ? `Select ${isCasePicker ? "case" : "simulation"}`
+              : isCase
+                ? en.simulation.addSimulationToCase
+                : en.simulation.addSimulationToPath}
           </h1>
 
           <div className="relative w-full mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-typography-800" />
             <input
               type="text"
-              placeholder="Search simulation"
+              placeholder={isCasePicker ? "Search case" : "Search simulation"}
               className="w-full !outline-none border rounded-md py-1 px-8 text-base"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -313,7 +352,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
                       }
                     >
                       <input
-                        type="checkbox"
+                        type={isSingleSelect ? "radio" : "checkbox"}
                         checked={isSelected}
                         onChange={() =>
                           handleCheckBoxClick(mapToGetScenarioType(simulation, nextOrder))
@@ -356,13 +395,19 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
               {en.common.cancel}
             </Button>
             <Button className="w-1/3 !text-base" onClick={toggleSelection}>
-              {en.simulation.addSelected}
+              {isSingleSelect ? "Select" : en.simulation.addSelected}
             </Button>
           </div>
         </div>
       </div>
     </div>
   );
+
+  // Single-select mode renders only the picker modal — the caller owns the
+  // "selected card + Change" presentation (track builder editors).
+  if (isSingleSelect) {
+    return <>{showSimulation && renderSimulationModal()}</>;
+  }
 
   return (
     <>

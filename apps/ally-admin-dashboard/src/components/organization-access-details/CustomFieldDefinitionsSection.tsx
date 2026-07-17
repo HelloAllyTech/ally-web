@@ -11,7 +11,7 @@ import {
 } from "@api";
 import { Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
-import { UserRole } from "@constants";
+import { isSuperAdminRole } from "@constants";
 import { RootState } from "@store";
 import {
   CustomFieldDefinition,
@@ -87,7 +87,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
   const formId = useId();
 
   const user = useSelector((state: RootState) => state.user.user);
-  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
+  const isSuperAdmin = isSuperAdminRole(user?.role);
 
   const { data: definitions = [], isLoading } = useGetCustomFieldDefinitionsQuery(tenantId);
   const [createDefinition, { isLoading: isCreating }] = useCreateCustomFieldDefinitionMutation();

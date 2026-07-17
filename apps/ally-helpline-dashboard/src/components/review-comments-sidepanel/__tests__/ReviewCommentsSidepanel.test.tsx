@@ -27,13 +27,6 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
-// Mock MUI Skeleton
-vi.mock("@mui/material", () => ({
-  Skeleton: ({ variant, className }: any) => (
-    <div data-testid="skeleton" data-variant={variant} className={className} />
-  ),
-}));
-
 // Mock @components (component imports GeneralCommentsToShow and ThreadsToShow from here)
 vi.mock("@components", () => ({
   ThreadCard: ({ thread, isFeedOwner }: any) => (
@@ -89,8 +82,8 @@ vi.mock("@components", () => ({
   },
 }));
 
-// Mock ui-shared
-vi.mock("@ally-ui-mono/ui-shared/index", () => ({
+// Mock ui-shared (the component imports both Tabs and SkeletonPlaceholder from here)
+vi.mock("@ally-ui-mono/ui-shared", () => ({
   Tabs: ({ items, activeId, onChange }: any) => (
     <div data-testid="tabs">
       {items.map((item: any) => (
@@ -105,6 +98,7 @@ vi.mock("@ally-ui-mono/ui-shared/index", () => ({
       ))}
     </div>
   ),
+  SkeletonPlaceholder: ({ className }: any) => <div data-testid="skeleton" className={className} />,
 }));
 
 // Create mock store

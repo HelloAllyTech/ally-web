@@ -1,6 +1,5 @@
 import React, { FC, ReactNode, SVGProps } from "react";
 
-import { Dialog } from "@mui/material"; // Statically import Dialog to access the mock function reference
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -34,22 +33,7 @@ export interface ConfirmationDialogProps {
 
 // --- Mocks Setup ---
 
-// 1. Mock MUI Dialog to isolate the component
-vi.mock("@mui/material", async importOriginal => {
-  // Explicitly cast the result to an object type before spreading
-  const original = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...original,
-    Dialog: vi.fn(({ children, ...props }) => (
-      // Use a test ID to verify the Dialog props
-      <div data-testid="mock-dialog" {...props}>
-        {children}
-      </div>
-    )),
-  };
-});
-
-// 2. Mock framer-motion to simplify testing (no need to track animations)
+// 1. Mock framer-motion to simplify testing (no need to track animations)
 vi.mock("framer-motion", () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
@@ -58,8 +42,10 @@ vi.mock("framer-motion", () => ({
   },
 }));
 
-// 3. Mock custom Button component (This mock is still defined correctly, but may be bypassed by the module loader)
-vi.mock("../button", () => {
+// 3. Mock custom Button component. The path is relative to this test file
+// (__test__/), so it must be "../../button" to resolve to components/button —
+// the same module the component imports as "../button".
+vi.mock("../../button", () => {
   const MockButton: FC<any> = ({ children, onClick, variant, fullWidth, ...props }) => (
     <button
       data-testid="mock-button" // This is the ID the original tests failed to find
@@ -74,6 +60,15 @@ vi.mock("../button", () => {
 
   return {
     Button: MockButton,
+    // Source imports ButtonVariant from "../button" too; provide it so the
+    // component can resolve its default secondary variant.
+    ButtonVariant: {
+      PRIMARY: "primary",
+      DESTRUCTIVE: "destructive",
+      SECONDARY: "secondary",
+      ICON: "icon",
+      TEXT: "text",
+    },
   };
 });
 
@@ -133,19 +128,20 @@ describe("ConfirmationDialog", () => {
     expect(screen.getByText(defaultProps.content)).toBeInTheDocument();
   });
 
-  it("should pass the correct props to the MUI Dialog component", () => {
+  it("should render inside an accessible modal dialog with a described-by body", () => {
     render(<ConfirmationDialog {...defaultProps} />);
 
-    expect(Dialog).toHaveBeenCalledWith(
-      // Using the statically imported Dialog reference
-      expect.objectContaining({
-        open: true,
-        onClose: defaultProps.onClose,
-        "aria-labelledby": "confirmation-dialog-title",
-        "aria-describedby": "confirmation-dialog-description",
-      }),
-      expect.anything(),
+    // Carbon ComposedModal renders a role="dialog" element when open.
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    // The description paragraph keeps its id for aria wiring.
+    expect(document.getElementById("confirmation-dialog-description")).toHaveTextContent(
+      defaultProps.content,
     );
+  });
+
+  it("should not render the dialog when isOpen is false", () => {
+    render(<ConfirmationDialog {...defaultProps} isOpen={false} />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   // --- Conditional Rendering Tests ---
@@ -171,18 +167,20 @@ describe("ConfirmationDialog", () => {
     const secondaryText = "Go Back";
     render(<ConfirmationDialog {...defaultProps} secondaryButtonText={secondaryText} />);
 
-    // FIX: Using getAllByRole('button') since the mock failed to apply its data-testid.
-    const buttons = screen.getAllByRole("button");
+    // Scope to the mocked Button (data-testid) to avoid Carbon's focus-sentinel buttons.
+    const buttons = screen.getAllByTestId("mock-button");
     expect(buttons).toHaveLength(2);
     expect(screen.getByText(secondaryText)).toBeInTheDocument();
-
-    // Cannot check 'data-variant' because the mock is not rendered.
+    // Secondary button defaults to the SECONDARY variant.
+    expect(screen.getByText(secondaryText).closest("button")).toHaveAttribute(
+      "data-variant",
+      "secondary",
+    );
   });
 
   it("should NOT render secondary button when secondaryButtonText is undefined", () => {
     render(<ConfirmationDialog {...defaultProps} secondaryButtonText={undefined} />);
-    // FIX: Using getAllByRole('button') since the mock failed to apply its data-testid.
-    expect(screen.getAllByRole("button")).toHaveLength(1);
+    expect(screen.getAllByTestId("mock-button")).toHaveLength(1);
   });
 
   // --- Interaction Tests ---
@@ -219,11 +217,10 @@ describe("ConfirmationDialog", () => {
   });
 
   it("should pass the correct variant to the primary Button component", () => {
-    // The previous assertion failed because the mock wasn't loading the 'data-variant' attribute.
     render(<ConfirmationDialog {...defaultProps} buttonVariant={ButtonVariant.TEXT} />);
     const primaryButton = screen.getByText(defaultProps.buttonText).closest("button");
 
-    // FIX: Just assert that the button exists, as we cannot reliably check the mock-only attribute.
     expect(primaryButton).toBeInTheDocument();
+    expect(primaryButton).toHaveAttribute("data-variant", "text");
   });
 });

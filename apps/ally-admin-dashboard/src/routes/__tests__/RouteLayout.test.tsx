@@ -24,7 +24,9 @@ vi.mock("../DefaultRedirect", () => ({
 vi.mock("@pages", () => ({
   CreateSimulation: () => <div>CreateSimulationPage</div>,
   CreatePath: () => <div>CreatePathPage</div>,
+  CreateTrack: () => <div>CreateTrackPage</div>,
   CreateCase: () => <div>CreateCasePage</div>,
+  BlogManagement: () => <div>BlogManagementPage</div>,
   Login: () => <div>LoginPage</div>,
   MagicLinkVerify: () => <div>MagicLinkVerifyPage</div>,
   LiveSimulationPreview: () => <div>LiveSimulationPreviewPage</div>,
@@ -44,9 +46,16 @@ vi.mock("@pages", () => ({
   Competencies: () => <div>CompetenciesPage</div>,
   RoleplaySessionLogs: () => <div>RoleplaySessionLogsPage</div>,
   RoleplaySessionLogDetail: () => <div>RoleplaySessionLogDetailPage</div>,
+  RoleplayStudioList: () => <div>RoleplayStudioListPage</div>,
+  RoleplayStudioWorkspace: () => <div>RoleplayStudioWorkspacePage</div>,
+  RoleplayLivePreview: () => <div>RoleplayLivePreviewPage</div>,
   Settings: () => <div>SettingsPage</div>,
   Terms: () => <div>TermsPage</div>,
   Privacy: () => <div>PrivacyPage</div>,
+  AILab: () => <div>AILabPage</div>,
+  EvaluateLogin: () => <div>EvaluateLoginPage</div>,
+  EvaluateRecords: () => <div>EvaluateRecordsPage</div>,
+  EvaluateRecordDetail: () => <div>EvaluateRecordDetailPage</div>,
 }));
 
 describe("RouteLayout", () => {

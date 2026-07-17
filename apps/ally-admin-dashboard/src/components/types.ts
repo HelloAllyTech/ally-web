@@ -1,6 +1,11 @@
-import { ButtonHTMLAttributes, ChangeEvent, CSSProperties, ReactNode } from "react";
+import {
+  ButtonHTMLAttributes,
+  ChangeEvent,
+  CSSProperties,
+  InputHTMLAttributes,
+  ReactNode,
+} from "react";
 
-import { TextFieldProps as MuiTextFieldProps } from "@mui/material";
 import { UseFormRegister, UseFormReturn, FieldErrors } from "react-hook-form";
 
 export interface PopupButtonProps {
@@ -46,6 +51,13 @@ export interface FilterListProps {
   onApply: (selectedStatuses: Array<{ id: string; label: string }>) => void;
   selectedFilters: Array<{ id: string; label: string }>;
   options?: { id: string; label: string }[];
+  /**
+   * Multi-dimension mode: render one checkbox group per section (e.g. Status
+   * + Category). Takes precedence over `options`; the selection still flows
+   * through the single `selectedFilters` array, so option ids must be unique
+   * across sections.
+   */
+  sections?: Array<{ title: string; options: { id: string; label: string }[] }>;
 }
 
 export interface FooterProps {
@@ -129,7 +141,10 @@ export interface OTPProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "on
 }
 
 // TextField
-export interface TextFieldProps extends Omit<MuiTextFieldProps, "variant"> {
+export interface TextFieldProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "value" | "defaultValue" | "size"
+> {
   className?: string;
   disabled?: boolean;
   hideError?: boolean;
@@ -199,6 +214,12 @@ export interface NavigationItem {
   label: string;
   path: string;
   icon?: React.ReactNode;
+  /**
+   * True for tabs a SUPER_DUPER_ADMIN can reach but a plain SUPER_ADMIN cannot.
+   * The sidebar renders a small blue dot beside these labels so it's clear the
+   * surface isn't available to the super-admin tier.
+   */
+  superDuperAdminOnly?: boolean;
 }
 
 export interface FilterValues {
@@ -245,6 +266,7 @@ export interface ListToolbarProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
   placeholder?: string;
+  filter?: React.ReactNode;
   filterChips?: FilterChipProps[];
   addFilterCta?: AddFilterCtaProps;
   action?: ActionProps;

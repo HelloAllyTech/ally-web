@@ -1,3 +1,4 @@
+export { AccessFilter } from "./AccessFilter";
 export { SimulationsTab } from "./SimulationsTab";
 export { PathTab } from "./PathTab";
 export { CasesTab } from "./CasesTab";
