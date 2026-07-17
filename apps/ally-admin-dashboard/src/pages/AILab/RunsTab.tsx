@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { BarChart3, Delete, Upload, Users } from "@icons";
 import { toast } from "sonner";
@@ -33,10 +33,23 @@ const VariableSummary: React.FC<{ run: LabRun }> = ({ run }) => {
   );
 };
 
+// Poll while any run is still queued/executing so async runs update live.
+const RUN_POLL_INTERVAL_MS = 3000;
+
 export const RunsTab: React.FC = () => {
   const [search, setSearch] = useState("");
-  const { data, isLoading, refetch } = useGetLabRunsQuery({ search: search || undefined });
+  const [pollInterval, setPollInterval] = useState(0);
+  const { data, isLoading, refetch } = useGetLabRunsQuery(
+    { search: search || undefined },
+    { pollingInterval: pollInterval },
+  );
   const runs = data?.items ?? [];
+
+  // Enable polling only while runs are in-flight; stop once all are terminal.
+  useEffect(() => {
+    const inFlight = runs.some(r => r.status === "PENDING" || r.status === "RUNNING");
+    setPollInterval(inFlight ? RUN_POLL_INTERVAL_MS : 0);
+  }, [runs]);
 
   const [deleteRun] = useDeleteLabRunMutation();
 

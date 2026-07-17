@@ -77,7 +77,7 @@ export interface CreateLabValueRequest {
 }
 export type UpdateLabValueRequest = Partial<CreateLabValueRequest>;
 
-export type LabRunStatus = "RUNNING" | "COMPLETED" | "FAILED";
+export type LabRunStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
 
 export interface LabRunVariableValue {
   name: string;
