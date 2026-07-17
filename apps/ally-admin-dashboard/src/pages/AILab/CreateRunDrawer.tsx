@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
+import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import { useGetLabSkillsQuery, useGetLabValuesQuery, useCreateLabRunMutation } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -212,25 +213,29 @@ export const CreateRunDrawer: React.FC<CreateRunDrawerProps> = ({
                   return (
                     <div key={name} className="flex flex-col gap-1.5">
                       <label className="text-sm font-mono text-typography-900">{`{{${name}}}`}</label>
-                      <select
+                      <Select
+                        id={`ailab-run-value-${name}`}
+                        labelText={`{{${name}}}`}
+                        hideLabel
                         value={selectedValues[name] ?? ""}
                         onChange={e =>
                           setSelectedValues(prev => ({ ...prev, [name]: e.target.value }))
                         }
                         disabled={running || opts.length === 0}
-                        className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base bg-white disabled:bg-background-secondary"
                       >
-                        <option value="" disabled>
-                          {opts.length === 0
-                            ? en.aiLab.values.noVariables
-                            : en.aiLab.values.variablePlaceholder}
-                        </option>
+                        <SelectItem
+                          value=""
+                          text={
+                            opts.length === 0
+                              ? en.aiLab.values.noVariables
+                              : en.aiLab.values.variablePlaceholder
+                          }
+                          disabled
+                        />
                         {opts.map(opt => (
-                          <option key={opt.id} value={opt.value}>
-                            {optionLabel(opt)}
-                          </option>
+                          <SelectItem key={opt.id} value={opt.value} text={optionLabel(opt)} />
                         ))}
-                      </select>
+                      </Select>
                     </div>
                   );
                 })}
