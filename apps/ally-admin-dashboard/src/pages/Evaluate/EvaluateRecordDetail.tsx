@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { useGetMyAssignmentQuery, useSubmitEvaluationMutation } from "@api";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -241,13 +242,16 @@ export const EvaluateRecordDetail: React.FC = () => {
                       />
                     )}
                     {question.type === "TEXT" && (
-                      <textarea
+                      <TextArea
+                        id={`eval-answer-${question.id}`}
+                        labelText={en.evaluate.textPlaceholder}
+                        hideLabel
                         value={current.text ?? ""}
                         disabled={submitted}
                         onChange={e => updateDraft(question.id, { text: e.target.value })}
                         placeholder={en.evaluate.textPlaceholder}
                         rows={4}
-                        className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base resize-y disabled:bg-background-secondary disabled:text-typography-700"
+                        className="w-full"
                       />
                     )}
                   </div>

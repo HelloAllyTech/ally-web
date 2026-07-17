@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 
-import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { useGetScenarioLanguagesQuery } from "@api";
 import { CustomDropdownField, Button, EvaluatorPromptPicker } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -72,11 +72,15 @@ const PromptConfiguration: FC<PromptConfigurationProps> = ({
           {REPORT_GENERATION_MESSAGES.HELPER_AGENT_PROMPT}
           <span className="text-red-500 ml-1">*</span>
         </label>
-        <textarea
+        <TextArea
+          id="helper-agent-prompt"
+          labelText={REPORT_GENERATION_MESSAGES.HELPER_AGENT_PROMPT}
+          hideLabel
           value={prompt}
           onChange={e => onPromptChange?.(e.target.value)}
           onBlur={() => setTouched(true)}
-          className="px-4 w-full min-h-[320px] bg-white p-4 font-primary text-base resize-none focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+          className="px-4 w-full font-primary"
+          rows={14}
           placeholder={REPORT_GENERATION_MESSAGES.PROMPT_PLACEHOLDER}
           required
         />

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
-import { Select, SelectItem, SelectItemGroup } from "@ally-ui-mono/ui-shared";
+import { Select, SelectItem, SelectItemGroup, TextArea } from "@ally-ui-mono/ui-shared";
 import {
   useGetLabSkillsQuery,
   useCreateLabSkillMutation,
@@ -188,12 +188,15 @@ export const SkillsTab: React.FC = () => {
           />
         </LabField>
         <LabField label={en.aiLab.skills.descriptionLabel}>
-          <textarea
+          <TextArea
+            id="ailab-skill-description"
+            labelText={en.aiLab.skills.descriptionLabel}
+            hideLabel
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder={en.aiLab.skills.descriptionPlaceholder}
             rows={2}
-            className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base resize-none"
+            className="w-full"
           />
         </LabField>
         <LabField label={en.aiLab.skills.modelLabel} required help={en.aiLab.skills.modelHelp}>
@@ -221,12 +224,15 @@ export const SkillsTab: React.FC = () => {
           </Select>
         </LabField>
         <LabField label={en.aiLab.skills.contentLabel} required>
-          <textarea
+          <TextArea
+            id="ailab-skill-content"
+            labelText={en.aiLab.skills.contentLabel}
+            hideLabel
             value={form.content}
             onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
             placeholder={en.aiLab.skills.contentPlaceholder}
             rows={12}
-            className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-sm font-mono resize-y"
+            className="w-full font-mono"
           />
         </LabField>
       </LabSidePanel>

@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { Plus, Trash } from "@assets";
 import { QUIZ_QUESTION_TYPE_LABELS } from "@constants";
 import { QuizQuestion, QuizQuestionType, TrackFormValues, TrackItemType } from "@types";
@@ -33,9 +34,6 @@ const QUESTION_TYPE_ORDER: QuizQuestionType[] = [
   "fill_blank",
   "open_ended",
 ];
-
-const inputClass =
-  "w-full border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400";
 
 const renderTypeBody = (type: QuizQuestionType, questionPath: QuestionPath) => {
   switch (type) {
@@ -161,12 +159,15 @@ export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemInde
                       control={control}
                       name={`${questionPath}.prompt`}
                       render={({ field }) => (
-                        <textarea
+                        <TextArea
+                          id={`${questionPath}.prompt`}
+                          labelText="Question"
+                          hideLabel
                           {...field}
                           value={field.value ?? ""}
                           rows={2}
                           placeholder="Question text"
-                          className={`${inputClass} resize-y`}
+                          className="w-full"
                         />
                       )}
                     />
@@ -183,12 +184,15 @@ export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemInde
                     control={control}
                     name={`${questionPath}.explanation`}
                     render={({ field }) => (
-                      <textarea
+                      <TextArea
+                        id={`${questionPath}.explanation`}
+                        labelText="Explanation (optional)"
+                        hideLabel
                         {...field}
                         value={field.value ?? ""}
                         rows={2}
                         placeholder="Shown after answering, per quiz settings"
-                        className={`${inputClass} resize-y`}
+                        className="w-full"
                       />
                     )}
                   />

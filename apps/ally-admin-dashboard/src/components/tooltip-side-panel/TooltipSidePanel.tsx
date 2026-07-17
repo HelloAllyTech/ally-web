@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button, EmojiPickerComponent, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -160,12 +161,14 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
           <div className="space-y-3">
             <Field label={en.tooltip.tipText} required multiline={true}>
               <div className="w-full">
-                <textarea
+                <TextArea
+                  id="tooltip-tip-text"
+                  labelText={en.tooltip.tipText}
+                  hideLabel
                   value={formData.tipText || ""}
                   onChange={e => handleFieldChange("tipText", e.target.value)}
                   placeholder="Enter tip text..."
                   rows={4}
-                  className="border border-border-light rounded-md focus:outline-none text-base w-full p-2 resize-none"
                 />
                 <div
                   className={`text-xs text-right mt-1 ${tipTextLength > 200 ? "text-red-600" : "text-typography-400"}`}

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { BlogPost, useGetBlogImageUploadUrlMutation } from "@api";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
@@ -267,12 +268,14 @@ export const BlogSidePanel: React.FC<BlogSidePanelProps> = ({
           </Field>
 
           <Field label="TL;DR" hint="Short summary shown in the blog listing.">
-            <textarea
+            <TextArea
+              id="blog-tldr"
+              labelText="TL;DR"
+              hideLabel
               value={form.tldr}
               onChange={e => setField("tldr", e.target.value)}
               placeholder="A one or two line summary..."
               rows={3}
-              className={`${inputClass} resize-none`}
             />
           </Field>
 
