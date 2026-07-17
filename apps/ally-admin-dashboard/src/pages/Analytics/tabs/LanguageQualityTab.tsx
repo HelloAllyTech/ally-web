@@ -6,7 +6,17 @@ import { Link } from "react-router-dom";
 import "@carbon/charts/styles.css";
 import "../analytics-carbon.scss";
 
-import { Button, CarbonDropdown as Dropdown, Tile } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  CarbonDropdown as Dropdown,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
 import { useGetLanguageQualityQuery, useSetLanguageReferenceMutation } from "@api";
 import { ROUTES } from "@constants";
 import { AnalyticsRange, LanguageRateByExperiment } from "@types";
@@ -353,22 +363,22 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
           <p className="text-sm text-typography-700 mb-8">No judged sessions in this window.</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border-light bg-white">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-typography-700 border-b border-border-light">
-                  <th className="px-3 py-2">Language</th>
-                  <th className="px-3 py-2">Sessions</th>
-                  <th className="px-3 py-2">Turns</th>
-                  <th className="px-3 py-2">Weighted errors / 100 turns</th>
-                  <th className="px-3 py-2">Worst dimension</th>
-                  <th className="px-3 py-2">Script fidelity</th>
-                  <th className="px-3 py-2">Round-trip WER</th>
-                  <th className="px-3 py-2">Garbled input</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="w-full text-sm">
+              <TableHead>
+                <TableRow className="text-left text-xs text-typography-700 border-b border-border-light">
+                  <TableHeader className="px-3 py-2">Language</TableHeader>
+                  <TableHeader className="px-3 py-2">Sessions</TableHeader>
+                  <TableHeader className="px-3 py-2">Turns</TableHeader>
+                  <TableHeader className="px-3 py-2">Weighted errors / 100 turns</TableHeader>
+                  <TableHeader className="px-3 py-2">Worst dimension</TableHeader>
+                  <TableHeader className="px-3 py-2">Script fidelity</TableHeader>
+                  <TableHeader className="px-3 py-2">Round-trip WER</TableHeader>
+                  <TableHeader className="px-3 py-2">Garbled input</TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {overview.map(row => (
-                  <tr
+                  <TableRow
                     key={row.language}
                     className={`border-b border-border-light last:border-b-0 ${
                       onSelectLanguage ? "cursor-pointer hover:bg-neutral-50" : ""
@@ -376,15 +386,15 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
                     onClick={() => onSelectLanguage?.(row.language)}
                     title={onSelectLanguage ? `View ${row.language} diagnostics` : undefined}
                   >
-                    <td className="px-3 py-2 font-medium text-primary-600 underline">
+                    <TableCell className="px-3 py-2 font-medium text-primary-600 underline">
                       {row.language}
-                    </td>
-                    <td className="px-3 py-2">{row.sessionsJudged}</td>
-                    <td className="px-3 py-2">{row.nTurns}</td>
-                    <td className="px-3 py-2 font-medium text-typography-900">
+                    </TableCell>
+                    <TableCell className="px-3 py-2">{row.sessionsJudged}</TableCell>
+                    <TableCell className="px-3 py-2">{row.nTurns}</TableCell>
+                    <TableCell className="px-3 py-2 font-medium text-typography-900">
                       {row.weightedRatePer100}
-                    </td>
-                    <td className="px-3 py-2">
+                    </TableCell>
+                    <TableCell className="px-3 py-2">
                       {row.worstDimension ? (
                         <span className="rounded bg-neutral-100 px-2 py-0.5 text-xs">
                           {DIMENSION_LABEL[row.worstDimension] ?? row.worstDimension} ·{" "}
@@ -393,18 +403,18 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
                       ) : (
                         <span className="text-xs text-typography-500">no errors</span>
                       )}
-                    </td>
-                    <td className={`px-3 py-2 ${fidelityClass(row.scriptFidelityPct)}`}>
+                    </TableCell>
+                    <TableCell className={`px-3 py-2 ${fidelityClass(row.scriptFidelityPct)}`}>
                       {row.scriptFidelityPct === null ? "—" : `${row.scriptFidelityPct}%`}
-                    </td>
-                    <td className={`px-3 py-2 ${werClass(row.roundTripWerPct)}`}>
+                    </TableCell>
+                    <TableCell className={`px-3 py-2 ${werClass(row.roundTripWerPct)}`}>
                       {row.roundTripWerPct === null ? "—" : `${row.roundTripWerPct}%`}
-                    </td>
-                    <td className="px-3 py-2">{row.garbledInputPct}%</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="px-3 py-2">{row.garbledInputPct}%</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
 
@@ -731,32 +741,34 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
         <p className="text-sm text-typography-700 mb-8">No error annotations in this window.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border-light bg-white mb-8">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-typography-700 border-b border-border-light">
-                <th className="px-3 py-2">When</th>
-                <th className="px-3 py-2">Language</th>
-                <th className="px-3 py-2">Dimension</th>
-                <th className="px-3 py-2">Category</th>
-                <th className="px-3 py-2">Severity</th>
-                <th className="px-3 py-2">Basis</th>
-                <th className="px-3 py-2">Evidence</th>
-                <th className="px-3 py-2">Session</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="w-full text-sm">
+            <TableHead>
+              <TableRow className="text-left text-xs text-typography-700 border-b border-border-light">
+                <TableHeader className="px-3 py-2">When</TableHeader>
+                <TableHeader className="px-3 py-2">Language</TableHeader>
+                <TableHeader className="px-3 py-2">Dimension</TableHeader>
+                <TableHeader className="px-3 py-2">Category</TableHeader>
+                <TableHeader className="px-3 py-2">Severity</TableHeader>
+                <TableHeader className="px-3 py-2">Basis</TableHeader>
+                <TableHeader className="px-3 py-2">Evidence</TableHeader>
+                <TableHeader className="px-3 py-2">Session</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {data.errorLog.map((row, i) => (
-                <tr
+                <TableRow
                   key={`${row.scenarioSessionId}-${row.turnIndex}-${i}`}
                   className="border-b border-border-light last:border-b-0 align-top"
                 >
-                  <td className="px-3 py-2 whitespace-nowrap text-typography-700">
+                  <TableCell className="px-3 py-2 whitespace-nowrap text-typography-700">
                     {row.occurredAt ? new Date(row.occurredAt).toLocaleDateString() : "—"}
-                  </td>
-                  <td className="px-3 py-2">{row.language ?? "—"}</td>
-                  <td className="px-3 py-2">{DIMENSION_LABEL[row.dimension] ?? row.dimension}</td>
-                  <td className="px-3 py-2">{row.category}</td>
-                  <td className="px-3 py-2">
+                  </TableCell>
+                  <TableCell className="px-3 py-2">{row.language ?? "—"}</TableCell>
+                  <TableCell className="px-3 py-2">
+                    {DIMENSION_LABEL[row.dimension] ?? row.dimension}
+                  </TableCell>
+                  <TableCell className="px-3 py-2">{row.category}</TableCell>
+                  <TableCell className="px-3 py-2">
                     <span
                       className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
                         SEVERITY_TAG_CLASS[row.severity] ?? "bg-gray-100 text-gray-900"
@@ -764,30 +776,30 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
                     >
                       {row.severity}
                     </span>
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap text-xs text-typography-700">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 whitespace-nowrap text-xs text-typography-700">
                     {row.isolationBasis ?? "—"}
-                  </td>
-                  <td className="px-3 py-2 max-w-md">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 max-w-md">
                     <span className="whitespace-pre-wrap">
                       {row.evidenceQuote ?? row.aiText ?? "—"}
                     </span>
                     {row.reasoning && (
                       <p className="text-xs text-typography-500 mt-1">{row.reasoning}</p>
                     )}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell className="px-3 py-2 whitespace-nowrap">
                     <Link
                       className="text-primary-600 underline"
                       to={ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(row.scenarioSessionId)}
                     >
                       turn {row.turnIndex} ↗
                     </Link>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
+import { Table, TableBody, TableRow, TableCell } from "@ally-ui-mono/ui-shared";
 import { useGetChatHistoryQuery } from "@api";
 import { AskAiIcon, Refresh, SendArrow, UpArrow } from "@assets";
 import { Button, CharacterCount } from "@components";
@@ -138,14 +139,14 @@ const CitationsTable = ({
       <div className="text-base font-primary px-3 py-2 bg-[#E2F2FF80] w-full">
         {t("askAi.transcriptReferences")}
       </div>
-      <table className="w-full text-xs font-primary">
-        <tbody className="text-base">
+      <Table className="w-full text-xs font-primary">
+        <TableBody className="text-base">
           {citations.map((citation, idx) => (
-            <tr key={idx} className="w-full" data-citation-row={idx}>
-              <td className="px-3 w-[8%] min-w-[50px] py-2 align-top text-typography-800">
+            <TableRow key={idx} className="w-full" data-citation-row={idx}>
+              <TableCell className="px-3 w-[8%] min-w-[50px] py-2 align-top text-typography-800">
                 {citation.timestamp}
-              </td>
-              <td className="text-typography-900 w-[92%] font-primary">
+              </TableCell>
+              <TableCell className="text-typography-900 w-[92%] font-primary">
                 <span className="font-medium pr-1">
                   {citation.senderId === -1
                     ? `${agentName} (${t("transcription.aiClientSuffix")})`
@@ -153,11 +154,11 @@ const CitationsTable = ({
                   :
                 </span>
                 {citation.content}
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

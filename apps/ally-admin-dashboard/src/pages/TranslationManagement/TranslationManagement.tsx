@@ -3,7 +3,17 @@ import React, { useMemo, useState } from "react";
 import { Info, Plus, RefreshCw, RotateCcw, UploadCloud } from "@icons";
 import { toast } from "sonner";
 
-import { Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
+import {
+  Select,
+  SelectItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TextArea,
+} from "@ally-ui-mono/ui-shared";
 import {
   useAutoTranslateI18nMutation,
   useGetAllI18nTranslationsQuery,
@@ -403,27 +413,27 @@ export const TranslationManagement: React.FC = () => {
         <div className="flex min-h-0 flex-1 flex-col">
           <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-white">
             <div className="min-h-0 flex-1 overflow-auto">
-              <table className="w-full min-w-[1800px] border-separate border-spacing-0 text-left text-sm">
-                <thead className="sticky top-0 z-20 bg-neutral-50 text-xs uppercase text-typography-600">
-                  <tr>
-                    <th className="sticky left-0 z-30 w-[160px] min-w-[160px] border-b border-neutral-200 bg-neutral-50 px-3 py-3">
+              <Table className="w-full min-w-[1800px] border-separate border-spacing-0 text-left text-sm">
+                <TableHead className="sticky top-0 z-20 bg-neutral-50 text-xs uppercase text-typography-600">
+                  <TableRow>
+                    <TableHeader className="sticky left-0 z-30 w-[160px] min-w-[160px] border-b border-neutral-200 bg-neutral-50 px-3 py-3">
                       Section
-                    </th>
-                    <th className="sticky left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-neutral-50 px-3 py-3 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                    </TableHeader>
+                    <TableHeader className="sticky left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-neutral-50 px-3 py-3 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                       Key
-                    </th>
+                    </TableHeader>
                     {languages.map(lang => (
-                      <th
+                      <TableHeader
                         key={lang}
                         className="border-b border-neutral-200 px-3 py-3"
                         style={{ minWidth: 280 }}
                       >
                         {labelForLanguage(lang)}
-                      </th>
+                      </TableHeader>
                     ))}
-                  </tr>
-                  <tr className="bg-white">
-                    <th className="sticky left-0 z-30 w-[160px] min-w-[160px] border-b border-neutral-200 bg-white px-2 py-2">
+                  </TableRow>
+                  <TableRow className="bg-white">
+                    <TableHeader className="sticky left-0 z-30 w-[160px] min-w-[160px] border-b border-neutral-200 bg-white px-2 py-2">
                       <Select
                         id="i18n-section-filter"
                         labelText="Section"
@@ -437,50 +447,56 @@ export const TranslationManagement: React.FC = () => {
                           <SelectItem key={section} value={section} text={section} />
                         ))}
                       </Select>
-                    </th>
-                    <th className="sticky left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-white px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                    </TableHeader>
+                    <TableHeader className="sticky left-[160px] z-30 w-[280px] min-w-[280px] border-b border-r border-neutral-200 bg-white px-2 py-2 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                       <input
                         value={filters[KEY_FILTER_KEY] ?? ""}
                         onChange={event => setFilter(KEY_FILTER_KEY, event.target.value)}
                         placeholder="Filter key"
                         className="h-8 w-full rounded-md border border-neutral-300 px-2 text-xs outline-none focus:border-primary-500"
                       />
-                    </th>
+                    </TableHeader>
                     {languages.map(lang => (
-                      <th key={lang} className="border-b border-neutral-200 px-2 py-2">
+                      <TableHeader key={lang} className="border-b border-neutral-200 px-2 py-2">
                         <input
                           value={filters[lang] ?? ""}
                           onChange={event => setFilter(lang, event.target.value)}
                           placeholder={`Filter ${labelForLanguage(lang)}`}
                           className="h-8 w-full rounded-md border border-neutral-300 px-2 text-xs outline-none focus:border-primary-500"
                         />
-                      </th>
+                      </TableHeader>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {isFetching && rows.length === 0 && (
-                    <tr>
-                      <td className="px-3 py-6 text-typography-600" colSpan={2 + languages.length}>
+                    <TableRow>
+                      <TableCell
+                        className="px-3 py-6 text-typography-600"
+                        colSpan={2 + languages.length}
+                      >
                         Loading translations...
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )}
                   {!isFetching && filteredRows.length === 0 && (
-                    <tr>
-                      <td className="px-3 py-6 text-typography-600" colSpan={2 + languages.length}>
+                    <TableRow>
+                      <TableCell
+                        className="px-3 py-6 text-typography-600"
+                        colSpan={2 + languages.length}
+                      >
                         No translations match your filters
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )}
                   {filteredRows.map(row => (
-                    <tr key={row.fullKey} className="group align-top">
-                      <td className="sticky left-0 z-10 w-[160px] min-w-[160px] border-b border-neutral-100 bg-white px-3 py-3 text-typography-700 group-hover:bg-neutral-50">
+                    <TableRow key={row.fullKey} className="group align-top">
+                      <TableCell className="sticky left-0 z-10 w-[160px] min-w-[160px] border-b border-neutral-100 bg-white px-3 py-3 text-typography-700 group-hover:bg-neutral-50">
                         <span className="rounded bg-neutral-100 px-2 py-0.5 text-xs">
                           {row.namespace}
                         </span>
-                      </td>
-                      <td className="sticky left-[160px] z-10 w-[280px] min-w-[280px] border-b border-r border-neutral-100 bg-white px-3 py-3 font-mono text-xs text-typography-700 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] group-hover:bg-neutral-50">
+                      </TableCell>
+                      <TableCell className="sticky left-[160px] z-10 w-[280px] min-w-[280px] border-b border-r border-neutral-100 bg-white px-3 py-3 font-mono text-xs text-typography-700 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] group-hover:bg-neutral-50">
                         {row.fullKey}
                         {row.placeholders.length > 0 && (
                           <div className="mt-1 flex flex-wrap gap-1">
@@ -494,13 +510,13 @@ export const TranslationManagement: React.FC = () => {
                             ))}
                           </div>
                         )}
-                      </td>
+                      </TableCell>
                       {languages.map(lang => {
                         const value = getCellValue(row, lang);
                         const dirty = isCellDirty(row, lang);
                         const placeholderMismatch = hasPlaceholderMismatch(row, lang);
                         return (
-                          <td
+                          <TableCell
                             key={lang}
                             className={`border-b border-neutral-100 px-2 py-2 ${
                               dirty ? "bg-amber-50" : ""
@@ -525,13 +541,13 @@ export const TranslationManagement: React.FC = () => {
                             {placeholderMismatch && (
                               <div className="mt-1 text-xs text-red-600">Placeholder mismatch</div>
                             )}
-                          </td>
+                          </TableCell>
                         );
                       })}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-neutral-200 px-3 py-2 text-xs text-typography-600">
               <span>

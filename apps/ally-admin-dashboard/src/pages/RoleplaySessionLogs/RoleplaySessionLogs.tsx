@@ -2,7 +2,16 @@ import { FC, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
+import {
+  Select,
+  SelectItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@ally-ui-mono/ui-shared";
 import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
@@ -188,33 +197,33 @@ export const RoleplaySessionLogs: FC = () => {
             hideActionButton
           />
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-border-light text-sm text-typography-700">
-                <th className="py-3 pr-4 font-medium">User</th>
-                <th className="py-3 pr-4 font-medium">Organization</th>
-                <th className="py-3 pr-4 font-medium">Scenario</th>
-                <th className="py-3 pr-4 font-medium">Status</th>
-                <th className="py-3 pr-4 font-medium">Started</th>
-                <th className="py-3 pr-4 font-medium">Duration</th>
-                <th className="py-3 pr-4 font-medium">Tokens</th>
-                <th className="py-3 pr-4 font-medium">Cost</th>
-                <th className="py-3 pr-4 font-medium">Score</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="w-full text-left border-collapse">
+            <TableHead>
+              <TableRow className="border-b border-border-light text-sm text-typography-700">
+                <TableHeader className="py-3 pr-4 font-medium">User</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Organization</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Scenario</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Status</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Started</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Duration</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Tokens</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Cost</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Score</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {rows.map(row => (
-                <tr
+                <TableRow
                   key={row.id}
                   onClick={() => openDetail(row)}
                   className="border-b border-border-light text-sm text-typography-900 align-top cursor-pointer hover:bg-background-secondary"
                 >
-                  <td className="py-3 pr-4">
+                  <TableCell className="py-3 pr-4">
                     <div className="font-medium">{row.counselorName || "—"}</div>
                     <div className="text-typography-700 text-xs">{row.counselorEmail || ""}</div>
-                  </td>
-                  <td className="py-3 pr-4">{row.orgName || "—"}</td>
-                  <td className="py-3 pr-4">
+                  </TableCell>
+                  <TableCell className="py-3 pr-4">{row.orgName || "—"}</TableCell>
+                  <TableCell className="py-3 pr-4">
                     <div className="flex items-center gap-2">
                       <span>{row.scenarioTitle || "—"}</span>
                       {row.isV2VTest && (
@@ -223,23 +232,27 @@ export const RoleplaySessionLogs: FC = () => {
                         </span>
                       )}
                     </div>
-                  </td>
-                  <td className="py-3 pr-4">
+                  </TableCell>
+                  <TableCell className="py-3 pr-4">
                     <StatusPill status={row.status} />
-                  </td>
-                  <td className="py-3 pr-4">{row.startedAt ? formatDate(row.startedAt) : "—"}</td>
-                  <td className="py-3 pr-4">{formatDuration(row.durationSeconds)}</td>
-                  <td className="py-3 pr-4 whitespace-nowrap">{formatTokens(row.totalTokens)}</td>
-                  <td className="py-3 pr-4 whitespace-nowrap">
+                  </TableCell>
+                  <TableCell className="py-3 pr-4">
+                    {row.startedAt ? formatDate(row.startedAt) : "—"}
+                  </TableCell>
+                  <TableCell className="py-3 pr-4">{formatDuration(row.durationSeconds)}</TableCell>
+                  <TableCell className="py-3 pr-4 whitespace-nowrap">
+                    {formatTokens(row.totalTokens)}
+                  </TableCell>
+                  <TableCell className="py-3 pr-4 whitespace-nowrap">
                     {formatCost(row.estimatedCostUsd, row.costPriced)}
-                  </td>
-                  <td className="py-3 pr-4">
+                  </TableCell>
+                  <TableCell className="py-3 pr-4">
                     {row.score === null ? "—" : Math.min(100, Math.round(row.score))}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </div>
 

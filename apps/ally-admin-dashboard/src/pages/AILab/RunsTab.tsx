@@ -3,6 +3,14 @@ import React, { useCallback, useState } from "react";
 import { BarChart3, Delete, Upload, Users } from "@icons";
 import { toast } from "sonner";
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@ally-ui-mono/ui-shared";
 import { useGetLabRunsQuery, useDeleteLabRunMutation } from "@api";
 import { ActionConfirmationPopup, EmptyState, ListToolbar } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -84,31 +92,43 @@ export const RunsTab: React.FC = () => {
           />
         ) : (
           <div className="border border-border-light rounded-md overflow-hidden">
-            <table className="w-full text-left font-primary text-base">
-              <thead>
-                <tr className="bg-background-secondary text-typography-700 text-sm">
-                  <th className="px-4 py-3 font-medium w-[20%]">{en.aiLab.runs.columnSkill}</th>
-                  <th className="px-4 py-3 font-medium w-[16%]">{en.aiLab.runs.columnVariables}</th>
-                  <th className="px-4 py-3 font-medium w-[12%]">{en.aiLab.runs.columnStatus}</th>
-                  <th className="px-4 py-3 font-medium">{en.aiLab.runs.columnOutput}</th>
-                  <th className="px-4 py-3 font-medium w-[130px]">{en.aiLab.runs.columnCreated}</th>
-                  <th className="px-4 py-3 font-medium text-right w-[70px]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="w-full text-left font-primary text-base">
+              <TableHead>
+                <TableRow className="bg-background-secondary text-typography-700 text-sm">
+                  <TableHeader className="px-4 py-3 font-medium w-[20%]">
+                    {en.aiLab.runs.columnSkill}
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium w-[16%]">
+                    {en.aiLab.runs.columnVariables}
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium w-[12%]">
+                    {en.aiLab.runs.columnStatus}
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium">
+                    {en.aiLab.runs.columnOutput}
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium w-[130px]">
+                    {en.aiLab.runs.columnCreated}
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium text-right w-[70px]">
+                    Actions
+                  </TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {runs.map(run => (
-                  <tr
+                  <TableRow
                     key={run.id}
                     onClick={() => setDetailRun(run)}
                     className="border-t border-border-light hover:bg-background-secondary/50 transition-colors cursor-pointer"
                   >
-                    <td className="px-4 py-3 align-top font-medium text-typography-900">
+                    <TableCell className="px-4 py-3 align-top font-medium text-typography-900">
                       {run.skillName}
-                    </td>
-                    <td className="px-4 py-3 align-top">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 align-top">
                       <VariableSummary run={run} />
-                    </td>
-                    <td className="px-4 py-3 align-top">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 align-top">
                       <div className="flex flex-col items-start gap-1">
                         <RunStatusBadge status={run.status} />
                         {run.publishedAt && (
@@ -125,16 +145,16 @@ export const RunsTab: React.FC = () => {
                           </span>
                         )}
                       </div>
-                    </td>
-                    <td className="px-4 py-3 align-top text-typography-700">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 align-top text-typography-700">
                       <span className="line-clamp-2">
                         {run.status === "FAILED" ? run.error : run.output}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 align-top text-typography-500 text-sm">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 align-top text-typography-500 text-sm">
                       {new Date(run.createdAt).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 align-top">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 align-top">
                       <div className="flex items-center justify-end gap-3 text-typography-600">
                         {run.status === "COMPLETED" && !run.publishedAt && (
                           <button
@@ -187,11 +207,11 @@ export const RunsTab: React.FC = () => {
                           <Delete size={18} />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>
