@@ -133,6 +133,11 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   useEffect(() => {
     const sourceLogs = isCall ? callLogs : simulationLogs || [];
     if (sourceLogs?.length > 0) {
+      // Only auto-scroll when this update came from an explicit "Load more".
+      // A background refetch (e.g. after saving a custom field, which
+      // invalidates CallLogs) must not move the user's scroll position and
+      // jump them to another session.
+      const triggeredByLoadMore = isLoadingMore;
       setLogs(prev => {
         // On page 0 the list is a fresh snapshot; otherwise upsert by id so a
         // refetched page replaces its rows in place (no duplicates) and edited
@@ -143,7 +148,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       setIsLoadingMore(false);
       // If less than limit, no more data
       setHasMore(sourceLogs.length >= CALL_LOGS_PAGINATION_LIMIT);
-      if (offset > 0) {
+      if (offset > 0 && triggeredByLoadMore) {
         handleScroll();
       }
     } else if (offset === 0) {
@@ -403,7 +408,9 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     const response = await refetchCallLogs();
 
     const selectedCallLog = response.data?.data?.find(log => log.id === chatId);
-    setSummary(selectedCallLog);
+    // The refetch only covers the current page; if the edited session isn't on
+    // it, keep the open summary rather than clearing the sidebar.
+    if (selectedCallLog) setSummary(selectedCallLog);
   };
 
   // Reflect a custom-field edit on the exact row immediately, regardless of
