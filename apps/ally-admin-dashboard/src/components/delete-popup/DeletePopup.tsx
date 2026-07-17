@@ -2,7 +2,8 @@ import { FC, useState } from "react";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { Close } from "@assets";
-import { DeleteSimulationPopupProps } from "@components/types";
+import { Button } from "@components";
+import { DeleteSimulationPopupProps, ButtonVariant } from "@components/types";
 import { en } from "@constants";
 
 export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
@@ -88,23 +89,17 @@ export const DeletePopup: FC<DeleteSimulationPopupProps> = ({
 
         {/* Action buttons */}
         <div className="flex gap-3">
-          <button
-            onClick={handleClose}
-            className="flex-1 bg-white border border-border-medium text-base font-normal py-2 px-4 rounded-none hover:bg-background-secondary transition-colors"
-          >
+          <Button variant={ButtonVariant.SECONDARY} onClick={handleClose} className="flex-1">
             {en.simulation.cancel}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={ButtonVariant.DESTRUCTIVE}
             onClick={handleConfirmDelete}
             disabled={!isConfirmed}
-            className={`flex-1 text-base font-normal py-2 px-4 rounded-none transition-colors bg-destructive-500 text-white hover:bg-destructive-600 ${
-              isConfirmed
-                ? "hover:bg-destructive-600"
-                : "bg-destructive-500 text-white hover:bg-destructive-600 opacity-50 cursor-not-allowed"
-            }`}
+            className="flex-1"
           >
             {en.simulation.deleteForever}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
