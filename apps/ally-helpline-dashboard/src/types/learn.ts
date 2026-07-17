@@ -444,6 +444,36 @@ export interface GetSimulationSkillsResponse {
   skillCoverage: SkillCoverageItem[];
   emotionalMovement: EmotionalMovementItem[];
 }
+
+// Roleplay Studio v2 learner coaching (mirrors ally-be RoleplayCoachingResponseDto).
+export interface RoleplayCoachingBehavior {
+  behaviorId: string;
+  name: string;
+  description?: string;
+  polarity: "helpful" | "unhelpful";
+  observedCount: number;
+  totalScore: number;
+  examples: string[];
+}
+export interface RoleplayCoachingDisclosure {
+  secretId: string;
+  topic: string;
+  turnIndex?: number;
+}
+export interface RoleplayCoachingNote {
+  turnIndex?: number;
+  feedback: string;
+}
+export interface RoleplayCoachingResponse {
+  available: boolean;
+  finalStateId?: string;
+  stateJourney: string[];
+  cumulativeScore?: number;
+  strengths: RoleplayCoachingBehavior[];
+  growthAreas: RoleplayCoachingBehavior[];
+  disclosures: RoleplayCoachingDisclosure[];
+  coachingNotes: RoleplayCoachingNote[];
+}
 export interface GetChatHistoryResponse {
   id: string;
   sourceId: string;

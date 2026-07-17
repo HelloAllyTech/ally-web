@@ -444,7 +444,20 @@
       "askAi": "Ask AI",
       "deeperReflection": "Deeper Reflection",
       "skillsDemonstrated": "Skills  Demonstrated",
-      "sessionReview": "Session Review"
+      "sessionReview": "Session Review",
+      "roleplayCoaching": "Roleplay Coaching"
+    },
+    "roleplayCoaching": {
+      "unavailable": "Coaching isn’t available for this session.",
+      "overallScore": "Overall score",
+      "strengths": "What you did well",
+      "noStrengths": "No strengths were observed in this session.",
+      "growthAreas": "Areas to grow",
+      "noGrowth": "No specific growth areas this session — nice work.",
+      "stateJourney": "How the conversation moved",
+      "disclosures": "What the client opened up about",
+      "coachingNotes": "Coaching notes",
+      "turn": "turn {{turn}}"
     },
     "shortSession": {
       "title": "Session ended too soon",

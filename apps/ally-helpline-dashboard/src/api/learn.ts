@@ -34,6 +34,7 @@ import {
   GetSimulationChecklistResponse,
   UpdateReflectionPromptRequest,
   GetSimulationSkillsResponse,
+  RoleplayCoachingResponse,
   GetChatHistoryResponse,
   Prompt,
   PresignedUrlResponse,
@@ -363,6 +364,15 @@ const learnAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.LEARN.GET_SIMULATION_SKILLS(sessionId),
       }),
     }),
+    /**
+     * Roleplay Studio v2 learner coaching (spec-based rubric, state journey,
+     * disclosures, per-turn coaching). `available` is false for non-v2 sessions.
+     */
+    getRoleplayCoaching: builder.query<RoleplayCoachingResponse, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: ApiEndpoints.LEARN.GET_ROLEPLAY_COACHING(sessionId),
+      }),
+    }),
     getChatHistory: builder.query<GetChatHistoryResponse[], { sessionId: string }>({
       query: ({ sessionId }) => ({
         url: ApiEndpoints.LEARN.CHAT_HISTORY(sessionId),
@@ -403,6 +413,7 @@ export const {
   useGetSimulationChecklistQuery,
   useUpdateReflectionPromptMutation,
   useGetSimulationSkillsQuery,
+  useGetRoleplayCoachingQuery,
   useGetChatHistoryQuery,
   useGetAudioUrlQuery,
   useLazyGetAudioUrlQuery,

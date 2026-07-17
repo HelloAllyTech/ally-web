@@ -104,6 +104,8 @@ export const ApiEndpoints = {
     GET_SIMULATION_CHECKLIST: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/event-checklist`,
     GET_SIMULATION_SKILLS: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/skills`,
+    GET_ROLEPLAY_COACHING: (sessionId: string) =>
+      `/v1/learn/scenario-session/${sessionId}/roleplay-coaching`,
     CHAT_STREAM: (sessionId: string) => `/v1/learn/scenario-sessions/${sessionId}/chat/stream`,
     CHAT_HISTORY: (sessionId: string) => `/v1/learn/scenario-sessions/${sessionId}/chat/history`,
     GET_AUDIO_URL: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/recording`,

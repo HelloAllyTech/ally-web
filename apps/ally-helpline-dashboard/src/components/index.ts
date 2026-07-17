@@ -18,6 +18,7 @@ import { CircularProgress } from "./circular-progress";
 import CommentCard from "./comment-card/CommentCard";
 import ConfirmationDialog from "./confirmation-dialog";
 import { ConfirmationPopover } from "./confirmation-popover";
+import { ContinueLearningCard } from "./continue-learning-card";
 import CreditInfo from "./credit-info-dialog";
 import { CreditsDisplay } from "./credits-display";
 import CustomCircularProgress from "./custom-circular-progress";
@@ -52,10 +53,9 @@ import {
   ThreadsToShow,
   GeneralCommentsToShow,
 } from "./review-comments-sidepanel";
+import RoleplayCoachingTab from "./roleplay-coaching-tab";
 import ScenarioCard from "./scenario-card";
 import ScenarioDetailsCard from "./scenario-details-card";
-import { ContinueLearningCard } from "./continue-learning-card";
-import { TrackTypeIcon, getTrackItemMeta } from "./track-visuals";
 import SearchResources from "./search-resources";
 import SelectableText from "./selectable-text/SelectableText";
 import { SessionRatingTrigger } from "./session-rating-trigger";
@@ -70,6 +70,7 @@ import ThreadCard from "./thread-card/ThreadCard";
 import Timer from "./timer";
 import ToggleButtonGroup from "./toggle-button-group";
 import { ToggleSwitch } from "./toggle-switch";
+import { TrackTypeIcon, getTrackItemMeta } from "./track-visuals";
 import TranscriptListing from "./transcript-listing";
 import Transcription from "./transcription";
 import { UpNextSimulationCard } from "./up-next-simulation-card";
@@ -154,6 +155,7 @@ export {
   ReflectionTab,
   Checklist,
   SkillsTab,
+  RoleplayCoachingTab,
   ShareForReview,
   ToggleSwitch,
   EmojiPickerTrigger,

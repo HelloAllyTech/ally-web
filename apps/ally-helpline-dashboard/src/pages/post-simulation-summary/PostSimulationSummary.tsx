@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
+  useGetRoleplayCoachingQuery,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
@@ -18,6 +19,7 @@ import {
   Button,
   NextChallengeCard,
   ReflectionTab,
+  RoleplayCoachingTab,
   SessionRatingTrigger,
   ShareForReview,
   SkillsTab,
@@ -53,6 +55,12 @@ export const PostSimulationSummary: FC = () => {
   const { summaryData, retryMaxReached, isShortSession } = useSimulationSummaryPolling(
     sessionId,
     i18n.language,
+  );
+  // Roleplay Studio v2 sessions expose spec-based coaching; `available` is
+  // false for v1 simulations, which keeps this tab v2-only.
+  const { data: roleplayCoaching } = useGetRoleplayCoachingQuery(
+    { sessionId: sessionId ?? "" },
+    { skip: !sessionId },
   );
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
@@ -97,6 +105,17 @@ export const PostSimulationSummary: FC = () => {
       label: t("postSim.tabs.deeperReflection"),
       content: <ReflectionTab sessionId={sessionId} />,
     },
+    // Roleplay Studio v2 only: spec-based coaching (rubric, state journey,
+    // disclosures, per-turn coaching). Shown alongside the generic feedback.
+    ...(roleplayCoaching?.available
+      ? [
+          {
+            id: 7,
+            label: t("postSim.tabs.roleplayCoaching"),
+            content: <RoleplayCoachingTab sessionId={sessionId} />,
+          },
+        ]
+      : []),
     ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
       ? [
           {
