@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { BarChart3, Delete, Upload, Users, WandStars } from "@icons";
+import { BarChart3, Copy, Delete, Upload, Users, WandStars } from "@icons";
 import { toast } from "sonner";
 
 import { useGetLabRunsQuery, useDeleteLabRunMutation } from "@api";
@@ -11,6 +11,7 @@ import { LabRun } from "@types";
 
 import { AssignRunDrawer } from "./AssignRunDrawer";
 import { AutoEvalDrawer } from "./AutoEvalDrawer";
+import { ComparisonDrawer } from "./ComparisonDrawer";
 import { CreateRunDrawer } from "./CreateRunDrawer";
 import { PublishRunDrawer } from "./PublishRunDrawer";
 import { RunDetailDrawer } from "./RunDetailDrawer";
@@ -61,6 +62,16 @@ export const RunsTab: React.FC = () => {
   const [assignRun, setAssignRun] = useState<LabRun | null>(null);
   const [resultsRun, setResultsRun] = useState<LabRun | null>(null);
   const [autoEvalRun, setAutoEvalRun] = useState<LabRun | null>(null);
+  const [compareRun, setCompareRun] = useState<LabRun | null>(null);
+
+  // Count runs per batch so the compare action shows only for multi-run batches.
+  const batchCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const r of runs) {
+      if (r.batchId) counts.set(r.batchId, (counts.get(r.batchId) ?? 0) + 1);
+    }
+    return counts;
+  }, [runs]);
 
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
@@ -151,6 +162,19 @@ export const RunsTab: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 align-top">
                       <div className="flex items-center justify-end gap-3 text-typography-600">
+                        {!!run.batchId && (batchCounts.get(run.batchId) ?? 0) > 1 && (
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              setCompareRun(run);
+                            }}
+                            className="hover:text-primary-600"
+                            aria-label={en.aiLab.compare.action}
+                            title={en.aiLab.compare.action}
+                          >
+                            <Copy size={18} />
+                          </button>
+                        )}
                         {run.status === "COMPLETED" && (
                           <button
                             onClick={e => {
@@ -239,6 +263,8 @@ export const RunsTab: React.FC = () => {
       <RunResultsDrawer run={resultsRun} onClose={() => setResultsRun(null)} />
 
       <AutoEvalDrawer run={autoEvalRun} onClose={() => setAutoEvalRun(null)} />
+
+      <ComparisonDrawer run={compareRun} allRuns={runs} onClose={() => setCompareRun(null)} />
 
       <ActionConfirmationPopup
         isOpen={!!deleteTarget}

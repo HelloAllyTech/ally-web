@@ -1478,6 +1478,21 @@ export const en = {
       evaluatorsHeading: "Evaluators",
       pending: "Pending",
       loadFailed: "Failed to load results",
+      exportCsv: "Export CSV",
+      exportJson: "Export JSON",
+      agreement: "Agreement",
+      agreementHelp:
+        "Share of evaluators on the most common answer — high means raters agree, low means they're split.",
+    },
+    // Compare runs in a batch
+    compare: {
+      action: "Compare batch",
+      drawerTitle: "Compare Runs",
+      subtitle: "Runs from the same batch, side by side.",
+      empty: "No other runs in this batch.",
+      columnOutput: "Output",
+      columnTokens: "Tokens",
+      columnCost: "Est. cost",
     },
     // Evaluators tab
     evaluators: {
