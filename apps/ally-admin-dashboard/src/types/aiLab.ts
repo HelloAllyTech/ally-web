@@ -8,6 +8,10 @@ export interface LabSkill {
   content: string;
   /** LLM model id this skill runs on (from the LLM model registry). */
   model?: string | null;
+  /** Optional generation params; null → the AI Lab default for that param. */
+  temperature?: number | null;
+  maxTokens?: number | null;
+  systemPrompt?: string | null;
   createdBy: number;
   createdAt: string;
   updatedAt: string;
@@ -54,6 +58,9 @@ export interface CreateLabSkillRequest {
   description?: string;
   content: string;
   model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  systemPrompt?: string;
 }
 export type UpdateLabSkillRequest = Partial<CreateLabSkillRequest>;
 
@@ -70,7 +77,7 @@ export interface CreateLabValueRequest {
 }
 export type UpdateLabValueRequest = Partial<CreateLabValueRequest>;
 
-export type LabRunStatus = "RUNNING" | "COMPLETED" | "FAILED";
+export type LabRunStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
 
 export interface LabRunVariableValue {
   name: string;
@@ -88,6 +95,12 @@ export interface LabRun {
   status: LabRunStatus;
   output?: string | null;
   error?: string | null;
+  /** Token usage + estimated USD cost (present on COMPLETED runs when the
+   *  provider reported usage and the model has a known price). */
+  promptTokens?: number | null;
+  completionTokens?: number | null;
+  totalTokens?: number | null;
+  costUsd?: string | number | null;
   /** Set when the run is published for human evaluation. */
   publishedAt?: string | null;
   /** Present on list items: human-eval assignment counters. */
@@ -102,6 +115,25 @@ export interface CreateLabRunRequest {
   skillId: string;
   batchId?: string;
   variableValues?: LabRunVariableValue[];
+}
+
+// ---- Automated (LLM-as-judge) evaluation ----
+
+export interface LabAutoEvaluation {
+  id: string;
+  runId: string;
+  model: string;
+  criteria: string;
+  score?: number | null;
+  reasoning?: string | null;
+  error?: string | null;
+  createdAt: string;
+}
+
+export interface CreateAutoEvalRequest {
+  runId: string;
+  criteria: string;
+  model?: string;
 }
 
 // ---- Human evaluation ----

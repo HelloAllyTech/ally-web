@@ -18,7 +18,16 @@ import { LabSkill } from "@types";
 import { LabSidePanel, LabField } from "./LabSidePanel";
 import { LabTable, LabTableColumn } from "./LabTable";
 
-const EMPTY_FORM = { name: "", description: "", content: "", model: DEFAULT_AUTOFILL_MODEL };
+// Numeric params are kept as strings in the form (empty = "use default").
+const EMPTY_FORM = {
+  name: "",
+  description: "",
+  content: "",
+  model: DEFAULT_AUTOFILL_MODEL,
+  temperature: "",
+  maxTokens: "",
+  systemPrompt: "",
+};
 
 export const SkillsTab: React.FC = () => {
   const [search, setSearch] = useState("");
@@ -54,6 +63,9 @@ export const SkillsTab: React.FC = () => {
       description: skill.description ?? "",
       content: skill.content,
       model: skill.model || DEFAULT_AUTOFILL_MODEL,
+      temperature: skill.temperature != null ? String(skill.temperature) : "",
+      maxTokens: skill.maxTokens != null ? String(skill.maxTokens) : "",
+      systemPrompt: skill.systemPrompt ?? "",
     });
     setIsPanelOpen(true);
   }, []);
@@ -63,7 +75,21 @@ export const SkillsTab: React.FC = () => {
     setSelected(null);
   }, []);
 
-  const isValid = form.name.trim().length > 0 && form.content.trim().length > 0;
+  // Blank numeric fields are valid (they mean "use the default"); a present
+  // value must parse and sit in range.
+  const temperatureValid =
+    form.temperature.trim() === "" ||
+    (!Number.isNaN(Number(form.temperature)) &&
+      Number(form.temperature) >= 0 &&
+      Number(form.temperature) <= 2);
+  const maxTokensValid =
+    form.maxTokens.trim() === "" ||
+    (Number.isInteger(Number(form.maxTokens)) && Number(form.maxTokens) >= 1);
+  const isValid =
+    form.name.trim().length > 0 &&
+    form.content.trim().length > 0 &&
+    temperatureValid &&
+    maxTokensValid;
 
   const dirty = useMemo(() => {
     const original = selected
@@ -72,6 +98,9 @@ export const SkillsTab: React.FC = () => {
           description: selected.description ?? "",
           content: selected.content,
           model: selected.model || DEFAULT_AUTOFILL_MODEL,
+          temperature: selected.temperature != null ? String(selected.temperature) : "",
+          maxTokens: selected.maxTokens != null ? String(selected.maxTokens) : "",
+          systemPrompt: selected.systemPrompt ?? "",
         }
       : EMPTY_FORM;
     return JSON.stringify(form) !== JSON.stringify(original);
@@ -84,6 +113,9 @@ export const SkillsTab: React.FC = () => {
       description: form.description.trim() || undefined,
       content: form.content,
       model: form.model,
+      temperature: form.temperature.trim() === "" ? undefined : Number(form.temperature),
+      maxTokens: form.maxTokens.trim() === "" ? undefined : Number(form.maxTokens),
+      systemPrompt: form.systemPrompt.trim() || undefined,
     };
     const response = selected
       ? await updateSkill({ id: selected.id, data: payload })
@@ -222,6 +254,40 @@ export const SkillsTab: React.FC = () => {
               </SelectItemGroup>
             )}
           </Select>
+        </LabField>
+        <div className="flex gap-3">
+          <LabField label={en.aiLab.skills.temperatureLabel} help={en.aiLab.skills.temperatureHelp}>
+            <input
+              type="number"
+              step="0.1"
+              min={0}
+              max={2}
+              value={form.temperature}
+              onChange={e => setForm(f => ({ ...f, temperature: e.target.value }))}
+              placeholder={en.aiLab.skills.temperaturePlaceholder}
+              className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base"
+            />
+          </LabField>
+          <LabField label={en.aiLab.skills.maxTokensLabel} help={en.aiLab.skills.maxTokensHelp}>
+            <input
+              type="number"
+              step="1"
+              min={1}
+              value={form.maxTokens}
+              onChange={e => setForm(f => ({ ...f, maxTokens: e.target.value }))}
+              placeholder={en.aiLab.skills.maxTokensPlaceholder}
+              className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base"
+            />
+          </LabField>
+        </div>
+        <LabField label={en.aiLab.skills.systemPromptLabel} help={en.aiLab.skills.systemPromptHelp}>
+          <textarea
+            value={form.systemPrompt}
+            onChange={e => setForm(f => ({ ...f, systemPrompt: e.target.value }))}
+            placeholder={en.aiLab.skills.systemPromptPlaceholder}
+            rows={3}
+            className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-sm font-mono resize-y"
+          />
         </LabField>
         <LabField label={en.aiLab.skills.contentLabel} required>
           <TextArea

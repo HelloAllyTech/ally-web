@@ -220,6 +220,7 @@ export const ApiEndpoints = {
     RUN_QUESTIONS: (id: string) => `/v1/lab/runs/${id}/questions`,
     RUN_ASSIGNMENTS: (id: string) => `/v1/lab/runs/${id}/assignments`,
     RUN_RESULTS: (id: string) => `/v1/lab/runs/${id}/results`,
+    RUN_AUTO_EVALUATIONS: (id: string) => `/v1/lab/runs/${id}/auto-evaluations`,
     ASSIGNMENT_BY_ID: (id: string) => `/v1/lab/runs/assignments/${id}`,
     EVALUATORS: "/v1/lab/evaluators",
     EVALUATOR_BY_ID: (id: string) => `/v1/lab/evaluators/${id}`,
@@ -459,6 +460,7 @@ export const TAG_TYPES = {
   AI_LAB_RUNS: "aiLabRuns",
   AI_LAB_EVALUATORS: "aiLabEvaluators",
   AI_LAB_ASSIGNMENTS: "aiLabAssignments",
+  AI_LAB_AUTO_EVALS: "aiLabAutoEvals",
   // Evaluator portal (separate evaluatorAPI)
   EVAL_ASSIGNMENTS: "evalAssignments",
 };

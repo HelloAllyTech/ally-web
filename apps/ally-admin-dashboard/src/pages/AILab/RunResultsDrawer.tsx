@@ -3,12 +3,78 @@ import React from "react";
 import { useGetRunResultsQuery } from "@api";
 import { DoubleArrowRight } from "@assets";
 import { en } from "@constants";
-import { LabRun, LabRunResultsQuestion } from "@types";
+import { LabRun, LabRunResults, LabRunResultsQuestion } from "@types";
 
 interface RunResultsDrawerProps {
   run: LabRun | null;
   onClose: () => void;
 }
+
+/** Trigger a client-side file download of `content`. */
+const download = (filename: string, content: string, mime: string) => {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+const csvCell = (v: string | number | null | undefined): string => {
+  const s = v == null ? "" : String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+/** Share of responses on the most common answer (0–1), or null if no responses. */
+const questionAgreement = (q: LabRunResultsQuestion): number | null => {
+  if (q.type === "RATING") {
+    const counts = Object.values(q.distribution ?? {});
+    const total = counts.reduce((a, b) => a + b, 0);
+    return total > 0 ? Math.max(...counts) / total : null;
+  }
+  if (q.type === "YES_NO") {
+    const yes = q.yesCount ?? 0;
+    const no = q.noCount ?? 0;
+    const total = yes + no;
+    return total > 0 ? Math.max(yes, no) / total : null;
+  }
+  return null;
+};
+
+/** Build a per-question summary CSV from the results. */
+const resultsToCsv = (skillName: string, data: LabRunResults): string => {
+  const rows: string[] = [];
+  rows.push(["skill", "assigned", "submitted", "record_score_pct"].map(csvCell).join(","));
+  rows.push(
+    [skillName, data.totals.assigned, data.totals.submitted, data.recordLevel.normalizedScore ?? ""]
+      .map(csvCell)
+      .join(","),
+  );
+  rows.push("");
+  rows.push(["question", "type", "responses", "summary", "agreement_pct"].map(csvCell).join(","));
+  for (const q of data.questions) {
+    const agreement = questionAgreement(q);
+    const summary =
+      q.type === "RATING"
+        ? `avg ${q.average ?? "n/a"} / ${q.scaleMax}`
+        : q.type === "YES_NO"
+          ? `yes ${q.yesCount ?? 0} / no ${q.noCount ?? 0}`
+          : `${q.answers?.length ?? 0} answers`;
+    rows.push(
+      [
+        q.question,
+        q.type,
+        q.responseCount,
+        summary,
+        agreement == null ? "" : Math.round(agreement * 100),
+      ]
+        .map(csvCell)
+        .join(","),
+    );
+  }
+  return rows.join("\n");
+};
 
 const Stat: React.FC<{ label: string; value: React.ReactNode; help?: string }> = ({
   label,
@@ -125,7 +191,37 @@ export const RunResultsDrawer: React.FC<RunResultsDrawerProps> = ({ run, onClose
               {en.aiLab.results.drawerTitle}
             </span>
           </button>
-          <span className="text-sm text-typography-600">{run.skillName}</span>
+          <div className="flex items-center gap-3">
+            {data && (
+              <>
+                <button
+                  onClick={() =>
+                    download(
+                      `run-${run.id}-results.csv`,
+                      resultsToCsv(run.skillName, data),
+                      "text/csv",
+                    )
+                  }
+                  className="text-xs text-typography-600 hover:text-primary-600 border border-border-light rounded px-2 py-1"
+                >
+                  {en.aiLab.results.exportCsv}
+                </button>
+                <button
+                  onClick={() =>
+                    download(
+                      `run-${run.id}-results.json`,
+                      JSON.stringify(data, null, 2),
+                      "application/json",
+                    )
+                  }
+                  className="text-xs text-typography-600 hover:text-primary-600 border border-border-light rounded px-2 py-1"
+                >
+                  {en.aiLab.results.exportJson}
+                </button>
+              </>
+            )}
+            <span className="text-sm text-typography-600">{run.skillName}</span>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 px-10 pt-2 overflow-y-auto custom-scrollbar space-y-6 pb-8">
@@ -158,8 +254,21 @@ export const RunResultsDrawer: React.FC<RunResultsDrawerProps> = ({ run, onClose
                   key={question.id}
                   className="border border-border-light rounded-md p-4 space-y-3"
                 >
-                  <div className="text-base font-medium text-typography-900">
-                    {index + 1}. {question.question}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="text-base font-medium text-typography-900">
+                      {index + 1}. {question.question}
+                    </div>
+                    {(() => {
+                      const agreement = questionAgreement(question);
+                      return agreement != null ? (
+                        <span
+                          className="shrink-0 text-xs text-typography-500 whitespace-nowrap"
+                          title={en.aiLab.results.agreementHelp}
+                        >
+                          {en.aiLab.results.agreement}: {Math.round(agreement * 100)}%
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   {question.type === "RATING" && <RatingResult question={question} />}
                   {question.type === "YES_NO" && <YesNoResult question={question} />}

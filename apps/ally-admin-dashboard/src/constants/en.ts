@@ -1281,6 +1281,18 @@ export const en = {
       contentPlaceholder: "You are a helpful assistant. Use {{variable}} placeholders…",
       modelLabel: "Model",
       modelHelp: "The AI model this skill runs on.",
+      temperatureLabel: "Temperature",
+      temperatureHelp:
+        "0–2. Leave blank for the provider default. Ignored by models that don't support it.",
+      temperaturePlaceholder: "e.g. 0.7",
+      maxTokensLabel: "Max output tokens",
+      maxTokensHelp: "Cap on the response length. Leave blank for the AI Lab default.",
+      maxTokensPlaceholder: "e.g. 2048",
+      systemPromptLabel: "System prompt (optional)",
+      systemPromptHelp: "Sent as a separate system message alongside the resolved prompt below.",
+      systemPromptPlaceholder: "You are a strict JSON generator…",
+      invalidTemperature: "Temperature must be between 0 and 2",
+      invalidMaxTokens: "Max tokens must be a positive whole number",
       empty: "No skills yet",
       emptySubtitle: "Create a system-prompt template to reuse across runs.",
       created: "Skill created",
@@ -1361,9 +1373,12 @@ export const en = {
       selectSkillsHelp: "Pick one or more skills to run.",
       noSkills: "Create a skill first — runs execute skills.",
       variablesHeading: "Variable values",
-      variablesHelp: "Choose a value for every variable used by the selected skills.",
+      variablesHelp:
+        "Choose one or more values for each variable — every combination is run (a matrix).",
       noVariablesNeeded: "The selected skills use no variables.",
       missingValues: "Some variables have no values yet — add values in the Values tab.",
+      matrixSummary: "{runs} run(s) will be created.",
+      tooManyRuns: "That's {runs} runs — reduce selections to {max} or fewer.",
       run: "Run",
       running: "Running…",
       runningProgress: "Running {done} of {total}…",
@@ -1371,6 +1386,12 @@ export const en = {
       validationValues: "Select a value for every variable",
       runsComplete: "Run complete",
       runsFailed: "Run failed",
+      runsPartial: "{failed} of {total} runs failed",
+      failuresTitle: "Some runs didn't complete",
+      failuresHelp:
+        "The skills below failed to run (a network or request error). Close to review the log, or dismiss to try again.",
+      dismissFailures: "Back to form",
+      close: "Close",
       // Table columns
       columnSkill: "Skill",
       columnVariables: "Variables",
@@ -1387,10 +1408,34 @@ export const en = {
       detailPrompt: "Resolved prompt",
       detailOutput: "Output",
       detailError: "Error",
+      detailTokens: "Tokens",
+      detailCost: "Est. cost",
       deleted: "Run deleted",
       deleteFailed: "Failed to delete run",
       deleteTitle: "Delete run?",
       deleteDescription: "This permanently removes the run from the log. This cannot be undone.",
+      paginationRange: "Showing {start}–{end} of {total}",
+      prev: "Previous",
+      next: "Next",
+    },
+    // Automated (LLM-as-judge) evaluation
+    autoEval: {
+      action: "Auto-evaluate",
+      drawerTitle: "Automated Evaluation",
+      subtitle:
+        "Score this run's output against a rubric using an LLM judge. Fast, cheap, repeatable — complements human evaluation.",
+      criteriaLabel: "Criteria / rubric",
+      criteriaPlaceholder:
+        "e.g. The response must be valid JSON, cite a source, and stay under 100 words.",
+      modelLabel: "Judge model",
+      run: "Run evaluation",
+      running: "Evaluating…",
+      empty: "No automated evaluations yet.",
+      priorHeading: "Previous evaluations",
+      scoreLabel: "Score",
+      failed: "Evaluation failed",
+      success: "Evaluation complete",
+      validation: "Enter the criteria to score against",
     },
     // Publish for human evaluation
     publish: {
@@ -1444,6 +1489,21 @@ export const en = {
       evaluatorsHeading: "Evaluators",
       pending: "Pending",
       loadFailed: "Failed to load results",
+      exportCsv: "Export CSV",
+      exportJson: "Export JSON",
+      agreement: "Agreement",
+      agreementHelp:
+        "Share of evaluators on the most common answer — high means raters agree, low means they're split.",
+    },
+    // Compare runs in a batch
+    compare: {
+      action: "Compare batch",
+      drawerTitle: "Compare Runs",
+      subtitle: "Runs from the same batch, side by side.",
+      empty: "No other runs in this batch.",
+      columnOutput: "Output",
+      columnTokens: "Tokens",
+      columnCost: "Est. cost",
     },
     // Evaluators tab
     evaluators: {
