@@ -1,8 +1,6 @@
 import { FC, ReactNode } from "react";
 
-import { ChevronDown } from "lucide-react";
-
-import { DropdownField } from "@ally-ui-mono/ui-shared";
+import { DropdownField, Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import { TextField } from "@components";
 import { carbonField } from "@constants/carbonFieldStyles";
 import { SummaryFieldKey } from "@types";
@@ -61,22 +59,19 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
       return (
         <div className={carbonField.group}>
           {labelEl}
-          <div className="relative">
-            <select
-              className={carbonField.select}
-              disabled={disabled}
-              value={value ?? ""}
-              onChange={e => onChange(field.key, e.target.value)}
-            >
-              <option value="">{field.placeholder ?? "--"}</option>
-              {(options ?? []).map(opt => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className={carbonField.selectChevron} />
-          </div>
+          <Select
+            id={`summary-field-${field.key}`}
+            labelText={field.label}
+            hideLabel
+            disabled={disabled}
+            value={value ?? ""}
+            onChange={e => onChange(field.key, e.target.value)}
+          >
+            <SelectItem value="" text={field.placeholder ?? "--"} />
+            {(options ?? []).map(opt => (
+              <SelectItem key={opt} value={opt} text={opt} />
+            ))}
+          </Select>
         </div>
       );
     }

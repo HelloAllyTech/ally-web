@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
+import { Select, SelectItem, SelectItemGroup } from "@ally-ui-mono/ui-shared";
 import {
   useGetLabSkillsQuery,
   useCreateLabSkillMutation,
@@ -196,30 +197,28 @@ export const SkillsTab: React.FC = () => {
           />
         </LabField>
         <LabField label={en.aiLab.skills.modelLabel} required help={en.aiLab.skills.modelHelp}>
-          <select
+          <Select
+            id="ailab-skills-model"
+            labelText={en.aiLab.skills.modelLabel}
+            hideLabel
             value={form.model}
             onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
-            className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base bg-white"
           >
             {openaiModels.length > 0 && (
-              <optgroup label="OpenAI">
+              <SelectItemGroup label="OpenAI">
                 {openaiModels.map(m => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
+                  <SelectItem key={m.value} value={m.value} text={m.label} />
                 ))}
-              </optgroup>
+              </SelectItemGroup>
             )}
             {anthropicModels.length > 0 && (
-              <optgroup label="Anthropic">
+              <SelectItemGroup label="Anthropic">
                 {anthropicModels.map(m => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
+                  <SelectItem key={m.value} value={m.value} text={m.label} />
                 ))}
-              </optgroup>
+              </SelectItemGroup>
             )}
-          </select>
+          </Select>
         </LabField>
         <LabField label={en.aiLab.skills.contentLabel} required>
           <textarea
