@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_POSTHOG_HOST: string;
   readonly VITE_POSTHOG_ENABLED: string;
   readonly VITE_I18N_BASE_URL?: string;
+  readonly VITE_GTM_ID?: string;
 }
 
 interface ImportMeta {
