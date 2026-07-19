@@ -2,6 +2,7 @@ import { FC, ReactNode } from "react";
 
 import { Controller, useFormContext } from "react-hook-form";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { Trash } from "@assets";
 import { TRACK_ITEM_TYPE_LABELS } from "@constants";
 import { TrackFormValues, TrackItemType } from "@types";
@@ -76,12 +77,15 @@ export const ItemEditorFrame: FC<ItemEditorFrameProps> = ({
           control={control}
           name={`${base}.description`}
           render={({ field }) => (
-            <textarea
+            <TextArea
+              id={`${base}.description`}
+              labelText="Description"
+              hideLabel
               {...field}
               disabled={disabled}
               rows={2}
               placeholder="Optional description shown to the learner"
-              className={`${inputClass} resize-y`}
+              className="w-full"
             />
           )}
         />

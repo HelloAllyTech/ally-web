@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import { Select, SelectItem, SelectItemGroup } from "@ally-ui-mono/ui-shared";
 import { useGetAutofillModelsQuery } from "@api";
 import { DEFAULT_AUTOFILL_MODEL, FALLBACK_AUTOFILL_MODEL_OPTIONS } from "@constants";
 import { AutofillModelOption } from "@types";
@@ -8,7 +9,7 @@ interface AutofillModelSelectProps {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
-  /** Extra classes merged onto the <select> (e.g. width constraints). */
+  /** Extra classes forwarded to the Select (e.g. width constraints). */
   className?: string;
 }
 
@@ -27,31 +28,30 @@ export const AutofillModelSelect: FC<AutofillModelSelectProps> = ({
   const anthropicOptions = options.filter(opt => opt.provider === "anthropic");
 
   return (
-    <select
+    <Select
+      id="autofill-model-select"
+      labelText="Autofill model"
+      hideLabel
       value={effectiveValue}
       onChange={e => onChange(e.target.value)}
       disabled={disabled || isLoading}
-      className={`text-sm border rounded-md px-2 py-1 text-typography-800 bg-white border-border-light cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={className}
       title={isLoading ? "Loading models..." : undefined}
     >
       {openaiOptions.length > 0 && (
-        <optgroup label="OpenAI">
+        <SelectItemGroup label="OpenAI">
           {openaiOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
+            <SelectItem key={opt.value} value={opt.value} text={opt.label} />
           ))}
-        </optgroup>
+        </SelectItemGroup>
       )}
       {anthropicOptions.length > 0 && (
-        <optgroup label="Anthropic">
+        <SelectItemGroup label="Anthropic">
           {anthropicOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
+            <SelectItem key={opt.value} value={opt.value} text={opt.label} />
           ))}
-        </optgroup>
+        </SelectItemGroup>
       )}
-    </select>
+    </Select>
   );
 };

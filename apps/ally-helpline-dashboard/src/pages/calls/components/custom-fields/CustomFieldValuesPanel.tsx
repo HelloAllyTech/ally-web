@@ -1,7 +1,6 @@
 import { FC, useState, useEffect, useRef } from "react";
 
 import { format } from "date-fns";
-import { ChevronDown } from "lucide-react";
 import { useSelector } from "react-redux";
 
 import {
@@ -10,6 +9,8 @@ import {
   FilterableMultiSelect,
   DatePicker,
   DatePickerInput,
+  Select,
+  SelectItem,
 } from "@ally-ui-mono/ui-shared";
 import { useGetCustomFieldValuesQuery } from "@api";
 import TextField from "@components/text-field";
@@ -287,22 +288,19 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       return (
         <div key={field.fieldDefinitionId} className={carbonField.group}>
           {labelEl}
-          <div className="relative">
-            <select
-              className={carbonField.select}
-              disabled={!isEditable}
-              value={value ?? ""}
-              onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
-            >
-              <option value="">--</option>
-              {(field.options ?? []).map(o => (
-                <option key={o.id} value={o.id}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className={carbonField.selectChevron} />
-          </div>
+          <Select
+            id={`cf-select-${field.fieldDefinitionId}`}
+            labelText={field.name}
+            hideLabel
+            disabled={!isEditable}
+            value={value ?? ""}
+            onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+          >
+            <SelectItem value="" text="--" />
+            {(field.options ?? []).map(o => (
+              <SelectItem key={o.id} value={o.id} text={o.label} />
+            ))}
+          </Select>
         </div>
       );
     }
@@ -360,19 +358,18 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
       return (
         <div key={field.fieldDefinitionId} className={carbonField.group}>
           {labelEl}
-          <div className="relative">
-            <select
-              className={carbonField.select}
-              disabled={!isEditable}
-              value={value ?? ""}
-              onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
-            >
-              <option value="">--</option>
-              <option value="true">Yes</option>
-              <option value="false">No</option>
-            </select>
-            <ChevronDown className={carbonField.selectChevron} />
-          </div>
+          <Select
+            id={`cf-bool-${field.fieldDefinitionId}`}
+            labelText={field.name}
+            hideLabel
+            disabled={!isEditable}
+            value={value ?? ""}
+            onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+          >
+            <SelectItem value="" text="--" />
+            <SelectItem value="true" text="Yes" />
+            <SelectItem value="false" text="No" />
+          </Select>
         </div>
       );
     }

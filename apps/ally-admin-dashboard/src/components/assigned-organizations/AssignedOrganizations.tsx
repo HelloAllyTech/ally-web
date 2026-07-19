@@ -9,6 +9,8 @@ import {
   useAssignAdminTenantsMutation,
   useRemoveAdminTenantsMutation,
 } from "@api";
+import { Button } from "@components";
+import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { Tenant, AdminTenant } from "@types";
 
@@ -181,22 +183,24 @@ export const AssignedOrganizations: React.FC<AssignedOrganizationsProps> = ({
 
             {/* Modal actions */}
             <div className="flex gap-3 flex-shrink-0">
-              <button
+              <Button
+                variant={ButtonVariant.SECONDARY}
                 onClick={() => {
                   setShowAddModal(false);
                   setSelectedIds([]);
                 }}
-                className="flex-1 py-2 rounded-lg border border-border-light text-sm text-typography-800 hover:bg-background-secondary transition-colors"
+                className="flex-1"
               >
                 {en.userManagement.cancel}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={ButtonVariant.PRIMARY}
                 onClick={handleAssign}
                 disabled={!selectedIds.length || isAssigning}
-                className="flex-1 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex-1"
               >
                 {isAssigning ? en.common.loading : en.userManagement.confirm}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

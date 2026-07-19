@@ -1,5 +1,14 @@
 import { useState } from "react";
 
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@ally-ui-mono/ui-shared";
+
 export const EditableTable = ({ columns, initialRows }) => {
   const [rows, setRows] = useState(initialRows);
 
@@ -11,24 +20,24 @@ export const EditableTable = ({ columns, initialRows }) => {
 
   return (
     <div className="w-full overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-      <table className="w-full min-w-full border-collapse text-left text-sm">
-        <thead>
-          <tr className="bg-gray-50">
+      <Table className="w-full min-w-full border-collapse text-left text-sm">
+        <TableHead>
+          <TableRow className="bg-gray-50">
             {columns.map(col => (
-              <th
+              <TableHeader
                 key={String(col.key)}
                 className="border-b border-r border-gray-200 px-4 py-3 text-left font-medium text-gray-700 last:border-r-0"
               >
                 {col.header}
-              </th>
+              </TableHeader>
             ))}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {rows.map((row, rowIndex) => (
-            <tr key={row.id ?? rowIndex} className="hover:bg-gray-50/50 transition-colors">
+            <TableRow key={row.id ?? rowIndex} className="hover:bg-gray-50/50 transition-colors">
               {columns.map(column => (
-                <td
+                <TableCell
                   key={column.key}
                   className="border-b border-r border-gray-200 p-0 last:border-r-0"
                 >
@@ -42,12 +51,12 @@ export const EditableTable = ({ columns, initialRows }) => {
                   ) : (
                     <span className="block px-4 py-2.5 text-gray-900">{row[column.key] ?? ""}</span>
                   )}
-                </td>
+                </TableCell>
               ))}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

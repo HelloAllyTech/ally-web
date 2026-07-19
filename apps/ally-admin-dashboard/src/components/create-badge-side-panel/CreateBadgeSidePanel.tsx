@@ -3,6 +3,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
+import { TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useCreateBadgeMutation,
   useUpdateBadgeMutation,
@@ -455,21 +456,26 @@ export const CreateBadgeSidePanel: React.FC<CreateBadgeSidePanelProps> = ({
           <div className="space-y-3">
             {/* Name */}
             <Field label={en.badge.name} required>
-              <input
-                type="text"
+              <TextInput
+                id="badge-name"
+                labelText={en.badge.name}
+                hideLabel
                 value={formData.name || ""}
                 onChange={event => handleFieldChange("name", event.target.value)}
                 placeholder={en.badge.enterName}
-                className="border-none focus:outline-none text-base w-full"
+                className="w-full"
               />
             </Field>
             {/* Description */}
             <Field label={en.badge.description} multiline required>
-              <input
+              <TextInput
+                id="badge-description"
+                labelText={en.badge.description}
+                hideLabel
                 value={formData.description || ""}
                 onChange={event => handleFieldChange("description", event.target.value)}
                 placeholder={en.badge.enterDescription}
-                className="border-none focus:outline-none text-base w-full"
+                className="w-full"
               />
             </Field>
 

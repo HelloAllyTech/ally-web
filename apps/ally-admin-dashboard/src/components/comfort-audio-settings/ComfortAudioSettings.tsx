@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
+import { TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useAddComfortAudioTrackMutation,
   useCreateComfortAudioUploadUrlMutation,
@@ -286,12 +287,13 @@ export const ComfortAudioSettings = () => {
       </div>
 
       <div className="flex flex-col gap-3 max-w-2xl border border-border-light rounded-md p-4">
-        <input
-          type="text"
+        <TextInput
+          id="comfort-audio-name"
+          labelText={en.comfortAudio.uploadNamePlaceholder}
           value={name}
           placeholder={en.comfortAudio.uploadNamePlaceholder}
           onChange={e => setName(e.target.value)}
-          className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
+          className="w-full"
         />
         <input
           ref={fileInputRef}

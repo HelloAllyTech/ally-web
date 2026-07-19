@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import {
   useGetLabVariablesQuery,
   useCreateLabVariableMutation,
@@ -155,12 +156,15 @@ export const VariablesTab: React.FC = () => {
           />
         </LabField>
         <LabField label={en.aiLab.variables.descriptionLabel}>
-          <textarea
+          <TextArea
+            id="ailab-variable-description"
+            labelText={en.aiLab.variables.descriptionLabel}
+            hideLabel
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder={en.aiLab.variables.descriptionPlaceholder}
             rows={3}
-            className="border border-border-light rounded-md px-3 py-2 w-full outline-none text-base resize-none"
+            className="w-full"
           />
         </LabField>
       </LabSidePanel>

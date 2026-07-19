@@ -2,6 +2,7 @@ import { FC, useId, useState } from "react";
 
 import { toast } from "sonner";
 
+import { Select, SelectItem, TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useGetOrgCustomFieldDefinitionsQuery,
   useCreateOrgCustomFieldDefinitionMutation,
@@ -313,13 +314,14 @@ const OrgCustomFieldDefinitionsSection: FC<OrgCustomFieldDefinitionsSectionProps
                   <label className="text-xs font-medium text-typography-700">
                     Field name <span className="text-error-500">*</span>
                   </label>
-                  <input
-                    type="text"
+                  <TextInput
+                    id="org-cf-name"
+                    labelText="Field name"
+                    hideLabel
                     maxLength={100}
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="e.g. Primary Diagnosis"
-                    className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400"
                   />
                 </div>
 
@@ -330,13 +332,15 @@ const OrgCustomFieldDefinitionsSection: FC<OrgCustomFieldDefinitionsSectionProps
                     <div className="flex flex-col gap-1.5">
                       {options.map((opt, idx) => (
                         <div key={opt.id} className="flex items-center gap-2">
-                          <input
-                            type="text"
+                          <TextInput
+                            id={`org-cf-option-${opt.id}`}
+                            labelText={`Option ${idx + 1}`}
+                            hideLabel
                             maxLength={100}
                             value={opt.label}
                             onChange={e => updateOption(idx, e.target.value)}
                             placeholder={`Option ${idx + 1}`}
-                            className="flex-1 border border-border-light rounded-lg px-3 py-1.5 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400"
+                            className="flex-1"
                           />
                           {options.length > 1 && (
                             <button
@@ -365,36 +369,34 @@ const OrgCustomFieldDefinitionsSection: FC<OrgCustomFieldDefinitionsSectionProps
                   <label className="text-xs font-medium text-typography-700">
                     Section <span className="text-error-500">*</span>
                   </label>
-                  <select
+                  <Select
+                    id="org-cf-section"
+                    labelText="Section"
+                    hideLabel
                     value={sectionKey}
                     onChange={e => setSectionKey(e.target.value)}
-                    className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 bg-white"
                   >
-                    <option value="" disabled>
-                      Select section
-                    </option>
+                    <SelectItem value="" text="Select section" disabled />
                     {SCRIBE_SECTIONS.map(s => (
-                      <option key={s.key} value={s.key}>
-                        {s.label}
-                      </option>
+                      <SelectItem key={s.key} value={s.key} text={s.label} />
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Who can edit */}
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-medium text-typography-700">Who can edit</label>
-                  <select
+                  <Select
+                    id="org-cf-edit-permission"
+                    labelText="Who can edit"
+                    hideLabel
                     value={editPermission}
                     onChange={e => setEditPermission(e.target.value as CustomFieldEditPermission)}
-                    className="border border-border-light rounded-lg px-3 py-2 text-sm text-typography-800 focus:outline-none focus:ring-1 focus:ring-primary-400 bg-white"
                   >
                     {(Object.keys(EDIT_PERMISSION_LABELS) as CustomFieldEditPermission[]).map(p => (
-                      <option key={p} value={p}>
-                        {EDIT_PERMISSION_LABELS[p]}
-                      </option>
+                      <SelectItem key={p} value={p} text={EDIT_PERMISSION_LABELS[p]} />
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="flex justify-end gap-2 mt-2">

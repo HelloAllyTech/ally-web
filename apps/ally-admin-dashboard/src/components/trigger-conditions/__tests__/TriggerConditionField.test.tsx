@@ -80,6 +80,9 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
       className={className}
     />
   ),
+  TextArea: ({ labelText, hideLabel, ...props }: any) => (
+    <textarea data-testid="text-area" aria-label={labelText} {...props} />
+  ),
 }));
 
 import { TriggerConditionField } from "../TriggerConditionField";

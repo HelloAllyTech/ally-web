@@ -1,7 +1,10 @@
 "use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 import { Close } from "@carbon/icons-react";
 import { IconButton } from "@carbon/react";
@@ -59,6 +62,8 @@ export function SidePanel({
   closeLabel = "Close",
   children,
 }: SidePanelProps) {
+  const panelRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e: KeyboardEvent) => {
@@ -67,6 +72,45 @@ export function SidePanel({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  // Focus trap: move focus into the panel on open, keep Tab cycling inside it,
+  // and restore focus to the previously-focused element on close.
+  useEffect(() => {
+    if (!open) return undefined;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+    const focusables = () =>
+      panel
+        ? Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+            el => el.offsetParent !== null,
+          )
+        : [];
+    (focusables()[0] ?? panel)?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const els = focusables();
+      if (els.length === 0) {
+        e.preventDefault();
+        panel?.focus();
+        return;
+      }
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    panel?.addEventListener("keydown", onKey);
+    return () => {
+      panel?.removeEventListener("keydown", onKey);
+      previouslyFocused?.focus?.();
+    };
+  }, [open]);
 
   if (!open) return null;
 
@@ -104,7 +148,14 @@ export function SidePanel({
   return (
     <>
       <div style={OVERLAY_STYLE} onClick={onClose} aria-hidden="true" />
-      <aside style={panelStyle} className={className} role="dialog" aria-modal="true">
+      <aside
+        ref={panelRef}
+        style={panelStyle}
+        className={className}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
+      >
         <div style={headerStyle}>
           <div style={{ minWidth: 0, flex: 1 }}>{title}</div>
           {/* The close button is pinned to the top of the viewport, so its

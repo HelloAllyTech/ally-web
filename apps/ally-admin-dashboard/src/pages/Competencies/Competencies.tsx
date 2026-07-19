@@ -3,6 +3,14 @@ import { FC, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@ally-ui-mono/ui-shared";
+import {
   useCreateCompetencyMutation,
   useDeleteCompetencyMutation,
   useGetCompetenciesQuery,
@@ -33,17 +41,21 @@ const CompetencyRow: FC<{ competency: Competency; onClick: () => void }> = ({
   const unhelpful = data?.unhelpful.map(b => b.name).join(", ");
 
   return (
-    <tr
+    <TableRow
       onClick={onClick}
       className="border-b border-border-light text-sm text-typography-900 cursor-pointer hover:bg-background-secondary transition-colors align-top"
     >
-      <td className="py-3 pr-4 font-mono text-xs text-typography-600 whitespace-nowrap">
+      <TableCell className="py-3 pr-4 font-mono text-xs text-typography-600 whitespace-nowrap">
         {competency.id}
-      </td>
-      <td className="py-3 pr-4 font-medium">{competency.name}</td>
-      <td className="py-3 pr-4 text-typography-700">{isLoading ? "…" : helpful || "—"}</td>
-      <td className="py-3 pr-4 text-typography-700">{isLoading ? "…" : unhelpful || "—"}</td>
-    </tr>
+      </TableCell>
+      <TableCell className="py-3 pr-4 font-medium">{competency.name}</TableCell>
+      <TableCell className="py-3 pr-4 text-typography-700">
+        {isLoading ? "…" : helpful || "—"}
+      </TableCell>
+      <TableCell className="py-3 pr-4 text-typography-700">
+        {isLoading ? "…" : unhelpful || "—"}
+      </TableCell>
+    </TableRow>
   );
 };
 
@@ -196,16 +208,16 @@ export const Competencies: FC = () => {
             No competencies yet. Click “Create competency” to add one.
           </p>
         ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-border-light text-sm text-typography-700">
-                <th className="py-3 pr-4 font-medium w-[220px]">Competency ID</th>
-                <th className="py-3 pr-4 font-medium w-1/5">Name</th>
-                <th className="py-3 pr-4 font-medium">Helpful behaviours</th>
-                <th className="py-3 pr-4 font-medium">Unhelpful behaviours</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="w-full text-left border-collapse">
+            <TableHead>
+              <TableRow className="border-b border-border-light text-sm text-typography-700">
+                <TableHeader className="py-3 pr-4 font-medium w-[220px]">Competency ID</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium w-1/5">Name</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Helpful behaviours</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Unhelpful behaviours</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {competencies.map(competency => (
                 <CompetencyRow
                   key={competency.id}
@@ -213,8 +225,8 @@ export const Competencies: FC = () => {
                   onClick={() => openEdit(competency)}
                 />
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </div>
 

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Delete } from "@icons";
 import { toast } from "sonner";
 
+import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import { usePublishLabRunMutation } from "@api";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -109,34 +110,40 @@ export const PublishRunDrawer: React.FC<PublishRunDrawerProps> = ({ run, onClose
                   <label className="text-xs text-typography-500">
                     {en.aiLab.publish.typeLabel}
                   </label>
-                  <select
+                  <Select
+                    id={`publish-question-type-${index}`}
+                    labelText={en.aiLab.publish.typeLabel}
+                    hideLabel
                     value={question.type}
                     onChange={e =>
                       updateQuestion(index, { type: e.target.value as LabEvalQuestionType })
                     }
-                    className="border border-border-light rounded-md px-3 py-2 outline-none text-base bg-white"
                   >
-                    <option value="RATING">{en.aiLab.publish.typeRating}</option>
-                    <option value="YES_NO">{en.aiLab.publish.typeYesNo}</option>
-                    <option value="TEXT">{en.aiLab.publish.typeText}</option>
-                  </select>
+                    <SelectItem value="RATING" text={en.aiLab.publish.typeRating} />
+                    <SelectItem value="YES_NO" text={en.aiLab.publish.typeYesNo} />
+                    <SelectItem value="TEXT" text={en.aiLab.publish.typeText} />
+                  </Select>
                 </div>
                 {question.type === "RATING" && (
                   <div className="flex flex-col gap-1 w-[160px]">
                     <label className="text-xs text-typography-500">
                       {en.aiLab.publish.scaleLabel}
                     </label>
-                    <select
+                    <Select
+                      id={`publish-question-scale-${index}`}
+                      labelText={en.aiLab.publish.scaleLabel}
+                      hideLabel
                       value={question.scaleMax}
                       onChange={e => updateQuestion(index, { scaleMax: Number(e.target.value) })}
-                      className="border border-border-light rounded-md px-3 py-2 outline-none text-base bg-white"
                     >
                       {SCALE_OPTIONS.map(max => (
-                        <option key={max} value={max}>
-                          {en.aiLab.publish.scaleOption(max)}
-                        </option>
+                        <SelectItem
+                          key={max}
+                          value={max}
+                          text={en.aiLab.publish.scaleOption(max)}
+                        />
                       ))}
-                    </select>
+                    </Select>
                   </div>
                 )}
               </div>

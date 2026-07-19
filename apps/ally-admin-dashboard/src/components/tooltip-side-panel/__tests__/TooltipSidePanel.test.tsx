@@ -109,7 +109,9 @@ describe("TooltipSidePanel", () => {
 
     it("renders Tip Text field with required asterisk", () => {
       render(<TooltipSidePanel {...defaultProps} />);
-      expect(screen.getByText("Tip Text")).toBeInTheDocument();
+      // "Tip Text" now appears twice: the visible <Field> label and the Carbon
+      // TextArea's (visually hidden) accessible label.
+      expect(screen.getAllByText("Tip Text").length).toBeGreaterThan(0);
       expect(screen.getByText("*")).toBeInTheDocument();
     });
 

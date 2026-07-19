@@ -4,6 +4,14 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@ally-ui-mono/ui-shared";
+import {
   useDemoteSuperDuperAdminMutation,
   useGetSuperAdminCandidatesQuery,
   useGetSuperAdminsQuery,
@@ -223,42 +231,46 @@ export const SuperAdmins: React.FC = () => {
     }
 
     return (
-      <table className="w-full text-left text-sm text-typography-900">
-        <thead>
-          <tr className="border-b border-border-dark text-typography-600">
-            <th className="py-3 pr-4 font-medium">{strings.name}</th>
-            <th className="py-3 pr-4 font-medium">{strings.email}</th>
-            <th className="py-3 pr-4 font-medium">{strings.tier}</th>
-            <th className="py-3 pr-4 font-medium">{strings.status}</th>
-            <th className="py-3 pr-4 font-medium">{strings.addedOn}</th>
-            <th className="py-3" />
-          </tr>
-        </thead>
-        <tbody>
+      <Table className="w-full text-left text-sm text-typography-900">
+        <TableHead>
+          <TableRow className="border-b border-border-dark text-typography-600">
+            <TableHeader className="py-3 pr-4 font-medium">{strings.name}</TableHeader>
+            <TableHeader className="py-3 pr-4 font-medium">{strings.email}</TableHeader>
+            <TableHeader className="py-3 pr-4 font-medium">{strings.tier}</TableHeader>
+            <TableHeader className="py-3 pr-4 font-medium">{strings.status}</TableHeader>
+            <TableHeader className="py-3 pr-4 font-medium">{strings.addedOn}</TableHeader>
+            <TableHeader className="py-3" />
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {admins.map(admin => {
             const isSelf = admin.id === currentUser?.id;
             return (
-              <tr key={admin.id} className="border-b border-border-light" data-testid="sa-row">
-                <td className="py-3 pr-4">
+              <TableRow
+                key={admin.id}
+                className="border-b border-border-light"
+                data-testid="sa-row"
+              >
+                <TableCell className="py-3 pr-4">
                   {admin.name || admin.email}
                   {isSelf && (
                     <span className="ml-2 text-xs text-typography-600">({strings.you})</span>
                   )}
-                </td>
-                <td className="py-3 pr-4">{admin.email}</td>
-                <td className="py-3 pr-4">
+                </TableCell>
+                <TableCell className="py-3 pr-4">{admin.email}</TableCell>
+                <TableCell className="py-3 pr-4">
                   <TierBadge tier={admin.tier} />
-                </td>
-                <td className="py-3 pr-4">
+                </TableCell>
+                <TableCell className="py-3 pr-4">
                   <StatusBadge status={admin.status} />
-                </td>
-                <td className="py-3 pr-4">{formatDate(admin.createdAt)}</td>
-                <td className="py-3 text-right">{renderRowActions(admin)}</td>
-              </tr>
+                </TableCell>
+                <TableCell className="py-3 pr-4">{formatDate(admin.createdAt)}</TableCell>
+                <TableCell className="py-3 text-right">{renderRowActions(admin)}</TableCell>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     );
   };
 

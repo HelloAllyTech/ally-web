@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { useFormContext, useWatch } from "react-hook-form";
 
+import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import { Plus, Trash } from "@assets";
 import { MatchingPair, QuizOption, TrackFormValues } from "@types";
 
@@ -88,18 +89,23 @@ export const MatchingEditor: FC<MatchingEditorProps> = ({ questionPath }) => {
               placeholder={`Right ${index + 1}`}
               className="flex-1 border border-border-light rounded-md px-3 py-1.5 text-sm outline-none focus:border-primary-400"
             />
-            <select
+            <Select
+              id={`matching-${leftEntry.id}`}
+              labelText="Match to…"
+              hideLabel
+              className="max-w-[160px]"
               value={getMatchFor(leftEntry.id)}
               onChange={event => setMatchFor(leftEntry.id, event.target.value)}
-              className="border border-border-light rounded-md px-2 py-1.5 text-sm outline-none focus:border-primary-400 max-w-[160px]"
             >
-              <option value="">Match to…</option>
+              <SelectItem value="" text="Match to…" />
               {right.map(rightEntry => (
-                <option key={rightEntry.id} value={rightEntry.id}>
-                  {rightEntry.text || "(untitled)"}
-                </option>
+                <SelectItem
+                  key={rightEntry.id}
+                  value={rightEntry.id}
+                  text={rightEntry.text || "(untitled)"}
+                />
               ))}
-            </select>
+            </Select>
             {left.length > 2 && (
               <button
                 type="button"

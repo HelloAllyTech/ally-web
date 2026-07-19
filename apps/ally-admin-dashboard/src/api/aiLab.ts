@@ -20,6 +20,8 @@ import {
   CreateEvaluatorResponse,
   LabRunAssignmentItem,
   LabRunResults,
+  LabAutoEvaluation,
+  CreateAutoEvalRequest,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -212,6 +214,25 @@ export const aiLabAPI = baseAPI.injectEndpoints({
       providesTags: (result, error, runId) => [{ type: TAG_TYPES.AI_LAB_ASSIGNMENTS, id: runId }],
     }),
 
+    // ---- Automated (LLM-judge) evaluation ----
+    getRunAutoEvaluations: builder.query<LabAutoEvaluation[], string>({
+      query: runId => ({
+        url: ApiEndpoints.AI_LAB.RUN_AUTO_EVALUATIONS(runId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (result, error, runId) => [{ type: TAG_TYPES.AI_LAB_AUTO_EVALS, id: runId }],
+    }),
+    createAutoEvaluation: builder.mutation<LabAutoEvaluation, CreateAutoEvalRequest>({
+      query: ({ runId, criteria, model }) => ({
+        url: ApiEndpoints.AI_LAB.RUN_AUTO_EVALUATIONS(runId),
+        method: HttpMethod.POST,
+        body: { criteria, model },
+      }),
+      invalidatesTags: (result, error, { runId }) => [
+        { type: TAG_TYPES.AI_LAB_AUTO_EVALS, id: runId },
+      ],
+    }),
+
     // ---- Evaluators ----
     getLabEvaluators: builder.query<LabListResponse<LabEvaluator>, LabListQuery | void>({
       query: params => ({
@@ -266,6 +287,8 @@ export const {
   useAssignLabRunMutation,
   useUnassignLabRunMutation,
   useGetRunResultsQuery,
+  useGetRunAutoEvaluationsQuery,
+  useCreateAutoEvaluationMutation,
   useGetLabEvaluatorsQuery,
   useCreateLabEvaluatorMutation,
   useRegenerateEvaluatorPasswordMutation,

@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { useForm } from "react-hook-form";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { PopupWrapper, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { addMessageModalFields, en } from "@constants";
@@ -42,11 +43,13 @@ export const AddMessageModal: FC<AddMessageModalProps> = ({
       </label>
 
       {field.multiline ? (
-        <textarea
+        <TextArea
           id={field.id}
+          labelText={field.label}
+          hideLabel
           {...register(field.id)}
           placeholder={field.placeholder}
-          className="border rounded-md px-2 py-2 font-primary outline-none placeholder:text-typography-600 text-base"
+          className="font-primary"
           rows={5}
         />
       ) : (

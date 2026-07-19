@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 
 import { toast } from "sonner";
 
-import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
+import { AutoExpandableTextarea, TextInput } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -276,22 +276,26 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
 
           <div className="space-y-3">
             <Field label={en.simulation.languageCode}>
-              <input
-                type="text"
+              <TextInput
+                id="language-code"
+                labelText={en.simulation.languageCode}
+                hideLabel
                 value={formData.value || ""}
                 onChange={event => handleFieldChange("value", event.target.value)}
                 placeholder={en.simulation.enterLanguageCode}
-                className="border-none focus:outline-none text-base w-full px-0"
+                className="w-full"
               />
             </Field>
 
             <Field label={en.simulation.translationCode}>
-              <input
-                type="text"
+              <TextInput
+                id="language-translation-code"
+                labelText={en.simulation.translationCode}
+                hideLabel
                 value={formData.translationCode || ""}
                 onChange={event => handleFieldChange("translationCode", event.target.value)}
                 placeholder={en.simulation.enterTranslationCode}
-                className="border-none focus:outline-none text-base w-full px-0"
+                className="w-full"
               />
             </Field>
 

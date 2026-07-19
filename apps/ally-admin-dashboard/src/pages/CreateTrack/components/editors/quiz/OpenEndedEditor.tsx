@@ -2,15 +2,13 @@ import { FC } from "react";
 
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { Plus, Trash } from "@assets";
 import { TrackFormValues } from "@types";
 
 interface OpenEndedEditorProps {
   questionPath: `sections.${number}.items.${number}.quiz.questions.${number}`;
 }
-
-const inputClass =
-  "w-full border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400";
 
 export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath }) => {
   const { control } = useFormContext<TrackFormValues>();
@@ -31,12 +29,15 @@ export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath }) => {
             `${questionPath}.rubric.guidance` as `sections.0.items.0.quiz.questions.0.rubric.guidance`
           }
           render={({ field }) => (
-            <textarea
+            <TextArea
+              id="open-ended-grading-guidance"
+              labelText="Grading guidance"
+              hideLabel
               {...field}
               value={field.value ?? ""}
               rows={3}
               placeholder="How should this answer be graded?"
-              className={`${inputClass} resize-y`}
+              className="w-full"
             />
           )}
         />

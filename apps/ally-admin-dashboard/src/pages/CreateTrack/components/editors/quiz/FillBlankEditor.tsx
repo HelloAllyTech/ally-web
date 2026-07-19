@@ -2,6 +2,7 @@ import { FC, useRef, useState } from "react";
 
 import { useFormContext, useWatch } from "react-hook-form";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { Plus, Trash } from "@assets";
 import { ToggleSwitch } from "@components";
 import { FillBlankDef, TrackFormValues } from "@types";
@@ -81,13 +82,16 @@ export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath }) => {
             Insert blank
           </button>
         </div>
-        <textarea
+        <TextArea
+          id="fill-blank-template"
+          labelText="Template"
+          hideLabel
           ref={templateRef}
           value={template}
           onChange={event => setTemplate(event.target.value)}
           rows={3}
           placeholder="The capital of France is {{b1}}."
-          className="w-full border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400 resize-y font-mono"
+          className="w-full font-mono"
         />
         <span className="text-xs text-typography-500">
           Use “Insert blank” to add a {"{{token}}"} placeholder for each answer.

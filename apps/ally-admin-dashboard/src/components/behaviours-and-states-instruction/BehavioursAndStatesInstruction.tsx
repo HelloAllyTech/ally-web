@@ -2,6 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
+import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
 import { Close, Trash } from "@assets";
 import { Button, NotionTable } from "@components";
 import {
@@ -362,17 +363,18 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
             >
               <div className="px-4 py-2.5 text-sm text-typography-900">{tag.name}</div>
               <div className="px-3 py-2 border-l border-border-light">
-                <select
+                <Select
+                  id={`rubric-category-${rowId}-${tag.id}`}
+                  labelText="Category"
+                  hideLabel
                   value={isShould ? "SHOULD_DO" : "SHOULD_NOT_DO"}
                   onChange={e => handleRubricRowCategoryChange(rowId, tag.id, e.target.value)}
-                  className="w-full text-sm bg-transparent border-none outline-none cursor-pointer text-typography-900"
+                  className="w-full"
                 >
                   {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
+                    <SelectItem key={opt.value} value={opt.value} text={opt.label} />
                   ))}
-                </select>
+                </Select>
               </div>
               <div className="flex items-center justify-center">
                 <button
@@ -402,19 +404,20 @@ export const BehavioursAndStatesInstruction: FC<BehavioursAndStatesInstructionPr
               />
             </div>
             <div className="px-3 py-2 border-l border-border-light">
-              <select
+              <Select
+                id="rubric-pending-category"
+                labelText="Category"
+                hideLabel
                 value={pendingRow.category}
                 onChange={e =>
                   setPendingRow(prev => (prev ? { ...prev, category: e.target.value } : null))
                 }
-                className="w-full text-sm bg-transparent border-none outline-none cursor-pointer text-typography-900"
+                className="w-full"
               >
                 {BEHAVIOURS_INSTRUCTION_CATEGORIES.map(opt => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
+                  <SelectItem key={opt.value} value={opt.value} text={opt.label} />
                 ))}
-              </select>
+              </Select>
             </div>
             <div />
           </div>

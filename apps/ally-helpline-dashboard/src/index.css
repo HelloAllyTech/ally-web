@@ -158,23 +158,6 @@
   font-display: swap;
 }
 
-/* Replay Pro - Local Font Faces */
-@font-face {
-  font-family: "Replay Pro";
-  src: url("./assets/fonts/ReplayPro-Regular.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Replay Pro";
-  src: url("./assets/fonts/ReplayPro-Bold.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 @layer base {
   * {
     @apply border-border;
