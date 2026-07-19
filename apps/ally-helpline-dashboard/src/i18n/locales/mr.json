@@ -1009,6 +1009,9 @@
     "of": "पैकी",
     "min": "मिनिटे",
     "sec": "सेकंद",
+    "remindersTab": "स्मरणपत्रे",
+    "descriptionTab": "वर्णन",
+    "noRemindersYet": "या परिस्थितीसाठी अद्याप कोणतीही स्मरणपत्रे नाहीत.",
     "turnIndicator": {
       "speaking": "बोलत आहे...",
       "listening": "ऐकत आहे...",

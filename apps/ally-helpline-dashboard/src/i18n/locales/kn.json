@@ -1009,6 +1009,9 @@
     "of": "ರಲ್ಲಿ",
     "min": "ನಿಮಿಷ",
     "sec": "ಸೆಕೆಂಡು",
+    "remindersTab": "ಜ್ಞಾಪನೆಗಳು",
+    "descriptionTab": "ವಿವರಣೆ",
+    "noRemindersYet": "ಈ ಸನ್ನಿವೇಶಕ್ಕೆ ಇನ್ನೂ ಯಾವುದೇ ಜ್ಞಾಪನೆಗಳಿಲ್ಲ.",
     "turnIndicator": {
       "speaking": "ಮಾತನಾಡುತ್ತಿದೆ...",
       "listening": "ಕೇಳುತ್ತಿದೆ...",

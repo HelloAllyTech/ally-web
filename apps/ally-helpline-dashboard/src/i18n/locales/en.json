@@ -1081,6 +1081,9 @@
     "of": "of",
     "min": "min",
     "sec": "sec",
+    "remindersTab": "Reminders",
+    "descriptionTab": "Description",
+    "noRemindersYet": "No reminders for this scenario yet.",
     "turnIndicator": {
       "speaking": "Speaking...",
       "listening": "Listening...",

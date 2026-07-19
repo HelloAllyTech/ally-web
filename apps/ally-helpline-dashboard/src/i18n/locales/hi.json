@@ -1009,6 +1009,9 @@
     "of": "में से",
     "min": "मिनट",
     "sec": "सेकंड",
+    "remindersTab": "रिमाइंडर",
+    "descriptionTab": "विवरण",
+    "noRemindersYet": "इस परिदृश्य के लिए अभी कोई रिमाइंडर नहीं है।",
     "turnIndicator": {
       "speaking": "बोल रहें है...",
       "listening": "सुन रहें है...",

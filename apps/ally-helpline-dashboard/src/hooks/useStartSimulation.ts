@@ -107,6 +107,10 @@ export const useStartSimulation = (
           JSON.stringify({
             roomId: scenario?.id,
             title: metadata?.title || scenario?.title,
+            // Challenge description + reminders stay viewable during the
+            // roleplay (SessionInfoTabs on the simulation screen).
+            description: scenario?.description,
+            reminders: scenario?.reminders || [],
             triggerWarnings: scenario?.triggerWarnings || [],
             localParticipant: {
               name: user?.name,

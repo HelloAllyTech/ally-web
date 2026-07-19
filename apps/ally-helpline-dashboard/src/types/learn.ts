@@ -24,6 +24,8 @@ export interface Scenario {
   title?: string;
   scenario?: string;
   description?: string;
+  /** Text reminders shown to the learner during the roleplay (backend field pending). */
+  reminders?: string[];
   coverImageUrl?: string | null;
   coverVideoUrl?: string | null;
   status?: ScenarioStatus;

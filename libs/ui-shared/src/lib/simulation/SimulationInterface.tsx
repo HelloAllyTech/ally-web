@@ -10,6 +10,7 @@ import {
 import { motion } from "framer-motion";
 
 import { SessionChecklist } from "./SessionChecklist";
+import { SessionInfoTabs } from "./SessionInfoTabs";
 import { SessionProgress } from "./SessionProgress";
 import { SimulationEvents } from "./SimulationEvents";
 import { TurnState } from "./TurnIndicator";
@@ -141,6 +142,9 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
 
   const hasStateNames = stateNames.length > 0;
   const showSessionProgress = hasStateNames || !!(roomData?.timerMode && startTime);
+  const sessionReminders: string[] = roomData?.reminders ?? [];
+  const sessionDescription: string | undefined = roomData?.description;
+  const showSessionInfo = sessionReminders.length > 0 || !!sessionDescription;
 
   const renderConnectedContent = () => (
     <>
@@ -167,6 +171,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
         />
         {!isFocusMode &&
           (showSessionProgress ||
+            showSessionInfo ||
             (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
             (checklistMode === ChecklistMode.OFF && events?.length > 0)) && (
             <div className="flex flex-col gap-4 w-full h-full min-h-0 max-h-[40vh] md:max-h-none">
@@ -191,6 +196,13 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
               )}
               {checklistMode === ChecklistMode.OFF && events?.length > 0 && (
                 <SimulationEvents events={events} />
+              )}
+              {showSessionInfo && (
+                <SessionInfoTabs
+                  reminders={sessionReminders}
+                  description={sessionDescription}
+                  translations={translations}
+                />
               )}
             </div>
           )}
