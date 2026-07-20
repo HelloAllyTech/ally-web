@@ -55,6 +55,11 @@ export interface SimulationTranslations {
   of: string;
   min: string;
   sec: string;
+  /** Session info panel (reminders + challenge description tabs). Optional so
+   * existing consumers (admin previews) compile without providing them. */
+  remindersTab?: string;
+  descriptionTab?: string;
+  noRemindersYet?: string;
   turnIndicator: TurnIndicatorTranslations;
 }
 

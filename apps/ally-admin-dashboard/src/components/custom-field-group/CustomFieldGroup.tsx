@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { TrashRed } from "@assets";
 import { en, FORM_FIELD_IDS } from "@constants";
 import { SimulationCustomField } from "@types";
@@ -82,10 +83,13 @@ export const CustomFieldGroup: FC<CustomFieldGroupProps> = ({ formMethods }) => 
                 </button>
               </div>
             </div>
-            <textarea
+            <TextArea
+              id={`custom-field-value-${field.id}`}
+              labelText={field.name || "Custom field"}
+              hideLabel
               value={field.value || ""}
               onChange={e => handleFieldChange(field.id, e.target.value)}
-              className="w-full rounded border border-border-light text-md placeholder:text-typography-600 focus:ring-1 focus:ring-primary focus:outline-none px-3 py-2 min-h-[160px] resize-none"
+              rows={6}
             />
           </div>
         );

@@ -4,7 +4,7 @@ import { Check, Info, CircleX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import { Loading, Tooltip } from "@ally-ui-mono/ui-shared";
+import { Loading, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { SummaryGenenerationVideo } from "@assets";
 import {
   NotesIcon,
@@ -182,14 +182,16 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
             </span>
           </Tooltip>
         </div>
-        <textarea
+        <TextArea
           id="notes"
+          labelText={t("summaryLoading.addNotes")}
+          hideLabel
           rows={4}
           value={notes}
           disabled={!hasEditSummaryPermission}
           onChange={e => onNotesChange(e.target.value)}
           placeholder={t("summaryLoading.notesPlaceholder")}
-          className="w-full p-[10px] border-none focus:ring-transparent focus:ring-0 focus:outline-none font-primary text-sm resize-none"
+          className="w-full font-primary"
         />
       </div>
     );

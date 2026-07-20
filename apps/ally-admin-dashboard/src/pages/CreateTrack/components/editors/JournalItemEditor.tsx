@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
+import { TextArea } from "@ally-ui-mono/ui-shared";
 import { Plus, Trash } from "@assets";
 import { ToggleSwitch } from "@components";
 import { MAX_JOURNAL_PROMPTS, MIN_JOURNAL_PROMPTS } from "@constants";
@@ -90,11 +91,14 @@ export const JournalItemEditor: FC<JournalItemEditorProps> = ({
                 control={control}
                 name={`${promptBase}.prompt`}
                 render={({ field: promptField }) => (
-                  <textarea
+                  <TextArea
+                    id={`${promptBase}.prompt`}
+                    labelText={`Prompt ${promptIndex + 1}`}
+                    hideLabel
                     {...promptField}
                     rows={2}
                     placeholder="What should the learner reflect on?"
-                    className="w-full border border-border-light rounded-md px-3 py-2 text-sm outline-none focus:border-primary-400 resize-y"
+                    className="w-full"
                   />
                 )}
               />

@@ -7,6 +7,7 @@ export { SimulationInterface } from "./SimulationInterface";
 export { SimulationControls } from "./SimulationControls";
 export { BottomSection } from "./SimulationBottomSection";
 export { SessionProgress } from "./SessionProgress";
+export { SessionInfoTabs } from "./SessionInfoTabs";
 export * from "./utils";
 export * from "./types";
 export * from "./constants";

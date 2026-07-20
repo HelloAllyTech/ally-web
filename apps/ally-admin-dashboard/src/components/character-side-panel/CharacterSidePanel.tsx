@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 
 import { toast } from "sonner";
 
+import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
 import { useCreateCharacterMutation, useUpdateCharacterMutation } from "@api";
 import { DoubleArrowRight, Trash } from "@assets";
 import { ActionConfirmationPopup, Button, CustomDropdownField, FileUpload } from "@components";
@@ -251,12 +252,14 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
         <div className="flex-1 px-10 pt-6 pb-6 overflow-y-auto min-h-0 custom-scrollbar">
           <div className="space-y-4">
             <Field label="Name" required>
-              <input
-                type="text"
+              <TextInput
+                id="character-name"
+                labelText="Name"
+                hideLabel
                 value={formData.name}
                 onChange={e => handleFieldChange("name", e.target.value)}
                 placeholder="Enter name"
-                className="w-full px-0 py-2 text-base border-none focus:outline-none"
+                className="w-full"
               />
             </Field>
 
@@ -288,22 +291,26 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
             </Field>
 
             <Field label="Profession" required>
-              <input
-                type="text"
+              <TextInput
+                id="character-profession"
+                labelText="Profession"
+                hideLabel
                 value={formData.profession || ""}
                 onChange={e => handleFieldChange("profession", e.target.value)}
                 placeholder="Enter profession"
-                className="w-full px-0 py-2 text-base border-none focus:outline-none"
+                className="w-full"
               />
             </Field>
 
             <Field label="Current location" required>
-              <input
-                type="text"
+              <TextInput
+                id="character-current-location"
+                labelText="Current location"
+                hideLabel
                 value={formData.currentLocation}
                 onChange={e => handleFieldChange("currentLocation", e.target.value)}
                 placeholder="Enter current location"
-                className="w-full px-0 py-2 text-base border-none focus:outline-none"
+                className="w-full"
               />
             </Field>
 
@@ -338,12 +345,15 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
             </Field>
 
             <Field label="Character Backstory">
-              <textarea
+              <TextArea
+                id="character-backstory"
+                labelText="Character Backstory"
+                hideLabel
                 value={formData.characterProfileText || ""}
                 onChange={e => handleFieldChange("characterProfileText", e.target.value)}
                 maxLength={2500}
                 placeholder="Enter character backstory"
-                className="w-full px-3 py-2 text-base border border-border-light rounded-md focus:outline-none min-h-[100px] resize-y"
+                rows={3}
               />
             </Field>
 

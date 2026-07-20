@@ -242,8 +242,10 @@ describe("CreateBadgeSidePanel", () => {
     it("displays all form fields", () => {
       renderComponent();
 
-      expect(screen.getByText("Name")).toBeInTheDocument();
-      expect(screen.getByText("Description")).toBeInTheDocument();
+      // "Name"/"Description" now appear twice: the visible <Field> label and
+      // the Carbon TextInput's (visually hidden) accessible label.
+      expect(screen.getAllByText("Name").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Description").length).toBeGreaterThan(0);
       expect(screen.getByText("Default org-level visibility")).toBeInTheDocument();
       expect(screen.getByText("Category")).toBeInTheDocument();
       expect(screen.getByText("Role")).toBeInTheDocument();

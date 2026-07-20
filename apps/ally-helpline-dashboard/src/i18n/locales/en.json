@@ -348,6 +348,40 @@
       "description": "No dashboards are available yet. Please contact your administrator."
     }
   },
+  "organizationMetrics": {
+    "subtitle": "Organization-wide usage for the selected time period",
+    "ranges": {
+      "30d": "Last 30 days",
+      "90d": "Last 90 days",
+      "12m": "Last 12 months"
+    },
+    "kpis": {
+      "simulationsCompleted": "Simulations completed",
+      "simulationsCompletedCaption": "Total across the organization",
+      "activeUsers": "Active users",
+      "activeUsersCaption": "Completed at least one simulation"
+    },
+    "charts": {
+      "simulationsTrend": "Simulations completed over time",
+      "activeUsersTrend": "Active users over time",
+      "simulationsSeries": "Simulations completed",
+      "activeUsersSeries": "Active users",
+      "axis": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month",
+        "simulations": "Simulations",
+        "users": "Users"
+      }
+    },
+    "states": {
+      "errorTitle": "Couldn't load this chart",
+      "errorSubtitle": "There was a problem fetching the data.",
+      "noAccess": "Organization metrics are available to organization admins only.",
+      "retry": "Retry",
+      "empty": "No data for this range"
+    }
+  },
   "suspended": {
     "title": "Account Suspended",
     "description": {
@@ -1081,6 +1115,9 @@
     "of": "of",
     "min": "min",
     "sec": "sec",
+    "remindersTab": "Reminders",
+    "descriptionTab": "Description",
+    "noRemindersYet": "No reminders for this scenario yet.",
     "turnIndicator": {
       "speaking": "Speaking...",
       "listening": "Listening...",

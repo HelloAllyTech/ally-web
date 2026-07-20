@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Controller } from "react-hook-form";
 import { toast } from "sonner";
 
-import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
 import { Close, Delete, Plus, Search } from "@assets";
 import { en, ENHANCE_TYPE } from "@constants";
 
@@ -209,12 +209,16 @@ export const KnowledgeSource: React.FC<KnowledgeSourceProps> = ({
             </div>
 
             <div className="flex-1 min-h-0 flex flex-col">
-              <textarea
+              <TextArea
+                id="knowledge-source-content"
+                labelText={en.knowledgeSource.content}
+                hideLabel
                 maxLength={MAX_CONTENT_LENGTH}
                 value={activeTab.content}
                 onChange={handleContentChange}
                 placeholder={en.knowledgeSource.content}
-                className="w-full flex-1 min-h-0 rounded border-none p-1 bg-white text-base resize-none focus:outline-none overflow-y-auto"
+                rows={12}
+                className="w-full flex-1 min-h-0"
               />
 
               {/* Character Count and Delete Button */}

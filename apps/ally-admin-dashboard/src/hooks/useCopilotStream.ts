@@ -23,7 +23,18 @@ import { logger } from "@utils";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 let messageIdCounter = 0;
-const nextMessageId = () => `msg_${Date.now().toString(36)}_${++messageIdCounter}`;
+/**
+ * Collision-proof client message id. Prefers crypto.randomUUID (unique across
+ * remounts, tabs, and rapid same-millisecond calls); the timestamp+counter form
+ * is a fallback for environments without it. Ids only need to be unique within
+ * the feed, so either is sufficient — randomUUID just removes the theoretical
+ * same-ms collision the bare counter allowed.
+ */
+const nextMessageId = () => {
+  const uuid = globalThis.crypto?.randomUUID?.();
+  if (uuid) return `msg_${uuid}`;
+  return `msg_${Date.now().toString(36)}_${++messageIdCounter}`;
+};
 
 /**
  * Parses SSE frames out of `buffer`. Returns the parsed events plus the

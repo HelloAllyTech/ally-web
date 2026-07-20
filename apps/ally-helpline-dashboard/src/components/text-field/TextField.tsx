@@ -1,4 +1,4 @@
-import { FC, WheelEventHandler } from "react";
+import { FC, useId, WheelEventHandler } from "react";
 
 import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
 
@@ -46,7 +46,12 @@ const TextField: FC<TextFieldProps> = ({
 
   const errorText = (errors?.[name ?? ""]?.message as string) || errorMessage;
   const invalid = !!errors?.[name ?? ""] || !!errorMessage;
-  const fieldId = id || name || label || "text-field";
+  // Each field needs a UNIQUE, stable id. The old `"text-field"` constant gave
+  // every field the same id, which breaks label↔input association and lets the
+  // browser's autofill/password manager treat them as one group — a known cause
+  // of focus being stolen after a single keystroke.
+  const generatedId = useId();
+  const fieldId = id || name || generatedId;
 
   const registerProps = register && name ? register(name) : {};
 
@@ -61,6 +66,21 @@ const TextField: FC<TextFieldProps> = ({
     style: inputStyles,
     ref: inputRef,
     onWheel: handleWheel,
+    // Opt these fields out of browser/extension form helpers that inject into
+    // inputs and can steal focus mid-typing (observed on Edge: focus lost after
+    // one keystroke, gone in InPrivate where extensions are disabled). There is
+    // no single universal opt-out, so we set the hints each common family
+    // honors. Callers can still override via `props`.
+    autoComplete: "off",
+    // Password managers
+    "data-lpignore": "true", // LastPass
+    "data-1p-ignore": "true", // 1Password
+    "data-bwignore": "true", // Bitwarden
+    "data-form-type": "other", // Dashlane / generic
+    // Writing assistants (Grammarly, Microsoft Editor, etc.)
+    "data-gramm": "false",
+    "data-gramm_editor": "false",
+    "data-enable-grammarly": "false",
     ...registerProps,
     ...(onChange ? { onChange } : {}),
     ...(props as Record<string, unknown>),

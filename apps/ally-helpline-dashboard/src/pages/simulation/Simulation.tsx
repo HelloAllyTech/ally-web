@@ -45,6 +45,9 @@ export const Simulation = () => {
     of: t("simulationPage.of"),
     min: t("simulationPage.min"),
     sec: t("simulationPage.sec"),
+    remindersTab: t("simulationPage.remindersTab"),
+    descriptionTab: t("simulationPage.descriptionTab"),
+    noRemindersYet: t("simulationPage.noRemindersYet"),
     turnIndicator: {
       speaking: t("simulationPage.turnIndicator.speaking"),
       listening: t("simulationPage.turnIndicator.listening"),

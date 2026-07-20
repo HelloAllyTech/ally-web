@@ -11,6 +11,8 @@ import {
   GetCounsellorStatsResponse,
   GetDashboardUrlResponse,
   GetDashboardsResponse,
+  GetOrganizationMetricsRequest,
+  GetOrganizationMetricsResponse,
 } from "@types";
 
 import { baseAPI } from "./baseAPI";
@@ -49,6 +51,24 @@ const analyticsAPI = baseAPI.injectEndpoints({
         params: params ? params : undefined,
       }),
     }),
+
+    /**
+     * Get organization metrics (tenant-admin native dashboard)
+     * Tenant-scoped on the backend via the caller's JWT — no tenant id is
+     * sent from the client.
+     * @param {GetOrganizationMetricsRequest} params - Time range (30d/90d/12m)
+     * @returns {Promise<GetOrganizationMetricsResponse>} Totals + per-bucket trends
+     */
+    getOrganizationMetrics: builder.query<
+      GetOrganizationMetricsResponse,
+      GetOrganizationMetricsRequest
+    >({
+      query: params => ({
+        url: ApiEndpoints.ANALYTICS.GET_ORGANIZATION_METRICS,
+        method: HttpMethod.GET,
+        params,
+      }),
+    }),
   }),
 });
 
@@ -56,4 +76,5 @@ export const {
   useLazyGetDashboardUrlQuery,
   useLazyGetDashboardsQuery,
   useLazyGetCounsellorStatsQuery,
+  useGetOrganizationMetricsQuery,
 } = analyticsAPI;

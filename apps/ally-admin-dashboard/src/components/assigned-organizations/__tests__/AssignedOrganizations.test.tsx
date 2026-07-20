@@ -19,6 +19,22 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ),
 }));
 
+// Mock the shared Button (avoids loading the whole @components barrel and its
+// transitive @api usage in this unit test).
+vi.mock("@components", () => ({
+  Button: ({ children, onClick, disabled, className, variant, fullWidth, ...props }: any) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={className}
+      data-variant={variant}
+      {...props}
+    >
+      {children}
+    </button>
+  ),
+}));
+
 // Mock sonner toast
 vi.mock("sonner", () => ({
   toast: {

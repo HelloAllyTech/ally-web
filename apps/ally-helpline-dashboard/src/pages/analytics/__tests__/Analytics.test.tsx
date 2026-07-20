@@ -7,7 +7,7 @@
  * - Basic functionality verification
  */
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { AnalyticsType } from "@constants";
@@ -17,17 +17,45 @@ import { Analytics } from "../Analytics";
 // Mock the API hooks
 const mockGetDashboardUrl = vi.fn();
 const mockGetDashboards = vi.fn();
+// Mutable fixtures so individual tests can vary the dashboards list and the
+// caller's permissions (they drive tab visibility and the Org tab's content).
+let mockDashboardsData: any;
+let mockPermissions: string[] = [];
 
 vi.mock("@api", () => ({
   useLazyGetDashboardUrlQuery: () => [mockGetDashboardUrl],
-  useLazyGetDashboardsQuery: () => [mockGetDashboards, { data: undefined }],
+  useLazyGetDashboardsQuery: () => [mockGetDashboards, { data: mockDashboardsData }],
+  useGetOrganizationMetricsQuery: () => ({
+    data: undefined,
+    isFetching: true,
+    isError: false,
+    refetch: vi.fn(),
+  }),
 }));
 
-// Mock the logger and feature flags
+// Mock the user hook — permissions gate the Organization Metrics content
+vi.mock("@hooks", () => ({
+  useUser: () => ({ permissions: mockPermissions }),
+}));
+
+// Mock the logger and the ui-shared primitives the Organization Metrics
+// section renders (Tile/skeletons/notification).
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
   },
+  Tile: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  SkeletonText: () => <div data-testid="skeleton-text" />,
+  SkeletonPlaceholder: ({ className }: any) => (
+    <div data-testid="skeleton-placeholder" className={className} />
+  ),
+  InlineNotification: ({ title, subtitle }: any) => (
+    <div data-testid="inline-notification">
+      {title}
+      {subtitle}
+    </div>
+  ),
+  Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
 }));
 
 // Mock the NoAnalytics asset
@@ -71,6 +99,8 @@ vi.mock("@components", () => ({
 describe("Analytics Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockDashboardsData = undefined;
+    mockPermissions = [];
   });
 
   afterEach(() => {
@@ -164,6 +194,68 @@ describe("Analytics Component", () => {
       expect(() => {
         render(<Analytics />);
       }).not.toThrow();
+    });
+  });
+
+  /**
+   * TEST GROUP: Toggle tabs & native Organization Metrics
+   * Tab visibility must stay driven by the tenant's registered dashboards
+   * (unchanged from the Metabase-only days); only the Organization Metrics
+   * tab's CONTENT is native now.
+   */
+  describe("Toggle tabs and Organization Metrics", () => {
+    const threeDashboards = [
+      { externalId: "d1", analyticsType: AnalyticsType.CallLog },
+      { externalId: "d2", analyticsType: AnalyticsType.Simulation },
+      { externalId: "d3", analyticsType: AnalyticsType.Org },
+    ];
+
+    it("keeps all three tabs when the tenant has all three dashboards", () => {
+      mockDashboardsData = threeDashboards;
+      render(<Analytics />);
+      expect(screen.getByTestId("toggle-items-count").textContent).toBe("3");
+      expect(screen.getByTestId(`toggle-${AnalyticsType.CallLog}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`toggle-${AnalyticsType.Simulation}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`toggle-${AnalyticsType.Org}`)).toBeInTheDocument();
+    });
+
+    it("renders the native section on the Organization Metrics tab for permitted users", async () => {
+      mockDashboardsData = threeDashboards;
+      mockPermissions = ["view:organization-metrics"];
+      render(<Analytics />);
+      fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
+      expect(await screen.findByTestId("organization-metrics-section")).toBeInTheDocument();
+      // No Metabase iframe for the org tab
+      expect(document.querySelector("iframe")).toBeNull();
+    });
+
+    it("shows an access notice on the Organization Metrics tab without the permission", async () => {
+      mockDashboardsData = threeDashboards;
+      render(<Analytics />);
+      fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
+      expect(await screen.findByTestId("organization-metrics-no-access")).toBeInTheDocument();
+    });
+
+    it("shows the Org tab (and native section) for admins even with no org Metabase dashboard", async () => {
+      mockDashboardsData = [
+        { externalId: "d1", analyticsType: AnalyticsType.CallLog },
+        { externalId: "d2", analyticsType: AnalyticsType.Simulation },
+      ];
+      mockPermissions = ["view:organization-metrics"];
+      render(<Analytics />);
+      expect(screen.getByTestId("toggle-items-count").textContent).toBe("3");
+      fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
+      expect(await screen.findByTestId("organization-metrics-section")).toBeInTheDocument();
+    });
+
+    it("keeps Metabase tabs untouched for users without the permission", () => {
+      mockDashboardsData = [
+        { externalId: "d1", analyticsType: AnalyticsType.CallLog },
+        { externalId: "d2", analyticsType: AnalyticsType.Simulation },
+      ];
+      render(<Analytics />);
+      expect(screen.getByTestId("toggle-items-count").textContent).toBe("2");
+      expect(screen.queryByTestId(`toggle-${AnalyticsType.Org}`)).toBeNull();
     });
   });
 });

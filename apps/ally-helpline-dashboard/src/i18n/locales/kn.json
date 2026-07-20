@@ -301,6 +301,40 @@
     },
     "evaluationChecklist": "ಮೌಲ್ಯಮಾಪನ ಪರಿಶೀಲನಾ ಪಟ್ಟಿ"
   },
+  "organizationMetrics": {
+    "subtitle": "ಆಯ್ದ ಅವಧಿಯಲ್ಲಿ ಇಡೀ ಸಂಸ್ಥೆಯ ಬಳಕೆ",
+    "ranges": {
+      "30d": "ಕಳೆದ 30 ದಿನಗಳು",
+      "90d": "ಕಳೆದ 90 ದಿನಗಳು",
+      "12m": "ಕಳೆದ 12 ತಿಂಗಳುಗಳು"
+    },
+    "kpis": {
+      "simulationsCompleted": "ಪೂರ್ಣಗೊಂಡ ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು",
+      "simulationsCompletedCaption": "ಇಡೀ ಸಂಸ್ಥೆಯ ಒಟ್ಟು",
+      "activeUsers": "ಸಕ್ರಿಯ ಬಳಕೆದಾರರು",
+      "activeUsersCaption": "ಕನಿಷ್ಠ ಒಂದು ಸಿಮ್ಯುಲೇಶನ್ ಪೂರ್ಣಗೊಳಿಸಿದವರು"
+    },
+    "charts": {
+      "simulationsTrend": "ಕಾಲಾನುಕ್ರಮದಲ್ಲಿ ಪೂರ್ಣಗೊಂಡ ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು",
+      "activeUsersTrend": "ಕಾಲಾನುಕ್ರಮದಲ್ಲಿ ಸಕ್ರಿಯ ಬಳಕೆದಾರರು",
+      "simulationsSeries": "ಪೂರ್ಣಗೊಂಡ ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು",
+      "activeUsersSeries": "ಸಕ್ರಿಯ ಬಳಕೆದಾರರು",
+      "axis": {
+        "day": "ದಿನ",
+        "week": "ವಾರ",
+        "month": "ತಿಂಗಳು",
+        "simulations": "ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು",
+        "users": "ಬಳಕೆದಾರರು"
+      }
+    },
+    "states": {
+      "errorTitle": "ಈ ಚಾರ್ಟ್ ಲೋಡ್ ಆಗಲಿಲ್ಲ",
+      "errorSubtitle": "ಡೇಟಾ ಪಡೆಯುವಲ್ಲಿ ಸಮಸ್ಯೆ ಉಂಟಾಯಿತು.",
+      "noAccess": "ಸಂಸ್ಥೆಯ ಮೆಟ್ರಿಕ್ಸ್ ಸಂಸ್ಥೆಯ ಅಡ್ಮಿನ್‌ಗಳಿಗೆ ಮಾತ್ರ ಲಭ್ಯವಿದೆ.",
+      "retry": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+      "empty": "ಈ ಅವಧಿಗೆ ಡೇಟಾ ಇಲ್ಲ"
+    }
+  },
   "analytics": {
     "title": "ಸೆಷನ್ ವಿಶ್ಲೇಷಣೆ",
     "dashboardTitle": "ಮೆಟಾಬೇಸ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
@@ -1009,6 +1043,9 @@
     "of": "ರಲ್ಲಿ",
     "min": "ನಿಮಿಷ",
     "sec": "ಸೆಕೆಂಡು",
+    "remindersTab": "ಜ್ಞಾಪನೆಗಳು",
+    "descriptionTab": "ವಿವರಣೆ",
+    "noRemindersYet": "ಈ ಸನ್ನಿವೇಶಕ್ಕೆ ಇನ್ನೂ ಯಾವುದೇ ಜ್ಞಾಪನೆಗಳಿಲ್ಲ.",
     "turnIndicator": {
       "speaking": "ಮಾತನಾಡುತ್ತಿದೆ...",
       "listening": "ಕೇಳುತ್ತಿದೆ...",

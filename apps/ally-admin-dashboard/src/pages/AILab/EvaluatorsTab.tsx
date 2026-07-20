@@ -4,6 +4,14 @@ import { Copy, Delete, Refresh } from "@icons";
 import { toast } from "sonner";
 
 import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@ally-ui-mono/ui-shared";
+import {
   useGetLabEvaluatorsQuery,
   useCreateLabEvaluatorMutation,
   useRegenerateEvaluatorPasswordMutation,
@@ -173,47 +181,53 @@ export const EvaluatorsTab: React.FC = () => {
           />
         ) : (
           <div className="border border-border-light rounded-md overflow-hidden">
-            <table className="w-full text-left font-primary text-base">
-              <thead>
-                <tr className="bg-background-secondary text-typography-700 text-sm">
-                  <th className="px-4 py-3 font-medium">{en.aiLab.evaluators.columnEmail}</th>
-                  <th className="px-4 py-3 font-medium w-[110px]">
+            <Table className="w-full text-left font-primary text-base">
+              <TableHead>
+                <TableRow className="bg-background-secondary text-typography-700 text-sm">
+                  <TableHeader className="px-4 py-3 font-medium">
+                    {en.aiLab.evaluators.columnEmail}
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium w-[110px]">
                     {en.aiLab.evaluators.columnAssigned}
-                  </th>
-                  <th className="px-4 py-3 font-medium w-[110px]">
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium w-[110px]">
                     {en.aiLab.evaluators.columnSubmitted}
-                  </th>
-                  <th className="px-4 py-3 font-medium w-[160px]">
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium w-[160px]">
                     {en.aiLab.evaluators.columnLastLogin}
-                  </th>
-                  <th className="px-4 py-3 font-medium w-[130px]">
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium w-[130px]">
                     {en.aiLab.evaluators.columnCreated}
-                  </th>
-                  <th className="px-4 py-3 font-medium text-right w-[100px]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableHeader>
+                  <TableHeader className="px-4 py-3 font-medium text-right w-[100px]">
+                    Actions
+                  </TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {evaluators.map(evaluator => (
-                  <tr
+                  <TableRow
                     key={evaluator.id}
                     className="border-t border-border-light hover:bg-background-secondary/50 transition-colors"
                   >
-                    <td className="px-4 py-3 text-typography-900">{evaluator.email}</td>
-                    <td className="px-4 py-3 text-typography-700">
+                    <TableCell className="px-4 py-3 text-typography-900">
+                      {evaluator.email}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-typography-700">
                       {evaluator.assignedCount ?? 0}
-                    </td>
-                    <td className="px-4 py-3 text-typography-700">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-typography-700">
                       {evaluator.submittedCount ?? 0}
-                    </td>
-                    <td className="px-4 py-3 text-typography-500 text-sm">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-typography-500 text-sm">
                       {evaluator.lastLoginAt
                         ? new Date(evaluator.lastLoginAt).toLocaleString()
                         : en.aiLab.evaluators.never}
-                    </td>
-                    <td className="px-4 py-3 text-typography-500 text-sm">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-typography-500 text-sm">
                       {new Date(evaluator.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
                       <div className="flex items-center justify-end gap-3 text-typography-600">
                         <button
                           onClick={() => setRegenerateTarget(evaluator)}
@@ -232,11 +246,11 @@ export const EvaluatorsTab: React.FC = () => {
                           <Delete size={18} />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>
