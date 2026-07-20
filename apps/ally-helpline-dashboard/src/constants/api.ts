@@ -20,6 +20,7 @@ export const ApiEndpoints = {
   ANALYTICS: {
     GET_DASHBOARD: "/v1/analytics/dashboard",
     GET_COUNSELLOR_STATS: "/v1/analytics/counselor-stats",
+    GET_ORGANIZATION_METRICS: "/v1/tenant-analytics/organization-metrics",
   },
   AUDIO_CALL: {
     GET_WAITING_CLIENTS: "/v1/users/waiting-list",

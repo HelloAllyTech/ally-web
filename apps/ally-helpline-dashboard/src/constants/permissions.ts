@@ -1,5 +1,7 @@
 export enum Permissions {
   VIEW_ANALYTICS_DASHBOARD = "view:analytics:dashboard",
+  // Tenant-admin native Organization Metrics dashboard (not Metabase)
+  VIEW_ORGANIZATION_METRICS = "view:organization-metrics",
 
   // Call related permissions
   START_MICROPHONE_CHAT = "start:microphone-chat",

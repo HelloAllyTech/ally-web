@@ -301,6 +301,40 @@
     },
     "evaluationChecklist": "मूल्यांकन चेकलिस्ट"
   },
+  "organizationMetrics": {
+    "subtitle": "चुनी गई समयावधि में पूरे संगठन का उपयोग",
+    "ranges": {
+      "30d": "पिछले 30 दिन",
+      "90d": "पिछले 90 दिन",
+      "12m": "पिछले 12 महीने"
+    },
+    "kpis": {
+      "simulationsCompleted": "पूरे किए गए सिमुलेशन",
+      "simulationsCompletedCaption": "पूरे संगठन में कुल",
+      "activeUsers": "सक्रिय उपयोगकर्ता",
+      "activeUsersCaption": "कम से कम एक सिमुलेशन पूरा किया"
+    },
+    "charts": {
+      "simulationsTrend": "समय के साथ पूरे किए गए सिमुलेशन",
+      "activeUsersTrend": "समय के साथ सक्रिय उपयोगकर्ता",
+      "simulationsSeries": "पूरे किए गए सिमुलेशन",
+      "activeUsersSeries": "सक्रिय उपयोगकर्ता",
+      "axis": {
+        "day": "दिन",
+        "week": "सप्ताह",
+        "month": "महीना",
+        "simulations": "सिमुलेशन",
+        "users": "उपयोगकर्ता"
+      }
+    },
+    "states": {
+      "errorTitle": "यह चार्ट लोड नहीं हो सका",
+      "errorSubtitle": "डेटा लाने में समस्या हुई।",
+      "noAccess": "ऑर्गनाइज़ेशन मेट्रिक्स केवल संगठन एडमिन के लिए उपलब्ध हैं।",
+      "retry": "पुनः प्रयास करें",
+      "empty": "इस अवधि के लिए कोई डेटा नहीं"
+    }
+  },
   "analytics": {
     "title": "सेशन का विश्लेषण",
     "dashboardTitle": "मेटाबेस डॅशबोर्ड",

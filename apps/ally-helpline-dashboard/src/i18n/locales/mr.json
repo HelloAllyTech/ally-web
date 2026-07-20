@@ -301,6 +301,40 @@
     },
     "evaluationChecklist": "मूल्यांकन तपासणी यादी"
   },
+  "organizationMetrics": {
+    "subtitle": "निवडलेल्या कालावधीतील संपूर्ण संस्थेचा वापर",
+    "ranges": {
+      "30d": "मागील 30 दिवस",
+      "90d": "मागील 90 दिवस",
+      "12m": "मागील 12 महिने"
+    },
+    "kpis": {
+      "simulationsCompleted": "पूर्ण झालेली सिम्युलेशन्स",
+      "simulationsCompletedCaption": "संपूर्ण संस्थेतील एकूण",
+      "activeUsers": "सक्रिय वापरकर्ते",
+      "activeUsersCaption": "किमान एक सिम्युलेशन पूर्ण केले"
+    },
+    "charts": {
+      "simulationsTrend": "कालानुसार पूर्ण झालेली सिम्युलेशन्स",
+      "activeUsersTrend": "कालानुसार सक्रिय वापरकर्ते",
+      "simulationsSeries": "पूर्ण झालेली सिम्युलेशन्स",
+      "activeUsersSeries": "सक्रिय वापरकर्ते",
+      "axis": {
+        "day": "दिवस",
+        "week": "आठवडा",
+        "month": "महिना",
+        "simulations": "सिम्युलेशन्स",
+        "users": "वापरकर्ते"
+      }
+    },
+    "states": {
+      "errorTitle": "हा चार्ट लोड होऊ शकला नाही",
+      "errorSubtitle": "डेटा आणताना अडचण आली.",
+      "noAccess": "ऑर्गनायझेशन मेट्रिक्स फक्त संस्था अ‍ॅडमिनसाठी उपलब्ध आहेत.",
+      "retry": "पुन्हा प्रयत्न करा",
+      "empty": "या कालावधीसाठी डेटा नाही"
+    }
+  },
   "analytics": {
     "title": "सेशनचे विश्लेषण",
     "dashboardTitle": "मेटाबेस डॅशबोर्ड",
