@@ -33,7 +33,7 @@ import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay }
 
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
 import CallSummarySidebar from "./CallSummarySidebar";
-import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
+import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
 import { LogsTableProps } from "./types";
 import {
@@ -58,6 +58,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [callNameFilter, setCallNameFilter] = useState<string | undefined>(undefined);
+  const [fieldFiltersParam, setFieldFiltersParam] = useState<string | undefined>(undefined);
   const tableRef = useRef<HTMLDivElement>(null);
   const [summary, setSummary] = useState<CallLog | SimulationLog>();
 
@@ -91,6 +92,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       offset: offset,
       archive: false,
       ...(callNameFilter ? { callName: callNameFilter } : {}),
+      ...(fieldFiltersParam ? { fieldFilters: fieldFiltersParam } : {}),
     },
     { skip: !isCall, refetchOnFocus: true, refetchOnReconnect: true },
   );
@@ -182,10 +184,12 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       callName && typeof callName.value === "string" && callName.value.trim()
         ? callName.value.trim()
         : undefined;
+    const newFieldFilters = buildFieldFiltersParam(filter);
     // GenericTable fires onFilterChange on mount with an empty filter; bail
     // out when nothing actually changed so we don't wipe the loaded page.
-    if (newCallName === callNameFilter) return;
+    if (newCallName === callNameFilter && newFieldFilters === fieldFiltersParam) return;
     setCallNameFilter(newCallName);
+    setFieldFiltersParam(newFieldFilters);
     setLogs([]);
     setHasMore(true);
     dispatch(updateFilters({ ...filters, offset: 0 }));
@@ -236,15 +240,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
     };
   };
 
-  const customFieldColumns: Column<any>[] = customFieldDefs
-    .filter(def => def.showInTable !== false)
-    .map(def => ({
-      key: `cf_${def.id}`,
-      header: def.name,
-      style: { width: "10%", minWidth: 100 },
-      render: (_value: any, row: any) =>
-        renderCustomFieldCell(def, row.raw?.customFieldValues ?? []),
-    }));
+  const customFieldColumns: Column<any>[] = buildCustomFieldColumns(customFieldDefs);
 
   const callColumns: Column<any>[] = [
     {

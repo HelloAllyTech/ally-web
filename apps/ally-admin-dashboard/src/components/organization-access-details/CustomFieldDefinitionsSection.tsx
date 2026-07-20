@@ -106,6 +106,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
     CustomFieldEditPermission.BOTH,
   );
   const [showInTable, setShowInTable] = useState(true);
+  const [filterable, setFilterable] = useState(true);
   const [fillMode, setFillMode] = useState<CustomFieldFillMode>(CustomFieldFillMode.MANUAL);
   const [aiInstruction, setAiInstruction] = useState("");
   const [options, setOptions] = useState<OptionRow[]>([newOptionRow(0)]);
@@ -116,6 +117,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
     setSectionKey(SCRIBE_SECTIONS[0].key);
     setEditPermission(CustomFieldEditPermission.BOTH);
     setShowInTable(true);
+    setFilterable(true);
     setFillMode(CustomFieldFillMode.MANUAL);
     setAiInstruction("");
     setOptions([newOptionRow(0)]);
@@ -132,6 +134,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
     setSectionKey(def.sectionKey);
     setEditPermission(def.editPermission);
     setShowInTable(def.showInTable);
+    setFilterable(def.filterable ?? true);
     setFillMode(def.fillMode);
     setAiInstruction(def.aiInstruction ?? "");
     setOptions(
@@ -166,6 +169,7 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
       sectionKey,
       editPermission,
       showInTable,
+      filterable,
       fillMode,
       aiInstruction: aiInstruction.trim() || undefined,
       options: TYPES_WITH_OPTIONS.includes(selectedType)
@@ -497,6 +501,21 @@ const CustomFieldDefinitionsSection: FC<CustomFieldDefinitionsSectionProps> = ({
                     enabled={showInTable}
                     onChange={setShowInTable}
                     label="Show in table"
+                  />
+                </div>
+
+                {/* Allow filtering */}
+                <div className="flex items-center justify-between rounded-lg border border-border-light px-3 py-2">
+                  <div>
+                    <p className="text-sm font-medium text-typography-700">Allow filtering</p>
+                    <p className="text-xs text-typography-400">
+                      Let users filter the calls table by this field
+                    </p>
+                  </div>
+                  <ToggleSwitch
+                    enabled={filterable}
+                    onChange={setFilterable}
+                    label="Allow filtering"
                   />
                 </div>
 

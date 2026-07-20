@@ -47,8 +47,8 @@ import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay }
 
 import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
+import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
-import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
 import { LogsTableProps } from "./types";
 import {
   getSourceChipConfig,
@@ -240,15 +240,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     return { id, callName: "", dateAndTime: "", provider: "--", mode: undefined, raw: row };
   };
 
-  const customFieldColumns: Column<any>[] = customFieldDefs
-    .filter(def => def.showInTable !== false)
-    .map(def => ({
-      key: `cf_${def.id}`,
-      header: def.name,
-      style: { width: "10%", minWidth: 100 },
-      render: (_value: any, row: any) =>
-        renderCustomFieldCell(def, row.raw?.customFieldValues ?? []),
-    }));
+  const customFieldColumns: Column<any>[] = buildCustomFieldColumns(customFieldDefs);
 
   const callColumns: Column<any>[] = [
     {
@@ -515,6 +507,9 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     if (callName && typeof callName.value === "string" && callName.value.trim()) {
       updatedFilters.callName = callName.value.trim();
     }
+
+    // Custom/default-field filters (keys prefixed cf_<definitionId>)
+    updatedFilters.fieldFilters = buildFieldFiltersParam(filter);
 
     dispatch(updateFilters(updatedFilters));
   };

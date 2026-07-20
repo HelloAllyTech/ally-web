@@ -29,6 +29,12 @@ export interface Column<T> {
   sortable?: boolean;
   /** Whether the column is filterable */
   filterable?: boolean;
+  /**
+   * Filter-only column: excluded from the rendered header/body but still
+   * offered in the filter list and resolvable by SelectedFiltersView. Use for
+   * fields that are filterable without being shown as a visible column.
+   */
+  hidden?: boolean;
   /** Type of filter (multiselect, singleSelect, date, number, text) */
   filterType?: FilterType;
   /** Options for filtering (for select types) */
@@ -100,6 +106,8 @@ export interface FilterPopoverProps {
   onSelectSingle: (colKey: string, value: string) => void;
   singleSelectedValue?: string;
   onDateSelect?: (key: string, value: string[]) => void;
+  /** Applies a numeric range filter as a [min, max] string tuple. */
+  onNumberSelect?: (key: string, value: string[]) => void;
   anchorOrigin?: { vertical: "top" | "bottom"; horizontal: "left" | "right" };
 }
 

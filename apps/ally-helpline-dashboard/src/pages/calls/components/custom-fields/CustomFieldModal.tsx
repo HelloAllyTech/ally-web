@@ -73,6 +73,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
     editingField?.options ?? [{ id: uuidv4(), label: "", order: 0 }],
   );
   const [showInTable, setShowInTable] = useState<boolean>(editingField?.showInTable ?? true);
+  const [filterable, setFilterable] = useState<boolean>(editingField?.filterable ?? true);
 
   const { t } = useTranslation();
   const sections = useMemo(() => getSummarySections(t), [t]);
@@ -143,6 +144,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
           editPermission,
           options: TYPES_WITH_OPTIONS.includes(selectedType) ? options : undefined,
           showInTable,
+          filterable,
         }).unwrap();
         toast.success("Custom field updated");
       } else {
@@ -153,6 +155,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
           editPermission,
           options: TYPES_WITH_OPTIONS.includes(selectedType) ? options : undefined,
           showInTable,
+          filterable,
         };
         await createDefinition(payload).unwrap();
         toast.success("Custom field created");
@@ -170,6 +173,7 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
     setEditPermission(CustomFieldEditPermission.BOTH);
     setOptions([{ id: uuidv4(), label: "", order: 0 }]);
     setShowInTable(true);
+    setFilterable(true);
     onClose();
   };
 
@@ -304,6 +308,23 @@ const CustomFieldModal: FC<CustomFieldModalProps> = ({ open, onClose, editingFie
                 labelText="Show as table column"
                 toggled={showInTable}
                 onToggle={checked => setShowInTable(checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
+              <div>
+                <p className="text-sm font-medium text-typography-700">Allow filtering</p>
+                <p className="text-xs text-typography-400">
+                  Field can be used to filter session logs
+                </p>
+              </div>
+              <CarbonToggle
+                id="cf-filterable"
+                size="sm"
+                hideLabel
+                labelText="Allow filtering"
+                toggled={filterable}
+                onToggle={checked => setFilterable(checked)}
               />
             </div>
           </div>

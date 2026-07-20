@@ -61,6 +61,8 @@ export interface CustomFieldDefinition {
   scope: CustomFieldScope;
   displayOrder: number;
   showInTable: boolean;
+  /** Whether this field can be used to filter the session-logs table. */
+  filterable: boolean;
   isActive: boolean;
   createdBy: number;
   updatedBy: number;
@@ -89,6 +91,7 @@ export interface CreateCustomFieldDefinitionInput {
   editPermission: CustomFieldEditPermission;
   displayOrder?: number;
   showInTable?: boolean;
+  filterable?: boolean;
 }
 
 export interface UpdateCustomFieldDefinitionInput {
@@ -98,6 +101,7 @@ export interface UpdateCustomFieldDefinitionInput {
   editPermission?: CustomFieldEditPermission;
   displayOrder?: number;
   showInTable?: boolean;
+  filterable?: boolean;
   isActive?: boolean;
 }
 

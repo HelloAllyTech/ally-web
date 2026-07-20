@@ -98,8 +98,8 @@ export const GenericTable = forwardRef(
       setSelectedColumn(col as Column<T> & { filterOptions: { label: string; value: string }[] });
       setOptionAnchorEl(event.currentTarget);
       setSearchText("");
-      // If multiselect, prefill with current filter values
-      if (col.filterType === "multiselect") {
+      // Prefill array-valued filters (multiselect + number range) from state
+      if (col.filterType === "multiselect" || col.filterType === "number") {
         const existing = filter.find(f => f.key === col.key);
         setMultiSelectValues(Array.isArray(existing?.value) ? existing?.value : []);
       } else {
@@ -165,6 +165,15 @@ export const GenericTable = forwardRef(
       handleCloseFilterPopover();
     };
 
+    const handleNumberSelect = (key: string, value: string[]) => {
+      if (key) {
+        // Both bounds empty → treat as clearing the filter.
+        const hasBound = value.some(v => v && v.trim() !== "");
+        handleFilterChange(key, hasBound ? value : []);
+      }
+      handleCloseFilterPopover();
+    };
+
     /**
      * Handles sort changes. Cycles through ASC, DESC, and none.
      * @param {string} key - The column key to sort by.
@@ -214,7 +223,6 @@ export const GenericTable = forwardRef(
                   className="flex flex-row items-center cursor-pointer px-4 py-[14px] min-w-[200px] hover:bg-[#F5F5F7] text-[#6B7280]"
                   onClick={e => handleSelectColumn(col, e)}
                 >
-                  {col.icon && <span className="mr-2">{col.icon}</span>}
                   <div>{col.header}</div>
                 </div>
               ))}
@@ -242,6 +250,7 @@ export const GenericTable = forwardRef(
               : ""
           }
           onDateSelect={handleDateSelect}
+          onNumberSelect={handleNumberSelect}
         />
       </>
     );

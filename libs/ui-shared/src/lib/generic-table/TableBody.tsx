@@ -36,6 +36,9 @@ const TableBody = <T extends Record<string, any>>({
   fallbackUI?: React.ReactNode;
   onRowClick?: (row: T) => void;
 }) => {
+  // Filter-only columns (hidden) are offered as filters but never rendered.
+  const visibleColumns = columns.filter(col => !col.hidden);
+
   /**
    * Render the fallback UI if no data is provided.
    * @returns {React.ReactNode} - The fallback UI.
@@ -44,7 +47,7 @@ const TableBody = <T extends Record<string, any>>({
     return (
       <tbody>
         <tr>
-          <td colSpan={columns.length} className="px-4 py-6 text-center text-gray-400">
+          <td colSpan={visibleColumns.length} className="px-4 py-6 text-center text-gray-400">
             {fallbackUI || "No data found."}
           </td>
         </tr>
@@ -64,11 +67,11 @@ const TableBody = <T extends Record<string, any>>({
           className="hover:bg-gray-100 cursor-pointer"
           onClick={onRowClick ? () => onRowClick(row) : undefined}
         >
-          {columns.map((col, columnIndex) => (
+          {visibleColumns.map((col, columnIndex) => (
             <td
               key={col.key as string}
               className={`px-4 min-h-[36px] border-b border-gray-300 font-primary ${
-                columnIndex === columns.length - 1 ? "border-r-0" : "border-r"
+                columnIndex === visibleColumns.length - 1 ? "border-r-0" : "border-r"
               } ${col.className || ""}`}
               style={col.style}
             >

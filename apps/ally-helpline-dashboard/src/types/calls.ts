@@ -61,6 +61,8 @@ export interface GetCallLogsInput {
   tags?: string;
   archive?: boolean;
   callName?: string;
+  /** JSON-encoded array of custom/default-field filters (see fieldFilters.ts). */
+  fieldFilters?: string;
 }
 
 export interface WaitingClientChat {
