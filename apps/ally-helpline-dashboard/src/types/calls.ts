@@ -63,6 +63,10 @@ export interface GetCallLogsInput {
   callName?: string;
   /** JSON-encoded array of custom/default-field filters (see fieldFilters.ts). */
   fieldFilters?: string;
+  /** Comma-separated built-in column filter groups (see builtinFilters.ts). */
+  mode?: string;
+  status?: string;
+  source?: string;
 }
 
 export interface WaitingClientChat {

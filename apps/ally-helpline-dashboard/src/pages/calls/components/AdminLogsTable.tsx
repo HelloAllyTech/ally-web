@@ -47,6 +47,12 @@ import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay }
 
 import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
+import {
+  buildBuiltinFilterParams,
+  getChannelFilterOptions,
+  getModeFilterOptions,
+  getStatusFilterOptions,
+} from "./builtinFilters";
 import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
 import { LogsTableProps } from "./types";
@@ -281,6 +287,8 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       sortable: true,
       icon: <TimerIcon />,
       style: { width: "10%" },
+      filterable: true,
+      filterType: FilterType.NUMBER,
     },
     {
       key: "mode",
@@ -288,6 +296,9 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getModeChipConfig(row.mode, t)} />,
       icon: <ScribeIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getModeFilterOptions(t),
     },
     {
       key: "tags",
@@ -309,6 +320,9 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       style: { width: "12%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus, t)} />,
       icon: <SummaryGenerationIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getStatusFilterOptions(t),
     },
     {
       key: "source",
@@ -316,6 +330,9 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       style: { width: "12%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getChannelFilterOptions(t),
     },
     ...customFieldColumns,
     {
@@ -479,14 +496,10 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       updatedFilters.counselorIds = ids.join(",");
     }
 
-    // Date filter
-    const date = filter.find((f: { key: string }) => f.key === "dateAndTime");
-    if (date && Array.isArray(date.value) && date.value.length === 2) {
-      updatedFilters.startDate = date.value[0];
-      updatedFilters.endDate = date.value[1];
-    }
+    // Built-in column filters: date, duration, tags, mode, status, channel
+    Object.assign(updatedFilters, buildBuiltinFilterParams(filter));
 
-    // Quality score filter
+    // Quality score filter (admin-only)
     const quality = filter.find((f: { key: string }) => f.key === "qualityScore");
     if (quality && typeof quality.value === "string") {
       const [min, max] = quality.value.split("-");
@@ -494,12 +507,6 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
         updatedFilters.minQualityScore = Number(min);
         updatedFilters.maxQualityScore = Number(max);
       }
-    }
-
-    // Tags filter
-    const tags = filter.find((f: { key: string }) => f.key === "tags");
-    if (tags && Array.isArray(tags.value) && tags.value.length > 0) {
-      updatedFilters.tags = tags.value.join(",");
     }
 
     // Call Name text filter

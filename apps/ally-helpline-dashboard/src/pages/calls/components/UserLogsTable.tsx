@@ -10,6 +10,7 @@ import {
   useGetCallLogsQuery,
   useGetSimulationLogsQuery,
   useGetCustomFieldDefinitionsQuery,
+  useGetCallTagsQuery,
 } from "@api";
 import {
   NoResults,
@@ -32,6 +33,13 @@ import { CallLog, ChatSummaryStatus, SimulationLog, TagDisplay, SessionType } fr
 import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay } from "@utils";
 
 import { CALL_LOGS_PAGINATION_LIMIT, tagColors } from "../constants";
+import {
+  buildBuiltinFilterParams,
+  BuiltinFilterParams,
+  getChannelFilterOptions,
+  getModeFilterOptions,
+  getStatusFilterOptions,
+} from "./builtinFilters";
 import CallSummarySidebar from "./CallSummarySidebar";
 import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import SimulationSummarySidebar from "./SimulationSummarySidebar";
@@ -59,6 +67,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [callNameFilter, setCallNameFilter] = useState<string | undefined>(undefined);
   const [fieldFiltersParam, setFieldFiltersParam] = useState<string | undefined>(undefined);
+  const [builtinParams, setBuiltinParams] = useState<BuiltinFilterParams>({});
   const tableRef = useRef<HTMLDivElement>(null);
   const [summary, setSummary] = useState<CallLog | SimulationLog>();
 
@@ -71,6 +80,8 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   const { data: customFieldDefs = [] } = useGetCustomFieldDefinitionsQuery(undefined, {
     skip: !isCall || !customFieldsActive,
   });
+
+  const { data: tagsData } = useGetCallTagsQuery({ offset: 0 }, { skip: !isCall });
 
   const durationLabels = {
     lessThanOneMinute: t("calls.duration.lessThanOneMinute", "Less than 1 min"),
@@ -93,6 +104,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       archive: false,
       ...(callNameFilter ? { callName: callNameFilter } : {}),
       ...(fieldFiltersParam ? { fieldFilters: fieldFiltersParam } : {}),
+      ...builtinParams,
     },
     { skip: !isCall, refetchOnFocus: true, refetchOnReconnect: true },
   );
@@ -185,11 +197,19 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
         ? callName.value.trim()
         : undefined;
     const newFieldFilters = buildFieldFiltersParam(filter);
+    const newBuiltin = buildBuiltinFilterParams(filter);
     // GenericTable fires onFilterChange on mount with an empty filter; bail
     // out when nothing actually changed so we don't wipe the loaded page.
-    if (newCallName === callNameFilter && newFieldFilters === fieldFiltersParam) return;
+    if (
+      newCallName === callNameFilter &&
+      newFieldFilters === fieldFiltersParam &&
+      JSON.stringify(newBuiltin) === JSON.stringify(builtinParams)
+    ) {
+      return;
+    }
     setCallNameFilter(newCallName);
     setFieldFiltersParam(newFieldFilters);
+    setBuiltinParams(newBuiltin);
     setLogs([]);
     setHasMore(true);
     dispatch(updateFilters({ ...filters, offset: 0 }));
@@ -256,12 +276,17 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       header: t("calls.table.dateTime"),
       style: { width: "18%" },
       icon: <DateIcon />,
+      filterable: true,
+      filterType: FilterType.DATE,
+      filterOptions: [],
     },
     {
       key: "duration",
       header: t("common.duration"),
       style: { width: "10%" },
       icon: <TimerIcon />,
+      filterable: true,
+      filterType: FilterType.NUMBER,
     },
     {
       key: "mode",
@@ -269,6 +294,9 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getModeChipConfig(row.mode, t)} />,
       icon: <ScribeIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getModeFilterOptions(t),
     },
     {
       key: "tags",
@@ -276,6 +304,9 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       style: { width: "22%" },
       render: (value: TagDisplay[]) => <TagGroup tags={value} />,
       icon: <TagsIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: tagsData?.data?.map(tag => ({ label: tag, value: tag })) || [],
     },
     {
       key: "summaryStatus",
@@ -283,6 +314,9 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus, t)} />,
       icon: <SummaryGenerationIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getStatusFilterOptions(t),
     },
     {
       key: "source",
@@ -290,6 +324,9 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getChannelFilterOptions(t),
     },
     ...customFieldColumns,
     {

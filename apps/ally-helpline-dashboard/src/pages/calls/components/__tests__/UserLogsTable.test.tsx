@@ -65,6 +65,7 @@ vi.mock("@api", () => ({
   useGetSimulationLogsQuery: vi.fn(),
   useGetCustomFieldsEnabledQuery: vi.fn(),
   useGetCustomFieldDefinitionsQuery: vi.fn(),
+  useGetCallTagsQuery: vi.fn(() => ({ data: { data: [] } })),
 }));
 
 vi.mock("@assets", async importOriginal => {
