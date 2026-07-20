@@ -34,9 +34,11 @@ export const OrganizationMetrics: FunctionComponent = () => {
   const { permissions } = useUser();
   const [range, setRange] = useState<OrganizationMetricsRange>("30d");
 
-  // The tab itself can be visible to anyone who could see the old Metabase
-  // org dashboard, but the metrics API is tenant-admin only — show a notice
-  // instead of firing a request that would 403.
+  // Analytics.tsx only mounts this component for Ally staff who also hold
+  // the permission (see canViewNativeOrgMetrics there — that's the staging
+  // gate). This check is a second, independent line of defense against the
+  // metrics API 403ing if that ever changes: it's tenant-admin only, so show
+  // a notice instead of firing a request that would fail.
   const canView = !!permissions?.includes(Permissions.VIEW_ORGANIZATION_METRICS);
 
   const { data, isFetching, isError, refetch } = useGetOrganizationMetricsQuery(
