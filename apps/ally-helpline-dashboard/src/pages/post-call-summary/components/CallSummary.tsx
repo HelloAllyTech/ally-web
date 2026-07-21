@@ -98,6 +98,14 @@ const CallSummary: FC<CallSummaryProps> = ({
   // silently write the stale locally-seeded value back over it.
   const [dirtyFieldIds, setDirtyFieldIds] = useState<Set<string>>(new Set());
   const seededChatIdRef = useRef<number | null>(null);
+  // Built-in summary fields the user has edited this visit. The summary is
+  // generated asynchronously, so summaryData is (re)seeded from the server when
+  // summaryStatus transitions (e.g. generation finishing, or a retry). Without
+  // this, an edit typed while the summary was still generating is overwritten
+  // by the arriving generated summary — the counsellor sees "saved" but their
+  // change is gone. Fields listed here are preserved across a reseed; untouched
+  // fields still receive the freshly generated values.
+  const dirtySummaryKeysRef = useRef<Set<string>>(new Set());
 
   // Seed local edit state once per chat. Re-seeding on every customFieldValues
   // change would clobber the user's in-progress edits: a background refetch
@@ -114,6 +122,12 @@ const CallSummary: FC<CallSummaryProps> = ({
       seededChatIdRef.current = chatId;
     }
   }, [customFieldValues, chatId]);
+
+  // Edits belong to one chat; drop the tracked keys when switching chats so a
+  // new session doesn't inherit the previous one's "preserve these" set.
+  useEffect(() => {
+    dirtySummaryKeysRef.current = new Set();
+  }, [chatId]);
 
   const handleCustomFieldChange = (fieldDefinitionId: string, value: string | null) => {
     setCustomLocalValues(prev => ({ ...prev, [fieldDefinitionId]: value }));
@@ -165,9 +179,23 @@ const CallSummary: FC<CallSummaryProps> = ({
     isSearchLocationsLoading;
 
   useEffect(() => {
+    // Merge the generated summary into state without discarding fields the user
+    // has already edited this visit. Untouched fields take the generated value;
+    // edited fields (dirtySummaryKeysRef) are kept so an async generation
+    // landing after the user started typing can't silently wipe their edit.
+    const seedPreservingEdits = (generated: Record<string, unknown>) =>
+      setSummaryData(prev => {
+        if (!prev) return generated;
+        const merged = { ...generated };
+        for (const key of dirtySummaryKeysRef.current) {
+          if (key in prev) merged[key] = prev[key];
+        }
+        return merged;
+      });
+
     if (callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS) {
       const tags = callSummary.details.summary?.tags;
-      setSummaryData({
+      seedPreservingEdits({
         ...callSummary.details.summary,
         tags: tags?.map(({ tag }) => tag).join(", "),
       });
@@ -184,7 +212,7 @@ const CallSummary: FC<CallSummaryProps> = ({
       // dead-end error screen.
       const existing = callSummary.details?.summary;
       const tags = existing?.tags;
-      setSummaryData({
+      seedPreservingEdits({
         ...(existing ?? {}),
         tags: tags?.map(({ tag }) => tag).join(", ") ?? "",
       });
@@ -278,7 +306,10 @@ const CallSummary: FC<CallSummaryProps> = ({
             <EnhanceButton
               fieldName={field.key}
               inputText={value}
-              updateValue={text => setSummaryData(prev => ({ ...prev, [field.key]: text }))}
+              updateValue={text => {
+                dirtySummaryKeysRef.current.add(field.key);
+                setSummaryData(prev => ({ ...prev, [field.key]: text }));
+              }}
             />
           </span>
         </Tooltip>
@@ -296,7 +327,10 @@ const CallSummary: FC<CallSummaryProps> = ({
             : undefined
         }
         showLabel={labelShownSections?.includes(field.sectionKey)}
-        onChange={(key, val) => setSummaryData(prev => ({ ...prev, [key]: val }))}
+        onChange={(key, val) => {
+          dirtySummaryKeysRef.current.add(key);
+          setSummaryData(prev => ({ ...prev, [key]: val }));
+        }}
         onSearch={onHandleSearch}
         isEnhancing={isEnhancing}
         enhanceStartAdornment={isEnhancing ? EnhancementLoadingSkeleton : undefined}
@@ -335,6 +369,9 @@ const CallSummary: FC<CallSummaryProps> = ({
           chatId,
           data: { summary: { ...summaryData, tags: tagsInput } },
         }).unwrap();
+        // Edits are now persisted; stop shadowing these keys so a later server
+        // update (e.g. a retried regeneration) can flow back into the form.
+        dirtySummaryKeysRef.current = new Set();
       } catch (error) {
         logger.info(`Error updating call summary:, ${error}`);
         saveFailed = true;
