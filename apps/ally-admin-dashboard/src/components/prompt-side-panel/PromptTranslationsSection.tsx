@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -18,19 +18,41 @@ interface Props {
   onToggleEnabled: (value: boolean) => void;
 }
 
-const STATUS_STYLES: Record<PromptTranslationStatus, string> = {
+/** Poll cadence while a translation is still in flight. */
+const POLL_MS = 4000;
+/** A row stuck `translating`/`pending` past this is treated as timed out (the
+ *  background job likely died) so it never spins forever. */
+const STUCK_MS = 3 * 60 * 1000;
+
+/** UI view state, incl. the synthetic "timedout" (not a stored status). */
+type RowView = PromptTranslationStatus | "timedout";
+
+const VIEW_STYLES: Record<RowView, string> = {
   ready: "bg-green-100 text-green-800",
   translating: "bg-blue-100 text-blue-800",
   pending: "bg-neutral-100 text-neutral-700",
   failed: "bg-red-100 text-red-800",
+  timedout: "bg-amber-100 text-amber-800",
 };
 
-const STATUS_LABEL: Record<PromptTranslationStatus, string> = {
+const VIEW_LABEL: Record<RowView, string> = {
   ready: "Ready",
   translating: "Translating…",
   pending: "Queued",
   failed: "Failed",
+  timedout: "Timed out",
 };
+
+/** In-flight (still expected to change on its own) vs stuck (won't). */
+const isInFlight = (s: PromptTranslationStatus) => s === "pending" || s === "translating";
+
+const isStuck = (row: PromptTranslation): boolean => {
+  if (!isInFlight(row.status) || !row.updatedAt) return false;
+  return Date.now() - Date.parse(row.updatedAt) > STUCK_MS;
+};
+
+/** What to show: a stuck in-flight row reads as "timed out". */
+const rowView = (row: PromptTranslation): RowView => (isStuck(row) ? "timedout" : row.status);
 
 /**
  * Read-only view of a prompt's auto-generated translations. Bodies are NOT
@@ -44,9 +66,19 @@ const PromptTranslationsSection: React.FC<Props> = ({
   onToggleEnabled,
 }) => {
   const { data: languages } = useGetLanguagesQuery({});
+  // Poll only while something is genuinely in flight — the background translate
+  // job doesn't notify the client, so without this a completed/failed run keeps
+  // showing "Translating…" until a manual refresh. Polling stops once every row
+  // is settled (ready/failed) or stuck (timed out), so it never runs forever.
+  const [pollMs, setPollMs] = useState(0);
   const { data: translations, isFetching } = useGetPromptTranslationsQuery(promptId, {
     skip: !promptId || !translationEnabled,
+    pollingInterval: pollMs,
   });
+  useEffect(() => {
+    const active = (translations ?? []).some(r => isInFlight(r.status) && !isStuck(r));
+    setPollMs(active ? POLL_MS : 0);
+  }, [translations]);
   const [retranslateAll, { isLoading: isRetranslatingAll }] = useRetranslatePromptMutation();
   const [retranslateLanguage] = useRetranslatePromptLanguageMutation();
   const [busyLanguageId, setBusyLanguageId] = useState<number | null>(null);
@@ -144,55 +176,65 @@ const PromptTranslationsSection: React.FC<Props> = ({
             </p>
           ) : (
             <div className="space-y-3">
-              {sortedRows.map(row => (
-                <div
-                  key={row.id}
-                  className="rounded-md border border-border-light bg-neutral-50 px-3 py-2"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => row.translatedPrompt && toggleExpanded(row.id)}
-                      disabled={!row.translatedPrompt}
-                      className="flex items-center gap-2 text-left disabled:cursor-default"
-                    >
-                      <span
-                        className={`text-typography-500 transition-transform ${
-                          expandedIds.has(row.id) ? "rotate-90" : ""
-                        } ${row.translatedPrompt ? "" : "opacity-0"}`}
-                        aria-hidden
+              {sortedRows.map(row => {
+                const view = rowView(row);
+                return (
+                  <div
+                    key={row.id}
+                    className="rounded-md border border-border-light bg-neutral-50 px-3 py-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => row.translatedPrompt && toggleExpanded(row.id)}
+                        disabled={!row.translatedPrompt}
+                        className="flex items-center gap-2 text-left disabled:cursor-default"
                       >
-                        ▸
-                      </span>
-                      <span className="text-sm font-medium text-typography-900">
-                        {languageLabel(row.languageId)}
-                      </span>
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded text-xs ${STATUS_STYLES[row.status]}`}
+                        <span
+                          className={`text-typography-500 transition-transform ${
+                            expandedIds.has(row.id) ? "rotate-90" : ""
+                          } ${row.translatedPrompt ? "" : "opacity-0"}`}
+                          aria-hidden
+                        >
+                          ▸
+                        </span>
+                        <span className="text-sm font-medium text-typography-900">
+                          {languageLabel(row.languageId)}
+                        </span>
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded text-xs ${VIEW_STYLES[view]}`}
+                        >
+                          {VIEW_LABEL[view]}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => handleRetranslateLanguage(row)}
+                        disabled={busyLanguageId === row.languageId}
+                        className="inline-flex px-2 py-0.5 rounded text-xs bg-neutral-100 text-typography-800 hover:bg-neutral-200 disabled:opacity-50 transition-colors border border-border-light"
                       >
-                        {STATUS_LABEL[row.status]}
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => handleRetranslateLanguage(row)}
-                      disabled={busyLanguageId === row.languageId}
-                      className="inline-flex px-2 py-0.5 rounded text-xs bg-neutral-100 text-typography-800 hover:bg-neutral-200 disabled:opacity-50 transition-colors border border-border-light"
-                    >
-                      {busyLanguageId === row.languageId ? "Retrying…" : "Retry"}
-                    </button>
+                        {busyLanguageId === row.languageId ? "Retrying…" : "Retry"}
+                      </button>
+                    </div>
+
+                    {view === "failed" && row.error && (
+                      <p className="mt-1 text-xs text-red-700">{row.error}</p>
+                    )}
+
+                    {view === "timedout" && (
+                      <p className="mt-1 text-xs text-amber-700">
+                        Translation is taking longer than expected — it may have stalled. Use Retry
+                        to run it again.
+                      </p>
+                    )}
+
+                    {row.translatedPrompt && expandedIds.has(row.id) && (
+                      <pre className="mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded bg-white px-2 py-2 text-xs text-neutral-800 custom-scrollbar border border-border-light select-all">
+                        {row.translatedPrompt}
+                      </pre>
+                    )}
                   </div>
-
-                  {row.status === "failed" && row.error && (
-                    <p className="mt-1 text-xs text-red-700">{row.error}</p>
-                  )}
-
-                  {row.translatedPrompt && expandedIds.has(row.id) && (
-                    <pre className="mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap break-words rounded bg-white px-2 py-2 text-xs text-neutral-800 custom-scrollbar border border-border-light select-all">
-                      {row.translatedPrompt}
-                    </pre>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </>
