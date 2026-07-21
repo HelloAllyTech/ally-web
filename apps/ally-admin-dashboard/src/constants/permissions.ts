@@ -25,8 +25,6 @@ export enum Permissions {
   VIEW_ROLEPLAY_SPECS = "view:roleplay-specs",
   EDIT_ROLEPLAY_SPEC = "edit:roleplay-spec",
   EDIT_ROLEPLAY_COPILOT = "edit:roleplay-copilot",
-  VIEW_ROLEPLAY_REHEARSALS = "view:roleplay-rehearsals",
-  EDIT_ROLEPLAY_REHEARSALS = "edit:roleplay-rehearsals",
   VIEW_BLOGS = "view:blogs",
   EDIT_BLOG = "edit:blog",
   DELETE_BLOG = "delete:blog",

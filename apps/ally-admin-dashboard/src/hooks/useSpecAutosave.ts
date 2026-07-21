@@ -42,9 +42,6 @@ export const useSpecAutosave = ({ step }: { step?: string } = {}) => {
     // the save itself creates one (returned as result.versionId).
     if (!state.spec || !state.specId) return false;
     if (state.isStreaming) return false;
-    // An auto-improve loop may rewrite the draft (auto-accept) at any moment —
-    // a save now would 409 against its write. Editing is locked anyway.
-    if (state.improvementRunning) return false;
     if (state.revision <= state.savedRevision) return false;
 
     savingRef.current = true;

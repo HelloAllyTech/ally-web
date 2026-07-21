@@ -18,19 +18,19 @@ type WorkbenchView = "spec" | "stateMachine";
  * A trainer who wants fine-grained control can flip "Edit spec directly" to
  * unlock the section editors + state-machine editor; direct edits autosave via
  * the same optimistic-concurrency draft save as copilot patches. Editing is
- * force-locked while the copilot streams or an improvement run is active, so
- * manual edits never race the copilot's patches.
+ * force-locked while the copilot streams, so manual edits never race the
+ * copilot's patches.
  */
 export const SpecWorkbench: React.FC = () => {
   const strings = en.roleplayStudio.workbench;
   const [view, setView] = useState<WorkbenchView>("spec");
   const [editing, setEditing] = useState(false);
 
-  const { isStreaming, improvementRunning } = useSelector(selectRoleplaySpecState);
-  const locked = isStreaming || improvementRunning;
+  const { isStreaming } = useSelector(selectRoleplaySpecState);
+  const locked = isStreaming;
 
-  // A copilot stream or improvement run takes over the draft — drop out of edit
-  // mode so the trainer's manual edits can't collide with incoming patches.
+  // A copilot stream takes over the draft — drop out of edit mode so the
+  // trainer's manual edits can't collide with incoming patches.
   useEffect(() => {
     if (locked && editing) setEditing(false);
   }, [locked, editing]);
