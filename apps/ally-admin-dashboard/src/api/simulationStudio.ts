@@ -28,6 +28,8 @@ import {
   CharacterData,
   DeleteCharacterRequest,
   Prompt,
+  PromptTranslation,
+  TranslatePromptResult,
   GetPromptsQuery,
   LlmModelInfo,
   GetReportsInput,
@@ -584,6 +586,45 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       providesTags: [TAG_TYPES.PROMPTS, TAG_TYPES.SIMULATION],
     }),
 
+    /**
+     * Read-only: stored translations for a prompt (one row per language).
+     * Drives the read-only Translations panel; refreshes when prompts change.
+     */
+    getPromptTranslations: builder.query<PromptTranslation[], string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_PROMPT_TRANSLATIONS(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /** Re-translate a prompt into all eligible languages ("Re-translate all"). */
+    retranslatePrompt: builder.mutation<TranslatePromptResult, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.RETRANSLATE_PROMPT(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /** Re-translate a prompt into a single language (per-language retry). */
+    retranslatePromptLanguage: builder.mutation<unknown, { id: string; languageId: number }>({
+      query: ({ id, languageId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.RETRANSLATE_PROMPT_LANGUAGE(id, languageId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /** Backfill: (re)translate every enabled source across eligible languages. */
+    backfillPromptTranslations: builder.mutation<unknown, void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.BACKFILL_PROMPT_TRANSLATIONS,
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
@@ -1071,6 +1112,10 @@ export const {
   useRevertPromptMutation,
   useDeletePromptMutation,
   useGetPromptUsageQuery,
+  useGetPromptTranslationsQuery,
+  useRetranslatePromptMutation,
+  useRetranslatePromptLanguageMutation,
+  useBackfillPromptTranslationsMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,

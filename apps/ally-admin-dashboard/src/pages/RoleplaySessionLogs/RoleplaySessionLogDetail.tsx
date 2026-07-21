@@ -406,6 +406,20 @@ export const RoleplaySessionLogDetail: FC = () => {
                     : `${data.runConfig.topP ?? "—"} / ${data.runConfig.maxTokens ?? "—"}`
                 }
               />
+              <Field
+                label="Skill (main-agent prompt)"
+                value={data.runConfig.selectedMainPromptCode ?? "— (default)"}
+              />
+              <Field
+                label="Language variant"
+                value={
+                  data.runConfig.mainPromptVariant === "MULTILINGUAL"
+                    ? "Multilingual (translated)"
+                    : data.runConfig.mainPromptVariant === "GENERIC"
+                      ? "Generic (English source)"
+                      : "—"
+                }
+              />
             </SectionCard>
             {data.runConfig.promptVersions &&
               Object.keys(data.runConfig.promptVersions).length > 0 && (

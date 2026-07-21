@@ -159,6 +159,7 @@ export const FORM_FIELD_TYPES = {
     BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
     TITLE_TRANSLATIONS: "title_translations",
     MAIN_AGENT_PROMPT_PICKER: "main_agent_prompt_picker",
+    MAIN_PROMPT_VARIANT_PICKER: "main_prompt_variant_picker",
     STATES_EDITOR: "states_editor",
     TITLE_PANEL: "title_panel",
     COMFORT_AUDIO_TRACK: "comfort_audio_track",
@@ -286,6 +287,16 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "selectedMainPromptCode",
         label: "Skill Version",
         type: FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER,
+        fullWidth: true,
+        isMandatory: false,
+      },
+      // Per-language choice of Generic (English source) vs Multilingual
+      // (translated) for the selected skill version. Only languages with a
+      // ready translation of that prompt can pick Multilingual.
+      {
+        id: "mainPromptVariantByLanguage",
+        label: "Language handling",
+        type: FORM_FIELD_TYPES.CUSTOM.MAIN_PROMPT_VARIANT_PICKER,
         fullWidth: true,
         isMandatory: false,
       },
@@ -941,6 +952,16 @@ export const PROMPT_COLUMNS = [
     accessor: "name",
     dataType: cellTypes.wrapText,
     minWidth: 500,
+    editable: false,
+  },
+  {
+    // Coverage badge for translation-enabled main_agent/branching prompts;
+    // blank for everything else. Populated in PromptManagement.formatTableData.
+    id: "translationCoverage",
+    label: "Translations",
+    accessor: "translationCoverage",
+    dataType: cellTypes.normalText,
+    minWidth: 160,
     editable: false,
   },
   {

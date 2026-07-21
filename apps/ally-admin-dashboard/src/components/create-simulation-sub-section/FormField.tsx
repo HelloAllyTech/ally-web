@@ -20,6 +20,7 @@ import { KnowledgeSource } from "../knowledge-source";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { LinguisticStyleSamples } from "../linguistic-style-samples";
 import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
+import { MainPromptVariantPicker } from "../main-prompt-variant-picker";
 import { OpeningDialoguesPanel } from "../opening-dialogues";
 import { RadioButtonGroup } from "../radio-button-group";
 import { SliderField } from "../slider-field";
@@ -270,6 +271,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
       case FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER:
         return (
           <MainAgentPromptPicker
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
+        );
+      case FORM_FIELD_TYPES.CUSTOM.MAIN_PROMPT_VARIANT_PICKER:
+        return (
+          <MainPromptVariantPicker
             id={id}
             label={label}
             formMethods={formMethods}

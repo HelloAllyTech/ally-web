@@ -301,6 +301,10 @@ export const PromptManagement: React.FC = () => {
       filteredPrompts.map(prompt => ({
         ...prompt,
         createdAt: prompt.createdAt ? new Date(prompt.createdAt).toLocaleDateString() : "",
+        // At-a-glance translation coverage; blank unless opted in.
+        translationCoverage: prompt.translationEnabled
+          ? `🌐 ${prompt.translationsReady ?? 0} ready`
+          : "",
       })),
     [filteredPrompts],
   );

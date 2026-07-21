@@ -249,6 +249,7 @@ describe("createSimulation utils", () => {
         stateNames: [],
         selectedMainPromptCode: undefined,
         selectedEvaluatorPromptCode: undefined,
+        mainPromptVariantByLanguage: {},
         helperAgentPrompt: undefined,
         agentBuilderDescription: undefined,
         agentBuilderPrompt: undefined,

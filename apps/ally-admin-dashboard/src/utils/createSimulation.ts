@@ -91,6 +91,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     })),
     selectedMainPromptCode: data?.metadata?.selectedMainPromptCode,
     selectedEvaluatorPromptCode: data?.metadata?.selectedEvaluatorPromptCode,
+    mainPromptVariantByLanguage: data?.metadata?.mainPromptVariantByLanguage ?? {},
     states: data?.metadata?.states ?? [],
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),

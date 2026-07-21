@@ -124,6 +124,12 @@ export interface SimulationInput {
    */
   selectedMainPromptCode?: string;
   /**
+   * Per-language main-agent prompt variant choice, keyed by languageId:
+   * "GENERIC" (English source) or "MULTILINGUAL" (translated body). Missing
+   * entry defaults to GENERIC; English always uses the source.
+   */
+  mainPromptVariantByLanguage?: Record<string, "GENERIC" | "MULTILINGUAL">;
+  /**
    * Per-simulation states used by main-agent prompts with `hasStates: true`.
    * Each entry: id, name, guidelines, scoreLower, scoreUpper, ragEnabled.
    * Validation rules (contiguous ranges, min gap 50, finite bounds) are
@@ -221,6 +227,8 @@ export interface GetSimulationByIdResponse {
     languageCharacteristics?: Record<string, string>;
     /** promptCode of the main-agent prompt variant chosen for this simulation. */
     selectedMainPromptCode?: string;
+    /** Per-language GENERIC vs MULTILINGUAL choice, keyed by languageId. */
+    mainPromptVariantByLanguage?: Record<string, "GENERIC" | "MULTILINGUAL">;
     /**
      * Per-simulation states used by main-agent prompts with `hasStates: true`.
      * Same shape as `SimulationInput.states`.

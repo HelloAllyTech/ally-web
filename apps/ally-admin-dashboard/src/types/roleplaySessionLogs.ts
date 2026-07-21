@@ -280,6 +280,10 @@ export interface RoleplaySessionRunConfig {
   scenarioVersion: RoleplaySessionScenarioVersion | null;
   /** {promptCode: version} captured at session start; null when not recorded. */
   promptVersions: Record<string, string | number> | null;
+  /** promptCode of the main-agent prompt this simulation selected; null = default. */
+  selectedMainPromptCode: string | null;
+  /** Effective variant this session ran: "GENERIC" | "MULTILINGUAL"; null for older sessions. */
+  mainPromptVariant: string | null;
   llmProvider: string | null;
   llmModel: string | null;
   temperature: number | null;

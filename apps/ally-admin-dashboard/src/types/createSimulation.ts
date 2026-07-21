@@ -61,6 +61,8 @@ export type FormData = {
   optGuardrails?: boolean;
   currentState?: boolean;
   knowledgeSources?: knowledgeSource[];
+  /** Per-language main-agent prompt variant choice (GENERIC vs MULTILINGUAL). */
+  mainPromptVariantByLanguage?: Record<string, "GENERIC" | "MULTILINGUAL">;
 };
 
 export interface DemographicsSectionProps {
@@ -379,6 +381,44 @@ export interface Prompt {
    * the code/language default; a simulation-level temperature still wins.
    */
   temperature?: number;
+  /**
+   * Opt-in: when true, this English main_agent/branching source is auto-translated
+   * into the eligible Indian languages and re-translated when its body changes.
+   * Translations are read-only (shown in the Translations panel, not editable).
+   */
+  translationEnabled?: boolean;
+  /** Count of languages whose translation is currently `ready` (drives the list coverage badge). */
+  translationsReady?: number;
+}
+
+/** Lifecycle of one (prompt, language) translation (mirrors ally-be). */
+export type PromptTranslationStatus = "pending" | "translating" | "ready" | "failed";
+
+/** A stored translation row for a prompt in one language (read-only in the UI). */
+export interface PromptTranslation {
+  id: string;
+  promptId: string;
+  languageId: number;
+  promptVersionId?: string | null;
+  translatedPrompt?: string | null;
+  sourceHash: string;
+  status: PromptTranslationStatus;
+  provider?: string | null;
+  model?: string | null;
+  translationPromptVersion?: string | null;
+  error?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** Result of translating a prompt into all eligible languages. */
+export interface TranslatePromptResult {
+  promptId: string;
+  eligible: boolean;
+  reason?: string;
+  translated: number;
+  skipped: number;
+  failed: number;
 }
 
 export type LlmProviderName = "openai" | "gemini" | "anthropic";

@@ -88,6 +88,11 @@ export const ApiEndpoints = {
     DUPLICATE_PROMPT: (id: string | number) => `/v1/prompts/${id}/duplicate`,
     REVERT_PROMPT: (id: string | number) => `/v1/prompts/${id}/revert`,
     GET_PROMPT_USAGE: (id: string | number) => `/v1/prompts/${id}/usage`,
+    GET_PROMPT_TRANSLATIONS: (id: string | number) => `/v1/prompts/${id}/translations`,
+    RETRANSLATE_PROMPT: (id: string | number) => `/v1/prompts/${id}/translations`,
+    RETRANSLATE_PROMPT_LANGUAGE: (id: string | number, languageId: string | number) =>
+      `/v1/prompts/${id}/translations/${languageId}`,
+    BACKFILL_PROMPT_TRANSLATIONS: "/v1/prompts/translations/backfill",
     GET_LLM_MODELS: "/v1/llm/models",
     GET_REPORT_BY_ID: (reportId: string) => `/v1/learn/scenarios/reports/${reportId}`,
     GET_REPORTS: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
