@@ -343,7 +343,11 @@ const CallSummary: FC<CallSummaryProps> = ({
     if (hasCustomFieldsChanged()) {
       const changedFields = Array.from(dirtyFieldIds).map(fieldDefinitionId => ({
         fieldDefinitionId,
-        value: customLocalValues[fieldDefinitionId] ?? undefined,
+        // Coalesce to null, not undefined: a cleared field must be sent as an
+        // explicit null so the backend overwrites it. undefined is dropped by
+        // JSON.stringify, which the backend reads as "leave unchanged" and the
+        // old value refills on reopen.
+        value: customLocalValues[fieldDefinitionId] ?? null,
       }));
       try {
         await upsertCustomFieldValues({ chatId, values: changedFields }).unwrap();

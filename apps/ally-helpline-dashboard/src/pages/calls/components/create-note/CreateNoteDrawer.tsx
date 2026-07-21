@@ -369,7 +369,11 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       const chatId = await ensureNote();
       const values = Object.entries(latestValuesRef.current).map(([fieldDefinitionId, value]) => ({
         fieldDefinitionId,
-        value: value ?? undefined,
+        // Coalesce to null, not undefined: a cleared field must be sent as an
+        // explicit null so the backend overwrites it. undefined is dropped by
+        // JSON.stringify, which the backend reads as "leave unchanged" and the
+        // old value refills on reopen.
+        value: value ?? null,
       }));
       const summary = await buildSummaryPayload();
       await Promise.all([

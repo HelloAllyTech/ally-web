@@ -106,5 +106,9 @@ export interface UpdateCustomFieldDefinitionInput {
 }
 
 export interface UpsertCustomFieldValuesInput {
-  values: { fieldDefinitionId: string; value?: string }[];
+  // `value: null` explicitly clears a field. It must stay distinct from an
+  // omitted `value`, which the backend treats as "leave unchanged" (TypeORM
+  // skips undefined columns on save) — sending `undefined` for a cleared
+  // field is what caused blanked fields to refill with their old value.
+  values: { fieldDefinitionId: string; value?: string | null }[];
 }
