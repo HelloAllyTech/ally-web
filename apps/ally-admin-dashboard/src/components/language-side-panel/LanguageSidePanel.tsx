@@ -336,10 +336,7 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
             </Field>
             {selectedLanguage?.id && (
               <Field label="Glossary">
-                <div className="w-full flex items-center justify-between py-2">
-                  <span className="text-sm text-gray-500">
-                    Per-language style card and term glossary served to agents.
-                  </span>
+                <div className="w-full py-2">
                   <Button
                     variant={ButtonVariant.SECONDARY}
                     onClick={() =>

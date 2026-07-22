@@ -25,6 +25,14 @@ const MODE_STYLES: Record<GlossaryInjectionMode, string> = {
   retrieved: "bg-teal-100 text-teal-800",
 };
 
+/** Human wording for injectionMode — "always" rides in every reply's
+ * instructions (token-capped); "retrieved" is pulled in only when the
+ * conversation needs that vocabulary. */
+const MODE_LABELS: Record<GlossaryInjectionMode, string> = {
+  always: "every turn",
+  retrieved: "on demand",
+};
+
 const STATUS_STYLES: Record<GlossarySectionStatus, string> = {
   draft: "bg-gray-100 text-gray-700",
   published: "bg-green-100 text-green-800",
@@ -260,7 +268,7 @@ export const LanguageGlossary: React.FC = () => {
           </h1>
         </div>
         <div className="text-right">
-          <div className="text-xs text-gray-500">Tier 0 budget (always-injected)</div>
+          <div className="text-xs text-gray-500">Every-turn budget (published sections)</div>
           <div className="flex items-center gap-2 justify-end">
             <div className="w-28 h-1.5 bg-gray-200 rounded overflow-hidden">
               <div
@@ -305,7 +313,7 @@ export const LanguageGlossary: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium truncate">{v.section.title}</span>
                     <Pill className={MODE_STYLES[v.section.injectionMode]}>
-                      {v.section.injectionMode}
+                      {MODE_LABELS[v.section.injectionMode]}
                     </Pill>
                   </div>
                   <div className="flex items-center justify-between mt-1">
@@ -372,16 +380,17 @@ export const LanguageGlossary: React.FC = () => {
 
               <div className="flex items-center gap-4">
                 <label className="text-sm text-gray-600 flex items-center gap-2">
-                  Injection mode
+                  Used
                   <select
                     className="border border-gray-300 rounded px-2 py-1 text-sm"
                     value={draft.injectionMode}
                     onChange={e =>
                       updateDraft({ injectionMode: e.target.value as GlossaryInjectionMode })
                     }
+                    title="Every turn: part of the agent's standing instructions on every reply (counts against the token budget). On demand: pulled in only when the conversation needs this vocabulary."
                   >
-                    <option value="always">always (Tier 0, every turn)</option>
-                    <option value="retrieved">retrieved (on demand)</option>
+                    <option value="always">every turn (core style rules)</option>
+                    <option value="retrieved">on demand (when relevant)</option>
                   </select>
                 </label>
                 <Pill className={STATUS_STYLES[draft.status]}>{draft.status}</Pill>
@@ -395,7 +404,7 @@ export const LanguageGlossary: React.FC = () => {
               {draft.injectionMode === "retrieved" && (
                 <TextInput
                   id="glossary-hint"
-                  labelText="Retrieval hint (when should the agent pull this section?)"
+                  labelText="When should this be pulled in? (guides the on-demand lookup)"
                   value={draft.retrievalHint}
                   onChange={e => updateDraft({ retrievalHint: e.target.value })}
                   placeholder="e.g. Retrieve when the reply turns toward diagnosis, symptoms, medication"
