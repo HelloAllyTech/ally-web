@@ -6,28 +6,16 @@
  * knowledge retrieval. Prompt text is compiled from published entries only.
  */
 
-export type GlossaryEntryType = "term_pair" | "rule" | "pattern";
-
-export type GlossaryEntryStatus = "published" | "proposed" | "rejected";
+export type GlossaryEntryStatus = "proposed" | "accepted" | "rejected";
 
 export type GlossaryInjectionMode = "always" | "retrieved";
 
 export type GlossarySectionStatus = "draft" | "published" | "archived";
 
+/** A consolidation proposal: a markdown line awaiting accept/reject review. */
 export interface GlossaryEntry {
   id: string;
-  type: GlossaryEntryType;
-  /** term_pair: English scaffolding term */
-  english?: string;
-  /** term_pair: colloquial spoken form (native script) */
-  preferred?: string;
-  /** term_pair: literary/formal form to avoid (native script) */
-  avoid?: string;
-  /** rule/pattern: one-line rule or conversational move (English) */
-  text?: string;
-  note?: string;
-  /** native-script example sentences */
-  examples?: string[];
+  markdown: string;
   status: GlossaryEntryStatus;
   importance?: number;
   provenance?: {
@@ -42,6 +30,9 @@ export interface LanguageGlossarySection {
   organizationId?: string | null;
   sectionCode: string;
   title: string;
+  /** The glossary body: plain markdown, served to the agent as-is. */
+  content: string;
+  /** Consolidation proposals awaiting review. */
   entries: GlossaryEntry[];
   retrievalHint?: string | null;
   injectionMode: GlossaryInjectionMode;
@@ -70,7 +61,7 @@ export interface GlossaryListResponse {
 
 export interface UpsertGlossarySectionPayload {
   title: string;
-  entries: GlossaryEntry[];
+  content: string;
   retrievalHint?: string;
   injectionMode: GlossaryInjectionMode;
   importance?: number;

@@ -688,6 +688,37 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
     }),
 
+    /** Accept a consolidation proposal — appends its markdown to the section content. */
+    acceptGlossaryProposal: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string; entryId: string }
+    >({
+      query: ({ languageId, sectionCode, entryId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.ACCEPT_GLOSSARY_PROPOSAL(
+          languageId,
+          sectionCode,
+          entryId,
+        ),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    rejectGlossaryProposal: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string; entryId: string }
+    >({
+      query: ({ languageId, sectionCode, entryId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.REJECT_GLOSSARY_PROPOSAL(
+          languageId,
+          sectionCode,
+          entryId,
+        ),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
     /** Consolidation: judge error annotations -> PROPOSED entries (never auto-published). */
     consolidateLanguageGlossary: builder.mutation<ConsolidateGlossaryResult, number>({
       query: id => ({
@@ -1208,6 +1239,8 @@ export const {
   useGenerateLanguageGlossaryMutation,
   useConsolidateLanguageGlossaryMutation,
   useBackfillLanguageGlossariesMutation,
+  useAcceptGlossaryProposalMutation,
+  useRejectGlossaryProposalMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,

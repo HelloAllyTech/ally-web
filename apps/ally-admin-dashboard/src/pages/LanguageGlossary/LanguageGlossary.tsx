@@ -5,24 +5,20 @@ import { toast } from "sonner";
 
 import { AutoExpandableTextarea, TextInput } from "@ally-ui-mono/ui-shared";
 import {
+  useAcceptGlossaryProposalMutation,
   useArchiveGlossarySectionMutation,
   useConsolidateLanguageGlossaryMutation,
   useGenerateLanguageGlossaryMutation,
   useGetLanguageGlossaryQuery,
   useGetLanguagesQuery,
   usePublishGlossarySectionMutation,
+  useRejectGlossaryProposalMutation,
   useUpsertGlossarySectionMutation,
 } from "@api";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
-import {
-  GlossaryEntry,
-  GlossaryEntryType,
-  GlossaryInjectionMode,
-  GlossarySectionStatus,
-  LanguageGlossarySection,
-} from "@types";
+import { GlossaryInjectionMode, GlossarySectionStatus, LanguageGlossarySection } from "@types";
 
 const MODE_STYLES: Record<GlossaryInjectionMode, string> = {
   always: "bg-purple-100 text-purple-800",
@@ -35,12 +31,6 @@ const STATUS_STYLES: Record<GlossarySectionStatus, string> = {
   archived: "bg-yellow-100 text-yellow-800",
 };
 
-const ENTRY_STATUS_STYLES: Record<string, string> = {
-  published: "bg-green-100 text-green-800",
-  proposed: "bg-amber-100 text-amber-800",
-  rejected: "bg-red-100 text-red-700",
-};
-
 const errorMessage = (err: unknown): string => {
   const data = (err as { data?: { message?: string | string[] } })?.data;
   const message = data?.message;
@@ -48,11 +38,11 @@ const errorMessage = (err: unknown): string => {
   return message ?? "Request failed";
 };
 
-/** Editable working copy of one section. */
+/** Editable working copy of one section — title + one markdown body. */
 interface SectionDraft {
   sectionCode: string;
   title: string;
-  entries: GlossaryEntry[];
+  content: string;
   retrievalHint: string;
   injectionMode: GlossaryInjectionMode;
   status: GlossarySectionStatus;
@@ -62,21 +52,11 @@ interface SectionDraft {
 const toDraft = (section: LanguageGlossarySection): SectionDraft => ({
   sectionCode: section.sectionCode,
   title: section.title,
-  entries: section.entries ?? [],
+  content: section.content ?? "",
   retrievalHint: section.retrievalHint ?? "",
   injectionMode: section.injectionMode,
   status: section.status,
   isNew: false,
-});
-
-const newEntry = (type: GlossaryEntryType): GlossaryEntry => ({
-  id: crypto.randomUUID(),
-  type,
-  status: "published",
-  provenance: { source: "manual" },
-  ...(type === "term_pair"
-    ? { english: "", preferred: "", avoid: "" }
-    : { text: "", examples: [] }),
 });
 
 const Pill: React.FC<{ className: string; children: React.ReactNode }> = ({
@@ -108,6 +88,8 @@ export const LanguageGlossary: React.FC = () => {
   const [generateGlossary, { isLoading: isGenerating }] = useGenerateLanguageGlossaryMutation();
   const [consolidateGlossary, { isLoading: isConsolidating }] =
     useConsolidateLanguageGlossaryMutation();
+  const [acceptProposal] = useAcceptGlossaryProposalMutation();
+  const [rejectProposal] = useRejectGlossaryProposalMutation();
 
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [draft, setDraft] = useState<SectionDraft | null>(null);
@@ -126,6 +108,9 @@ export const LanguageGlossary: React.FC = () => {
   }, [data]);
 
   const selectedView = views.find(v => v.section.sectionCode === selectedCode);
+  const pendingProposals = (selectedView?.section.entries ?? []).filter(
+    e => e.status === "proposed",
+  );
 
   // Hydrate the editable draft whenever the selection or server data changes,
   // but never while the user has unsaved edits.
@@ -151,7 +136,7 @@ export const LanguageGlossary: React.FC = () => {
     setDraft({
       sectionCode: "",
       title: "",
-      entries: [],
+      content: "",
       retrievalHint: "",
       injectionMode: "retrieved",
       status: "draft",
@@ -161,23 +146,6 @@ export const LanguageGlossary: React.FC = () => {
 
   const updateDraft = (patch: Partial<SectionDraft>) => {
     setDraft(d => (d ? { ...d, ...patch } : d));
-    setDirty(true);
-  };
-
-  const updateEntry = (entryId: string, patch: Partial<GlossaryEntry>) => {
-    setDraft(d =>
-      d ? { ...d, entries: d.entries.map(e => (e.id === entryId ? { ...e, ...patch } : e)) } : d,
-    );
-    setDirty(true);
-  };
-
-  const removeEntry = (entryId: string) => {
-    setDraft(d => (d ? { ...d, entries: d.entries.filter(e => e.id !== entryId) } : d));
-    setDirty(true);
-  };
-
-  const addEntry = (type: GlossaryEntryType) => {
-    setDraft(d => (d ? { ...d, entries: [...d.entries, newEntry(type)] } : d));
     setDirty(true);
   };
 
@@ -194,7 +162,7 @@ export const LanguageGlossary: React.FC = () => {
         sectionCode: code,
         payload: {
           title: draft.title.trim(),
-          entries: draft.entries,
+          content: draft.content,
           retrievalHint: draft.retrievalHint.trim() || undefined,
           injectionMode: draft.injectionMode,
         },
@@ -230,21 +198,6 @@ export const LanguageGlossary: React.FC = () => {
     }
   };
 
-  const handleConsolidate = async () => {
-    try {
-      const result = await consolidateGlossary(languageId).unwrap();
-      if (result.annotationsConsidered === 0) {
-        toast.info("No new judge error annotations to consolidate");
-        return;
-      }
-      toast.success(
-        `Consolidated ${result.annotationsConsidered} annotations into ${result.proposed} proposed entries (${result.skippedDuplicates} duplicates skipped) — review the amber entries`,
-      );
-    } catch (err) {
-      toast.error(errorMessage(err));
-    }
-  };
-
   const handleGenerate = async () => {
     try {
       const result = await generateGlossary(languageId).unwrap();
@@ -256,117 +209,41 @@ export const LanguageGlossary: React.FC = () => {
     }
   };
 
+  const handleConsolidate = async () => {
+    try {
+      const result = await consolidateGlossary(languageId).unwrap();
+      if (result.annotationsConsidered === 0) {
+        toast.info("No new judge error annotations to consolidate");
+        return;
+      }
+      toast.success(
+        `Consolidated ${result.annotationsConsidered} annotations into ${result.proposed} proposals (${result.skippedDuplicates} duplicates skipped)`,
+      );
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
+  };
+
+  const handleProposal = async (entryId: string, accept: boolean) => {
+    if (!draft || draft.isNew) return;
+    if (accept && dirty) {
+      toast.error("Save your content edits before accepting a proposal");
+      return;
+    }
+    try {
+      const mutate = accept ? acceptProposal : rejectProposal;
+      await mutate({ languageId, sectionCode: draft.sectionCode, entryId }).unwrap();
+      setDirty(false);
+      toast.success(accept ? "Proposal added to the section" : "Proposal rejected");
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
+  };
+
   const tier0Tokens = data?.tier0Tokens ?? 0;
   const tier0Cap = data?.tier0TokenCap ?? 2000;
   const tier0Pct = Math.min(100, Math.round((tier0Tokens / tier0Cap) * 100));
   const tier0Over = tier0Tokens > tier0Cap * 0.9;
-
-  const renderEntryEditor = (entry: GlossaryEntry) => {
-    const statusPill = (
-      <Pill className={ENTRY_STATUS_STYLES[entry.status] ?? "bg-gray-100 text-gray-700"}>
-        {entry.status}
-      </Pill>
-    );
-    const reviewControls = entry.status === "proposed" && (
-      <span className="flex gap-1">
-        <button
-          className="text-xs text-green-700 underline"
-          onClick={() => updateEntry(entry.id, { status: "published" })}
-        >
-          Accept
-        </button>
-        <button
-          className="text-xs text-red-700 underline"
-          onClick={() => updateEntry(entry.id, { status: "rejected" })}
-        >
-          Reject
-        </button>
-      </span>
-    );
-
-    if (entry.type === "term_pair") {
-      return (
-        <div key={entry.id} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center py-1">
-          <TextInput
-            id={`en-${entry.id}`}
-            labelText="English"
-            hideLabel
-            placeholder="English term"
-            value={entry.english ?? ""}
-            onChange={e => updateEntry(entry.id, { english: e.target.value })}
-          />
-          <TextInput
-            id={`pref-${entry.id}`}
-            labelText="Say"
-            hideLabel
-            placeholder="Say (colloquial, native script)"
-            value={entry.preferred ?? ""}
-            onChange={e => updateEntry(entry.id, { preferred: e.target.value })}
-          />
-          <TextInput
-            id={`avoid-${entry.id}`}
-            labelText="Avoid"
-            hideLabel
-            placeholder="Avoid (literary)"
-            value={entry.avoid ?? ""}
-            onChange={e => updateEntry(entry.id, { avoid: e.target.value })}
-          />
-          <span className="flex items-center gap-2">
-            {statusPill}
-            {reviewControls}
-            <button
-              className="text-gray-400 hover:text-red-600 text-sm"
-              title="Remove entry"
-              onClick={() => removeEntry(entry.id)}
-            >
-              ✕
-            </button>
-          </span>
-        </div>
-      );
-    }
-
-    return (
-      <div key={entry.id} className="border border-gray-200 rounded p-3 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-wide text-gray-500">
-            {entry.type === "rule" ? "Rule" : "Pattern"}
-          </span>
-          <span className="flex items-center gap-2">
-            {statusPill}
-            {reviewControls}
-            <button
-              className="text-gray-400 hover:text-red-600 text-sm"
-              title="Remove entry"
-              onClick={() => removeEntry(entry.id)}
-            >
-              ✕
-            </button>
-          </span>
-        </div>
-        <TextInput
-          id={`text-${entry.id}`}
-          labelText="Text"
-          hideLabel
-          placeholder={entry.type === "rule" ? "One-line rule (English)" : "Conversational move"}
-          value={entry.text ?? ""}
-          onChange={e => updateEntry(entry.id, { text: e.target.value })}
-        />
-        <AutoExpandableTextarea
-          maxLines={6}
-          minHeight={20}
-          value={(entry.examples ?? []).join("\n")}
-          onChange={(text: string) =>
-            updateEntry(entry.id, {
-              examples: text.split("\n").filter(line => line.trim().length > 0),
-            })
-          }
-          placeholder="Native-script examples, one per line"
-          className="py-1 px-2 border border-gray-200 rounded text-sm w-full resize-none"
-        />
-      </div>
-    );
-  };
 
   return (
     <div className="p-8 max-w-[1200px] mx-auto">
@@ -382,41 +259,24 @@ export const LanguageGlossary: React.FC = () => {
             {language?.label ?? `Language ${languageId}`} — glossary
           </h1>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className="text-xs text-gray-500">Tier 0 budget (always-injected)</div>
-            <div className="flex items-center gap-2">
-              <div className="w-28 h-1.5 bg-gray-200 rounded overflow-hidden">
-                <div
-                  className={`h-full ${tier0Over ? "bg-red-500" : "bg-green-600"}`}
-                  style={{ width: `${tier0Pct}%` }}
-                />
-              </div>
-              <span className="text-sm font-medium">
-                {tier0Tokens.toLocaleString()} / {tier0Cap.toLocaleString()} tok
-              </span>
+        <div className="text-right">
+          <div className="text-xs text-gray-500">Tier 0 budget (always-injected)</div>
+          <div className="flex items-center gap-2 justify-end">
+            <div className="w-28 h-1.5 bg-gray-200 rounded overflow-hidden">
+              <div
+                className={`h-full ${tier0Over ? "bg-red-500" : "bg-green-600"}`}
+                style={{ width: `${tier0Pct}%` }}
+              />
             </div>
+            <span className="text-sm font-medium">
+              {tier0Tokens.toLocaleString()} / {tier0Cap.toLocaleString()} tok
+            </span>
           </div>
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            onClick={handleConsolidate}
-            disabled={isConsolidating}
-            title="Turn the language judge's error annotations into proposed entries"
-          >
-            {isConsolidating ? "Consolidating…" : "Run consolidation"}
-          </Button>
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            onClick={handleGenerate}
-            disabled={isGenerating}
-          >
-            {isGenerating ? "Generating…" : "Generate draft glossary"}
-          </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-[280px_1fr] gap-6">
-        <div className="border border-gray-200 rounded">
+        <div className="border border-gray-200 rounded flex flex-col">
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
             <span className="text-sm font-medium">Sections</span>
             <button className="text-sm text-primary-500" onClick={addSection}>
@@ -426,31 +286,62 @@ export const LanguageGlossary: React.FC = () => {
           {isLoading && <div className="p-3 text-sm text-gray-500">Loading…</div>}
           {!isLoading && views.length === 0 && (
             <div className="p-3 text-sm text-gray-500">
-              No sections yet. Generate a draft glossary or add a section.
+              No sections yet. Generate a draft glossary below, or add a section by hand.
             </div>
           )}
-          {views.map(v => (
-            <button
-              key={v.section.sectionCode}
-              className={`w-full text-left px-3 py-2 border-b border-gray-100 hover:bg-gray-50 ${
-                v.section.sectionCode === selectedCode ? "bg-gray-100" : ""
-              }`}
-              onClick={() => selectSection(v.section.sectionCode)}
+          <div className="flex-1">
+            {views.map(v => {
+              const proposals = (v.section.entries ?? []).filter(
+                e => e.status === "proposed",
+              ).length;
+              return (
+                <button
+                  key={v.section.sectionCode}
+                  className={`w-full text-left px-3 py-2 border-b border-gray-100 hover:bg-gray-50 ${
+                    v.section.sectionCode === selectedCode ? "bg-gray-100" : ""
+                  }`}
+                  onClick={() => selectSection(v.section.sectionCode)}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium truncate">{v.section.title}</span>
+                    <Pill className={MODE_STYLES[v.section.injectionMode]}>
+                      {v.section.injectionMode}
+                    </Pill>
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="flex items-center gap-1">
+                      <Pill className={STATUS_STYLES[v.section.status]}>{v.section.status}</Pill>
+                      {proposals > 0 && (
+                        <Pill className="bg-amber-100 text-amber-800">
+                          {proposals} proposal{proposals > 1 ? "s" : ""}
+                        </Pill>
+                      )}
+                    </span>
+                    <span className="text-xs text-gray-500">{v.compiledTokens} tok</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <div className="p-3 border-t border-gray-200 flex flex-col gap-2">
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className="w-full"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium truncate">{v.section.title}</span>
-                <Pill className={MODE_STYLES[v.section.injectionMode]}>
-                  {v.section.injectionMode}
-                </Pill>
-              </div>
-              <div className="flex items-center justify-between mt-1">
-                <Pill className={STATUS_STYLES[v.section.status]}>{v.section.status}</Pill>
-                <span className="text-xs text-gray-500">
-                  {v.section.entries.length} entries · {v.compiledTokens} tok
-                </span>
-              </div>
-            </button>
-          ))}
+              {isGenerating ? "Generating…" : "Generate draft glossary"}
+            </Button>
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={handleConsolidate}
+              disabled={isConsolidating}
+              className="w-full"
+              title="Turn the language judge's error annotations into proposals"
+            >
+              {isConsolidating ? "Consolidating…" : "Run consolidation"}
+            </Button>
+          </div>
         </div>
 
         <div className="border border-gray-200 rounded p-4">
@@ -511,31 +402,53 @@ export const LanguageGlossary: React.FC = () => {
                 />
               )}
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Entries ({draft.entries.length})</span>
-                  <span className="flex gap-2">
-                    <Button variant={ButtonVariant.TEXT} onClick={() => addEntry("term_pair")}>
-                      + Term pair
-                    </Button>
-                    <Button variant={ButtonVariant.TEXT} onClick={() => addEntry("rule")}>
-                      + Rule
-                    </Button>
-                    <Button variant={ButtonVariant.TEXT} onClick={() => addEntry("pattern")}>
-                      + Pattern
-                    </Button>
-                  </span>
+              <div>
+                <div className="text-sm text-gray-600 mb-1">
+                  Content (markdown — served to the agent as written)
                 </div>
-                {draft.entries.some(e => e.type === "term_pair") && (
-                  <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 text-xs text-gray-500 px-1">
-                    <span>English</span>
-                    <span>Say (colloquial)</span>
-                    <span>Avoid (literary)</span>
-                    <span />
-                  </div>
-                )}
-                <div className="space-y-2">{draft.entries.map(renderEntryEditor)}</div>
+                <AutoExpandableTextarea
+                  maxLines={30}
+                  minHeight={200}
+                  value={draft.content}
+                  onChange={(text: string) => updateDraft({ content: text })}
+                  placeholder={
+                    '- worry: say "டென்ஷன்" (avoid: "பதட்டம்")\n- Always use colloquial spoken forms.\n  e.g. சாப்டீங்களா? (not சாப்பிட்டீர்களா?)'
+                  }
+                  className="w-full border border-gray-200 rounded p-3 text-sm font-mono resize-none"
+                />
               </div>
+
+              {pendingProposals.length > 0 && (
+                <div className="border border-amber-200 bg-amber-50 rounded p-3 space-y-2">
+                  <div className="text-sm font-medium text-amber-900">
+                    Proposals from the language judge ({pendingProposals.length})
+                  </div>
+                  {pendingProposals.map(proposal => (
+                    <div
+                      key={proposal.id}
+                      className="flex items-start justify-between gap-3 bg-white border border-amber-200 rounded p-2"
+                    >
+                      <pre className="text-sm whitespace-pre-wrap flex-1 font-sans">
+                        {proposal.markdown}
+                      </pre>
+                      <span className="flex gap-2 shrink-0">
+                        <button
+                          className="text-sm text-green-700 underline"
+                          onClick={() => handleProposal(proposal.id, true)}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          className="text-sm text-red-700 underline"
+                          onClick={() => handleProposal(proposal.id, false)}
+                        >
+                          Reject
+                        </button>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="flex gap-3 pt-2 border-t border-gray-200">
                 <Button

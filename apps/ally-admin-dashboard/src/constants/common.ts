@@ -56,6 +56,10 @@ export const ApiEndpoints = {
     ARCHIVE_GLOSSARY_SECTION: (id: string | number, sectionCode: string) =>
       `/v1/language/${id}/glossary/${sectionCode}/archive`,
     GENERATE_LANGUAGE_GLOSSARY: (id: string | number) => `/v1/language/${id}/glossary/generate`,
+    ACCEPT_GLOSSARY_PROPOSAL: (id: string | number, sectionCode: string, entryId: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}/proposals/${entryId}/accept`,
+    REJECT_GLOSSARY_PROPOSAL: (id: string | number, sectionCode: string, entryId: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}/proposals/${entryId}/reject`,
     CONSOLIDATE_LANGUAGE_GLOSSARY: (id: string | number) =>
       `/v1/language/${id}/glossary/consolidate`,
     BACKFILL_LANGUAGE_GLOSSARIES: "/v1/language/glossary/backfill",
