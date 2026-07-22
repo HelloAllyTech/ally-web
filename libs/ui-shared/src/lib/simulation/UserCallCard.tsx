@@ -17,9 +17,9 @@ interface UserCallCardProps {
   isMuted?: boolean;
   turnState?: TurnState;
   turnIndicatorTranslations?: TurnIndicatorTranslations;
-  /** Small picture-in-picture self-view sizing: drop the name label and turn
-   * sentence (no room for either at ~100px wide), keep only the speaking-glow
-   * border and a slimmer mute icon. */
+  /** Small picture-in-picture self-view sizing: same name + turn-status info
+   * as the full-size card, just stacked vertically (instead of side-by-side)
+   * and shrunk down to fit a ~100px-wide bubble. */
   compact?: boolean;
 }
 
@@ -58,11 +58,25 @@ export const UserCallCard: React.FC<UserCallCardProps> = ({
       } ${isSpeaking ? "border-primary-500" : "border-transparent"}`}
     >
       {compact ? (
-        isMuted && (
-          <div className="w-fit p-1 rounded-md bg-[rgba(0,0,0,0.40)]">
-            <MicOffWhite className="w-3 h-3" />
+        <div className="flex flex-col items-start gap-1">
+          <div className="w-fit max-w-full flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[rgba(0,0,0,0.40)]">
+            {isMuted ? (
+              <MicOffWhite className="w-3 h-3 shrink-0" />
+            ) : (
+              <SpeakingIndicator isSpeaking={isSpeaking} />
+            )}
+            <span className="text-white text-[10px] font-medium leading-[13px] truncate">
+              {name}
+            </span>
           </div>
-        )
+          {turnState && turnState !== TurnState.IDLE && (
+            <TurnTakingIndicator
+              turnState={turnState}
+              translations={turnIndicatorTranslations}
+              compact
+            />
+          )}
+        </div>
       ) : (
         <div className="flex flex-row gap-2 items-center">
           <div className="w-fit flex items-center gap-2 p-2 rounded-md bg-[rgba(0,0,0,0.40)]">

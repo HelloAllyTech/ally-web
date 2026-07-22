@@ -233,6 +233,7 @@ export const ENHANCE_TYPE = {
   CHARACTER_PROFILE_TEXT: "characterProfileText",
   DESCRIPTION: "description",
   OPENING_STATEMENTS: "openingStatements",
+  REMINDERS: "reminders",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   ALLOWED_FILLER_WORDS: "allowedFillerWords",
   KNOWLEDGE_SOURCES: "knowledgeSources",
@@ -515,15 +516,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         enhanceType: ENHANCE_TYPE.OPENING_STATEMENTS,
       },
       // Plain-text reminders shown to the learner during the live session —
-      // deliberately NOT wired to a promptVariable/enhanceType: unlike
-      // Checklist items, reminders never reach the agent's prompt or AI
-      // scoring, so there's no ai-learn placeholder to gate visibility on.
+      // deliberately NOT gated by a promptVariable: unlike Checklist items,
+      // reminders never reach the agent's prompt or AI scoring, so there's no
+      // ai-learn placeholder to gate visibility on. Enhance IS supported
+      // (below) since it only rewrites the field's own content.
       {
         id: "reminders",
         label: "Reminders",
         type: FORM_FIELD_TYPES.CUSTOM.REMINDERS,
         fullWidth: true,
         isMandatory: false,
+        enhanceType: ENHANCE_TYPE.REMINDERS,
       },
       {
         id: "linguisticStyleSamples",

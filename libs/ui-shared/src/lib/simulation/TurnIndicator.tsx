@@ -19,6 +19,10 @@ export enum TurnState {
 interface TurnTakingIndicatorProps {
   turnState: TurnState;
   translations?: TurnIndicatorTranslations;
+  /** Smaller padding/text + wraps within its parent's width, for the PiP
+   * self-view bubble where a full-size pill (or a long "Your turn to
+   * listen") wouldn't fit. */
+  compact?: boolean;
 }
 
 const DEFAULT_TRANSLATIONS: TurnIndicatorTranslations = {
@@ -67,25 +71,37 @@ const getBackgroundColor = (turnState: TurnState): string => {
   }
 };
 
-export const TurnTakingIndicator = memo<TurnTakingIndicatorProps>(({ turnState, translations }) => {
-  const message = getTurnMessage(turnState, translations ?? DEFAULT_TRANSLATIONS);
+export const TurnTakingIndicator = memo<TurnTakingIndicatorProps>(
+  ({ turnState, translations, compact = false }) => {
+    const message = getTurnMessage(turnState, translations ?? DEFAULT_TRANSLATIONS);
 
-  if (!message) return null;
+    if (!message) return null;
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -5 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -5 }}
-      transition={{ duration: 0.2 }}
-      className={`px-3 py-1 rounded-md ${getBackgroundColor(turnState)} flex items-center justify-center`}
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      <span className="text-white text-[14px] font-medium leading-[18px] italic">{message}</span>
-    </motion.div>
-  );
-});
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -5 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -5 }}
+        transition={{ duration: 0.2 }}
+        className={`rounded-md max-w-full flex items-center justify-center ${getBackgroundColor(turnState)} ${
+          compact ? "px-1.5 py-0.5" : "px-3 py-1"
+        }`}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span
+          className={`text-white font-medium italic ${
+            compact
+              ? "text-[9px] leading-[11px] text-center whitespace-normal"
+              : "text-[14px] leading-[18px]"
+          }`}
+        >
+          {message}
+        </span>
+      </motion.div>
+    );
+  },
+);
 
 TurnTakingIndicator.displayName = "TurnTakingIndicator";

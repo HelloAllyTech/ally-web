@@ -188,7 +188,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
               equal-size card of its own. */}
           <div
             data-testid="simulation-pip-self-view"
-            className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36 lg:w-32 lg:h-40 rounded-xl overflow-hidden border-2 border-[#3D4045] shadow-[0_2px_12px_rgba(0,0,0,0.45)]"
+            className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 lg:w-36 lg:h-44 rounded-xl overflow-hidden border-2 border-[#3D4045] shadow-[0_2px_12px_rgba(0,0,0,0.45)]"
           >
             <UserCallCard
               userData={{

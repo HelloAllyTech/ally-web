@@ -19,7 +19,9 @@ vi.mock("../TurnIndicator", async importOriginal => {
   const actual = await importOriginal<any>();
   return {
     ...actual,
-    TurnTakingIndicator: () => <div data-testid="turn-taking-indicator" />,
+    TurnTakingIndicator: (props: any) => (
+      <div data-testid="turn-taking-indicator" data-compact={String(!!props.compact)} />
+    ),
   };
 });
 
@@ -32,10 +34,12 @@ describe("UserCallCard", () => {
     );
 
     expect(screen.getByText("Asha")).toBeInTheDocument();
-    expect(screen.getByTestId("turn-taking-indicator")).toBeInTheDocument();
+    const turnIndicator = screen.getByTestId("turn-taking-indicator");
+    expect(turnIndicator).toBeInTheDocument();
+    expect(turnIndicator).toHaveAttribute("data-compact", "false");
   });
 
-  it("omits the name label and turn indicator in compact mode", () => {
+  it("still renders the name label and turn indicator in compact (PiP) mode, just marked compact", () => {
     render(
       <UserCallCard
         userData={userData}
@@ -45,15 +49,19 @@ describe("UserCallCard", () => {
       />,
     );
 
-    expect(screen.queryByText("Asha")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("turn-taking-indicator")).not.toBeInTheDocument();
+    expect(screen.getByText("Asha")).toBeInTheDocument();
+    const turnIndicator = screen.getByTestId("turn-taking-indicator");
+    expect(turnIndicator).toBeInTheDocument();
+    expect(turnIndicator).toHaveAttribute("data-compact", "true");
   });
 
-  it("shows only a mute icon in compact mode when muted, and nothing when unmuted", () => {
+  it("shows a mute icon when muted and a speaking indicator when unmuted, in both modes", () => {
     const { rerender } = render(<UserCallCard userData={userData} isMuted compact />);
     expect(screen.getByTestId("mic-off-icon")).toBeInTheDocument();
+    expect(screen.queryByTestId("speaking-indicator")).not.toBeInTheDocument();
 
     rerender(<UserCallCard userData={userData} isMuted={false} compact />);
     expect(screen.queryByTestId("mic-off-icon")).not.toBeInTheDocument();
+    expect(screen.getByTestId("speaking-indicator")).toBeInTheDocument();
   });
 });

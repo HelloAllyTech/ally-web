@@ -317,7 +317,12 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
         );
       case FORM_FIELD_TYPES.CUSTOM.REMINDERS:
         return (
-          <RemindersPanel formMethods={formMethods} isMandatory={isMandatory} readOnly={readOnly} />
+          <RemindersPanel
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+            enhanceType={enhanceType}
+            readOnly={readOnly}
+          />
         );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
