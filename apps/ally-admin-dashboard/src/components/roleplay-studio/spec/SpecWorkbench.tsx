@@ -72,7 +72,15 @@ export const SpecWorkbench: React.FC = () => {
 
       <div className="flex-1 min-h-0">
         {view === "spec" ? (
-          <div className="h-full min-h-0 overflow-y-auto custom-scrollbar pr-1">
+          // `relative` is load-bearing: Carbon's CarbonToggle internals
+          // (`.cds--toggle__button` + the `.cds--visually-hidden` label) are
+          // `position: absolute`. `overflow-y-auto` clips but does NOT establish
+          // a containing block, so without `relative` those absolute nodes escape
+          // this scroll area and resolve against the PrivateLayout wrapper,
+          // inflating its scrollHeight to the spec's full length — a phantom
+          // second scrollbar with empty white space below the content (worst at
+          // the end-of-page Voice & Language / naturalness toggles).
+          <div className="relative h-full min-h-0 overflow-y-auto custom-scrollbar pr-1">
             <SpecPanel readOnly={readOnly} />
           </div>
         ) : (
