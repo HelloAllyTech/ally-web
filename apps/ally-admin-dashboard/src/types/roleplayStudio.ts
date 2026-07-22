@@ -259,10 +259,19 @@ export interface PublishRoleplayVersionInput {
 // Copilot
 // ---------------------------------------------------------------------------
 
+/**
+ * What the copilot is doing in a session. BUILDING is the authoring interview;
+ * ITERATING is post-build refinement from live-test feedback. Mirrors the
+ * backend CopilotSessionMode enum.
+ */
+export type CopilotSessionMode = "BUILDING" | "ITERATING";
+
 export interface RoleplayCopilotSession {
   id: string;
   specId?: string;
   status?: string;
+  /** BUILDING (authoring interview) or ITERATING (refine from feedback). */
+  mode?: CopilotSessionMode;
   /** Present on session resume (GET sessions/:id). */
   messages?: RoleplayCopilotServerMessage[];
   createdAt?: string;
@@ -273,9 +282,12 @@ export interface RoleplayCopilotMessageMetadata {
   questionId?: string;
   /** On user rows: the structured answer for a select/dropdown/behaviour card. */
   answer?: CopilotStructuredAnswer;
+  /** On assistant rows: the mode the turn ran in. */
+  mode?: CopilotSessionMode;
   /** On assistant rows: structured cards emitted during that turn. */
   questions?: CopilotQuestionEvent[];
   behaviourReviews?: CopilotBehaviourReviewEvent[];
+  iterationSummaries?: CopilotIterationSummaryEvent[];
   [key: string]: unknown;
 }
 
@@ -376,6 +388,21 @@ export interface CopilotStructuredAnswer {
   unhelpful?: string[];
 }
 
+/** One spec area the copilot changed for a piece of iteration feedback. */
+export interface CopilotIterationChange {
+  area: string;
+  summary: string;
+}
+
+/** iteration_summary SSE payload — the "summary of updates made" card. */
+export interface CopilotIterationSummaryEvent {
+  id: string;
+  feedback: string;
+  reasoning: string;
+  changes: CopilotIterationChange[];
+  note?: string;
+}
+
 export interface CopilotErrorEvent {
   code: string;
   message: string;
@@ -393,6 +420,7 @@ export type CopilotStreamEvent =
   | { type: "spec_patch"; data: CopilotSpecPatchEvent }
   | { type: "question"; data: CopilotQuestionEvent }
   | { type: "behaviour_review"; data: CopilotBehaviourReviewEvent }
+  | { type: "iteration_summary"; data: CopilotIterationSummaryEvent }
   | { type: "error"; data: CopilotErrorEvent }
   | { type: "done"; data: CopilotDoneEvent };
 
@@ -405,6 +433,8 @@ export interface CopilotChatMessage {
   question?: CopilotQuestionEvent;
   /** Present when the assistant asked the trainer to review behaviours. */
   behaviourReview?: CopilotBehaviourReviewEvent;
+  /** Present when the assistant summarised a feedback-driven iteration edit. */
+  iterationSummary?: CopilotIterationSummaryEvent;
   /** On resumed freeText/singleSelect questions: the answer already given. */
   answeredWith?: string;
   /** On resumed multi-select / dropdown / behaviour cards: the structured answer. */

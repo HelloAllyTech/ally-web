@@ -883,6 +883,21 @@ export const en = {
       behaviourReviewConfirm: "Confirm behaviours",
       behaviourReviewEmpty: "No behaviours selected yet",
       selectedCountLabel: (n: number) => `${n} selected`,
+      // Build ⇄ Iterate mode
+      modeBuild: "Build",
+      modeIterate: "Iterate",
+      modeBuildHint: "Interview & build the spec",
+      modeIterateHint: "Refine the spec from your live-test feedback",
+      modeIterateLockedHint: "Build the spec first — then test it live and iterate",
+      modeSwitchFailed: "Couldn’t switch copilot mode",
+      iterationPlaceholder:
+        "After testing live, tell the copilot what to change — e.g. “She opened up too fast”",
+      iterationEmptyTitle: "Iterate on your roleplay",
+      iterationEmptySubtitle:
+        "Test the roleplay live, then tell the copilot what felt off. It will reason about which part of the spec to change and update it for you.",
+      iterationSummaryTitle: "Updated the roleplay",
+      iterationSummaryReasoning: "Why",
+      iterationSummaryChanges: "Changes",
     },
     spec: {
       personaBible: "Persona Bible",

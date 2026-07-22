@@ -5,6 +5,7 @@ import {
   CreateRoleplaySpecInput,
   GetRoleplayCopilotMessagesParams,
   GetRoleplayCopilotMessagesResponse,
+  CopilotSessionMode,
   GetRoleplaySpecsResponse,
   PublishRoleplayVersionInput,
   RoleplayCopilotSession,
@@ -140,6 +141,21 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.ROLEPLAY_COPILOT_SESSIONS],
     }),
 
+    /** Switch a copilot session between BUILDING and ITERATING. */
+    setRoleplayCopilotSessionMode: builder.mutation<
+      RoleplayCopilotSession,
+      { sessionId: string; mode: CopilotSessionMode }
+    >({
+      query: ({ sessionId, mode }) => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.COPILOT_SESSION_MODE(sessionId),
+        method: HttpMethod.PATCH,
+        body: { mode },
+      }),
+      invalidatesTags: (_result, _error, { sessionId }) => [
+        { type: TAG_TYPES.ROLEPLAY_COPILOT_SESSIONS, id: sessionId },
+      ],
+    }),
+
     getRoleplayCopilotSession: builder.query<RoleplayCopilotSession, string>({
       query: sessionId => ({
         url: ApiEndpoints.ROLEPLAY_STUDIO.COPILOT_SESSION(sessionId),
@@ -217,6 +233,7 @@ export const {
   useCreateRoleplaySpecVersionMutation,
   usePublishRoleplayVersionMutation,
   useCreateRoleplayCopilotSessionMutation,
+  useSetRoleplayCopilotSessionModeMutation,
   useGetRoleplayCopilotSessionQuery,
   useLazyGetRoleplayCopilotSessionQuery,
   useLazyGetRoleplayCopilotSessionsBySpecQuery,
