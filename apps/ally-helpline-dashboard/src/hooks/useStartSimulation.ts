@@ -108,9 +108,11 @@ export const useStartSimulation = (
             roomId: scenario?.id,
             title: metadata?.title || scenario?.title,
             // Challenge description + reminders stay viewable during the
-            // roleplay (SessionSidebar on the simulation screen).
+            // roleplay (SessionSidebar on the simulation screen). Reminders
+            // are also gated server-side, but check remindersEnabled here
+            // too so the client never displays them when the switch is off.
             description: scenario?.description,
-            reminders: scenario?.reminders || [],
+            reminders: scenario?.remindersEnabled ? scenario?.reminders || [] : [],
             triggerWarnings: scenario?.triggerWarnings || [],
             localParticipant: {
               name: user?.name,

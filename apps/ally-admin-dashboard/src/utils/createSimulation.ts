@@ -130,6 +130,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,
     currentState: data?.metadata?.currentState,
+    remindersEnabled: data?.metadata?.remindersEnabled,
     stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
       ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
       : data?.metadata?.stateInstructions,
