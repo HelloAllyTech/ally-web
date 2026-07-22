@@ -720,6 +720,67 @@ describe("CreateSimulation", () => {
     });
   });
 
+  describe("Reminders Processing", () => {
+    it("should convert reminders string to array, one reminder per line", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        reminders: "Maintain eye contact\nAsk open-ended questions",
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalledWith(
+            expect.objectContaining({
+              scenarios: expect.arrayContaining([
+                expect.objectContaining({
+                  reminders: ["Maintain eye contact", "Ask open-ended questions"],
+                }),
+              ]),
+            }),
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it("should split translationReminders per-language text into arrays", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        reminders: "",
+        translationReminders: { "7": "Mantén la calma\nEscucha activamente" },
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalledWith(
+            expect.objectContaining({
+              scenarios: expect.arrayContaining([
+                expect.objectContaining({
+                  translationReminders: { "7": ["Mantén la calma", "Escucha activamente"] },
+                }),
+              ]),
+            }),
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+  });
+
   describe("Timer Mode Validation", () => {
     it("should validate maxTimeValue when timerMode is enabled", async () => {
       mockFormMethods.getValues.mockReturnValue({

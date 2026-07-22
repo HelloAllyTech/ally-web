@@ -71,6 +71,16 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     translationDescription: data.translationDescription ?? {},
     challengeDescriptionPrimaryLanguageId: data.challengeDescriptionPrimaryLanguageId ?? null,
     translationTitle: data.translationTitle ?? {},
+    reminders: Array.isArray(data?.metadata?.reminders)
+      ? data.metadata.reminders.join("\n")
+      : ((data?.metadata?.reminders as unknown as string) ?? ""),
+    translationReminders: Object.fromEntries(
+      Object.entries(data.translationReminders ?? {}).map(([languageId, lines]) => [
+        languageId,
+        Array.isArray(lines) ? lines.join("\n") : (lines ?? ""),
+      ]),
+    ),
+    remindersPrimaryLanguageId: data.remindersPrimaryLanguageId ?? null,
     profession: data?.metadata?.profession,
     sexualOrientation: data?.metadata?.sexualOrientation,
     // Agent Builder Copilot V2 agent-test-case selection (metadata JSONB).

@@ -23,6 +23,7 @@ import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
 import { MainPromptVariantPicker } from "../main-prompt-variant-picker";
 import { OpeningDialoguesPanel } from "../opening-dialogues";
 import { RadioButtonGroup } from "../radio-button-group";
+import { RemindersPanel } from "../reminders";
 import { SliderField } from "../slider-field";
 import { StatesEditor } from "../states-editor";
 import { TagSelector } from "../tag-selector";
@@ -314,6 +315,10 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
             readOnly={readOnly}
           />
         );
+      case FORM_FIELD_TYPES.CUSTOM.REMINDERS:
+        return (
+          <RemindersPanel formMethods={formMethods} isMandatory={isMandatory} readOnly={readOnly} />
+        );
       case FORM_FIELD_TYPES.CUSTOM_FIELDS:
         return <CustomFieldGroup formMethods={formMethods} />;
       case FORM_FIELD_TYPES.CUSTOM.RADIO_BUTTONS:
@@ -393,6 +398,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
     FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS,
     FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION,
     FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
+    FORM_FIELD_TYPES.CUSTOM.REMINDERS,
   ];
 
   // View Details mode: the field content stays visible (accordions above

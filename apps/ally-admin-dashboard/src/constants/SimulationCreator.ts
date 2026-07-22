@@ -154,6 +154,7 @@ export const FORM_FIELD_TYPES = {
     LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
     OPENING_DIALOGUES: "opening_dialogues",
     CHALLENGE_DESCRIPTION: "challenge_description",
+    REMINDERS: "reminders",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
     BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
@@ -193,6 +194,7 @@ export const FORM_FIELD_IDS = {
   STATE_INSTRUCTIONS: "stateInstructions",
   CUSTOM_FIELDS: "customFields",
   OPENING_STATEMENTS: "openingStatements",
+  REMINDERS: "reminders",
   LANGUAGES_VOICES: "languageVoices",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   AUTO_TERMINATION_STATUS: "autoTerminationStatus",
@@ -511,6 +513,17 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         isMandatory: false,
         promptVariable: "opening_statements",
         enhanceType: ENHANCE_TYPE.OPENING_STATEMENTS,
+      },
+      // Plain-text reminders shown to the learner during the live session —
+      // deliberately NOT wired to a promptVariable/enhanceType: unlike
+      // Checklist items, reminders never reach the agent's prompt or AI
+      // scoring, so there's no ai-learn placeholder to gate visibility on.
+      {
+        id: "reminders",
+        label: "Reminders",
+        type: FORM_FIELD_TYPES.CUSTOM.REMINDERS,
+        fullWidth: true,
+        isMandatory: false,
       },
       {
         id: "linguisticStyleSamples",

@@ -85,6 +85,8 @@ export interface SimulationInput {
   profession?: string;
   context?: string;
   openingStatements?: string[];
+  /** Plain-text reminder bullet points shown to the learner during the live session. */
+  reminders?: string[];
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
   terminationMessage?: string;
@@ -115,6 +117,7 @@ export interface SimulationInput {
   stateNames?: stateInstruction[];
   translationOpeningStatements?: Record<string, string[]>;
   translationDescription?: Record<string, string>;
+  translationReminders?: Record<string, string[]>;
   /**
    * promptCode of the main-agent prompt variant this simulation uses
    * (e.g. 'ally_ai_learn_system_main_agent_prompt_full'). When unset, the
@@ -195,6 +198,7 @@ export interface GetSimulationByIdResponse {
     gender?: string;
     genderIdentity?: string;
     openingStatements?: string[];
+    reminders?: string[];
     profession?: string;
     sexualOrientation?: string;
     voiceId?: string;
@@ -247,6 +251,8 @@ export interface GetSimulationByIdResponse {
   translationDescription?: Record<string, string>;
   challengeDescriptionPrimaryLanguageId?: number | null;
   translationTitle?: Record<string, string>;
+  translationReminders?: Record<string, string[]>;
+  remindersPrimaryLanguageId?: number | null;
   competency?: Competency;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {

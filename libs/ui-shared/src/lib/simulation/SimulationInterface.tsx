@@ -146,66 +146,93 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   const sessionDescription: string | undefined = roomData?.description;
   const showSessionInfo = sessionReminders.length > 0 || !!sessionDescription;
 
+  const showRightColumn =
+    !isFocusMode &&
+    (showSessionProgress ||
+      (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
+      (checklistMode === ChecklistMode.OFF && events?.length > 0));
+  const showLeftColumn = !isFocusMode && showSessionInfo;
+
   const renderConnectedContent = () => (
     <>
       <RoomAudioRenderer />
-      <div className="flex md:flex-row flex-col justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
-        <UserCallCard
-          userData={{
-            name: roomData?.remoteParticipant?.name,
-            coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
-          }}
-          isSpeaking={remoteParticipant?.isSpeaking}
-          turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
-          turnIndicatorTranslations={translations?.turnIndicator}
-        />
-        <UserCallCard
-          userData={{
-            name: roomData?.localParticipant?.name || "You",
-            coverImageUrl: roomData?.localParticipant?.coverImageUrl || null,
-          }}
-          isSpeaking={localParticipant.isSpeaking}
-          isMuted={isMuted}
-          turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
-          turnIndicatorTranslations={translations?.turnIndicator}
-        />
-        {!isFocusMode &&
-          (showSessionProgress ||
-            showSessionInfo ||
-            (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
-            (checklistMode === ChecklistMode.OFF && events?.length > 0)) && (
-            <div className="flex flex-col gap-4 w-full h-full min-h-0 max-h-[40vh] md:max-h-none">
-              {showSessionProgress && (
-                <SessionProgress
-                  stateNames={stateNames}
-                  difficultyLevel={difficultyLevel}
-                  score={score}
-                  startTime={startTime}
-                  maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
-                  isPaused={isPaused}
-                  pausedOffsetMs={pausedOffsetMs}
-                />
-              )}
-              {checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
-                <SessionChecklist
-                  mode={checklistMode}
-                  items={checklistItems}
-                  triggeredEvents={detectedEventIds || []}
-                  translations={translations}
-                />
-              )}
-              {checklistMode === ChecklistMode.OFF && events?.length > 0 && (
-                <SimulationEvents events={events} />
-              )}
-              {showSessionInfo && (
-                <SessionInfoTabs
-                  reminders={sessionReminders}
-                  description={sessionDescription}
-                  translations={translations}
-                />
-              )}
-            </div>
-          )}
+      <div className="flex md:flex-row flex-col-reverse justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
+        {showLeftColumn && (
+          <div
+            data-testid="simulation-left-column"
+            className="order-3 md:order-1 flex flex-col gap-4 w-full md:w-[240px] lg:w-[280px] xl:w-[320px] shrink-0 h-full min-h-0 max-h-[35vh] md:max-h-none"
+          >
+            <SessionInfoTabs
+              reminders={sessionReminders}
+              description={sessionDescription}
+              translations={translations}
+            />
+          </div>
+        )}
+
+        <div
+          data-testid="simulation-middle-column"
+          className="order-1 md:order-2 relative flex-1 min-w-0 h-full min-h-[240px]"
+        >
+          <UserCallCard
+            userData={{
+              name: roomData?.remoteParticipant?.name,
+              coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
+            }}
+            isSpeaking={remoteParticipant?.isSpeaking}
+            turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
+            turnIndicatorTranslations={translations?.turnIndicator}
+          />
+          {/* Learner's own self-view: a small inlaid picture-in-picture bubble
+              over the AI card, like a WhatsApp/Zoom video call, rather than an
+              equal-size card of its own. */}
+          <div
+            data-testid="simulation-pip-self-view"
+            className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36 lg:w-32 lg:h-40 rounded-xl overflow-hidden border-2 border-[#3D4045] shadow-[0_2px_12px_rgba(0,0,0,0.45)]"
+          >
+            <UserCallCard
+              userData={{
+                name: roomData?.localParticipant?.name || "You",
+                coverImageUrl: roomData?.localParticipant?.coverImageUrl || null,
+              }}
+              isSpeaking={localParticipant.isSpeaking}
+              isMuted={isMuted}
+              turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
+              turnIndicatorTranslations={translations?.turnIndicator}
+              compact
+            />
+          </div>
+        </div>
+
+        {showRightColumn && (
+          <div
+            data-testid="simulation-right-column"
+            className="order-2 md:order-3 flex flex-col gap-4 w-full md:w-[300px] lg:w-[320px] shrink-0 h-full min-h-0 max-h-[40vh] md:max-h-none"
+          >
+            {showSessionProgress && (
+              <SessionProgress
+                stateNames={stateNames}
+                difficultyLevel={difficultyLevel}
+                score={score}
+                startTime={startTime}
+                maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
+                isPaused={isPaused}
+                pausedOffsetMs={pausedOffsetMs}
+              />
+            )}
+            {checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
+              <SessionChecklist
+                mode={checklistMode}
+                items={checklistItems}
+                triggeredEvents={detectedEventIds || []}
+                translations={translations}
+              />
+            )}
+            {checklistMode === ChecklistMode.OFF && events?.length > 0 && (
+              <SimulationEvents events={events} />
+            )}
+          </div>
+        )}
       </div>
     </>
   );

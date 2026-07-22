@@ -157,6 +157,7 @@ describe("createSimulation utils", () => {
           gender: "male",
           genderIdentity: "Male/Man",
           openingStatements: ["Hello, how are you?"],
+          reminders: ["Maintain eye contact"],
           profession: "Engineer",
           sexualOrientation: "Heterosexual",
           languageVoices: {
@@ -206,6 +207,9 @@ describe("createSimulation utils", () => {
         translationDescription: {},
         challengeDescriptionPrimaryLanguageId: null,
         translationTitle: {},
+        reminders: "Maintain eye contact",
+        translationReminders: {},
+        remindersPrimaryLanguageId: null,
         profession: "Engineer",
         sexualOrientation: "Heterosexual",
         agentTestCaseIds: [],
@@ -284,6 +288,56 @@ describe("createSimulation utils", () => {
         "7": "Descripción en español",
       });
       expect(result.challengeDescriptionPrimaryLanguageId).toBe(1);
+    });
+
+    it("should map translationReminders and remindersPrimaryLanguageId, joining each language's lines", () => {
+      const mockResponse = {
+        id: "sim-reminders-translated",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: { customFields: [], reminders: ["Stay calm", "Listen actively"] },
+        translationReminders: { "7": ["Mantén la calma", "Escucha activamente"] },
+        remindersPrimaryLanguageId: 1,
+      } as unknown as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.reminders).toBe("Stay calm\nListen actively");
+      expect(result.translationReminders).toEqual({
+        "7": "Mantén la calma\nEscucha activamente",
+      });
+      expect(result.remindersPrimaryLanguageId).toBe(1);
+    });
+
+    it("should default reminders fields to empty when backend omits them", () => {
+      const mockResponse = {
+        id: "sim-no-reminders",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        isGlobal: false,
+        isPublic: false,
+        coverImageUrl: "https://example.com/i.jpg",
+        createdBy: "u",
+        lastModified: "2024-01-01T00:00:00Z",
+        triggerWarnings: [],
+        difficultyLevel: "medium",
+        metadata: { customFields: [] },
+      } as unknown as GetSimulationByIdResponse;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.reminders).toBe("");
+      expect(result.translationReminders).toEqual({});
+      expect(result.remindersPrimaryLanguageId).toBeNull();
     });
 
     it("should map translationTitle when backend provides it", () => {

@@ -50,6 +50,10 @@ export type FormData = {
   translationDescription?: Record<string, string>;
   challengeDescriptionPrimaryLanguageId?: number | null;
   translationTitle?: Record<string, string>;
+  reminders: string;
+  /** Raw newline-joined text per language while editing — split into string[] at save time, mirroring `reminders`. */
+  translationReminders?: Record<string, string>;
+  remindersPrimaryLanguageId?: number | null;
   autoTerminationStatus?: boolean;
   experienceMode?: string;
   checklistType?: string;

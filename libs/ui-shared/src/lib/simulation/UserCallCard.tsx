@@ -17,6 +17,10 @@ interface UserCallCardProps {
   isMuted?: boolean;
   turnState?: TurnState;
   turnIndicatorTranslations?: TurnIndicatorTranslations;
+  /** Small picture-in-picture self-view sizing: drop the name label and turn
+   * sentence (no room for either at ~100px wide), keep only the speaking-glow
+   * border and a slimmer mute icon. */
+  compact?: boolean;
 }
 
 export const UserCallCard: React.FC<UserCallCardProps> = ({
@@ -25,6 +29,7 @@ export const UserCallCard: React.FC<UserCallCardProps> = ({
   isMuted = false,
   turnState,
   turnIndicatorTranslations,
+  compact = false,
 }) => {
   const { name, coverImageUrl = "" } = userData;
 
@@ -48,23 +53,31 @@ export const UserCallCard: React.FC<UserCallCardProps> = ({
 
   const renderOverlay = () => (
     <div
-      className={`absolute bottom-0 left-0 right-0 top-0 p-2 rounded-xl flex flex-col justify-end border-4 ${
-        isSpeaking ? "border-primary-500" : "border-transparent"
-      }`}
+      className={`absolute bottom-0 left-0 right-0 top-0 rounded-xl flex flex-col justify-end border-transparent ${
+        compact ? "p-1 border-2" : "p-2 border-4"
+      } ${isSpeaking ? "border-primary-500" : "border-transparent"}`}
     >
-      <div className="flex flex-row gap-2 items-center">
-        <div className="w-fit flex items-center gap-2 p-2 rounded-md bg-[rgba(0,0,0,0.40)]">
-          {isMuted ? (
-            <MicOffWhite className="w-4 h-4" />
-          ) : (
-            <SpeakingIndicator isSpeaking={isSpeaking} />
+      {compact ? (
+        isMuted && (
+          <div className="w-fit p-1 rounded-md bg-[rgba(0,0,0,0.40)]">
+            <MicOffWhite className="w-3 h-3" />
+          </div>
+        )
+      ) : (
+        <div className="flex flex-row gap-2 items-center">
+          <div className="w-fit flex items-center gap-2 p-2 rounded-md bg-[rgba(0,0,0,0.40)]">
+            {isMuted ? (
+              <MicOffWhite className="w-4 h-4" />
+            ) : (
+              <SpeakingIndicator isSpeaking={isSpeaking} />
+            )}
+            <span className="text-white text-[14px] font-medium leading-[22px]">{name}</span>
+          </div>
+          {turnState && turnState !== TurnState.IDLE && (
+            <TurnTakingIndicator turnState={turnState} translations={turnIndicatorTranslations} />
           )}
-          <span className="text-white text-[14px] font-medium leading-[22px]">{name}</span>
         </div>
-        {turnState && turnState !== TurnState.IDLE && (
-          <TurnTakingIndicator turnState={turnState} translations={turnIndicatorTranslations} />
-        )}
-      </div>
+      )}
     </div>
   );
 

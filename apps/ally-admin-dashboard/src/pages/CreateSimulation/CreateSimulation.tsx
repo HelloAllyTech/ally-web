@@ -574,6 +574,8 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
       translationOpeningStatements,
       translationDescription,
       translationTitle,
+      reminders,
+      translationReminders,
       triggerWarningIds,
       customFields,
       agentDialogues,
@@ -586,6 +588,21 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
     const openingStatementsArray = isNonEmptyString(openingStatements)
       ? openingStatements.split("\n").filter((line: string) => line.length > 0)
       : null;
+
+    const splitReminderLines = (text: string | undefined) =>
+      isNonEmptyString(text)
+        ? text
+            .split("\n")
+            .map((line: string) => line.trim())
+            .filter((line: string) => line.length > 0)
+        : [];
+
+    const remindersArray = splitReminderLines(reminders);
+    const translationRemindersArray = Object.fromEntries(
+      Object.entries((translationReminders ?? {}) as Record<string, string>).map(
+        ([languageId, text]) => [languageId, splitReminderLines(text)],
+      ),
+    );
 
     const agentDialoguesArray = isNonEmptyString(agentDialogues)
       ? agentDialogues
@@ -665,6 +682,8 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
       translationOpeningStatements: translationOpeningStatements ?? {},
       translationDescription: translationDescription ?? {},
       translationTitle: translationTitle ?? {},
+      reminders: remindersArray,
+      translationReminders: translationRemindersArray,
       agentDialogues: agentDialoguesArray,
       customFields: customFieldGroupList,
       triggerWarningIds: triggerWarning,
