@@ -4,6 +4,8 @@ import {
   LanguageGlossarySection,
   UpsertGlossarySectionPayload,
   GenerateGlossaryResult,
+  ConsolidateGlossaryResult,
+  BackfillGlossariesOutcome,
   SessionEvent,
   GetSessionEventsQuery,
   SessionEventResponse,
@@ -686,6 +688,59 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
     }),
 
+    /** Accept a consolidation proposal — appends its markdown to the section content. */
+    acceptGlossaryProposal: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string; entryId: string }
+    >({
+      query: ({ languageId, sectionCode, entryId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.ACCEPT_GLOSSARY_PROPOSAL(
+          languageId,
+          sectionCode,
+          entryId,
+        ),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    rejectGlossaryProposal: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string; entryId: string }
+    >({
+      query: ({ languageId, sectionCode, entryId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.REJECT_GLOSSARY_PROPOSAL(
+          languageId,
+          sectionCode,
+          entryId,
+        ),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Consolidation: judge error annotations -> PROPOSED entries (never auto-published). */
+    consolidateLanguageGlossary: builder.mutation<ConsolidateGlossaryResult, number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CONSOLIDATE_LANGUAGE_GLOSSARY(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Backfill: generate DRAFT glossaries for all active non-English languages (or given ids). */
+    backfillLanguageGlossaries: builder.mutation<
+      BackfillGlossariesOutcome[],
+      { languageIds?: number[] } | void
+    >({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.BACKFILL_LANGUAGE_GLOSSARIES,
+        method: HttpMethod.POST,
+        body: body ?? {},
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
@@ -1182,6 +1237,10 @@ export const {
   usePublishGlossarySectionMutation,
   useArchiveGlossarySectionMutation,
   useGenerateLanguageGlossaryMutation,
+  useConsolidateLanguageGlossaryMutation,
+  useBackfillLanguageGlossariesMutation,
+  useAcceptGlossaryProposalMutation,
+  useRejectGlossaryProposalMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,
