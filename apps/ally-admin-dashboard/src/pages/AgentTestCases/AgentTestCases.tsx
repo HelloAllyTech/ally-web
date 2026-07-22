@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -17,25 +17,43 @@ import {
   useGetAgentTestCasesQuery,
   useUpdateAgentTestCaseMutation,
 } from "@api";
-import { ActionConfirmationPopup, Button, FormLabel } from "@components";
+import { ActionConfirmationPopup, Button, FormLabel, SegmentedToggle, TagList } from "@components";
 import { ButtonVariant } from "@components/types";
-import { AgentTestCase } from "@types";
+import {
+  AgentTestCase,
+  AgentTestCaseRubric,
+  AgentTestCaseType,
+  CreateAgentTestCaseRequest,
+} from "@types";
+
+import { RubricsEditor } from "./RubricsEditor";
+import { TagsInput } from "./TagsInput";
 
 interface TestCaseFormState {
+  type: AgentTestCaseType;
   title: string;
-  category: string;
-  description: string;
+  tags: string[];
   condition: string;
   test: string;
+  rubrics: AgentTestCaseRubric[];
 }
 
 const EMPTY_FORM: TestCaseFormState = {
+  type: "condition",
   title: "",
-  category: "",
-  description: "",
+  tags: [],
   condition: "",
   test: "",
+  rubrics: [],
 };
+
+const TYPE_OPTIONS: { label: string; value: AgentTestCaseType }[] = [
+  { label: "Condition Test", value: "condition" },
+  { label: "Full Session Test", value: "full_session" },
+];
+
+const typeLabel = (type: AgentTestCaseType): string =>
+  type === "full_session" ? "Full Session Test" : "Condition Test";
 
 export const AgentTestCases: FC = () => {
   const { data, isLoading } = useGetAgentTestCasesQuery();
@@ -43,7 +61,7 @@ export const AgentTestCases: FC = () => {
   const [updateTestCase, { isLoading: isUpdating }] = useUpdateAgentTestCaseMutation();
   const [deleteTestCase] = useDeleteAgentTestCaseMutation();
 
-  // Side-panel state: null = closed, otherwise create (no id) or edit.
+  // Side-panel state: undefined = closed, null = create, otherwise edit.
   const [editing, setEditing] = useState<AgentTestCase | null | undefined>(undefined);
   const [form, setForm] = useState<TestCaseFormState>(EMPTY_FORM);
   const [testCasePendingDelete, setTestCasePendingDelete] = useState<AgentTestCase | null>(null);
@@ -51,7 +69,13 @@ export const AgentTestCases: FC = () => {
   const testCases = data?.data ?? [];
   const isPanelOpen = editing !== undefined;
   const isSaving = isCreating || isUpdating;
-  const canSave = form.title.trim().length > 0 && form.category.trim().length > 0;
+  const canSave = form.title.trim().length > 0;
+
+  // Suggest tags the admin has already used on other test cases.
+  const tagSuggestions = useMemo(
+    () => Array.from(new Set(testCases.flatMap(tc => tc.tags ?? []))).sort(),
+    [testCases],
+  );
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
@@ -60,11 +84,12 @@ export const AgentTestCases: FC = () => {
 
   const openEdit = (testCase: AgentTestCase) => {
     setForm({
+      type: testCase.type,
       title: testCase.title,
-      category: testCase.category,
-      description: testCase.description ?? "",
+      tags: testCase.tags ?? [],
       condition: testCase.condition ?? "",
       test: testCase.test ?? "",
+      rubrics: testCase.rubrics ?? [],
     });
     setEditing(testCase);
   };
@@ -73,13 +98,29 @@ export const AgentTestCases: FC = () => {
 
   const handleSave = async () => {
     if (!canSave) return;
-    const payload = {
+
+    const base = {
       title: form.title.trim(),
-      category: form.category.trim(),
-      description: form.description.trim() || undefined,
-      condition: form.condition.trim() || undefined,
-      test: form.test.trim() || undefined,
+      type: form.type,
+      tags: form.tags,
     };
+    const payload: CreateAgentTestCaseRequest =
+      form.type === "condition"
+        ? {
+            ...base,
+            condition: form.condition.trim() || undefined,
+            test: form.test.trim() || undefined,
+          }
+        : {
+            ...base,
+            rubrics: form.rubrics
+              .map(row => ({
+                criteria: row.criteria.trim(),
+                scoringInstructions: row.scoringInstructions.trim(),
+              }))
+              .filter(row => row.criteria || row.scoringInstructions),
+          };
+
     try {
       if (editing) {
         await updateTestCase({ id: editing.id, data: payload }).unwrap();
@@ -106,6 +147,38 @@ export const AgentTestCases: FC = () => {
     }
   };
 
+  const renderDetails = (testCase: AgentTestCase) => {
+    if (testCase.type === "full_session") {
+      const rubrics = testCase.rubrics ?? [];
+      if (rubrics.length === 0) return <span className="text-typography-400">—</span>;
+      return (
+        <div className="flex flex-col gap-1">
+          <span className="text-typography-700">
+            {rubrics.length} rubric{rubrics.length === 1 ? "" : "s"}
+          </span>
+          <span className="text-typography-500 text-xs">
+            {rubrics
+              .map(r => r.criteria)
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="whitespace-pre-wrap text-typography-700">
+          <span className="text-typography-500">Condition: </span>
+          {testCase.condition || "—"}
+        </span>
+        <span className="whitespace-pre-wrap text-typography-700">
+          <span className="text-typography-500">Pass: </span>
+          {testCase.test || "—"}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="h-full font-primary flex flex-col">
       <div className="flex justify-between items-center shrink-0">
@@ -126,11 +199,10 @@ export const AgentTestCases: FC = () => {
           <Table className="w-full text-left border-collapse">
             <TableHead>
               <TableRow className="border-b border-border-light text-sm text-typography-700">
-                <TableHeader className="py-3 pr-4 font-medium w-1/6">Title</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium w-1/12">Category</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Condition</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Test</TableHeader>
-                <TableHeader className="py-3 pr-4 font-medium">Description</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium w-1/5">Title</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium w-[140px]">Type</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium w-1/6">Tags</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Details</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium w-[120px]">Actions</TableHeader>
               </TableRow>
             </TableHead>
@@ -141,16 +213,15 @@ export const AgentTestCases: FC = () => {
                   className="border-b border-border-light text-sm text-typography-900 align-top"
                 >
                   <TableCell className="py-3 pr-4">{testCase.title}</TableCell>
-                  <TableCell className="py-3 pr-4">{testCase.category}</TableCell>
-                  <TableCell className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
-                    {testCase.condition || "—"}
+                  <TableCell className="py-3 pr-4">
+                    <span className="inline-flex items-center rounded-full bg-primary-50 text-primary-500 px-2 py-0.5 text-xs whitespace-nowrap">
+                      {typeLabel(testCase.type)}
+                    </span>
                   </TableCell>
-                  <TableCell className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
-                    {testCase.test || "—"}
+                  <TableCell className="py-3 pr-4">
+                    <TagList tags={testCase.tags} />
                   </TableCell>
-                  <TableCell className="py-3 pr-4 text-typography-700 whitespace-pre-wrap">
-                    {testCase.description || "—"}
-                  </TableCell>
+                  <TableCell className="py-3 pr-4">{renderDetails(testCase)}</TableCell>
                   <TableCell className="py-3 pr-4">
                     <div className="flex gap-3">
                       <button
@@ -184,6 +255,16 @@ export const AgentTestCases: FC = () => {
             </h2>
 
             <div className="flex flex-col gap-2">
+              <FormLabel>Test case type</FormLabel>
+              <SegmentedToggle<AgentTestCaseType>
+                value={form.type}
+                options={TYPE_OPTIONS}
+                onChange={type => setForm(prev => ({ ...prev, type }))}
+                label="Test case type"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
               <FormLabel isMandatory>Title</FormLabel>
               <input
                 type="text"
@@ -194,52 +275,45 @@ export const AgentTestCases: FC = () => {
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <FormLabel isMandatory>Category</FormLabel>
-              <input
-                type="text"
-                value={form.category}
-                onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}
-                placeholder="e.g. Relationship"
-                className="w-full rounded border border-border-light px-3 py-2 bg-white text-base focus-within:ring-1 focus-within:ring-primary"
-              />
-            </div>
+            <TagsInput
+              tags={form.tags}
+              onChange={tags => setForm(prev => ({ ...prev, tags }))}
+              suggestions={tagSuggestions}
+              label="Tags"
+            />
 
-            <div className="flex flex-col gap-2">
-              <FormLabel>Condition</FormLabel>
-              <AutoExpandableTextarea
-                value={form.condition}
-                onChange={value => setForm(prev => ({ ...prev, condition: value }))}
-                placeholder="When does this test case apply? (the precondition to evaluate)"
-                minHeight={96}
-                maxLines={12}
-                className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
-              />
-            </div>
+            {form.type === "condition" ? (
+              <>
+                <div className="flex flex-col gap-2">
+                  <FormLabel>Condition to simulate</FormLabel>
+                  <AutoExpandableTextarea
+                    value={form.condition}
+                    onChange={value => setForm(prev => ({ ...prev, condition: value }))}
+                    placeholder="The condition to simulate during the session."
+                    minHeight={96}
+                    maxLines={12}
+                    className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
+                  />
+                </div>
 
-            <div className="flex flex-col gap-2">
-              <FormLabel>Test</FormLabel>
-              <AutoExpandableTextarea
-                value={form.test}
-                onChange={value => setForm(prev => ({ ...prev, test: value }))}
-                placeholder="What should the agent do to pass? (the assertion)"
-                minHeight={96}
-                maxLines={12}
-                className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
+                <div className="flex flex-col gap-2">
+                  <FormLabel>Test pass description</FormLabel>
+                  <AutoExpandableTextarea
+                    value={form.test}
+                    onChange={value => setForm(prev => ({ ...prev, test: value }))}
+                    placeholder="What must the agent do to pass this condition?"
+                    minHeight={96}
+                    maxLines={12}
+                    className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
+                  />
+                </div>
+              </>
+            ) : (
+              <RubricsEditor
+                rubrics={form.rubrics}
+                onChange={rubrics => setForm(prev => ({ ...prev, rubrics }))}
               />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <FormLabel>Description</FormLabel>
-              <AutoExpandableTextarea
-                value={form.description}
-                onChange={value => setForm(prev => ({ ...prev, description: value }))}
-                placeholder="What does this test case mean and when should it apply?"
-                minHeight={96}
-                maxLines={12}
-                className="w-full rounded border border-border-light px-3 py-2 bg-white text-base"
-              />
-            </div>
+            )}
 
             <div className="flex justify-end gap-3 mt-auto">
               <Button variant={ButtonVariant.TEXT} onClick={closePanel} className="h-[40px] px-5">

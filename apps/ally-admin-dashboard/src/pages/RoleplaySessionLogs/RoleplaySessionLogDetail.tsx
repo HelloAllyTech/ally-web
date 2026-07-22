@@ -269,7 +269,9 @@ export const RoleplaySessionLogDetail: FC = () => {
                   {data.agentTestCases.map(g => (
                     <li key={g.id}>
                       <span className="font-medium">{g.title}</span>{" "}
-                      <span className="text-typography-700">({g.category})</span>
+                      {g.tags.length > 0 && (
+                        <span className="text-typography-700">({g.tags.join(", ")})</span>
+                      )}
                     </li>
                   ))}
                 </ul>
