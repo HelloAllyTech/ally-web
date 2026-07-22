@@ -614,13 +614,25 @@ export interface SetCompetencyBehavioursRequest {
   };
 }
 
+export type AgentTestCaseType = "condition" | "full_session";
+
+export interface AgentTestCaseRubric {
+  criteria: string;
+  scoringInstructions: string;
+}
+
 export interface AgentTestCase {
   id: string;
   title: string;
-  category: string;
+  type: AgentTestCaseType;
+  tags: string[];
   description?: string;
+  /** Condition test cases: the condition to simulate. */
   condition?: string;
+  /** Condition test cases: test pass description. */
   test?: string;
+  /** Full-session test cases: rubric rows. */
+  rubrics?: AgentTestCaseRubric[];
 }
 
 export interface AgentTestCasesResponse {
@@ -630,10 +642,11 @@ export interface AgentTestCasesResponse {
 
 export interface CreateAgentTestCaseRequest {
   title: string;
-  category: string;
-  description?: string;
+  type: AgentTestCaseType;
+  tags: string[];
   condition?: string;
   test?: string;
+  rubrics?: AgentTestCaseRubric[];
 }
 
 export interface UpdateAgentTestCaseRequest {

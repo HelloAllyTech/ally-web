@@ -284,7 +284,7 @@ export const AgentBuilderCopilotWizard: React.FC<AgentBuilderCopilotWizardProps>
                       />
                       <span className="flex flex-col">
                         <span className="text-sm text-typography-900">{goal.title}</span>
-                        <span className="text-xs text-typography-600">{goal.category}</span>
+                        <span className="text-xs text-typography-600">{goal.tags?.join(", ")}</span>
                       </span>
                     </label>
                   );

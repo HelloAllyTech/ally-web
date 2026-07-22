@@ -107,7 +107,7 @@ export interface RoleplaySessionFeedback {
 export interface RoleplaySessionAgentTestCase {
   id: string;
   title: string;
-  category: string;
+  tags: string[];
   description: string | null;
 }
 
