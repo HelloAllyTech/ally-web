@@ -2,7 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useGetLanguagesQuery, useCreateLanguageMutation, useUpdateLanguageMutation } from "@api";
+import {
+  useGetLanguagesQuery,
+  useCreateLanguageMutation,
+  useUpdateLanguageMutation,
+  useBackfillLanguageGlossariesMutation,
+} from "@api";
 import { NotionTable, ListToolbar, LanguageManagementSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en, SCENARIO_LANGUAGE_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
@@ -51,6 +56,29 @@ export const ScenarioLanguages: React.FC = () => {
   }, [searchQuery]);
 
   const [createLanguage] = useCreateLanguageMutation();
+  const [backfillGlossaries, { isLoading: isBackfillingGlossaries }] =
+    useBackfillLanguageGlossariesMutation();
+
+  const handleBackfillGlossaries = async () => {
+    try {
+      const outcomes = await backfillGlossaries().unwrap();
+      const failed = outcomes.filter(o => o.error);
+      const generated = outcomes.length - failed.length;
+      if (failed.length > 0) {
+        toast.warning(
+          `Draft glossaries generated for ${generated}/${outcomes.length} languages; failed: ${failed
+            .map(o => o.value)
+            .join(", ")}`,
+        );
+      } else {
+        toast.success(
+          `Draft glossaries generated for ${generated} languages — review before publishing`,
+        );
+      }
+    } catch {
+      toast.error("Glossary backfill failed");
+    }
+  };
   const [updateLanguage] = useUpdateLanguageMutation();
 
   // Handle data updates when query data changes
@@ -287,6 +315,11 @@ export const ScenarioLanguages: React.FC = () => {
             label: en.simulation.createLanguage || "Create new language",
             variant: ButtonVariant.PRIMARY,
             onClick: handleNewLanguageClick,
+          }}
+          secondaryAction={{
+            label: isBackfillingGlossaries ? "Generating glossaries…" : "Generate glossaries (all)",
+            variant: ButtonVariant.SECONDARY,
+            onClick: handleBackfillGlossaries,
           }}
         />
         <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
