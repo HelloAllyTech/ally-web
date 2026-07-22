@@ -9,14 +9,8 @@ import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api
 import { ArrowDown } from "@assets";
 import { CopilotChatPanel, SpecWorkbench } from "@components";
 import { en, ROUTES } from "@constants";
-import { useActiveImprovementRun, useSpecAutosave } from "@hooks";
-import {
-  hydrateSpec,
-  resetRoleplayStudio,
-  selectRoleplaySpecState,
-  setImprovementRunning,
-  setSpecTitle,
-} from "@reducer";
+import { useSpecAutosave } from "@hooks";
+import { hydrateSpec, resetRoleplayStudio, selectRoleplaySpecState, setSpecTitle } from "@reducer";
 import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 
 import { RoleplayStudioActions } from "./RoleplayStudioActions";
@@ -148,13 +142,6 @@ export const RoleplayStudioWorkspace: React.FC = () => {
   // Leave the studio clean for the next spec.
   useEffect(() => () => void dispatch(resetRoleplayStudio()), [dispatch]);
 
-  // Auto-improve awareness: lock spec editing + pause autosave while a loop
-  // is rewriting versions (it may auto-accept into the draft).
-  const { improvementRunning } = useActiveImprovementRun(specId ?? null);
-  useEffect(() => {
-    dispatch(setImprovementRunning(improvementRunning));
-  }, [dispatch, improvementRunning]);
-
   // Background draft persistence (10s cadence + step change + beforeunload).
   const { saveNow } = useSpecAutosave({ step });
 
@@ -172,7 +159,7 @@ export const RoleplayStudioWorkspace: React.FC = () => {
     switch (step) {
       case ROLEPLAY_STEP_IDS.SPEC:
         // Editable spec / state-machine workbench on its own tab, locked while
-        // the copilot streams or an auto-improve loop is running.
+        // the copilot streams.
         return (
           <div className="min-h-0 h-full">
             <SpecWorkbench />

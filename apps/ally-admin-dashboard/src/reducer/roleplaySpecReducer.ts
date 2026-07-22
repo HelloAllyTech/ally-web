@@ -3,7 +3,6 @@ import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 import {
   CopilotSpecPatchEvent,
   JsonPatchOperation,
-  RoleplayCritiqueProposal,
   RoleplayEngineeredEvent,
   RoleplayNaturalnessFlag,
   RoleplayNodePosition,
@@ -45,11 +44,7 @@ export interface RoleplaySpecState {
   saveStatus: RoleplaySaveStatus;
   /** True while a copilot stream is in flight — autosave must pause. */
   isStreaming: boolean;
-  /** True while an auto-improve loop is RUNNING for this spec — editing is
-   *  locked and autosave paused (the loop may auto-accept into the draft). */
-  improvementRunning: boolean;
   patchLog: SpecPatchLogEntry[];
-  pendingProposals: RoleplayCritiqueProposal[];
 }
 
 const initialState: RoleplaySpecState = {
@@ -62,9 +57,7 @@ const initialState: RoleplaySpecState = {
   serverUpdatedAt: null,
   saveStatus: "idle",
   isStreaming: false,
-  improvementRunning: false,
   patchLog: [],
-  pendingProposals: [],
 };
 
 const MAX_PATCH_LOG_ENTRIES = 100;
@@ -111,9 +104,6 @@ const roleplaySpecSlice = createSlice({
     setStreaming(state, action: PayloadAction<boolean>) {
       state.isStreaming = action.payload;
     },
-    setImprovementRunning(state, action: PayloadAction<boolean>) {
-      state.improvementRunning = action.payload;
-    },
     setSaveStatus(state, action: PayloadAction<RoleplaySaveStatus>) {
       state.saveStatus = action.payload;
     },
@@ -124,8 +114,8 @@ const roleplaySpecSlice = createSlice({
     ) {
       state.savedRevision = Math.max(state.savedRevision, action.payload.revision);
       state.serverUpdatedAt = action.payload.updatedAt;
-      // Each save appends a server-side snapshot; track its id so publish and
-      // rehearsal always target the freshest version.
+      // Each save appends a server-side snapshot; track its id so publish
+      // always targets the freshest version.
       if (action.payload.versionId) state.versionId = action.payload.versionId;
       state.saveStatus = state.revision > state.savedRevision ? "idle" : "saved";
     },
@@ -338,13 +328,6 @@ const roleplaySpecSlice = createSlice({
       }
       touch(state);
     },
-    /** Trainer-chosen agent test cases (library ids) wired into the rehearsal. */
-    setAgentTestCaseIds(state, action: PayloadAction<string[]>) {
-      const spec = requireSpec(state);
-      if (!spec) return;
-      spec.agentTestCaseIds = action.payload;
-      touch(state);
-    },
 
     // ----- state machine -----
     upsertState(state, action: PayloadAction<RoleplayStateNode>) {
@@ -415,29 +398,6 @@ const roleplaySpecSlice = createSlice({
       spec.ui.layout[action.payload.stateId] = action.payload.position;
       touch(state);
     },
-
-    // ----- critique proposals -----
-    queueProposals(state, action: PayloadAction<RoleplayCritiqueProposal[]>) {
-      state.pendingProposals = action.payload;
-    },
-    /** Applies the proposal's patch to the spec and removes it from the queue. */
-    acceptProposal(state, action: PayloadAction<string>) {
-      const proposal = state.pendingProposals.find(p => p.id === action.payload);
-      if (!proposal || !state.spec) return;
-      try {
-        state.spec = applyJsonPatch(current(state.spec) as RoleplaySpec, proposal.ops);
-        touch(state);
-      } catch {
-        // Leave the spec untouched if the proposal no longer applies cleanly.
-      }
-      state.pendingProposals = state.pendingProposals.filter(p => p.id !== action.payload);
-    },
-    rejectProposal(state, action: PayloadAction<string>) {
-      state.pendingProposals = state.pendingProposals.filter(p => p.id !== action.payload);
-    },
-    clearProposals(state) {
-      state.pendingProposals = [];
-    },
   },
 });
 
@@ -446,7 +406,6 @@ export const {
   resetRoleplayStudio,
   setCopilotSessionId,
   setStreaming,
-  setImprovementRunning,
   setSaveStatus,
   markDraftSaved,
   applySpecPatches,
@@ -469,17 +428,12 @@ export const {
   setLanguageVoice,
   setLanguage,
   setConfiguredLanguages,
-  setAgentTestCaseIds,
   upsertState,
   removeState,
   setInitialState,
   upsertTransition,
   removeTransition,
   updateLayout,
-  queueProposals,
-  acceptProposal,
-  rejectProposal,
-  clearProposals,
 } = roleplaySpecSlice.actions;
 
 // Selectors

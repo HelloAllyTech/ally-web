@@ -275,38 +275,10 @@ export const ApiEndpoints = {
     CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
     COPILOT_SESSIONS: `/v1/roleplay-studio/copilot/sessions`,
     COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
-    COPILOT_SESSION_TEST_CASES: (sessionId: string) =>
-      `/v1/roleplay-studio/copilot/sessions/${sessionId}/test-cases`,
     COPILOT_SESSION_MESSAGES: (sessionId: string) =>
       `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
     COPILOT_SESSION_STREAM: (sessionId: string) =>
       `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages/stream`,
-    CREATE_REHEARSALS: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/rehearsals`,
-    REHEARSALS_BY_SPEC: (specId: string) => `/v1/roleplay-studio/specs/${specId}/rehearsals`,
-    REHEARSAL_BY_ID: (rehearsalId: string) => `/v1/roleplay-studio/rehearsals/${rehearsalId}`,
-    CANCEL_REHEARSAL: (rehearsalId: string) =>
-      `/v1/roleplay-studio/rehearsals/${rehearsalId}/cancel`,
-    CRITIQUE_REHEARSAL: (rehearsalId: string) =>
-      `/v1/roleplay-studio/rehearsals/${rehearsalId}/critique`,
-    CRITIQUE_PROPOSAL: (proposalId: string) =>
-      `/v1/roleplay-studio/rehearsals/critique-proposals/${proposalId}`,
-    REHEARSAL_COMPARISON: (rehearsalId: string) =>
-      `/v1/roleplay-studio/rehearsals/${rehearsalId}/comparison`,
-    REHEARSAL_TRANSCRIPTS: (rehearsalId: string) =>
-      `/v1/roleplay-studio/rehearsals/${rehearsalId}/transcripts`,
-    CREATE_IMPROVEMENT_RUN: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/improvement-runs`,
-    IMPROVEMENT_RUNS_BY_SPEC: (specId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/improvement-runs`,
-    IMPROVEMENT_RUN_BY_ID: (runId: string) => `/v1/roleplay-studio/improvement-runs/${runId}`,
-    IMPROVEMENT_RUN_DIFF: (runId: string) => `/v1/roleplay-studio/improvement-runs/${runId}/diff`,
-    ACCEPT_IMPROVEMENT_RUN: (runId: string) =>
-      `/v1/roleplay-studio/improvement-runs/${runId}/accept`,
-    DISCARD_IMPROVEMENT_RUN: (runId: string) =>
-      `/v1/roleplay-studio/improvement-runs/${runId}/discard`,
-    CANCEL_IMPROVEMENT_RUN: (runId: string) =>
-      `/v1/roleplay-studio/improvement-runs/${runId}/cancel`,
     CREATE_SESSION: (specId: string, versionId: string) =>
       `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/sessions`,
     SESSION_DIRECTOR_EVENTS: (sessionId: string) =>
@@ -452,8 +424,6 @@ export const TAG_TYPES = {
   ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
   ROLEPLAY_SPECS: "roleplaySpecs",
   ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
-  ROLEPLAY_REHEARSALS: "roleplayRehearsals",
-  ROLEPLAY_IMPROVEMENTS: "roleplayImprovements",
   ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
   TRACKS_V2: "tracksV2",

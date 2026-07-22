@@ -23,7 +23,6 @@ export const createEmptyRoleplaySpec = (title: string): RoleplaySpec => ({
   engineeredEvents: [],
   voice: { languageVoices: {} },
   language: {},
-  agentTestCaseIds: [],
   openingStatement: "",
   difficulty: "",
   fillerEnabled: false,
@@ -58,7 +57,6 @@ export const normalizeRoleplaySpec = (
     language: { ...empty.language, ...(raw.language ?? {}) },
     ui: { layout: { ...(raw.ui?.layout ?? {}) } },
     engineeredEvents: raw.engineeredEvents ?? [],
-    agentTestCaseIds: raw.agentTestCaseIds ?? [],
   };
 };
 

@@ -6,14 +6,13 @@ import { CarbonDropdown, Stack, Tag, TextArea } from "@ally-ui-mono/ui-shared";
 import { DIFFICULTY_LEVEL_OPTIONS, en } from "@constants";
 import { selectRoleplaySpec, setDifficulty, setOpeningStatement } from "@reducer";
 
-import { AgentTestCasesSection } from "./AgentTestCasesSection";
 import { DisclosureLedgerSection } from "./DisclosureLedgerSection";
 import { EngineeredEventsSection } from "./EngineeredEventsSection";
 import { NaturalnessSettingsSection } from "./NaturalnessSettingsSection";
 import { PersonaBibleSection } from "./PersonaBibleSection";
 import { RubricSection } from "./RubricSection";
-import { SpecSectionCard } from "./SpecSectionCard";
 import { SpecValue } from "./SpecField";
+import { SpecSectionCard } from "./SpecSectionCard";
 import { VoiceLanguageSection } from "./VoiceLanguageSection";
 
 interface SpecPanelProps {
@@ -87,10 +86,6 @@ export const SpecPanel: React.FC<SpecPanelProps> = ({ readOnly = false }) => {
       <PersonaBibleSection persona={spec.persona} readOnly={readOnly} />
       <DisclosureLedgerSection ledger={spec.disclosureLedger} readOnly={readOnly} />
       <RubricSection rubric={spec.rubric} readOnly={readOnly} />
-      {/* Agent test cases are the trainer's to choose (which behavioral checks
-          the rehearsal runs against), so this stays editable even when the rest
-          of the spec is read-only. */}
-      <AgentTestCasesSection agentTestCaseIds={spec.agentTestCaseIds} />
       <EngineeredEventsSection events={spec.engineeredEvents} readOnly={readOnly} />
       <VoiceLanguageSection voice={spec.voice} language={spec.language} readOnly={readOnly} />
       {/* Voice-naturalness toggles stay trainer-editable even when the rest of

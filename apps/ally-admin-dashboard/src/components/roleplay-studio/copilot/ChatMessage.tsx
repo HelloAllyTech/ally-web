@@ -9,15 +9,10 @@ import { CopilotChatMessage } from "@src/types/roleplayStudio";
 
 import { roleplayMarkdownComponents } from "../markdownComponents";
 import { BehaviourReviewCard } from "./BehaviourReviewCard";
-import { ImprovementProgressCard } from "./ImprovementProgressCard";
-import { ImprovementReadyCard } from "./ImprovementReadyCard";
 import { CopilotAnswerPayload, QuestionCard } from "./QuestionCard";
-import { TestCaseSuggestionCard } from "./TestCaseSuggestionCard";
 
 interface ChatMessageProps {
   message: CopilotChatMessage;
-  /** Copilot session the message belongs to (test-case acceptance target). */
-  sessionId: string | null;
   onAnswerQuestion: (payload: CopilotAnswerPayload) => void;
   disabled?: boolean;
 }
@@ -29,22 +24,10 @@ interface ChatMessageProps {
  */
 export const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
-  sessionId,
   onAnswerQuestion,
   disabled = false,
 }) => {
   const strings = en.roleplayStudio.copilot;
-
-  // Marker rows (e.g. accepted test cases) render as a subtle centered note.
-  if (message.systemNote) {
-    return (
-      <div className="flex justify-center">
-        <Tag type="gray" size="sm">
-          {message.content}
-        </Tag>
-      </div>
-    );
-  }
 
   if (message.role === "user") {
     return (
@@ -53,15 +36,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           <p className="text-sm text-typography-900 whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
-    );
-  }
-
-  if (message.improvementReady) {
-    return <ImprovementReadyCard content={message.content} payload={message.improvementReady} />;
-  }
-  if (message.improvementUpdate) {
-    return (
-      <ImprovementProgressCard content={message.content} payload={message.improvementUpdate} />
     );
   }
 
@@ -114,18 +88,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             <InlineLoading description={strings.thinking} />
           </Tile>
         ) : null}
-        {message.testCaseSuggestions && message.testCaseSuggestions.length > 0 && (
-          <div className="mt-2 flex flex-col gap-2">
-            {message.testCaseSuggestions.map(suggestion => (
-              <TestCaseSuggestionCard
-                key={suggestion.id}
-                suggestion={suggestion}
-                sessionId={sessionId}
-                initiallyAccepted={message.acceptedSuggestionIds?.includes(suggestion.id)}
-              />
-            ))}
-          </div>
-        )}
         {message.error && (
           <InlineNotification
             className="mt-1"
