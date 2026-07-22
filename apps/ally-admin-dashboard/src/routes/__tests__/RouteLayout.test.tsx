@@ -23,6 +23,7 @@ vi.mock("../DefaultRedirect", () => ({
 // Stub out pages referenced by the router
 vi.mock("@pages", () => ({
   CreateSimulation: () => <div>CreateSimulationPage</div>,
+  LanguageGlossary: () => <div>LanguageGlossaryPage</div>,
   CreatePath: () => <div>CreatePathPage</div>,
   CreateTrack: () => <div>CreateTrackPage</div>,
   CreateCase: () => <div>CreateCasePage</div>,

@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea, TextInput } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en } from "@constants";
+import { en, ROUTES } from "@constants";
 import { ScenarioLanguage } from "@types";
 
 interface LanguageManagementSidePanelProps {
@@ -57,6 +58,7 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
   onUpdate,
 }) => {
   const emptyConfig = useMemo(() => ({}), []);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<Partial<ScenarioLanguage>>({
     label: "",
@@ -332,6 +334,23 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
                 )}
               </div>
             </Field>
+            {selectedLanguage?.id && (
+              <Field label="Glossary">
+                <div className="w-full flex items-center justify-between py-2">
+                  <span className="text-sm text-gray-500">
+                    Per-language style card and term glossary served to agents.
+                  </span>
+                  <Button
+                    variant={ButtonVariant.SECONDARY}
+                    onClick={() =>
+                      navigate(ROUTES.MANAGE_LANGUAGE_GLOSSARY(selectedLanguage.id as number))
+                    }
+                  >
+                    Manage glossary
+                  </Button>
+                </div>
+              </Field>
+            )}
           </div>
 
           <div className="flex gap-3 mt-8 pb-6 justify-center">

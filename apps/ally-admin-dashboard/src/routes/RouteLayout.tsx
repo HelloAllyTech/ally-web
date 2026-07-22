@@ -24,6 +24,7 @@ import {
   CreateCase,
   ScenarioVoices,
   ScenarioLanguages,
+  LanguageGlossary,
   GuardrailsManagement,
   PromptManagement,
   UserBadges,
@@ -187,6 +188,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <ScenarioLanguages />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_LANGUAGE_GLOSSARY(":id")}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <LanguageGlossary />
             </PrivateLayout>
           }
         />

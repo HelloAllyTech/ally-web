@@ -1,5 +1,9 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  GlossaryListResponse,
+  LanguageGlossarySection,
+  UpsertGlossarySectionPayload,
+  GenerateGlossaryResult,
   SessionEvent,
   GetSessionEventsQuery,
   SessionEventResponse,
@@ -625,6 +629,63 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.PROMPTS],
     }),
 
+    /**
+     * Per-language glossary sections + Tier 0 token accounting.
+     * Sections are the unit of publish; entries render only when published.
+     */
+    getLanguageGlossary: builder.query<GlossaryListResponse, number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_LANGUAGE_GLOSSARY(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Create/update a glossary section (draft edit; cap-checked when published+always). */
+    upsertGlossarySection: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string; payload: UpsertGlossarySectionPayload }
+    >({
+      query: ({ languageId, sectionCode, payload }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPSERT_GLOSSARY_SECTION(languageId, sectionCode),
+        method: HttpMethod.PUT,
+        body: payload,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Publish a section (backend blocks when the Tier 0 set would exceed the cap). */
+    publishGlossarySection: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string }
+    >({
+      query: ({ languageId, sectionCode }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PUBLISH_GLOSSARY_SECTION(languageId, sectionCode),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    archiveGlossarySection: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string }
+    >({
+      query: ({ languageId, sectionCode }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.ARCHIVE_GLOSSARY_SECTION(languageId, sectionCode),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Seed job: LLM-generated DRAFT sections; never overwrites published ones. */
+    generateLanguageGlossary: builder.mutation<GenerateGlossaryResult, number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_LANGUAGE_GLOSSARY(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
@@ -1116,6 +1177,11 @@ export const {
   useRetranslatePromptMutation,
   useRetranslatePromptLanguageMutation,
   useBackfillPromptTranslationsMutation,
+  useGetLanguageGlossaryQuery,
+  useUpsertGlossarySectionMutation,
+  usePublishGlossarySectionMutation,
+  useArchiveGlossarySectionMutation,
+  useGenerateLanguageGlossaryMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,

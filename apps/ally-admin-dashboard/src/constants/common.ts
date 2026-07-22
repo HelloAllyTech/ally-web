@@ -48,6 +48,14 @@ export const ApiEndpoints = {
     GET_LANGUAGES: "/v1/language",
     CREATE_LANGUAGE: "/v1/language",
     UPDATE_LANGUAGE: (id: string | number) => `/v1/language/${id}`,
+    GET_LANGUAGE_GLOSSARY: (id: string | number) => `/v1/language/${id}/glossary`,
+    UPSERT_GLOSSARY_SECTION: (id: string | number, sectionCode: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}`,
+    PUBLISH_GLOSSARY_SECTION: (id: string | number, sectionCode: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}/publish`,
+    ARCHIVE_GLOSSARY_SECTION: (id: string | number, sectionCode: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}/archive`,
+    GENERATE_LANGUAGE_GLOSSARY: (id: string | number) => `/v1/language/${id}/glossary/generate`,
     SESSION_EVENTS: "/v1/session-events",
     GET_SESSION_EVENT_BY_ID: (eventId: string) => `/v1/session-events/events/${eventId}`,
     UPDATE_SESSION_EVENT: (eventId: string) => `/v1/session-events/events/${eventId}`,
@@ -297,6 +305,7 @@ export const ROUTES = {
   CHARACTER_LIBRARY: "/character-library",
   MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
   MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
+  MANAGE_LANGUAGE_GLOSSARY: (id: string | number) => `/manage-scenario-languages/${id}/glossary`,
   MANAGE_PROMPTS: "/manage-prompts",
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
@@ -399,6 +408,7 @@ export const TAG_TYPES = {
   TRIGGER_WARNINGS: "triggerWarnings",
   SCENARIO_VOICES: "scenarioVoices",
   SCENARIO_LANGUAGES: "scenarioLanguages",
+  LANGUAGE_GLOSSARY: "languageGlossary",
   SUMMARY_SECTIONS: "summarySections",
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
   CUSTOM_FIELD_TYPES: "customFieldTypes",

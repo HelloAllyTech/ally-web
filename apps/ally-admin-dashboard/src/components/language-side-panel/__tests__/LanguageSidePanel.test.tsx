@@ -1,6 +1,11 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+vi.mock("react-router-dom", async importOriginal => ({
+  ...(await importOriginal<typeof import("react-router-dom")>()),
+  useNavigate: () => vi.fn(),
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
