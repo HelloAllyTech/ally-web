@@ -275,6 +275,8 @@ export const ApiEndpoints = {
     CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
     COPILOT_SESSIONS: `/v1/roleplay-studio/copilot/sessions`,
     COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
+    COPILOT_SESSION_MODE: (sessionId: string) =>
+      `/v1/roleplay-studio/copilot/sessions/${sessionId}/mode`,
     COPILOT_SESSION_MESSAGES: (sessionId: string) =>
       `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
     COPILOT_SESSION_STREAM: (sessionId: string) =>

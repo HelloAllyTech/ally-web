@@ -10,6 +10,8 @@ interface ChatComposerProps {
   onStop: () => void;
   isStreaming: boolean;
   disabled?: boolean;
+  /** Mode-aware prompt text (build vs iterate); falls back to the default. */
+  placeholder?: string;
 }
 
 /** Pinned composer: Enter sends, Shift+Enter adds a newline, Stop aborts. */
@@ -18,9 +20,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   onStop,
   isStreaming,
   disabled = false,
+  placeholder,
 }) => {
   const [value, setValue] = useState("");
   const strings = en.roleplayStudio.copilot;
+  const promptText = placeholder ?? strings.placeholder;
 
   const send = () => {
     const trimmed = value.trim();
@@ -34,11 +38,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
       <div className="flex-1 min-w-0">
         <TextArea
           id="copilot-chat-composer"
-          labelText={strings.placeholder}
+          labelText={promptText}
           hideLabel
           value={value}
           onChange={event => setValue(event.target.value)}
-          placeholder={strings.placeholder}
+          placeholder={promptText}
           disabled={disabled}
           rows={2}
           onKeyDown={event => {

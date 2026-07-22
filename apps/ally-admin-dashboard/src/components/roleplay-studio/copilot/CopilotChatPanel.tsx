@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
+import clsx from "clsx";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -8,11 +9,13 @@ import {
   useCreateRoleplayCopilotSessionMutation,
   useLazyGetRoleplayCopilotSessionQuery,
   useLazyGetRoleplayCopilotSessionsBySpecQuery,
+  useSetRoleplayCopilotSessionModeMutation,
 } from "@api";
 import { EmptyState } from "@components";
 import { en, LOCAL_STORAGE_KEYS } from "@constants";
 import { useCopilotStream } from "@hooks/useCopilotStream";
 import { selectRoleplaySpecState, setCopilotSessionId } from "@reducer";
+import { CopilotSessionMode } from "@src/types/roleplayStudio";
 import { logger } from "@utils";
 
 import { ChatComposer } from "./ChatComposer";
@@ -21,6 +24,57 @@ import { CopilotAnswerPayload } from "./QuestionCard";
 
 const sessionStorageKey = (specId: string) =>
   `${LOCAL_STORAGE_KEYS.ROLEPLAY_COPILOT_SESSION_PREFIX}:${specId}`;
+
+interface CopilotModeToggleProps {
+  mode: CopilotSessionMode;
+  /** Iterate is unlocked once the spec has been built (has states). */
+  canIterate: boolean;
+  disabled: boolean;
+  onChange: (mode: CopilotSessionMode) => void;
+}
+
+/**
+ * Build ⇄ Iterate segmented control. Iterate stays locked until the spec has
+ * a state machine — you can only refine a roleplay that has been built.
+ */
+const CopilotModeToggle: React.FC<CopilotModeToggleProps> = ({
+  mode,
+  canIterate,
+  disabled,
+  onChange,
+}) => {
+  const strings = en.roleplayStudio.copilot;
+  const baseBtn = "rounded-md px-3 py-1 text-xs font-medium transition-colors";
+  const active = "bg-white text-typography-900 shadow-sm";
+  const inactive = "text-typography-500 hover:text-typography-700";
+
+  return (
+    <div className="inline-flex items-center rounded-lg bg-secondary-50 p-0.5">
+      <button
+        type="button"
+        onClick={() => onChange("BUILDING")}
+        disabled={disabled}
+        title={strings.modeBuildHint}
+        className={clsx(baseBtn, mode === "BUILDING" ? active : inactive)}
+      >
+        {strings.modeBuild}
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("ITERATING")}
+        disabled={disabled || !canIterate}
+        title={canIterate ? strings.modeIterateHint : strings.modeIterateLockedHint}
+        className={clsx(
+          baseBtn,
+          mode === "ITERATING" ? active : inactive,
+          !canIterate && "cursor-not-allowed opacity-50",
+        )}
+      >
+        {strings.modeIterate}
+      </button>
+    </div>
+  );
+};
 
 /**
  * Left pane of the chat screen: bootstraps (or resumes) the copilot session
@@ -32,11 +86,17 @@ const sessionStorageKey = (specId: string) =>
 export const CopilotChatPanel: React.FC = () => {
   const strings = en.roleplayStudio.copilot;
   const dispatch = useDispatch();
-  const { specId, copilotSessionId } = useSelector(selectRoleplaySpecState);
+  const { specId, copilotSessionId, spec } = useSelector(selectRoleplaySpecState);
 
   const [createSession] = useCreateRoleplayCopilotSessionMutation();
   const [getSession] = useLazyGetRoleplayCopilotSessionQuery();
   const [getSessionsBySpec] = useLazyGetRoleplayCopilotSessionsBySpecQuery();
+  const [setSessionMode, { isLoading: isSwitchingMode }] =
+    useSetRoleplayCopilotSessionModeMutation();
+
+  const [mode, setModeState] = useState<CopilotSessionMode>("BUILDING");
+  // Iterate is only meaningful once the copilot has built a state machine.
+  const canIterate = (spec?.stateMachine?.states?.length ?? 0) >= 1;
 
   // Create a fresh session for the current spec and pin it (Redux + localStorage).
   // Used both to bootstrap and to recover when the server session disappears.
@@ -46,6 +106,7 @@ export const CopilotChatPanel: React.FC = () => {
       const session = await createSession(specId).unwrap();
       localStorage.setItem(sessionStorageKey(specId), session.id);
       dispatch(setCopilotSessionId(session.id));
+      setModeState(session.mode ?? "BUILDING");
       return session.id;
     } catch {
       toast.error(strings.startFailed);
@@ -77,6 +138,7 @@ export const CopilotChatPanel: React.FC = () => {
           const session = await getSession(storedSessionId).unwrap();
           localStorage.setItem(sessionStorageKey(specId), session.id);
           dispatch(setCopilotSessionId(session.id));
+          setModeState(session.mode ?? "BUILDING");
           hydrateMessages(session.messages ?? []);
           setIsBooting(false);
           return;
@@ -93,6 +155,7 @@ export const CopilotChatPanel: React.FC = () => {
           const session = await getSession(latest.id).unwrap();
           localStorage.setItem(sessionStorageKey(specId), session.id);
           dispatch(setCopilotSessionId(session.id));
+          setModeState(session.mode ?? "BUILDING");
           hydrateMessages(session.messages ?? []);
           setIsBooting(false);
           return;
@@ -127,10 +190,34 @@ export const CopilotChatPanel: React.FC = () => {
       answer: payload.answer,
     });
 
+  // Optimistically flip the toggle, then persist; revert on failure.
+  const handleModeChange = useCallback(
+    async (next: CopilotSessionMode) => {
+      if (!copilotSessionId || next === mode || isStreaming) return;
+      const previous = mode;
+      setModeState(next);
+      try {
+        await setSessionMode({ sessionId: copilotSessionId, mode: next }).unwrap();
+      } catch {
+        setModeState(previous);
+        toast.error(strings.modeSwitchFailed);
+      }
+    },
+    [copilotSessionId, mode, isStreaming, setSessionMode, strings.modeSwitchFailed],
+  );
+
+  const isIterating = mode === "ITERATING";
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center justify-between pb-3 shrink-0">
         <h2 className="text-base font-medium text-typography-900">{strings.title}</h2>
+        <CopilotModeToggle
+          mode={mode}
+          canIterate={canIterate}
+          disabled={isBooting || !copilotSessionId || isStreaming || isSwitchingMode}
+          onChange={handleModeChange}
+        />
       </div>
 
       <div
@@ -146,8 +233,8 @@ export const CopilotChatPanel: React.FC = () => {
           </div>
         ) : messages.length === 0 ? (
           <EmptyState
-            title={strings.emptyTitle}
-            subtitle={strings.emptySubtitle}
+            title={isIterating ? strings.iterationEmptyTitle : strings.emptyTitle}
+            subtitle={isIterating ? strings.iterationEmptySubtitle : strings.emptySubtitle}
             hideActionButton
           />
         ) : (
@@ -170,6 +257,7 @@ export const CopilotChatPanel: React.FC = () => {
           onStop={stop}
           isStreaming={isStreaming}
           disabled={isBooting || !copilotSessionId}
+          placeholder={isIterating ? strings.iterationPlaceholder : undefined}
         />
       </div>
     </div>

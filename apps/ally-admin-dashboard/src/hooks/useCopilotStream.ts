@@ -9,6 +9,7 @@ import {
   CopilotBehaviourReviewEvent,
   CopilotChatMessage,
   CopilotDoneEvent,
+  CopilotIterationSummaryEvent,
   CopilotQuestionEvent,
   CopilotSpecPatchEvent,
   CopilotStreamEvent,
@@ -135,6 +136,14 @@ export const mapServerMessagesToFeed = (
         content: review.prompt,
         behaviourReview: review,
         answeredAnswer: answeredAnswers.get(review.id),
+      });
+    }
+    for (const summary of metadata.iterationSummaries ?? []) {
+      feed.push({
+        id: `${baseId}_it_${summary.id}`,
+        role: "assistant",
+        content: summary.feedback,
+        iterationSummary: summary,
       });
     }
   });
@@ -294,6 +303,20 @@ export const useCopilotStream = ({
               role: "assistant",
               content: review.prompt,
               behaviourReview: review,
+            },
+          ]);
+          break;
+        }
+        case "iteration_summary": {
+          flushTokens();
+          const summary = event.data as CopilotIterationSummaryEvent;
+          setMessages(prev => [
+            ...prev,
+            {
+              id: nextMessageId(),
+              role: "assistant",
+              content: summary.feedback,
+              iterationSummary: summary,
             },
           ]);
           break;

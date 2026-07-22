@@ -202,6 +202,36 @@ describe("useCopilotStream", () => {
     });
   });
 
+  it("renders iteration_summary events as structured messages", async () => {
+    const summary = {
+      id: "it1",
+      feedback: "She opened up too fast",
+      reasoning: "The transition into Open needed only 2 turns.",
+      changes: [{ area: "State machine", summary: "Raised minTurnsInState to 4" }],
+      note: "Try it again.",
+    };
+    vi.stubGlobal(
+      "fetch",
+      mockSseFetch([
+        sseFrame("iteration_summary", summary),
+        sseFrame("done", { messageSeq: 2, specVersionId: "v1" }),
+      ]),
+    );
+
+    const store = buildStore();
+    const { result } = renderStream(store);
+
+    await act(async () => {
+      await result.current.sendMessage("she opened up too fast");
+    });
+
+    await waitFor(() => {
+      const message = result.current.messages.find(m => m.iterationSummary);
+      expect(message?.iterationSummary).toEqual(summary);
+      expect(message?.content).toBe("She opened up too fast");
+    });
+  });
+
   it("posts a structured answer for select/behaviour cards", async () => {
     const fetchMock = mockSseFetch([sseFrame("done", { messageSeq: 3, specVersionId: "v1" })]);
     vi.stubGlobal("fetch", fetchMock);
@@ -476,5 +506,33 @@ describe("mapServerMessagesToFeed", () => {
     const behaviourCard = feed.find(m => m.behaviourReview?.id === "r-1");
     expect(behaviourCard?.behaviourReview?.helpful[0].name).toBe("Reflect");
     expect(behaviourCard?.answeredAnswer).toEqual({ helpful: ["Reflect"], unhelpful: ["Advise"] });
+  });
+
+  it("reconstructs iteration-summary cards from persisted rows", async () => {
+    const { mapServerMessagesToFeed } = await import("@hooks/useCopilotStream");
+    const resumeRows = [
+      {
+        id: "a1",
+        seq: 1,
+        role: "assistant" as const,
+        content: "Done.",
+        metadata: {
+          mode: "ITERATING" as const,
+          iterationSummaries: [
+            {
+              id: "it-1",
+              feedback: "She opened up too fast",
+              reasoning: "Guard into Open needed only 2 turns.",
+              changes: [{ area: "State machine", summary: "Raised minTurnsInState" }],
+            },
+          ],
+        },
+      },
+    ];
+
+    const feed = mapServerMessagesToFeed(resumeRows as never);
+    const summaryCard = feed.find(m => m.iterationSummary?.id === "it-1");
+    expect(summaryCard?.iterationSummary?.feedback).toBe("She opened up too fast");
+    expect(summaryCard?.content).toBe("She opened up too fast");
   });
 });

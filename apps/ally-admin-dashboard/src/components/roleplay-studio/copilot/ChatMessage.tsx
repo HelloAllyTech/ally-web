@@ -9,6 +9,7 @@ import { CopilotChatMessage } from "@src/types/roleplayStudio";
 
 import { roleplayMarkdownComponents } from "../markdownComponents";
 import { BehaviourReviewCard } from "./BehaviourReviewCard";
+import { IterationSummaryCard } from "./IterationSummaryCard";
 import { CopilotAnswerPayload, QuestionCard } from "./QuestionCard";
 
 interface ChatMessageProps {
@@ -60,6 +61,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         disabled={disabled}
       />
     );
+  }
+
+  if (message.iterationSummary) {
+    return <IterationSummaryCard summary={message.iterationSummary} />;
   }
 
   return (
