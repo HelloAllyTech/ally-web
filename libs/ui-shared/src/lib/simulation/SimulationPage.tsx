@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { RoomEvent } from "livekit-client";
 import { toast } from "sonner";
 
+import { SessionTimeBar } from "./SessionTimeBar";
 import { BottomSection } from "./SimulationBottomSection";
 import { RoomStatus, SimulationInterface } from "./SimulationInterface";
 import { SimulationScoreMeter } from "./SimulationScoreMeter";
@@ -402,15 +403,23 @@ export const SimulationPage: FC<SimulationPageProps> = ({
             </div>
           )}
         </div>
-        {isPreview && (
-          <button
-            data-testid="simulation-page-close-preview-button"
-            className="text-primary-300 font-['Roboto']"
-            onClick={handleEndSimulation}
-          >
-            {translations?.closePreview ?? "Close Preview"}
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          <SessionTimeBar
+            startTime={startTime}
+            maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
+            isPaused={isPaused}
+            pausedOffsetMs={pausedOffsetMs}
+          />
+          {isPreview && (
+            <button
+              data-testid="simulation-page-close-preview-button"
+              className="text-primary-300 font-['Roboto']"
+              onClick={handleEndSimulation}
+            >
+              {translations?.closePreview ?? "Close Preview"}
+            </button>
+          )}
+        </div>
       </div>
 
       <motion.div layout className="w-full flex flex-1 gap-2 min-h-0 overflow-hidden">

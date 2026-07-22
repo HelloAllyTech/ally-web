@@ -9,10 +9,7 @@ import {
 } from "@livekit/components-react";
 import { motion } from "framer-motion";
 
-import { SessionChecklist } from "./SessionChecklist";
-import { SessionInfoTabs } from "./SessionInfoTabs";
-import { SessionProgress } from "./SessionProgress";
-import { SimulationEvents } from "./SimulationEvents";
+import { SessionSidebar } from "./SessionSidebar";
 import { TurnState } from "./TurnIndicator";
 import {
   SimulationEventType,
@@ -141,30 +138,43 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   }, [isPaused, agentTurnStatus, debouncedRemoteSpeaking, localParticipant?.isSpeaking]);
 
   const hasStateNames = stateNames.length > 0;
-  const showSessionProgress = hasStateNames || !!(roomData?.timerMode && startTime);
   const sessionReminders: string[] = roomData?.reminders ?? [];
   const sessionDescription: string | undefined = roomData?.description;
   const showSessionInfo = sessionReminders.length > 0 || !!sessionDescription;
 
-  const showRightColumn =
+  // The sidebar's stepper only needs actual stateNames — a timerMode-only
+  // session with no other content shows no sidebar, since the timer display
+  // itself now lives in the page header (SessionTimeBar), not here.
+  const showSidebar =
     !isFocusMode &&
-    (showSessionProgress ||
+    (showSessionInfo ||
+      hasStateNames ||
       (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
       (checklistMode === ChecklistMode.OFF && events?.length > 0));
-  const showLeftColumn = !isFocusMode && showSessionInfo;
 
   const renderConnectedContent = () => (
     <>
       <RoomAudioRenderer />
       <div className="flex md:flex-row flex-col-reverse justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
-        {showLeftColumn && (
+        {showSidebar && (
           <div
-            data-testid="simulation-left-column"
-            className="order-3 md:order-1 flex flex-col gap-4 w-full md:w-[240px] lg:w-[280px] xl:w-[320px] shrink-0 h-full min-h-0 max-h-[35vh] md:max-h-none"
+            data-testid="simulation-sidebar-column"
+            className="order-3 md:order-1 flex flex-col gap-4 w-full md:w-[280px] lg:w-[320px] xl:w-[360px] shrink-0 h-full min-h-0 max-h-[45vh] md:max-h-none"
           >
-            <SessionInfoTabs
+            <SessionSidebar
               reminders={sessionReminders}
               description={sessionDescription}
+              stateNames={stateNames}
+              difficultyLevel={difficultyLevel}
+              score={score}
+              startTime={startTime}
+              maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
+              isPaused={isPaused}
+              pausedOffsetMs={pausedOffsetMs}
+              checklistMode={checklistMode}
+              checklistItems={checklistItems}
+              detectedEventIds={detectedEventIds}
+              events={events}
               translations={translations}
             />
           </div>
@@ -203,36 +213,6 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
             />
           </div>
         </div>
-
-        {showRightColumn && (
-          <div
-            data-testid="simulation-right-column"
-            className="order-2 md:order-3 flex flex-col gap-4 w-full md:w-[300px] lg:w-[320px] shrink-0 h-full min-h-0 max-h-[40vh] md:max-h-none"
-          >
-            {showSessionProgress && (
-              <SessionProgress
-                stateNames={stateNames}
-                difficultyLevel={difficultyLevel}
-                score={score}
-                startTime={startTime}
-                maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
-                isPaused={isPaused}
-                pausedOffsetMs={pausedOffsetMs}
-              />
-            )}
-            {checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
-              <SessionChecklist
-                mode={checklistMode}
-                items={checklistItems}
-                triggeredEvents={detectedEventIds || []}
-                translations={translations}
-              />
-            )}
-            {checklistMode === ChecklistMode.OFF && events?.length > 0 && (
-              <SimulationEvents events={events} />
-            )}
-          </div>
-        )}
       </div>
     </>
   );

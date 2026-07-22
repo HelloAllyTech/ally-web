@@ -47,7 +47,7 @@ describe("SessionProgress", () => {
       expect(screen.getByTestId("session-progress-title")).toHaveTextContent("Session Progress");
     });
 
-    it("should render all state names", () => {
+    it("should render all state names, each on its own row in a vertical list", () => {
       render(
         <SessionProgress stateNames={mockStateInstructions} difficultyLevel="EASY" score={0} />,
       );
@@ -57,7 +57,7 @@ describe("SessionProgress", () => {
       expect(screen.getByText("Hopeful")).toBeInTheDocument();
     });
 
-    it("should render state test ids for each state", () => {
+    it("should render a state test id for each state", () => {
       render(
         <SessionProgress stateNames={mockStateInstructions} difficultyLevel="EASY" score={0} />,
       );

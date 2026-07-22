@@ -9,6 +9,13 @@ export interface StateInstruction {
   stateId: string;
 }
 
+export interface SessionTimeBarProps {
+  startTime?: string;
+  maxTimeSeconds?: number;
+  isPaused?: boolean;
+  pausedOffsetMs?: number;
+}
+
 export interface SessionProgressProps {
   stateNames: StateInstruction[];
   difficultyLevel: string;
@@ -17,6 +24,9 @@ export interface SessionProgressProps {
   maxTimeSeconds?: number;
   isPaused?: boolean;
   pausedOffsetMs?: number;
+  /** Suppress the title row + time bar (used when the timer is shown
+   * elsewhere, e.g. the page header) and render only the state-name stepper. */
+  hideTimeBar?: boolean;
 }
 
 export interface TurnIndicatorTranslations {
@@ -72,6 +82,26 @@ export interface SimulationEventType {
 
 export interface SimulationEventsProps {
   events: SimulationEventType[];
+  /** Suppress the "AI Feedback" header bar (redundant when rendered under a
+   * tab already labeled "Live"). */
+  hideHeader?: boolean;
+}
+
+export interface SessionSidebarProps {
+  reminders?: string[];
+  description?: string;
+  stateNames: StateInstruction[];
+  difficultyLevel: string;
+  score: number;
+  startTime?: string;
+  maxTimeSeconds?: number;
+  isPaused?: boolean;
+  pausedOffsetMs?: number;
+  checklistMode: ChecklistMode;
+  checklistItems: ChecklistItem[];
+  detectedEventIds?: string[];
+  events: SimulationEventType[];
+  translations?: SimulationTranslations;
 }
 
 export interface SimulationScoreMeterProps {
