@@ -6,6 +6,7 @@ vi.mock("@api", () => ({
   useGetLanguagesQuery: vi.fn(),
   useCreateLanguageMutation: vi.fn(),
   useUpdateLanguageMutation: vi.fn(),
+  useBackfillLanguageGlossariesMutation: vi.fn(),
 }));
 
 import * as api from "@api";
@@ -114,6 +115,10 @@ describe("Languages Page", () => {
     (api.useUpdateLanguageMutation as any).mockReturnValue([
       vi.fn().mockResolvedValue({ data: mockLanguages[0] }),
       {},
+    ]);
+    (api.useBackfillLanguageGlossariesMutation as any).mockReturnValue([
+      vi.fn().mockResolvedValue({ data: [] }),
+      { isLoading: false },
     ]);
   });
 

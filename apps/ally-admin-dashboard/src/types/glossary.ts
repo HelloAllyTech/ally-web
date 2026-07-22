@@ -81,3 +81,19 @@ export interface GenerateGlossaryResult {
   updated: string[];
   skipped: string[];
 }
+
+export interface ConsolidateGlossaryResult {
+  annotationsConsidered: number;
+  proposed: number;
+  skippedDuplicates: number;
+  sections: string[];
+}
+
+export interface BackfillGlossariesOutcome {
+  languageId: number;
+  value: string;
+  created: string[];
+  updated: string[];
+  skipped: string[];
+  error?: string;
+}

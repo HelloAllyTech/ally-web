@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { AutoExpandableTextarea, TextInput } from "@ally-ui-mono/ui-shared";
 import {
   useArchiveGlossarySectionMutation,
+  useConsolidateLanguageGlossaryMutation,
   useGenerateLanguageGlossaryMutation,
   useGetLanguageGlossaryQuery,
   useGetLanguagesQuery,
@@ -105,6 +106,8 @@ export const LanguageGlossary: React.FC = () => {
   const [publishSection, { isLoading: isPublishing }] = usePublishGlossarySectionMutation();
   const [archiveSection] = useArchiveGlossarySectionMutation();
   const [generateGlossary, { isLoading: isGenerating }] = useGenerateLanguageGlossaryMutation();
+  const [consolidateGlossary, { isLoading: isConsolidating }] =
+    useConsolidateLanguageGlossaryMutation();
 
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [draft, setDraft] = useState<SectionDraft | null>(null);
@@ -222,6 +225,21 @@ export const LanguageGlossary: React.FC = () => {
       await archiveSection({ languageId, sectionCode: draft.sectionCode }).unwrap();
       setDirty(false);
       toast.success(`Section '${draft.sectionCode}' archived`);
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
+  };
+
+  const handleConsolidate = async () => {
+    try {
+      const result = await consolidateGlossary(languageId).unwrap();
+      if (result.annotationsConsidered === 0) {
+        toast.info("No new judge error annotations to consolidate");
+        return;
+      }
+      toast.success(
+        `Consolidated ${result.annotationsConsidered} annotations into ${result.proposed} proposed entries (${result.skippedDuplicates} duplicates skipped) — review the amber entries`,
+      );
     } catch (err) {
       toast.error(errorMessage(err));
     }
@@ -379,6 +397,14 @@ export const LanguageGlossary: React.FC = () => {
               </span>
             </div>
           </div>
+          <Button
+            variant={ButtonVariant.SECONDARY}
+            onClick={handleConsolidate}
+            disabled={isConsolidating}
+            title="Turn the language judge's error annotations into proposed entries"
+          >
+            {isConsolidating ? "Consolidating…" : "Run consolidation"}
+          </Button>
           <Button
             variant={ButtonVariant.SECONDARY}
             onClick={handleGenerate}
