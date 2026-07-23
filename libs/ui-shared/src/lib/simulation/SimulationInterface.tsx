@@ -159,7 +159,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
         {showSidebar && (
           <div
             data-testid="simulation-sidebar-column"
-            className="order-3 md:order-1 flex flex-col gap-4 w-full md:w-[280px] lg:w-[320px] xl:w-[360px] shrink-0 h-full min-h-0 max-h-[45vh] md:max-h-none"
+            className="order-3 md:order-2 flex flex-col gap-4 w-full md:w-[280px] lg:w-[320px] xl:w-[360px] shrink-0 h-full min-h-0 max-h-[45vh] md:max-h-none"
           >
             <SessionSidebar
               reminders={sessionReminders}
@@ -182,7 +182,7 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
 
         <div
           data-testid="simulation-middle-column"
-          className="order-1 md:order-2 relative flex-1 min-w-0 h-full min-h-[240px]"
+          className="order-1 relative flex-1 min-w-0 h-full min-h-[240px]"
         >
           <UserCallCard
             userData={{
