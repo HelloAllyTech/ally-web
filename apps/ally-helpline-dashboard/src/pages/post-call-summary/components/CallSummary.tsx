@@ -27,13 +27,18 @@ import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/Custom
 import { RootState } from "@store";
 import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag } from "@types";
 import { CustomFieldEditPermission, CustomFieldValue } from "@types";
-import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions } from "@utils";
+import {
+  getEstimatedSummaryGenerationTime,
+  getFormattedDateTime,
+  hasPermissions,
+  rateTagsWithFallback,
+} from "@utils";
 
 import { SummaryLoading } from ".";
 import SummaryFieldInput from "./SummaryFieldInput";
 import { getSummaryFields, getSummarySections, labelShownSections } from "../constants";
 import { CallSummaryProps, FieldType, SummaryField, SummarySectionKey } from "../types";
-import { getSectionFields, summaryHasChanges } from "../utils";
+import { getSectionFields } from "../utils";
 
 // TODO: Keep it outside the pages since two pages are using this componentß
 
@@ -339,7 +344,11 @@ const CallSummary: FC<CallSummaryProps> = ({
     );
   };
 
-  const hasDataChanged = () => summaryHasChanges(callSummary?.details?.summary, summaryData);
+  // Only fields the user actually edited this visit count as changes. Diffing
+  // summaryData against the server copy instead is spuriously true after any
+  // refetch (nested values are compared by reference), which used to send
+  // every save — even custom-field-only ones — through the tags LLM call.
+  const hasDataChanged = () => summaryData !== null && dirtySummaryKeysRef.current.size > 0;
 
   const navigateToCallLogs = () => {
     navigate(ROUTES.SCRIBE_LOGS, { state: { refetch: true } });
@@ -354,15 +363,18 @@ const CallSummary: FC<CallSummaryProps> = ({
     // two catch blocks below.
     let saveFailed = false;
     if (hasDataChanged()) {
-      const tags = summaryData?.tags?.split(", ");
-      let tagsInput: Tag[] = [];
-      if (tags?.length > 0) {
-        const response = await getTags({ tags });
-        if (response.error) {
-          logger.info(`Error getting tags: ${response.error}`);
-        } else if (response.data) {
-          tagsInput = response.data;
-        }
+      const existingTags: Tag[] = callSummary?.details?.summary?.tags ?? [];
+      let tagsInput: Tag[] = existingTags;
+      if (dirtySummaryKeysRef.current.has(SummaryFieldKey.Tags)) {
+        const typedTags =
+          summaryData?.tags
+            ?.split(",")
+            .map((tag: string) => tag.trim())
+            .filter(Boolean) ?? [];
+        // Ratings come from an LLM; rateTagsWithFallback caps the wait and
+        // keeps the typed tags (with previous/neutral ratings) if it fails,
+        // so an unhealthy AI service can no longer stall or wipe the save.
+        tagsInput = await rateTagsWithFallback(getTags, typedTags, existingTags);
       }
       try {
         await updateCallSummary({
