@@ -16,6 +16,7 @@ import { useGetCustomFieldValuesQuery } from "@api";
 import TextField from "@components/text-field";
 import { Permissions } from "@constants";
 import { carbonField } from "@constants/carbonFieldStyles";
+import { formFieldProtectionProps } from "@constants/formFieldProtection";
 import { useCustomFieldsEnabled } from "@hooks";
 import { RootState } from "@store";
 import {
@@ -219,6 +220,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
                 labelText={field.name}
                 hideLabel
                 placeholder="mm/dd/yyyy"
+                {...formFieldProtectionProps}
               />
             </DatePicker>
           ) : (
@@ -272,6 +274,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
             disabled={!isEditable}
             value={value ?? ""}
             onChange={e => handleChange(field.fieldDefinitionId, e.target.value || null)}
+            {...formFieldProtectionProps}
             // Scrolling over a focused number input silently changes its value
             // in the browser — blur so the page scrolls instead of the value.
             onWheel={e => {
@@ -349,6 +352,7 @@ const CustomFieldValuesPanel: FC<CustomFieldValuesPanelProps> = ({
                 e.target.value ? new Date(e.target.value).toISOString() : null,
               )
             }
+            {...formFieldProtectionProps}
           />
         </div>
       );
