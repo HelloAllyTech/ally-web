@@ -64,6 +64,7 @@ export type FormData = {
   pauseEnabled?: boolean;
   optGuardrails?: boolean;
   currentState?: boolean;
+  remindersEnabled?: boolean;
   knowledgeSources?: knowledgeSource[];
   /** Per-language main-agent prompt variant choice (GENERIC vs MULTILINGUAL). */
   mainPromptVariantByLanguage?: Record<string, "GENERIC" | "MULTILINGUAL">;

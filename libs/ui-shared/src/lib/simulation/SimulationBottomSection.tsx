@@ -27,19 +27,25 @@ export const BottomSection: FC<BottomSectionProps> = ({
 }) => {
   return (
     <div data-testid="simulation-bottom-section" className="w-full flex items-center gap-2">
-      <div className="flex-1 flex justify-start min-w-0">
-        <SimulationTimer
-          isWarning={isWarning}
-          onWarning={onTimeLimitWarning}
-          onTimeLimit={onEndSimulation}
-          startTime={startTime?.toString()}
-          timeLimit={timeLimit}
-          isPaused={isPaused}
-          pausedOffsetMs={pausedOffsetMs}
-          translations={
-            translations ? { sessionDuration: translations.sessionDuration } : undefined
-          }
-        />
+      {/* The visible session timer now lives in the page header (SessionTimeBar).
+          SimulationTimer stays mounted here — invisibly — because it (not just
+          displays time but) owns the onWarning/onTimeLimit side effects: the
+          "ending soon" dialog trigger and the client-side auto-end fallback. */}
+      <div className="flex-1 min-w-0">
+        <div className="sr-only">
+          <SimulationTimer
+            isWarning={isWarning}
+            onWarning={onTimeLimitWarning}
+            onTimeLimit={onEndSimulation}
+            startTime={startTime?.toString()}
+            timeLimit={timeLimit}
+            isPaused={isPaused}
+            pausedOffsetMs={pausedOffsetMs}
+            translations={
+              translations ? { sessionDuration: translations.sessionDuration } : undefined
+            }
+          />
+        </div>
       </div>
       <SimulationControls
         isMuted={isMuted}

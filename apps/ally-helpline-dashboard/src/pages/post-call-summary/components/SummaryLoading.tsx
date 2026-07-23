@@ -15,6 +15,7 @@ import {
 } from "@assets/icons";
 import { Button, ButtonVariant, InfoBanner, ShinyText } from "@components";
 import { Permissions, SESSION_STORAGE_KEYS } from "@constants";
+import { formFieldProtectionProps } from "@constants/formFieldProtection";
 import { RootState } from "@store";
 import { ChatSummaryStatus } from "@types";
 
@@ -192,6 +193,7 @@ const SummaryLoading: FC<SummaryLoadingProps> = ({
           onChange={e => onNotesChange(e.target.value)}
           placeholder={t("summaryLoading.notesPlaceholder")}
           className="w-full font-primary"
+          {...formFieldProtectionProps}
         />
       </div>
     );

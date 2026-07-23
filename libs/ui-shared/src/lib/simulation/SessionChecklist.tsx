@@ -11,6 +11,9 @@ export interface SessionChecklistProps {
   items: ChecklistItem[];
   triggeredEvents: string[];
   translations?: Pick<SimulationTranslations, "sessionChecklist" | "progress" | "completed" | "of">;
+  /** Suppress the icon + "Session Checklist" title (redundant when rendered
+   * under a tab already labeled "Checklist") — the progress count still shows. */
+  hideHeader?: boolean;
 }
 
 export const SessionChecklist: FC<SessionChecklistProps> = ({
@@ -18,6 +21,7 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
   items,
   triggeredEvents,
   translations,
+  hideHeader = false,
 }) => {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
@@ -59,20 +63,10 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
       className="overflow-hidden bg-[#1d2020] flex flex-col flex-1 min-h-0 w-full rounded-lg p-4 font-sans"
     >
       {/* Header */}
-      <div
-        className={`flex gap-4 mb-6 pt-2 pl-1 ${
-          mode === ChecklistMode.LIST ? "items-center" : "items-start"
-        }`}
-      >
-        <div className={mode === ChecklistMode.LIST ? "" : "mt-1"}>
-          <ListChecks className="w-10 h-10 text-white" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[18px] font-medium text-white leading-tight">
-            {translations?.sessionChecklist ?? "Session Checklist"}
-          </span>
-          {mode !== ChecklistMode.LIST && (
-            <span className="text-[14px] text-[#9CA3AF] mt-1 italic font-['IBM_Plex_Serif']">
+      {hideHeader ? (
+        mode !== ChecklistMode.LIST && (
+          <div className="mb-4 pt-2 pl-1">
+            <span className="text-[13px] text-[#9CA3AF] italic font-['IBM_Plex_Serif']">
               {translations?.progress ?? "Progress"}:{" "}
               <span className="text-[#57f646] font-bold">{completedCount}</span>{" "}
               {translations?.of ?? "of"}{" "}
@@ -80,9 +74,34 @@ export const SessionChecklist: FC<SessionChecklistProps> = ({
                 {totalCount} {translations?.completed ?? "completed"}
               </span>
             </span>
-          )}
+          </div>
+        )
+      ) : (
+        <div
+          className={`flex gap-4 mb-6 pt-2 pl-1 ${
+            mode === ChecklistMode.LIST ? "items-center" : "items-start"
+          }`}
+        >
+          <div className={mode === ChecklistMode.LIST ? "" : "mt-1"}>
+            <ListChecks className="w-10 h-10 text-white" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[18px] font-medium text-white leading-tight">
+              {translations?.sessionChecklist ?? "Session Checklist"}
+            </span>
+            {mode !== ChecklistMode.LIST && (
+              <span className="text-[14px] text-[#9CA3AF] mt-1 italic font-['IBM_Plex_Serif']">
+                {translations?.progress ?? "Progress"}:{" "}
+                <span className="text-[#57f646] font-bold">{completedCount}</span>{" "}
+                {translations?.of ?? "of"}{" "}
+                <span className="text-white font-medium">
+                  {totalCount} {translations?.completed ?? "completed"}
+                </span>
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* List */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1">

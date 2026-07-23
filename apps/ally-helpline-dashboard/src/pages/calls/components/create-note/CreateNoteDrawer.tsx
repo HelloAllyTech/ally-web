@@ -35,11 +35,10 @@ import {
   CustomFieldValue,
   SingleSelectOption,
   SummaryFieldKey,
-  Tag,
   VoiceNoteFieldSpec,
   VoiceNoteFieldType,
 } from "@types";
-import { hasPermissions } from "@utils";
+import { hasPermissions, rateTagsWithFallback } from "@utils";
 
 import VoiceNotePanel from "./VoiceNotePanel";
 
@@ -353,9 +352,9 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
           .map(s => s.trim())
           .filter(Boolean);
         if (tagList.length === 0) continue;
-        const response = await getTags({ tags: tagList });
-        const tagsInput: Tag[] = "data" in response && response.data ? response.data : [];
-        summary.tags = tagsInput;
+        // Never let the LLM ratings call stall or drop the typed tags — on
+        // failure they're saved with neutral ratings instead of discarded.
+        summary.tags = await rateTagsWithFallback(getTags, tagList);
       } else {
         summary[key] = val;
       }

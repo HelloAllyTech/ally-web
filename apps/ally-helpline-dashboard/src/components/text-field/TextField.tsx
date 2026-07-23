@@ -1,6 +1,7 @@
 import { FC, useId, WheelEventHandler } from "react";
 
 import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
+import { formFieldProtectionProps } from "@constants/formFieldProtection";
 
 import { TextFieldProps } from "./types";
 
@@ -66,21 +67,8 @@ const TextField: FC<TextFieldProps> = ({
     style: inputStyles,
     ref: inputRef,
     onWheel: handleWheel,
-    // Opt these fields out of browser/extension form helpers that inject into
-    // inputs and can steal focus mid-typing (observed on Edge: focus lost after
-    // one keystroke, gone in InPrivate where extensions are disabled). There is
-    // no single universal opt-out, so we set the hints each common family
-    // honors. Callers can still override via `props`.
-    autoComplete: "off",
-    // Password managers
-    "data-lpignore": "true", // LastPass
-    "data-1p-ignore": "true", // 1Password
-    "data-bwignore": "true", // Bitwarden
-    "data-form-type": "other", // Dashlane / generic
-    // Writing assistants (Grammarly, Microsoft Editor, etc.)
-    "data-gramm": "false",
-    "data-gramm_editor": "false",
-    "data-enable-grammarly": "false",
+    // Callers can still override the protection hints via `props`.
+    ...formFieldProtectionProps,
     ...registerProps,
     ...(onChange ? { onChange } : {}),
     ...(props as Record<string, unknown>),

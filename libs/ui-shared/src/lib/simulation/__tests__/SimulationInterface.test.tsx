@@ -17,19 +17,10 @@ vi.mock("@livekit/components-react", () => ({
   useRemoteParticipants: () => [{ isSpeaking: false }],
 }));
 
-vi.mock("../SessionInfoTabs", () => ({
-  SessionInfoTabs: (props: any) => (
-    <div data-testid="session-info-tabs" data-reminders={JSON.stringify(props.reminders)} />
+vi.mock("../SessionSidebar", () => ({
+  SessionSidebar: (props: any) => (
+    <div data-testid="session-sidebar" data-reminders={JSON.stringify(props.reminders)} />
   ),
-}));
-vi.mock("../SessionChecklist", () => ({
-  SessionChecklist: () => <div data-testid="session-checklist" />,
-}));
-vi.mock("../SessionProgress", () => ({
-  SessionProgress: () => <div data-testid="session-progress" />,
-}));
-vi.mock("../SimulationEvents", () => ({
-  SimulationEvents: () => <div data-testid="simulation-events" />,
 }));
 vi.mock("../UserCallCard", () => ({
   UserCallCard: (props: any) => (
@@ -63,7 +54,7 @@ describe("SimulationInterface", () => {
     expect(pip.contains(screen.getByTestId("user-call-card-local"))).toBe(true);
   });
 
-  it("renders the left column with Reminders/Description when session info exists", () => {
+  it("renders the sidebar with Reminders/Description content when session info exists", () => {
     render(
       <SimulationInterface
         {...baseProps}
@@ -71,19 +62,19 @@ describe("SimulationInterface", () => {
       />,
     );
 
-    const left = screen.getByTestId("simulation-left-column");
-    expect(left).toBeInTheDocument();
-    expect(screen.getByTestId("session-info-tabs")).toBeInTheDocument();
+    const sidebar = screen.getByTestId("simulation-sidebar-column");
+    expect(sidebar).toBeInTheDocument();
+    expect(screen.getByTestId("session-sidebar")).toBeInTheDocument();
   });
 
-  it("does not render the left column when there are no reminders and no description", () => {
+  it("does not render the sidebar when there is no reminders, description, progress, checklist, or events content", () => {
     render(<SimulationInterface {...baseProps} roomData={{}} />);
 
-    expect(screen.queryByTestId("simulation-left-column")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("session-info-tabs")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("simulation-sidebar-column")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("session-sidebar")).not.toBeInTheDocument();
   });
 
-  it("renders the right column with the checklist when checklist items exist", () => {
+  it("renders the sidebar when checklist items exist", () => {
     render(
       <SimulationInterface
         {...baseProps}
@@ -92,17 +83,19 @@ describe("SimulationInterface", () => {
       />,
     );
 
-    expect(screen.getByTestId("simulation-right-column")).toBeInTheDocument();
-    expect(screen.getByTestId("session-checklist")).toBeInTheDocument();
+    expect(screen.getByTestId("simulation-sidebar-column")).toBeInTheDocument();
+    expect(screen.getByTestId("session-sidebar")).toBeInTheDocument();
   });
 
-  it("does not render the right column when there is no progress, checklist, or events content", () => {
-    render(<SimulationInterface {...baseProps} />);
+  it("renders the sidebar when there are state names (stepper) even with no other content", () => {
+    render(
+      <SimulationInterface {...baseProps} stateNames={[{ name: "Resistive", stateId: "1" }]} />,
+    );
 
-    expect(screen.queryByTestId("simulation-right-column")).not.toBeInTheDocument();
+    expect(screen.getByTestId("simulation-sidebar-column")).toBeInTheDocument();
   });
 
-  it("hides both side columns in focus mode but keeps the AI card and PiP self-view", () => {
+  it("hides the sidebar in focus mode but keeps the AI card and PiP self-view", () => {
     render(
       <SimulationInterface
         {...baseProps}
@@ -113,8 +106,7 @@ describe("SimulationInterface", () => {
       />,
     );
 
-    expect(screen.queryByTestId("simulation-left-column")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("simulation-right-column")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("simulation-sidebar-column")).not.toBeInTheDocument();
     expect(screen.getByTestId("simulation-middle-column")).toBeInTheDocument();
     expect(screen.getByTestId("simulation-pip-self-view")).toBeInTheDocument();
   });

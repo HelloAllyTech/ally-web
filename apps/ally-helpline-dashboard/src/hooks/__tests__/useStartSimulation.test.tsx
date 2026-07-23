@@ -349,4 +349,75 @@ describe("useStartSimulation", () => {
       serverUrl: "https://server.example.com",
     });
   });
+
+  it("stores reminders when remindersEnabled is true", async () => {
+    const mockData = {
+      scenarioSession: { id: "session-123", startedAt: "2024-01-01T00:00:00Z" },
+      scenario: {
+        id: "scenario-123",
+        title: "Test Scenario",
+        reminders: ["Maintain eye contact", "Ask open-ended questions"],
+        remindersEnabled: true,
+      },
+      accessToken: { token: "token-123", serverUrl: "https://server.example.com" },
+    };
+
+    mockStartSimulationMutation.mockResolvedValue({ data: mockData, error: null });
+
+    const { result } = renderHook(() => useStartSimulation(), { wrapper });
+
+    await act(async () => {
+      await result.current.startSimulation({ params: { scenarioId: 1, languageId: 1 } });
+    });
+
+    const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
+    expect(storedData.reminders).toEqual(["Maintain eye contact", "Ask open-ended questions"]);
+  });
+
+  it("does not store reminders when remindersEnabled is false", async () => {
+    const mockData = {
+      scenarioSession: { id: "session-123", startedAt: "2024-01-01T00:00:00Z" },
+      scenario: {
+        id: "scenario-123",
+        title: "Test Scenario",
+        reminders: ["Maintain eye contact"],
+        remindersEnabled: false,
+      },
+      accessToken: { token: "token-123", serverUrl: "https://server.example.com" },
+    };
+
+    mockStartSimulationMutation.mockResolvedValue({ data: mockData, error: null });
+
+    const { result } = renderHook(() => useStartSimulation(), { wrapper });
+
+    await act(async () => {
+      await result.current.startSimulation({ params: { scenarioId: 1, languageId: 1 } });
+    });
+
+    const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
+    expect(storedData.reminders).toEqual([]);
+  });
+
+  it("does not store reminders when remindersEnabled is undefined", async () => {
+    const mockData = {
+      scenarioSession: { id: "session-123", startedAt: "2024-01-01T00:00:00Z" },
+      scenario: {
+        id: "scenario-123",
+        title: "Test Scenario",
+        reminders: ["Maintain eye contact"],
+      },
+      accessToken: { token: "token-123", serverUrl: "https://server.example.com" },
+    };
+
+    mockStartSimulationMutation.mockResolvedValue({ data: mockData, error: null });
+
+    const { result } = renderHook(() => useStartSimulation(), { wrapper });
+
+    await act(async () => {
+      await result.current.startSimulation({ params: { scenarioId: 1, languageId: 1 } });
+    });
+
+    const storedData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.ROOM_DATA) || "{}");
+    expect(storedData.reminders).toEqual([]);
+  });
 });

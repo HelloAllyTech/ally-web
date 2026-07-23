@@ -487,6 +487,7 @@ export enum TooltipLocation {
   PUBLIC_VISIBILITY = "public_visibility",
   CONVERSATIONAL_GUARDRAILS = "conversational_guardrails",
   CURRENT_STATE = "current_state",
+  REMINDERS_ENABLED = "reminders_enabled",
   // Edit Simulation → form fields (seeded disabled; review + enable in Manage Tooltips)
   CHARACTER_PROFILE_SELECTOR = "character_profile_selector",
   CHARACTER_BACKSTORY = "character_backstory",

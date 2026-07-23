@@ -88,6 +88,12 @@ vi.mock("@constants", () => ({
 vi.mock("@utils", () => ({
   hasPermissions: (permissions: string[] | null | undefined, required: string) =>
     Array.isArray(permissions) && permissions.includes(required),
+  // Thin passthrough of the real helper's happy path so the drawer's tag
+  // conversion (getTags → Tag[]) stays observable through the module mock.
+  rateTagsWithFallback: async (
+    getTags: (arg: { tags: string[] }) => Promise<{ data?: unknown[] }>,
+    tags: string[],
+  ) => (await getTags({ tags }))?.data ?? [],
 }));
 
 const userResult = {
@@ -242,7 +248,7 @@ describe("CreateNoteDrawer", () => {
     mockUpsertValues.mockReturnValue({ unwrap: () => Promise.resolve({ success: true }) });
     mockSaveNoteTranscript.mockReturnValue({ unwrap: () => Promise.resolve({ success: true }) });
     mockUpdateCallSummary.mockReturnValue({ unwrap: () => Promise.resolve({}) });
-    mockGetTags.mockResolvedValue({ data: [{ tag: "x", priority_rating: 1 }] });
+    mockGetTags.mockResolvedValue({ data: [{ tag: "x", positivity_rating: 1 }] });
     mockUseGetSummaryFields.mockReturnValue({ data: [], isLoading: false });
     mockUseGetDefinitions.mockReturnValue({ data: [], isLoading: false });
   });
@@ -346,7 +352,7 @@ describe("CreateNoteDrawer", () => {
     await waitFor(() =>
       expect(mockUpdateCallSummary).toHaveBeenCalledWith({
         chatId: 123,
-        data: { summary: { tags: [{ tag: "x", priority_rating: 1 }] } },
+        data: { summary: { tags: [{ tag: "x", positivity_rating: 1 }] } },
       }),
     );
   });
