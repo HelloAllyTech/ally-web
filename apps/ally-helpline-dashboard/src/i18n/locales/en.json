@@ -470,7 +470,10 @@
       "timeline": "Session Timeline",
       "strengths": "Strengths & skills demonstrated",
       "areasForGrowth": "Areas for growth",
-      "recommended": "RECOMMENDED"
+      "recommended": "RECOMMENDED",
+      "strengthsEmpty": "No strengths were identified for this session",
+      "areasForGrowthEmpty": "No areas for growth were identified for this session",
+      "feedbackUnavailable": "Feedback couldn't be generated for this session"
     },
     "tabs": {
       "annotatedTranscript": "Annotated Transcript",

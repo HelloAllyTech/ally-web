@@ -90,7 +90,7 @@ export const PostSimulationSummary: FC = () => {
     {
       id: 5,
       label: t("postSim.tabs.skillsDemonstrated"),
-      content: <SkillsTab sessionId={sessionId} />,
+      content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
     },
     {
       id: 6,

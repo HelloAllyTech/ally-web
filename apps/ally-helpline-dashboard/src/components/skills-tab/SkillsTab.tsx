@@ -34,6 +34,12 @@ interface EmotionalDataPoint {
 
 interface SkillsTabProps {
   sessionId?: string;
+  /**
+   * True once summary polling has exhausted its retries. Lets the feedback
+   * sections settle into a terminal empty/failed state instead of showing the
+   * "Generating…" pulse indefinitely when no feedback ever arrives.
+   */
+  retryMaxReached?: boolean;
 }
 
 interface CustomDotProps {
@@ -335,9 +341,45 @@ const EmotionalMovementChart: FC<{
   );
 };
 
-const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
+// A feedback section is "settled" once generation has produced a summary
+// (feedback present), explicitly failed (errorMessage), or the poller gave up
+// (retryMaxReached). Only before that do we show the "Generating…" pulse — an
+// empty array on a settled summary means "none found / couldn't generate", not
+// "still working", so it must NOT animate forever.
+const isFeedbackSettled = (summary: SimulationSummary, retryMaxReached: boolean): boolean => {
+  const summaryBlock = summary?.details?.summary;
+  return Boolean(summaryBlock?.feedback) || Boolean(summaryBlock?.errorMessage) || retryMaxReached;
+};
+
+// Terminal (settled + empty) message: an explicit generation failure reads
+// differently from a session that simply had nothing to surface.
+const EmptyFeedback = ({ summary, emptyKey }: { summary: SimulationSummary; emptyKey: string }) => {
+  const { t } = useTranslation();
+  const failed = Boolean(summary?.details?.summary?.errorMessage);
+  const message = failed
+    ? t("postSim.skills.feedbackUnavailable", "Feedback couldn't be generated for this session")
+    : t(emptyKey);
+  return <p className="text-typography-700 font-primary text-center">{message}</p>;
+};
+
+const GeneratingFeedback = () => {
+  const { t } = useTranslation();
+  return (
+    <p className="text-typography-700 font-primary text-center animate-pulse">
+      {t("postSim.feedback.generating", "Generating your feedback…")}
+    </p>
+  );
+};
+
+interface FeedbackSectionProps {
+  summary: SimulationSummary;
+  retryMaxReached: boolean;
+}
+
+const StrengthAndSkills = ({ summary, retryMaxReached }: FeedbackSectionProps) => {
   const { t } = useTranslation();
   const strengths = summary?.details?.summary?.feedback?.positives || [];
+  const settled = isFeedbackSettled(summary, retryMaxReached);
 
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md mb-5">
@@ -348,9 +390,11 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
       </div>
       <div className="px-6 py-6">
         {strengths.length === 0 ? (
-          <p className="text-typography-700 font-primary text-center animate-pulse">
-            {t("postSim.feedback.generating", "Generating your feedback…")}
-          </p>
+          settled ? (
+            <EmptyFeedback summary={summary} emptyKey="postSim.skills.strengthsEmpty" />
+          ) : (
+            <GeneratingFeedback />
+          )
         ) : (
           strengths.map((strength, index) => (
             <li key={index} className="flex items-start">
@@ -364,7 +408,7 @@ const StrengthAndSkills = ({ summary }: { summary: SimulationSummary }) => {
   );
 };
 
-const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
+const AreasForGrowth = ({ summary, retryMaxReached }: FeedbackSectionProps) => {
   const { t } = useTranslation();
   const feedback = summary?.details?.summary?.feedback;
   const hasValidAreasOfGrowth =
@@ -376,6 +420,7 @@ const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
     );
   const areasForGrowth =
     (hasValidAreasOfGrowth ? feedback?.areasOfGrowth : feedback?.improvements) || [];
+  const settled = isFeedbackSettled(summary, retryMaxReached);
 
   return (
     <div className="bg-white border border-[#B39DDB] rounded-md">
@@ -386,9 +431,11 @@ const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
       </div>
       {areasForGrowth.length === 0 ? (
         <div className="px-6 py-6">
-          <p className="text-typography-700 font-primary text-center animate-pulse">
-            {t("postSim.feedback.generating", "Generating your feedback…")}
-          </p>
+          {settled ? (
+            <EmptyFeedback summary={summary} emptyKey="postSim.skills.areasForGrowthEmpty" />
+          ) : (
+            <GeneratingFeedback />
+          )}
         </div>
       ) : (
         <ul className="px-6 py-6 space-y-6 list-none">
@@ -419,7 +466,7 @@ const AreasForGrowth = ({ summary }: { summary: SimulationSummary }) => {
 };
 
 // Main Component
-export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
+export const SkillsTab: FC<SkillsTabProps> = ({ sessionId, retryMaxReached = false }) => {
   const { t, i18n } = useTranslation();
   const { data, isLoading, isError } = useGetSimulationSkillsQuery(
     { sessionId: sessionId || "" },
@@ -481,8 +528,8 @@ export const SkillsTab: FC<SkillsTabProps> = ({ sessionId }) => {
 
       {summary && isChecklistMode && (
         <>
-          <StrengthAndSkills summary={summary} />
-          <AreasForGrowth summary={summary} />
+          <StrengthAndSkills summary={summary} retryMaxReached={retryMaxReached} />
+          <AreasForGrowth summary={summary} retryMaxReached={retryMaxReached} />
         </>
       )}
       {hasSkillData && <SkillCoverageCard skills={skillCoverages} />}
