@@ -300,6 +300,11 @@ export const ApiEndpoints = {
       `/v1/roleplay-studio/sessions/${sessionId}/director-events`,
     SESSION_RUBRIC_SCORES: (sessionId: string) =>
       `/v1/roleplay-studio/sessions/${sessionId}/rubric-scores`,
+    // Improve: test-case-driven test runs + per-case reports.
+    TEST_RUNS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-runs`,
+    TEST_REPORTS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-reports`,
+    TEST_REPORT_BY_ID: (reportId: string) => `/v1/roleplay-studio/test-reports/${reportId}`,
+    TEST_RUN_CANCEL: (runId: string) => `/v1/roleplay-studio/test-runs/${runId}/cancel`,
   },
 };
 
@@ -442,6 +447,7 @@ export const TAG_TYPES = {
   ROLEPLAY_SPECS: "roleplaySpecs",
   ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
   ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
+  ROLEPLAY_TEST_REPORTS: "roleplayTestReports",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
   TRACKS_V2: "tracksV2",
   BLOGS: "blogs",

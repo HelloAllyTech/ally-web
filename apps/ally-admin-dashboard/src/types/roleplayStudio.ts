@@ -320,6 +320,11 @@ export interface CopilotSpecPatchEvent {
   summary: string;
   ops: JsonPatchOperation[];
   specVersionId: string;
+  /**
+   * Fresh draft concurrency token after the server persisted this patch.
+   * Consumed by applySpecPatches so the next autosave doesn't 409.
+   */
+  updatedAt?: string;
 }
 
 /** `choice` is a legacy alias for `singleSelect` (older persisted messages). */
@@ -384,6 +389,8 @@ export interface CopilotErrorEvent {
 export interface CopilotDoneEvent {
   messageSeq: number;
   specVersionId: string;
+  /** Fresh draft concurrency token (present when the turn patched the spec). */
+  updatedAt?: string;
 }
 
 export type CopilotStreamEvent =
@@ -394,6 +401,8 @@ export type CopilotStreamEvent =
   | { type: "question"; data: CopilotQuestionEvent }
   | { type: "behaviour_review"; data: CopilotBehaviourReviewEvent }
   | { type: "error"; data: CopilotErrorEvent }
+  // Server heartbeat during long tool generations — carries no payload.
+  | { type: "ping"; data: Record<string, unknown> }
   | { type: "done"; data: CopilotDoneEvent };
 
 /** Chat feed entry rendered by the copilot panel. */
@@ -456,6 +465,179 @@ export interface RoleplayDirectorTurnPayload {
   feedback?: string;
   stale?: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Improve — test runs + test reports (`specs/:specId/test-runs`)
+// ---------------------------------------------------------------------------
+
+export enum RoleplayTestRunStatus {
+  STARTED = "STARTED",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  CANCELLED = "CANCELLED",
+}
+
+export enum RoleplayTestReportStatus {
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  CANCELLED = "CANCELLED",
+}
+
+/** Auto-improve lifecycle, tracked on the PARENT report. */
+export enum RoleplayReportImproveStatus {
+  IMPROVING = "IMPROVING",
+  RERUNNING = "RERUNNING",
+  NO_CHANGES = "NO_CHANGES",
+  DONE = "DONE",
+  FAILED = "FAILED",
+}
+
+/** Condition-case judge verdicts. */
+export type RoleplayTestVerdict = "PASSED" | "FAILED" | "INCONCLUSIVE";
+
+/**
+ * Jsonb snapshot of the agent test case taken when the run started (the
+ * source rows are hard-deletable, so reports never re-read them).
+ */
+export interface RoleplayTestCaseSnapshot {
+  id: string;
+  title: string;
+  type: "condition" | "full_session";
+  tags?: string[];
+  description?: string;
+  condition?: string;
+  test?: string;
+  rubrics?: Array<{ criteria: string; scoringInstructions: string }>;
+}
+
+export interface RoleplayTestRunProgress {
+  completed?: number;
+  total?: number;
+  [key: string]: unknown;
+}
+
+export interface RoleplayTestRun {
+  id: string;
+  specId: string;
+  specVersionId: string;
+  status: RoleplayTestRunStatus | string;
+  config?: Record<string, unknown> | null;
+  progress?: RoleplayTestRunProgress | null;
+  resultsSummary?: Record<string, unknown> | null;
+  reportMarkdown?: string | null;
+  /** Set on auto-improve re-runs — the report this run re-tests. */
+  sourceReportId?: string | null;
+  createdAt: string;
+  endedAt?: string | null;
+}
+
+/** Poll-friendly list row (no transcript / markdown). */
+export interface RoleplayTestReportListItem {
+  id: string;
+  runId: string;
+  runStatus: RoleplayTestRunStatus | string;
+  runProgress?: RoleplayTestRunProgress | null;
+  specVersionId: string;
+  versionNumber?: number | null;
+  agentTestCaseId: string;
+  testCaseSnapshot: Pick<RoleplayTestCaseSnapshot, "id" | "title" | "type" | "tags">;
+  status: RoleplayTestReportStatus | string;
+  verdict?: RoleplayTestVerdict | string | null;
+  overallScore?: number | null;
+  /** Lineage — the parent report this one was auto-improved from. */
+  improveOfReportId?: string | null;
+  improveStatus?: RoleplayReportImproveStatus | string | null;
+  improveMeta?: { error?: string; [key: string]: unknown } | null;
+  createdAt: string;
+  endedAt?: string | null;
+}
+
+export interface RoleplayTestReportTranscriptTurn {
+  role?: string;
+  speaker?: string;
+  content?: string;
+  text?: string;
+  [key: string]: unknown;
+}
+
+/** Per-rubric-criterion judge score (full_session cases; ai-learn wire shape). */
+export interface RoleplayRubricCriterionScore {
+  criteria: string;
+  score: number;
+  evidence?: string;
+  reasoning?: string;
+}
+
+/**
+ * Full report row from `test-reports/:reportId` — the bare entity, WITHOUT
+ * the run-joined list fields (runStatus / runProgress / versionNumber).
+ */
+export interface RoleplayTestReportDetail {
+  id: string;
+  runId: string;
+  specId: string;
+  specVersionId: string;
+  agentTestCaseId: string;
+  testCaseSnapshot: RoleplayTestCaseSnapshot;
+  status: RoleplayTestReportStatus | string;
+  transcript?: RoleplayTestReportTranscriptTurn[] | null;
+  directorTrace?: unknown[] | null;
+  /** The 4 judge session-quality dimensions (0–100 each). */
+  judgeScores?: Record<string, number> | null;
+  judgeNotes?: string | null;
+  /** Raw ai-learn TestCaseResult wire object. */
+  testResult?: {
+    rubric_scores?: RoleplayRubricCriterionScore[];
+    [key: string]: unknown;
+  } | null;
+  verdict?: RoleplayTestVerdict | string | null;
+  overallScore?: number | null;
+  reportMarkdown?: string | null;
+  /** Lineage — the parent report this one was auto-improved from. */
+  improveOfReportId?: string | null;
+  improveStatus?: RoleplayReportImproveStatus | string | null;
+  improveMeta?: {
+    copilotSessionId?: string;
+    assistantMessageSeq?: number;
+    newSpecVersionId?: string;
+    error?: string;
+  } | null;
+  createdAt: string;
+  endedAt?: string | null;
+}
+
+export interface StartRoleplayTestRunInput {
+  specId: string;
+  agentTestCaseIds: string[];
+  turnsPerCase?: number;
+  /** BE DTO is @IsInt without a transform — must be numeric on the wire. */
+  languageId?: number;
+  judgeModel?: string;
+  traineeModel?: string;
+}
+
+export interface StartRoleplayTestRunResponse {
+  run: RoleplayTestRun;
+  /** Bare report entities — no run-joined list fields; the list poll re-reads them. */
+  reports: RoleplayTestReportDetail[];
+}
+
+export interface GetRoleplayTestReportsParams {
+  specId: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetRoleplayTestReportsResponse {
+  data: RoleplayTestReportListItem[];
+  count?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Live sessions / preview (room data)
+// ---------------------------------------------------------------------------
 
 export interface RoleplayPreviewRoomData {
   sessionId: string;
