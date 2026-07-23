@@ -58,7 +58,15 @@ exports[`SummaryLoading > should match snapshot when FAILED 1`] = `
         </div>
         <textarea
           aria-label="Add Notes (optional)"
+          autocomplete="off"
           class="w-full font-primary"
+          data-1p-ignore="true"
+          data-bwignore="true"
+          data-enable-grammarly="false"
+          data-form-type="other"
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-lpignore="true"
           disabled=""
           id="notes"
           placeholder="write down your thoughts"
@@ -154,7 +162,15 @@ exports[`SummaryLoading > should match snapshot when IN_PROGRESS 1`] = `
         </div>
         <textarea
           aria-label="Add Notes (optional)"
+          autocomplete="off"
           class="w-full font-primary"
+          data-1p-ignore="true"
+          data-bwignore="true"
+          data-enable-grammarly="false"
+          data-form-type="other"
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-lpignore="true"
           disabled=""
           id="notes"
           placeholder="write down your thoughts"
@@ -249,7 +265,15 @@ exports[`SummaryLoading > should match snapshot when NO_AUDIO 1`] = `
         </div>
         <textarea
           aria-label="Add Notes (optional)"
+          autocomplete="off"
           class="w-full font-primary"
+          data-1p-ignore="true"
+          data-bwignore="true"
+          data-enable-grammarly="false"
+          data-form-type="other"
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-lpignore="true"
           disabled=""
           id="notes"
           placeholder="write down your thoughts"
@@ -334,7 +358,15 @@ exports[`SummaryLoading > should match snapshot when SUCCESS 1`] = `
         </div>
         <textarea
           aria-label="Add Notes (optional)"
+          autocomplete="off"
           class="w-full font-primary"
+          data-1p-ignore="true"
+          data-bwignore="true"
+          data-enable-grammarly="false"
+          data-form-type="other"
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-lpignore="true"
           disabled=""
           id="notes"
           placeholder="write down your thoughts"

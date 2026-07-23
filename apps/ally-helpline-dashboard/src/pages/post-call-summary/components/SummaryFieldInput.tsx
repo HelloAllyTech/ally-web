@@ -3,6 +3,7 @@ import { FC, ReactNode } from "react";
 import { DropdownField, Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
 import { TextField } from "@components";
 import { carbonField } from "@constants/carbonFieldStyles";
+import { formFieldProtectionProps } from "@constants/formFieldProtection";
 import { SummaryFieldKey } from "@types";
 
 import { FieldType, SummaryField } from "../types";
@@ -89,6 +90,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
             placeholder={field.placeholder}
             value={value ?? ""}
             onChange={e => onChange(field.key, e.target.value)}
+            {...formFieldProtectionProps}
           />
         </div>
       );
@@ -104,6 +106,7 @@ const SummaryFieldInput: FC<SummaryFieldInputProps> = ({
           placeholder={field.placeholder}
           value={value ?? ""}
           onChange={e => onChange(field.key, e.target.value)}
+          {...formFieldProtectionProps}
           // Scrolling over a focused number input silently changes its value
           // in the browser — blur so the page scrolls instead of the value.
           onWheel={e => {

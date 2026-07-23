@@ -154,6 +154,18 @@ const cancelFrame = (handle: number | ReturnType<typeof setTimeout>) => {
   }
 };
 
+/** Per-message options accepted by `sendMessage` (forwarded in the POST body). */
+export interface CopilotSendOptions {
+  questionId?: string;
+  answer?: CopilotStructuredAnswer;
+  /**
+   * Marks the turn as an auto-improve turn for the given test report; the
+   * server injects the full report into the message and re-runs the test case
+   * after the copilot patches the spec.
+   */
+  autoImprove?: { reportId: string };
+}
+
 interface UseCopilotStreamOptions {
   sessionId: string | null;
   onDone?: (done: CopilotDoneEvent) => void;
@@ -302,9 +314,19 @@ export const useCopilotStream = ({
           flushTokens();
           const id = currentAssistantIdRef.current;
           if (id) patchAssistantMessage(id, { error: event.data.message, streaming: false });
-          toast.error(event.data.message || en.roleplayStudio.copilot.streamFailed);
+          // Improve-flow rejections get specific, actionable toasts.
+          if (event.data.code === "auto_improve_rejected") {
+            toast.error(en.roleplayStudio.improve.autoImproveRejected);
+          } else if (event.data.code === "turn_in_progress") {
+            toast.error(en.roleplayStudio.improve.turnInProgress);
+          } else {
+            toast.error(event.data.message || en.roleplayStudio.copilot.streamFailed);
+          }
           break;
         }
+        case "ping":
+          // Server heartbeat during long tool generations — keep-alive only.
+          break;
         case "done":
           flushTokens();
           onDone?.(event.data as CopilotDoneEvent);
@@ -365,8 +387,7 @@ export const useCopilotStream = ({
     async (
       text: string,
       activeSessionId: string,
-      questionId?: string,
-      answer?: CopilotStructuredAnswer,
+      opts?: CopilotSendOptions,
     ): Promise<{
       userMsgId: string;
       assistantId: string;
@@ -395,8 +416,9 @@ export const useCopilotStream = ({
           url,
           {
             message: text,
-            ...(questionId ? { questionId } : {}),
-            ...(answer ? { answer } : {}),
+            ...(opts?.questionId ? { questionId: opts.questionId } : {}),
+            ...(opts?.answer ? { answer: opts.answer } : {}),
+            ...(opts?.autoImprove ? { autoImprove: opts.autoImprove } : {}),
           },
           controller.signal,
         );
@@ -454,11 +476,11 @@ export const useCopilotStream = ({
   );
 
   const sendMessage = useCallback(
-    async (text: string, opts?: { questionId?: string; answer?: CopilotStructuredAnswer }) => {
+    async (text: string, opts?: CopilotSendOptions) => {
       const trimmed = text.trim();
       if (!trimmed || !sessionId || abortRef.current) return;
 
-      const first = await runStream(trimmed, sessionId, opts?.questionId, opts?.answer);
+      const first = await runStream(trimmed, sessionId, opts);
       if (!first.sessionLost || first.aborted) return;
 
       // The server session is gone (e.g. a local DB reset dropped it). Re-create
@@ -469,7 +491,7 @@ export const useCopilotStream = ({
         toast.error(en.roleplayStudio.copilot.streamFailed);
         return;
       }
-      const retry = await runStream(trimmed, freshId, opts?.questionId, opts?.answer);
+      const retry = await runStream(trimmed, freshId, opts);
       // The fresh session vanished too (or a code bug) — surface it rather than
       // looping. One recovery attempt is the ceiling.
       if (retry.sessionLost && !retry.aborted) {

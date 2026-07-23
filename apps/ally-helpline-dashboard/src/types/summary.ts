@@ -85,7 +85,7 @@ export interface EnhanceContentResponse {
 
 export interface Tag {
   tag: string;
-  priority_rating: number;
+  positivity_rating: number;
 }
 
 export interface UpdateCallInfoRequest {

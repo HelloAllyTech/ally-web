@@ -12,7 +12,7 @@ import {
 import { EmptyState } from "@components";
 import { en, LOCAL_STORAGE_KEYS } from "@constants";
 import { useCopilotStream } from "@hooks/useCopilotStream";
-import { selectRoleplaySpecState, setCopilotSessionId } from "@reducer";
+import { clearPendingCopilotPrompt, selectRoleplaySpecState, setCopilotSessionId } from "@reducer";
 import { logger } from "@utils";
 
 import { ChatComposer } from "./ChatComposer";
@@ -32,7 +32,7 @@ const sessionStorageKey = (specId: string) =>
 export const CopilotChatPanel: React.FC = () => {
   const strings = en.roleplayStudio.copilot;
   const dispatch = useDispatch();
-  const { specId, copilotSessionId } = useSelector(selectRoleplaySpecState);
+  const { specId, copilotSessionId, pendingCopilotPrompt } = useSelector(selectRoleplaySpecState);
 
   const [createSession] = useCreateRoleplayCopilotSessionMutation();
   const [getSession] = useLazyGetRoleplayCopilotSessionQuery();
@@ -119,6 +119,19 @@ export const CopilotChatPanel: React.FC = () => {
     const node = scrollRef.current;
     if (node) node.scrollTop = node.scrollHeight;
   }, [messages]);
+
+  // Send a prompt queued from outside the chat (the Improve drawer's "Auto
+  // improve") once the session is ready and nothing else is streaming. Cleared
+  // BEFORE sending so a re-render mid-stream can't replay it. This panel stays
+  // the single stream owner: the server consumes auto-improve turns to
+  // completion, so a tab-switch unmount mid-turn is harmless — remounting shows
+  // the finished turn via the messages refetch (acceptable v1).
+  useEffect(() => {
+    if (!pendingCopilotPrompt || !copilotSessionId || isBooting || isStreaming) return;
+    const { text, autoImprove } = pendingCopilotPrompt;
+    dispatch(clearPendingCopilotPrompt());
+    void sendMessage(text, autoImprove ? { autoImprove } : undefined);
+  }, [pendingCopilotPrompt, copilotSessionId, isBooting, isStreaming, dispatch, sendMessage]);
 
   const handleSend = (text: string) => void sendMessage(text);
   const handleAnswerQuestion = (payload: CopilotAnswerPayload) =>

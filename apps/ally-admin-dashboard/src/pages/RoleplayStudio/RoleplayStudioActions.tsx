@@ -14,6 +14,8 @@ import { deriveRoleplayReadiness } from "@utils/roleplaySpec";
 interface RoleplayStudioActionsProps {
   /** Persists any dirty draft state before preview / publish. */
   onSaveDraft: () => Promise<boolean>;
+  /** Opens the Improve drawer (test-case runs + reports). */
+  onOpenImprove: () => void;
 }
 
 interface PreviewLanguage {
@@ -30,8 +32,12 @@ interface PreviewLanguage {
  *   the trainer choose which one to preview.
  * - Publish is only enabled once the full readiness checklist passes.
  */
-export const RoleplayStudioActions: React.FC<RoleplayStudioActionsProps> = ({ onSaveDraft }) => {
+export const RoleplayStudioActions: React.FC<RoleplayStudioActionsProps> = ({
+  onSaveDraft,
+  onOpenImprove,
+}) => {
   const strings = en.roleplayStudio.publish;
+  const improveStrings = en.roleplayStudio.improve;
   const { specId, versionId, spec } = useSelector(selectRoleplaySpecState);
   const { tryLive, isStartingSession } = useTryRoleplayLive({ onSaveDraft });
   const [publishVersion, { isLoading: isPublishing }] = usePublishRoleplayVersionMutation();
@@ -113,6 +119,12 @@ export const RoleplayStudioActions: React.FC<RoleplayStudioActionsProps> = ({ on
           onClick={handlePreview}
         >
           {isStartingSession ? strings.startingSession : strings.preview}
+        </Button>
+      </span>
+      {/* Improve needs the same runnable core as Preview — it plays the draft. */}
+      <span title={specComplete ? "" : improveStrings.buttonHint}>
+        <Button kind="secondary" size="sm" disabled={!specComplete} onClick={onOpenImprove}>
+          {improveStrings.button}
         </Button>
       </span>
       <span title={publishReady ? "" : strings.publishHint}>
