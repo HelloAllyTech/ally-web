@@ -30,6 +30,15 @@ export interface SpecPatchLogEntry {
   failed?: boolean;
 }
 
+/**
+ * A chat prompt queued from outside the chat panel (e.g. the Improve drawer's
+ * "Auto improve"); CopilotChatPanel sends it once the session is ready.
+ */
+export interface PendingCopilotPrompt {
+  text: string;
+  autoImprove?: { reportId: string };
+}
+
 export interface RoleplaySpecState {
   specId: string | null;
   versionId: string | null;
@@ -45,6 +54,7 @@ export interface RoleplaySpecState {
   /** True while a copilot stream is in flight — autosave must pause. */
   isStreaming: boolean;
   patchLog: SpecPatchLogEntry[];
+  pendingCopilotPrompt: PendingCopilotPrompt | null;
 }
 
 const initialState: RoleplaySpecState = {
@@ -58,6 +68,7 @@ const initialState: RoleplaySpecState = {
   saveStatus: "idle",
   isStreaming: false,
   patchLog: [],
+  pendingCopilotPrompt: null,
 };
 
 const MAX_PATCH_LOG_ENTRIES = 100;
@@ -107,6 +118,13 @@ const roleplaySpecSlice = createSlice({
     setSaveStatus(state, action: PayloadAction<RoleplaySaveStatus>) {
       state.saveStatus = action.payload;
     },
+    /** Queues a chat prompt to be sent by CopilotChatPanel (see the effect there). */
+    queueCopilotPrompt(state, action: PayloadAction<PendingCopilotPrompt>) {
+      state.pendingCopilotPrompt = action.payload;
+    },
+    clearPendingCopilotPrompt(state) {
+      state.pendingCopilotPrompt = null;
+    },
     /** A draft save round-tripped: pin the saved revision + concurrency token. */
     markDraftSaved(
       state,
@@ -127,7 +145,7 @@ const roleplaySpecSlice = createSlice({
      * revision/savedRevision gap) is preserved.
      */
     applySpecPatches(state, action: PayloadAction<CopilotSpecPatchEvent>) {
-      const { patchId, summary, ops, specVersionId } = action.payload;
+      const { patchId, summary, ops, specVersionId, updatedAt } = action.payload;
       const entry: SpecPatchLogEntry = {
         patchId,
         summary,
@@ -148,6 +166,13 @@ const roleplaySpecSlice = createSlice({
         entry.failed = true;
       }
       if (specVersionId) state.versionId = specVersionId;
+      // The server persisted this patch, moving the draft's updatedAt under us.
+      // Adopt the fresh concurrency token so the next autosave doesn't 409 (and
+      // then clobber the copilot's work with the conflict re-hydrate). Skip it
+      // when the patch failed to apply locally — the stale token makes that
+      // autosave 409 and re-hydrate instead of silently overwriting the
+      // server-persisted patch.
+      if (!entry.failed && updatedAt) state.serverUpdatedAt = updatedAt;
       state.patchLog.push(entry);
       if (state.patchLog.length > MAX_PATCH_LOG_ENTRIES) {
         state.patchLog.splice(0, state.patchLog.length - MAX_PATCH_LOG_ENTRIES);
@@ -407,6 +432,8 @@ export const {
   setCopilotSessionId,
   setStreaming,
   setSaveStatus,
+  queueCopilotPrompt,
+  clearPendingCopilotPrompt,
   markDraftSaved,
   applySpecPatches,
   setSpecTitle,

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -7,10 +7,17 @@ import { toast } from "sonner";
 import { CarbonTabs, Tab, TabList } from "@ally-ui-mono/ui-shared";
 import { useCreateRoleplaySpecMutation, useGetRoleplaySpecByIdQuery } from "@api";
 import { ArrowDown } from "@assets";
-import { CopilotChatPanel, SpecWorkbench } from "@components";
+import { CopilotChatPanel, ImproveDrawer, SpecWorkbench } from "@components";
 import { en, ROUTES } from "@constants";
 import { useSpecAutosave } from "@hooks";
-import { hydrateSpec, resetRoleplayStudio, selectRoleplaySpecState, setSpecTitle } from "@reducer";
+import {
+  hydrateSpec,
+  queueCopilotPrompt,
+  resetRoleplayStudio,
+  selectRoleplaySpecState,
+  setSpecTitle,
+} from "@reducer";
+import { RoleplayTestReportListItem } from "@src/types/roleplayStudio";
 import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 
 import { RoleplayStudioActions } from "./RoleplayStudioActions";
@@ -155,6 +162,26 @@ export const RoleplayStudioWorkspace: React.FC = () => {
     });
   };
 
+  // Improve drawer (test-case runs + reports).
+  const [improveOpen, setImproveOpen] = useState(false);
+
+  /**
+   * "Auto improve" on a report: queue the prompt for the copilot (the chat
+   * panel sends it once its session is ready), jump to the Chat tab so the
+   * trainer watches the copilot patch the spec, and close the drawer.
+   */
+  const handleAutoImprove = (report: RoleplayTestReportListItem) => {
+    dispatch(
+      queueCopilotPrompt({
+        text: strings.improve.autoImprovePrompt(report.testCaseSnapshot?.title ?? ""),
+        autoImprove: { reportId: report.id },
+      }),
+    );
+    handleStepChange(ROLEPLAY_STEP_IDS.CHAT);
+    setImproveOpen(false);
+    toast.info(strings.improve.autoImproveQueued);
+  };
+
   const renderStep = () => {
     switch (step) {
       case ROLEPLAY_STEP_IDS.SPEC:
@@ -221,10 +248,17 @@ export const RoleplayStudioWorkspace: React.FC = () => {
             ))}
           </TabList>
         </CarbonTabs>
-        <RoleplayStudioActions onSaveDraft={saveNow} />
+        <RoleplayStudioActions onSaveDraft={saveNow} onOpenImprove={() => setImproveOpen(true)} />
       </div>
 
       <div className="flex-1 min-h-0 pt-2">{renderStep()}</div>
+
+      <ImproveDrawer
+        open={improveOpen}
+        onClose={() => setImproveOpen(false)}
+        onSaveDraft={saveNow}
+        onAutoImprove={handleAutoImprove}
+      />
     </div>
   );
 };

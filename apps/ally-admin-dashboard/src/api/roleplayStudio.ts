@@ -6,14 +6,21 @@ import {
   GetRoleplayCopilotMessagesParams,
   GetRoleplayCopilotMessagesResponse,
   GetRoleplaySpecsResponse,
+  GetRoleplayTestReportsParams,
+  GetRoleplayTestReportsResponse,
   PublishRoleplayVersionInput,
   RoleplayCopilotSession,
   RoleplayDirectorTurnPayload,
   RoleplaySpecDetail,
   RoleplaySpecListItem,
   RoleplaySpecVersionSummary,
+  RoleplayTestReportDetail,
+  RoleplayTestReportListItem,
+  RoleplayTestRun,
   SaveRoleplayDraftInput,
   SaveRoleplayDraftResponse,
+  StartRoleplayTestRunInput,
+  StartRoleplayTestRunResponse,
   UpdateRoleplaySpecInput,
 } from "@src/types/roleplayStudio";
 
@@ -202,6 +209,59 @@ const roleplayStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
     }),
+
+    // ----- Improve: test runs + test reports -----
+    startRoleplayTestRun: builder.mutation<StartRoleplayTestRunResponse, StartRoleplayTestRunInput>(
+      {
+        query: ({ specId, ...body }) => ({
+          url: ApiEndpoints.ROLEPLAY_STUDIO.TEST_RUNS(specId),
+          method: HttpMethod.POST,
+          body,
+        }),
+        invalidatesTags: [TAG_TYPES.ROLEPLAY_TEST_REPORTS],
+      },
+    ),
+
+    /**
+     * Cheap per-spec report list for the Improve drawer. The drawer polls this
+     * (4s) while any run/report is non-terminal — polling options live at the
+     * call site, not here.
+     */
+    getRoleplayTestReports: builder.query<
+      GetRoleplayTestReportsResponse,
+      GetRoleplayTestReportsParams
+    >({
+      query: ({ specId, ...params }) => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.TEST_REPORTS(specId),
+        method: HttpMethod.GET,
+        params,
+      }),
+      // Tolerate both a bare array and a { data, count } envelope.
+      transformResponse: (
+        response: RoleplayTestReportListItem[] | GetRoleplayTestReportsResponse,
+      ) => (Array.isArray(response) ? { data: response } : response),
+      providesTags: [TAG_TYPES.ROLEPLAY_TEST_REPORTS],
+    }),
+
+    /** Full report row (markdown, judge dims, transcript) — fetched on expand. */
+    getRoleplayTestReport: builder.query<RoleplayTestReportDetail, string>({
+      query: reportId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.TEST_REPORT_BY_ID(reportId),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (_result, _error, reportId) => [
+        { type: TAG_TYPES.ROLEPLAY_TEST_REPORTS, id: reportId },
+      ],
+    }),
+
+    cancelRoleplayTestRun: builder.mutation<RoleplayTestRun, string>({
+      query: runId => ({
+        url: ApiEndpoints.ROLEPLAY_STUDIO.TEST_RUN_CANCEL(runId),
+        method: HttpMethod.POST,
+        body: {},
+      }),
+      invalidatesTags: [TAG_TYPES.ROLEPLAY_TEST_REPORTS],
+    }),
   }),
 });
 
@@ -225,6 +285,10 @@ export const {
   useCreateRoleplaySessionMutation,
   useGetRoleplayDirectorEventsQuery,
   useGetRoleplayRubricScoresQuery,
+  useStartRoleplayTestRunMutation,
+  useGetRoleplayTestReportsQuery,
+  useGetRoleplayTestReportQuery,
+  useCancelRoleplayTestRunMutation,
 } = roleplayStudioAPI;
 
 export { roleplayStudioAPI };
