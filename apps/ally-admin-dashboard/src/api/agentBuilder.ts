@@ -8,7 +8,8 @@ export type AgentBuilderField =
   | "title"
   | "challenge_description"
   | "knowledge_sources"
-  | "persona";
+  | "persona"
+  | "states";
 
 export interface GenerateAgentBuilderFieldRequest {
   field: AgentBuilderField;
@@ -35,10 +36,26 @@ export interface AgentBuilderKnowledgeSource {
 }
 
 /**
+ * One state returned by the `states` field generator. The server has already
+ * assigned the stable `id` and the contiguous score bands, so this matches the
+ * StatesEditor's SimulationStateFormValue shape and can be dropped straight
+ * into the `states` form field.
+ */
+export interface AgentBuilderState {
+  id: string;
+  name: string;
+  guidelines: string;
+  scoreLower: number;
+  scoreUpper: number;
+  ragEnabled: boolean;
+}
+
+/**
  * `value`'s shape depends on `field`:
  *  - role_instruction / title / challenge_description → string
  *  - persona → AgentBuilderPersona
  *  - knowledge_sources → AgentBuilderKnowledgeSource[]
+ *  - states → AgentBuilderState[]
  */
 export interface GenerateAgentBuilderFieldResponse {
   field: AgentBuilderField;

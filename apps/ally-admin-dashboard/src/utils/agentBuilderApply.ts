@@ -1,6 +1,11 @@
 import { UseFormReturn } from "react-hook-form";
 
-import type { AgentBuilderField, AgentBuilderKnowledgeSource, AgentBuilderPersona } from "@api";
+import type {
+  AgentBuilderField,
+  AgentBuilderKnowledgeSource,
+  AgentBuilderPersona,
+  AgentBuilderState,
+} from "@api";
 import { FORM_FIELD_IDS, GENDER_OPTIONS } from "@constants";
 
 /**
@@ -101,6 +106,33 @@ export const applyAgentBuilderField = (
         touched = true;
       }
       return touched ? "Persona details" : null;
+    }
+
+    case "states": {
+      // The server already assigned ids + contiguous score bands, so each item
+      // matches the StatesEditor's SimulationStateFormValue shape. Guard the
+      // shape defensively and drop cards lacking the fields the editor / save
+      // path require (a non-empty name; finite bounds).
+      const items = Array.isArray(value) ? (value as AgentBuilderState[]) : [];
+      const rows = items
+        .filter(
+          s =>
+            isNonEmptyString(s?.name) &&
+            isNonEmptyString(s?.guidelines) &&
+            Number.isFinite(s?.scoreLower) &&
+            Number.isFinite(s?.scoreUpper),
+        )
+        .map(s => ({
+          id: isNonEmptyString(s.id) ? s.id : uid(),
+          name: s.name.trim(),
+          guidelines: s.guidelines.trim(),
+          scoreLower: s.scoreLower,
+          scoreUpper: s.scoreUpper,
+          ragEnabled: typeof s.ragEnabled === "boolean" ? s.ragEnabled : true,
+        }));
+      if (rows.length === 0) return null;
+      set(FORM_FIELD_IDS.STATES, rows);
+      return "States";
     }
 
     default:
