@@ -80,6 +80,7 @@ describe("deriveNavigationItems", () => {
     // Super-admin-tier tabs remain visible to a plain super-admin.
     expect(ids).toContain(SIDEBAR_ITEMS.ANALYTICS);
     expect(ids).toContain(SIDEBAR_ITEMS.COMPETENCIES);
+    expect(ids).toContain(SIDEBAR_ITEMS.AI_LAB);
     // Super-duper-admin-only tabs are hidden from a plain super-admin.
     expect(ids).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.SETTINGS);
@@ -97,7 +98,11 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.COMPETENCIES]);
+    expect(result.map(i => i.id)).toEqual([
+      SIDEBAR_ITEMS.ANALYTICS,
+      SIDEBAR_ITEMS.COMPETENCIES,
+      SIDEBAR_ITEMS.AI_LAB,
+    ]);
   });
 
   it("exposes the super-duper-only tabs (and super-admin-tier tabs) to a super-duper-admin, Settings last", () => {
@@ -205,7 +210,6 @@ describe("deriveNavigationItems", () => {
         SIDEBAR_ITEMS.USER_BADGES,
         SIDEBAR_ITEMS.AGENT_TEST_CASES,
         SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-        SIDEBAR_ITEMS.AI_LAB,
         SIDEBAR_ITEMS.SETTINGS,
       ]),
     );
@@ -213,6 +217,7 @@ describe("deriveNavigationItems", () => {
     const byId = new Map(result.map(i => [i.id, i]));
     expect(byId.get(SIDEBAR_ITEMS.ANALYTICS)?.superDuperAdminOnly).toBeFalsy();
     expect(byId.get(SIDEBAR_ITEMS.COMPETENCIES)?.superDuperAdminOnly).toBeFalsy();
+    expect(byId.get(SIDEBAR_ITEMS.AI_LAB)?.superDuperAdminOnly).toBeFalsy();
     expect(byId.get(SIDEBAR_ITEMS.SIMULATION_STUDIO)?.superDuperAdminOnly).toBeFalsy();
   });
 

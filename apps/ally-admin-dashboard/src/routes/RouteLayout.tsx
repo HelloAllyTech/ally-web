@@ -290,7 +290,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.AI_LAB}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <AILab />
             </PrivateLayout>
           }
