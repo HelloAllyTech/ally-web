@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { UseFormReturn } from "react-hook-form";
 
 import { AgentBuilderField, useGenerateAgentBuilderFieldMutation } from "@api";
+import { useIsPlaceholderUsed } from "@hooks";
 import { applyAgentBuilderField } from "@utils";
 
 /**
@@ -38,14 +39,26 @@ export interface GenerationInputs {
   agentTestCases?: string;
 }
 
-/** The fields generated in parallel, in the order shown in the feed. */
-const FIELD_PLAN: { field: AgentBuilderField; label: string }[] = [
+/** The fields always generated in parallel, in the order shown in the feed. */
+const BASE_FIELD_PLAN: { field: AgentBuilderField; label: string }[] = [
   { field: "role_instruction", label: "Role instruction" },
   { field: "title", label: "Title" },
   { field: "challenge_description", label: "Challenge description" },
   { field: "persona", label: "Persona (name, age, gender, profession, location)" },
   { field: "knowledge_sources", label: "Knowledge sources" },
 ];
+
+/**
+ * The `states` field is only generated when the selected main-agent prompt
+ * actually uses states (its body references `{state_x_guidelines}`) — the same
+ * gate that decides whether the StatesEditor is shown. For any other variant
+ * the generated states would be inert and hidden, so we skip the call entirely
+ * rather than write metadata the trainer can't see.
+ */
+const STATES_FIELD: { field: AgentBuilderField; label: string } = {
+  field: "states",
+  label: "States",
+};
 
 const DEFAULT_KNOWLEDGE_SOURCES = 3;
 
@@ -58,6 +71,19 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
   const [trigger] = useGenerateAgentBuilderFieldMutation();
   const [phase, setPhase] = useState<GenerationPhase>("idle");
   const [tasks, setTasks] = useState<GenerationTask[]>([]);
+
+  // Include `states` in the fan-out only when the currently-selected main-agent
+  // prompt uses states — mirrors the StatesEditor's own visibility gate so we
+  // never generate states the trainer can't see or use.
+  const selectedMainPromptCode = formMethods.watch("selectedMainPromptCode") as string | undefined;
+  const { isUsed: statesPromptSelected } = useIsPlaceholderUsed(
+    selectedMainPromptCode,
+    "state_x_guidelines",
+  );
+  const fieldPlan = useMemo(
+    () => (statesPromptSelected ? [...BASE_FIELD_PLAN, STATES_FIELD] : BASE_FIELD_PLAN),
+    [statesPromptSelected],
+  );
 
   // In-flight mutation handles (each exposes `.abort()`) + a flag the resolve/
   // reject callbacks read to stop applying once the user has aborted.
@@ -79,11 +105,11 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
       if (runningRef.current) return;
       runningRef.current = true;
       abortedRef.current = false;
-      setTasks(FIELD_PLAN.map(t => ({ ...t, status: "active" as GenerationTaskStatus })));
+      setTasks(fieldPlan.map(t => ({ ...t, status: "active" as GenerationTaskStatus })));
       setPhase("running");
 
       const handles: { abort: () => void }[] = [];
-      const runs = FIELD_PLAN.map(({ field }) => {
+      const runs = fieldPlan.map(({ field }) => {
         const handle = trigger({
           field,
           actorDescription: inputs.actorDescription,
@@ -125,7 +151,7 @@ export const useAgentBuilderGeneration = (formMethods: UseFormReturn<any>) => {
         void formMethods.trigger();
       });
     },
-    [trigger, formMethods, patchTask],
+    [trigger, formMethods, patchTask, fieldPlan],
   );
 
   const abort = useCallback(() => {
