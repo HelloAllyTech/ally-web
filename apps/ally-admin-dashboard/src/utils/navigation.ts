@@ -27,7 +27,6 @@ const buildSuperDuperAdminOnlyItems = (): Set<string> =>
     SIDEBAR_ITEMS.USER_BADGES,
     SIDEBAR_ITEMS.AGENT_TEST_CASES,
     SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-    SIDEBAR_ITEMS.AI_LAB,
     SIDEBAR_ITEMS.SETTINGS,
   ]);
 
@@ -163,8 +162,8 @@ export const applySavedOrder = (
  *  - Super-duper-admin only (Characters, Languages, Guardrails, Tooltips,
  *    Badges, Agent Test Cases, Roleplay Session Logs, Super Duper Admins,
  *    Settings): shown solely to SUPER_DUPER_ADMIN, independent of permissions.
- *  - Super-admin tier (Analytics, Competencies): shown to both super-admin
- *    roles, independent of permissions.
+ *  - Super-admin tier (Analytics, Competencies, AI Lab): shown to both
+ *    super-admin roles, independent of permissions.
  *  - Permission-gated (everything else): shown once permissions are loaded and
  *    the user holds the required permission.
  * The single-pass filter preserves each tab's natural order from
@@ -204,6 +203,7 @@ export const deriveNavigationItems = ({
       // Super-admin-tier tabs (both super-admin roles). Role-gated.
       case SIDEBAR_ITEMS.ANALYTICS:
       case SIDEBAR_ITEMS.COMPETENCIES:
+      case SIDEBAR_ITEMS.AI_LAB:
         return isSuperAdmin;
 
       // Permission-gated tabs require permissions to be loaded; until then
