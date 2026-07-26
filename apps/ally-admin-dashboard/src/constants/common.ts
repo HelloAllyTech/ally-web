@@ -342,6 +342,8 @@ export const ROUTES = {
   SETTINGS: "/settings",
   TERMS: "/terms",
   PRIVACY: "/privacy",
+  // Fully public, no-login gallery of the centralised design-system components.
+  DESIGN_SYSTEM: "/designsystem",
   ROLEPLAY_STUDIO: "/roleplay-studio",
   ROLEPLAY_STUDIO_NEW: "/roleplay-studio/new",
   ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
