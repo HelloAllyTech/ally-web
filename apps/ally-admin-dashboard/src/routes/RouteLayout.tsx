@@ -57,6 +57,12 @@ const Analytics = lazy(() =>
   import("../pages/Analytics/Analytics").then(module => ({ default: module.Analytics })),
 );
 
+// Public design-system gallery. Lazy-loaded (kept out of the eager @pages
+// barrel) so this browse-only showcase never weighs on the main admin bundle.
+const DesignSystem = lazy(() =>
+  import("../pages/DesignSystem/DesignSystem").then(module => ({ default: module.DesignSystem })),
+);
+
 export const RouteLayout: React.FC = () => {
   return (
     <BrowserRouter>
@@ -83,6 +89,16 @@ export const RouteLayout: React.FC = () => {
         {/* Legal pages — fully public, accessible whether or not signed in */}
         <Route path={ROUTES.TERMS} element={<Terms />} />
         <Route path={ROUTES.PRIVACY} element={<Privacy />} />
+
+        {/* Design-system gallery — fully public, no login required */}
+        <Route
+          path={ROUTES.DESIGN_SYSTEM}
+          element={
+            <Suspense fallback={null}>
+              <DesignSystem />
+            </Suspense>
+          }
+        />
 
         {/* Evaluator micro-app — its own email+password session (NOT admin
             auth); the pages gate themselves on the evaluator token. */}
