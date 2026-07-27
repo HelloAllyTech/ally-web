@@ -18,6 +18,13 @@ vi.mock("../V2VTestModal", () => ({
   V2VTestModal: () => null,
 }));
 
+// The page also queries the scenario languages list directly for the language
+// filter; stub it so the real @api slice (and its @constants dependency) isn't
+// pulled into this isolated page test.
+vi.mock("@api", () => ({
+  useGetScenarioLanguagesQuery: () => ({ data: [] }),
+}));
+
 vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled }: any) => (
     <button onClick={onClick} disabled={disabled}>
@@ -65,6 +72,7 @@ const baseRow = {
   durationSeconds: 300,
   score: 88.5,
   platform: "web",
+  language: "English",
   createdAt: "2026-06-01T10:00:00Z",
 };
 
@@ -79,6 +87,10 @@ const makeState = (overrides: Record<string, unknown> = {}) => ({
   setSearchInput: vi.fn(),
   status: "" as const,
   onStatusChange: vi.fn(),
+  sessionType: "all" as const,
+  onSessionTypeChange: vi.fn(),
+  language: "",
+  onLanguageChange: vi.fn(),
   dateFrom: "",
   onDateFromChange: vi.fn(),
   dateTo: "",
