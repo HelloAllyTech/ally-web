@@ -410,6 +410,9 @@ export interface PromptTranslation {
   status: PromptTranslationStatus;
   provider?: string | null;
   model?: string | null;
+  /** Per-language runtime engine override: which model runs the main agent when this body is served. */
+  runtimeProvider?: string | null;
+  runtimeModel?: string | null;
   translationPromptVersion?: string | null;
   error?: string | null;
   createdAt?: string;

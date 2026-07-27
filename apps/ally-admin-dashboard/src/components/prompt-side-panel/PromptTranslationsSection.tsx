@@ -4,10 +4,13 @@ import { toast } from "sonner";
 
 import {
   useGetLanguagesQuery,
+  useGetLlmModelsQuery,
   useGetPromptTranslationsQuery,
   useRetranslatePromptMutation,
   useRetranslatePromptLanguageMutation,
+  useSetTranslationRuntimeModelMutation,
 } from "@api";
+import { PROMPT_LLM_MODEL_OPTIONS, providerForModel } from "@constants";
 import { PromptTranslation, PromptTranslationStatus } from "@types";
 
 interface Props {
@@ -81,7 +84,21 @@ const PromptTranslationsSection: React.FC<Props> = ({
   }, [translations]);
   const [retranslateAll, { isLoading: isRetranslatingAll }] = useRetranslatePromptMutation();
   const [retranslateLanguage] = useRetranslatePromptLanguageMutation();
+  const [setRuntimeModel] = useSetTranslationRuntimeModelMutation();
+  const { data: llmModels } = useGetLlmModelsQuery();
   const [busyLanguageId, setBusyLanguageId] = useState<number | null>(null);
+
+  // Model options for the per-language runtime override (which model runs the
+  // main agent when a translated body is served). Backend registry when
+  // available, else the static fallback used elsewhere in the studio.
+  const modelOptions = useMemo(() => {
+    if (llmModels?.length) {
+      return llmModels.map(m => ({ value: m.model, label: m.label }));
+    }
+    return PROMPT_LLM_MODEL_OPTIONS.flatMap(g =>
+      g.models.map(m => ({ value: m.value, label: m.label })),
+    );
+  }, [llmModels]);
   // Bodies collapsed by default so the panel stays short as languages grow.
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
@@ -130,6 +147,22 @@ const PromptTranslationsSection: React.FC<Props> = ({
       toast.error(`Could not re-translate ${languageLabel(row.languageId)}.`);
     } finally {
       setBusyLanguageId(null);
+    }
+  };
+
+  // Empty model = inherit the prompt's own model. Provider is derived so the
+  // runtime doesn't have to infer it.
+  const handleRuntimeModelChange = async (row: PromptTranslation, model: string) => {
+    try {
+      await setRuntimeModel({
+        id: promptId,
+        languageId: row.languageId,
+        model,
+        provider: model ? (providerForModel(model) ?? "") : "",
+      }).unwrap();
+      toast.success(`Runtime model updated for ${languageLabel(row.languageId)}.`);
+    } catch {
+      toast.error(`Could not update the runtime model for ${languageLabel(row.languageId)}.`);
     }
   };
 
@@ -225,6 +258,25 @@ const PromptTranslationsSection: React.FC<Props> = ({
                         Translation is taking longer than expected — it may have stalled. Use Retry
                         to run it again.
                       </p>
+                    )}
+
+                    {view === "ready" && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <label className="text-xs text-typography-600">Run agent with:</label>
+                        <select
+                          value={row.runtimeModel ?? ""}
+                          onChange={e => handleRuntimeModelChange(row, e.target.value)}
+                          className="rounded border border-border-light bg-white px-2 py-0.5 text-xs text-typography-800"
+                          title="Which model runs the main agent when this translated prompt is used for this language"
+                        >
+                          <option value="">Inherit (prompt default)</option>
+                          {modelOptions.map(m => (
+                            <option key={m.value} value={m.value}>
+                              {m.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     )}
 
                     {row.translatedPrompt && expandedIds.has(row.id) && (

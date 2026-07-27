@@ -107,6 +107,8 @@ export const ApiEndpoints = {
     RETRANSLATE_PROMPT: (id: string | number) => `/v1/prompts/${id}/translations`,
     RETRANSLATE_PROMPT_LANGUAGE: (id: string | number, languageId: string | number) =>
       `/v1/prompts/${id}/translations/${languageId}`,
+    SET_TRANSLATION_RUNTIME_MODEL: (id: string | number, languageId: string | number) =>
+      `/v1/prompts/${id}/translations/${languageId}/runtime-model`,
     BACKFILL_PROMPT_TRANSLATIONS: "/v1/prompts/translations/backfill",
     GET_LLM_MODELS: "/v1/llm/models",
     GET_REPORT_BY_ID: (reportId: string) => `/v1/learn/scenarios/reports/${reportId}`,

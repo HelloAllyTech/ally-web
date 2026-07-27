@@ -622,6 +622,22 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.PROMPTS],
     }),
 
+    /**
+     * Set (or clear, with empty provider/model) the per-language runtime model
+     * that runs the main agent when this translated body is served.
+     */
+    setTranslationRuntimeModel: builder.mutation<
+      unknown,
+      { id: string; languageId: number; provider?: string; model?: string }
+    >({
+      query: ({ id, languageId, provider, model }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SET_TRANSLATION_RUNTIME_MODEL(id, languageId),
+        method: HttpMethod.PUT,
+        body: { provider, model },
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
     /** Backfill: (re)translate every enabled source across eligible languages. */
     backfillPromptTranslations: builder.mutation<unknown, void>({
       query: () => ({
@@ -1231,6 +1247,7 @@ export const {
   useGetPromptTranslationsQuery,
   useRetranslatePromptMutation,
   useRetranslatePromptLanguageMutation,
+  useSetTranslationRuntimeModelMutation,
   useBackfillPromptTranslationsMutation,
   useGetLanguageGlossaryQuery,
   useUpsertGlossarySectionMutation,
