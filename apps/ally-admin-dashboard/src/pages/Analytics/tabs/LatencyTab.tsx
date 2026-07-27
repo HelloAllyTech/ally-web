@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { LineChart, StackedBarChart } from "@carbon/charts-react";
+import { LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 
 import { CarbonDropdown as Dropdown } from "@ally-ui-mono/ui-shared";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@api";
 import { AnalyticsBucket, AnalyticsRange } from "@types";
 
-import { ChartCard, PALETTE, lineOpts, stackedBarOpts } from "../chartKit";
+import { barOpts, ChartCard, PALETTE, lineOpts, stackedBarOpts } from "../chartKit";
 import {
   buildJoinLatencySeries,
   buildReliabilitySeries,
@@ -20,6 +20,7 @@ import {
 } from "../joinReliabilityChart";
 import {
   buildStartLatencySeries,
+  buildVoiceLatencyByLanguageBars,
   buildVoiceLatencySeries,
   latencyBucketTitle,
   LATENCY_GROUPS,
@@ -68,6 +69,10 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
 
   const series = useMemo(() => buildVoiceLatencySeries(data?.points ?? []), [data]);
   const axisTitle = useMemo(() => latencyBucketTitle(data?.bucket), [data]);
+  const byLanguageBars = useMemo(
+    () => buildVoiceLatencyByLanguageBars(data?.byLanguage ?? []),
+    [data],
+  );
   const selectedBucket = BUCKET_ITEMS.find(b => b.id === bucket) ?? BUCKET_ITEMS[0];
 
   const options = useMemo(
@@ -224,6 +229,32 @@ export const LatencyTab = ({ range, language }: { range: AnalyticsRange; languag
       >
         <LineChart data={series} options={options} />
       </ChartCard>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ChartCard
+          title="Avg voice-to-voice latency by language"
+          caption="Live pipeline only, across the full range"
+          loading={isLoading && !data}
+          error={isError}
+          onRetry={refetch}
+          errorTitle="Couldn't load latency by language"
+          errorSubtitle="There was a problem fetching turn-latency metrics."
+          empty={!isLoading && byLanguageBars.avg.length === 0}
+        >
+          <SimpleBarChart data={byLanguageBars.avg} options={barOpts({ leftTitle: "Seconds" })} />
+        </ChartCard>
+        <ChartCard
+          title="P95 voice-to-voice latency by language"
+          caption="Live pipeline only, across the full range"
+          loading={isLoading && !data}
+          error={isError}
+          onRetry={refetch}
+          errorTitle="Couldn't load latency by language"
+          errorSubtitle="There was a problem fetching turn-latency metrics."
+          empty={!isLoading && byLanguageBars.p95.length === 0}
+        >
+          <SimpleBarChart data={byLanguageBars.p95} options={barOpts({ leftTitle: "Seconds" })} />
+        </ChartCard>
+      </div>
       <ChartCard
         title="Simulation start latency — time to first word (by startup segment)"
         loading={startLoading && !startData}

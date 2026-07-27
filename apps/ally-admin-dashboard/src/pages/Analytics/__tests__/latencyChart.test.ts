@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { VoiceLatencyPoint } from "@types";
+import { VoiceLatencyByLanguageRow, VoiceLatencyPoint } from "@types";
 
-import { buildVoiceLatencySeries, LATENCY_GROUPS, latencyBucketTitle } from "../latencyChart";
+import {
+  buildVoiceLatencyByLanguageBars,
+  buildVoiceLatencySeries,
+  LATENCY_GROUPS,
+  latencyBucketTitle,
+} from "../latencyChart";
 
 const point = (over: Partial<VoiceLatencyPoint>): VoiceLatencyPoint => ({
   bucket: "2024-06-10",
@@ -61,6 +66,36 @@ describe("buildVoiceLatencySeries", () => {
   it("rounds sub-millisecond noise before converting to seconds", () => {
     const [avg] = buildVoiceLatencySeries([point({ avgMs: 1500.6, p95Ms: 0 })]);
     expect(avg.value).toBe(1.501);
+  });
+});
+
+describe("buildVoiceLatencyByLanguageBars", () => {
+  const row = (over: Partial<VoiceLatencyByLanguageRow>): VoiceLatencyByLanguageRow => ({
+    language: "en",
+    turns: 1,
+    avgMs: 0,
+    p95Ms: 0,
+    ...over,
+  });
+
+  it("maps each language row to one avg bar and one p95 bar, in seconds", () => {
+    const { avg, p95 } = buildVoiceLatencyByLanguageBars([
+      row({ language: "en", avgMs: 900, p95Ms: 1600 }),
+      row({ language: "hi-IN", avgMs: 1200, p95Ms: 2100 }),
+    ]);
+
+    expect(avg).toEqual([
+      { group: "en", value: 0.9 },
+      { group: "hi-IN", value: 1.2 },
+    ]);
+    expect(p95).toEqual([
+      { group: "en", value: 1.6 },
+      { group: "hi-IN", value: 2.1 },
+    ]);
+  });
+
+  it("returns empty bars for no rows", () => {
+    expect(buildVoiceLatencyByLanguageBars([])).toEqual({ avg: [], p95: [] });
   });
 });
 

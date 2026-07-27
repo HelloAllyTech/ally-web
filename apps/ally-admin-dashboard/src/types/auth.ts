@@ -316,6 +316,14 @@ export interface VoiceLatencyPoint {
   p95Ms: number;
 }
 
+/** One language's live-pipeline latency over the whole window (no time bucketing). */
+export interface VoiceLatencyByLanguageRow {
+  language: string;
+  turns: number;
+  avgMs: number;
+  p95Ms: number;
+}
+
 export interface VoiceLatencyResponse {
   range: AnalyticsRange;
   /** Bucket granularity for this range ('day' | 'week' | 'month'). */
@@ -323,6 +331,8 @@ export interface VoiceLatencyResponse {
   /** Latency target line for reference (ms). */
   targetMs: number;
   points: VoiceLatencyPoint[];
+  /** Live-pipeline latency by language, independent of the `language` filter. */
+  byLanguage: VoiceLatencyByLanguageRow[];
 }
 
 // AgentJoinReliabilityResponseDto from GET /api/v1/analytics/agent-join-reliability.

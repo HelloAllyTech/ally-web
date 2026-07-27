@@ -1,4 +1,9 @@
-import { AnalyticsBucket, StartLatencyPoint, VoiceLatencyPoint } from "@types";
+import {
+  AnalyticsBucket,
+  StartLatencyPoint,
+  VoiceLatencyByLanguageRow,
+  VoiceLatencyPoint,
+} from "@types";
 
 // Latency series labels, keyed so the color scale and data groups stay in sync.
 export const LATENCY_GROUPS = {
@@ -27,6 +32,25 @@ export function buildVoiceLatencySeries(points: VoiceLatencyPoint[]): LatencyDat
       { group: p95Group, key: point.bucket, value: toS(point.p95Ms) },
     ];
   });
+}
+
+export type LanguageBarDatum = { group: string; value: number };
+
+/**
+ * Map the BE's per-language live-pipeline latency rows (ms) into Carbon
+ * simple-bar data in **seconds**, one bar per language. Returns avg and p95
+ * as two separate series so each can drive its own bar chart, mirroring how
+ * `driftRateByLanguage` feeds a single-metric-per-language bar chart.
+ */
+export function buildVoiceLatencyByLanguageBars(rows: VoiceLatencyByLanguageRow[]): {
+  avg: LanguageBarDatum[];
+  p95: LanguageBarDatum[];
+} {
+  const toS = (ms: number) => Math.round(ms) / 1000;
+  return {
+    avg: rows.map(r => ({ group: r.language, value: toS(r.avgMs) })),
+    p95: rows.map(r => ({ group: r.language, value: toS(r.p95Ms) })),
+  };
 }
 
 /** Human-readable x-axis title for the bucket granularity returned by the BE. */
