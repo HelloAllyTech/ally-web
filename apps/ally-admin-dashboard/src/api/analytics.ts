@@ -18,29 +18,60 @@ import {
 
 import { baseAPI } from "./baseApi";
 
-type AnalyticsRangeQuery = {
+/**
+ * Window params every super-admin analytics endpoint accepts.
+ *
+ * `range` is the rolling preset; `from`/`to` override it with an explicit period
+ * (both required together, server-capped). `compare: "prev"` asks for the
+ * equal-length preceding window so a KPI can state its change against a named
+ * basis. `tenantId` narrows to one org — the response's `scoping.unscopedSections`
+ * lists what could not honestly be narrowed.
+ */
+export type AnalyticsWindowQuery = {
   range?: AnalyticsRange;
+  bucket?: AnalyticsBucket;
+  from?: string;
+  to?: string;
+  compare?: "prev";
+  tenantId?: string;
 };
 
-type VoiceLatencyQuery = AnalyticsRangeQuery & {
-  bucket?: AnalyticsBucket;
+/**
+ * Serialise only the params that are set. RTK Query keys its cache on the
+ * argument object, so emitting `undefined` entries would fragment the cache
+ * across requests that are actually identical.
+ */
+const windowParams = ({
+  range,
+  bucket,
+  from,
+  to,
+  compare,
+  tenantId,
+}: AnalyticsWindowQuery = {}): Record<string, string> => ({
+  ...(range ? { range } : {}),
+  ...(bucket ? { bucket } : {}),
+  // from/to are only meaningful as a pair; the server rejects a lone one.
+  ...(from && to ? { from, to } : {}),
+  ...(compare ? { compare } : {}),
+  ...(tenantId ? { tenantId } : {}),
+});
+
+type AnalyticsRangeQuery = AnalyticsWindowQuery;
+
+type VoiceLatencyQuery = AnalyticsWindowQuery & {
   language?: string;
 };
 
-type AgentJoinReliabilityQuery = AnalyticsRangeQuery & {
-  bucket?: AnalyticsBucket;
-};
+type AgentJoinReliabilityQuery = AnalyticsWindowQuery;
 
-type HighlightsQuery = AnalyticsRangeQuery & {
-  bucket?: AnalyticsBucket;
-};
+type HighlightsQuery = AnalyticsWindowQuery;
 
-type StartLatencyQuery = AnalyticsRangeQuery & {
-  bucket?: AnalyticsBucket;
+type StartLatencyQuery = AnalyticsWindowQuery & {
   language?: string;
 };
 
-type ConversationDriftQuery = AnalyticsRangeQuery & {
+type ConversationDriftQuery = AnalyticsWindowQuery & {
   language?: string;
   scenarioId?: number;
   scenarioVersionId?: string;
@@ -52,79 +83,65 @@ type ConversationDriftQuery = AnalyticsRangeQuery & {
 export const analyticsAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
     getAnalyticsOverview: builder.query<AnalyticsOverviewResponse, AnalyticsRangeQuery>({
-      query: ({ range } = {}) => ({
+      query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.OVERVIEW,
         method: HttpMethod.GET,
-        params: range ? { range } : undefined,
+        params: windowParams(q),
       }),
     }),
     // Leadership KPIs not covered by /overview or /scribe/overview: org
     // adoption, practice minutes, roleplay quality, CSAT, track funnel, AI cost.
     getAnalyticsHighlights: builder.query<AnalyticsHighlightsResponse, HighlightsQuery>({
-      query: ({ range, bucket } = {}) => ({
+      query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.HIGHLIGHTS,
         method: HttpMethod.GET,
-        params: {
-          ...(range ? { range } : {}),
-          ...(bucket ? { bucket } : {}),
-        },
+        params: windowParams(q),
       }),
     }),
     getVoiceLatency: builder.query<VoiceLatencyResponse, VoiceLatencyQuery>({
-      query: ({ range, bucket, language } = {}) => ({
+      query: ({ language, ...q } = {}) => ({
         url: ApiEndpoints.ANALYTICS.VOICE_LATENCY,
         method: HttpMethod.GET,
-        params: {
-          ...(range ? { range } : {}),
-          ...(bucket ? { bucket } : {}),
-          ...(language ? { language } : {}),
-        },
+        params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
     getAgentJoinReliability: builder.query<AgentJoinReliabilityResponse, AgentJoinReliabilityQuery>(
       {
-        query: ({ range, bucket } = {}) => ({
+        query: (q = {}) => ({
           url: ApiEndpoints.ANALYTICS.AGENT_JOIN_RELIABILITY,
           method: HttpMethod.GET,
-          params: {
-            ...(range ? { range } : {}),
-            ...(bucket ? { bucket } : {}),
-          },
+          params: windowParams(q),
         }),
       },
     ),
     getStartLatency: builder.query<StartLatencyResponse, StartLatencyQuery>({
-      query: ({ range, bucket, language } = {}) => ({
+      query: ({ language, ...q } = {}) => ({
         url: ApiEndpoints.ANALYTICS.START_LATENCY,
         method: HttpMethod.GET,
-        params: {
-          ...(range ? { range } : {}),
-          ...(bucket ? { bucket } : {}),
-          ...(language ? { language } : {}),
-        },
+        params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
     getTokenConsumption: builder.query<TokenConsumptionResponse, AnalyticsRangeQuery>({
-      query: ({ range } = {}) => ({
+      query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.TOKEN_CONSUMPTION,
         method: HttpMethod.GET,
-        params: range ? { range } : undefined,
+        params: windowParams(q),
       }),
     }),
     getConversationDrift: builder.query<ConversationDriftResponse, ConversationDriftQuery>({
       query: ({
-        range,
         language,
         scenarioId,
         scenarioVersionId,
         llmModel,
         llmProvider,
         promptVersion,
+        ...q
       } = {}) => ({
         url: ApiEndpoints.ANALYTICS.CONVERSATION_DRIFT,
         method: HttpMethod.GET,
         params: {
-          ...(range ? { range } : {}),
+          ...windowParams(q),
           ...(language ? { language } : {}),
           ...(scenarioId != null ? { scenarioId } : {}),
           ...(scenarioVersionId ? { scenarioVersionId } : {}),
@@ -135,17 +152,17 @@ export const analyticsAPI = baseAPI.injectEndpoints({
       }),
     }),
     getScribeOverview: builder.query<ScribeOverviewResponse, AnalyticsRangeQuery>({
-      query: ({ range } = {}) => ({
+      query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.SCRIBE_OVERVIEW,
         method: HttpMethod.GET,
-        params: range ? { range } : undefined,
+        params: windowParams(q),
       }),
     }),
     getScribeSummaryFailures: builder.query<ScribeSummaryFailureResponse, AnalyticsRangeQuery>({
-      query: ({ range } = {}) => ({
+      query: (q = {}) => ({
         url: ApiEndpoints.ANALYTICS.SCRIBE_SUMMARY_FAILURES,
         method: HttpMethod.GET,
-        params: range ? { range } : undefined,
+        params: windowParams(q),
       }),
     }),
     // Kick off the async backfill (last `sinceDays` days, default 90 ≈ 3 months).
@@ -167,15 +184,12 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     // aggregated from the same per-session rows shown in session logs.
     getLanguageQuality: builder.query<
       LanguageQualityResponse,
-      { range?: AnalyticsRange; language?: string }
+      AnalyticsWindowQuery & { language?: string }
     >({
-      query: ({ range, language } = {}) => ({
+      query: ({ language, ...q } = {}) => ({
         url: ApiEndpoints.ANALYTICS.LANGUAGE_QUALITY,
         method: HttpMethod.GET,
-        params: {
-          ...(range ? { range } : {}),
-          ...(language ? { language } : {}),
-        },
+        params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
     // Pin the reference experiment all language-quality deltas read against.

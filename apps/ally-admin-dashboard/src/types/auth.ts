@@ -170,10 +170,42 @@ export interface AnalyticsData {
 export type AnalyticsRange = "30d" | "90d" | "12m";
 export type AnalyticsBucket = "day" | "week" | "month";
 
+/**
+ * The window the server actually resolved, echoed back so every chart, caption
+ * and export can state the period it covers rather than leaving the reader to
+ * infer it from a dropdown that may since have moved.
+ */
+export interface AnalyticsWindow {
+  /** yyyy-mm-dd, inclusive. */
+  from: string;
+  /** yyyy-mm-dd, INCLUSIVE. */
+  to: string;
+  /** e.g. "Last 30 days" or "2026-01-01 → 2026-03-31". */
+  label: string;
+  days: number;
+  bucket: AnalyticsBucket;
+  /** ISO 8601 server time the aggregates were computed. */
+  computedAt: string;
+}
+
+/**
+ * Which parts of a response honoured the tenant filter. Sections named in
+ * `unscopedSections` stayed platform-wide because their source tables cannot be
+ * attributed to one org — the UI must badge them rather than let them read as
+ * tenant-specific.
+ */
+export interface AnalyticsScoping {
+  tenantId: string | null;
+  unscopedSections: string[];
+}
+
 export interface AnalyticsSummary {
+  /** Cumulative as at the end of the window, not windowed. */
   totalUsers: number;
-  activeUsers30d: number;
-  simsThisWeek: number;
+  /** Distinct users active WITHIN the window. */
+  activeUsers: number;
+  /** Simulations completed WITHIN the window. */
+  simulationsCompleted: number;
   retentionRatePct: number;
 }
 
@@ -211,7 +243,11 @@ export interface UsersByRolePoint {
 }
 
 export interface AnalyticsOverviewResponse {
+  window: AnalyticsWindow;
   summary: AnalyticsSummary;
+  /** Present only when `compare=prev` — the basis for a KPI delta. */
+  previous: AnalyticsSummary | null;
+  previousLabel: string | null;
   userGrowth: UserGrowthPoint[];
   activeUsers: ActiveUsersPoint[];
   simulationsCompleted: SimulationsCompletedPoint[];
@@ -233,6 +269,12 @@ export interface HighlightsSummary {
   trackCompletionRatePct: number | null;
   quizPassRatePct: number | null;
   totalAiCostUsd: number;
+  /**
+   * Calls whose model has no pricing entry. They contribute $0, so
+   * `totalAiCostUsd` UNDERSTATES real spend whenever this is non-zero — say so
+   * on the surface rather than presenting the total as complete.
+   */
+  unpricedCalls: number;
   costPerCompletedSimUsd: number | null;
 }
 
@@ -282,11 +324,24 @@ export interface CostPerSimPoint {
   unpricedCalls: number;
 }
 
+/** Orgs too small to name, aggregated so the total stays honest. */
+export interface TopOrgsBelowFloor {
+  orgs: number;
+  completedSimulations: number;
+}
+
 export interface AnalyticsHighlightsResponse {
   range: AnalyticsRange;
   bucket: string;
+  window: AnalyticsWindow;
+  scoping: AnalyticsScoping;
   summary: HighlightsSummary;
+  /** Present only when `compare=prev` — the basis for a KPI delta. */
+  previous: HighlightsSummary | null;
+  previousLabel: string | null;
+  /** Named orgs at or above the minimum group size, descending. */
   topOrgs: TopOrgRow[];
+  topOrgsBelowFloor: TopOrgsBelowFloor;
   /** Gap-filled to a contiguous bucket axis. */
   practiceMinutes: PracticeMinutesPoint[];
   /** Sparse — buckets with no evaluated sessions are absent. */
@@ -321,7 +376,12 @@ export interface ScribeOverviewSummary {
 export interface ScribeOverviewResponse {
   range: AnalyticsRange;
   bucket: string;
+  window: AnalyticsWindow;
+  scoping: AnalyticsScoping;
   summary: ScribeOverviewSummary;
+  /** Present only when `compare=prev` — the basis for a KPI delta. */
+  previous: ScribeOverviewSummary | null;
+  previousLabel: string | null;
   sessionsTrend: ScribeTrendPoint[];
   outcomeBreakdown: ScribeCount[];
   modeBreakdown: ScribeCount[];
@@ -370,6 +430,7 @@ export interface ScribeFailureSummary {
 export interface ScribeSummaryFailureResponse {
   range: AnalyticsRange;
   bucket: string;
+  window: AnalyticsWindow;
   summary: ScribeFailureSummary;
   failureRateTrend: ScribeFailureRatePoint[];
   failureBreakdown: ScribeCount[];
@@ -405,6 +466,7 @@ export interface VoiceLatencyByLanguageRow {
 
 export interface VoiceLatencyResponse {
   range: AnalyticsRange;
+  window: AnalyticsWindow;
   /** Bucket granularity for this range ('day' | 'week' | 'month'). */
   bucket: string;
   /** Latency target line for reference (ms). */
@@ -437,6 +499,7 @@ export interface SessionOutcomeMix {
 
 export interface AgentJoinReliabilityResponse {
   range: AnalyticsRange;
+  window: AnalyticsWindow;
   bucket: string;
   points: AgentJoinReliabilityPoint[];
   outcomeMix: SessionOutcomeMix;
@@ -463,6 +526,7 @@ export interface StartLatencyPoint {
 
 export interface StartLatencyResponse {
   range: AnalyticsRange;
+  window: AnalyticsWindow;
   /** Bucket granularity for this range ('day' | 'week' | 'month'). */
   bucket: string;
   /** Start-latency target line for reference (ms). */
@@ -517,6 +581,7 @@ export interface DriftTrendPoint {
 
 export interface ConversationDriftResponse {
   range: AnalyticsRange;
+  window: AnalyticsWindow;
   summary: DriftSummary;
   driftRateByLanguage: DriftRateByLanguage[];
   attributionMix: DriftCount[];
@@ -565,6 +630,7 @@ export interface TokenConsumptionPoint {
 
 export interface TokenConsumptionResponse {
   range: AnalyticsRange;
+  window: AnalyticsWindow;
   totalEstimatedCostUsd: number;
   totalTokens: number;
   points: TokenConsumptionPoint[];

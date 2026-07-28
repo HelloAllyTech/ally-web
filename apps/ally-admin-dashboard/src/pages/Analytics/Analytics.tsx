@@ -14,13 +14,13 @@ import {
   CarbonTabs as Tabs,
   Theme,
 } from "@ally-ui-mono/ui-shared";
-import { useGetScenarioLanguagesQuery } from "@api";
+import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
+import { AnalyticsTabFilters } from "./analyticsFilters";
 import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
-import { OverviewTab } from "./tabs/OverviewTab";
 import { ScribeTab } from "./tabs/ScribeTab";
 import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
@@ -30,15 +30,6 @@ const RANGE_ITEMS: { id: AnalyticsRange; label: string }[] = [
   { id: "90d", label: "Last 90 days" },
   { id: "12m", label: "Last 12 months" },
 ];
-
-/** Shared, page-level filter values passed into every tab. */
-interface TabFilters {
-  range: AnalyticsRange;
-  language: string;
-  /** Lets a tab drive the page-level language picker (e.g. drill-in from a
-   *  per-language overview row). */
-  onSelectLanguage: (language: string) => void;
-}
 
 /**
  * Tab registry — the single place to add/reorder analytics tabs. Each entry
@@ -50,59 +41,50 @@ interface TabDef {
   id: string;
   label: string;
   uses: { language: boolean };
-  render: (f: TabFilters) => ReactNode;
+  render: (f: AnalyticsTabFilters) => ReactNode;
 }
 
 const TABS: TabDef[] = [
-  // First entry = the default landing tab (tabIndex starts at 0) — Highlights
-  // is the leadership summary, so it leads.
+  // First entry = the default landing tab. Highlights is the whole-platform
+  // picture; it absorbed the former separate "Overview" tab, which rendered four
+  // of the same charts from the same data.
   {
     id: "highlights",
     label: "Highlights",
     uses: { language: false },
-    render: f => <HighlightsTab range={f.range} />,
-  },
-  {
-    id: "overview",
-    label: "Overview",
-    uses: { language: false },
-    render: f => <OverviewTab range={f.range} />,
+    render: f => <HighlightsTab {...f} />,
   },
   {
     id: "latency",
     label: "Latency & reliability",
     uses: { language: true },
-    render: f => <LatencyTab range={f.range} language={f.language} />,
+    render: f => <LatencyTab {...f} />,
   },
   {
     id: "drift",
     label: "Drift",
     uses: { language: true },
-    render: f => <ConversationDrift range={f.range} language={f.language} />,
+    render: f => <ConversationDrift {...f} />,
   },
   {
     id: "language",
     label: "Language",
     uses: { language: true },
-    render: f => (
-      <LanguageQualityTab
-        range={f.range}
-        language={f.language}
-        onSelectLanguage={f.onSelectLanguage}
-      />
-    ),
+    render: f => <LanguageQualityTab {...f} />,
   },
   {
-    id: "tokens",
-    label: "Tokens",
+    // Labelled for what it measures. It was "Tokens" while its heading said "AI
+    // cost" and its axis was USD.
+    id: "cost",
+    label: "AI cost",
     uses: { language: false },
-    render: f => <TokenConsumption range={f.range} />,
+    render: f => <TokenConsumption {...f} />,
   },
   {
     id: "scribe",
     label: "Scribe",
     uses: { language: false },
-    render: f => <ScribeTab range={f.range} />,
+    render: f => <ScribeTab {...f} />,
   },
 ];
 
@@ -125,14 +107,25 @@ export const Analytics = () => {
   const selectedRange = RANGE_ITEMS.find(i => i.id === range) ?? RANGE_ITEMS[0];
   const selectedLanguage = languageItems.find(i => i.id === language) ?? languageItems[0];
   const activeTab = TABS[tabIndex] ?? TABS[0];
-  const filters: TabFilters = { range, language, onSelectLanguage: setLanguage };
+
+  const query: AnalyticsWindowQuery = useMemo(() => ({ range }), [range]);
+  const filters: AnalyticsTabFilters = useMemo(
+    () => ({ query, language, onSelectLanguage: setLanguage }),
+    [query, language],
+  );
 
   return (
     <div className="font-primary pr-1">
       <Theme theme="white">
         <Section>
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <Heading className="text-2xl">Analytics</Heading>
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+            <div>
+              <Heading className="text-2xl">Analytics</Heading>
+              <p className="text-sm text-typography-500 mt-1">
+                Platform-wide metrics, excluding internal and test organisations. Each panel states
+                what it is derived from and how many observations back it.
+              </p>
+            </div>
             <div className="flex items-center gap-3">
               {activeTab.uses.language && (
                 <div className="w-48">
@@ -179,8 +172,15 @@ export const Analytics = () => {
               ))}
             </TabList>
             <TabPanels>
-              {TABS.map(t => (
-                <TabPanel key={t.id}>{t.render(filters)}</TabPanel>
+              {/*
+                Only the ACTIVE panel's component is mounted. Carbon's TabPanel
+                merely sets `hidden`, so rendering every tab's children fired one
+                query per chart across all tabs on first paint — most of them for
+                panels nobody was looking at. Depth stays available on demand; it
+                just is not all fetched up front.
+              */}
+              {TABS.map((t, i) => (
+                <TabPanel key={t.id}>{i === tabIndex ? t.render(filters) : null}</TabPanel>
               ))}
             </TabPanels>
           </Tabs>

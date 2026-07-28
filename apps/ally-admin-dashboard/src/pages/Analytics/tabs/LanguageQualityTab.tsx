@@ -19,9 +19,19 @@ import {
 } from "@ally-ui-mono/ui-shared";
 import { useGetLanguageQualityQuery, useSetLanguageReferenceMutation } from "@api";
 import { ROUTES } from "@constants";
-import { AnalyticsRange, LanguageRateByExperiment } from "@types";
+import { LanguageRateByExperiment } from "@types";
 
-import { ChartCard, PALETTE, barOpts, lineOpts, stackedBarOpts } from "../chartKit";
+import { AnalyticsTabFilters, windowLabel } from "../analyticsFilters";
+import { ChartCard, buildSource, hBarOpts, lineOpts, stackedBarOpts } from "../chartKit";
+import {
+  SEVERITY_SCALE,
+  VERDICT_SCALE,
+  formatDelta,
+  languageScale,
+  sequentialScale,
+  severityTagStyle,
+  stableScale,
+} from "../chartScales";
 
 /**
  * Language-capability evaluation tab (PRD FR6-FR14; see
@@ -33,12 +43,6 @@ import { ChartCard, PALETTE, barOpts, lineOpts, stackedBarOpts } from "../chartK
  * Masking principle (FR6): unmeasured layers/metrics are shown as UNMEASURED,
  * never hidden and never rendered as a healthy 0.
  */
-
-const SEVERITY_COLOR: Record<string, string> = {
-  minor: PALETTE.gold,
-  major: PALETTE.orange,
-  critical: PALETTE.red,
-};
 
 const SEVERITY_WEIGHT: Record<string, number> = {
   minor: 1,
@@ -72,11 +76,9 @@ const BASIS_LABEL: Record<string, string> = {
   pattern_systemic: "Systemic pattern",
 };
 
-const SEVERITY_TAG_CLASS: Record<string, string> = {
-  minor: "bg-yellow-100 text-yellow-900",
-  major: "bg-orange-100 text-orange-900",
-  critical: "bg-red-100 text-red-900",
-};
+/** How many error categories the bar chart shows. Named so the caption can say
+ *  so — a silent top-N reads as "this is all of them". */
+const CATEGORY_LIMIT = 12;
 
 const EXPERIMENT_DIMS = [
   { id: "scenarioVersion", label: "Scenario version" },
@@ -94,22 +96,32 @@ const UnmeasuredTag: FC<{ children?: ReactNode }> = ({ children }) => (
   </span>
 );
 
-interface Props {
-  range: AnalyticsRange;
-  language: string;
-  /** Drives the page-level language picker (drill-in from an overview row). */
-  onSelectLanguage?: (language: string) => void;
-}
-
-export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguage }) => {
+export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
+  query,
+  language,
+  onSelectLanguage,
+}) => {
   const { data, isFetching, isError, refetch } = useGetLanguageQualityQuery({
-    range,
+    ...query,
     language: language || undefined,
   });
   const [experimentDim, setExperimentDim] = useState<(typeof EXPERIMENT_DIMS)[number]>(
     EXPERIMENT_DIMS[0],
   );
   const [setReference, { isLoading: pinning }] = useSetLanguageReferenceMutation();
+
+  /**
+   * Provenance for every panel on this tab. Judge model AND rubric version are
+   * both required: a weighted error rate is only comparable within one judge
+   * version, so a number without its version cannot be compared with anything.
+   */
+  const judgeSource = buildSource({
+    derivation: `LLM judge ${data?.judgeModel ?? "—"}, rubric ${data?.judgePromptVersion ?? "—"}`,
+    window: windowLabel(),
+    n: data?.sessionsJudged,
+    nUnit: "sessions judged",
+    extra: `${(data?.turnsJudged ?? 0).toLocaleString()} turns judged · comparisons valid only within one judge version`,
+  });
 
   // FR13: pin the current view (its language slice) as THE reference all
   // deltas are read against.
@@ -236,7 +248,7 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
 
   const categoryBars = useMemo(
     () =>
-      (data?.categoryBreakdown ?? []).slice(0, 12).map(r => ({
+      (data?.categoryBreakdown ?? []).slice(0, CATEGORY_LIMIT).map(r => ({
         group: r.category,
         value: r.weighted,
       })),
@@ -424,6 +436,7 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
             bare
             title="Weighted error rate by language"
             caption="Slice per language — never a single global score. Pick a language above to drill in."
+            source={judgeSource}
             loading={isFetching}
             error={isError}
             onRetry={refetch}
@@ -431,7 +444,10 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
           >
             <SimpleBarChart
               data={languageBars}
-              options={barOpts({ leftTitle: "Weighted errors / 100 turns" })}
+              options={hBarOpts({
+                bottomTitle: "Weighted errors / 100 turns",
+                colorScale: languageScale(languageBars.map(b => b.group)),
+              })}
             />
           </ChartCard>
         </div>
@@ -542,7 +558,30 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
                   group: v.voiceName ?? v.voiceId ?? "unknown",
                   value: v.avgRoundTripWerPct,
                 }))}
-                options={barOpts({ leftTitle: "Round-trip WER %" })}
+                options={hBarOpts({
+                  bottomTitle: "Round-trip WER %",
+                  colorScale: stableScale(
+                    (data?.werByVoice ?? []).map(v => v.voiceName ?? v.voiceId ?? "unknown"),
+                  ),
+                  extra: {
+                    axes: {
+                      left: { mapsTo: "group", scaleType: "labels", title: "" },
+                      bottom: {
+                        mapsTo: "value",
+                        scaleType: "linear",
+                        title: "Round-trip WER %",
+                        thresholds: [
+                          { value: 20, label: "20 — warn above", fillColor: VERDICT_SCALE.warn },
+                          {
+                            value: 30,
+                            label: "30 — critical above",
+                            fillColor: VERDICT_SCALE.critical,
+                          },
+                        ],
+                      },
+                    },
+                  },
+                })}
               />
             </ChartCard>
           </div>
@@ -582,6 +621,7 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
           bare
           title="Weighted error rate by dimension"
           caption="Σ(errors × severity weight 1/5/10) per 100 turns, stacked by severity. Garbled-input turns are excluded from Understanding/Adequacy."
+          source={judgeSource}
           loading={isFetching}
           error={isError}
           onRetry={refetch}
@@ -591,7 +631,7 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
             data={dimensionBars}
             options={stackedBarOpts({
               leftTitle: "Weighted errors / 100 turns",
-              colorScale: SEVERITY_COLOR,
+              colorScale: SEVERITY_SCALE,
             })}
           />
         </ChartCard>
@@ -600,23 +640,18 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
           <div className="flex flex-wrap items-center gap-2 text-xs -mt-2">
             <span className="text-typography-500">Δ vs reference:</span>
             {(data?.errorRateByDimension ?? []).map(d => {
-              const delta = deltaFor(d.dimension);
-              if (delta === null) return null;
-              const cls =
-                delta > 0
-                  ? "bg-red-100 text-red-900"
-                  : delta < 0
-                    ? "bg-green-100 text-green-900"
-                    : "bg-neutral-100 text-typography-700";
-              const sign = delta > 0 ? "+" : "";
+              const raw = deltaFor(d.dimension);
+              // More weighted errors is worse, so the arrow and colour invert.
+              const shown = formatDelta(raw, { higherIsBetter: false, decimals: 2 });
+              if (!shown) return null;
               return (
                 <span
                   key={d.dimension}
-                  className={`rounded px-2 py-0.5 font-medium ${cls}`}
+                  className="rounded border px-2 py-0.5 font-medium"
+                  style={{ color: shown.color, borderColor: shown.color }}
                   title="current − reference, weighted errors / 100 turns; valid only within one judge version"
                 >
-                  {DIMENSION_LABEL[d.dimension] ?? d.dimension}: {sign}
-                  {delta}
+                  {DIMENSION_LABEL[d.dimension] ?? d.dimension}: {shown.arrow} {shown.label}
                 </span>
               );
             })}
@@ -633,11 +668,19 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
           caption="A one-variable experiment should move only its layer; movement across layers flags a leak to investigate."
           loading={isFetching}
           error={isError}
-          empty={!trendLines.some(p => p.value > 0)}
+          empty={!trendLines.length}
         >
           <LineChart
             data={trendLines}
-            options={lineOpts({ leftTitle: "Weighted errors / 100 turns" })}
+            options={lineOpts({
+              leftTitle: "Weighted errors / 100 turns",
+              bottomTitle: "Week",
+              colorScale: sequentialScale([
+                LAYER_LABEL.comprehension,
+                LAYER_LABEL.content,
+                LAYER_LABEL.appropriateness,
+              ]),
+            })}
           />
         </ChartCard>
       </div>
@@ -672,7 +715,10 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
         >
           <SimpleBarChart
             data={experimentBars}
-            options={barOpts({ leftTitle: "Weighted errors / 100 turns" })}
+            options={hBarOpts({
+              bottomTitle: "Weighted errors / 100 turns",
+              colorScale: stableScale(experimentBars.map(b => b.group)),
+            })}
           />
         </ChartCard>
         {/* FR18: changed_from_prev — which config element each scenario
@@ -716,12 +762,18 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
         <ChartCard
           bare
           title="Top error categories"
-          caption="Weighted counts. Categories point at fixed targets; scores don't."
+          caption={`Weighted counts, top ${CATEGORY_LIMIT} of ${data?.categoryBreakdown?.length ?? 0}. Categories point at fixed targets; scores don't.`}
           loading={isFetching}
           error={isError}
           empty={!categoryBars.length}
         >
-          <SimpleBarChart data={categoryBars} options={barOpts({ leftTitle: "Weighted count" })} />
+          <SimpleBarChart
+            data={categoryBars}
+            options={hBarOpts({
+              bottomTitle: "Weighted count",
+              colorScale: stableScale(categoryBars.map(b => b.group)),
+            })}
+          />
         </ChartCard>
         <ChartCard
           bare
@@ -731,7 +783,13 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
           error={isError}
           empty={!basisBars.length}
         >
-          <SimpleBarChart data={basisBars} options={barOpts({ leftTitle: "Annotations" })} />
+          <SimpleBarChart
+            data={basisBars}
+            options={hBarOpts({
+              bottomTitle: "Annotations",
+              colorScale: stableScale(basisBars.map(b => b.group)),
+            })}
+          />
         </ChartCard>
       </div>
 
@@ -770,9 +828,8 @@ export const LanguageQualityTab: FC<Props> = ({ range, language, onSelectLanguag
                   <TableCell className="px-3 py-2">{row.category}</TableCell>
                   <TableCell className="px-3 py-2">
                     <span
-                      className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
-                        SEVERITY_TAG_CLASS[row.severity] ?? "bg-gray-100 text-gray-900"
-                      }`}
+                      className="inline-block rounded border px-2 py-0.5 text-xs font-medium"
+                      style={severityTagStyle(row.severity)}
                     >
                       {row.severity}
                     </span>

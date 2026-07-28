@@ -39,8 +39,10 @@ import {
   Close as CClose,
   CloudUpload as CCloudUpload,
   Copy as CCopy,
+  DataTable as CDataTable,
   Document as CDocument,
   DotMark as CDotMark,
+  Download as CDownload,
   Draggable as CDraggable,
   Edit as CEdit,
   Filter as CFilter,
@@ -55,6 +57,7 @@ import {
   ListBulleted as CListBulleted,
   ListNumbered as CListNumbered,
   Logout as CLogout,
+  Maximize as CMaximize,
   Microphone as CMicrophone,
   Minimize as CMinimize,
   Misuse as CMisuse,
@@ -152,6 +155,7 @@ export const DockToRight = createCarbonIcon(COpenPanelRight);
 export const Document = createCarbonIcon(CDocument);
 export const Dot = createCarbonIcon(CDotMark);
 export const DoubleArrowRight = createCarbonIcon(CChevronRight);
+export const Download = createCarbonIcon(CDownload);
 export const DragIndicator = createCarbonIcon(CDraggable);
 export const DragUpload = createCarbonIcon(CUpload);
 export const Edit = createCarbonIcon(CEdit);
@@ -166,6 +170,7 @@ export const ImageIcon = createCarbonIcon(CImage);
 export const InfoIcon = createCarbonIcon(CInformation);
 export const Logout = createCarbonIcon(CLogout);
 export const ManageAccounts = createCarbonIcon(CUserMultiple);
+export const Maximize = createCarbonIcon(CMaximize);
 export const Mic = createCarbonIcon(CMicrophone);
 export const PauseIcon = createCarbonIcon(CPause);
 export const Play = createCarbonIcon(CPlay);
@@ -173,6 +178,7 @@ export const PlayIcon = createCarbonIcon(CPlay);
 export const Plus = createCarbonIcon(CAdd);
 export const Refresh = createCarbonIcon(CRenew);
 export const Search = createCarbonIcon(CSearch);
+export const TableIcon = createCarbonIcon(CDataTable);
 export const ThreeDot = createCarbonIcon(COverflowMenuHorizontal);
 export const Tick = createCarbonIcon(CCheckmark);
 export const Timer = createCarbonIcon(CTime);
