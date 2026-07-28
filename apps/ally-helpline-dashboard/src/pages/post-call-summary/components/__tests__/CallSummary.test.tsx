@@ -93,14 +93,26 @@ const enhanceResult = {
 };
 const userResult = { user: { role: UserRole.COUNSELLOR } };
 
-vi.mock("@hooks", () => ({
-  useEnhance: () => enhanceResult,
-  useDebounce: (fn: any) => fn,
-  useUser: () => userResult,
-  useCustomFieldsEnabled: () => mockGetCustomFieldsEnabled(),
-}));
+// Real autosave hook (its behaviour is under test here), imported directly so
+// the @hooks barrel's heavy modules stay out of the test worker. delayMs 0 keeps
+// the debounce out of the assertions.
+vi.mock("@hooks", async () => {
+  const autosave = await import("@hooks/useFieldAutosave");
+  return {
+    useEnhance: () => enhanceResult,
+    useDebounce: (fn: any) => fn,
+    useUser: () => userResult,
+    useCustomFieldsEnabled: () => mockGetCustomFieldsEnabled(),
+    SUMMARY_CHANNEL: autosave.SUMMARY_CHANNEL,
+    CUSTOM_CHANNEL: autosave.CUSTOM_CHANNEL,
+    useFieldAutosave: (options: any) => autosave.useFieldAutosave({ ...options, delayMs: 0 }),
+  };
+});
 
 vi.mock("@components", () => ({
+  // Renders the raw state so tests can assert what the counsellor is told.
+  SaveStatus: ({ state }: any) =>
+    state === "idle" ? null : <span data-testid="save-status">{state}</span>,
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
   TextField: (props: any) => <input {...props} />,
   Accordion: ({ children }: any) => <div>{children}</div>,
@@ -129,13 +141,9 @@ vi.mock("@assets", () => ({
   Badge: () => <svg data-testid="badge-icon" />,
   ReviewNavIcon: () => <svg data-testid="review-nav-icon" />,
 }));
-const mockRateTagsWithFallback = vi.fn(async (_getTags: any, tags: string[]) =>
-  tags.map(tag => ({ tag, positivity_rating: 0.5 })),
-);
 vi.mock("@utils", () => ({
   getFormattedDateTime: (date: string, format: string) => `formatted-${date}`,
   getEstimatedSummaryGenerationTime: () => 2,
-  rateTagsWithFallback: (...args: any[]) => mockRateTagsWithFallback(...(args as [any, string[]])),
   hasPermissions: (permissions: any[], requiredPermission: any) => {
     if (!permissions || !Array.isArray(permissions)) {
       return false;
@@ -164,6 +172,7 @@ vi.mock("../../utils", async importOriginal => {
     // editable summary key.
     getSectionFields: () => [
       { key: "keyConcerns", type: "text", label: "Key Concerns", isEditable: true },
+      { key: "tags", type: "text", label: "Tags", isEditable: true },
     ],
   };
 });
@@ -623,22 +632,101 @@ describe("CallSummary — built-in summary save sends a patch, not the whole sum
     expect("keyConcerns" in data.summary).toBe(true);
   });
 
-  it("does not call the tag-ratings LLM when tags were not edited", async () => {
-    render(<CallSummary chatId={1} callSummary={summaryCall} />);
-
-    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "edited" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
-
-    await waitFor(() => expect(mockUpdateCallSummary).toHaveBeenCalledTimes(1));
-    expect(mockRateTagsWithFallback).not.toHaveBeenCalled();
-  });
-
   it("does not send a summary patch at all when nothing was edited", () => {
     render(<CallSummary chatId={1} callSummary={summaryCall} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Save report" }));
 
     expect(mockUpdateCallSummary).not.toHaveBeenCalled();
+  });
+});
+
+describe("CallSummary — edits autosave without pressing Save", () => {
+  const summaryCall = {
+    id: 1,
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 42,
+    details: {
+      chatId: 1,
+      callInfo: { notes: "" },
+      summary: { keyConcerns: "AI generated", tags: [{ tag: "anxiety", positivity_rating: 2 }] },
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.resolve({ success: true }),
+    }));
+    mockGetCustomFieldsEnabled.mockImplementation(() => customFieldsEnabledResult);
+    mockGetCustomFieldValues.mockImplementation(() => customFieldValuesResult);
+    mockUseSelector.mockReturnValue({
+      user: { userId: 42 },
+      permissions: ["edit:call:details", "view:settings:summary-fields"],
+    });
+  });
+
+  it("writes a typed edit with no Save click at all", async () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed only" } });
+
+    // This is the whole point of step 3: the counsellor's work is durable before
+    // they navigate, switch tabs, or close the sidebar.
+    await waitFor(() => expect(mockUpdateCallSummary).toHaveBeenCalledTimes(1));
+    expect(mockUpdateCallSummary.mock.calls[0][0].data.summary).toEqual({
+      keyConcerns: "typed only",
+    });
+  });
+
+  it("tells the counsellor when the write succeeded", async () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+    expect(screen.queryByTestId("save-status")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed" } });
+
+    await waitFor(() => expect(screen.getByTestId("save-status")).toHaveTextContent("saved"));
+  });
+
+  it("reports an error and keeps the edit when the write fails", async () => {
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.reject(new Error("boom")),
+    }));
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed" } });
+
+    await waitFor(() => expect(screen.getByTestId("save-status")).toHaveTextContent("error"));
+    // The value stays on screen so it can be retried, not silently reverted.
+    expect(screen.getByLabelText("Key Concerns")).toHaveValue("typed");
+  });
+
+  it("surfaces a toast when the counsellor presses Save and the flush fails", async () => {
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.reject(new Error("boom")),
+    }));
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("sends tag names, never a rated list built by calling an LLM first", async () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+
+    fireEvent.change(screen.getByLabelText("Tags"), { target: { value: "anxiety, grief " } });
+
+    await waitFor(() => expect(mockUpdateCallSummary).toHaveBeenCalledTimes(1));
+    // No LLM call anywhere on the save path: a wedged AI service can no longer
+    // hold up a save or wipe the tags. The backend stores these names as-is,
+    // keeping any rating a tag already had.
+    expect(mockUpdateCallSummary.mock.calls[0][0].data.summary).toEqual({
+      tags: ["anxiety", "grief"],
+    });
+    expect(mockGetTags).not.toHaveBeenCalled();
   });
 });
 

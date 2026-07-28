@@ -61,6 +61,9 @@ vi.mock("../VoiceNotePanel", () => ({
 }));
 
 vi.mock("@components", () => ({
+  // Renders the raw state so tests can assert what the counsellor is told.
+  SaveStatus: ({ state }: any) =>
+    state === "idle" ? null : <span data-testid="save-status">{state}</span>,
   Drawer: ({ children, title, headerButtons }: any) => (
     <div>
       <div>{title}</div>
@@ -88,25 +91,28 @@ vi.mock("@constants", () => ({
 vi.mock("@utils", () => ({
   hasPermissions: (permissions: string[] | null | undefined, required: string) =>
     Array.isArray(permissions) && permissions.includes(required),
-  // Thin passthrough of the real helper's happy path so the drawer's tag
-  // conversion (getTags → Tag[]) stays observable through the module mock.
-  rateTagsWithFallback: async (
-    getTags: (arg: { tags: string[] }) => Promise<{ data?: unknown[] }>,
-    tags: string[],
-  ) => (await getTags({ tags }))?.data ?? [],
 }));
 
 const userResult = {
   user: { role: "COUNSELLOR", email: "sandeep.malhotra+internal@helloally.ai" },
   permissions: ["view:settings:summary-fields", "edit:call:details", "counselor:access"],
 };
-vi.mock("@hooks", () => ({
-  useUser: () => userResult,
-  // Run the debounced persist synchronously so saves can be asserted.
-  useDebounce: (fn: any) => fn,
-  useAudioRecorder: () => recorderState,
-  useScribeVoiceNoteEnabled: () => ({ data: mockVoiceNoteEnabled }),
-}));
+// The autosave hook is real (its behaviour is what these tests are asserting),
+// pulled in directly rather than through the @hooks barrel so the barrel's heavy
+// modules stay out of the test worker. delayMs 0 keeps the debounce out of the
+// assertions — the waitFors below cover the remaining tick.
+vi.mock("@hooks", async () => {
+  const autosave = await import("@hooks/useFieldAutosave");
+  return {
+    useUser: () => userResult,
+    useDebounce: (fn: any) => fn,
+    useAudioRecorder: () => recorderState,
+    useScribeVoiceNoteEnabled: () => ({ data: mockVoiceNoteEnabled }),
+    SUMMARY_CHANNEL: autosave.SUMMARY_CHANNEL,
+    CUSTOM_CHANNEL: autosave.CUSTOM_CHANNEL,
+    useFieldAutosave: (options: any) => autosave.useFieldAutosave({ ...options, delayMs: 0 }),
+  };
+});
 
 vi.mock("@types", () => ({
   UserRole: { COUNSELLOR: "COUNSELLOR", ADMIN: "ADMIN" },
@@ -340,7 +346,7 @@ describe("CreateNoteDrawer", () => {
     expect(mockUpdateCallSummary).not.toHaveBeenCalled();
   });
 
-  it("converts the Tags field to the Tag[] shape before saving", async () => {
+  it("sends tag names rather than waiting on an LLM to rate them", async () => {
     mockUseGetSummaryFields.mockReturnValue({ data: ["tags"], isLoading: false });
     render(<CreateNoteDrawer open onClose={vi.fn()} />);
 
@@ -348,11 +354,10 @@ describe("CreateNoteDrawer", () => {
       target: { value: "anxiety, sleep" },
     });
 
-    await waitFor(() => expect(mockGetTags).toHaveBeenCalledWith({ tags: ["anxiety", "sleep"] }));
     await waitFor(() =>
       expect(mockUpdateCallSummary).toHaveBeenCalledWith({
         chatId: 123,
-        data: { summary: { tags: [{ tag: "x", positivity_rating: 1 }] } },
+        data: { summary: { tags: ["anxiety", "sleep"] } },
       }),
     );
   });
