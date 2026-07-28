@@ -14,7 +14,8 @@ const SIMULATION_SETTINGS_ITEMS = [
 
 const SCRIBE_SETTINGS_ITEMS = [
   { id: "enableMicrophoneMode", label: "Microphone Mode" },
-  { id: "enableDictationMode", label: "Dictation Mode" },
+  // "Dictation Mode" removed: the live dictation session is retired, the backend
+  // always hides it and ignores enableDictationMode.
   { id: "enableAudioUpload", label: "Upload Call Recording" },
   {
     id: "",

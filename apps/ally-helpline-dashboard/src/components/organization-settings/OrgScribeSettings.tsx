@@ -66,17 +66,15 @@ export const OrgScribeSettings: FC = () => {
     if (!tenant) return;
     const next: ScribeToggleId[] = [];
     if (tenant.enableMicrophoneMode) next.push("enableMicrophoneMode");
-    if (tenant.enableDictationMode) next.push("enableDictationMode");
     if (tenant.enableAudioUpload) next.push("enableAudioUpload");
     setEnabledToggles(next);
   }, [tenant]);
 
   const handleTenantToggle = async (id: ScribeToggleId) => {
     const willEnable = !enabledToggles.includes(id);
-    // Send the full trio each time so the backend never clears a sibling flag.
+    // Send both flags each time so the backend never clears a sibling flag.
     const body: UpdateOwnTenantSettingsBody = {
       enableMicrophoneMode: enabledToggles.includes("enableMicrophoneMode"),
-      enableDictationMode: enabledToggles.includes("enableDictationMode"),
       enableAudioUpload: enabledToggles.includes("enableAudioUpload"),
       [id]: willEnable,
     };
