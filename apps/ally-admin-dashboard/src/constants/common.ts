@@ -260,6 +260,7 @@ export const ApiEndpoints = {
   },
   ANALYTICS: {
     OVERVIEW: "/v1/analytics/overview",
+    HIGHLIGHTS: "/v1/analytics/highlights",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
     AGENT_JOIN_RELIABILITY: "/v1/analytics/agent-join-reliability",
     START_LATENCY: "/v1/analytics/start-latency",

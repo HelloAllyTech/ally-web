@@ -148,6 +148,17 @@ export const heatmapOpts = ({
   toolbar: { enabled: false },
 });
 
+/**
+ * A single KPI stat tile. `value` is pre-formatted by the caller (locale
+ * strings, "%" suffixes, em-dash for missing data) so this stays presentational.
+ */
+export const KpiTile = ({ label, value }: { label: string; value: string }) => (
+  <Tile className="analytics-kpi">
+    <p className="text-sm text-typography-600 mb-2">{label}</p>
+    <p className="text-3xl font-medium text-typography-900">{value}</p>
+  </Tile>
+);
+
 interface ChartCardProps {
   /** Header title (rendered as text above the chart). */
   title?: string;

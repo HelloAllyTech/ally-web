@@ -2,6 +2,7 @@ import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   AgentJoinReliabilityResponse,
   AnalyticsBucket,
+  AnalyticsHighlightsResponse,
   AnalyticsOverviewResponse,
   AnalyticsRange,
   ConversationDriftResponse,
@@ -30,6 +31,10 @@ type AgentJoinReliabilityQuery = AnalyticsRangeQuery & {
   bucket?: AnalyticsBucket;
 };
 
+type HighlightsQuery = AnalyticsRangeQuery & {
+  bucket?: AnalyticsBucket;
+};
+
 type StartLatencyQuery = AnalyticsRangeQuery & {
   bucket?: AnalyticsBucket;
   language?: string;
@@ -51,6 +56,18 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.OVERVIEW,
         method: HttpMethod.GET,
         params: range ? { range } : undefined,
+      }),
+    }),
+    // Leadership KPIs not covered by /overview or /scribe/overview: org
+    // adoption, practice minutes, roleplay quality, CSAT, track funnel, AI cost.
+    getAnalyticsHighlights: builder.query<AnalyticsHighlightsResponse, HighlightsQuery>({
+      query: ({ range, bucket } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.HIGHLIGHTS,
+        method: HttpMethod.GET,
+        params: {
+          ...(range ? { range } : {}),
+          ...(bucket ? { bucket } : {}),
+        },
       }),
     }),
     getVoiceLatency: builder.query<VoiceLatencyResponse, VoiceLatencyQuery>({
@@ -177,6 +194,7 @@ export const analyticsAPI = baseAPI.injectEndpoints({
 
 export const {
   useGetAnalyticsOverviewQuery,
+  useGetAnalyticsHighlightsQuery,
   useGetVoiceLatencyQuery,
   useGetAgentJoinReliabilityQuery,
   useGetStartLatencyQuery,
