@@ -27,4 +27,5 @@ export const USER_MANAGEMENT_TAB_SETTINGS_OPTIONS_2 = [
   { id: "enableMicrophoneMode", label: "Microphone Mode" },
   { id: "enableAudioUpload", label: "Upload Call Recording" },
   { id: "hideRankInCommunity", label: "Hide Rank in Leaderboard" },
+  { id: "isTestOrganization", label: "Test Organization (excluded from analytics)" },
 ];
