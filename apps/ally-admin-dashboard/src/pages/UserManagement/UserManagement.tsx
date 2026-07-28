@@ -159,6 +159,7 @@ export const UserManagement: FC = () => {
   const enableMicrophoneMode = tenantMethods.watch("enableMicrophoneMode");
   const enableAudioUpload = tenantMethods.watch("enableAudioUpload");
   const hideRankInCommunity = tenantMethods.watch("hideRankInCommunity");
+  const isTestOrganization = tenantMethods.watch("isTestOrganization");
 
   const getSettingValue = useCallback(
     (optionId: string): boolean => {
@@ -169,11 +170,13 @@ export const UserManagement: FC = () => {
           return enableAudioUpload;
         case "hideRankInCommunity":
           return hideRankInCommunity;
+        case "isTestOrganization":
+          return isTestOrganization;
         default:
           return false;
       }
     },
-    [enableMicrophoneMode, enableAudioUpload, hideRankInCommunity],
+    [enableMicrophoneMode, enableAudioUpload, hideRankInCommunity, isTestOrganization],
   );
 
   const optionValues = useMemo(
@@ -213,7 +216,11 @@ export const UserManagement: FC = () => {
         label: option.label,
         onClick: (enabled: boolean) => {
           tenantMethods.setValue(
-            option.id as "enableMicrophoneMode" | "enableAudioUpload" | "hideRankInCommunity",
+            option.id as
+              | "enableMicrophoneMode"
+              | "enableAudioUpload"
+              | "hideRankInCommunity"
+              | "isTestOrganization",
             enabled,
             { shouldDirty: true },
           );
