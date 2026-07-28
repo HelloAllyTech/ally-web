@@ -157,7 +157,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
                   variant={ButtonVariant.SECONDARY}
                   onClick={handleCreateNote}
                 >
-                  {`+ ${t("calls.actions.createNote")}`}
+                  {t("calls.dialog.startSession.startDictationMode")}
                 </Button>
               )}
               <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
@@ -165,7 +165,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
                   <AppTooltip location={TooltipLocation.START_SESSION_BUTTON}>
                     <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
                       <StartSession data-testid="calls-start-session-icon" />
-                      {t("calls.actions.startSession")}
+                      {t("calls.dialog.startSession.startScribeMode")}
                     </Button>
                   </AppTooltip>
                 )}
