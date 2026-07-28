@@ -8,9 +8,31 @@
 // global serif rules in `styles.css` (incl. `svg text` for Carbon Charts)
 // cover this page now.
 
+// Must match CHART_HEIGHT in chartKit.tsx — a taller skeleton than the chart it
+// stands in for shifts the whole page down on every load.
 .analytics-chart-skeleton {
   width: 100%;
-  height: 320px;
+  height: 300px;
+}
+
+// KPI tiles: one min-height so a row stays aligned whether or not an individual
+// tile has a delta line, and so the loading state doesn't collapse the row.
+.analytics-kpi {
+  min-height: 116px;
+}
+
+.analytics-kpi-skeleton {
+  width: 60%;
+  height: 36px;
+}
+
+// Scrollable region inside the expanded chart view. Carbon Toggle/Dropdown
+// internals are absolutely positioned and escape a `static` scroll container,
+// inflating scrollHeight and producing a phantom second scrollbar — so the
+// container must establish a containing block.
+.analytics-detail-scroll {
+  position: relative;
+  overflow-y: auto;
 }
 
 // Carbon Charts ships its own precompiled `styles.css` (imported just before

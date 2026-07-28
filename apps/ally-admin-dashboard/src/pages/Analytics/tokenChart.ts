@@ -1,5 +1,7 @@
 import { TokenConsumptionPoint } from "@types";
 
+import { stableScale } from "./chartScales";
+
 // Currency formatters. Kept co-located with the Token chart (mirrors how
 // latencyChart.ts keeps its ms→s helper local) rather than in shared utils —
 // this is the only consumer today. Promote to @utils if a second one appears.
@@ -21,34 +23,17 @@ const usdCompact = new Intl.NumberFormat("en-US", {
 export const formatUsd = (n: number) => usd.format(n);
 export const formatUsdCompact = (n: number) => usdCompact.format(n);
 
-// The stacked-bar segments (tasks when grouping by model, models when grouping
-// by task) are data-driven, so a static colour map won't do. Use a fixed
-// Carbon categorical palette and assign by SORTED-DISTINCT group value, so a
-// given task/model keeps the same colour across renders and across both toggle
-// states. Wraps with modulo when there are more groups than colours.
-export const TOKEN_PALETTE = [
-  "#264D8E", // blue (brand)
-  "#8a3ffc", // purple
-  "#08bdba", // teal
-  "#42be65", // green
-  "#33b1ff", // cyan
-  "#ff7eb6", // magenta
-  "#fa4d56", // red
-  "#d2a106", // gold
-  "#6929c4", // deep purple
-  "#1192e8", // light blue
-  "#005d5d", // dark teal
-  "#9f1853", // berry
-];
-
-/** Map each distinct group to a stable palette colour (sorted → deterministic). */
-export const buildColorScale = (groups: string[]): Record<string, string> => {
-  const distinct = Array.from(new Set(groups)).sort();
-  return distinct.reduce<Record<string, string>>((scale, group, i) => {
-    scale[group] = TOKEN_PALETTE[i % TOKEN_PALETTE.length];
-    return scale;
-  }, {});
-};
+/**
+ * Colour for the stacked segments (tasks when grouping by model, models when
+ * grouping by task) comes from the shared {@link stableScale}, which keys on the
+ * NAME rather than on its position in the current result set.
+ *
+ * The previous implementation assigned colours by sorted index of the groups
+ * present, so a service changed colour whenever the group set changed — flipping
+ * the breakdown toggle, changing the range, or a new provider appearing. A colour
+ * that moves encodes nothing, and the reader has no way to know it moved.
+ */
+export const buildColorScale = stableScale;
 
 export type TokenDim = "service" | "model" | "task";
 export type TokenDatum = { group: string; key: string; value: number };
