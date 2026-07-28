@@ -2,11 +2,10 @@ import { useMemo } from "react";
 
 import { DonutChart, LineChart } from "@carbon/charts-react";
 
-import { Tile } from "@ally-ui-mono/ui-shared";
 import { useGetScribeOverviewQuery, useGetScribeSummaryFailuresQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
-import { ChartCard, PALETTE, donutOpts, lineOpts } from "../chartKit";
+import { ChartCard, KpiTile, PALETTE, donutOpts, lineOpts } from "../chartKit";
 
 const BUCKET_TITLE: Record<string, string> = {
   day: "Day",
@@ -211,10 +210,7 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
             {overviewKpis.map(kpi => (
-              <Tile key={kpi.label} className="analytics-kpi">
-                <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-                <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
-              </Tile>
+              <KpiTile key={kpi.label} label={kpi.label} value={kpi.value} />
             ))}
           </div>
 
@@ -292,10 +288,7 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
         <>
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {failuresKpis.map(kpi => (
-              <Tile key={kpi.label} className="analytics-kpi">
-                <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-                <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
-              </Tile>
+              <KpiTile key={kpi.label} label={kpi.label} value={kpi.value} />
             ))}
           </div>
 

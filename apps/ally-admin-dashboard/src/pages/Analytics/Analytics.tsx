@@ -17,6 +17,7 @@ import {
 import { useGetScenarioLanguagesQuery } from "@api";
 import { AnalyticsRange } from "@types";
 
+import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { OverviewTab } from "./tabs/OverviewTab";
@@ -53,6 +54,14 @@ interface TabDef {
 }
 
 const TABS: TabDef[] = [
+  // First entry = the default landing tab (tabIndex starts at 0) — Highlights
+  // is the leadership summary, so it leads.
+  {
+    id: "highlights",
+    label: "Highlights",
+    uses: { language: false },
+    render: f => <HighlightsTab range={f.range} />,
+  },
   {
     id: "overview",
     label: "Overview",

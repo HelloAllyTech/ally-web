@@ -219,6 +219,85 @@ export interface AnalyticsOverviewResponse {
   usersByRole: UsersByRolePoint[];
 }
 
+// Leadership highlights — mirrors the backend AnalyticsHighlightsResponseDto
+// from GET /api/v1/analytics/highlights. Only the metrics NOT already served by
+// /overview or /scribe/overview live here; the tab composes all three.
+export interface HighlightsSummary {
+  activeOrgs: number;
+  completedSimulations: number;
+  practiceMinutes: number;
+  avgCompositeScore: number | null;
+  evaluatedSessions: number;
+  avgCsat: number | null;
+  csatResponses: number;
+  trackCompletionRatePct: number | null;
+  quizPassRatePct: number | null;
+  totalAiCostUsd: number;
+  costPerCompletedSimUsd: number | null;
+}
+
+export interface TopOrgRow {
+  tenantId: string;
+  tenantName: string;
+  completedSimulations: number;
+}
+
+export interface PracticeMinutesPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  minutes: number;
+  activeLearners: number;
+}
+
+export interface QualityTrendPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  avgCompositeScore: number | null;
+  evaluatedSessions: number;
+}
+
+export interface CsatTrendPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  avgRating: number | null;
+  responses: number;
+}
+
+export interface TrackFunnel {
+  enrolled: number;
+  started: number;
+  completed: number;
+  quizAttempts: number;
+  quizPassed: number;
+  quizPassRatePct: number | null;
+}
+
+export interface CostPerSimPoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  estimatedCostUsd: number;
+  completedSimulations: number;
+  /** null when the bucket had no completed simulations. */
+  costPerSimUsd: number | null;
+  unpricedCalls: number;
+}
+
+export interface AnalyticsHighlightsResponse {
+  range: AnalyticsRange;
+  bucket: string;
+  summary: HighlightsSummary;
+  topOrgs: TopOrgRow[];
+  /** Gap-filled to a contiguous bucket axis. */
+  practiceMinutes: PracticeMinutesPoint[];
+  /** Sparse — buckets with no evaluated sessions are absent. */
+  qualityTrend: QualityTrendPoint[];
+  /** Sparse — buckets with no ratings are absent. */
+  csatTrend: CsatTrendPoint[];
+  trackFunnel: TrackFunnel;
+  /** Gap-filled to a contiguous bucket axis. */
+  costPerSim: CostPerSimPoint[];
+}
+
 // Scribe-session analytics from GET /api/v1/analytics/scribe/*.
 export interface ScribeTrendPoint {
   /** Bucket start (yyyy-mm-dd). */
