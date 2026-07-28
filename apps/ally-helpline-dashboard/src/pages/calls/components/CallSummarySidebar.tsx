@@ -424,7 +424,12 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
         permissions: [Permissions.VIEW_CHAT_DETAILS],
         content: (
           <>
+            {/* Keyed on the session id: this sidebar stays mounted while the
+                user clicks from one call log row to another, so without a key
+                React reuses the same CallSummary instance (and its in-progress
+                edit state) for a different session. */}
             <CallSummary
+              key={callSummary.id}
               headerContent={
                 <SummaryHeader
                   summaryName={summaryName}

@@ -111,6 +111,9 @@ const CallSummary: FC<CallSummaryProps> = ({
   // change is gone. Fields listed here are preserved across a reseed; untouched
   // fields still receive the freshly generated values.
   const dirtySummaryKeysRef = useRef<Set<string>>(new Set());
+  // The chat whose summary is currently loaded into summaryData. Seeding is
+  // keyed on this, not on summaryStatus — see the seeding effect below.
+  const seededSummaryChatIdRef = useRef<number | null>(null);
 
   // Seed local edit state once per chat. Re-seeding on every customFieldValues
   // change would clobber the user's in-progress edits: a background refetch
@@ -128,10 +131,22 @@ const CallSummary: FC<CallSummaryProps> = ({
     }
   }, [customFieldValues, chatId]);
 
-  // Edits belong to one chat; drop the tracked keys when switching chats so a
-  // new session doesn't inherit the previous one's "preserve these" set.
+  // Switching sessions must drop the previous session's values *immediately*,
+  // before its replacement has loaded — otherwise the form still holds session
+  // A's values under session B's chatId, and a save writes A's summary onto B.
+  // Edits belong to one chat, so the dirty sets go too.
+  //
+  // Initialised to the mounting chatId so this does not fire on mount: the two
+  // seeding effects populate state on mount and a reset would wipe them.
+  const resetChatIdRef = useRef<number | null>(chatId);
   useEffect(() => {
+    if (resetChatIdRef.current === chatId) return;
+    resetChatIdRef.current = chatId;
+    setSummaryData(null);
+    setCustomLocalValues({});
+    setDirtyFieldIds(new Set());
     dirtySummaryKeysRef.current = new Set();
+    seededChatIdRef.current = null;
   }, [chatId]);
 
   const handleCustomFieldChange = (fieldDefinitionId: string, value: string | null) => {
@@ -184,19 +199,32 @@ const CallSummary: FC<CallSummaryProps> = ({
     isSearchLocationsLoading;
 
   useEffect(() => {
+    // Never seed from a summary that belongs to a different chat. RTK Query can
+    // hand back another session's cached payload for a render after chatId
+    // changes, and the id check is what stops those values being adopted (and
+    // then saved) under the new chat's id.
+    if (callSummary?.id != null && callSummary.id !== chatId) return;
+
+    // A different chat than the one currently loaded: take the server copy
+    // wholesale. Merging would be wrong here — the "edits to preserve" belong
+    // to the session we just navigated away from.
+    const isNewChat = seededSummaryChatIdRef.current !== chatId;
+
     // Merge the generated summary into state without discarding fields the user
     // has already edited this visit. Untouched fields take the generated value;
     // edited fields (dirtySummaryKeysRef) are kept so an async generation
     // landing after the user started typing can't silently wipe their edit.
-    const seedPreservingEdits = (generated: Record<string, unknown>) =>
+    const seedPreservingEdits = (generated: Record<string, unknown>) => {
       setSummaryData(prev => {
-        if (!prev) return generated;
+        if (isNewChat || !prev) return generated;
         const merged = { ...generated };
         for (const key of dirtySummaryKeysRef.current) {
           if (key in prev) merged[key] = prev[key];
         }
         return merged;
       });
+      seededSummaryChatIdRef.current = chatId;
+    };
 
     if (callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS) {
       const tags = callSummary.details.summary?.tags;
@@ -223,7 +251,11 @@ const CallSummary: FC<CallSummaryProps> = ({
       });
       setCanShowSummary(true);
     }
-  }, [callSummary?.summaryStatus, isInSidebar]);
+    // chatId is a dependency because summaryStatus alone never changes when the
+    // user switches between two sessions that have both finished generating —
+    // the effect wouldn't fire, and the previous session's summary would stay
+    // in the form.
+  }, [callSummary?.summaryStatus, callSummary?.id, chatId, isInSidebar]);
 
   useEffect(() => {
     if (initialNotes?.length > 0) {
@@ -363,9 +395,20 @@ const CallSummary: FC<CallSummaryProps> = ({
     // two catch blocks below.
     let saveFailed = false;
     if (hasDataChanged()) {
-      const existingTags: Tag[] = callSummary?.details?.summary?.tags ?? [];
-      let tagsInput: Tag[] = existingTags;
+      // Send ONLY the keys the user edited. The backend merges the patch into
+      // the stored summary, so anything not listed here keeps its stored value.
+      // Sending the whole of summaryData instead would write back the snapshot
+      // this form was seeded with — silently reverting any field the AI filled,
+      // or a regeneration produced, after that snapshot was taken.
+      const summaryPatch: Record<string, unknown> = {};
+      for (const key of dirtySummaryKeysRef.current) {
+        // Coalesce to null, not undefined: a cleared field has to reach the
+        // backend as an explicit null to be cleared. JSON.stringify drops
+        // undefined keys, which the merge reads as "leave unchanged".
+        summaryPatch[key] = summaryData?.[key] ?? null;
+      }
       if (dirtySummaryKeysRef.current.has(SummaryFieldKey.Tags)) {
+        const existingTags: Tag[] = callSummary?.details?.summary?.tags ?? [];
         const typedTags =
           summaryData?.tags
             ?.split(",")
@@ -374,12 +417,14 @@ const CallSummary: FC<CallSummaryProps> = ({
         // Ratings come from an LLM; rateTagsWithFallback caps the wait and
         // keeps the typed tags (with previous/neutral ratings) if it fails,
         // so an unhealthy AI service can no longer stall or wipe the save.
-        tagsInput = await rateTagsWithFallback(getTags, typedTags, existingTags);
+        // summaryData.tags is the comma-separated text the user typed; the
+        // stored shape is Tag[].
+        summaryPatch.tags = await rateTagsWithFallback(getTags, typedTags, existingTags);
       }
       try {
         await updateCallSummary({
           chatId,
-          data: { summary: { ...summaryData, tags: tagsInput } },
+          data: { summary: summaryPatch },
         }).unwrap();
         // Edits are now persisted; stop shadowing these keys so a later server
         // update (e.g. a retried regeneration) can flow back into the form.
