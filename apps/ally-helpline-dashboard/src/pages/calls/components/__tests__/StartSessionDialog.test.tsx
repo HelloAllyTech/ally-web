@@ -73,9 +73,16 @@ describe("StartSessionDialog", () => {
     expect(screen.getByText("Start Scribe Mode")).toBeInTheDocument();
   });
 
-  it("no longer offers the retired dictation mode", () => {
+  it("does not offer a mode choice — it is a consent step, not a menu", () => {
     render(<StartSessionDialog isOpen={true} onClose={onClose} />);
+    // Dictation is reached from the page's own button; this dialog exists only
+    // to confirm consent before recording starts.
     expect(screen.queryByText("Start Dictation Mode")).not.toBeInTheDocument();
+  });
+
+  it("shows the consent confirmation, which is the reason this step exists", () => {
+    render(<StartSessionDialog isOpen={true} onClose={onClose} />);
+    expect(screen.getByTestId("start-session-consent")).toHaveTextContent(/given consent/i);
   });
 
   it("navigates to microphone mode when Start Scribe Mode is clicked", () => {
