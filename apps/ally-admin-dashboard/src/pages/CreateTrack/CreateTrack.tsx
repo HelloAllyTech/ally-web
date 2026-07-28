@@ -63,9 +63,13 @@ export const CreateTrack: FC = () => {
 
   const sectionArray = useFieldArray({ control, name: "sections", keyName: "fieldId" });
 
+  // Keyed on the route param, not `trackId` state — `trackId` is also set
+  // internally right after a fresh create (see `persist`), and refetching at
+  // that moment races the structure PUT: the GET can return the just-created
+  // track before it has any sections, which then wipes the in-progress form.
   useEffect(() => {
-    if (trackId) getTrackById(trackId);
-  }, [trackId, getTrackById]);
+    if (id) getTrackById(id);
+  }, [id, getTrackById]);
 
   useEffect(() => {
     if (trackDetail) reset(deserializeTrack(trackDetail));
