@@ -13,11 +13,13 @@
 /** Feature-toggle rows shown at the top of the Scribe Settings tab. */
 export const SCRIBE_TOGGLE_ITEMS: { id: ScribeToggleId; label: string }[] = [
   { id: "enableMicrophoneMode", label: "Microphone Mode" },
-  { id: "enableDictationMode", label: "Dictation Mode" },
   { id: "enableAudioUpload", label: "Upload Call Recording" },
 ];
 
-export type ScribeToggleId = "enableMicrophoneMode" | "enableDictationMode" | "enableAudioUpload";
+// "Dictation Mode" used to sit between these two. The live dictation session is
+// retired — the backend always hides it and ignores enableDictationMode — so the
+// toggle is gone rather than left as a switch that does nothing.
+export type ScribeToggleId = "enableMicrophoneMode" | "enableAudioUpload";
 
 /** All custom-field types the org can enable, mirroring the admin screen. */
 export const CUSTOM_FIELD_TYPE_ITEMS: { key: string; label: string }[] = [
