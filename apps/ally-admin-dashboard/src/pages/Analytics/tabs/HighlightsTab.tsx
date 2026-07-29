@@ -2,11 +2,8 @@ import { useMemo, useState } from "react";
 
 import { LineChart, SimpleBarChart, StackedBarChart } from "@carbon/charts-react";
 
-import {
-  useGetAnalyticsHighlightsQuery,
-  useGetAnalyticsOverviewQuery,
-  useGetScribeOverviewQuery,
-} from "@api";
+import { useGetAnalyticsHighlightsQuery, useGetAnalyticsOverviewQuery } from "@api";
+import { AnalyticsBucket } from "@types";
 
 import {
   AnalyticsTabFilters,
@@ -15,11 +12,22 @@ import {
   isUnscoped,
   windowLabel,
 } from "../analyticsFilters";
-import { ChartDetailModal, ChartTableData } from "../ChartDetailModal";
+import {
+  DEFAULT_GROUPING,
+  bucketTitle,
+  groupingNote,
+  inProgressCaption,
+  isInProgress,
+  useChartGrouping,
+  withoutInProgress,
+} from "../analyticsGrouping";
+import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
+  GroupingPicker,
   KpiTile,
   MIN_N_FOR_SCORE,
+  ScrollableChart,
   boundedDomainNote,
   buildSource,
   hBarOpts,
@@ -35,6 +43,7 @@ import {
   COST_PER_SIM_SCALE,
   CUMULATIVE_USERS_SCALE,
   NEW_USERS_SCALE,
+  PLAY_TIME_SCALE,
   PRACTICE_SCALE,
   QUALITY_SCALE,
   RATING_DOMAIN,
@@ -46,6 +55,7 @@ import {
   buildCsatTrendSeries,
   buildCumulativeUsersSeries,
   buildNewUsersSeries,
+  buildPlayTimeSeries,
   buildPracticeMinutesSeries,
   buildQualityTrendSeries,
   buildRetentionSeries,
@@ -54,13 +64,14 @@ import {
   buildTopOrgBars,
   buildTotalCostSeries,
   buildTrackFunnelStages,
-  delta,
   formatKpi,
   peakActiveLearners,
   sparkValues,
+  totalPlayTimeSessions,
   totalUnpricedCalls,
 } from "../highlightsChart";
-import { latencyBucketTitle } from "../latencyChart";
+import { RoleplayVolumeCard } from "../RoleplayVolumeCard";
+import { UsageLevelCard } from "../UsageLevelCard";
 
 const SubHeading = ({ children }: { children: string }) => (
   <h2 className="text-xs font-medium uppercase tracking-wide text-typography-500 mt-8 mb-3">
@@ -70,6 +81,54 @@ const SubHeading = ({ children }: { children: string }) => (
 
 /** Note appended to a panel that stayed platform-wide under a tenant filter. */
 const scopeNote = (unscoped: boolean) => (unscoped ? ` · ${PLATFORM_WIDE_NOTE}` : "");
+
+/**
+ * The charts on this tab that carry their own grouping control.
+ *
+ * A chart is listed here when re-grouping it re-grains the SAME metric. The
+ * DAU/WAU/MAU small multiples are deliberately absent: those are trailing-window
+ * definitions sampled once per day, so "monthly DAU" is not this metric at a
+ * coarser grain, it is a different measurement. Users-by-role, the track funnel
+ * and the per-org ranking have no time axis at all, and the three fixed-window
+ * cards (cohort retention, usage levels, roleplay volume) own their own grain by
+ * construction.
+ */
+type ChartId =
+  | "newUsers"
+  | "cumulative"
+  | "retention"
+  | "sims"
+  | "practice"
+  | "playTime"
+  | "quality"
+  | "csat"
+  | "costPerSim"
+  | "totalCost";
+
+/**
+ * Which endpoint feeds each chart.
+ *
+ * Split so a grain is only fetched from the endpoint that needs it: re-graining
+ * a growth chart must not re-run the highlights aggregation (thirteen parallel
+ * queries) for a grain nothing on that side is showing.
+ */
+const OVERVIEW_CHARTS = ["newUsers", "cumulative", "retention", "sims"] as const;
+const HIGHLIGHTS_CHARTS = [
+  "practice",
+  "playTime",
+  "quality",
+  "csat",
+  "costPerSim",
+  "totalCost",
+] as const;
+
+const CHART_IDS: ChartId[] = [...OVERVIEW_CHARTS, ...HIGHLIGHTS_CHARTS];
+
+/** Every chart opens on the same grain, so the first paint is two requests. */
+const DEFAULT_GROUPINGS = Object.fromEntries(CHART_IDS.map(id => [id, DEFAULT_GROUPING])) as Record<
+  ChartId,
+  AnalyticsBucket
+>;
 
 /**
  * Highlights — the whole platform picture on one tab.
@@ -83,112 +142,338 @@ const scopeNote = (unscoped: boolean) => (unscoped ? ` · ${PLATFORM_WIDE_NOTE}`
  * supporting tiles in greys: if every panel shouts, the page has no focus, and
  * salience has to be budgeted across the whole screen rather than per chart.
  *
- * Every KPI carries its sample size and, when the server was asked for a
- * comparison window, its change against a NAMED basis — "+12%" with nothing
- * beside it is not a fact about anything.
+ * ## Window and grain
+ *
+ * The tab is **all-time** and shows no time-range picker (declared by
+ * `TabDef.uses.range` in Analytics.tsx, which drives both the picker and the
+ * window queried, so the two cannot disagree). Leadership's question here is
+ * about the whole history; what replaces the page-level range is **per-chart
+ * grouping** — each time series carries its own day/week/month/year control, so
+ * one reader can look at years of growth and weeks of quality at the same time.
+ *
+ * Grouping resolves SERVER-side: one query per grain currently on screen,
+ * deduplicated by RTK Query. Re-binning on the client would be correct only for
+ * counts and sums — a mean of monthly means weights a quiet month like a busy
+ * one, and a median or p95 cannot be recovered from bucketed values at all. The
+ * base grain stays fetched even when no chart shows it, because the KPI strip,
+ * the funnel and the per-org ranking read from that response.
+ *
+ * Two consequences this surface states rather than hides:
+ *  - **No KPI deltas.** An all-time window has no equal-length predecessor, so
+ *    the server returns no comparison basis and each tile shows its bare value
+ *    with its sample size. A "+12%" with no named basis is not a fact about
+ *    anything, so the arrow goes rather than the basis being invented.
+ *  - **The current period is left off every plot.** It is still accruing, so it
+ *    can only rise and would draw as a fall. It stays in the expanded table and
+ *    the export, flagged, which is where a provisional number belongs.
  */
 export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
-  // `compare: "prev"` is requested here because this tab owns the KPI strip; the
-  // extra query is only paid for where a delta is actually rendered.
-  const highlights = useGetAnalyticsHighlightsQuery({ ...query, compare: "prev" });
-  const overview = useGetAnalyticsOverviewQuery({ ...query, compare: "prev" });
-  const scribe = useGetScribeOverviewQuery({ ...query, compare: "prev" });
+  const { groupingFor, setGrouping, bucketsFor } = useChartGrouping<ChartId>(
+    DEFAULT_GROUPINGS,
+    DEFAULT_GROUPING,
+  );
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  /* ------------------------- one query per grain --------------------------- */
+  //
+  // Four hooks per endpoint, fixed in number so hook order is stable, each
+  // skipped unless a chart FED BY THAT ENDPOINT is reading that grain. Untouched,
+  // this is exactly two requests — the same as before the control existed — and
+  // re-graining one chart adds exactly one. `compare` is never requested: the
+  // window is all-time, which has no comparison basis.
+  const hBuckets = bucketsFor(HIGHLIGHTS_CHARTS);
+  const oBuckets = bucketsFor(OVERVIEW_CHARTS);
+
+  const hQ = {
+    day: useGetAnalyticsHighlightsQuery(
+      { ...query, bucket: "day" },
+      { skip: !hBuckets.has("day") },
+    ),
+    week: useGetAnalyticsHighlightsQuery(
+      { ...query, bucket: "week" },
+      { skip: !hBuckets.has("week") },
+    ),
+    month: useGetAnalyticsHighlightsQuery(
+      { ...query, bucket: "month" },
+      { skip: !hBuckets.has("month") },
+    ),
+    year: useGetAnalyticsHighlightsQuery(
+      { ...query, bucket: "year" },
+      { skip: !hBuckets.has("year") },
+    ),
+  };
+  const oQ = {
+    day: useGetAnalyticsOverviewQuery({ ...query, bucket: "day" }, { skip: !oBuckets.has("day") }),
+    week: useGetAnalyticsOverviewQuery(
+      { ...query, bucket: "week" },
+      { skip: !oBuckets.has("week") },
+    ),
+    month: useGetAnalyticsOverviewQuery(
+      { ...query, bucket: "month" },
+      { skip: !oBuckets.has("month") },
+    ),
+    year: useGetAnalyticsOverviewQuery(
+      { ...query, bucket: "year" },
+      { skip: !oBuckets.has("year") },
+    ),
+  };
+
+  // The base response. KPIs and the panels with no time axis read from here, so
+  // they do not blink out when the last chart on this grain is switched away.
+  const highlights = hQ[DEFAULT_GROUPING];
+  const overview = oQ[DEFAULT_GROUPING];
 
   const highlightsLoading = highlights.isLoading && !highlights.data;
   const overviewLoading = overview.isLoading && !overview.data;
-  const scribeLoading = scribe.isLoading && !scribe.data;
 
   const h = highlights.data;
   const o = overview.data;
-  const s = scribe.data;
   const summary = h?.summary;
-  const prev = h?.previous;
   const overviewSummary = o?.summary;
-  const overviewPrev = o?.previous;
-  const scribeSummary = s?.summary;
-  const scribePrev = s?.previous;
-
-  const bucketTitle = latencyBucketTitle(h?.bucket);
-  const overviewBucketTitle = latencyBucketTitle(o?.window?.bucket);
-  const basis = h?.previousLabel ? `vs ${h.previousLabel}` : undefined;
-  const overviewBasis = o?.previousLabel ? `vs ${o.previousLabel}` : undefined;
-  const scribeBasis = s?.previousLabel ? `vs ${s.previousLabel}` : undefined;
 
   const hWindow = windowLabel(h?.window);
   const oWindow = windowLabel(o?.window);
-  const sWindow = windowLabel(s?.window);
 
   const costUnscoped = isUnscoped("costPerSim", h?.scoping);
   const orgsUnscoped = isUnscoped("topOrgs", h?.scoping);
 
-  /* ----------------------------- series ----------------------------------- */
+  /**
+   * The grouping control for one chart. A function returning an element, not a
+   * component defined in the render body — a fresh component identity each
+   * render would remount the picker (and unmount the chart's sibling subtree)
+   * every time any state on this tab changed.
+   */
+  const picker = (chart: ChartId) => (
+    <GroupingPicker
+      id={`highlights-grouping-${chart}`}
+      value={groupingFor(chart)}
+      onChange={grouping => setGrouping(chart, grouping)}
+    />
+  );
 
-  const newUsers = useMemo(() => buildNewUsersSeries(o?.userGrowth ?? []), [o]);
-  const cumulativeUsers = useMemo(() => buildCumulativeUsersSeries(o?.userGrowth ?? []), [o]);
+  /**
+   * Whether a chart's OWN grain is still in flight, not the tab as a whole.
+   *
+   * `isUninitialized` counts: on the render where a grain is first selected the
+   * hook has only just stopped being skipped, so it reports neither loading nor
+   * fetching yet. Without it the card renders its empty state ("No data for this
+   * range") for a frame before the request it is waiting on has even started.
+   */
+  const busy = (q: {
+    isLoading: boolean;
+    isFetching: boolean;
+    isUninitialized: boolean;
+    data?: unknown;
+  }) => !q.data && (q.isLoading || q.isFetching || q.isUninitialized);
+
+  /* --------------------- per-chart responses and grains -------------------- */
+
+  const newUsersQ = oQ[groupingFor("newUsers")];
+  const cumulativeQ = oQ[groupingFor("cumulative")];
+  const retentionQ = oQ[groupingFor("retention")];
+  const simsQ = oQ[groupingFor("sims")];
+  const practiceQ = hQ[groupingFor("practice")];
+  const playTimeQ = hQ[groupingFor("playTime")];
+  const qualityQ = hQ[groupingFor("quality")];
+  const csatQ = hQ[groupingFor("csat")];
+  const costPerSimQ = hQ[groupingFor("costPerSim")];
+  const totalCostQ = hQ[groupingFor("totalCost")];
+
+  const grain = {
+    newUsers: groupingFor("newUsers"),
+    cumulative: groupingFor("cumulative"),
+    retention: groupingFor("retention"),
+    sims: groupingFor("sims"),
+    practice: groupingFor("practice"),
+    playTime: groupingFor("playTime"),
+    quality: groupingFor("quality"),
+    csat: groupingFor("csat"),
+    costPerSim: groupingFor("costPerSim"),
+    totalCost: groupingFor("totalCost"),
+  };
+
+  /* ----------------------------- plotted series ---------------------------- */
+  //
+  // `withoutInProgress` strips the still-accruing period from what is PLOTTED
+  // only. The detail tables below read the full arrays and flag that row.
+
+  const newUsersPoints = newUsersQ.data?.userGrowth ?? [];
+  const newUsersInProgress = newUsersQ.data?.window.inProgressBucket;
+  const newUsers = useMemo(
+    () => buildNewUsersSeries(withoutInProgress(newUsersPoints, p => p.date, newUsersInProgress)),
+    [newUsersPoints, newUsersInProgress],
+  );
+
+  const cumulativePoints = cumulativeQ.data?.userGrowth ?? [];
+  const cumulativeInProgress = cumulativeQ.data?.window.inProgressBucket;
+  const cumulativeUsers = useMemo(
+    () =>
+      buildCumulativeUsersSeries(
+        withoutInProgress(cumulativePoints, p => p.date, cumulativeInProgress),
+      ),
+    [cumulativePoints, cumulativeInProgress],
+  );
+
+  const retentionPoints = retentionQ.data?.retention ?? [];
+  const retentionInProgress = retentionQ.data?.window.inProgressBucket;
+  const retention = useMemo(
+    () =>
+      buildRetentionSeries(withoutInProgress(retentionPoints, p => p.bucket, retentionInProgress)),
+    [retentionPoints, retentionInProgress],
+  );
+
+  const simsPoints = simsQ.data?.simulationsCompleted ?? [];
+  const simsInProgress = simsQ.data?.window.inProgressBucket;
+  const sims = useMemo(
+    () => buildSimulationsSeries(withoutInProgress(simsPoints, p => p.bucket, simsInProgress)),
+    [simsPoints, simsInProgress],
+  );
+
+  const practicePoints = practiceQ.data?.practiceMinutes ?? [];
+  const practiceInProgress = practiceQ.data?.window.inProgressBucket;
+  const practice = useMemo(
+    () =>
+      buildPracticeMinutesSeries(
+        withoutInProgress(practicePoints, p => p.bucket, practiceInProgress),
+      ),
+    [practicePoints, practiceInProgress],
+  );
+  const learners = useMemo(() => peakActiveLearners(practicePoints), [practicePoints]);
+
+  const playTimePoints = playTimeQ.data?.playTime ?? [];
+  const playTimeInProgress = playTimeQ.data?.window.inProgressBucket;
+  const playTime = useMemo(
+    () => buildPlayTimeSeries(withoutInProgress(playTimePoints, p => p.bucket, playTimeInProgress)),
+    [playTimePoints, playTimeInProgress],
+  );
+  const playTimeSessions = useMemo(() => totalPlayTimeSessions(playTimePoints), [playTimePoints]);
+
+  const qualityPoints = qualityQ.data?.qualityTrend ?? [];
+  const qualityInProgress = qualityQ.data?.window.inProgressBucket;
+  const quality = useMemo(
+    () =>
+      buildQualityTrendSeries(withoutInProgress(qualityPoints, p => p.bucket, qualityInProgress)),
+    [qualityPoints, qualityInProgress],
+  );
+
+  const csatPoints = csatQ.data?.csatTrend ?? [];
+  const csatInProgress = csatQ.data?.window.inProgressBucket;
+  const csat = useMemo(
+    () => buildCsatTrendSeries(withoutInProgress(csatPoints, p => p.bucket, csatInProgress)),
+    [csatPoints, csatInProgress],
+  );
+
+  const costPoints = costPerSimQ.data?.costPerSim ?? [];
+  const costInProgress = costPerSimQ.data?.window.inProgressBucket;
+  const costPerSim = useMemo(
+    () => buildCostPerSimSeries(withoutInProgress(costPoints, p => p.bucket, costInProgress)),
+    [costPoints, costInProgress],
+  );
+  const unpriced = useMemo(() => totalUnpricedCalls(costPoints), [costPoints]);
+
+  const totalCostPoints = totalCostQ.data?.costPerSim ?? [];
+  const totalCostInProgress = totalCostQ.data?.window.inProgressBucket;
+  const totalCost = useMemo(
+    () =>
+      buildTotalCostSeries(withoutInProgress(totalCostPoints, p => p.bucket, totalCostInProgress)),
+    [totalCostPoints, totalCostInProgress],
+  );
+
+  /* --------------- base-response panels (no grain of their own) ------------- */
+
   const activeMultiples = useMemo(() => buildActiveUserMultiples(o?.activeUsers ?? []), [o]);
-  const retention = useMemo(() => buildRetentionSeries(o?.retention ?? []), [o]);
-  const sims = useMemo(() => buildSimulationsSeries(o?.simulationsCompleted ?? []), [o]);
   const roles = useMemo(() => buildRoleBars(o?.usersByRole ?? []), [o]);
-
-  const practice = useMemo(() => buildPracticeMinutesSeries(h?.practiceMinutes ?? []), [h]);
-  const learners = useMemo(() => peakActiveLearners(h?.practiceMinutes ?? []), [h]);
-  const quality = useMemo(() => buildQualityTrendSeries(h?.qualityTrend ?? []), [h]);
-  const csat = useMemo(() => buildCsatTrendSeries(h?.csatTrend ?? []), [h]);
-  const costPerSim = useMemo(() => buildCostPerSimSeries(h?.costPerSim ?? []), [h]);
-  const totalCost = useMemo(() => buildTotalCostSeries(h?.costPerSim ?? []), [h]);
-  const unpriced = useMemo(() => totalUnpricedCalls(h?.costPerSim ?? []), [h]);
   const topOrgs = useMemo(() => buildTopOrgBars(h?.topOrgs ?? [], h?.topOrgsBelowFloor), [h]);
   const funnelStages = useMemo(() => buildTrackFunnelStages(h?.trackFunnel), [h]);
 
   /* ------------------------------- KPIs ----------------------------------- */
 
+  const baseInProgress = h?.window.inProgressBucket;
+  const baseOverviewInProgress = o?.window.inProgressBucket;
+
+  // Sparklines come from the BASE grain, not from each chart's grain: a KPI's
+  // trend should not change shape because someone re-grouped one chart below it.
+  // They drop the accruing period for the same reason the plots do.
+  const kpiSparks = useMemo(() => {
+    const growth = withoutInProgress(o?.userGrowth ?? [], p => p.date, baseOverviewInProgress);
+    return {
+      cumulative: sparkValues(buildCumulativeUsersSeries(growth)),
+      sims: sparkValues(
+        buildSimulationsSeries(
+          withoutInProgress(o?.simulationsCompleted ?? [], p => p.bucket, baseOverviewInProgress),
+        ),
+      ),
+      practice: sparkValues(
+        buildPracticeMinutesSeries(
+          withoutInProgress(h?.practiceMinutes ?? [], p => p.bucket, baseInProgress),
+        ),
+      ),
+      quality: sparkValues(
+        buildQualityTrendSeries(
+          withoutInProgress(h?.qualityTrend ?? [], p => p.bucket, baseInProgress),
+        ),
+      ),
+      csat: sparkValues(
+        buildCsatTrendSeries(withoutInProgress(h?.csatTrend ?? [], p => p.bucket, baseInProgress)),
+      ),
+      costPerSim: sparkValues(
+        buildCostPerSimSeries(
+          withoutInProgress(h?.costPerSim ?? [], p => p.bucket, baseInProgress),
+        ),
+      ),
+    };
+  }, [h, o, baseInProgress, baseOverviewInProgress]);
+
+  // Each tile states what it counts, in one line, on its face. The strip is the
+  // part of this page most likely to be screenshotted on its own, and a bare
+  // "Active orgs: 0" is not interpretable without knowing that "active" means a
+  // COMPLETED simulation and that the figure covers all of the platform's
+  // history. Definitions are worded to match the derivations the charts cite.
+  //
+  // No `delta` / `comparisonLabel` on any tile: the window is all-time, so the
+  // server returns no comparison basis and there is nothing honest to compare
+  // against. The tiles fall back to showing their sample size.
   const kpis = [
     {
       label: "Total users",
+      description: "Every registered account, all time.",
       value: formatKpi(overviewSummary?.totalUsers),
-      delta: delta(overviewSummary?.totalUsers, overviewPrev?.totalUsers),
-      comparisonLabel: overviewBasis,
-      deltaDecimals: 0,
-      spark: sparkValues(cumulativeUsers),
+      spark: kpiSparks.cumulative,
       loading: overviewLoading,
     },
     {
       label: "Active users",
+      description:
+        "Distinct people who have started at least one simulation — started, not necessarily finished.",
       value: formatKpi(overviewSummary?.activeUsers),
-      delta: delta(overviewSummary?.activeUsers, overviewPrev?.activeUsers),
-      comparisonLabel: overviewBasis,
-      deltaDecimals: 0,
       loading: overviewLoading,
     },
     {
       label: "Active orgs",
+      description:
+        "Organisations with at least one completed simulation. An org that only browsed does not count.",
       value: formatKpi(summary?.activeOrgs),
-      delta: delta(summary?.activeOrgs, prev?.activeOrgs),
-      comparisonLabel: basis,
-      deltaDecimals: 0,
       loading: highlightsLoading,
     },
     {
       label: "Completed sims",
+      description:
+        "Roleplay sessions played through to the end. Abandoned and failed runs are excluded.",
       value: formatKpi(summary?.completedSimulations),
-      delta: delta(summary?.completedSimulations, prev?.completedSimulations),
-      comparisonLabel: basis,
-      deltaDecimals: 0,
-      spark: sparkValues(sims),
+      spark: kpiSparks.sims,
       loading: highlightsLoading,
     },
     {
       label: "Practice minutes",
+      description:
+        "Total minutes learners spent practising, summed across everyone. A few heavy users can carry this on their own.",
       value: formatKpi(summary?.practiceMinutes),
-      delta: delta(summary?.practiceMinutes, prev?.practiceMinutes),
-      comparisonLabel: basis,
-      deltaDecimals: 0,
-      spark: sparkValues(practice),
+      spark: kpiSparks.practice,
       loading: highlightsLoading,
     },
     {
       label: "Avg quality score",
+      description: `Mean composite score of evaluated sessions, ${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]}, judged by an LLM against the scenario rubric.`,
       value: formatKpi(summary?.avgCompositeScore, { decimals: 1 }),
       // Below the documented minimum this tile shows "not enough data" instead:
       // a one-decimal mean of a handful of LLM-judged sessions is noise wearing
@@ -196,87 +481,75 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
       n: summary?.evaluatedSessions,
       nUnit: "evaluated sessions",
       minN: MIN_N_FOR_SCORE,
-      delta: delta(summary?.avgCompositeScore, prev?.avgCompositeScore),
-      comparisonLabel: basis,
-      spark: sparkValues(quality),
+      spark: kpiSparks.quality,
       loading: highlightsLoading,
     },
     {
       label: "Avg rating",
+      description: `Mean ${RATING_DOMAIN[0]}–${RATING_DOMAIN[1]} rating learners gave after a session. Rating is optional, so this covers only those who answered.`,
       value: formatKpi(summary?.avgCsat, { decimals: 2 }),
       n: summary?.csatResponses,
       nUnit: "responses",
       minN: MIN_N_FOR_SCORE,
-      delta: delta(summary?.avgCsat, prev?.avgCsat),
-      comparisonLabel: basis,
-      deltaDecimals: 2,
-      spark: sparkValues(csat),
+      spark: kpiSparks.csat,
       loading: highlightsLoading,
     },
     {
-      label: "Scribe success rate",
-      value: formatKpi(scribeSummary?.successRatePct, { suffix: "%" }),
-      // Sourced from a third endpoint over its own window, hence its own basis.
-      n: scribeSummary?.totalSessions,
-      nUnit: `sessions · ${sWindow}`,
-      delta: delta(scribeSummary?.successRatePct, scribePrev?.successRatePct),
-      comparisonLabel: scribeBasis,
-      deltaSuffix: "pp",
-      loading: scribeLoading,
-    },
-    {
       label: "AI cost / sim",
+      // The scope note is on the tile, not just on the chart below: this tile
+      // draws from the same unattributable spend rows, so under a tenant filter
+      // it is a platform-wide number and has to say so where it is read.
+      description:
+        "Estimated AI spend (LLM + speech-to-text + text-to-speech) divided by completed sims. Priced at read time, not a billed figure." +
+        scopeNote(costUnscoped),
       value: formatKpi(summary?.costPerCompletedSimUsd, { prefix: "$", decimals: 2 }),
-      delta: delta(summary?.costPerCompletedSimUsd, prev?.costPerCompletedSimUsd),
-      comparisonLabel: basis,
-      deltaDecimals: 2,
-      deltaSuffix: "",
-      // Cheaper is better for cost, so a rise is bad — the arrow and colour have
-      // to follow the metric, not assume "up is good".
-      higherIsBetter: false,
-      spark: sparkValues(costPerSim),
+      spark: kpiSparks.costPerSim,
       loading: highlightsLoading,
     },
   ];
 
   /* ------------------------------ options --------------------------------- */
+  //
+  // Memoised on the chart's own grain: the axis title is the only thing in these
+  // that varies, and a fresh options object on every render makes Carbon re-apply
+  // (and re-animate) the chart.
 
   const newUsersOpts = useMemo(
     () =>
       timeBarOpts({
         leftTitle: "New users",
-        bottomTitle: overviewBucketTitle,
+        bottomTitle: bucketTitle(grain.newUsers),
         colorScale: NEW_USERS_SCALE,
       }),
-    [overviewBucketTitle],
+    [grain.newUsers],
   );
   const cumulativeOpts = useMemo(
     () =>
       lineOpts({
         leftTitle: "Users",
-        bottomTitle: overviewBucketTitle,
+        bottomTitle: bucketTitle(grain.cumulative),
         colorScale: CUMULATIVE_USERS_SCALE,
         legend: false,
       }),
-    [overviewBucketTitle],
+    [grain.cumulative],
   );
   const retentionOpts = useMemo(
     () =>
       stackedBarOpts({
         leftTitle: "Active users",
-        bottomTitle: "Week",
+        bottomTitle: bucketTitle(grain.retention),
         colorScale: RETENTION_SCALE,
       }),
-    [],
+    [grain.retention],
   );
   const simsOpts = useMemo(
     () =>
       timeBarOpts({
         leftTitle: "Completed",
-        bottomTitle: "Week",
+        bottomTitle: bucketTitle(grain.sims),
         colorScale: { Simulations: CONTEXT.line },
       }),
-    [],
+    [grain.sims],
   );
   const rolesOpts = useMemo(
     () =>
@@ -295,53 +568,62 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
     () =>
       lineOpts({
         leftTitle: "Minutes",
-        bottomTitle: bucketTitle,
+        bottomTitle: bucketTitle(grain.practice),
         colorScale: PRACTICE_SCALE,
         legend: false,
       }),
-    [bucketTitle],
+    [grain.practice],
+  );
+  const playTimeOpts = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Minutes per session",
+        bottomTitle: bucketTitle(grain.playTime),
+        colorScale: PLAY_TIME_SCALE,
+      }),
+    [grain.playTime],
   );
   const qualityOpts = useMemo(
     () =>
       lineOpts({
         leftTitle: "Composite score",
-        bottomTitle: bucketTitle,
+        bottomTitle: bucketTitle(grain.quality),
         colorScale: QUALITY_SCALE,
         legend: false,
         domain: SCORE_DOMAIN,
       }),
-    [bucketTitle],
+    [grain.quality],
   );
   const qualityZoomedOpts = useMemo(
     () =>
       lineOpts({
         leftTitle: "Composite score",
-        bottomTitle: bucketTitle,
+        bottomTitle: bucketTitle(grain.quality),
         colorScale: QUALITY_SCALE,
         legend: false,
       }),
-    [bucketTitle],
+    [grain.quality],
   );
   const csatOpts = useMemo(
     () =>
       lineOpts({
         leftTitle: "Rating",
-        bottomTitle: bucketTitle,
+        bottomTitle: bucketTitle(grain.csat),
         colorScale: CSAT_SCALE,
         legend: false,
         domain: RATING_DOMAIN,
       }),
-    [bucketTitle],
+    [grain.csat],
   );
   const csatZoomedOpts = useMemo(
     () =>
       lineOpts({
         leftTitle: "Rating",
-        bottomTitle: bucketTitle,
+        bottomTitle: bucketTitle(grain.csat),
         colorScale: CSAT_SCALE,
         legend: false,
       }),
-    [bucketTitle],
+    [grain.csat],
   );
   const orgsOpts = useMemo(
     () =>
@@ -358,32 +640,42 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
     () =>
       lineOpts({
         leftTitle: "USD per simulation",
-        bottomTitle: bucketTitle,
+        bottomTitle: bucketTitle(grain.costPerSim),
         colorScale: COST_PER_SIM_SCALE,
         legend: false,
       }),
-    [bucketTitle],
+    [grain.costPerSim],
   );
   const totalCostOpts = useMemo(
     () =>
       timeBarOpts({
         leftTitle: "USD",
-        bottomTitle: bucketTitle,
+        bottomTitle: bucketTitle(grain.totalCost),
         colorScale: TOTAL_COST_SCALE,
       }),
-    [bucketTitle],
+    [grain.totalCost],
   );
 
   /* --------------------------- detail tables ------------------------------ */
 
-  const table = (
-    series: { key: string; value: number | null }[],
-    keyHeader: string,
-    valueHeader: string,
-  ): ChartTableData => ({
-    columns: [keyHeader, valueHeader],
-    rows: series.map(d => [d.key, d.value]),
-  });
+  /** Bucket label for a table row, flagged while the period is still accruing. */
+  const rowKey = (bucket: string, inProgress?: string | null) =>
+    isInProgress(bucket, inProgress) ? `${bucket} (in progress)` : bucket;
+
+  /** The header lines every export carries: window, grain, and the omission. */
+  const exportLines = (
+    window: string,
+    grouping: AnalyticsBucket,
+    inProgress?: string | null,
+    ...extra: string[]
+  ) => [
+    `Window: ${window}`,
+    `Grouping: ${bucketTitle(grouping)}`,
+    ...(inProgress
+      ? [`${inProgress} is still accruing — provisional, and omitted from the chart`]
+      : []),
+    ...extra,
+  ];
 
   const costUnpricedNote =
     unpriced > 0
@@ -392,10 +684,11 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* KPI strip. Sample sizes and comparison bases live on the tiles, not in
+      {/* KPI strip. Definitions and sample sizes live on the tiles, not in
           tooltips — a caveat that only appears on hover never reaches the
-          screenshot that ends up in a board deck. */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+          screenshot that ends up in a board deck. No change-vs-previous on an
+          all-time window: see the file header. */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
         {kpis.map(kpi => (
           <KpiTile key={kpi.label} {...kpi} />
         ))}
@@ -416,47 +709,74 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <ChartCard
             title="New users per period"
-            caption="Registrations in each period — the growth signal."
+            caption={`Registrations in each period — the growth signal.${inProgressCaption(
+              grain.newUsers,
+              newUsersInProgress,
+            )}`}
             source={buildSource({
               derivation: "users.createdAt, bucketed",
-              window: oWindow,
-              asOf: asOf(o?.window),
+              window: windowLabel(newUsersQ.data?.window),
+              extra: groupingNote(grain.newUsers),
+              asOf: asOf(newUsersQ.data?.window),
             })}
-            loading={overviewLoading}
-            empty={!overviewLoading && newUsers.length === 0}
+            loading={busy(newUsersQ)}
+            error={newUsersQ.isError}
+            onRetry={newUsersQ.refetch}
+            empty={!busy(newUsersQ) && newUsers.length === 0}
+            controls={picker("newUsers")}
             onExpand={() => setExpanded("newUsers")}
           >
-            <SimpleBarChart data={newUsers} options={newUsersOpts} />
+            <ScrollableChart data={newUsers}>
+              <SimpleBarChart data={newUsers} options={newUsersOpts} />
+            </ScrollableChart>
           </ChartCard>
 
           <ChartCard
             title="Cumulative users"
-            caption="Running total. Shown separately because it is two orders of magnitude larger than the per-period figure — on one axis it flattens the chart beside it."
+            caption={`Running total. Shown separately because it is two orders of magnitude larger than the per-period figure — on one axis it flattens the chart beside it.${inProgressCaption(
+              grain.cumulative,
+              cumulativeInProgress,
+            )}`}
             source={buildSource({
               derivation: "Running total of registrations",
-              window: oWindow,
-              asOf: asOf(o?.window),
+              window: windowLabel(cumulativeQ.data?.window),
+              extra: groupingNote(grain.cumulative),
+              asOf: asOf(cumulativeQ.data?.window),
             })}
-            loading={overviewLoading}
-            empty={!overviewLoading && cumulativeUsers.length === 0}
+            loading={busy(cumulativeQ)}
+            error={cumulativeQ.isError}
+            onRetry={cumulativeQ.refetch}
+            empty={!busy(cumulativeQ) && cumulativeUsers.length === 0}
+            controls={picker("cumulative")}
             onExpand={() => setExpanded("cumulative")}
           >
-            <LineChart data={cumulativeUsers} options={cumulativeOpts} />
+            <ScrollableChart data={cumulativeUsers}>
+              <LineChart data={cumulativeUsers} options={cumulativeOpts} />
+            </ScrollableChart>
           </ChartCard>
 
           <ChartCard
-            title="Weekly active users — new vs returning"
-            caption="Stacked because the two partition the week's active users."
+            title="Active users — new vs returning"
+            caption={`Stacked because the two partition the period's active users. "New" means the account was created in that same period, so the split moves with the grouping — read yearly, most of a year's actives count as returning.${inProgressCaption(
+              grain.retention,
+              retentionInProgress,
+            )}`}
             source={buildSource({
-              derivation: "Distinct active users per ISO week, split by account age",
-              window: oWindow,
-              asOf: asOf(o?.window),
+              derivation: "Distinct active users per period, split by account age",
+              window: windowLabel(retentionQ.data?.window),
+              extra: groupingNote(grain.retention),
+              asOf: asOf(retentionQ.data?.window),
             })}
-            loading={overviewLoading}
-            empty={!overviewLoading && retention.length === 0}
+            loading={busy(retentionQ)}
+            error={retentionQ.isError}
+            onRetry={retentionQ.refetch}
+            empty={!busy(retentionQ) && retention.length === 0}
+            controls={picker("retention")}
             onExpand={() => setExpanded("retention")}
           >
-            <StackedBarChart data={retention} options={retentionOpts} />
+            <ScrollableChart data={retention}>
+              <StackedBarChart data={retention} options={retentionOpts} />
+            </ScrollableChart>
           </ChartCard>
 
           <ChartCard
@@ -480,10 +800,10 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
 
       {/* Sits next to "new vs returning" deliberately: both are retention, and
           adjacency is what tells the reader they are related. That chart
-          re-partitions each week independently; this one follows one cohort
+          re-partitions each period independently; this one follows one cohort
           forward, which is the only way to see whether newer intakes stick. It
-          owns its own query because it is all-time — it cannot honour the page's
-          range, and says so on its face. */}
+          owns its own query and is month-grained by construction — a cohort
+          triangle needs a fixed cohort grain, so it carries no grouping control. */}
       <div className="mt-4">
         <CohortRetentionCard tenantId={query.tenantId} />
       </div>
@@ -493,47 +813,116 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <ChartCard
           title="Practice minutes"
-          caption="Total minutes learners spent practising. Zero periods are real zeros, not missing data."
+          caption={`Total minutes learners spent practising. Zero periods are real zeros, not missing data.${inProgressCaption(
+            grain.practice,
+            practiceInProgress,
+          )}`}
           source={buildSource({
             derivation: "Sum of user_daily_scores.minutesPlayed",
-            window: hWindow,
+            window: windowLabel(practiceQ.data?.window),
             n: learners,
             nUnit: "learners at peak",
-            asOf: asOf(h?.window),
+            extra: groupingNote(grain.practice),
+            asOf: asOf(practiceQ.data?.window),
           })}
-          loading={highlightsLoading}
-          error={highlights.isError}
-          onRetry={highlights.refetch}
-          empty={!highlightsLoading && practice.length === 0}
+          loading={busy(practiceQ)}
+          error={practiceQ.isError}
+          onRetry={practiceQ.refetch}
+          empty={!busy(practiceQ) && practice.length === 0}
+          controls={picker("practice")}
           onExpand={() => setExpanded("practice")}
         >
-          <LineChart data={practice} options={practiceOpts} />
+          <ScrollableChart data={practice}>
+            <LineChart data={practice} options={practiceOpts} />
+          </ScrollableChart>
         </ChartCard>
 
         <ChartCard
-          title="Completed simulations per week"
-          caption="Volume context for the quality and cost figures."
+          title="Average simulation play time"
+          caption={`How long one simulation lasts. The mean is the headline; the median and p95 are there because session length is skewed — a few very long sittings pull an average away from the typical session. Breaks in the lines are periods with no completed session, not zero-length ones.${inProgressCaption(
+            grain.playTime,
+            playTimeInProgress,
+          )}`}
           source={buildSource({
-            derivation: "Sessions with eventStatus COMPLETED, per ISO week",
-            window: oWindow,
-            asOf: asOf(o?.window),
+            derivation:
+              "scenario_session_details.callDuration over COMPLETED sessions, net of paused time",
+            window: windowLabel(playTimeQ.data?.window),
+            n: playTimeSessions,
+            nUnit: "timed sessions",
+            extra: groupingNote(grain.playTime),
+            asOf: asOf(playTimeQ.data?.window),
           })}
-          loading={overviewLoading}
-          empty={!overviewLoading && sims.length === 0}
+          takeaway={
+            summary?.avgPlayTimeMinutes !== null && summary?.avgPlayTimeMinutes !== undefined
+              ? `${summary.avgPlayTimeMinutes} min per simulation on average, all time`
+              : undefined
+          }
+          loading={busy(playTimeQ)}
+          error={playTimeQ.isError}
+          onRetry={playTimeQ.refetch}
+          empty={!busy(playTimeQ) && playTime.every(d => d.value === null)}
+          controls={picker("playTime")}
+          onExpand={() => setExpanded("playTime")}
+        >
+          <ScrollableChart data={playTime}>
+            <LineChart data={playTime} options={playTimeOpts} />
+          </ScrollableChart>
+        </ChartCard>
+
+        <ChartCard
+          title="Completed simulations"
+          caption={`Volume context for the quality and cost figures.${inProgressCaption(
+            grain.sims,
+            simsInProgress,
+          )}`}
+          source={buildSource({
+            derivation: "Sessions with eventStatus COMPLETED, per period",
+            window: windowLabel(simsQ.data?.window),
+            extra: groupingNote(grain.sims),
+            asOf: asOf(simsQ.data?.window),
+          })}
+          loading={busy(simsQ)}
+          error={simsQ.isError}
+          onRetry={simsQ.refetch}
+          empty={!busy(simsQ) && sims.length === 0}
+          controls={picker("sims")}
           onExpand={() => setExpanded("sims")}
         >
-          <SimpleBarChart data={sims} options={simsOpts} />
+          <ScrollableChart data={sims}>
+            <SimpleBarChart data={sims} options={simsOpts} />
+          </ScrollableChart>
         </ChartCard>
       </div>
 
+      {/* Sits directly under the practice-minutes total on purpose: that line
+          says how much practice happened, which a handful of heavy users can
+          carry on their own, and this says who it came from. Owns its own query
+          because it is monthly and fixed-window, and says so on its face. */}
+      <div className="mt-4">
+        <UsageLevelCard tenantId={query.tenantId} />
+      </div>
+
+      {/* Next to the usage-level mix on purpose: both are distributions over the
+          same learner population, and adjacency is what tells the reader they are
+          two views of one question. That one bands a MONTH of minutes and shows
+          whether the mix is shifting; this one bands a LIFETIME of completed
+          roleplays and shows how deep engagement goes and how many learners never
+          started. Owns its own query, all-time by construction. */}
+      <div className="mt-4">
+        <RoleplayVolumeCard tenantId={query.tenantId} />
+      </div>
+
       {/* Active users as small multiples: DAU/WAU/MAU are nested windows, so on
-          one axis MAU dominates and the volatile DAU shape is unreadable. */}
+          one axis MAU dominates and the volatile DAU shape is unreadable. No
+          grouping control here — these are trailing-window definitions sampled
+          once per day, so a coarser grain would answer a different question
+          rather than the same one at lower resolution. */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {activeMultiples.map(m => (
           <ChartCard
             key={m.label}
             title={`Active users — ${m.label}`}
-            caption="Each window has its own vertical scale; they are nested, so they are not comparable by height."
+            caption="Sampled daily, and not re-groupable: a trailing 7- or 30-day count read monthly would be a different measure. Each window has its own vertical scale; they are nested, so they are not comparable by height."
             source={buildSource({
               derivation: "Distinct users with session activity in the trailing window",
               window: oWindow,
@@ -541,16 +930,18 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
             loading={overviewLoading}
             empty={!overviewLoading && m.series.length === 0}
           >
-            <LineChart
-              data={m.series}
-              options={lineOpts({
-                leftTitle: "Distinct users",
-                bottomTitle: "Day",
-                colorScale: m.scale,
-                legend: false,
-                extra: { points: { enabled: false } },
-              })}
-            />
+            <ScrollableChart data={m.series}>
+              <LineChart
+                data={m.series}
+                options={lineOpts({
+                  leftTitle: "Distinct users",
+                  bottomTitle: "Day",
+                  colorScale: m.scale,
+                  legend: false,
+                  extra: { points: { enabled: false } },
+                })}
+              />
+            </ScrollableChart>
           </ChartCard>
         ))}
       </div>
@@ -560,52 +951,67 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <ChartCard
           title="Roleplay quality"
-          caption={`Mean composite evaluation score. ${boundedDomainNote(SCORE_DOMAIN)} Gaps are periods with no evaluated sessions.`}
+          caption={`Mean composite evaluation score. ${boundedDomainNote(
+            SCORE_DOMAIN,
+          )} Gaps are periods with no evaluated sessions.${inProgressCaption(
+            grain.quality,
+            qualityInProgress,
+          )}`}
           source={buildSource({
             derivation: "Mean of scenario_session_details.compositeScore (LLM-judged)",
-            window: hWindow,
+            window: windowLabel(qualityQ.data?.window),
             n: summary?.evaluatedSessions,
             nUnit: "evaluated sessions",
-            asOf: asOf(h?.window),
+            extra: groupingNote(grain.quality),
+            asOf: asOf(qualityQ.data?.window),
           })}
-          loading={highlightsLoading}
-          error={highlights.isError}
-          onRetry={highlights.refetch}
+          loading={busy(qualityQ)}
+          error={qualityQ.isError}
+          onRetry={qualityQ.refetch}
           n={summary?.evaluatedSessions}
           nUnit="evaluated sessions"
           minN={MIN_N_FOR_SCORE}
-          empty={!highlightsLoading && quality.every(d => d.value === null)}
+          empty={!busy(qualityQ) && quality.every(d => d.value === null)}
+          controls={picker("quality")}
           onExpand={() => setExpanded("quality")}
         >
-          <LineChart data={quality} options={qualityOpts} />
+          <ScrollableChart data={quality}>
+            <LineChart data={quality} options={qualityOpts} />
+          </ScrollableChart>
         </ChartCard>
 
         <ChartCard
           title="Learner satisfaction"
-          caption={`Mean post-session rating. ${boundedDomainNote(RATING_DOMAIN)} Gaps are periods with no ratings.`}
+          caption={`Mean post-session rating. ${boundedDomainNote(
+            RATING_DOMAIN,
+          )} Gaps are periods with no ratings.${inProgressCaption(grain.csat, csatInProgress)}`}
           source={buildSource({
             derivation: "Mean of scenario_session_feedbacks.rating",
-            window: hWindow,
+            window: windowLabel(csatQ.data?.window),
             n: summary?.csatResponses,
             nUnit: "responses",
-            asOf: asOf(h?.window),
+            extra: groupingNote(grain.csat),
+            asOf: asOf(csatQ.data?.window),
           })}
-          loading={highlightsLoading}
-          error={highlights.isError}
-          onRetry={highlights.refetch}
+          loading={busy(csatQ)}
+          error={csatQ.isError}
+          onRetry={csatQ.refetch}
           n={summary?.csatResponses}
           nUnit="responses"
           minN={MIN_N_FOR_SCORE}
-          empty={!highlightsLoading && csat.every(d => d.value === null)}
+          empty={!busy(csatQ) && csat.every(d => d.value === null)}
+          controls={picker("csat")}
           onExpand={() => setExpanded("csat")}
         >
-          <LineChart data={csat} options={csatOpts} />
+          <ScrollableChart data={csat}>
+            <LineChart data={csat} options={csatOpts} />
+          </ScrollableChart>
         </ChartCard>
       </div>
 
       <ChartCard
         title="Learning track funnel"
-        caption="Enrollments created in this window. Recent cohorts have had less time to finish, so a low completion share here is not necessarily a drop-off."
+        caption="Every enrollment ever created. Recent cohorts have had less time to finish, so a low completion share here is not necessarily a drop-off."
         source={buildSource({
           derivation: "track_enrollments cohort created in window",
           window: hWindow,
@@ -635,8 +1041,8 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
         title="Completed simulations by organisation"
         caption={
           h?.topOrgsBelowFloor && h.topOrgsBelowFloor.orgs > 0
-            ? `Top orgs by volume. ${h.topOrgsBelowFloor.orgs} smaller orgs are grouped unnamed — naming an org with a handful of sessions identifies its learners.`
-            : "Top orgs by volume."
+            ? `Top orgs by volume, all time. ${h.topOrgsBelowFloor.orgs} smaller orgs are grouped unnamed — naming an org with a handful of sessions identifies its learners.`
+            : "Top orgs by volume, all time."
         }
         source={
           buildSource({
@@ -659,240 +1065,405 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <ChartCard
           title="AI cost per completed simulation"
-          caption="All platform AI spend (LLM + STT + TTS) divided by completed simulations. Gaps are periods with no completed simulations."
+          caption={`All platform AI spend (LLM + STT + TTS) divided by completed simulations. Gaps are periods with no completed simulations.${inProgressCaption(
+            grain.costPerSim,
+            costInProgress,
+          )}`}
           source={
             buildSource({
               derivation: "Estimated from the pricing table at read time — not a billed figure",
-              window: hWindow,
-              asOf: asOf(h?.window),
+              window: windowLabel(costPerSimQ.data?.window),
+              extra: groupingNote(grain.costPerSim),
+              asOf: asOf(costPerSimQ.data?.window),
             }) +
             costUnpricedNote +
             scopeNote(costUnscoped)
           }
-          loading={highlightsLoading}
-          error={highlights.isError}
-          onRetry={highlights.refetch}
+          loading={busy(costPerSimQ)}
+          error={costPerSimQ.isError}
+          onRetry={costPerSimQ.refetch}
           errorTitle="Couldn't load AI cost"
           errorSubtitle="There was a problem fetching cost metrics."
-          empty={!highlightsLoading && costPerSim.every(d => d.value === null)}
+          empty={!busy(costPerSimQ) && costPerSim.every(d => d.value === null)}
+          controls={picker("costPerSim")}
           onExpand={() => setExpanded("costPerSim")}
         >
-          <LineChart data={costPerSim} options={costPerSimOpts} />
+          <ScrollableChart data={costPerSim}>
+            <LineChart data={costPerSim} options={costPerSimOpts} />
+          </ScrollableChart>
         </ChartCard>
 
         <ChartCard
           title="Total AI spend"
-          caption="Absolute spend per period. Separate from cost-per-sim because the two differ by orders of magnitude."
+          caption={`Absolute spend per period. Separate from cost-per-sim because the two differ by orders of magnitude.${inProgressCaption(
+            grain.totalCost,
+            totalCostInProgress,
+          )}`}
           source={
             buildSource({
               derivation: "Estimated from the pricing table at read time — not a billed figure",
-              window: hWindow,
-              asOf: asOf(h?.window),
+              window: windowLabel(totalCostQ.data?.window),
+              extra: groupingNote(grain.totalCost),
+              asOf: asOf(totalCostQ.data?.window),
             }) +
             costUnpricedNote +
             scopeNote(costUnscoped)
           }
-          loading={highlightsLoading}
-          error={highlights.isError}
-          onRetry={highlights.refetch}
-          empty={!highlightsLoading && totalCost.length === 0}
+          loading={busy(totalCostQ)}
+          error={totalCostQ.isError}
+          onRetry={totalCostQ.refetch}
+          empty={!busy(totalCostQ) && totalCost.length === 0}
+          controls={picker("totalCost")}
           onExpand={() => setExpanded("totalCost")}
         >
-          <SimpleBarChart data={totalCost} options={totalCostOpts} />
+          <ScrollableChart data={totalCost}>
+            <SimpleBarChart data={totalCost} options={totalCostOpts} />
+          </ScrollableChart>
         </ChartCard>
       </div>
 
       {/* ---------------------------- Detail views ------------------------- */}
+      {/*
+        The tables read the FULL arrays, including the accruing period, whose row
+        is flagged. That is where a provisional number belongs: a reader looking
+        at a grid can see "in progress" beside the figure, where a line chart can
+        only draw it as a fall.
+      */}
 
       {expanded === "newUsers" && (
         <ChartDetailModal
-          open={expanded === "newUsers"}
+          open
           onClose={() => setExpanded(null)}
           title="New users per period"
-          source={buildSource({ derivation: "users.createdAt, bucketed", window: oWindow })}
-          table={table(newUsers, overviewBucketTitle, "New users")}
-          exportContext={[`Window: ${oWindow}`]}
+          source={buildSource({
+            derivation: "users.createdAt, bucketed",
+            window: windowLabel(newUsersQ.data?.window),
+            extra: groupingNote(grain.newUsers),
+          })}
+          table={{
+            columns: [bucketTitle(grain.newUsers), "New users"],
+            rows: newUsersPoints.map(p => [rowKey(p.date, newUsersInProgress), p.newUsers]),
+          }}
+          exportContext={exportLines(
+            windowLabel(newUsersQ.data?.window),
+            grain.newUsers,
+            newUsersInProgress,
+          )}
           render={({ height }) => (
-            <SimpleBarChart data={newUsers} options={{ ...newUsersOpts, height }} />
+            <ScrollableChart data={newUsers}>
+              <SimpleBarChart data={newUsers} options={{ ...newUsersOpts, height }} />
+            </ScrollableChart>
           )}
         />
       )}
 
       {expanded === "cumulative" && (
         <ChartDetailModal
-          open={expanded === "cumulative"}
+          open
           onClose={() => setExpanded(null)}
           title="Cumulative users"
-          source={buildSource({ derivation: "Running total of registrations", window: oWindow })}
-          table={table(cumulativeUsers, overviewBucketTitle, "Cumulative users")}
-          exportContext={[`Window: ${oWindow}`]}
+          source={buildSource({
+            derivation: "Running total of registrations",
+            window: windowLabel(cumulativeQ.data?.window),
+            extra: groupingNote(grain.cumulative),
+          })}
+          table={{
+            columns: [bucketTitle(grain.cumulative), "Cumulative users"],
+            rows: cumulativePoints.map(p => [
+              rowKey(p.date, cumulativeInProgress),
+              p.cumulativeUsers,
+            ]),
+          }}
+          exportContext={exportLines(
+            windowLabel(cumulativeQ.data?.window),
+            grain.cumulative,
+            cumulativeInProgress,
+          )}
           render={({ height }) => (
-            <LineChart data={cumulativeUsers} options={{ ...cumulativeOpts, height }} />
+            <ScrollableChart data={cumulativeUsers}>
+              <LineChart data={cumulativeUsers} options={{ ...cumulativeOpts, height }} />
+            </ScrollableChart>
           )}
         />
       )}
 
       {expanded === "retention" && (
         <ChartDetailModal
-          open={expanded === "retention"}
+          open
           onClose={() => setExpanded(null)}
-          title="Weekly active users — new vs returning"
+          title="Active users — new vs returning"
+          caption='"New" is relative to the grouping: an account created in the same period as the activity. Re-grouping this chart genuinely changes the question, not just the resolution.'
           source={buildSource({
-            derivation: "Distinct active users per ISO week, split by account age",
-            window: oWindow,
+            derivation: "Distinct active users per period, split by account age",
+            window: windowLabel(retentionQ.data?.window),
+            extra: groupingNote(grain.retention),
           })}
           table={{
-            columns: ["Week", "New", "Returning"],
-            rows: (o?.retention ?? []).map(p => [p.weekStart, p.newUsers, p.returningUsers]),
+            columns: [bucketTitle(grain.retention), "New", "Returning"],
+            rows: retentionPoints.map(p => [
+              rowKey(p.bucket, retentionInProgress),
+              p.newUsers,
+              p.returningUsers,
+            ]),
           }}
-          exportContext={[`Window: ${oWindow}`]}
+          exportContext={exportLines(
+            windowLabel(retentionQ.data?.window),
+            grain.retention,
+            retentionInProgress,
+          )}
           render={({ height }) => (
-            <StackedBarChart data={retention} options={{ ...retentionOpts, height }} />
+            <ScrollableChart data={retention}>
+              <StackedBarChart data={retention} options={{ ...retentionOpts, height }} />
+            </ScrollableChart>
           )}
         />
       )}
 
       {expanded === "sims" && (
         <ChartDetailModal
-          open={expanded === "sims"}
+          open
           onClose={() => setExpanded(null)}
-          title="Completed simulations per week"
+          title="Completed simulations"
           source={buildSource({
-            derivation: "Sessions with eventStatus COMPLETED, per ISO week",
-            window: oWindow,
+            derivation: "Sessions with eventStatus COMPLETED, per period",
+            window: windowLabel(simsQ.data?.window),
+            extra: groupingNote(grain.sims),
           })}
-          table={table(sims, "Week", "Completed")}
-          exportContext={[`Window: ${oWindow}`]}
-          render={({ height }) => <SimpleBarChart data={sims} options={{ ...simsOpts, height }} />}
+          table={{
+            columns: [bucketTitle(grain.sims), "Completed"],
+            rows: simsPoints.map(p => [rowKey(p.bucket, simsInProgress), p.count]),
+          }}
+          exportContext={exportLines(windowLabel(simsQ.data?.window), grain.sims, simsInProgress)}
+          render={({ height }) => (
+            <ScrollableChart data={sims}>
+              <SimpleBarChart data={sims} options={{ ...simsOpts, height }} />
+            </ScrollableChart>
+          )}
         />
       )}
 
       {expanded === "practice" && (
         <ChartDetailModal
-          open={expanded === "practice"}
+          open
           onClose={() => setExpanded(null)}
           title="Practice minutes"
           source={buildSource({
             derivation: "Sum of user_daily_scores.minutesPlayed",
-            window: hWindow,
+            window: windowLabel(practiceQ.data?.window),
             n: learners,
             nUnit: "learners at peak",
+            extra: groupingNote(grain.practice),
           })}
           table={{
-            columns: [bucketTitle, "Minutes", "Active learners"],
-            rows: (h?.practiceMinutes ?? []).map(p => [p.bucket, p.minutes, p.activeLearners]),
+            columns: [bucketTitle(grain.practice), "Minutes", "Active learners"],
+            rows: practicePoints.map(p => [
+              rowKey(p.bucket, practiceInProgress),
+              p.minutes,
+              p.activeLearners,
+            ]),
           }}
-          exportContext={[`Window: ${hWindow}`]}
+          exportContext={exportLines(
+            windowLabel(practiceQ.data?.window),
+            grain.practice,
+            practiceInProgress,
+          )}
           render={({ height }) => (
-            <LineChart data={practice} options={{ ...practiceOpts, height }} />
+            <ScrollableChart data={practice}>
+              <LineChart data={practice} options={{ ...practiceOpts, height }} />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "playTime" && (
+        <ChartDetailModal
+          open
+          onClose={() => setExpanded(null)}
+          title="Average simulation play time"
+          caption="Mean, median and p95 length of one completed simulation. Where the mean sits well above the median, a minority of long sittings is carrying it."
+          source={buildSource({
+            derivation:
+              "scenario_session_details.callDuration over COMPLETED sessions, net of paused time",
+            window: windowLabel(playTimeQ.data?.window),
+            n: playTimeSessions,
+            nUnit: "timed sessions",
+            extra: groupingNote(grain.playTime),
+          })}
+          table={{
+            columns: [
+              bucketTitle(grain.playTime),
+              "Mean (min)",
+              "Median (min)",
+              "p95 (min)",
+              "Sessions",
+            ],
+            rows: playTimePoints.map(p => [
+              rowKey(p.bucket, playTimeInProgress),
+              p.avgMinutes ?? "—",
+              p.medianMinutes ?? "—",
+              p.p95Minutes ?? "—",
+              p.sessions,
+            ]),
+          }}
+          exportContext={exportLines(
+            windowLabel(playTimeQ.data?.window),
+            grain.playTime,
+            playTimeInProgress,
+            `Timed sessions: ${playTimeSessions}`,
+          )}
+          render={({ height }) => (
+            <ScrollableChart data={playTime}>
+              <LineChart data={playTime} options={{ ...playTimeOpts, height }} />
+            </ScrollableChart>
           )}
         />
       )}
 
       {expanded === "quality" && (
         <ChartDetailModal
-          open={expanded === "quality"}
+          open
           onClose={() => setExpanded(null)}
           title="Roleplay quality"
-          caption="Sample size per period is the column the chart cannot show — a mean over three sessions moves for reasons that are not quality."
+          caption="Sample size per period is the column the chart cannot show — a mean over three sessions moves for reasons that are not quality, and coarser grouping is the cheapest way to get a period worth reading."
           source={buildSource({
             derivation: "Mean of scenario_session_details.compositeScore (LLM-judged)",
-            window: hWindow,
+            window: windowLabel(qualityQ.data?.window),
             n: summary?.evaluatedSessions,
             nUnit: "evaluated sessions",
+            extra: groupingNote(grain.quality),
           })}
           zoomable
           zoomNote={`Axis zoomed to the data instead of the full ${SCORE_DOMAIN[0]}–${SCORE_DOMAIN[1]} scale. This magnifies small changes — read the shape, not the height.`}
           table={{
-            columns: [bucketTitle, "Avg composite score", "Evaluated sessions"],
-            rows: (h?.qualityTrend ?? []).map(p => [
-              p.bucket,
+            columns: [bucketTitle(grain.quality), "Avg composite score", "Evaluated sessions"],
+            rows: qualityPoints.map(p => [
+              rowKey(p.bucket, qualityInProgress),
               p.avgCompositeScore,
               p.evaluatedSessions,
             ]),
           }}
-          exportContext={[`Window: ${hWindow}`, `Minimum n for a stated score: ${MIN_N_FOR_SCORE}`]}
+          exportContext={exportLines(
+            windowLabel(qualityQ.data?.window),
+            grain.quality,
+            qualityInProgress,
+            `Minimum n for a stated score: ${MIN_N_FOR_SCORE}`,
+          )}
           render={({ height, zoomed }) => (
-            <LineChart
-              data={quality}
-              options={{ ...(zoomed ? qualityZoomedOpts : qualityOpts), height }}
-            />
+            <ScrollableChart data={quality}>
+              <LineChart
+                data={quality}
+                options={{ ...(zoomed ? qualityZoomedOpts : qualityOpts), height }}
+              />
+            </ScrollableChart>
           )}
         />
       )}
 
       {expanded === "csat" && (
         <ChartDetailModal
-          open={expanded === "csat"}
+          open
           onClose={() => setExpanded(null)}
           title="Learner satisfaction"
           caption="Response count per period is the column the chart cannot show."
           source={buildSource({
             derivation: "Mean of scenario_session_feedbacks.rating",
-            window: hWindow,
+            window: windowLabel(csatQ.data?.window),
             n: summary?.csatResponses,
             nUnit: "responses",
+            extra: groupingNote(grain.csat),
           })}
           zoomable
           zoomNote={`Axis zoomed to the data instead of the full ${RATING_DOMAIN[0]}–${RATING_DOMAIN[1]} scale. This magnifies small changes — read the shape, not the height.`}
           table={{
-            columns: [bucketTitle, "Avg rating", "Responses"],
-            rows: (h?.csatTrend ?? []).map(p => [p.bucket, p.avgRating, p.responses]),
+            columns: [bucketTitle(grain.csat), "Avg rating", "Responses"],
+            rows: csatPoints.map(p => [rowKey(p.bucket, csatInProgress), p.avgRating, p.responses]),
           }}
-          exportContext={[`Window: ${hWindow}`, `Minimum n for a stated score: ${MIN_N_FOR_SCORE}`]}
+          exportContext={exportLines(
+            windowLabel(csatQ.data?.window),
+            grain.csat,
+            csatInProgress,
+            `Minimum n for a stated score: ${MIN_N_FOR_SCORE}`,
+          )}
           render={({ height, zoomed }) => (
-            <LineChart data={csat} options={{ ...(zoomed ? csatZoomedOpts : csatOpts), height }} />
+            <ScrollableChart data={csat}>
+              <LineChart
+                data={csat}
+                options={{ ...(zoomed ? csatZoomedOpts : csatOpts), height }}
+              />
+            </ScrollableChart>
           )}
         />
       )}
 
       {expanded === "costPerSim" && (
         <ChartDetailModal
-          open={expanded === "costPerSim"}
+          open
           onClose={() => setExpanded(null)}
           title="AI cost per completed simulation"
           caption="Unpriced calls contribute $0, so a period with many of them understates cost."
           source={buildSource({
             derivation: "Estimated from the pricing table at read time — not a billed figure",
-            window: hWindow,
+            window: windowLabel(costPerSimQ.data?.window),
+            extra: groupingNote(grain.costPerSim),
           })}
           table={{
-            columns: [bucketTitle, "Cost / sim (USD)", "Total (USD)", "Sims", "Unpriced calls"],
-            rows: (h?.costPerSim ?? []).map(p => [
-              p.bucket,
+            columns: [
+              bucketTitle(grain.costPerSim),
+              "Cost / sim (USD)",
+              "Total (USD)",
+              "Sims",
+              "Unpriced calls",
+            ],
+            rows: costPoints.map(p => [
+              rowKey(p.bucket, costInProgress),
               p.costPerSimUsd,
               p.estimatedCostUsd,
               p.completedSimulations,
               p.unpricedCalls,
             ]),
           }}
-          exportContext={[
-            `Window: ${hWindow}`,
+          exportContext={exportLines(
+            windowLabel(costPerSimQ.data?.window),
+            grain.costPerSim,
+            costInProgress,
             "Costs are estimated from the pricing table at read time, not billed figures",
             `Unpriced calls in window: ${unpriced.toLocaleString()}`,
-          ]}
+          )}
           render={({ height }) => (
-            <LineChart data={costPerSim} options={{ ...costPerSimOpts, height }} />
+            <ScrollableChart data={costPerSim}>
+              <LineChart data={costPerSim} options={{ ...costPerSimOpts, height }} />
+            </ScrollableChart>
           )}
         />
       )}
 
       {expanded === "totalCost" && (
         <ChartDetailModal
-          open={expanded === "totalCost"}
+          open
           onClose={() => setExpanded(null)}
           title="Total AI spend"
           source={buildSource({
             derivation: "Estimated from the pricing table at read time — not a billed figure",
-            window: hWindow,
+            window: windowLabel(totalCostQ.data?.window),
+            extra: groupingNote(grain.totalCost),
           })}
-          table={table(totalCost, bucketTitle, "Total (USD)")}
-          exportContext={[
-            `Window: ${hWindow}`,
+          table={{
+            columns: [bucketTitle(grain.totalCost), "Total (USD)"],
+            rows: totalCostPoints.map(p => [
+              rowKey(p.bucket, totalCostInProgress),
+              p.estimatedCostUsd,
+            ]),
+          }}
+          exportContext={exportLines(
+            windowLabel(totalCostQ.data?.window),
+            grain.totalCost,
+            totalCostInProgress,
             `Unpriced calls in window: ${unpriced.toLocaleString()}`,
-          ]}
+          )}
           render={({ height }) => (
-            <SimpleBarChart data={totalCost} options={{ ...totalCostOpts, height }} />
+            <ScrollableChart data={totalCost}>
+              <SimpleBarChart data={totalCost} options={{ ...totalCostOpts, height }} />
+            </ScrollableChart>
           )}
         />
       )}

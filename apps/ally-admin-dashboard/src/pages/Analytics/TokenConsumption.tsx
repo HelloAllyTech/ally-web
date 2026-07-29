@@ -8,7 +8,7 @@ import { useGetTokenConsumptionQuery } from "@api";
 
 import { AnalyticsTabFilters, asOf, windowLabel } from "./analyticsFilters";
 import { ChartDetailModal } from "./ChartDetailModal";
-import { CHART_HEIGHT, ChartCard, buildSource } from "./chartKit";
+import { CHART_HEIGHT, ChartCard, ScrollableChart, buildSource } from "./chartKit";
 import { PALETTE } from "./chartScales";
 import {
   TokenDim,
@@ -150,7 +150,11 @@ export const TokenConsumption = ({ query }: AnalyticsTabFilters) => {
         onExpand={() => setExpanded(true)}
         wide
       >
-        <StackedBarChart data={chartData} options={options} />
+        {/* "By model" is an open-ended axis — one category per model the platform
+            has ever called, with long free-text names. */}
+        <ScrollableChart data={chartData}>
+          <StackedBarChart data={chartData} options={options} />
+        </ScrollableChart>
       </ChartCard>
 
       {expanded && (
@@ -192,7 +196,9 @@ export const TokenConsumption = ({ query }: AnalyticsTabFilters) => {
             `Unpriced calls in window: ${unpricedCalls.toLocaleString()}`,
           ]}
           render={({ height }) => (
-            <StackedBarChart data={chartData} options={{ ...options, height }} />
+            <ScrollableChart data={chartData}>
+              <StackedBarChart data={chartData} options={{ ...options, height }} />
+            </ScrollableChart>
           )}
         />
       )}

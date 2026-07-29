@@ -22,7 +22,14 @@ import { ROUTES } from "@constants";
 import { LanguageRateByExperiment } from "@types";
 
 import { AnalyticsTabFilters, windowLabel } from "../analyticsFilters";
-import { ChartCard, buildSource, hBarOpts, lineOpts, stackedBarOpts } from "../chartKit";
+import {
+  ChartCard,
+  ScrollableChart,
+  buildSource,
+  hBarOpts,
+  lineOpts,
+  stackedBarOpts,
+} from "../chartKit";
 import {
   SEVERITY_SCALE,
   VERDICT_SCALE,
@@ -670,18 +677,20 @@ export const LanguageQualityTab: FC<AnalyticsTabFilters> = ({
           error={isError}
           empty={!trendLines.length}
         >
-          <LineChart
-            data={trendLines}
-            options={lineOpts({
-              leftTitle: "Weighted errors / 100 turns",
-              bottomTitle: "Week",
-              colorScale: sequentialScale([
-                LAYER_LABEL.comprehension,
-                LAYER_LABEL.content,
-                LAYER_LABEL.appropriateness,
-              ]),
-            })}
-          />
+          <ScrollableChart data={trendLines}>
+            <LineChart
+              data={trendLines}
+              options={lineOpts({
+                leftTitle: "Weighted errors / 100 turns",
+                bottomTitle: "Week",
+                colorScale: sequentialScale([
+                  LAYER_LABEL.comprehension,
+                  LAYER_LABEL.content,
+                  LAYER_LABEL.appropriateness,
+                ]),
+              })}
+            />
+          </ScrollableChart>
         </ChartCard>
       </div>
 

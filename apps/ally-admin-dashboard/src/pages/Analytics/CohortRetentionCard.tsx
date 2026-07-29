@@ -5,7 +5,7 @@ import { LineChart } from "@carbon/charts-react";
 import { CarbonDropdown as Dropdown, ContentSwitcher, Switch } from "@ally-ui-mono/ui-shared";
 import { useGetCohortRetentionQuery } from "@api";
 
-import { ChartCard, buildSource, lineOpts } from "./chartKit";
+import { ChartCard, ScrollableChart, buildSource, lineOpts } from "./chartKit";
 import {
   CohortGridRow,
   buildCohortCurveScale,
@@ -229,7 +229,11 @@ export const CohortRetentionCard = ({ tenantId }: { tenantId?: string }) => {
             No cohort has a completed month yet.
           </div>
         ) : (
-          <LineChart data={curves} options={curveOpts} />
+          // The curve view scrolls sideways for the same reason the grid beside it
+          // does: both grow a column per month of history.
+          <ScrollableChart data={curves}>
+            <LineChart data={curves} options={curveOpts} />
+          </ScrollableChart>
         )}
 
         <div className="flex flex-col gap-1 text-xs text-typography-500">

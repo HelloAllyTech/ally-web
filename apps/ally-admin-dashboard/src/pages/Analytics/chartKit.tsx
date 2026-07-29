@@ -1,10 +1,18 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import { ScaleTypes } from "@carbon/charts";
 import { Maximize } from "@icons";
 
-import { Button, InlineNotification, SkeletonPlaceholder, Tile } from "@ally-ui-mono/ui-shared";
+import {
+  Button,
+  CarbonDropdown as Dropdown,
+  InlineNotification,
+  SkeletonPlaceholder,
+  Tile,
+} from "@ally-ui-mono/ui-shared";
+import { AnalyticsBucket } from "@types";
 
+import { GROUPINGS, GROUPING_LABEL } from "./analyticsGrouping";
 import { CONTEXT, ColorScale, PALETTE, formatDelta } from "./chartScales";
 
 /**
@@ -25,6 +33,10 @@ import { CONTEXT, ColorScale, PALETTE, formatDelta } from "./chartScales";
  *  - Lines default to `curveLinear`. Monotone smoothing invents values between
  *    measured points and glides across gaps in a sparse series with no visual
  *    hint that data is missing.
+ *  - Any plot whose number of x-axis categories grows with the data goes inside
+ *    {@link ScrollableChart}. Carbon fits every category into whatever width it
+ *    is given, so a long series does not overflow — it compresses, until the tick
+ *    labels overlap into a grey smear and the bars are a pixel wide.
  */
 
 export const CHART_HEIGHT = "300px";
@@ -254,6 +266,107 @@ export const donutOpts = ({
 });
 
 /* -------------------------------------------------------------------------- */
+/* Horizontal scrolling                                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Minimum horizontal room one x-axis category gets before the plot scrolls
+ * instead of compressing.
+ *
+ * 28px is roughly what a rotated `2026-06-09` tick label needs to stand clear of
+ * its neighbours, and enough for a bar to read as a bar. Below that Carbon keeps
+ * fitting categories in — it never overflows — so fifty days in a half-width card
+ * renders as hairline bars under a solid band of overlapping dates, which is the
+ * state this constant exists to prevent.
+ */
+export const MIN_CATEGORY_WIDTH = 28;
+
+/** Width the value axis (title + tick labels) takes before the plot starts. */
+const AXIS_GUTTER = 88;
+
+/** The shape {@link ScrollableChart} needs to count a series' x categories. */
+type ChartDatum = { key?: string | number | null; group?: string | number | null };
+
+/**
+ * Gives a plot the width its x-axis categories actually need, and scrolls the
+ * card sideways when that is more than the card has.
+ *
+ * Wrap every chart whose category count grows with the data — anything bucketed
+ * by time, and any categorical axis over an open-ended set (models, orgs). It is
+ * a no-op when the categories fit: the inner `min-width` only exceeds the
+ * container once there are enough of them, so a chart with six bars is untouched
+ * and no scrollbar appears.
+ *
+ * Two honest costs, both stated on the surface rather than discovered:
+ *  - **The value axis scrolls with the plot.** Carbon draws axis and plot in one
+ *    SVG, so there is nothing to pin. Hover gives the exact value, and the
+ *    expanded view's table gives all of them.
+ *  - **Part of the range is off-screen.** The note below the plot says so; a plot
+ *    cut off at the card edge with no caption reads as the whole series.
+ *
+ * The alternative — thinning ticks to every nth label — keeps everything in view
+ * but shrinks the marks themselves, and a chart whose bars are narrower than the
+ * gap between them stops being readable at any tick density.
+ */
+export const ScrollableChart = ({
+  data,
+  on = "key",
+  minCategoryWidth = MIN_CATEGORY_WIDTH,
+  children,
+}: {
+  /** The series being plotted — the same array handed to the chart. */
+  data: readonly ChartDatum[];
+  /** Which field the x-axis maps to: `key` for time buckets, `group` for
+   *  {@link barOpts}-style categorical bars. */
+  on?: "key" | "group";
+  minCategoryWidth?: number;
+  children: ReactNode;
+}) => {
+  const scroller = useRef<HTMLDivElement>(null);
+  const [overflowing, setOverflowing] = useState(false);
+
+  const categories = useMemo(() => new Set(data.map(d => d[on])).size, [data, on]);
+  const minWidth = categories * minCategoryWidth + AXIS_GUTTER;
+
+  // Measured rather than derived from the category count: whether the plot
+  // actually overflows depends on the card's width, which changes with the
+  // viewport and the grid breakpoint, and the note and the tab stop below must
+  // only appear when there is genuinely something out of view.
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return undefined;
+    const measure = () => setOverflowing(el.scrollWidth - el.clientWidth > 1);
+    measure();
+    if (typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [minWidth]);
+
+  return (
+    <>
+      <div
+        ref={scroller}
+        className="analytics-chart-scroll"
+        // Focusable only while it overflows: a scroll container is unreachable by
+        // keyboard without a tab stop, and a tab stop on a container with nothing
+        // to scroll is just an extra press on the way to the next control.
+        {...(overflowing
+          ? { tabIndex: 0, role: "group", "aria-label": "Chart, scrollable horizontally" }
+          : {})}
+      >
+        <div style={{ minWidth }}>{children}</div>
+      </div>
+      {overflowing && (
+        <p className="mt-1 text-[11px] leading-tight text-typography-500">
+          Scroll sideways for the rest of the range — the value axis scrolls with the plot.
+        </p>
+      )}
+    </>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
 /* Sample-size + provenance helpers                                           */
 /* -------------------------------------------------------------------------- */
 
@@ -385,6 +498,13 @@ export const Sparkline = ({
 
 interface KpiTileProps {
   label: string;
+  /**
+   * What the number actually measures, in one line — the tile's equivalent of a
+   * {@link ChartCard} caption. Rendered on the face of the tile rather than in a
+   * tooltip: a definition that only appears on hover never reaches the
+   * screenshot that ends up in a board deck.
+   */
+  description?: string;
   /** Pre-formatted by the caller (locale strings, "%" suffixes, em-dash). */
   value: string;
   /** Sample size behind the value. Rendered as "n = …" under the number. */
@@ -406,15 +526,21 @@ interface KpiTileProps {
 }
 
 /**
- * A single KPI stat tile: label, value, sample size, and change vs the
- * comparison window with its basis named.
+ * A single KPI stat tile: label, value, sample size, change vs the comparison
+ * window with its basis named, and a one-line definition of the metric.
  *
  * The delta carries an arrow as well as a colour so the direction survives
  * greyscale and colour-blindness, and its good/bad sense follows
  * `higherIsBetter` rather than assuming "up is good".
+ *
+ * The definition sits BELOW the number, not above it: the value is the focal
+ * element and prose over the top of it would compete for that. It is still on
+ * the face of the tile, because "what is this counting?" is the question a KPI
+ * strip most often leaves unanswered.
  */
 export const KpiTile = ({
   label,
+  description,
   value,
   n,
   nUnit,
@@ -466,7 +592,62 @@ export const KpiTile = ({
           </div>
         </>
       )}
+
+      {/* Rendered in every state, including loading — it describes the metric,
+          not the value, so hiding it until data arrives would only shift the
+          layout under the reader. */}
+      {description && (
+        <p className="mt-2 text-xs leading-snug text-typography-500">{description}</p>
+      )}
     </Tile>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* Grouping picker                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The per-chart "group by" control, for {@link ChartCard.controls}.
+ *
+ * Lives on the chart rather than the page because the grain belongs to the
+ * question the chart asks — see the header of ./analyticsGrouping. Rendered as a
+ * small dropdown rather than a four-way switcher so it stays inside a card
+ * header at the narrowest column width the grid produces.
+ */
+export const GroupingPicker = ({
+  id,
+  value,
+  onChange,
+  options = GROUPINGS,
+}: {
+  id: string;
+  value: AnalyticsBucket;
+  onChange: (grouping: AnalyticsBucket) => void;
+  /** Restrict the offered grains where a coarser or finer one is meaningless. */
+  options?: AnalyticsBucket[];
+}) => {
+  const items = options.map(g => ({ id: g, label: GROUPING_LABEL[g] }));
+  const selected = items.find(i => i.id === value) ?? items[0];
+
+  return (
+    <div className="w-28 shrink-0">
+      <Dropdown
+        id={id}
+        size="sm"
+        titleText="Group by"
+        hideLabel
+        label="Group by"
+        // The chosen grain is the axis title too, so the control repeats it
+        // rather than being the only place it appears.
+        items={items}
+        selectedItem={selected}
+        itemToString={item => item?.label ?? ""}
+        onChange={({ selectedItem }) => {
+          if (selectedItem) onChange(selectedItem.id);
+        }}
+      />
+    </div>
   );
 };
 
@@ -497,6 +678,13 @@ interface ChartCardProps {
   nUnit?: string;
   minN?: number;
   onRetry?: () => void;
+  /**
+   * Per-chart controls in the header — a {@link GroupingPicker}, typically.
+   * Rendered beside the expand button and left in place through loading, error
+   * and empty states: a control that vanishes while its own chart is reloading
+   * cannot be used to get out of the state it put the chart in.
+   */
+  controls?: ReactNode;
   /** Opens the dense-tier view (bigger chart, zoomed axis, table, export). */
   onExpand?: () => void;
   errorTitle?: string;
@@ -533,6 +721,7 @@ export const ChartCard = ({
   nUnit,
   minN,
   onRetry,
+  controls,
   onExpand,
   errorTitle = "Couldn't load this chart",
   errorSubtitle = "There was a problem fetching the data.",
@@ -584,7 +773,7 @@ export const ChartCard = ({
 
   const body = (
     <>
-      {(title || onExpand) && (
+      {(title || onExpand || controls) && (
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             {title && (
@@ -594,17 +783,20 @@ export const ChartCard = ({
             )}
             {caption && <p className="text-xs text-typography-500">{caption}</p>}
           </div>
-          {onExpand && (
-            <Button
-              kind="ghost"
-              size="sm"
-              hasIconOnly
-              iconDescription={title ? `Expand ${title}` : "Expand chart"}
-              tooltipPosition="left"
-              renderIcon={Maximize}
-              onClick={onExpand}
-            />
-          )}
+          <div className="flex items-start gap-1 shrink-0">
+            {controls}
+            {onExpand && (
+              <Button
+                kind="ghost"
+                size="sm"
+                hasIconOnly
+                iconDescription={title ? `Expand ${title}` : "Expand chart"}
+                tooltipPosition="left"
+                renderIcon={Maximize}
+                onClick={onExpand}
+              />
+            )}
+          </div>
         </div>
       )}
       {takeaway && <div className="text-xs font-medium mt-1">{takeaway}</div>}

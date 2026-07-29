@@ -9,6 +9,7 @@ import { ChartDetailModal } from "../ChartDetailModal";
 import {
   ChartCard,
   KpiTile,
+  ScrollableChart,
   buildSource,
   donutOpts,
   hBarOpts,
@@ -345,7 +346,9 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               empty={!overview.data?.sessionsTrend?.length}
               onExpand={() => setExpanded("sessions")}
             >
-              <LineChart data={sessionsData} options={sessionsOpts} />
+              <ScrollableChart data={sessionsData}>
+                <LineChart data={sessionsData} options={sessionsOpts} />
+              </ScrollableChart>
             </ChartCard>
 
             <ChartCard
@@ -440,7 +443,9 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
               empty={!failures.data?.failureRateTrend?.length}
               onExpand={() => setExpanded("failureRate")}
             >
-              <LineChart data={rateData} options={rateOpts} />
+              <ScrollableChart data={rateData}>
+                <LineChart data={rateData} options={rateOpts} />
+              </ScrollableChart>
             </ChartCard>
 
             <ChartCard
@@ -579,7 +584,9 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
           }}
           exportContext={[`Window: ${oWindow}`]}
           render={({ height }) => (
-            <LineChart data={sessionsData} options={{ ...sessionsOpts, height }} />
+            <ScrollableChart data={sessionsData}>
+              <LineChart data={sessionsData} options={{ ...sessionsOpts, height }} />
+            </ScrollableChart>
           )}
         />
       )}
@@ -617,7 +624,11 @@ export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
             ]),
           }}
           exportContext={[`Window: ${fWindow}`]}
-          render={({ height }) => <LineChart data={rateData} options={{ ...rateOpts, height }} />}
+          render={({ height }) => (
+            <ScrollableChart data={rateData}>
+              <LineChart data={rateData} options={{ ...rateOpts, height }} />
+            </ScrollableChart>
+          )}
         />
       )}
     </div>

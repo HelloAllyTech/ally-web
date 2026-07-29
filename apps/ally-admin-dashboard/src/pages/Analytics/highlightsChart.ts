@@ -2,6 +2,7 @@ import {
   ActiveUsersPoint,
   CostPerSimPoint,
   CsatTrendPoint,
+  PlayTimePoint,
   PracticeMinutesPoint,
   QualityTrendPoint,
   RetentionPoint,
@@ -31,6 +32,9 @@ export const HIGHLIGHTS_GROUPS = {
   returningActive: "Returning",
   simulations: "Simulations",
   sessions: "Sessions",
+  playTimeAvg: "Mean",
+  playTimeMedian: "Median",
+  playTimeP95: "p95",
 };
 
 /**
@@ -108,11 +112,18 @@ export function buildActiveUserMultiples(points: ActiveUsersPoint[]): {
   }));
 }
 
-/** Weekly new-vs-returning active users, stacked (they partition the total). */
+/**
+ * New-vs-returning active users per bucket, stacked (they partition the total).
+ *
+ * "New" means the account was created in the SAME bucket, so the split is
+ * relative to the grain the chart is grouped by — at a yearly grain far more
+ * people count as returning than at a weekly one. The server recomputes it per
+ * grain for that reason; the chart names the grain on its axis.
+ */
 export function buildRetentionSeries(points: RetentionPoint[]): HighlightsDatum[] {
   return points.flatMap(p => [
-    { group: HIGHLIGHTS_GROUPS.newActive, key: p.weekStart, value: p.newUsers },
-    { group: HIGHLIGHTS_GROUPS.returningActive, key: p.weekStart, value: p.returningUsers },
+    { group: HIGHLIGHTS_GROUPS.newActive, key: p.bucket, value: p.newUsers },
+    { group: HIGHLIGHTS_GROUPS.returningActive, key: p.bucket, value: p.returningUsers },
   ]);
 }
 
@@ -129,11 +140,11 @@ export const RETENTION_SCALE: ColorScale = {
  * default) every period collapses onto one bar labelled "Simulations".
  */
 export function buildSimulationsSeries(
-  points: { weekStart: string; count: number }[],
+  points: { bucket: string; count: number }[],
 ): HighlightsDatum[] {
   return points.map(p => ({
     group: HIGHLIGHTS_GROUPS.simulations,
-    key: p.weekStart,
+    key: p.bucket,
     value: p.count,
   }));
 }
@@ -184,6 +195,58 @@ export function buildPracticeMinutesSeries(points: PracticeMinutesPoint[]): High
     value: p.minutes,
   }));
 }
+
+/**
+ * Session length over time: mean, median and p95 in one chart.
+ *
+ * The mean alone would be a half-truth. Session length is skewed — a handful of
+ * very long sittings pull the average away from the typical session — so the
+ * median says where the middle really is and p95 says how long the tail runs.
+ * All three are the same measure at different points of one distribution, which
+ * is why they share one hue family rather than three unrelated colours.
+ *
+ * Nulls are passed through, not dropped: the server puts every bucket on the
+ * axis and nulls the quiet ones, so the line breaks visibly where nothing was
+ * measured instead of closing over a fortnight of silence.
+ */
+export function buildPlayTimeSeries(points: PlayTimePoint[]): HighlightsDatum[] {
+  return [
+    ...points.map(p => ({
+      group: HIGHLIGHTS_GROUPS.playTimeMedian,
+      key: p.bucket,
+      value: p.medianMinutes,
+    })),
+    ...points.map(p => ({
+      group: HIGHLIGHTS_GROUPS.playTimeAvg,
+      key: p.bucket,
+      value: p.avgMinutes,
+    })),
+    ...points.map(p => ({
+      group: HIGHLIGHTS_GROUPS.playTimeP95,
+      key: p.bucket,
+      value: p.p95Minutes,
+    })),
+  ];
+}
+
+/**
+ * Timed sessions behind the session-length series — its denominator, and the
+ * thing that makes a spiky line legible ("that peak is one session").
+ */
+export function totalPlayTimeSessions(points: PlayTimePoint[]): number {
+  return points.reduce((sum, p) => sum + p.sessions, 0);
+}
+
+/**
+ * One hue at three depths: median light, mean mid, p95 dark. Reuses the shared
+ * STAT ramp so a percentile means the same thing here as it does on the Latency
+ * tab — the same measure at different points of one distribution.
+ */
+export const PLAY_TIME_SCALE: ColorScale = {
+  [HIGHLIGHTS_GROUPS.playTimeMedian]: STAT.p50,
+  [HIGHLIGHTS_GROUPS.playTimeAvg]: STAT.avg,
+  [HIGHLIGHTS_GROUPS.playTimeP95]: STAT.p95,
+};
 
 /** Distinct learners behind the practice-minutes series — its denominator. */
 export function peakActiveLearners(points: PracticeMinutesPoint[]): number {

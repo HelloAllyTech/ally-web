@@ -10,10 +10,12 @@ import {
   DriftBackfillJob,
   LanguageEvalReference,
   LanguageQualityResponse,
+  RoleplayVolumeResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
   StartLatencyResponse,
   TokenConsumptionResponse,
+  UsageLevelResponse,
   VoiceLatencyResponse,
 } from "@types";
 
@@ -71,6 +73,12 @@ type HighlightsQuery = AnalyticsWindowQuery;
 /** Cohort retention is all-time; only the org filter applies. */
 type CohortRetentionQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 
+/** Usage levels are fixed to 12 complete months + the current one, same reason. */
+type UsageLevelQuery = Pick<AnalyticsWindowQuery, "tenantId">;
+
+/** Roleplay volume is a lifetime distribution; only the org filter applies. */
+type RoleplayVolumeQuery = Pick<AnalyticsWindowQuery, "tenantId">;
+
 type StartLatencyQuery = AnalyticsWindowQuery & {
   language?: string;
 };
@@ -108,6 +116,28 @@ export const analyticsAPI = baseAPI.injectEndpoints({
     getCohortRetention: builder.query<CohortRetentionResponse, CohortRetentionQuery>({
       query: ({ tenantId } = {}) => ({
         url: ApiEndpoints.ANALYTICS.COHORT_RETENTION,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Monthly distribution of practice minutes across the learner population.
+    // Takes ONLY `tenantId` for the same reason as cohort retention: the window
+    // is fixed and month-grained, so passing the page's range through would imply
+    // a scoping that does not happen.
+    getUsageLevels: builder.query<UsageLevelResponse, UsageLevelQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.USAGE_LEVELS,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Lifetime distribution of completed roleplays across the learner
+    // population. Takes ONLY `tenantId`, like usage levels and cohort retention:
+    // the quantity is a LIFETIME count, so a window param would change what is
+    // being counted rather than narrow it.
+    getRoleplayVolume: builder.query<RoleplayVolumeResponse, RoleplayVolumeQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.ROLEPLAY_VOLUME,
         method: HttpMethod.GET,
         params: tenantId ? { tenantId } : {},
       }),
@@ -224,6 +254,8 @@ export const {
   useGetAnalyticsOverviewQuery,
   useGetAnalyticsHighlightsQuery,
   useGetCohortRetentionQuery,
+  useGetUsageLevelsQuery,
+  useGetRoleplayVolumeQuery,
   useGetVoiceLatencyQuery,
   useGetAgentJoinReliabilityQuery,
   useGetStartLatencyQuery,
