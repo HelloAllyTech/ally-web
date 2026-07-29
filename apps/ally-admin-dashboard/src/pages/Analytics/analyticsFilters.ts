@@ -24,16 +24,24 @@ export interface AnalyticsTabFilters {
 export const windowLabel = (window?: AnalyticsWindow): string =>
   window ? `${window.label} (${window.from} → ${window.to})` : "window loading";
 
-/** Short "as of" stamp for a provenance line. */
-export const asOf = (window?: AnalyticsWindow): string | undefined => {
-  if (!window?.computedAt) return undefined;
-  const d = new Date(window.computedAt);
+/**
+ * Short "as of" stamp for a provenance line.
+ *
+ * Takes the timestamp rather than a window so the all-time endpoints — which
+ * return a `computedAt` and no window, because their quantity is not a period —
+ * can carry the same stamp as the windowed ones.
+ */
+export const asOfStamp = (computedAt?: string): string | undefined => {
+  if (!computedAt) return undefined;
+  const d = new Date(computedAt);
   if (Number.isNaN(d.getTime())) return undefined;
   return d.toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   });
 };
+
+export const asOf = (window?: AnalyticsWindow): string | undefined => asOfStamp(window?.computedAt);
 
 /**
  * True when a named response section could not honour the active tenant filter.

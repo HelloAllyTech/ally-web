@@ -274,6 +274,19 @@ export const ApiEndpoints = {
     TOKEN_CONSUMPTION: "/v1/analytics/token-consumption",
     SCRIBE_OVERVIEW: "/v1/analytics/scribe/overview",
     SCRIBE_SUMMARY_FAILURES: "/v1/analytics/scribe/summary-failures",
+    // Endpoints behind the Testing tab. Named for what they measure, not for the
+    // tab: charts graduate from Testing onto Highlights (or are cut), and an
+    // endpoint called /testing would have to be renamed the day one moved.
+    ACTIVATION: "/v1/analytics/activation",
+    COMPLETION_RATE: "/v1/analytics/completion-rate",
+    LANGUAGE_MIX: "/v1/analytics/language-mix",
+    SKILL_GROWTH: "/v1/analytics/skill-growth",
+    QUALITY_DISTRIBUTION: "/v1/analytics/quality-distribution",
+    COMPETENCY_MAP: "/v1/analytics/competency-map",
+    TRACK_DROPOFF: "/v1/analytics/track-dropoff",
+    COACHING_LOOP: "/v1/analytics/coaching-loop",
+    ORG_HEALTH: "/v1/analytics/org-health",
+    SCRIBE_ADOPTION: "/v1/analytics/scribe-adoption",
   },
   ROLEPLAY_SESSION_LOGS: {
     LIST: "/v1/roleplay-session-logs",

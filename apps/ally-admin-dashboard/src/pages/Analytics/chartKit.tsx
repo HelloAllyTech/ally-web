@@ -240,6 +240,54 @@ export const stackedBarOpts = ({
 });
 
 /**
+ * Scatter plot with TWO measured axes (x = `x`, y = `y`).
+ *
+ * The only chart type here whose x-axis is a quantity rather than a time bucket
+ * or a category, which is why it cannot borrow the factories above: it exists for
+ * the "is there a relationship between these two measures?" question, where the
+ * answer is a shape in a plane and neither axis is the subject on its own.
+ *
+ * Two cautions worth stating where the factory lives, since a scatter is the
+ * easiest chart to over-read:
+ *  - It shows correlation persuasively enough that readers make the causal leap
+ *    unprompted. The caption has to say what the chart does and does not claim.
+ *  - Colour must not be assigned per point. One point per entity is exactly the
+ *    case where colour-by-identity looks informative and encodes nothing; pass a
+ *    single-group scale and let the tooltip and the expanded table name the
+ *    points.
+ */
+export const scatterOpts = ({
+  leftTitle = "Value",
+  bottomTitle = "Value",
+  colorScale,
+  legend = false,
+  height = CHART_HEIGHT,
+  domain,
+  xDomain,
+  extra = {},
+}: AxisOptsBase & { xDomain?: [number, number] }) => ({
+  height,
+  axes: {
+    left: {
+      mapsTo: "y",
+      scaleType: ScaleTypes.LINEAR,
+      title: leftTitle,
+      ...(domain ? { domain } : { includeZero: true }),
+    },
+    bottom: {
+      mapsTo: "x",
+      scaleType: ScaleTypes.LINEAR,
+      title: bottomTitle,
+      ...(xDomain ? { domain: xDomain } : { includeZero: true }),
+    },
+  },
+  color: { scale: colorScale },
+  legend: { enabled: legend },
+  toolbar: { enabled: false },
+  ...extra,
+});
+
+/**
  * Donut chart (group = `group`, value = `value`).
  *
  * Keep to ~4 slices — people estimate wedge area badly, and past a handful of
