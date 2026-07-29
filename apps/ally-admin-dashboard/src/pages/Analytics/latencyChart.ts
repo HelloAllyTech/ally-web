@@ -5,6 +5,7 @@ import {
   VoiceLatencyPoint,
 } from "@types";
 
+import { bucketTitle } from "./analyticsGrouping";
 import { CONTEXT, ColorScale, STAT } from "./chartScales";
 
 /**
@@ -96,11 +97,14 @@ export function buildVoiceLatencyByLanguageBars(rows: VoiceLatencyByLanguageRow[
   };
 }
 
-/** Human-readable x-axis title for the bucket granularity returned by the BE. */
+/**
+ * Human-readable x-axis title for the bucket granularity returned by the BE.
+ * Delegates to the shared grain table so a new granularity cannot be legible on
+ * one tab and fall back to "Week" on another (which is what happened when this
+ * held its own if-chain and `year` was added).
+ */
 export function latencyBucketTitle(bucket?: AnalyticsBucket | string): string {
-  if (bucket === "day") return "Day";
-  if (bucket === "month") return "Month";
-  return "Week";
+  return bucketTitle(bucket);
 }
 
 /**

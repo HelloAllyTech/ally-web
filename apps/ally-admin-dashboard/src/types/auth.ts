@@ -167,8 +167,15 @@ export interface AnalyticsData {
 
 // Platform analytics (super-admin overview) — mirrors the backend
 // AnalyticsOverviewResponseDto from GET /api/v1/analytics/overview.
-export type AnalyticsRange = "30d" | "90d" | "12m";
-export type AnalyticsBucket = "day" | "week" | "month";
+/**
+ * `all` spans the platform's whole history — the server resolves its start from
+ * the first row in the data rather than the calendar, so such a window has no
+ * equal-length predecessor and never carries a `previous` comparison.
+ */
+export type AnalyticsRange = "30d" | "90d" | "12m" | "all";
+
+/** Grouping grain for a trend. Surfaced per chart, not per page. */
+export type AnalyticsBucket = "day" | "week" | "month" | "year";
 
 /**
  * The window the server actually resolved, echoed back so every chart, caption
@@ -184,6 +191,14 @@ export interface AnalyticsWindow {
   label: string;
   days: number;
   bucket: AnalyticsBucket;
+  /** True when the window covers all of the platform's history. */
+  allTime: boolean;
+  /**
+   * Bucket start of the period containing today, or null when the window ended
+   * in the past. That period is still accruing, so it belongs in tables (flagged)
+   * and NOT on a line or bar — an unfinished period draws as a fall.
+   */
+  inProgressBucket: string | null;
   /** ISO 8601 server time the aggregates were computed. */
   computedAt: string;
 }
@@ -225,14 +240,15 @@ export interface ActiveUsersPoint {
 }
 
 export interface SimulationsCompletedPoint {
-  /** ISO week start (yyyy-mm-dd). */
-  weekStart: string;
+  /** Bucket start (yyyy-mm-dd) — the grain the request asked for. */
+  bucket: string;
   count: number;
 }
 
 export interface RetentionPoint {
-  /** ISO week start (yyyy-mm-dd). */
-  weekStart: string;
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  /** Active users whose account was created in this same bucket. */
   newUsers: number;
   returningUsers: number;
 }
@@ -276,6 +292,8 @@ export interface HighlightsSummary {
    */
   unpricedCalls: number;
   costPerCompletedSimUsd: number | null;
+  avgPlayTimeMinutes: number | null;
+  playTimeSessions: number;
 }
 
 export interface TopOrgRow {
@@ -289,6 +307,21 @@ export interface PracticeMinutesPoint {
   bucket: string;
   minutes: number;
   activeLearners: number;
+}
+
+/**
+ * How long one simulation lasts, per bucket. Median and p95 travel with the
+ * mean because session length is skewed. Nulls mark a bucket with no completed,
+ * timed session — the axis stays a real calendar and the line breaks.
+ */
+export interface PlayTimePoint {
+  /** Bucket start (yyyy-mm-dd). */
+  bucket: string;
+  avgMinutes: number | null;
+  medianMinutes: number | null;
+  p95Minutes: number | null;
+  /** Timed sessions behind the bucket. A count, so its zero is a real zero. */
+  sessions: number;
 }
 
 export interface QualityTrendPoint {
@@ -344,6 +377,8 @@ export interface AnalyticsHighlightsResponse {
   topOrgsBelowFloor: TopOrgsBelowFloor;
   /** Gap-filled to a contiguous bucket axis. */
   practiceMinutes: PracticeMinutesPoint[];
+  /** Contiguous axis, gap-filled with NULLs — an average has no zero. */
+  playTime: PlayTimePoint[];
   /** Sparse — buckets with no evaluated sessions are absent. */
   qualityTrend: QualityTrendPoint[];
   /** Sparse — buckets with no ratings are absent. */
@@ -391,6 +426,86 @@ export interface CohortRetentionResponse {
   currentMonth: string;
   /** Oldest first, with signup-less months present at `learners: 0`. */
   cohorts: CohortRetentionRow[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+// Monthly learner usage-level mix — mirrors UsageLevelResponseDto from
+// GET /api/v1/analytics/usage-levels. Month-grained and fixed-window (12 complete
+// months + the current one): it takes no window params, because a shift in a
+// distribution is only visible across several months.
+export interface UsageLevelBand {
+  /** Server-owned label, e.g. "25–50 min". */
+  label: string;
+  /** Inclusive lower bound, minutes. */
+  minMinutes: number;
+  /** Exclusive upper bound; null for the open-ended top band. */
+  maxMinutes: number | null;
+}
+
+export interface UsageLevelMonth {
+  /** First day of the month (yyyy-mm-01). */
+  month: string;
+  /** Learners per band, index-aligned with the response's `bands`. */
+  learnersByBand: number[];
+  /** Σ learnersByBand — learners with any practice that month. */
+  activeLearners: number;
+  /** Learner accounts that existed by the end of the month. */
+  registeredLearners: number;
+  /** Of those, the ones who had practised at least once by then. */
+  activatedLearners: number;
+  /** True for the current, unfinished month: its low bands are overstated. */
+  partial: boolean;
+}
+
+export interface UsageLevelResponse {
+  /** Bands lowest first, excluding the zero band (a residual — see below). */
+  bands: UsageLevelBand[];
+  /** Label for the residual "practised nothing this month" band. */
+  zeroBandLabel: string;
+  completeMonths: number;
+  /** Below this population, a month shows counts and no percentages. */
+  minPopulationSize: number;
+  /** First day of the current, incomplete month (yyyy-mm-01). */
+  currentMonth: string;
+  /** Oldest first, gap-free; months before the population existed carry zeros. */
+  months: UsageLevelMonth[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+// Lifetime roleplay-volume distribution — mirrors RoleplayVolumeResponseDto from
+// GET /api/v1/analytics/roleplay-volume. All-time and takes no window params: the
+// quantity is a LIFETIME count per learner, so a 30-day window would put nearly
+// every learner in the lowest bands whatever their real depth.
+export interface RoleplayVolumeBand {
+  /** Server-owned label, and the x-axis tick: "1", "3–5", "51+". */
+  label: string;
+  /** Inclusive lower bound, completed roleplays. */
+  minCount: number;
+  /** INCLUSIVE upper bound (counts are discrete); null for the top band. */
+  maxCount: number | null;
+}
+
+export interface RoleplayVolumeResponse {
+  /** Bands lowest first, excluding the zero band (a residual — see below). */
+  bands: RoleplayVolumeBand[];
+  /** Label for the residual "never completed a roleplay" band. */
+  zeroBandLabel: string;
+  /** Below this population, shares must not be stated — counts only. */
+  minPopulationSize: number;
+  /** Every learner account in scope: the denominator for every share. */
+  registeredLearners: number;
+  /** Learners with >= 1 completed roleplay — Σ learnersByBand. */
+  learnersWithAny: number;
+  /** registeredLearners − learnersWithAny, derived server-side. */
+  learnersWithNone: number;
+  /** Learners per band, index-aligned with `bands`. */
+  learnersByBand: number[];
+  /** Completed roleplays across every learner in scope. */
+  totalCompletedRoleplays: number;
+  /** Median lifetime count among learners with >= 1; null when nobody has. */
+  medianAmongActiveLearners: number | null;
   scoping: AnalyticsScoping;
   computedAt: string;
 }

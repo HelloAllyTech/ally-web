@@ -12,7 +12,14 @@ import { AnalyticsBucket } from "@types";
 
 import { AnalyticsTabFilters, asOf, windowLabel } from "../analyticsFilters";
 import { ChartDetailModal, ChartTableData } from "../ChartDetailModal";
-import { ChartCard, buildSource, hBarOpts, lineOpts, stackedBarOpts } from "../chartKit";
+import {
+  ChartCard,
+  ScrollableChart,
+  buildSource,
+  hBarOpts,
+  lineOpts,
+  stackedBarOpts,
+} from "../chartKit";
 import { CONTEXT, PALETTE, languageScale } from "../chartScales";
 import {
   JOIN_LATENCY_SCALE,
@@ -338,7 +345,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching turn-latency metrics."
         empty={!isLoading && liveSeries.length === 0}
       >
-        <LineChart data={liveSeries} options={voiceOptions} />
+        <ScrollableChart data={liveSeries}>
+          <LineChart data={liveSeries} options={voiceOptions} />
+        </ScrollableChart>
       </ChartCard>
 
       {/* Only rendered when backfilled data actually exists — an empty context
@@ -357,7 +366,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           loading={isLoading && !data}
           onExpand={() => setExpanded("history")}
         >
-          <LineChart data={historySeries} options={historyOptions} />
+          <ScrollableChart data={historySeries}>
+            <LineChart data={historySeries} options={historyOptions} />
+          </ScrollableChart>
         </ChartCard>
       )}
 
@@ -420,7 +431,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching start-latency metrics."
         empty={!startLoading && startSegments.length === 0}
       >
-        <StackedBarChart data={startSegments} options={startSegmentOptions} />
+        <ScrollableChart data={startSegments}>
+          <StackedBarChart data={startSegments} options={startSegmentOptions} />
+        </ScrollableChart>
       </ChartCard>
 
       <ChartCard
@@ -441,7 +454,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching start-latency metrics."
         empty={!startLoading && startTotals.length === 0}
       >
-        <LineChart data={startTotals} options={startTotalOptions} />
+        <ScrollableChart data={startTotals}>
+          <LineChart data={startTotals} options={startTotalOptions} />
+        </ScrollableChart>
       </ChartCard>
 
       <ChartCard
@@ -462,7 +477,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching reliability metrics."
         empty={!reliabilityLoading && joinLatencySeries.length === 0}
       >
-        <LineChart data={joinLatencySeries} options={joinLatencyOptions} />
+        <ScrollableChart data={joinLatencySeries}>
+          <LineChart data={joinLatencySeries} options={joinLatencyOptions} />
+        </ScrollableChart>
       </ChartCard>
 
       <ChartCard
@@ -483,7 +500,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         errorSubtitle="There was a problem fetching reliability metrics."
         empty={!reliabilityLoading && reliabilityPoints.length === 0}
       >
-        <LineChart data={rateSeries} options={rateOptions} />
+        <ScrollableChart data={rateSeries}>
+          <LineChart data={rateSeries} options={rateOptions} />
+        </ScrollableChart>
       </ChartCard>
 
       {/* ---------------------------- Detail views ---------------------------- */}
@@ -498,7 +517,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           table={seriesTable(liveSeries, axisTitle)}
           exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
           render={({ height }) => (
-            <LineChart data={liveSeries} options={{ ...voiceOptions, height }} />
+            <ScrollableChart data={liveSeries}>
+              <LineChart data={liveSeries} options={{ ...voiceOptions, height }} />
+            </ScrollableChart>
           )}
         />
       )}
@@ -517,7 +538,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           table={seriesTable(historySeries, axisTitle)}
           exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
           render={({ height }) => (
-            <LineChart data={historySeries} options={{ ...historyOptions, height }} />
+            <ScrollableChart data={historySeries}>
+              <LineChart data={historySeries} options={{ ...historyOptions, height }} />
+            </ScrollableChart>
           )}
         />
       )}
@@ -564,7 +587,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           table={seriesTable(startSegments, startAxisTitle)}
           exportContext={[`Window: ${startWindow}`, `Granularity: ${bucket}`]}
           render={({ height }) => (
-            <StackedBarChart data={startSegments} options={{ ...startSegmentOptions, height }} />
+            <ScrollableChart data={startSegments}>
+              <StackedBarChart data={startSegments} options={{ ...startSegmentOptions, height }} />
+            </ScrollableChart>
           )}
         />
       )}
@@ -583,7 +608,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           table={seriesTable(startTotals, startAxisTitle)}
           exportContext={[`Window: ${startWindow}`, `Granularity: ${bucket}`]}
           render={({ height }) => (
-            <LineChart data={startTotals} options={{ ...startTotalOptions, height }} />
+            <ScrollableChart data={startTotals}>
+              <LineChart data={startTotals} options={{ ...startTotalOptions, height }} />
+            </ScrollableChart>
           )}
         />
       )}
@@ -602,7 +629,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           table={seriesTable(joinLatencySeries, reliabilityAxisTitle)}
           exportContext={[`Window: ${reliabilityWindow}`, `Granularity: ${bucket}`]}
           render={({ height }) => (
-            <LineChart data={joinLatencySeries} options={{ ...joinLatencyOptions, height }} />
+            <ScrollableChart data={joinLatencySeries}>
+              <LineChart data={joinLatencySeries} options={{ ...joinLatencyOptions, height }} />
+            </ScrollableChart>
           )}
         />
       )}
@@ -643,7 +672,9 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
             `Failure-rate ceiling: ${FAILURE_RATE_TARGET_PCT}% (frontend service objective, not measured)`,
           ]}
           render={({ height }) => (
-            <LineChart data={rateSeries} options={{ ...rateOptions, height }} />
+            <ScrollableChart data={rateSeries}>
+              <LineChart data={rateSeries} options={{ ...rateOptions, height }} />
+            </ScrollableChart>
           )}
         />
       )}

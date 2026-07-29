@@ -36,11 +36,17 @@ const RANGE_ITEMS: { id: AnalyticsRange; label: string }[] = [
  * declares which page-level pickers it consumes (`uses`) and renders its own
  * component with the shared filter values. Adding a tab = one entry + a
  * component under ./tabs; tab-local pickers live inside that component.
+ *
+ * `uses.range: false` means the tab reads ALL-TIME data and the time-range
+ * picker is hidden for it. That is one switch, not two: the picker's visibility
+ * and the window actually queried are both derived from this flag, so a tab
+ * cannot end up showing a picker that changes nothing — or worse, hiding one
+ * that still silently constrains its charts.
  */
 interface TabDef {
   id: string;
   label: string;
-  uses: { language: boolean };
+  uses: { language: boolean; range: boolean };
   render: (f: AnalyticsTabFilters) => ReactNode;
 }
 
@@ -48,28 +54,33 @@ const TABS: TabDef[] = [
   // First entry = the default landing tab. Highlights is the whole-platform
   // picture; it absorbed the former separate "Overview" tab, which rendered four
   // of the same charts from the same data.
+  //
+  // It takes no time range: a leadership view of "how is the platform doing" is
+  // a question about the whole history, and the reader who wants a narrower read
+  // gets it per chart via the grouping control rather than by re-scoping every
+  // panel on the page at once.
   {
     id: "highlights",
     label: "Highlights",
-    uses: { language: false },
+    uses: { language: false, range: false },
     render: f => <HighlightsTab {...f} />,
   },
   {
     id: "latency",
     label: "Latency & reliability",
-    uses: { language: true },
+    uses: { language: true, range: true },
     render: f => <LatencyTab {...f} />,
   },
   {
     id: "drift",
     label: "Drift",
-    uses: { language: true },
+    uses: { language: true, range: true },
     render: f => <ConversationDrift {...f} />,
   },
   {
     id: "language",
     label: "Language",
-    uses: { language: true },
+    uses: { language: true, range: true },
     render: f => <LanguageQualityTab {...f} />,
   },
   {
@@ -77,13 +88,13 @@ const TABS: TabDef[] = [
     // cost" and its axis was USD.
     id: "cost",
     label: "AI cost",
-    uses: { language: false },
+    uses: { language: false, range: true },
     render: f => <TokenConsumption {...f} />,
   },
   {
     id: "scribe",
     label: "Scribe",
-    uses: { language: false },
+    uses: { language: false, range: true },
     render: f => <ScribeTab {...f} />,
   },
 ];
@@ -108,7 +119,12 @@ export const Analytics = () => {
   const selectedLanguage = languageItems.find(i => i.id === language) ?? languageItems[0];
   const activeTab = TABS[tabIndex] ?? TABS[0];
 
-  const query: AnalyticsWindowQuery = useMemo(() => ({ range }), [range]);
+  // A tab with no range picker reads all-time data. Derived from the same flag
+  // that hides the picker, so the two cannot disagree.
+  const query: AnalyticsWindowQuery = useMemo(
+    () => ({ range: activeTab.uses.range ? range : "all" }),
+    [range, activeTab],
+  );
   const filters: AnalyticsTabFilters = useMemo(
     () => ({ query, language, onSelectLanguage: setLanguage }),
     [query, language],
@@ -124,6 +140,10 @@ export const Analytics = () => {
               <p className="text-sm text-typography-500 mt-1">
                 Platform-wide metrics, excluding internal and test organisations. Each panel states
                 what it is derived from and how many observations back it.
+                {/* Says where the window went, for a tab that has no picker. A
+                    missing control reads as an omission unless it is explained. */}
+                {!activeTab.uses.range &&
+                  " This tab covers all of the platform's history; each chart carries its own day/week/month/year grouping."}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -144,21 +164,23 @@ export const Analytics = () => {
                   />
                 </div>
               )}
-              <div className="w-56">
-                <Dropdown
-                  id="analytics-range"
-                  size="md"
-                  titleText="Time range"
-                  hideLabel
-                  label="Time range"
-                  items={RANGE_ITEMS}
-                  selectedItem={selectedRange}
-                  itemToString={item => item?.label ?? ""}
-                  onChange={({ selectedItem }) => {
-                    if (selectedItem) setRange(selectedItem.id);
-                  }}
-                />
-              </div>
+              {activeTab.uses.range && (
+                <div className="w-56">
+                  <Dropdown
+                    id="analytics-range"
+                    size="md"
+                    titleText="Time range"
+                    hideLabel
+                    label="Time range"
+                    items={RANGE_ITEMS}
+                    selectedItem={selectedRange}
+                    itemToString={item => item?.label ?? ""}
+                    onChange={({ selectedItem }) => {
+                      if (selectedItem) setRange(selectedItem.id);
+                    }}
+                  />
+                </div>
+              )}
             </div>
           </div>
 

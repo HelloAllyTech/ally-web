@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CostPerSimPoint,
   CsatTrendPoint,
+  PlayTimePoint,
   PracticeMinutesPoint,
   QualityTrendPoint,
   UsersByRolePoint,
@@ -10,8 +11,10 @@ import {
 
 import {
   HIGHLIGHTS_GROUPS,
+  PLAY_TIME_SCALE,
   buildCostPerSimSeries,
   buildCsatTrendSeries,
+  buildPlayTimeSeries,
   buildPracticeMinutesSeries,
   buildQualityTrendSeries,
   buildRoleBars,
@@ -22,6 +25,7 @@ import {
   delta,
   formatKpi,
   sparkValues,
+  totalPlayTimeSessions,
   totalUnpricedCalls,
 } from "../highlightsChart";
 
@@ -137,8 +141,8 @@ describe("buildSimulationsSeries", () => {
     // The x-axis maps to `key`. If the period lived in `group` instead, every
     // week would collapse onto a single bar — which is what used to happen.
     const series = buildSimulationsSeries([
-      { weekStart: "2024-06-03", count: 4 },
-      { weekStart: "2024-06-10", count: 9 },
+      { bucket: "2024-06-03", count: 4 },
+      { bucket: "2024-06-10", count: 9 },
     ]);
 
     expect(series.map(d => d.key)).toEqual(["2024-06-03", "2024-06-10"]);
@@ -264,5 +268,82 @@ describe("formatKpi", () => {
   it("applies prefix, suffix and fixed decimals", () => {
     expect(formatKpi(1234.5, { prefix: "$", decimals: 2 })).toBe("$1,234.50");
     expect(formatKpi(92.5, { suffix: "%" })).toBe("92.5%");
+  });
+});
+
+const playPoint = (over: Partial<PlayTimePoint> = {}): PlayTimePoint => ({
+  bucket: "2024-06-10",
+  avgMinutes: 12,
+  medianMinutes: 10,
+  p95Minutes: 30,
+  sessions: 5,
+  ...over,
+});
+
+describe("buildPlayTimeSeries", () => {
+  it("plots all three statistics of the one distribution", () => {
+    const series = buildPlayTimeSeries([playPoint()]);
+
+    expect(series).toEqual([
+      { group: HIGHLIGHTS_GROUPS.playTimeMedian, key: "2024-06-10", value: 10 },
+      { group: HIGHLIGHTS_GROUPS.playTimeAvg, key: "2024-06-10", value: 12 },
+      { group: HIGHLIGHTS_GROUPS.playTimeP95, key: "2024-06-10", value: 30 },
+    ]);
+  });
+
+  it("passes nulls through so a sessionless period breaks the line", () => {
+    // Never 0: a zero would read as "sessions collapsed to nothing" when in
+    // fact nobody practised at all.
+    const series = buildPlayTimeSeries([
+      playPoint({ bucket: "2024-06-11", avgMinutes: null, medianMinutes: null, p95Minutes: null }),
+    ]);
+
+    expect(series.every(d => d.value === null)).toBe(true);
+    expect(series.some(d => d.value === 0)).toBe(false);
+  });
+
+  it("keeps every bucket on the axis, measured or not", () => {
+    const series = buildPlayTimeSeries([
+      playPoint({ bucket: "2024-06-10" }),
+      playPoint({ bucket: "2024-06-11", avgMinutes: null, medianMinutes: null, p95Minutes: null }),
+    ]);
+
+    // Three series x two buckets — the quiet day still occupies its slot, so
+    // the x-axis stays a real calendar.
+    expect(series).toHaveLength(6);
+    expect(new Set(series.map(d => d.key))).toEqual(new Set(["2024-06-10", "2024-06-11"]));
+  });
+
+  it("returns nothing for an empty series", () => {
+    expect(buildPlayTimeSeries([])).toEqual([]);
+  });
+});
+
+describe("totalPlayTimeSessions", () => {
+  it("sums the sessions behind the whole series", () => {
+    expect(totalPlayTimeSessions([playPoint({ sessions: 5 }), playPoint({ sessions: 7 })])).toBe(
+      12,
+    );
+  });
+
+  it("is zero, not NaN, for an empty series", () => {
+    expect(totalPlayTimeSessions([])).toBe(0);
+  });
+});
+
+describe("PLAY_TIME_SCALE", () => {
+  it("gives the three statistics one hue family, not three unrelated colours", () => {
+    const colours = [
+      PLAY_TIME_SCALE[HIGHLIGHTS_GROUPS.playTimeMedian],
+      PLAY_TIME_SCALE[HIGHLIGHTS_GROUPS.playTimeAvg],
+      PLAY_TIME_SCALE[HIGHLIGHTS_GROUPS.playTimeP95],
+    ];
+
+    expect(colours.every(Boolean)).toBe(true);
+    // Distinct, so the reader can tell them apart...
+    expect(new Set(colours).size).toBe(3);
+    // ...but the same ramp the Latency tab uses, so a percentile means the same
+    // thing everywhere on the dashboard.
+    expect(colours).toEqual(["#a6c8ff", "#4589ff", "#0043ce"]);
   });
 });
