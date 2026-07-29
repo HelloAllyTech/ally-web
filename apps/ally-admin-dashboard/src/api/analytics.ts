@@ -1,20 +1,30 @@
 import { ApiEndpoints, HttpMethod } from "@constants";
 import {
+  ActivationResponse,
   AgentJoinReliabilityResponse,
   AnalyticsBucket,
   AnalyticsHighlightsResponse,
   AnalyticsOverviewResponse,
   AnalyticsRange,
+  CoachingLoopResponse,
   CohortRetentionResponse,
+  CompetencyMapResponse,
+  CompletionRateResponse,
   ConversationDriftResponse,
   DriftBackfillJob,
   LanguageEvalReference,
+  LanguageMixResponse,
   LanguageQualityResponse,
+  OrgHealthResponse,
+  QualityDistributionResponse,
   RoleplayVolumeResponse,
+  ScribeAdoptionResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
+  SkillGrowthResponse,
   StartLatencyResponse,
   TokenConsumptionResponse,
+  TrackDropoffResponse,
   UsageLevelResponse,
   VoiceLatencyResponse,
 } from "@types";
@@ -78,6 +88,14 @@ type UsageLevelQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 
 /** Roleplay volume is a lifetime distribution; only the org filter applies. */
 type RoleplayVolumeQuery = Pick<AnalyticsWindowQuery, "tenantId">;
+
+/**
+ * Endpoints whose quantity is a LIFETIME or all-time measure, so a window param
+ * would change what is being counted rather than narrow it: a learning curve
+ * inside 30 days is a window artefact, and a competency's practice volume over a
+ * month says more about the month than the competency.
+ */
+type AllTimeAnalyticsQuery = Pick<AnalyticsWindowQuery, "tenantId">;
 
 type StartLatencyQuery = AnalyticsWindowQuery & {
   language?: string;
@@ -236,6 +254,99 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: { ...windowParams(q), ...(language ? { language } : {}) },
       }),
     }),
+    /* ------------------------- Testing-tab endpoints ------------------------ */
+    //
+    // Windowed like /highlights (range + per-chart bucket), except the four whose
+    // quantity is all-time by construction — those take `tenantId` only, for the
+    // same reason cohort retention and roleplay volume do.
+
+    // North-star series (weekly practising learners) + the activation funnel and
+    // time-to-first-practice distribution, in one response: all three answer "do
+    // new learners reach value, and how fast", and they share one denominator.
+    getActivation: builder.query<ActivationResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.ACTIVATION,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Started vs completed roleplays — the friction signal that also guards every
+    // efficacy number on the tab (those only see completers).
+    getCompletionRate: builder.query<CompletionRateResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.COMPLETION_RATE,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Language mix of completed sessions. Volume only — quality by language is
+    // the Language tab's question, and duplicating it here would let a reader
+    // compare a number with itself.
+    getLanguageMix: builder.query<LanguageMixResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.LANGUAGE_MIX,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // Score by Nth completed session — the efficacy curve. All-time: an ordinal
+    // is a position in a learner's history, not a date.
+    getSkillGrowth: builder.query<SkillGrowthResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SKILL_GROWTH,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Quality as a distribution (median + IQR) and satisfaction as a rating mix,
+    // plus the tags behind low ratings — the three panels that replace two means.
+    getQualityDistribution: builder.query<QualityDistributionResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.QUALITY_DISTRIBUTION,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    getCompetencyMap: builder.query<CompetencyMapResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.COMPETENCY_MAP,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    getTrackDropoff: builder.query<TrackDropoffResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.TRACK_DROPOFF,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    getCoachingLoop: builder.query<CoachingLoopResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.COACHING_LOOP,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+    // One row per customer org. All-time totals plus a fixed trailing 12-week
+    // trend, so "fading" is visible without a window picker.
+    getOrgHealth: builder.query<OrgHealthResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.ORG_HEALTH,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Scribe BREADTH (orgs and counsellors using it), not ops volume — the
+    // failure funnels and provider reliability stay on the Scribe tab.
+    getScribeAdoption: builder.query<ScribeAdoptionResponse, AnalyticsWindowQuery>({
+      query: (q = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SCRIBE_ADOPTION,
+        method: HttpMethod.GET,
+        params: windowParams(q),
+      }),
+    }),
+
     // Pin the reference experiment all language-quality deltas read against.
     setLanguageReference: builder.mutation<
       LanguageEvalReference | null,
@@ -267,4 +378,14 @@ export const {
   useGetTokenConsumptionQuery,
   useGetScribeOverviewQuery,
   useGetScribeSummaryFailuresQuery,
+  useGetActivationQuery,
+  useGetCompletionRateQuery,
+  useGetLanguageMixQuery,
+  useGetSkillGrowthQuery,
+  useGetQualityDistributionQuery,
+  useGetCompetencyMapQuery,
+  useGetTrackDropoffQuery,
+  useGetCoachingLoopQuery,
+  useGetOrgHealthQuery,
+  useGetScribeAdoptionQuery,
 } = analyticsAPI;

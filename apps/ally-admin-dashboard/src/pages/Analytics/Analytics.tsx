@@ -15,6 +15,8 @@ import {
   Theme,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
+import { isSuperDuperAdminRole } from "@constants";
+import { useUser } from "@hooks";
 import { AnalyticsRange } from "@types";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
@@ -22,6 +24,7 @@ import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { ScribeTab } from "./tabs/ScribeTab";
+import { TestingTab } from "./tabs/TestingTab";
 import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
 
@@ -48,6 +51,13 @@ interface TabDef {
   label: string;
   uses: { language: boolean; range: boolean };
   render: (f: AnalyticsTabFilters) => ReactNode;
+  /**
+   * Reserve a tab for the elevated super-admin tier. Declared here rather than
+   * checked inside the tab component so the tab never appears in the tab list at
+   * all — a visible tab that renders an access message is a worse answer than an
+   * absent one, and it also keeps the index-based selection honest.
+   */
+  superDuperOnly?: boolean;
 }
 
 const TABS: TabDef[] = [
@@ -97,6 +107,18 @@ const TABS: TabDef[] = [
     uses: { language: false, range: true },
     render: f => <ScribeTab {...f} />,
   },
+  {
+    // The staging surface for charts that are candidates for the tabs above.
+    // Last in the list and reserved for the elevated tier: everything on it is
+    // provisional, and a panel still being judged should not be the first thing a
+    // reader meets. Like Highlights it is all-time with per-chart grouping, so a
+    // chart that earns its place can move without rework.
+    id: "testing",
+    label: "Testing",
+    uses: { language: false, range: false },
+    superDuperOnly: true,
+    render: f => <TestingTab {...f} />,
+  },
 ];
 
 export const Analytics = () => {
@@ -105,6 +127,14 @@ export const Analytics = () => {
   // opts in via TabDef.uses; the picker only renders for tabs that use it.
   const [language, setLanguage] = useState<string>("");
   const [tabIndex, setTabIndex] = useState(0);
+
+  const { user } = useUser();
+  // Tabs the current reader may see. Filtered before anything indexes into the
+  // list, so `tabIndex` always refers to a tab that is actually rendered.
+  const tabs = useMemo(
+    () => TABS.filter(t => !t.superDuperOnly || isSuperDuperAdminRole(user?.role)),
+    [user?.role],
+  );
 
   const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });
   const languageItems = useMemo(
@@ -117,7 +147,7 @@ export const Analytics = () => {
 
   const selectedRange = RANGE_ITEMS.find(i => i.id === range) ?? RANGE_ITEMS[0];
   const selectedLanguage = languageItems.find(i => i.id === language) ?? languageItems[0];
-  const activeTab = TABS[tabIndex] ?? TABS[0];
+  const activeTab = tabs[tabIndex] ?? tabs[0];
 
   // A tab with no range picker reads all-time data. Derived from the same flag
   // that hides the picker, so the two cannot disagree.
@@ -189,7 +219,7 @@ export const Analytics = () => {
             onChange={({ selectedIndex }) => setTabIndex(selectedIndex)}
           >
             <TabList aria-label="Analytics sections">
-              {TABS.map(t => (
+              {tabs.map(t => (
                 <Tab key={t.id}>{t.label}</Tab>
               ))}
             </TabList>
@@ -201,7 +231,7 @@ export const Analytics = () => {
                 panels nobody was looking at. Depth stays available on demand; it
                 just is not all fetched up front.
               */}
-              {TABS.map((t, i) => (
+              {tabs.map((t, i) => (
                 <TabPanel key={t.id}>{i === tabIndex ? t.render(filters) : null}</TabPanel>
               ))}
             </TabPanels>
