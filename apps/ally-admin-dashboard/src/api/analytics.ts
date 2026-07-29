@@ -5,6 +5,7 @@ import {
   AnalyticsHighlightsResponse,
   AnalyticsOverviewResponse,
   AnalyticsRange,
+  CohortRetentionResponse,
   ConversationDriftResponse,
   DriftBackfillJob,
   LanguageEvalReference,
@@ -67,6 +68,9 @@ type AgentJoinReliabilityQuery = AnalyticsWindowQuery;
 
 type HighlightsQuery = AnalyticsWindowQuery;
 
+/** Cohort retention is all-time; only the org filter applies. */
+type CohortRetentionQuery = Pick<AnalyticsWindowQuery, "tenantId">;
+
 type StartLatencyQuery = AnalyticsWindowQuery & {
   language?: string;
 };
@@ -96,6 +100,16 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.HIGHLIGHTS,
         method: HttpMethod.GET,
         params: windowParams(q),
+      }),
+    }),
+    // Monthly learner cohort retention. Deliberately takes ONLY `tenantId`:
+    // the grid is all-time by design, so passing the page's window params
+    // through would imply a scoping that does not happen.
+    getCohortRetention: builder.query<CohortRetentionResponse, CohortRetentionQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.COHORT_RETENTION,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
       }),
     }),
     getVoiceLatency: builder.query<VoiceLatencyResponse, VoiceLatencyQuery>({
@@ -209,6 +223,7 @@ export const analyticsAPI = baseAPI.injectEndpoints({
 export const {
   useGetAnalyticsOverviewQuery,
   useGetAnalyticsHighlightsQuery,
+  useGetCohortRetentionQuery,
   useGetVoiceLatencyQuery,
   useGetAgentJoinReliabilityQuery,
   useGetStartLatencyQuery,

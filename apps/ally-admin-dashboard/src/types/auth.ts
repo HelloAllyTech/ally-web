@@ -353,6 +353,48 @@ export interface AnalyticsHighlightsResponse {
   costPerSim: CostPerSimPoint[];
 }
 
+// Monthly learner cohort retention — mirrors CohortRetentionResponseDto from
+// GET /api/v1/analytics/cohort-retention. All-time and month-grained: it takes
+// no window params, because a cohort is only readable once it has been followed
+// for several months.
+export interface CohortRetentionCell {
+  /** Whole months since the cohort signed up. Always >= 1; month 0 is the cohort. */
+  monthIndex: number;
+  /** Calendar month the activity happened in (yyyy-mm-01). */
+  activityMonth: string;
+  /**
+   * Learners who cleared each minutes threshold that month, index-aligned with
+   * the response's `thresholds`. Counts, not rates — the rate is derived here
+   * against the row's `learners` so there is one definition of it.
+   */
+  activeByThreshold: number[];
+  /** True for the current, unfinished calendar month: these counts can only rise. */
+  partial: boolean;
+}
+
+export interface CohortRetentionRow {
+  /** Signup month (yyyy-mm-01) — the cohort key. */
+  cohortMonth: string;
+  /** Learner accounts created that month: the denominator, and the 100% anchor. */
+  learners: number;
+  /** True below `minCohortSize` — show the size, suppress the percentages. */
+  belowFloor: boolean;
+  /** Elapsed months only. A month that has not happened yet is absent, not zero. */
+  cells: CohortRetentionCell[];
+}
+
+export interface CohortRetentionResponse {
+  /** Selectable "active" definitions, in practice minutes per month. */
+  thresholds: number[];
+  minCohortSize: number;
+  /** First day of the current, incomplete month (yyyy-mm-01). */
+  currentMonth: string;
+  /** Oldest first, with signup-less months present at `learners: 0`. */
+  cohorts: CohortRetentionRow[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
 // Scribe-session analytics from GET /api/v1/analytics/scribe/*.
 export interface ScribeTrendPoint {
   /** Bucket start (yyyy-mm-dd). */

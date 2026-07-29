@@ -28,6 +28,7 @@ import {
   timeBarOpts,
 } from "../chartKit";
 import { CONTEXT } from "../chartScales";
+import { CohortRetentionCard } from "../CohortRetentionCard";
 import { FunnelBars } from "../FunnelBars";
 import {
   CSAT_SCALE,
@@ -476,6 +477,16 @@ export const HighlightsTab = ({ query }: AnalyticsTabFilters) => {
           </ChartCard>
         </div>
       )}
+
+      {/* Sits next to "new vs returning" deliberately: both are retention, and
+          adjacency is what tells the reader they are related. That chart
+          re-partitions each week independently; this one follows one cohort
+          forward, which is the only way to see whether newer intakes stick. It
+          owns its own query because it is all-time — it cannot honour the page's
+          range, and says so on its face. */}
+      <div className="mt-4">
+        <CohortRetentionCard tenantId={query.tenantId} />
+      </div>
 
       {/* --------------------------- Engagement --------------------------- */}
       <SubHeading>Engagement</SubHeading>
