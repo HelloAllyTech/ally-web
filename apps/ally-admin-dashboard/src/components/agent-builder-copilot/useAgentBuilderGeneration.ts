@@ -45,7 +45,12 @@ const BASE_FIELD_PLAN: { field: AgentBuilderField; label: string }[] = [
   { field: "title", label: "Title" },
   { field: "challenge_description", label: "Challenge description" },
   { field: "persona", label: "Persona (name, age, gender, profession, location)" },
+  { field: "backstory", label: "Character backstory" },
   { field: "knowledge_sources", label: "Knowledge sources" },
+  { field: "opening_statements", label: "Opening dialogues" },
+  { field: "reminders", label: "Reminders" },
+  { field: "linguistic_style_samples", label: "Linguistic style samples (English)" },
+  { field: "allowed_filler_words", label: "Allowed filler words (English)" },
 ];
 
 /**
