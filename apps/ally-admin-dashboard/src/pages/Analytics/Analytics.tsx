@@ -15,8 +15,6 @@ import {
   Theme,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
-import { isSuperDuperAdminRole } from "@constants";
-import { useUser } from "@hooks";
 import { AnalyticsRange } from "@types";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
@@ -51,13 +49,6 @@ interface TabDef {
   label: string;
   uses: { language: boolean; range: boolean };
   render: (f: AnalyticsTabFilters) => ReactNode;
-  /**
-   * Reserve a tab for the elevated super-admin tier. Declared here rather than
-   * checked inside the tab component so the tab never appears in the tab list at
-   * all — a visible tab that renders an access message is a worse answer than an
-   * absent one, and it also keeps the index-based selection honest.
-   */
-  superDuperOnly?: boolean;
 }
 
 const TABS: TabDef[] = [
@@ -109,14 +100,16 @@ const TABS: TabDef[] = [
   },
   {
     // The staging surface for charts that are candidates for the tabs above.
-    // Last in the list and reserved for the elevated tier: everything on it is
-    // provisional, and a panel still being judged should not be the first thing a
-    // reader meets. Like Highlights it is all-time with per-chart grouping, so a
-    // chart that earns its place can move without rework.
+    // Last in the list because everything on it is provisional, and a panel
+    // still being judged should not be the first thing a reader meets. Visible
+    // to both super-admin tiers, like the rest of this page — the route already
+    // gates on SUPER_ADMIN_ROLES and every endpoint it calls does the same, so a
+    // narrower tab-level gate would only hide charts a reader is allowed to
+    // fetch. Like Highlights it is all-time with per-chart grouping, so a chart
+    // that earns its place can move without rework.
     id: "testing",
     label: "Testing",
     uses: { language: false, range: false },
-    superDuperOnly: true,
     render: f => <TestingTab {...f} />,
   },
 ];
@@ -128,13 +121,9 @@ export const Analytics = () => {
   const [language, setLanguage] = useState<string>("");
   const [tabIndex, setTabIndex] = useState(0);
 
-  const { user } = useUser();
-  // Tabs the current reader may see. Filtered before anything indexes into the
-  // list, so `tabIndex` always refers to a tab that is actually rendered.
-  const tabs = useMemo(
-    () => TABS.filter(t => !t.superDuperOnly || isSuperDuperAdminRole(user?.role)),
-    [user?.role],
-  );
+  // Every tab is visible to everyone who can reach this page (the route gates on
+  // SUPER_ADMIN_ROLES), so the rendered list is the registry itself.
+  const tabs = TABS;
 
   const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });
   const languageItems = useMemo(
