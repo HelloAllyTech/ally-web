@@ -93,6 +93,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.BLOG,
   },
   {
+    id: SIDEBAR_ITEMS.PRODUCT_ROADMAP,
+    label: "Product Roadmap",
+    path: ROUTES.PRODUCT_ROADMAP,
+  },
+  {
     id: SIDEBAR_ITEMS.USERS,
     label: en.userManagement.users,
     path: ROUTES.USER_MANAGEMENT,
@@ -234,6 +239,11 @@ export const deriveNavigationItems = ({
             return permissions!.includes(Permissions.VIEW_I18N_TRANSLATIONS);
           case SIDEBAR_ITEMS.BLOG:
             return permissions!.includes(Permissions.VIEW_BLOGS);
+          // Permission-gated, deliberately NOT role-gated: viewing and voting on the
+          // roadmap are meant to reach a wider group than the manage surface, so the tab
+          // must stay out of buildSuperDuperAdminOnlyItems().
+          case SIDEBAR_ITEMS.PRODUCT_ROADMAP:
+            return permissions!.includes(Permissions.VIEW_PRODUCT_ROADMAP);
           default:
             return true;
         }
