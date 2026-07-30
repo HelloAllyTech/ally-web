@@ -1085,7 +1085,6 @@ export const en = {
     editTooltip: "Edit Tooltip",
     searchTooltips: "Search tooltips...",
     tipText: "Tip Text",
-    icon: "Icon",
     status: "Status",
     locationRequired: "Location and tip text are required",
     tipTextTooLong: "Tip text must be 200 characters or less",

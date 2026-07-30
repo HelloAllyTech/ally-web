@@ -1201,14 +1201,6 @@ export const TOOLTIPS_TABLE_COLUMNS = [
     minWidth: 560,
   },
   {
-    id: "icon",
-    label: "Icon",
-    accessor: "icon",
-    dataType: cellTypes.emoji_select,
-    options: [],
-    minWidth: 80,
-  },
-  {
     id: "active",
     label: "Active",
     accessor: "active",

@@ -73,7 +73,6 @@ export const TooltipManagement: React.FC = () => {
           data: {
             location: tooltipData.location ? toLocationSlug(tooltipData.location) : undefined,
             tipText: tooltipData.tipText,
-            icon: tooltipData.icon,
             active: tooltipData.active,
           },
         });
@@ -92,7 +91,6 @@ export const TooltipManagement: React.FC = () => {
         const response = await createTooltip({
           location: toLocationSlug(tooltipData.location!),
           tipText: tooltipData.tipText!,
-          icon: tooltipData.icon,
           active: tooltipData.active ?? false,
         });
         if (response.error) {
@@ -121,7 +119,6 @@ export const TooltipManagement: React.FC = () => {
         data: {
           location: columnId === "location" ? toLocationSlug(value) : originalTooltip.location,
           tipText: columnId === "tipText" ? value : originalTooltip.tipText,
-          icon: columnId === "icon" ? value : originalTooltip.icon,
           active: columnId === "active" ? value : originalTooltip.active,
         },
       });
