@@ -244,6 +244,7 @@ export const ApiEndpoints = {
     PRODUCT_GOALS_ORDER: "/v1/product-roadmap/product-goals/order",
     PRODUCT_GOALS_USAGE: "/v1/product-roadmap/product-goals/usage",
     OWNERS: "/v1/product-roadmap/opportunity-owners",
+    OWNERS_ELIGIBLE: "/v1/product-roadmap/opportunity-owners/eligible",
     OWNER_BY_ID: (id: string) => `/v1/product-roadmap/opportunity-owners/${id}`,
     OWNERS_ORDER: "/v1/product-roadmap/opportunity-owners/order",
     OWNERS_USAGE: "/v1/product-roadmap/opportunity-owners/usage",

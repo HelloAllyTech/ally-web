@@ -3,6 +3,7 @@ import { RoadmapSavedView, RoadmapViewState } from "@types";
 
 import {
   applySavedViewOrder,
+  normaliseSortField,
   isValidViewDrop,
   isViewDirty,
   serializeViewState,
@@ -124,5 +125,44 @@ describe("isValidViewDrop", () => {
 
   it("rejects an out-of-range source index", () => {
     expect(isValidViewDrop(views, 99, 0)).toBe(false);
+  });
+});
+
+describe("normaliseSortField", () => {
+  it("maps the standalone app's legacy names to the API's", () => {
+    // 3 of the 8 views migrated from production carry these. Sending them straight through made
+    // the API 400 and the board silently kept the previous rows.
+    expect(normaliseSortField("created")).toBe("createdAt");
+    expect(normaliseSortField("released")).toBe("releasedAt");
+  });
+
+  it("passes canonical names through untouched", () => {
+    for (const field of ["priority", "createdAt", "releasedAt", "myCoins", "description"]) {
+      expect(normaliseSortField(field)).toBe(field);
+    }
+  });
+
+  it("defaults to priority when the field is missing", () => {
+    expect(normaliseSortField(undefined)).toBe("priority");
+    expect(normaliseSortField("")).toBe("priority");
+  });
+});
+
+describe("serializeViewState with legacy sort fields", () => {
+  it("treats a legacy field and its canonical equivalent as EQUAL", () => {
+    // Otherwise every migrated view shows a permanent unsaved-changes dot the moment it opens,
+    // and an owner's autosave would fire on load.
+    expect(serializeViewState({ sort: { field: "created", dir: "desc" } })).toBe(
+      serializeViewState({ sort: { field: "createdAt", dir: "desc" } }),
+    );
+  });
+
+  it("still reports a genuine sort change as dirty", () => {
+    expect(
+      isViewDirty(
+        { sort: { field: "priority", dir: "desc" } },
+        { sort: { field: "created", dir: "desc" } },
+      ),
+    ).toBe(true);
   });
 });

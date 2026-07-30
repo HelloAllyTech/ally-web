@@ -19,13 +19,20 @@ import {
   RoadmapFacets,
   RoadmapOpportunitiesQuery,
   RoadmapOpportunitiesResponse,
+  RoadmapOpportunity,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
   RoadmapTaxonomyItem,
 } from "@types";
 
 import { CoinAllocator } from "./CoinAllocator";
+import { RoadmapAdvancedFilters } from "./RoadmapAdvancedFilters";
 import { useAllocateCoins } from "./useAllocateCoins";
+import {
+  EMPTY_ADVANCED_FILTERS,
+  RoadmapAdvancedFilterValues,
+  countActiveAdvancedFilters,
+} from "./utils/filters";
 
 const STAGE_STYLE: Record<string, string> = {
   new: "bg-background-secondary text-typography-primary",
@@ -59,6 +66,13 @@ interface OpportunitiesBoardProps {
   onStageFilterChange: (value: RoadmapOpportunityStage[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
+  /** Owner NAMES, matching RoadmapViewState — options come from GET /facets. */
+  ownerFilter: string[];
+  onOwnerFilterChange: (value: string[]) => void;
+  advanced: RoadmapAdvancedFilterValues;
+  onAdvancedChange: (next: RoadmapAdvancedFilterValues) => void;
+  /** Opens the goal-management modal. Manager-only. */
+  onManageGoals: () => void;
   sortBy: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>;
   order: "ASC" | "DESC";
   onToggleSort: (field: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>) => void;
@@ -66,6 +80,10 @@ interface OpportunitiesBoardProps {
   canManage: boolean;
   onOpenOpportunity: (id: string) => void;
   onAddClick: () => void;
+  /** Merge selection, manager-only. Lifted so the bar can live outside the table. */
+  selectedIds: Set<string>;
+  onToggleSelected: (id: string) => void;
+  onSplit: (opportunity: RoadmapOpportunity) => void;
 }
 
 /**
@@ -90,6 +108,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   isFetching,
   budget,
   goals,
+  facets,
   search,
   onSearchChange,
   typeFilter,
@@ -98,6 +117,11 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   onStageFilterChange,
   goalFilter,
   onGoalFilterChange,
+  ownerFilter,
+  onOwnerFilterChange,
+  advanced,
+  onAdvancedChange,
+  onManageGoals,
   sortBy,
   order,
   onToggleSort,
@@ -105,6 +129,9 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   canManage,
   onOpenOpportunity,
   onAddClick,
+  selectedIds,
+  onToggleSelected,
+  onSplit,
 }) => {
   const allocate = useAllocateCoins(listArgs);
   const rows = data?.items ?? [];
@@ -132,7 +159,13 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   const toggle = <T,>(list: T[], value: T): T[] =>
     list.includes(value) ? list.filter(v => v !== value) : [...list, value];
 
-  const activeFilters = typeFilter.length + stageFilter.length + goalFilter.length > 0;
+  const activeFilters =
+    typeFilter.length +
+      stageFilter.length +
+      goalFilter.length +
+      ownerFilter.length +
+      countActiveAdvancedFilters(advanced) >
+    0;
 
   return (
     <div className="flex flex-col gap-3">
@@ -189,6 +222,11 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
         ))}
 
         <span className="text-typography-secondary ml-3">Goal</span>
+        {canManage && (
+          <Button variant={ButtonVariant.TEXT} onClick={onManageGoals}>
+            Manage
+          </Button>
+        )}
         {goals.map(goal => (
           <button
             key={goal.id}
@@ -204,6 +242,31 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
           </button>
         ))}
 
+        {/* Owner options come from GET /facets, not from the loaded rows. Deriving them from the
+            page would shrink the option list as soon as a filter or the 50-row page limit hid an
+            owner — and four of the saved views migrated from production are defined ENTIRELY by
+            ownerFilter, so without this control those tabs would apply as "no filter" and
+            silently show everything. */}
+        {!!facets?.owners?.length && (
+          <>
+            <span className="text-typography-secondary ml-3">Owner</span>
+            {facets.owners.map(owner => (
+              <button
+                key={owner}
+                type="button"
+                onClick={() => onOwnerFilterChange(toggle(ownerFilter, owner))}
+                className={`border px-2 py-1 ${
+                  ownerFilter.includes(owner)
+                    ? "border-primary-500 text-primary-600"
+                    : "border-border-light text-typography-secondary"
+                }`}
+              >
+                {owner}
+              </button>
+            ))}
+          </>
+        )}
+
         {activeFilters && (
           <Button
             variant={ButtonVariant.TEXT}
@@ -211,12 +274,18 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
               onTypeFilterChange([]);
               onStageFilterChange([]);
               onGoalFilterChange([]);
+              onOwnerFilterChange([]);
+              // Must include the collapsed panel: "Clear filters" that leaves a hidden date range
+              // applied is the exact confusion the active-count badge exists to prevent.
+              onAdvancedChange({ ...EMPTY_ADVANCED_FILTERS });
             }}
           >
             Clear filters
           </Button>
         )}
       </div>
+
+      <RoadmapAdvancedFilters values={advanced} onChange={onAdvancedChange} facets={facets} />
 
       {isLoading ? (
         <SkeletonText paragraph lineCount={8} />
@@ -240,6 +309,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
           <Table>
             <TableHead>
               <TableRow>
+                {canManage && <TableHeader className="w-10" aria-label="Select for merge" />}
                 <SortHeader field="priority" className="w-32">
                   Priority
                 </SortHeader>
@@ -251,6 +321,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                 <SortHeader field="createdAt" className="w-28">
                   Filed
                 </SortHeader>
+                {canManage && <TableHeader className="w-16" aria-label="Actions" />}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -260,6 +331,17 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                   onClick={() => onOpenOpportunity(opportunity.id)}
                   className="cursor-pointer"
                 >
+                  {canManage && (
+                    // stopPropagation, or ticking the box also opens the drawer.
+                    <TableCell onClick={event => event.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(opportunity.id)}
+                        onChange={() => onToggleSelected(opportunity.id)}
+                        aria-label={`Select for merge: ${opportunity.description.slice(0, 40)}`}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="font-mono tabular-nums w-8 text-right">
@@ -327,6 +409,14 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                   <TableCell className="text-typography-secondary font-mono text-xs">
                     {new Date(opportunity.createdAt).toISOString().slice(0, 10)}
                   </TableCell>
+
+                  {canManage && (
+                    <TableCell onClick={event => event.stopPropagation()}>
+                      <Button variant={ButtonVariant.TEXT} onClick={() => onSplit(opportunity)}>
+                        Split
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

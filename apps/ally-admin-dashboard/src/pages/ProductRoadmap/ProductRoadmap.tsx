@@ -13,13 +13,28 @@ import {
 } from "@api";
 import { Permissions } from "@constants";
 import { useUser } from "@hooks";
-import { RoadmapOpportunitiesQuery, RoadmapOpportunityStage, RoadmapOpportunityType } from "@types";
+import {
+  RoadmapOpportunitiesQuery,
+  RoadmapOpportunity,
+  RoadmapOpportunityStage,
+  RoadmapOpportunityType,
+  RoadmapViewState,
+} from "@types";
 
 import { AddOpportunityModal } from "./AddOpportunityModal";
 import { InterviewsTab } from "./InterviewsTab";
+import { MergeOpportunitiesModal } from "./MergeOpportunitiesModal";
+import { MergeSelectionBar } from "./MergeSelectionBar";
 import { OpportunitiesBoard } from "./OpportunitiesBoard";
 import { OpportunityDrawer } from "./OpportunityDrawer";
+import { ProductGoalsManager } from "./ProductGoalsManager";
 import { ReleaseNotesTab } from "./ReleaseNotesTab";
+import { SavedViewTabs } from "./SavedViewTabs";
+import { SplitOpportunityModal } from "./SplitOpportunityModal";
+import { useProductRoadmapRealtime } from "./useProductRoadmapRealtime";
+import { useSavedViews } from "./useSavedViews";
+import { EMPTY_ADVANCED_FILTERS, RoadmapAdvancedFilterValues } from "./utils/filters";
+import { normaliseSortField } from "./utils/views";
 
 const PAGE_SIZE = 50;
 
@@ -58,10 +73,20 @@ export const ProductRoadmap: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<RoadmapOpportunityType[]>([]);
   const [stageFilter, setStageFilter] = useState<RoadmapOpportunityStage[]>([]);
   const [goalFilter, setGoalFilter] = useState<string[]>([]);
+  const [ownerFilter, setOwnerFilter] = useState<string[]>([]);
+  /** Creator + the three range filters, grouped so one setter drives the whole panel. */
+  const [advanced, setAdvanced] = useState<RoadmapAdvancedFilterValues>({
+    ...EMPTY_ADVANCED_FILTERS,
+  });
   const [sortBy, setSortBy] =
     useState<NonNullable<RoadmapOpportunitiesQuery["sortBy"]>>("priority");
   const [order, setOrder] = useState<"ASC" | "DESC">("DESC");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [splitTarget, setSplitTarget] = useState<RoadmapOpportunity | null>(null);
+  const [isMergeOpen, setIsMergeOpen] = useState(false);
+  const [isGoalsOpen, setIsGoalsOpen] = useState(false);
+  /** Merge selection. Page-local on purpose: it should reset on navigation. */
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   /**
    * ONE memoised query-arg object, used by BOTH the list subscription and useAllocateCoins.
@@ -74,12 +99,21 @@ export const ProductRoadmap: React.FC = () => {
       type: typeFilter.length ? typeFilter : undefined,
       stage: stageFilter.length ? stageFilter : undefined,
       productGoal: goalFilter.length ? goalFilter : undefined,
+      owner: ownerFilter.length ? ownerFilter : undefined,
+      createdBy: advanced.createdBy.length ? advanced.createdBy : undefined,
+      // Empty string means "no bound" — sending it would fail @IsISO8601 / @IsInt.
+      dateFrom: advanced.dateFrom || undefined,
+      dateTo: advanced.dateTo || undefined,
+      releasedFrom: advanced.releasedFrom || undefined,
+      releasedTo: advanced.releasedTo || undefined,
+      priorityMin: advanced.priorityMin === "" ? undefined : Number(advanced.priorityMin),
+      priorityMax: advanced.priorityMax === "" ? undefined : Number(advanced.priorityMax),
       sortBy,
       order,
       limit: PAGE_SIZE,
       offset: 0,
     }),
-    [search, typeFilter, stageFilter, goalFilter, sortBy, order],
+    [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order],
   );
 
   const { data, isLoading, isFetching } = useGetRoadmapOpportunitiesQuery(listArgs);
@@ -91,6 +125,88 @@ export const ProductRoadmap: React.FC = () => {
   const { data: releaseNotes } = useGetRoadmapReleaseNotesQuery({ limit: 1 });
 
   const openOpportunityId = searchParams.get("opportunity");
+  const activeViewId = searchParams.get("view");
+
+  const setActiveViewId = (id: string | null) => {
+    const next = new URLSearchParams(searchParams);
+    if (id) next.set("view", id);
+    else next.delete("view");
+    setSearchParams(next, { replace: true });
+  };
+
+  /** The board's filter/sort state in saved-view shape. Goals are NAMES, per RoadmapViewState. */
+  const currentViewState = useMemo<RoadmapViewState>(
+    () => ({
+      searchQuery: search.trim() || undefined,
+      typeFilter,
+      stageFilter,
+      goalFilter,
+      ownerFilter,
+      // Same key names the standalone app used, so a view saved here and a view migrated from
+      // Supabase are the same shape — see RoadmapViewState.
+      creatorFilter: advanced.createdBy.map(String),
+      dateFrom: advanced.dateFrom || undefined,
+      dateTo: advanced.dateTo || undefined,
+      releasedFrom: advanced.releasedFrom || undefined,
+      releasedTo: advanced.releasedTo || undefined,
+      priorityMin: advanced.priorityMin || undefined,
+      priorityMax: advanced.priorityMax || undefined,
+      sort: { field: sortBy, dir: order === "DESC" ? "desc" : "asc" },
+    }),
+    [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order],
+  );
+
+  const applyViewState = (state: RoadmapViewState) => {
+    setSearch(state.searchQuery ?? "");
+    setTypeFilter((state.typeFilter ?? []) as RoadmapOpportunityType[]);
+    setStageFilter((state.stageFilter ?? []) as RoadmapOpportunityStage[]);
+    setGoalFilter(state.goalFilter ?? []);
+    setOwnerFilter(state.ownerFilter ?? []);
+    // These four keys were previously DROPPED on apply: the board had no controls for them, so a
+    // view carrying a date or priority bound applied only partially and looked like it had worked.
+    setAdvanced({
+      createdBy: (state.creatorFilter ?? []).map(Number).filter(id => Number.isFinite(id)),
+      dateFrom: state.dateFrom ?? "",
+      dateTo: state.dateTo ?? "",
+      releasedFrom: state.releasedFrom ?? "",
+      releasedTo: state.releasedTo ?? "",
+      priorityMin: state.priorityMin ?? "",
+      priorityMax: state.priorityMax ?? "",
+    });
+    // Migrated views carry the standalone app's field names — see normaliseSortField.
+    setSortBy(
+      normaliseSortField(state.sort?.field) as NonNullable<RoadmapOpportunitiesQuery["sortBy"]>,
+    );
+    setOrder(state.sort?.dir === "asc" ? "ASC" : "DESC");
+  };
+
+  // Live updates. Gated on VIEW so the socket stays closed rather than connecting and being
+  // rejected by the gateway's permission middleware.
+  useProductRoadmapRealtime({
+    currentUserId: user?.id,
+    openOpportunityId,
+    enabled: !!permissions?.includes(Permissions.VIEW_PRODUCT_ROADMAP),
+  });
+
+  const savedViews = useSavedViews({
+    current: currentViewState,
+    onApply: applyViewState,
+    activeViewId,
+    setActiveViewId,
+    canVote,
+    canManage,
+    currentUserId: user?.id,
+  });
+
+  const toggleSelected = (id: string) =>
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const selectedOpportunities = (data?.items ?? []).filter(o => selectedIds.has(o.id));
 
   const requestedTab = searchParams.get("tab") as RoadmapTab | null;
   const activeTab =
@@ -175,6 +291,26 @@ export const ProductRoadmap: React.FC = () => {
 
       {activeTab === RoadmapTab.RELEASE_NOTES && <ReleaseNotesTab canManage={canManage} />}
 
+      {/* Saved-view sub-tabs sit between the top-level strip and the board, so the hierarchy
+          reads top-down: section → view → rows. */}
+      {activeTab === RoadmapTab.OPPORTUNITIES && (
+        <SavedViewTabs
+          views={savedViews.views}
+          activeViewId={activeViewId}
+          isDirty={savedViews.isDirty}
+          isOwner={savedViews.isOwner}
+          canReorder={savedViews.canReorder}
+          canPin={savedViews.canPin}
+          canSave={canVote}
+          onSelect={savedViews.selectView}
+          onSaveCurrentAs={savedViews.saveCurrentAs}
+          onRename={savedViews.renameView}
+          onTogglePinned={savedViews.togglePinned}
+          onDelete={savedViews.removeView}
+          onReorder={savedViews.reorderViews}
+        />
+      )}
+
       {activeTab === RoadmapTab.OPPORTUNITIES && (
         <OpportunitiesBoard
           listArgs={listArgs}
@@ -192,6 +328,11 @@ export const ProductRoadmap: React.FC = () => {
           onStageFilterChange={setStageFilter}
           goalFilter={goalFilter}
           onGoalFilterChange={setGoalFilter}
+          ownerFilter={ownerFilter}
+          onOwnerFilterChange={setOwnerFilter}
+          advanced={advanced}
+          onAdvancedChange={setAdvanced}
+          onManageGoals={() => setIsGoalsOpen(true)}
           sortBy={sortBy}
           order={order}
           onToggleSort={toggleSort}
@@ -199,6 +340,37 @@ export const ProductRoadmap: React.FC = () => {
           canManage={canManage}
           onOpenOpportunity={openOpportunity}
           onAddClick={() => setIsAddOpen(true)}
+          selectedIds={selectedIds}
+          onToggleSelected={toggleSelected}
+          onSplit={setSplitTarget}
+        />
+      )}
+
+      {activeTab === RoadmapTab.OPPORTUNITIES && canManage && (
+        <MergeSelectionBar
+          count={selectedIds.size}
+          onClear={() => setSelectedIds(new Set())}
+          onMerge={() => setIsMergeOpen(true)}
+        />
+      )}
+
+      {isGoalsOpen && (
+        <ProductGoalsManager
+          goals={goals ?? []}
+          isLoading={!goals}
+          onClose={() => setIsGoalsOpen(false)}
+        />
+      )}
+
+      {splitTarget && (
+        <SplitOpportunityModal opportunity={splitTarget} onClose={() => setSplitTarget(null)} />
+      )}
+
+      {isMergeOpen && selectedOpportunities.length >= 2 && (
+        <MergeOpportunitiesModal
+          selected={selectedOpportunities}
+          onClose={() => setIsMergeOpen(false)}
+          onMerged={() => setSelectedIds(new Set())}
         />
       )}
 

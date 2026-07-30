@@ -1,5 +1,27 @@
 import { RoadmapSavedView, RoadmapViewState } from "@types";
 
+/**
+ * Sort-field names the STANDALONE app wrote into saved-view state, mapped to the API's names.
+ *
+ * This is a real data-compatibility problem, not defensive padding: 3 of the 8 views migrated
+ * from production carry `created` or `released`, and the API's sortBy enum only accepts
+ * `priority | createdAt | releasedAt | myCoins | description`. Applying such a view sent
+ * `sortBy=created`, the request 400'd, and the board silently kept showing the PREVIOUS rows —
+ * the filter chips updated while the table did not, which reads as "filters are broken".
+ *
+ * Normalising on read (rather than rewriting the rows in the import) keeps the migration a pure
+ * copy and lets views self-heal: the next autosave writes the canonical name.
+ */
+const LEGACY_SORT_FIELDS: Record<string, string> = {
+  created: "createdAt",
+  released: "releasedAt",
+  score: "priority",
+  coins: "myCoins",
+};
+
+export const normaliseSortField = (field: string | undefined): string =>
+  (field && LEGACY_SORT_FIELDS[field]) || field || "priority";
+
 /** Every key of RoadmapViewState, in a fixed order. See serializeViewState. */
 const STATE_KEYS: (keyof RoadmapViewState)[] = [
   "searchQuery",
@@ -36,8 +58,13 @@ export const serializeViewState = (state: RoadmapViewState | undefined): string 
       if (value.length === 0) continue;
       canonical[key] = [...value].sort();
     } else if (typeof value === "object") {
+      const entries = Object.entries(value as Record<string, unknown>).map(([k, v]) =>
+        // Legacy and canonical field names must compare EQUAL, or every migrated view would show
+        // a permanent unsaved-changes dot the moment it is opened.
+        key === "sort" && k === "field" ? [k, normaliseSortField(String(v))] : [k, v],
+      );
       canonical[key] = Object.fromEntries(
-        Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)),
+        entries.sort(([a], [b]) => String(a).localeCompare(String(b))),
       );
     } else {
       canonical[key] = value;
