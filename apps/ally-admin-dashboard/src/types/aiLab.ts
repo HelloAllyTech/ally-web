@@ -138,7 +138,7 @@ export interface CreateAutoEvalRequest {
 
 // ---- Human evaluation ----
 
-export type LabEvalQuestionType = "RATING" | "YES_NO" | "TEXT";
+export type LabEvalQuestionType = "RATING" | "YES_NO" | "TEXT" | "DESCRIPTION";
 
 export interface LabEvalQuestion {
   id: string;
@@ -153,11 +153,60 @@ export interface PublishRunQuestionInput {
   question: string;
   type: LabEvalQuestionType;
   scaleMax?: number;
+  /** Set when this question was imported from a Question Set (traceability only). */
+  sourceQuestionSetId?: string;
 }
 
 export interface PublishRunRequest {
   runId: string;
   questions: PublishRunQuestionInput[];
+}
+
+// ---- Question Sets (reusable human-eval question lists) ----
+
+export interface QuestionSetQuestionInput {
+  question: string;
+  type: LabEvalQuestionType;
+  scaleMax?: number;
+}
+
+export interface QuestionSetQuestion extends QuestionSetQuestionInput {
+  id: string;
+  scaleMin: number;
+  position: number;
+}
+
+export interface QuestionSet {
+  id: string;
+  name: string;
+  description?: string | null;
+  publishedAt?: string | null;
+  archivedAt?: string | null;
+  isPublished: boolean;
+  isArchived: boolean;
+  questionCount: number;
+  /** Present on the single-record GET (list items omit the full array). */
+  questions?: QuestionSetQuestion[];
+  createdBy: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ListQuestionSetsQuery extends LabListQuery {
+  includeArchived?: boolean;
+  publishedOnly?: boolean;
+}
+
+export interface CreateQuestionSetRequest {
+  name: string;
+  description?: string;
+  questions?: QuestionSetQuestionInput[];
+}
+
+export interface UpdateQuestionSetRequest {
+  name?: string;
+  description?: string;
+  questions?: QuestionSetQuestionInput[];
 }
 
 export interface LabEvaluator {
@@ -192,6 +241,7 @@ export interface LabRunResultsQuestion extends LabEvalQuestion {
   noCount?: number;
   // TEXT
   answers?: { text: string; evaluatorEmail: string }[];
+  // DESCRIPTION has no aggregate fields — it is display-only, never answered.
 }
 
 export interface LabRunResults {

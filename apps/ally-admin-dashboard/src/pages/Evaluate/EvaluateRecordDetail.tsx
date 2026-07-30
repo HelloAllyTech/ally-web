@@ -111,6 +111,8 @@ export const EvaluateRecordDetail: React.FC = () => {
   const allAnswered = useMemo(() => {
     if (!data) return false;
     return data.questions.every(question => {
+      // DESCRIPTION is explanatory text — nothing to answer, never blocks submit.
+      if (question.type === "DESCRIPTION") return true;
       const answer = draft[question.id];
       if (!answer) return false;
       if (question.type === "RATING") return answer.rating != null;
@@ -126,12 +128,14 @@ export const EvaluateRecordDetail: React.FC = () => {
   const handleSubmit = useCallback(async () => {
     if (!data || !allAnswered) return;
     setShowConfirm(false);
-    const answers: SubmitEvaluationAnswerInput[] = data.questions.map(question => {
-      const answer = draft[question.id] ?? {};
-      if (question.type === "RATING") return { questionId: question.id, rating: answer.rating };
-      if (question.type === "YES_NO") return { questionId: question.id, yesNo: answer.yesNo };
-      return { questionId: question.id, text: answer.text?.trim() };
-    });
+    const answers: SubmitEvaluationAnswerInput[] = data.questions
+      .filter(question => question.type !== "DESCRIPTION")
+      .map(question => {
+        const answer = draft[question.id] ?? {};
+        if (question.type === "RATING") return { questionId: question.id, rating: answer.rating };
+        if (question.type === "YES_NO") return { questionId: question.id, yesNo: answer.yesNo };
+        return { questionId: question.id, text: answer.text?.trim() };
+      });
     try {
       await submitEvaluation({ assignmentId, answers }).unwrap();
       toast.success(en.evaluate.submitted);
@@ -225,6 +229,11 @@ export const EvaluateRecordDetail: React.FC = () => {
                     <div className="text-base text-typography-900 font-medium">
                       {index + 1}. {question.question}
                     </div>
+                    {question.type === "DESCRIPTION" && (
+                      <p className="text-xs text-typography-500 italic">
+                        {en.evaluate.descriptionHint}
+                      </p>
+                    )}
                     {question.type === "RATING" && (
                       <RatingInput
                         question={question}

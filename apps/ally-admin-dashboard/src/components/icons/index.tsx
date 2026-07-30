@@ -47,6 +47,7 @@ import {
   CheckmarkOutline as CCheckmarkOutline,
   ChevronDown as CChevronDown,
   ChevronRight as CChevronRight,
+  ChevronUp as CChevronUp,
   Close as CClose,
   CloudUpload as CCloudUpload,
   Copy as CCopy,
@@ -146,6 +147,7 @@ export const AlarmOn = createCarbonIcon(CAlarm);
 export const Archive = createCarbonIcon(CArchive);
 export const ArrowDown = createCarbonIcon(CChevronDown);
 export const ArrowDownFilled = createCarbonIcon(CChevronDown);
+export const ArrowUp = createCarbonIcon(CChevronUp);
 export const ArrowSolid = createCarbonIcon(CArrowRight);
 export const BackCircle = createCarbonIcon(CArrowLeft);
 export const BackIcon = createCarbonIcon(CArrowLeft);

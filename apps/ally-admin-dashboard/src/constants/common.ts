@@ -287,6 +287,11 @@ export const ApiEndpoints = {
     EVAL_ASSIGNMENTS: "/v1/lab/eval/assignments",
     EVAL_ASSIGNMENT_BY_ID: (id: string) => `/v1/lab/eval/assignments/${id}`,
     EVAL_ASSIGNMENT_SUBMIT: (id: string) => `/v1/lab/eval/assignments/${id}/submit`,
+    // Question Sets (reusable human-eval question lists)
+    QUESTION_SETS: "/v1/lab/question-sets",
+    QUESTION_SET_BY_ID: (id: string) => `/v1/lab/question-sets/${id}`,
+    QUESTION_SET_PUBLISH: (id: string) => `/v1/lab/question-sets/${id}/publish`,
+    QUESTION_SET_ARCHIVE: (id: string) => `/v1/lab/question-sets/${id}/archive`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -529,6 +534,7 @@ export const TAG_TYPES = {
   AI_LAB_EVALUATORS: "aiLabEvaluators",
   AI_LAB_ASSIGNMENTS: "aiLabAssignments",
   AI_LAB_AUTO_EVALS: "aiLabAutoEvals",
+  AI_LAB_QUESTION_SETS: "aiLabQuestionSets",
   // Evaluator portal (separate evaluatorAPI)
   EVAL_ASSIGNMENTS: "evalAssignments",
 };

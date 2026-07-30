@@ -60,7 +60,9 @@ const resultsToCsv = (skillName: string, data: LabRunResults): string => {
         ? `avg ${q.average ?? "n/a"} / ${q.scaleMax}`
         : q.type === "YES_NO"
           ? `yes ${q.yesCount ?? 0} / no ${q.noCount ?? 0}`
-          : `${q.answers?.length ?? 0} answers`;
+          : q.type === "DESCRIPTION"
+            ? "n/a (description)"
+            : `${q.answers?.length ?? 0} answers`;
     rows.push(
       [
         q.question,
@@ -148,6 +150,10 @@ const YesNoResult: React.FC<{ question: LabRunResultsQuestion }> = ({ question }
     </div>
   );
 };
+
+const DescriptionResult: React.FC = () => (
+  <p className="text-sm text-typography-500">{en.aiLab.results.descriptionNote}</p>
+);
 
 const TextResult: React.FC<{ question: LabRunResultsQuestion }> = ({ question }) => {
   const answers = question.answers ?? [];
@@ -273,6 +279,7 @@ export const RunResultsDrawer: React.FC<RunResultsDrawerProps> = ({ run, onClose
                   {question.type === "RATING" && <RatingResult question={question} />}
                   {question.type === "YES_NO" && <YesNoResult question={question} />}
                   {question.type === "TEXT" && <TextResult question={question} />}
+                  {question.type === "DESCRIPTION" && <DescriptionResult />}
                 </div>
               ))}
 
