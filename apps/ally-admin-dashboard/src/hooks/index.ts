@@ -1,3 +1,4 @@
+import { AllySocketStatus, useAllySocket } from "./useAllySocket";
 import { useClickOutside } from "./useClickOutside";
 import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
@@ -16,6 +17,8 @@ import { useTryRoleplayLive } from "./useTryRoleplayLive";
 import { useUser } from "./useUser";
 
 export {
+  useAllySocket,
+  AllySocketStatus,
   useUser,
   useLiveKitRoom,
   useClickOutside,
