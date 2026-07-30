@@ -23,3 +23,4 @@ export * from "./organizationAccess";
 export * from "./superDuperAdmins";
 export * from "./aiLab";
 export * from "./productRoadmap";
+export * from "./analyticsAgent";

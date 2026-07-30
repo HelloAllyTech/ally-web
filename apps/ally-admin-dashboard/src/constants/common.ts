@@ -328,6 +328,13 @@ export const ApiEndpoints = {
     ORG_HEALTH: "/v1/analytics/org-health",
     SCRIBE_ADOPTION: "/v1/analytics/scribe-adoption",
   },
+  // The Analytics Agent's own namespace, not another entry under ANALYTICS: it
+  // is gated on the elevated super-duper-admin tier rather than on the pair of
+  // super-admin roles the rest of the analytics endpoints accept.
+  ANALYTICS_AGENT: {
+    ASK: "/v1/analytics/agent/ask",
+    CATALOG: "/v1/analytics/agent/catalog",
+  },
   ROLEPLAY_SESSION_LOGS: {
     LIST: "/v1/roleplay-session-logs",
     BY_ID: (id: string) => `/v1/roleplay-session-logs/${id}`,
