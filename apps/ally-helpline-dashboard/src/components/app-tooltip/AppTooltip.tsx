@@ -26,7 +26,7 @@ const AppTooltip: React.FC<AppTooltipProps> = ({ location, children }) => {
 
   if (!tooltip) return children;
 
-  const title = tooltip.icon ? `${tooltip.icon} ${tooltip.tipText}` : tooltip.tipText;
+  const title = tooltip.tipText;
 
   return (
     <Tooltip label={title} align="top" autoAlign>
