@@ -13,6 +13,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const clearEvaluatorSession = () => {
   localStorage.removeItem(LOCAL_STORAGE_KEYS.EVALUATOR_ACCESS_TOKEN);
   localStorage.removeItem(LOCAL_STORAGE_KEYS.EVALUATOR_EMAIL);
+  localStorage.removeItem(LOCAL_STORAGE_KEYS.EVALUATOR_ID);
 };
 
 const rawEvaluatorBaseQuery = fetchBaseQuery({

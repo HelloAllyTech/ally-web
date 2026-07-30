@@ -6,6 +6,7 @@ import { Tabs } from "@ally-ui-mono/ui-shared";
 import { en } from "@constants";
 
 import { EvaluatorsTab } from "./EvaluatorsTab";
+import { QuestionSetsTab } from "./QuestionSetsTab";
 import { RunsTab } from "./RunsTab";
 import { SkillsTab } from "./SkillsTab";
 import { ValuesTab } from "./ValuesTab";
@@ -17,6 +18,7 @@ enum AILabTab {
   VALUES = "values",
   RUNS = "runs",
   EVALUATORS = "evaluators",
+  QUESTION_SETS = "question-sets",
 }
 
 const TAB_ITEMS = [
@@ -25,6 +27,7 @@ const TAB_ITEMS = [
   { id: AILabTab.VALUES, label: en.aiLab.tabs.values },
   { id: AILabTab.RUNS, label: en.aiLab.tabs.runs },
   { id: AILabTab.EVALUATORS, label: en.aiLab.tabs.evaluators },
+  { id: AILabTab.QUESTION_SETS, label: en.aiLab.tabs.questionSets },
 ];
 
 const VALID_TABS = new Set<string>(TAB_ITEMS.map(t => t.id));
@@ -47,6 +50,8 @@ export const AILab: React.FC = () => {
         return <RunsTab />;
       case AILabTab.EVALUATORS:
         return <EvaluatorsTab />;
+      case AILabTab.QUESTION_SETS:
+        return <QuestionSetsTab />;
       case AILabTab.SKILLS:
       default:
         return <SkillsTab />;
