@@ -9,7 +9,12 @@ export type AgentBuilderField =
   | "challenge_description"
   | "knowledge_sources"
   | "persona"
-  | "states";
+  | "backstory"
+  | "states"
+  | "opening_statements"
+  | "reminders"
+  | "linguistic_style_samples"
+  | "allowed_filler_words";
 
 export interface GenerateAgentBuilderFieldRequest {
   field: AgentBuilderField;
@@ -52,10 +57,12 @@ export interface AgentBuilderState {
 
 /**
  * `value`'s shape depends on `field`:
- *  - role_instruction / title / challenge_description → string
+ *  - role_instruction / title / challenge_description / backstory → string
+ *  - opening_statements / reminders → string (newline-joined, one item per line)
  *  - persona → AgentBuilderPersona
  *  - knowledge_sources → AgentBuilderKnowledgeSource[]
  *  - states → AgentBuilderState[]
+ *  - linguistic_style_samples / allowed_filler_words → string[] (English only)
  */
 export interface GenerateAgentBuilderFieldResponse {
   field: AgentBuilderField;
