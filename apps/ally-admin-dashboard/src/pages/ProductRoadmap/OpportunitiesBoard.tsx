@@ -26,7 +26,13 @@ import {
 } from "@types";
 
 import { CoinAllocator } from "./CoinAllocator";
+import { RoadmapAdvancedFilters } from "./RoadmapAdvancedFilters";
 import { useAllocateCoins } from "./useAllocateCoins";
+import {
+  EMPTY_ADVANCED_FILTERS,
+  RoadmapAdvancedFilterValues,
+  countActiveAdvancedFilters,
+} from "./utils/filters";
 
 const STAGE_STYLE: Record<string, string> = {
   new: "bg-background-secondary text-typography-primary",
@@ -63,6 +69,10 @@ interface OpportunitiesBoardProps {
   /** Owner NAMES, matching RoadmapViewState — options come from GET /facets. */
   ownerFilter: string[];
   onOwnerFilterChange: (value: string[]) => void;
+  advanced: RoadmapAdvancedFilterValues;
+  onAdvancedChange: (next: RoadmapAdvancedFilterValues) => void;
+  /** Opens the goal-management modal. Manager-only. */
+  onManageGoals: () => void;
   sortBy: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>;
   order: "ASC" | "DESC";
   onToggleSort: (field: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>) => void;
@@ -109,6 +119,9 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   onGoalFilterChange,
   ownerFilter,
   onOwnerFilterChange,
+  advanced,
+  onAdvancedChange,
+  onManageGoals,
   sortBy,
   order,
   onToggleSort,
@@ -147,7 +160,12 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
     list.includes(value) ? list.filter(v => v !== value) : [...list, value];
 
   const activeFilters =
-    typeFilter.length + stageFilter.length + goalFilter.length + ownerFilter.length > 0;
+    typeFilter.length +
+      stageFilter.length +
+      goalFilter.length +
+      ownerFilter.length +
+      countActiveAdvancedFilters(advanced) >
+    0;
 
   return (
     <div className="flex flex-col gap-3">
@@ -204,6 +222,11 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
         ))}
 
         <span className="text-typography-secondary ml-3">Goal</span>
+        {canManage && (
+          <Button variant={ButtonVariant.TEXT} onClick={onManageGoals}>
+            Manage
+          </Button>
+        )}
         {goals.map(goal => (
           <button
             key={goal.id}
@@ -252,12 +275,17 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
               onStageFilterChange([]);
               onGoalFilterChange([]);
               onOwnerFilterChange([]);
+              // Must include the collapsed panel: "Clear filters" that leaves a hidden date range
+              // applied is the exact confusion the active-count badge exists to prevent.
+              onAdvancedChange({ ...EMPTY_ADVANCED_FILTERS });
             }}
           >
             Clear filters
           </Button>
         )}
       </div>
+
+      <RoadmapAdvancedFilters values={advanced} onChange={onAdvancedChange} facets={facets} />
 
       {isLoading ? (
         <SkeletonText paragraph lineCount={8} />

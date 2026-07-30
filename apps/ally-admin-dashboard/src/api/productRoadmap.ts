@@ -11,6 +11,7 @@ import {
   RoadmapOpportunity,
   RoadmapReleaseNote,
   RoadmapSavedView,
+  RoadmapEligibleOwner,
   RoadmapTaxonomyItem,
   RoadmapViewState,
   SetAllocationResponse,
@@ -221,6 +222,30 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
       }),
       providesTags: [TAG_TYPES.PRODUCT_ROADMAP_OWNERS],
+    }),
+
+    /**
+     * The owner picker's options: Ally super-admin users.
+     *
+     * Separate from getRoadmapOwners, which lists the LEGACY free-text taxonomy still referenced by
+     * migrated rows. New assignments must come from this list — the backend rejects anyone else
+     * with a 422.
+     */
+    getRoadmapEligibleOwners: builder.query<RoadmapEligibleOwner[], void>({
+      query: () => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.OWNERS_ELIGIBLE,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.PRODUCT_ROADMAP_OWNERS],
+    }),
+
+    /** How many opportunities each goal is on — shown before a delete un-assigns them. */
+    getRoadmapProductGoalUsage: builder.query<Record<string, number>, void>({
+      query: () => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.PRODUCT_GOALS_USAGE,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.PRODUCT_ROADMAP_GOALS],
     }),
 
     createRoadmapProductGoal: builder.mutation<RoadmapTaxonomyItem, { name: string }>({
@@ -521,7 +546,9 @@ export const {
   useUpdateRoadmapCommentMutation,
   useDeleteRoadmapCommentMutation,
   useGetRoadmapProductGoalsQuery,
+  useGetRoadmapEligibleOwnersQuery,
   useGetRoadmapOwnersQuery,
+  useGetRoadmapProductGoalUsageQuery,
   useCreateRoadmapProductGoalMutation,
   useRenameRoadmapProductGoalMutation,
   useDeleteRoadmapProductGoalMutation,

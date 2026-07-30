@@ -8,7 +8,8 @@ import {
   useCreateRoadmapCommentMutation,
   useGetRoadmapCommentsQuery,
   useGetRoadmapOpportunityQuery,
-  useGetRoadmapOwnersQuery,
+  useGetRoadmapEligibleOwnersQuery,
+  useDeleteRoadmapOpportunityMutation,
   useUpdateRoadmapOpportunityMutation,
 } from "@api";
 import { Button } from "@components";
@@ -63,19 +64,22 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
   onClose,
 }) => {
   const { data: opportunity, isLoading, isError } = useGetRoadmapOpportunityQuery(opportunityId);
-  const { data: owners } = useGetRoadmapOwnersQuery();
+  const { data: eligibleOwners } = useGetRoadmapEligibleOwnersQuery();
   const { data: comments } = useGetRoadmapCommentsQuery(opportunityId);
   const [updateOpportunity, { isLoading: isSaving }] = useUpdateRoadmapOpportunityMutation();
   const [createComment, { isLoading: isCommenting }] = useCreateRoadmapCommentMutation();
+  const [deleteOpportunity, { isLoading: isDeleting }] = useDeleteRoadmapOpportunityMutation();
 
   const [draft, setDraft] = useState({
     description: "",
     stage: RoadmapOpportunityStage.NEW as RoadmapOpportunityStage,
     productGoal: "",
-    owner: "",
+    /** "" means unassigned. Holds an Ally user id as a string, since <Select> values are strings. */
+    ownerUserId: "",
     prd: "",
   });
   const [commentBody, setCommentBody] = useState("");
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   useEffect(() => {
     if (!opportunity) return;
@@ -83,7 +87,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       description: opportunity.description,
       stage: opportunity.stage,
       productGoal: opportunity.productGoal,
-      owner: opportunity.owner ?? "",
+      ownerUserId: opportunity.ownerUserId ? String(opportunity.ownerUserId) : "",
       prd: opportunity.prd ?? "",
     });
   }, [opportunity]);
@@ -101,8 +105,26 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     (draft.description !== opportunity.description ||
       draft.stage !== opportunity.stage ||
       draft.productGoal !== opportunity.productGoal ||
-      draft.owner !== (opportunity.owner ?? "") ||
+      draft.ownerUserId !== (opportunity.ownerUserId ? String(opportunity.ownerUserId) : "") ||
       draft.prd !== (opportunity.prd ?? ""));
+
+  /**
+   * Soft-delete. The backend also returns every contributor's coins to them, soft-deletes the
+   * comments, and removes the vector so duplicate detection stops proposing it — so this is not
+   * only a visibility change and the confirmation says the part people care about.
+   */
+  const remove = async () => {
+    try {
+      await deleteOpportunity(opportunityId).unwrap();
+      toast.success("Deleted. Coins returned to whoever spent them.");
+      onClose();
+    } catch (error) {
+      const message =
+        (error as { data?: { message?: string } })?.data?.message ??
+        "Could not delete that opportunity.";
+      toast.error(message);
+    }
+  };
 
   const save = async () => {
     try {
@@ -112,7 +134,9 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           description: draft.description.trim(),
           stage: draft.stage,
           productGoal: draft.productGoal,
-          owner: draft.owner || null,
+          // null un-assigns. The legacy free-text `owner` is no longer writable — an owner must be
+          // a super-admin user, and the backend answers 422 for anyone else.
+          ownerUserId: draft.ownerUserId ? Number(draft.ownerUserId) : null,
           prd: draft.prd || null,
         },
       }).unwrap();
@@ -231,18 +255,34 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
                 ))}
               </Select>
 
+              {/* Options are Ally SUPER_ADMIN / SUPER_DUPER_ADMIN users, not a hand-maintained list
+                  of names. Losing super-admin therefore removes someone from this picker with no
+                  separate cleanup step. */}
               <Select
                 id="drawer-owner"
                 labelText="Owner"
-                value={draft.owner}
+                value={draft.ownerUserId}
                 disabled={!canManage}
-                onChange={event => setDraft(prev => ({ ...prev, owner: event.target.value }))}
+                onChange={event => setDraft(prev => ({ ...prev, ownerUserId: event.target.value }))}
               >
                 <SelectItem value="" text="Unassigned" />
-                {(owners ?? []).map(owner => (
-                  <SelectItem key={owner.id} value={owner.name} text={owner.name} />
+                {(eligibleOwners ?? []).map(owner => (
+                  <SelectItem
+                    key={owner.id}
+                    value={String(owner.id)}
+                    text={owner.name || owner.email}
+                  />
                 ))}
               </Select>
+              {/* A migrated row's owner is a plain string with no account behind it. Say so, rather
+                  than showing "Unassigned" over a name the board is still displaying and filtering
+                  on — that reads as data loss. */}
+              {!opportunity.ownerUserId && opportunity.owner && (
+                <p className="text-typography-secondary text-xs">
+                  Currently <strong>{opportunity.owner}</strong>, migrated from the old roadmap and
+                  not yet linked to an Ally account. Pick a super-admin above to link it.
+                </p>
+              )}
             </div>
 
             {/* PRD stays PLAIN TEXT / markdown, not TipTap HTML. The AI flows generate this kind
@@ -262,7 +302,30 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
             />
 
             {canManage && (
-              <div className="flex justify-end">
+              <div className="flex items-center justify-between gap-2">
+                {/* Delete sits opposite Save, not beside it: they are not peers, and an irreversible
+                    action adjacent to the button people click reflexively is how accidents happen.
+                    Two-step rather than a modal — one primary action per view. */}
+                {isConfirmingDelete ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-typography-primary text-sm">
+                      Delete this? Coins go back to whoever spent them.
+                    </span>
+                    <Button variant={ButtonVariant.PRIMARY} onClick={remove} disabled={isDeleting}>
+                      {isDeleting ? "Deleting…" : "Delete"}
+                    </Button>
+                    <Button
+                      variant={ButtonVariant.SECONDARY}
+                      onClick={() => setIsConfirmingDelete(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <Button variant={ButtonVariant.TEXT} onClick={() => setIsConfirmingDelete(true)}>
+                    Delete opportunity
+                  </Button>
+                )}
                 <Button
                   variant={ButtonVariant.PRIMARY}
                   onClick={save}

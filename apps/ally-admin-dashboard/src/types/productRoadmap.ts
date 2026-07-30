@@ -26,7 +26,10 @@ export interface RoadmapOpportunity {
   type: RoadmapOpportunityType;
   stage: RoadmapOpportunityStage;
   productGoal: string;
+  /** Display name: the linked super-admin's current name, or a legacy migrated string. */
   owner: string | null;
+  /** Null for legacy migrated rows whose owner was never linked to an Ally account. */
+  ownerUserId?: number | null;
   prd: string | null;
   releasedAt: string | null;
   /** SUM of every user's coins across every period. Computed in SQL, never stored. */
@@ -183,4 +186,11 @@ export interface RoadmapDuplicateMatch {
 export interface RoadmapListEnvelope<T> {
   items: T[];
   count: number;
+}
+
+/** An Ally super-admin who may be assigned as an opportunity owner. */
+export interface RoadmapEligibleOwner {
+  id: number;
+  name: string;
+  email: string;
 }
