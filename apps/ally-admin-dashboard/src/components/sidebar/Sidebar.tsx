@@ -258,11 +258,11 @@ export const Sidebar: React.FC = () => {
     : filteredNavigationItems;
 
   const sidebarItems = (
-    <nav className="flex-1 min-h-0 overflow-y-auto px-2 py-4">
-      {/* Search bar before the first tab — lets users find the right tab fast. */}
+    <div className="flex-1 min-h-0 flex flex-col pt-4">
+      {/* Kept outside the scrollable nav below so it stays visible ("sticky") at any scroll position. */}
       {isExpanded && (
-        <div className="relative flex items-center mb-3">
-          <span className="absolute left-3 flex items-center text-typography-600 pointer-events-none">
+        <div className="relative flex items-center px-2 mb-3 flex-shrink-0">
+          <span className="absolute left-5 flex items-center text-typography-600 pointer-events-none">
             <Search size={16} />
           </span>
           <input
@@ -278,37 +278,39 @@ export const Sidebar: React.FC = () => {
               type="button"
               onClick={() => setNavSearch("")}
               aria-label={en.common.clearSearch}
-              className="absolute right-2 flex items-center text-typography-600 hover:text-typography-900"
+              className="absolute right-4 flex items-center text-typography-600 hover:text-typography-900"
             >
               <Close size={16} />
             </button>
           )}
         </div>
       )}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext
-          items={displayedNavItems.map(item => item.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <ul className="space-y-1">
-            {displayedNavItems.map(item => (
-              <SortableNavItem
-                key={item.id}
-                item={item}
-                icon={renderIcon(item.id)}
-                isActive={isTabItemActive(item.path)}
-                isExpanded={isExpanded}
-                canReorder={canReorder && !isSearching}
-                onNavigate={handleNavigation}
-              />
-            ))}
-          </ul>
-          {isExpanded && isSearching && displayedNavItems.length === 0 && (
-            <p className="px-3 py-2 text-sm text-typography-600">{en.common.noMenuResults}</p>
-          )}
-        </SortableContext>
-      </DndContext>
-    </nav>
+      <nav className="flex-1 min-h-0 overflow-y-auto px-2 pb-4">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext
+            items={displayedNavItems.map(item => item.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul className="space-y-1">
+              {displayedNavItems.map(item => (
+                <SortableNavItem
+                  key={item.id}
+                  item={item}
+                  icon={renderIcon(item.id)}
+                  isActive={isTabItemActive(item.path)}
+                  isExpanded={isExpanded}
+                  canReorder={canReorder && !isSearching}
+                  onNavigate={handleNavigation}
+                />
+              ))}
+            </ul>
+            {isExpanded && isSearching && displayedNavItems.length === 0 && (
+              <p className="px-3 py-2 text-sm text-typography-600">{en.common.noMenuResults}</p>
+            )}
+          </SortableContext>
+        </DndContext>
+      </nav>
+    </div>
   );
 
   const profileSection = (
