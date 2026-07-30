@@ -7,7 +7,7 @@ import { TextArea } from "@ally-ui-mono/ui-shared";
 import { useGetMyAssignmentQuery, useSubmitEvaluationMutation } from "@api";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, ROUTES } from "@constants";
+import { en, LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
 import { LabEvalQuestion, SubmitEvaluationAnswerInput } from "@types";
 
 import { EvaluateLayout } from "./EvaluateLayout";
@@ -97,6 +97,9 @@ export const EvaluateRecordDetail: React.FC = () => {
   const [draft, setDraft] = useState<Record<string, DraftAnswer>>({});
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const evaluatorId = localStorage.getItem(LOCAL_STORAGE_KEYS.EVALUATOR_ID) ?? "";
+  const recordId = data ? `${data.run.id}-${evaluatorId}` : "";
+
   const submitted = Boolean(data?.submittedAt);
 
   // Read-only values from the server after submission.
@@ -158,10 +161,10 @@ export const EvaluateRecordDetail: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl text-typography-900 font-secondary">{data.run.skillName}</h1>
-              <p className="text-sm text-typography-500 mt-1">
-                {en.evaluate.modelLabel}: <span className="font-mono">{data.run.model}</span>
-              </p>
+              <h1 className="text-2xl text-typography-900 font-secondary font-mono break-all">
+                {recordId}
+              </h1>
+              <p className="text-sm text-typography-500 mt-1">{en.evaluate.recordIdLabel}</p>
             </div>
             {submitted && data.submittedAt && (
               <span className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full px-3 py-1 whitespace-nowrap">
@@ -170,37 +173,33 @@ export const EvaluateRecordDetail: React.FC = () => {
             )}
           </div>
 
-          {data.run.variableValues.length > 0 && (
-            <Section label={en.evaluate.variablesHeading}>
-              <div className="space-y-2">
-                {data.run.variableValues.map(variable => (
-                  <div
-                    key={variable.name}
-                    className="border border-border-light rounded-md bg-white px-3 py-2"
-                  >
-                    <div className="font-mono text-sm text-typography-700 mb-1 break-all">
-                      {`{{${variable.name}}}`}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {data.run.variableValues.length > 0 && (
+              <Section label={en.evaluate.variablesHeading}>
+                <div className="space-y-2">
+                  {data.run.variableValues.map(variable => (
+                    <div
+                      key={variable.name}
+                      className="border border-border-light rounded-md bg-white px-3 py-2"
+                    >
+                      <div className="font-mono text-sm text-typography-700 mb-1 break-all">
+                        {`{{${variable.name}}}`}
+                      </div>
+                      <div className="text-sm text-typography-900 whitespace-pre-wrap break-words max-h-40 overflow-y-auto custom-scrollbar">
+                        {variable.value}
+                      </div>
                     </div>
-                    <div className="text-sm text-typography-900 whitespace-pre-wrap break-words max-h-40 overflow-y-auto custom-scrollbar">
-                      {variable.value}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            <Section label={en.evaluate.outputHeading}>
+              <pre className="whitespace-pre-wrap break-words text-base bg-white border border-border-light rounded-md p-4 max-h-[420px] overflow-y-auto custom-scrollbar">
+                {data.run.output || ""}
+              </pre>
             </Section>
-          )}
-
-          <Section label={en.evaluate.promptHeading}>
-            <pre className="whitespace-pre-wrap break-words font-mono text-sm bg-white border border-border-light rounded-md p-3 max-h-[220px] overflow-y-auto custom-scrollbar">
-              {data.run.resolvedPrompt}
-            </pre>
-          </Section>
-
-          <Section label={en.evaluate.outputHeading}>
-            <pre className="whitespace-pre-wrap break-words text-base bg-white border border-border-light rounded-md p-4 max-h-[420px] overflow-y-auto custom-scrollbar">
-              {data.run.output || ""}
-            </pre>
-          </Section>
+          </div>
 
           <Section label={en.evaluate.questionsHeading}>
             {submitted && (

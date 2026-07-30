@@ -421,6 +421,7 @@ export const LOCAL_STORAGE_KEYS = {
   // Evaluator micro-app session (separate from the admin session)
   EVALUATOR_ACCESS_TOKEN: "evaluatorAccessToken",
   EVALUATOR_EMAIL: "evaluatorEmail",
+  EVALUATOR_ID: "evaluatorId",
   // Prefix — the copilot session id is stored per spec as `${prefix}:${specId}`
   // so a page refresh can resume the same interview session.
   ROLEPLAY_COPILOT_SESSION_PREFIX: "roleplayCopilotSession",
