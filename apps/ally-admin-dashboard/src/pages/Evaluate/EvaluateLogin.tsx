@@ -33,6 +33,7 @@ export const EvaluateLogin: React.FC = () => {
         store.dispatch(evaluatorAPI.util.resetApiState());
         localStorage.setItem(LOCAL_STORAGE_KEYS.EVALUATOR_ACCESS_TOKEN, result.accessToken);
         localStorage.setItem(LOCAL_STORAGE_KEYS.EVALUATOR_EMAIL, result.evaluator.email);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.EVALUATOR_ID, result.evaluator.id);
         navigate(ROUTES.EVALUATE_RECORDS, { replace: true });
       } catch {
         setError(en.evaluate.loginFailed);
