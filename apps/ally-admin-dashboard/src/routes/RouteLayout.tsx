@@ -32,6 +32,7 @@ import {
   TooltipManagement,
   BlogManagement,
   AILab,
+  ProductRoadmap,
   Settings,
   AgentTestCases,
   Competencies,
@@ -300,6 +301,16 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.VIEW_BLOGS]}>
               <BlogManagement />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.PRODUCT_ROADMAP}
+          element={
+            // Permission-gated, not role-gated: SUPER_ADMIN can view and vote, while the
+            // manage surface inside the page is gated on EDIT_PRODUCT_ROADMAP.
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_PRODUCT_ROADMAP]}>
+              <ProductRoadmap />
             </PrivateLayout>
           }
         />

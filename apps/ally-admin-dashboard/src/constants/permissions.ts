@@ -30,6 +30,11 @@ export enum Permissions {
   DELETE_BLOG = "delete:blog",
   VIEW_AI_LAB = "view:admin:ai-lab",
   EDIT_AI_LAB = "edit:admin:ai-lab",
+  // Product Roadmap. Three tiers because the board is a voting surface, not a CRUD screen:
+  // VIEW = read, VOTE = participate (file/allocate/comment/own views), EDIT = manage.
+  VIEW_PRODUCT_ROADMAP = "view:admin:product-roadmap",
+  VOTE_PRODUCT_ROADMAP = "vote:admin:product-roadmap",
+  EDIT_PRODUCT_ROADMAP = "edit:admin:product-roadmap",
   DELETE_AI_LAB = "delete:admin:ai-lab",
 }
 
@@ -47,6 +52,7 @@ export const SIDEBAR_ITEMS = {
   TOOLTIPS: "tooltips",
   ANALYTICS: "analytics",
   AGENT_TEST_CASES: "agent-test-cases",
+  PRODUCT_ROADMAP: "product-roadmap",
   COMPETENCIES: "competencies",
   ROLEPLAY_SESSION_LOGS: "roleplay-session-logs",
   ROLEPLAY_STUDIO: "roleplay-studio",

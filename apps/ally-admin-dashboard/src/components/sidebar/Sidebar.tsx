@@ -12,6 +12,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import {
   BarChart3,
   Chemistry,
+  Roadmap,
   Close,
   Document,
   Flag,
@@ -197,6 +198,8 @@ export const Sidebar: React.FC = () => {
         return <List size={20} />;
       case SIDEBAR_ITEMS.AI_LAB:
         return <Chemistry size={20} />;
+      case SIDEBAR_ITEMS.PRODUCT_ROADMAP:
+        return <Roadmap size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
         return <Settings size={20} />;
       default:
@@ -239,6 +242,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.ROLEPLAY_SESSION_LOGS);
       case ROUTES.AI_LAB:
         return location.pathname.includes(ROUTES.AI_LAB);
+      case ROUTES.PRODUCT_ROADMAP:
+        return location.pathname.includes(ROUTES.PRODUCT_ROADMAP);
       case ROUTES.SETTINGS:
         return location.pathname.includes(ROUTES.SETTINGS);
       default:

@@ -40,6 +40,29 @@ describe("deriveNavigationItems", () => {
     ).toEqual([]);
   });
 
+  it("shows Product Roadmap for a user holding only VIEW_PRODUCT_ROADMAP", () => {
+    // Deliberately permission-gated rather than role-gated, because viewing and voting are
+    // meant to reach a wider group than the manage surface. If someone moves the tab into
+    // buildSuperDuperAdminOnlyItems(), this fails.
+    const result = deriveNavigationItems({
+      permissions: [Permissions.VIEW_PRODUCT_ROADMAP],
+      role: UserRole.ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.PRODUCT_ROADMAP]);
+    expect(result[0].path).toBe(ROUTES.PRODUCT_ROADMAP);
+  });
+
+  it("hides Product Roadmap from a super-duper-admin who lacks the permission", () => {
+    // Role alone must not unlock it — the grant migration is what does.
+    const result = deriveNavigationItems({
+      permissions: [],
+      role: UserRole.SUPER_DUPER_ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.PRODUCT_ROADMAP);
+  });
+
   it("filters permission-gated items to those the user can access", () => {
     const result = deriveNavigationItems({
       permissions: [Permissions.EDIT_EVENT],

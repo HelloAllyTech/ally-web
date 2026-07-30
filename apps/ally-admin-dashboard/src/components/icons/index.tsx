@@ -31,6 +31,17 @@ import {
   ChartBar as CChartBar,
   Chat as CChat,
   Chemistry as CChemistry,
+  Roadmap as CRoadmap,
+  Idea as CIdea,
+  Debug as CDebug,
+  Pin as CPin,
+  Split as CSplit,
+  Merge as CMerge,
+  Bullhorn as CBullhorn,
+  Link as CLink,
+  SortAscending as CSortAscending,
+  SortDescending as CSortDescending,
+  Currency as CCurrency,
   Checkmark as CCheckmark,
   CheckmarkFilled as CCheckmarkFilled,
   CheckmarkOutline as CCheckmarkOutline,
@@ -146,6 +157,19 @@ export const Calendar = createCarbonIcon(CCalendar);
 export const Cancel = createCarbonIcon(CClose);
 export const Chat = createCarbonIcon(CChat);
 export const Chemistry = createCarbonIcon(CChemistry);
+export const Roadmap = createCarbonIcon(CRoadmap);
+export const Idea = createCarbonIcon(CIdea);
+// NOTE: @carbon/icons-react has no `Bug` or `Coins`. Debug is the bug glyph and Currency is
+// the coin glyph — do not "correct" these names.
+export const Debug = createCarbonIcon(CDebug);
+export const Pin = createCarbonIcon(CPin);
+export const Split = createCarbonIcon(CSplit);
+export const Merge = createCarbonIcon(CMerge);
+export const Bullhorn = createCarbonIcon(CBullhorn);
+export const Link = createCarbonIcon(CLink);
+export const SortAscending = createCarbonIcon(CSortAscending);
+export const SortDescending = createCarbonIcon(CSortDescending);
+export const Currency = createCarbonIcon(CCurrency);
 export const CheckCircle = createCarbonIcon(CCheckmarkOutline);
 export const Close = createCarbonIcon(CClose);
 export const Compress = createCarbonIcon(CMinimize);

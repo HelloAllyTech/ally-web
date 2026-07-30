@@ -54,6 +54,7 @@ vi.mock("@pages", () => ({
   Terms: () => <div>TermsPage</div>,
   Privacy: () => <div>PrivacyPage</div>,
   AILab: () => <div>AILabPage</div>,
+  ProductRoadmap: () => <div>ProductRoadmapPage</div>,
   EvaluateLogin: () => <div>EvaluateLoginPage</div>,
   EvaluateRecords: () => <div>EvaluateRecordsPage</div>,
   EvaluateRecordDetail: () => <div>EvaluateRecordDetailPage</div>,
