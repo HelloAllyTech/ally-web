@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { Select, SelectItem, TextArea } from "@ally-ui-mono/ui-shared";
+import { Select, SelectItem, TextArea, ComposedModal, ModalBody } from "@ally-ui-mono/ui-shared";
 import {
   useCreateRoadmapOpportunityMutation,
   useRoadmapAiDuplicatesMutation,
   useRoadmapAiEnhanceMutation,
   useRoadmapAiReviewMutation,
 } from "@api";
-import { Button, PopupWrapper } from "@components";
+import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { RoadmapDuplicateMatch, RoadmapOpportunityType, RoadmapTaxonomyItem } from "@types";
 
@@ -128,107 +128,109 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
     !isSaving;
 
   return (
-    <PopupWrapper isOpen onClose={onClose}>
-      <div className="flex w-[42rem] max-w-full flex-col gap-4 p-6">
-        <h2 className="text-typography-primary text-xl">New opportunity</h2>
+    <ComposedModal open onClose={onClose} size="lg">
+      <ModalBody>
+        <div className="flex flex-col gap-4">
+          <h2 className="text-typography-primary text-xl">New opportunity</h2>
 
-        <TextArea
-          id="roadmap-description"
-          labelText="What is the problem or idea?"
-          rows={5}
-          value={description}
-          maxCount={DESCRIPTION_MAX}
-          enableCounter
-          maxLength={DESCRIPTION_MAX}
-          onChange={event => setDescription(event.target.value)}
-          placeholder="Describe the problem, who hits it, and what it costs them."
-        />
+          <TextArea
+            id="roadmap-description"
+            labelText="What is the problem or idea?"
+            rows={5}
+            value={description}
+            maxCount={DESCRIPTION_MAX}
+            enableCounter
+            maxLength={DESCRIPTION_MAX}
+            onChange={event => setDescription(event.target.value)}
+            placeholder="Describe the problem, who hits it, and what it costs them."
+          />
 
-        <div className="flex gap-3">
-          <Select
-            id="roadmap-type"
-            labelText="Type"
-            value={type}
-            onChange={event => setType(event.target.value as RoadmapOpportunityType)}
-          >
-            <SelectItem value={RoadmapOpportunityType.IDEA} text="Idea" />
-            <SelectItem value={RoadmapOpportunityType.BUG} text="Bug" />
-          </Select>
+          <div className="flex gap-3">
+            <Select
+              id="roadmap-type"
+              labelText="Type"
+              value={type}
+              onChange={event => setType(event.target.value as RoadmapOpportunityType)}
+            >
+              <SelectItem value={RoadmapOpportunityType.IDEA} text="Idea" />
+              <SelectItem value={RoadmapOpportunityType.BUG} text="Bug" />
+            </Select>
 
-          <Select
-            id="roadmap-goal"
-            labelText="Product goal"
-            value={productGoal}
-            onChange={event => setProductGoal(event.target.value)}
-          >
-            {goals.map(goal => (
-              <SelectItem key={goal.id} value={goal.name} text={goal.name} />
-            ))}
-          </Select>
-        </div>
+            <Select
+              id="roadmap-goal"
+              labelText="Product goal"
+              value={productGoal}
+              onChange={event => setProductGoal(event.target.value)}
+            >
+              {goals.map(goal => (
+                <SelectItem key={goal.id} value={goal.name} text={goal.name} />
+              ))}
+            </Select>
+          </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            onClick={runReview}
-            disabled={!description.trim() || isReviewing}
-          >
-            {isReviewing ? "Reviewing…" : "Review"}
-          </Button>
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            onClick={runEnhance}
-            disabled={!description.trim() || isEnhancing}
-          >
-            {isEnhancing ? "Rewriting…" : "Improve wording"}
-          </Button>
-          {isCheckingDuplicates && (
-            <span className="text-typography-secondary self-center text-xs">
-              checking for duplicates…
-            </span>
+          <div className="flex gap-2">
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={runReview}
+              disabled={!description.trim() || isReviewing}
+            >
+              {isReviewing ? "Reviewing…" : "Review"}
+            </Button>
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              onClick={runEnhance}
+              disabled={!description.trim() || isEnhancing}
+            >
+              {isEnhancing ? "Rewriting…" : "Improve wording"}
+            </Button>
+            {isCheckingDuplicates && (
+              <span className="text-typography-secondary self-center text-xs">
+                checking for duplicates…
+              </span>
+            )}
+          </div>
+
+          {suggestions.length > 0 && (
+            <div className="border border-border-light p-3">
+              <div className="text-typography-primary mb-2 text-sm">Suggestions</div>
+              <ul className="flex flex-col gap-2">
+                {suggestions.map(suggestion => (
+                  <li key={suggestion.issue} className="text-sm">
+                    <span className="text-typography-primary">{suggestion.issue}</span>
+                    <span className="text-typography-secondary"> — {suggestion.tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
-        </div>
 
-        {suggestions.length > 0 && (
-          <div className="border border-border-light p-3">
-            <div className="text-typography-primary mb-2 text-sm">Suggestions</div>
-            <ul className="flex flex-col gap-2">
-              {suggestions.map(suggestion => (
-                <li key={suggestion.issue} className="text-sm">
-                  <span className="text-typography-primary">{suggestion.issue}</span>
-                  <span className="text-typography-secondary"> — {suggestion.tip}</span>
-                </li>
-              ))}
-            </ul>
+          {duplicates.length > 0 && (
+            <div className="border border-primary-500 p-3">
+              <div className="text-typography-primary mb-2 text-sm">This may already exist</div>
+              <ul className="flex flex-col gap-2">
+                {duplicates.map(match => (
+                  <li key={match.id} className="text-sm">
+                    <div className="text-typography-primary">{match.description}</div>
+                    <div className="text-typography-secondary text-xs">{match.reason}</div>
+                    <Button variant={ButtonVariant.TEXT} onClick={() => onOpenExisting(match.id)}>
+                      Allocate coins to this instead →
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button variant={ButtonVariant.SECONDARY} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button variant={ButtonVariant.PRIMARY} onClick={save} disabled={!canSave}>
+              {isSaving ? "Filing…" : "File opportunity"}
+            </Button>
           </div>
-        )}
-
-        {duplicates.length > 0 && (
-          <div className="border border-primary-500 p-3">
-            <div className="text-typography-primary mb-2 text-sm">This may already exist</div>
-            <ul className="flex flex-col gap-2">
-              {duplicates.map(match => (
-                <li key={match.id} className="text-sm">
-                  <div className="text-typography-primary">{match.description}</div>
-                  <div className="text-typography-secondary text-xs">{match.reason}</div>
-                  <Button variant={ButtonVariant.TEXT} onClick={() => onOpenExisting(match.id)}>
-                    Allocate coins to this instead →
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="flex justify-end gap-2">
-          <Button variant={ButtonVariant.SECONDARY} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant={ButtonVariant.PRIMARY} onClick={save} disabled={!canSave}>
-            {isSaving ? "Filing…" : "File opportunity"}
-          </Button>
         </div>
-      </div>
-    </PopupWrapper>
+      </ModalBody>
+    </ComposedModal>
   );
 };
