@@ -19,6 +19,7 @@ import {
   RoadmapFacets,
   RoadmapOpportunitiesQuery,
   RoadmapOpportunitiesResponse,
+  RoadmapOpportunity,
   RoadmapOpportunityStage,
   RoadmapOpportunityType,
   RoadmapTaxonomyItem,
@@ -66,6 +67,10 @@ interface OpportunitiesBoardProps {
   canManage: boolean;
   onOpenOpportunity: (id: string) => void;
   onAddClick: () => void;
+  /** Merge selection, manager-only. Lifted so the bar can live outside the table. */
+  selectedIds: Set<string>;
+  onToggleSelected: (id: string) => void;
+  onSplit: (opportunity: RoadmapOpportunity) => void;
 }
 
 /**
@@ -105,6 +110,9 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   canManage,
   onOpenOpportunity,
   onAddClick,
+  selectedIds,
+  onToggleSelected,
+  onSplit,
 }) => {
   const allocate = useAllocateCoins(listArgs);
   const rows = data?.items ?? [];
@@ -240,6 +248,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
           <Table>
             <TableHead>
               <TableRow>
+                {canManage && <TableHeader className="w-10" aria-label="Select for merge" />}
                 <SortHeader field="priority" className="w-32">
                   Priority
                 </SortHeader>
@@ -251,6 +260,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                 <SortHeader field="createdAt" className="w-28">
                   Filed
                 </SortHeader>
+                {canManage && <TableHeader className="w-16" aria-label="Actions" />}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -260,6 +270,17 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                   onClick={() => onOpenOpportunity(opportunity.id)}
                   className="cursor-pointer"
                 >
+                  {canManage && (
+                    // stopPropagation, or ticking the box also opens the drawer.
+                    <TableCell onClick={event => event.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(opportunity.id)}
+                        onChange={() => onToggleSelected(opportunity.id)}
+                        aria-label={`Select for merge: ${opportunity.description.slice(0, 40)}`}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="font-mono tabular-nums w-8 text-right">
@@ -327,6 +348,14 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
                   <TableCell className="text-typography-secondary font-mono text-xs">
                     {new Date(opportunity.createdAt).toISOString().slice(0, 10)}
                   </TableCell>
+
+                  {canManage && (
+                    <TableCell onClick={event => event.stopPropagation()}>
+                      <Button variant={ButtonVariant.TEXT} onClick={() => onSplit(opportunity)}>
+                        Split
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
