@@ -70,6 +70,7 @@ export const ProductRoadmap: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<RoadmapOpportunityType[]>([]);
   const [stageFilter, setStageFilter] = useState<RoadmapOpportunityStage[]>([]);
   const [goalFilter, setGoalFilter] = useState<string[]>([]);
+  const [ownerFilter, setOwnerFilter] = useState<string[]>([]);
   const [sortBy, setSortBy] =
     useState<NonNullable<RoadmapOpportunitiesQuery["sortBy"]>>("priority");
   const [order, setOrder] = useState<"ASC" | "DESC">("DESC");
@@ -90,12 +91,13 @@ export const ProductRoadmap: React.FC = () => {
       type: typeFilter.length ? typeFilter : undefined,
       stage: stageFilter.length ? stageFilter : undefined,
       productGoal: goalFilter.length ? goalFilter : undefined,
+      owner: ownerFilter.length ? ownerFilter : undefined,
       sortBy,
       order,
       limit: PAGE_SIZE,
       offset: 0,
     }),
-    [search, typeFilter, stageFilter, goalFilter, sortBy, order],
+    [search, typeFilter, stageFilter, goalFilter, ownerFilter, sortBy, order],
   );
 
   const { data, isLoading, isFetching } = useGetRoadmapOpportunitiesQuery(listArgs);
@@ -123,9 +125,10 @@ export const ProductRoadmap: React.FC = () => {
       typeFilter,
       stageFilter,
       goalFilter,
+      ownerFilter,
       sort: { field: sortBy, dir: order === "DESC" ? "desc" : "asc" },
     }),
-    [search, typeFilter, stageFilter, goalFilter, sortBy, order],
+    [search, typeFilter, stageFilter, goalFilter, ownerFilter, sortBy, order],
   );
 
   const applyViewState = (state: RoadmapViewState) => {
@@ -133,6 +136,7 @@ export const ProductRoadmap: React.FC = () => {
     setTypeFilter((state.typeFilter ?? []) as RoadmapOpportunityType[]);
     setStageFilter((state.stageFilter ?? []) as RoadmapOpportunityStage[]);
     setGoalFilter(state.goalFilter ?? []);
+    setOwnerFilter(state.ownerFilter ?? []);
     // Migrated views carry the standalone app's field names — see normaliseSortField.
     setSortBy(
       normaliseSortField(state.sort?.field) as NonNullable<RoadmapOpportunitiesQuery["sortBy"]>,
@@ -280,6 +284,8 @@ export const ProductRoadmap: React.FC = () => {
           onStageFilterChange={setStageFilter}
           goalFilter={goalFilter}
           onGoalFilterChange={setGoalFilter}
+          ownerFilter={ownerFilter}
+          onOwnerFilterChange={setOwnerFilter}
           sortBy={sortBy}
           order={order}
           onToggleSort={toggleSort}

@@ -60,6 +60,9 @@ interface OpportunitiesBoardProps {
   onStageFilterChange: (value: RoadmapOpportunityStage[]) => void;
   goalFilter: string[];
   onGoalFilterChange: (value: string[]) => void;
+  /** Owner NAMES, matching RoadmapViewState — options come from GET /facets. */
+  ownerFilter: string[];
+  onOwnerFilterChange: (value: string[]) => void;
   sortBy: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>;
   order: "ASC" | "DESC";
   onToggleSort: (field: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>) => void;
@@ -95,6 +98,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   isFetching,
   budget,
   goals,
+  facets,
   search,
   onSearchChange,
   typeFilter,
@@ -103,6 +107,8 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   onStageFilterChange,
   goalFilter,
   onGoalFilterChange,
+  ownerFilter,
+  onOwnerFilterChange,
   sortBy,
   order,
   onToggleSort,
@@ -140,7 +146,8 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   const toggle = <T,>(list: T[], value: T): T[] =>
     list.includes(value) ? list.filter(v => v !== value) : [...list, value];
 
-  const activeFilters = typeFilter.length + stageFilter.length + goalFilter.length > 0;
+  const activeFilters =
+    typeFilter.length + stageFilter.length + goalFilter.length + ownerFilter.length > 0;
 
   return (
     <div className="flex flex-col gap-3">
@@ -212,6 +219,31 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
           </button>
         ))}
 
+        {/* Owner options come from GET /facets, not from the loaded rows. Deriving them from the
+            page would shrink the option list as soon as a filter or the 50-row page limit hid an
+            owner — and four of the saved views migrated from production are defined ENTIRELY by
+            ownerFilter, so without this control those tabs would apply as "no filter" and
+            silently show everything. */}
+        {!!facets?.owners?.length && (
+          <>
+            <span className="text-typography-secondary ml-3">Owner</span>
+            {facets.owners.map(owner => (
+              <button
+                key={owner}
+                type="button"
+                onClick={() => onOwnerFilterChange(toggle(ownerFilter, owner))}
+                className={`border px-2 py-1 ${
+                  ownerFilter.includes(owner)
+                    ? "border-primary-500 text-primary-600"
+                    : "border-border-light text-typography-secondary"
+                }`}
+              >
+                {owner}
+              </button>
+            ))}
+          </>
+        )}
+
         {activeFilters && (
           <Button
             variant={ButtonVariant.TEXT}
@@ -219,6 +251,7 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
               onTypeFilterChange([]);
               onStageFilterChange([]);
               onGoalFilterChange([]);
+              onOwnerFilterChange([]);
             }}
           >
             Clear filters
