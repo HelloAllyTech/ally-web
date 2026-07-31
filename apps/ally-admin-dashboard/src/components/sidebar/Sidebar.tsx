@@ -12,6 +12,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import {
   BarChart3,
   Chemistry,
+  MachineLearningModel,
   Roadmap,
   Close,
   Document,
@@ -39,6 +40,7 @@ import {
   ManageAccounts,
   Globe,
   Mic,
+  UserSpeaker,
   CharacterLibrary,
   FrameSource,
   Guardrails,
@@ -172,12 +174,14 @@ export const Sidebar: React.FC = () => {
         return <HappyEmoji />;
       case SIDEBAR_ITEMS.CHARACTER_LIBRARY:
         return <CharacterLibrary />;
+      // Voices is TTS — the side that talks — so a persona with a speaker. The
+      // microphone belongs to Speech Recognition, the side that listens.
       case SIDEBAR_ITEMS.SCENARIO_VOICES:
-        return <Mic />;
+        return <UserSpeaker size={20} />;
       case SIDEBAR_ITEMS.STT_CONFIGS:
         return <Mic />;
       case SIDEBAR_ITEMS.LLM_CONFIGS:
-        return <FrameSource />;
+        return <MachineLearningModel size={20} />;
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return <Globe />;
       case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:

@@ -30,6 +30,7 @@ import {
   Calendar as CCalendar,
   ChartBar as CChartBar,
   Chat as CChat,
+  UserSpeaker as CUserSpeaker,
   Chemistry as CChemistry,
   Roadmap as CRoadmap,
   Idea as CIdea,
@@ -101,6 +102,7 @@ import {
   ViewOff as CViewOff,
   WarningAlt as CWarningAlt,
   ZoomIn as CZoomIn,
+  MachineLearningModel as CMachineLearningModel,
 } from "@carbon/icons-react";
 import { Heading1 as LHeading1, Heading2 as LHeading2, Heading3 as LHeading3 } from "lucide-react";
 
@@ -190,6 +192,11 @@ export const FailIcon = createCarbonIcon(CMisuse);
 export const Filter = createCarbonIcon(CFilter);
 export const FocusLens = createCarbonIcon(CZoomIn);
 export const Globe = createCarbonIcon(CGlobe);
+/** Voices (TTS) — a persona with a speaker, i.e. the side that talks. The
+ *  microphone belongs to Speech Recognition, the side that listens. */
+export const UserSpeaker = createCarbonIcon(CUserSpeaker);
+/** Language Model (LLM) registry. */
+export const MachineLearningModel = createCarbonIcon(CMachineLearningModel);
 export const GroupBranch = createCarbonIcon(CFlowConnection);
 export const HappyEmoji = createCarbonIcon(CFaceSatisfied);
 export const ImageIcon = createCarbonIcon(CImage);
