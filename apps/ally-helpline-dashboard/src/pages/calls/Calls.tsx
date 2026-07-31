@@ -78,7 +78,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
           refreshKey={refreshKey}
           sessionType={sessionType}
           className={
-            userGroupList?.length > 1 ? "max-h-[calc(100vh-200px)]" : "max-h-[calc(100vh-140px)]"
+            userGroupList?.length > 1 ? "max-h-[calc(100dvh-200px)]" : "max-h-[calc(100dvh-140px)]"
           }
         />
       );
@@ -88,7 +88,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
         refreshKey={refreshKey}
         sessionType={sessionType}
         className={
-          userGroupList?.length > 1 ? "max-h-[calc(100vh-200px)]" : "max-h-[calc(100vh-140px)]"
+          userGroupList?.length > 1 ? "max-h-[calc(100dvh-200px)]" : "max-h-[calc(100dvh-140px)]"
         }
       />
     );

@@ -6,7 +6,7 @@ exports[`AudioCall Component > Snapshot Testing > should match snapshot 1`] = `
     data-testid="browser-router"
   >
     <div
-      class="h-screen flex items-center justify-center bg-gray-50"
+      class="h-dvh flex items-center justify-center bg-gray-50"
     >
       <video
         class="hidden"
@@ -38,7 +38,7 @@ exports[`AudioCall Component > Snapshot Testing > should match snapshot with mic
     data-testid="browser-router"
   >
     <div
-      class="h-screen flex items-center justify-center bg-gray-50"
+      class="h-dvh flex items-center justify-center bg-gray-50"
     >
       <video
         class="hidden"

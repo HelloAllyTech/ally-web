@@ -70,7 +70,7 @@ describe("Health Component", () => {
   describe("Component Structure", () => {
     it("should render main container with correct classes", () => {
       const { container } = render(<Health />);
-      const mainContainer = container.querySelector("div.min-h-screen");
+      const mainContainer = container.querySelector("div.min-h-dvh");
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("bg-gray-100");
       expect(mainContainer?.className).toContain("dark:bg-gray-900");
@@ -244,7 +244,7 @@ describe("Health Component", () => {
   describe("CSS Classes and Styling", () => {
     it("should apply dark mode classes", () => {
       const { container } = render(<Health />);
-      const mainContainer = container.querySelector("div.min-h-screen");
+      const mainContainer = container.querySelector("div.min-h-dvh");
       const cardContainer = container.querySelector("div.max-w-md");
 
       expect(mainContainer?.className).toContain("dark:bg-gray-900");
@@ -253,7 +253,7 @@ describe("Health Component", () => {
 
     it("should apply responsive design classes", () => {
       const { container } = render(<Health />);
-      const mainContainer = container.querySelector("div.min-h-screen");
+      const mainContainer = container.querySelector("div.min-h-dvh");
       const cardContainer = container.querySelector("div.max-w-md");
 
       expect(mainContainer?.className).toContain("p-4");
@@ -366,7 +366,7 @@ describe("Health Component", () => {
 
     it("should maintain proper component hierarchy", () => {
       const { container } = render(<Health />);
-      const mainContainer = container.querySelector("div.min-h-screen");
+      const mainContainer = container.querySelector("div.min-h-dvh");
       const cardContainer = container.querySelector("div.max-w-md");
 
       expect(mainContainer).toContainElement(cardContainer as HTMLElement);
@@ -397,9 +397,9 @@ describe("Health Component", () => {
 
     it("should have consistent component structure", () => {
       const { container } = render(<Health />);
-      const mainContainer = container.querySelector("div.min-h-screen");
+      const mainContainer = container.querySelector("div.min-h-dvh");
       expect(mainContainer).not.toBeNull();
-      expect(mainContainer?.className).toContain("min-h-screen");
+      expect(mainContainer?.className).toContain("min-h-dvh");
     });
   });
 
@@ -418,7 +418,7 @@ describe("Health Component", () => {
     it("should have timer functionality available", () => {
       render(<Health />);
       // Component should render without errors, indicating timer setup is working
-      const container = document.querySelector("div.min-h-screen");
+      const container = document.querySelector("div.min-h-dvh");
       expect(container).not.toBeNull();
     });
   });

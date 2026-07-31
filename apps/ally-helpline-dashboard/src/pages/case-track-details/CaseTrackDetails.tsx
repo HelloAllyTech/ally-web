@@ -226,7 +226,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="flex items-center justify-center min-h-dvh bg-white">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
       </div>
     );
@@ -234,7 +234,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+      <div className="flex flex-col items-center justify-center min-h-dvh bg-white">
         <div className="text-typography-700 text-lg mb-4">{currentLabels.notFound}</div>
         <button
           onClick={() => navigate(ROUTES.LEARN)}
@@ -366,7 +366,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   return (
     <>
-      <div className="min-h-screen bg-white mx-[15%] font-primary">
+      <div className="min-h-dvh bg-white mx-[15%] font-primary">
         {renderHeaderSection()}
         {renderScenariosList()}
       </div>

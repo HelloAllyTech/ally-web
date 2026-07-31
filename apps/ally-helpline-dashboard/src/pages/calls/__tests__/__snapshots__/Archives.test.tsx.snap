@@ -52,7 +52,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with MY_L
         data-testid="archives-content"
       >
         <div
-          data-class-name="max-h-[calc(100vh-140px)]"
+          data-class-name="max-h-[calc(100dvh-140px)]"
           data-refresh-key="0"
           data-session-type="call"
           data-session-user-group="my-logs"
@@ -118,7 +118,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with ORG_
         data-testid="archives-content"
       >
         <div
-          data-class-name="max-h-[calc(100vh-140px)]"
+          data-class-name="max-h-[calc(100dvh-140px)]"
           data-refresh-key="0"
           data-session-type="call"
           data-session-user-group="org-logs"
@@ -184,7 +184,7 @@ exports[`Archives Component > Snapshot Testing > should match snapshot with defa
         data-testid="archives-content"
       >
         <div
-          data-class-name="max-h-[calc(100vh-140px)]"
+          data-class-name="max-h-[calc(100dvh-140px)]"
           data-refresh-key="0"
           data-session-type="call"
           data-session-user-group="my-logs"

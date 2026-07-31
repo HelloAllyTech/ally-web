@@ -359,7 +359,7 @@ describe("Learn Component", () => {
       const mainContainer = container.querySelector("div.flex.flex-col");
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("w-full");
-      expect(mainContainer?.className).toContain("max-h-screen");
+      expect(mainContainer?.className).toContain("max-h-dvh");
       expect(mainContainer?.className).toContain("bg-white");
     });
 

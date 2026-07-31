@@ -578,7 +578,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       open={open}
       onClose={handleClose}
       className="font-primary"
-      drawerClassName="h-screen w-[50vw] md:min-w-[600px] max-w-[95vw]"
+      drawerClassName="h-dvh w-[50vw] md:min-w-[600px] max-w-[95vw]"
       bodyClassName="overflow-y-auto"
       title={noteName ?? t("calls.createNote.title")}
       headerButtons={[

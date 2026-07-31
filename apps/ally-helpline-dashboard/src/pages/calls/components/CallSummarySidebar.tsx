@@ -277,7 +277,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
               ? t("transcription.youLabel")
               : t("transcription.counsellorLabel")
           }
-          className="max-h-[calc(100vh-100px)] overflow-y-auto w-full"
+          className="max-h-[calc(100dvh-100px)] overflow-y-auto w-full"
           mode={callSummary.details?.callInfo?.mode || (transcriptData as any)?.mode}
         />
         {transcriptList.length > 0 && renderComments()}
@@ -439,7 +439,7 @@ const CallSummarySidebar: FC<CallSummarySidebarProps> = ({
                   counsellorId={callSummary.counselorId}
                 />
               }
-              className="max-h-[calc(100vh-320px)]"
+              className="max-h-[calc(100dvh-320px)]"
               chatId={callSummary.id}
               callSummary={individualCallSummary}
               onRefetchSummary={refetchCallSummary}

@@ -141,12 +141,12 @@ export const AudioCall: FunctionComponent = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-50">
+    <div className="h-dvh flex items-center justify-center bg-gray-50">
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {getFallbackUI()}
       {shouldShowCallInterface && (
-        <div className="w-screen h-screen flex justify-center items-center">
-          <div className="w-screen h-screen bg-[#171A1A] flex flex-col gap-10 justify-center items-center overflow-hidden">
+        <div className="w-screen h-dvh flex justify-center items-center">
+          <div className="w-screen h-dvh bg-[#171A1A] flex flex-col gap-10 justify-center items-center overflow-hidden">
             <CallInterface
               activeChat={activeChat}
               isUserJoined={isUserJoined}

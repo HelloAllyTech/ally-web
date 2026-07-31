@@ -109,7 +109,7 @@ export const Analytics: FunctionComponent = () => {
 
   return (
     <div
-      className={"flex flex-col justify-center m-6 overflow-hidden h-[calc(100vh-100px)]"}
+      className={"flex flex-col justify-center m-6 overflow-hidden h-[calc(100dvh-100px)]"}
       data-testid="analytics-page"
     >
       <div data-testid="analytics-header">

@@ -17,7 +17,7 @@ export const LegalPage: FC<LegalPageProps> = ({ title, html, isLoading }) => {
   const sanitized = sanitizeHtml(html ?? "");
 
   return (
-    <div className="min-h-screen bg-white font-primary">
+    <div className="min-h-dvh bg-white font-primary">
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="flex items-center mb-8">
           <Ally />

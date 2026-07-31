@@ -217,7 +217,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
 
   if (isLoading && offset === 0) {
     return (
-      <div className="flex justify-center items-center h-[calc(100vh-80px)]">
+      <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
         <Loading withOverlay={false} />
       </div>
     );
@@ -482,7 +482,7 @@ const UserLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className 
   return (
     <>
       <div
-        className="rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"
+        className="rounded-xl w-full max-h-[calc(100dvh-10px)] overflow-y-hidden"
         data-testid="user-logs-table-container"
       >
         <GenericTable

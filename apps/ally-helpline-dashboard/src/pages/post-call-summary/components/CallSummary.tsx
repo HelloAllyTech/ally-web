@@ -463,7 +463,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   if (canShowSummary && isSummaryLoading) {
     return (
-      <div className="flex justify-center items-center h-[calc(100vh-80px)]">
+      <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
         <Loading withOverlay={false} />
       </div>
     );

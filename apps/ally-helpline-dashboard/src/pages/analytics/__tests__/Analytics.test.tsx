@@ -142,7 +142,7 @@ describe("Analytics Component", () => {
       const mainContainer = container.querySelector("div.flex.flex-col.justify-center.m-6");
       expect(mainContainer).toBeInTheDocument();
       expect(mainContainer?.className).toContain("overflow-hidden");
-      expect(mainContainer?.className).toContain("h-[calc(100vh-100px)]");
+      expect(mainContainer?.className).toContain("h-[calc(100dvh-100px)]");
     });
 
     it("should render title with correct styling", () => {

@@ -80,7 +80,7 @@ export const TrackOverview: FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-dvh items-center justify-center bg-white">
         <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500" />
       </div>
     );
@@ -88,7 +88,7 @@ export const TrackOverview: FC = () => {
 
   if (!track) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 text-center">
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-white px-6 text-center">
         <div className="mb-4 text-lg text-typography-700">{t("tracks2.notFound")}</div>
         <button
           onClick={() => navigate(`${ROUTES.LEARN}?tab=courses`)}
@@ -103,7 +103,7 @@ export const TrackOverview: FC = () => {
   const sortedSections = [...track.sections].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-3xl bg-white px-4 pb-16 font-primary sm:px-6">
+    <div className="mx-auto min-h-dvh w-full max-w-3xl bg-white px-4 pb-16 font-primary sm:px-6">
       <TrackProgressHeader
         track={track}
         isStarting={isStarting}

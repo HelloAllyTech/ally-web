@@ -340,7 +340,7 @@ describe("NavbarWrapper", () => {
     );
 
     const mainContent = container.querySelector(
-      ".flex-1.min-h-screen.overflow-auto.bg-white.custom-scrollbar",
+      ".flex-1.min-h-dvh.overflow-auto.bg-white.custom-scrollbar",
     );
     expect(mainContent).toBeInTheDocument();
   });
@@ -357,7 +357,7 @@ describe("NavbarWrapper", () => {
       </NavbarWrapper>,
     );
 
-    const innerDiv = container.querySelector(".h-\\[calc\\(100vh-56px\\)\\]");
+    const innerDiv = container.querySelector(".h-\\[calc\\(100dvh-56px\\)\\]");
     expect(innerDiv).toBeInTheDocument();
   });
 });

@@ -379,7 +379,7 @@ export const Login: FunctionComponent = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex flex-col font-primary md:flex-row h-screen overflow-y-auto lg:p-8">
+    <div className="flex flex-col font-primary md:flex-row h-dvh overflow-y-auto lg:p-8">
       <div className="hidden sm:block sm:max-w-full lg:max-w-[50%] flex-1 h-full relative">
         <img
           src={LoginImage}

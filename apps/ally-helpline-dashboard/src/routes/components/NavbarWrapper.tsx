@@ -52,7 +52,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-y-hidden">
+    <div className="flex h-dvh w-full overflow-y-hidden">
       {showNavbar && (
         <NavSideBar
           activeTab={activeTab}
@@ -61,7 +61,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
           onClose={toggleSidebar}
         />
       )}
-      <div className={"flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"}>
+      <div className={"flex-1 min-h-dvh overflow-auto bg-white custom-scrollbar"}>
         {showNavbar && (
           <div className="sticky top-0 z-30 flex items-center justify-end border-b border-border-light bg-white p-2 md:hidden">
             <button
@@ -73,7 +73,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
             </button>
           </div>
         )}
-        <div className={showNavbar ? "h-[calc(100vh-56px)] md:h-screen" : ""}>
+        <div className={showNavbar ? "h-[calc(100dvh-56px)] md:h-dvh" : ""}>
           {children}
           <UploadProgressDialog />
           {shouldShowBadgeModal && BadgeModal}

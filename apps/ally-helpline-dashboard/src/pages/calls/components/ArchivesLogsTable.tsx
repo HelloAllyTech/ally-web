@@ -147,7 +147,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   // Show loading state
   if (isLoading && offset === 0) {
     return (
-      <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+      <div className="flex justify-center items-center h-[calc(100dvh-200px)]">
         <Loading withOverlay={false} />
       </div>
     );
@@ -158,7 +158,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
 
   if (isError && !isLoading) {
     return (
-      <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+      <div className="flex justify-center items-center h-[calc(100dvh-200px)]">
         <FallbackUI
           icon={<NoResults />}
           mainMessage={t("calls.archives.errorTitle")}
@@ -323,7 +323,7 @@ const ArchivesLogsTable: FC<ArchivesLogsTableProps> = ({
   return (
     <>
       <div
-        className="rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"
+        className="rounded-xl w-full max-h-[calc(100dvh-10px)] overflow-y-hidden"
         data-testid="archives-logs-table-container"
       >
         <GenericTable

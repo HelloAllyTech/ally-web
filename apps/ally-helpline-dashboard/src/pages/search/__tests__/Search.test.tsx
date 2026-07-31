@@ -56,7 +56,7 @@ describe("Search Component", () => {
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("h-full");
       expect(mainContainer?.className).toContain("overflow-y-hidden");
-      expect(mainContainer?.className).toContain("h-[calc(100vh-30px)]");
+      expect(mainContainer?.className).toContain("h-[calc(100dvh-30px)]");
       expect(mainContainer?.className).toContain("flex");
       expect(mainContainer?.className).toContain("justify-center");
       expect(mainContainer?.className).toContain("items-center");
@@ -91,7 +91,7 @@ describe("Search Component", () => {
       const { container } = render(<Search />);
       const mainContainer = container.querySelector("div");
       expect(mainContainer?.className).toContain("h-full");
-      expect(mainContainer?.className).toContain("h-[calc(100vh-30px)]");
+      expect(mainContainer?.className).toContain("h-[calc(100dvh-30px)]");
     });
 
     it("should center content both horizontally and vertically", () => {
@@ -151,7 +151,7 @@ describe("Search Component", () => {
     it("should apply calculated height for viewport", () => {
       const { container } = render(<Search />);
       const mainContainer = container.querySelector("div");
-      expect(mainContainer?.className).toContain("h-[calc(100vh-30px)]");
+      expect(mainContainer?.className).toContain("h-[calc(100dvh-30px)]");
     });
 
     it("should apply flexbox centering", () => {
@@ -419,7 +419,7 @@ describe("Search Component", () => {
       const { container } = render(<Search />);
       const mainContainer = container.querySelector("div");
 
-      expect(mainContainer?.className).toContain("h-[calc(100vh-30px)]");
+      expect(mainContainer?.className).toContain("h-[calc(100dvh-30px)]");
     });
   });
 });

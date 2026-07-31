@@ -40,7 +40,7 @@ export const CompleteProfile: FC = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen gap-2">
+    <div className="flex flex-col justify-center items-center h-dvh gap-2">
       <div className="border rounded-lg px-16 py-10 flex flex-col items-center gap-4 w-[420px] max-w-[90vw]">
         <div className="text-2xl font-secondary">{t("completeProfile.title")}</div>
         <div className="text-center font-primary text-typography-700 text-sm">

@@ -272,7 +272,7 @@ describe("PostCallSummary Component", () => {
         </TestWrapper>,
       );
 
-      const mainContainer = container.querySelector("div.h-\\[100vh\\]");
+      const mainContainer = container.querySelector("div.h-\\[100dvh\\]");
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("w-[50%]");
       expect(mainContainer?.className).toContain("pt-6");
@@ -451,7 +451,7 @@ describe("PostCallSummary Component", () => {
       );
 
       const callSummary = screen.getByTestId("call-summary");
-      expect(callSummary).toHaveClass("max-h-[calc(100vh-350px)]");
+      expect(callSummary).toHaveClass("max-h-[calc(100dvh-350px)]");
       expect(screen.getByTestId("chat-id")).toHaveTextContent("123");
     });
 

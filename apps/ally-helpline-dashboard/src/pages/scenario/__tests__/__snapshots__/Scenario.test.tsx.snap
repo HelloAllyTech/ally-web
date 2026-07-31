@@ -9,7 +9,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
       data-testid="animate-presence"
     >
       <div
-        class="h-screen w-full flex flex-col bg-white"
+        class="h-dvh w-full flex flex-col bg-white"
         data-testid="scenario-page"
       >
         <div
@@ -166,7 +166,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
       data-testid="animate-presence"
     >
       <div
-        class="h-screen w-full flex flex-col bg-white"
+        class="h-dvh w-full flex flex-col bg-white"
         data-testid="scenario-page"
       >
         <div

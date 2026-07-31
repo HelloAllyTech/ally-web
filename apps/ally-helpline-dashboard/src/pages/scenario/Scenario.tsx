@@ -219,7 +219,7 @@ export const Scenario: FC = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <div className="h-screen w-full flex flex-col bg-white" data-testid="scenario-page">
+      <div className="h-dvh w-full flex flex-col bg-white" data-testid="scenario-page">
         {scenario && isScenarioSuccess ? (
           <>
             {isAuthenticated() && (

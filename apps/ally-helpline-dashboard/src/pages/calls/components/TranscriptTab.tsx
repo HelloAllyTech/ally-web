@@ -32,7 +32,7 @@ const TranscriptTab: FC<TranscriptTabProps> = ({
       {transcriptList?.length > 0 ? (
         <div
           ref={scrollContainerRef}
-          className="space-y-4 flex-1 mb-[12px] h-[calc(100vh-250px)] overflow-y-auto"
+          className="space-y-4 flex-1 mb-[12px] h-[calc(100dvh-250px)] overflow-y-auto"
         >
           <InfiniteScroll
             onInfiniteScroll={handleLoadMore}

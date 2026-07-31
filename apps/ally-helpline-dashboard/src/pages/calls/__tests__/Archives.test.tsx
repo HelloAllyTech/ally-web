@@ -348,7 +348,7 @@ describe("Archives Component", () => {
       );
 
       const table = screen.getByTestId("archives-logs-table");
-      expect(table).toHaveAttribute("data-class-name", "max-h-[calc(100vh-140px)]");
+      expect(table).toHaveAttribute("data-class-name", "max-h-[calc(100dvh-140px)]");
     });
 
     it("should pass refreshKey to ArchivesLogsTable", () => {
