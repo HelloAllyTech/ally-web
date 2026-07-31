@@ -359,7 +359,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOGS}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <RoleplaySessionLogs />
             </PrivateLayout>
           }
@@ -367,7 +367,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(":id")}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <RoleplaySessionLogDetail />
             </PrivateLayout>
           }
