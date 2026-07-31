@@ -335,6 +335,15 @@ export const ApiEndpoints = {
     ASK: "/v1/analytics/agent/ask",
     CATALOG: "/v1/analytics/agent/catalog",
   },
+  // Analytics Suggestions — its own namespace for the same reason as the agent's:
+  // the elevated super-duper-admin tier, because accepting a suggestion writes
+  // onto the product roadmap rather than only reading a chart.
+  ANALYTICS_SUGGESTIONS: {
+    LIST: "/v1/analytics/suggestions",
+    GENERATE: "/v1/analytics/suggestions/generate",
+    ACCEPT: (id: string) => `/v1/analytics/suggestions/${id}/accept`,
+    REJECT: (id: string) => `/v1/analytics/suggestions/${id}/reject`,
+  },
   ROLEPLAY_SESSION_LOGS: {
     LIST: "/v1/roleplay-session-logs",
     BY_ID: (id: string) => `/v1/roleplay-session-logs/${id}`,
@@ -534,6 +543,8 @@ export const TAG_TYPES = {
   PRODUCT_ROADMAP_RELEASE_NOTES: "productRoadmapReleaseNotes",
   PRODUCT_ROADMAP_SAVED_VIEWS: "productRoadmapSavedViews",
   PRODUCT_ROADMAP_VIEW_ORDER: "productRoadmapViewOrder",
+  // Analytics Suggestions review queue. Also registered in baseApi.ts's `tagTypes`.
+  ANALYTICS_SUGGESTIONS: "analyticsSuggestions",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",
