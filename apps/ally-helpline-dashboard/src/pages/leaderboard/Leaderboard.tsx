@@ -112,14 +112,17 @@ export const Leaderboard = () => {
   };
 
   return (
-    <div className={"p-4 sm:p-6 overflow-hidden w-full h-full"} data-testid="leaderboard-page">
+    <div
+      className={"p-4 sm:p-6 overflow-y-auto sm:overflow-hidden w-full h-full"}
+      data-testid="leaderboard-page"
+    >
       <div
         className="text-typography-900 font-secondary text-xl sm:text-2xl font-[500] flex items-center"
         data-testid="leaderboard-title"
       >
         {t("community.title")}
       </div>
-      <div className="flex flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pb-4 h-full items-stretch sm:items-start">
         <LeaderboardList
           currentUser={currentUser}
           onTimeFilterChange={handleWindowChange}

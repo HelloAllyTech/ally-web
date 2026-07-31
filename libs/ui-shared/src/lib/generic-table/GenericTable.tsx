@@ -66,6 +66,17 @@ export const GenericTable = forwardRef(
     // Memoize filterable columns for performance
     const filterableColumns = useMemo(() => columns.filter(c => c.filterable), [columns]);
 
+    // Column widths are caller-supplied percentages with no floor, so on
+    // narrow viewports columns are squeezed illegibly instead of the table
+    // scrolling. Give the table a real px min-width (one column's worth of
+    // breathing room each) so percentages have something concrete to divide
+    // up, and horizontal scroll — not squeeze — is what kicks in below that.
+    const MIN_COLUMN_WIDTH_PX = 140;
+    const tableMinWidthPx = useMemo(
+      () => columns.filter(c => !c.hidden).length * MIN_COLUMN_WIDTH_PX,
+      [columns],
+    );
+
     /**
      * Opens the filter popover for column selection.
      * @param {React.MouseEvent<HTMLElement>} event
@@ -258,8 +269,8 @@ export const GenericTable = forwardRef(
     return (
       <div
         ref={scrollRef}
-        className={`overflow-x-auto min-w-full ${className}`}
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none", ...style }}
+        className={`overflow-x-auto min-w-full custom-scrollbar ${className}`}
+        style={style}
       >
         {/* Display selected sort and filter options */}
         {showSelectedFilters && (
@@ -274,7 +285,7 @@ export const GenericTable = forwardRef(
           />
         )}
         {renderPopovers()}
-        <table className="w-full min-w-full">
+        <table className="w-full" style={{ minWidth: `${tableMinWidthPx}px` }}>
           <TableHeader
             columns={columns}
             filter={filter}
