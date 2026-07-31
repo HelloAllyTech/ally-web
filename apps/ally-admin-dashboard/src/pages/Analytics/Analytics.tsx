@@ -17,7 +17,7 @@ import {
   Theme,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
-import { isSuperDuperAdminRole, UserRole } from "@constants";
+import { en, isSuperDuperAdminRole, UserRole } from "@constants";
 import { RootState } from "@store";
 import { AnalyticsRange } from "@types";
 
@@ -27,6 +27,7 @@ import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
 import { ScribeTab } from "./tabs/ScribeTab";
+import { SuggestionsTab } from "./tabs/suggestions/SuggestionsTab";
 import { TestingTab } from "./tabs/TestingTab";
 import { TokenConsumption } from "./TokenConsumption";
 import { ConversationDrift } from "../ConversationDrift/ConversationDrift";
@@ -128,8 +129,8 @@ const TABS: TabDef[] = [
     render: f => <TestingTab {...f} />,
   },
   {
-    // Ask-anything, in English. Last in the list and gated on the elevated
-    // super-duper-admin tier, unlike every tab above it.
+    // Ask-anything, in English. Gated on the elevated super-duper-admin tier,
+    // unlike every tab above it.
     //
     // The narrower gate is the point: the other tabs answer fixed, reviewed
     // questions, while this one writes its own query across every readable
@@ -144,6 +145,24 @@ const TABS: TabDef[] = [
     label: "Analytics Agent",
     uses: { language: false, range: false },
     render: () => <AnalyticsAgentTab />,
+    visibleTo: isSuperDuperAdminRole,
+  },
+  {
+    // "What should we build next?", answered from the platform's own numbers and
+    // reviewed card by card. Last in the list, and on the elevated tier for a
+    // reason the tabs above it do not share: accepting a suggestion WRITES — it
+    // files an opportunity onto the product roadmap. Reading a chart and adding to
+    // the backlog are different privileges, and only SUPER_DUPER_ADMIN holds
+    // edit:admin:product-roadmap, so a plain SUPER_ADMIN seeing this tab would be
+    // offered a decision they cannot make.
+    //
+    // No page-level pickers: the period belongs to a Generate run that already
+    // happened and is stamped on every card, so a picker at the top of the page
+    // would imply it re-scopes a queue it cannot touch.
+    id: "suggestions",
+    label: en.analyticsSuggestions.tabLabel,
+    uses: { language: false, range: false },
+    render: () => <SuggestionsTab />,
     visibleTo: isSuperDuperAdminRole,
   },
 ];

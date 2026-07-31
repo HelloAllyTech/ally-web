@@ -1603,6 +1603,101 @@ export const en = {
       "How many learners practised at all in the last 30 days, by organisation?",
     ],
   },
+  analyticsSuggestions: {
+    tabLabel: "Suggestions",
+    heading: "Product suggestions from the platform's own data",
+    // The empty state teaches: nothing on this screen explains itself until a
+    // reader has seen one run, and the two facts they need first are what it
+    // reads and that they stay in control of what gets filed.
+    emptyTitle: "Nothing generated yet",
+    emptySubtitle:
+      "Generate reads a period's analytics — adoption, practice, quality, tracks, Scribe and cost — and drafts product suggestions from it. Each one arrives as a card you accept onto the roadmap or reject. Nothing is filed without you.",
+    emptyFilteredTitle: "Nothing here",
+    emptyFilteredSubtitle: "No suggestions have this status yet. Try another filter.",
+    generate: "Generate",
+    // ── Generate dialog ──────────────────────────────────────────────────────
+    generateTitle: "Generate suggestions",
+    generateIntro:
+      "Pick the period to read. Everything the model sees comes from this window, except a few platform-history figures which are labelled as such.",
+    periodLabel: "Period",
+    period30d: "Last 30 days",
+    period90d: "Last 90 days",
+    period12m: "Last 12 months",
+    periodAll: "All time",
+    periodCustom: "Custom range",
+    customFrom: "From",
+    customTo: "To",
+    customIncomplete: "Pick both a start and an end date.",
+    customOrder: "The end date must be on or after the start date.",
+    customTooLong: "A custom range is limited to {max} days. This one is {days}.",
+    generateSubmit: "Generate suggestions",
+    cancel: "Cancel",
+    // A bounded progress narrative, not a spinner: this reads fifteen analytics
+    // sections and then drafts, so a reader who cannot tell "working" from
+    // "stuck" will reload and start a second run.
+    pendingReading: "Reading the platform's analytics for this period…",
+    pendingSlow: "Still working — a full read and draft can take up to two minutes.",
+    generateFailed:
+      "The run did not finish and nothing was saved. Check the period and try again.",
+    generated: "{count} suggestion(s) added.",
+    // Zero is a real answer here, so it gets its own copy rather than reading as
+    // a failure.
+    nothingProposed:
+      "The run finished and proposed nothing — the data for this period did not support a suggestion worth filing. Try a wider window.",
+    sectionsUnavailable:
+      "{count} analytics section(s) could not be read for this period, so the suggestions do not account for them:",
+    // ── Cards ────────────────────────────────────────────────────────────────
+    statusFilterLabel: "Show",
+    statusPending: "Awaiting a decision",
+    statusAccepted: "Accepted",
+    statusRejected: "Rejected",
+    statusAll: "Everything",
+    batchHeading: "{window} · generated {date}",
+    // Provenance on every card: a suggestion without the window and model it came
+    // from is a claim nobody can check.
+    provenance: "{window} · {model}",
+    noGoalMatched: "No goal matched",
+    rationaleLabel: "Why now",
+    evidenceLabel: "From the data",
+    accept: "Accept",
+    reject: "Reject",
+    viewOnRoadmap: "View on roadmap",
+    // An accepted suggestion whose opportunity was later deleted.
+    opportunityGone: "The roadmap item for this was deleted.",
+    rejectedBecause: "Rejected: {reason}",
+    rejectedNoReason: "Rejected, with no reason recorded.",
+    loadFailed: "Couldn't load the suggestions.",
+    retry: "Try again",
+    // ── Accept dialog ────────────────────────────────────────────────────────
+    acceptTitle: "File this on the roadmap",
+    acceptIntro:
+      "This is a draft. Edit it into the opportunity you actually want on the board — what you file is what the team reads.",
+    descriptionLabel: "Opportunity",
+    descriptionPlaceholder: "The problem, who hits it, and why it matters",
+    typeLabel: "Type",
+    typeIdea: "Idea",
+    typeBug: "Bug",
+    goalLabel: "Product goal",
+    goalPlaceholder: "Pick a goal",
+    goalMissing: "Pick a product goal.",
+    descriptionMissing: "Write the opportunity before filing it.",
+    duplicatesTitle: "Similar items already on the roadmap",
+    acceptSubmit: "File it",
+    accepted: "Filed on the roadmap.",
+    acceptFailed: "Could not file this suggestion.",
+    // ── Reject dialog ────────────────────────────────────────────────────────
+    rejectTitle: "Reject this suggestion",
+    reasonLabel: "Why not? (optional)",
+    reasonPlaceholder: "e.g. Already covered by the tracks work",
+    reasonHelper:
+      "A reason is fed into later runs as a standing decision, so this idea is not proposed again. Without one, only this exact suggestion is suppressed.",
+    // Distinct from the card's "Reject" trigger: two controls with the same name
+    // on one screen are one ambiguous target for a screen reader, and the dialog's
+    // job is to say what confirming does.
+    rejectSubmit: "Reject suggestion",
+    rejected: "Rejected.",
+    rejectFailed: "Could not reject this suggestion.",
+  },
   evaluate: {
     title: "Ally Evaluation",
     loginHeading: "Evaluator Sign In",

@@ -152,6 +152,7 @@ export const baseAPI = createApi({
     TAG_TYPES.AI_LAB_ASSIGNMENTS,
     TAG_TYPES.AI_LAB_AUTO_EVALS,
     TAG_TYPES.AI_LAB_QUESTION_SETS,
+    TAG_TYPES.ANALYTICS_SUGGESTIONS,
   ],
   endpoints: () => ({}),
 });
