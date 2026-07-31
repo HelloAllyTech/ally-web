@@ -312,7 +312,18 @@
       "simulationsCompleted": "पूरे किए गए सिमुलेशन",
       "simulationsCompletedCaption": "पूरे संगठन में कुल",
       "activeUsers": "सक्रिय उपयोगकर्ता",
-      "activeUsersCaption": "कम से कम एक सिमुलेशन पूरा किया"
+      "activeUsersCaption": "कम से कम एक सिमुलेशन पूरा किया",
+      "newLearnersOnboarded": "नए जुड़े लर्नर्स",
+      "newLearnersOnboardedCaption": "इस अवधि में बनाए गए नए लर्नर अकाउंट्स",
+      "totalRegisteredLearners": "कुल पंजीकृत लर्नर्स",
+      "totalRegisteredLearnersCaption": "वर्तमान संख्या, हमेशा से (चुनी गई अवधि से जुड़ी नहीं)",
+      "avgSessionsPerActiveLearner": "प्रति सक्रिय लर्नर औसत सेशन",
+      "avgSessionsPerActiveLearnerCaption": "इस अवधि में पूरे किए गए सेशन ÷ सक्रिय लर्नर्स",
+      "avgPracticeMinutesPerLearner": "प्रति लर्नर औसत प्रैक्टिस मिनट",
+      "avgPracticeMinutesPerLearnerCaption": "इस अवधि में प्रैक्टिस समय ÷ सक्रिय लर्नर्स",
+      "avgDaysToFirstSession": "पहले सेशन तक औसत दिन",
+      "avgDaysToFirstSessionCaption_one": "साइनअप से पहले पूरे हुए सेशन तक, इस अवधि में जुड़े {{count}} लर्नर पर आधारित",
+      "avgDaysToFirstSessionCaption_other": "साइनअप से पहले पूरे हुए सेशन तक, इस अवधि में जुड़े {{count}} लर्नर्स पर आधारित"
     },
     "charts": {
       "simulationsTrend": "समय के साथ पूरे किए गए सिमुलेशन",
@@ -324,15 +335,25 @@
         "week": "सप्ताह",
         "month": "महीना",
         "simulations": "सिमुलेशन",
-        "users": "उपयोगकर्ता"
-      }
+        "users": "उपयोगकर्ता",
+        "newLearners": "नए लर्नर्स"
+      },
+      "newLearnersTrend": "समय के साथ नए जुड़े लर्नर्स",
+      "newLearnersSeries": "नए जुड़े लर्नर्स"
     },
     "states": {
       "errorTitle": "यह चार्ट लोड नहीं हो सका",
       "errorSubtitle": "डेटा लाने में समस्या हुई।",
       "noAccess": "ऑर्गनाइज़ेशन मेट्रिक्स केवल संगठन एडमिन के लिए उपलब्ध हैं।",
       "retry": "पुनः प्रयास करें",
-      "empty": "इस अवधि के लिए कोई डेटा नहीं"
+      "empty": "इस अवधि के लिए कोई डेटा नहीं",
+      "notEnoughData": "अभी पर्याप्त डेटा नहीं है"
+    },
+    "mostUsedSimulations": {
+      "title": "सबसे ज़्यादा प्रैक्टिस किए गए सिमुलेशन",
+      "caption": "चुनी गई अवधि में पूरे किए गए सेशन के आधार पर टॉप सिनेरियो",
+      "sessions_one": "{{count}} सेशन",
+      "sessions_other": "{{count}} सेशन"
     }
   },
   "analytics": {

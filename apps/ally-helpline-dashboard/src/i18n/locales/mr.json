@@ -312,7 +312,18 @@
       "simulationsCompleted": "पूर्ण झालेली सिम्युलेशन्स",
       "simulationsCompletedCaption": "संपूर्ण संस्थेतील एकूण",
       "activeUsers": "सक्रिय वापरकर्ते",
-      "activeUsersCaption": "किमान एक सिम्युलेशन पूर्ण केले"
+      "activeUsersCaption": "किमान एक सिम्युलेशन पूर्ण केले",
+      "newLearnersOnboarded": "नवीन सामील झालेले लर्नर्स",
+      "newLearnersOnboardedCaption": "या कालावधीत तयार झालेली नवीन लर्नर खाती",
+      "totalRegisteredLearners": "एकूण नोंदणीकृत लर्नर्स",
+      "totalRegisteredLearnersCaption": "सध्याची संख्या, सर्वकाळ (निवडलेल्या कालावधीशी संबंधित नाही)",
+      "avgSessionsPerActiveLearner": "प्रति सक्रिय लर्नर सरासरी सेशन्स",
+      "avgSessionsPerActiveLearnerCaption": "या कालावधीत पूर्ण झालेली सेशन्स ÷ सक्रिय लर्नर्स",
+      "avgPracticeMinutesPerLearner": "प्रति लर्नर सरासरी सराव मिनिटे",
+      "avgPracticeMinutesPerLearnerCaption": "या कालावधीतील सराव वेळ ÷ सक्रिय लर्नर्स",
+      "avgDaysToFirstSession": "पहिल्या सेशनपर्यंत सरासरी दिवस",
+      "avgDaysToFirstSessionCaption_one": "साइनअप ते पहिले पूर्ण झालेले सेशन, या कालावधीत सामील झालेल्या {{count}} लर्नरवर आधारित",
+      "avgDaysToFirstSessionCaption_other": "साइनअप ते पहिले पूर्ण झालेले सेशन, या कालावधीत सामील झालेल्या {{count}} लर्नर्सवर आधारित"
     },
     "charts": {
       "simulationsTrend": "कालानुसार पूर्ण झालेली सिम्युलेशन्स",
@@ -324,15 +335,25 @@
         "week": "आठवडा",
         "month": "महिना",
         "simulations": "सिम्युलेशन्स",
-        "users": "वापरकर्ते"
-      }
+        "users": "वापरकर्ते",
+        "newLearners": "नवीन लर्नर्स"
+      },
+      "newLearnersTrend": "कालानुसार नवीन सामील झालेले लर्नर्स",
+      "newLearnersSeries": "नवीन सामील झालेले लर्नर्स"
     },
     "states": {
       "errorTitle": "हा चार्ट लोड होऊ शकला नाही",
       "errorSubtitle": "डेटा आणताना अडचण आली.",
       "noAccess": "ऑर्गनायझेशन मेट्रिक्स फक्त संस्था अ‍ॅडमिनसाठी उपलब्ध आहेत.",
       "retry": "पुन्हा प्रयत्न करा",
-      "empty": "या कालावधीसाठी डेटा नाही"
+      "empty": "या कालावधीसाठी डेटा नाही",
+      "notEnoughData": "अद्याप पुरेसा डेटा नाही"
+    },
+    "mostUsedSimulations": {
+      "title": "सर्वाधिक सराव केलेली सिम्युलेशन्स",
+      "caption": "निवडलेल्या कालावधीत पूर्ण झालेल्या सेशन्सनुसार टॉप सिनारिओ",
+      "sessions_one": "{{count}} सेशन",
+      "sessions_other": "{{count}} सेशन्स"
     }
   },
   "analytics": {
