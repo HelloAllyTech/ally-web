@@ -68,7 +68,40 @@ export type FormData = {
   knowledgeSources?: knowledgeSource[];
   /** Per-language main-agent prompt variant choice (GENERIC vs MULTILINGUAL). */
   mainPromptVariantByLanguage?: Record<string, "GENERIC" | "MULTILINGUAL">;
+  /**
+   * Per-language STT choices for this simulation, keyed by language ID and
+   * pointing at stt_configs rows — the same shape as `languageVoices`. A
+   * language absent from the map (or mapped to "") inherits its own default.
+   */
+  sttConfigByLanguage?: Record<string, string>;
 };
+
+/** A row from the STT registry (the Speech Recognition admin tab). */
+export interface SttConfig {
+  id: string;
+  name: string;
+  provider: string;
+  config: Record<string, any>;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type SttConfigPayload = Omit<SttConfig, "id" | "createdAt" | "updatedAt">;
+
+/** A row from the LLM registry (the Language Model admin tab). */
+export interface LlmConfig {
+  id: string;
+  name: string;
+  provider: string;
+  /** Shape is governed by the registry's field schema, not this type. */
+  config: Record<string, any>;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type LlmConfigPayload = Omit<LlmConfig, "id" | "createdAt" | "updatedAt">;
 
 export interface DemographicsSectionProps {
   formMethods: UseFormReturn<FormData>;
@@ -298,7 +331,16 @@ interface BaseLanguage {
   translationCode?: string;
   active?: boolean;
   llmProviderConfig?: ScenarioLanguageConfig;
+  /**
+   * @deprecated Superseded by `sttConfigId` (the Speech Recognition registry).
+   * Still returned by the API as a fallback for rows the registry migration
+   * could not map.
+   */
   sttProviderConfig?: ScenarioLanguageConfig;
+  /** This language's default STT, referencing an stt_configs row. */
+  sttConfigId?: string | null;
+  /** This language's default LLM, referencing an llm_configs row. */
+  llmConfigId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

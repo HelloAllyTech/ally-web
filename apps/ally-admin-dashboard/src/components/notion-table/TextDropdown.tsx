@@ -11,6 +11,13 @@ interface DropdownOption {
   label: string;
   value: string;
   backgroundColor?: string;
+  /**
+   * Optional heading this option sits under. Options carrying the same
+   * consecutive `groupLabel` are rendered beneath one sticky header — callers
+   * are responsible for ordering `options` so a group's members are adjacent.
+   * Headers are display-only and never enter keyboard navigation.
+   */
+  groupLabel?: string;
 }
 
 interface TextDropdownProps {
@@ -50,10 +57,18 @@ export const TextDropdown = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Use options directly when onSearch is provided (global search), otherwise filter locally
+  // Use options directly when onSearch is provided (global search), otherwise filter locally.
+  // The group label is searchable too, so typing a provider still finds its
+  // voices once the provider moved out of each option's own label.
   const filteredOptions = onSearch
     ? options
-    : options?.filter(option => option?.label?.toLowerCase().includes(searchTerm.toLowerCase()));
+    : options?.filter(option => {
+        const term = searchTerm.toLowerCase();
+        return (
+          option?.label?.toLowerCase().includes(term) ||
+          option?.groupLabel?.toLowerCase().includes(term)
+        );
+      });
 
   // Handle opening/closing dropdown
   const toggleDropdown = () => {
@@ -219,38 +234,53 @@ export const TextDropdown = ({
                 No options found
               </div>
             ) : (
-              filteredOptions.map((option, index) =>
-                optionRenderer ? (
-                  <div
-                    key={option?.value}
-                    ref={el => (optionRefs.current[index] = el)}
-                    className={clsx({
-                      "bg-primary-50 text-primary-700": index === highlightedIndex,
-                    })}
-                  >
-                    {optionRenderer(option, (v: string) => selectOption({ ...option, value: v }))}
-                  </div>
-                ) : (
-                  <div
-                    key={option?.value}
-                    ref={el => (optionRefs.current[index] = el)}
-                    onClick={() => selectOption(option)}
-                    className={clsx("px-3 py-2 cursor-pointer text-sm flex items-center", {
-                      "bg-primary-50 text-primary-700": index === highlightedIndex,
-                      "bg-white text-typography-900 hover:bg-background-secondary":
-                        index !== highlightedIndex,
-                    })}
-                  >
-                    {option.backgroundColor && (
-                      <div
-                        className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
-                        style={{ backgroundColor: option.backgroundColor }}
-                      />
+              filteredOptions.map((option, index) => {
+                // A header is emitted whenever the group changes, so the flat
+                // index stays aligned with optionRefs and highlightedIndex.
+                const previousGroup =
+                  index > 0 ? filteredOptions[index - 1]?.groupLabel : undefined;
+                const showGroupHeader = !!option.groupLabel && option.groupLabel !== previousGroup;
+
+                return (
+                  <React.Fragment key={option?.value}>
+                    {showGroupHeader && (
+                      <div className="sticky top-0 z-10 bg-background-secondary px-3 py-1 text-xs font-medium uppercase tracking-wide text-typography-600">
+                        {option.groupLabel}
+                      </div>
                     )}
-                    <span className="whitespace-nowrap">{option?.label}</span>
-                  </div>
-                ),
-              )
+                    {optionRenderer ? (
+                      <div
+                        ref={el => (optionRefs.current[index] = el)}
+                        className={clsx({
+                          "bg-primary-50 text-primary-700": index === highlightedIndex,
+                        })}
+                      >
+                        {optionRenderer(option, (v: string) =>
+                          selectOption({ ...option, value: v }),
+                        )}
+                      </div>
+                    ) : (
+                      <div
+                        ref={el => (optionRefs.current[index] = el)}
+                        onClick={() => selectOption(option)}
+                        className={clsx("px-3 py-2 cursor-pointer text-sm flex items-center", {
+                          "bg-primary-50 text-primary-700": index === highlightedIndex,
+                          "bg-white text-typography-900 hover:bg-background-secondary":
+                            index !== highlightedIndex,
+                        })}
+                      >
+                        {option.backgroundColor && (
+                          <div
+                            className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
+                            style={{ backgroundColor: option.backgroundColor }}
+                          />
+                        )}
+                        <span className="whitespace-nowrap">{option?.label}</span>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })
             )}
             {/* Load More Button */}
             {onLoadMore && (

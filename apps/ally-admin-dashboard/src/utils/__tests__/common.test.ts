@@ -317,8 +317,8 @@ describe("common utils", () => {
       const result = getSimulationVoiceOptions(voices);
 
       expect(result).toEqual([
-        { value: "voice1", label: "Male voice" },
-        { value: "voice2", label: "Female voice" },
+        { value: "voice2", label: "Female voice", groupLabel: "Unspecified gender" },
+        { value: "voice1", label: "Male voice", groupLabel: "Unspecified gender" },
       ]);
     });
 
@@ -328,8 +328,8 @@ describe("common utils", () => {
       const result = getSimulationVoiceOptions(voices);
 
       expect(result).toEqual([
-        { value: "voice1", label: "Voice1" },
-        { value: "voice2", label: "Voice2" },
+        { value: "voice1", label: "Voice1", groupLabel: "Unspecified gender" },
+        { value: "voice2", label: "Voice2", groupLabel: "Unspecified gender" },
       ]);
     });
 
@@ -339,8 +339,8 @@ describe("common utils", () => {
       const result = getSimulationVoiceOptions(voices);
 
       expect(result).toEqual([
-        { value: "male_voice", label: "Male voice" },
-        { value: "female_voice", label: "Female voice" },
+        { value: "female_voice", label: "Female voice", groupLabel: "Unspecified gender" },
+        { value: "male_voice", label: "Male voice", groupLabel: "Unspecified gender" },
       ]);
     });
 
@@ -355,9 +355,31 @@ describe("common utils", () => {
       const result = getSimulationVoiceOptions(voices);
 
       expect(result).toEqual([
-        { value: "voice1", label: "Male voice" },
-        { value: "voice2", label: "Female voice" },
+        { value: "voice2", label: "Female voice", groupLabel: "Unspecified gender" },
+        { value: "voice1", label: "Male voice", groupLabel: "Unspecified gender" },
       ]);
+    });
+
+    it("groups by provider then gender", () => {
+      const voices = [
+        { id: "s-male", name: "abhilash", provider: "SARVAM", gender: "male" },
+        { id: "g-female", name: "achernar", provider: "GOOGLE", gender: "female" },
+        { id: "s-female", name: "anushka", provider: "SARVAM", gender: "female" },
+      ];
+
+      expect(getSimulationVoiceOptions(voices)).toEqual([
+        { value: "g-female", label: "Achernar", groupLabel: "Google · Female" },
+        { value: "s-female", label: "Anushka", groupLabel: "Sarvam · Female" },
+        { value: "s-male", label: "Abhilash", groupLabel: "Sarvam · Male" },
+      ]);
+    });
+
+    it("reads gender from config when the API does not send it flattened", () => {
+      const voices = [
+        { id: "v1", name: "abhilash", provider: "SARVAM", config: { gender: "male" } },
+      ];
+
+      expect(getSimulationVoiceOptions(voices)[0].groupLabel).toBe("Sarvam · Male");
     });
 
     it("should handle empty array", () => {

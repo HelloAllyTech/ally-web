@@ -260,6 +260,8 @@ describe("createSimulation utils", () => {
         interimReplyEnabled: true,
         languageCharacteristics: undefined,
         states: [],
+        // No picks stored → every language inherits its own STT default.
+        sttConfigByLanguage: {},
       });
     });
 

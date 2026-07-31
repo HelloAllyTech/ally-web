@@ -174,6 +174,10 @@ export const Sidebar: React.FC = () => {
         return <CharacterLibrary />;
       case SIDEBAR_ITEMS.SCENARIO_VOICES:
         return <Mic />;
+      case SIDEBAR_ITEMS.STT_CONFIGS:
+        return <Mic />;
+      case SIDEBAR_ITEMS.LLM_CONFIGS:
+        return <FrameSource />;
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return <Globe />;
       case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
@@ -224,6 +228,10 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_LANGUAGES);
       case ROUTES.MANAGE_SCENARIO_VOICES:
         return location.pathname.includes(ROUTES.MANAGE_SCENARIO_VOICES);
+      case ROUTES.MANAGE_STT_CONFIGS:
+        return location.pathname.includes(ROUTES.MANAGE_STT_CONFIGS);
+      case ROUTES.MANAGE_LLM_CONFIGS:
+        return location.pathname.includes(ROUTES.MANAGE_LLM_CONFIGS);
       case ROUTES.MANAGE_PROMPTS:
         return location.pathname.includes(ROUTES.MANAGE_PROMPTS);
       case ROUTES.MANAGE_GUARDRAILS:

@@ -70,6 +70,10 @@ import {
   GetReportTranscriptResponse,
   GenerateCoverImageRequest,
   GenerateCoverImageResponse,
+  SttConfig,
+  SttConfigPayload,
+  LlmConfig,
+  LlmConfigPayload,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -304,6 +308,89 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         body,
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * Named STT configurations. `activeOnly` is what the pickers pass —
+     * a retired config must stay resolvable for whatever already points at it,
+     * but must not be offered as a new choice.
+     */
+    getSttConfigs: builder.query<SttConfig[], { activeOnly?: boolean } | void>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.STT_CONFIGS,
+        method: HttpMethod.GET,
+        ...(params && params.activeOnly ? { params: { activeOnly: true } } : {}),
+      }),
+      providesTags: [TAG_TYPES.STT_CONFIGS],
+    }),
+
+    createSttConfig: builder.mutation<SttConfig, SttConfigPayload>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.STT_CONFIGS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.STT_CONFIGS],
+    }),
+
+    updateSttConfig: builder.mutation<
+      SttConfig,
+      { id: string; sttConfig: Partial<SttConfigPayload> }
+    >({
+      query: ({ id, sttConfig }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_STT_CONFIG(id),
+        method: HttpMethod.PUT,
+        body: sttConfig,
+      }),
+      invalidatesTags: [TAG_TYPES.STT_CONFIGS],
+    }),
+
+    deleteSttConfig: builder.mutation<{ deleted: true }, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_STT_CONFIG(id),
+        method: HttpMethod.DELETE,
+      }),
+      // Languages also change when a config they referenced is removed.
+      invalidatesTags: [TAG_TYPES.STT_CONFIGS, TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    /** Named LLM configurations — the registry behind the Language Model tab. */
+    getLlmConfigs: builder.query<LlmConfig[], { activeOnly?: boolean } | void>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_CONFIGS,
+        method: HttpMethod.GET,
+        ...(params && params.activeOnly ? { params: { activeOnly: true } } : {}),
+      }),
+      providesTags: [TAG_TYPES.LLM_CONFIGS],
+    }),
+
+    createLlmConfig: builder.mutation<LlmConfig, LlmConfigPayload>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_CONFIGS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_CONFIGS],
+    }),
+
+    updateLlmConfig: builder.mutation<
+      LlmConfig,
+      { id: string; llmConfig: Partial<LlmConfigPayload> }
+    >({
+      query: ({ id, llmConfig }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_LLM_CONFIG(id),
+        method: HttpMethod.PUT,
+        body: llmConfig,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_CONFIGS],
+    }),
+
+    deleteLlmConfig: builder.mutation<{ deleted: true }, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_LLM_CONFIG(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_CONFIGS, TAG_TYPES.SCENARIO_LANGUAGES],
     }),
 
     /**
@@ -1222,6 +1309,14 @@ export const {
   useCreateScenarioVoiceMutation,
   useUpdateScenarioVoiceMutation,
   useGetAvailableLanguageVoicesQuery,
+  useGetSttConfigsQuery,
+  useCreateSttConfigMutation,
+  useUpdateSttConfigMutation,
+  useDeleteSttConfigMutation,
+  useGetLlmConfigsQuery,
+  useCreateLlmConfigMutation,
+  useUpdateLlmConfigMutation,
+  useDeleteLlmConfigMutation,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
   useDispatchPreviewAgentMutation,

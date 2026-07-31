@@ -160,6 +160,8 @@ describe("deriveNavigationItems", () => {
     });
     expect(result.map(i => i.id)).toEqual([
       SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+      SIDEBAR_ITEMS.STT_CONFIGS,
+      SIDEBAR_ITEMS.LLM_CONFIGS,
       SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
       SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       SIDEBAR_ITEMS.TOOLTIPS,
@@ -228,6 +230,8 @@ describe("deriveNavigationItems", () => {
     expect(flagged).toEqual(
       new Set([
         SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+        SIDEBAR_ITEMS.STT_CONFIGS,
+        SIDEBAR_ITEMS.LLM_CONFIGS,
         SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.TOOLTIPS,

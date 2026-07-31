@@ -2,14 +2,26 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useGetAvailableLanguageVoicesQuery, useLazyGetPreviewVoiceQuery } from "@api";
+import {
+  useGetAvailableLanguageVoicesQuery,
+  useGetSttConfigsQuery,
+  useLazyGetPreviewVoiceQuery,
+} from "@api";
 import { NotionTable, cellTypes } from "@components";
-import { en } from "@constants";
+import { buildConfigPickerOptions, en } from "@constants";
+import { buildGroupedVoiceOptions } from "@constants/voiceProviders";
 
 interface VoiceOption {
   id: string;
   name: string;
   provider?: string;
+  /**
+   * Populated by ally-be from `config->>'gender'`. Older backends don't send
+   * it, in which case voices fall into an "Unspecified gender" group rather
+   * than disappearing.
+   */
+  gender?: string | null;
+  age?: string | null;
   config?: Record<string, unknown>;
   text?: string;
 }
@@ -46,6 +58,18 @@ const COLUMNS = [
     width: 400,
   },
   {
+    // Speech in, next to speech out. Options are filled in at render time from
+    // the STT registry; an empty value means "use this language's default",
+    // which is what almost every row should stay on.
+    id: "stt",
+    label: "Speech Recognition",
+    accessor: "stt",
+    dataType: cellTypes.dropdown,
+    options: [] as { value: string; label: string }[],
+    minWidth: 220,
+    width: 280,
+  },
+  {
     id: "label",
     label: "Label",
     accessor: "label",
@@ -55,6 +79,9 @@ const COLUMNS = [
     placeholder: "Add label…",
   },
 ];
+
+/** Shown when a simulation hasn't overridden a language's STT. */
+const STT_INHERIT_LABEL = "Use language default";
 
 export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   id = "languageVoices",
@@ -80,6 +107,12 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
   const languageVoices = watch(id) ?? {};
   const languageCharacteristics =
     (watch("languageCharacteristics") as Record<string, string> | undefined) ?? {};
+  const sttConfigByLanguage =
+    (watch("sttConfigByLanguage") as Record<string, string> | undefined) ?? {};
+
+  // activeOnly: a retired config stays resolvable for whatever already points
+  // at it, but must not be offered as a new choice.
+  const { data: sttConfigs = [] } = useGetSttConfigsQuery({ activeOnly: true });
 
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
@@ -145,16 +178,27 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
 
   const languages: LanguageOption[] = availableLanguages ?? [];
 
+  /**
+   * Voices grouped as "Provider · Gender", which is the order people actually
+   * choose in: pick the vendor you trust for this language, then the gender the
+   * persona needs. A flat alphabetical list of every voice across every
+   * provider gave no way to narrow either axis.
+   */
   const getVoiceOptions = useCallback(
-    (language: LanguageOption) =>
-      language.voices.map(v => ({
-        value: v.id,
-        label: v.provider ? `${v.name} (${v.provider})` : v.name,
-      })),
+    (language: LanguageOption) => buildGroupedVoiceOptions(language.voices),
     [],
   );
 
+  const sttOptions = useMemo(
+    () => buildConfigPickerOptions(sttConfigs, STT_INHERIT_LABEL),
+    [sttConfigs],
+  );
+
   const tableData = useMemo(() => {
+    const columns = COLUMNS.map(column =>
+      column.id === "stt" ? { ...column, options: sttOptions } : column,
+    );
+
     const data = languages.map(language => {
       const languageId = String(language.language_id);
       const selectedVoiceId = languageVoices?.[languageId] ?? "";
@@ -178,6 +222,16 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
           disabled: false,
           rowId: languageId,
         },
+        stt: {
+          options: sttOptions,
+          // A config that has since been deactivated is no longer in the
+          // options list; showing "" would read as "using the default" when the
+          // session is in fact still resolving the retired config. Keep the
+          // stored value visible instead.
+          value: sttConfigByLanguage[languageId] ?? "",
+          disabled: false,
+          rowId: languageId,
+        },
         label: {
           value: languageCharacteristics[languageId] ?? "",
           disabled: false,
@@ -186,11 +240,13 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
       };
     });
 
-    return { columns: COLUMNS, data };
+    return { columns, data };
   }, [
     languages,
     languageVoices,
     languageCharacteristics,
+    sttConfigByLanguage,
+    sttOptions,
     playingVoice,
     isAudioLoading,
     getVoiceOptions,
@@ -213,6 +269,16 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
           delete nextLanguageVoices[rowId];
         }
         setValue(id, nextLanguageVoices, { shouldDirty: true });
+      } else if (columnId === "stt") {
+        const nextSttConfigByLanguage = { ...sttConfigByLanguage };
+        if (value) {
+          nextSttConfigByLanguage[rowId] = value;
+        } else {
+          // Drop the key rather than storing "" so the saved metadata says
+          // "this language was never overridden", not "overridden to nothing".
+          delete nextSttConfigByLanguage[rowId];
+        }
+        setValue("sttConfigByLanguage", nextSttConfigByLanguage, { shouldDirty: true });
       } else if (columnId === "label") {
         setValue(
           "languageCharacteristics",
@@ -221,7 +287,7 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
         );
       }
     },
-    [id, languageVoices, languageCharacteristics, setValue],
+    [id, languageVoices, languageCharacteristics, sttConfigByLanguage, setValue],
   );
 
   const languageVoicesString = useMemo(

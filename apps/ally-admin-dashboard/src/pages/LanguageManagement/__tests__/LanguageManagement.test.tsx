@@ -6,6 +6,9 @@ vi.mock("@api", () => ({
   useGetLanguagesQuery: vi.fn(),
   useCreateLanguageMutation: vi.fn(),
   useUpdateLanguageMutation: vi.fn(),
+  // The page reads the STT registry to fill the Speech Recognition dropdown.
+  useGetSttConfigsQuery: () => ({ data: [], isFetching: false }),
+  useGetLlmConfigsQuery: () => ({ data: [], isFetching: false }),
 }));
 
 import * as api from "@api";
@@ -44,6 +47,10 @@ vi.mock("@components", () => ({
 
 // Mock constants
 vi.mock("@constants", () => ({
+  buildConfigPickerOptions: (configs: any[], inheritLabel: string) => [
+    { value: "", label: inheritLabel },
+    ...configs.map(c => ({ value: c.id, label: c.name })),
+  ],
   en: {
     simulation: {
       languageCreatedSuccessfully: "Language created successfully",

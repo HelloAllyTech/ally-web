@@ -6,6 +6,12 @@ vi.mock("react-router-dom", async importOriginal => ({
   useNavigate: () => vi.fn(),
 }));
 
+// The panel now reads the STT registry to populate its picker; the real slice
+// would need a configured store.
+vi.mock("@api", () => ({
+  useGetSttConfigsQuery: () => ({ data: [], isLoading: false }),
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),

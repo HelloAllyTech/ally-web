@@ -11,6 +11,8 @@ export * from "./CreatePath/CreatePath";
 export * from "./CreateTrack/CreateTrack";
 export * from "./CreateCase/CreateCase";
 export * from "./ScenarioVoices/ScenarioVoices";
+export * from "./SttConfigs/SttConfigs";
+export * from "./LlmConfigs/LlmConfigs";
 export * from "./LanguageManagement/LanguageManagement";
 export * from "./PromptManagement/PromptManagement";
 export * from "./LanguageGlossary/LanguageGlossary";

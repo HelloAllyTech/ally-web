@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea, TextInput } from "@ally-ui-mono/ui-shared";
+import { useGetSttConfigsQuery } from "@api";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -70,10 +71,22 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
   });
 
   const [llmConfigText, setLlmConfigText] = useState<string>(JSON.stringify(emptyConfig, null, 2));
-  const [sttConfigText, setSttConfigText] = useState<string>(JSON.stringify(emptyConfig, null, 2));
   const [llmConfigError, setLlmConfigError] = useState<string | null>(null);
-  const [sttConfigError, setSttConfigError] = useState<string | null>(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+
+  // Not activeOnly: this panel must be able to show (and keep) a retired config
+  // a language is still pointing at.
+  const { data: sttConfigs = [] } = useGetSttConfigsQuery();
+
+  // Surfaced read-only so it's clear what the language falls back to while no
+  // registry config is selected.
+  const legacySttConfigSummary = useMemo(() => {
+    const legacy = selectedLanguage?.sttProviderConfig as
+      | { provider?: string; config?: { model?: string } }
+      | undefined;
+    if (!legacy?.provider) return null;
+    return [legacy.provider, legacy.config?.model].filter(Boolean).join(" · ");
+  }, [selectedLanguage]);
 
   const handleFieldChange = useCallback((field: keyof ScenarioLanguage, value: any) => {
     setFormData(previousData => ({
@@ -113,44 +126,11 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
     }
   }, []);
 
-  const handleSttConfigChange = useCallback((text: string) => {
-    setSttConfigText(text);
-
-    if (!text.trim()) {
-      setSttConfigError(en.simulation.configurationCannotBeEmpty);
-      return;
-    }
-
-    const trimmedText = text.trim();
-    if (!trimmedText.startsWith("{") || !trimmedText.endsWith("}")) {
-      setSttConfigError(en.simulation.configurationMustBeJsonObject);
-      return;
-    }
-
-    try {
-      const parsedConfig = JSON.parse(text);
-      if (typeof parsedConfig !== "object" || Array.isArray(parsedConfig)) {
-        setSttConfigError(en.simulation.configurationMustBeJsonObject);
-        return;
-      }
-
-      setSttConfigError(null);
-      setFormData(previousData => ({
-        ...previousData,
-        sttProviderConfig: parsedConfig,
-      }));
-    } catch {
-      setSttConfigError(en.simulation.invalidJsonSyntax);
-    }
-  }, []);
-
   useEffect(() => {
     if (selectedLanguage) {
       setFormData(selectedLanguage);
       setLlmConfigText(JSON.stringify(selectedLanguage.llmProviderConfig || emptyConfig, null, 2));
-      setSttConfigText(JSON.stringify(selectedLanguage.sttProviderConfig || emptyConfig, null, 2));
       setLlmConfigError(null);
-      setSttConfigError(null);
     } else {
       setFormData({
         label: "",
@@ -161,9 +141,7 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
         active: true,
       });
       setLlmConfigText(JSON.stringify(emptyConfig, null, 2));
-      setSttConfigText(JSON.stringify(emptyConfig, null, 2));
       setLlmConfigError(null);
-      setSttConfigError(null);
     }
   }, [selectedLanguage, emptyConfig]);
 
@@ -173,20 +151,20 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
       return;
     }
 
-    if (llmConfigError || sttConfigError) {
+    if (llmConfigError) {
       toast.error(en.simulation.fixConfigurationErrorsBeforeSaving);
       return;
     }
 
     let finalLlmConfig = formData.llmProviderConfig || {};
-    let finalSttConfig = formData.sttProviderConfig || {};
+    // The legacy jsonb column is no longer editable here — carried through
+    // untouched so switching a language onto the registry doesn't destroy the
+    // fallback it would revert to.
+    const finalSttConfig = selectedLanguage?.sttProviderConfig ?? {};
 
     try {
       if (llmConfigText.trim()) {
         finalLlmConfig = JSON.parse(llmConfigText);
-      }
-      if (sttConfigText.trim()) {
-        finalSttConfig = JSON.parse(sttConfigText);
       }
     } catch {
       toast.error(en.simulation.invalidConfigurationJson);
@@ -199,6 +177,7 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
       translationCode: formData.translationCode || "",
       llmProviderConfig: finalLlmConfig,
       sttProviderConfig: finalSttConfig,
+      sttConfigId: formData.sttConfigId ?? null,
       active: formData.active ?? true,
       ...(selectedLanguage?.id && {
         id: selectedLanguage?.id,
@@ -207,15 +186,7 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
       }),
     };
     onUpdate(updatedLanguage);
-  }, [
-    formData,
-    selectedLanguage,
-    onUpdate,
-    llmConfigError,
-    sttConfigError,
-    llmConfigText,
-    sttConfigText,
-  ]);
+  }, [formData, selectedLanguage, onUpdate, llmConfigError, llmConfigText]);
 
   const handleClose = useCallback(() => {
     // Check if there are unsaved changes
@@ -242,9 +213,9 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
       formData.value &&
       formData.translationCode &&
       !llmConfigError &&
-      !sttConfigError
+      true
     );
-  }, [formData.label, formData.value, formData.translationCode, llmConfigError, sttConfigError]);
+  }, [formData.label, formData.value, formData.translationCode, llmConfigError]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -318,19 +289,32 @@ export const LanguageManagementSidePanel: React.FC<LanguageManagementSidePanelPr
               </div>
             </Field>
 
-            <Field label={en.simulation.sttProviderConfig} multiline={true}>
+            {/* Picked from the Speech Recognition registry rather than typed as
+                JSON: the same config is shared across languages, so it should be
+                one referenced row, not a copy per language. */}
+            <Field label="Speech Recognition">
               <div className="w-full">
-                <AutoExpandableTextarea
-                  maxLines={15}
-                  minHeight={20}
-                  value={sttConfigText}
-                  onChange={handleSttConfigChange}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Enter STT configuration as JSON object"
-                  className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
-                />
-                {sttConfigError && (
-                  <div className="text-red-600 text-sm mt-2 font-medium">⚠️ {sttConfigError}</div>
+                <select
+                  id="language-stt-config"
+                  aria-label="Speech Recognition"
+                  className="w-full border border-border-light rounded-md h-10 px-3 text-typography-900 bg-transparent"
+                  value={formData.sttConfigId ?? ""}
+                  onChange={event => handleFieldChange("sttConfigId", event.target.value || null)}
+                >
+                  <option value="">Platform default</option>
+                  {sttConfigs.map(config => (
+                    <option key={config.id} value={config.id}>
+                      {config.name}
+                      {config.active ? "" : " (inactive)"}
+                    </option>
+                  ))}
+                </select>
+                {legacySttConfigSummary && (
+                  <div className="text-typography-500 text-sm mt-2">
+                    Legacy config still stored on this language:{" "}
+                    <code>{legacySttConfigSummary}</code>. It is only used while no registry config
+                    is selected.
+                  </div>
                 )}
               </div>
             </Field>

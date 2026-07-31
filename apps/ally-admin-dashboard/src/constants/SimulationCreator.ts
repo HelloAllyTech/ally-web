@@ -253,6 +253,56 @@ export const TEMPERATURE_MIN = 0;
 export const TEMPERATURE_MAX = 2;
 export const TEMPERATURE_STEP = 0.1;
 
+/**
+ * STT providers ally-ai-learn's `app/stt/factory.py` can construct. Kept in
+ * step with SUPPORTED_STT_PROVIDERS in ally-be — a provider outside this list
+ * raises at agent start, so the registry form must not offer one.
+ */
+export const STT_PROVIDER_OPTIONS = [
+  { value: "deepgram", label: "Deepgram" },
+  { value: "google", label: "Google" },
+  { value: "sarvam", label: "Sarvam" },
+  { value: "elevenlabs", label: "ElevenLabs" },
+];
+
+/**
+ * LLM providers ally-ai-learn's `app/llms/factory.py` can construct. "google"
+ * and "gemini" both build the Gemini client; only "google" is offered here to
+ * keep the picker unambiguous, and existing "gemini" rows still resolve.
+ */
+export const LLM_PROVIDER_OPTIONS = [
+  { value: "openai", label: "OpenAI" },
+  { value: "google", label: "Google (Gemini)" },
+  { value: "ollama", label: "Ollama" },
+  { value: "vllm", label: "vLLM" },
+];
+
+/** Columns shared by every provider-config registry tab (STT, LLM). */
+export const PROVIDER_CONFIG_COLUMNS = [
+  {
+    id: "configName",
+    label: "Name",
+    accessor: "configName",
+    dataType: cellTypes.normalText,
+    minWidth: 260,
+  },
+  {
+    id: "providerLabel",
+    label: "Provider",
+    accessor: "providerLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 160,
+  },
+  { id: "model", label: "Model", accessor: "model", dataType: cellTypes.normalText, minWidth: 220 },
+  {
+    id: "status",
+    label: "Status",
+    accessor: "status",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+];
+
 // Comfort-audio volume slider (0..1), shown when the Comfort Audio toggle is on.
 export const COMFORT_AUDIO_VOLUME_DEFAULT = 0.3;
 export const COMFORT_AUDIO_VOLUME_MIN = 0;
@@ -887,6 +937,15 @@ export const SCENARIO_VOICE_COLUMNS = [
     options: [], // Will be populated dynamically from API/existing voices
   },
   {
+    id: "gender",
+    label: "Gender",
+    accessor: "gender",
+    dataType: cellTypes.normalText,
+    minWidth: 140,
+  },
+  {
+    // Read-only summary of config, rendered from the provider's schema. The raw
+    // JSON is edited field-by-field in the side panel, not inline here.
     id: "config",
     label: "Configuration",
     accessor: "config",
@@ -940,18 +999,25 @@ export const SCENARIO_LANGUAGE_COLUMNS = [
     minWidth: 200,
   },
   {
-    id: "llmProviderConfig",
-    label: "LLM Provider Config",
-    accessor: "llmProviderConfig",
-    dataType: cellTypes.normalText,
-    minWidth: 200,
+    // Picked from the Language Model registry rather than typed as JSON.
+    // `options` is injected at render time — see LanguageManagement.
+    id: "llmConfigId",
+    label: "Language Model",
+    accessor: "llmConfigId",
+    dataType: cellTypes.dropdown,
+    options: [] as { value: string; label: string }[],
+    minWidth: 240,
   },
   {
-    id: "sttProviderConfig",
-    label: "STT Provider Config",
-    accessor: "sttProviderConfig",
-    dataType: cellTypes.normalText,
-    minWidth: 200,
+    // Picked from the Speech Recognition registry rather than typed as JSON.
+    // `options` is injected at render time from the registry — see
+    // LanguageManagement.
+    id: "sttConfigId",
+    label: "Speech Recognition",
+    accessor: "sttConfigId",
+    dataType: cellTypes.dropdown,
+    options: [] as { value: string; label: string }[],
+    minWidth: 240,
   },
   {
     id: "active",

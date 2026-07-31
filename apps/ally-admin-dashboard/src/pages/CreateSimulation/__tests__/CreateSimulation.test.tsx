@@ -187,6 +187,10 @@ vi.mock("@constants", () => ({
     LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   },
   isValidStateInstructionId: (id: any) => ["-1", "1", "2", "3"].includes(String(id)),
+  // Per-simulation STT override: empty selection clears it, anything else keeps
+  // whatever is already stored. The real preset expansion is covered in
+  // utils/__tests__/createSimulation.test.ts.
+  resolveSttConfigFromPreset: (presetId: any, existing: any) => (presetId ? existing : null),
   ROLE_INSTRUCTION_PROMPT_CODE: "openai_simulation_role_instruction",
   SIMULATION_CATEGORY: { PARTNER_SIM: "PARTNER_SIM" },
   ROUTES: {

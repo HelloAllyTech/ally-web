@@ -144,6 +144,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     enableFeedback: data?.metadata?.enableFeedback ?? true,
     // Opt-in toggle: missing → disabled (only an explicit true enables it).
     pauseEnabled: (data?.metadata as any)?.pauseEnabled ?? false,
+    // Per-language STT picks, keyed like languageVoices. Absent = inherit.
+    sttConfigByLanguage: (data?.metadata as any)?.sttConfigByLanguage ?? {},
     characterProfileText: data?.metadata?.characterProfileText,
     helperAgentPrompt: data?.metadata?.helperAgentPrompt,
     agentBuilderDescription: (data?.metadata as any)?.agentBuilderDescription,

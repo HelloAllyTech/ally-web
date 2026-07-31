@@ -618,6 +618,14 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
       : [];
 
     // filter out empty values from languageVoiceMapping
+    // Same treatment as languageVoices: an empty selection means "inherit this
+    // language's default", which is the absence of a key, not an empty string.
+    restForm.sttConfigByLanguage = restForm.sttConfigByLanguage
+      ? Object.fromEntries(
+          Object.entries(restForm.sttConfigByLanguage || {}).filter(([, v]) => !!v),
+        )
+      : {};
+
     if (restForm.languageVoices) {
       restForm.languageVoices = Object.fromEntries(
         Object.entries(restForm.languageVoices || {}).filter(([, v]) => v !== ""),

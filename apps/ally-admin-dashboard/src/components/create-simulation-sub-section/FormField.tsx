@@ -133,6 +133,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
               isMandatory={isMandatory}
               allowDeselect={config.allowDeselect}
             />
+            {note && <span className="text-typography-500 text-sm">{note}</span>}
             {errors && (
               <p className="text-destructive-500 text-sm mt-1">{errors[config.id]?.message}</p>
             )}

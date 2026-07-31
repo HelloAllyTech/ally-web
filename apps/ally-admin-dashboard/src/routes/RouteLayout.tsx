@@ -23,6 +23,8 @@ import {
   CreateTrack,
   CreateCase,
   ScenarioVoices,
+  SttConfigs,
+  LlmConfigs,
   ScenarioLanguages,
   LanguageGlossary,
   GuardrailsManagement,
@@ -197,6 +199,22 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredPermissions={[Permissions.EDIT_SCENARIO]}>
               <ScenarioVoices />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_STT_CONFIGS}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <SttConfigs />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_LLM_CONFIGS}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <LlmConfigs />
             </PrivateLayout>
           }
         />

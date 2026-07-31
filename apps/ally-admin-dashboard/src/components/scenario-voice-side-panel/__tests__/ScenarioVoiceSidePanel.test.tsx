@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock API hooks
@@ -20,90 +20,84 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   ),
 }));
 
-// Mock components
+// Mock components. TextDropdown is keyed by its placeholder so a test can
+// address the provider, language and gender dropdowns independently.
 vi.mock("@components", () => ({
   Button: ({ children, onClick, disabled }: any) => (
-    <button data-testid="button" onClick={onClick} disabled={disabled}>
+    <button
+      data-testid={`button-${String(children).toLowerCase()}`}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {children}
     </button>
   ),
   TextDropdown: ({ value, options, onChange, placeholder }: any) => (
-    <div data-testid="text-dropdown">
-      <select value={value} onChange={e => onChange(e.target.value)}>
-        <option value="">{placeholder}</option>
-        {options?.map((opt: any) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </div>
+    <select
+      data-testid={`dropdown-${placeholder}`}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+    >
+      <option value="">{placeholder}</option>
+      {options?.map((opt: any) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   ),
-  ActionConfirmationPopup: ({ isOpen, onConfirm, onCancel }: any) =>
-    isOpen ? (
-      <div data-testid="confirmation-popup">
-        <button data-testid="confirm-btn" onClick={onConfirm}>
-          Confirm
-        </button>
-        <button data-testid="cancel-btn" onClick={onCancel}>
-          Cancel
-        </button>
-      </div>
-    ) : null,
+  ActionConfirmationPopup: ({ isOpen }: any) =>
+    isOpen ? <div data-testid="confirmation-popup" /> : null,
 }));
 
-// Mock assets
+vi.mock("@components/types", () => ({
+  ButtonVariant: { PRIMARY: "primary", SECONDARY: "secondary" },
+}));
+
 vi.mock("@assets", () => ({
   DoubleArrowRight: () => <svg data-testid="double-arrow" />,
 }));
 
-// Mock utils
 vi.mock("@utils/common", () => ({
-  isObject: (value: unknown) => {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-  },
+  isObject: (value: unknown) =>
+    typeof value === "object" && value !== null && !Array.isArray(value),
 }));
 
-// Mock constants
+// Only `en` is stubbed — the provider schema and its validation load for real
+// from @constants/voiceProviders, so these tests exercise the actual rules.
 vi.mock("@constants", () => ({
   en: {
     simulation: {
-      voiceCreatedSuccessfully: "Voice created successfully",
-      voiceUpdatedSuccessfully: "Voice updated successfully",
-      enterProvider: "Enter provider name",
       configurationCannotBeEmpty: "Configuration cannot be empty",
       configurationMustBeJsonObject:
         "Configuration must be a JSON object enclosed in curly braces {}",
       configurationMustNotBeArray: "Configuration must be a JSON object, not an array or primitive",
       invalidJsonSyntax: "Invalid JSON syntax",
       nameAndProviderRequired: "Name and provider are required",
-      invalidConfigurationJson: "Invalid configuration JSON",
       nameProviderConfigRequired: "Name, provider, and valid configuration are required",
     },
   },
 }));
 
-// Mock sonner
 vi.mock("sonner", () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
+
+const saveButton = () => screen.getByTestId("button-save");
+const providerDropdown = () => screen.getByTestId("dropdown-Select provider");
 
 describe("ScenarioVoiceSidePanel", () => {
   const mockLanguages = [
-    { id: "en", name: "English", voices: [] },
-    { id: "es", name: "Spanish", voices: [] },
-    { id: "fr", name: "French", voices: [] },
+    { language_id: 1, label: "English (India)", value: "en-IN" },
+    { language_id: 2, label: "Hindi", value: "hi-IN" },
   ];
 
-  const mockVoice = {
+  const sarvamVoice = {
     id: "voice-1",
-    name: "Test Voice",
-    provider: "Google",
+    name: "Hindi - Abhilash",
+    provider: "SARVAM",
     languageId: 1,
-    config: { model: "neural", age: "adult", gender: "female" },
+    config: { gender: "male", model: "bulbul:v2", speaker: "abhilash", age: "adult" },
     createdAt: "2024-01-15T10:00:00Z",
     updatedAt: "2024-01-15T10:00:00Z",
     active: true,
@@ -114,12 +108,10 @@ describe("ScenarioVoiceSidePanel", () => {
     isOpen: true,
     onClose: vi.fn(),
     onUpdate: vi.fn(),
-    existingProviders: ["Google", "Azure"],
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-
     (api.useGetAvailableLanguageVoicesQuery as any).mockReturnValue({
       data: mockLanguages,
       isFetching: false,
@@ -127,166 +119,436 @@ describe("ScenarioVoiceSidePanel", () => {
     });
   });
 
-  it("renders side panel when isOpen is true", () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} />);
+  describe("rendering", () => {
+    it("renders when isOpen is true", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} />);
+      expect(screen.getByTestId("double-arrow")).toBeInTheDocument();
+    });
 
-    expect(screen.getByTestId("double-arrow")).toBeInTheDocument();
-  });
+    it("does not render when isOpen is false", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} isOpen={false} />);
+      expect(screen.queryByTestId("double-arrow")).not.toBeInTheDocument();
+    });
 
-  it("does not render side panel when isOpen is false", () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} isOpen={false} />);
+    it("shows 'Create Voice' with no voice and 'Edit Voice' with one", () => {
+      const { rerender } = render(<ScenarioVoiceSidePanel {...defaultProps} />);
+      expect(screen.getByText("Create Voice")).toBeInTheDocument();
 
-    expect(screen.queryByTestId("double-arrow")).not.toBeInTheDocument();
-  });
+      rerender(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+      expect(screen.getByText("Edit Voice")).toBeInTheDocument();
+    });
 
-  it("displays 'Create Voice' header when no voice is selected", () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} />);
-
-    const header = screen.getByText("Create Voice");
-    expect(header).toBeInTheDocument();
-  });
-
-  it("displays 'Edit Voice' header when voice is selected", () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={mockVoice} />);
-
-    const header = screen.getByText("Edit Voice");
-    expect(header).toBeInTheDocument();
-  });
-
-  it("closes panel when close button is clicked", () => {
-    const onClose = vi.fn();
-    render(<ScenarioVoiceSidePanel {...defaultProps} onClose={onClose} />);
-
-    const closeButton = screen.getByText("Create Voice").closest("button");
-    if (closeButton) fireEvent.click(closeButton);
-
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it("validates empty configuration", async () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} />);
-
-    const textarea = screen.getByTestId("auto-expandable-textarea");
-    expect(textarea).toBeInTheDocument();
-
-    // Component pre-fills with a default template, so no error initially
-    // Clear the textarea to test empty validation
-    fireEvent.change(textarea, { target: { value: "" } });
-
-    await waitFor(() => {
-      expect(screen.queryByText(/Configuration cannot be empty/)).toBeInTheDocument();
+    it("asks for a provider before showing any config fields", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} />);
+      expect(screen.getByText("Pick a provider to configure this voice.")).toBeInTheDocument();
     });
   });
 
-  it("validates configuration without curly braces", async () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} />);
+  describe("provider-driven fields", () => {
+    it("renders the fields the selected provider actually needs", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
 
-    const textarea = screen.getByTestId("auto-expandable-textarea");
-    fireEvent.change(textarea, { target: { value: "invalid config" } });
+      expect(screen.getByLabelText("Model")).toHaveValue("bulbul:v2");
+      expect(screen.getByLabelText("Speaker")).toHaveValue("abhilash");
+      expect(screen.getByLabelText("Age")).toHaveValue("adult");
+      // Hume-only field must not appear for a Sarvam voice.
+      expect(screen.queryByLabelText("Voice name")).not.toBeInTheDocument();
+    });
 
-    await waitFor(() => {
+    it("swaps the fields when the provider changes", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+      fireEvent.change(providerDropdown(), { target: { value: "HUME" } });
+
+      expect(screen.getByLabelText("Voice name")).toBeInTheDocument();
+      expect(screen.getByLabelText("Instant mode")).toBeInTheDocument();
+      expect(screen.queryByLabelText("Speaker")).not.toBeInTheDocument();
+    });
+
+    it("offers only providers the runtime can dispatch to", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} />);
+
+      const options = Array.from(providerDropdown().querySelectorAll("option")).map(option =>
+        option.getAttribute("value"),
+      );
+      expect(options).toEqual(["", "DEEPGRAM", "ELEVENLABS", "SARVAM", "GOOGLE", "HUME"]);
+    });
+  });
+
+  describe("legacy providers", () => {
+    const legacyVoice = { ...sarvamVoice, provider: "OPENAI", config: { gender: "male" } };
+
+    it("warns about a stored provider the runtime has no client for", () => {
+      const { container } = render(
+        <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={legacyVoice} />,
+      );
+
+      // The provider name sits in its own <strong>, so match on the container's
+      // flattened text rather than a single text node.
+      expect(container.textContent).toContain("fall back to a default Deepgram voice");
+      expect(container.textContent).toContain("OPENAI");
+    });
+
+    it("keeps the stored value selectable so an unrelated edit can't rewrite it", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={legacyVoice} />);
+
+      expect(screen.getByText("OPENAI (unsupported)")).toBeInTheDocument();
+    });
+
+    it("blocks saving until a supported provider is chosen", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={legacyVoice} />);
+      expect(saveButton()).toBeDisabled();
+
+      fireEvent.change(providerDropdown(), { target: { value: "GOOGLE" } });
+      expect(saveButton()).toBeEnabled();
+    });
+  });
+
+  describe("validation", () => {
+    it("blocks saving when a provider-required field is missing", () => {
+      const incomplete = { ...sarvamVoice, config: { gender: "male", model: "bulbul:v2" } };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={incomplete} />);
+
+      expect(screen.getByText("Speaker is required.")).toBeInTheDocument();
+      expect(saveButton()).toBeDisabled();
+    });
+
+    it("warns about a missing gender but still allows saving", () => {
+      // The voice plays fine without one; what suffers is which languages the
+      // studio offers. So it's advisory, not a blocker.
+      const noGender = {
+        ...sarvamVoice,
+        config: { model: "bulbul:v2", speaker: "abhilash" },
+      };
+      const { container } = render(
+        <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={noGender} />,
+      );
+
+      expect(container.textContent).toContain("No gender set");
+      expect(saveButton()).toBeEnabled();
+    });
+
+    it("drops the gender warning once one is chosen", () => {
+      const noGender = {
+        ...sarvamVoice,
+        config: { model: "bulbul:v2", speaker: "abhilash" },
+      };
+      const { container } = render(
+        <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={noGender} />,
+      );
+      expect(container.textContent).toContain("No gender set");
+
+      fireEvent.change(screen.getByTestId("dropdown-Select gender"), {
+        target: { value: "female" },
+      });
+
+      expect(container.textContent).not.toContain("No gender set");
+    });
+
+    it("still rejects a gender value the rest of the system can't read", () => {
+      const badGender = { ...sarvamVoice, config: { ...sarvamVoice.config, gender: "woman" } };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={badGender} />);
+
       expect(
-        screen.queryByText(/Configuration must be a JSON object enclosed in curly braces/),
+        screen.getByText("Gender must be one of: Male, Female, Non-binary."),
+      ).toBeInTheDocument();
+      expect(saveButton()).toBeDisabled();
+    });
+
+    it("enables saving once the missing field is filled in", () => {
+      const incomplete = { ...sarvamVoice, config: { gender: "male", model: "bulbul:v2" } };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={incomplete} />);
+
+      fireEvent.change(screen.getByLabelText("Speaker"), { target: { value: "abhilash" } });
+
+      expect(saveButton()).toBeEnabled();
+    });
+
+    it("accepts a Google voice with nothing beyond gender", () => {
+      const googleVoice = {
+        ...sarvamVoice,
+        provider: "GOOGLE",
+        config: { gender: "female" },
+      };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={googleVoice} />);
+
+      expect(saveButton()).toBeEnabled();
+    });
+  });
+
+  describe("saving", () => {
+    it("passes the edited config to onUpdate", () => {
+      const onUpdate = vi.fn();
+      render(
+        <ScenarioVoiceSidePanel
+          {...defaultProps}
+          selectedVoice={sarvamVoice}
+          onUpdate={onUpdate}
+        />,
+      );
+
+      fireEvent.change(screen.getByLabelText("Speaker"), { target: { value: "anushka" } });
+      fireEvent.click(saveButton());
+
+      expect(onUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "voice-1",
+          provider: "SARVAM",
+          config: expect.objectContaining({ speaker: "anushka", model: "bulbul:v2" }),
+        }),
+      );
+    });
+
+    it("drops a cleared optional field instead of storing an empty string", () => {
+      // An empty value reads as set at runtime, which is how a voice ends up
+      // dispatching with a blank id.
+      const onUpdate = vi.fn();
+      render(
+        <ScenarioVoiceSidePanel
+          {...defaultProps}
+          selectedVoice={sarvamVoice}
+          onUpdate={onUpdate}
+        />,
+      );
+
+      fireEvent.change(screen.getByLabelText("Age"), { target: { value: "" } });
+      fireEvent.click(saveButton());
+
+      expect(onUpdate).toHaveBeenCalledTimes(1);
+      expect(onUpdate.mock.calls[0][0].config).not.toHaveProperty("age");
+    });
+
+    it("migrates a legacy alias to the canonical key when edited", () => {
+      const onUpdate = vi.fn();
+      const elevenLabsVoice = {
+        ...sarvamVoice,
+        provider: "ELEVENLABS",
+        config: { gender: "female", model: "eleven_turbo_v2_5", voiceId: "old-id" },
+      };
+      render(
+        <ScenarioVoiceSidePanel
+          {...defaultProps}
+          selectedVoice={elevenLabsVoice}
+          onUpdate={onUpdate}
+        />,
+      );
+
+      expect(screen.getByLabelText("Voice ID")).toHaveValue("old-id");
+      fireEvent.change(screen.getByLabelText("Voice ID"), { target: { value: "new-id" } });
+      fireEvent.click(saveButton());
+
+      const savedConfig = onUpdate.mock.calls[0][0].config;
+      expect(savedConfig.voice_id).toBe("new-id");
+      expect(savedConfig).not.toHaveProperty("voiceId");
+    });
+  });
+
+  describe("unknown keys", () => {
+    const withExtraKey = {
+      ...sarvamVoice,
+      provider: "GOOGLE",
+      config: { gender: "female", voice_name: "en-IN-Chirp3-HD-Achernar", languageCode: "en-IN" },
+    };
+
+    it("surfaces keys the provider schema does not describe", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={withExtraKey} />);
+
+      expect(screen.getByLabelText("languageCode")).toHaveValue("en-IN");
+    });
+
+    it("keeps them on save rather than silently dropping them", () => {
+      const onUpdate = vi.fn();
+      render(
+        <ScenarioVoiceSidePanel
+          {...defaultProps}
+          selectedVoice={withExtraKey}
+          onUpdate={onUpdate}
+        />,
+      );
+
+      fireEvent.click(saveButton());
+
+      expect(onUpdate.mock.calls[0][0].config.languageCode).toBe("en-IN");
+    });
+
+    it("does not block saving", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={withExtraKey} />);
+      expect(saveButton()).toBeEnabled();
+    });
+  });
+
+  describe("custom keys", () => {
+    const addKey = (name: string) => {
+      fireEvent.click(screen.getByText("+ Add custom key"));
+      fireEvent.change(screen.getByLabelText("New config key"), { target: { value: name } });
+      fireEvent.click(screen.getByTestId("button-add"));
+    };
+
+    it("adds a key the schema doesn't describe, without going through JSON", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+      addKey("speed");
+
+      expect(screen.getByLabelText("speed")).toBeInTheDocument();
+      expect(screen.queryByTestId("auto-expandable-textarea")).not.toBeInTheDocument();
+    });
+
+    it("says the new key is ignored at runtime", () => {
+      // The honest part: from_config() reads named keys, so an extra one
+      // persists but does nothing.
+      const { container } = render(
+        <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />,
+      );
+
+      addKey("speed");
+
+      expect(container.textContent).toContain("aren't read by SARVAM");
+      expect(container.textContent).toContain("ignores");
+    });
+
+    it("saves the value typed into a custom key", () => {
+      const onUpdate = vi.fn();
+      render(
+        <ScenarioVoiceSidePanel
+          {...defaultProps}
+          selectedVoice={sarvamVoice}
+          onUpdate={onUpdate}
+        />,
+      );
+
+      addKey("speed");
+      fireEvent.change(screen.getByLabelText("speed"), { target: { value: "1.2" } });
+      fireEvent.click(saveButton());
+
+      expect(onUpdate.mock.calls[0][0].config.speed).toBe("1.2");
+    });
+
+    it("does not let a custom key shadow a real provider field", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+      fireEvent.click(screen.getByText("+ Add custom key"));
+      fireEvent.change(screen.getByLabelText("New config key"), { target: { value: "speaker" } });
+      fireEvent.click(screen.getByTestId("button-add"));
+
+      expect(screen.getByText(/is a SARVAM field/)).toBeInTheDocument();
+    });
+
+    it("rejects a key that is already set", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+      addKey("speed");
+      addKey("speed");
+
+      expect(screen.getByText('"speed" is already set.')).toBeInTheDocument();
+    });
+
+    it("rejects an empty key name", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+      fireEvent.click(screen.getByText("+ Add custom key"));
+      fireEvent.click(screen.getByTestId("button-add"));
+
+      expect(screen.getByText("Enter a key name.")).toBeInTheDocument();
+    });
+
+    it("adding a custom key does not block saving", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+      addKey("speed");
+
+      expect(saveButton()).toBeEnabled();
+    });
+  });
+
+  describe("JSON escape hatch", () => {
+    it("is off by default and toggles on", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+      expect(screen.queryByTestId("auto-expandable-textarea")).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByText("Edit as JSON"));
+      expect(screen.getByTestId("auto-expandable-textarea")).toBeInTheDocument();
+    });
+
+    it("opens showing the config the fields currently hold", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+      fireEvent.change(screen.getByLabelText("Speaker"), { target: { value: "anushka" } });
+      fireEvent.click(screen.getByText("Edit as JSON"));
+
+      expect(
+        (screen.getByTestId("auto-expandable-textarea") as HTMLTextAreaElement).value,
+      ).toContain("anushka");
+    });
+
+    it("reports invalid JSON", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+      fireEvent.click(screen.getByText("Edit as JSON"));
+
+      fireEvent.change(screen.getByTestId("auto-expandable-textarea"), {
+        target: { value: "{ invalid }" },
+      });
+
+      expect(screen.getByText(/Invalid JSON syntax/)).toBeInTheDocument();
+      expect(saveButton()).toBeDisabled();
+    });
+
+    it("rejects a non-object", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+      fireEvent.click(screen.getByText("Edit as JSON"));
+
+      fireEvent.change(screen.getByTestId("auto-expandable-textarea"), {
+        target: { value: "[1, 2]" },
+      });
+
+      expect(
+        screen.getByText(/Configuration must be a JSON object enclosed in curly braces/),
       ).toBeInTheDocument();
     });
-  });
 
-  it("validates invalid JSON syntax", async () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} />);
+    it("feeds edits back into the fields", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+      fireEvent.click(screen.getByText("Edit as JSON"));
 
-    const textarea = screen.getByTestId("auto-expandable-textarea");
-    fireEvent.change(textarea, { target: { value: '{ "key": invalid }' } });
+      fireEvent.change(screen.getByTestId("auto-expandable-textarea"), {
+        target: {
+          value: JSON.stringify({ gender: "female", model: "bulbul:v2", speaker: "anushka" }),
+        },
+      });
+      fireEvent.click(screen.getByText("Back to fields"));
 
-    await waitFor(() => {
-      expect(screen.queryByText(/Invalid JSON syntax/)).toBeInTheDocument();
+      expect(screen.getByLabelText("Speaker")).toHaveValue("anushka");
     });
   });
 
-  it("validates that configuration is an object, not an array", async () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} />);
+  describe("language", () => {
+    it("loads language options from the API", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} />);
 
-    const textarea = screen.getByTestId("auto-expandable-textarea");
-    fireEvent.change(textarea, { target: { value: "[1, 2, 3]" } });
-
-    await waitFor(() => {
-      // Arrays trigger the same error as non-JSON objects
-      expect(
-        screen.queryByText(/Configuration must be a JSON object enclosed in curly braces/),
-      ).toBeInTheDocument();
+      expect(screen.getByText("English (India)")).toBeInTheDocument();
+      expect(screen.getByText("Hindi")).toBeInTheDocument();
     });
   });
 
-  it("accepts valid JSON configuration", async () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} />);
+  describe("closing", () => {
+    it("confirms before discarding unsaved changes", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
 
-    const textarea = screen.getByTestId("auto-expandable-textarea");
-    fireEvent.change(textarea, { target: { value: '{ "model": "neural" }' } });
+      fireEvent.change(screen.getByLabelText("Speaker"), { target: { value: "anushka" } });
+      fireEvent.click(screen.getByTestId("button-cancel"));
 
-    await waitFor(() => {
-      expect(screen.queryByText(/Invalid JSON syntax/)).not.toBeInTheDocument();
+      expect(screen.getByTestId("confirmation-popup")).toBeInTheDocument();
     });
-  });
 
-  it("calls onUpdate when save button is clicked with valid data", async () => {
-    const onUpdate = vi.fn();
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} onUpdate={onUpdate} />);
+    it("closes straight away when nothing changed", () => {
+      const onClose = vi.fn();
+      render(
+        <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} onClose={onClose} />,
+      );
 
-    // This would require filling in all form fields which depends on mocked components
-    // The actual implementation will handle this through user interactions
-    expect(onUpdate).not.toHaveBeenCalled();
-  });
+      fireEvent.click(screen.getByTestId("button-cancel"));
 
-  it("shows unsaved changes confirmation when closing with changes", async () => {
-    const onClose = vi.fn();
-    render(
-      <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={mockVoice} onClose={onClose} />,
-    );
-
-    // Simulate changes by interacting with form fields
-    // This would trigger the confirmation modal
-    expect(screen.queryByTestId("confirmation-popup")).not.toBeInTheDocument();
-  });
-
-  it("handles provider dropdown with existing and custom options", () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} existingProviders={["Google", "Azure"]} />);
-
-    const dropdown = screen.getAllByTestId("text-dropdown")[1]; // Provider is second dropdown
-    expect(dropdown).toBeInTheDocument();
-  });
-
-  it("loads language options from API", () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} />);
-
-    expect(api.useGetAvailableLanguageVoicesQuery).toHaveBeenCalledWith({
-      active: true,
-      voicesNeeded: false,
-    });
-  });
-
-  it("populates form with existing voice data when editing", () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={mockVoice} />);
-
-    // When voice is selected, form should be populated
-    expect(screen.getByText("Edit Voice")).toBeInTheDocument();
-  });
-
-  it("clears form when creating new voice", () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} />);
-
-    // When no voice is selected, form should be empty
-    expect(screen.getByText("Create Voice")).toBeInTheDocument();
-  });
-
-  it("disables save button when configuration is invalid", async () => {
-    render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={null} />);
-
-    const textarea = screen.getByTestId("auto-expandable-textarea");
-    fireEvent.change(textarea, { target: { value: "invalid" } });
-
-    await waitFor(() => {
-      const buttons = screen.getAllByTestId("button");
-      const saveButton = buttons.find(btn => btn.textContent === "Save");
-      expect(saveButton).toBeDisabled();
+      expect(onClose).toHaveBeenCalled();
+      expect(screen.queryByTestId("confirmation-popup")).not.toBeInTheDocument();
     });
   });
 });

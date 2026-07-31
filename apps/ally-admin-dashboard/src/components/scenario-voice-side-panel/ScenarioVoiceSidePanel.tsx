@@ -8,6 +8,16 @@ import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, TextDropdown, Button } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
+import {
+  TTS_PROVIDER_OPTIONS,
+  VoiceConfigField,
+  getProviderSchema,
+  getUnknownConfigKeys,
+  isMissingGender,
+  isSupportedProvider,
+  readConfigField,
+  validateVoiceConfig,
+} from "@constants/voiceProviders";
 import { ScenarioVoice, ScenarioLanguage } from "@types";
 import { isObject } from "@utils/common";
 
@@ -16,23 +26,34 @@ interface ScenarioVoiceSidePanelProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (voice: ScenarioVoice) => void;
-  existingProviders?: string[];
 }
 
 interface FieldProps {
   label: string;
   children: React.ReactNode;
   multiline?: boolean;
+  required?: boolean;
+  hint?: string;
 }
 
-const Field: React.FC<FieldProps> = ({ label, children, multiline = false }) => (
+const Field: React.FC<FieldProps> = ({
+  label,
+  children,
+  multiline = false,
+  required = false,
+  hint,
+}) => (
   <div
     className={`flex flex-row min-h-[40px] ${multiline ? "items-start" : "items-center"} text-base justify-between`}
   >
     <div className={`w-[40%] ${multiline && "mt-[8px]"}`}>
-      <span className="text-base font-regular text-typography-800">{label}</span>
+      <span className="text-base font-regular text-typography-800">
+        {label}
+        {required && <span className="text-destructive-500 ml-[2px]">*</span>}
+      </span>
+      {hint && <p className="text-xs text-typography-500 mt-[2px] pr-4">{hint}</p>}
     </div>
-    <div className="w-[60%] flex text-left justify-start text-neutral-800">{children}</div>
+    <div className="w-[60%] flex flex-col text-left justify-start text-neutral-800">{children}</div>
   </div>
 );
 
@@ -54,12 +75,14 @@ const PanelHeader: React.FC<{
   </div>
 );
 
+const textInputClass =
+  "border-b border-border-light focus:outline-none focus:border-primary-500 text-base w-full py-1 bg-transparent";
+
 export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
   selectedVoice,
   isOpen,
   onClose,
   onUpdate,
-  existingProviders = [],
 }) => {
   const { data: languageOptions = [] } = useGetAvailableLanguageVoicesQuery({
     active: true,
@@ -68,30 +91,23 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     data: ScenarioLanguage[];
   };
 
-  const [showCustomProvider, setShowCustomProvider] = useState(false);
-
-  // Create provider options from existing providers
-  const providerOptions: Array<{ value: string; label: string }> = [
-    ...Array.from(new Set(existingProviders)).map(provider => ({
-      value: provider,
-      label: provider,
-    })),
-    { value: "__custom__", label: "Add Custom Provider" },
-  ];
-
-  const emptyVoiceConfig = { model: "", age: "", gender: "", name: "", voiceId: "" };
-
   const [formData, setFormData] = useState<Partial<ScenarioVoice>>({
     name: "",
     provider: "",
     languageId: undefined,
-    config: emptyVoiceConfig,
+    config: {},
     active: true,
   });
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [configText, setConfigText] = useState<string>(JSON.stringify(emptyVoiceConfig, null, 2));
+  // The raw-JSON editor is an escape hatch, not the primary path. It stays
+  // available because a config can carry keys no provider schema describes.
+  const [isJsonMode, setIsJsonMode] = useState(false);
+  const [configText, setConfigText] = useState<string>("{}");
   const [configError, setConfigError] = useState<string | null>(null);
+  const [isAddingCustomKey, setIsAddingCustomKey] = useState(false);
+  const [customKeyName, setCustomKeyName] = useState("");
+  const [customKeyError, setCustomKeyError] = useState<string | null>(null);
 
   const handleFieldChange = useCallback((field: keyof ScenarioVoice, value: any) => {
     setFormData(previousData => ({
@@ -101,33 +117,122 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
   }, []);
 
   useEffect(() => {
-    if (selectedVoice) {
-      setFormData(selectedVoice);
-      setConfigText(JSON.stringify(selectedVoice.config, null, 2));
-      setConfigError(null);
-    } else {
-      setFormData({
-        name: "",
-        provider: "",
-        languageId: undefined,
-        config: emptyVoiceConfig,
-        active: true,
-      });
-      setConfigText(JSON.stringify(emptyVoiceConfig, null, 2));
-      setConfigError(null);
-    }
+    const initial: Partial<ScenarioVoice> = selectedVoice ?? {
+      name: "",
+      provider: "",
+      languageId: undefined,
+      config: {},
+      active: true,
+    };
+    setFormData(initial);
+    setConfigText(JSON.stringify(initial.config ?? {}, null, 2));
+    setConfigError(null);
+    setIsJsonMode(false);
+    setIsAddingCustomKey(false);
+    setCustomKeyName("");
+    setCustomKeyError(null);
   }, [selectedVoice]);
 
-  const handleConfigChange = useCallback((text: string) => {
+  const config = useMemo(() => formData.config ?? {}, [formData.config]);
+  const providerSchema = useMemo(() => getProviderSchema(formData.provider), [formData.provider]);
+  const unknownKeys = useMemo(
+    () => getUnknownConfigKeys(formData.provider, config),
+    [formData.provider, config],
+  );
+
+  /**
+   * Write a schema field into the config.
+   *
+   * Clearing a value removes the key rather than storing "" — the runtime reads
+   * a present-but-empty key as set, which is how a voice ends up dispatching
+   * with a blank model id. Editing a field stored under a legacy alias
+   * (ElevenLabs `voiceId`) migrates it to the canonical key so the two spellings
+   * can't drift apart.
+   */
+  const setConfigValue = useCallback((field: VoiceConfigField, value: any) => {
+    setFormData(previousData => {
+      const nextConfig = { ...(previousData.config ?? {}) };
+      (field.aliases ?? []).forEach(alias => delete nextConfig[alias]);
+
+      if (value === "" || value === undefined || value === null) {
+        delete nextConfig[field.key];
+      } else {
+        nextConfig[field.key] = value;
+      }
+      return { ...previousData, config: nextConfig };
+    });
+  }, []);
+
+  const removeConfigKey = useCallback((key: string) => {
+    setFormData(previousData => {
+      const nextConfig = { ...(previousData.config ?? {}) };
+      delete nextConfig[key];
+      return { ...previousData, config: nextConfig };
+    });
+  }, []);
+
+  const setUnknownKeyValue = useCallback((key: string, value: string) => {
+    setFormData(previousData => ({
+      ...previousData,
+      config: { ...(previousData.config ?? {}), [key]: value },
+    }));
+  }, []);
+
+  /**
+   * Add a config key the provider's schema doesn't describe.
+   *
+   * Exists so adding one doesn't mean dropping into raw JSON. The key lands in
+   * the "not read by <provider>" list above, which is where the warning lives —
+   * anything `from_config()` doesn't name is ignored at runtime.
+   */
+  const commitCustomKey = useCallback(() => {
+    const key = customKeyName.trim();
+
+    if (!key) {
+      setCustomKeyError("Enter a key name.");
+      return;
+    }
+    // Checked before "already set" so typing a schema field's name always
+    // points at its real input, whether or not it currently has a value —
+    // otherwise it would appear twice, once as a proper field and once as an
+    // "ignored" key.
+    const schemaMatch = providerSchema.find(
+      field => field.key === key || (field.aliases ?? []).includes(key),
+    );
+    if (schemaMatch) {
+      setCustomKeyError(
+        `"${key}" is a ${formData.provider} field — use the ${schemaMatch.label} input above.`,
+      );
+      return;
+    }
+    if (Object.prototype.hasOwnProperty.call(config, key)) {
+      setCustomKeyError(`"${key}" is already set.`);
+      return;
+    }
+
+    setFormData(previousData => ({
+      ...previousData,
+      config: { ...(previousData.config ?? {}), [key]: "" },
+    }));
+    setCustomKeyName("");
+    setCustomKeyError(null);
+    setIsAddingCustomKey(false);
+  }, [customKeyName, config, providerSchema, formData.provider]);
+
+  const cancelCustomKey = useCallback(() => {
+    setCustomKeyName("");
+    setCustomKeyError(null);
+    setIsAddingCustomKey(false);
+  }, []);
+
+  const handleConfigTextChange = useCallback((text: string) => {
     setConfigText(text);
 
-    // Check if text is empty
     if (!text.trim()) {
       setConfigError(en.simulation.configurationCannotBeEmpty);
       return;
     }
 
-    // Check if text starts with { and ends with }
     const trimmedText = text.trim();
     if (!trimmedText.startsWith("{") || !trimmedText.endsWith("}")) {
       setConfigError(en.simulation.configurationMustBeJsonObject);
@@ -136,25 +241,40 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
 
     try {
       const parsedConfig = JSON.parse(text);
-
-      // Verify it's an object (not array or other JSON type) using isObject utility
       if (!isObject(parsedConfig)) {
         setConfigError(en.simulation.configurationMustNotBeArray);
         return;
       }
-
       setConfigError(null);
-      setFormData(previousData => ({
-        ...previousData,
-        config: parsedConfig,
-      }));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : en.simulation.invalidJsonSyntax;
-      toast.error(errorMessage);
-      // Invalid JSON syntax
+      setFormData(previousData => ({ ...previousData, config: parsedConfig }));
+    } catch {
       setConfigError(en.simulation.invalidJsonSyntax);
     }
   }, []);
+
+  const toggleJsonMode = useCallback(() => {
+    setIsJsonMode(previous => {
+      // Entering raw mode: serialise whatever the fields currently hold, so the
+      // two editors never show different configs.
+      if (!previous) {
+        setConfigText(JSON.stringify(config, null, 2));
+        setConfigError(null);
+      }
+      return !previous;
+    });
+  }, [config]);
+
+  const handleProviderChange = useCallback(
+    (value: string) => {
+      handleFieldChange("provider", value);
+    },
+    [handleFieldChange],
+  );
+
+  const configErrors = useMemo(
+    () => validateVoiceConfig(formData.provider, config),
+    [formData.provider, config],
+  );
 
   const handleSave = useCallback(() => {
     if (!formData.name || !formData.provider) {
@@ -167,15 +287,8 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       return;
     }
 
-    // Parse the latest configText to ensure we're sending the updated config
-    let finalConfig = formData.config || emptyVoiceConfig;
-
-    try {
-      if (configText.trim()) {
-        finalConfig = JSON.parse(configText);
-      }
-    } catch {
-      toast.error(en.simulation.invalidConfigurationJson);
+    if (configErrors.length) {
+      toast.error(configErrors[0]);
       return;
     }
 
@@ -183,7 +296,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       name: formData.name || "",
       provider: formData.provider || "",
       languageId: formData.languageId,
-      config: finalConfig,
+      config,
       active: formData.active,
       ...(selectedVoice?.id && {
         id: selectedVoice?.id,
@@ -192,10 +305,9 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       }),
     };
     onUpdate(updatedVoice);
-  }, [formData, selectedVoice, onUpdate, emptyVoiceConfig, configError, configText]);
+  }, [formData, config, configError, configErrors, selectedVoice, onUpdate]);
 
   const handleClose = useCallback(() => {
-    // Check if there are unsaved changes
     if (selectedVoice && JSON.stringify(formData) !== JSON.stringify(selectedVoice)) {
       setShowConfirmationModal(true);
     } else {
@@ -212,14 +324,11 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     setShowConfirmationModal(false);
   }, []);
 
-  // Memoized function to get the current language value
   const getCurrentLanguageValue = useCallback(() => {
-    // Find the language option that matches the current languageId
     const currentLang = languageOptions.find(lang => lang.language_id === formData.languageId);
     return currentLang?.label?.toString() || "";
   }, [languageOptions, formData.languageId]);
 
-  // Memoized function to handle language change
   const handleLanguageChange = useCallback(
     (value: string | number) => {
       handleFieldChange("languageId", typeof value === "string" ? parseInt(value) : value);
@@ -227,20 +336,6 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     [handleFieldChange],
   );
 
-  // Memoized function to handle provider change
-  const handleProviderChange = useCallback(
-    (value: string) => {
-      if (value === "__custom__") {
-        setShowCustomProvider(true);
-        handleFieldChange("provider", "");
-      } else {
-        handleFieldChange("provider", value);
-      }
-    },
-    [handleFieldChange],
-  );
-
-  // Memoized language options for dropdown
   const languageDropdownOptions = useMemo(
     () =>
       languageOptions.map(lang => ({
@@ -250,12 +345,61 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     [languageOptions],
   );
 
-  // Check if form is valid for saving
-  const isFormValid = useMemo(() => {
-    const hasRequiredFields = !!(formData.name && formData.provider);
-    const configIsValid = !configError;
-    return hasRequiredFields && configIsValid;
-  }, [formData.name, formData.provider, configError]);
+  /**
+   * A voice already stored with a provider the runtime can't dispatch to keeps
+   * its value in the list — dropping it would silently rewrite the row the
+   * moment anyone saved an unrelated field.
+   */
+  const providerDropdownOptions = useMemo(() => {
+    const stored = formData.provider;
+    if (stored && !isSupportedProvider(stored)) {
+      return [...TTS_PROVIDER_OPTIONS, { value: stored, label: `${stored} (unsupported)` }];
+    }
+    return TTS_PROVIDER_OPTIONS;
+  }, [formData.provider]);
+
+  const isFormValid = useMemo(
+    () => !!(formData.name && formData.provider) && !configError && configErrors.length === 0,
+    [formData.name, formData.provider, configError, configErrors],
+  );
+
+  const renderConfigField = (field: VoiceConfigField) => {
+    const value = readConfigField(config, field);
+
+    if (field.type === "boolean") {
+      return (
+        <input
+          type="checkbox"
+          checked={value === true}
+          onChange={event => setConfigValue(field, event.target.checked)}
+          className="w-4 h-4 mt-2 accent-primary-600"
+          aria-label={field.label}
+        />
+      );
+    }
+
+    if (field.type === "select") {
+      return (
+        <TextDropdown
+          value={value ?? ""}
+          options={field.options ?? []}
+          onChange={(next: string) => setConfigValue(field, next)}
+          placeholder={`Select ${field.label.toLowerCase()}`}
+        />
+      );
+    }
+
+    return (
+      <input
+        type="text"
+        value={value ?? ""}
+        onChange={event => setConfigValue(field, event.target.value)}
+        placeholder={field.placeholder ?? ""}
+        className={textInputClass}
+        aria-label={field.label}
+      />
+    );
+  };
 
   if (!isOpen) return null;
 
@@ -281,33 +425,13 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
           </div>
 
           <div className="space-y-3">
-            <Field label="Provider">
-              {showCustomProvider ? (
-                <div className="flex gap-2 w-full">
-                  <input
-                    type="text"
-                    value={formData.provider || ""}
-                    onChange={event => handleFieldChange("provider", event.target.value)}
-                    placeholder="Enter custom provider name"
-                    className="border-none focus:outline-none text-base w-full"
-                  />
-                  <button
-                    onClick={() => setShowCustomProvider(false)}
-                    className="text-primary-600 hover:text-primary-700 text-sm whitespace-nowrap"
-                  >
-                    Back
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-2 w-full">
-                  <TextDropdown
-                    value={formData.provider || ""}
-                    options={providerOptions}
-                    onChange={handleProviderChange}
-                    placeholder="Select or add provider"
-                  />
-                </div>
-              )}
+            <Field label="Provider" required>
+              <TextDropdown
+                value={formData.provider || ""}
+                options={providerDropdownOptions}
+                onChange={handleProviderChange}
+                placeholder="Select provider"
+              />
             </Field>
 
             <Field label="Language">
@@ -318,14 +442,47 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
                 placeholder="Select language"
               />
             </Field>
+          </div>
 
-            <Field label="Configuration" multiline={true}>
+          {formData.provider && !isSupportedProvider(formData.provider) && (
+            <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              The voice agent has no client for <strong>{formData.provider}</strong>. Calls using
+              this voice fall back to a default Deepgram voice. Pick a supported provider to fix it.
+            </div>
+          )}
+
+          {/*
+            Advisory, not a validation error — the voice still plays fine. It's
+            language coverage that suffers, so say which effect it has rather
+            than just flagging a blank field.
+          */}
+          {formData.provider && isMissingGender(config) && (
+            <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              No gender set. This voice still works, but a language is only offered for simulation
+              creation once it has both a male and a female voice — so leaving this blank can keep
+              its language out of the studio.
+            </div>
+          )}
+
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-base font-[500] text-typography-900">Configuration</h2>
+              <button
+                type="button"
+                onClick={toggleJsonMode}
+                className="text-sm text-primary-600 hover:text-primary-700"
+              >
+                {isJsonMode ? "Back to fields" : "Edit as JSON"}
+              </button>
+            </div>
+
+            {isJsonMode ? (
               <div className="w-full">
                 <AutoExpandableTextarea
                   maxLines={20}
                   minHeight={20}
                   value={configText}
-                  onChange={handleConfigChange}
+                  onChange={handleConfigTextChange}
                   placeholder="Enter configuration as JSON object"
                   className="py-2 pt-[16px] px-0 border-none focus:outline-none text-base w-full resize-none overflow-y-auto custom-scrollbar"
                 />
@@ -333,7 +490,114 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
                   <div className="text-red-600 text-sm mt-2 font-medium">⚠️ {configError}</div>
                 )}
               </div>
-            </Field>
+            ) : !formData.provider ? (
+              <p className="text-sm text-typography-500">
+                Pick a provider to configure this voice.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {providerSchema.map(field => (
+                  <Field
+                    key={field.key}
+                    label={field.label}
+                    required={field.required}
+                    hint={field.hint}
+                  >
+                    {renderConfigField(field)}
+                  </Field>
+                ))}
+
+                <div className="pt-4 mt-4 border-t border-border-light">
+                  {unknownKeys.length > 0 && (
+                    <>
+                      {/*
+                        Stated plainly because it's the whole risk of this
+                        section: `from_config()` in ally-ai-learn reads named
+                        keys, so an extra one persists but changes nothing at
+                        runtime — and looks like it worked.
+                      */}
+                      <p className="text-sm text-typography-600 mb-2">
+                        These keys aren&apos;t read by {formData.provider} — the voice agent ignores
+                        them at runtime. They&apos;re kept so nothing is lost on save. Making one
+                        take effect needs a change in the voice agent first.
+                      </p>
+                      {unknownKeys.map(key => (
+                        <Field key={key} label={key}>
+                          <div className="flex items-center gap-2 w-full">
+                            <input
+                              type="text"
+                              value={
+                                typeof config[key] === "object"
+                                  ? JSON.stringify(config[key])
+                                  : String(config[key] ?? "")
+                              }
+                              onChange={event => setUnknownKeyValue(key, event.target.value)}
+                              disabled={typeof config[key] === "object"}
+                              className={textInputClass}
+                              aria-label={key}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeConfigKey(key)}
+                              className="text-sm text-destructive-500 hover:text-destructive-700 whitespace-nowrap"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </Field>
+                      ))}
+                    </>
+                  )}
+
+                  {isAddingCustomKey ? (
+                    <div className="flex items-start gap-2 mt-2">
+                      <input
+                        type="text"
+                        value={customKeyName}
+                        onChange={event => setCustomKeyName(event.target.value)}
+                        onKeyDown={event => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            commitCustomKey();
+                          }
+                          if (event.key === "Escape") cancelCustomKey();
+                        }}
+                        placeholder="Key name, e.g. speed"
+                        className={textInputClass}
+                        aria-label="New config key"
+                        autoFocus
+                      />
+                      <Button variant={ButtonVariant.SECONDARY} onClick={commitCustomKey}>
+                        Add
+                      </Button>
+                      <Button variant={ButtonVariant.SECONDARY} onClick={cancelCustomKey}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingCustomKey(true)}
+                      className="text-sm text-primary-600 hover:text-primary-700 mt-1"
+                    >
+                      + Add custom key
+                    </button>
+                  )}
+
+                  {customKeyError && (
+                    <p className="text-sm text-destructive-500 mt-2">{customKeyError}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!isJsonMode && configErrors.length > 0 && (
+              <ul className="mt-3 text-sm text-destructive-500 list-disc pl-5">
+                {configErrors.map(error => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="flex gap-3 mt-8 pb-6 justify-center">
