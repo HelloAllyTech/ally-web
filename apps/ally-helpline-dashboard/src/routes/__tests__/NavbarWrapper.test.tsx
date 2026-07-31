@@ -262,9 +262,7 @@ describe("NavbarWrapper", () => {
       </NavbarWrapper>,
     );
 
-    const menuButton = screen
-      .getAllByRole("button")
-      .find(button => button.className.includes("md:hidden"));
+    const menuButton = screen.getByTestId("nav-sidebar-hamburger");
     expect(menuButton).toBeInTheDocument();
 
     // Initially sidebar should be closed
@@ -325,10 +323,8 @@ describe("NavbarWrapper", () => {
       </NavbarWrapper>,
     );
 
-    const menuButton = screen
-      .getAllByRole("button")
-      .find(button => button.className.includes("md:hidden"));
-    expect(menuButton).toHaveClass("md:hidden");
+    const menuButton = screen.getByTestId("nav-sidebar-hamburger");
+    expect(menuButton.parentElement).toHaveClass("md:hidden");
   });
 
   it("applies correct classes to main content area", () => {
@@ -361,7 +357,7 @@ describe("NavbarWrapper", () => {
       </NavbarWrapper>,
     );
 
-    const innerDiv = container.querySelector(".h-\\[100vh\\]");
+    const innerDiv = container.querySelector(".h-\\[calc\\(100vh-56px\\)\\]");
     expect(innerDiv).toBeInTheDocument();
   });
 });
