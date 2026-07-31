@@ -129,7 +129,7 @@ const LoadingState: FC = () => (
       <div className="px-4 py-3 border-b border-b-[#B39DDB] bg-[#EDE7F680]">
         <div className="h-6 bg-gray-200 rounded w-32"></div>
       </div>
-      <div className="grid grid-cols-3 divide-x divide-[#B39DDB]">
+      <div className="grid grid-cols-1 divide-y divide-[#B39DDB] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {[1, 2, 3].map(i => (
           <div key={i} className="px-6 py-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -193,11 +193,11 @@ const SkillCoverageCard: FC<{ skills: SkillCoverage[] }> = ({ skills }) => {
           {t("postSim.skills.coverage")}
         </h3>
       </div>
-      <div className="flex p-6 gap-6">
-        <div className="w-1/3 flex items-center justify-center">
+      <div className="flex flex-col gap-6 p-6 sm:flex-row">
+        <div className="flex w-full items-center justify-center sm:w-1/3">
           <OverallScoreMeter percentage={getSkillOverallPercentage(skills)} />
         </div>
-        <div className="flex flex-col gap-3 w-2/3">
+        <div className="flex w-full flex-col gap-3 sm:w-2/3">
           {skills.map(skill => (
             <div key={skill.label} className="px-6 border rounded-sm py-5 flex w-full gap-2.5">
               <div className="min-w-10 w-10 h-10 rounded-sm border flex items-center justify-center">
