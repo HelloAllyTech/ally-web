@@ -157,7 +157,7 @@ const AudioUploadDialog: FC<AudioUploadDialogProps> = ({ isOpen, onClose }) => {
       <ModalBody className="p-0">
         <motion.div
           data-testid="audio-upload-dialog-content"
-          className="max-w-[760px] min-w-[600px] w-full flex flex-col gap-6 p-6 sm:p-8 md:p-10"
+          className="max-w-[760px] md:min-w-[600px] w-full flex flex-col gap-6 p-6 sm:p-8 md:p-10"
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}

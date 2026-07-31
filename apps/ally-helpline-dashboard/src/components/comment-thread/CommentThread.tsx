@@ -218,7 +218,7 @@ const CommentThread = ({
     });
   };
   return (
-    <div className="bg-white rounded-lg p-4 shadow-lg border w-[400px]">
+    <div className="bg-white rounded-lg p-4 shadow-lg border w-[min(400px,95vw)]">
       <div className="text-base font-medium border-b-[0.5px] pb-2 border-border-light">
         Comment Thread
       </div>
