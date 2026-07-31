@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useRef } from "react";
 
 import CharacterCount from "@tiptap/extension-character-count";
 import Image from "@tiptap/extension-image";
@@ -9,6 +9,15 @@ import StarterKit from "@tiptap/starter-kit";
 
 import { sanitizeHtml } from "./richTextSanitizer";
 import { RichTextToolbar } from "./RichTextToolbar";
+
+// TipTap renders an empty document as "<p></p>"; callers store empty as "".
+// Comparing the two forms directly would read "still empty" as a change.
+const EMPTY_DOC_HTML = new Set(["", "<p></p>", "<p><br></p>"]);
+
+const normalizeForCompare = (html: string) => {
+  const trimmed = (html ?? "").trim();
+  return EMPTY_DOC_HTML.has(trimmed) ? "" : trimmed;
+};
 
 interface RichTextEditorProps {
   value: string;
@@ -35,6 +44,11 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
   allowImages = false,
   onImageUpload,
 }) => {
+  // Read inside onUpdate, which TipTap creates once and would otherwise close
+  // over the first render's `value`.
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -72,6 +86,13 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
     onUpdate: ({ editor: updatedEditor }) => {
       const html = updatedEditor.getHTML();
       const sanitized = sanitizeHtml(html, { allowImages });
+      // TipTap fires onUpdate for its own initial content load, not only for
+      // typing. Reporting that as an edit is destructive: the editor mounts
+      // before the form has been populated from the server, so the empty
+      // "<p></p>" doc would be written back over the real value and mark the
+      // field dirty — which the studio's background autosave then persists.
+      // Only report content that actually differs from what we were given.
+      if (normalizeForCompare(sanitized) === normalizeForCompare(valueRef.current)) return;
       onChange(sanitized);
     },
   });
@@ -83,7 +104,7 @@ export const RichTextEditor: FC<RichTextEditorProps> = ({
     const sanitizedValue = sanitizeHtml(value || "", { allowImages });
 
     // Avoid infinite loop: only update if content actually differs
-    if (currentHtml !== sanitizedValue && sanitizedValue !== currentHtml) {
+    if (normalizeForCompare(currentHtml) !== normalizeForCompare(sanitizedValue)) {
       editor.commands.setContent(sanitizedValue, { emitUpdate: false });
     }
   }, [editor, value, allowImages]);
