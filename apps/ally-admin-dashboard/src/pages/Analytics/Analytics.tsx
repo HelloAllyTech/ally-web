@@ -1,5 +1,7 @@
 import { ReactNode, useMemo, useState } from "react";
 
+import { useSelector } from "react-redux";
+
 import "@carbon/charts/styles.css";
 import "./analytics-carbon.scss";
 
@@ -15,9 +17,12 @@ import {
   Theme,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
+import { isSuperDuperAdminRole, UserRole } from "@constants";
+import { RootState } from "@store";
 import { AnalyticsRange } from "@types";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
+import { AnalyticsAgentTab } from "./tabs/AnalyticsAgentTab";
 import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
@@ -49,6 +54,16 @@ interface TabDef {
   label: string;
   uses: { language: boolean; range: boolean };
   render: (f: AnalyticsTabFilters) => ReactNode;
+  /**
+   * Optional extra gate, on top of the route's SUPER_ADMIN_ROLES. Only one tab
+   * needs it today (see the Analytics Agent entry), and a tab without it stays
+   * visible to everyone who can reach the page — which is how every other tab
+   * here already behaved.
+   *
+   * A hidden tab, not a disabled one: a reader who can never use it is better
+   * served by not knowing it exists than by a tab whose every request 403s.
+   */
+  visibleTo?: (role?: UserRole | string | null) => boolean;
 }
 
 const TABS: TabDef[] = [
@@ -112,6 +127,25 @@ const TABS: TabDef[] = [
     uses: { language: false, range: false },
     render: f => <TestingTab {...f} />,
   },
+  {
+    // Ask-anything, in English. Last in the list and gated on the elevated
+    // super-duper-admin tier, unlike every tab above it.
+    //
+    // The narrower gate is the point: the other tabs answer fixed, reviewed
+    // questions, while this one writes its own query across every readable
+    // table at platform scope. ally-be gates the endpoints on the same tier, so
+    // hiding the tab for a plain SUPER_ADMIN keeps the UI honest about what it
+    // could actually fetch rather than offering a control that 403s.
+    //
+    // No page-level pickers: the reader states the period and the grouping in
+    // the question itself, and a range picker that silently re-scoped a typed
+    // question would be a filter nobody could see being applied.
+    id: "agent",
+    label: "Analytics Agent",
+    uses: { language: false, range: false },
+    render: () => <AnalyticsAgentTab />,
+    visibleTo: isSuperDuperAdminRole,
+  },
 ];
 
 export const Analytics = () => {
@@ -121,9 +155,10 @@ export const Analytics = () => {
   const [language, setLanguage] = useState<string>("");
   const [tabIndex, setTabIndex] = useState(0);
 
-  // Every tab is visible to everyone who can reach this page (the route gates on
-  // SUPER_ADMIN_ROLES), so the rendered list is the registry itself.
-  const tabs = TABS;
+  // Most tabs are visible to everyone who can reach this page (the route gates
+  // on SUPER_ADMIN_ROLES); a tab may declare a narrower gate of its own.
+  const role = useSelector((state: RootState) => state.user.user?.role);
+  const tabs = useMemo(() => TABS.filter(t => !t.visibleTo || t.visibleTo(role)), [role]);
 
   const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });
   const languageItems = useMemo(

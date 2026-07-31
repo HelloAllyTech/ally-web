@@ -1316,7 +1316,8 @@ export const en = {
       publishButton: "Publish All",
       publishing: "Publishing…",
       validation: "Add at least one question and fill in every question text",
-      allSucceeded: (count: number) => `${count} run${count === 1 ? "" : "s"} published for evaluation`,
+      allSucceeded: (count: number) =>
+        `${count} run${count === 1 ? "" : "s"} published for evaluation`,
       partialFailure: (failed: number, total: number) =>
         `${failed} of ${total} runs failed to publish — the rest were published`,
       allFailed: "Failed to publish the selected runs",
@@ -1541,6 +1542,67 @@ export const en = {
     listError: "Failed to load AI Lab data",
   },
   // The /evaluate micro-app (human evaluators; separate from the admin session)
+  analyticsAgent: {
+    tabLabel: "Analytics Agent",
+    heading: "Ask a question about the platform",
+    // The empty state teaches rather than decorates: this is the one screen where
+    // a reader has no idea what the thing can do until they have watched it work.
+    emptyTitle: "Ask in plain English",
+    emptySubtitle:
+      "The agent writes a read-only SQL query against the analytics tables, runs it, and explains the result. It shows you the query it ran, so you can check the number.",
+    inputPlaceholder: "e.g. How many simulations were completed per week in the last 90 days?",
+    send: "Ask",
+    sending: "Working…",
+    // Named for what it does. "Clear" would read as deleting data.
+    reset: "Reset chat",
+    resetConfirmTitle: "Reset this chat?",
+    resetConfirmBody:
+      "The conversation is only held in this browser tab, so resetting it cannot be undone. Nothing stored is affected.",
+    // Distinct from the trigger button's label: two controls named "Reset chat"
+    // on the same screen are one ambiguous target for a screen reader, and the
+    // dialog's job is to state what confirming does.
+    resetConfirm: "Reset and start over",
+    cancel: "Cancel",
+    // Progress narrative, not a bare spinner: two model calls and a query take
+    // real seconds, and a reader who cannot tell "working" from "stuck" reloads.
+    pendingPlanning: "Working out which tables answer this…",
+    pendingSlow: "Still working — a broad question can take up to a minute.",
+    requestFailed: "The agent could not be reached. Check your connection and ask again.",
+    showQuery: "Show the SQL",
+    hideQuery: "Hide the SQL",
+    ranIn: "ran in",
+    rowsReturned: "rows",
+    truncatedNotice:
+      "Showing the first {count} rows — the full result is larger, so any total in the answer is a lower bound.",
+    skippedRowsNotice:
+      "{count} row(s) are not on the chart because the measure was missing or not a number. They are in the table.",
+    caveatsTitle: "Worth knowing",
+    followUpsTitle: "Ask next",
+    clarifyTitle: "Needs a bit more detail",
+    refusedTitle: "Can't answer that from this data",
+    rejectedTitle: "Query refused",
+    failedTitle: "Query didn't run",
+    provenance: "Planned by {planner} · written by {answer} · prompt {version}",
+    provenancePlannerOnly: "Planned by {planner} · prompt {version}",
+    scopeTitle: "What can I ask about?",
+    scopeIntro:
+      "The agent reads aggregate analytics only. It can query these tables, capped at {rowLimit} rows per question:",
+    scopeDeniedIntro:
+      "It can never read credentials, personal contact details, or session and message content — including inside a count.",
+    scopeLoadFailed: "Couldn't load the list of readable tables.",
+    tableColumns: "columns",
+    emptyResult: "The query ran and matched no rows.",
+    // Sample questions in the empty state. Deliberately concrete and answerable
+    // from the readable tables — a suggestion that gets refused teaches the wrong
+    // lesson on a reader's first try.
+    samples: [
+      "How many simulations were completed each week over the last 90 days?",
+      "Which 10 organisations ran the most simulations this month?",
+      "What is the median simulation length, and how many sessions is that over?",
+      "How has AI spend per model changed month over month this year?",
+      "How many learners practised at all in the last 30 days, by organisation?",
+    ],
+  },
   evaluate: {
     title: "Ally Evaluation",
     loginHeading: "Evaluator Sign In",
