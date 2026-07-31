@@ -22,9 +22,9 @@ const TermsAndAgreement = ({ isOpen, handleAgreeButtonClick }) => {
       onClose={() => {}}
       preventCloseOnClickOutside
       size="md"
-      className="font-primary"
+      className="font-primary !fixed !inset-0 !flex !items-center !justify-center"
     >
-      <ModalBody className="h-[550px] p-4">
+      <ModalBody className="max-h-[85vh] h-[550px] p-4">
         <div className="flex items-center justify-center font-medium text-2xl font-secondary">
           {t("terms.title")}
         </div>
