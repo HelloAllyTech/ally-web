@@ -27,7 +27,7 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
     <div
       role="group"
       className={cn(
-        "inline-flex h-9 items-stretch rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary",
+        "inline-flex h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary",
         className,
       )}
     >
@@ -45,9 +45,9 @@ const ToggleButtonGroup: FC<ToggleButtonGroupProps> = ({
               if (!disabled && itemValue !== value) onValueChange(itemValue);
             }}
             className={cn(
-              "rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+              "whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
               inheritFontSize ? "text-inherit" : "text-sm",
-              equalWidth && "min-w-0 flex-1",
+              equalWidth ? "min-w-0 flex-1" : "shrink-0",
               isSelected
                 ? isSuccess
                   ? "bg-[#33BA60] text-white shadow-sm"

@@ -126,7 +126,7 @@ export const Learn: FC = () => {
               items={tabs.map(tab => ({ id: tab.id, label: tab.label }))}
               activeId={activeTab}
               onChange={id => handleTabChange(id as LearnTabId)}
-              className="border-none font-primary"
+              className="min-w-0 flex-1 border-none font-primary"
               showCount={false}
             />
 

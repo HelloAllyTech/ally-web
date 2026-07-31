@@ -3,12 +3,12 @@
 exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 <DocumentFragment>
   <div
-    class="inline-flex h-9 items-stretch rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
+    class="inline-flex h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
     role="group"
   >
     <button
       aria-checked="false"
-      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
+      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 text-typography-700 hover:bg-black/5"
       disabled=""
       role="radio"
       type="button"
@@ -17,7 +17,7 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
     </button>
     <button
       aria-checked="true"
-      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm bg-white text-[#4D4D4D] shadow-sm"
+      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 bg-white text-[#4D4D4D] shadow-sm"
       disabled=""
       role="radio"
       type="button"
@@ -26,7 +26,7 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
     </button>
     <button
       aria-checked="false"
-      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
+      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 text-typography-700 hover:bg-black/5"
       disabled=""
       role="radio"
       type="button"
@@ -40,12 +40,12 @@ exports[`ToggleButtonGroup > should match snapshot when disabled 1`] = `
 exports[`ToggleButtonGroup > should match snapshot when rendered with default props 1`] = `
 <DocumentFragment>
   <div
-    class="inline-flex h-9 items-stretch rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
+    class="inline-flex h-9 max-w-full items-stretch overflow-x-auto rounded-[4px] border-[0.5px] border-border-medium bg-neutral-100 p-0.5 font-tertiary"
     role="group"
   >
     <button
       aria-checked="true"
-      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm bg-white text-[#4D4D4D] shadow-sm"
+      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 bg-white text-[#4D4D4D] shadow-sm"
       role="radio"
       type="button"
     >
@@ -53,7 +53,7 @@ exports[`ToggleButtonGroup > should match snapshot when rendered with default pr
     </button>
     <button
       aria-checked="false"
-      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
+      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 text-typography-700 hover:bg-black/5"
       role="radio"
       type="button"
     >
@@ -61,7 +61,7 @@ exports[`ToggleButtonGroup > should match snapshot when rendered with default pr
     </button>
     <button
       aria-checked="false"
-      class="rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm text-typography-700 hover:bg-black/5"
+      class="whitespace-nowrap rounded-[4px] px-6 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 text-sm shrink-0 text-typography-700 hover:bg-black/5"
       role="radio"
       type="button"
     >
