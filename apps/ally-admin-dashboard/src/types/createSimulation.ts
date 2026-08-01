@@ -103,6 +103,25 @@ export interface LlmConfig {
 
 export type LlmConfigPayload = Omit<LlmConfig, "id" | "createdAt" | "updatedAt">;
 
+/**
+ * Outcome of testing a saved LLM config against its provider.
+ *
+ * `ok: false` is a normal 200 response, not an HTTP error: a model that has
+ * been retired is exactly what this call exists to report, and `error` carries
+ * the provider's own wording so it can be shown verbatim.
+ */
+export interface LlmPreviewResult {
+  ok: boolean;
+  text: string;
+  latencyMs: number;
+  promptTokens?: number;
+  completionTokens?: number;
+  error?: string;
+  configName: string;
+  provider: string;
+  model: string;
+}
+
 export interface DemographicsSectionProps {
   formMethods: UseFormReturn<FormData>;
 }

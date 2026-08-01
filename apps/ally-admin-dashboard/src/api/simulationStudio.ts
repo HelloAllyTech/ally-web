@@ -74,6 +74,7 @@ import {
   SttConfigPayload,
   LlmConfig,
   LlmConfigPayload,
+  LlmPreviewResult,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -391,6 +392,17 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.DELETE,
       }),
       invalidatesTags: [TAG_TYPES.LLM_CONFIGS, TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    /**
+     * Run a one-line completion against a saved LLM config to check the model
+     * still answers. Invalidates nothing — it reads from the provider, not us.
+     */
+    previewLlmConfig: builder.mutation<LlmPreviewResult, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PREVIEW_LLM_CONFIG(id),
+        method: HttpMethod.POST,
+      }),
     }),
 
     /**
@@ -1317,6 +1329,7 @@ export const {
   useCreateLlmConfigMutation,
   useUpdateLlmConfigMutation,
   useDeleteLlmConfigMutation,
+  usePreviewLlmConfigMutation,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
   useDispatchPreviewAgentMutation,

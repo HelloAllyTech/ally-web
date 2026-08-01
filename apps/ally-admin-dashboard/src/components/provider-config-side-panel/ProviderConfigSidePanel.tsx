@@ -31,6 +31,22 @@ interface ProviderConfigSidePanelProps {
   onClose: () => void;
   onSave: (payload: ProviderConfigPayload, id?: string) => Promise<void>;
   onDelete?: (row: ProviderConfigRow) => void;
+  /**
+   * Run a live check against the provider for a saved row.
+   *
+   * Optional so a registry without a meaningful test (STT needs audio input,
+   * not a text prompt) simply doesn't render the control. Resolves with a
+   * human-readable outcome; rejects only if the request itself failed.
+   */
+  onTest?: (id: string) => Promise<ProviderConfigTestResult>;
+}
+
+export interface ProviderConfigTestResult {
+  ok: boolean;
+  /** One line for the happy path, e.g. "ok · 312 ms · 8→2 tokens". */
+  summary: string;
+  /** The provider's own error, shown verbatim and allowed to wrap. */
+  detail?: string;
 }
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({
@@ -68,6 +84,7 @@ export const ProviderConfigSidePanel: React.FC<ProviderConfigSidePanelProps> = (
   onClose,
   onSave,
   onDelete,
+  onTest,
 }) => {
   const [name, setName] = useState("");
   const [provider, setProvider] = useState<string>(providerOptions[0]?.value ?? "");
@@ -75,13 +92,35 @@ export const ProviderConfigSidePanel: React.FC<ProviderConfigSidePanelProps> = (
   const [active, setActive] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<ProviderConfigTestResult | null>(null);
 
   useEffect(() => {
     setName(selected?.name ?? "");
     setProvider(selected?.provider ?? providerOptions[0]?.value ?? "");
     setConfig({ ...(selected?.config ?? {}) });
     setActive(selected?.active ?? true);
+    // A result from the previously opened row would otherwise read as if it
+    // described this one.
+    setTestResult(null);
   }, [selected, isOpen, providerOptions]);
+
+  const handleTest = useCallback(async () => {
+    if (!onTest || !selected?.id) return;
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      setTestResult(await onTest(selected.id));
+    } catch (error: any) {
+      setTestResult({
+        ok: false,
+        summary: "Could not run the test",
+        detail: error?.data?.message ?? error?.message ?? "Request failed",
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  }, [onTest, selected?.id]);
 
   const fields = useMemo(() => getProviderSchemaFields(schema, provider), [schema, provider]);
 
@@ -196,12 +235,45 @@ export const ProviderConfigSidePanel: React.FC<ProviderConfigSidePanelProps> = (
           >
             <DoubleArrowRight />
           </button>
-          {selected && onDelete && (
-            <Button variant={ButtonVariant.SECONDARY} onClick={() => onDelete(selected)}>
-              Delete
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Only for a saved row: the test runs against what is stored, not
+                what is currently typed in the form. */}
+            {selected && onTest && (
+              <Button variant={ButtonVariant.SECONDARY} onClick={handleTest} disabled={isTesting}>
+                {isTesting ? "Testing…" : "Test model"}
+              </Button>
+            )}
+            {selected && onDelete && (
+              <Button variant={ButtonVariant.SECONDARY} onClick={() => onDelete(selected)}>
+                Delete
+              </Button>
+            )}
+          </div>
         </div>
+
+        {testResult && (
+          <div
+            data-testid="provider-config-test-result"
+            className={`mx-10 ml-[46px] mt-4 rounded-md border px-4 py-3 text-sm ${
+              testResult.ok
+                ? "border-success-400 bg-success-50 text-typography-800"
+                : "border-destructive-500 bg-destructive-50 text-typography-800"
+            }`}
+          >
+            <div className="font-medium">
+              {testResult.ok ? "Model responded" : "Model did not respond"}
+            </div>
+            <div className="mt-1 text-typography-700">{testResult.summary}</div>
+            {testResult.detail && (
+              // The provider's own wording, wrapped rather than truncated — a
+              // deprecation notice names the replacement model, and cutting it
+              // off would hide the one useful part.
+              <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-typography-700">
+                {testResult.detail}
+              </pre>
+            )}
+          </div>
+        )}
 
         <div className="h-[calc(100vh-100px)] px-10 pl-[46px] pt-2 overflow-y-auto custom-scrollbar">
           <div className="mb-4">

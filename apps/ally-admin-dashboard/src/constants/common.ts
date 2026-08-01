@@ -47,6 +47,7 @@ export const ApiEndpoints = {
     STT_CONFIGS: "/v1/learn/stt-configs",
     UPDATE_STT_CONFIG: (id: string) => `/v1/learn/stt-configs/${id}`,
     LLM_CONFIGS: "/v1/learn/llm-configs",
+    PREVIEW_LLM_CONFIG: (id: string) => `/v1/llm-preview/generate/${id}`,
     UPDATE_LLM_CONFIG: (id: string) => `/v1/learn/llm-configs/${id}`,
     SCENARIO_LANGUAGES: "/v1/learn/scenario-languages",
     GET_LANGUAGES: "/v1/language",

@@ -8,7 +8,11 @@ import {
   NotionTable,
   ProviderConfigSidePanel,
 } from "@components";
-import { ProviderConfigPayload, ProviderConfigRow } from "@components/provider-config-side-panel";
+import {
+  ProviderConfigPayload,
+  ProviderConfigRow,
+  ProviderConfigTestResult,
+} from "@components/provider-config-side-panel";
 import { ButtonVariant } from "@components/types";
 import { getProviderLabelFrom, ProviderConfigSchema } from "@constants";
 
@@ -26,6 +30,8 @@ interface ProviderConfigRegistryProps {
   buildRow?: (config: ProviderConfigRow) => Record<string, any>;
   onSave: (payload: ProviderConfigPayload, id?: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  /** Optional live check; omitted by registries that have nothing to test. */
+  onTest?: (id: string) => Promise<ProviderConfigTestResult>;
 }
 
 /**
@@ -46,6 +52,7 @@ export const ProviderConfigRegistry: React.FC<ProviderConfigRegistryProps> = ({
   buildRow,
   onSave,
   onDelete,
+  onTest,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
@@ -160,6 +167,7 @@ export const ProviderConfigRegistry: React.FC<ProviderConfigRegistryProps> = ({
           }}
           onSave={handleSave}
           onDelete={setPendingDelete}
+          onTest={onTest}
         />
       )}
 
