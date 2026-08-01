@@ -103,6 +103,7 @@ import {
   WarningAlt as CWarningAlt,
   ZoomIn as CZoomIn,
   MachineLearningModel as CMachineLearningModel,
+  Catalog as CCatalog,
 } from "@carbon/icons-react";
 import { Heading1 as LHeading1, Heading2 as LHeading2, Heading3 as LHeading3 } from "lucide-react";
 
@@ -197,6 +198,8 @@ export const Globe = createCarbonIcon(CGlobe);
 export const UserSpeaker = createCarbonIcon(CUserSpeaker);
 /** Language Model (LLM) registry. */
 export const MachineLearningModel = createCarbonIcon(CMachineLearningModel);
+/** Model Catalog tab — the list of models, distinct from Language Model configs. */
+export const Catalog = createCarbonIcon(CCatalog);
 export const GroupBranch = createCarbonIcon(CFlowConnection);
 export const HappyEmoji = createCarbonIcon(CFaceSatisfied);
 export const ImageIcon = createCarbonIcon(CImage);

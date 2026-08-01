@@ -46,6 +46,7 @@ export const SIDEBAR_ITEMS = {
   SCENARIO_VOICES: "scenario-voices",
   STT_CONFIGS: "stt-configs",
   LLM_CONFIGS: "llm-configs",
+  LLM_MODEL_CATALOG: "llm-model-catalog",
   SCENARIO_LANGUAGES: "scenario-languages",
   PROMPTS: "prompts",
   USER_BADGES: "user-badges",

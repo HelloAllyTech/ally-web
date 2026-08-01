@@ -75,6 +75,8 @@ import {
   LlmConfig,
   LlmConfigPayload,
   LlmPreviewResult,
+  LlmCatalogModel,
+  LlmCatalogModelPayload,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -395,6 +397,49 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * The LLM model catalog as stored, inactive rows included. Distinct from
+     * getLlmModels (the pickers' feed), which hides inactive rows and falls
+     * back to the in-code list.
+     */
+    getLlmModelCatalog: builder.query<LlmCatalogModel[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.LLM_MODEL_CATALOG],
+    }),
+
+    createLlmModel: builder.mutation<LlmCatalogModel, LlmCatalogModelPayload>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG,
+        method: HttpMethod.POST,
+        body,
+      }),
+      // LLM_MODELS is the pickers' feed, so it has to refresh too.
+      invalidatesTags: [TAG_TYPES.LLM_MODEL_CATALOG, TAG_TYPES.LLM_MODELS],
+    }),
+
+    updateLlmModel: builder.mutation<
+      LlmCatalogModel,
+      { id: string; model: Partial<LlmCatalogModelPayload> }
+    >({
+      query: ({ id, model: body }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG_BY_ID(id),
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_MODEL_CATALOG, TAG_TYPES.LLM_MODELS],
+    }),
+
+    deleteLlmModel: builder.mutation<{ deleted: true }, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_MODEL_CATALOG, TAG_TYPES.LLM_MODELS],
+    }),
+
+    /**
      * Run a one-line completion against a saved LLM config to check the model
      * still answers. Invalidates nothing — it reads from the provider, not us.
      */
@@ -596,6 +641,9 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         ...(runtime ? { params: { runtime } } : {}),
       }),
+      // Now that the catalog is editable, adding or retiring a model has to
+      // reach every picker fed by this query without a page reload.
+      providesTags: [TAG_TYPES.LLM_MODELS],
     }),
 
     /**
@@ -1330,6 +1378,10 @@ export const {
   useUpdateLlmConfigMutation,
   useDeleteLlmConfigMutation,
   usePreviewLlmConfigMutation,
+  useGetLlmModelCatalogQuery,
+  useCreateLlmModelMutation,
+  useUpdateLlmModelMutation,
+  useDeleteLlmModelMutation,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
   useDispatchPreviewAgentMutation,

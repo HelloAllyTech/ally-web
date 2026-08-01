@@ -104,6 +104,27 @@ export interface LlmConfig {
 export type LlmConfigPayload = Omit<LlmConfig, "id" | "createdAt" | "updatedAt">;
 
 /**
+ * A row in the LLM model catalog.
+ *
+ * Note there is no `runtimes` field: which runtimes can execute a model is a
+ * property of deployed code, not of this row, and is joined in by the backend
+ * when serving the pickers. Adding a model here is a config change; adding a
+ * provider is a code change.
+ */
+export interface LlmCatalogModel {
+  id: string;
+  provider: string;
+  model: string;
+  label: string;
+  supportsTemperature: boolean;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type LlmCatalogModelPayload = Omit<LlmCatalogModel, "id" | "createdAt" | "updatedAt">;
+
+/**
  * Outcome of testing a saved LLM config against its provider.
  *
  * `ok: false` is a normal 200 response, not an HTTP error: a model that has

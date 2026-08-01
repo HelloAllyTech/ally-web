@@ -25,6 +25,7 @@ const buildSuperDuperAdminOnlyItems = (): Set<string> =>
     // every language (and every simulation defaulting to it) transcribes with.
     SIDEBAR_ITEMS.STT_CONFIGS,
     SIDEBAR_ITEMS.LLM_CONFIGS,
+    SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
     SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
     SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
     SIDEBAR_ITEMS.TOOLTIPS,
@@ -74,6 +75,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     id: SIDEBAR_ITEMS.LLM_CONFIGS,
     label: "Language Model",
     path: ROUTES.MANAGE_LLM_CONFIGS,
+  },
+  {
+    id: SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
+    label: "Model Catalog",
+    path: ROUTES.MANAGE_LLM_MODEL_CATALOG,
   },
   {
     id: SIDEBAR_ITEMS.SCENARIO_LANGUAGES,

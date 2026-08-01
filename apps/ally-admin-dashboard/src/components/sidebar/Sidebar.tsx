@@ -13,6 +13,7 @@ import {
   BarChart3,
   Chemistry,
   MachineLearningModel,
+  Catalog,
   Roadmap,
   Close,
   Document,
@@ -182,6 +183,8 @@ export const Sidebar: React.FC = () => {
         return <Mic />;
       case SIDEBAR_ITEMS.LLM_CONFIGS:
         return <MachineLearningModel size={20} />;
+      case SIDEBAR_ITEMS.LLM_MODEL_CATALOG:
+        return <Catalog size={20} />;
       case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return <Globe />;
       case SIDEBAR_ITEMS.MANAGE_GUARDRAILS:
@@ -236,6 +239,8 @@ export const Sidebar: React.FC = () => {
         return location.pathname.includes(ROUTES.MANAGE_STT_CONFIGS);
       case ROUTES.MANAGE_LLM_CONFIGS:
         return location.pathname.includes(ROUTES.MANAGE_LLM_CONFIGS);
+      case ROUTES.MANAGE_LLM_MODEL_CATALOG:
+        return location.pathname.includes(ROUTES.MANAGE_LLM_MODEL_CATALOG);
       case ROUTES.MANAGE_PROMPTS:
         return location.pathname.includes(ROUTES.MANAGE_PROMPTS);
       case ROUTES.MANAGE_GUARDRAILS:

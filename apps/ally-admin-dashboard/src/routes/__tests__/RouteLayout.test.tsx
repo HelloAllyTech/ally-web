@@ -39,6 +39,7 @@ vi.mock("@pages", () => ({
   ScenarioVoices: () => <div>ScenarioVoicesPage</div>,
   SttConfigs: () => <div>SttConfigsPage</div>,
   LlmConfigs: () => <div>LlmConfigsPage</div>,
+  LlmModelCatalog: () => <div>LlmModelCatalogPage</div>,
   ScenarioLanguages: () => <div>ScenarioLanguagesPage</div>,
   PromptManagement: () => <div>PromptManagementPage</div>,
   UserBadges: () => <div>UserBadgesPage</div>,

@@ -303,6 +303,52 @@ export const PROVIDER_CONFIG_COLUMNS = [
   },
 ];
 
+/** Columns for the LLM model catalog — the list of models, not of configs. */
+export const LLM_MODEL_CATALOG_COLUMNS = [
+  {
+    id: "label",
+    label: "Name",
+    accessor: "label",
+    dataType: cellTypes.normalText,
+    minWidth: 240,
+  },
+  {
+    id: "providerLabel",
+    label: "Provider",
+    accessor: "providerLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 160,
+  },
+  {
+    id: "model",
+    label: "Model id",
+    accessor: "model",
+    dataType: cellTypes.normalText,
+    minWidth: 240,
+  },
+  {
+    id: "temperature",
+    label: "Temperature",
+    accessor: "temperature",
+    dataType: cellTypes.normalText,
+    minWidth: 140,
+  },
+  {
+    id: "runtimeSupport",
+    label: "Runs in",
+    accessor: "runtimeSupport",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "status",
+    label: "Status",
+    accessor: "status",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+];
+
 // Comfort-audio volume slider (0..1), shown when the Comfort Audio toggle is on.
 export const COMFORT_AUDIO_VOLUME_DEFAULT = 0.3;
 export const COMFORT_AUDIO_VOLUME_MIN = 0;

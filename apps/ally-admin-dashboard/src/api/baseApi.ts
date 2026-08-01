@@ -163,6 +163,16 @@ export const baseAPI = createApi({
     TAG_TYPES.AI_LAB_AUTO_EVALS,
     TAG_TYPES.AI_LAB_QUESTION_SETS,
     TAG_TYPES.ANALYTICS_SUGGESTIONS,
+    // These four were used in providesTags/invalidatesTags but never declared
+    // here, so RTK Query silently ignored them and the invalidation never
+    // fired — saving a voice or a config left the list showing stale data
+    // until something else forced a refetch.
+    TAG_TYPES.SCENARIO_VOICES,
+    TAG_TYPES.STT_CONFIGS,
+    TAG_TYPES.LLM_CONFIGS,
+    TAG_TYPES.SCENARIO_LANGUAGES,
+    TAG_TYPES.LLM_MODEL_CATALOG,
+    TAG_TYPES.LLM_MODELS,
   ],
   endpoints: () => ({}),
 });
