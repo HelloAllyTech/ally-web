@@ -31,6 +31,8 @@ export interface RoadmapOpportunity {
   /** Null for legacy migrated rows whose owner was never linked to an Ally account. */
   ownerUserId?: number | null;
   prd: string | null;
+  /** AI-generated Claude Code implementation prompt, saved verbatim like `prd`. */
+  claudePrompt: string | null;
   releasedAt: string | null;
   /** SUM of every user's coins across every period. Computed in SQL, never stored. */
   priorityScore: number;

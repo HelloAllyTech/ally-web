@@ -527,6 +527,17 @@ export const productRoadmapAPI = baseAPI.injectEndpoints({
         body,
       }),
     }),
+
+    roadmapAiGenerateClaudePrompt: builder.mutation<
+      { text: string },
+      { description: string; prd?: string }
+    >({
+      query: body => ({
+        url: ApiEndpoints.PRODUCT_ROADMAP.AI_GENERATE_CLAUDE_PROMPT,
+        method: HttpMethod.POST,
+        body,
+      }),
+    }),
   }),
 });
 
@@ -576,4 +587,5 @@ export const {
   useRoadmapAiClassifyMutation,
   useRoadmapAiSummariseMutation,
   useRoadmapAiReleaseNotesMutation,
+  useRoadmapAiGenerateClaudePromptMutation,
 } = productRoadmapAPI;

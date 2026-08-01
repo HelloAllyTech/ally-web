@@ -17,7 +17,10 @@ import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
 import { RoadmapOpportunityStage, RoadmapTaxonomyItem } from "@types";
 
+import { GenerateClaudePromptModal } from "./GenerateClaudePromptModal";
+
 const PRD_MAX = 20000;
+const CLAUDE_PROMPT_MAX = 20000;
 const COMMENT_MAX = 500;
 
 const STAGES = Object.values(RoadmapOpportunityStage);
@@ -77,9 +80,11 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
     /** "" means unassigned. Holds an Ally user id as a string, since <Select> values are strings. */
     ownerUserId: "",
     prd: "",
+    claudePrompt: "",
   });
   const [commentBody, setCommentBody] = useState("");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
   useEffect(() => {
     if (!opportunity) return;
@@ -89,6 +94,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       productGoal: opportunity.productGoal,
       ownerUserId: opportunity.ownerUserId ? String(opportunity.ownerUserId) : "",
       prd: opportunity.prd ?? "",
+      claudePrompt: opportunity.claudePrompt ?? "",
     });
   }, [opportunity]);
 
@@ -106,7 +112,8 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
       draft.stage !== opportunity.stage ||
       draft.productGoal !== opportunity.productGoal ||
       draft.ownerUserId !== (opportunity.ownerUserId ? String(opportunity.ownerUserId) : "") ||
-      draft.prd !== (opportunity.prd ?? ""));
+      draft.prd !== (opportunity.prd ?? "") ||
+      draft.claudePrompt !== (opportunity.claudePrompt ?? ""));
 
   /**
    * Soft-delete. The backend also returns every contributor's coins to them, soft-deletes the
@@ -138,6 +145,7 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           // a super-admin user, and the backend answers 422 for anyone else.
           ownerUserId: draft.ownerUserId ? Number(draft.ownerUserId) : null,
           prd: draft.prd || null,
+          claudePrompt: draft.claudePrompt || null,
         },
       }).unwrap();
       toast.success("Saved.");
@@ -301,6 +309,33 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
               className="font-mono"
             />
 
+            {/* Same plain-text treatment as PRD above, and saved the same way: filled by the
+                Generate action or typed directly, but only persisted on "Save changes" below —
+                there is no separate write path. */}
+            <TextArea
+              id="drawer-claude-prompt"
+              labelText="Claude Code prompt"
+              rows={8}
+              value={draft.claudePrompt}
+              readOnly={!canManage}
+              maxLength={CLAUDE_PROMPT_MAX}
+              placeholder={canManage ? "Generate one below, or write it yourself." : ""}
+              onChange={event => setDraft(prev => ({ ...prev, claudePrompt: event.target.value }))}
+              className="font-mono"
+            />
+
+            {canManage && (
+              <div>
+                <Button
+                  variant={ButtonVariant.SECONDARY}
+                  onClick={() => setIsGeneratingPrompt(true)}
+                  disabled={!draft.description.trim()}
+                >
+                  Generate Claude Code prompt
+                </Button>
+              </div>
+            )}
+
             {canManage && (
               <div className="flex items-center justify-between gap-2">
                 {/* Delete sits opposite Save, not beside it: they are not peers, and an irreversible
@@ -380,6 +415,20 @@ export const OpportunityDrawer: React.FC<OpportunityDrawerProps> = ({
           </div>
         )}
       </aside>
+
+      {/* React bubbles synthetic events up the COMPONENT tree even across a portal, so without
+          this wrapper a click anywhere in the (portaled) modal would reach the backdrop's
+          onClick above and close the whole drawer along with the modal. */}
+      {isGeneratingPrompt && (
+        <div onClick={event => event.stopPropagation()}>
+          <GenerateClaudePromptModal
+            description={draft.description}
+            prd={draft.prd}
+            onApply={text => setDraft(prev => ({ ...prev, claudePrompt: text }))}
+            onClose={() => setIsGeneratingPrompt(false)}
+          />
+        </div>
+      )}
     </div>
   );
 };

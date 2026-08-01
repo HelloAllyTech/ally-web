@@ -266,6 +266,7 @@ export const ApiEndpoints = {
     AI_CLASSIFY: "/v1/product-roadmap/ai/classify",
     AI_SUMMARISE: "/v1/product-roadmap/ai/summarise",
     AI_RELEASE_NOTES: "/v1/product-roadmap/ai/release-notes",
+    AI_GENERATE_CLAUDE_PROMPT: "/v1/product-roadmap/ai/generate-claude-prompt",
     ADMIN_REINDEX: "/v1/product-roadmap/admin/reindex",
   },
   AI_LAB: {
