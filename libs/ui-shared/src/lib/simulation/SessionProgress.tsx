@@ -124,18 +124,20 @@ export const SessionProgress: FC<SessionProgressProps> = ({
                     style={{ backgroundColor: isCompleted ? STATE_COLORS.completed : "#374151" }}
                   />
                 )}
-                <motion.div
-                  data-testid={`session-progress-dot-${state.stateId}`}
-                  className="relative z-10 shrink-0 rounded-full"
-                  style={{
-                    width: isActive ? "14px" : "10px",
-                    height: isActive ? "14px" : "10px",
-                    backgroundColor: isActive || isCompleted ? dotColor : "#374151",
-                    boxShadow: isActive ? `0 0 8px 2px ${dotColor}66` : "none",
-                  }}
-                  animate={{ scale: isActive ? 1.1 : 1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                />
+                <div className="relative z-10 flex shrink-0 items-center justify-center w-[14px] h-[14px]">
+                  <motion.div
+                    data-testid={`session-progress-dot-${state.stateId}`}
+                    className="rounded-full"
+                    style={{
+                      width: isActive ? "14px" : "10px",
+                      height: isActive ? "14px" : "10px",
+                      backgroundColor: isActive || isCompleted ? dotColor : "#374151",
+                      boxShadow: isActive ? `0 0 8px 2px ${dotColor}66` : "none",
+                    }}
+                    animate={{ scale: isActive ? 1.1 : 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  />
+                </div>
                 <span
                   className="text-[12px] leading-[1.3]"
                   style={{
