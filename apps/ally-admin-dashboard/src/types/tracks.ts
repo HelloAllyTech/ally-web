@@ -1,4 +1,5 @@
 import { SimulationStatus } from "./createSimulation";
+import { AssignmentStatus } from "./organizationAccess";
 
 /**
  * Track 2.0 (admin "Courses") — types for the multi-component learning track
@@ -185,6 +186,8 @@ export interface GetTracksQueryParams {
   limit?: number;
   search?: string;
   tenantId?: string;
+  /** Only applied together with `tenantId`; the API ignores it otherwise. */
+  assignmentStatus?: AssignmentStatus;
   sortBy?: string;
   order?: string;
 }

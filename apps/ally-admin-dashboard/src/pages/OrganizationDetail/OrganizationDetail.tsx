@@ -13,6 +13,8 @@ import {
   useLazyGetTenantByIdQuery,
   useEnableCaseMutation,
   useDisableCaseMutation,
+  useAddTracksToTenantMutation,
+  useRemoveTracksFromTenantMutation,
 } from "@api";
 import { ArrowDown, Dot } from "@assets";
 import {
@@ -22,6 +24,7 @@ import {
   ScribeSettings,
   SimulationsSettings,
   CasesTab,
+  CoursesTab,
   BadgesTab,
 } from "@components";
 import { en, ROUTES, isSuperAdminRole } from "@constants";
@@ -32,6 +35,7 @@ enum TAB_IDS {
   SIMULATIONS = "simulations",
   PATH = "path",
   CASES = "cases",
+  COURSES = "courses",
   BADGES = "badges",
   SCRIBE_SETTINGS = "scribeSettings",
   SIMULATION_SETTINGS = "simulationSettings",
@@ -41,6 +45,7 @@ const defaultTabs = [
   { id: TAB_IDS.SIMULATIONS, label: en.userManagement.simulations },
   { id: TAB_IDS.PATH, label: en.userManagement.path },
   { id: TAB_IDS.CASES, label: en.userManagement.cases },
+  { id: TAB_IDS.COURSES, label: en.userManagement.courses },
   { id: TAB_IDS.BADGES, label: en.userManagement.badges },
   { id: TAB_IDS.SCRIBE_SETTINGS, label: en.userManagement.scribeSettings },
   { id: TAB_IDS.SIMULATION_SETTINGS, label: en.userManagement.simulationSettings },
@@ -57,7 +62,8 @@ export const OrganizationDetail: FC = () => {
 
   const filteredTabs = useMemo(() => {
     return defaultTabs.filter(tab => {
-      if (tab.id === TAB_IDS.PATH || tab.id === TAB_IDS.CASES) {
+      // Content-access tabs stay super-admin only, matching Tracks and Cases.
+      if (tab.id === TAB_IDS.PATH || tab.id === TAB_IDS.CASES || tab.id === TAB_IDS.COURSES) {
         return isSuperAdmin;
       }
       return true;
@@ -84,6 +90,8 @@ export const OrganizationDetail: FC = () => {
   const [disablePathAccess] = useDisablePathMutation();
   const [enableCaseAccess] = useEnableCaseMutation();
   const [disableCaseAccess] = useDisableCaseMutation();
+  const [addTracksToTenant] = useAddTracksToTenantMutation();
+  const [removeTracksFromTenant] = useRemoveTracksFromTenantMutation();
 
   useEffect(() => {
     if (id) {
@@ -156,6 +164,25 @@ export const OrganizationDetail: FC = () => {
     }
   };
 
+  const handleToggleCourseAccess = async (trackId: string, enabled: boolean) => {
+    try {
+      if (enabled) {
+        await addTracksToTenant({
+          tenantId: id,
+          trackIds: [trackId],
+        }).unwrap();
+      } else {
+        await removeTracksFromTenant({
+          tenantId: id,
+          trackIds: [trackId],
+        }).unwrap();
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || en.errors.courseUpdateFailed);
+      throw error;
+    }
+  };
+
   // Show skeleton loader while fetching organization data
   if (isTenantsLoading || !organization) {
     if (isTenantsLoading) {
@@ -201,6 +228,15 @@ export const OrganizationDetail: FC = () => {
             searchValue={searchValue}
             onSearchChange={setSearchValue}
             onToggleAccess={handleToggleCaseAccess}
+          />
+        );
+      case TAB_IDS.COURSES:
+        return (
+          <CoursesTab
+            organizationId={id}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onToggleAccess={handleToggleCourseAccess}
           />
         );
       case TAB_IDS.SCRIBE_SETTINGS:
