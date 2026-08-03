@@ -10,7 +10,11 @@ import {
 } from "@api";
 import { ActionConfirmationPopup, ListToolbar, NotionTable } from "@components";
 import { ButtonVariant } from "@components/types";
-import { getProviderLabelFrom, LLM_MODEL_CATALOG_COLUMNS, LLM_PROVIDER_OPTIONS } from "@constants";
+import {
+  getProviderLabelFrom,
+  LLM_CATALOG_PROVIDER_OPTIONS,
+  LLM_MODEL_CATALOG_COLUMNS,
+} from "@constants";
 import { LlmCatalogModel, LlmCatalogModelPayload } from "@types";
 
 import { LlmModelCatalogPanel } from "./LlmModelCatalogPanel";
@@ -28,6 +32,10 @@ const PROVIDER_RUNTIMES: Record<string, string> = {
   gemini: "Voice, AI, Backend",
   google: "Voice, AI, Backend",
   anthropic: "Backend only",
+  // Self-hosted: only the voice agent can reach them, so they cannot serve
+  // prompts run by ally-be or ally-ai — and cannot be reached by Test model.
+  ollama: "Voice only",
+  vllm: "Voice only",
 };
 
 export const LlmModelCatalog: React.FC = () => {
@@ -55,7 +63,7 @@ export const LlmModelCatalog: React.FC = () => {
     () =>
       filtered.map(row => ({
         ...row,
-        providerLabel: getProviderLabelFrom(LLM_PROVIDER_OPTIONS, row.provider),
+        providerLabel: getProviderLabelFrom(LLM_CATALOG_PROVIDER_OPTIONS, row.provider),
         temperature: row.supportsTemperature ? "Adjustable" : "Fixed",
         runtimeSupport: PROVIDER_RUNTIMES[row.provider?.toLowerCase()] ?? "Not runnable",
         status: row.active ? "Active" : "Inactive",

@@ -46,6 +46,11 @@ const VERBATIM_TEXT_COLUMN_IDS = new Set([
   "usedBy",
   // Brand-cased provider label ("OpenAI", "vLLM").
   "providerLabel",
+  // Model catalog: the display name carries vendor casing ("GPT-4o mini",
+  // "Claude Haiku 4.5") and the runtime list is a comma-joined set of proper
+  // nouns ("Voice, AI, Backend"). Sentence-casing either mangles it.
+  "label",
+  "runtimeSupport",
 ]);
 
 export const Cell = ({

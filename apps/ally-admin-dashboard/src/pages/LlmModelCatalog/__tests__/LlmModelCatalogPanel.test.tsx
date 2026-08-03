@@ -14,7 +14,7 @@ vi.mock("@components", () => ({
 }));
 
 vi.mock("@constants", () => ({
-  LLM_PROVIDER_OPTIONS: [
+  LLM_CATALOG_PROVIDER_OPTIONS: [
     { value: "openai", label: "OpenAI" },
     { value: "gemini", label: "Google (Gemini)" },
     { value: "anthropic", label: "Anthropic" },

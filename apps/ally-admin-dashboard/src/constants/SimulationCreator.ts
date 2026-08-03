@@ -277,6 +277,28 @@ export const LLM_PROVIDER_OPTIONS = [
   { value: "vllm", label: "vLLM" },
 ];
 
+/**
+ * Providers the model catalog can hold — deliberately NOT the same list as
+ * LLM_PROVIDER_OPTIONS above.
+ *
+ * Anthropic is absent from the config list (no llm_configs row uses it) but
+ * belongs here, since prompts can select Claude models. Ollama and vLLM are
+ * self-hosted and only the voice agent can reach them, but they are still
+ * selectable models and must not be lost now that the catalog is the single
+ * list.
+ *
+ * `gemini` rather than `google`: the catalog stores the canonical spelling used
+ * by the voice runtime's LLMProvider enum. ally-be accepts either and
+ * canonicalises on write.
+ */
+export const LLM_CATALOG_PROVIDER_OPTIONS = [
+  { value: "openai", label: "OpenAI" },
+  { value: "gemini", label: "Google (Gemini)" },
+  { value: "anthropic", label: "Anthropic" },
+  { value: "ollama", label: "Ollama" },
+  { value: "vllm", label: "vLLM" },
+];
+
 /** Columns shared by every provider-config registry tab (STT, LLM). */
 export const PROVIDER_CONFIG_COLUMNS = [
   {
@@ -1047,9 +1069,9 @@ export const SCENARIO_LANGUAGE_COLUMNS = [
   {
     // Picked from the Language Model registry rather than typed as JSON.
     // `options` is injected at render time — see LanguageManagement.
-    id: "llmConfigId",
+    id: "llmModelId",
     label: "Language Model",
-    accessor: "llmConfigId",
+    accessor: "llmModelId",
     dataType: cellTypes.dropdown,
     options: [] as { value: string; label: string }[],
     minWidth: 240,

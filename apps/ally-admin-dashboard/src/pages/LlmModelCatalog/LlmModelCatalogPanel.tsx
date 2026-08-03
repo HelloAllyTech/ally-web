@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { DoubleArrowRight } from "@assets";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { LLM_PROVIDER_OPTIONS } from "@constants";
+import { LLM_CATALOG_PROVIDER_OPTIONS } from "@constants";
 import { LlmCatalogModel, LlmCatalogModelPayload } from "@types";
 
 interface LlmModelCatalogPanelProps {
@@ -29,7 +29,7 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
   onSave,
   onDelete,
 }) => {
-  const [provider, setProvider] = useState(LLM_PROVIDER_OPTIONS[0]?.value ?? "openai");
+  const [provider, setProvider] = useState(LLM_CATALOG_PROVIDER_OPTIONS[0]?.value ?? "openai");
   const [model, setModel] = useState("");
   const [label, setLabel] = useState("");
   const [supportsTemperature, setSupportsTemperature] = useState(true);
@@ -37,7 +37,7 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setProvider(selected?.provider ?? LLM_PROVIDER_OPTIONS[0]?.value ?? "openai");
+    setProvider(selected?.provider ?? LLM_CATALOG_PROVIDER_OPTIONS[0]?.value ?? "openai");
     setModel(selected?.model ?? "");
     setLabel(selected?.label ?? "");
     setSupportsTemperature(selected?.supportsTemperature ?? true);
@@ -96,7 +96,7 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
               value={provider}
               onChange={event => setProvider(event.target.value)}
             >
-              {LLM_PROVIDER_OPTIONS.map(option => (
+              {LLM_CATALOG_PROVIDER_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

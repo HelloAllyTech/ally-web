@@ -8,7 +8,7 @@ vi.mock("@api", () => ({
   useUpdateLanguageMutation: vi.fn(),
   // The page reads the STT registry to fill the Speech Recognition dropdown.
   useGetSttConfigsQuery: () => ({ data: [], isFetching: false }),
-  useGetLlmConfigsQuery: () => ({ data: [], isFetching: false }),
+  useGetLlmModelCatalogQuery: () => ({ data: [], isFetching: false }),
 }));
 
 import * as api from "@api";

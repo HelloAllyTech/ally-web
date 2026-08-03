@@ -7,7 +7,7 @@ import {
   useCreateLanguageMutation,
   useUpdateLanguageMutation,
   useGetSttConfigsQuery,
-  useGetLlmConfigsQuery,
+  useGetLlmModelCatalogQuery,
 } from "@api";
 import { NotionTable, ListToolbar, LanguageManagementSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -195,10 +195,8 @@ export const ScenarioLanguages: React.FC = () => {
           translationCode:
             columnId === "translationCode" ? parsedValue : originalLanguage.translationCode,
           llmProviderConfig: llmConfig,
-          llmConfigId:
-            columnId === "llmConfigId"
-              ? parsedValue || null
-              : (originalLanguage.llmConfigId ?? null),
+          llmModelId:
+            columnId === "llmModelId" ? parsedValue || null : (originalLanguage.llmModelId ?? null),
           // The legacy jsonb column is no longer editable — carried through so
           // moving a language onto the registry doesn't destroy the fallback it
           // would revert to. An empty pick clears the reference.
@@ -240,7 +238,10 @@ export const ScenarioLanguages: React.FC = () => {
   // Not activeOnly: a language may still point at a retired config, and the
   // dropdown has to be able to show it rather than silently reading as unset.
   const { data: sttConfigs = [] } = useGetSttConfigsQuery();
-  const { data: llmConfigs = [] } = useGetLlmConfigsQuery();
+  // The LLM picker reads the model catalog, not llm_configs: every config row
+  // was just {provider, model} with no temperature, so the config layer added
+  // nothing for LLM and has been retired in favour of the catalog.
+  const { data: llmModels = [] } = useGetLlmModelCatalogQuery();
 
   const sttOptions = useMemo(
     () => buildConfigPickerOptions(sttConfigs, "Platform default"),
@@ -248,15 +249,21 @@ export const ScenarioLanguages: React.FC = () => {
   );
 
   const llmOptions = useMemo(
-    () => buildConfigPickerOptions(llmConfigs, "Platform default"),
-    [llmConfigs],
+    () => [
+      { value: "", label: "Platform default" },
+      ...llmModels.map(model => ({
+        value: model.id,
+        label: model.active ? model.label : `${model.label} (inactive)`,
+      })),
+    ],
+    [llmModels],
   );
 
   const languageColumns = useMemo(
     () =>
       SCENARIO_LANGUAGE_COLUMNS.map(column => {
         if (column.id === "sttConfigId") return { ...column, options: sttOptions };
-        if (column.id === "llmConfigId") return { ...column, options: llmOptions };
+        if (column.id === "llmModelId") return { ...column, options: llmOptions };
         return column;
       }),
     [sttOptions, llmOptions],
@@ -266,7 +273,7 @@ export const ScenarioLanguages: React.FC = () => {
     ...language,
     createdAt: language.createdAt ? new Date(language.createdAt).toLocaleDateString() : "",
     sttConfigId: language.sttConfigId ?? "",
-    llmConfigId: language.llmConfigId ?? "",
+    llmModelId: language.llmModelId ?? "",
   }));
 
   const tableFooter = (

@@ -25,7 +25,6 @@ import {
   CreateCase,
   ScenarioVoices,
   SttConfigs,
-  LlmConfigs,
   LlmModelCatalog,
   ScenarioLanguages,
   LanguageGlossary,
@@ -212,14 +211,6 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <SttConfigs />
-            </PrivateLayout>
-          }
-        />
-        <Route
-          path={ROUTES.MANAGE_LLM_CONFIGS}
-          element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
-              <LlmConfigs />
             </PrivateLayout>
           }
         />

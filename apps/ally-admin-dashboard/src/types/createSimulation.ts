@@ -381,6 +381,8 @@ interface BaseLanguage {
   sttConfigId?: string | null;
   /** This language's default LLM, referencing an llm_configs row. */
   llmConfigId?: string | null;
+  /** Catalog model this language runs; supersedes llmConfigId. */
+  llmModelId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
