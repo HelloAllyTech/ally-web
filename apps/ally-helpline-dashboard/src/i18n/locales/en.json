@@ -787,6 +787,7 @@
     "save": "Save report",
     "saving": "Saving...",
     "enhance": "Enhance",
+    "enhanceFailed": "Couldn't enhance this text. Please try again.",
     "tabs": {
       "returnToSelf": "Return to Self",
       "sessionSummary": "Session summary",
