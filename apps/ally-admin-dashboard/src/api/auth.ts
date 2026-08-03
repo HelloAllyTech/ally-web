@@ -11,9 +11,10 @@ import {
   AppType,
   HttpMethod,
   Permissions,
-  SUPER_ADMIN_ROLES,
   TAG_TYPES,
-  UserRole,
+  adminLoginRolesFor,
+  isEmbeddedSurface,
+  resolveAdminRole,
 } from "@constants";
 import {
   VerifyOTPRequest,
@@ -27,6 +28,12 @@ import {
   ImpersonateResponse,
   UserPreferencesData,
 } from "@types";
+
+// Which roles this deployment lets in at its own login. The surface is fixed at
+// build time, but this is resolved per call rather than at module load so that
+// importing this module never depends on the constants barrel being complete —
+// several test suites replace @constants wholesale.
+const adminLoginRoles = () => adminLoginRolesFor(isEmbeddedSurface());
 
 export const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
@@ -62,6 +69,13 @@ export const authAPI = baseAPI.injectEndpoints({
      */
     getUser: builder.query<User, void>({
       query: () => ApiEndpoints.AUTH.GET_USER,
+      // Re-resolve `role` from the full `roles` list before anything reads it,
+      // so every existing `user.role` gate in this app sees the user's highest
+      // admin tier rather than whichever role the backend's priority list
+      // happened to collapse to. Normalising here (rather than at each call
+      // site) covers both the RTK cache and the Redux mirror fed from it.
+      transformResponse: (user: User) =>
+        user ? { ...user, role: resolveAdminRole(user) ?? user.role } : user,
     }),
 
     /**
@@ -85,7 +99,7 @@ export const authAPI = baseAPI.injectEndpoints({
         body: {
           phone,
           email,
-          allowedRoles: [...SUPER_ADMIN_ROLES, UserRole.MULTI_TENANT_ADMIN],
+          allowedRoles: adminLoginRoles(),
           appType: AppType.ADMIN,
         },
       }),
@@ -104,7 +118,7 @@ export const authAPI = baseAPI.injectEndpoints({
           phone,
           otp,
           email,
-          allowedRoles: [...SUPER_ADMIN_ROLES, UserRole.MULTI_TENANT_ADMIN],
+          allowedRoles: adminLoginRoles(),
         },
       }),
     }),
@@ -117,7 +131,7 @@ export const authAPI = baseAPI.injectEndpoints({
       query: data => ({
         url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
         method: HttpMethod.POST,
-        body: { ...data, allowedRoles: [...SUPER_ADMIN_ROLES, UserRole.MULTI_TENANT_ADMIN] },
+        body: { ...data, allowedRoles: adminLoginRoles() },
       }),
     }),
     getProfileImageUrl: builder.mutation<GetProfileUrlResponse, GetProfileUrlRequest>({
@@ -160,7 +174,7 @@ export const authAPI = baseAPI.injectEndpoints({
           {
             url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
             method: HttpMethod.POST,
-            body: { token, allowedRoles: [...SUPER_ADMIN_ROLES, UserRole.MULTI_TENANT_ADMIN] },
+            body: { token, allowedRoles: adminLoginRoles() },
           },
           api,
           extraOptions,

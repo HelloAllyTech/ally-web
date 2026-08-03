@@ -37,7 +37,14 @@ export interface User {
   email: string;
   id: number;
   name: string;
+  /**
+   * The role to gate on. The backend collapses a user's roles to one; the
+   * getUser query re-resolves it from `roles` so a super-admin tier held
+   * alongside a tenant role is not lost (see resolveAdminRole).
+   */
   role: UserRole;
+  /** Every role the user holds. Absent on responses predating the field. */
+  roles?: UserRole[];
   userId: number;
 }
 

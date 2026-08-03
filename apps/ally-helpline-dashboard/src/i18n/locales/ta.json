@@ -198,6 +198,7 @@
   },
   "user": {
     "creditUsage": "கிரெடிட் பயன்பாடு",
+    "adminConsole": "நிர்வாகக் கன்சோல்",
     "logout": "வெளியேறு",
     "profileAlt": "சுயவிவரம்",
     "dataPolicy": "தரவியல் கொள்கை"

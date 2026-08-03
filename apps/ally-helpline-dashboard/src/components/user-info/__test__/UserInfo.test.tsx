@@ -33,6 +33,7 @@ vi.mock("@assets", () => ({
   Ally: (props: any) => <svg data-testid="ally-logo" {...props} />,
   DataPolicy: (props: any) => <svg data-testid="data-policy" {...props} />,
   ManageAccount: (props: any) => <svg data-testid="manage-account" {...props} />,
+  RedirectIcon: (props: any) => <svg data-testid="redirect-icon" {...props} />,
 }));
 
 // Mock constants
@@ -49,6 +50,9 @@ vi.mock("@constants", () => ({
     PROFILE_MENU: "profile_menu",
     LOGOUT_BUTTON: "logout_button",
   },
+  ADMIN_CONSOLE_PATH: "/admin",
+  hasInternalRole: (user?: { roles?: string[] | null } | null) =>
+    !!user?.roles?.includes("INTERNAL"),
 }));
 
 // --- SETUP DATA ---
@@ -253,6 +257,40 @@ describe("UserInfo", () => {
       fireEvent.click(logoutButton);
 
       expect(mockOnLogout).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("Admin console link", () => {
+    const openMenu = () => fireEvent.click(screen.getByText("Jane Doe"));
+
+    it("is hidden for a user without the INTERNAL role", () => {
+      renderComponent();
+      openMenu();
+
+      expect(screen.queryByTestId("user-info-admin-console-link")).not.toBeInTheDocument();
+    });
+
+    it("is shown for Ally staff and points at the mounted console", () => {
+      renderComponent({ ...mockUser, roles: ["INTERNAL", "LEARNER"] as any });
+      openMenu();
+
+      const link = screen.getByTestId("user-info-admin-console-link");
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute("href", "/admin");
+      expect(screen.getByText("Admin console")).toBeInTheDocument();
+    });
+
+    it("keys on roles rather than the collapsed role", () => {
+      // The backend reports role: "LEARNER" for a staff member who is also a
+      // learner — only the roles array names INTERNAL.
+      renderComponent({
+        ...mockUser,
+        role: "LEARNER" as any,
+        roles: ["LEARNER", "INTERNAL"] as any,
+      });
+      openMenu();
+
+      expect(screen.getByTestId("user-info-admin-console-link")).toBeInTheDocument();
     });
   });
 

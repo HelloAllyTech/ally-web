@@ -1,4 +1,5 @@
 export * from "./common";
+export * from "./consumerSession";
 export * from "./detectionConfig";
 export * from "./permissions";
 export * from "./eventManagement";

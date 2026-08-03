@@ -198,6 +198,7 @@
   },
   "user": {
     "creditUsage": "उपयोग किए गए क्रेडिट्स",
+    "adminConsole": "एडमिन कंसोल",
     "logout": "लॉगआउट",
     "profileAlt": "प्रोफाइल",
     "dataPolicy": "डेटा संबंधी नीति"

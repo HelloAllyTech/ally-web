@@ -200,6 +200,7 @@
   },
   "user": {
     "creditUsage": "Credit usage",
+    "adminConsole": "Admin console",
     "logout": "Logout",
     "profileAlt": "Profile",
     "dataPolicy": "Data policy"
