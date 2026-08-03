@@ -15,9 +15,12 @@ import {
   LanguageEvalReference,
   LanguageMixResponse,
   LanguageQualityResponse,
+  LearnerKpisResponse,
   OrgHealthResponse,
+  OrgSessionDistributionResponse,
   QualityDistributionResponse,
   RoleplayVolumeResponse,
+  ScenarioUsageResponse,
   ScribeAdoptionResponse,
   ScribeOverviewResponse,
   ScribeSummaryFailureResponse,
@@ -337,6 +340,35 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         params: tenantId ? { tenantId } : {},
       }),
     }),
+    // How the whole customer base is shaped (org-health is which SPECIFIC org
+    // needs attention) — bucketed by avg minutes/sessions per learner, all-time.
+    getOrgSessionDistribution: builder.query<OrgSessionDistributionResponse, AllTimeAnalyticsQuery>(
+      {
+        query: ({ tenantId } = {}) => ({
+          url: ApiEndpoints.ANALYTICS.ORG_SESSION_DISTRIBUTION,
+          method: HttpMethod.GET,
+          params: tenantId ? { tenantId } : {},
+        }),
+      },
+    ),
+    // LEARNER-role-scoped counterparts of overview's totalUsers/activeUsers/
+    // simulationsCompleted/newUsers, which count every account regardless of role.
+    getLearnerKpis: builder.query<LearnerKpisResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.LEARNER_KPIS,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Platform-wide most/least-used scenarios — the org-scoped sibling lives on
+    // the tenant-admin Organization Metrics dashboard, not here.
+    getScenarioUsage: builder.query<ScenarioUsageResponse, AllTimeAnalyticsQuery>({
+      query: ({ tenantId } = {}) => ({
+        url: ApiEndpoints.ANALYTICS.SCENARIO_USAGE,
+        method: HttpMethod.GET,
+        params: tenantId ? { tenantId } : {},
+      }),
+    }),
     // Scribe BREADTH (orgs and counsellors using it), not ops volume — the
     // failure funnels and provider reliability stay on the Scribe tab.
     getScribeAdoption: builder.query<ScribeAdoptionResponse, AnalyticsWindowQuery>({
@@ -387,5 +419,8 @@ export const {
   useGetTrackDropoffQuery,
   useGetCoachingLoopQuery,
   useGetOrgHealthQuery,
+  useGetOrgSessionDistributionQuery,
+  useGetLearnerKpisQuery,
+  useGetScenarioUsageQuery,
   useGetScribeAdoptionQuery,
 } = analyticsAPI;

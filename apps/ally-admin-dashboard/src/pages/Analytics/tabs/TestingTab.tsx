@@ -10,8 +10,11 @@ import {
   useGetCompetencyMapQuery,
   useGetCompletionRateQuery,
   useGetLanguageMixQuery,
+  useGetLearnerKpisQuery,
   useGetOrgHealthQuery,
+  useGetOrgSessionDistributionQuery,
   useGetQualityDistributionQuery,
+  useGetScenarioUsageQuery,
   useGetScribeAdoptionQuery,
   useGetSkillGrowthQuery,
   useGetTrackDropoffQuery,
@@ -44,6 +47,7 @@ import {
   stackedBarOpts,
   timeBarOpts,
 } from "../chartKit";
+import { CONTEXT, PALETTE, sequentialScale } from "../chartScales";
 import { FunnelBars } from "../FunnelBars";
 import { OrgHealthCard } from "../OrgHealthCard";
 import {
@@ -247,6 +251,9 @@ export const TestingTab = ({ query }: AnalyticsTabFilters) => {
   const competencyMap = useGetCompetencyMapQuery(tenantOnly);
   const trackDropoff = useGetTrackDropoffQuery(tenantOnly);
   const orgHealth = useGetOrgHealthQuery(tenantOnly);
+  const orgSessionDistribution = useGetOrgSessionDistributionQuery(tenantOnly);
+  const learnerKpis = useGetLearnerKpisQuery(tenantOnly);
+  const scenarioUsage = useGetScenarioUsageQuery(tenantOnly);
 
   /**
    * Whether a panel's OWN request is still in flight. `isUninitialized` counts:
@@ -339,6 +346,68 @@ export const TestingTab = ({ query }: AnalyticsTabFilters) => {
   const itemBars = useMemo(() => buildItemTypeBars(td?.itemTypes ?? []), [td]);
   const itemScale = useMemo(() => buildItemTypeScale(itemBars), [itemBars]);
   const itemHeld = useMemo(() => suppressedItemTypes(td?.itemTypes ?? []), [td]);
+
+  // LEARNER-role-scoped counterparts of overview's totalUsers/activeUsers/
+  // simulationsCompleted/newUsers (see the endpoint doc: those count every
+  // account regardless of role). Monthly signups double as the "new users"
+  // trend, since an all-time endpoint has no window to bucket by grain.
+  const lk = learnerKpis.data;
+  const learnerSignupSeries = useMemo(
+    () =>
+      (lk?.signupsByMonth ?? []).map(p => ({
+        group: "New learners",
+        key: p.month,
+        value: p.newLearners,
+      })),
+    [lk],
+  );
+
+  // Platform-wide most/least-used scenarios — the org-scoped sibling lives on
+  // the tenant-admin Organization Metrics dashboard, not here. Horizontal
+  // bars, one row per scenario, matching Highlights' "top orgs" ranking chart:
+  // a ranking is read down a sorted list, not off value labels on every bar.
+  const su = scenarioUsage.data;
+  const mostUsedBars = useMemo(
+    () => (su?.mostUsed ?? []).map(r => ({ group: r.title, value: r.sessionCount })),
+    [su],
+  );
+  const leastUsedBars = useMemo(
+    () => (su?.leastUsed ?? []).map(r => ({ group: r.title, value: r.sessionCount })),
+    [su],
+  );
+  // Highlight the notable row (the biggest/smallest), grey the rest — matching
+  // Highlights' "top orgs" ranking chart: a ranking is read down the sorted
+  // order, not off which bar is which color.
+  const rankingScale = (bars: { group: string }[]) =>
+    bars.reduce<Record<string, string>>(
+      (acc, b, i) => ({ ...acc, [b.group]: i === 0 ? PALETTE.blue : CONTEXT.line }),
+      {},
+    );
+  const mostUsedScale = useMemo(() => rankingScale(mostUsedBars), [mostUsedBars]);
+  const leastUsedScale = useMemo(() => rankingScale(leastUsedBars), [leastUsedBars]);
+
+  // Orgs bucketed by all-time average minutes/sessions per learner — how the
+  // WHOLE customer base is shaped, not which specific org needs attention
+  // (org-health, below). Same histogram convention as "Time to first
+  // practice": ordered bands get one sequential ramp, zero band greyed as
+  // context rather than coloured as a real tier.
+  const osd = orgSessionDistribution.data;
+  const minutesBars = useMemo(
+    () => (osd?.avgMinutesPerLearner.bands ?? []).map(b => ({ group: b.label, value: b.orgs })),
+    [osd],
+  );
+  const minutesScale = useMemo(
+    () => sequentialScale((osd?.avgMinutesPerLearner.bands ?? []).map(b => b.label)),
+    [osd],
+  );
+  const sessionsBars = useMemo(
+    () => (osd?.avgSessionsPerLearner.bands ?? []).map(b => ({ group: b.label, value: b.orgs })),
+    [osd],
+  );
+  const sessionsScale = useMemo(
+    () => sequentialScale((osd?.avgSessionsPerLearner.bands ?? []).map(b => b.label)),
+    [osd],
+  );
 
   const cl = coaching.data;
   const coachingInProgress = cl?.window.inProgressBucket;
@@ -672,6 +741,58 @@ export const TestingTab = ({ query }: AnalyticsTabFilters) => {
         </ChartCard>
       </div>
 
+      {/* ------------------------- Learner KPIs ---------------------------- */}
+      <SubHeading>Learner KPIs</SubHeading>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <KpiTile
+            label="Total learners"
+            description="LEARNER-role accounts created, all-time — the overview KPI of the same name counts every role."
+            value={formatCount(lk?.summary.totalLearners)}
+            loading={learnerKpis.isLoading && !lk}
+          />
+          <KpiTile
+            label="Active learners"
+            description="Distinct learners with >=1 completed session, all-time."
+            value={formatCount(lk?.summary.activeLearners)}
+            loading={learnerKpis.isLoading && !lk}
+          />
+          <KpiTile
+            label="Completed sessions"
+            description="Completed sessions attributed to learners, all-time."
+            value={formatCount(lk?.summary.totalCompletedSessions)}
+            loading={learnerKpis.isLoading && !lk}
+          />
+        </div>
+
+        <ChartCard
+          title="New learners per month"
+          caption="LEARNER-role signups, all-time and month-grained — the LEARNER-only cut of the overview's new-users trend, which counts every role."
+          source={buildSource({
+            derivation: "LEARNER-role users.createdAt, grouped by month",
+            window: "All time",
+            n: lk?.summary.totalLearners,
+            nUnit: "learner accounts",
+            asOf: asOfStamp(lk?.computedAt),
+          })}
+          loading={learnerKpis.isLoading && !lk}
+          error={learnerKpis.isError}
+          onRetry={learnerKpis.refetch}
+          empty={!learnerKpis.isLoading && learnerSignupSeries.length === 0}
+        >
+          <ScrollableChart data={learnerSignupSeries}>
+            <LineChart
+              data={learnerSignupSeries}
+              options={lineOpts({
+                leftTitle: "New learners",
+                legend: false,
+                colorScale: { "New learners": PALETTE.blue },
+              })}
+            />
+          </ScrollableChart>
+        </ChartCard>
+      </div>
+
       {/* -------------------------- Activation ---------------------------- */}
       <SubHeading>Activation &amp; onboarding</SubHeading>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -895,6 +1016,54 @@ export const TestingTab = ({ query }: AnalyticsTabFilters) => {
         </ChartCard>
       </div>
 
+      {/* ------------------------- Scenario usage --------------------------- */}
+      <SubHeading>Scenario usage</SubHeading>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <ChartCard
+          title="Most-practised scenarios"
+          caption="Top scenarios by completed-session count, all-time, across every non-test tenant. The org-scoped sibling of this list lives on each tenant's Organization Metrics dashboard, not here."
+          source={buildSource({
+            derivation: "scenario_sessions grouped by scenario, completed, all time",
+            window: "All time",
+            asOf: asOfStamp(su?.computedAt),
+          })}
+          loading={scenarioUsage.isLoading && !su}
+          error={scenarioUsage.isError}
+          onRetry={scenarioUsage.refetch}
+          empty={!scenarioUsage.isLoading && mostUsedBars.length === 0}
+          emptyText="No completed sessions yet"
+        >
+          <ScrollableChart data={mostUsedBars} on="group">
+            <SimpleBarChart
+              data={mostUsedBars}
+              options={hBarOpts({ bottomTitle: "Sessions", colorScale: mostUsedScale })}
+            />
+          </ScrollableChart>
+        </ChartCard>
+
+        <ChartCard
+          title="Least-practised scenarios"
+          caption="Bottom scenarios by completed-session count, among scenarios with >=1 completed session — a never-completed scenario has no row to rank."
+          source={buildSource({
+            derivation: "scenario_sessions grouped by scenario, completed, all time",
+            window: "All time",
+            asOf: asOfStamp(su?.computedAt),
+          })}
+          loading={scenarioUsage.isLoading && !su}
+          error={scenarioUsage.isError}
+          onRetry={scenarioUsage.refetch}
+          empty={!scenarioUsage.isLoading && leastUsedBars.length === 0}
+          emptyText="No completed sessions yet"
+        >
+          <ScrollableChart data={leastUsedBars} on="group">
+            <SimpleBarChart
+              data={leastUsedBars}
+              options={hBarOpts({ bottomTitle: "Sessions", colorScale: leastUsedScale })}
+            />
+          </ScrollableChart>
+        </ChartCard>
+      </div>
+
       {/* ----------------------- Voice of the learner --------------------- */}
       <SubHeading>Voice of the learner</SubHeading>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -1077,6 +1246,62 @@ export const TestingTab = ({ query }: AnalyticsTabFilters) => {
           error={orgHealth.isError}
           onRetry={orgHealth.refetch}
         />
+      </div>
+
+      {/* How the WHOLE customer base is shaped — org-health above is which
+          SPECIFIC org needs attention; this has no per-org row on purpose. */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <ChartCard
+          title="Orgs by avg practice minutes per learner"
+          caption={`All-time average minutes-played per learner, per org, bucketed. A first-pass scale — not yet calibrated against real usage.${
+            osd && !osd.avgMinutesPerLearner.shown
+              ? ` Fewer than ${osd.avgMinutesPerLearner.minGroupSize} orgs in scope — suppressed rather than shown over a population too small to band.`
+              : ""
+          }`}
+          source={buildSource({
+            derivation: "AVG(user_daily_scores.minutesPlayed) per learner, per org",
+            window: "All time",
+            n: osd?.avgMinutesPerLearner.totalOrgs,
+            nUnit: "orgs with >=1 learner",
+            asOf: asOfStamp(osd?.computedAt),
+          })}
+          loading={orgSessionDistribution.isLoading && !osd}
+          error={orgSessionDistribution.isError}
+          onRetry={orgSessionDistribution.refetch}
+          empty={!orgSessionDistribution.isLoading && minutesBars.length === 0}
+          emptyText="No orgs with learners yet"
+        >
+          <SimpleBarChart
+            data={minutesBars}
+            options={barOpts({ leftTitle: "Orgs", colorScale: minutesScale })}
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Orgs by avg completed sessions per learner"
+          caption={`All-time average completed sessions per learner, per org, bucketed.${
+            osd && !osd.avgSessionsPerLearner.shown
+              ? ` Fewer than ${osd.avgSessionsPerLearner.minGroupSize} orgs in scope — suppressed rather than shown over a population too small to band.`
+              : ""
+          }`}
+          source={buildSource({
+            derivation: "AVG(completed scenario_sessions count) per learner, per org",
+            window: "All time",
+            n: osd?.avgSessionsPerLearner.totalOrgs,
+            nUnit: "orgs with >=1 learner",
+            asOf: asOfStamp(osd?.computedAt),
+          })}
+          loading={orgSessionDistribution.isLoading && !osd}
+          error={orgSessionDistribution.isError}
+          onRetry={orgSessionDistribution.refetch}
+          empty={!orgSessionDistribution.isLoading && sessionsBars.length === 0}
+          emptyText="No orgs with learners yet"
+        >
+          <SimpleBarChart
+            data={sessionsBars}
+            options={barOpts({ leftTitle: "Orgs", colorScale: sessionsScale })}
+          />
+        </ChartCard>
       </div>
 
       {/* ------------------------- Detail / export ------------------------ */}

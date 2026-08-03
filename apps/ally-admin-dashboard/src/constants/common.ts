@@ -331,6 +331,9 @@ export const ApiEndpoints = {
     TRACK_DROPOFF: "/v1/analytics/track-dropoff",
     COACHING_LOOP: "/v1/analytics/coaching-loop",
     ORG_HEALTH: "/v1/analytics/org-health",
+    ORG_SESSION_DISTRIBUTION: "/v1/analytics/org-session-distribution",
+    LEARNER_KPIS: "/v1/analytics/learner-kpis",
+    SCENARIO_USAGE: "/v1/analytics/scenario-usage",
     SCRIBE_ADOPTION: "/v1/analytics/scribe-adoption",
   },
   // The Analytics Agent's own namespace, not another entry under ANALYTICS: it

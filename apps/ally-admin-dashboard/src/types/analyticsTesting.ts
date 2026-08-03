@@ -405,3 +405,77 @@ export interface ScribeAdoptionResponse {
   scoping: AnalyticsScoping;
   computedAt: string;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Org session distribution — GET /v1/analytics/org-session-distribution      */
+/* -------------------------------------------------------------------------- */
+
+export interface OrgDistributionBand {
+  label: string;
+  /** Orgs whose all-time average falls in this band. */
+  orgs: number;
+}
+
+export interface OrgDistributionSection {
+  /** Orgs with >=1 learner — the population this distribution is drawn from. */
+  totalOrgs: number;
+  /**
+   * Lowest band first. Does NOT include the zero band (orgs whose learners
+   * have no activity at all) — that is `totalOrgs` minus the sum of these,
+   * computed on render so the two always add up to the stated denominator.
+   */
+  bands: OrgDistributionBand[];
+  minGroupSize: number;
+  /** False when totalOrgs is below minGroupSize — bands is empty in that case. */
+  shown: boolean;
+}
+
+export interface OrgSessionDistributionResponse {
+  avgMinutesPerLearner: OrgDistributionSection;
+  avgSessionsPerLearner: OrgDistributionSection;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Learner KPIs — GET /v1/analytics/learner-kpis                              */
+/* -------------------------------------------------------------------------- */
+
+export interface LearnerSignupPoint {
+  /** Calendar month start (yyyy-mm-dd). */
+  month: string;
+  newLearners: number;
+  cumulativeLearners: number;
+}
+
+export interface LearnerKpisResponse {
+  summary: {
+    totalLearners: number;
+    activeLearners: number;
+    totalCompletedSessions: number;
+  };
+  /** All-time monthly signups — the LEARNER-scoped "new users" trend. */
+  signupsByMonth: LearnerSignupPoint[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Scenario usage — GET /v1/analytics/scenario-usage                          */
+/* -------------------------------------------------------------------------- */
+
+export interface ScenarioUsageRow {
+  scenarioId: number;
+  title: string;
+  /** Completed sessions, all-time. */
+  sessionCount: number;
+}
+
+export interface ScenarioUsageResponse {
+  /** Most-used first. */
+  mostUsed: ScenarioUsageRow[];
+  /** Least-used first, among scenarios with >=1 completed session. */
+  leastUsed: ScenarioUsageRow[];
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
