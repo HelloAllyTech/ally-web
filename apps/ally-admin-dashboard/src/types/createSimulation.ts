@@ -126,6 +126,24 @@ export interface LlmCatalogModel {
 export type LlmCatalogModelPayload = Omit<LlmCatalogModel, "id" | "createdAt" | "updatedAt">;
 
 /**
+ * Outcome of pulling an ElevenLabs voice's creation type.
+ *
+ * `voiceIdMismatch` matters as much as `voiceType`: 7 of 77 production ids
+ * resolve to a different voice, so a stored id does not necessarily name the
+ * voice that renders.
+ */
+export interface ElevenLabsVoiceSyncResult {
+  storedVoiceId: string;
+  resolvedVoiceId: string | null;
+  voiceIdMismatch: boolean;
+  category: string | null;
+  resolvedName: string | null;
+  voiceType: string | null;
+  warning: string | null;
+  persisted: boolean;
+}
+
+/**
  * Outcome of testing a saved LLM config against its provider.
  *
  * `ok: false` is a normal 200 response, not an HTTP error: a model that has

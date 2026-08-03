@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { useGetAvailableLanguageVoicesQuery } from "@api";
+import { useGetAvailableLanguageVoicesQuery, useSyncElevenLabsVoiceMutation } from "@api";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, TextDropdown, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -14,11 +14,13 @@ import {
   getProviderSchema,
   getUnknownConfigKeys,
   isMissingGender,
+  getElevenLabsV3Warning,
+  VOICE_TYPE_SUMMARY,
   isSupportedProvider,
   readConfigField,
   validateVoiceConfig,
 } from "@constants/voiceProviders";
-import { ScenarioVoice, ScenarioLanguage } from "@types";
+import { ScenarioVoice, ScenarioLanguage, ElevenLabsVoiceSyncResult } from "@types";
 import { isObject } from "@utils/common";
 
 interface ScenarioVoiceSidePanelProps {
@@ -139,6 +141,31 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     () => getUnknownConfigKeys(formData.provider, config),
     [formData.provider, config],
   );
+
+  const [syncElevenLabsVoice, { isLoading: isSyncing }] = useSyncElevenLabsVoiceMutation();
+  const [syncResult, setSyncResult] = useState<ElevenLabsVoiceSyncResult | null>(null);
+
+  /**
+   * Ask ElevenLabs how this voice was created. The answer cannot be derived
+   * locally — the model string and voice id look identical for a Professional
+   * and an Instant clone — and a v3 call against a PVC returns 200 either way.
+   */
+  const handleSyncElevenLabs = useCallback(async () => {
+    if (!selectedVoice?.id) return;
+    try {
+      const result = await syncElevenLabsVoice(selectedVoice.id).unwrap();
+      setSyncResult(result);
+      if (result.voiceType) {
+        setFormData(previous => ({
+          ...previous,
+          config: { ...(previous.config ?? {}), voice_type: result.voiceType },
+        }));
+      }
+      toast.success(`Voice type: ${result.voiceType ?? "unknown"}`);
+    } catch (error: any) {
+      toast.error(error?.data?.message ?? "Could not reach ElevenLabs");
+    }
+  }, [selectedVoice?.id, syncElevenLabsVoice]);
 
   /**
    * Write a schema field into the config.
@@ -464,6 +491,59 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
             </div>
           )}
 
+          {/*
+            eleven_v3 cannot render from a fine-tuned voice, and a Professional
+            clone is one — so it silently substitutes a ~30-90s render and still
+            returns 200. Advisory rather than blocking: a same-voice A/B was
+            perceptually identical, so the pairing is unsupported, not proven
+            harmful. Silence is what let 23 production rows end up here.
+          */}
+          {getElevenLabsV3Warning(formData.provider, config) && (
+            <div
+              data-testid="elevenlabs-v3-warning"
+              className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            >
+              {getElevenLabsV3Warning(formData.provider, config)}
+            </div>
+          )}
+
+          {syncResult && (
+            <div
+              data-testid="elevenlabs-sync-result"
+              className={`mt-4 rounded-md border px-3 py-2 text-sm ${
+                syncResult.voiceIdMismatch
+                  ? "border-destructive-500 bg-destructive-50 text-typography-800"
+                  : "border-success-400 bg-success-50 text-typography-800"
+              }`}
+            >
+              <div className="font-medium">
+                {VOICE_TYPE_SUMMARY[syncResult.voiceType ?? ""]?.title ??
+                  "Voice type could not be determined"}
+              </div>
+              <div className="mt-1">
+                {VOICE_TYPE_SUMMARY[syncResult.voiceType ?? ""]?.v3 ??
+                  "ElevenLabs returned no category for this voice."}
+              </div>
+              {syncResult.category && (
+                // Their own value, kept small — traceability without making it
+                // the headline.
+                <div className="mt-1 text-xs text-typography-500">
+                  ElevenLabs category: {syncResult.category}
+                </div>
+              )}
+              {syncResult.voiceIdMismatch && (
+                // The stored id is not the voice that renders. Observed on 7 of
+                // 77 production ids, all well-known public-library ids.
+                <div className="mt-1">
+                  This id resolves to a <b>different voice</b>: stored{" "}
+                  <code>{syncResult.storedVoiceId}</code> → actually{" "}
+                  <code>{syncResult.resolvedVoiceId}</code> ({syncResult.resolvedName}). What plays
+                  is the second one.
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mt-8">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-base font-[500] text-typography-900">Configuration</h2>
@@ -612,6 +692,20 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
             <Button variant={ButtonVariant.SECONDARY} onClick={handleClose}>
               Cancel
             </Button>
+            {/*
+              Only for a saved ElevenLabs voice: the sync reads the stored
+              voice_id, so there is nothing to look up until the row exists.
+            */}
+            {selectedVoice?.id &&
+              String(formData.provider ?? "").toUpperCase() === "ELEVENLABS" && (
+                <Button
+                  variant={ButtonVariant.SECONDARY}
+                  onClick={handleSyncElevenLabs}
+                  disabled={isSyncing}
+                >
+                  {isSyncing ? "Syncing…" : "Sync from ElevenLabs"}
+                </Button>
+              )}
           </div>
         </div>
       </div>

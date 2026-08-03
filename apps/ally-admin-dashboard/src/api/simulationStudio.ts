@@ -77,6 +77,7 @@ import {
   LlmPreviewResult,
   LlmCatalogModel,
   LlmCatalogModelPayload,
+  ElevenLabsVoiceSyncResult,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -410,6 +411,18 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         ...(args && args.runtime ? { params: { runtime: args.runtime } } : {}),
       }),
       providesTags: [TAG_TYPES.LLM_MODEL_CATALOG],
+    }),
+
+    /**
+     * Pull an ElevenLabs voice's creation type so v3 compatibility is visible.
+     * Invalidates the voices list because it writes voice_type onto the row.
+     */
+    syncElevenLabsVoice: builder.mutation<ElevenLabsVoiceSyncResult, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SYNC_ELEVENLABS_VOICE(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
     }),
 
     /** Test a catalog model against its provider. */
@@ -1391,6 +1404,7 @@ export const {
   usePreviewLlmConfigMutation,
   useGetLlmModelCatalogQuery,
   usePreviewLlmModelMutation,
+  useSyncElevenLabsVoiceMutation,
   useCreateLlmModelMutation,
   useUpdateLlmModelMutation,
   useDeleteLlmModelMutation,

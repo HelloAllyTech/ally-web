@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock API hooks
 vi.mock("@api", () => ({
   useGetAvailableLanguageVoicesQuery: vi.fn(),
+  useSyncElevenLabsVoiceMutation: () => [vi.fn(), { isLoading: false }],
 }));
 
 import * as api from "@api";

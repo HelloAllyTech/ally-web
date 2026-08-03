@@ -42,6 +42,7 @@ export const ApiEndpoints = {
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     SCENARIO_VOICES: "/v1/learn/scenario-voices",
     CREATE_SCENARIO_VOICE: "/v1/learn/scenario-voices",
+    SYNC_ELEVENLABS_VOICE: (id: string) => `/v1/learn/scenario-voices/${id}/sync-elevenlabs`,
     UPDATE_SCENARIO_VOICE: (id: string | number) => `/v1/learn/scenario-voices/${id}`,
     SCENARIO_VOICE_LANGUAGES: "/v1/learn/scenario-voice-languages",
     STT_CONFIGS: "/v1/learn/stt-configs",
