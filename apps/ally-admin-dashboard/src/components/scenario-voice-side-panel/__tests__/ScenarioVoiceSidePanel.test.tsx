@@ -92,6 +92,8 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
+import { toast } from "sonner";
+
 const saveButton = () => screen.getByTestId("button-save");
 const providerDropdown = () => screen.getByTestId("dropdown-Select provider");
 
@@ -191,6 +193,57 @@ describe("ScenarioVoiceSidePanel", () => {
         option.getAttribute("value"),
       );
       expect(options).toEqual(["", "DEEPGRAM", "ELEVENLABS", "SARVAM", "GOOGLE", "HUME"]);
+    });
+
+    it("clears the old provider's config on switch, rather than leaking it under a same-named field", () => {
+      // Deepgram and ElevenLabs both use the key "model", but the values mean
+      // completely different things — Deepgram's is "aura-asteria-en",
+      // ElevenLabs' is "eleven_multilingual_v2". Carrying the old value
+      // forward makes it look like valid Deepgram data.
+      const elevenLabsVoice = {
+        id: "voice-10",
+        name: "Priya (public Rachel id)",
+        provider: "ELEVENLABS",
+        languageId: 1,
+        config: {
+          gender: "female",
+          model: "eleven_multilingual_v2",
+          voiceId: "21m00Tcm4TlvDq8ikWAM",
+          voice_type: "pvc",
+        },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={elevenLabsVoice} />);
+
+      fireEvent.change(providerDropdown(), { target: { value: "DEEPGRAM" } });
+
+      expect(screen.getByLabelText("Model")).toHaveValue("");
+      // gender is the one field every provider's schema shares — it survives.
+      expect(screen.getByTestId("dropdown-Select gender")).toHaveValue("female");
+      // Deepgram doesn't recognise voiceId or voice_type either, but they
+      // must not linger as unrelated leftovers from the old provider.
+      expect(screen.queryByText("voiceId")).not.toBeInTheDocument();
+      expect(screen.queryByText("voice_type")).not.toBeInTheDocument();
+    });
+
+    it("tells the admin fields were cleared when switching away from a filled-in provider", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+      fireEvent.change(providerDropdown(), { target: { value: "HUME" } });
+
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringContaining("previous provider's fields were cleared"),
+      );
+    });
+
+    it("does not toast about clearing when there was nothing to clear", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} />);
+
+      fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+
+      expect(toast.success).not.toHaveBeenCalled();
     });
   });
 

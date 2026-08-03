@@ -16,6 +16,7 @@ import { en } from "@constants";
 import {
   TTS_PROVIDER_OPTIONS,
   VoiceConfigField,
+  getProviderLabel,
   getProviderSchema,
   getUnknownConfigKeys,
   isMissingGender,
@@ -433,11 +434,37 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     });
   }, [config]);
 
+  /**
+   * Config fields are provider-specific even when a key name coincidentally
+   * matches across providers — Deepgram's `model` is "aura-asteria-en",
+   * ElevenLabs' is "eleven_multilingual_v2". Carrying the old config forward
+   * let a stale ElevenLabs model id sit in Deepgram's Model field looking
+   * perfectly valid (non-empty, required field satisfied) while voiceId and
+   * voice_type fell into the unrelated "unknown keys" bucket below.
+   *
+   * `gender` is the one field every provider's schema shares (literally the
+   * same GENDER_FIELD object), so it's the only value carried over.
+   */
   const handleProviderChange = useCallback(
     (value: string) => {
-      handleFieldChange("provider", value);
+      setFormData(previous => {
+        const previousConfig = previous.config ?? {};
+        const clearedOtherFields = Object.keys(previousConfig).some(
+          key => key !== "gender",
+        );
+        if (previous.provider && previous.provider !== value && clearedOtherFields) {
+          toast.success(
+            `Switched to ${getProviderLabel(value)} — the previous provider's fields were cleared.`,
+          );
+        }
+        return {
+          ...previous,
+          provider: value,
+          config: previousConfig.gender ? { gender: previousConfig.gender } : {},
+        };
+      });
     },
-    [handleFieldChange],
+    [],
   );
 
   const configErrors = useMemo(
