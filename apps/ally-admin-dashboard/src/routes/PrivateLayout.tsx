@@ -12,10 +12,17 @@ import {
   ROUTES,
   Permissions,
   UserRole,
+  adminLoginRolesFor,
+  isEmbeddedSurface,
   normalizeEmailForAllowlist,
 } from "@constants";
 import { setUser, setPermissions } from "@reducer";
 import { hasPermissions } from "@utils";
+
+// Roles this deployment admits at all. Fixed at build time with the surface,
+// but read lazily so importing this module never depends on the constants
+// barrel being complete — several test suites replace @constants wholesale.
+const adminSurfaceRoles = () => adminLoginRolesFor(isEmbeddedSurface());
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
@@ -58,6 +65,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   let hasPermission = true;
   let hasRole = true;
   let hasAllowedEmail = true;
+  let hasSurfaceAccess = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
     hasPermission = hasPermissions(permissions, requiredPermissions);
@@ -85,7 +93,17 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     );
   }
 
-  const hasAccess = hasPermission && hasRole && hasAllowedEmail;
+  // Whole-console gate, independent of any individual route. Login already
+  // filters on the same list, but the embedded surface can also be entered by
+  // adopting the consumer app's session (see adoptConsumerSession) — which any
+  // signed-in consumer user has. Without this, an ordinary learner who typed
+  // /admin would land in the console shell and meet an empty sidebar and a
+  // wall of 403s instead of a straight answer.
+  if (!isUserLoading && userData) {
+    hasSurfaceAccess = adminSurfaceRoles().includes(userData.role as UserRole);
+  }
+
+  const hasAccess = hasPermission && hasRole && hasAllowedEmail && hasSurfaceAccess;
 
   if (hasAccess && isPreview) return children;
 

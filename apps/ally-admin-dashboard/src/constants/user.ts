@@ -270,15 +270,26 @@ export enum UserRole {
   SIMULATION_REVIEWER = "SIMULATION_REVIEWER",
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
+  INTERNAL = "INTERNAL",
 }
 
 /**
- * Platform-level super-admin roles. SUPER_DUPER_ADMIN is a peer of SUPER_ADMIN
- * today (identical access; may gain extra capabilities later). Gate super-admin
- * UI on this list — via isSuperAdminRole — instead of an exact SUPER_ADMIN check
- * so both roles behave identically.
+ * Platform-level super-admin roles. SUPER_DUPER_ADMIN and INTERNAL are both
+ * peers of SUPER_ADMIN today (identical access; SUPER_DUPER_ADMIN may gain
+ * extra capabilities later). Gate super-admin UI on this list — via
+ * isSuperAdminRole — instead of an exact SUPER_ADMIN check so all three behave
+ * identically.
+ *
+ * INTERNAL is Ally staff: the backend grants it a permission-for-permission
+ * clone of SUPER_ADMIN. It is NOT in the list of roles the standalone console
+ * accepts at login (see ADMIN_LOGIN_ROLES) — INTERNAL reaches this same app
+ * through the copy path-mounted at /admin on the consumer origin.
  */
-export const SUPER_ADMIN_ROLES: UserRole[] = [UserRole.SUPER_ADMIN, UserRole.SUPER_DUPER_ADMIN];
+export const SUPER_ADMIN_ROLES: UserRole[] = [
+  UserRole.SUPER_ADMIN,
+  UserRole.SUPER_DUPER_ADMIN,
+  UserRole.INTERNAL,
+];
 
 export const isSuperAdminRole = (role?: UserRole | string | null): boolean =>
   role != null && (SUPER_ADMIN_ROLES as string[]).includes(role);
@@ -294,6 +305,63 @@ export const SUPER_DUPER_ADMIN_ROLES: UserRole[] = [UserRole.SUPER_DUPER_ADMIN];
 
 export const isSuperDuperAdminRole = (role?: UserRole | string | null): boolean =>
   role != null && (SUPER_DUPER_ADMIN_ROLES as string[]).includes(role);
+
+/**
+ * The roles this console offers at its own login, by surface.
+ *
+ * INTERNAL is accepted only on the embedded surface (the copy path-mounted at
+ * /admin on the consumer origin), so the standalone admin dashboard keeps
+ * exactly the audience it has today.
+ *
+ * This is a routing convention, not a security boundary: `allowedRoles` is sent
+ * by the client, and the backend checks the caller against whatever list it
+ * receives. An INTERNAL holder who posts the standalone list themselves would
+ * be let in — and would get the same API access either way, since INTERNAL and
+ * SUPER_ADMIN carry identical permissions. Enforcing the split server-side
+ * would mean deriving allowedRoles from a trusted signal rather than the
+ * request body, which is a change to how every client authenticates.
+ */
+export const adminLoginRolesFor = (embedded: boolean): UserRole[] => [
+  UserRole.SUPER_ADMIN,
+  UserRole.SUPER_DUPER_ADMIN,
+  UserRole.MULTI_TENANT_ADMIN,
+  ...(embedded ? [UserRole.INTERNAL] : []),
+];
+
+/**
+ * Collapse a user's roles to the one this console should gate on.
+ *
+ * Roles are additive, but `GET /users/me` also reports a single `role`, chosen
+ * by a backend priority list (SUPER_DUPER_ADMIN > SUPER_ADMIN > ADMIN >
+ * COUNSELOR > whichever row came back first). INTERNAL is deliberately absent
+ * from that list — hoisting it would change what the *consumer* app sees for a
+ * member of staff who is also an org ADMIN, and cost them their org-settings
+ * access. So a staffer holding [INTERNAL, LEARNER] can arrive here reporting
+ * `role: "LEARNER"`, which no super-admin gate would accept.
+ *
+ * The fix is to prefer the `roles` array the backend now sends and pick the
+ * highest admin tier in it. Only the super-admin tiers are hoisted: everything
+ * else falls through to the backend's own answer, so no existing user's gating
+ * changes. Falls back to `role` for any client or cache entry predating
+ * `roles`.
+ */
+const ADMIN_ROLE_PRECEDENCE: UserRole[] = [
+  UserRole.SUPER_DUPER_ADMIN,
+  UserRole.SUPER_ADMIN,
+  UserRole.INTERNAL,
+];
+
+export const resolveAdminRole = (user?: {
+  role?: UserRole | string | null;
+  roles?: (UserRole | string)[] | null;
+}): UserRole | undefined => {
+  const held = user?.roles;
+  if (held?.length) {
+    const ranked = ADMIN_ROLE_PRECEDENCE.find(candidate => (held as string[]).includes(candidate));
+    if (ranked) return ranked;
+  }
+  return (user?.role as UserRole) ?? undefined;
+};
 
 export enum AppType {
   ADMIN = "ADMIN",

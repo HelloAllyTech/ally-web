@@ -3,9 +3,15 @@ import { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
-import { Ally, Arrow, Bolt, DataPolicy, Logout, ManageAccount } from "@assets";
+import { Ally, Arrow, Bolt, DataPolicy, Logout, ManageAccount, RedirectIcon } from "@assets";
 import { AppTooltip, PermissionGuard } from "@components";
-import { ALLY_DATA_POLICY_URL, Permissions, TooltipLocation } from "@constants";
+import {
+  ADMIN_CONSOLE_PATH,
+  ALLY_DATA_POLICY_URL,
+  Permissions,
+  TooltipLocation,
+  hasInternalRole,
+} from "@constants";
 import { useSimulationCredits } from "@hooks";
 import { User } from "@types";
 import { openLinkInNewTab } from "@utils";
@@ -154,6 +160,19 @@ const UserInfo: FC<{
             <div className="border-b" data-testid="user-info-divider" />
           </PermissionGuard>
           <div className="flex flex-col items-center justify-center text-base">
+            {/* Ally staff only. A plain link, not navigate(): the admin console
+                is a separate app served under /admin on this origin, so it
+                needs a full page load rather than a client-side route change. */}
+            {hasInternalRole(user) && (
+              <a
+                data-testid="user-info-admin-console-link"
+                href={ADMIN_CONSOLE_PATH}
+                className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
+              >
+                <RedirectIcon className="w-4 h-4" />
+                {t("user.adminConsole")}
+              </a>
+            )}
             <button
               onClick={onProfileSettings}
               className="flex items-center gap-2 text-typography-700 hover:bg-gray-100 py-1 px-2 rounded justify-start w-full border-gray-200"
