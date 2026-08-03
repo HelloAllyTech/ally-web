@@ -69,6 +69,7 @@ export const en = {
     failedSimulationCreation: "Failed to create simulation. Please try again.",
     pathUpdateFailed: "Failed to update track access.",
     caseUpdateFailed: "Failed to update case access.",
+    courseUpdateFailed: "Failed to update course access.",
     failedUpdateAccess: "Failed to update access.",
     failedUpdateBadgeAccess: "Failed to update badge access.",
     OrganizationNotFound: "Organization not found",
@@ -675,8 +676,11 @@ export const en = {
     simulations: "Simulations",
     path: "Tracks",
     cases: "Cases",
+    courses: "Courses",
     badges: "Badges",
     access: "Access",
+    global: "Global",
+    globalCourseHint: "Published to every organization from the course settings.",
     all: "All",
     enabled: "Enabled",
     disabled: "Disabled",
@@ -1637,8 +1641,7 @@ export const en = {
     // "stuck" will reload and start a second run.
     pendingReading: "Reading the platform's analytics for this period…",
     pendingSlow: "Still working — a full read and draft can take up to two minutes.",
-    generateFailed:
-      "The run did not finish and nothing was saved. Check the period and try again.",
+    generateFailed: "The run did not finish and nothing was saved. Check the period and try again.",
     generated: "{count} suggestion(s) added.",
     // Zero is a real answer here, so it gets its own copy rather than reading as
     // a failure.
