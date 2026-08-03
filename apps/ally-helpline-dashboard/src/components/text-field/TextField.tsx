@@ -88,8 +88,16 @@ const TextField: FC<TextFieldProps> = ({
     <div className={`flex flex-col ${fullWidth ? "w-full" : ""} ${className ?? ""}`}>
       {label && <span className="text-xs text-typography-700">{label}</span>}
       {hasAdornment ? (
+        // `relative` is load-bearing: adornments (the Enhance wand) pin
+        // themselves with `absolute bottom-2 right-2`, which needs THIS row to
+        // be their containing block. MUI's InputBase used to provide that; the
+        // Carbon migration dropped it, and Carbon's autoAlign Tooltip wrapper
+        // deliberately does not set `position: relative` either — so every
+        // field's wand escaped and stacked in the corner of the page's
+        // `relative` scroll panel, where only the last one in DOM order was
+        // clickable.
         <div
-          className={`flex items-center gap-2 w-full ${showBorder ? "border border-[#E5E7EB] rounded" : ""}`}
+          className={`relative flex items-center gap-2 w-full ${showBorder ? "border border-[#E5E7EB] rounded" : ""}`}
         >
           {InputProps?.startAdornment}
           <div className="flex-1 min-w-0">{inputElement}</div>
