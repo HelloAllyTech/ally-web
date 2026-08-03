@@ -161,7 +161,13 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
           config: { ...(previous.config ?? {}), voice_type: result.voiceType },
         }));
       }
-      toast.success(`Voice type: ${result.voiceType ?? "unknown"}`);
+      // The plain-English title, not the raw enum — "Voice type: pvc" means
+      // nothing to the person configuring the voice. The banner below carries
+      // the detail; this only confirms the sync landed.
+      toast.success(
+        VOICE_TYPE_SUMMARY[result.voiceType ?? ""]?.title ??
+          "Synced, but ElevenLabs did not say how this voice was created",
+      );
     } catch (error: any) {
       toast.error(error?.data?.message ?? "Could not reach ElevenLabs");
     }
@@ -516,13 +522,15 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
                   : "border-success-400 bg-success-50 text-typography-800"
               }`}
             >
+              {/*
+                Reports only what the sync FOUND. The v3 verdict belongs to the
+                amber banner above and is deliberately not repeated here — both
+                render together after a sync, and once both were written in
+                plain English they were visibly saying the same sentence twice.
+              */}
               <div className="font-medium">
                 {VOICE_TYPE_SUMMARY[syncResult.voiceType ?? ""]?.title ??
-                  "Voice type could not be determined"}
-              </div>
-              <div className="mt-1">
-                {VOICE_TYPE_SUMMARY[syncResult.voiceType ?? ""]?.v3 ??
-                  "ElevenLabs returned no category for this voice."}
+                  "ElevenLabs did not say how this voice was created"}
               </div>
               {syncResult.category && (
                 // Their own value, kept small — traceability without making it

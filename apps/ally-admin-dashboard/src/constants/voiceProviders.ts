@@ -72,42 +72,39 @@ const GENDER_FIELD: VoiceConfigField = {
  * internal enum on both sides of an arrow and tells a reader nothing. What they
  * need is what the voice IS and whether they can use v3 with it.
  */
-export const VOICE_TYPE_SUMMARY: Record<string, { title: string; v3: string }> = {
-  pvc: {
-    title: "Professional voice clone",
-    // v3 does render these — measured 200s with audio indistinguishable from the
-    // fine-tuned render — so this states what is certain (the fine-tune goes
-    // unused) rather than recommending a model.
-    v3: "eleven_v3 will not use its fine-tune; only eleven_multilingual_v2 does.",
-  },
-  ivc: {
-    title: "Instant voice clone",
-    v3: "Works with eleven_v3.",
-  },
-  voice_design: {
-    title: "Voice Design voice",
-    v3: "Works with eleven_v3.",
-  },
-  premade: {
-    title: "ElevenLabs stock voice",
-    v3: "Works with eleven_v3.",
-  },
-  unknown: {
-    title: "Clone type unclear",
-    v3: "ElevenLabs did not say whether this is an Instant or a Professional clone — check the workspace before using eleven_v3.",
-  },
+/**
+ * Plain-English name for a voice type — what the voice IS, nothing more.
+ *
+ * Says nothing about v3 on purpose. `getElevenLabsV3Warning` is the single
+ * source for that, because both this and the warning render together after a
+ * sync: this used to carry a parallel `v3` verdict per type, which duplicated
+ * the warning on screen and was a second list that could drift out of step
+ * with V3_COMPATIBLE_VOICE_TYPES.
+ */
+export const VOICE_TYPE_SUMMARY: Record<string, { title: string }> = {
+  pvc: { title: "Custom-trained from recordings" },
+  ivc: { title: "Quick clone from a short sample" },
+  voice_design: { title: "Generated with Voice Design" },
+  premade: { title: "ElevenLabs stock voice" },
+  unknown: { title: "How it was created is unclear" },
 };
 
 /** Voice types eleven_v3 can render from. */
 const V3_COMPATIBLE_VOICE_TYPES = ["ivc", "voice_design", "premade"];
 
 /**
- * Advisory for an ElevenLabs voice whose type eleven_v3 cannot use.
+ * Advisory for an ElevenLabs voice whose training eleven_v3 cannot use.
  *
  * v3 does not support fine-tuned models, and a Professional clone is one — so it
  * silently renders from the first ~30-90s of training audio and still returns
  * 200. A warning rather than a blocked save: a same-voice A/B was perceptually
  * identical, so the pairing is unsupported rather than proven harmful.
+ *
+ * Written for a studio user, not an engineer: no "PVC", "fine-tune" or
+ * "render". The reader configuring a voice cannot act on our vocabulary, only
+ * on what will happen and what to do about it — which is why every message ends
+ * in an instruction. An earlier draft said "eleven_v3 will not use this PVC
+ * voice's fine-tuned model", which is precise and unreadable.
  */
 export const getElevenLabsV3Warning = (
   provider: string | undefined,
@@ -118,13 +115,13 @@ export const getElevenLabsV3Warning = (
 
   const type = String(config?.voice_type ?? "").trim();
   if (!type) {
-    return "This voice runs eleven_v3 but its voice type is unrecorded. Sync it from ElevenLabs — v3 cannot use a Professional Voice Clone and will silently substitute a lower-fidelity render.";
+    return 'We do not know how this voice was created, so we cannot say how it will sound on the v3 model. Click "Sync from ElevenLabs" to check.';
   }
   if (type === "unknown") {
-    return "ElevenLabs did not report a category that distinguishes an Instant from a Professional clone. Confirm in the ElevenLabs workspace which flow created this voice.";
+    return "ElevenLabs did not tell us how this voice was created. Check in the ElevenLabs workspace whether it was trained from recordings — if it was, v3 will not sound as close to the original person.";
   }
   if (!V3_COMPATIBLE_VOICE_TYPES.includes(type)) {
-    return `eleven_v3 will not use this ${type.toUpperCase()} voice's fine-tuned model — it renders from the first ~30-90s of the training audio instead. It still returns audio and may sound close, so judge it by ear. Only eleven_multilingual_v2 uses the fine-tune.`;
+    return "This voice was custom-trained from real recordings. The v3 model cannot use that training — it will still speak, but it will not sound as close to the original person. Listen to it before you use it.";
   }
   return null;
 };
@@ -167,13 +164,13 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
       type: "select",
       options: [
         { value: "", label: "Not recorded" },
-        { value: "pvc", label: "Professional clone (PVC) — not v3-compatible" },
-        { value: "ivc", label: "Instant clone (IVC)" },
-        { value: "voice_design", label: "Voice Design / generated" },
-        { value: "premade", label: "ElevenLabs stock (premade)" },
-        { value: "unknown", label: "Unknown — needs confirming" },
+        { value: "pvc", label: "Custom-trained from recordings" },
+        { value: "ivc", label: "Quick clone from a short sample" },
+        { value: "voice_design", label: "Generated with Voice Design" },
+        { value: "premade", label: "ElevenLabs stock voice" },
+        { value: "unknown", label: "Unclear — needs checking" },
       ],
-      hint: "Decides whether eleven_v3 can use this voice. Populated by Sync from ElevenLabs rather than guessed.",
+      hint: 'Decides how this voice sounds on the v3 model. Use "Sync from ElevenLabs" to fill it in rather than guessing.',
     },
     {
       key: "voice_id",
