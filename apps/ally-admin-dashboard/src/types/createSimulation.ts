@@ -144,7 +144,7 @@ export interface ElevenLabsVoiceSyncResult {
   /**
    * Models THIS voice's fine-tune supports, per ElevenLabs — annotation data,
    * not the option list. The picker's options come from the account-wide
-   * catalog ({@link ElevenLabsModelInfo}); v3 is real and selectable there
+   * catalog ({@link TtsCatalogEntry}); v3 is real and selectable there
    * even though it's never in this list, since v3 uses no per-voice fine-tune
    * at all, for any voice.
    */
@@ -171,7 +171,7 @@ export interface ElevenLabsVoiceLookupResult {
   /**
    * Models THIS voice's fine-tune supports, per ElevenLabs — annotation data,
    * not the option list. The picker's options come from the account-wide
-   * catalog ({@link ElevenLabsModelInfo}); v3 is real and selectable there
+   * catalog ({@link TtsCatalogEntry}); v3 is real and selectable there
    * even though it's never in this list, since v3 uses no per-voice fine-tune
    * at all, for any voice.
    */
@@ -199,10 +199,24 @@ export interface ElevenLabsBulkSyncSummary {
   }>;
 }
 
-/** A model from ElevenLabs' account-wide catalog — not tied to any one voice. */
-export interface ElevenLabsModelInfo {
-  modelId: string;
-  name: string;
+/**
+ * One selectable entry in a TTS provider's account-wide model/voice catalog
+ * — not tied to any one voice. Every provider's underlying fetch is
+ * different (auth, base URL, response shape); this is the one shape they
+ * all get mapped to so the picker doesn't care which provider it's showing.
+ */
+export interface TtsCatalogEntry {
+  /** What gets written into the voice's config field (e.g. `model`, `voice_name`). */
+  value: string;
+  /** What the picker shows. */
+  label: string;
+}
+
+/** Params for the shared TTS catalog query — only some providers use `languageCode`/`voiceProvider`. */
+export interface TtsCatalogParams {
+  provider: string;
+  languageCode?: string;
+  voiceProvider?: string;
 }
 
 /**

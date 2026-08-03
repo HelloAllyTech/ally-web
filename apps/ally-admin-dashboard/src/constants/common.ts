@@ -45,7 +45,7 @@ export const ApiEndpoints = {
     SYNC_ELEVENLABS_VOICE: (id: string) => `/v1/learn/scenario-voices/${id}/sync-elevenlabs`,
     LOOKUP_ELEVENLABS_VOICE: "/v1/learn/scenario-voices/elevenlabs-lookup",
     BULK_SYNC_ELEVENLABS_VOICES: "/v1/learn/scenario-voices/sync-elevenlabs/bulk",
-    ELEVENLABS_MODELS: "/v1/learn/scenario-voices/elevenlabs-models",
+    TTS_CATALOG: "/v1/learn/scenario-voices/tts-catalog",
     UPDATE_SCENARIO_VOICE: (id: string | number) => `/v1/learn/scenario-voices/${id}`,
     SCENARIO_VOICE_LANGUAGES: "/v1/learn/scenario-voice-languages",
     STT_CONFIGS: "/v1/learn/stt-configs",

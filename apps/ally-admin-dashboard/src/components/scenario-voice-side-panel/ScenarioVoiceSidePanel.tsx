@@ -7,7 +7,7 @@ import {
   useGetAvailableLanguageVoicesQuery,
   useSyncElevenLabsVoiceMutation,
   useLazyLookupElevenLabsVoiceQuery,
-  useGetElevenLabsModelsQuery,
+  useGetTtsCatalogQuery,
 } from "@api";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, TextDropdown, Button } from "@components";
@@ -26,6 +26,7 @@ import {
   isSupportedProvider,
   readConfigField,
   validateVoiceConfig,
+  TTS_CATALOG_FIELD_KEY,
 } from "@constants/voiceProviders";
 import { ScenarioVoice, ScenarioLanguage, ElevenLabsVoiceSyncResult } from "@types";
 import { isObject } from "@utils/common";
@@ -127,8 +128,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
 
   const [syncElevenLabsVoice, { isLoading: isSyncing }] = useSyncElevenLabsVoiceMutation();
   const [syncResult, setSyncResult] = useState<ElevenLabsVoiceSyncResult | null>(null);
-  const [lookupElevenLabsVoice, { isFetching: isLookingUp }] =
-    useLazyLookupElevenLabsVoiceQuery();
+  const [lookupElevenLabsVoice, { isFetching: isLookingUp }] = useLazyLookupElevenLabsVoiceQuery();
   // Guards the debounced auto-lookup below against re-firing for an id it
   // already resolved (e.g. a re-render with no real change to the field).
   const lastLookedUpVoiceIdRef = useRef<string | null>(null);
@@ -161,65 +161,92 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     [formData.provider, config],
   );
 
-  const isElevenLabsForm = String(formData.provider ?? "").toUpperCase() === "ELEVENLABS";
+  const normalizedProvider = String(formData.provider ?? "").toUpperCase();
+  const isElevenLabsForm = normalizedProvider === "ELEVENLABS";
+  // Absent for a provider with no real catalog (Sarvam today) — everything
+  // downstream keys off this, so an unsupported provider falls straight
+  // through to the plain free-text field with no extra branching.
+  const catalogFieldKey =
+    TTS_CATALOG_FIELD_KEY[normalizedProvider as keyof typeof TTS_CATALOG_FIELD_KEY];
+
+  const currentLanguageCode = useMemo(
+    () => languageOptions.find(lang => lang.language_id === formData.languageId)?.value,
+    [languageOptions, formData.languageId],
+  );
 
   /**
-   * ElevenLabs' account-wide, text-to-speech-capable model catalog — not
-   * tied to any one voice, so this loads regardless of whether a sync or
-   * lookup has run yet. It's what makes the Model field a picker at all;
-   * a per-voice sync only adds annotations on top (below).
+   * A TTS provider's account-wide model/voice catalog — not tied to any one
+   * voice, so this loads regardless of whether an ElevenLabs sync or lookup
+   * has run. It's what makes the field a picker at all; a per-voice
+   * ElevenLabs sync only adds annotations on top (below) — no other
+   * provider has that extra layer.
+   *
+   * `languageCode`/`voiceProvider` are ignored server-side by providers that
+   * don't need them (harmless to always send).
    */
-  const { data: elevenLabsModels } = useGetElevenLabsModelsQuery(undefined, {
-    skip: !isElevenLabsForm,
-  });
+  const { data: catalogEntries } = useGetTtsCatalogQuery(
+    {
+      provider: normalizedProvider,
+      languageCode: currentLanguageCode,
+      voiceProvider: config.voice_provider,
+    },
+    { skip: !catalogFieldKey },
+  );
 
   /**
    * The currently stored value stays selectable even if it's not in the
-   * catalog — e.g. a legacy or hand-typed model — so an unrelated edit can't
+   * catalog — e.g. a legacy or hand-typed value — so an unrelated edit can't
    * silently drop it, matching the pattern already used for a legacy
    * provider value.
    *
-   * Once a sync or lookup has told us which models THIS voice's fine-tune
-   * supports, that annotates options rather than filtering them: v3 is
-   * always selectable even though ElevenLabs never lists it as fine-tune-
-   * compatible for any voice — getElevenLabsV3Warning carries that caveat,
-   * not this list.
+   * ElevenLabs alone gets a second layer: once a sync or lookup has told us
+   * which models THIS voice's fine-tune supports, that annotates options
+   * rather than filtering them — v3 is always selectable even though
+   * ElevenLabs never lists it as fine-tune-compatible for any voice;
+   * getElevenLabsV3Warning carries that caveat, not this list. No other
+   * provider has an equivalent per-voice signal (yet), so they just get the
+   * plain catalog.
    */
-  const modelFieldOptions = useMemo(() => {
-    if (!isElevenLabsForm || !elevenLabsModels?.length) return null;
+  const catalogFieldOptions = useMemo(() => {
+    if (!catalogFieldKey || !catalogEntries?.length) return null;
 
-    const current = String(config.model ?? "").trim();
-    const currentIsListed = elevenLabsModels.some(model => model.modelId === current);
-    const models = current && !currentIsListed
-      ? [...elevenLabsModels, { modelId: current, name: current }]
-      : elevenLabsModels;
+    const current = String(config[catalogFieldKey] ?? "").trim();
+    const currentIsListed = catalogEntries.some(entry => entry.value === current);
+    const entries =
+      current && !currentIsListed
+        ? [...catalogEntries, { value: current, label: current }]
+        : catalogEntries;
 
-    return models.map(model => {
-      if (model.modelId === syncResult?.recommendedModel) {
-        return { value: model.modelId, label: `${model.name} (recommended)` };
+    if (!isElevenLabsForm) {
+      return entries.map(entry => ({ value: entry.value, label: entry.label }));
+    }
+
+    return entries.map(entry => {
+      if (entry.value === syncResult?.recommendedModel) {
+        return { value: entry.value, label: `${entry.label} (recommended)` };
       }
-      if (syncResult?.availableModels && !syncResult.availableModels.includes(model.modelId)) {
-        // Only v3 has a corresponding warning banner — the other models not
+      if (syncResult?.availableModels && !syncResult.availableModels.includes(entry.value)) {
+        // Only v3 has a corresponding warning banner — other models not
         // listed for this voice are just unconfirmed, not risky.
-        return isElevenLabsV3Model(model.modelId)
+        return isElevenLabsV3Model(entry.value)
           ? {
-              value: model.modelId,
-              label: `${model.name} (not listed by ElevenLabs for this voice — see warning below)`,
+              value: entry.value,
+              label: `${entry.label} (not listed by ElevenLabs for this voice — see warning below)`,
             }
-          : { value: model.modelId, label: `${model.name} (not confirmed for this voice)` };
+          : { value: entry.value, label: `${entry.label} (not confirmed for this voice)` };
       }
-      return { value: model.modelId, label: model.name };
+      return { value: entry.value, label: entry.label };
     });
-  }, [isElevenLabsForm, elevenLabsModels, config.model, syncResult]);
+  }, [catalogFieldKey, catalogEntries, config, isElevenLabsForm, syncResult]);
 
   const effectiveProviderSchema = useMemo(() => {
-    if (!modelFieldOptions) return providerSchema;
+    if (!catalogFieldKey || !catalogFieldOptions) return providerSchema;
     return providerSchema.map(field =>
-      field.key === "model"
-        ? { ...field, type: "select" as const, options: modelFieldOptions }
+      field.key === catalogFieldKey
+        ? { ...field, type: "select" as const, options: catalogFieldOptions }
         : field,
     );
-  }, [providerSchema, modelFieldOptions]);
+  }, [providerSchema, catalogFieldKey, catalogFieldOptions]);
 
   /**
    * Ask ElevenLabs how this voice was created. The answer cannot be derived
@@ -308,7 +335,13 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [config.voice_id, config.voiceId, formData.provider, selectedVoice?.id, lookupElevenLabsVoice]);
+  }, [
+    config.voice_id,
+    config.voiceId,
+    formData.provider,
+    selectedVoice?.id,
+    lookupElevenLabsVoice,
+  ]);
 
   /**
    * Write a schema field into the config.
@@ -445,27 +478,22 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
    * `gender` is the one field every provider's schema shares (literally the
    * same GENDER_FIELD object), so it's the only value carried over.
    */
-  const handleProviderChange = useCallback(
-    (value: string) => {
-      setFormData(previous => {
-        const previousConfig = previous.config ?? {};
-        const clearedOtherFields = Object.keys(previousConfig).some(
-          key => key !== "gender",
+  const handleProviderChange = useCallback((value: string) => {
+    setFormData(previous => {
+      const previousConfig = previous.config ?? {};
+      const clearedOtherFields = Object.keys(previousConfig).some(key => key !== "gender");
+      if (previous.provider && previous.provider !== value && clearedOtherFields) {
+        toast.success(
+          `Switched to ${getProviderLabel(value)} — the previous provider's fields were cleared.`,
         );
-        if (previous.provider && previous.provider !== value && clearedOtherFields) {
-          toast.success(
-            `Switched to ${getProviderLabel(value)} — the previous provider's fields were cleared.`,
-          );
-        }
-        return {
-          ...previous,
-          provider: value,
-          config: previousConfig.gender ? { gender: previousConfig.gender } : {},
-        };
-      });
-    },
-    [],
-  );
+      }
+      return {
+        ...previous,
+        provider: value,
+        config: previousConfig.gender ? { gender: previousConfig.gender } : {},
+      };
+    });
+  }, []);
 
   const configErrors = useMemo(
     () => validateVoiceConfig(formData.provider, config),
@@ -730,17 +758,16 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
             is only for the rare case of re-checking one voice ElevenLabs may
             have changed since — not the everyday path anymore.
           */}
-          {selectedVoice?.id &&
-            String(formData.provider ?? "").toUpperCase() === "ELEVENLABS" && (
-              <button
-                type="button"
-                onClick={handleSyncElevenLabs}
-                disabled={isSyncing}
-                className="mt-2 text-sm text-primary-600 hover:text-primary-700 disabled:opacity-50"
-              >
-                {isSyncing ? "Checking…" : "Re-check with ElevenLabs"}
-              </button>
-            )}
+          {selectedVoice?.id && String(formData.provider ?? "").toUpperCase() === "ELEVENLABS" && (
+            <button
+              type="button"
+              onClick={handleSyncElevenLabs}
+              disabled={isSyncing}
+              className="mt-2 text-sm text-primary-600 hover:text-primary-700 disabled:opacity-50"
+            >
+              {isSyncing ? "Checking…" : "Re-check with ElevenLabs"}
+            </button>
+          )}
 
           <div className="mt-8">
             <div className="flex items-center justify-between mb-2">

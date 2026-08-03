@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 
 import {
   TtsProvider,
+  TTS_CATALOG_FIELD_KEY,
+  VOICE_CONFIG_SCHEMA,
   buildGroupedVoiceOptions,
   getUnknownConfigKeys,
   getVoiceGenderLabel,
@@ -225,5 +227,25 @@ describe("buildGroupedVoiceOptions", () => {
   it("handles an empty list", () => {
     expect(buildGroupedVoiceOptions([])).toEqual([]);
     expect(buildGroupedVoiceOptions()).toEqual([]);
+  });
+});
+
+describe("TTS_CATALOG_FIELD_KEY", () => {
+  // Guards against drift: if a provider's schema ever renames its catalog
+  // field, this constant has to be updated in the same change, or the
+  // picker silently stops appearing for that provider.
+  it("names a real field in that provider's own schema", () => {
+    for (const [provider, key] of Object.entries(TTS_CATALOG_FIELD_KEY)) {
+      const schema = VOICE_CONFIG_SCHEMA[provider as TtsProvider];
+      expect(schema.some(field => field.key === key)).toBe(true);
+    }
+  });
+
+  // Sarvam has no real listing endpoint — only an unofficial trick of
+  // scraping speaker names out of a deliberately-triggered validation
+  // error — so it deliberately has no catalog field, and its Model/Speaker
+  // fields stay free text.
+  it("has no entry for a provider with no real catalog endpoint", () => {
+    expect(TTS_CATALOG_FIELD_KEY[TtsProvider.SARVAM]).toBeUndefined();
   });
 });

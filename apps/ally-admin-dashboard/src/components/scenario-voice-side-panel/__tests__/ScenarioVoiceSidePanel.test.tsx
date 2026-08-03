@@ -12,7 +12,7 @@ vi.mock("@api", () => ({
     mockLookupElevenLabsVoice,
     { isFetching: false },
   ],
-  useGetElevenLabsModelsQuery: vi.fn(),
+  useGetTtsCatalogQuery: vi.fn(),
 }));
 
 import * as api from "@api";
@@ -128,13 +128,15 @@ describe("ScenarioVoiceSidePanel", () => {
       isFetching: false,
       error: null,
     });
-    // The account-wide catalog the Model picker's options come from —
-    // independent of any per-voice sync/lookup.
-    (api.useGetElevenLabsModelsQuery as any).mockReturnValue({
+    // A provider's account-wide catalog — independent of any per-voice
+    // ElevenLabs sync/lookup. Ignores which provider was actually asked for,
+    // matching every other API mock in this file — tests that care about a
+    // specific provider's catalog override this per-test.
+    (api.useGetTtsCatalogQuery as any).mockReturnValue({
       data: [
-        { modelId: "eleven_turbo_v2_5", name: "eleven_turbo_v2_5" },
-        { modelId: "eleven_multilingual_v2", name: "eleven_multilingual_v2" },
-        { modelId: "eleven_v3", name: "eleven_v3" },
+        { value: "eleven_turbo_v2_5", label: "eleven_turbo_v2_5" },
+        { value: "eleven_multilingual_v2", label: "eleven_multilingual_v2" },
+        { value: "eleven_v3", label: "eleven_v3" },
       ],
       isFetching: false,
     });
@@ -176,12 +178,83 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(screen.queryByLabelText("Voice name")).not.toBeInTheDocument();
     });
 
+    it("turns Deepgram's Model field into a picker too, requesting the voice's own language", () => {
+      const deepgramVoice = {
+        id: "voice-dg",
+        name: "English (India) - Asteria",
+        provider: "DEEPGRAM",
+        languageId: 1, // en-IN, per mockLanguages
+        config: { gender: "female", model: "aura-asteria-en" },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={deepgramVoice} />);
+
+      expect(screen.getByTestId("dropdown-Select model")).toHaveValue("aura-asteria-en");
+      expect(
+        (api.useGetTtsCatalogQuery as any).mock.calls.some(
+          ([params]: any) => params.provider === "DEEPGRAM" && params.languageCode === "en-IN",
+        ),
+      ).toBe(true);
+    });
+
+    it("turns Google's Voice name field into a picker, also scoped to the voice's language", () => {
+      const googleVoice = {
+        id: "voice-goog",
+        name: "English (India) - Achernar",
+        provider: "GOOGLE",
+        languageId: 1,
+        config: { gender: "female", voice_name: "en-IN-Chirp3-HD-Achernar" },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={googleVoice} />);
+
+      expect(screen.getByTestId("dropdown-Select voice name")).toHaveValue(
+        "en-IN-Chirp3-HD-Achernar",
+      );
+      expect(
+        (api.useGetTtsCatalogQuery as any).mock.calls.some(
+          ([params]: any) => params.provider === "GOOGLE" && params.languageCode === "en-IN",
+        ),
+      ).toBe(true);
+    });
+
+    it("turns Hume's Voice name field into a picker, scoped to its own voice_provider (not language)", () => {
+      const humeVoice = {
+        id: "voice-hume",
+        name: "English (India) - Priya",
+        provider: "HUME",
+        languageId: 1,
+        config: { gender: "female", voice_name: "Priya", voice_provider: "CUSTOM_VOICE" },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={humeVoice} />);
+
+      expect(screen.getByTestId("dropdown-Select voice name")).toHaveValue("Priya");
+      // Hume's catalog is scoped by voice_provider (which library), not language.
+      expect(
+        (api.useGetTtsCatalogQuery as any).mock.calls.some(
+          ([params]: any) =>
+            params.provider === "HUME" && params.voiceProvider === "CUSTOM_VOICE",
+        ),
+      ).toBe(true);
+    });
+
     it("swaps the fields when the provider changes", () => {
       render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
 
       fireEvent.change(providerDropdown(), { target: { value: "HUME" } });
 
-      expect(screen.getByLabelText("Voice name")).toBeInTheDocument();
+      // Hume's "Voice name" is a catalog field, so it renders as a picker
+      // (mocked TextDropdown doesn't forward an aria-label — the real one
+      // doesn't either; the field's own <Field label> span carries that in
+      // production), not a labelled text input.
+      expect(screen.getByTestId("dropdown-Select voice name")).toBeInTheDocument();
       expect(screen.getByLabelText("Instant mode")).toBeInTheDocument();
       expect(screen.queryByLabelText("Speaker")).not.toBeInTheDocument();
     });
@@ -219,7 +292,9 @@ describe("ScenarioVoiceSidePanel", () => {
 
       fireEvent.change(providerDropdown(), { target: { value: "DEEPGRAM" } });
 
-      expect(screen.getByLabelText("Model")).toHaveValue("");
+      // Deepgram's Model is a catalog field too now, so this is a picker —
+      // an empty selection, not a cleared text input.
+      expect(screen.getByTestId("dropdown-Select model")).toHaveValue("");
       // gender is the one field every provider's schema shares — it survives.
       expect(screen.getByTestId("dropdown-Select gender")).toHaveValue("female");
       // Deepgram doesn't recognise voiceId or voice_type either, but they

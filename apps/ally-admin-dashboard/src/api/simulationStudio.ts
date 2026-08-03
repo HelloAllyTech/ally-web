@@ -80,7 +80,8 @@ import {
   ElevenLabsVoiceSyncResult,
   ElevenLabsVoiceLookupResult,
   ElevenLabsBulkSyncSummary,
-  ElevenLabsModelInfo,
+  TtsCatalogEntry,
+  TtsCatalogParams,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -451,15 +452,18 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
-     * ElevenLabs' account-wide, text-to-speech-capable model catalog — not
-     * tied to any one voice, so this is what the Model picker's options come
-     * from. Barely ever changes, so RTK Query's default cache is enough;
-     * no args means every panel open shares one cached result.
+     * A TTS provider's account-wide model/voice catalog — not tied to any
+     * one voice, so this is what a picker's options come from. One endpoint
+     * for every provider that has a real catalog (ElevenLabs, Deepgram,
+     * Google, Hume today); `languageCode`/`voiceProvider` are only used by
+     * the providers that need them. Barely ever changes, so RTK Query's
+     * default cache is enough — same provider+params share one cached result.
      */
-    getElevenLabsModels: builder.query<ElevenLabsModelInfo[], void>({
-      query: () => ({
-        url: ApiEndpoints.SIMULATION_STUDIO.ELEVENLABS_MODELS,
+    getTtsCatalog: builder.query<TtsCatalogEntry[], TtsCatalogParams>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.TTS_CATALOG,
         method: HttpMethod.GET,
+        params,
       }),
     }),
 
@@ -1445,7 +1449,7 @@ export const {
   useSyncElevenLabsVoiceMutation,
   useLazyLookupElevenLabsVoiceQuery,
   useBulkSyncElevenLabsVoicesMutation,
-  useGetElevenLabsModelsQuery,
+  useGetTtsCatalogQuery,
   useCreateLlmModelMutation,
   useUpdateLlmModelMutation,
   useDeleteLlmModelMutation,

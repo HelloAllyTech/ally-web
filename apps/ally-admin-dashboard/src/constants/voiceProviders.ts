@@ -270,6 +270,20 @@ export const TTS_PROVIDER_OPTIONS = Object.values(TtsProvider).map(provider => (
   label: provider.charAt(0) + provider.slice(1).toLowerCase(),
 }));
 
+/**
+ * Which config field a provider's account-wide catalog fills — the field
+ * that becomes a picker once `getTtsCatalog` has data for this provider.
+ * Absent for a provider with no real catalog endpoint (Sarvam: no listing
+ * endpoint exists, only an unofficial trick of scraping speaker names out of
+ * a deliberately-triggered validation error).
+ */
+export const TTS_CATALOG_FIELD_KEY: Partial<Record<TtsProvider, string>> = {
+  [TtsProvider.ELEVENLABS]: "model",
+  [TtsProvider.DEEPGRAM]: "model",
+  [TtsProvider.GOOGLE]: "voice_name",
+  [TtsProvider.HUME]: "voice_name",
+};
+
 /** Display label for a provider, falling back to the raw stored value. */
 export const getProviderLabel = (provider?: string): string =>
   getProviderLabelFrom(TTS_PROVIDER_OPTIONS, provider);
