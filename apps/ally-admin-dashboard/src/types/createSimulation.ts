@@ -141,7 +141,13 @@ export interface ElevenLabsVoiceSyncResult {
   voiceType: string | null;
   warning: string | null;
   persisted: boolean;
-  /** Models to offer for this voice — ElevenLabs' own answer plus v3. */
+  /**
+   * Models THIS voice's fine-tune supports, per ElevenLabs — annotation data,
+   * not the option list. The picker's options come from the account-wide
+   * catalog ({@link ElevenLabsModelInfo}); v3 is real and selectable there
+   * even though it's never in this list, since v3 uses no per-voice fine-tune
+   * at all, for any voice.
+   */
   availableModels: string[];
   /** A safe starting model, or null when there's nothing to prefer. */
   recommendedModel: string | null;
@@ -162,7 +168,13 @@ export interface ElevenLabsVoiceLookupResult {
   voiceType: string | null;
   gender: string | null;
   language: string | null;
-  /** Models to offer for this voice — ElevenLabs' own answer plus v3. */
+  /**
+   * Models THIS voice's fine-tune supports, per ElevenLabs — annotation data,
+   * not the option list. The picker's options come from the account-wide
+   * catalog ({@link ElevenLabsModelInfo}); v3 is real and selectable there
+   * even though it's never in this list, since v3 uses no per-voice fine-tune
+   * at all, for any voice.
+   */
   availableModels: string[];
   /** A safe starting model, or null when there's nothing to prefer. */
   recommendedModel: string | null;
@@ -185,6 +197,12 @@ export interface ElevenLabsBulkSyncSummary {
     storedVoiceId: string;
     error: string;
   }>;
+}
+
+/** A model from ElevenLabs' account-wide catalog — not tied to any one voice. */
+export interface ElevenLabsModelInfo {
+  modelId: string;
+  name: string;
 }
 
 /**

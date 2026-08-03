@@ -80,6 +80,7 @@ import {
   ElevenLabsVoiceSyncResult,
   ElevenLabsVoiceLookupResult,
   ElevenLabsBulkSyncSummary,
+  ElevenLabsModelInfo,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -447,6 +448,19 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * ElevenLabs' account-wide, text-to-speech-capable model catalog — not
+     * tied to any one voice, so this is what the Model picker's options come
+     * from. Barely ever changes, so RTK Query's default cache is enough;
+     * no args means every panel open shares one cached result.
+     */
+    getElevenLabsModels: builder.query<ElevenLabsModelInfo[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.ELEVENLABS_MODELS,
+        method: HttpMethod.GET,
+      }),
     }),
 
     /** Test a catalog model against its provider. */
@@ -1431,6 +1445,7 @@ export const {
   useSyncElevenLabsVoiceMutation,
   useLazyLookupElevenLabsVoiceQuery,
   useBulkSyncElevenLabsVoicesMutation,
+  useGetElevenLabsModelsQuery,
   useCreateLlmModelMutation,
   useUpdateLlmModelMutation,
   useDeleteLlmModelMutation,

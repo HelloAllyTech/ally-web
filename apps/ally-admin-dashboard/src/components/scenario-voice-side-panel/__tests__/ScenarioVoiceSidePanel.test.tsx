@@ -12,6 +12,7 @@ vi.mock("@api", () => ({
     mockLookupElevenLabsVoice,
     { isFetching: false },
   ],
+  useGetElevenLabsModelsQuery: vi.fn(),
 }));
 
 import * as api from "@api";
@@ -124,6 +125,16 @@ describe("ScenarioVoiceSidePanel", () => {
       data: mockLanguages,
       isFetching: false,
       error: null,
+    });
+    // The account-wide catalog the Model picker's options come from —
+    // independent of any per-voice sync/lookup.
+    (api.useGetElevenLabsModelsQuery as any).mockReturnValue({
+      data: [
+        { modelId: "eleven_turbo_v2_5", name: "eleven_turbo_v2_5" },
+        { modelId: "eleven_multilingual_v2", name: "eleven_multilingual_v2" },
+        { modelId: "eleven_v3", name: "eleven_v3" },
+      ],
+      isFetching: false,
     });
   });
 
@@ -623,7 +634,24 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(screen.getByTestId("dropdown-Select gender")).toHaveValue("male");
     });
 
-    it("turns the Model field into a picker of what ElevenLabs actually supports, and fills in the recommendation", async () => {
+    it("shows the account-wide model catalog as a picker even with no per-voice sync yet", () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} />);
+      fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+
+      // No lookup has run — just the global catalog, with no annotations.
+      const modelDropdown = screen.getByTestId("dropdown-Select model");
+      const options = Array.from(modelDropdown.querySelectorAll("option")).map(
+        o => o.textContent,
+      );
+      expect(options).toEqual([
+        "Select model",
+        "eleven_turbo_v2_5",
+        "eleven_multilingual_v2",
+        "eleven_v3",
+      ]);
+    });
+
+    it("annotates the catalog once a lookup tells us which models this voice's fine-tune supports", async () => {
       mockLookupElevenLabsVoice.mockReturnValue({
         unwrap: () =>
           Promise.resolve({
@@ -635,7 +663,8 @@ describe("ScenarioVoiceSidePanel", () => {
             voiceType: "voice_design",
             gender: "female",
             language: "ta",
-            availableModels: ["eleven_turbo_v2_5", "eleven_v3"],
+            // ElevenLabs never lists v3 here, for any voice — that's the point.
+            availableModels: ["eleven_turbo_v2_5"],
             recommendedModel: "eleven_turbo_v2_5",
           }),
       });
@@ -654,38 +683,36 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(
         screen.getByText("eleven_v3 (not listed by ElevenLabs for this voice — see warning below)"),
       ).toBeInTheDocument();
+      // A non-v3 model missing from this voice's fine-tune list is a milder
+      // case — nothing to warn about, so it gets softer wording.
+      expect(
+        screen.getByText("eleven_multilingual_v2 (not confirmed for this voice)"),
+      ).toBeInTheDocument();
     });
 
-    it("keeps a manually chosen model even if it isn't in ElevenLabs' supported list", async () => {
-      mockLookupElevenLabsVoice.mockReturnValue({
-        unwrap: () =>
-          Promise.resolve({
-            voiceId: "iA7mRIiSweGrLdznkosO",
-            resolvedVoiceId: "iA7mRIiSweGrLdznkosO",
-            voiceIdMismatch: false,
-            category: "generated",
-            resolvedName: "Meenakshi",
-            voiceType: "voice_design",
-            gender: "female",
-            language: "ta",
-            availableModels: ["eleven_turbo_v2_5"],
-            recommendedModel: "eleven_turbo_v2_5",
-          }),
-      });
-      render(<ScenarioVoiceSidePanel {...defaultProps} />);
-      fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
-      fireEvent.change(screen.getByLabelText("Model"), {
-        target: { value: "eleven_multilingual_v2" },
-      });
+    it("keeps a stored model selectable even if it isn't in ElevenLabs' current catalog", () => {
+      // A legacy/deprecated model id — not one of the three the mocked
+      // catalog returns — must not silently disappear from a saved voice.
+      const legacyModelVoice = {
+        id: "voice-legacy",
+        name: "Old ElevenLabs voice",
+        provider: "ELEVENLABS",
+        languageId: 1,
+        config: {
+          gender: "male",
+          model: "eleven_monolingual_v1",
+          voice_id: "someOldId1234567890",
+        },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={legacyModelVoice} />);
 
-      fireEvent.change(screen.getByLabelText("Voice ID"), {
-        target: { value: "iA7mRIiSweGrLdznkosO" },
-      });
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(1000);
-      });
-
-      expect(screen.getByTestId("dropdown-Select model")).toHaveValue("eleven_multilingual_v2");
+      expect(screen.getByTestId("dropdown-Select model")).toHaveValue(
+        "eleven_monolingual_v1",
+      );
+      expect(screen.getByText("eleven_monolingual_v1")).toBeInTheDocument();
     });
 
     it("does not auto-lookup once the voice is already saved", async () => {

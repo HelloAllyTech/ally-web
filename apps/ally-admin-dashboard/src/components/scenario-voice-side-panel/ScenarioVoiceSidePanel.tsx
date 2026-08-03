@@ -7,6 +7,7 @@ import {
   useGetAvailableLanguageVoicesQuery,
   useSyncElevenLabsVoiceMutation,
   useLazyLookupElevenLabsVoiceQuery,
+  useGetElevenLabsModelsQuery,
 } from "@api";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, TextDropdown, Button } from "@components";
@@ -19,6 +20,7 @@ import {
   getUnknownConfigKeys,
   isMissingGender,
   getElevenLabsV3Warning,
+  isElevenLabsV3Model,
   VOICE_TYPE_SUMMARY,
   isSupportedProvider,
   readConfigField,
@@ -158,35 +160,56 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     [formData.provider, config],
   );
 
+  const isElevenLabsForm = String(formData.provider ?? "").toUpperCase() === "ELEVENLABS";
+
   /**
-   * Turns the free-text Model field into a picker once a sync or lookup has
-   * told us which models THIS voice supports — ElevenLabs' own answer, plus
-   * v3 (which the API never lists for any voice, but which still renders;
-   * getElevenLabsV3Warning carries the caveat, not this list).
+   * ElevenLabs' account-wide, text-to-speech-capable model catalog — not
+   * tied to any one voice, so this loads regardless of whether a sync or
+   * lookup has run yet. It's what makes the Model field a picker at all;
+   * a per-voice sync only adds annotations on top (below).
+   */
+  const { data: elevenLabsModels } = useGetElevenLabsModelsQuery(undefined, {
+    skip: !isElevenLabsForm,
+  });
+
+  /**
+   * The currently stored value stays selectable even if it's not in the
+   * catalog — e.g. a legacy or hand-typed model — so an unrelated edit can't
+   * silently drop it, matching the pattern already used for a legacy
+   * provider value.
    *
-   * The currently stored value stays selectable even if it's not in the list
-   * — e.g. a legacy or hand-typed model — so an unrelated edit can't silently
-   * drop it, matching the pattern already used for a legacy provider value.
+   * Once a sync or lookup has told us which models THIS voice's fine-tune
+   * supports, that annotates options rather than filtering them: v3 is
+   * always selectable even though ElevenLabs never lists it as fine-tune-
+   * compatible for any voice — getElevenLabsV3Warning carries that caveat,
+   * not this list.
    */
   const modelFieldOptions = useMemo(() => {
-    if (String(formData.provider ?? "").toUpperCase() !== "ELEVENLABS") return null;
-    if (!syncResult?.availableModels?.length) return null;
+    if (!isElevenLabsForm || !elevenLabsModels?.length) return null;
 
     const current = String(config.model ?? "").trim();
-    const values = current && !syncResult.availableModels.includes(current)
-      ? [...syncResult.availableModels, current]
-      : syncResult.availableModels;
+    const currentIsListed = elevenLabsModels.some(model => model.modelId === current);
+    const models = current && !currentIsListed
+      ? [...elevenLabsModels, { modelId: current, name: current }]
+      : elevenLabsModels;
 
-    return values.map(model => ({
-      value: model,
-      label:
-        model === "eleven_v3"
-          ? "eleven_v3 (not listed by ElevenLabs for this voice — see warning below)"
-          : model === syncResult.recommendedModel
-            ? `${model} (recommended)`
-            : model,
-    }));
-  }, [formData.provider, syncResult, config.model]);
+    return models.map(model => {
+      if (model.modelId === syncResult?.recommendedModel) {
+        return { value: model.modelId, label: `${model.name} (recommended)` };
+      }
+      if (syncResult?.availableModels && !syncResult.availableModels.includes(model.modelId)) {
+        // Only v3 has a corresponding warning banner — the other models not
+        // listed for this voice are just unconfirmed, not risky.
+        return isElevenLabsV3Model(model.modelId)
+          ? {
+              value: model.modelId,
+              label: `${model.name} (not listed by ElevenLabs for this voice — see warning below)`,
+            }
+          : { value: model.modelId, label: `${model.name} (not confirmed for this voice)` };
+      }
+      return { value: model.modelId, label: model.name };
+    });
+  }, [isElevenLabsForm, elevenLabsModels, config.model, syncResult]);
 
   const effectiveProviderSchema = useMemo(() => {
     if (!modelFieldOptions) return providerSchema;

@@ -92,6 +92,10 @@ export const VOICE_TYPE_SUMMARY: Record<string, { title: string }> = {
 /** Voice types eleven_v3 can render from. */
 const V3_COMPATIBLE_VOICE_TYPES = ["ivc", "voice_design", "premade"];
 
+/** Whether a model string names an ElevenLabs v3 model. */
+export const isElevenLabsV3Model = (model?: string | null): boolean =>
+  /v3/i.test(String(model ?? ""));
+
 /**
  * Advisory for an ElevenLabs voice whose training eleven_v3 cannot use.
  *
@@ -111,7 +115,7 @@ export const getElevenLabsV3Warning = (
   config: Record<string, any> | undefined,
 ): string | null => {
   if (String(provider ?? "").toUpperCase() !== TtsProvider.ELEVENLABS) return null;
-  if (!/v3/i.test(String(config?.model ?? ""))) return null;
+  if (!isElevenLabsV3Model(config?.model)) return null;
 
   const type = String(config?.voice_type ?? "").trim();
   if (!type) {
