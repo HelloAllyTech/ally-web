@@ -214,6 +214,7 @@ export const FORM_FIELD_IDS = {
   COMFORT_AUDIO_URL: "comfortAudioUrl",
   COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
+  INPUT_COMPRESSION_ENABLED: "inputCompressionEnabled",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
@@ -811,6 +812,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         tooltipLocation: TooltipLocation.TRIM_HISTORY,
+      },
+      {
+        id: "inputCompressionEnabled",
+        label: "Input Compression",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
       },
       {
         id: "continuousBackchanneling",

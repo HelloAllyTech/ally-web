@@ -127,6 +127,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     comfortAudioUrl: (data?.metadata as any)?.comfortAudioUrl ?? "",
     comfortAudioVolume: (data?.metadata as any)?.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_DEFAULT,
     historyTrimEnabled: data?.metadata?.historyTrimEnabled ?? true,
+    inputCompressionEnabled: data?.metadata?.inputCompressionEnabled ?? false,
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,
     currentState: data?.metadata?.currentState,

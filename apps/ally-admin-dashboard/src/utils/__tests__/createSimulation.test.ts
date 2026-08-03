@@ -236,6 +236,7 @@ describe("createSimulation utils", () => {
         comfortAudioUrl: "",
         comfortAudioVolume: 0.3,
         historyTrimEnabled: true,
+        inputCompressionEnabled: false,
         continuousBackchanneling: false,
         currentState: false,
         checklistType: "GUIDED",

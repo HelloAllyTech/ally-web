@@ -108,6 +108,7 @@ export interface SimulationInput {
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
   historyTrimEnabled?: boolean;
+  inputCompressionEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
   currentState?: boolean;
@@ -220,6 +221,7 @@ export interface GetSimulationByIdResponse {
     comfortAudioUrl?: string;
     comfortAudioVolume?: number;
     historyTrimEnabled?: boolean;
+    inputCompressionEnabled?: boolean;
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;
     currentState?: boolean;

@@ -35,6 +35,7 @@ export type FormData = {
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
   historyTrimEnabled?: boolean;
+  inputCompressionEnabled?: boolean;
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
   temperature?: number;
