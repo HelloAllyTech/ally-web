@@ -13,7 +13,9 @@ import { PALETTE } from "./chartScales";
 import {
   TokenDim,
   buildColorScale,
+  buildPromptCacheStats,
   buildTokenCostData,
+  formatPercent,
   formatUsd,
   formatUsdCompact,
 } from "./tokenChart";
@@ -70,6 +72,7 @@ export const TokenConsumption = ({ query }: AnalyticsTabFilters) => {
     () => unpricedRows.reduce((sum, p) => sum + p.calls, 0),
     [unpricedRows],
   );
+  const cacheStats = useMemo(() => buildPromptCacheStats(points), [points]);
 
   const options = useMemo(
     () => ({
@@ -109,10 +112,19 @@ export const TokenConsumption = ({ query }: AnalyticsTabFilters) => {
   });
 
   const takeaway = (
-    <span style={{ color: unpricedCalls > 0 ? PALETTE.orange : undefined }}>
-      {formatUsd(totalCost)} estimated across {totalTokens.toLocaleString()} tokens
-      {unpricedCalls > 0 ? " — an undercount, see below" : ""}
-    </span>
+    <div className="flex flex-col gap-0.5">
+      <span style={{ color: unpricedCalls > 0 ? PALETTE.orange : undefined }}>
+        {formatUsd(totalCost)} estimated across {totalTokens.toLocaleString()} tokens
+        {unpricedCalls > 0 ? " — an undercount, see below" : ""}
+      </span>
+      {cacheStats.promptTokens > 0 && (
+        <span className="text-typography-700 font-normal">
+          Prompt-cache hit rate: {formatPercent(cacheStats.hitRate)} (
+          {cacheStats.cachedTokens.toLocaleString()} of {cacheStats.promptTokens.toLocaleString()}{" "}
+          LLM prompt tokens)
+        </span>
+      )}
+    </div>
   );
 
   return (
@@ -172,6 +184,7 @@ export const TokenConsumption = ({ query }: AnalyticsTabFilters) => {
               "Task",
               "Calls",
               "Total tokens",
+              "Cached tokens",
               "Audio ms",
               "Characters",
               "Est. cost (USD)",
@@ -184,6 +197,7 @@ export const TokenConsumption = ({ query }: AnalyticsTabFilters) => {
               p.task,
               p.calls,
               p.totalTokens,
+              p.service === "llm" ? p.cachedTokens : null,
               p.audioMs,
               p.characters,
               p.estimatedCostUsd,

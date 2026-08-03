@@ -22,6 +22,30 @@ const usdCompact = new Intl.NumberFormat("en-US", {
 
 export const formatUsd = (n: number) => usd.format(n);
 export const formatUsdCompact = (n: number) => usdCompact.format(n);
+export const formatPercent = (n: number) => `${Math.round(n * 100)}%`;
+
+export interface PromptCacheStats {
+  promptTokens: number;
+  cachedTokens: number;
+  /** cachedTokens / promptTokens across LLM-service points; 0 when no prompt tokens recorded. */
+  hitRate: number;
+}
+
+/**
+ * Prompt-cache hit rate across LLM-service points only (STT/TTS rows don't
+ * carry cachedTokens). Verifies whether provider prompt caching is actually
+ * landing, rather than just being eligible for it.
+ */
+export const buildPromptCacheStats = (points: TokenConsumptionPoint[]): PromptCacheStats => {
+  const llmPoints = points.filter(p => p.service === "llm");
+  const promptTokens = llmPoints.reduce((sum, p) => sum + p.promptTokens, 0);
+  const cachedTokens = llmPoints.reduce((sum, p) => sum + p.cachedTokens, 0);
+  return {
+    promptTokens,
+    cachedTokens,
+    hitRate: promptTokens > 0 ? cachedTokens / promptTokens : 0,
+  };
+};
 
 /**
  * Colour for the stacked segments (tasks when grouping by model, models when
