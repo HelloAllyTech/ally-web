@@ -626,6 +626,8 @@ export interface VoiceLatencyByLanguageRow {
   turns: number;
   avgMs: number;
   p95Ms: number;
+  /** Mean pure STT finalization time (ms); null when unpopulated for this window. */
+  avgSttFinalizeMs: number | null;
 }
 
 export interface VoiceLatencyResponse {

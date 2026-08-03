@@ -79,6 +79,7 @@ export interface RoleplaySessionLatency {
   p50ResponseLatencyMs: number | null;
   p95ResponseLatencyMs: number | null;
   avgEouDelayMs: number | null;
+  avgSttFinalizeMs: number | null;
   avgLlmTtftMs: number | null;
   avgTtsTtfbMs: number | null;
   avgOrchestrationMs: number | null;

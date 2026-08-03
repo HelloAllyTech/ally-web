@@ -372,7 +372,7 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         </ChartCard>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <ChartCard
           title="Average latency by language"
           caption="Live pipeline, whole window. Sorted slowest first."
@@ -410,6 +410,25 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           onExpand={() => setExpanded("byLanguage")}
         >
           <SimpleBarChart data={byLanguageBars.p95} options={languageBarOptions} />
+        </ChartCard>
+        <ChartCard
+          title="STT finalize time by language"
+          caption="Pure STT finalization time (time to transcript after end of speech), isolated from the broader end-to-end latency beside it. Same language order and colours."
+          source={buildSource({
+            derivation: "Live pipeline turn metrics, mean STT finalize per language",
+            window: voiceWindow,
+            n: byLanguageBars.totalTurns,
+            nUnit: "turns",
+          })}
+          loading={isLoading && !data}
+          error={isError}
+          onRetry={refetch}
+          errorTitle="Couldn't load STT finalize time by language"
+          errorSubtitle="There was a problem fetching turn-latency metrics."
+          empty={!isLoading && byLanguageBars.sttFinalize.length === 0}
+          onExpand={() => setExpanded("byLanguage")}
+        >
+          <SimpleBarChart data={byLanguageBars.sttFinalize} options={languageBarOptions} />
         </ChartCard>
       </div>
 
@@ -558,11 +577,12 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
             nUnit: "turns",
           })}
           table={{
-            columns: ["Language", "Average (s)", "p95 (s)", "Turns"],
+            columns: ["Language", "Average (s)", "p95 (s)", "STT finalize (avg, s)", "Turns"],
             rows: byLanguageBars.avg.map((row, i) => [
               row.group,
               row.value,
               byLanguageBars.p95[i]?.value ?? null,
+              byLanguageBars.sttFinalizeByLanguage[row.group] ?? null,
               byLanguageBars.turnsByLanguage[row.group] ?? null,
             ]),
           }}

@@ -85,13 +85,29 @@ export type LanguageBarDatum = { group: string; value: number };
 export function buildVoiceLatencyByLanguageBars(rows: VoiceLatencyByLanguageRow[]): {
   avg: LanguageBarDatum[];
   p95: LanguageBarDatum[];
+  /**
+   * Mean pure STT finalization time per language, seconds. Rows where
+   * avgSttFinalizeMs is null (no turns with the field populated yet, e.g.
+   * pre-rollout data) are omitted rather than fabricated as 0.
+   */
+  sttFinalize: LanguageBarDatum[];
+  /** Same values as `sttFinalize`, keyed by language for table lookups (the array omits languages with no data, so index alignment with `avg`/`p95` can't be assumed). */
+  sttFinalizeByLanguage: Record<string, number>;
   turnsByLanguage: Record<string, number>;
   totalTurns: number;
 } {
   const sorted = [...rows].sort((a, b) => b.avgMs - a.avgMs);
+  const sttFinalizeRows = sorted.filter(r => r.avgSttFinalizeMs != null);
   return {
     avg: sorted.map(r => ({ group: r.language, value: toS(r.avgMs) })),
     p95: sorted.map(r => ({ group: r.language, value: toS(r.p95Ms) })),
+    sttFinalize: sttFinalizeRows.map(r => ({
+      group: r.language,
+      value: toS(r.avgSttFinalizeMs as number),
+    })),
+    sttFinalizeByLanguage: Object.fromEntries(
+      sttFinalizeRows.map(r => [r.language, toS(r.avgSttFinalizeMs as number)]),
+    ),
     turnsByLanguage: Object.fromEntries(sorted.map(r => [r.language, r.turns])),
     totalTurns: sorted.reduce((sum, r) => sum + r.turns, 0),
   };

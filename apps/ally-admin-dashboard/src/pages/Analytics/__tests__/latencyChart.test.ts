@@ -98,6 +98,7 @@ describe("buildVoiceLatencyByLanguageBars", () => {
     avgMs: 0,
     p50Ms: 0,
     p95Ms: 0,
+    avgSttFinalizeMs: null,
     ...over,
   });
 
@@ -129,9 +130,21 @@ describe("buildVoiceLatencyByLanguageBars", () => {
     expect(buildVoiceLatencyByLanguageBars([])).toEqual({
       avg: [],
       p95: [],
+      sttFinalize: [],
+      sttFinalizeByLanguage: {},
       turnsByLanguage: {},
       totalTurns: 0,
     });
+  });
+
+  it("omits languages with no STT-finalize data rather than fabricating a value", () => {
+    const { sttFinalize, sttFinalizeByLanguage } = buildVoiceLatencyByLanguageBars([
+      row({ language: "en", avgMs: 900, avgSttFinalizeMs: 300 }),
+      row({ language: "ta-IN", avgMs: 1200, avgSttFinalizeMs: null }),
+    ]);
+
+    expect(sttFinalize).toEqual([{ group: "en", value: 0.3 }]);
+    expect(sttFinalizeByLanguage).toEqual({ en: 0.3 });
   });
 });
 

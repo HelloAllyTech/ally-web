@@ -460,6 +460,7 @@ export const RoleplaySessionLogDetail: FC = () => {
               value={formatMs(data.latency.avgResponseLatencyMs)}
             />
             <Field label="EOU delay (avg)" value={formatMs(data.latency.avgEouDelayMs)} />
+            <Field label="STT finalize (avg)" value={formatMs(data.latency.avgSttFinalizeMs)} />
             <Field label="LLM TTFT (avg)" value={formatMs(data.latency.avgLlmTtftMs)} />
             <Field label="TTS TTFB (avg)" value={formatMs(data.latency.avgTtsTtfbMs)} />
             <Field label="LLM response (avg)" value={formatMs(data.latency.avgLlmResponseMs)} />
