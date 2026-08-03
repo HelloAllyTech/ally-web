@@ -401,12 +401,23 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
      * getLlmModels (the pickers' feed), which hides inactive rows and falls
      * back to the in-code list.
      */
-    getLlmModelCatalog: builder.query<LlmCatalogModel[], void>({
-      query: () => ({
+    getLlmModelCatalog: builder.query<LlmCatalogModel[], { runtime?: string } | void>({
+      query: args => ({
         url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG,
         method: HttpMethod.GET,
+        // Runtime filtering is the backend's job — it owns the
+        // provider x runtime matrix, and a client-side copy would drift.
+        ...(args && args.runtime ? { params: { runtime: args.runtime } } : {}),
       }),
       providesTags: [TAG_TYPES.LLM_MODEL_CATALOG],
+    }),
+
+    /** Test a catalog model against its provider. */
+    previewLlmModel: builder.mutation<LlmPreviewResult, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PREVIEW_LLM_MODEL(id),
+        method: HttpMethod.POST,
+      }),
     }),
 
     createLlmModel: builder.mutation<LlmCatalogModel, LlmCatalogModelPayload>({
@@ -1379,6 +1390,7 @@ export const {
   useDeleteLlmConfigMutation,
   usePreviewLlmConfigMutation,
   useGetLlmModelCatalogQuery,
+  usePreviewLlmModelMutation,
   useCreateLlmModelMutation,
   useUpdateLlmModelMutation,
   useDeleteLlmModelMutation,

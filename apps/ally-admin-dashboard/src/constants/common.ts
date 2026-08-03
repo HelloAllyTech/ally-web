@@ -50,6 +50,7 @@ export const ApiEndpoints = {
     PREVIEW_LLM_CONFIG: (id: string) => `/v1/llm-preview/generate/${id}`,
     LLM_MODEL_CATALOG: "/v1/llm/catalog",
     LLM_MODEL_CATALOG_BY_ID: (id: string) => `/v1/llm/catalog/${id}`,
+    PREVIEW_LLM_MODEL: (id: string) => `/v1/llm-preview/model/${id}`,
     UPDATE_LLM_CONFIG: (id: string) => `/v1/learn/llm-configs/${id}`,
     SCENARIO_LANGUAGES: "/v1/learn/scenario-languages",
     GET_LANGUAGES: "/v1/language",

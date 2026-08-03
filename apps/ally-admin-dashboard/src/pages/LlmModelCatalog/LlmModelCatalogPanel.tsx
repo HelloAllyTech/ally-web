@@ -11,6 +11,8 @@ interface LlmModelCatalogPanelProps {
   onClose: () => void;
   onSave: (payload: LlmCatalogModelPayload, id?: string) => Promise<void>;
   onDelete?: (row: LlmCatalogModel) => void;
+  /** Live check against the provider; resolves with a readable outcome. */
+  onTest?: (id: string) => Promise<{ ok: boolean; summary: string; detail?: string }>;
 }
 
 const inputClass =
@@ -28,6 +30,7 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
   onClose,
   onSave,
   onDelete,
+  onTest,
 }) => {
   const [provider, setProvider] = useState(LLM_CATALOG_PROVIDER_OPTIONS[0]?.value ?? "openai");
   const [model, setModel] = useState("");
@@ -35,6 +38,12 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
   const [supportsTemperature, setSupportsTemperature] = useState(true);
   const [active, setActive] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{
+    ok: boolean;
+    summary: string;
+    detail?: string;
+  } | null>(null);
 
   useEffect(() => {
     setProvider(selected?.provider ?? LLM_CATALOG_PROVIDER_OPTIONS[0]?.value ?? "openai");
@@ -42,7 +51,27 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
     setLabel(selected?.label ?? "");
     setSupportsTemperature(selected?.supportsTemperature ?? true);
     setActive(selected?.active ?? true);
+    // A result from the previously opened row would read as if it described
+    // this one.
+    setTestResult(null);
   }, [selected]);
+
+  const handleTest = async () => {
+    if (!onTest || !selected?.id) return;
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      setTestResult(await onTest(selected.id));
+    } catch (error: any) {
+      setTestResult({
+        ok: false,
+        summary: "Could not run the test",
+        detail: error?.data?.message ?? error?.message ?? "Request failed",
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -76,12 +105,42 @@ export const LlmModelCatalogPanel: React.FC<LlmModelCatalogPanelProps> = ({
           >
             <DoubleArrowRight />
           </button>
-          {selected && onDelete && (
-            <Button variant={ButtonVariant.SECONDARY} onClick={() => onDelete(selected)}>
-              Delete
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {selected && onTest && (
+              <Button variant={ButtonVariant.SECONDARY} onClick={handleTest} disabled={isTesting}>
+                {isTesting ? "Testing…" : "Test model"}
+              </Button>
+            )}
+            {selected && onDelete && (
+              <Button variant={ButtonVariant.SECONDARY} onClick={() => onDelete(selected)}>
+                Delete
+              </Button>
+            )}
+          </div>
         </div>
+
+        {testResult && (
+          <div
+            data-testid="llm-model-test-result"
+            className={`mx-10 mt-4 rounded-md border px-4 py-3 text-sm ${
+              testResult.ok
+                ? "border-success-400 bg-success-50 text-typography-800"
+                : "border-destructive-500 bg-destructive-50 text-typography-800"
+            }`}
+          >
+            <div className="font-medium">
+              {testResult.ok ? "Model responded" : "Model did not respond"}
+            </div>
+            <div className="mt-1 text-typography-700">{testResult.summary}</div>
+            {testResult.detail && (
+              // The provider's own wording, wrapped rather than truncated — a
+              // deprecation notice names the replacement model.
+              <pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs text-typography-700">
+                {testResult.detail}
+              </pre>
+            )}
+          </div>
+        )}
 
         <div className="px-10 pt-6 space-y-5">
           <h2 className="text-2xl font-light">{selected ? "Edit model" : "Add model"}</h2>

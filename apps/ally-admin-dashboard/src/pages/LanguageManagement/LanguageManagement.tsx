@@ -241,7 +241,12 @@ export const ScenarioLanguages: React.FC = () => {
   // The LLM picker reads the model catalog, not llm_configs: every config row
   // was just {provider, model} with no temperature, so the config layer added
   // nothing for LLM and has been retired in favour of the catalog.
-  const { data: llmModels = [] } = useGetLlmModelCatalogQuery();
+  // Filtered to what the voice agent can actually build. ai-learn raises
+  // `Unsupported LLM provider` for anything outside its factory branches, so
+  // offering an Anthropic model here would fail every session in that language.
+  const { data: llmModels = [] } = useGetLlmModelCatalogQuery({
+    runtime: "ai-learn",
+  });
 
   const sttOptions = useMemo(
     () => buildConfigPickerOptions(sttConfigs, "Platform default"),

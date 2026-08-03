@@ -7,6 +7,7 @@ import {
   useDeleteLlmModelMutation,
   useGetLlmModelCatalogQuery,
   useUpdateLlmModelMutation,
+  usePreviewLlmModelMutation,
 } from "@api";
 import { ActionConfirmationPopup, ListToolbar, NotionTable } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -43,6 +44,7 @@ export const LlmModelCatalog: React.FC = () => {
   const [createModel] = useCreateLlmModelMutation();
   const [updateModel] = useUpdateLlmModelMutation();
   const [deleteModel] = useDeleteLlmModelMutation();
+  const [previewModel] = usePreviewLlmModelMutation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -103,6 +105,33 @@ export const LlmModelCatalog: React.FC = () => {
     }
   }, [pendingDelete, deleteModel]);
 
+  /**
+   * Ask the provider whether this model answers. A refusal comes back as a 200
+   * with ok:false — a retired model is the answer, not an error.
+   */
+  const handleTest = useCallback(
+    async (id: string) => {
+      const result = await previewModel(id).unwrap();
+      if (!result.ok) {
+        return {
+          ok: false,
+          summary: `${result.provider} · ${result.model}`,
+          detail: result.error ?? "The provider returned no response.",
+        };
+      }
+      const tokens =
+        result.promptTokens != null && result.completionTokens != null
+          ? ` · ${result.promptTokens}→${result.completionTokens} tokens`
+          : "";
+      return {
+        ok: true,
+        summary: `${result.model} · ${result.latencyMs} ms${tokens}`,
+        detail: result.text ? `Reply: ${result.text}` : undefined,
+      };
+    },
+    [previewModel],
+  );
+
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div className="flex items-center gap-3 pb-6">
@@ -154,6 +183,7 @@ export const LlmModelCatalog: React.FC = () => {
           }}
           onSave={handleSave}
           onDelete={setPendingDelete}
+          onTest={handleTest}
         />
       )}
 

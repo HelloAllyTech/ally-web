@@ -514,10 +514,29 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         models: group.models.map(m => ({ ...m, supportsTemperature: true })),
       }));
     }
+    // A prompt carries no declaration of which runtime consumes it — the voice
+    // agent, ally-ai and ally-be all read prompts — so the picker cannot know
+    // where a model will be asked to run. It therefore offers only models EVERY
+    // runtime can execute.
+    //
+    // This matters concretely: ai-learn's factory raises
+    // `Unsupported LLM provider` for Anthropic, so offering a Claude model for
+    // a main-agent prompt would fail the session outright. Ollama and vLLM are
+    // the mirror case — only the voice agent can reach them.
+    //
+    // Derived from each model's `runtimes` rather than a fixed provider list,
+    // so it widens by itself once a provider gains a branch in the remaining
+    // runtimes. Per-prompt runtime metadata would let this narrow to exactly
+    // the consuming runtime; see the LLM-config ADR.
+    const runtimeCount = new Set(llmModels.flatMap(m => m.runtimes)).size;
+    const eligible = llmModels.filter(
+      m => new Set(m.runtimes).size === runtimeCount,
+    );
+
     return PROVIDER_ORDER.map(({ provider, label }) => ({
       provider,
       label,
-      models: llmModels
+      models: eligible
         .filter(m => m.provider === provider)
         .map(m => ({
           value: m.model,
