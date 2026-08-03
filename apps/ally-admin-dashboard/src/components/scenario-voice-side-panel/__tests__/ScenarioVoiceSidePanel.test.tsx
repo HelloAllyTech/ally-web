@@ -1,10 +1,17 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock API hooks
+const mockLookupElevenLabsVoice = vi.fn().mockReturnValue({
+  unwrap: () => new Promise(() => {}), // never resolves unless a test overrides it
+});
 vi.mock("@api", () => ({
   useGetAvailableLanguageVoicesQuery: vi.fn(),
   useSyncElevenLabsVoiceMutation: () => [vi.fn(), { isLoading: false }],
+  useLazyLookupElevenLabsVoiceQuery: () => [
+    mockLookupElevenLabsVoice,
+    { isFetching: false },
+  ],
 }));
 
 import * as api from "@api";
@@ -527,6 +534,181 @@ describe("ScenarioVoiceSidePanel", () => {
 
       expect(screen.getByText("English (India)")).toBeInTheDocument();
       expect(screen.getByText("Hindi")).toBeInTheDocument();
+    });
+  });
+
+  describe("auto-lookup for a new ElevenLabs voice", () => {
+    const goToVoiceIdField = () => {
+      render(<ScenarioVoiceSidePanel {...defaultProps} />);
+      fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+      return screen.getByLabelText("Voice ID");
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("waits for something id-shaped before looking anything up", async () => {
+      const voiceIdField = goToVoiceIdField();
+
+      fireEvent.change(voiceIdField, { target: { value: "short" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      expect(mockLookupElevenLabsVoice).not.toHaveBeenCalled();
+    });
+
+    it("looks up a full id after a pause in typing, and fills in voice type and gender", async () => {
+      mockLookupElevenLabsVoice.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            voiceId: "iA7mRIiSweGrLdznkosO",
+            resolvedVoiceId: "iA7mRIiSweGrLdznkosO",
+            voiceIdMismatch: false,
+            category: "generated",
+            resolvedName: "Meenakshi",
+            voiceType: "voice_design",
+            gender: "female",
+            language: "ta",
+            availableModels: ["eleven_turbo_v2_5", "eleven_v3"],
+            recommendedModel: "eleven_turbo_v2_5",
+          }),
+      });
+      const voiceIdField = goToVoiceIdField();
+
+      fireEvent.change(voiceIdField, { target: { value: "iA7mRIiSweGrLdznkosO" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      expect(mockLookupElevenLabsVoice).toHaveBeenCalledWith("iA7mRIiSweGrLdznkosO");
+      expect(screen.getByTestId("elevenlabs-sync-result")).toHaveTextContent(
+        "Generated with Voice Design",
+      );
+      expect(screen.getByTestId("dropdown-Select gender")).toHaveValue("female");
+    });
+
+    it("never overwrites a gender already chosen on the form", async () => {
+      mockLookupElevenLabsVoice.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            voiceId: "iA7mRIiSweGrLdznkosO",
+            resolvedVoiceId: "iA7mRIiSweGrLdznkosO",
+            voiceIdMismatch: false,
+            category: "generated",
+            resolvedName: "Meenakshi",
+            voiceType: "voice_design",
+            gender: "female",
+            language: "ta",
+            availableModels: ["eleven_turbo_v2_5", "eleven_v3"],
+            recommendedModel: "eleven_turbo_v2_5",
+          }),
+      });
+      const voiceIdField = goToVoiceIdField();
+      fireEvent.change(screen.getByTestId("dropdown-Select gender"), {
+        target: { value: "male" },
+      });
+
+      fireEvent.change(voiceIdField, { target: { value: "iA7mRIiSweGrLdznkosO" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      screen.getByTestId("elevenlabs-sync-result");
+
+      expect(screen.getByTestId("dropdown-Select gender")).toHaveValue("male");
+    });
+
+    it("turns the Model field into a picker of what ElevenLabs actually supports, and fills in the recommendation", async () => {
+      mockLookupElevenLabsVoice.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            voiceId: "iA7mRIiSweGrLdznkosO",
+            resolvedVoiceId: "iA7mRIiSweGrLdznkosO",
+            voiceIdMismatch: false,
+            category: "generated",
+            resolvedName: "Meenakshi",
+            voiceType: "voice_design",
+            gender: "female",
+            language: "ta",
+            availableModels: ["eleven_turbo_v2_5", "eleven_v3"],
+            recommendedModel: "eleven_turbo_v2_5",
+          }),
+      });
+      const voiceIdField = goToVoiceIdField();
+
+      fireEvent.change(voiceIdField, { target: { value: "iA7mRIiSweGrLdznkosO" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      const modelDropdown = screen.getByTestId("dropdown-Select model");
+      expect(modelDropdown).toHaveValue("eleven_turbo_v2_5");
+      expect(screen.getByText("eleven_turbo_v2_5 (recommended)")).toBeInTheDocument();
+      // v3 is offered, but flagged as ElevenLabs' own list not including it —
+      // not silently presented as equally supported.
+      expect(
+        screen.getByText("eleven_v3 (not listed by ElevenLabs for this voice — see warning below)"),
+      ).toBeInTheDocument();
+    });
+
+    it("keeps a manually chosen model even if it isn't in ElevenLabs' supported list", async () => {
+      mockLookupElevenLabsVoice.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            voiceId: "iA7mRIiSweGrLdznkosO",
+            resolvedVoiceId: "iA7mRIiSweGrLdznkosO",
+            voiceIdMismatch: false,
+            category: "generated",
+            resolvedName: "Meenakshi",
+            voiceType: "voice_design",
+            gender: "female",
+            language: "ta",
+            availableModels: ["eleven_turbo_v2_5"],
+            recommendedModel: "eleven_turbo_v2_5",
+          }),
+      });
+      render(<ScenarioVoiceSidePanel {...defaultProps} />);
+      fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+      fireEvent.change(screen.getByLabelText("Model"), {
+        target: { value: "eleven_multilingual_v2" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Voice ID"), {
+        target: { value: "iA7mRIiSweGrLdznkosO" },
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      expect(screen.getByTestId("dropdown-Select model")).toHaveValue("eleven_multilingual_v2");
+    });
+
+    it("does not auto-lookup once the voice is already saved", async () => {
+      const elevenLabsVoice = {
+        id: "voice-9",
+        name: "Raju",
+        provider: "ELEVENLABS",
+        languageId: 1,
+        config: { gender: "male", model: "eleven_v3", voice_id: "zT03pEAEi0VHKciJODfn" },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={elevenLabsVoice} />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      expect(mockLookupElevenLabsVoice).not.toHaveBeenCalled();
+      // The explicit, demoted control for a saved voice instead of the old
+      // primary "Sync from ElevenLabs" button.
+      expect(screen.getByText("Re-check with ElevenLabs")).toBeInTheDocument();
     });
   });
 

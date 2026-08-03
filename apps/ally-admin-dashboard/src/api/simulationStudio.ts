@@ -78,6 +78,8 @@ import {
   LlmCatalogModel,
   LlmCatalogModelPayload,
   ElevenLabsVoiceSyncResult,
+  ElevenLabsVoiceLookupResult,
+  ElevenLabsBulkSyncSummary,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -420,6 +422,28 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     syncElevenLabsVoice: builder.mutation<ElevenLabsVoiceSyncResult, string>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.SYNC_ELEVENLABS_VOICE(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * Look up a voice id before it has a saved row — read-only, so a query
+     * (not a mutation), triggered lazily as the id is typed rather than on
+     * every render.
+     */
+    lookupElevenLabsVoice: builder.query<ElevenLabsVoiceLookupResult, string>({
+      query: voiceId => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LOOKUP_ELEVENLABS_VOICE,
+        method: HttpMethod.GET,
+        params: { voiceId },
+      }),
+    }),
+
+    /** Sync every ElevenLabs voice's type from the workspace listing in one pass. */
+    bulkSyncElevenLabsVoices: builder.mutation<ElevenLabsBulkSyncSummary, void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.BULK_SYNC_ELEVENLABS_VOICES,
         method: HttpMethod.POST,
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
@@ -1405,6 +1429,8 @@ export const {
   useGetLlmModelCatalogQuery,
   usePreviewLlmModelMutation,
   useSyncElevenLabsVoiceMutation,
+  useLazyLookupElevenLabsVoiceQuery,
+  useBulkSyncElevenLabsVoicesMutation,
   useCreateLlmModelMutation,
   useUpdateLlmModelMutation,
   useDeleteLlmModelMutation,

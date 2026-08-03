@@ -1,9 +1,13 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { toast } from "sonner";
 
 import { AutoExpandableTextarea } from "@ally-ui-mono/ui-shared";
-import { useGetAvailableLanguageVoicesQuery, useSyncElevenLabsVoiceMutation } from "@api";
+import {
+  useGetAvailableLanguageVoicesQuery,
+  useSyncElevenLabsVoiceMutation,
+  useLazyLookupElevenLabsVoiceQuery,
+} from "@api";
 import { DoubleArrowRight } from "@assets";
 import { ActionConfirmationPopup, TextDropdown, Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -118,6 +122,14 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     }));
   }, []);
 
+  const [syncElevenLabsVoice, { isLoading: isSyncing }] = useSyncElevenLabsVoiceMutation();
+  const [syncResult, setSyncResult] = useState<ElevenLabsVoiceSyncResult | null>(null);
+  const [lookupElevenLabsVoice, { isFetching: isLookingUp }] =
+    useLazyLookupElevenLabsVoiceQuery();
+  // Guards the debounced auto-lookup below against re-firing for an id it
+  // already resolved (e.g. a re-render with no real change to the field).
+  const lastLookedUpVoiceIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     const initial: Partial<ScenarioVoice> = selectedVoice ?? {
       name: "",
@@ -133,6 +145,10 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     setIsAddingCustomKey(false);
     setCustomKeyName("");
     setCustomKeyError(null);
+    // Otherwise a sync/lookup result from whichever voice was open before
+    // stays on screen until this one is synced too.
+    setSyncResult(null);
+    lastLookedUpVoiceIdRef.current = null;
   }, [selectedVoice]);
 
   const config = useMemo(() => formData.config ?? {}, [formData.config]);
@@ -142,8 +158,44 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     [formData.provider, config],
   );
 
-  const [syncElevenLabsVoice, { isLoading: isSyncing }] = useSyncElevenLabsVoiceMutation();
-  const [syncResult, setSyncResult] = useState<ElevenLabsVoiceSyncResult | null>(null);
+  /**
+   * Turns the free-text Model field into a picker once a sync or lookup has
+   * told us which models THIS voice supports — ElevenLabs' own answer, plus
+   * v3 (which the API never lists for any voice, but which still renders;
+   * getElevenLabsV3Warning carries the caveat, not this list).
+   *
+   * The currently stored value stays selectable even if it's not in the list
+   * — e.g. a legacy or hand-typed model — so an unrelated edit can't silently
+   * drop it, matching the pattern already used for a legacy provider value.
+   */
+  const modelFieldOptions = useMemo(() => {
+    if (String(formData.provider ?? "").toUpperCase() !== "ELEVENLABS") return null;
+    if (!syncResult?.availableModels?.length) return null;
+
+    const current = String(config.model ?? "").trim();
+    const values = current && !syncResult.availableModels.includes(current)
+      ? [...syncResult.availableModels, current]
+      : syncResult.availableModels;
+
+    return values.map(model => ({
+      value: model,
+      label:
+        model === "eleven_v3"
+          ? "eleven_v3 (not listed by ElevenLabs for this voice — see warning below)"
+          : model === syncResult.recommendedModel
+            ? `${model} (recommended)`
+            : model,
+    }));
+  }, [formData.provider, syncResult, config.model]);
+
+  const effectiveProviderSchema = useMemo(() => {
+    if (!modelFieldOptions) return providerSchema;
+    return providerSchema.map(field =>
+      field.key === "model"
+        ? { ...field, type: "select" as const, options: modelFieldOptions }
+        : field,
+    );
+  }, [providerSchema, modelFieldOptions]);
 
   /**
    * Ask ElevenLabs how this voice was created. The answer cannot be derived
@@ -155,12 +207,17 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     try {
       const result = await syncElevenLabsVoice(selectedVoice.id).unwrap();
       setSyncResult(result);
-      if (result.voiceType) {
-        setFormData(previous => ({
-          ...previous,
-          config: { ...(previous.config ?? {}), voice_type: result.voiceType },
-        }));
-      }
+      setFormData(previous => {
+        const previousConfig = previous.config ?? {};
+        const nextConfig: Record<string, any> = { ...previousConfig };
+        if (result.voiceType) nextConfig.voice_type = result.voiceType;
+        // Only suggest a model when the field is blank — never overwrite one
+        // someone already chose.
+        if (result.recommendedModel && !previousConfig.model) {
+          nextConfig.model = result.recommendedModel;
+        }
+        return { ...previous, config: nextConfig };
+      });
       // The plain-English title, not the raw enum — "Voice type: pvc" means
       // nothing to the person configuring the voice. The banner below carries
       // the detail; this only confirms the sync landed.
@@ -172,6 +229,62 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       toast.error(error?.data?.message ?? "Could not reach ElevenLabs");
     }
   }, [selectedVoice?.id, syncElevenLabsVoice]);
+
+  /**
+   * Auto-check a voice id as it's typed, before the voice is ever saved.
+   *
+   * Only for a not-yet-saved voice: a saved row has its own explicit
+   * "Re-check with ElevenLabs" action below, and this effect would otherwise
+   * silently overwrite a voice_type or gender someone already set on it.
+   *
+   * ElevenLabs ids run ~20 characters — waiting for at least that many avoids
+   * firing on every keystroke of a paste-in-progress.
+   */
+  useEffect(() => {
+    const isNewElevenLabsVoice =
+      !selectedVoice?.id && String(formData.provider ?? "").toUpperCase() === "ELEVENLABS";
+    const voiceId = String(config.voice_id ?? config.voiceId ?? "").trim();
+    const looksLikeAnId = voiceId.length >= 18 && voiceId !== lastLookedUpVoiceIdRef.current;
+
+    if (!isNewElevenLabsVoice || !looksLikeAnId) {
+      return undefined;
+    }
+
+    const timer = setTimeout(async () => {
+      lastLookedUpVoiceIdRef.current = voiceId;
+      try {
+        const result = await lookupElevenLabsVoice(voiceId).unwrap();
+        setSyncResult({
+          storedVoiceId: result.voiceId,
+          resolvedVoiceId: result.resolvedVoiceId,
+          voiceIdMismatch: result.voiceIdMismatch,
+          category: result.category,
+          resolvedName: result.resolvedName,
+          voiceType: result.voiceType,
+          warning: null,
+          persisted: false,
+          availableModels: result.availableModels,
+          recommendedModel: result.recommendedModel,
+        });
+        setFormData(previous => {
+          const previousConfig = previous.config ?? {};
+          const nextConfig: Record<string, any> = { ...previousConfig };
+          if (result.voiceType) nextConfig.voice_type = result.voiceType;
+          // Never overwrite a gender or model someone already set.
+          if (result.gender && !previousConfig.gender) nextConfig.gender = result.gender;
+          if (result.recommendedModel && !previousConfig.model) {
+            nextConfig.model = result.recommendedModel;
+          }
+          return { ...previous, config: nextConfig };
+        });
+      } catch (error: any) {
+        setSyncResult(null);
+        toast.error(error?.data?.message ?? "Could not look up this voice on ElevenLabs");
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [config.voice_id, config.voiceId, formData.provider, selectedVoice?.id, lookupElevenLabsVoice]);
 
   /**
    * Write a schema field into the config.
@@ -513,6 +626,14 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
             </div>
           )}
 
+          {!selectedVoice?.id &&
+            isLookingUp &&
+            String(formData.provider ?? "").toUpperCase() === "ELEVENLABS" && (
+              <div className="mt-4 text-sm text-typography-500">
+                Looking up this voice on ElevenLabs…
+              </div>
+            )}
+
           {syncResult && (
             <div
               data-testid="elevenlabs-sync-result"
@@ -552,6 +673,25 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
             </div>
           )}
 
+          {/*
+            Demoted from a primary button: new voices auto-check as the id is
+            typed, and the whole workspace is kept in sync by a monthly job
+            plus an admin-triggered bulk sync from the voices list. This link
+            is only for the rare case of re-checking one voice ElevenLabs may
+            have changed since — not the everyday path anymore.
+          */}
+          {selectedVoice?.id &&
+            String(formData.provider ?? "").toUpperCase() === "ELEVENLABS" && (
+              <button
+                type="button"
+                onClick={handleSyncElevenLabs}
+                disabled={isSyncing}
+                className="mt-2 text-sm text-primary-600 hover:text-primary-700 disabled:opacity-50"
+              >
+                {isSyncing ? "Checking…" : "Re-check with ElevenLabs"}
+              </button>
+            )}
+
           <div className="mt-8">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-base font-[500] text-typography-900">Configuration</h2>
@@ -584,7 +724,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
               </p>
             ) : (
               <div className="space-y-3">
-                {providerSchema.map(field => (
+                {effectiveProviderSchema.map(field => (
                   <Field
                     key={field.key}
                     label={field.label}
@@ -700,20 +840,6 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
             <Button variant={ButtonVariant.SECONDARY} onClick={handleClose}>
               Cancel
             </Button>
-            {/*
-              Only for a saved ElevenLabs voice: the sync reads the stored
-              voice_id, so there is nothing to look up until the row exists.
-            */}
-            {selectedVoice?.id &&
-              String(formData.provider ?? "").toUpperCase() === "ELEVENLABS" && (
-                <Button
-                  variant={ButtonVariant.SECONDARY}
-                  onClick={handleSyncElevenLabs}
-                  disabled={isSyncing}
-                >
-                  {isSyncing ? "Syncing…" : "Sync from ElevenLabs"}
-                </Button>
-              )}
           </div>
         </div>
       </div>

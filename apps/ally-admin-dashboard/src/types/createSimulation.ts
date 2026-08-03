@@ -141,6 +141,50 @@ export interface ElevenLabsVoiceSyncResult {
   voiceType: string | null;
   warning: string | null;
   persisted: boolean;
+  /** Models to offer for this voice — ElevenLabs' own answer plus v3. */
+  availableModels: string[];
+  /** A safe starting model, or null when there's nothing to prefer. */
+  recommendedModel: string | null;
+}
+
+/**
+ * Outcome of looking up a voice id that has no saved voice row yet —
+ * same facts as {@link ElevenLabsVoiceSyncResult} minus `warning` (no chosen
+ * model to warn against) and `persisted` (nothing to write to), plus
+ * `gender`/`language` for autofilling a new voice's form.
+ */
+export interface ElevenLabsVoiceLookupResult {
+  voiceId: string;
+  resolvedVoiceId: string | null;
+  voiceIdMismatch: boolean;
+  category: string | null;
+  resolvedName: string | null;
+  voiceType: string | null;
+  gender: string | null;
+  language: string | null;
+  /** Models to offer for this voice — ElevenLabs' own answer plus v3. */
+  availableModels: string[];
+  /** A safe starting model, or null when there's nothing to prefer. */
+  recommendedModel: string | null;
+}
+
+/** Outcome of syncing every ElevenLabs voice row's type in one pass. */
+export interface ElevenLabsBulkSyncSummary {
+  checked: number;
+  updated: number;
+  mismatched: Array<{
+    voiceId: string;
+    name: string;
+    storedVoiceId: string;
+    resolvedVoiceId: string;
+    resolvedName: string;
+  }>;
+  failed: Array<{
+    voiceId: string;
+    name: string;
+    storedVoiceId: string;
+    error: string;
+  }>;
 }
 
 /**
