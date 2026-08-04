@@ -21,8 +21,6 @@ import {
   getUnknownConfigKeys,
   isMissingGender,
   getElevenLabsV3Warning,
-  isElevenLabsV3Model,
-  isElevenLabsV3CompatibleVoiceType,
   VOICE_TYPE_SUMMARY,
   isSupportedProvider,
   readConfigField,
@@ -200,72 +198,75 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
    * silently drop it, matching the pattern already used for a legacy
    * provider value.
    *
-   * ElevenLabs alone gets a second layer: once a sync or lookup has told us
-   * which models THIS voice's fine-tune supports, that annotates options
-   * rather than filtering them — v3 is always selectable even though
-   * ElevenLabs never lists it as fine-tune-compatible for any voice;
-   * getElevenLabsV3Warning carries that caveat, not this list. No other
-   * provider has an equivalent per-voice signal (yet), so they just get the
-   * plain catalog.
+   * ElevenLabs alone gets a per-voice verdict, computed server-side: once a
+   * sync or lookup has run, `syncResult.modelOptions` is the account-wide
+   * catalog already labeled with which model is the recommendation for THIS
+   * voice, and which to flag — ally-be owns the ElevenLabs integration and
+   * the classification rule, so it decides that once, rather than this panel
+   * keeping its own copy. A real production voice ("Meenakshi") is exactly
+   * what went wrong the one time it did: v3 got wrongly flagged for every
+   * voice because this panel's own copy of the rule didn't agree with
+   * ally-be's. Before any sync, or for every other provider, there's no such
+   * verdict — just the plain catalog.
    */
   const catalogFieldOptions = useMemo(() => {
-    if (!catalogFieldKey || !catalogEntries?.length) return null;
+    if (!catalogFieldKey) return null;
+
+    const source =
+      isElevenLabsForm && syncResult?.modelOptions?.length
+        ? syncResult.modelOptions
+        : catalogEntries;
+    if (!source?.length) return null;
 
     const current = String(config[catalogFieldKey] ?? "").trim();
-    const currentIsListed = catalogEntries.some(entry => entry.value === current);
+    const currentIsListed = source.some(entry => entry.value === current);
     const entries =
       current && !currentIsListed
-        ? [...catalogEntries, { value: current, label: current }]
-        : catalogEntries;
-
-    if (!isElevenLabsForm) {
-      return entries.map(entry => ({ value: entry.value, label: entry.label }));
-    }
+        ? [...source, { value: current, label: current, recommended: null }]
+        : source;
 
     return entries.map(entry => {
-      if (entry.value === syncResult?.recommendedModel) {
-        return { value: entry.value, label: `${entry.label} (recommended)` };
-      }
-      // v3 needs its own check: ElevenLabs' per-voice fine-tune list
-      // (availableModels) never includes it, for ANY voice — that's a fact
-      // about how v3 works, not a signal about this voice. Whether v3 suits
-      // THIS voice depends on voice type instead — read from `config.voice_type`
-      // (the persisted field), the same source getElevenLabsV3Warning already
-      // uses, NOT syncResult: voice_type can already be populated by the bulk
-      // sync script from a previous session, and this must reflect that
-      // without waiting for a fresh individual re-sync right now.
-      if (isElevenLabsV3Model(entry.value)) {
-        return isElevenLabsV3CompatibleVoiceType(config.voice_type)
-          ? { value: entry.value, label: entry.label }
-          : { value: entry.value, label: `${entry.label} (not recommended)` };
-      }
-      // Only meaningful when ElevenLabs actually listed SOME models as
-      // fine-tuned for this voice — that's a real choice on their part, so
-      // the others being left off is a real signal. An EMPTY list is not a
-      // verdict on every model; it means ElevenLabs reports no fine-tune data
-      // for this voice at all (true for every Voice Design voice — 0 of 27
-      // in the account-wide sweep). Flagging every model in that case would
-      // claim ElevenLabs said something it never said. `.length` is the fix:
-      // `[]` is truthy in JS, so a bare existence check treated "no data" the
-      // same as "checked and none of these qualify."
-      if (
-        syncResult?.availableModels?.length &&
-        !syncResult.availableModels.includes(entry.value)
-      ) {
-        return { value: entry.value, label: `${entry.label} (not recommended)` };
-      }
-      return { value: entry.value, label: entry.label };
+      const recommended = "recommended" in entry ? entry.recommended : null;
+      const label =
+        recommended === true
+          ? `${entry.label} (recommended)`
+          : recommended === false
+            ? `${entry.label} (not recommended)`
+            : entry.label;
+      return { value: entry.value, label };
     });
   }, [catalogFieldKey, catalogEntries, config, isElevenLabsForm, syncResult]);
 
+  /**
+   * ElevenLabs' own category for this voice, once a sync or lookup reported
+   * one. It hangs off the Voice type field — the thing it describes — rather
+   * than living in a banner of its own. The banner used to lead with the
+   * plain-English type title, which is the same string this field already
+   * displays two rows down (and the same string the sync toast shows), so the
+   * one fact was on screen three times over. Only the raw category was ever
+   * unique to it, and it reads as traceability for a field, not an
+   * announcement.
+   */
+  const syncedCategory = isElevenLabsForm ? syncResult?.category : null;
+
   const effectiveProviderSchema = useMemo(() => {
-    if (!catalogFieldKey || !catalogFieldOptions) return providerSchema;
-    return providerSchema.map(field =>
-      field.key === catalogFieldKey
-        ? { ...field, type: "select" as const, options: catalogFieldOptions }
-        : field,
-    );
-  }, [providerSchema, catalogFieldKey, catalogFieldOptions]);
+    const needsCatalogField = Boolean(catalogFieldKey && catalogFieldOptions);
+    if (!needsCatalogField && !syncedCategory) return providerSchema;
+
+    return providerSchema.map(field => {
+      let next = field;
+      if (needsCatalogField && field.key === catalogFieldKey) {
+        next = { ...next, type: "select" as const, options: catalogFieldOptions! };
+      }
+      if (syncedCategory && field.key === "voice_type") {
+        next = {
+          ...next,
+          hint: [next.hint, `ElevenLabs category: ${syncedCategory}.`].filter(Boolean).join(" "),
+        };
+      }
+      return next;
+    });
+  }, [providerSchema, catalogFieldKey, catalogFieldOptions, syncedCategory]);
 
   /**
    * Ask ElevenLabs how this voice was created. The answer cannot be derived
@@ -289,8 +290,9 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
         return { ...previous, config: nextConfig };
       });
       // The plain-English title, not the raw enum — "Voice type: pvc" means
-      // nothing to the person configuring the voice. The banner below carries
-      // the detail; this only confirms the sync landed.
+      // nothing to the person configuring the voice. This is now the only
+      // confirmation that the sync landed at all: the fields it changed (Voice
+      // type, and the model picker's labels) carry the result itself.
       toast.success(
         VOICE_TYPE_SUMMARY[result.voiceType ?? ""]?.title ??
           "Synced, but ElevenLabs did not say how this voice was created",
@@ -331,10 +333,10 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
           category: result.category,
           resolvedName: result.resolvedName,
           voiceType: result.voiceType,
-          warning: null,
           persisted: false,
           availableModels: result.availableModels,
           recommendedModel: result.recommendedModel,
+          modelOptions: result.modelOptions,
         });
         setFormData(previous => {
           const previousConfig = previous.config ?? {};
@@ -731,42 +733,25 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
               </div>
             )}
 
-          {syncResult && (
+          {/*
+            Only ever a problem report now. A sync that finds nothing wrong
+            already announces itself three other ways — the toast, the Voice
+            type field it fills in, and the model picker it annotates — so a
+            green "here is what we found" panel restating the type title was
+            the same sentence a third time. A mismatch is the one thing none of
+            those can surface: the stored id is not the voice that renders.
+            Observed on 7 of 77 production ids, all well-known public-library
+            ids.
+          */}
+          {syncResult?.voiceIdMismatch && (
             <div
               data-testid="elevenlabs-sync-result"
-              className={`mt-4 rounded-md border px-3 py-2 text-sm ${
-                syncResult.voiceIdMismatch
-                  ? "border-destructive-500 bg-destructive-50 text-typography-800"
-                  : "border-success-400 bg-success-50 text-typography-800"
-              }`}
+              className="mt-4 rounded-md border border-destructive-500 bg-destructive-50 px-3 py-2 text-sm text-typography-800"
             >
-              {/*
-                Reports only what the sync FOUND. The v3 verdict belongs to the
-                amber banner above and is deliberately not repeated here — both
-                render together after a sync, and once both were written in
-                plain English they were visibly saying the same sentence twice.
-              */}
-              <div className="font-medium">
-                {VOICE_TYPE_SUMMARY[syncResult.voiceType ?? ""]?.title ??
-                  "ElevenLabs did not say how this voice was created"}
-              </div>
-              {syncResult.category && (
-                // Their own value, kept small — traceability without making it
-                // the headline.
-                <div className="mt-1 text-xs text-typography-500">
-                  ElevenLabs category: {syncResult.category}
-                </div>
-              )}
-              {syncResult.voiceIdMismatch && (
-                // The stored id is not the voice that renders. Observed on 7 of
-                // 77 production ids, all well-known public-library ids.
-                <div className="mt-1">
-                  This id resolves to a <b>different voice</b>: stored{" "}
-                  <code>{syncResult.storedVoiceId}</code> → actually{" "}
-                  <code>{syncResult.resolvedVoiceId}</code> ({syncResult.resolvedName}). What plays
-                  is the second one.
-                </div>
-              )}
+              This id resolves to a <b>different voice</b>: stored{" "}
+              <code>{syncResult.storedVoiceId}</code> → actually{" "}
+              <code>{syncResult.resolvedVoiceId}</code> ({syncResult.resolvedName}). What plays is
+              the second one.
             </div>
           )}
 

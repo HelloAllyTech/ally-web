@@ -8,7 +8,7 @@ import {
   getUnknownConfigKeys,
   getVoiceGenderLabel,
   getVoiceGroupLabel,
-  isElevenLabsV3CompatibleVoiceType,
+  getElevenLabsV3Warning,
   isMissingGender,
   isSupportedProvider,
   readConfigField,
@@ -263,22 +263,81 @@ describe("TTS_CATALOG_FIELD_KEY", () => {
   });
 });
 
-describe("isElevenLabsV3CompatibleVoiceType", () => {
-  // A real production voice ("Meenakshi", voice_design) caught this: the
-  // model picker used to flag v3 as unrecommended for every voice, because
-  // ElevenLabs' per-voice fine-tune list never includes v3 regardless of
-  // voice type. Only voice type — this function's job — decides correctly.
-  it.each(["ivc", "voice_design", "premade"])(
-    "treats %s as v3-compatible",
-    type => {
-      expect(isElevenLabsV3CompatibleVoiceType(type)).toBe(true);
-    },
-  );
+/**
+ * Ported from ally-be, which owned an identical copy of this rule until it was
+ * found to be dead — it populated a `warning` field on the sync response that
+ * nothing rendered, and had already drifted from this one. The implementation
+ * stays here because the advisory must appear the instant an admin flips the
+ * Model dropdown, and must work off a persisted `voice_type` for a voice nobody
+ * has re-synced — neither of which survives a round-trip. These tests came with
+ * it: they were the only guard on the wording, and this file had none.
+ */
+describe("getElevenLabsV3Warning", () => {
+  const config = (model: string, voiceType?: string | null) => ({
+    model,
+    ...(voiceType === undefined ? {} : { voice_type: voiceType }),
+  });
 
-  it.each(["pvc", "unknown", "", undefined, null])(
-    "does not treat %s as v3-compatible",
-    type => {
-      expect(isElevenLabsV3CompatibleVoiceType(type as any)).toBe(false);
-    },
-  );
+  // Warning, not error: a same-voice A/B of the fine-tuned v2 render against
+  // the v3 fallback was perceptually identical, so blocking the save would
+  // discard deliberate work on no evidence of harm. States the mechanism
+  // without prescribing a model — v3 genuinely renders these voices (measured),
+  // so recommending v2 would overstate the evidence.
+  it("warns for a PVC on v3, naming the consequence but not prescribing", () => {
+    const w = getElevenLabsV3Warning("ELEVENLABS", config("eleven_v3", "pvc"));
+    expect(w).toMatch(/custom-trained from real recordings/i);
+    expect(w).toMatch(/will still speak/i);
+    expect(w).toMatch(/not sound as close to the original person/i);
+    expect(w).toMatch(/listen to it/i);
+    // Must not claim v3 cannot render it — it can, and does.
+    expect(w).not.toMatch(/cannot use this voice/i);
+  });
+
+  it("warns when the type is unrecorded, since silence is how this went unnoticed", () => {
+    for (const type of [null, "", undefined]) {
+      const w = getElevenLabsV3Warning("ELEVENLABS", config("eleven_v3", type));
+      expect(w).toMatch(/do not know how this voice was created/i);
+      // Must name the action that resolves it, as the panel labels it, or the
+      // reader goes looking for a button that isn't there.
+      expect(w).toMatch(/Re-check with ElevenLabs/i);
+    }
+  });
+
+  it("warns for an ambiguous category rather than assuming", () => {
+    expect(getElevenLabsV3Warning("ELEVENLABS", config("eleven_v3", "unknown"))).toMatch(
+      /did not tell us how this voice was created/i,
+    );
+  });
+
+  // These strings are read by studio users configuring a voice, who cannot act
+  // on our vocabulary. Guarding the whole set rather than one message, because
+  // the jargon crept in one message at a time.
+  it.each(["pvc", "unknown", null])("keeps internal vocabulary out of the %s message", type => {
+    const w = getElevenLabsV3Warning("ELEVENLABS", config("eleven_v3", type)) ?? "";
+    expect(w).not.toMatch(/\bPVC\b|\bIVC\b/);
+    expect(w).not.toMatch(/fine-tun/i);
+    expect(w).not.toMatch(/\brender/i);
+    // "the v3 model" is fine; raw model ids are not.
+    expect(w).not.toMatch(/eleven_/);
+  });
+
+  it.each(["ivc", "voice_design", "premade"])("stays silent for %s on v3", type => {
+    expect(getElevenLabsV3Warning("ELEVENLABS", config("eleven_v3", type))).toBeNull();
+  });
+
+  // A PVC on v2 is the correct, fine-tuned configuration — nothing to say.
+  it("stays silent for any voice type on a v2 model", () => {
+    expect(
+      getElevenLabsV3Warning("ELEVENLABS", config("eleven_multilingual_v2", "pvc")),
+    ).toBeNull();
+    expect(getElevenLabsV3Warning("ELEVENLABS", config("eleven_flash_v2_5", null))).toBeNull();
+  });
+
+  // Only ElevenLabs has a v3, so no other provider's config can trigger this —
+  // a stray "v3" in another provider's model string must not produce advice
+  // about a model that provider does not have.
+  it("says nothing for a non-ElevenLabs provider", () => {
+    expect(getElevenLabsV3Warning("GOOGLE", config("some-v3-voice", "pvc"))).toBeNull();
+    expect(getElevenLabsV3Warning(undefined, config("eleven_v3", "pvc"))).toBeNull();
+  });
 });

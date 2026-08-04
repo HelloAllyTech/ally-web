@@ -8,10 +8,7 @@ const mockLookupElevenLabsVoice = vi.fn().mockReturnValue({
 vi.mock("@api", () => ({
   useGetAvailableLanguageVoicesQuery: vi.fn(),
   useSyncElevenLabsVoiceMutation: () => [vi.fn(), { isLoading: false }],
-  useLazyLookupElevenLabsVoiceQuery: () => [
-    mockLookupElevenLabsVoice,
-    { isFetching: false },
-  ],
+  useLazyLookupElevenLabsVoiceQuery: () => [mockLookupElevenLabsVoice, { isFetching: false }],
   useGetTtsCatalogQuery: vi.fn(),
 }));
 
@@ -298,8 +295,7 @@ describe("ScenarioVoiceSidePanel", () => {
       // Hume's catalog is scoped by voice_provider (which library), not language.
       expect(
         (api.useGetTtsCatalogQuery as any).mock.calls.some(
-          ([params]: any) =>
-            params.provider === "HUME" && params.voiceProvider === "CUSTOM_VOICE",
+          ([params]: any) => params.provider === "HUME" && params.voiceProvider === "CUSTOM_VOICE",
         ),
       ).toBe(true);
     });
@@ -785,9 +781,9 @@ describe("ScenarioVoiceSidePanel", () => {
       });
 
       expect(mockLookupElevenLabsVoice).toHaveBeenCalledWith("iA7mRIiSweGrLdznkosO");
-      expect(screen.getByTestId("elevenlabs-sync-result")).toHaveTextContent(
-        "Generated with Voice Design",
-      );
+      // The field the lookup filled in IS the result — there is no separate
+      // banner restating it.
+      expect(screen.getByTestId("dropdown-Select voice type")).toHaveValue("voice_design");
       expect(screen.getByTestId("dropdown-Select gender")).toHaveValue("female");
     });
 
@@ -816,7 +812,8 @@ describe("ScenarioVoiceSidePanel", () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(1000);
       });
-      screen.getByTestId("elevenlabs-sync-result");
+      // Confirms the lookup actually landed before asserting what it left alone.
+      expect(screen.getByTestId("dropdown-Select voice type")).toHaveValue("voice_design");
 
       expect(screen.getByTestId("dropdown-Select gender")).toHaveValue("male");
     });
@@ -825,24 +822,22 @@ describe("ScenarioVoiceSidePanel", () => {
       render(<ScenarioVoiceSidePanel {...defaultProps} />);
       fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
 
-      // No lookup has run — the global catalog, mostly unannotated. v3 is the
-      // one exception: with no voice_type recorded, we don't know if it's
-      // safe (same cautious-by-default stance getElevenLabsV3Warning takes
-      // for an unrecorded type), so it stays flagged until a sync says
-      // otherwise — never silently presented as fine by default.
+      // No lookup has run — ally-be is the only source of a recommendation
+      // verdict (via modelOptions), and it hasn't been asked yet, so the
+      // catalog renders plain. The cautious "we don't know how this voice
+      // was created" case is the warning banner's job (getElevenLabsV3Warning),
+      // not a default flag baked into the picker.
       const modelDropdown = screen.getByTestId("dropdown-Select model");
-      const options = Array.from(modelDropdown.querySelectorAll("option")).map(
-        o => o.textContent,
-      );
+      const options = Array.from(modelDropdown.querySelectorAll("option")).map(o => o.textContent);
       expect(options).toEqual([
         "Select model",
         "eleven_turbo_v2_5",
         "eleven_multilingual_v2",
-        "eleven_v3 (not recommended)",
+        "eleven_v3",
       ]);
     });
 
-    it("annotates the catalog once a lookup tells us which models this voice's fine-tune supports", async () => {
+    it("renders the per-voice recommendation ally-be computed for a lookup", async () => {
       mockLookupElevenLabsVoice.mockReturnValue({
         unwrap: () =>
           Promise.resolve({
@@ -854,9 +849,25 @@ describe("ScenarioVoiceSidePanel", () => {
             voiceType: "voice_design",
             gender: "female",
             language: "ta",
-            // ElevenLabs never lists v3 here, for any voice — that's the point.
-            availableModels: ["eleven_turbo_v2_5"],
+            // Still used to auto-fill an empty Model field on lookup — a
+            // convenience separate from rendering the picker's labels.
             recommendedModel: "eleven_turbo_v2_5",
+            // ally-be's verdict for this voice — the panel renders this
+            // directly rather than re-deriving it from raw catalog data.
+            modelOptions: [
+              { value: "eleven_turbo_v2_5", label: "eleven_turbo_v2_5", recommended: true },
+              {
+                value: "eleven_multilingual_v2",
+                label: "eleven_multilingual_v2",
+                recommended: false,
+              },
+              // v3 has no per-voice fine-tune signal (ElevenLabs never lists
+              // it for any voice) but this voice's TYPE (voice_design) is one
+              // it renders from just fine, so ally-be reports no verdict — a
+              // real production voice ("Meenakshi") caught the regression
+              // where the panel's own duplicate logic flagged it anyway.
+              { value: "eleven_v3", label: "eleven_v3", recommended: null },
+            ],
           }),
       });
       const voiceIdField = goToVoiceIdField();
@@ -869,19 +880,9 @@ describe("ScenarioVoiceSidePanel", () => {
       const modelDropdown = screen.getByTestId("dropdown-Select model");
       expect(modelDropdown).toHaveValue("eleven_turbo_v2_5");
       expect(screen.getByText("eleven_turbo_v2_5 (recommended)")).toBeInTheDocument();
-      // v3 is absent from availableModels here too — ElevenLabs never lists
-      // it, for ANY voice — but this voice's TYPE (voice_design) is one v3
-      // renders from just fine, so it must NOT be flagged "not recommended".
-      // A real production voice ("Meenakshi") caught this exact regression:
-      // availableModels-based flagging alone marked v3 unrecommended even
-      // for a voice it works perfectly well for.
       expect(screen.getByText("eleven_v3")).toBeInTheDocument();
       expect(screen.queryByText("eleven_v3 (not recommended)")).not.toBeInTheDocument();
-      // Any other model missing from this voice's fine-tune list still gets
-      // flagged — only v3 needed the special case.
-      expect(
-        screen.getByText("eleven_multilingual_v2 (not recommended)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("eleven_multilingual_v2 (not recommended)")).toBeInTheDocument();
     });
 
     it("still flags v3 as not recommended for a voice type it genuinely doesn't suit (PVC)", async () => {
@@ -896,8 +897,15 @@ describe("ScenarioVoiceSidePanel", () => {
             voiceType: "pvc",
             gender: "male",
             language: "hi",
-            availableModels: ["eleven_turbo_v2_5", "eleven_multilingual_v2"],
-            recommendedModel: "eleven_multilingual_v2",
+            modelOptions: [
+              { value: "eleven_turbo_v2_5", label: "eleven_turbo_v2_5", recommended: null },
+              {
+                value: "eleven_multilingual_v2",
+                label: "eleven_multilingual_v2",
+                recommended: true,
+              },
+              { value: "eleven_v3", label: "eleven_v3", recommended: false },
+            ],
           }),
       });
       const voiceIdField = goToVoiceIdField();
@@ -911,14 +919,12 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(screen.getByText("eleven_v3 (not recommended)")).toBeInTheDocument();
     });
 
-    it("does not flag every other model as unrecommended when ElevenLabs reports no fine-tune data at all", async () => {
+    it("does not flag every other model as unrecommended when ally-be reports no verdict at all", async () => {
       // A real production voice ("Meenakshi", Voice Design) caught this too:
       // ElevenLabs' high_quality_base_model_ids is genuinely empty for every
-      // Voice Design voice (0 of 27 in the account-wide sweep) — that's
-      // "no data reported", not "checked and none of these qualify". `[]` is
-      // truthy in JS, so a bare existence check flagged all four non-v3
-      // models as "not recommended" from an empty list — a claim ElevenLabs
-      // never made.
+      // Voice Design voice (0 of 27 in the account-wide sweep). ally-be
+      // reports `recommended: null` — "no signal either way" — for all of
+      // them rather than treating absence-from-an-empty-list as a rejection.
       mockLookupElevenLabsVoice.mockReturnValue({
         unwrap: () =>
           Promise.resolve({
@@ -930,8 +936,15 @@ describe("ScenarioVoiceSidePanel", () => {
             voiceType: "voice_design",
             gender: "female",
             language: "ta",
-            availableModels: [],
-            recommendedModel: null,
+            modelOptions: [
+              { value: "eleven_turbo_v2_5", label: "eleven_turbo_v2_5", recommended: null },
+              {
+                value: "eleven_multilingual_v2",
+                label: "eleven_multilingual_v2",
+                recommended: null,
+              },
+              { value: "eleven_v3", label: "eleven_v3", recommended: null },
+            ],
           }),
       });
       const voiceIdField = goToVoiceIdField();
@@ -946,6 +959,69 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(screen.getByText("eleven_turbo_v2_5")).toBeInTheDocument();
       expect(screen.getByText("eleven_multilingual_v2")).toBeInTheDocument();
       expect(screen.queryByText(/not recommended/)).not.toBeInTheDocument();
+    });
+
+    it("hangs ElevenLabs' own category off the Voice type field, not a banner of its own", async () => {
+      // The banner that used to carry this led with the plain-English type
+      // title — the same string the Voice type field displays and the same
+      // string the toast shows, so the one fact was on screen three times.
+      // Only the raw category was ever unique to it, and it belongs next to
+      // the field it describes.
+      mockLookupElevenLabsVoice.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            voiceId: "iA7mRIiSweGrLdznkosO",
+            resolvedVoiceId: "iA7mRIiSweGrLdznkosO",
+            voiceIdMismatch: false,
+            category: "generated",
+            resolvedName: "Meenakshi",
+            voiceType: "voice_design",
+            gender: "female",
+            language: "ta",
+            modelOptions: [],
+          }),
+      });
+      const voiceIdField = goToVoiceIdField();
+
+      fireEvent.change(voiceIdField, { target: { value: "iA7mRIiSweGrLdznkosO" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      expect(screen.getByText(/ElevenLabs category: generated/)).toBeInTheDocument();
+      // A clean sync is not an event worth its own panel.
+      expect(screen.queryByTestId("elevenlabs-sync-result")).not.toBeInTheDocument();
+    });
+
+    it("still calls out an id that resolves to a different voice", async () => {
+      // The one thing neither the toast, the Voice type field, nor the model
+      // picker can surface — so this alert survives while the rest of the
+      // banner went away. Observed on 7 of 77 production ids.
+      mockLookupElevenLabsVoice.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            voiceId: "21m00Tcm4TlvDq8ikWAM",
+            resolvedVoiceId: "eLDc7xhWxG2FElT3kUTj",
+            storedVoiceId: "21m00Tcm4TlvDq8ikWAM",
+            voiceIdMismatch: true,
+            category: "professional",
+            resolvedName: "Janet",
+            voiceType: "pvc",
+            gender: "female",
+            language: "en",
+            modelOptions: [],
+          }),
+      });
+      const voiceIdField = goToVoiceIdField();
+
+      fireEvent.change(voiceIdField, { target: { value: "21m00Tcm4TlvDq8ikWAM" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      const alert = screen.getByTestId("elevenlabs-sync-result");
+      expect(alert).toHaveTextContent("different voice");
+      expect(alert).toHaveTextContent("Janet");
     });
 
     it("keeps a stored model selectable even if it isn't in ElevenLabs' current catalog", () => {
@@ -967,9 +1043,7 @@ describe("ScenarioVoiceSidePanel", () => {
       };
       render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={legacyModelVoice} />);
 
-      expect(screen.getByTestId("dropdown-Select model")).toHaveValue(
-        "eleven_monolingual_v1",
-      );
+      expect(screen.getByTestId("dropdown-Select model")).toHaveValue("eleven_monolingual_v1");
       expect(screen.getByText("eleven_monolingual_v1")).toBeInTheDocument();
     });
 

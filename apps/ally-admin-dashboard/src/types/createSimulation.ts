@@ -125,6 +125,21 @@ export interface LlmCatalogModel {
 export type LlmCatalogModelPayload = Omit<LlmCatalogModel, "id" | "createdAt" | "updatedAt">;
 
 /**
+ * One entry in a picker, with ElevenLabs' own verdict for THIS voice already
+ * applied server-side — ally-be owns the ElevenLabs integration and the
+ * classification rule (which voice types suit v3, which models a voice's
+ * fine-tune actually supports), so it computes the verdict once. This panel
+ * renders it, rather than keeping its own copy of the same rule — a real
+ * production voice ("Meenakshi") is exactly what went wrong when it had one.
+ */
+export interface ElevenLabsModelOption {
+  value: string;
+  label: string;
+  /** true = the recommendation for this voice; false = flagged; null = no signal either way. */
+  recommended: boolean | null;
+}
+
+/**
  * Outcome of pulling an ElevenLabs voice's creation type.
  *
  * `voiceIdMismatch` matters as much as `voiceType`: 7 of 77 production ids
@@ -138,25 +153,23 @@ export interface ElevenLabsVoiceSyncResult {
   category: string | null;
   resolvedName: string | null;
   voiceType: string | null;
-  warning: string | null;
   persisted: boolean;
   /**
-   * Models THIS voice's fine-tune supports, per ElevenLabs — annotation data,
-   * not the option list. The picker's options come from the account-wide
-   * catalog ({@link TtsCatalogEntry}); v3 is real and selectable there
-   * even though it's never in this list, since v3 uses no per-voice fine-tune
-   * at all, for any voice.
+   * Models THIS voice's fine-tune supports, per ElevenLabs — raw annotation
+   * data. Prefer {@link ElevenLabsVoiceSyncResult.modelOptions} for
+   * rendering; this is what it was built from.
    */
   availableModels: string[];
   /** A safe starting model, or null when there's nothing to prefer. */
   recommendedModel: string | null;
+  /** The account-wide catalog, pre-labeled for THIS voice — what the Model picker renders directly. */
+  modelOptions: ElevenLabsModelOption[];
 }
 
 /**
  * Outcome of looking up a voice id that has no saved voice row yet —
- * same facts as {@link ElevenLabsVoiceSyncResult} minus `warning` (no chosen
- * model to warn against) and `persisted` (nothing to write to), plus
- * `gender`/`language` for autofilling a new voice's form.
+ * same facts as {@link ElevenLabsVoiceSyncResult} minus `persisted` (nothing to
+ * write to), plus `gender`/`language` for autofilling a new voice's form.
  */
 export interface ElevenLabsVoiceLookupResult {
   voiceId: string;
@@ -168,15 +181,15 @@ export interface ElevenLabsVoiceLookupResult {
   gender: string | null;
   language: string | null;
   /**
-   * Models THIS voice's fine-tune supports, per ElevenLabs — annotation data,
-   * not the option list. The picker's options come from the account-wide
-   * catalog ({@link TtsCatalogEntry}); v3 is real and selectable there
-   * even though it's never in this list, since v3 uses no per-voice fine-tune
-   * at all, for any voice.
+   * Models THIS voice's fine-tune supports, per ElevenLabs — raw annotation
+   * data. Prefer {@link ElevenLabsVoiceLookupResult.modelOptions} for
+   * rendering; this is what it was built from.
    */
   availableModels: string[];
   /** A safe starting model, or null when there's nothing to prefer. */
   recommendedModel: string | null;
+  /** The account-wide catalog, pre-labeled for THIS voice — what the Model picker renders directly. */
+  modelOptions: ElevenLabsModelOption[];
 }
 
 /** Outcome of syncing every ElevenLabs voice row's type in one pass. */

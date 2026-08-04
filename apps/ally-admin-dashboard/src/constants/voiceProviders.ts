@@ -97,19 +97,6 @@ export const isElevenLabsV3Model = (model?: string | null): boolean =>
   /v3/i.test(String(model ?? ""));
 
 /**
- * Whether v3 is a sound choice for a voice of this type — the same check
- * `getElevenLabsV3Warning` uses to decide whether to stay silent.
- *
- * Exists separately because the model picker needs this fact independent of
- * which model happens to be selected right now: a voice's per-voice
- * fine-tune list (`availableModels`) never includes v3 for ANY voice type —
- * that's a fact about how v3 works, not a per-voice signal — so it cannot
- * tell the picker whether v3 suits THIS voice. Only voice type can.
- */
-export const isElevenLabsV3CompatibleVoiceType = (voiceType?: string | null): boolean =>
-  V3_COMPATIBLE_VOICE_TYPES.includes(String(voiceType ?? "").trim());
-
-/**
  * Advisory for an ElevenLabs voice whose training eleven_v3 cannot use.
  *
  * v3 does not support fine-tuned models, and a Professional clone is one — so it
@@ -132,7 +119,11 @@ export const getElevenLabsV3Warning = (
 
   const type = String(config?.voice_type ?? "").trim();
   if (!type) {
-    return 'We do not know how this voice was created, so we cannot say how it will sound on the v3 model. Click "Sync from ElevenLabs" to check.';
+    // Names the control as it is actually labelled in the panel. It was
+    // renamed to "Re-check with ElevenLabs" when it was demoted from a primary
+    // button, and these two hints kept pointing at the old name — sending the
+    // reader looking for a button that is not on the screen.
+    return 'We do not know how this voice was created, so we cannot say how it will sound on the v3 model. Click "Re-check with ElevenLabs" to check.';
   }
   if (type === "unknown") {
     return "ElevenLabs did not tell us how this voice was created. Check in the ElevenLabs workspace whether it was trained from recordings — if it was, v3 will not sound as close to the original person.";
@@ -201,7 +192,7 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
         { value: "premade", label: "ElevenLabs stock voice" },
         { value: "unknown", label: "Unclear — needs checking" },
       ],
-      hint: 'Decides how this voice sounds on the v3 model. Use "Sync from ElevenLabs" to fill it in rather than guessing.',
+      hint: 'Decides how this voice sounds on the v3 model. Use "Re-check with ElevenLabs" to fill it in rather than guessing.',
     },
   ],
   [TtsProvider.SARVAM]: [
