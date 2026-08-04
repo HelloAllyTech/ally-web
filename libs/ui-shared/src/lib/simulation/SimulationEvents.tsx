@@ -6,7 +6,10 @@ import { motion } from "framer-motion";
 
 import { SimulationEventsProps } from "./types";
 
-export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => {
+export const SimulationEvents: FC<SimulationEventsProps> = ({
+  events = [],
+  hideHeader = false,
+}) => {
   const filteredEvents = events.filter(event => event.emoji && event.message);
   const hasEvents = filteredEvents.length > 0;
 
@@ -42,9 +45,11 @@ export const SimulationEvents: FC<SimulationEventsProps> = ({ events = [] }) => 
       className="overflow-hidden rounded-sm bg-[#1D2020] h-full flex flex-col"
       style={{ willChange: "width" }}
     >
-      <div className="shrink-0 text-white text-[14px] font-medium leading-[22px] tracking-[0.28px] bg-[#282B31] px-4 h-[48px] items-center flex">
-        AI Feedback
-      </div>
+      {!hideHeader && (
+        <div className="shrink-0 text-white text-[14px] font-medium leading-[22px] tracking-[0.28px] bg-[#282B31] px-4 h-[48px] items-center flex">
+          AI Feedback
+        </div>
+      )}
       <motion.div
         data-testid="simulation-events-container"
         initial={{ x: "100%", opacity: 0 }}

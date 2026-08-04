@@ -5,26 +5,19 @@ import { toast } from "sonner";
 
 import { SkeletonPlaceholder } from "@ally-ui-mono/ui-shared";
 import {
-  baseAPI,
-  useCancelImprovementRunMutation,
   useCreateRoleplayCopilotSessionMutation,
   useLazyGetRoleplayCopilotSessionQuery,
   useLazyGetRoleplayCopilotSessionsBySpecQuery,
-  useLazyGetRoleplaySpecByIdQuery,
 } from "@api";
 import { EmptyState } from "@components";
-import { en, LOCAL_STORAGE_KEYS, TAG_TYPES } from "@constants";
+import { en, LOCAL_STORAGE_KEYS } from "@constants";
 import { useCopilotStream } from "@hooks/useCopilotStream";
-import { useImprovementLiveProgress } from "@hooks/useImprovementLiveProgress";
-import { hydrateSpec, selectRoleplaySpecState, setCopilotSessionId } from "@reducer";
+import { clearPendingCopilotPrompt, selectRoleplaySpecState, setCopilotSessionId } from "@reducer";
 import { logger } from "@utils";
-import { normalizeRoleplaySpec } from "@utils/roleplaySpec";
 
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessage } from "./ChatMessage";
-import { ImprovementLiveCard } from "./ImprovementLiveCard";
 import { CopilotAnswerPayload } from "./QuestionCard";
-import { useImprovementSocket } from "../improvement/useImprovementSocket";
 
 const sessionStorageKey = (specId: string) =>
   `${LOCAL_STORAGE_KEYS.ROLEPLAY_COPILOT_SESSION_PREFIX}:${specId}`;
@@ -35,22 +28,15 @@ const sessionStorageKey = (specId: string) =>
  * composer. Resume prefers the pinned session (redux/localStorage) and falls
  * back to the caller's latest server-side session, so the chat survives
  * reloads AND browser changes with full card fidelity.
- *
- * While an auto-improve loop runs, its narration rows land out-of-band in
- * copilot_messages — the improvements socket triggers a transcript refetch so
- * progress appears live, and an ACCEPTED flip re-hydrates the (auto-updated)
- * draft spec.
  */
 export const CopilotChatPanel: React.FC = () => {
   const strings = en.roleplayStudio.copilot;
   const dispatch = useDispatch();
-  const { specId, copilotSessionId, revision, savedRevision, improvementRunning } =
-    useSelector(selectRoleplaySpecState);
+  const { specId, copilotSessionId, pendingCopilotPrompt } = useSelector(selectRoleplaySpecState);
 
   const [createSession] = useCreateRoleplayCopilotSessionMutation();
   const [getSession] = useLazyGetRoleplayCopilotSessionQuery();
   const [getSessionsBySpec] = useLazyGetRoleplayCopilotSessionsBySpecQuery();
-  const [fetchSpec] = useLazyGetRoleplaySpecByIdQuery();
 
   // Create a fresh session for the current spec and pin it (Redux + localStorage).
   // Used both to bootstrap and to recover when the server session disappears.
@@ -67,35 +53,14 @@ export const CopilotChatPanel: React.FC = () => {
     }
   }, [createSession, dispatch, specId, strings.startFailed]);
 
-  const { messages, isStreaming, sendMessage, stop, hydrateMessages, replaceFeed } =
-    useCopilotStream({
-      sessionId: copilotSessionId,
-      onSessionInvalid: recreateSession,
-    });
-
-  // Live auto-improve progress for the ephemeral in-feed card (only while a run
-  // is RUNNING). Data is kept fresh by the improvements socket below + a
-  // dedicated rehearsals socket inside the hook.
-  const { activeRun, detail, currentRound, rehearsal } = useImprovementLiveProgress(specId);
-  const [cancelRun, { isLoading: cancellingRun }] = useCancelImprovementRunMutation();
-  const showLiveCard = Boolean(activeRun);
-
-  const handleCancelRun = useCallback(async () => {
-    if (!activeRun) return;
-    try {
-      await cancelRun(activeRun.id).unwrap();
-    } catch {
-      toast.error(en.roleplayStudio.improvement.cancelFailed);
-    }
-  }, [activeRun, cancelRun]);
+  const { messages, isStreaming, sendMessage, stop, hydrateMessages } = useCopilotStream({
+    sessionId: copilotSessionId,
+    onSessionInvalid: recreateSession,
+  });
 
   const [isBooting, setIsBooting] = useState(true);
   const bootedForSpecRef = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  // Deferred refresh: a loop update that lands mid-stream is picked up after done.
-  const pendingRefreshRef = useRef(false);
-  const isStreamingRef = useRef(false);
-  isStreamingRef.current = isStreaming;
 
   // Bootstrap: resume the pinned session (redux/localStorage), else the
   // caller's latest server-side session for this spec, else create fresh.
@@ -149,80 +114,24 @@ export const CopilotChatPanel: React.FC = () => {
     recreateSession,
   ]);
 
-  /** Pull freshly appended rows (loop narration) into the feed. */
-  const refreshTranscript = useCallback(async () => {
-    if (!copilotSessionId) return;
-    if (isStreamingRef.current) {
-      pendingRefreshRef.current = true;
-      return;
-    }
-    try {
-      const session = await getSession(copilotSessionId).unwrap();
-      replaceFeed(session.messages ?? []);
-    } catch (error) {
-      logger.warn(`[Roleplay Copilot] Transcript refresh failed: ${error}`);
-    }
-  }, [copilotSessionId, getSession, replaceFeed]);
-
-  /** The loop may auto-accept into the draft — re-hydrate it when safe. */
-  const refreshSpecIfClean = useCallback(async () => {
-    if (!specId) return;
-    // Belt-and-braces: editing is locked while a run is active, but never
-    // clobber genuinely unsaved local edits.
-    if (revision > savedRevision) return;
-    try {
-      const detail = await fetchSpec(specId).unwrap();
-      dispatch(
-        hydrateSpec({
-          spec: normalizeRoleplaySpec(
-            detail.activeVersion?.spec,
-            detail.title || en.roleplayStudio.untitledRoleplay,
-          ),
-          specId: detail.id,
-          versionId: detail.activeVersion?.id ?? "",
-          updatedAt: detail.activeVersion?.updatedAt ?? null,
-        }),
-      );
-    } catch (error) {
-      logger.warn(`[Roleplay Copilot] Spec refresh failed: ${error}`);
-    }
-  }, [dispatch, fetchSpec, revision, savedRevision, specId]);
-
-  // Loop progress lands out-of-band; the improvements socket is the doorbell.
-  const onImprovementUpdate = useCallback(
-    (data: unknown) => {
-      // Refetch the runs list + active-run detail (drives the live card), then
-      // pull any freshly-appended narration rows into the feed.
-      dispatch(baseAPI.util.invalidateTags([TAG_TYPES.ROLEPLAY_IMPROVEMENTS]));
-      void refreshTranscript();
-      const entries = Array.isArray(data) ? data : [data];
-      const hasResolvedRun = entries.some(entry => {
-        const status = String((entry as { status?: string })?.status ?? "");
-        return status === "ACCEPTED" || status === "AWAITING_REVIEW";
-      });
-      if (hasResolvedRun) void refreshSpecIfClean();
-    },
-    [dispatch, refreshSpecIfClean, refreshTranscript],
-  );
-
-  useImprovementSocket({ specId, onUpdate: onImprovementUpdate });
-
-  // Flush a deferred transcript refresh once the stream finishes (narration
-  // rows can also land mid-turn).
-  useEffect(() => {
-    if (!isStreaming && pendingRefreshRef.current) {
-      pendingRefreshRef.current = false;
-      void refreshTranscript();
-    }
-  }, [isStreaming, refreshTranscript]);
-
-  // Keep the feed pinned to the latest message. Also scroll when the live card
-  // appears or the current round's phase advances (not on every rehearsal tick,
-  // to avoid yanking the view while the user reads).
+  // Keep the feed pinned to the latest message.
   useEffect(() => {
     const node = scrollRef.current;
     if (node) node.scrollTop = node.scrollHeight;
-  }, [messages, activeRun?.id, currentRound?.status]);
+  }, [messages]);
+
+  // Send a prompt queued from outside the chat (the Improve drawer's "Auto
+  // improve") once the session is ready and nothing else is streaming. Cleared
+  // BEFORE sending so a re-render mid-stream can't replay it. This panel stays
+  // the single stream owner: the server consumes auto-improve turns to
+  // completion, so a tab-switch unmount mid-turn is harmless — remounting shows
+  // the finished turn via the messages refetch (acceptable v1).
+  useEffect(() => {
+    if (!pendingCopilotPrompt || !copilotSessionId || isBooting || isStreaming) return;
+    const { text, autoImprove } = pendingCopilotPrompt;
+    dispatch(clearPendingCopilotPrompt());
+    void sendMessage(text, autoImprove ? { autoImprove } : undefined);
+  }, [pendingCopilotPrompt, copilotSessionId, isBooting, isStreaming, dispatch, sendMessage]);
 
   const handleSend = (text: string) => void sendMessage(text);
   const handleAnswerQuestion = (payload: CopilotAnswerPayload) =>
@@ -248,7 +157,7 @@ export const CopilotChatPanel: React.FC = () => {
             <SkeletonPlaceholder className="!h-12 !w-1/2 self-end rounded-2xl" />
             <SkeletonPlaceholder className="!h-12 !w-3/4 rounded-2xl" />
           </div>
-        ) : messages.length === 0 && !showLiveCard ? (
+        ) : messages.length === 0 ? (
           <EmptyState
             title={strings.emptyTitle}
             subtitle={strings.emptySubtitle}
@@ -260,45 +169,15 @@ export const CopilotChatPanel: React.FC = () => {
               <ChatMessage
                 key={message.id}
                 message={message}
-                sessionId={copilotSessionId}
                 onAnswerQuestion={handleAnswerQuestion}
                 disabled={isStreaming}
               />
             ))}
-            {showLiveCard && activeRun && (
-              <ImprovementLiveCard
-                run={activeRun}
-                detail={detail}
-                currentRound={currentRound}
-                rehearsal={rehearsal}
-                onCancel={handleCancelRun}
-                cancelling={cancellingRun}
-              />
-            )}
           </div>
         )}
       </div>
 
       <div className="shrink-0 pt-1">
-        {improvementRunning && (
-          <div
-            className="mb-2 flex items-center gap-3 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2.5"
-            role="status"
-            aria-live="polite"
-            data-testid="improvement-running-banner"
-          >
-            <span
-              className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"
-              aria-hidden
-            />
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-primary-700">
-                {strings.improvement.running}
-              </span>
-              <span className="text-xs text-typography-600">{strings.improvement.runningHint}</span>
-            </div>
-          </div>
-        )}
         <ChatComposer
           onSend={handleSend}
           onStop={stop}

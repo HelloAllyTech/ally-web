@@ -379,8 +379,8 @@ export const Login: FunctionComponent = () => {
     loginSection === LoginSection.EMAIL ? !email || !!emailError : !otp || otp.length < 4;
 
   return (
-    <div className="flex font-primary sm:flex-col md:flex-row h-screen lg:p-8">
-      <div className="sm:max-w-full lg:max-w-[50%] flex-1 h-full relative">
+    <div className="flex flex-col font-primary md:flex-row h-dvh overflow-y-auto lg:p-8">
+      <div className="hidden sm:block sm:max-w-full lg:max-w-[50%] flex-1 h-full relative">
         <img
           src={LoginImage}
           alt={t("auth.login.imageAlt")}
@@ -403,7 +403,7 @@ export const Login: FunctionComponent = () => {
           />
         </div>
       </div>
-      <div className="flex-1 absolute min-h-[35vh] p-5 rounded-[10px] bottom-[10%] right-[25%] left-[25%] lg:static bg-white  flex flex-col items-center justify-center md:min-h-auto">
+      <div className="w-full static sm:absolute sm:flex-1 min-h-[35vh] p-5 rounded-[10px] sm:bottom-[10%] sm:right-[25%] sm:left-[25%] lg:static bg-white  flex flex-col items-center justify-center md:min-h-auto">
         <div className="w-full max-w-md flex flex-col gap-6">
           <div className="flex flex-col">
             <AnimatePresence mode="wait">{getLoginSection()}</AnimatePresence>

@@ -24,8 +24,10 @@ export interface Scenario {
   title?: string;
   scenario?: string;
   description?: string;
-  /** Text reminders shown to the learner during the roleplay (backend field pending). */
+  /** Text reminders shown to the learner during the roleplay. */
   reminders?: string[];
+  /** Whether reminders are shown to the learner during the roleplay — reminders should only render when this is true. */
+  remindersEnabled?: boolean;
   coverImageUrl?: string | null;
   coverVideoUrl?: string | null;
   status?: ScenarioStatus;

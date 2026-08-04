@@ -16,6 +16,8 @@ export interface RoleplaySessionLogRow {
   durationSeconds: number | null;
   score: number | null;
   platform: string | null;
+  /** Display label of the session's language (e.g. "English"), null if unresolved. */
+  language: string | null;
   createdAt: string;
   /** Total LLM tokens consumed; null when no usage is correlated. */
   totalTokens: number | null;
@@ -77,6 +79,7 @@ export interface RoleplaySessionLatency {
   p50ResponseLatencyMs: number | null;
   p95ResponseLatencyMs: number | null;
   avgEouDelayMs: number | null;
+  avgSttFinalizeMs: number | null;
   avgLlmTtftMs: number | null;
   avgTtsTtfbMs: number | null;
   avgOrchestrationMs: number | null;
@@ -107,7 +110,7 @@ export interface RoleplaySessionFeedback {
 export interface RoleplaySessionAgentTestCase {
   id: string;
   title: string;
-  category: string;
+  tags: string[];
   description: string | null;
 }
 
@@ -163,7 +166,6 @@ export interface RoleplaySessionLifecycleEvent {
 export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   summary: Record<string, unknown> | null;
   scenarioVersionId: string | null;
-  language: string | null;
   voiceId: string | null;
   totalPausedMs: number | null;
   usage: RoleplaySessionUsage | null;
@@ -199,6 +201,8 @@ export interface RoleplaySessionLogsParams {
   dateFrom?: string;
   dateTo?: string;
   tenantId?: string;
+  /** Restrict to a language, matched against languages.value (e.g. "ta-IN"). */
+  language?: string;
   sortBy?: "createdAt" | "startedAt" | "endedAt" | "score" | "status";
   order?: "ASC" | "DESC";
   /** true = only V2V test sessions, false = only real sessions, omit = all */
@@ -280,6 +284,10 @@ export interface RoleplaySessionRunConfig {
   scenarioVersion: RoleplaySessionScenarioVersion | null;
   /** {promptCode: version} captured at session start; null when not recorded. */
   promptVersions: Record<string, string | number> | null;
+  /** promptCode of the main-agent prompt this simulation selected; null = default. */
+  selectedMainPromptCode: string | null;
+  /** Effective variant this session ran: "GENERIC" | "MULTILINGUAL"; null for older sessions. */
+  mainPromptVariant: string | null;
   llmProvider: string | null;
   llmModel: string | null;
   temperature: number | null;

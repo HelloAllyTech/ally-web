@@ -491,10 +491,17 @@ export const useMicrophoneMode = (mode: string | null): UseMicrophoneModeReturn 
         );
         return;
       }
+      // Live dictation is retired. A stale ?mode=dictation URL must not silently
+      // start a scribe session under a mode the counselor never picked — the page
+      // shows the "not available" fallback instead.
+      if (mode === "dictation") {
+        setIsStartAudioChatEmitted(true);
+        return;
+      }
       const socketData = {
         platform: "WEB",
         sampleRate: 48000,
-        mode: mode === "dictation" ? ScribeSessionMode.DICTATION : ScribeSessionMode.SCRIBE,
+        mode: ScribeSessionMode.SCRIBE,
       };
       emitSocketEvent(SocketEvent.START_AUDIO_CHAT, socketData);
       setIsStartAudioChatEmitted(true);

@@ -18,6 +18,7 @@ export function useRoleplaySessionLogs() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<RoleplaySessionStatus | "">("");
   const [sessionType, setSessionType] = useState<SessionTypeFilter>("all");
+  const [language, setLanguage] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [offset, setOffset] = useState(0);
@@ -40,11 +41,12 @@ export function useRoleplaySessionLogs() {
     if (status) next.status = status;
     if (sessionType === "test") next.isV2VTest = true;
     if (sessionType === "real") next.isV2VTest = false;
+    if (language) next.language = language;
     if (dateFrom) next.dateFrom = dateFrom;
     // Treat the picked end date as inclusive (end of that day, UTC).
     if (dateTo) next.dateTo = `${dateTo}T23:59:59.999Z`;
     return next;
-  }, [search, status, sessionType, dateFrom, dateTo, offset]);
+  }, [search, status, sessionType, language, dateFrom, dateTo, offset]);
 
   const { data, isLoading, isFetching, isError, refetch } = useGetRoleplaySessionLogsQuery(params);
 
@@ -59,6 +61,10 @@ export function useRoleplaySessionLogs() {
     setSessionType(value);
     setOffset(0);
   };
+  const onLanguageChange = (value: string) => {
+    setLanguage(value);
+    setOffset(0);
+  };
   const onDateFromChange = (value: string) => {
     setDateFrom(value);
     setOffset(0);
@@ -68,12 +74,15 @@ export function useRoleplaySessionLogs() {
     setOffset(0);
   };
 
-  const hasActiveFilters = Boolean(search || status || sessionType !== "all" || dateFrom || dateTo);
+  const hasActiveFilters = Boolean(
+    search || status || sessionType !== "all" || language || dateFrom || dateTo,
+  );
   const clearFilters = () => {
     setSearchInput("");
     setSearch("");
     setStatus("");
     setSessionType("all");
+    setLanguage("");
     setDateFrom("");
     setDateTo("");
     setOffset(0);
@@ -102,6 +111,8 @@ export function useRoleplaySessionLogs() {
     onStatusChange,
     sessionType,
     onSessionTypeChange,
+    language,
+    onLanguageChange,
     dateFrom,
     onDateFromChange,
     dateTo,

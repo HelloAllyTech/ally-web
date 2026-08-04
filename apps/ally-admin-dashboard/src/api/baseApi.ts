@@ -7,7 +7,15 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { toast } from "sonner";
 
-import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, TAG_TYPES, en } from "@constants";
+import {
+  ApiEndpoints,
+  HttpMethod,
+  LOCAL_STORAGE_KEYS,
+  ROUTES,
+  TAG_TYPES,
+  en,
+  withBasePath,
+} from "@constants";
 import { RefreshResponse } from "@types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -17,7 +25,9 @@ const handleLogout = () => {
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN);
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED);
 
-  window.location.href = ROUTES.LOGIN;
+  // Full page load, so it bypasses the router and needs the mount point
+  // spelled out — "/login" standalone, "/admin/login" when path-mounted.
+  window.location.href = withBasePath(ROUTES.LOGIN);
 };
 
 const baseQuery = fetchBaseQuery({
@@ -111,6 +121,7 @@ export const baseAPI = createApi({
     TAG_TYPES.SCENARIO_PATHS,
     TAG_TYPES.EACH_SESSION,
     TAG_TYPES.TRIGGER_WARNINGS,
+    TAG_TYPES.LANGUAGE_GLOSSARY,
     TAG_TYPES.HELPER_TAGS,
     TAG_TYPES.FILLER_TAGS,
     TAG_TYPES.COMPETENCIES,
@@ -126,14 +137,23 @@ export const baseAPI = createApi({
     TAG_TYPES.ROLEPLAY_SESSION_LOGS,
     TAG_TYPES.ROLEPLAY_SPECS,
     TAG_TYPES.ROLEPLAY_SPEC_VERSIONS,
-    TAG_TYPES.ROLEPLAY_REHEARSALS,
-    TAG_TYPES.ROLEPLAY_IMPROVEMENTS,
     TAG_TYPES.ROLEPLAY_COPILOT_SESSIONS,
+    TAG_TYPES.ROLEPLAY_TEST_REPORTS,
     TAG_TYPES.COMFORT_AUDIO_LIBRARY,
     TAG_TYPES.TRACKS_V2,
     TAG_TYPES.BLOGS,
     TAG_TYPES.IMAGE_LIBRARY,
     TAG_TYPES.SUPER_DUPER_ADMINS,
+    TAG_TYPES.PRODUCT_ROADMAP_OPPORTUNITIES,
+    TAG_TYPES.PRODUCT_ROADMAP_COIN_BUDGET,
+    TAG_TYPES.PRODUCT_ROADMAP_FACETS,
+    TAG_TYPES.PRODUCT_ROADMAP_GOALS,
+    TAG_TYPES.PRODUCT_ROADMAP_OWNERS,
+    TAG_TYPES.PRODUCT_ROADMAP_COMMENTS,
+    TAG_TYPES.PRODUCT_ROADMAP_INTERVIEWS,
+    TAG_TYPES.PRODUCT_ROADMAP_RELEASE_NOTES,
+    TAG_TYPES.PRODUCT_ROADMAP_SAVED_VIEWS,
+    TAG_TYPES.PRODUCT_ROADMAP_VIEW_ORDER,
     TAG_TYPES.AI_LAB_SKILLS,
     TAG_TYPES.AI_LAB_VARIABLES,
     TAG_TYPES.AI_LAB_VALUES,
@@ -141,6 +161,18 @@ export const baseAPI = createApi({
     TAG_TYPES.AI_LAB_EVALUATORS,
     TAG_TYPES.AI_LAB_ASSIGNMENTS,
     TAG_TYPES.AI_LAB_AUTO_EVALS,
+    TAG_TYPES.AI_LAB_QUESTION_SETS,
+    TAG_TYPES.ANALYTICS_SUGGESTIONS,
+    // These four were used in providesTags/invalidatesTags but never declared
+    // here, so RTK Query silently ignored them and the invalidation never
+    // fired — saving a voice or a config left the list showing stale data
+    // until something else forced a refetch.
+    TAG_TYPES.SCENARIO_VOICES,
+    TAG_TYPES.STT_CONFIGS,
+    TAG_TYPES.LLM_CONFIGS,
+    TAG_TYPES.SCENARIO_LANGUAGES,
+    TAG_TYPES.LLM_MODEL_CATALOG,
+    TAG_TYPES.LLM_MODELS,
   ],
   endpoints: () => ({}),
 });

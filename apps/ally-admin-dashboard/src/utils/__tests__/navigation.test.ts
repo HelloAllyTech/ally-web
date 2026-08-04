@@ -40,6 +40,29 @@ describe("deriveNavigationItems", () => {
     ).toEqual([]);
   });
 
+  it("shows Product Roadmap for a user holding only VIEW_PRODUCT_ROADMAP", () => {
+    // Deliberately permission-gated rather than role-gated, because viewing and voting are
+    // meant to reach a wider group than the manage surface. If someone moves the tab into
+    // buildSuperDuperAdminOnlyItems(), this fails.
+    const result = deriveNavigationItems({
+      permissions: [Permissions.VIEW_PRODUCT_ROADMAP],
+      role: UserRole.ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.PRODUCT_ROADMAP]);
+    expect(result[0].path).toBe(ROUTES.PRODUCT_ROADMAP);
+  });
+
+  it("hides Product Roadmap from a super-duper-admin who lacks the permission", () => {
+    // Role alone must not unlock it — the grant migration is what does.
+    const result = deriveNavigationItems({
+      permissions: [],
+      role: UserRole.SUPER_DUPER_ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.PRODUCT_ROADMAP);
+  });
+
   it("filters permission-gated items to those the user can access", () => {
     const result = deriveNavigationItems({
       permissions: [Permissions.EDIT_EVENT],
@@ -80,8 +103,9 @@ describe("deriveNavigationItems", () => {
     // Super-admin-tier tabs remain visible to a plain super-admin.
     expect(ids).toContain(SIDEBAR_ITEMS.ANALYTICS);
     expect(ids).toContain(SIDEBAR_ITEMS.COMPETENCIES);
+    expect(ids).toContain(SIDEBAR_ITEMS.AI_LAB);
+    expect(ids).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
     // Super-duper-admin-only tabs are hidden from a plain super-admin.
-    expect(ids).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.SETTINGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.AGENT_TEST_CASES);
     expect(ids).not.toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
@@ -97,7 +121,12 @@ describe("deriveNavigationItems", () => {
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.COMPETENCIES]);
+    expect(result.map(i => i.id)).toEqual([
+      SIDEBAR_ITEMS.ANALYTICS,
+      SIDEBAR_ITEMS.COMPETENCIES,
+      SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
+      SIDEBAR_ITEMS.AI_LAB,
+    ]);
   });
 
   it("exposes the super-duper-only tabs (and super-admin-tier tabs) to a super-duper-admin, Settings last", () => {
@@ -131,6 +160,8 @@ describe("deriveNavigationItems", () => {
     });
     expect(result.map(i => i.id)).toEqual([
       SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+      SIDEBAR_ITEMS.STT_CONFIGS,
+      SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
       SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
       SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
       SIDEBAR_ITEMS.TOOLTIPS,
@@ -164,7 +195,7 @@ describe("deriveNavigationItems", () => {
     expect(ids).not.toContain(SIDEBAR_ITEMS.USER_BADGES);
   });
 
-  it("exposes Roleplay Session Logs only to super-duper-admins", () => {
+  it("exposes Roleplay Session Logs to both super-admin tiers but not to a regular admin", () => {
     const superDuperAdmin = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
       role: UserRole.SUPER_DUPER_ADMIN,
@@ -172,13 +203,13 @@ describe("deriveNavigationItems", () => {
     });
     expect(superDuperAdmin.map(i => i.id)).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
 
-    // A plain super-admin no longer sees Roleplay Session Logs.
+    // A plain super-admin sees it too — it is a read-only cross-tenant view.
     const superAdmin = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
       role: UserRole.SUPER_ADMIN,
       savedOrder: undefined,
     });
-    expect(superAdmin.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
+    expect(superAdmin.map(i => i.id)).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
 
     const admin = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
@@ -199,13 +230,14 @@ describe("deriveNavigationItems", () => {
     expect(flagged).toEqual(
       new Set([
         SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+        SIDEBAR_ITEMS.STT_CONFIGS,
+        SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
+        SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
         SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.TOOLTIPS,
         SIDEBAR_ITEMS.USER_BADGES,
         SIDEBAR_ITEMS.AGENT_TEST_CASES,
-        SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-        SIDEBAR_ITEMS.AI_LAB,
         SIDEBAR_ITEMS.SETTINGS,
       ]),
     );
@@ -213,6 +245,8 @@ describe("deriveNavigationItems", () => {
     const byId = new Map(result.map(i => [i.id, i]));
     expect(byId.get(SIDEBAR_ITEMS.ANALYTICS)?.superDuperAdminOnly).toBeFalsy();
     expect(byId.get(SIDEBAR_ITEMS.COMPETENCIES)?.superDuperAdminOnly).toBeFalsy();
+    expect(byId.get(SIDEBAR_ITEMS.AI_LAB)?.superDuperAdminOnly).toBeFalsy();
+    expect(byId.get(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS)?.superDuperAdminOnly).toBeFalsy();
     expect(byId.get(SIDEBAR_ITEMS.SIMULATION_STUDIO)?.superDuperAdminOnly).toBeFalsy();
   });
 

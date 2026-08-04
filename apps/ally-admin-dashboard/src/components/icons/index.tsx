@@ -30,17 +30,32 @@ import {
   Calendar as CCalendar,
   ChartBar as CChartBar,
   Chat as CChat,
+  UserSpeaker as CUserSpeaker,
   Chemistry as CChemistry,
+  Roadmap as CRoadmap,
+  Idea as CIdea,
+  Debug as CDebug,
+  Pin as CPin,
+  Split as CSplit,
+  Merge as CMerge,
+  Bullhorn as CBullhorn,
+  Link as CLink,
+  SortAscending as CSortAscending,
+  SortDescending as CSortDescending,
+  Currency as CCurrency,
   Checkmark as CCheckmark,
   CheckmarkFilled as CCheckmarkFilled,
   CheckmarkOutline as CCheckmarkOutline,
   ChevronDown as CChevronDown,
   ChevronRight as CChevronRight,
+  ChevronUp as CChevronUp,
   Close as CClose,
   CloudUpload as CCloudUpload,
   Copy as CCopy,
+  DataTable as CDataTable,
   Document as CDocument,
   DotMark as CDotMark,
+  Download as CDownload,
   Draggable as CDraggable,
   Edit as CEdit,
   Filter as CFilter,
@@ -55,6 +70,7 @@ import {
   ListBulleted as CListBulleted,
   ListNumbered as CListNumbered,
   Logout as CLogout,
+  Maximize as CMaximize,
   Microphone as CMicrophone,
   Minimize as CMinimize,
   Misuse as CMisuse,
@@ -86,6 +102,8 @@ import {
   ViewOff as CViewOff,
   WarningAlt as CWarningAlt,
   ZoomIn as CZoomIn,
+  MachineLearningModel as CMachineLearningModel,
+  Catalog as CCatalog,
 } from "@carbon/icons-react";
 import { Heading1 as LHeading1, Heading2 as LHeading2, Heading3 as LHeading3 } from "lucide-react";
 
@@ -132,6 +150,7 @@ export const AlarmOn = createCarbonIcon(CAlarm);
 export const Archive = createCarbonIcon(CArchive);
 export const ArrowDown = createCarbonIcon(CChevronDown);
 export const ArrowDownFilled = createCarbonIcon(CChevronDown);
+export const ArrowUp = createCarbonIcon(CChevronUp);
 export const ArrowSolid = createCarbonIcon(CArrowRight);
 export const BackCircle = createCarbonIcon(CArrowLeft);
 export const BackIcon = createCarbonIcon(CArrowLeft);
@@ -143,6 +162,19 @@ export const Calendar = createCarbonIcon(CCalendar);
 export const Cancel = createCarbonIcon(CClose);
 export const Chat = createCarbonIcon(CChat);
 export const Chemistry = createCarbonIcon(CChemistry);
+export const Roadmap = createCarbonIcon(CRoadmap);
+export const Idea = createCarbonIcon(CIdea);
+// NOTE: @carbon/icons-react has no `Bug` or `Coins`. Debug is the bug glyph and Currency is
+// the coin glyph — do not "correct" these names.
+export const Debug = createCarbonIcon(CDebug);
+export const Pin = createCarbonIcon(CPin);
+export const Split = createCarbonIcon(CSplit);
+export const Merge = createCarbonIcon(CMerge);
+export const Bullhorn = createCarbonIcon(CBullhorn);
+export const Link = createCarbonIcon(CLink);
+export const SortAscending = createCarbonIcon(CSortAscending);
+export const SortDescending = createCarbonIcon(CSortDescending);
+export const Currency = createCarbonIcon(CCurrency);
 export const CheckCircle = createCarbonIcon(CCheckmarkOutline);
 export const Close = createCarbonIcon(CClose);
 export const Compress = createCarbonIcon(CMinimize);
@@ -152,6 +184,7 @@ export const DockToRight = createCarbonIcon(COpenPanelRight);
 export const Document = createCarbonIcon(CDocument);
 export const Dot = createCarbonIcon(CDotMark);
 export const DoubleArrowRight = createCarbonIcon(CChevronRight);
+export const Download = createCarbonIcon(CDownload);
 export const DragIndicator = createCarbonIcon(CDraggable);
 export const DragUpload = createCarbonIcon(CUpload);
 export const Edit = createCarbonIcon(CEdit);
@@ -160,12 +193,20 @@ export const FailIcon = createCarbonIcon(CMisuse);
 export const Filter = createCarbonIcon(CFilter);
 export const FocusLens = createCarbonIcon(CZoomIn);
 export const Globe = createCarbonIcon(CGlobe);
+/** Voices (TTS) — a persona with a speaker, i.e. the side that talks. The
+ *  microphone belongs to Speech Recognition, the side that listens. */
+export const UserSpeaker = createCarbonIcon(CUserSpeaker);
+/** Language Model (LLM) registry. */
+export const MachineLearningModel = createCarbonIcon(CMachineLearningModel);
+/** Model Catalog tab — the list of models, distinct from Language Model configs. */
+export const Catalog = createCarbonIcon(CCatalog);
 export const GroupBranch = createCarbonIcon(CFlowConnection);
 export const HappyEmoji = createCarbonIcon(CFaceSatisfied);
 export const ImageIcon = createCarbonIcon(CImage);
 export const InfoIcon = createCarbonIcon(CInformation);
 export const Logout = createCarbonIcon(CLogout);
 export const ManageAccounts = createCarbonIcon(CUserMultiple);
+export const Maximize = createCarbonIcon(CMaximize);
 export const Mic = createCarbonIcon(CMicrophone);
 export const PauseIcon = createCarbonIcon(CPause);
 export const Play = createCarbonIcon(CPlay);
@@ -173,6 +214,7 @@ export const PlayIcon = createCarbonIcon(CPlay);
 export const Plus = createCarbonIcon(CAdd);
 export const Refresh = createCarbonIcon(CRenew);
 export const Search = createCarbonIcon(CSearch);
+export const TableIcon = createCarbonIcon(CDataTable);
 export const ThreeDot = createCarbonIcon(COverflowMenuHorizontal);
 export const Tick = createCarbonIcon(CCheckmark);
 export const Timer = createCarbonIcon(CTime);

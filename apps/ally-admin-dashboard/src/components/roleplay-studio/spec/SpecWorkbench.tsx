@@ -18,19 +18,19 @@ type WorkbenchView = "spec" | "stateMachine";
  * A trainer who wants fine-grained control can flip "Edit spec directly" to
  * unlock the section editors + state-machine editor; direct edits autosave via
  * the same optimistic-concurrency draft save as copilot patches. Editing is
- * force-locked while the copilot streams or an improvement run is active, so
- * manual edits never race the copilot's patches.
+ * force-locked while the copilot streams, so manual edits never race the
+ * copilot's patches.
  */
 export const SpecWorkbench: React.FC = () => {
   const strings = en.roleplayStudio.workbench;
   const [view, setView] = useState<WorkbenchView>("spec");
   const [editing, setEditing] = useState(false);
 
-  const { isStreaming, improvementRunning } = useSelector(selectRoleplaySpecState);
-  const locked = isStreaming || improvementRunning;
+  const { isStreaming } = useSelector(selectRoleplaySpecState);
+  const locked = isStreaming;
 
-  // A copilot stream or improvement run takes over the draft — drop out of edit
-  // mode so the trainer's manual edits can't collide with incoming patches.
+  // A copilot stream takes over the draft — drop out of edit mode so the
+  // trainer's manual edits can't collide with incoming patches.
   useEffect(() => {
     if (locked && editing) setEditing(false);
   }, [locked, editing]);
@@ -72,7 +72,15 @@ export const SpecWorkbench: React.FC = () => {
 
       <div className="flex-1 min-h-0">
         {view === "spec" ? (
-          <div className="h-full min-h-0 overflow-y-auto custom-scrollbar pr-1">
+          // `relative` is load-bearing: Carbon's CarbonToggle internals
+          // (`.cds--toggle__button` + the `.cds--visually-hidden` label) are
+          // `position: absolute`. `overflow-y-auto` clips but does NOT establish
+          // a containing block, so without `relative` those absolute nodes escape
+          // this scroll area and resolve against the PrivateLayout wrapper,
+          // inflating its scrollHeight to the spec's full length — a phantom
+          // second scrollbar with empty white space below the content (worst at
+          // the end-of-page Voice & Language / naturalness toggles).
+          <div className="relative h-full min-h-0 overflow-y-auto custom-scrollbar pr-1">
             <SpecPanel readOnly={readOnly} />
           </div>
         ) : (

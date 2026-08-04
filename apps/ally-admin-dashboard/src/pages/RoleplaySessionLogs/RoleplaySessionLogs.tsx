@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@ally-ui-mono/ui-shared";
+import { useGetScenarioLanguagesQuery } from "@api";
 import { Button, EmptyState } from "@components";
 import { ButtonVariant } from "@components/types";
 import { ROUTES } from "@constants";
@@ -78,6 +79,8 @@ export const RoleplaySessionLogs: FC = () => {
     onStatusChange,
     sessionType,
     onSessionTypeChange,
+    language,
+    onLanguageChange,
     dateFrom,
     onDateFromChange,
     dateTo,
@@ -91,6 +94,8 @@ export const RoleplaySessionLogs: FC = () => {
     rangeStart,
     rangeEnd,
   } = useRoleplaySessionLogs();
+
+  const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });
 
   const openDetail = (row: RoleplaySessionLogRow) =>
     navigate(ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(row.id));
@@ -155,6 +160,21 @@ export const RoleplaySessionLogs: FC = () => {
           </Select>
         </div>
         <div className="flex flex-col gap-1">
+          <label className="text-xs text-typography-700">Language</label>
+          <Select
+            id="roleplay-language-filter"
+            labelText="Language"
+            hideLabel
+            value={language}
+            onChange={e => onLanguageChange(e.target.value)}
+          >
+            <SelectItem value="" text="All languages" />
+            {(scenarioLanguages ?? []).map(l => (
+              <SelectItem key={l.value} value={l.value} text={l.label} />
+            ))}
+          </Select>
+        </div>
+        <div className="flex flex-col gap-1">
           <label className="text-xs text-typography-700">From</label>
           <input
             type="date"
@@ -204,6 +224,7 @@ export const RoleplaySessionLogs: FC = () => {
                 <TableHeader className="py-3 pr-4 font-medium">Organization</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium">Scenario</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium">Status</TableHeader>
+                <TableHeader className="py-3 pr-4 font-medium">Language</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium">Started</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium">Duration</TableHeader>
                 <TableHeader className="py-3 pr-4 font-medium">Tokens</TableHeader>
@@ -236,6 +257,7 @@ export const RoleplaySessionLogs: FC = () => {
                   <TableCell className="py-3 pr-4">
                     <StatusPill status={row.status} />
                   </TableCell>
+                  <TableCell className="py-3 pr-4">{row.language || "—"}</TableCell>
                   <TableCell className="py-3 pr-4">
                     {row.startedAt ? formatDate(row.startedAt) : "—"}
                   </TableCell>

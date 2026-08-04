@@ -89,7 +89,7 @@ describe("SuspendedUser", () => {
     const { container } = renderComponent();
     const mainContainer = container.querySelector(".flex.flex-col.justify-center.items-center");
     expect(mainContainer).toBeInTheDocument();
-    expect(mainContainer).toHaveClass("h-screen", "gap-2");
+    expect(mainContainer).toHaveClass("h-dvh", "gap-2");
   });
 
   it("should render inner container with border and padding", () => {

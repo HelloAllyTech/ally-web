@@ -21,13 +21,15 @@ import { store } from "@store";
 const buildSuperDuperAdminOnlyItems = (): Set<string> =>
   new Set<string>([
     SIDEBAR_ITEMS.CHARACTER_LIBRARY,
+    // Matches the route gate: editing the STT registry changes which engine
+    // every language (and every simulation defaulting to it) transcribes with.
+    SIDEBAR_ITEMS.STT_CONFIGS,
+    SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
     SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
     SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
     SIDEBAR_ITEMS.TOOLTIPS,
     SIDEBAR_ITEMS.USER_BADGES,
     SIDEBAR_ITEMS.AGENT_TEST_CASES,
-    SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
-    SIDEBAR_ITEMS.AI_LAB,
     SIDEBAR_ITEMS.SETTINGS,
   ]);
 
@@ -64,6 +66,16 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.MANAGE_SCENARIO_VOICES,
   },
   {
+    id: SIDEBAR_ITEMS.STT_CONFIGS,
+    label: "Speech Recognition",
+    path: ROUTES.MANAGE_STT_CONFIGS,
+  },
+  {
+    id: SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
+    label: "Language Model",
+    path: ROUTES.MANAGE_LLM_MODEL_CATALOG,
+  },
+  {
     id: SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
     label: en.simulation.languages,
     path: ROUTES.MANAGE_SCENARIO_LANGUAGES,
@@ -92,6 +104,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     id: SIDEBAR_ITEMS.BLOG,
     label: "Blog",
     path: ROUTES.BLOG,
+  },
+  {
+    id: SIDEBAR_ITEMS.PRODUCT_ROADMAP,
+    label: "Product Roadmap",
+    path: ROUTES.PRODUCT_ROADMAP,
   },
   {
     id: SIDEBAR_ITEMS.USERS,
@@ -161,10 +178,10 @@ export const applySavedOrder = (
  * user's "first tab" — used both to render the sidebar and to pick the default
  * landing route after login. Tabs fall into three gating tiers:
  *  - Super-duper-admin only (Characters, Languages, Guardrails, Tooltips,
- *    Badges, Agent Test Cases, Roleplay Session Logs, Super Duper Admins,
- *    Settings): shown solely to SUPER_DUPER_ADMIN, independent of permissions.
- *  - Super-admin tier (Analytics, Competencies): shown to both super-admin
- *    roles, independent of permissions.
+ *    Badges, Agent Test Cases, Super Duper Admins, Settings): shown solely to
+ *    SUPER_DUPER_ADMIN, independent of permissions.
+ *  - Super-admin tier (Analytics, Competencies, AI Lab, Roleplay Session Logs):
+ *    shown to both super-admin roles, independent of permissions.
  *  - Permission-gated (everything else): shown once permissions are loaded and
  *    the user holds the required permission.
  * The single-pass filter preserves each tab's natural order from
@@ -204,6 +221,8 @@ export const deriveNavigationItems = ({
       // Super-admin-tier tabs (both super-admin roles). Role-gated.
       case SIDEBAR_ITEMS.ANALYTICS:
       case SIDEBAR_ITEMS.COMPETENCIES:
+      case SIDEBAR_ITEMS.AI_LAB:
+      case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
         return isSuperAdmin;
 
       // Permission-gated tabs require permissions to be loaded; until then
@@ -234,6 +253,11 @@ export const deriveNavigationItems = ({
             return permissions!.includes(Permissions.VIEW_I18N_TRANSLATIONS);
           case SIDEBAR_ITEMS.BLOG:
             return permissions!.includes(Permissions.VIEW_BLOGS);
+          // Permission-gated, deliberately NOT role-gated: viewing and voting on the
+          // roadmap are meant to reach a wider group than the manage surface, so the tab
+          // must stay out of buildSuperDuperAdminOnlyItems().
+          case SIDEBAR_ITEMS.PRODUCT_ROADMAP:
+            return permissions!.includes(Permissions.VIEW_PRODUCT_ROADMAP);
           default:
             return true;
         }

@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -155,11 +155,14 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const profileUrl = profileSettingsForm.watch("profileImageUrl");
 
+  // Tracks whether the user has manually toggled the sidebar — once they have,
+  // their choice sticks and auto-resize stops overriding it.
+  const userToggledRef = useRef(false);
+
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < EXPANDED_WIDTH) {
-        setIsExpanded(false);
-      }
+      if (userToggledRef.current) return;
+      setIsExpanded(window.innerWidth >= EXPANDED_WIDTH);
     };
 
     handleResize();
@@ -174,6 +177,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   };
 
   const handleToggleSidebar = () => {
+    userToggledRef.current = true;
     setIsExpanded(!isExpanded);
   };
 
@@ -247,9 +251,9 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
     <>
       <div
         data-testid="nav-sidebar"
-        className={`bg-background h-screen flex flex-col justify-between border-r border-r-border-light transition-all duration-300 relative ${
+        className={`fixed md:static inset-y-0 left-0 z-20 bg-background h-dvh flex flex-col justify-between border-r border-r-border-light transition-all duration-300 ${
           isExpanded ? "w-64" : "w-24"
-        } p-[12px] font-primary`}
+        } p-[12px] font-primary ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         {/* Logo container */}
         <div

@@ -1,12 +1,31 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
-import { DonutChart, LineChart } from "@carbon/charts-react";
+import { DonutChart, LineChart, SimpleBarChart } from "@carbon/charts-react";
 
-import { Tile } from "@ally-ui-mono/ui-shared";
 import { useGetScribeOverviewQuery, useGetScribeSummaryFailuresQuery } from "@api";
-import { AnalyticsRange } from "@types";
 
-import { ChartCard, PALETTE, donutOpts, lineOpts } from "../chartKit";
+import { AnalyticsTabFilters, asOf, windowLabel } from "../analyticsFilters";
+import { ChartDetailModal } from "../ChartDetailModal";
+import {
+  ChartCard,
+  KpiTile,
+  ScrollableChart,
+  buildSource,
+  donutOpts,
+  hBarOpts,
+  lineOpts,
+  single,
+} from "../chartKit";
+import {
+  CAPTURE_SCALE,
+  CONTEXT,
+  NOTE_MODE_SCALE,
+  OUTCOME_SCALE,
+  PALETTE,
+  stableScale,
+} from "../chartScales";
+import { FunnelBars, FunnelStage } from "../FunnelBars";
+import { delta, formatKpi } from "../highlightsChart";
 
 const BUCKET_TITLE: Record<string, string> = {
   day: "Day",
@@ -24,12 +43,7 @@ const OUTCOME_LABELS: Record<string, string> = {
   PENDING: "Processing",
   NO_AUDIO: "No audio",
 };
-const OUTCOME_COLORS: Record<string, string> = {
-  Summarised: PALETTE.green,
-  Failed: PALETTE.red,
-  Processing: PALETTE.gold,
-  "No audio": PALETTE.gray,
-};
+
 /** Note-mode labels (summary style — independent of how audio was captured). */
 const NOTE_MODE_LABELS: Record<string, string> = {
   DICTATION: "Dictation",
@@ -54,23 +68,42 @@ const PHASE_LABELS: Record<string, string> = {
   delivered: "Delivered (done)",
 };
 
+const FAILURE_GROUPS = {
+  firstAttempt: "First attempt",
+  final: "Final (after retries)",
+};
+
+/**
+ * First attempt is the health signal and leads; the post-retry residual is
+ * context. Both are rates over the same denominator, so they share an axis
+ * honestly.
+ */
+const FAILURE_SCALE = {
+  [FAILURE_GROUPS.firstAttempt]: PALETTE.red,
+  [FAILURE_GROUPS.final]: CONTEXT.strong,
+};
+
 const SubHeading = ({ children }: { children: string }) => (
-  <p className="text-xs font-medium uppercase tracking-wide text-typography-500 mt-8 mb-3">
+  <h2 className="text-xs font-medium uppercase tracking-wide text-typography-500 mt-8 mb-3">
     {children}
-  </p>
+  </h2>
 );
 
 /**
- * Scribe — session volume/outcome overview plus summary-generation failures,
- * both derived from the `chats` table (real counselor sessions) and not
+ * Scribe — session volume/outcome overview plus summary-generation failures, both
+ * derived from the `chats` table (real counselor sessions) and not
  * language-scoped; only the shared time range applies.
  */
-export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
-  const overview = useGetScribeOverviewQuery({ range });
-  const failures = useGetScribeSummaryFailuresQuery({ range });
+export const ScribeTab = ({ query }: AnalyticsTabFilters) => {
+  const overview = useGetScribeOverviewQuery({ ...query, compare: "prev" });
+  const failures = useGetScribeSummaryFailuresQuery(query);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const overviewLoading = overview.isLoading && !overview.data;
   const overviewBucketTitle = BUCKET_TITLE[overview.data?.bucket ?? ""] ?? "Period";
+  const oWindow = windowLabel(overview.data?.window);
+  const fWindow = windowLabel(failures.data?.window);
+  const basis = overview.data?.previousLabel ? `vs ${overview.data.previousLabel}` : undefined;
 
   const sessionsData = useMemo(
     () =>
@@ -81,6 +114,7 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
       })),
     [overview.data],
   );
+
   // Aggregate by mapped label so PENDING + IN_PROGRESS collapse into one
   // "Processing" slice — matching the KPI tiles above exactly.
   const outcomeData = useMemo(() => {
@@ -92,9 +126,7 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
     }
     return Array.from(byLabel, ([group, value]) => ({ group, value }));
   }, [overview.data]);
-  // All-sessions capture method (how the audio was recorded), grouped by
-  // provider — NOT note mode. This is the honest upload-vs-live split and is
-  // consistent with the "Failures by capture method" chart.
+
   const captureMethodData = useMemo(
     () =>
       (overview.data?.captureBreakdown ?? [])
@@ -103,58 +135,110 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
     [overview.data],
   );
 
+  // The overview also returns a note-mode split for ALL sessions, which was
+  // fetched and never rendered. It is the denominator the failures-by-note-mode
+  // donut needs to be readable, so it earns a panel.
+  const noteModeAllData = useMemo(
+    () =>
+      (overview.data?.modeBreakdown ?? [])
+        .filter(m => m.count > 0)
+        .map(m => ({ group: NOTE_MODE_LABELS[m.key] ?? m.key, value: m.count })),
+    [overview.data],
+  );
+
   const overviewSummary = overview.data?.summary;
+  const overviewPrev = overview.data?.previous;
   const overviewKpis = [
     {
       label: "Total sessions",
-      value: overviewSummary ? overviewSummary.totalSessions.toLocaleString() : "—",
+      value: formatKpi(overviewSummary?.totalSessions),
+      delta: delta(overviewSummary?.totalSessions, overviewPrev?.totalSessions),
+      comparisonLabel: basis,
+      deltaDecimals: 0,
+      loading: overviewLoading,
     },
     {
       label: "Summary success rate",
-      value: overviewSummary ? `${overviewSummary.successRatePct}%` : "—",
+      value: formatKpi(overviewSummary?.successRatePct, { suffix: "%" }),
+      n: overviewSummary?.totalSessions,
+      nUnit: "sessions",
+      delta: delta(overviewSummary?.successRatePct, overviewPrev?.successRatePct),
+      comparisonLabel: basis,
+      deltaSuffix: "pp",
+      loading: overviewLoading,
     },
     {
       label: "Processing",
-      value: overviewSummary ? overviewSummary.processing.toLocaleString() : "—",
+      value: formatKpi(overviewSummary?.processing),
+      loading: overviewLoading,
     },
-    { label: "Failed", value: overviewSummary ? overviewSummary.failed.toLocaleString() : "—" },
+    {
+      label: "Failed",
+      value: formatKpi(overviewSummary?.failed),
+      delta: delta(overviewSummary?.failed, overviewPrev?.failed),
+      comparisonLabel: basis,
+      deltaDecimals: 0,
+      // More failures is worse, so the arrow and colour must invert.
+      higherIsBetter: false,
+      loading: overviewLoading,
+    },
     {
       label: "No audio",
-      value: overviewSummary ? overviewSummary.noAudio.toLocaleString() : "—",
+      value: formatKpi(overviewSummary?.noAudio),
+      loading: overviewLoading,
     },
   ];
 
   const failuresLoading = failures.isLoading && !failures.data;
   const failuresBucketTitle = BUCKET_TITLE[failures.data?.bucket ?? ""] ?? "Period";
 
-  // Two series: "First attempt" (the true health signal, from the write-once
-  // first-attempt columns) and "Final" (post-backfill residual). The gap
-  // between them is exactly what the backfill recovers.
-  // A period with no terminal sessions has an undefined rate (0/0), not 0%.
-  // Rather than break the line (looks buggy) or plot 0 (falsely reads as
-  // "failures fixed"), CARRY THE LAST KNOWN RATE FORWARD, so an empty period
-  // renders as a flat horizontal continuation. Leading periods before any data
-  // stay null (nothing to hold yet).
+  /**
+   * Two failure-rate series: "First attempt" (the true health signal, from the
+   * write-once first-attempt columns) and "Final" (post-backfill residual). The
+   * gap between them is what the backfill recovers.
+   *
+   * A period with no terminal sessions has an undefined rate (0/0). This used to
+   * CARRY THE LAST KNOWN RATE FORWARD, which drew a flat horizontal line
+   * indistinguishable from a genuinely measured plateau — a fabricated
+   * measurement, and the most misleading thing on the tab. Unmeasured periods now
+   * emit null and render as a visible gap.
+   */
   const rateData = useMemo(() => {
     const trend = failures.data?.failureRateTrend ?? [];
-    let lastFirst: number | null = null;
-    let lastFinal: number | null = null;
-    const points: { group: string; key: string; value: number | null }[] = [];
-    for (const p of trend) {
-      if (p.firstAttemptTerminal > 0) {
-        lastFirst = parseFloat((p.firstAttemptFailureRate * 100).toFixed(1));
-      }
-      if (p.terminal > 0) {
-        lastFinal = parseFloat((p.failureRate * 100).toFixed(1));
-      }
-      points.push({ group: "First attempt", key: p.bucket, value: lastFirst });
-      points.push({ group: "Final (after retries)", key: p.bucket, value: lastFinal });
-    }
-    return points;
+    return trend.flatMap(p => [
+      {
+        group: FAILURE_GROUPS.firstAttempt,
+        key: p.bucket,
+        value:
+          p.firstAttemptTerminal > 0
+            ? parseFloat((p.firstAttemptFailureRate * 100).toFixed(1))
+            : null,
+      },
+      {
+        group: FAILURE_GROUPS.final,
+        key: p.bucket,
+        value: p.terminal > 0 ? parseFloat((p.failureRate * 100).toFixed(1)) : null,
+      },
+    ]);
   }, [failures.data]);
-  const phaseFunnel = failures.data?.phaseFunnel ?? [];
-  const funnelMax = Math.max(...phaseFunnel.map(p => p.reached), 1);
+
+  const terminalSessions = useMemo(
+    () => (failures.data?.failureRateTrend ?? []).reduce((sum, p) => sum + p.terminal, 0),
+    [failures.data],
+  );
+
+  const funnelStages: FunnelStage[] = useMemo(
+    () =>
+      (failures.data?.phaseFunnel ?? []).map(p => ({
+        label: PHASE_LABELS[p.phase] ?? p.phase,
+        reached: p.reached,
+        terminal: p.phase === "delivered",
+      })),
+    [failures.data],
+  );
+
   const sttProviderStats = failures.data?.sttProviderStats ?? [];
+
   const summaryModelData = useMemo(
     () =>
       (failures.data?.summaryModelStats ?? [])
@@ -162,6 +246,11 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
         .map(o => ({ group: o.key, value: o.count })),
     [failures.data],
   );
+  const summaryModelScale = useMemo(
+    () => stableScale(summaryModelData.map(d => d.group)),
+    [summaryModelData],
+  );
+
   const noteModeData = useMemo(
     () =>
       (failures.data?.failuresByMode ?? [])
@@ -176,25 +265,51 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
         .map(o => ({ group: CAPTURE_LABELS[o.key] ?? o.key, value: o.count })),
     [failures.data],
   );
+
   const failuresSummary = failures.data?.summary;
   const failuresKpis = [
     {
       label: "Summary failure rate",
-      value: failuresSummary ? `${failuresSummary.failureRatePct}%` : "—",
+      value: formatKpi(failuresSummary?.failureRatePct, { suffix: "%" }),
+      n: failuresSummary?.totalTerminal,
+      nUnit: "resolved sessions",
+      higherIsBetter: false,
+      loading: failuresLoading,
     },
     {
       label: "Total failed",
-      value: failuresSummary ? failuresSummary.totalFailed.toLocaleString() : "—",
+      value: formatKpi(failuresSummary?.totalFailed),
+      loading: failuresLoading,
     },
     {
       label: "Retryable share",
-      value: failuresSummary ? `${failuresSummary.retryableSharePct}%` : "—",
+      value: formatKpi(failuresSummary?.retryableSharePct, { suffix: "%" }),
+      n: failuresSummary?.totalFailed,
+      nUnit: "failures",
+      loading: failuresLoading,
     },
     {
       label: "Timeout share",
-      value: failuresSummary ? `${failuresSummary.timeoutSharePct}%` : "—",
+      value: formatKpi(failuresSummary?.timeoutSharePct, { suffix: "%" }),
+      n: failuresSummary?.totalFailed,
+      nUnit: "failures",
+      loading: failuresLoading,
     },
   ];
+
+  const sessionsOpts = lineOpts({
+    leftTitle: "Sessions",
+    bottomTitle: overviewBucketTitle,
+    colorScale: single("Sessions"),
+    legend: false,
+    extra: { points: { enabled: false } },
+  });
+
+  const rateOpts = lineOpts({
+    leftTitle: "Failure rate %",
+    bottomTitle: failuresBucketTitle,
+    colorScale: FAILURE_SCALE,
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -211,66 +326,82 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
             {overviewKpis.map(kpi => (
-              <Tile key={kpi.label} className="analytics-kpi">
-                <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-                <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
-              </Tile>
+              <KpiTile key={kpi.label} {...kpi} />
             ))}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             <ChartCard
               title="Scribe sessions over time"
-              caption="Sessions created per period"
+              caption="Counselor sessions created per period."
+              source={buildSource({
+                derivation: "chats.createdAt, bucketed",
+                window: oWindow,
+                n: overviewSummary?.totalSessions,
+                nUnit: "sessions",
+                asOf: asOf(overview.data?.window),
+              })}
               loading={overviewLoading}
               wide
               empty={!overview.data?.sessionsTrend?.length}
+              onExpand={() => setExpanded("sessions")}
             >
-              <LineChart
-                data={sessionsData}
-                options={lineOpts({
-                  leftTitle: "Sessions",
-                  bottomTitle: overviewBucketTitle,
-                  colorScale: { Sessions: PALETTE.blue },
-                  legend: false,
-                  extra: { points: { enabled: false } },
-                })}
-              />
+              <ScrollableChart data={sessionsData}>
+                <LineChart data={sessionsData} options={sessionsOpts} />
+              </ScrollableChart>
             </ChartCard>
+
             <ChartCard
               title="Outcome breakdown"
-              caption="Sessions by summary status"
+              caption="Sessions by summary status. Same four categories, same colours, as the tiles above."
+              source={buildSource({
+                derivation: "chats.summaryStatus",
+                window: oWindow,
+                n: overviewSummary?.totalSessions,
+                nUnit: "sessions",
+              })}
               loading={overviewLoading}
               empty={!outcomeData.length}
             >
               <DonutChart
                 data={outcomeData}
-                options={donutOpts({
-                  centerLabel: "Sessions",
-                  extra: { color: { scale: OUTCOME_COLORS } },
-                })}
+                options={donutOpts({ centerLabel: "Sessions", colorScale: OUTCOME_SCALE })}
               />
             </ChartCard>
+
             <ChartCard
-              title="Capture method"
-              caption="How the audio was recorded: uploaded file vs live stream"
+              title="Capture method — all sessions"
+              caption="How the audio was recorded. This is the denominator for the failures-by-capture chart below."
+              source={buildSource({
+                derivation: "call_details.callInfo->>'provider'",
+                window: oWindow,
+                n: overviewSummary?.totalSessions,
+                nUnit: "sessions",
+              })}
               loading={overviewLoading}
               empty={!captureMethodData.length}
             >
               <DonutChart
                 data={captureMethodData}
-                options={donutOpts({
-                  centerLabel: "Sessions",
-                  extra: {
-                    color: {
-                      scale: {
-                        "Upload (file)": PALETTE.purple,
-                        "Live (streamed)": PALETTE.teal,
-                        Unknown: PALETTE.gray,
-                      },
-                    },
-                  },
-                })}
+                options={donutOpts({ centerLabel: "Sessions", colorScale: CAPTURE_SCALE })}
+              />
+            </ChartCard>
+
+            <ChartCard
+              title="Note mode — all sessions"
+              caption="Summary style, independent of how audio was captured. Denominator for the failures-by-mode chart below."
+              source={buildSource({
+                derivation: "call_details.callInfo->>'mode'",
+                window: oWindow,
+                n: overviewSummary?.totalSessions,
+                nUnit: "sessions",
+              })}
+              loading={overviewLoading}
+              empty={!noteModeAllData.length}
+            >
+              <DonutChart
+                data={noteModeAllData}
+                options={donutOpts({ centerLabel: "Sessions", colorScale: NOTE_MODE_SCALE })}
               />
             </ChartCard>
           </div>
@@ -292,171 +423,213 @@ export const ScribeTab = ({ range }: { range: AnalyticsRange }) => {
         <>
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {failuresKpis.map(kpi => (
-              <Tile key={kpi.label} className="analytics-kpi">
-                <p className="text-sm text-typography-600 mb-2">{kpi.label}</p>
-                <p className="text-3xl font-medium text-typography-900">{kpi.value}</p>
-              </Tile>
+              <KpiTile key={kpi.label} {...kpi} />
             ))}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             <ChartCard
               title="Summary failure rate over time"
-              caption="First-attempt (health signal) vs final after retries/backfill — the gap is what backfill recovers"
+              caption="First attempt is the health signal; final is what remains after retries and backfill — the gap is what backfill recovers. Gaps in the lines are periods with no resolved sessions, not periods without failures."
+              source={buildSource({
+                derivation: "Failed ÷ resolved (SUCCESS + FAILED) sessions per period",
+                window: fWindow,
+                n: terminalSessions,
+                nUnit: "resolved sessions",
+                asOf: asOf(failures.data?.window),
+              })}
               loading={failuresLoading}
               wide
               empty={!failures.data?.failureRateTrend?.length}
+              onExpand={() => setExpanded("failureRate")}
             >
-              <LineChart
-                data={rateData}
-                options={lineOpts({
-                  leftTitle: "Failure rate %",
-                  bottomTitle: failuresBucketTitle,
-                  colorScale: {
-                    "First attempt": PALETTE.red,
-                    "Final (after retries)": PALETTE.blue,
-                  },
-                  legend: true,
-                })}
-              />
+              <ScrollableChart data={rateData}>
+                <LineChart data={rateData} options={rateOpts} />
+              </ScrollableChart>
             </ChartCard>
+
             <ChartCard
               title="Where sessions stop"
-              caption="Pipeline drop-off funnel — sessions that reached each phase (post-rollout sessions)"
+              caption="Pipeline drop-off. The right-hand figure is conversion from the previous phase — that is where the loss actually happens."
+              source={buildSource({
+                derivation: "Furthest phase reached per session (post-rollout sessions only)",
+                window: fWindow,
+                n: funnelStages[0]?.reached,
+                nUnit: "sessions",
+                asOf: asOf(failures.data?.window),
+              })}
               loading={failuresLoading}
               wide
-              empty={!phaseFunnel.some(p => p.reached > 0)}
+              empty={!funnelStages.some(p => p.reached > 0)}
             >
-              <div className="flex flex-col gap-2">
-                {phaseFunnel.map(p => (
-                  <div key={p.phase} className="flex items-center gap-3">
-                    <div
-                      className="text-sm text-typography-900 truncate"
-                      style={{ flex: "0 0 35%" }}
-                      title={p.phase}
-                    >
-                      {PHASE_LABELS[p.phase] ?? p.phase}
-                    </div>
-                    <div className="flex-1 h-3 rounded" style={{ background: "#f0f0f0" }}>
-                      <div
-                        className="h-3 rounded"
-                        style={{
-                          width: `${Math.round((p.reached / funnelMax) * 100)}%`,
-                          background: p.phase === "delivered" ? PALETTE.teal : PALETTE.blue,
-                        }}
-                      />
-                    </div>
-                    <div className="text-sm font-medium text-typography-900 w-12 text-right">
-                      {p.reached}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <FunnelBars stages={funnelStages} unit="sessions" />
             </ChartCard>
+
             <ChartCard
               title="Failures by capture method"
-              caption="How the audio was recorded: live stream vs uploaded file"
+              caption="Compare against the all-sessions capture split above — a method with more failures may simply have more sessions."
+              source={buildSource({
+                derivation: "Failed sessions grouped by capture provider",
+                window: fWindow,
+                n: failuresSummary?.totalFailed,
+                nUnit: "failures",
+              })}
               loading={failuresLoading}
               empty={!captureData.length}
             >
               <DonutChart
                 data={captureData}
-                options={donutOpts({
-                  centerLabel: "Failures",
-                  extra: {
-                    color: {
-                      scale: {
-                        "Live (streamed)": PALETTE.magenta,
-                        "Upload (file)": PALETTE.blue,
-                        Unknown: PALETTE.gray,
-                      },
-                    },
-                  },
-                })}
+                options={donutOpts({ centerLabel: "Failures", colorScale: CAPTURE_SCALE })}
               />
             </ChartCard>
+
             <ChartCard
               title="Failures by note mode"
-              caption="Summary style — independent of how audio was captured"
+              caption="Compare against the all-sessions note-mode split above."
+              source={buildSource({
+                derivation: "Failed sessions grouped by note mode",
+                window: fWindow,
+                n: failuresSummary?.totalFailed,
+                nUnit: "failures",
+              })}
               loading={failuresLoading}
               empty={!noteModeData.length}
             >
               <DonutChart
                 data={noteModeData}
-                options={donutOpts({
-                  centerLabel: "Failures",
-                  extra: {
-                    color: {
-                      scale: {
-                        Dictation: PALETTE.purple,
-                        Scribe: PALETTE.teal,
-                        Unknown: PALETTE.gray,
-                      },
-                    },
-                  },
-                })}
+                options={donutOpts({ centerLabel: "Failures", colorScale: NOTE_MODE_SCALE })}
               />
             </ChartCard>
+
             <ChartCard
               title="STT provider reliability"
-              caption="Per-provider tries vs failures across the fallback chain (populated once the AI service reports it)"
+              caption="Failure share across the fallback chain, with the attempt count that makes it meaningful. Populated once the AI service reports the provider trail."
+              source={buildSource({
+                derivation: "chat_summary_attempts.sttAttempts, expanded per attempt",
+                window: fWindow,
+                asOf: asOf(failures.data?.window),
+              })}
               loading={failuresLoading}
               wide
               empty={!sttProviderStats.length}
             >
               <div className="flex flex-col gap-2">
                 {sttProviderStats.map(s => {
-                  const failPct = s.tried > 0 ? Math.round((s.failed / s.tried) * 100) : 0;
+                  // Both widths come from the same rounded percentage, so the two
+                  // segments always sum to exactly 100% of the track. Rounding
+                  // one and not the other let the stack overflow or under-fill.
+                  const failPct = s.tried > 0 ? Math.round((s.failed / s.tried) * 1000) / 10 : 0;
+                  const okPct = s.tried > 0 ? 100 - failPct : 0;
                   return (
-                    <div key={s.provider} className="flex items-center gap-3">
+                    <div key={s.provider} className="flex items-center gap-3 text-xs">
                       <div
-                        className="text-sm text-typography-900 truncate capitalize"
-                        style={{ flex: "0 0 25%" }}
+                        className="w-28 shrink-0 truncate capitalize text-typography-700"
                         title={s.provider}
                       >
                         {s.provider}
                       </div>
                       <div
-                        className="flex-1 h-3 rounded overflow-hidden flex"
+                        className="flex-1 h-5 rounded overflow-hidden flex"
                         style={{ background: "#f0f0f0" }}
-                        title={`${s.ok} ok / ${s.failed} failed of ${s.tried} tries`}
                       >
-                        <div
-                          className="h-3"
-                          style={{
-                            width: `${s.tried > 0 ? (s.ok / s.tried) * 100 : 0}%`,
-                            background: PALETTE.teal,
-                          }}
-                        />
-                        <div
-                          className="h-3"
-                          style={{
-                            width: `${failPct}%`,
-                            background: PALETTE.red,
-                          }}
-                        />
+                        <div style={{ width: `${okPct}%`, background: PALETTE.teal }} />
+                        <div style={{ width: `${failPct}%`, background: PALETTE.red }} />
                       </div>
-                      <div className="text-sm font-medium text-typography-900 w-20 text-right">
+                      <div className="w-20 shrink-0 text-right font-medium text-typography-900">
                         {failPct}% fail
+                      </div>
+                      {/* The denominator is on the surface, not in a hover title:
+                          1 failure of 1 try and 1,000 of 1,000 both read as
+                          "100% fail" and mean entirely different things. */}
+                      <div className="w-32 shrink-0 text-right" style={{ color: CONTEXT.strong }}>
+                        {s.failed.toLocaleString()} of {s.tried.toLocaleString()} tries
                       </div>
                     </div>
                   );
                 })}
               </div>
             </ChartCard>
+
             <ChartCard
               title="Summaries by model"
-              caption="Which LLM produced successful summaries (populated once the AI service reports it)"
+              caption="Which LLM produced successful summaries. Populated once the AI service reports the model."
+              source={buildSource({
+                derivation: "chat_summary_attempts.summaryModel on successful attempts",
+                window: fWindow,
+              })}
               loading={failuresLoading}
               empty={!summaryModelData.length}
             >
-              <DonutChart
+              {/* Horizontal bars, not a donut: model ids are long free-text
+                  labels and the count is unbounded, which is the case a donut
+                  handles worst. */}
+              <SimpleBarChart
                 data={summaryModelData}
-                options={donutOpts({ centerLabel: "Summaries" })}
+                options={hBarOpts({ bottomTitle: "Summaries", colorScale: summaryModelScale })}
               />
             </ChartCard>
           </div>
         </>
+      )}
+
+      {expanded === "sessions" && (
+        <ChartDetailModal
+          open={expanded === "sessions"}
+          onClose={() => setExpanded(null)}
+          title="Scribe sessions over time"
+          source={buildSource({ derivation: "chats.createdAt, bucketed", window: oWindow })}
+          table={{
+            columns: [overviewBucketTitle, "Sessions"],
+            rows: (overview.data?.sessionsTrend ?? []).map(p => [p.bucket, p.count]),
+          }}
+          exportContext={[`Window: ${oWindow}`]}
+          render={({ height }) => (
+            <ScrollableChart data={sessionsData}>
+              <LineChart data={sessionsData} options={{ ...sessionsOpts, height }} />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "failureRate" && (
+        <ChartDetailModal
+          open={expanded === "failureRate"}
+          onClose={() => setExpanded(null)}
+          title="Summary failure rate over time"
+          caption="Blank rate cells are periods with no resolved sessions — nothing was measured, rather than nothing failed."
+          source={buildSource({
+            derivation: "Failed ÷ resolved (SUCCESS + FAILED) sessions per period",
+            window: fWindow,
+            n: terminalSessions,
+            nUnit: "resolved sessions",
+          })}
+          table={{
+            columns: [
+              failuresBucketTitle,
+              "First attempt %",
+              "Final %",
+              "Failed",
+              "Resolved",
+              "First-attempt resolved",
+            ],
+            rows: (failures.data?.failureRateTrend ?? []).map(p => [
+              p.bucket,
+              p.firstAttemptTerminal > 0
+                ? parseFloat((p.firstAttemptFailureRate * 100).toFixed(1))
+                : null,
+              p.terminal > 0 ? parseFloat((p.failureRate * 100).toFixed(1)) : null,
+              p.failed,
+              p.terminal,
+              p.firstAttemptTerminal,
+            ]),
+          }}
+          exportContext={[`Window: ${fWindow}`]}
+          render={({ height }) => (
+            <ScrollableChart data={rateData}>
+              <LineChart data={rateData} options={{ ...rateOpts, height }} />
+            </ScrollableChart>
+          )}
+        />
       )}
     </div>
   );

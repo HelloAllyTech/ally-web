@@ -122,7 +122,6 @@ export interface RoleplaySpec {
   engineeredEvents: RoleplayEngineeredEvent[];
   voice: RoleplayVoiceConfig;
   language: RoleplayLanguageConfig;
-  agentTestCaseIds: string[];
   openingStatement: string;
   difficulty: string;
   /** Voice-naturalness / latency-masking runtime toggles (honored by worker_v2). */
@@ -156,7 +155,6 @@ export type RoleplaySpecSection =
   | "engineeredEvents"
   | "voice"
   | "language"
-  | "agentTestCaseIds"
   | "openingStatement"
   | "difficulty"
   | "fillerEnabled"
@@ -255,7 +253,6 @@ export interface SaveRoleplayDraftResponse {
 export interface PublishRoleplayVersionInput {
   specId: string;
   versionId: string;
-  force?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -271,35 +268,6 @@ export interface RoleplayCopilotSession {
   createdAt?: string;
 }
 
-/** Structured payload of a loop progress row (metadata.kind=improvement_update). */
-export interface CopilotImprovementUpdatePayload {
-  kind: "improvement_update";
-  subkind: "round_scored" | "proposals_applied" | "finished" | "failed";
-  improvementRunId: string;
-  roundNumber?: number;
-  roundKind?: string;
-  scores?: { overall: number | null; testCounts: Record<string, number> | null } | null;
-  deltas?: { overallVsPrevious: number | null; overallVsBaseline: number | null };
-  proposals?: Array<{ summary: string; targetSection: string; severity: string }>;
-  outcome?: string | null;
-  trajectory?: Array<{
-    roundNumber: number;
-    kind: string;
-    overall: number | null;
-    testCounts: Record<string, number> | null;
-  }>;
-}
-
-/** Structured payload of the "ready" row (metadata.kind=improvement_ready). */
-export interface CopilotImprovementReadyPayload {
-  kind: "improvement_ready";
-  improvementRunId: string;
-  specId: string;
-  bestVersionId: string | null;
-  acceptedVersionId: string | null;
-  scores?: { overall: number | null; testCounts: Record<string, number> | null } | null;
-}
-
 export interface RoleplayCopilotMessageMetadata {
   /** On user rows answering an ask_trainer question. */
   questionId?: string;
@@ -308,10 +276,6 @@ export interface RoleplayCopilotMessageMetadata {
   /** On assistant rows: structured cards emitted during that turn. */
   questions?: CopilotQuestionEvent[];
   behaviourReviews?: CopilotBehaviourReviewEvent[];
-  testCaseSuggestions?: CopilotTestCaseSuggestion[];
-  /** Loop narration / marker rows. */
-  kind?: "improvement_update" | "improvement_ready" | "test_cases_accepted";
-  suggestionIds?: string[];
   [key: string]: unknown;
 }
 
@@ -356,6 +320,11 @@ export interface CopilotSpecPatchEvent {
   summary: string;
   ops: JsonPatchOperation[];
   specVersionId: string;
+  /**
+   * Fresh draft concurrency token after the server persisted this patch.
+   * Consumed by applySpecPatches so the next autosave doesn't 409.
+   */
+  updatedAt?: string;
 }
 
 /** `choice` is a legacy alias for `singleSelect` (older persisted messages). */
@@ -420,6 +389,8 @@ export interface CopilotErrorEvent {
 export interface CopilotDoneEvent {
   messageSeq: number;
   specVersionId: string;
+  /** Fresh draft concurrency token (present when the turn patched the spec). */
+  updatedAt?: string;
 }
 
 export type CopilotStreamEvent =
@@ -429,8 +400,9 @@ export type CopilotStreamEvent =
   | { type: "spec_patch"; data: CopilotSpecPatchEvent }
   | { type: "question"; data: CopilotQuestionEvent }
   | { type: "behaviour_review"; data: CopilotBehaviourReviewEvent }
-  | { type: "test_case_suggestions"; data: { suggestions: CopilotTestCaseSuggestion[] } }
   | { type: "error"; data: CopilotErrorEvent }
+  // Server heartbeat during long tool generations — carries no payload.
+  | { type: "ping"; data: Record<string, unknown> }
   | { type: "done"; data: CopilotDoneEvent };
 
 /** Chat feed entry rendered by the copilot panel. */
@@ -446,16 +418,6 @@ export interface CopilotChatMessage {
   answeredWith?: string;
   /** On resumed multi-select / dropdown / behaviour cards: the structured answer. */
   answeredAnswer?: CopilotStructuredAnswer;
-  /** Present when the assistant suggested agent test cases (accept-to-persist cards). */
-  testCaseSuggestions?: CopilotTestCaseSuggestion[];
-  /** Resumed suggestion cards already accepted (by suggestion id). */
-  acceptedSuggestionIds?: string[];
-  /** Auto-improve loop progress row. */
-  improvementUpdate?: CopilotImprovementUpdatePayload;
-  /** The "ready to test live & publish" row (renders action buttons). */
-  improvementReady?: CopilotImprovementReadyPayload;
-  /** Subtle system-style note (e.g. accepted-test-cases marker). */
-  systemNote?: boolean;
   /** Tool activity annotations shown inline. */
   toolNotes?: string[];
   /** True when a stream was aborted mid-message. */
@@ -463,332 +425,6 @@ export interface CopilotChatMessage {
   /** True while tokens are still streaming into this message. */
   streaming?: boolean;
   error?: string;
-}
-
-// ---------------------------------------------------------------------------
-// Rehearsals
-// ---------------------------------------------------------------------------
-
-export type RoleplayTraineeProfile = "SKILLED" | "POOR" | "ADVERSARIAL";
-
-export enum RoleplayRehearsalStatus {
-  STARTED = "STARTED",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-  FAILED = "FAILED",
-  CANCELLED = "CANCELLED",
-}
-
-/**
- * Launch-time snapshot of an agent test case. The library is global and
- * hard-deleted, so completed runs carry their own copy (`config.testCases`).
- */
-export interface RoleplayRehearsalTestCaseSnapshot {
-  id: string;
-  title: string;
-  category?: string;
-  condition?: string;
-  test?: string;
-}
-
-export type RoleplayTestCaseVerdict = "PASSED" | "FAILED" | "INCONCLUSIVE";
-
-/** One entry of `results.test_case_results` (snake_case: BE webhook contract). */
-export interface RoleplayTestCaseResult {
-  test_case_id: string;
-  title?: string;
-  verdict: RoleplayTestCaseVerdict | string;
-  evidence?: string;
-  reasoning?: string;
-  condition_recreated?: boolean;
-}
-
-export interface CreateRoleplayRehearsalInput {
-  specId: string;
-  versionId: string;
-  traineeProfiles: RoleplayTraineeProfile[];
-  turnsPerProfile: number;
-  /** Agent test cases to run as dedicated condition-driven sessions. */
-  agentTestCaseIds?: string[];
-  languageId?: number;
-}
-
-export type RoleplayJudgeDimension =
-  | "persona_consistency"
-  | "disclosure_discipline"
-  | "difficulty_calibration"
-  | "rubric_coverage";
-
-export interface RoleplayRehearsalResults {
-  overall: number;
-  dimensions: Record<RoleplayJudgeDimension, number>;
-  per_profile?: Record<string, Record<string, number>>;
-  test_case_results?: RoleplayTestCaseResult[];
-  test_counts?: { passed: number; failed: number; inconclusive: number };
-  /** Percent 0-100; null when the run had no test cases. */
-  test_pass_rate?: number | null;
-}
-
-export interface RoleplayRehearsalTranscriptTurn {
-  role: string;
-  content: string;
-  turnIndex: number;
-  stateId?: string;
-  stageDirection?: string;
-}
-
-export interface RoleplayRehearsalTranscript {
-  /**
-   * Profile sessions carry a real profile; test-case sessions carry the
-   * 'CONDITION_DRIVEN' label (not an enum member) plus `agentTestCaseId`.
-   */
-  traineeProfile?: RoleplayTraineeProfile | string;
-  /** Set on test-case sessions; keys the verdict/snapshot lookups. */
-  agentTestCaseId?: string;
-  transcript: RoleplayRehearsalTranscriptTurn[];
-  judgeScores?: Record<string, number>;
-  judgeNotes?: string | Record<string, string>;
-  directorTrace?: unknown;
-}
-
-export interface RoleplayRehearsal {
-  id: string;
-  specId?: string;
-  specVersionId?: string;
-  status: RoleplayRehearsalStatus | string;
-  createdAt?: string;
-  updatedAt?: string;
-  /** @deprecated legacy top-level shape — the BE returns the raw entity, so read `config` first. */
-  traineeProfiles?: RoleplayTraineeProfile[];
-  turnsPerProfile?: number;
-  /** Raw entity config as stored by the BE (profiles + launch-time snapshots). */
-  config?: {
-    traineeProfiles?: RoleplayTraineeProfile[];
-    testCases?: RoleplayRehearsalTestCaseSnapshot[];
-    turnsPerProfile?: number;
-  };
-  progress?: RoleplayRehearsalProgress;
-  results?: RoleplayRehearsalResults | null;
-  reportMarkdown?: string | null;
-  transcripts?: RoleplayRehearsalTranscript[];
-}
-
-export type RoleplayCritiqueSeverity = "critical" | "major" | "minor";
-
-export type RoleplayCritiqueProposalStatus =
-  | "proposed"
-  | "applied"
-  | "rejected"
-  | "skipped_invalid"
-  | "verified"
-  | "failed_verification";
-
-/** Which metrics a proposal is expected to move — checked after re-rehearsal. */
-export interface RoleplayExpectedEffect {
-  dimensions?: Array<{ name: string; direction: "increase" | "decrease" }>;
-  testCases?: Array<{ id: string; expectedVerdict: RoleplayTestCaseVerdict | string }>;
-}
-
-export interface RoleplayCritiqueProposal {
-  /** Server-assigned id (persisted roleplay_critique_proposals row). */
-  id: string;
-  /** Canonical flat RFC-6902 ops — the BE normalizes whatever the LLM emitted. */
-  ops: JsonPatchOperation[];
-  summary: string;
-  rationale: string;
-  targetSection: RoleplaySpecSection | string;
-  severity: RoleplayCritiqueSeverity | string;
-  expectedEffect?: RoleplayExpectedEffect | null;
-  status?: RoleplayCritiqueProposalStatus | string;
-}
-
-export interface RoleplayCritiqueResponse {
-  proposals: Array<Omit<RoleplayCritiqueProposal, "id"> & { id?: string }>;
-}
-
-// ---------------------------------------------------------------------------
-// Rehearsal comparison (score deltas between two runs)
-// ---------------------------------------------------------------------------
-
-export interface RoleplayDimensionDelta {
-  before: number | null;
-  after: number | null;
-  delta: number | null;
-}
-
-export type RoleplayTestCaseFlip = "FIXED" | "REGRESSED" | "UNCHANGED" | "NEW" | "DROPPED";
-
-export interface RoleplayRehearsalComparison {
-  overall: RoleplayDimensionDelta;
-  dimensions: Record<string, RoleplayDimensionDelta>;
-  testCases: Array<{
-    id: string;
-    title: string;
-    before: string | null;
-    after: string | null;
-    flip: RoleplayTestCaseFlip;
-  }>;
-  testPassRate: RoleplayDimensionDelta;
-  regressed: boolean;
-}
-
-export interface RoleplayRehearsalComparisonResponse {
-  against: {
-    rehearsalId: string;
-    specVersionId?: string;
-    createdAt?: string;
-  } | null;
-  comparison: RoleplayRehearsalComparison | null;
-}
-
-// ---------------------------------------------------------------------------
-// Auto-improve (improvement runs)
-// ---------------------------------------------------------------------------
-
-export type RoleplayImprovementRunStatus =
-  | "RUNNING"
-  | "AWAITING_REVIEW"
-  | "ACCEPTED"
-  | "DISCARDED"
-  | "FAILED"
-  | "CANCELLED";
-
-export type RoleplayImprovementOutcome =
-  | "TARGETS_MET"
-  | "NO_PROPOSALS"
-  | "MAX_ROUNDS"
-  | "NO_IMPROVEMENT"
-  | "TIMED_OUT"
-  | "REHEARSAL_FAILED";
-
-export type RoleplayImprovementRoundKind = "BASELINE" | "ITERATION" | "FINAL_VERIFICATION";
-
-export type RoleplayImprovementRoundStatus =
-  | "REHEARSING"
-  | "CRITIQUING"
-  | "APPLYING"
-  | "DONE"
-  | "FAILED";
-
-export interface RoleplayImprovementRound {
-  id: string;
-  improvementRunId: string;
-  roundNumber: number;
-  kind: RoleplayImprovementRoundKind | string;
-  candidateVersionId: string;
-  rehearsalRunId?: string | null;
-  status: RoleplayImprovementRoundStatus | string;
-  fullScope: boolean;
-  scores?: RoleplayRehearsalResults | null;
-  deltas?: {
-    vsPrevious?: RoleplayRehearsalComparison | null;
-    vsBaseline?: RoleplayRehearsalComparison | null;
-  } | null;
-  proposalsAppliedCount: number;
-}
-
-export interface RoleplayImprovementTargets {
-  minOverall?: number;
-  minDimensions?: Record<string, number>;
-  requireAllTestCasesPass?: boolean;
-}
-
-export interface RoleplayImprovementRun {
-  id: string;
-  specId: string;
-  baseVersionId: string;
-  status: RoleplayImprovementRunStatus | string;
-  outcome?: RoleplayImprovementOutcome | string | null;
-  config: {
-    maxRounds?: number;
-    targets?: RoleplayImprovementTargets;
-    agentTestCaseIds?: string[];
-    traineeProfiles?: RoleplayTraineeProfile[];
-    turnsPerProfile?: number;
-    languageId?: number;
-    judgeModel?: string | null;
-    cheapIntermediateRounds?: boolean;
-    timeoutMinutes?: number;
-  };
-  currentRound: number;
-  bestVersionId?: string | null;
-  bestRehearsalId?: string | null;
-  acceptedVersionId?: string | null;
-  metadata?: Record<string, unknown> | null;
-  endedAt?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface RoleplayImprovementRunDetail extends RoleplayImprovementRun {
-  rounds: RoleplayImprovementRound[];
-  proposals: RoleplayCritiqueProposal[];
-}
-
-export interface RoleplayImprovementDiffEntry {
-  path: string;
-  before: unknown;
-  after: unknown;
-}
-
-export interface RoleplayImprovementDiff {
-  baseVersionId: string;
-  bestVersionId: string | null;
-  changes: RoleplayImprovementDiffEntry[];
-}
-
-export interface StartImprovementRunInput {
-  specId: string;
-  versionId: string;
-  maxRounds?: number;
-  targets?: RoleplayImprovementTargets;
-  agentTestCaseIds?: string[];
-  traineeProfiles?: RoleplayTraineeProfile[];
-  turnsPerProfile?: number;
-  languageId?: number;
-  cheapIntermediateRounds?: boolean;
-}
-
-export enum RoleplayImprovementSocketEvent {
-  CONNECTED = "CONNECTED",
-  JOIN_USER_IMPROVEMENTS_ROOM = "JOIN_USER_IMPROVEMENTS_ROOM",
-  JOIN_IMPROVEMENT_ROOM = "JOIN_IMPROVEMENT_ROOM",
-  IMPROVEMENTS_UPDATED = "IMPROVEMENTS_UPDATED",
-}
-
-// ---------------------------------------------------------------------------
-// Copilot test-case suggestions (SSE frame `test_case_suggestions`)
-// ---------------------------------------------------------------------------
-
-export interface CopilotTestCaseSuggestion {
-  id: string;
-  title: string;
-  category?: string | null;
-  description?: string | null;
-  condition?: string | null;
-  test?: string | null;
-}
-
-// { completed, total } snapshot reported by the rehearsal webhook and pushed
-// live over the rehearsals socket. Ticks once per fully-finished-and-judged
-// unit (trainee profile or test case), so `completed` counts settled units.
-export interface RoleplayRehearsalProgress {
-  completed: number;
-  total: number;
-}
-
-/**
- * Rehearsals socket (namespace `roleplay-studio/rehearsals`, event
- * `REHEARSALS_UPDATED`). Mirrors the backend `RehearsalEvents` enum. Each
- * `REHEARSALS_UPDATED` carries the whole `RoleplayRehearsal` (single object for
- * a `rehearsal:<id>` room, an array for the user room) — the `progress` field
- * on it is the live sub-progress source.
- */
-export enum RoleplayRehearsalSocketEvent {
-  CONNECTED = "CONNECTED",
-  JOIN_USER_REHEARSALS_ROOM = "JOIN_USER_REHEARSALS_ROOM",
-  JOIN_REHEARSAL_ROOM = "JOIN_REHEARSAL_ROOM",
-  REHEARSALS_UPDATED = "REHEARSALS_UPDATED",
 }
 
 // ---------------------------------------------------------------------------
@@ -829,6 +465,179 @@ export interface RoleplayDirectorTurnPayload {
   feedback?: string;
   stale?: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Improve — test runs + test reports (`specs/:specId/test-runs`)
+// ---------------------------------------------------------------------------
+
+export enum RoleplayTestRunStatus {
+  STARTED = "STARTED",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  CANCELLED = "CANCELLED",
+}
+
+export enum RoleplayTestReportStatus {
+  PENDING = "PENDING",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  CANCELLED = "CANCELLED",
+}
+
+/** Auto-improve lifecycle, tracked on the PARENT report. */
+export enum RoleplayReportImproveStatus {
+  IMPROVING = "IMPROVING",
+  RERUNNING = "RERUNNING",
+  NO_CHANGES = "NO_CHANGES",
+  DONE = "DONE",
+  FAILED = "FAILED",
+}
+
+/** Condition-case judge verdicts. */
+export type RoleplayTestVerdict = "PASSED" | "FAILED" | "INCONCLUSIVE";
+
+/**
+ * Jsonb snapshot of the agent test case taken when the run started (the
+ * source rows are hard-deletable, so reports never re-read them).
+ */
+export interface RoleplayTestCaseSnapshot {
+  id: string;
+  title: string;
+  type: "condition" | "full_session";
+  tags?: string[];
+  description?: string;
+  condition?: string;
+  test?: string;
+  rubrics?: Array<{ criteria: string; scoringInstructions: string }>;
+}
+
+export interface RoleplayTestRunProgress {
+  completed?: number;
+  total?: number;
+  [key: string]: unknown;
+}
+
+export interface RoleplayTestRun {
+  id: string;
+  specId: string;
+  specVersionId: string;
+  status: RoleplayTestRunStatus | string;
+  config?: Record<string, unknown> | null;
+  progress?: RoleplayTestRunProgress | null;
+  resultsSummary?: Record<string, unknown> | null;
+  reportMarkdown?: string | null;
+  /** Set on auto-improve re-runs — the report this run re-tests. */
+  sourceReportId?: string | null;
+  createdAt: string;
+  endedAt?: string | null;
+}
+
+/** Poll-friendly list row (no transcript / markdown). */
+export interface RoleplayTestReportListItem {
+  id: string;
+  runId: string;
+  runStatus: RoleplayTestRunStatus | string;
+  runProgress?: RoleplayTestRunProgress | null;
+  specVersionId: string;
+  versionNumber?: number | null;
+  agentTestCaseId: string;
+  testCaseSnapshot: Pick<RoleplayTestCaseSnapshot, "id" | "title" | "type" | "tags">;
+  status: RoleplayTestReportStatus | string;
+  verdict?: RoleplayTestVerdict | string | null;
+  overallScore?: number | null;
+  /** Lineage — the parent report this one was auto-improved from. */
+  improveOfReportId?: string | null;
+  improveStatus?: RoleplayReportImproveStatus | string | null;
+  improveMeta?: { error?: string; [key: string]: unknown } | null;
+  createdAt: string;
+  endedAt?: string | null;
+}
+
+export interface RoleplayTestReportTranscriptTurn {
+  role?: string;
+  speaker?: string;
+  content?: string;
+  text?: string;
+  [key: string]: unknown;
+}
+
+/** Per-rubric-criterion judge score (full_session cases; ai-learn wire shape). */
+export interface RoleplayRubricCriterionScore {
+  criteria: string;
+  score: number;
+  evidence?: string;
+  reasoning?: string;
+}
+
+/**
+ * Full report row from `test-reports/:reportId` — the bare entity, WITHOUT
+ * the run-joined list fields (runStatus / runProgress / versionNumber).
+ */
+export interface RoleplayTestReportDetail {
+  id: string;
+  runId: string;
+  specId: string;
+  specVersionId: string;
+  agentTestCaseId: string;
+  testCaseSnapshot: RoleplayTestCaseSnapshot;
+  status: RoleplayTestReportStatus | string;
+  transcript?: RoleplayTestReportTranscriptTurn[] | null;
+  directorTrace?: unknown[] | null;
+  /** The 4 judge session-quality dimensions (0–100 each). */
+  judgeScores?: Record<string, number> | null;
+  judgeNotes?: string | null;
+  /** Raw ai-learn TestCaseResult wire object. */
+  testResult?: {
+    rubric_scores?: RoleplayRubricCriterionScore[];
+    [key: string]: unknown;
+  } | null;
+  verdict?: RoleplayTestVerdict | string | null;
+  overallScore?: number | null;
+  reportMarkdown?: string | null;
+  /** Lineage — the parent report this one was auto-improved from. */
+  improveOfReportId?: string | null;
+  improveStatus?: RoleplayReportImproveStatus | string | null;
+  improveMeta?: {
+    copilotSessionId?: string;
+    assistantMessageSeq?: number;
+    newSpecVersionId?: string;
+    error?: string;
+  } | null;
+  createdAt: string;
+  endedAt?: string | null;
+}
+
+export interface StartRoleplayTestRunInput {
+  specId: string;
+  agentTestCaseIds: string[];
+  turnsPerCase?: number;
+  /** BE DTO is @IsInt without a transform — must be numeric on the wire. */
+  languageId?: number;
+  judgeModel?: string;
+  traineeModel?: string;
+}
+
+export interface StartRoleplayTestRunResponse {
+  run: RoleplayTestRun;
+  /** Bare report entities — no run-joined list fields; the list poll re-reads them. */
+  reports: RoleplayTestReportDetail[];
+}
+
+export interface GetRoleplayTestReportsParams {
+  specId: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetRoleplayTestReportsResponse {
+  data: RoleplayTestReportListItem[];
+  count?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Live sessions / preview (room data)
+// ---------------------------------------------------------------------------
 
 export interface RoleplayPreviewRoomData {
   sessionId: string;

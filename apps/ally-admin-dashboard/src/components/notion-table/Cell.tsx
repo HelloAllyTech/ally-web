@@ -25,6 +25,34 @@ import {
 
 import { cellTypes } from "./utils";
 
+/**
+ * normalText columns whose value is an identifier, not prose.
+ *
+ * Everything else is passed through `formatCapitalizedEnum`, which lower-cases
+ * and swaps separators for spaces — fine for an enum like SHOULD_NOT_DO, but it
+ * silently corrupts values an operator is meant to copy verbatim into a provider
+ * config: `en-IN-Chirp3-HD-Kore` becomes `en in chirp3 hd kore`, `nova-3` becomes
+ * `Nova 3`, `pa-Guru-IN` becomes `pa guru in`.
+ */
+const VERBATIM_TEXT_COLUMN_IDS = new Set([
+  "eventCode",
+  "promptCode",
+  "config",
+  "model",
+  // Author-typed STT config label (it embeds the model id) and a comma-joined
+  // list of language labels — both already read the way they should. Scoped to
+  // these ids rather than a bare "name" so other tables keep their formatting.
+  "configName",
+  "usedBy",
+  // Brand-cased provider label ("OpenAI", "vLLM").
+  "providerLabel",
+  // Model catalog: the display name carries vendor casing ("GPT-4o mini",
+  // "Claude Haiku 4.5") and the runtime list is a comma-joined set of proper
+  // nouns ("Voice, AI, Backend"). Sentence-casing either mangles it.
+  "label",
+  "runtimeSupport",
+]);
+
 export const Cell = ({
   value: initialValue,
   rowIndex: index,
@@ -160,9 +188,7 @@ export const Cell = ({
       } else {
         element = (
           <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-            {id === "eventCode" || id === "promptCode"
-              ? value.value
-              : formatCapitalizedEnum(value.value)}
+            {VERBATIM_TEXT_COLUMN_IDS.has(id) ? value.value : formatCapitalizedEnum(value.value)}
           </span>
         );
       }
@@ -215,7 +241,10 @@ export const Cell = ({
       element = (
         <TextDropdown
           value={value.value}
-          options={options}
+          // Cell-level options win over the column's, so a table can vary the
+          // choices per row (and so options that load asynchronously reach the
+          // cell without depending on the column pipeline re-running).
+          options={initialValue?.options ?? options}
           onChange={updateCellValue}
           placeholder={"Select an option"}
           disabled={isDisabled}

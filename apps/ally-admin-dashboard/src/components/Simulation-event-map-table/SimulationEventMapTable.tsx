@@ -102,6 +102,13 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
 
   const tableRef = useRef<HTMLDivElement>(null);
 
+  // Tracks edits that are queued (debounced) or in-flight to the API. The
+  // server-sync effect below must not overwrite local state while this is
+  // non-empty/true, or a save made shortly after another save's refetch
+  // resolves gets silently reverted (and never re-sent).
+  const changedEventsRef = useRef<Map<string, UpdateScenarioEventDataParam>>(new Map());
+  const isSavingRef = useRef(false);
+
   // Create a memoized map for quick event lookup
   const sessionEventsMap = useMemo(() => createSessionEventsMap(sessionEvents), [sessionEvents]);
 
@@ -123,6 +130,12 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
   // an older scenario that predates event-versioning still shows its events,
   // which then get captured into the draft on first edit).
   useEffect(() => {
+    // Skip syncing from the server while a save is queued or in-flight — this
+    // effect also re-runs on the refetch that every save triggers (they share
+    // the SIMULATION_EVENTS tag), and overwriting local state mid-edit would
+    // silently drop whatever hasn't round-tripped yet.
+    if (changedEventsRef.current.size > 0 || isSavingRef.current) return;
+
     // An array (even empty) is authoritative — the version captured its events.
     // Only `undefined` (a version predating event-versioning) falls back to the
     // live mapping so branching an older scenario keeps its events.
@@ -341,6 +354,7 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
       // never write event changes to the live scenario.
       if (versionId) return;
       const apiEvents = convertToApiFormat(events);
+      isSavingRef.current = true;
       try {
         const response: any = await mapScenarioEvents({
           scenarioId: Number(simulationId),
@@ -351,13 +365,12 @@ export const SimulationEventMapTable: FC<SimulationEventMapTableProps> = ({
         }
       } catch {
         toast.error(en.errors.failedToSaveEvents);
+      } finally {
+        isSavingRef.current = false;
       }
     },
     [simulationId, mapScenarioEvents, versionId],
   );
-
-  // Changed events accumulator for debounce
-  const changedEventsRef = useRef<Map<string, UpdateScenarioEventDataParam>>(new Map());
 
   // Debounced save for cell updates (to prevent multiple saves when typing quickly in number input)
   const debouncedSaveTimeoutRef = useRef<NodeJS.Timeout>();

@@ -3,7 +3,6 @@ import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 import {
   CopilotSpecPatchEvent,
   JsonPatchOperation,
-  RoleplayCritiqueProposal,
   RoleplayEngineeredEvent,
   RoleplayNaturalnessFlag,
   RoleplayNodePosition,
@@ -31,6 +30,15 @@ export interface SpecPatchLogEntry {
   failed?: boolean;
 }
 
+/**
+ * A chat prompt queued from outside the chat panel (e.g. the Improve drawer's
+ * "Auto improve"); CopilotChatPanel sends it once the session is ready.
+ */
+export interface PendingCopilotPrompt {
+  text: string;
+  autoImprove?: { reportId: string };
+}
+
 export interface RoleplaySpecState {
   specId: string | null;
   versionId: string | null;
@@ -45,11 +53,8 @@ export interface RoleplaySpecState {
   saveStatus: RoleplaySaveStatus;
   /** True while a copilot stream is in flight — autosave must pause. */
   isStreaming: boolean;
-  /** True while an auto-improve loop is RUNNING for this spec — editing is
-   *  locked and autosave paused (the loop may auto-accept into the draft). */
-  improvementRunning: boolean;
   patchLog: SpecPatchLogEntry[];
-  pendingProposals: RoleplayCritiqueProposal[];
+  pendingCopilotPrompt: PendingCopilotPrompt | null;
 }
 
 const initialState: RoleplaySpecState = {
@@ -62,9 +67,8 @@ const initialState: RoleplaySpecState = {
   serverUpdatedAt: null,
   saveStatus: "idle",
   isStreaming: false,
-  improvementRunning: false,
   patchLog: [],
-  pendingProposals: [],
+  pendingCopilotPrompt: null,
 };
 
 const MAX_PATCH_LOG_ENTRIES = 100;
@@ -111,11 +115,15 @@ const roleplaySpecSlice = createSlice({
     setStreaming(state, action: PayloadAction<boolean>) {
       state.isStreaming = action.payload;
     },
-    setImprovementRunning(state, action: PayloadAction<boolean>) {
-      state.improvementRunning = action.payload;
-    },
     setSaveStatus(state, action: PayloadAction<RoleplaySaveStatus>) {
       state.saveStatus = action.payload;
+    },
+    /** Queues a chat prompt to be sent by CopilotChatPanel (see the effect there). */
+    queueCopilotPrompt(state, action: PayloadAction<PendingCopilotPrompt>) {
+      state.pendingCopilotPrompt = action.payload;
+    },
+    clearPendingCopilotPrompt(state) {
+      state.pendingCopilotPrompt = null;
     },
     /** A draft save round-tripped: pin the saved revision + concurrency token. */
     markDraftSaved(
@@ -124,8 +132,8 @@ const roleplaySpecSlice = createSlice({
     ) {
       state.savedRevision = Math.max(state.savedRevision, action.payload.revision);
       state.serverUpdatedAt = action.payload.updatedAt;
-      // Each save appends a server-side snapshot; track its id so publish and
-      // rehearsal always target the freshest version.
+      // Each save appends a server-side snapshot; track its id so publish
+      // always targets the freshest version.
       if (action.payload.versionId) state.versionId = action.payload.versionId;
       state.saveStatus = state.revision > state.savedRevision ? "idle" : "saved";
     },
@@ -137,7 +145,7 @@ const roleplaySpecSlice = createSlice({
      * revision/savedRevision gap) is preserved.
      */
     applySpecPatches(state, action: PayloadAction<CopilotSpecPatchEvent>) {
-      const { patchId, summary, ops, specVersionId } = action.payload;
+      const { patchId, summary, ops, specVersionId, updatedAt } = action.payload;
       const entry: SpecPatchLogEntry = {
         patchId,
         summary,
@@ -158,6 +166,13 @@ const roleplaySpecSlice = createSlice({
         entry.failed = true;
       }
       if (specVersionId) state.versionId = specVersionId;
+      // The server persisted this patch, moving the draft's updatedAt under us.
+      // Adopt the fresh concurrency token so the next autosave doesn't 409 (and
+      // then clobber the copilot's work with the conflict re-hydrate). Skip it
+      // when the patch failed to apply locally — the stale token makes that
+      // autosave 409 and re-hydrate instead of silently overwriting the
+      // server-persisted patch.
+      if (!entry.failed && updatedAt) state.serverUpdatedAt = updatedAt;
       state.patchLog.push(entry);
       if (state.patchLog.length > MAX_PATCH_LOG_ENTRIES) {
         state.patchLog.splice(0, state.patchLog.length - MAX_PATCH_LOG_ENTRIES);
@@ -338,13 +353,6 @@ const roleplaySpecSlice = createSlice({
       }
       touch(state);
     },
-    /** Trainer-chosen agent test cases (library ids) wired into the rehearsal. */
-    setAgentTestCaseIds(state, action: PayloadAction<string[]>) {
-      const spec = requireSpec(state);
-      if (!spec) return;
-      spec.agentTestCaseIds = action.payload;
-      touch(state);
-    },
 
     // ----- state machine -----
     upsertState(state, action: PayloadAction<RoleplayStateNode>) {
@@ -415,29 +423,6 @@ const roleplaySpecSlice = createSlice({
       spec.ui.layout[action.payload.stateId] = action.payload.position;
       touch(state);
     },
-
-    // ----- critique proposals -----
-    queueProposals(state, action: PayloadAction<RoleplayCritiqueProposal[]>) {
-      state.pendingProposals = action.payload;
-    },
-    /** Applies the proposal's patch to the spec and removes it from the queue. */
-    acceptProposal(state, action: PayloadAction<string>) {
-      const proposal = state.pendingProposals.find(p => p.id === action.payload);
-      if (!proposal || !state.spec) return;
-      try {
-        state.spec = applyJsonPatch(current(state.spec) as RoleplaySpec, proposal.ops);
-        touch(state);
-      } catch {
-        // Leave the spec untouched if the proposal no longer applies cleanly.
-      }
-      state.pendingProposals = state.pendingProposals.filter(p => p.id !== action.payload);
-    },
-    rejectProposal(state, action: PayloadAction<string>) {
-      state.pendingProposals = state.pendingProposals.filter(p => p.id !== action.payload);
-    },
-    clearProposals(state) {
-      state.pendingProposals = [];
-    },
   },
 });
 
@@ -446,8 +431,9 @@ export const {
   resetRoleplayStudio,
   setCopilotSessionId,
   setStreaming,
-  setImprovementRunning,
   setSaveStatus,
+  queueCopilotPrompt,
+  clearPendingCopilotPrompt,
   markDraftSaved,
   applySpecPatches,
   setSpecTitle,
@@ -469,17 +455,12 @@ export const {
   setLanguageVoice,
   setLanguage,
   setConfiguredLanguages,
-  setAgentTestCaseIds,
   upsertState,
   removeState,
   setInitialState,
   upsertTransition,
   removeTransition,
   updateLayout,
-  queueProposals,
-  acceptProposal,
-  rejectProposal,
-  clearProposals,
 } = roleplaySpecSlice.actions;
 
 // Selectors

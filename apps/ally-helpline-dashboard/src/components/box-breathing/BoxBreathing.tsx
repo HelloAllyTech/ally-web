@@ -186,7 +186,7 @@ const BoxBreathing: FC<BoxBreathingProps> = ({
       open
       onClose={onClose}
       size="lg"
-      className="[&_.cds--modal-container]:h-screen [&_.cds--modal-container]:max-h-screen [&_.cds--modal-container]:w-screen [&_.cds--modal-container]:max-w-full"
+      className="[&_.cds--modal-container]:h-dvh [&_.cds--modal-container]:max-h-dvh [&_.cds--modal-container]:w-screen [&_.cds--modal-container]:max-w-full"
     >
       <ModalBody className="p-0 h-full">{BoxBreathingComponent}</ModalBody>
     </ComposedModal>

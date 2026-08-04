@@ -13,6 +13,11 @@ import { NotionTable, ListToolbar, ScenarioVoiceSidePanel } from "@components";
 import { FilterDropdown } from "@components/filters/FilterDropdown";
 import { ButtonVariant } from "@components/types";
 import { en, SCENARIO_VOICE_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
+import {
+  TTS_PROVIDER_OPTIONS,
+  isSupportedProvider,
+  summarizeVoiceConfig,
+} from "@constants/voiceProviders";
 import { ScenarioVoice, ScenarioLanguage, ScenarioVoiceFilters } from "@types";
 
 const getVoiceSaveErrorMessage = (error: unknown) => {
@@ -207,11 +212,16 @@ export const ScenarioVoices: React.FC = () => {
   };
 
   const handleNewVoiceClick = () => {
+    // Empty config on purpose: the side panel builds the right keys from the
+    // provider's schema. The old placeholder ({age, gender, name, model,
+    // voiceId}) matched no provider — `name` is read by nothing and `voiceId`
+    // only works for ElevenLabs — so filling in its blanks produced a voice that
+    // silently fell back to a default Deepgram voice at runtime.
     const newVoiceData: ScenarioVoice = {
       name: "",
       provider: "",
       languageId: undefined,
-      config: { age: "", gender: "", name: "", model: "", voiceId: "" },
+      config: {},
       active: true,
     };
     setSelectedVoice(newVoiceData);
@@ -355,31 +365,11 @@ export const ScenarioVoices: React.FC = () => {
     });
 
     try {
-      let configValue = originalVoice.config;
       let parsedValue = value;
 
       if (columnId === "language") {
         // Language field comes as language_id from API, convert to number
         parsedValue = typeof value === "string" ? parseInt(value, 10) : value;
-      }
-
-      // Parse config if it was edited (it will be a string from table)
-      if (columnId === "config") {
-        try {
-          configValue = typeof value === "string" ? JSON.parse(value) : value;
-          parsedValue = configValue;
-        } catch {
-          toast.error("Invalid JSON in configuration");
-          // Revert on parse error
-          setVoices(prev => {
-            const updated = [...prev];
-            if (updated[rowIndex]) {
-              updated[rowIndex] = originalVoice;
-            }
-            return updated;
-          });
-          return;
-        }
       }
 
       const response = await updateScenarioVoice({
@@ -388,7 +378,7 @@ export const ScenarioVoices: React.FC = () => {
           name: columnId === "name" ? parsedValue : originalVoice.name,
           provider: columnId === "provider" ? parsedValue : originalVoice.provider,
           languageId: columnId === "language" ? parsedValue : originalVoice.languageId,
-          config: columnId === "config" ? configValue : originalVoice.config,
+          config: originalVoice.config,
           active: columnId === "active" ? parsedValue : originalVoice.active,
         },
       });
@@ -419,8 +409,13 @@ export const ScenarioVoices: React.FC = () => {
     }
   };
 
-  // Extract unique providers from voices
-  const uniqueProviders = Array.from(new Set(voices.map(voice => voice.provider).filter(Boolean)));
+  // Providers offered for filtering: the ones the runtime supports, plus any
+  // legacy value already stored on a row so those rows stay findable.
+  const uniqueProviders = React.useMemo(() => {
+    const supported = TTS_PROVIDER_OPTIONS.map(option => option.value);
+    const stored = voices.map(voice => voice.provider).filter(Boolean) as string[];
+    return Array.from(new Set([...supported, ...stored]));
+  }, [voices]);
 
   // Build a combined language options list for the table — includes active languages
   // plus any inactive languages already assigned to a voice (resolved via languageLabel
@@ -448,7 +443,7 @@ export const ScenarioVoices: React.FC = () => {
         ...column,
         options: uniqueProviders.map((provider: string) => ({
           value: provider,
-          label: provider,
+          label: isSupportedProvider(provider) ? provider : `${provider} (unsupported)`,
         })),
       };
     }
@@ -456,6 +451,7 @@ export const ScenarioVoices: React.FC = () => {
   });
 
   const formatTableData = voices.map(voice => {
+    const gender = voice.config?.gender;
     const formatted = {
       ...voice,
       preview: {
@@ -466,7 +462,10 @@ export const ScenarioVoices: React.FC = () => {
         onPause: handlePausePreview,
       },
       createdAt: new Date(voice.createdAt).toLocaleDateString(),
-      config: JSON.stringify(voice.config, null, 2),
+      // A missing gender is worth calling out: ally-be only offers a language
+      // for simulation creation when it has both a male and a female voice.
+      gender: gender ? String(gender) : "⚠️ Not set",
+      config: summarizeVoiceConfig(voice.provider, voice.config),
       languageId: voice.languageId,
     };
     return formatted;
@@ -548,7 +547,6 @@ export const ScenarioVoices: React.FC = () => {
           isOpen={isSidePanelOpen}
           onClose={handleSidePanelClose}
           onUpdate={handleVoiceUpdate}
-          existingProviders={uniqueProviders}
         />
       )}
     </div>

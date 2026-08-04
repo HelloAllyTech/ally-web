@@ -92,13 +92,8 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
         dataVal[item.id] = !enabledItems.includes(item.id);
         if (item.id === "enableMicrophoneMode") {
           dataVal.enableAudioUpload = enabledItems.includes("enableAudioUpload");
-          dataVal.enableDictationMode = enabledItems.includes("enableDictationMode");
         } else if (item.id === "enableAudioUpload") {
           dataVal.enableMicrophoneMode = enabledItems.includes("enableMicrophoneMode");
-          dataVal.enableDictationMode = enabledItems.includes("enableDictationMode");
-        } else if (item.id === "enableDictationMode") {
-          dataVal.enableMicrophoneMode = enabledItems.includes("enableMicrophoneMode");
-          dataVal.enableAudioUpload = enabledItems.includes("enableAudioUpload");
         }
       }
       await updateTenant({ id: tenantId, data: dataVal });
@@ -224,9 +219,6 @@ export const ScribeSettings: FC<ScribeSettingsProps> = ({ tenantId, onUpdateTena
       const newEnabledItems = [];
       if (tenant.enableMicrophoneMode) {
         newEnabledItems.push("enableMicrophoneMode");
-      }
-      if (tenant.enableDictationMode) {
-        newEnabledItems.push("enableDictationMode");
       }
       if (tenant.enableAudioUpload) {
         newEnabledItems.push("enableAudioUpload");

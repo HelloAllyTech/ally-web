@@ -28,6 +28,39 @@ export const canViewOrganizationSettings = (
   !!user?.email &&
   ORG_SETTINGS_ALLOWED_EMAILS.includes(user.email);
 
+/**
+ * Where the admin console is path-mounted on this origin. Not a React Router
+ * route — it is a separate SPA served under the same domain, so links to it
+ * must be full page loads (an <a href>, not navigate()).
+ */
+export const ADMIN_CONSOLE_PATH = "/admin";
+
+/**
+ * True when the user holds the INTERNAL role, which grants access to the admin
+ * console at ADMIN_CONSOLE_PATH.
+ *
+ * Deliberately reads `roles`, not `role`: the backend collapses a user's roles
+ * to a single `role` by a priority list that INTERNAL is not part of, so a
+ * member of staff who is also a learner reports `role: "LEARNER"`. Only the
+ * full list is reliable here.
+ */
+export const hasInternalRole = (user?: { roles?: UserRole[] | null } | null): boolean =>
+  !!user?.roles?.includes(UserRole.INTERNAL);
+
+/**
+ * Internal Ally staff email domain. `view:organization-metrics` is granted to
+ * every tenant's ADMIN group by the backend migration, so the permission
+ * check alone can't stage the native Organization Metrics dashboard — every
+ * customer admin would get it the moment the migration deploys. Gating the
+ * native view to this domain lets Ally staff dogfood it first; tenant admins
+ * outside it keep seeing the old Metabase Organization Metrics dashboard.
+ * Remove this check (and use the permission alone) once it's ready for GA.
+ */
+const INTERNAL_ALLY_EMAIL_DOMAIN = "@helloally.ai";
+
+export const isInternalAllyEmail = (email?: string | null): boolean =>
+  !!email && email.trim().toLowerCase().endsWith(INTERNAL_ALLY_EMAIL_DOMAIN);
+
 // In-app privacy page (ROUTES.PRIVACY), opened in a new tab via openLinkInNewTab.
 export const PRIVACY_POLICY_URL = "/privacy";
 

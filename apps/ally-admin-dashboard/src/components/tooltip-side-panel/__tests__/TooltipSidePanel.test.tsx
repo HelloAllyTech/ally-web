@@ -30,11 +30,6 @@ vi.mock("@components", () => ({
       onChange={e => onChange(e.target.checked)}
     />
   ),
-  EmojiPickerComponent: ({ buttonText, onEmojiClick }: any) => (
-    <button data-testid="emoji-picker" onClick={() => onEmojiClick("🎯")}>
-      {buttonText}
-    </button>
-  ),
   ActionConfirmationPopup: ({ isOpen, primaryButton, secondaryButton }: any) =>
     isOpen ? (
       <div data-testid="confirmation-popup">
@@ -55,7 +50,6 @@ vi.mock("@constants", () => ({
       createTooltip: "Create Tooltip",
       editTooltip: "Edit Tooltip",
       tipText: "Tip Text",
-      icon: "Icon",
       status: "Status",
       locationRequired: "Location is required",
       unsavedChangesWarning: "You have unsaved changes. Are you sure you want to close?",
@@ -70,7 +64,6 @@ describe("TooltipSidePanel", () => {
     id: "tooltip-1",
     location: "login_button",
     tipText: "Click here to log in",
-    icon: "😀",
     active: true,
     createdAt: "2026-01-01T00:00:00Z",
   };
@@ -115,9 +108,8 @@ describe("TooltipSidePanel", () => {
       expect(screen.getByText("*")).toBeInTheDocument();
     });
 
-    it("renders Icon and Status fields", () => {
+    it("renders Status field", () => {
       render(<TooltipSidePanel {...defaultProps} />);
-      expect(screen.getByText("Icon")).toBeInTheDocument();
       expect(screen.getByText("Status")).toBeInTheDocument();
     });
 
@@ -178,12 +170,6 @@ describe("TooltipSidePanel", () => {
         target: { value: "Hello" },
       });
       expect(screen.getByText("5/200")).toBeInTheDocument();
-    });
-
-    it("updates emoji when emoji is selected", () => {
-      render(<TooltipSidePanel {...defaultProps} selectedTooltip={mockTooltip} />);
-      fireEvent.click(screen.getByTestId("emoji-picker"));
-      expect(screen.getByTestId("emoji-picker")).toHaveTextContent("🎯");
     });
 
     it("updates status toggle when clicked", () => {

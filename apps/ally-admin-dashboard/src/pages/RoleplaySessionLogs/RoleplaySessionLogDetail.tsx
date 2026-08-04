@@ -269,7 +269,9 @@ export const RoleplaySessionLogDetail: FC = () => {
                   {data.agentTestCases.map(g => (
                     <li key={g.id}>
                       <span className="font-medium">{g.title}</span>{" "}
-                      <span className="text-typography-700">({g.category})</span>
+                      {g.tags.length > 0 && (
+                        <span className="text-typography-700">({g.tags.join(", ")})</span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -406,6 +408,20 @@ export const RoleplaySessionLogDetail: FC = () => {
                     : `${data.runConfig.topP ?? "—"} / ${data.runConfig.maxTokens ?? "—"}`
                 }
               />
+              <Field
+                label="Skill (main-agent prompt)"
+                value={data.runConfig.selectedMainPromptCode ?? "— (default)"}
+              />
+              <Field
+                label="Language variant"
+                value={
+                  data.runConfig.mainPromptVariant === "MULTILINGUAL"
+                    ? "Multilingual (translated)"
+                    : data.runConfig.mainPromptVariant === "GENERIC"
+                      ? "Generic (English source)"
+                      : "—"
+                }
+              />
             </SectionCard>
             {data.runConfig.promptVersions &&
               Object.keys(data.runConfig.promptVersions).length > 0 && (
@@ -444,6 +460,7 @@ export const RoleplaySessionLogDetail: FC = () => {
               value={formatMs(data.latency.avgResponseLatencyMs)}
             />
             <Field label="EOU delay (avg)" value={formatMs(data.latency.avgEouDelayMs)} />
+            <Field label="STT finalize (avg)" value={formatMs(data.latency.avgSttFinalizeMs)} />
             <Field label="LLM TTFT (avg)" value={formatMs(data.latency.avgLlmTtftMs)} />
             <Field label="TTS TTFB (avg)" value={formatMs(data.latency.avgTtsTtfbMs)} />
             <Field label="LLM response (avg)" value={formatMs(data.latency.avgLlmResponseMs)} />

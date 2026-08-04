@@ -187,6 +187,10 @@ vi.mock("@constants", () => ({
     LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   },
   isValidStateInstructionId: (id: any) => ["-1", "1", "2", "3"].includes(String(id)),
+  // Per-simulation STT override: empty selection clears it, anything else keeps
+  // whatever is already stored. The real preset expansion is covered in
+  // utils/__tests__/createSimulation.test.ts.
+  resolveSttConfigFromPreset: (presetId: any, existing: any) => (presetId ? existing : null),
   ROLE_INSTRUCTION_PROMPT_CODE: "openai_simulation_role_instruction",
   SIMULATION_CATEGORY: { PARTNER_SIM: "PARTNER_SIM" },
   ROUTES: {
@@ -710,6 +714,67 @@ describe("CreateSimulation", () => {
               scenarios: expect.arrayContaining([
                 expect.objectContaining({
                   openingStatements: ["Statement 1", "Statement 2", "Statement 3"],
+                }),
+              ]),
+            }),
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+  });
+
+  describe("Reminders Processing", () => {
+    it("should convert reminders string to array, one reminder per line", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        reminders: "Maintain eye contact\nAsk open-ended questions",
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalledWith(
+            expect.objectContaining({
+              scenarios: expect.arrayContaining([
+                expect.objectContaining({
+                  reminders: ["Maintain eye contact", "Ask open-ended questions"],
+                }),
+              ]),
+            }),
+          );
+        },
+        { timeout: 500 },
+      );
+    });
+
+    it("should split translationReminders per-language text into arrays", async () => {
+      mockFormMethods.getValues.mockReturnValue({
+        title: "Test",
+        reminders: "",
+        translationReminders: { "7": "Mantén la calma\nEscucha activamente" },
+        triggerWarningIds: [],
+      });
+      mockCreateSimulation.mockResolvedValue({ data: [{ id: "new-id" }] });
+
+      renderCreateSimulation();
+
+      const saveDraftButton = screen.getAllByText("Save Draft")[0];
+      fireEvent.click(saveDraftButton);
+
+      await waitFor(
+        () => {
+          expect(mockCreateSimulation).toHaveBeenCalledWith(
+            expect.objectContaining({
+              scenarios: expect.arrayContaining([
+                expect.objectContaining({
+                  translationReminders: { "7": ["Mantén la calma", "Escucha activamente"] },
                 }),
               ]),
             }),

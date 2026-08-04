@@ -61,6 +61,8 @@ export interface CustomFieldDefinition {
   scope: CustomFieldScope;
   displayOrder: number;
   showInTable: boolean;
+  /** Whether this field can be used to filter the session-logs table. */
+  filterable: boolean;
   isActive: boolean;
   createdBy: number;
   updatedBy: number;
@@ -89,6 +91,7 @@ export interface CreateCustomFieldDefinitionInput {
   editPermission: CustomFieldEditPermission;
   displayOrder?: number;
   showInTable?: boolean;
+  filterable?: boolean;
 }
 
 export interface UpdateCustomFieldDefinitionInput {
@@ -98,9 +101,14 @@ export interface UpdateCustomFieldDefinitionInput {
   editPermission?: CustomFieldEditPermission;
   displayOrder?: number;
   showInTable?: boolean;
+  filterable?: boolean;
   isActive?: boolean;
 }
 
 export interface UpsertCustomFieldValuesInput {
-  values: { fieldDefinitionId: string; value?: string }[];
+  // `value: null` explicitly clears a field. It must stay distinct from an
+  // omitted `value`, which the backend treats as "leave unchanged" (TypeORM
+  // skips undefined columns on save) — sending `undefined` for a cleared
+  // field is what caused blanked fields to refill with their old value.
+  values: { fieldDefinitionId: string; value?: string | null }[];
 }

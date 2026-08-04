@@ -19,12 +19,22 @@ import { LabRun } from "@types";
 
 import { AssignRunDrawer } from "./AssignRunDrawer";
 import { AutoEvalDrawer } from "./AutoEvalDrawer";
+import { BulkAssignEvaluatorsDrawer } from "./BulkAssignEvaluatorsDrawer";
+import { BulkPublishDrawer } from "./BulkPublishDrawer";
 import { ComparisonDrawer } from "./ComparisonDrawer";
 import { CreateRunDrawer } from "./CreateRunDrawer";
 import { PublishRunDrawer } from "./PublishRunDrawer";
 import { RunDetailDrawer } from "./RunDetailDrawer";
 import { RunResultsDrawer } from "./RunResultsDrawer";
 import { RunStatusBadge } from "./RunStatusBadge";
+
+/** Bulk-selection eligibility: a run can only be bulk-selected alongside others of the same kind. */
+type BulkKind = "unpublished" | "published";
+const rowBulkKind = (run: LabRun): BulkKind | null => {
+  if (run.status === "COMPLETED" && !run.publishedAt) return "unpublished";
+  if (run.publishedAt) return "published";
+  return null;
+};
 
 const VariableSummary: React.FC<{ run: LabRun }> = ({ run }) => {
   if (!run.variableValues.length) return <span className="text-typography-400">—</span>;
@@ -62,11 +72,15 @@ export const RunsTab: React.FC = () => {
   const rangeStart = total === 0 ? 0 : offset + 1;
   const rangeEnd = Math.min(offset + RUNS_PAGE_SIZE, total);
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
   // Reset to the first page whenever the search term changes.
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
     setOffset(0);
-  }, []);
+    clearSelection();
+  }, [clearSelection]);
 
   // Enable polling only while runs are in-flight; stop once all are terminal.
   useEffect(() => {
@@ -84,6 +98,8 @@ export const RunsTab: React.FC = () => {
   const [resultsRun, setResultsRun] = useState<LabRun | null>(null);
   const [autoEvalRun, setAutoEvalRun] = useState<LabRun | null>(null);
   const [compareRun, setCompareRun] = useState<LabRun | null>(null);
+  const [bulkPublishOpen, setBulkPublishOpen] = useState(false);
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
 
   // Count runs per batch so the compare action shows only for multi-run batches.
   const batchCounts = useMemo(() => {
@@ -93,6 +109,57 @@ export const RunsTab: React.FC = () => {
     }
     return counts;
   }, [runs]);
+
+  // Bulk selection: only rows of one "kind" (unpublished-completed vs
+  // published) can be selected together, derived from whichever kind is
+  // currently selected (so mixed selections are impossible by construction).
+  const selectedKind = useMemo<BulkKind | null>(() => {
+    if (selectedIds.size === 0) return null;
+    const firstSelected = runs.find(r => selectedIds.has(r.id));
+    return firstSelected ? rowBulkKind(firstSelected) : null;
+  }, [selectedIds, runs]);
+  const selectedRuns = useMemo(() => runs.filter(r => selectedIds.has(r.id)), [runs, selectedIds]);
+
+  const toggleSelectRow = useCallback((run: LabRun) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(run.id)) next.delete(run.id);
+      else next.add(run.id);
+      return next;
+    });
+  }, []);
+
+  // "Select all" targets whichever kind is already selected, or unpublished
+  // (the more common bulk case) when nothing is selected yet.
+  const headerBulkKind = selectedKind ?? "unpublished";
+  const headerEligibleRuns = useMemo(
+    () => runs.filter(r => rowBulkKind(r) === headerBulkKind),
+    [runs, headerBulkKind],
+  );
+  const allHeaderSelected =
+    headerEligibleRuns.length > 0 && headerEligibleRuns.every(r => selectedIds.has(r.id));
+  const someHeaderSelected = headerEligibleRuns.some(r => selectedIds.has(r.id));
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allHeaderSelected) {
+        headerEligibleRuns.forEach(r => next.delete(r.id));
+      } else {
+        headerEligibleRuns.forEach(r => next.add(r.id));
+      }
+      return next;
+    });
+  }, [allHeaderSelected, headerEligibleRuns]);
+
+  const closeBulkPublish = useCallback(() => {
+    setBulkPublishOpen(false);
+    clearSelection();
+  }, [clearSelection]);
+  const closeBulkAssign = useCallback(() => {
+    setBulkAssignOpen(false);
+    clearSelection();
+  }, [clearSelection]);
 
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
@@ -131,10 +198,49 @@ export const RunsTab: React.FC = () => {
           />
         ) : (
           <>
+            {selectedIds.size > 0 && (
+              <div className="flex items-center justify-between bg-primary-50 border border-primary-200 rounded-md px-4 py-2 mb-3">
+                <span className="text-sm font-medium text-primary-800">
+                  {en.aiLab.runs.selectedCount(selectedIds.size)}
+                </span>
+                <div className="flex items-center gap-4">
+                  {selectedKind === "unpublished" && (
+                    <Button variant={ButtonVariant.PRIMARY} onClick={() => setBulkPublishOpen(true)}>
+                      {en.aiLab.runs.bulkPublishAction}
+                    </Button>
+                  )}
+                  {selectedKind === "published" && (
+                    <Button variant={ButtonVariant.PRIMARY} onClick={() => setBulkAssignOpen(true)}>
+                      {en.aiLab.runs.bulkAssignAction}
+                    </Button>
+                  )}
+                  <button
+                    onClick={clearSelection}
+                    className="text-sm text-typography-600 hover:text-typography-900 underline"
+                  >
+                    {en.aiLab.runs.clearSelection}
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="border border-border-light rounded-md overflow-hidden">
               <Table className="w-full text-left font-primary text-base">
                 <TableHead>
                   <TableRow className="bg-background-secondary text-typography-700 text-sm">
+                    <TableHeader className="px-4 py-3 w-[36px]">
+                      {headerEligibleRuns.length > 0 && (
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4"
+                          checked={allHeaderSelected}
+                          ref={el => {
+                            if (el) el.indeterminate = !allHeaderSelected && someHeaderSelected;
+                          }}
+                          onChange={toggleSelectAll}
+                          aria-label={en.common.select}
+                        />
+                      )}
+                    </TableHeader>
                     <TableHeader className="px-4 py-3 font-medium w-[20%]">
                       {en.aiLab.runs.columnSkill}
                     </TableHeader>
@@ -156,12 +262,30 @@ export const RunsTab: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {runs.map(run => (
+                  {runs.map(run => {
+                    const kind = rowBulkKind(run);
+                    const checkboxDisabled = !kind || (selectedKind !== null && selectedKind !== kind);
+                    return (
                     <TableRow
                       key={run.id}
                       onClick={() => setDetailRun(run)}
                       className="border-t border-border-light hover:bg-background-secondary/50 transition-colors cursor-pointer"
                     >
+                      <TableCell
+                        className="px-4 py-3 align-top"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {kind && (
+                          <input
+                            type="checkbox"
+                            className="w-4 h-4"
+                            checked={selectedIds.has(run.id)}
+                            disabled={checkboxDisabled}
+                            onChange={() => toggleSelectRow(run)}
+                            aria-label={en.common.select}
+                          />
+                        )}
+                      </TableCell>
                       <TableCell className="px-4 py-3 align-top font-medium text-typography-900">
                         {run.skillName}
                       </TableCell>
@@ -275,7 +399,8 @@ export const RunsTab: React.FC = () => {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -291,14 +416,20 @@ export const RunsTab: React.FC = () => {
                   <Button
                     variant={ButtonVariant.SECONDARY}
                     disabled={!canPrev}
-                    onClick={() => setOffset(o => Math.max(0, o - RUNS_PAGE_SIZE))}
+                    onClick={() => {
+                      setOffset(o => Math.max(0, o - RUNS_PAGE_SIZE));
+                      clearSelection();
+                    }}
                   >
                     {en.aiLab.runs.prev}
                   </Button>
                   <Button
                     variant={ButtonVariant.SECONDARY}
                     disabled={!canNext}
-                    onClick={() => setOffset(o => (canNext ? o + RUNS_PAGE_SIZE : o))}
+                    onClick={() => {
+                      setOffset(o => (canNext ? o + RUNS_PAGE_SIZE : o));
+                      clearSelection();
+                    }}
                   >
                     {en.aiLab.runs.next}
                   </Button>
@@ -320,6 +451,13 @@ export const RunsTab: React.FC = () => {
       <PublishRunDrawer run={publishRun} onClose={() => setPublishRun(null)} />
 
       <AssignRunDrawer run={assignRun} onClose={() => setAssignRun(null)} />
+
+      <BulkPublishDrawer runs={bulkPublishOpen ? selectedRuns : []} onClose={closeBulkPublish} />
+
+      <BulkAssignEvaluatorsDrawer
+        runs={bulkAssignOpen ? selectedRuns : []}
+        onClose={closeBulkAssign}
+      />
 
       <RunResultsDrawer run={resultsRun} onClose={() => setResultsRun(null)} />
 

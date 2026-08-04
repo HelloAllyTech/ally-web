@@ -24,7 +24,7 @@ const FallbackUI: FC<FallbackUIProps> = ({
       ) : (
         <>
           <div className="flex flex-col items-center gap-2 text-center">
-            {Icon}
+            <div className="max-w-full [&>svg]:h-auto [&>svg]:max-w-full">{Icon}</div>
             <h2 className={`text-2xl ${isDarkTheme ? "text-white" : ""}`}>{mainMessage}</h2>
             <p className={`text-xs ${isDarkTheme ? "text-white" : "text-typography-700"}`}>
               {description}

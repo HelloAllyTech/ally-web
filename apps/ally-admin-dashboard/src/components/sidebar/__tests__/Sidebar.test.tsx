@@ -43,6 +43,7 @@ vi.mock("@assets", () => ({
   ManageAccounts: () => <svg data-testid="manage-accounts" />,
   Globe: () => <svg data-testid="globe" />,
   Mic: () => <svg data-testid="mic" />,
+  UserSpeaker: () => <svg data-testid="user-speaker" />,
   CharacterLibrary: () => <svg data-testid="character-library" />,
   FrameSource: () => <svg data-testid="frame-source" />,
   Guardrails: () => <svg data-testid="guardrails" />,

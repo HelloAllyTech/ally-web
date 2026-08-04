@@ -36,11 +36,7 @@ export const ToggleSection = ({
     skip: !tooltipLocation,
   });
   const tooltip = tooltipLocation ? tooltips.find(t => t.location === tooltipLocation) : undefined;
-  const tooltipTitle = tooltip
-    ? tooltip.icon
-      ? `${tooltip.icon} ${tooltip.tipText}`
-      : tooltip.tipText
-    : "";
+  const tooltipTitle = tooltip?.tipText ?? "";
 
   return (
     <div className="flex justify-between items-center py-2 w-full">

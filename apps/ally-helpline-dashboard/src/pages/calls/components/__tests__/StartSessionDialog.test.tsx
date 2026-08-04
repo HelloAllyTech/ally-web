@@ -68,81 +68,26 @@ describe("StartSessionDialog", () => {
     vi.clearAllMocks();
   });
 
-  it("shows both buttons when showScribeMode and showDictationMode are true", () => {
-    render(
-      <StartSessionDialog
-        isOpen={true}
-        onClose={onClose}
-        showScribeMode={true}
-        showDictationMode={true}
-      />,
-    );
+  it("shows only the scribe button", () => {
+    render(<StartSessionDialog isOpen={true} onClose={onClose} />);
     expect(screen.getByText("Start Scribe Mode")).toBeInTheDocument();
-    expect(screen.getByText("Start Dictation Mode")).toBeInTheDocument();
   });
 
-  it("shows only scribe button when showScribeMode is true and showDictationMode is false", () => {
-    render(
-      <StartSessionDialog
-        isOpen={true}
-        onClose={onClose}
-        showScribeMode={true}
-        showDictationMode={false}
-      />,
-    );
-    expect(screen.getByText("Start Scribe Mode")).toBeInTheDocument();
+  it("does not offer a mode choice — it is a consent step, not a menu", () => {
+    render(<StartSessionDialog isOpen={true} onClose={onClose} />);
+    // Dictation is reached from the page's own button; this dialog exists only
+    // to confirm consent before recording starts.
     expect(screen.queryByText("Start Dictation Mode")).not.toBeInTheDocument();
   });
 
-  it("shows only dictation button as primary when showScribeMode is false and showDictationMode is true", () => {
-    render(
-      <StartSessionDialog
-        isOpen={true}
-        onClose={onClose}
-        showScribeMode={false}
-        showDictationMode={true}
-      />,
-    );
-    expect(screen.getByText("Start Dictation Mode")).toBeInTheDocument();
-    expect(screen.queryByText("Start Scribe Mode")).not.toBeInTheDocument();
+  it("shows the consent confirmation, which is the reason this step exists", () => {
+    render(<StartSessionDialog isOpen={true} onClose={onClose} />);
+    expect(screen.getByTestId("start-session-consent")).toHaveTextContent(/given consent/i);
   });
 
   it("navigates to microphone mode when Start Scribe Mode is clicked", () => {
-    render(
-      <StartSessionDialog
-        isOpen={true}
-        onClose={onClose}
-        showScribeMode={true}
-        showDictationMode={false}
-      />,
-    );
+    render(<StartSessionDialog isOpen={true} onClose={onClose} />);
     fireEvent.click(screen.getByText("Start Scribe Mode"));
     expect(mockNavigate).toHaveBeenCalledWith(`${ROUTES.AUDIO_CALL}?mode=microphone`);
-  });
-
-  it("navigates to dictation mode when Start Dictation Mode is clicked (dictation only)", () => {
-    render(
-      <StartSessionDialog
-        isOpen={true}
-        onClose={onClose}
-        showScribeMode={false}
-        showDictationMode={true}
-      />,
-    );
-    fireEvent.click(screen.getByText("Start Dictation Mode"));
-    expect(mockNavigate).toHaveBeenCalledWith(`${ROUTES.AUDIO_CALL}?mode=dictation`);
-  });
-
-  it("navigates to dictation mode when Start Dictation Mode secondary button is clicked", () => {
-    render(
-      <StartSessionDialog
-        isOpen={true}
-        onClose={onClose}
-        showScribeMode={true}
-        showDictationMode={true}
-      />,
-    );
-    fireEvent.click(screen.getByText("Start Dictation Mode"));
-    expect(mockNavigate).toHaveBeenCalledWith(`${ROUTES.AUDIO_CALL}?mode=dictation`);
   });
 });

@@ -75,7 +75,7 @@ export const Archives: FC = () => {
       <div data-testid="archives-content">
         <ArchivesLogsTable
           sessionType={SessionType.CALL}
-          className="max-h-[calc(100vh-140px)]"
+          className="max-h-[calc(100dvh-140px)]"
           refreshKey={refreshKey}
           sessionUserGroup={sessionUserGroup}
         />

@@ -78,7 +78,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
           refreshKey={refreshKey}
           sessionType={sessionType}
           className={
-            userGroupList?.length > 1 ? "max-h-[calc(100vh-200px)]" : "max-h-[calc(100vh-140px)]"
+            userGroupList?.length > 1 ? "max-h-[calc(100dvh-200px)]" : "max-h-[calc(100dvh-140px)]"
           }
         />
       );
@@ -88,7 +88,7 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
         refreshKey={refreshKey}
         sessionType={sessionType}
         className={
-          userGroupList?.length > 1 ? "max-h-[calc(100vh-200px)]" : "max-h-[calc(100vh-140px)]"
+          userGroupList?.length > 1 ? "max-h-[calc(100dvh-200px)]" : "max-h-[calc(100dvh-140px)]"
         }
       />
     );
@@ -157,16 +157,15 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
                   variant={ButtonVariant.SECONDARY}
                   onClick={handleCreateNote}
                 >
-                  {`+ ${t("calls.actions.createNote")}`}
+                  {t("calls.dialog.startSession.startDictationMode")}
                 </Button>
               )}
               <PermissionGuard requiredPermissions={[Permissions.START_MICROPHONE_CHAT]}>
-                {(availableChatTypes?.includes(CallType.MICROPHONE_CHAT) ||
-                  availableChatTypes?.includes(CallType.DICTATION_MODE)) && (
+                {availableChatTypes?.includes(CallType.MICROPHONE_CHAT) && (
                   <AppTooltip location={TooltipLocation.START_SESSION_BUTTON}>
                     <Button data-testid="calls-start-session-button" onClick={handleStartSession}>
                       <StartSession data-testid="calls-start-session-icon" />
-                      {t("calls.actions.startSession")}
+                      {t("calls.dialog.startSession.startScribeMode")}
                     </Button>
                   </AppTooltip>
                 )}
@@ -201,8 +200,6 @@ export const Calls: FC<CallsProps> = ({ sessionType }) => {
         data-testid="calls-start-session-dialog"
         isOpen={isStartSessionDialogOpen}
         onClose={() => setIsStartSessionDialogOpen(false)}
-        showScribeMode={availableChatTypes?.includes(CallType.MICROPHONE_CHAT)}
-        showDictationMode={availableChatTypes?.includes(CallType.DICTATION_MODE)}
       />
       <PermissionGuard requiredPermissions={[Permissions.VIEW_AUDIO_UPLOAD]}>
         <AudioUploadDialog

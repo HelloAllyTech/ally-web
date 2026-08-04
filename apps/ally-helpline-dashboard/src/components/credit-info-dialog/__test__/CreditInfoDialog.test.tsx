@@ -177,7 +177,7 @@ describe("CreditInfoDialog", () => {
     expect(containerDiv).toHaveClass(
       "bg-white",
       "h-fit",
-      "w-[400px]",
+      "w-[min(400px,95vw)]",
       "flex",
       "flex-col",
       "gap-6",

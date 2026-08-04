@@ -42,12 +42,39 @@ export const ApiEndpoints = {
     END_SIMULATION: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/end`,
     SCENARIO_VOICES: "/v1/learn/scenario-voices",
     CREATE_SCENARIO_VOICE: "/v1/learn/scenario-voices",
+    SYNC_ELEVENLABS_VOICE: (id: string) => `/v1/learn/scenario-voices/${id}/sync-elevenlabs`,
+    LOOKUP_ELEVENLABS_VOICE: "/v1/learn/scenario-voices/elevenlabs-lookup",
+    BULK_SYNC_ELEVENLABS_VOICES: "/v1/learn/scenario-voices/sync-elevenlabs/bulk",
+    TTS_CATALOG: "/v1/learn/scenario-voices/tts-catalog",
     UPDATE_SCENARIO_VOICE: (id: string | number) => `/v1/learn/scenario-voices/${id}`,
     SCENARIO_VOICE_LANGUAGES: "/v1/learn/scenario-voice-languages",
+    STT_CONFIGS: "/v1/learn/stt-configs",
+    UPDATE_STT_CONFIG: (id: string) => `/v1/learn/stt-configs/${id}`,
+    LLM_CONFIGS: "/v1/learn/llm-configs",
+    PREVIEW_LLM_CONFIG: (id: string) => `/v1/llm-preview/generate/${id}`,
+    LLM_MODEL_CATALOG: "/v1/llm/catalog",
+    LLM_MODEL_CATALOG_BY_ID: (id: string) => `/v1/llm/catalog/${id}`,
+    PREVIEW_LLM_MODEL: (id: string) => `/v1/llm-preview/model/${id}`,
+    UPDATE_LLM_CONFIG: (id: string) => `/v1/learn/llm-configs/${id}`,
     SCENARIO_LANGUAGES: "/v1/learn/scenario-languages",
     GET_LANGUAGES: "/v1/language",
     CREATE_LANGUAGE: "/v1/language",
     UPDATE_LANGUAGE: (id: string | number) => `/v1/language/${id}`,
+    GET_LANGUAGE_GLOSSARY: (id: string | number) => `/v1/language/${id}/glossary`,
+    UPSERT_GLOSSARY_SECTION: (id: string | number, sectionCode: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}`,
+    PUBLISH_GLOSSARY_SECTION: (id: string | number, sectionCode: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}/publish`,
+    ARCHIVE_GLOSSARY_SECTION: (id: string | number, sectionCode: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}/archive`,
+    GENERATE_LANGUAGE_GLOSSARY: (id: string | number) => `/v1/language/${id}/glossary/generate`,
+    ACCEPT_GLOSSARY_PROPOSAL: (id: string | number, sectionCode: string, entryId: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}/proposals/${entryId}/accept`,
+    REJECT_GLOSSARY_PROPOSAL: (id: string | number, sectionCode: string, entryId: string) =>
+      `/v1/language/${id}/glossary/${sectionCode}/proposals/${entryId}/reject`,
+    CONSOLIDATE_LANGUAGE_GLOSSARY: (id: string | number) =>
+      `/v1/language/${id}/glossary/consolidate`,
+    BACKFILL_LANGUAGE_GLOSSARIES: "/v1/language/glossary/backfill",
     SESSION_EVENTS: "/v1/session-events",
     GET_SESSION_EVENT_BY_ID: (eventId: string) => `/v1/session-events/events/${eventId}`,
     UPDATE_SESSION_EVENT: (eventId: string) => `/v1/session-events/events/${eventId}`,
@@ -88,6 +115,13 @@ export const ApiEndpoints = {
     DUPLICATE_PROMPT: (id: string | number) => `/v1/prompts/${id}/duplicate`,
     REVERT_PROMPT: (id: string | number) => `/v1/prompts/${id}/revert`,
     GET_PROMPT_USAGE: (id: string | number) => `/v1/prompts/${id}/usage`,
+    GET_PROMPT_TRANSLATIONS: (id: string | number) => `/v1/prompts/${id}/translations`,
+    RETRANSLATE_PROMPT: (id: string | number) => `/v1/prompts/${id}/translations`,
+    RETRANSLATE_PROMPT_LANGUAGE: (id: string | number, languageId: string | number) =>
+      `/v1/prompts/${id}/translations/${languageId}`,
+    SET_TRANSLATION_RUNTIME_MODEL: (id: string | number, languageId: string | number) =>
+      `/v1/prompts/${id}/translations/${languageId}/runtime-model`,
+    BACKFILL_PROMPT_TRANSLATIONS: "/v1/prompts/translations/backfill",
     GET_LLM_MODELS: "/v1/llm/models",
     GET_REPORT_BY_ID: (reportId: string) => `/v1/learn/scenarios/reports/${reportId}`,
     GET_REPORTS: (scenarioId: string) => `/v1/learn/scenarios/${scenarioId}/reports`,
@@ -207,6 +241,42 @@ export const ApiEndpoints = {
     UNPUBLISH_BLOG: (id: string) => `/v1/blog/${id}/unpublish`,
     UPLOAD_IMAGE_URL: "/v1/blog/upload-url",
   },
+  PRODUCT_ROADMAP: {
+    OPPORTUNITIES: "/v1/product-roadmap/opportunities",
+    OPPORTUNITY_BY_ID: (id: string) => `/v1/product-roadmap/opportunities/${id}`,
+    OPPORTUNITY_SPLIT: (id: string) => `/v1/product-roadmap/opportunities/${id}/split`,
+    OPPORTUNITY_MERGE: "/v1/product-roadmap/opportunities/merge",
+    OPPORTUNITY_COMMENTS: (id: string) => `/v1/product-roadmap/opportunities/${id}/comments`,
+    COMMENT_BY_ID: (id: string) => `/v1/product-roadmap/comments/${id}`,
+    ALLOCATIONS: "/v1/product-roadmap/allocations",
+    COIN_BUDGET: "/v1/product-roadmap/me/coin-budget",
+    FACETS: "/v1/product-roadmap/facets",
+    PRODUCT_GOALS: "/v1/product-roadmap/product-goals",
+    PRODUCT_GOAL_BY_ID: (id: string) => `/v1/product-roadmap/product-goals/${id}`,
+    PRODUCT_GOALS_ORDER: "/v1/product-roadmap/product-goals/order",
+    PRODUCT_GOALS_USAGE: "/v1/product-roadmap/product-goals/usage",
+    OWNERS: "/v1/product-roadmap/opportunity-owners",
+    OWNERS_ELIGIBLE: "/v1/product-roadmap/opportunity-owners/eligible",
+    OWNER_BY_ID: (id: string) => `/v1/product-roadmap/opportunity-owners/${id}`,
+    OWNERS_ORDER: "/v1/product-roadmap/opportunity-owners/order",
+    OWNERS_USAGE: "/v1/product-roadmap/opportunity-owners/usage",
+    INTERVIEW_NOTES: "/v1/product-roadmap/interview-notes",
+    INTERVIEW_NOTE_BY_ID: (id: string) => `/v1/product-roadmap/interview-notes/${id}`,
+    RELEASE_NOTES: "/v1/product-roadmap/release-notes",
+    RELEASE_NOTE_BY_ID: (id: string) => `/v1/product-roadmap/release-notes/${id}`,
+    VIEWS: "/v1/product-roadmap/views",
+    VIEW_BY_ID: (id: string) => `/v1/product-roadmap/views/${id}`,
+    VIEW_PIN: (id: string) => `/v1/product-roadmap/views/${id}/pin`,
+    VIEW_TAB_ORDER: "/v1/product-roadmap/views/tab-order",
+    AI_REVIEW: "/v1/product-roadmap/ai/review",
+    AI_ENHANCE: "/v1/product-roadmap/ai/enhance",
+    AI_DUPLICATES: "/v1/product-roadmap/ai/duplicates",
+    AI_CLASSIFY: "/v1/product-roadmap/ai/classify",
+    AI_SUMMARISE: "/v1/product-roadmap/ai/summarise",
+    AI_RELEASE_NOTES: "/v1/product-roadmap/ai/release-notes",
+    AI_GENERATE_CLAUDE_PROMPT: "/v1/product-roadmap/ai/generate-claude-prompt",
+    ADMIN_REINDEX: "/v1/product-roadmap/admin/reindex",
+  },
   AI_LAB: {
     SKILLS: "/v1/lab/skills",
     SKILL_BY_ID: (id: string) => `/v1/lab/skills/${id}`,
@@ -230,6 +300,11 @@ export const ApiEndpoints = {
     EVAL_ASSIGNMENTS: "/v1/lab/eval/assignments",
     EVAL_ASSIGNMENT_BY_ID: (id: string) => `/v1/lab/eval/assignments/${id}`,
     EVAL_ASSIGNMENT_SUBMIT: (id: string) => `/v1/lab/eval/assignments/${id}/submit`,
+    // Question Sets (reusable human-eval question lists)
+    QUESTION_SETS: "/v1/lab/question-sets",
+    QUESTION_SET_BY_ID: (id: string) => `/v1/lab/question-sets/${id}`,
+    QUESTION_SET_PUBLISH: (id: string) => `/v1/lab/question-sets/${id}/publish`,
+    QUESTION_SET_ARCHIVE: (id: string) => `/v1/lab/question-sets/${id}/archive`,
   },
   AUTHORIZATION: {
     GET_PERMISSIONS: "/v1/authorization/permissions",
@@ -238,6 +313,10 @@ export const ApiEndpoints = {
   },
   ANALYTICS: {
     OVERVIEW: "/v1/analytics/overview",
+    HIGHLIGHTS: "/v1/analytics/highlights",
+    COHORT_RETENTION: "/v1/analytics/cohort-retention",
+    USAGE_LEVELS: "/v1/analytics/usage-levels",
+    ROLEPLAY_VOLUME: "/v1/analytics/roleplay-volume",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
     AGENT_JOIN_RELIABILITY: "/v1/analytics/agent-join-reliability",
     START_LATENCY: "/v1/analytics/start-latency",
@@ -248,6 +327,38 @@ export const ApiEndpoints = {
     TOKEN_CONSUMPTION: "/v1/analytics/token-consumption",
     SCRIBE_OVERVIEW: "/v1/analytics/scribe/overview",
     SCRIBE_SUMMARY_FAILURES: "/v1/analytics/scribe/summary-failures",
+    // Endpoints behind the Testing tab. Named for what they measure, not for the
+    // tab: charts graduate from Testing onto Highlights (or are cut), and an
+    // endpoint called /testing would have to be renamed the day one moved.
+    ACTIVATION: "/v1/analytics/activation",
+    COMPLETION_RATE: "/v1/analytics/completion-rate",
+    LANGUAGE_MIX: "/v1/analytics/language-mix",
+    SKILL_GROWTH: "/v1/analytics/skill-growth",
+    QUALITY_DISTRIBUTION: "/v1/analytics/quality-distribution",
+    COMPETENCY_MAP: "/v1/analytics/competency-map",
+    TRACK_DROPOFF: "/v1/analytics/track-dropoff",
+    COACHING_LOOP: "/v1/analytics/coaching-loop",
+    ORG_HEALTH: "/v1/analytics/org-health",
+    ORG_SESSION_DISTRIBUTION: "/v1/analytics/org-session-distribution",
+    LEARNER_KPIS: "/v1/analytics/learner-kpis",
+    SCENARIO_USAGE: "/v1/analytics/scenario-usage",
+    SCRIBE_ADOPTION: "/v1/analytics/scribe-adoption",
+  },
+  // The Analytics Agent's own namespace, not another entry under ANALYTICS: it
+  // is gated on the elevated super-duper-admin tier rather than on the pair of
+  // super-admin roles the rest of the analytics endpoints accept.
+  ANALYTICS_AGENT: {
+    ASK: "/v1/analytics/agent/ask",
+    CATALOG: "/v1/analytics/agent/catalog",
+  },
+  // Analytics Suggestions — its own namespace for the same reason as the agent's:
+  // the elevated super-duper-admin tier, because accepting a suggestion writes
+  // onto the product roadmap rather than only reading a chart.
+  ANALYTICS_SUGGESTIONS: {
+    LIST: "/v1/analytics/suggestions",
+    GENERATE: "/v1/analytics/suggestions/generate",
+    ACCEPT: (id: string) => `/v1/analytics/suggestions/${id}/accept`,
+    REJECT: (id: string) => `/v1/analytics/suggestions/${id}/reject`,
   },
   ROLEPLAY_SESSION_LOGS: {
     LIST: "/v1/roleplay-session-logs",
@@ -270,44 +381,21 @@ export const ApiEndpoints = {
     CREATE_COPILOT_SESSION: `/v1/roleplay-studio/copilot/sessions`,
     COPILOT_SESSIONS: `/v1/roleplay-studio/copilot/sessions`,
     COPILOT_SESSION: (sessionId: string) => `/v1/roleplay-studio/copilot/sessions/${sessionId}`,
-    COPILOT_SESSION_TEST_CASES: (sessionId: string) =>
-      `/v1/roleplay-studio/copilot/sessions/${sessionId}/test-cases`,
     COPILOT_SESSION_MESSAGES: (sessionId: string) =>
       `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages`,
     COPILOT_SESSION_STREAM: (sessionId: string) =>
       `/v1/roleplay-studio/copilot/sessions/${sessionId}/messages/stream`,
-    CREATE_REHEARSALS: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/rehearsals`,
-    REHEARSALS_BY_SPEC: (specId: string) => `/v1/roleplay-studio/specs/${specId}/rehearsals`,
-    REHEARSAL_BY_ID: (rehearsalId: string) => `/v1/roleplay-studio/rehearsals/${rehearsalId}`,
-    CANCEL_REHEARSAL: (rehearsalId: string) =>
-      `/v1/roleplay-studio/rehearsals/${rehearsalId}/cancel`,
-    CRITIQUE_REHEARSAL: (rehearsalId: string) =>
-      `/v1/roleplay-studio/rehearsals/${rehearsalId}/critique`,
-    CRITIQUE_PROPOSAL: (proposalId: string) =>
-      `/v1/roleplay-studio/rehearsals/critique-proposals/${proposalId}`,
-    REHEARSAL_COMPARISON: (rehearsalId: string) =>
-      `/v1/roleplay-studio/rehearsals/${rehearsalId}/comparison`,
-    REHEARSAL_TRANSCRIPTS: (rehearsalId: string) =>
-      `/v1/roleplay-studio/rehearsals/${rehearsalId}/transcripts`,
-    CREATE_IMPROVEMENT_RUN: (specId: string, versionId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/improvement-runs`,
-    IMPROVEMENT_RUNS_BY_SPEC: (specId: string) =>
-      `/v1/roleplay-studio/specs/${specId}/improvement-runs`,
-    IMPROVEMENT_RUN_BY_ID: (runId: string) => `/v1/roleplay-studio/improvement-runs/${runId}`,
-    IMPROVEMENT_RUN_DIFF: (runId: string) => `/v1/roleplay-studio/improvement-runs/${runId}/diff`,
-    ACCEPT_IMPROVEMENT_RUN: (runId: string) =>
-      `/v1/roleplay-studio/improvement-runs/${runId}/accept`,
-    DISCARD_IMPROVEMENT_RUN: (runId: string) =>
-      `/v1/roleplay-studio/improvement-runs/${runId}/discard`,
-    CANCEL_IMPROVEMENT_RUN: (runId: string) =>
-      `/v1/roleplay-studio/improvement-runs/${runId}/cancel`,
     CREATE_SESSION: (specId: string, versionId: string) =>
       `/v1/roleplay-studio/specs/${specId}/versions/${versionId}/sessions`,
     SESSION_DIRECTOR_EVENTS: (sessionId: string) =>
       `/v1/roleplay-studio/sessions/${sessionId}/director-events`,
     SESSION_RUBRIC_SCORES: (sessionId: string) =>
       `/v1/roleplay-studio/sessions/${sessionId}/rubric-scores`,
+    // Improve: test-case-driven test runs + per-case reports.
+    TEST_RUNS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-runs`,
+    TEST_REPORTS: (specId: string) => `/v1/roleplay-studio/specs/${specId}/test-reports`,
+    TEST_REPORT_BY_ID: (reportId: string) => `/v1/roleplay-studio/test-reports/${reportId}`,
+    TEST_RUN_CANCEL: (runId: string) => `/v1/roleplay-studio/test-runs/${runId}/cancel`,
   },
 };
 
@@ -319,7 +407,11 @@ export const ROUTES = {
   MANAGE_EVENTS: "/manage-events",
   CHARACTER_LIBRARY: "/character-library",
   MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
+  MANAGE_STT_CONFIGS: "/manage-stt-configs",
+  MANAGE_LLM_CONFIGS: "/manage-llm-configs",
+  MANAGE_LLM_MODEL_CATALOG: "/manage-llm-model-catalog",
   MANAGE_SCENARIO_LANGUAGES: "/manage-scenario-languages",
+  MANAGE_LANGUAGE_GLOSSARY: (id: string | number) => `/manage-scenario-languages/${id}/glossary`,
   MANAGE_PROMPTS: "/manage-prompts",
   CREATE_SIMULATION: "/create-simulation",
   SIMULATION_PREVIEW: (id: string | number) => `/simulation-preview/${id}`,
@@ -344,12 +436,15 @@ export const ROUTES = {
   SETTINGS: "/settings",
   TERMS: "/terms",
   PRIVACY: "/privacy",
+  // Fully public, no-login gallery of the centralised design-system components.
+  DESIGN_SYSTEM: "/designsystem",
   ROLEPLAY_STUDIO: "/roleplay-studio",
   ROLEPLAY_STUDIO_NEW: "/roleplay-studio/new",
   ROLEPLAY_STUDIO_SPEC: (specId: string | number) => `/roleplay-studio/${specId}`,
   ROLEPLAY_STUDIO_PREVIEW: (id: string | number) => `/roleplay-studio/preview/${id}`,
   BLOG: "/blog",
   AI_LAB: "/ai-lab",
+  PRODUCT_ROADMAP: "/product-roadmap",
   // Evaluator micro-app (public routes; evaluator email+password auth)
   EVALUATE: "/evaluate",
   EVALUATE_RECORDS: "/evaluate/records",
@@ -366,6 +461,7 @@ export const LOCAL_STORAGE_KEYS = {
   // Evaluator micro-app session (separate from the admin session)
   EVALUATOR_ACCESS_TOKEN: "evaluatorAccessToken",
   EVALUATOR_EMAIL: "evaluatorEmail",
+  EVALUATOR_ID: "evaluatorId",
   // Prefix — the copilot session id is stored per spec as `${prefix}:${specId}`
   // so a page refresh can resume the same interview session.
   ROLEPLAY_COPILOT_SESSION_PREFIX: "roleplayCopilotSession",
@@ -421,7 +517,12 @@ export const TAG_TYPES = {
   SIMULATION_CASES: "simulationCases",
   TRIGGER_WARNINGS: "triggerWarnings",
   SCENARIO_VOICES: "scenarioVoices",
+  STT_CONFIGS: "sttConfigs",
+  LLM_CONFIGS: "llmConfigs",
+  LLM_MODEL_CATALOG: "llmModelCatalog",
+  LLM_MODELS: "llmModels",
   SCENARIO_LANGUAGES: "scenarioLanguages",
+  LANGUAGE_GLOSSARY: "languageGlossary",
   SUMMARY_SECTIONS: "summarySections",
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
   CUSTOM_FIELD_TYPES: "customFieldTypes",
@@ -447,13 +548,26 @@ export const TAG_TYPES = {
   ROLEPLAY_SESSION_LOGS: "roleplaySessionLogs",
   ROLEPLAY_SPECS: "roleplaySpecs",
   ROLEPLAY_SPEC_VERSIONS: "roleplaySpecVersions",
-  ROLEPLAY_REHEARSALS: "roleplayRehearsals",
-  ROLEPLAY_IMPROVEMENTS: "roleplayImprovements",
   ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
+  ROLEPLAY_TEST_REPORTS: "roleplayTestReports",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
   TRACKS_V2: "tracksV2",
   BLOGS: "blogs",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
+  // Product Roadmap. NOTE: every one of these must ALSO be listed in baseApi.ts's
+  // `tagTypes` array — an unregistered tag makes invalidatesTags a silent no-op.
+  PRODUCT_ROADMAP_OPPORTUNITIES: "productRoadmapOpportunities",
+  PRODUCT_ROADMAP_COIN_BUDGET: "productRoadmapCoinBudget",
+  PRODUCT_ROADMAP_FACETS: "productRoadmapFacets",
+  PRODUCT_ROADMAP_GOALS: "productRoadmapGoals",
+  PRODUCT_ROADMAP_OWNERS: "productRoadmapOwners",
+  PRODUCT_ROADMAP_COMMENTS: "productRoadmapComments",
+  PRODUCT_ROADMAP_INTERVIEWS: "productRoadmapInterviews",
+  PRODUCT_ROADMAP_RELEASE_NOTES: "productRoadmapReleaseNotes",
+  PRODUCT_ROADMAP_SAVED_VIEWS: "productRoadmapSavedViews",
+  PRODUCT_ROADMAP_VIEW_ORDER: "productRoadmapViewOrder",
+  // Analytics Suggestions review queue. Also registered in baseApi.ts's `tagTypes`.
+  ANALYTICS_SUGGESTIONS: "analyticsSuggestions",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",
@@ -461,6 +575,7 @@ export const TAG_TYPES = {
   AI_LAB_EVALUATORS: "aiLabEvaluators",
   AI_LAB_ASSIGNMENTS: "aiLabAssignments",
   AI_LAB_AUTO_EVALS: "aiLabAutoEvals",
+  AI_LAB_QUESTION_SETS: "aiLabQuestionSets",
   // Evaluator portal (separate evaluatorAPI)
   EVAL_ASSIGNMENTS: "evalAssignments",
 };
@@ -489,6 +604,7 @@ export enum TooltipLocation {
   PUBLIC_VISIBILITY = "public_visibility",
   CONVERSATIONAL_GUARDRAILS = "conversational_guardrails",
   CURRENT_STATE = "current_state",
+  REMINDERS_ENABLED = "reminders_enabled",
   // Edit Simulation → form fields (seeded disabled; review + enable in Manage Tooltips)
   CHARACTER_PROFILE_SELECTOR = "character_profile_selector",
   CHARACTER_BACKSTORY = "character_backstory",

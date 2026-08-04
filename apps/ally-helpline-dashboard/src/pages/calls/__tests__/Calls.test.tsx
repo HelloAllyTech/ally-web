@@ -334,7 +334,7 @@ describe("Calls Component", () => {
 
     it("should not show scribe action buttons on the roleplay page", () => {
       renderCalls({ sessionType: SessionType.SIMULATION });
-      expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
+      expect(screen.queryByText("Start Scribe Mode")).not.toBeInTheDocument();
     });
   });
 
@@ -372,7 +372,7 @@ describe("Calls Component", () => {
 
     it("should show Start Session button for non-admin with MICROPHONE_CHAT", () => {
       renderCalls();
-      expect(screen.getByText("Start Session")).toBeInTheDocument();
+      expect(screen.getByText("Start Scribe Mode")).toBeInTheDocument();
     });
 
     it("should not show Start Session button for admin", () => {
@@ -383,13 +383,13 @@ describe("Calls Component", () => {
       });
 
       renderCalls();
-      expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
+      expect(screen.queryByText("Start Scribe Mode")).not.toBeInTheDocument();
     });
   });
 
   /**
    * TEST GROUP: Create Note Button
-   * The "+ Create Note" button renders only for counsellors when the tenant
+   * The "Start Dictation Mode" button renders only for counsellors when the tenant
    * toggle is on.
    */
   describe("Create Note Button", () => {
@@ -402,7 +402,7 @@ describe("Calls Component", () => {
       mockUseScribeNoteCreationEnabled.mockReturnValue({ data: false });
 
       renderCalls();
-      expect(screen.queryByText("+ Create Note")).not.toBeInTheDocument();
+      expect(screen.queryByText("Start Dictation Mode")).not.toBeInTheDocument();
     });
 
     it("shows the Create Note button for a counsellor when the tenant toggle is on", () => {
@@ -414,7 +414,7 @@ describe("Calls Component", () => {
       mockUseScribeNoteCreationEnabled.mockReturnValue({ data: true });
 
       renderCalls();
-      expect(screen.getByText("+ Create Note")).toBeInTheDocument();
+      expect(screen.getByText("Start Dictation Mode")).toBeInTheDocument();
     });
   });
 
@@ -426,7 +426,7 @@ describe("Calls Component", () => {
     it("should handle start session button click", () => {
       renderCalls();
 
-      const startSessionButton = screen.getByText("Start Session");
+      const startSessionButton = screen.getByText("Start Scribe Mode");
       fireEvent.click(startSessionButton);
 
       expect(screen.getByTestId("start-session-dialog")).toHaveAttribute("data-is-open", "true");
@@ -451,7 +451,7 @@ describe("Calls Component", () => {
     it("should open start session dialog", () => {
       renderCalls();
 
-      const startSessionButton = screen.getByText("Start Session");
+      const startSessionButton = screen.getByText("Start Scribe Mode");
       fireEvent.click(startSessionButton);
 
       expect(screen.getByTestId("start-session-dialog")).toHaveAttribute("data-is-open", "true");
@@ -460,7 +460,7 @@ describe("Calls Component", () => {
     it("should close start session dialog", () => {
       renderCalls();
 
-      const startSessionButton = screen.getByText("Start Session");
+      const startSessionButton = screen.getByText("Start Scribe Mode");
       fireEvent.click(startSessionButton);
 
       const closeButton = screen.getByTestId("close-dialog");
@@ -533,7 +533,7 @@ describe("Calls Component", () => {
       });
 
       renderCalls();
-      expect(screen.queryByText("Start Session")).not.toBeInTheDocument();
+      expect(screen.queryByText("Start Scribe Mode")).not.toBeInTheDocument();
     });
   });
 
@@ -552,7 +552,7 @@ describe("Calls Component", () => {
     it("should have proper button labels", () => {
       renderCalls();
 
-      expect(screen.getByText("Start Session")).toBeInTheDocument();
+      expect(screen.getByText("Start Scribe Mode")).toBeInTheDocument();
     });
   });
 

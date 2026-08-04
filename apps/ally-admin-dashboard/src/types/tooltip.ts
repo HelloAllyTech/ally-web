@@ -2,7 +2,6 @@ export interface Tooltip {
   id: string;
   location: string;
   tipText: string;
-  icon?: string;
   active: boolean;
   createdBy: number;
   updatedBy: number;
@@ -15,5 +14,4 @@ export interface ActiveTooltip {
   id: string;
   location: string;
   tipText: string;
-  icon?: string | null;
 }

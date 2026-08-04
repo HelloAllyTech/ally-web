@@ -403,7 +403,7 @@ describe("AudioCall Component", () => {
       expect(screen.getByTestId("browser-router")).toBeInTheDocument();
     });
 
-    it("should handle dictation mode without rendering sidebar", () => {
+    it("should refuse to start a retired dictation session even if the org still lists it", () => {
       mockSearchParams.get.mockReturnValue("dictation");
       const store = createMockStore({
         user: {
@@ -424,6 +424,9 @@ describe("AudioCall Component", () => {
 
       // Component should render without errors in dictation mode
       expect(screen.getByTestId("browser-router")).toBeInTheDocument();
+      // ...but never hand the counselor a live session.
+      expect(screen.queryByTestId("call-interface")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("call-sidebar")).not.toBeInTheDocument();
     });
 
     it("should handle no mode parameter", () => {

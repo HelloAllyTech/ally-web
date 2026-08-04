@@ -1,6 +1,7 @@
 import { FC, useId, WheelEventHandler } from "react";
 
 import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
+import { formFieldProtectionProps } from "@constants/formFieldProtection";
 
 import { TextFieldProps } from "./types";
 
@@ -66,21 +67,8 @@ const TextField: FC<TextFieldProps> = ({
     style: inputStyles,
     ref: inputRef,
     onWheel: handleWheel,
-    // Opt these fields out of browser/extension form helpers that inject into
-    // inputs and can steal focus mid-typing (observed on Edge: focus lost after
-    // one keystroke, gone in InPrivate where extensions are disabled). There is
-    // no single universal opt-out, so we set the hints each common family
-    // honors. Callers can still override via `props`.
-    autoComplete: "off",
-    // Password managers
-    "data-lpignore": "true", // LastPass
-    "data-1p-ignore": "true", // 1Password
-    "data-bwignore": "true", // Bitwarden
-    "data-form-type": "other", // Dashlane / generic
-    // Writing assistants (Grammarly, Microsoft Editor, etc.)
-    "data-gramm": "false",
-    "data-gramm_editor": "false",
-    "data-enable-grammarly": "false",
+    // Callers can still override the protection hints via `props`.
+    ...formFieldProtectionProps,
     ...registerProps,
     ...(onChange ? { onChange } : {}),
     ...(props as Record<string, unknown>),
@@ -100,8 +88,16 @@ const TextField: FC<TextFieldProps> = ({
     <div className={`flex flex-col ${fullWidth ? "w-full" : ""} ${className ?? ""}`}>
       {label && <span className="text-xs text-typography-700">{label}</span>}
       {hasAdornment ? (
+        // `relative` is load-bearing: adornments (the Enhance wand) pin
+        // themselves with `absolute bottom-2 right-2`, which needs THIS row to
+        // be their containing block. MUI's InputBase used to provide that; the
+        // Carbon migration dropped it, and Carbon's autoAlign Tooltip wrapper
+        // deliberately does not set `position: relative` either — so every
+        // field's wand escaped and stacked in the corner of the page's
+        // `relative` scroll panel, where only the last one in DOM order was
+        // clickable.
         <div
-          className={`flex items-center gap-2 w-full ${showBorder ? "border border-[#E5E7EB] rounded" : ""}`}
+          className={`relative flex items-center gap-2 w-full ${showBorder ? "border border-[#E5E7EB] rounded" : ""}`}
         >
           {InputProps?.startAdornment}
           <div className="flex-1 min-w-0">{inputElement}</div>

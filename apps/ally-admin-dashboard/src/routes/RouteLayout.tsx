@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import {
   Permissions,
   ROLEPLAY_STUDIO_ALLOWED_EMAILS,
+  ROUTER_BASENAME,
   ROUTES,
   SUPER_ADMIN_ROLES,
   SUPER_DUPER_ADMIN_ROLES,
@@ -23,7 +24,10 @@ import {
   CreateTrack,
   CreateCase,
   ScenarioVoices,
+  SttConfigs,
+  LlmModelCatalog,
   ScenarioLanguages,
+  LanguageGlossary,
   GuardrailsManagement,
   PromptManagement,
   UserBadges,
@@ -31,6 +35,7 @@ import {
   TooltipManagement,
   BlogManagement,
   AILab,
+  ProductRoadmap,
   Settings,
   AgentTestCases,
   Competencies,
@@ -56,9 +61,18 @@ const Analytics = lazy(() =>
   import("../pages/Analytics/Analytics").then(module => ({ default: module.Analytics })),
 );
 
+// Public design-system gallery. Lazy-loaded (kept out of the eager @pages
+// barrel) so this browse-only showcase never weighs on the main admin bundle.
+const DesignSystem = lazy(() =>
+  import("../pages/DesignSystem/DesignSystem").then(module => ({ default: module.DesignSystem })),
+);
+
 export const RouteLayout: React.FC = () => {
   return (
-    <BrowserRouter>
+    // basename is "" for the standalone dashboard and "/admin" for the copy
+    // path-mounted on the consumer origin, so every ROUTES.* path below stays
+    // written relative to the app root regardless of where it is served.
+    <BrowserRouter basename={ROUTER_BASENAME}>
       <Routes>
         {/* Public Routes */}
         <Route
@@ -82,6 +96,16 @@ export const RouteLayout: React.FC = () => {
         {/* Legal pages — fully public, accessible whether or not signed in */}
         <Route path={ROUTES.TERMS} element={<Terms />} />
         <Route path={ROUTES.PRIVACY} element={<Privacy />} />
+
+        {/* Design-system gallery — fully public, no login required */}
+        <Route
+          path={ROUTES.DESIGN_SYSTEM}
+          element={
+            <Suspense fallback={null}>
+              <DesignSystem />
+            </Suspense>
+          }
+        />
 
         {/* Evaluator micro-app — its own email+password session (NOT admin
             auth); the pages gate themselves on the evaluator token. */}
@@ -183,10 +207,34 @@ export const RouteLayout: React.FC = () => {
           }
         />
         <Route
+          path={ROUTES.MANAGE_STT_CONFIGS}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <SttConfigs />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_LLM_MODEL_CATALOG}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <LlmModelCatalog />
+            </PrivateLayout>
+          }
+        />
+        <Route
           path={ROUTES.MANAGE_SCENARIO_LANGUAGES}
           element={
             <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <ScenarioLanguages />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MANAGE_LANGUAGE_GLOSSARY(":id")}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <LanguageGlossary />
             </PrivateLayout>
           }
         />
@@ -279,9 +327,19 @@ export const RouteLayout: React.FC = () => {
           }
         />
         <Route
+          path={ROUTES.PRODUCT_ROADMAP}
+          element={
+            // Permission-gated, not role-gated: SUPER_ADMIN can view and vote, while the
+            // manage surface inside the page is gated on EDIT_PRODUCT_ROADMAP.
+            <PrivateLayout requiredPermissions={[Permissions.VIEW_PRODUCT_ROADMAP]}>
+              <ProductRoadmap />
+            </PrivateLayout>
+          }
+        />
+        <Route
           path={ROUTES.AI_LAB}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <AILab />
             </PrivateLayout>
           }
@@ -323,7 +381,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOGS}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <RoleplaySessionLogs />
             </PrivateLayout>
           }
@@ -331,7 +389,7 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(":id")}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <RoleplaySessionLogDetail />
             </PrivateLayout>
           }

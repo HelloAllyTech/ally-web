@@ -365,10 +365,10 @@ describe("CommentThread Component", () => {
       expect(mainContainer).toHaveClass("shadow-lg");
     });
 
-    it("should have fixed width of 400px", () => {
+    it("should cap width at 400px without overflowing narrow viewports", () => {
       const { container } = renderWithProvider(<CommentThread {...defaultProps} />);
       const mainContainer = container.firstChild as HTMLElement;
-      expect(mainContainer).toHaveClass("w-[400px]");
+      expect(mainContainer).toHaveClass("w-[min(400px,95vw)]");
     });
 
     it("should have border on header", () => {

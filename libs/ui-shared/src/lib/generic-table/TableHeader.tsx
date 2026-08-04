@@ -57,8 +57,11 @@ const TableHeader = <T extends Record<string, any>>({
   const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
     setFilterAnchorEl(event.currentTarget);
     setSearchText("");
-    // If multiselect, prefill with current filter values
-    if (activeCol && activeCol.filterType === "multiselect") {
+    // Prefill array-valued filters (multiselect + number range) from current state
+    if (
+      activeCol &&
+      (activeCol.filterType === "multiselect" || activeCol.filterType === "number")
+    ) {
       const existing = filter.find(f => f.key === activeCol.key);
       setMultiSelectValues(Array.isArray(existing?.value) ? existing?.value : []);
     } else {
@@ -113,6 +116,13 @@ const TableHeader = <T extends Record<string, any>>({
     handleCloseAll();
   };
 
+  const handleNumberSelect = (key: string, value: string[]) => {
+    if (key) {
+      onFilterChange(key, value);
+    }
+    handleCloseAll();
+  };
+
   // Render filter popover content
   const renderFilterPopover = () => {
     if (!activeCol || !activeCol.filterable) return null;
@@ -129,6 +139,7 @@ const TableHeader = <T extends Record<string, any>>({
         onSaveMultiSelect={handleSaveMultiSelect}
         onSelectSingle={(_colKey, value) => handleFilterOptionSelect(value)}
         onDateSelect={(key, value) => handleDateSelect(key, value)}
+        onNumberSelect={(key, value) => handleNumberSelect(key, value)}
         singleSelectedValue={
           activeCol
             ? (() => {
@@ -213,34 +224,36 @@ const TableHeader = <T extends Record<string, any>>({
   return (
     <thead>
       <tr className="bg-[#FFF] sticky top-0 border-b border-gray-300 z-10">
-        {columns?.map(col => (
-          <th
-            key={col.key as string}
-            className={`text-left font-[500] text-[#000] min-w-[100px] ${col.className || ""}`}
-            style={col.style}
-          >
-            {col.headerNode ? (
-              <div className="px-4 py-[14px] flex items-center justify-center">
-                {col.headerNode}
-              </div>
-            ) : (
-              <div
-                className={`px-4 py-[14px] flex flex-row items-center justify-between ${
-                  (col.filterable || col.sortable) && "cursor-pointer"
-                }`}
-                onClick={e => handleHeaderClick(e, col)}
-              >
-                <div className="flex flex-row items-center">
-                  {col?.icon && <div className="pr-[8px]">{col?.icon}</div>}
-                  <div className="font-[500] text-[#6B7280]">{col.header}</div>
+        {columns
+          ?.filter(col => !col.hidden)
+          .map(col => (
+            <th
+              key={col.key as string}
+              className={`text-left font-[500] text-[#000] min-w-[100px] ${col.className || ""}`}
+              style={col.style}
+            >
+              {col.headerNode ? (
+                <div className="px-4 py-[14px] flex items-center justify-center">
+                  {col.headerNode}
                 </div>
-              </div>
-            )}
-            {renderMainPopover(col)}
-            {activeCol?.key === col.key && renderSortPopover()}
-            {activeCol?.key === col.key && col.filterable && renderFilterPopover()}
-          </th>
-        ))}
+              ) : (
+                <div
+                  className={`px-4 py-[14px] flex flex-row items-center justify-between ${
+                    (col.filterable || col.sortable) && "cursor-pointer"
+                  }`}
+                  onClick={e => handleHeaderClick(e, col)}
+                >
+                  <div className="flex flex-row items-center">
+                    {col?.icon && <div className="pr-[8px]">{col?.icon}</div>}
+                    <div className="font-[500] text-[#6B7280]">{col.header}</div>
+                  </div>
+                </div>
+              )}
+              {renderMainPopover(col)}
+              {activeCol?.key === col.key && renderSortPopover()}
+              {activeCol?.key === col.key && col.filterable && renderFilterPopover()}
+            </th>
+          ))}
       </tr>
     </thead>
   );

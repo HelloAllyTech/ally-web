@@ -1,6 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 
 import { MenuIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { matchPath, useLocation, useNavigate } from "react-router-dom";
 
 import { NavSideBar } from "@components";
@@ -12,6 +13,7 @@ import UploadProgressDialog from "./UploadProgressDialog";
 
 // TODO: Rename to LayoutWrapper
 const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const { user, checkAuth, isAuthenticated } = useUser();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -50,7 +52,7 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-y-hidden">
+    <div className="flex h-dvh w-full overflow-y-hidden">
       {showNavbar && (
         <NavSideBar
           activeTab={activeTab}
@@ -59,11 +61,19 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
           onClose={toggleSidebar}
         />
       )}
-      <div className={"flex-1 min-h-screen overflow-auto bg-white custom-scrollbar"}>
-        <div className={`${showNavbar && "h-[100vh]"}`}>
-          <button onClick={toggleSidebar} className="md:hidden p-4 fixed top-0 right-0 z-30">
-            <MenuIcon />
-          </button>
+      <div className={"flex-1 min-h-dvh overflow-auto bg-white custom-scrollbar"}>
+        {showNavbar && (
+          <div className="sticky top-0 z-30 flex items-center justify-end border-b border-border-light bg-white p-2 md:hidden">
+            <button
+              onClick={toggleSidebar}
+              aria-label={t("nav.sidebar.expand")}
+              data-testid="nav-sidebar-hamburger"
+            >
+              <MenuIcon />
+            </button>
+          </div>
+        )}
+        <div className={showNavbar ? "h-[calc(100dvh-56px)] md:h-dvh" : ""}>
           {children}
           <UploadProgressDialog />
           {shouldShowBadgeModal && BadgeModal}

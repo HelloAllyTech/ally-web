@@ -6,16 +6,15 @@ import { TooltipIcon } from "@assets";
 
 /**
  * Resolve the display title for a data-driven tooltip `location`, or "" when no
- * active tooltip exists for it. Prefixes the optional emoji icon, matching the
- * helpline AppTooltip / ToggleSection behaviour. Returns "" while loading or
- * when location is unset so callers can render nothing.
+ * active tooltip exists for it. Returns "" while loading or when location is
+ * unset so callers can render nothing.
  */
 const useActiveTooltipTitle = (location?: string): string => {
   const { data: tooltips = [] } = useGetActiveTooltipsQuery(undefined, { skip: !location });
   if (!location) return "";
   const tooltip = tooltips.find(t => t.location === location);
   if (!tooltip) return "";
-  return tooltip.icon ? `${tooltip.icon} ${tooltip.tipText}` : tooltip.tipText;
+  return tooltip.tipText;
 };
 
 /**

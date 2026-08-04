@@ -22,6 +22,10 @@ import {
   LabRunResults,
   LabAutoEvaluation,
   CreateAutoEvalRequest,
+  QuestionSet,
+  ListQuestionSetsQuery,
+  CreateQuestionSetRequest,
+  UpdateQuestionSetRequest,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -263,6 +267,72 @@ export const aiLabAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.AI_LAB_EVALUATORS, TAG_TYPES.AI_LAB_RUNS],
     }),
+
+    // ---- Question Sets ----
+    getQuestionSets: builder.query<LabListResponse<QuestionSet>, ListQuestionSetsQuery | void>({
+      query: params => ({
+        url: ApiEndpoints.AI_LAB.QUESTION_SETS,
+        method: HttpMethod.GET,
+        params: params || undefined,
+      }),
+      providesTags: [TAG_TYPES.AI_LAB_QUESTION_SETS],
+    }),
+    getQuestionSet: builder.query<QuestionSet, string>({
+      query: id => ({
+        url: ApiEndpoints.AI_LAB.QUESTION_SET_BY_ID(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: (result, error, id) => [{ type: TAG_TYPES.AI_LAB_QUESTION_SETS, id }],
+    }),
+    createQuestionSet: builder.mutation<QuestionSet, CreateQuestionSetRequest>({
+      query: body => ({
+        url: ApiEndpoints.AI_LAB.QUESTION_SETS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.AI_LAB_QUESTION_SETS],
+    }),
+    updateQuestionSet: builder.mutation<QuestionSet, { id: string; data: UpdateQuestionSetRequest }>(
+      {
+        query: ({ id, data }) => ({
+          url: ApiEndpoints.AI_LAB.QUESTION_SET_BY_ID(id),
+          method: HttpMethod.PATCH,
+          body: data,
+        }),
+        invalidatesTags: (result, error, { id }) => [
+          { type: TAG_TYPES.AI_LAB_QUESTION_SETS, id },
+          TAG_TYPES.AI_LAB_QUESTION_SETS,
+        ],
+      },
+    ),
+    publishQuestionSet: builder.mutation<QuestionSet, string>({
+      query: id => ({
+        url: ApiEndpoints.AI_LAB.QUESTION_SET_PUBLISH(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: TAG_TYPES.AI_LAB_QUESTION_SETS, id },
+        TAG_TYPES.AI_LAB_QUESTION_SETS,
+      ],
+    }),
+    archiveQuestionSet: builder.mutation<QuestionSet, { id: string; isArchived: boolean }>({
+      query: ({ id, isArchived }) => ({
+        url: ApiEndpoints.AI_LAB.QUESTION_SET_ARCHIVE(id),
+        method: HttpMethod.PATCH,
+        body: { isArchived },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: TAG_TYPES.AI_LAB_QUESTION_SETS, id },
+        TAG_TYPES.AI_LAB_QUESTION_SETS,
+      ],
+    }),
+    deleteQuestionSet: builder.mutation<{ success: boolean }, string>({
+      query: id => ({
+        url: ApiEndpoints.AI_LAB.QUESTION_SET_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.AI_LAB_QUESTION_SETS],
+    }),
   }),
 });
 
@@ -284,6 +354,7 @@ export const {
   useDeleteLabRunMutation,
   usePublishLabRunMutation,
   useGetRunAssignmentsQuery,
+  useLazyGetRunAssignmentsQuery,
   useAssignLabRunMutation,
   useUnassignLabRunMutation,
   useGetRunResultsQuery,
@@ -293,4 +364,12 @@ export const {
   useCreateLabEvaluatorMutation,
   useRegenerateEvaluatorPasswordMutation,
   useDeleteLabEvaluatorMutation,
+  useGetQuestionSetsQuery,
+  useGetQuestionSetQuery,
+  useLazyGetQuestionSetQuery,
+  useCreateQuestionSetMutation,
+  useUpdateQuestionSetMutation,
+  usePublishQuestionSetMutation,
+  useArchiveQuestionSetMutation,
+  useDeleteQuestionSetMutation,
 } = aiLabAPI;

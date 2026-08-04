@@ -200,6 +200,7 @@
   },
   "user": {
     "creditUsage": "Credit usage",
+    "adminConsole": "Admin console",
     "logout": "Logout",
     "profileAlt": "Profile",
     "dataPolicy": "Data policy"
@@ -359,7 +360,18 @@
       "simulationsCompleted": "Simulations completed",
       "simulationsCompletedCaption": "Total across the organization",
       "activeUsers": "Active users",
-      "activeUsersCaption": "Completed at least one simulation"
+      "activeUsersCaption": "Completed at least one simulation",
+      "newLearnersOnboarded": "New learners onboarded",
+      "newLearnersOnboardedCaption": "New learner accounts created in the period",
+      "totalRegisteredLearners": "Total registered learners",
+      "totalRegisteredLearnersCaption": "Current headcount, all-time (not scoped to the selected period)",
+      "avgSessionsPerActiveLearner": "Avg sessions per active learner",
+      "avgSessionsPerActiveLearnerCaption": "Completed sessions ÷ active learners in the period",
+      "avgPracticeMinutesPerLearner": "Avg practice minutes per learner",
+      "avgPracticeMinutesPerLearnerCaption": "Practice time ÷ active learners in the period",
+      "avgDaysToFirstSession": "Avg days to first session",
+      "avgDaysToFirstSessionCaption_one": "From signup to first completed session, based on {{count}} learner onboarded in the period",
+      "avgDaysToFirstSessionCaption_other": "From signup to first completed session, based on {{count}} learners onboarded in the period"
     },
     "charts": {
       "simulationsTrend": "Simulations completed over time",
@@ -371,15 +383,25 @@
         "week": "Week",
         "month": "Month",
         "simulations": "Simulations",
-        "users": "Users"
-      }
+        "users": "Users",
+        "newLearners": "New learners"
+      },
+      "newLearnersTrend": "New learners onboarded over time",
+      "newLearnersSeries": "New learners onboarded"
     },
     "states": {
       "errorTitle": "Couldn't load this chart",
       "errorSubtitle": "There was a problem fetching the data.",
       "noAccess": "Organization metrics are available to organization admins only.",
       "retry": "Retry",
-      "empty": "No data for this range"
+      "empty": "No data for this range",
+      "notEnoughData": "Not enough data yet"
+    },
+    "mostUsedSimulations": {
+      "title": "Most practiced simulations",
+      "caption": "Top scenarios by completed sessions in the selected period",
+      "sessions_one": "{{count}} session",
+      "sessions_other": "{{count}} sessions"
     }
   },
   "suspended": {
@@ -470,7 +492,10 @@
       "timeline": "Session Timeline",
       "strengths": "Strengths & skills demonstrated",
       "areasForGrowth": "Areas for growth",
-      "recommended": "RECOMMENDED"
+      "recommended": "RECOMMENDED",
+      "strengthsEmpty": "No strengths were identified for this session",
+      "areasForGrowthEmpty": "No areas for growth were identified for this session",
+      "feedbackUnavailable": "Feedback couldn't be generated for this session"
     },
     "tabs": {
       "annotatedTranscript": "Annotated Transcript",
@@ -762,6 +787,7 @@
     "save": "Save report",
     "saving": "Saving...",
     "enhance": "Enhance",
+    "enhanceFailed": "Couldn't enhance this text. Please try again.",
     "tabs": {
       "returnToSelf": "Return to Self",
       "sessionSummary": "Session summary",

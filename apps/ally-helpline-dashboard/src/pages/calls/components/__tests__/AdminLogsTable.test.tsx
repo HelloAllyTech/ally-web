@@ -32,19 +32,23 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
         {isLoading && <div data-testid="table-loading">Loading...</div>}
         {fallbackUI}
         <div data-testid="table-header">
-          {columns.map((col: any) => (
-            <div key={col.key} data-testid={`header-${col.key}`}>
-              {col.headerNode ?? col.header}
-            </div>
-          ))}
+          {columns
+            .filter((col: any) => !col.hidden)
+            .map((col: any) => (
+              <div key={col.key} data-testid={`header-${col.key}`}>
+                {col.headerNode ?? col.header}
+              </div>
+            ))}
         </div>
         {data?.map((item: any, index: number) => (
           <div key={item.id || index} data-testid={`table-row-${index}`}>
-            {columns.map((col: any) => (
-              <div key={col.key} data-testid={`cell-${col.key}-${index}`}>
-                {col.render ? col.render(item[col.key], item) : item[col.key]}
-              </div>
-            ))}
+            {columns
+              .filter((col: any) => !col.hidden)
+              .map((col: any) => (
+                <div key={col.key} data-testid={`cell-${col.key}-${index}`}>
+                  {col.render ? col.render(item[col.key], item) : item[col.key]}
+                </div>
+              ))}
           </div>
         ))}
         {handleLoadMore && (

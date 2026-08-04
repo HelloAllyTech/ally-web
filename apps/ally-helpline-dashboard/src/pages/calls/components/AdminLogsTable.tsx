@@ -47,8 +47,14 @@ import { convertSecondsToDuration, getFormattedDate, getSimulationScoreDisplay }
 
 import { CallSummarySidebar, DeleteCallLogConfirmationDialog, SimulationSummarySidebar } from ".";
 import { CALL_LOGS_PAGINATION_LIMIT, defaultTags, tagColors } from "../constants";
+import {
+  buildBuiltinFilterParams,
+  getChannelFilterOptions,
+  getModeFilterOptions,
+  getStatusFilterOptions,
+} from "./builtinFilters";
+import { buildCustomFieldColumns, buildFieldFiltersParam } from "./custom-fields/fieldFilters";
 import ManageCustomFieldsDialog from "./custom-fields/ManageCustomFieldsDialog";
-import { renderCustomFieldCell } from "./custom-fields/renderCustomFieldCell";
 import { LogsTableProps } from "./types";
 import {
   getSourceChipConfig,
@@ -208,7 +214,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
 
   if (isLoading && offset === 0) {
     return (
-      <div className="flex justify-center items-center h-[calc(100vh-80px)]">
+      <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
         <Loading withOverlay={false} />
       </div>
     );
@@ -240,15 +246,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
     return { id, callName: "", dateAndTime: "", provider: "--", mode: undefined, raw: row };
   };
 
-  const customFieldColumns: Column<any>[] = customFieldDefs
-    .filter(def => def.showInTable !== false)
-    .map(def => ({
-      key: `cf_${def.id}`,
-      header: def.name,
-      style: { width: "10%", minWidth: 100 },
-      render: (_value: any, row: any) =>
-        renderCustomFieldCell(def, row.raw?.customFieldValues ?? []),
-    }));
+  const customFieldColumns: Column<any>[] = buildCustomFieldColumns(customFieldDefs);
 
   const callColumns: Column<any>[] = [
     {
@@ -289,6 +287,8 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       sortable: true,
       icon: <TimerIcon />,
       style: { width: "10%" },
+      filterable: true,
+      filterType: FilterType.NUMBER,
     },
     {
       key: "mode",
@@ -296,6 +296,9 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       style: { width: "10%" },
       render: (_value, row) => <Chip config={getModeChipConfig(row.mode, t)} />,
       icon: <ScribeIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getModeFilterOptions(t),
     },
     {
       key: "tags",
@@ -317,6 +320,9 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       style: { width: "12%" },
       render: (_value, row) => <Chip config={getStatusChipConfig(row.raw.summaryStatus, t)} />,
       icon: <SummaryGenerationIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getStatusFilterOptions(t),
     },
     {
       key: "source",
@@ -324,6 +330,9 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       style: { width: "12%" },
       render: (_value, row) => <Chip config={getSourceChipConfig(row.provider, t)} />,
       icon: <SourceIcon />,
+      filterable: true,
+      filterType: FilterType.MULTISELECT,
+      filterOptions: getChannelFilterOptions(t),
     },
     ...customFieldColumns,
     {
@@ -487,14 +496,10 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       updatedFilters.counselorIds = ids.join(",");
     }
 
-    // Date filter
-    const date = filter.find((f: { key: string }) => f.key === "dateAndTime");
-    if (date && Array.isArray(date.value) && date.value.length === 2) {
-      updatedFilters.startDate = date.value[0];
-      updatedFilters.endDate = date.value[1];
-    }
+    // Built-in column filters: date, duration, tags, mode, status, channel
+    Object.assign(updatedFilters, buildBuiltinFilterParams(filter));
 
-    // Quality score filter
+    // Quality score filter (admin-only)
     const quality = filter.find((f: { key: string }) => f.key === "qualityScore");
     if (quality && typeof quality.value === "string") {
       const [min, max] = quality.value.split("-");
@@ -504,17 +509,14 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
       }
     }
 
-    // Tags filter
-    const tags = filter.find((f: { key: string }) => f.key === "tags");
-    if (tags && Array.isArray(tags.value) && tags.value.length > 0) {
-      updatedFilters.tags = tags.value.join(",");
-    }
-
     // Call Name text filter
     const callName = filter.find((f: { key: string }) => f.key === "callName");
     if (callName && typeof callName.value === "string" && callName.value.trim()) {
       updatedFilters.callName = callName.value.trim();
     }
+
+    // Custom/default-field filters (keys prefixed cf_<definitionId>)
+    updatedFilters.fieldFilters = buildFieldFiltersParam(filter);
 
     dispatch(updateFilters(updatedFilters));
   };
@@ -595,7 +597,7 @@ const AdminLogsTable: FC<LogsTableProps> = ({ refreshKey, sessionType, className
   return (
     <>
       <div
-        className={"rounded-xl w-full max-h-[calc(100vh-10px)] overflow-y-hidden"}
+        className={"rounded-xl w-full max-h-[calc(100dvh-10px)] overflow-y-hidden"}
         data-testid="admin-logs-table-container"
       >
         <GenericTable

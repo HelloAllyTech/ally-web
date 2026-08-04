@@ -11,7 +11,7 @@ import { SearchVariant } from "../../types";
  */
 const SkeletonLoader: FC<SkeletonLoaderProps> = ({ mode = SearchVariant.LIGHT }) => {
   return (
-    <main className="w-full min-h-screen flex justify-center overflow-y-hidden ">
+    <main className="w-full min-h-dvh flex justify-center overflow-y-hidden ">
       <div className="w-full mx-auto mt-8">
         {/* Tabs Skeleton */}
         <div className="w-full border-b border-gray-200 mb-6">

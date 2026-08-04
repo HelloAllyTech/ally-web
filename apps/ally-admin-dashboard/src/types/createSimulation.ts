@@ -50,6 +50,10 @@ export type FormData = {
   translationDescription?: Record<string, string>;
   challengeDescriptionPrimaryLanguageId?: number | null;
   translationTitle?: Record<string, string>;
+  reminders: string;
+  /** Raw newline-joined text per language while editing — split into string[] at save time, mirroring `reminders`. */
+  translationReminders?: Record<string, string>;
+  remindersPrimaryLanguageId?: number | null;
   autoTerminationStatus?: boolean;
   experienceMode?: string;
   checklistType?: string;
@@ -60,8 +64,200 @@ export type FormData = {
   pauseEnabled?: boolean;
   optGuardrails?: boolean;
   currentState?: boolean;
+  remindersEnabled?: boolean;
   knowledgeSources?: knowledgeSource[];
+  /** Per-language main-agent prompt variant choice (GENERIC vs MULTILINGUAL). */
+  mainPromptVariantByLanguage?: Record<string, "GENERIC" | "MULTILINGUAL">;
+  /**
+   * Per-language STT choices for this simulation, keyed by language ID and
+   * pointing at stt_configs rows — the same shape as `languageVoices`. A
+   * language absent from the map (or mapped to "") inherits its own default.
+   */
+  sttConfigByLanguage?: Record<string, string>;
 };
+
+/** A row from the STT registry (the Speech Recognition admin tab). */
+export interface SttConfig {
+  id: string;
+  name: string;
+  provider: string;
+  config: Record<string, any>;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type SttConfigPayload = Omit<SttConfig, "id" | "createdAt" | "updatedAt">;
+
+/** A row from the LLM registry (the Language Model admin tab). */
+export interface LlmConfig {
+  id: string;
+  name: string;
+  provider: string;
+  /** Shape is governed by the registry's field schema, not this type. */
+  config: Record<string, any>;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type LlmConfigPayload = Omit<LlmConfig, "id" | "createdAt" | "updatedAt">;
+
+/**
+ * A row in the LLM model catalog.
+ *
+ * Note there is no `runtimes` field: which runtimes can execute a model is a
+ * property of deployed code, not of this row, and is joined in by the backend
+ * when serving the pickers. Adding a model here is a config change; adding a
+ * provider is a code change.
+ */
+export interface LlmCatalogModel {
+  id: string;
+  provider: string;
+  model: string;
+  label: string;
+  supportsTemperature: boolean;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type LlmCatalogModelPayload = Omit<LlmCatalogModel, "id" | "createdAt" | "updatedAt">;
+
+/**
+ * One entry in a picker, with ElevenLabs' own verdict for THIS voice already
+ * applied server-side — ally-be owns the ElevenLabs integration and the
+ * classification rule (which voice types suit v3, which models a voice's
+ * fine-tune actually supports), so it computes the verdict once. This panel
+ * renders it, rather than keeping its own copy of the same rule — a real
+ * production voice ("Meenakshi") is exactly what went wrong when it had one.
+ */
+export interface ElevenLabsModelOption {
+  value: string;
+  label: string;
+  /** true = the recommendation for this voice; false = flagged; null = no signal either way. */
+  recommended: boolean | null;
+}
+
+/**
+ * Outcome of pulling an ElevenLabs voice's creation type.
+ *
+ * `voiceIdMismatch` matters as much as `voiceType`: 7 of 77 production ids
+ * resolve to a different voice, so a stored id does not necessarily name the
+ * voice that renders.
+ */
+export interface ElevenLabsVoiceSyncResult {
+  storedVoiceId: string;
+  resolvedVoiceId: string | null;
+  voiceIdMismatch: boolean;
+  category: string | null;
+  resolvedName: string | null;
+  voiceType: string | null;
+  persisted: boolean;
+  /**
+   * Models THIS voice's fine-tune supports, per ElevenLabs — raw annotation
+   * data. Prefer {@link ElevenLabsVoiceSyncResult.modelOptions} for
+   * rendering; this is what it was built from.
+   */
+  availableModels: string[];
+  /** A safe starting model, or null when there's nothing to prefer. */
+  recommendedModel: string | null;
+  /** The account-wide catalog, pre-labeled for THIS voice — what the Model picker renders directly. */
+  modelOptions: ElevenLabsModelOption[];
+}
+
+/**
+ * Outcome of looking up a voice id that has no saved voice row yet —
+ * same facts as {@link ElevenLabsVoiceSyncResult} minus `persisted` (nothing to
+ * write to), plus `gender`/`language` for autofilling a new voice's form.
+ */
+export interface ElevenLabsVoiceLookupResult {
+  voiceId: string;
+  resolvedVoiceId: string | null;
+  voiceIdMismatch: boolean;
+  category: string | null;
+  resolvedName: string | null;
+  voiceType: string | null;
+  gender: string | null;
+  language: string | null;
+  /**
+   * Models THIS voice's fine-tune supports, per ElevenLabs — raw annotation
+   * data. Prefer {@link ElevenLabsVoiceLookupResult.modelOptions} for
+   * rendering; this is what it was built from.
+   */
+  availableModels: string[];
+  /** A safe starting model, or null when there's nothing to prefer. */
+  recommendedModel: string | null;
+  /** The account-wide catalog, pre-labeled for THIS voice — what the Model picker renders directly. */
+  modelOptions: ElevenLabsModelOption[];
+}
+
+/** Outcome of syncing every ElevenLabs voice row's type in one pass. */
+export interface ElevenLabsBulkSyncSummary {
+  checked: number;
+  updated: number;
+  mismatched: Array<{
+    voiceId: string;
+    name: string;
+    storedVoiceId: string;
+    resolvedVoiceId: string;
+    resolvedName: string;
+  }>;
+  failed: Array<{
+    voiceId: string;
+    name: string;
+    storedVoiceId: string;
+    error: string;
+  }>;
+}
+
+/**
+ * One selectable entry in a TTS provider's account-wide model/voice catalog
+ * — not tied to any one voice. Every provider's underlying fetch is
+ * different (auth, base URL, response shape); this is the one shape they
+ * all get mapped to so the picker doesn't care which provider it's showing.
+ */
+export interface TtsCatalogEntry {
+  /** What gets written into the voice's config field (e.g. `model`, `voice_name`). */
+  value: string;
+  /** What the picker shows. */
+  label: string;
+  /**
+   * This voice's gender, where the provider publishes one — used to narrow the
+   * picker to the gender being configured. Absent rather than guessed whenever
+   * the provider says nothing usable: Deepgram exposes no gender at all,
+   * ElevenLabs' catalog is models rather than voices, and Google reports
+   * NEUTRAL for some voices. Treat absent as "unknown" and keep the entry — as
+   * "no match" it would empty those pickers.
+   */
+  gender?: string;
+}
+
+/** Params for the shared TTS catalog query — only some providers use `languageCode`/`voiceProvider`. */
+export interface TtsCatalogParams {
+  provider: string;
+  languageCode?: string;
+  voiceProvider?: string;
+}
+
+/**
+ * Outcome of testing a saved LLM config against its provider.
+ *
+ * `ok: false` is a normal 200 response, not an HTTP error: a model that has
+ * been retired is exactly what this call exists to report, and `error` carries
+ * the provider's own wording so it can be shown verbatim.
+ */
+export interface LlmPreviewResult {
+  ok: boolean;
+  text: string;
+  latencyMs: number;
+  promptTokens?: number;
+  completionTokens?: number;
+  error?: string;
+  configName: string;
+  provider: string;
+  model: string;
+}
 
 export interface DemographicsSectionProps {
   formMethods: UseFormReturn<FormData>;
@@ -291,7 +487,18 @@ interface BaseLanguage {
   translationCode?: string;
   active?: boolean;
   llmProviderConfig?: ScenarioLanguageConfig;
+  /**
+   * @deprecated Superseded by `sttConfigId` (the Speech Recognition registry).
+   * Still returned by the API as a fallback for rows the registry migration
+   * could not map.
+   */
   sttProviderConfig?: ScenarioLanguageConfig;
+  /** This language's default STT, referencing an stt_configs row. */
+  sttConfigId?: string | null;
+  /** This language's default LLM, referencing an llm_configs row. */
+  llmConfigId?: string | null;
+  /** Catalog model this language runs; supersedes llmConfigId. */
+  llmModelId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -379,6 +586,47 @@ export interface Prompt {
    * the code/language default; a simulation-level temperature still wins.
    */
   temperature?: number;
+  /**
+   * Opt-in: when true, this English main_agent/branching source is auto-translated
+   * into the eligible Indian languages and re-translated when its body changes.
+   * Translations are read-only (shown in the Translations panel, not editable).
+   */
+  translationEnabled?: boolean;
+  /** Count of languages whose translation is currently `ready` (drives the list coverage badge). */
+  translationsReady?: number;
+}
+
+/** Lifecycle of one (prompt, language) translation (mirrors ally-be). */
+export type PromptTranslationStatus = "pending" | "translating" | "ready" | "failed";
+
+/** A stored translation row for a prompt in one language (read-only in the UI). */
+export interface PromptTranslation {
+  id: string;
+  promptId: string;
+  languageId: number;
+  promptVersionId?: string | null;
+  translatedPrompt?: string | null;
+  sourceHash: string;
+  status: PromptTranslationStatus;
+  provider?: string | null;
+  model?: string | null;
+  /** Per-language runtime engine override: which model runs the main agent when this body is served. */
+  runtimeProvider?: string | null;
+  runtimeModel?: string | null;
+  translationPromptVersion?: string | null;
+  error?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** Result of translating a prompt into all eligible languages. */
+export interface TranslatePromptResult {
+  promptId: string;
+  eligible: boolean;
+  reason?: string;
+  translated: number;
+  skipped: number;
+  failed: number;
 }
 
 export type LlmProviderName = "openai" | "gemini" | "anthropic";

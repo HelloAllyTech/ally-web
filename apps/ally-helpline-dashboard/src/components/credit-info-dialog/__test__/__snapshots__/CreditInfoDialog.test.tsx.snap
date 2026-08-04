@@ -25,7 +25,7 @@ exports[`CreditInfoDialog > should match snapshot when fully populated 1`] = `
           class="cds--layer-two cds--modal-content cds--modal-scroll-content--no-fade p-0"
         >
           <div
-            class="bg-white h-fit w-[400px] flex flex-col gap-6 rounded-[8px] items-center justify-center pb-10"
+            class="bg-white h-fit w-[min(400px,95vw)] flex flex-col gap-6 rounded-[8px] items-center justify-center pb-10"
           >
             <svg
               class="cursor-pointer self-end"
@@ -40,7 +40,7 @@ exports[`CreditInfoDialog > should match snapshot when fully populated 1`] = `
               data-testid="mock-no-credit-left-icon"
             />
             <div
-              class="w-[300px] flex  justify-center text-center font-primary text-xl"
+              class="w-[min(300px,90vw)] flex  justify-center text-center font-primary text-xl"
             >
               You have run out of credits. Please purchase more to continue.
             </div>

@@ -154,11 +154,13 @@ export const FORM_FIELD_TYPES = {
     LINGUISTIC_STYLE_SAMPLES: "linguistic_style_samples",
     OPENING_DIALOGUES: "opening_dialogues",
     CHALLENGE_DESCRIPTION: "challenge_description",
+    REMINDERS: "reminders",
     RADIO_BUTTONS: "radio_buttons",
     CHARACTER_PROFILE_SELECTOR: "character_profile_selector",
     BEHAVIOURS_STATES_INSTRUCTION: "behaviours_states_instruction",
     TITLE_TRANSLATIONS: "title_translations",
     MAIN_AGENT_PROMPT_PICKER: "main_agent_prompt_picker",
+    MAIN_PROMPT_VARIANT_PICKER: "main_prompt_variant_picker",
     STATES_EDITOR: "states_editor",
     TITLE_PANEL: "title_panel",
     COMFORT_AUDIO_TRACK: "comfort_audio_track",
@@ -192,6 +194,7 @@ export const FORM_FIELD_IDS = {
   STATE_INSTRUCTIONS: "stateInstructions",
   CUSTOM_FIELDS: "customFields",
   OPENING_STATEMENTS: "openingStatements",
+  REMINDERS: "reminders",
   LANGUAGES_VOICES: "languageVoices",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   AUTO_TERMINATION_STATUS: "autoTerminationStatus",
@@ -203,6 +206,7 @@ export const FORM_FIELD_IDS = {
   ENABLE_FEEDBACK: "enableFeedback",
   OPT_GUARDRAILS: "optGuardrails",
   CURRENT_STATE: "currentState",
+  REMINDERS_ENABLED: "remindersEnabled",
   KNOWLEDGE_SOURCE: "knowledgeSources",
   STATE_NAMES: "stateNames",
   FILLER_ENABLED: "fillerEnabled",
@@ -230,6 +234,7 @@ export const ENHANCE_TYPE = {
   CHARACTER_PROFILE_TEXT: "characterProfileText",
   DESCRIPTION: "description",
   OPENING_STATEMENTS: "openingStatements",
+  REMINDERS: "reminders",
   LINGUISTIC_STYLE_SAMPLES: "linguisticStyleSamples",
   ALLOWED_FILLER_WORDS: "allowedFillerWords",
   KNOWLEDGE_SOURCES: "knowledgeSources",
@@ -247,6 +252,124 @@ export const TEMPERATURE_DEFAULT = 0.7;
 export const TEMPERATURE_MIN = 0;
 export const TEMPERATURE_MAX = 2;
 export const TEMPERATURE_STEP = 0.1;
+
+/**
+ * STT providers ally-ai-learn's `app/stt/factory.py` can construct. Kept in
+ * step with SUPPORTED_STT_PROVIDERS in ally-be — a provider outside this list
+ * raises at agent start, so the registry form must not offer one.
+ */
+export const STT_PROVIDER_OPTIONS = [
+  { value: "deepgram", label: "Deepgram" },
+  { value: "google", label: "Google" },
+  { value: "sarvam", label: "Sarvam" },
+  { value: "elevenlabs", label: "ElevenLabs" },
+];
+
+/**
+ * LLM providers ally-ai-learn's `app/llms/factory.py` can construct. "google"
+ * and "gemini" both build the Gemini client; only "google" is offered here to
+ * keep the picker unambiguous, and existing "gemini" rows still resolve.
+ */
+export const LLM_PROVIDER_OPTIONS = [
+  { value: "openai", label: "OpenAI" },
+  { value: "google", label: "Google (Gemini)" },
+  { value: "ollama", label: "Ollama" },
+  { value: "vllm", label: "vLLM" },
+];
+
+/**
+ * Providers the model catalog can hold — deliberately NOT the same list as
+ * LLM_PROVIDER_OPTIONS above.
+ *
+ * Anthropic is absent from the config list (no llm_configs row uses it) but
+ * belongs here, since prompts can select Claude models. Ollama and vLLM are
+ * self-hosted and only the voice agent can reach them, but they are still
+ * selectable models and must not be lost now that the catalog is the single
+ * list.
+ *
+ * `gemini` rather than `google`: the catalog stores the canonical spelling used
+ * by the voice runtime's LLMProvider enum. ally-be accepts either and
+ * canonicalises on write.
+ */
+export const LLM_CATALOG_PROVIDER_OPTIONS = [
+  { value: "openai", label: "OpenAI" },
+  { value: "gemini", label: "Google (Gemini)" },
+  { value: "anthropic", label: "Anthropic" },
+  { value: "ollama", label: "Ollama" },
+  { value: "vllm", label: "vLLM" },
+];
+
+/** Columns shared by every provider-config registry tab (STT, LLM). */
+export const PROVIDER_CONFIG_COLUMNS = [
+  {
+    id: "configName",
+    label: "Name",
+    accessor: "configName",
+    dataType: cellTypes.normalText,
+    minWidth: 260,
+  },
+  {
+    id: "providerLabel",
+    label: "Provider",
+    accessor: "providerLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 160,
+  },
+  { id: "model", label: "Model", accessor: "model", dataType: cellTypes.normalText, minWidth: 220 },
+  {
+    id: "status",
+    label: "Status",
+    accessor: "status",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+];
+
+/** Columns for the LLM model catalog — the list of models, not of configs. */
+export const LLM_MODEL_CATALOG_COLUMNS = [
+  {
+    id: "label",
+    label: "Name",
+    accessor: "label",
+    dataType: cellTypes.normalText,
+    minWidth: 240,
+  },
+  {
+    id: "providerLabel",
+    label: "Provider",
+    accessor: "providerLabel",
+    dataType: cellTypes.normalText,
+    minWidth: 160,
+  },
+  {
+    id: "model",
+    label: "Model id",
+    accessor: "model",
+    dataType: cellTypes.normalText,
+    minWidth: 240,
+  },
+  {
+    id: "temperature",
+    label: "Temperature",
+    accessor: "temperature",
+    dataType: cellTypes.normalText,
+    minWidth: 140,
+  },
+  {
+    id: "runtimeSupport",
+    label: "Runs in",
+    accessor: "runtimeSupport",
+    dataType: cellTypes.normalText,
+    minWidth: 200,
+  },
+  {
+    id: "status",
+    label: "Status",
+    accessor: "status",
+    dataType: cellTypes.normalText,
+    minWidth: 120,
+  },
+];
 
 // Comfort-audio volume slider (0..1), shown when the Comfort Audio toggle is on.
 export const COMFORT_AUDIO_VOLUME_DEFAULT = 0.3;
@@ -286,6 +409,16 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         id: "selectedMainPromptCode",
         label: "Skill Version",
         type: FORM_FIELD_TYPES.CUSTOM.MAIN_AGENT_PROMPT_PICKER,
+        fullWidth: true,
+        isMandatory: false,
+      },
+      // Per-language choice of Generic (English source) vs Multilingual
+      // (translated) for the selected skill version. Only languages with a
+      // ready translation of that prompt can pick Multilingual.
+      {
+        id: "mainPromptVariantByLanguage",
+        label: "Language handling",
+        type: FORM_FIELD_TYPES.CUSTOM.MAIN_PROMPT_VARIANT_PICKER,
         fullWidth: true,
         isMandatory: false,
       },
@@ -501,6 +634,19 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         promptVariable: "opening_statements",
         enhanceType: ENHANCE_TYPE.OPENING_STATEMENTS,
       },
+      // Plain-text reminders shown to the learner during the live session —
+      // deliberately NOT gated by a promptVariable: unlike Checklist items,
+      // reminders never reach the agent's prompt or AI scoring, so there's no
+      // ai-learn placeholder to gate visibility on. Enhance IS supported
+      // (below) since it only rewrites the field's own content.
+      {
+        id: "reminders",
+        label: "Reminders",
+        type: FORM_FIELD_TYPES.CUSTOM.REMINDERS,
+        fullWidth: true,
+        isMandatory: false,
+        enhanceType: ENHANCE_TYPE.REMINDERS,
+      },
       {
         id: "linguisticStyleSamples",
         label: "Linguistic Style Samples",
@@ -689,6 +835,13 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         tooltipLocation: TooltipLocation.CURRENT_STATE,
       },
+      {
+        id: "remindersEnabled",
+        label: "Reminders",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        tooltipLocation: TooltipLocation.REMINDERS_ENABLED,
+      },
     ] as FormFieldConfig[],
   },
 ];
@@ -852,6 +1005,15 @@ export const SCENARIO_VOICE_COLUMNS = [
     options: [], // Will be populated dynamically from API/existing voices
   },
   {
+    id: "gender",
+    label: "Gender",
+    accessor: "gender",
+    dataType: cellTypes.normalText,
+    minWidth: 140,
+  },
+  {
+    // Read-only summary of config, rendered from the provider's schema. The raw
+    // JSON is edited field-by-field in the side panel, not inline here.
     id: "config",
     label: "Configuration",
     accessor: "config",
@@ -905,18 +1067,25 @@ export const SCENARIO_LANGUAGE_COLUMNS = [
     minWidth: 200,
   },
   {
-    id: "llmProviderConfig",
-    label: "LLM Provider Config",
-    accessor: "llmProviderConfig",
-    dataType: cellTypes.normalText,
-    minWidth: 200,
+    // Picked from the Language Model registry rather than typed as JSON.
+    // `options` is injected at render time — see LanguageManagement.
+    id: "llmModelId",
+    label: "Language Model",
+    accessor: "llmModelId",
+    dataType: cellTypes.dropdown,
+    options: [] as { value: string; label: string }[],
+    minWidth: 240,
   },
   {
-    id: "sttProviderConfig",
-    label: "STT Provider Config",
-    accessor: "sttProviderConfig",
-    dataType: cellTypes.normalText,
-    minWidth: 200,
+    // Picked from the Speech Recognition registry rather than typed as JSON.
+    // `options` is injected at render time from the registry — see
+    // LanguageManagement.
+    id: "sttConfigId",
+    label: "Speech Recognition",
+    accessor: "sttConfigId",
+    dataType: cellTypes.dropdown,
+    options: [] as { value: string; label: string }[],
+    minWidth: 240,
   },
   {
     id: "active",
@@ -941,6 +1110,16 @@ export const PROMPT_COLUMNS = [
     accessor: "name",
     dataType: cellTypes.wrapText,
     minWidth: 500,
+    editable: false,
+  },
+  {
+    // Coverage badge for translation-enabled main_agent/branching prompts;
+    // blank for everything else. Populated in PromptManagement.formatTableData.
+    id: "translationCoverage",
+    label: "Translations",
+    accessor: "translationCoverage",
+    dataType: cellTypes.normalText,
+    minWidth: 160,
     editable: false,
   },
   {
@@ -1154,14 +1333,6 @@ export const TOOLTIPS_TABLE_COLUMNS = [
     accessor: "tipText",
     dataType: cellTypes.wrapText,
     minWidth: 560,
-  },
-  {
-    id: "icon",
-    label: "Icon",
-    accessor: "icon",
-    dataType: cellTypes.emoji_select,
-    options: [],
-    minWidth: 80,
   },
   {
     id: "active",

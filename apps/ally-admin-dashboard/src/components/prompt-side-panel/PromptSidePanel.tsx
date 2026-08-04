@@ -8,7 +8,6 @@ import { useGetPromptUsageQuery, useGetLlmModelsQuery } from "@api";
 import { Refresh, DoubleArrowRight, Copy, Delete, CheckCircle, ArrowDown } from "@assets";
 import { ActionConfirmationPopup, Button } from "@components";
 import { ButtonVariant } from "@components/types";
-import { useCreatePortal } from "@hooks";
 import {
   en,
   MAIN_AGENT_PROMPT_VARIABLE_CATALOG,
@@ -16,12 +15,17 @@ import {
   PROMPT_TEMPERATURE_DEFAULT,
   providerForModel,
 } from "@constants";
+import { useCreatePortal } from "@hooks";
 import { Prompt, LlmProviderName } from "@types";
 
+import PromptTranslationsSection from "./PromptTranslationsSection";
 import {
   getAvailableVariableName,
   normalizeAvailableVariables,
 } from "../../utils/availableVariables";
+
+/** Prompt types whose templates are auto-translated (mirrors ally-be). */
+const TRANSLATABLE_PROMPT_TYPES = new Set(["main_agent", "branching"]);
 
 /**
  * Placeholders that the runtime substitutes but the studio shouldn't
@@ -450,6 +454,7 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         prompt: d.prompt ?? "",
         model: d.model ?? "",
         temperature: typeof d.temperature === "number" ? d.temperature : null,
+        translationEnabled: !!d.translationEnabled,
       }),
     [],
   );
@@ -509,10 +514,29 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
         models: group.models.map(m => ({ ...m, supportsTemperature: true })),
       }));
     }
+    // A prompt carries no declaration of which runtime consumes it — the voice
+    // agent, ally-ai and ally-be all read prompts — so the picker cannot know
+    // where a model will be asked to run. It therefore offers only models EVERY
+    // runtime can execute.
+    //
+    // This matters concretely: ai-learn's factory raises
+    // `Unsupported LLM provider` for Anthropic, so offering a Claude model for
+    // a main-agent prompt would fail the session outright. Ollama and vLLM are
+    // the mirror case — only the voice agent can reach them.
+    //
+    // Derived from each model's `runtimes` rather than a fixed provider list,
+    // so it widens by itself once a provider gains a branch in the remaining
+    // runtimes. Per-prompt runtime metadata would let this narrow to exactly
+    // the consuming runtime; see the LLM-config ADR.
+    const runtimeCount = new Set(llmModels.flatMap(m => m.runtimes)).size;
+    const eligible = llmModels.filter(
+      m => new Set(m.runtimes).size === runtimeCount,
+    );
+
     return PROVIDER_ORDER.map(({ provider, label }) => ({
       provider,
       label,
-      models: llmModels
+      models: eligible
         .filter(m => m.provider === provider)
         .map(m => ({
           value: m.model,
@@ -687,6 +711,10 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
       // time by either the file-sync (meta JSON) or the duplicate endpoint,
       // and prompt management edits should not flip it.
       promptType: formData.promptType ?? selectedPrompt?.promptType,
+      // Opt-in translation flag. Toggling it triggers the same auto-save as any
+      // edit; enabling it kicks off an initial translation server-side.
+      translationEnabled:
+        formData.translationEnabled ?? selectedPrompt?.translationEnabled ?? false,
       // Prompt-level LLM overrides. Empty model / non-numeric temperature are
       // sent as explicit clears ("" / null) so the runtime falls back to the
       // code/language default. Provider is derived from the model. Temperature
@@ -1135,6 +1163,21 @@ export const PromptSidePanel: React.FC<PromptSidePanelProps> = ({
                 </div>
               </Field>
             )}
+
+            {selectedPrompt?.id &&
+              TRANSLATABLE_PROMPT_TYPES.has(
+                selectedPrompt?.promptType ?? formData.promptType ?? "",
+              ) && (
+                <Field label="Translations">
+                  <PromptTranslationsSection
+                    promptId={selectedPrompt.id}
+                    translationEnabled={
+                      formData.translationEnabled ?? selectedPrompt.translationEnabled ?? false
+                    }
+                    onToggleEnabled={value => handleFieldChange("translationEnabled", value)}
+                  />
+                </Field>
+              )}
           </div>
 
           <div className="pb-6" />

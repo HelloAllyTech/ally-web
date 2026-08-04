@@ -1,11 +1,15 @@
 import { FC, useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+
 import { SkeletonText, logger } from "@ally-ui-mono/ui-shared";
 import { useEnhanceContentMutation } from "@api";
 import { WandStars } from "@assets";
 import { EnhanceButtonProps } from "@types";
 
 export const useEnhance = () => {
+  const { t } = useTranslation();
   const [enhancing, setEnhancing] = useState("");
   const [streaming, setStreaming] = useState("");
 
@@ -21,6 +25,20 @@ export const useEnhance = () => {
       }
     };
   }, []);
+
+  /**
+   * Every exit from an enhance attempt has to come through here. A field left
+   * with `enhancing`/`streaming` still pointing at it stays greyed out and
+   * pointer-events-none — i.e. permanently un-enhanceable until remount.
+   */
+  const resetEnhanceState = () => {
+    setEnhancing("");
+    setStreaming("");
+    if (streamIntervalRef.current) {
+      clearInterval(streamIntervalRef.current);
+      streamIntervalRef.current = null;
+    }
+  };
 
   /**
    * Triggers content enhancement for a specific field with streaming effect.
@@ -42,11 +60,18 @@ export const useEnhance = () => {
       setEnhancing(key);
       const response = await enhanceContent({ content: inputText });
 
-      // Simulating API response - replace with actual API call
       const updatedValue = response?.data?.enhanced_content;
 
+      // RTK Query resolves with `{ error }` instead of throwing, so an
+      // unavailable AI service lands here rather than in the catch below. This
+      // used to `return` silently: the wand looked like a dead button, and
+      // nothing reached the counsellor or our logs.
       if (!updatedValue) {
-        setEnhancing("");
+        logger.error(
+          `Enhance returned no content for ${key}: ${JSON.stringify(response?.error ?? null)}`,
+        );
+        resetEnhanceState();
+        toast.error(t("summary.enhanceFailed", "Couldn't enhance this text. Please try again."));
         return;
       }
 
@@ -74,13 +99,9 @@ export const useEnhance = () => {
         }
       }, 50);
     } catch (error) {
-      logger.info(`Error enhancing content:, ${error}`);
-      setEnhancing("");
-      setStreaming("");
-      if (streamIntervalRef.current) {
-        clearInterval(streamIntervalRef.current);
-        streamIntervalRef.current = null;
-      }
+      logger.error(`Error enhancing content: ${error}`);
+      resetEnhanceState();
+      toast.error(t("summary.enhanceFailed", "Couldn't enhance this text. Please try again."));
     }
   };
 

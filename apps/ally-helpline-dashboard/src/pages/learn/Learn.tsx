@@ -126,7 +126,7 @@ export const Learn: FC = () => {
               items={tabs.map(tab => ({ id: tab.id, label: tab.label }))}
               activeId={activeTab}
               onChange={id => handleTabChange(id as LearnTabId)}
-              className="border-none font-primary"
+              className="min-w-0 flex-1 border-none font-primary"
               showCount={false}
             />
 
@@ -305,7 +305,7 @@ export const Learn: FC = () => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="max-h-[calc(100vh-380px)] pt-4 overflow-y-scroll px-[10px] custom-scrollbar"
+          className="max-h-[calc(100dvh-380px)] pt-4 overflow-y-scroll px-[10px] custom-scrollbar"
         >
           {renderContentGrid()}
         </motion.div>
@@ -314,7 +314,7 @@ export const Learn: FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full bg-white max-h-screen overflow-y-hidden p-[10px] pl-0 sm:p-[24px] font-tertiary">
+    <div className="flex flex-col w-full bg-white max-h-dvh overflow-y-hidden p-[10px] pl-0 sm:p-[24px] font-tertiary">
       <PracticeStreakHeatmap className="mb-[24px]" />
       {renderPageHeader()}
       <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>

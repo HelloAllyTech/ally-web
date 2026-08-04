@@ -79,6 +79,11 @@ function SelectedFiltersView<T extends Record<string, any>>({
               const date = new Date(f.value);
               displayValue = isNaN(date.getTime()) ? f.value : format(date, "yyyy-MM-dd");
             }
+          } else if (col?.filterType === "number" && Array.isArray(f.value)) {
+            // Numeric range: "min - max", tolerating an open-ended bound.
+            const [min, max] = f.value;
+            displayValue =
+              min && max ? `${min} - ${max}` : min ? `≥ ${min}` : max ? `≤ ${max}` : "";
           } else if (Array.isArray(f.value)) {
             // For multi-select, show comma-separated labels
             if (col && col.filterOptions) {

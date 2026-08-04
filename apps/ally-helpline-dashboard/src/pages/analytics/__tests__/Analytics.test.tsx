@@ -7,7 +7,7 @@
  * - Basic functionality verification
  */
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { AnalyticsType } from "@constants";
@@ -17,10 +17,16 @@ import { Analytics } from "../Analytics";
 // Mock the API hooks
 const mockGetDashboardUrl = vi.fn();
 const mockGetDashboards = vi.fn();
-// Mutable fixtures so individual tests can vary the dashboards list and the
-// caller's permissions (they drive tab visibility and the Org tab's content).
+// Mutable fixtures so individual tests can vary the dashboards list, the
+// caller's permissions, and the caller's email (dashboards + permission +
+// the internal-Ally-domain check together decide tab visibility and the Org
+// tab's content — see canViewNativeOrgMetrics in Analytics.tsx).
 let mockDashboardsData: any;
 let mockPermissions: string[] = [];
+let mockUserEmail: string | undefined;
+
+const INTERNAL_ALLY_EMAIL = "engineer@helloally.ai";
+const EXTERNAL_ADMIN_EMAIL = "admin@customer-org.com";
 
 vi.mock("@api", () => ({
   useLazyGetDashboardUrlQuery: () => [mockGetDashboardUrl],
@@ -33,29 +39,25 @@ vi.mock("@api", () => ({
   }),
 }));
 
-// Mock the user hook — permissions gate the Organization Metrics content
+// Mock the user hook — email + permissions together gate the Organization
+// Metrics content (the email check is the internal-staff staging gate).
 vi.mock("@hooks", () => ({
-  useUser: () => ({ permissions: mockPermissions }),
+  useUser: () => ({ user: { email: mockUserEmail }, permissions: mockPermissions }),
 }));
 
-// Mock the logger and the ui-shared primitives the Organization Metrics
-// section renders (Tile/skeletons/notification).
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   logger: {
     info: vi.fn(),
   },
-  Tile: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  SkeletonText: () => <div data-testid="skeleton-text" />,
-  SkeletonPlaceholder: ({ className }: any) => (
-    <div data-testid="skeleton-placeholder" className={className} />
-  ),
-  InlineNotification: ({ title, subtitle }: any) => (
-    <div data-testid="inline-notification">
-      {title}
-      {subtitle}
-    </div>
-  ),
-  Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+}));
+
+// Analytics.tsx React.lazy()s this module, which pulls in the real
+// @carbon/charts-react tree. Resolving that dynamic import can blow past
+// findByTestId's default wait under full-suite CPU contention (flaky, not a
+// logic bug) — mock it so this file only exercises Analytics.tsx's own
+// gating logic (tab visibility + native-vs-Metabase content selection).
+vi.mock("../OrganizationMetrics", () => ({
+  default: () => <div data-testid="organization-metrics-section" />,
 }));
 
 // Mock the NoAnalytics asset
@@ -101,6 +103,7 @@ describe("Analytics Component", () => {
     vi.clearAllMocks();
     mockDashboardsData = undefined;
     mockPermissions = [];
+    mockUserEmail = undefined;
   });
 
   afterEach(() => {
@@ -139,7 +142,7 @@ describe("Analytics Component", () => {
       const mainContainer = container.querySelector("div.flex.flex-col.justify-center.m-6");
       expect(mainContainer).toBeInTheDocument();
       expect(mainContainer?.className).toContain("overflow-hidden");
-      expect(mainContainer?.className).toContain("h-[calc(100vh-100px)]");
+      expect(mainContainer?.className).toContain("h-[calc(100dvh-100px)]");
     });
 
     it("should render title with correct styling", () => {
@@ -200,8 +203,11 @@ describe("Analytics Component", () => {
   /**
    * TEST GROUP: Toggle tabs & native Organization Metrics
    * Tab visibility must stay driven by the tenant's registered dashboards
-   * (unchanged from the Metabase-only days); only the Organization Metrics
-   * tab's CONTENT is native now.
+   * (unchanged from the Metabase-only days). The native Organization Metrics
+   * CONTENT is staged to the internal Ally email domain ONLY — the
+   * `view:organization-metrics` permission alone is granted to every
+   * tenant's ADMIN group by a backend migration, so it can't be the only
+   * gate or every customer admin would get the native view immediately.
    */
   describe("Toggle tabs and Organization Metrics", () => {
     const threeDashboards = [
@@ -219,9 +225,10 @@ describe("Analytics Component", () => {
       expect(screen.getByTestId(`toggle-${AnalyticsType.Org}`)).toBeInTheDocument();
     });
 
-    it("renders the native section on the Organization Metrics tab for permitted users", async () => {
+    it("renders the native section on the Organization Metrics tab for internal Ally staff with the permission", async () => {
       mockDashboardsData = threeDashboards;
       mockPermissions = ["view:organization-metrics"];
+      mockUserEmail = INTERNAL_ALLY_EMAIL;
       render(<Analytics />);
       fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
       expect(await screen.findByTestId("organization-metrics-section")).toBeInTheDocument();
@@ -229,23 +236,49 @@ describe("Analytics Component", () => {
       expect(document.querySelector("iframe")).toBeNull();
     });
 
-    it("shows an access notice on the Organization Metrics tab without the permission", async () => {
+    it("keeps the Metabase dashboard on the Organization Metrics tab for external admins, even though they hold the permission", async () => {
       mockDashboardsData = threeDashboards;
+      mockPermissions = ["view:organization-metrics"];
+      mockUserEmail = EXTERNAL_ADMIN_EMAIL;
       render(<Analytics />);
       fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
-      expect(await screen.findByTestId("organization-metrics-no-access")).toBeInTheDocument();
+      // Falls through to the same Metabase fetch every other tab uses
+      await waitFor(() => expect(mockGetDashboardUrl).toHaveBeenCalledWith({ dashboardId: "d3" }));
+      expect(screen.queryByTestId("organization-metrics-section")).toBeNull();
     });
 
-    it("shows the Org tab (and native section) for admins even with no org Metabase dashboard", async () => {
+    it("keeps the Metabase dashboard for internal Ally staff without the permission", async () => {
+      mockDashboardsData = threeDashboards;
+      mockUserEmail = INTERNAL_ALLY_EMAIL;
+      render(<Analytics />);
+      fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
+      await waitFor(() => expect(mockGetDashboardUrl).toHaveBeenCalledWith({ dashboardId: "d3" }));
+      expect(screen.queryByTestId("organization-metrics-section")).toBeNull();
+    });
+
+    it("shows the Org tab (and native section) for staff even with no org Metabase dashboard", async () => {
       mockDashboardsData = [
         { externalId: "d1", analyticsType: AnalyticsType.CallLog },
         { externalId: "d2", analyticsType: AnalyticsType.Simulation },
       ];
       mockPermissions = ["view:organization-metrics"];
+      mockUserEmail = INTERNAL_ALLY_EMAIL;
       render(<Analytics />);
       expect(screen.getByTestId("toggle-items-count").textContent).toBe("3");
       fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
       expect(await screen.findByTestId("organization-metrics-section")).toBeInTheDocument();
+    });
+
+    it("does not add the Org tab for external admins with no org Metabase dashboard, even with the permission", () => {
+      mockDashboardsData = [
+        { externalId: "d1", analyticsType: AnalyticsType.CallLog },
+        { externalId: "d2", analyticsType: AnalyticsType.Simulation },
+      ];
+      mockPermissions = ["view:organization-metrics"];
+      mockUserEmail = EXTERNAL_ADMIN_EMAIL;
+      render(<Analytics />);
+      expect(screen.getByTestId("toggle-items-count").textContent).toBe("2");
+      expect(screen.queryByTestId(`toggle-${AnalyticsType.Org}`)).toBeNull();
     });
 
     it("keeps Metabase tabs untouched for users without the permission", () => {

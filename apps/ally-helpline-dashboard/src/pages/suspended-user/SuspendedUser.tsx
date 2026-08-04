@@ -12,7 +12,7 @@ export const SuspendedUser = () => {
   };
 
   return (
-    <div className="flex  flex-col justify-center  items-center h-screen gap-2">
+    <div className="flex  flex-col justify-center  items-center h-dvh gap-2">
       <div className="border rounded-lg px-16 py-10 flex flex-col justify-center items-center gap-2">
         <SuspendedUserIcon />
         <div className="text-2xl font-secondary">{t("suspended.title")}</div>

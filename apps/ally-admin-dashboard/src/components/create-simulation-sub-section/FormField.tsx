@@ -20,8 +20,10 @@ import { KnowledgeSource } from "../knowledge-source";
 import { LanguageVoiceMapping } from "../language-voice-mapping";
 import { LinguisticStyleSamples } from "../linguistic-style-samples";
 import { MainAgentPromptPicker } from "../main-agent-prompt-picker";
+import { MainPromptVariantPicker } from "../main-prompt-variant-picker";
 import { OpeningDialoguesPanel } from "../opening-dialogues";
 import { RadioButtonGroup } from "../radio-button-group";
+import { RemindersPanel } from "../reminders";
 import { SliderField } from "../slider-field";
 import { StatesEditor } from "../states-editor";
 import { TagSelector } from "../tag-selector";
@@ -131,6 +133,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
               isMandatory={isMandatory}
               allowDeselect={config.allowDeselect}
             />
+            {note && <span className="text-typography-500 text-sm">{note}</span>}
             {errors && (
               <p className="text-destructive-500 text-sm mt-1">{errors[config.id]?.message}</p>
             )}
@@ -276,6 +279,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
             isMandatory={isMandatory}
           />
         );
+      case FORM_FIELD_TYPES.CUSTOM.MAIN_PROMPT_VARIANT_PICKER:
+        return (
+          <MainPromptVariantPicker
+            id={id}
+            label={label}
+            formMethods={formMethods}
+            isMandatory={isMandatory}
+          />
+        );
       case FORM_FIELD_TYPES.CUSTOM.STATES_EDITOR:
         return (
           <StatesEditor id={id} label={label} formMethods={formMethods} isMandatory={isMandatory} />
@@ -300,6 +312,15 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
             label={label}
             placeholder={placeholder}
             maxLength={maxLength}
+            enhanceType={enhanceType}
+            readOnly={readOnly}
+          />
+        );
+      case FORM_FIELD_TYPES.CUSTOM.REMINDERS:
+        return (
+          <RemindersPanel
+            formMethods={formMethods}
+            isMandatory={isMandatory}
             enhanceType={enhanceType}
             readOnly={readOnly}
           />
@@ -383,6 +404,7 @@ export const FormField: FC<FormFieldProps> = ({ config, formMethods, readOnly = 
     FORM_FIELD_TYPES.CUSTOM.TITLE_TRANSLATIONS,
     FORM_FIELD_TYPES.CUSTOM.CHALLENGE_DESCRIPTION,
     FORM_FIELD_TYPES.CUSTOM.LINGUISTIC_STYLE_SAMPLES,
+    FORM_FIELD_TYPES.CUSTOM.REMINDERS,
   ];
 
   // View Details mode: the field content stays visible (accordions above

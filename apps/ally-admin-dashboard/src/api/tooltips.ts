@@ -14,14 +14,12 @@ type TooltipQuery = {
 type CreateTooltipRequest = {
   location: string;
   tipText: string;
-  icon?: string;
   active: boolean;
 };
 
 type UpdateTooltipRequest = {
   location?: string;
   tipText?: string;
-  icon?: string;
   active?: boolean;
 };
 

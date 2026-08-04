@@ -198,6 +198,7 @@
   },
   "user": {
     "creditUsage": "ಕ್ರೆಡಿಟ್ ಬಳಕೆ",
+    "adminConsole": "ಅಡ್ಮಿನ್ ಕನ್ಸೋಲ್",
     "logout": "ಲಾಗ್ ಔಟ್",
     "profileAlt": "ಪ್ರೊಫೈಲ್",
     "dataPolicy": "ಡೇಟಾ ನೀತಿ"
@@ -312,7 +313,18 @@
       "simulationsCompleted": "ಪೂರ್ಣಗೊಂಡ ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು",
       "simulationsCompletedCaption": "ಇಡೀ ಸಂಸ್ಥೆಯ ಒಟ್ಟು",
       "activeUsers": "ಸಕ್ರಿಯ ಬಳಕೆದಾರರು",
-      "activeUsersCaption": "ಕನಿಷ್ಠ ಒಂದು ಸಿಮ್ಯುಲೇಶನ್ ಪೂರ್ಣಗೊಳಿಸಿದವರು"
+      "activeUsersCaption": "ಕನಿಷ್ಠ ಒಂದು ಸಿಮ್ಯುಲೇಶನ್ ಪೂರ್ಣಗೊಳಿಸಿದವರು",
+      "newLearnersOnboarded": "ಹೊಸ ಸೇರ್ಪಡೆಗೊಂಡ ಕಲಿಯುವವರು",
+      "newLearnersOnboardedCaption": "ಈ ಅವಧಿಯಲ್ಲಿ ರಚಿಸಲಾದ ಹೊಸ ಲರ್ನರ್ ಖಾತೆಗಳು",
+      "totalRegisteredLearners": "ಒಟ್ಟು ನೋಂದಾಯಿತ ಕಲಿಯುವವರು",
+      "totalRegisteredLearnersCaption": "ಪ್ರಸ್ತುತ ಸಂಖ್ಯೆ, ಎಲ್ಲಾ ಕಾಲಕ್ಕೂ (ಆಯ್ದ ಅವಧಿಗೆ ಸಂಬಂಧಿಸಿಲ್ಲ)",
+      "avgSessionsPerActiveLearner": "ಪ್ರತಿ ಸಕ್ರಿಯ ಕಲಿಯುವವರಿಗೆ ಸರಾಸರಿ ಸೆಷನ್‌ಗಳು",
+      "avgSessionsPerActiveLearnerCaption": "ಈ ಅವಧಿಯಲ್ಲಿ ಪೂರ್ಣಗೊಂಡ ಸೆಷನ್‌ಗಳು ÷ ಸಕ್ರಿಯ ಕಲಿಯುವವರು",
+      "avgPracticeMinutesPerLearner": "ಪ್ರತಿ ಕಲಿಯುವವರಿಗೆ ಸರಾಸರಿ ಅಭ್ಯಾಸ ನಿಮಿಷಗಳು",
+      "avgPracticeMinutesPerLearnerCaption": "ಈ ಅವಧಿಯ ಅಭ್ಯಾಸ ಸಮಯ ÷ ಸಕ್ರಿಯ ಕಲಿಯುವವರು",
+      "avgDaysToFirstSession": "ಮೊದಲ ಸೆಷನ್‌ಗೆ ಸರಾಸರಿ ದಿನಗಳು",
+      "avgDaysToFirstSessionCaption_one": "ಸೈನ್‌ಅಪ್‌ನಿಂದ ಮೊದಲ ಪೂರ್ಣಗೊಂಡ ಸೆಷನ್‌ವರೆಗೆ, ಈ ಅವಧಿಯಲ್ಲಿ ಸೇರ್ಪಡೆಗೊಂಡ {{count}} ಕಲಿಯುವವರ ಆಧಾರದ ಮೇಲೆ",
+      "avgDaysToFirstSessionCaption_other": "ಸೈನ್‌ಅಪ್‌ನಿಂದ ಮೊದಲ ಪೂರ್ಣಗೊಂಡ ಸೆಷನ್‌ವರೆಗೆ, ಈ ಅವಧಿಯಲ್ಲಿ ಸೇರ್ಪಡೆಗೊಂಡ {{count}} ಕಲಿಯುವವರ ಆಧಾರದ ಮೇಲೆ"
     },
     "charts": {
       "simulationsTrend": "ಕಾಲಾನುಕ್ರಮದಲ್ಲಿ ಪೂರ್ಣಗೊಂಡ ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು",
@@ -324,15 +336,25 @@
         "week": "ವಾರ",
         "month": "ತಿಂಗಳು",
         "simulations": "ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು",
-        "users": "ಬಳಕೆದಾರರು"
-      }
+        "users": "ಬಳಕೆದಾರರು",
+        "newLearners": "ಹೊಸ ಕಲಿಯುವವರು"
+      },
+      "newLearnersTrend": "ಕಾಲಾನುಕ್ರಮದಲ್ಲಿ ಹೊಸ ಸೇರ್ಪಡೆಗೊಂಡ ಕಲಿಯುವವರು",
+      "newLearnersSeries": "ಹೊಸ ಸೇರ್ಪಡೆಗೊಂಡ ಕಲಿಯುವವರು"
     },
     "states": {
       "errorTitle": "ಈ ಚಾರ್ಟ್ ಲೋಡ್ ಆಗಲಿಲ್ಲ",
       "errorSubtitle": "ಡೇಟಾ ಪಡೆಯುವಲ್ಲಿ ಸಮಸ್ಯೆ ಉಂಟಾಯಿತು.",
       "noAccess": "ಸಂಸ್ಥೆಯ ಮೆಟ್ರಿಕ್ಸ್ ಸಂಸ್ಥೆಯ ಅಡ್ಮಿನ್‌ಗಳಿಗೆ ಮಾತ್ರ ಲಭ್ಯವಿದೆ.",
       "retry": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
-      "empty": "ಈ ಅವಧಿಗೆ ಡೇಟಾ ಇಲ್ಲ"
+      "empty": "ಈ ಅವಧಿಗೆ ಡೇಟಾ ಇಲ್ಲ",
+      "notEnoughData": "ಇನ್ನೂ ಸಾಕಷ್ಟು ಡೇಟಾ ಇಲ್ಲ"
+    },
+    "mostUsedSimulations": {
+      "title": "ಹೆಚ್ಚು ಅಭ್ಯಾಸ ಮಾಡಿದ ಸಿಮ್ಯುಲೇಶನ್‌ಗಳು",
+      "caption": "ಆಯ್ದ ಅವಧಿಯಲ್ಲಿ ಪೂರ್ಣಗೊಂಡ ಸೆಷನ್‌ಗಳ ಆಧಾರದ ಮೇಲೆ ಟಾಪ್ ಸನ್ನಿವೇಶಗಳು",
+      "sessions_one": "{{count}} ಸೆಷನ್",
+      "sessions_other": "{{count}} ಸೆಷನ್‌ಗಳು"
     }
   },
   "analytics": {

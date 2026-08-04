@@ -9,10 +9,7 @@ import {
 } from "@livekit/components-react";
 import { motion } from "framer-motion";
 
-import { SessionChecklist } from "./SessionChecklist";
-import { SessionInfoTabs } from "./SessionInfoTabs";
-import { SessionProgress } from "./SessionProgress";
-import { SimulationEvents } from "./SimulationEvents";
+import { SessionSidebar } from "./SessionSidebar";
 import { TurnState } from "./TurnIndicator";
 import {
   SimulationEventType,
@@ -141,71 +138,81 @@ export const SimulationInterface: FC<SimulationInterfaceProps> = ({
   }, [isPaused, agentTurnStatus, debouncedRemoteSpeaking, localParticipant?.isSpeaking]);
 
   const hasStateNames = stateNames.length > 0;
-  const showSessionProgress = hasStateNames || !!(roomData?.timerMode && startTime);
   const sessionReminders: string[] = roomData?.reminders ?? [];
   const sessionDescription: string | undefined = roomData?.description;
   const showSessionInfo = sessionReminders.length > 0 || !!sessionDescription;
 
+  // The sidebar's stepper only needs actual stateNames — a timerMode-only
+  // session with no other content shows no sidebar, since the timer display
+  // itself now lives in the page header (SessionTimeBar), not here.
+  const showSidebar =
+    !isFocusMode &&
+    (showSessionInfo ||
+      hasStateNames ||
+      (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
+      (checklistMode === ChecklistMode.OFF && events?.length > 0));
+
   const renderConnectedContent = () => (
     <>
       <RoomAudioRenderer />
-      <div className="flex md:flex-row flex-col justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
-        <UserCallCard
-          userData={{
-            name: roomData?.remoteParticipant?.name,
-            coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
-          }}
-          isSpeaking={remoteParticipant?.isSpeaking}
-          turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
-          turnIndicatorTranslations={translations?.turnIndicator}
-        />
-        <UserCallCard
-          userData={{
-            name: roomData?.localParticipant?.name || "You",
-            coverImageUrl: roomData?.localParticipant?.coverImageUrl || null,
-          }}
-          isSpeaking={localParticipant.isSpeaking}
-          isMuted={isMuted}
-          turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
-          turnIndicatorTranslations={translations?.turnIndicator}
-        />
-        {!isFocusMode &&
-          (showSessionProgress ||
-            showSessionInfo ||
-            (checklistMode !== ChecklistMode.OFF && checklistItems.length > 0) ||
-            (checklistMode === ChecklistMode.OFF && events?.length > 0)) && (
-            <div className="flex flex-col gap-4 w-full h-full min-h-0 max-h-[40vh] md:max-h-none">
-              {showSessionProgress && (
-                <SessionProgress
-                  stateNames={stateNames}
-                  difficultyLevel={difficultyLevel}
-                  score={score}
-                  startTime={startTime}
-                  maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
-                  isPaused={isPaused}
-                  pausedOffsetMs={pausedOffsetMs}
-                />
-              )}
-              {checklistMode !== ChecklistMode.OFF && checklistItems.length > 0 && (
-                <SessionChecklist
-                  mode={checklistMode}
-                  items={checklistItems}
-                  triggeredEvents={detectedEventIds || []}
-                  translations={translations}
-                />
-              )}
-              {checklistMode === ChecklistMode.OFF && events?.length > 0 && (
-                <SimulationEvents events={events} />
-              )}
-              {showSessionInfo && (
-                <SessionInfoTabs
-                  reminders={sessionReminders}
-                  description={sessionDescription}
-                  translations={translations}
-                />
-              )}
-            </div>
-          )}
+      <div className="flex md:flex-row flex-col-reverse justify-between max-h-[calc(100dvh-180px)] sm:max-h-[calc(100dvh-220px)] lg:max-h-[calc(100dvh-280px)] gap-2 sm:gap-4 w-full h-full">
+        {showSidebar && (
+          <div
+            data-testid="simulation-sidebar-column"
+            className="order-3 md:order-2 flex flex-col gap-4 w-full md:w-[280px] lg:w-[320px] xl:w-[360px] shrink-0 h-full min-h-0 max-h-[45vh] md:max-h-none"
+          >
+            <SessionSidebar
+              reminders={sessionReminders}
+              description={sessionDescription}
+              stateNames={stateNames}
+              difficultyLevel={difficultyLevel}
+              score={score}
+              startTime={startTime}
+              maxTimeSeconds={roomData?.timerMode ? maxTimeSeconds : undefined}
+              isPaused={isPaused}
+              pausedOffsetMs={pausedOffsetMs}
+              checklistMode={checklistMode}
+              checklistItems={checklistItems}
+              detectedEventIds={detectedEventIds}
+              events={events}
+              translations={translations}
+            />
+          </div>
+        )}
+
+        <div
+          data-testid="simulation-middle-column"
+          className="order-1 relative flex-1 min-w-0 h-full min-h-[240px]"
+        >
+          <UserCallCard
+            userData={{
+              name: roomData?.remoteParticipant?.name,
+              coverImageUrl: roomData?.remoteParticipant?.coverImageUrl,
+            }}
+            isSpeaking={remoteParticipant?.isSpeaking}
+            turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? remoteTurnState : undefined}
+            turnIndicatorTranslations={translations?.turnIndicator}
+          />
+          {/* Learner's own self-view: a small inlaid picture-in-picture bubble
+              over the AI card, like a WhatsApp/Zoom video call, rather than an
+              equal-size card of its own. */}
+          <div
+            data-testid="simulation-pip-self-view"
+            className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 lg:w-36 lg:h-44 rounded-xl overflow-hidden border-2 border-[#3D4045] shadow-[0_2px_12px_rgba(0,0,0,0.45)]"
+          >
+            <UserCallCard
+              userData={{
+                name: roomData?.localParticipant?.name || "You",
+                coverImageUrl: roomData?.localParticipant?.coverImageUrl || null,
+              }}
+              isSpeaking={localParticipant.isSpeaking}
+              isMuted={isMuted}
+              turnState={FEATURE_FLAGS_MAP.TURN_INDICATOR_FLAG ? localTurnState : undefined}
+              turnIndicatorTranslations={translations?.turnIndicator}
+              compact
+            />
+          </div>
+        </div>
       </div>
     </>
   );

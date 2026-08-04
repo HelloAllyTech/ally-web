@@ -18,7 +18,6 @@ const mockTooltip = {
   id: "tooltip-uuid-1",
   location: TooltipLocation.LOGIN_BUTTON,
   tipText: "Click on the login button to see more",
-  icon: "😀",
 };
 
 describe("AppTooltip", () => {
@@ -70,24 +69,7 @@ describe("AppTooltip", () => {
     expect(screen.getByText("Click me")).toBeInTheDocument();
   });
 
-  it("shows tooltip text with icon on hover", async () => {
-    render(
-      <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
-        <button>Click me</button>
-      </AppTooltip>,
-    );
-
-    await userEvent.hover(screen.getByText("Click me"));
-
-    expect(await screen.findByText("😀 Click on the login button to see more")).toBeInTheDocument();
-  });
-
-  it("shows tooltip text without emoji when icon is not set", async () => {
-    mockUseGetActiveTooltipsQuery.mockReturnValue({
-      data: [{ ...mockTooltip, icon: null }],
-      isLoading: false,
-    });
-
+  it("shows tooltip text on hover", async () => {
     render(
       <AppTooltip location={TooltipLocation.LOGIN_BUTTON}>
         <button>Click me</button>

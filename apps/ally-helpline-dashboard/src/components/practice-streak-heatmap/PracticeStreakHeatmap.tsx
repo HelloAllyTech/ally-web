@@ -154,7 +154,10 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
   // Compact recent-history strip shown in the collapsed header. The full,
   // scrollable timeline lives in the expandable panel below.
   const renderPreviewStrip = () => (
-    <div className="hidden min-w-0 flex-1 justify-end overflow-hidden md:flex" aria-hidden>
+    <div
+      className="hidden min-w-0 max-w-full flex-1 justify-end overflow-hidden md:flex"
+      aria-hidden
+    >
       <div className="flex gap-[3px]">
         {cells.slice(-PREVIEW_CELLS).map(cell => {
           const level = getHeatmapLevel(cell.minutes, groupBy);
@@ -316,11 +319,17 @@ const PracticeStreakHeatmap: FC<PracticeStreakHeatmapProps> = ({
         <div
           id="practice-streak-detail"
           className={cn(
-            "grid transition-[grid-template-rows] duration-300 ease-out",
+            // grid-cols-[minmax(0,1fr)] caps the track to the container's own
+            // width — without it, a grid track sizes to its content's
+            // max-content width (the full, un-scrolled timeline can be
+            // thousands of px wide), pushing the whole section past the
+            // viewport instead of leaving the scroll to the inner
+            // overflow-x-auto div.
+            "grid w-full grid-cols-[minmax(0,1fr)] transition-[grid-template-rows] duration-300 ease-out",
             expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
           )}
         >
-          <div className="min-h-0 overflow-hidden" aria-hidden={!expanded}>
+          <div className="min-h-0 min-w-0 overflow-hidden" aria-hidden={!expanded}>
             <div className="pt-4">
               {renderTimeline()}
               {renderLegend()}

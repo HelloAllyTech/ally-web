@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -11,7 +11,6 @@ import {
   useGetSummaryFieldsQuery,
   useUpdateCallSummaryMutation,
   useRetrySummaryMutation,
-  useGetTagsMutation,
   useGetLocationsQuery,
   useLazySearchLocationsQuery,
   useUpdateCallSummaryNotesMutation,
@@ -19,13 +18,21 @@ import {
   useUpsertCustomFieldValuesMutation,
 } from "@api";
 import { Assessment, PageNotFoundIllustration, Warning } from "@assets";
-import { Accordion, Button, InfoBanner, FallbackUI } from "@components";
+import { Accordion, Button, InfoBanner, FallbackUI, SaveStatus } from "@components";
 import { LanguageMap, Permissions, ROUTES } from "@constants";
 import { FeedbackDialog } from "@containers";
-import { useEnhance, useDebounce, useCustomFieldsEnabled } from "@hooks";
+import {
+  CUSTOM_CHANNEL,
+  SUMMARY_CHANNEL,
+  useCustomFieldsEnabled,
+  useDebounce,
+  useEnhance,
+  useFieldAutosave,
+} from "@hooks";
+import type { PendingEdits } from "@hooks";
 import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import { RootState } from "@store";
-import { ChatSummaryStatus, SessionType, SummaryFieldKey, Tag } from "@types";
+import { ChatSummaryStatus, SessionType, SummaryFieldKey } from "@types";
 import { CustomFieldEditPermission, CustomFieldValue } from "@types";
 import { getEstimatedSummaryGenerationTime, getFormattedDateTime, hasPermissions } from "@utils";
 
@@ -33,7 +40,7 @@ import { SummaryLoading } from ".";
 import SummaryFieldInput from "./SummaryFieldInput";
 import { getSummaryFields, getSummarySections, labelShownSections } from "../constants";
 import { CallSummaryProps, FieldType, SummaryField, SummarySectionKey } from "../types";
-import { getSectionFields, summaryHasChanges } from "../utils";
+import { getSectionFields } from "../utils";
 
 // TODO: Keep it outside the pages since two pages are using this componentß
 
@@ -67,21 +74,17 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   const navigate = useNavigate();
 
-  const { data: visibleFields, isLoading: isGetSummaryFieldsLoading } = useGetSummaryFieldsQuery(
-    undefined,
-    {
-      skip: !hasPermissions(permissions, Permissions.VIEW_SUMMARY_FIELDS),
-    },
-  );
-  const [updateCallSummary, { isLoading: isUpdateLoading }] = useUpdateCallSummaryMutation();
+  const { data: visibleFields } = useGetSummaryFieldsQuery(undefined, {
+    skip: !hasPermissions(permissions, Permissions.VIEW_SUMMARY_FIELDS),
+  });
+  const [updateCallSummary] = useUpdateCallSummaryMutation();
   const [retrySummary, { isLoading: isRetrying }] = useRetrySummaryMutation();
-  const [getTags, { isLoading: isGetTagsLoading }] = useGetTagsMutation();
-  const { data: locations, isLoading: isGetLocationsLoading } = useGetLocationsQuery();
-  const [searchLocations, { isLoading: isSearchLocationsLoading }] = useLazySearchLocationsQuery();
+  const { data: locations } = useGetLocationsQuery();
+  const [searchLocations] = useLazySearchLocationsQuery();
   const [updateCallSummaryNotes, { isLoading: isUpdateNotesLoading }] =
     useUpdateCallSummaryNotesMutation();
 
-  const { enhancing, EnhanceButton, EnhancementLoadingSkeleton, isEnhanceLoading } = useEnhance();
+  const { enhancing, EnhanceButton, EnhancementLoadingSkeleton } = useEnhance();
 
   // Custom field state
   const { data: customFieldsEnabled } = useCustomFieldsEnabled();
@@ -91,13 +94,10 @@ const CallSummary: FC<CallSummaryProps> = ({
   });
   const [upsertCustomFieldValues] = useUpsertCustomFieldValuesMutation();
   const [customLocalValues, setCustomLocalValues] = useState<Record<string, string | null>>({});
-  // Fields the user has actually edited in this visit. Saving must only ever
-  // send these — diffing customLocalValues against the live customFieldValues
-  // cache instead would re-include any field whose server value drifted for a
-  // reason unrelated to this user (another editor, a background AI fill) and
-  // silently write the stale locally-seeded value back over it.
-  const [dirtyFieldIds, setDirtyFieldIds] = useState<Set<string>>(new Set());
   const seededChatIdRef = useRef<number | null>(null);
+  // The chat whose summary is currently loaded into summaryData. Seeding is
+  // keyed on this, not on summaryStatus — see the seeding effect below.
+  const seededSummaryChatIdRef = useRef<number | null>(null);
 
   // Seed local edit state once per chat. Re-seeding on every customFieldValues
   // change would clobber the user's in-progress edits: a background refetch
@@ -110,17 +110,9 @@ const CallSummary: FC<CallSummaryProps> = ({
         initial[f.fieldDefinitionId] = f.value ?? null;
       });
       setCustomLocalValues(initial);
-      setDirtyFieldIds(new Set());
       seededChatIdRef.current = chatId;
     }
   }, [customFieldValues, chatId]);
-
-  const handleCustomFieldChange = (fieldDefinitionId: string, value: string | null) => {
-    setCustomLocalValues(prev => ({ ...prev, [fieldDefinitionId]: value }));
-    setDirtyFieldIds(prev => new Set(prev).add(fieldDefinitionId));
-  };
-
-  const hasCustomFieldsChanged = () => dirtyFieldIds.size > 0;
 
   // Determine if editing should be allowed
   // If canEditSummary is explicitly false (from ConsolidatedLogs), respect that
@@ -155,19 +147,118 @@ const CallSummary: FC<CallSummaryProps> = ({
     (canEditCustomFields !== false &&
       (hasAdminEditableCustomFields || hasCounsellorEditableCustomFields));
 
-  const isLoading =
-    isGetSummaryFieldsLoading ||
-    isSummaryLoading ||
-    isUpdateLoading ||
-    isEnhanceLoading ||
-    isGetTagsLoading ||
-    isGetLocationsLoading ||
-    isSearchLocationsLoading;
+  // Write the pending edits. Each channel goes to its own endpoint, and only the
+  // keys the counsellor actually touched are sent — the backend merges the
+  // summary patch, so an untouched field keeps whatever the server has (an
+  // AI-filled value, or a regeneration that landed mid-edit).
+  const persistEdits = useCallback(
+    async (pending: PendingEdits) => {
+      const summaryPatch: Record<string, unknown> = { ...(pending[SUMMARY_CHANNEL] ?? {}) };
+      if (SummaryFieldKey.Tags in summaryPatch) {
+        // The field holds comma-separated text; the API takes tag names and
+        // rates them server-side, after the write.
+        summaryPatch[SummaryFieldKey.Tags] = String(summaryPatch[SummaryFieldKey.Tags] ?? "")
+          .split(",")
+          .map(tag => tag.trim())
+          .filter(Boolean);
+      }
+      const customValues = Object.entries(pending[CUSTOM_CHANNEL] ?? {}).map(
+        ([fieldDefinitionId, value]) => ({
+          fieldDefinitionId,
+          // Coalesce to null, not undefined: a cleared field has to reach the
+          // backend as an explicit null to be cleared, and JSON.stringify drops
+          // undefined keys.
+          value: (value as string | null) ?? null,
+        }),
+      );
+
+      await Promise.all([
+        Object.keys(summaryPatch).length > 0
+          ? updateCallSummary({ chatId, data: { summary: summaryPatch } }).unwrap()
+          : Promise.resolve(),
+        customValues.length > 0
+          ? upsertCustomFieldValues({ chatId, values: customValues }).unwrap()
+          : Promise.resolve(),
+      ]);
+
+      if (customValues.length > 0) {
+        // Let a parent list reflect the edit on its row immediately; the list
+        // only refetches its current page, so rows elsewhere would stay stale.
+        onCustomFieldValuesSaved?.(chatId, customValues);
+      }
+    },
+    [chatId, updateCallSummary, upsertCustomFieldValues, onCustomFieldValuesSaved],
+  );
+
+  // Autosave. Scribe used to hold every edit in component state until the
+  // counsellor pressed Save, so switching tabs, closing the sidebar or
+  // navigating away threw the work away silently. Edits now reach the server
+  // within a second of typing, and the Save button is a force-flush.
+  const autosave = useFieldAutosave({
+    onPersist: persistEdits,
+    enabled: canSave,
+  });
+
+  // Switching sessions must drop the previous session's values *immediately*,
+  // before its replacement has loaded — otherwise the form still holds session
+  // A's values under session B's chatId, and a save writes A's summary onto B.
+  //
+  // Initialised to the mounting chatId so this does not fire on mount: the two
+  // seeding effects populate state on mount and a reset would wipe them. Hosts
+  // that swap sessions by remounting (the sidebar keys on session id) flush
+  // pending edits on unmount instead, against the session they belong to.
+  const resetChatIdRef = useRef<number | null>(chatId);
+  useEffect(() => {
+    if (resetChatIdRef.current === chatId) return;
+    resetChatIdRef.current = chatId;
+    setSummaryData(null);
+    setCustomLocalValues({});
+    autosave.reset();
+    seededChatIdRef.current = null;
+  }, [chatId, autosave]);
+
+  const handleCustomFieldChange = (fieldDefinitionId: string, value: string | null) => {
+    setCustomLocalValues(prev => ({ ...prev, [fieldDefinitionId]: value }));
+    autosave.edit(CUSTOM_CHANNEL, fieldDefinitionId, value);
+  };
+
+  const handleSummaryFieldChange = (key: string, value: unknown) => {
+    setSummaryData(prev => ({ ...prev, [key]: value }));
+    autosave.edit(SUMMARY_CHANNEL, key, value);
+  };
 
   useEffect(() => {
+    // Never seed from a summary that belongs to a different chat. RTK Query can
+    // hand back another session's cached payload for a render after chatId
+    // changes, and the id check is what stops those values being adopted (and
+    // then saved) under the new chat's id.
+    if (callSummary?.id != null && callSummary.id !== chatId) return;
+
+    // A different chat than the one currently loaded: take the server copy
+    // wholesale. Merging would be wrong here — the "edits to preserve" belong
+    // to the session we just navigated away from.
+    const isNewChat = seededSummaryChatIdRef.current !== chatId;
+
+    // Merge the generated summary into state without discarding edits that
+    // haven't reached the server yet. Untouched fields take the generated value;
+    // fields still pending in the autosave queue are kept, so an async
+    // generation landing mid-keystroke can't wipe what the user just typed.
+    // (Already-written edits need no protection — the server copy *is* them.)
+    const seedPreservingEdits = (generated: Record<string, unknown>) => {
+      setSummaryData(prev => {
+        if (isNewChat || !prev) return generated;
+        const merged = { ...generated };
+        for (const key of Object.keys(autosave.getPending()[SUMMARY_CHANNEL] ?? {})) {
+          if (key in prev) merged[key] = prev[key];
+        }
+        return merged;
+      });
+      seededSummaryChatIdRef.current = chatId;
+    };
+
     if (callSummary?.summaryStatus === ChatSummaryStatus.SUCCESS) {
       const tags = callSummary.details.summary?.tags;
-      setSummaryData({
+      seedPreservingEdits({
         ...callSummary.details.summary,
         tags: tags?.map(({ tag }) => tag).join(", "),
       });
@@ -184,13 +275,17 @@ const CallSummary: FC<CallSummaryProps> = ({
       // dead-end error screen.
       const existing = callSummary.details?.summary;
       const tags = existing?.tags;
-      setSummaryData({
+      seedPreservingEdits({
         ...(existing ?? {}),
         tags: tags?.map(({ tag }) => tag).join(", ") ?? "",
       });
       setCanShowSummary(true);
     }
-  }, [callSummary?.summaryStatus, isInSidebar]);
+    // chatId is a dependency because summaryStatus alone never changes when the
+    // user switches between two sessions that have both finished generating —
+    // the effect wouldn't fire, and the previous session's summary would stay
+    // in the form.
+  }, [callSummary?.summaryStatus, callSummary?.id, chatId, isInSidebar]);
 
   useEffect(() => {
     if (initialNotes?.length > 0) {
@@ -278,7 +373,7 @@ const CallSummary: FC<CallSummaryProps> = ({
             <EnhanceButton
               fieldName={field.key}
               inputText={value}
-              updateValue={text => setSummaryData(prev => ({ ...prev, [field.key]: text }))}
+              updateValue={text => handleSummaryFieldChange(field.key, text)}
             />
           </span>
         </Tooltip>
@@ -296,7 +391,7 @@ const CallSummary: FC<CallSummaryProps> = ({
             : undefined
         }
         showLabel={labelShownSections?.includes(field.sectionKey)}
-        onChange={(key, val) => setSummaryData(prev => ({ ...prev, [key]: val }))}
+        onChange={handleSummaryFieldChange}
         onSearch={onHandleSearch}
         isEnhancing={isEnhancing}
         enhanceStartAdornment={isEnhancing ? EnhancementLoadingSkeleton : undefined}
@@ -305,60 +400,22 @@ const CallSummary: FC<CallSummaryProps> = ({
     );
   };
 
-  const hasDataChanged = () => summaryHasChanges(callSummary?.details?.summary, summaryData);
-
   const navigateToCallLogs = () => {
     navigate(ROUTES.SCRIBE_LOGS, { state: { refetch: true } });
   };
 
+  /**
+   * Save is now a force-flush: edits are already being written as they're made,
+   * so this only pushes out whatever is still inside the debounce window and
+   * then moves the counsellor on. A failed flush must NOT fall through to
+   * postProcess/navigate as if it worked — the edit would live on in component
+   * state, still looking saved on screen, while the DB keeps the old value.
+   */
   const handleSave = async () => {
-    // Track whether any persistence step failed. A failed save must NOT fall
-    // through to postProcess/navigate as if it succeeded — otherwise the edit
-    // only lives in local component state (the field still *looks* updated on
-    // screen) while the DB, and anything that reads it like the call-logs
-    // table column, keep the old value with no error shown. See handleSave's
-    // two catch blocks below.
-    let saveFailed = false;
-    if (hasDataChanged()) {
-      const tags = summaryData?.tags?.split(", ");
-      let tagsInput: Tag[] = [];
-      if (tags?.length > 0) {
-        const response = await getTags({ tags });
-        if (response.error) {
-          logger.info(`Error getting tags: ${response.error}`);
-        } else if (response.data) {
-          tagsInput = response.data;
-        }
-      }
-      try {
-        await updateCallSummary({
-          chatId,
-          data: { summary: { ...summaryData, tags: tagsInput } },
-        }).unwrap();
-      } catch (error) {
-        logger.info(`Error updating call summary:, ${error}`);
-        saveFailed = true;
-      }
-    }
-    if (hasCustomFieldsChanged()) {
-      const changedFields = Array.from(dirtyFieldIds).map(fieldDefinitionId => ({
-        fieldDefinitionId,
-        value: customLocalValues[fieldDefinitionId] ?? undefined,
-      }));
-      try {
-        await upsertCustomFieldValues({ chatId, values: changedFields }).unwrap();
-        setDirtyFieldIds(new Set());
-        // Let a parent list reflect the edit on its row immediately; the list
-        // only refetches its current page, so rows elsewhere would stay stale.
-        onCustomFieldValuesSaved?.(chatId, changedFields);
-      } catch (error) {
-        logger.info(`Error saving custom field values: ${error}`);
-        saveFailed = true;
-      }
-    }
-    if (saveFailed) {
-      // Surface the failure and keep the (still-dirty) edits so the user can
-      // retry, instead of silently navigating away as though the save worked.
+    try {
+      await autosave.flush();
+    } catch {
+      // The edits stay pending so the next flush retries them.
       toast.error(t("summary.saveFailed", "Couldn't save your changes. Please try again."));
       return;
     }
@@ -370,7 +427,6 @@ const CallSummary: FC<CallSummaryProps> = ({
         setShowFeedbackDialog(true);
       }
     }
-    return;
   };
 
   const handleRetrySummary = async () => {
@@ -407,7 +463,7 @@ const CallSummary: FC<CallSummaryProps> = ({
 
   if (canShowSummary && isSummaryLoading) {
     return (
-      <div className="flex justify-center items-center h-[calc(100vh-80px)]">
+      <div className="flex justify-center items-center h-[calc(100dvh-80px)]">
         <Loading withOverlay={false} />
       </div>
     );
@@ -534,14 +590,19 @@ const CallSummary: FC<CallSummaryProps> = ({
         </div>
 
         {canSave && (
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
+            {/* Autosave is invisible unless we say so; without this the
+                counsellor has no way to tell a written edit from a pending one. */}
+            <SaveStatus state={autosave.saveState} />
             <Button
               onClick={handleSave}
-              disabled={
-                isLoading || (isInSidebar && !hasDataChanged() && !hasCustomFieldsChanged())
-              }
+              // Only the save itself gates this. It used to also wait on the
+              // locations and location-search queries, so a slow or failed
+              // /locations call left Save permanently greyed out with no
+              // explanation — read by counsellors as "I can't save".
+              disabled={autosave.saveState === "saving" || (isInSidebar && !autosave.isDirty)}
             >
-              {isUpdateLoading || isGetTagsLoading ? t("summary.saving") : t("summary.save")}
+              {autosave.saveState === "saving" ? t("summary.saving") : t("summary.save")}
             </Button>
           </div>
         )}

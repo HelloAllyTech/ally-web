@@ -25,13 +25,16 @@ export enum Permissions {
   VIEW_ROLEPLAY_SPECS = "view:roleplay-specs",
   EDIT_ROLEPLAY_SPEC = "edit:roleplay-spec",
   EDIT_ROLEPLAY_COPILOT = "edit:roleplay-copilot",
-  VIEW_ROLEPLAY_REHEARSALS = "view:roleplay-rehearsals",
-  EDIT_ROLEPLAY_REHEARSALS = "edit:roleplay-rehearsals",
   VIEW_BLOGS = "view:blogs",
   EDIT_BLOG = "edit:blog",
   DELETE_BLOG = "delete:blog",
   VIEW_AI_LAB = "view:admin:ai-lab",
   EDIT_AI_LAB = "edit:admin:ai-lab",
+  // Product Roadmap. Three tiers because the board is a voting surface, not a CRUD screen:
+  // VIEW = read, VOTE = participate (file/allocate/comment/own views), EDIT = manage.
+  VIEW_PRODUCT_ROADMAP = "view:admin:product-roadmap",
+  VOTE_PRODUCT_ROADMAP = "vote:admin:product-roadmap",
+  EDIT_PRODUCT_ROADMAP = "edit:admin:product-roadmap",
   DELETE_AI_LAB = "delete:admin:ai-lab",
 }
 
@@ -41,6 +44,9 @@ export const SIDEBAR_ITEMS = {
   CHARACTER_LIBRARY: "character-library",
   USERS: "users",
   SCENARIO_VOICES: "scenario-voices",
+  STT_CONFIGS: "stt-configs",
+  LLM_CONFIGS: "llm-configs",
+  LLM_MODEL_CATALOG: "llm-model-catalog",
   SCENARIO_LANGUAGES: "scenario-languages",
   PROMPTS: "prompts",
   USER_BADGES: "user-badges",
@@ -49,6 +55,7 @@ export const SIDEBAR_ITEMS = {
   TOOLTIPS: "tooltips",
   ANALYTICS: "analytics",
   AGENT_TEST_CASES: "agent-test-cases",
+  PRODUCT_ROADMAP: "product-roadmap",
   COMPETENCIES: "competencies",
   ROLEPLAY_SESSION_LOGS: "roleplay-session-logs",
   ROLEPLAY_STUDIO: "roleplay-studio",

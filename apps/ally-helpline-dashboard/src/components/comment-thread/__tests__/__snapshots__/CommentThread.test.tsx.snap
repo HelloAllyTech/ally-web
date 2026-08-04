@@ -3,7 +3,7 @@
 exports[`CommentThread Component > should match snapshot when rendered 1`] = `
 <DocumentFragment>
   <div
-    class="bg-white rounded-lg p-4 shadow-lg border w-[400px]"
+    class="bg-white rounded-lg p-4 shadow-lg border w-[min(400px,95vw)]"
   >
     <div
       class="text-base font-medium border-b-[0.5px] pb-2 border-border-light"
@@ -157,7 +157,7 @@ exports[`CommentThread Component > should match snapshot when rendered 1`] = `
 exports[`CommentThread Component > should match snapshot with empty comments 1`] = `
 <DocumentFragment>
   <div
-    class="bg-white rounded-lg p-4 shadow-lg border w-[400px]"
+    class="bg-white rounded-lg p-4 shadow-lg border w-[min(400px,95vw)]"
   >
     <div
       class="text-base font-medium border-b-[0.5px] pb-2 border-border-light"

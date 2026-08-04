@@ -201,7 +201,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
     {
       id: 5,
       label: t("postSim.tabs.skillsDemonstrated", "Skills Demonstrated"),
-      content: <SkillsTab sessionId={summaryId} />,
+      content: <SkillsTab sessionId={summaryId} retryMaxReached={retryMaxReached} />,
     },
     {
       id: 1,

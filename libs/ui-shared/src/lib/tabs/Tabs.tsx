@@ -23,8 +23,11 @@ export const Tabs: React.FC<TabsProps> = ({
   tabStyles,
 }) => {
   return (
-    <div className={`border-b border-border-light ${className ?? ""}`} data-testid="tabs">
-      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+    <div
+      className={`overflow-x-auto border-b border-border-light ${className ?? ""}`}
+      data-testid="tabs"
+    >
+      <nav className="-mb-px flex min-w-max space-x-8" aria-label="Tabs">
         {items?.map(item => {
           const isActive = activeId === item.id;
           return (

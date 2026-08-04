@@ -26,7 +26,7 @@ const PeerSessionsDrawer: FC<PeerSessionsDrawerProps> = ({ onClose, scenarioId }
       open
       onClose={onClose}
       title={t("learn.scenario.peerSessions.title", "Watch how peers handled this")}
-      drawerClassName="w-[46vw] min-w-[420px] max-w-[640px]"
+      drawerClassName="w-[46vw] md:min-w-[420px] max-w-[640px]"
       bodyClassName="h-full overflow-y-auto"
     >
       <div className="flex w-full flex-col items-center gap-4 px-4 py-4 sm:px-6">

@@ -22,7 +22,7 @@ const ChecklistSkeleton: FC = () => {
       <div className="w-full bg-gray-200 rounded-full h-3" />
 
       {/* Checklist Items Skeleton */}
-      <div className="flex flex-col gap-3 max-h-[calc(100vh-400px)] overflow-y-scroll custom-scrollbar">
+      <div className="flex flex-col gap-3 max-h-[calc(100dvh-400px)] overflow-y-scroll custom-scrollbar">
         {[...Array(9)].map((_, index) => (
           <div
             key={index}
@@ -39,7 +39,7 @@ const ChecklistSkeleton: FC = () => {
 
 export const Checklist: FC<ChecklistProps> = ({
   sessionId,
-  className = "max-h-[calc(100vh-400px)]",
+  className = "max-h-[calc(100dvh-400px)]",
 }) => {
   const { i18n, t } = useTranslation();
   const { data, isLoading, isError } = useGetSimulationChecklistQuery(

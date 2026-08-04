@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Mic } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -11,14 +11,21 @@ import {
   useSaveNoteTranscriptMutation,
   useGetCustomFieldDefinitionsQuery,
   useGetSummaryFieldsQuery,
-  useGetTagsMutation,
   useUpdateCallSummaryMutation,
   useUpsertCustomFieldValuesMutation,
 } from "@api";
-import { Drawer } from "@components";
+import { Drawer, SaveStatus } from "@components";
 import { Permissions } from "@constants";
 import { carbonField } from "@constants/carbonFieldStyles";
-import { useAudioRecorder, useDebounce, useScribeVoiceNoteEnabled, useUser } from "@hooks";
+import {
+  CUSTOM_CHANNEL,
+  SUMMARY_CHANNEL,
+  useAudioRecorder,
+  useFieldAutosave,
+  useScribeVoiceNoteEnabled,
+  useUser,
+} from "@hooks";
+import type { PendingEdits } from "@hooks";
 import CustomFieldValuesPanel from "@pages/calls/components/custom-fields/CustomFieldValuesPanel";
 import SummaryFieldInput from "@pages/post-call-summary/components/SummaryFieldInput";
 import {
@@ -35,7 +42,6 @@ import {
   CustomFieldValue,
   SingleSelectOption,
   SummaryFieldKey,
-  Tag,
   VoiceNoteFieldSpec,
   VoiceNoteFieldType,
 } from "@types";
@@ -126,8 +132,6 @@ const encodeVoiceValue = (decoder: VoiceDecoder, value: string): string | null =
   }
 };
 
-type SaveState = "idle" | "saving" | "saved" | "error";
-
 /**
  * Right-side panel for creating a manual scribe note. Renders the tenant's
  * enabled built-in summary template fields (read-only/auto fields disabled)
@@ -157,7 +161,6 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   const [createNote] = useCreateNoteMutation();
   const [upsertValues] = useUpsertCustomFieldValuesMutation();
   const [updateCallSummary] = useUpdateCallSummaryMutation();
-  const [getTags] = useGetTagsMutation();
   const [generateNoteFromAudio, { isLoading: isGeneratingNotes }] =
     useGenerateNoteFromAudioMutation();
   const [saveNoteTranscript] = useSaveNoteTranscriptMutation();
@@ -179,7 +182,6 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   // Built-in summary-field edit state (keyed by SummaryFieldKey).
   const [summaryValues, setSummaryValues] = useState<Record<string, string | null>>({});
   const [noteName, setNoteName] = useState<string | null>(null);
-  const [saveState, setSaveState] = useState<SaveState>("idle");
 
   // Refs survive re-renders and the in-flight create/save races.
   const noteIdRef = useRef<number | null>(null);
@@ -188,12 +190,6 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
   // session; the full text is saved to the note so it shows in the Transcript
   // view later. (The audio itself is never persisted.)
   const transcriptRef = useRef<string>("");
-  const latestValuesRef = useRef<Record<string, string | null>>({});
-  const latestSummaryRef = useRef<Record<string, string | null>>({});
-  // True when there are edits not yet confirmed saved. Guards the close-flush so
-  // an edit made after a prior save (while saveState is still "saved") isn't
-  // dropped when the drawer closes within the debounce window.
-  const dirtyRef = useRef(false);
 
   // Built-in template metadata (translated). Memoised so the editable-key set is stable.
   const translatedFields = useMemo(() => getSummaryFields(t), [t]);
@@ -209,16 +205,15 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       setLocalValues({});
       setSummaryValues({});
       setNoteName(null);
-      setSaveState("idle");
+      autosaveRef.current?.reset();
       noteIdRef.current = null;
       creatingRef.current = null;
       transcriptRef.current = "";
-      latestValuesRef.current = {};
-      latestSummaryRef.current = {};
-      dirtyRef.current = false;
       setVoiceOpen(false);
       resetRecorder();
     }
+    // autosave is intentionally not a dependency: re-running this on every
+    // autosave state change would wipe the form mid-typing.
   }, [open, resetRecorder]);
 
   // Surface recorder problems (denied mic, unsupported browser) as toasts.
@@ -336,104 +331,105 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     return creatingRef.current;
   };
 
-  // Build the built-in summary payload from the editable fields the user filled.
-  // The call-details endpoint REPLACES summary wholesale, so we send the full
-  // accumulated set every save. Tags must be converted to the Tag[] shape.
-  const buildSummaryPayload = async (): Promise<Record<string, unknown> | null> => {
-    const entries = Object.entries(latestSummaryRef.current).filter(
-      ([key, val]) => editableSummaryKeys.has(key as SummaryFieldKey) && val != null && val !== "",
-    );
-    if (entries.length === 0) return null;
-
+  // Shape the pending built-in summary edits for the call-details endpoint.
+  // Only editable template keys are sent; the backend merges the patch, so
+  // nothing else on the note is touched.
+  const buildSummaryPatch = (pending: Record<string, unknown>): Record<string, unknown> => {
     const summary: Record<string, unknown> = {};
-    for (const [key, val] of entries) {
+    for (const [key, value] of Object.entries(pending)) {
+      if (!editableSummaryKeys.has(key as SummaryFieldKey)) continue;
       if (key === SummaryFieldKey.Tags) {
-        const tagList = String(val)
+        // The API takes tag names and rates them server-side, after the write,
+        // so a slow or dead AI service can never hold up this save.
+        summary.tags = String(value ?? "")
           .split(",")
-          .map(s => s.trim())
+          .map(tag => tag.trim())
           .filter(Boolean);
-        if (tagList.length === 0) continue;
-        const response = await getTags({ tags: tagList });
-        const tagsInput: Tag[] = "data" in response && response.data ? response.data : [];
-        summary.tags = tagsInput;
       } else {
-        summary[key] = val;
+        summary[key] = value ?? null;
       }
     }
-    return Object.keys(summary).length > 0 ? summary : null;
+    return summary;
   };
 
-  const persist = async () => {
-    setSaveState("saving");
-    try {
-      const chatId = await ensureNote();
-      const values = Object.entries(latestValuesRef.current).map(([fieldDefinitionId, value]) => ({
-        fieldDefinitionId,
-        value: value ?? undefined,
-      }));
-      const summary = await buildSummaryPayload();
-      await Promise.all([
-        values.length > 0 ? upsertValues({ chatId, values }).unwrap() : Promise.resolve(),
-        summary ? updateCallSummary({ chatId, data: { summary } }).unwrap() : Promise.resolve(),
-      ]);
-      dirtyRef.current = false;
-      setSaveState("saved");
-    } catch {
-      setSaveState("error");
-      creatingRef.current = null; // allow a retry on the next edit
+  const persistEdits = useCallback(
+    async (pending: PendingEdits) => {
+      const values = Object.entries(pending[CUSTOM_CHANNEL] ?? {}).map(
+        ([fieldDefinitionId, value]) => ({
+          fieldDefinitionId,
+          // Coalesce to null, not undefined: a cleared field must be sent as an
+          // explicit null so the backend overwrites it. undefined is dropped by
+          // JSON.stringify, which the backend reads as "leave unchanged" and the
+          // old value refills on reopen.
+          value: (value as string | null) ?? null,
+        }),
+      );
+      const summary = buildSummaryPatch(pending[SUMMARY_CHANNEL] ?? {});
+
+      try {
+        const chatId = await ensureNote();
+        await Promise.all([
+          values.length > 0 ? upsertValues({ chatId, values }).unwrap() : Promise.resolve(),
+          Object.keys(summary).length > 0
+            ? updateCallSummary({ chatId, data: { summary } }).unwrap()
+            : Promise.resolve(),
+        ]);
+      } catch (error) {
+        creatingRef.current = null; // allow a retry on the next edit
+        throw error;
+      }
+    },
+    [upsertValues, updateCallSummary, editableSummaryKeys],
+  );
+
+  const autosave = useFieldAutosave({ onPersist: persistEdits, delayMs: SAVE_DEBOUNCE_MS });
+  // The open-reset effect must not depend on `autosave` (its identity changes
+  // with save state, and re-running would clear the form mid-typing), so reach
+  // it through a ref instead.
+  const autosaveRef = useRef(autosave);
+  autosaveRef.current = autosave;
+
+  // Surface a failed write once, rather than on every keystroke that retries it.
+  const reportedErrorRef = useRef(false);
+  useEffect(() => {
+    if (autosave.saveState === "error" && !reportedErrorRef.current) {
+      reportedErrorRef.current = true;
       toast.error(t("calls.createNote.saveError"));
     }
-  };
-
-  const debouncedPersist = useDebounce(persist, SAVE_DEBOUNCE_MS);
+    if (autosave.saveState === "saved") reportedErrorRef.current = false;
+  }, [autosave.saveState, t]);
 
   const handleValueChange = (fieldDefinitionId: string, value: string | null) => {
-    setLocalValues(prev => {
-      const next = { ...prev, [fieldDefinitionId]: value };
-      latestValuesRef.current = next;
-      return next;
-    });
-    dirtyRef.current = true;
-    debouncedPersist();
+    setLocalValues(prev => ({ ...prev, [fieldDefinitionId]: value }));
+    autosave.edit(CUSTOM_CHANNEL, fieldDefinitionId, value);
   };
 
   const handleSummaryChange = (key: string, value: string) => {
-    setSummaryValues(prev => {
-      const next = { ...prev, [key]: value };
-      latestSummaryRef.current = next;
-      return next;
-    });
-    dirtyRef.current = true;
-    debouncedPersist();
+    setSummaryValues(prev => ({ ...prev, [key]: value }));
+    autosave.edit(SUMMARY_CHANNEL, key, value);
   };
 
   // Write the model's extracted values into the form using each field's decoder,
   // then persist. Returns how many fields were actually filled.
   const applyGeneratedValues = (values: { id: string; value: string }[]): number => {
-    const nextSummary = { ...latestSummaryRef.current };
-    const nextLocal = { ...latestValuesRef.current };
     let filled = 0;
     for (const { id, value } of values) {
       const decoder = voiceDecoders.get(id);
       if (!decoder) continue;
       if (decoder.kind === "builtin") {
-        nextSummary[id] = value;
+        handleSummaryChange(id, value);
         filled += 1;
       } else {
         const encoded = encodeVoiceValue(decoder, value);
         if (encoded != null) {
-          nextLocal[id] = encoded;
+          handleValueChange(id, encoded);
           filled += 1;
         }
       }
     }
     if (filled === 0) return 0;
-    latestSummaryRef.current = nextSummary;
-    latestValuesRef.current = nextLocal;
-    dirtyRef.current = true;
-    setSummaryValues(nextSummary);
-    setLocalValues(nextLocal);
-    void persist();
+    // Dictated values shouldn't sit in the debounce window — write them now.
+    void autosave.flush().catch(() => {});
     return filled;
   };
 
@@ -493,15 +489,10 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     }
   };
 
-  // Flush pending edits before the drawer unmounts (useDebounce cancels its
-  // timer on unmount, so the last keystroke would otherwise be lost).
+  // Flush pending edits before the drawer closes — the debounce timer is
+  // cancelled on unmount, so the last keystroke would otherwise be lost.
   const handleClose = () => {
-    // Flush unsaved edits. dirtyRef is cleared only on a successful save, so
-    // this catches edits made after a prior save that the debounce hasn't
-    // persisted yet.
-    if (dirtyRef.current) {
-      void persist();
-    }
+    void autosave.flush().catch(() => {});
     resetRecorder();
     setVoiceOpen(false);
     onClose();
@@ -518,15 +509,6 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
     t("calls.createNote.voice.processing.extracting"),
     t("calls.createNote.voice.processing.populating"),
   ];
-
-  const saveLabel =
-    saveState === "saving"
-      ? t("calls.createNote.saving")
-      : saveState === "saved"
-        ? t("calls.createNote.saved")
-        : saveState === "error"
-          ? t("calls.createNote.saveError")
-          : "";
 
   const renderBody = () => {
     if (isDefinitionsLoading || isSummaryFieldsLoading) {
@@ -596,7 +578,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
       open={open}
       onClose={handleClose}
       className="font-primary"
-      drawerClassName="h-screen w-[50vw] min-w-[600px] max-w-[95vw]"
+      drawerClassName="h-dvh w-[50vw] md:min-w-[600px] max-w-[95vw]"
       bodyClassName="overflow-y-auto"
       title={noteName ?? t("calls.createNote.title")}
       headerButtons={[
@@ -630,25 +612,7 @@ const CreateNoteDrawer: FC<CreateNoteDrawerProps> = ({ open, onClose }) => {
             onDiscard={handleDiscardVoice}
           />
         )}
-        {saveLabel && (
-          <span
-            className={`inline-flex items-center gap-1.5 font-primary text-xs ${
-              saveState === "error" ? "text-[#da1e28]" : "text-[#525252]"
-            }`}
-            data-testid="create-note-save-status"
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                saveState === "error"
-                  ? "bg-[#da1e28]"
-                  : saveState === "saved"
-                    ? "bg-[#24a148]"
-                    : "bg-[#264D8E]"
-              }`}
-            />
-            {saveLabel}
-          </span>
-        )}
+        <SaveStatus state={autosave.saveState} />
         {renderBody()}
       </div>
     </Drawer>

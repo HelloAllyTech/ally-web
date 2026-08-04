@@ -1,72 +1,104 @@
 import { AgentJoinReliabilityPoint, AnalyticsBucket, SessionOutcomeMix } from "@types";
 
-export type ChartDatum = { group: string; key: string; value: number };
+import { ColorScale, OUTCOME_SCALE, PALETTE, STAT } from "./chartScales";
+
+/**
+ * Carbon plots a `null` value as a gap. Every rate builder here emits null
+ * rather than 0 for a bucket with no sessions, because "no sessions ran" and
+ * "sessions ran and none failed" are different facts and only one of them is
+ * good news. The previous implementation returned 0 on a zero denominator, so a
+ * quiet weekend rendered as a flat healthy 0% failure line.
+ */
+export type ChartDatum = { group: string; key: string; value: number | null };
 export type DonutDatum = { group: string; value: number };
 
-// Reliability line labels, keyed so color scale and data groups stay in sync.
+/** Reliability line labels, keyed so colour scale and data groups stay in sync. */
 export const RELIABILITY_GROUPS = {
   joinFailure: "Join failure %",
   midDrop: "Mid-session drop %",
   freeze: "Suspected freeze %",
 };
 
-export const JOIN_LATENCY_GROUPS = {
-  p50: "p50",
-  p95: "p95",
+/**
+ * Three distinct failure modes, so three distinct hues — but all in the warm
+ * "something is wrong" family rather than spread across the spectrum.
+ */
+export const RELIABILITY_SCALE: ColorScale = {
+  [RELIABILITY_GROUPS.joinFailure]: PALETTE.red,
+  [RELIABILITY_GROUPS.midDrop]: PALETTE.orange,
+  [RELIABILITY_GROUPS.freeze]: PALETTE.gold,
 };
 
-const pct = (num: number, denom: number): number =>
-  denom > 0 ? Math.round((num / denom) * 1000) / 10 : 0;
+export const JOIN_LATENCY_GROUPS = {
+  p50: "p50 (median)",
+  p95: "p95 (slow tail)",
+};
+
+/** Same distribution, so same hue family as the other latency charts. */
+export const JOIN_LATENCY_SCALE: ColorScale = {
+  [JOIN_LATENCY_GROUPS.p50]: STAT.p50,
+  [JOIN_LATENCY_GROUPS.p95]: STAT.p95,
+};
+
+/** Outcome-mix donut uses the shared outcome scale so green/red mean one thing. */
+export const OUTCOME_MIX_SCALE = OUTCOME_SCALE;
+
+/** A rate as a 1-dp percentage, or null when there is nothing to divide by. */
+const pct = (num: number, denom: number): number | null =>
+  denom > 0 ? Math.round((num / denom) * 1000) / 10 : null;
 
 /**
- * Two percentage lines per bucket: join-failure rate (agent never joined) and
- * mid-session drop rate (agent joined then left). Both are rates so they share
- * the % y-axis.
+ * Three failure-rate lines per bucket. All are rates over the same denominator
+ * (sessions in the bucket), so they honestly share one % axis.
+ *
+ * A bucket with no sessions yields null for all three — a visible gap, not a
+ * clean bill of health.
  */
 export function buildReliabilitySeries(points: AgentJoinReliabilityPoint[]): ChartDatum[] {
-  return points.flatMap(p => [
-    {
-      group: RELIABILITY_GROUPS.joinFailure,
-      key: p.bucket,
-      value: p.failureRatePct,
-    },
-    {
-      group: RELIABILITY_GROUPS.midDrop,
-      key: p.bucket,
-      value: pct(p.midSessionDrops, p.totalSessions),
-    },
-    {
-      group: RELIABILITY_GROUPS.freeze,
-      key: p.bucket,
-      value: p.freezeRatePct,
-    },
-  ]);
+  return points.flatMap(p => {
+    const measured = p.totalSessions > 0;
+    return [
+      {
+        group: RELIABILITY_GROUPS.joinFailure,
+        key: p.bucket,
+        value: measured ? p.failureRatePct : null,
+      },
+      {
+        group: RELIABILITY_GROUPS.midDrop,
+        key: p.bucket,
+        value: pct(p.midSessionDrops, p.totalSessions),
+      },
+      {
+        group: RELIABILITY_GROUPS.freeze,
+        key: p.bucket,
+        // Freezes are measured over conversations (sessions that got talking),
+        // not all sessions — a session that never joined cannot freeze.
+        value: p.conversations > 0 ? p.freezeRatePct : null,
+      },
+    ];
+  });
 }
 
 /**
  * Dispatch->join latency p50/p95 (seconds) per bucket. Buckets with no joins
- * (null percentiles) are skipped — latency has no meaningful zero, so the chart
- * shows a gap rather than a fabricated 0 (mirrors the voice-latency chart).
+ * have null percentiles and are skipped — latency has no meaningful zero.
  */
 export function buildJoinLatencySeries(points: AgentJoinReliabilityPoint[]): ChartDatum[] {
   return points.flatMap(p => {
     const rows: ChartDatum[] = [];
     if (p.joinLatencyP50Sec !== null) {
-      rows.push({
-        group: JOIN_LATENCY_GROUPS.p50,
-        key: p.bucket,
-        value: p.joinLatencyP50Sec,
-      });
+      rows.push({ group: JOIN_LATENCY_GROUPS.p50, key: p.bucket, value: p.joinLatencyP50Sec });
     }
     if (p.joinLatencyP95Sec !== null) {
-      rows.push({
-        group: JOIN_LATENCY_GROUPS.p95,
-        key: p.bucket,
-        value: p.joinLatencyP95Sec,
-      });
+      rows.push({ group: JOIN_LATENCY_GROUPS.p95, key: p.bucket, value: p.joinLatencyP95Sec });
     }
     return rows;
   });
+}
+
+/** Total sessions behind the reliability series — the n it is measured over. */
+export function countReliabilitySessions(points: AgentJoinReliabilityPoint[]): number {
+  return points.reduce((sum, p) => sum + p.totalSessions, 0);
 }
 
 /** Outcome mix as donut slices. */

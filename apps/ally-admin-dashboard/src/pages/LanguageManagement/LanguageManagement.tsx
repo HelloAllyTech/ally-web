@@ -1,11 +1,23 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
-import { useGetLanguagesQuery, useCreateLanguageMutation, useUpdateLanguageMutation } from "@api";
+import {
+  useGetLanguagesQuery,
+  useCreateLanguageMutation,
+  useUpdateLanguageMutation,
+  useGetSttConfigsQuery,
+  useGetLlmModelCatalogQuery,
+} from "@api";
 import { NotionTable, ListToolbar, LanguageManagementSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
-import { en, SCENARIO_LANGUAGE_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
+import {
+  buildConfigPickerOptions,
+  en,
+  SCENARIO_LANGUAGE_COLUMNS,
+  SORT_BY,
+  SORT_ORDER,
+} from "@constants";
 import { ScenarioLanguage } from "@types";
 
 export const ScenarioLanguages: React.FC = () => {
@@ -170,44 +182,10 @@ export const ScenarioLanguages: React.FC = () => {
     });
 
     try {
-      let llmConfig = originalLanguage.llmProviderConfig || {};
-      let sttConfig = originalLanguage.sttProviderConfig || {};
-      let parsedValue = value;
-
-      // Handle JSON parsing for config fields
-      if (columnId === "llmProviderConfig") {
-        try {
-          llmConfig = typeof value === "string" ? JSON.parse(value) : value;
-          parsedValue = llmConfig;
-        } catch {
-          toast.error("Invalid JSON in LLM configuration");
-          setLanguages(prev => {
-            const updated = [...prev];
-            if (updated[rowIndex]) {
-              updated[rowIndex] = originalLanguage;
-            }
-            return updated;
-          });
-          return;
-        }
-      }
-
-      if (columnId === "sttProviderConfig") {
-        try {
-          sttConfig = typeof value === "string" ? JSON.parse(value) : value;
-          parsedValue = sttConfig;
-        } catch {
-          toast.error("Invalid JSON in STT configuration");
-          setLanguages(prev => {
-            const updated = [...prev];
-            if (updated[rowIndex]) {
-              updated[rowIndex] = originalLanguage;
-            }
-            return updated;
-          });
-          return;
-        }
-      }
+      // Both legacy jsonb columns are carried through untouched — they are the
+      // fallback a language reverts to if its registry reference is cleared.
+      const llmConfig = originalLanguage.llmProviderConfig || {};
+      const parsedValue = value;
 
       const response = await updateLanguage({
         id: originalLanguage.id,
@@ -216,10 +194,17 @@ export const ScenarioLanguages: React.FC = () => {
           value: columnId === "value" ? parsedValue : originalLanguage.value,
           translationCode:
             columnId === "translationCode" ? parsedValue : originalLanguage.translationCode,
-          llmProviderConfig:
-            columnId === "llmProviderConfig" ? llmConfig : originalLanguage.llmProviderConfig,
-          sttProviderConfig:
-            columnId === "sttProviderConfig" ? sttConfig : originalLanguage.sttProviderConfig,
+          llmProviderConfig: llmConfig,
+          llmModelId:
+            columnId === "llmModelId" ? parsedValue || null : (originalLanguage.llmModelId ?? null),
+          // The legacy jsonb column is no longer editable — carried through so
+          // moving a language onto the registry doesn't destroy the fallback it
+          // would revert to. An empty pick clears the reference.
+          sttProviderConfig: originalLanguage.sttProviderConfig,
+          sttConfigId:
+            columnId === "sttConfigId"
+              ? parsedValue || null
+              : (originalLanguage.sttConfigId ?? null),
           active: columnId === "active" ? parsedValue : originalLanguage.active,
         },
       });
@@ -250,11 +235,50 @@ export const ScenarioLanguages: React.FC = () => {
     }
   };
 
+  // Not activeOnly: a language may still point at a retired config, and the
+  // dropdown has to be able to show it rather than silently reading as unset.
+  const { data: sttConfigs = [] } = useGetSttConfigsQuery();
+  // The LLM picker reads the model catalog, not llm_configs: every config row
+  // was just {provider, model} with no temperature, so the config layer added
+  // nothing for LLM and has been retired in favour of the catalog.
+  // Filtered to what the voice agent can actually build. ai-learn raises
+  // `Unsupported LLM provider` for anything outside its factory branches, so
+  // offering an Anthropic model here would fail every session in that language.
+  const { data: llmModels = [] } = useGetLlmModelCatalogQuery({
+    runtime: "ai-learn",
+  });
+
+  const sttOptions = useMemo(
+    () => buildConfigPickerOptions(sttConfigs, "Platform default"),
+    [sttConfigs],
+  );
+
+  const llmOptions = useMemo(
+    () => [
+      { value: "", label: "Platform default" },
+      ...llmModels.map(model => ({
+        value: model.id,
+        label: model.active ? model.label : `${model.label} (inactive)`,
+      })),
+    ],
+    [llmModels],
+  );
+
+  const languageColumns = useMemo(
+    () =>
+      SCENARIO_LANGUAGE_COLUMNS.map(column => {
+        if (column.id === "sttConfigId") return { ...column, options: sttOptions };
+        if (column.id === "llmModelId") return { ...column, options: llmOptions };
+        return column;
+      }),
+    [sttOptions, llmOptions],
+  );
+
   const formatTableData = languages.map(language => ({
     ...language,
     createdAt: language.createdAt ? new Date(language.createdAt).toLocaleDateString() : "",
-    llmProviderConfig: JSON.stringify(language.llmProviderConfig || {}, null, 2),
-    sttProviderConfig: JSON.stringify(language.sttProviderConfig || {}, null, 2),
+    sttConfigId: language.sttConfigId ?? "",
+    llmModelId: language.llmModelId ?? "",
   }));
 
   const tableFooter = (
@@ -293,7 +317,7 @@ export const ScenarioLanguages: React.FC = () => {
           <NotionTable
             tableData={{
               data: formatTableData,
-              columns: SCENARIO_LANGUAGE_COLUMNS,
+              columns: languageColumns,
             }}
             onRowChange={handleTableRowChange}
             onRowClick={handleLanguageSelect}

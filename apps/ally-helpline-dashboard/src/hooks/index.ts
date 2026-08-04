@@ -20,3 +20,4 @@ export * from "./useScribeVoiceNoteEnabled";
 export * from "./useAudioRecorder";
 export * from "./useNextChallenge";
 export * from "./useVideoWatchProgress";
+export * from "./useFieldAutosave";

@@ -1,5 +1,4 @@
-import { useActiveImprovementRun } from "./useActiveImprovementRun";
-import { useImprovementLiveProgress } from "./useImprovementLiveProgress";
+import { AllySocketStatus, useAllySocket } from "./useAllySocket";
 import { useClickOutside } from "./useClickOutside";
 import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
@@ -18,6 +17,8 @@ import { useTryRoleplayLive } from "./useTryRoleplayLive";
 import { useUser } from "./useUser";
 
 export {
+  useAllySocket,
+  AllySocketStatus,
   useUser,
   useLiveKitRoom,
   useClickOutside,
@@ -32,8 +33,6 @@ export {
   useResolvedPrimaryLanguageId,
   useCopilotStream,
   useTryRoleplayLive,
-  useActiveImprovementRun,
-  useImprovementLiveProgress,
   useSpecAutosave,
   useTracks,
 };

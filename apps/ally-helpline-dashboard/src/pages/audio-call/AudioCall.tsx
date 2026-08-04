@@ -15,8 +15,12 @@ export const AudioCall: FunctionComponent = () => {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode");
   const isMicrophoneMode = mode === "microphone";
-  const isDictationMode = mode === "dictation";
-  const isAudioWebMode = isMicrophoneMode || isDictationMode;
+  // Live dictation is retired. The link is gone from the UI, but a bookmark or
+  // browser-history entry can still land here — recognise it only so the
+  // "Dictation mode is not available" fallback renders instead of a blank
+  // telephony screen. It never starts a session.
+  const isRetiredDictationMode = mode === "dictation";
+  const isAudioWebMode = isMicrophoneMode || isRetiredDictationMode;
 
   const microphoneHook = useMicrophoneMode(mode);
   const cloudTelephonyHook = useCloudTelephonyMode();
@@ -56,9 +60,8 @@ export const AudioCall: FunctionComponent = () => {
     ? (activeChat?.chatId && activeChat?.provider === CallProvider.MICROPHONE) ||
       (Array.isArray(activeChat) &&
         activeChat.length === 0 &&
-        (isDictationMode
-          ? availableChatTypes?.includes(CallType.DICTATION_MODE)
-          : availableChatTypes?.includes(CallType.MICROPHONE_CHAT)))
+        !isRetiredDictationMode &&
+        availableChatTypes?.includes(CallType.MICROPHONE_CHAT))
     : !isLoading &&
       activeChat?.chatId &&
       activeChat?.provider !== CallProvider.MICROPHONE &&
@@ -78,21 +81,20 @@ export const AudioCall: FunctionComponent = () => {
         );
       }
 
-      const hasPermission = isDictationMode
-        ? availableChatTypes?.includes(CallType.DICTATION_MODE)
-        : availableChatTypes?.includes(CallType.MICROPHONE_CHAT);
+      const hasPermission =
+        !isRetiredDictationMode && availableChatTypes?.includes(CallType.MICROPHONE_CHAT);
 
       if (!isLoading && !activeChat?.chatId && !hasPermission) {
         return (
           <FallbackUI
             icon={<NoResults />}
             mainMessage={t("audioCall.fallback.modeNotAvailable", {
-              mode: isDictationMode
+              mode: isRetiredDictationMode
                 ? t("audioCall.fallback.modeDictation")
                 : t("audioCall.fallback.modeMicrophone"),
             })}
             description={t("audioCall.fallback.noPermission", {
-              mode: isDictationMode
+              mode: isRetiredDictationMode
                 ? t("audioCall.fallback.modeDictation").toLowerCase()
                 : t("audioCall.fallback.modeMicrophone").toLowerCase(),
             })}
@@ -139,12 +141,12 @@ export const AudioCall: FunctionComponent = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-50">
+    <div className="h-dvh flex items-center justify-center bg-gray-50">
       <video src={MindfullnessVideo} preload="auto" className="hidden" />
       {getFallbackUI()}
       {shouldShowCallInterface && (
-        <div className="w-screen h-screen flex justify-center items-center">
-          <div className="w-screen h-screen bg-[#171A1A] flex flex-col gap-10 justify-center items-center overflow-hidden">
+        <div className="w-screen h-dvh flex justify-center items-center">
+          <div className="w-screen h-dvh bg-[#171A1A] flex flex-col gap-10 justify-center items-center overflow-hidden">
             <CallInterface
               activeChat={activeChat}
               isUserJoined={isUserJoined}
@@ -155,7 +157,7 @@ export const AudioCall: FunctionComponent = () => {
             />
 
             <CallControls
-              isFocusMode={isDictationMode ? false : isFocusMode}
+              isFocusMode={isFocusMode}
               isPaused={isMuted}
               isEndSessionDisabled={isEndSessionDisabled}
               isFocusButtonDisabled={isFocusButtonDisabled}
@@ -164,7 +166,7 @@ export const AudioCall: FunctionComponent = () => {
               onFocusButtonClick={(isFocused: boolean) => setIsFocusMode(isFocused)}
               onPauseTranscriptionClick={onPauseTranscriptionClick}
               showEndSession={isAudioWebMode}
-              showFocusButton={!isDictationMode}
+              showFocusButton
               showPauseTranscription={isAudioWebMode}
             />
           </div>
@@ -183,7 +185,7 @@ export const AudioCall: FunctionComponent = () => {
               icon={EndSessionIllustration}
             />
           )}
-          {nudgeStatus && (!isAudioWebMode || !socketDisconnectionReason) && !isDictationMode && (
+          {nudgeStatus && (!isAudioWebMode || !socketDisconnectionReason) && (
             <CallSidebar
               showSidebar={isAudioWebMode ? isUserJoined && !isSocketDisconnected : isUserJoined}
               isFocusMode={isFocusMode}

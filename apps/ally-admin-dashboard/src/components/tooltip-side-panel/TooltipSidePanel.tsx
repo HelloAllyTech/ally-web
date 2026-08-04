@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 
 import { TextArea } from "@ally-ui-mono/ui-shared";
 import { DoubleArrowRight } from "@assets";
-import { ActionConfirmationPopup, Button, EmojiPickerComponent, ToggleSwitch } from "@components";
+import { ActionConfirmationPopup, Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
 import { Tooltip } from "@types";
@@ -59,14 +59,9 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
   onClose,
   onSave,
 }) => {
-  // No default emoji — the icon is optional (schema allows null), so an admin can
-  // create an icon-less tooltip instead of every tooltip silently inheriting 😀.
-  const DEFAULT_ICON = "";
-
   const [formData, setFormData] = useState<Partial<Tooltip>>({
     location: "",
     tipText: "",
-    icon: DEFAULT_ICON,
     active: false,
   });
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -77,11 +72,10 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
       setFormData({
         location: fromLocationSlug(selectedTooltip.location),
         tipText: selectedTooltip.tipText,
-        icon: selectedTooltip.icon || DEFAULT_ICON,
         active: selectedTooltip.active,
       });
     } else {
-      setFormData({ location: "", tipText: "", icon: DEFAULT_ICON, active: false });
+      setFormData({ location: "", tipText: "", active: false });
     }
   }, [selectedTooltip, isOpen]);
 
@@ -111,10 +105,9 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
       ? {
           location: fromLocationSlug(selectedTooltip.location),
           tipText: selectedTooltip.tipText,
-          icon: selectedTooltip.icon || DEFAULT_ICON,
           active: selectedTooltip.active,
         }
-      : { location: "", tipText: "", icon: DEFAULT_ICON, active: false };
+      : { location: "", tipText: "", active: false };
 
     const hasChanges = JSON.stringify(formData) !== JSON.stringify(original);
     if (hasChanges) {
@@ -176,15 +169,6 @@ export const TooltipSidePanel: React.FC<TooltipSidePanelProps> = ({
                   {tipTextLength}/200
                 </div>
               </div>
-            </Field>
-
-            <Field label={en.tooltip.icon}>
-              <EmojiPickerComponent
-                buttonText={formData.icon}
-                onEmojiClick={emoji => handleFieldChange("icon", emoji)}
-                className="!w-auto"
-                buttonClassName="!justify-start !w-auto"
-              />
             </Field>
 
             <Field label={en.tooltip.status}>

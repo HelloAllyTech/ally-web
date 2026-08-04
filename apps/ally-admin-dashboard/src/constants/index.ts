@@ -1,4 +1,5 @@
 export * from "./common";
+export * from "./surface";
 export * from "./user";
 export * from "./en";
 export * from "./uiStyles";
@@ -19,3 +20,6 @@ export * from "./ExperienceModeEnum";
 export * from "./UserManagement";
 export * from "./socket";
 export * from "./Guardrails";
+export * from "./voiceProviders";
+export * from "./providerConfigSchema";
+export * from "./providerConfigSchemas";

@@ -1,5 +1,11 @@
 import { ApiEndpoints, HttpMethod, TAG_TYPES } from "@constants";
 import {
+  GlossaryListResponse,
+  LanguageGlossarySection,
+  UpsertGlossarySectionPayload,
+  GenerateGlossaryResult,
+  ConsolidateGlossaryResult,
+  BackfillGlossariesOutcome,
   SessionEvent,
   GetSessionEventsQuery,
   SessionEventResponse,
@@ -28,6 +34,8 @@ import {
   CharacterData,
   DeleteCharacterRequest,
   Prompt,
+  PromptTranslation,
+  TranslatePromptResult,
   GetPromptsQuery,
   LlmModelInfo,
   GetReportsInput,
@@ -62,6 +70,18 @@ import {
   GetReportTranscriptResponse,
   GenerateCoverImageRequest,
   GenerateCoverImageResponse,
+  SttConfig,
+  SttConfigPayload,
+  LlmConfig,
+  LlmConfigPayload,
+  LlmPreviewResult,
+  LlmCatalogModel,
+  LlmCatalogModelPayload,
+  ElevenLabsVoiceSyncResult,
+  ElevenLabsVoiceLookupResult,
+  ElevenLabsBulkSyncSummary,
+  TtsCatalogEntry,
+  TtsCatalogParams,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -299,6 +319,204 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
     }),
 
     /**
+     * Named STT configurations. `activeOnly` is what the pickers pass —
+     * a retired config must stay resolvable for whatever already points at it,
+     * but must not be offered as a new choice.
+     */
+    getSttConfigs: builder.query<SttConfig[], { activeOnly?: boolean } | void>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.STT_CONFIGS,
+        method: HttpMethod.GET,
+        ...(params && params.activeOnly ? { params: { activeOnly: true } } : {}),
+      }),
+      providesTags: [TAG_TYPES.STT_CONFIGS],
+    }),
+
+    createSttConfig: builder.mutation<SttConfig, SttConfigPayload>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.STT_CONFIGS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.STT_CONFIGS],
+    }),
+
+    updateSttConfig: builder.mutation<
+      SttConfig,
+      { id: string; sttConfig: Partial<SttConfigPayload> }
+    >({
+      query: ({ id, sttConfig }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_STT_CONFIG(id),
+        method: HttpMethod.PUT,
+        body: sttConfig,
+      }),
+      invalidatesTags: [TAG_TYPES.STT_CONFIGS],
+    }),
+
+    deleteSttConfig: builder.mutation<{ deleted: true }, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_STT_CONFIG(id),
+        method: HttpMethod.DELETE,
+      }),
+      // Languages also change when a config they referenced is removed.
+      invalidatesTags: [TAG_TYPES.STT_CONFIGS, TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    /** Named LLM configurations — the registry behind the Language Model tab. */
+    getLlmConfigs: builder.query<LlmConfig[], { activeOnly?: boolean } | void>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_CONFIGS,
+        method: HttpMethod.GET,
+        ...(params && params.activeOnly ? { params: { activeOnly: true } } : {}),
+      }),
+      providesTags: [TAG_TYPES.LLM_CONFIGS],
+    }),
+
+    createLlmConfig: builder.mutation<LlmConfig, LlmConfigPayload>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_CONFIGS,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_CONFIGS],
+    }),
+
+    updateLlmConfig: builder.mutation<
+      LlmConfig,
+      { id: string; llmConfig: Partial<LlmConfigPayload> }
+    >({
+      query: ({ id, llmConfig }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_LLM_CONFIG(id),
+        method: HttpMethod.PUT,
+        body: llmConfig,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_CONFIGS],
+    }),
+
+    deleteLlmConfig: builder.mutation<{ deleted: true }, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPDATE_LLM_CONFIG(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_CONFIGS, TAG_TYPES.SCENARIO_LANGUAGES],
+    }),
+
+    /**
+     * The LLM model catalog as stored, inactive rows included. Distinct from
+     * getLlmModels (the pickers' feed), which hides inactive rows and falls
+     * back to the in-code list.
+     */
+    getLlmModelCatalog: builder.query<LlmCatalogModel[], { runtime?: string } | void>({
+      query: args => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG,
+        method: HttpMethod.GET,
+        // Runtime filtering is the backend's job — it owns the
+        // provider x runtime matrix, and a client-side copy would drift.
+        ...(args && args.runtime ? { params: { runtime: args.runtime } } : {}),
+      }),
+      providesTags: [TAG_TYPES.LLM_MODEL_CATALOG],
+    }),
+
+    /**
+     * Pull an ElevenLabs voice's creation type so v3 compatibility is visible.
+     * Invalidates the voices list because it writes voice_type onto the row.
+     */
+    syncElevenLabsVoice: builder.mutation<ElevenLabsVoiceSyncResult, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SYNC_ELEVENLABS_VOICE(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * Look up a voice id before it has a saved row — read-only, so a query
+     * (not a mutation), triggered lazily as the id is typed rather than on
+     * every render.
+     */
+    lookupElevenLabsVoice: builder.query<ElevenLabsVoiceLookupResult, string>({
+      query: voiceId => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LOOKUP_ELEVENLABS_VOICE,
+        method: HttpMethod.GET,
+        params: { voiceId },
+      }),
+    }),
+
+    /** Sync every ElevenLabs voice's type from the workspace listing in one pass. */
+    bulkSyncElevenLabsVoices: builder.mutation<ElevenLabsBulkSyncSummary, void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.BULK_SYNC_ELEVENLABS_VOICES,
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.SCENARIO_VOICES],
+    }),
+
+    /**
+     * A TTS provider's account-wide model/voice catalog — not tied to any
+     * one voice, so this is what a picker's options come from. One endpoint
+     * for every provider that has a real catalog (ElevenLabs, Deepgram,
+     * Google, Hume today); `languageCode`/`voiceProvider` are only used by
+     * the providers that need them. Barely ever changes, so RTK Query's
+     * default cache is enough — same provider+params share one cached result.
+     */
+    getTtsCatalog: builder.query<TtsCatalogEntry[], TtsCatalogParams>({
+      query: params => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.TTS_CATALOG,
+        method: HttpMethod.GET,
+        params,
+      }),
+    }),
+
+    /** Test a catalog model against its provider. */
+    previewLlmModel: builder.mutation<LlmPreviewResult, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PREVIEW_LLM_MODEL(id),
+        method: HttpMethod.POST,
+      }),
+    }),
+
+    createLlmModel: builder.mutation<LlmCatalogModel, LlmCatalogModelPayload>({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG,
+        method: HttpMethod.POST,
+        body,
+      }),
+      // LLM_MODELS is the pickers' feed, so it has to refresh too.
+      invalidatesTags: [TAG_TYPES.LLM_MODEL_CATALOG, TAG_TYPES.LLM_MODELS],
+    }),
+
+    updateLlmModel: builder.mutation<
+      LlmCatalogModel,
+      { id: string; model: Partial<LlmCatalogModelPayload> }
+    >({
+      query: ({ id, model: body }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG_BY_ID(id),
+        method: HttpMethod.PATCH,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_MODEL_CATALOG, TAG_TYPES.LLM_MODELS],
+    }),
+
+    deleteLlmModel: builder.mutation<{ deleted: true }, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.LLM_MODEL_CATALOG_BY_ID(id),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.LLM_MODEL_CATALOG, TAG_TYPES.LLM_MODELS],
+    }),
+
+    /**
+     * Run a one-line completion against a saved LLM config to check the model
+     * still answers. Invalidates nothing — it reads from the provider, not us.
+     */
+    previewLlmConfig: builder.mutation<LlmPreviewResult, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PREVIEW_LLM_CONFIG(id),
+        method: HttpMethod.POST,
+      }),
+    }),
+
+    /**
      * Get all available scenario languages
      */
     getAvailableLanguageVoices: builder.query<
@@ -489,6 +707,9 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         ...(runtime ? { params: { runtime } } : {}),
       }),
+      // Now that the catalog is editable, adding or retiring a model has to
+      // reach every picker fed by this query without a page reload.
+      providesTags: [TAG_TYPES.LLM_MODELS],
     }),
 
     /**
@@ -582,6 +803,171 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       // Re-fetch when a simulation is created/updated (which may change
       // which variant it points at) or when the prompts list refreshes.
       providesTags: [TAG_TYPES.PROMPTS, TAG_TYPES.SIMULATION],
+    }),
+
+    /**
+     * Read-only: stored translations for a prompt (one row per language).
+     * Drives the read-only Translations panel; refreshes when prompts change.
+     */
+    getPromptTranslations: builder.query<PromptTranslation[], string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_PROMPT_TRANSLATIONS(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /** Re-translate a prompt into all eligible languages ("Re-translate all"). */
+    retranslatePrompt: builder.mutation<TranslatePromptResult, string>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.RETRANSLATE_PROMPT(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /** Re-translate a prompt into a single language (per-language retry). */
+    retranslatePromptLanguage: builder.mutation<unknown, { id: string; languageId: number }>({
+      query: ({ id, languageId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.RETRANSLATE_PROMPT_LANGUAGE(id, languageId),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Set (or clear, with empty provider/model) the per-language runtime model
+     * that runs the main agent when this translated body is served.
+     */
+    setTranslationRuntimeModel: builder.mutation<
+      unknown,
+      { id: string; languageId: number; provider?: string; model?: string }
+    >({
+      query: ({ id, languageId, provider, model }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.SET_TRANSLATION_RUNTIME_MODEL(id, languageId),
+        method: HttpMethod.PUT,
+        body: { provider, model },
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /** Backfill: (re)translate every enabled source across eligible languages. */
+    backfillPromptTranslations: builder.mutation<unknown, void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.BACKFILL_PROMPT_TRANSLATIONS,
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.PROMPTS],
+    }),
+
+    /**
+     * Per-language glossary sections + Tier 0 token accounting.
+     * Sections are the unit of publish; entries render only when published.
+     */
+    getLanguageGlossary: builder.query<GlossaryListResponse, number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_LANGUAGE_GLOSSARY(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Create/update a glossary section (draft edit; cap-checked when published+always). */
+    upsertGlossarySection: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string; payload: UpsertGlossarySectionPayload }
+    >({
+      query: ({ languageId, sectionCode, payload }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.UPSERT_GLOSSARY_SECTION(languageId, sectionCode),
+        method: HttpMethod.PUT,
+        body: payload,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Publish a section (backend blocks when the Tier 0 set would exceed the cap). */
+    publishGlossarySection: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string }
+    >({
+      query: ({ languageId, sectionCode }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.PUBLISH_GLOSSARY_SECTION(languageId, sectionCode),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    archiveGlossarySection: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string }
+    >({
+      query: ({ languageId, sectionCode }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.ARCHIVE_GLOSSARY_SECTION(languageId, sectionCode),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Seed job: LLM-generated DRAFT sections; never overwrites published ones. */
+    generateLanguageGlossary: builder.mutation<GenerateGlossaryResult, number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GENERATE_LANGUAGE_GLOSSARY(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Accept a consolidation proposal — appends its markdown to the section content. */
+    acceptGlossaryProposal: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string; entryId: string }
+    >({
+      query: ({ languageId, sectionCode, entryId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.ACCEPT_GLOSSARY_PROPOSAL(
+          languageId,
+          sectionCode,
+          entryId,
+        ),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    rejectGlossaryProposal: builder.mutation<
+      LanguageGlossarySection,
+      { languageId: number; sectionCode: string; entryId: string }
+    >({
+      query: ({ languageId, sectionCode, entryId }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.REJECT_GLOSSARY_PROPOSAL(
+          languageId,
+          sectionCode,
+          entryId,
+        ),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Consolidation: judge error annotations -> PROPOSED entries (never auto-published). */
+    consolidateLanguageGlossary: builder.mutation<ConsolidateGlossaryResult, number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.CONSOLIDATE_LANGUAGE_GLOSSARY(id),
+        method: HttpMethod.POST,
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
+    }),
+
+    /** Backfill: generate DRAFT glossaries for all active non-English languages (or given ids). */
+    backfillLanguageGlossaries: builder.mutation<
+      BackfillGlossariesOutcome[],
+      { languageIds?: number[] } | void
+    >({
+      query: body => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.BACKFILL_LANGUAGE_GLOSSARIES,
+        method: HttpMethod.POST,
+        body: body ?? {},
+      }),
+      invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
     }),
 
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
@@ -1049,6 +1435,24 @@ export const {
   useCreateScenarioVoiceMutation,
   useUpdateScenarioVoiceMutation,
   useGetAvailableLanguageVoicesQuery,
+  useGetSttConfigsQuery,
+  useCreateSttConfigMutation,
+  useUpdateSttConfigMutation,
+  useDeleteSttConfigMutation,
+  useGetLlmConfigsQuery,
+  useCreateLlmConfigMutation,
+  useUpdateLlmConfigMutation,
+  useDeleteLlmConfigMutation,
+  usePreviewLlmConfigMutation,
+  useGetLlmModelCatalogQuery,
+  usePreviewLlmModelMutation,
+  useSyncElevenLabsVoiceMutation,
+  useLazyLookupElevenLabsVoiceQuery,
+  useBulkSyncElevenLabsVoicesMutation,
+  useGetTtsCatalogQuery,
+  useCreateLlmModelMutation,
+  useUpdateLlmModelMutation,
+  useDeleteLlmModelMutation,
   useGetScenarioLanguagesQuery,
   useScenarioPreviewMutation,
   useDispatchPreviewAgentMutation,
@@ -1071,6 +1475,20 @@ export const {
   useRevertPromptMutation,
   useDeletePromptMutation,
   useGetPromptUsageQuery,
+  useGetPromptTranslationsQuery,
+  useRetranslatePromptMutation,
+  useRetranslatePromptLanguageMutation,
+  useSetTranslationRuntimeModelMutation,
+  useBackfillPromptTranslationsMutation,
+  useGetLanguageGlossaryQuery,
+  useUpsertGlossarySectionMutation,
+  usePublishGlossarySectionMutation,
+  useArchiveGlossarySectionMutation,
+  useGenerateLanguageGlossaryMutation,
+  useConsolidateLanguageGlossaryMutation,
+  useBackfillLanguageGlossariesMutation,
+  useAcceptGlossaryProposalMutation,
+  useRejectGlossaryProposalMutation,
   useGetDynamicBranchingInstructionQuery,
   useGetCharactersQuery,
   useGetCharacterByIdQuery,

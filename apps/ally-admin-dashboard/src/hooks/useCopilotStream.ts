@@ -9,8 +9,6 @@ import {
   CopilotBehaviourReviewEvent,
   CopilotChatMessage,
   CopilotDoneEvent,
-  CopilotImprovementReadyPayload,
-  CopilotImprovementUpdatePayload,
   CopilotQuestionEvent,
   CopilotSpecPatchEvent,
   CopilotStreamEvent,
@@ -71,8 +69,7 @@ const ANSWER_PREFIX_RE = /^\[answers question [^\]]+\]\s*/i;
 /**
  * Rebuilds the full chat feed from persisted copilot_messages rows — the
  * resume path. Reconstructs question cards (marked answered via later user
- * rows' metadata.questionId), test-case suggestion cards (marked accepted via
- * test_cases_accepted marker rows), loop progress/ready cards, and tool notes.
+ * rows' metadata.questionId), behaviour-review cards, and tool notes.
  * Pure; exported for unit tests.
  */
 export const mapServerMessagesToFeed = (
@@ -80,7 +77,6 @@ export const mapServerMessagesToFeed = (
 ): CopilotChatMessage[] => {
   const answeredQuestions = new Map<string, string>();
   const answeredAnswers = new Map<string, CopilotStructuredAnswer>();
-  const acceptedSuggestionIds = new Set<string>();
   for (const row of rows) {
     if (row.role !== "user") continue;
     const questionId = row.metadata?.questionId;
@@ -88,11 +84,6 @@ export const mapServerMessagesToFeed = (
       answeredQuestions.set(String(questionId), (row.content ?? "").replace(ANSWER_PREFIX_RE, ""));
       if (row.metadata?.answer) {
         answeredAnswers.set(String(questionId), row.metadata.answer);
-      }
-    }
-    if (row.metadata?.kind === "test_cases_accepted") {
-      for (const suggestionId of row.metadata.suggestionIds ?? []) {
-        acceptedSuggestionIds.add(String(suggestionId));
       }
     }
   }
@@ -104,34 +95,10 @@ export const mapServerMessagesToFeed = (
     const content = row.content ?? "";
 
     if (row.role === "user") {
-      if (metadata.kind === "test_cases_accepted") {
-        feed.push({ id: baseId, role: "user", content, systemNote: true });
-        return;
-      }
       feed.push({
         id: baseId,
         role: "user",
         content: content.replace(ANSWER_PREFIX_RE, ""),
-      });
-      return;
-    }
-
-    // Assistant rows: loop narration rows are dedicated cards.
-    if (metadata.kind === "improvement_update") {
-      feed.push({
-        id: baseId,
-        role: "assistant",
-        content,
-        improvementUpdate: metadata as unknown as CopilotImprovementUpdatePayload,
-      });
-      return;
-    }
-    if (metadata.kind === "improvement_ready") {
-      feed.push({
-        id: baseId,
-        role: "assistant",
-        content,
-        improvementReady: metadata as unknown as CopilotImprovementReadyPayload,
       });
       return;
     }
@@ -170,18 +137,6 @@ export const mapServerMessagesToFeed = (
         answeredAnswer: answeredAnswers.get(review.id),
       });
     }
-    const suggestions = metadata.testCaseSuggestions ?? [];
-    if (suggestions.length > 0) {
-      feed.push({
-        id: `${baseId}_suggestions`,
-        role: "assistant",
-        content: "",
-        testCaseSuggestions: suggestions,
-        acceptedSuggestionIds: suggestions
-          .map(suggestion => suggestion.id)
-          .filter(id => acceptedSuggestionIds.has(id)),
-      });
-    }
   });
   return feed;
 };
@@ -198,6 +153,18 @@ const cancelFrame = (handle: number | ReturnType<typeof setTimeout>) => {
     clearTimeout(handle as ReturnType<typeof setTimeout>);
   }
 };
+
+/** Per-message options accepted by `sendMessage` (forwarded in the POST body). */
+export interface CopilotSendOptions {
+  questionId?: string;
+  answer?: CopilotStructuredAnswer;
+  /**
+   * Marks the turn as an auto-improve turn for the given test report; the
+   * server injects the full report into the message and re-runs the test case
+   * after the copilot patches the spec.
+   */
+  autoImprove?: { reportId: string };
+}
 
 interface UseCopilotStreamOptions {
   sessionId: string | null;
@@ -343,36 +310,23 @@ export const useCopilotStream = ({
           ]);
           break;
         }
-        case "test_case_suggestions": {
-          flushTokens();
-          const suggestions = event.data.suggestions ?? [];
-          if (suggestions.length === 0) break;
-          const id = currentAssistantIdRef.current;
-          if (id) {
-            patchAssistantMessage(id, message => ({
-              ...message,
-              testCaseSuggestions: [...(message.testCaseSuggestions ?? []), ...suggestions],
-            }));
-          } else {
-            setMessages(prev => [
-              ...prev,
-              {
-                id: nextMessageId(),
-                role: "assistant",
-                content: "",
-                testCaseSuggestions: suggestions,
-              },
-            ]);
-          }
-          break;
-        }
         case "error": {
           flushTokens();
           const id = currentAssistantIdRef.current;
           if (id) patchAssistantMessage(id, { error: event.data.message, streaming: false });
-          toast.error(event.data.message || en.roleplayStudio.copilot.streamFailed);
+          // Improve-flow rejections get specific, actionable toasts.
+          if (event.data.code === "auto_improve_rejected") {
+            toast.error(en.roleplayStudio.improve.autoImproveRejected);
+          } else if (event.data.code === "turn_in_progress") {
+            toast.error(en.roleplayStudio.improve.turnInProgress);
+          } else {
+            toast.error(event.data.message || en.roleplayStudio.copilot.streamFailed);
+          }
           break;
         }
+        case "ping":
+          // Server heartbeat during long tool generations — keep-alive only.
+          break;
         case "done":
           flushTokens();
           onDone?.(event.data as CopilotDoneEvent);
@@ -433,8 +387,7 @@ export const useCopilotStream = ({
     async (
       text: string,
       activeSessionId: string,
-      questionId?: string,
-      answer?: CopilotStructuredAnswer,
+      opts?: CopilotSendOptions,
     ): Promise<{
       userMsgId: string;
       assistantId: string;
@@ -463,8 +416,9 @@ export const useCopilotStream = ({
           url,
           {
             message: text,
-            ...(questionId ? { questionId } : {}),
-            ...(answer ? { answer } : {}),
+            ...(opts?.questionId ? { questionId: opts.questionId } : {}),
+            ...(opts?.answer ? { answer: opts.answer } : {}),
+            ...(opts?.autoImprove ? { autoImprove: opts.autoImprove } : {}),
           },
           controller.signal,
         );
@@ -522,11 +476,11 @@ export const useCopilotStream = ({
   );
 
   const sendMessage = useCallback(
-    async (text: string, opts?: { questionId?: string; answer?: CopilotStructuredAnswer }) => {
+    async (text: string, opts?: CopilotSendOptions) => {
       const trimmed = text.trim();
       if (!trimmed || !sessionId || abortRef.current) return;
 
-      const first = await runStream(trimmed, sessionId, opts?.questionId, opts?.answer);
+      const first = await runStream(trimmed, sessionId, opts);
       if (!first.sessionLost || first.aborted) return;
 
       // The server session is gone (e.g. a local DB reset dropped it). Re-create
@@ -537,7 +491,7 @@ export const useCopilotStream = ({
         toast.error(en.roleplayStudio.copilot.streamFailed);
         return;
       }
-      const retry = await runStream(trimmed, freshId, opts?.questionId, opts?.answer);
+      const retry = await runStream(trimmed, freshId, opts);
       // The fresh session vanished too (or a code bug) — surface it rather than
       // looping. One recovery attempt is the ceiling.
       if (retry.sessionLost && !retry.aborted) {
@@ -560,15 +514,5 @@ export const useCopilotStream = ({
     setMessages(mapServerMessagesToFeed(serverMessages));
   }, []);
 
-  /**
-   * Full-replace refresh from the server transcript — used when the
-   * improvement loop appends narration rows out-of-band. Skipped while a
-   * stream is in flight (the post-`done` refetch picks the rows up instead).
-   */
-  const replaceFeed = useCallback((serverMessages: RoleplayCopilotServerMessage[]) => {
-    if (abortRef.current) return;
-    setMessages(mapServerMessagesToFeed(serverMessages));
-  }, []);
-
-  return { messages, isStreaming, sendMessage, stop, hydrateMessages, replaceFeed };
+  return { messages, isStreaming, sendMessage, stop, hydrateMessages };
 };

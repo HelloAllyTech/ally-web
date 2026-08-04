@@ -41,6 +41,7 @@ export interface CustomFieldDefinition {
   aiInstruction?: string;
   displayOrder: number;
   showInTable: boolean;
+  filterable: boolean;
   isActive: boolean;
 }
 
@@ -53,6 +54,7 @@ export interface CreateCustomFieldDefinitionInput {
   aiInstruction?: string;
   options?: SingleSelectOption[];
   showInTable?: boolean;
+  filterable?: boolean;
   tenantId: string;
 }
 
@@ -65,5 +67,6 @@ export interface UpdateCustomFieldDefinitionInput {
   aiInstruction?: string;
   options?: SingleSelectOption[];
   showInTable?: boolean;
+  filterable?: boolean;
   tenantId: string;
 }

@@ -246,12 +246,12 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+          class="overflow-x-auto border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
           data-testid="tabs"
         >
           <nav
             aria-label="Tabs"
-            class="-mb-px flex space-x-8"
+            class="-mb-px flex min-w-max space-x-8"
           >
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-primary-500"
@@ -569,12 +569,12 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
           </div>
         </div>
         <div
-          class="border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
+          class="overflow-x-auto border-b border-border-light w-full shrink-0 border-b border-[#DBDBDB] font-primary"
           data-testid="tabs"
         >
           <nav
             aria-label="Tabs"
-            class="-mb-px flex space-x-8"
+            class="-mb-px flex min-w-max space-x-8"
           >
             <button
               class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-primary-500"

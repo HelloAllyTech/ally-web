@@ -85,6 +85,8 @@ export interface SimulationInput {
   profession?: string;
   context?: string;
   openingStatements?: string[];
+  /** Plain-text reminder bullet points shown to the learner during the live session. */
+  reminders?: string[];
   autoTerminationStatus?: boolean;
   terminationEventId?: string;
   terminationMessage?: string;
@@ -109,12 +111,14 @@ export interface SimulationInput {
   continuousBackchanneling?: boolean;
   interimReplyEnabled?: boolean;
   currentState?: boolean;
+  remindersEnabled?: boolean;
   stateInstructions?: stateInstruction[];
   behaviorInstructions?: behaviourInstruction[];
   knowledgeSources?: KnowledgeSourceInput[];
   stateNames?: stateInstruction[];
   translationOpeningStatements?: Record<string, string[]>;
   translationDescription?: Record<string, string>;
+  translationReminders?: Record<string, string[]>;
   /**
    * promptCode of the main-agent prompt variant this simulation uses
    * (e.g. 'ally_ai_learn_system_main_agent_prompt_full'). When unset, the
@@ -123,6 +127,12 @@ export interface SimulationInput {
    * singletons shared by every variant.
    */
   selectedMainPromptCode?: string;
+  /**
+   * Per-language main-agent prompt variant choice, keyed by languageId:
+   * "GENERIC" (English source) or "MULTILINGUAL" (translated body). Missing
+   * entry defaults to GENERIC; English always uses the source.
+   */
+  mainPromptVariantByLanguage?: Record<string, "GENERIC" | "MULTILINGUAL">;
   /**
    * Per-simulation states used by main-agent prompts with `hasStates: true`.
    * Each entry: id, name, guidelines, scoreLower, scoreUpper, ragEnabled.
@@ -189,6 +199,7 @@ export interface GetSimulationByIdResponse {
     gender?: string;
     genderIdentity?: string;
     openingStatements?: string[];
+    reminders?: string[];
     profession?: string;
     sexualOrientation?: string;
     voiceId?: string;
@@ -212,6 +223,7 @@ export interface GetSimulationByIdResponse {
     continuousBackchanneling?: boolean;
     interimReplyEnabled?: boolean;
     currentState?: boolean;
+    remindersEnabled?: boolean;
     stateInstructions?: stateInstruction[];
     characterProfileText?: string;
     knowledgeSources?: knowledgeSource[];
@@ -221,6 +233,8 @@ export interface GetSimulationByIdResponse {
     languageCharacteristics?: Record<string, string>;
     /** promptCode of the main-agent prompt variant chosen for this simulation. */
     selectedMainPromptCode?: string;
+    /** Per-language GENERIC vs MULTILINGUAL choice, keyed by languageId. */
+    mainPromptVariantByLanguage?: Record<string, "GENERIC" | "MULTILINGUAL">;
     /**
      * Per-simulation states used by main-agent prompts with `hasStates: true`.
      * Same shape as `SimulationInput.states`.
@@ -239,6 +253,8 @@ export interface GetSimulationByIdResponse {
   translationDescription?: Record<string, string>;
   challengeDescriptionPrimaryLanguageId?: number | null;
   translationTitle?: Record<string, string>;
+  translationReminders?: Record<string, string[]>;
+  remindersPrimaryLanguageId?: number | null;
   competency?: Competency;
   terminationEvents?: terminationEvent[];
   terminationEvent?: {
@@ -600,13 +616,25 @@ export interface SetCompetencyBehavioursRequest {
   };
 }
 
+export type AgentTestCaseType = "condition" | "full_session";
+
+export interface AgentTestCaseRubric {
+  criteria: string;
+  scoringInstructions: string;
+}
+
 export interface AgentTestCase {
   id: string;
   title: string;
-  category: string;
+  type: AgentTestCaseType;
+  tags: string[];
   description?: string;
+  /** Condition test cases: the condition to simulate. */
   condition?: string;
+  /** Condition test cases: test pass description. */
   test?: string;
+  /** Full-session test cases: rubric rows. */
+  rubrics?: AgentTestCaseRubric[];
 }
 
 export interface AgentTestCasesResponse {
@@ -616,10 +644,11 @@ export interface AgentTestCasesResponse {
 
 export interface CreateAgentTestCaseRequest {
   title: string;
-  category: string;
-  description?: string;
+  type: AgentTestCaseType;
+  tags: string[];
   condition?: string;
   test?: string;
+  rubrics?: AgentTestCaseRubric[];
 }
 
 export interface UpdateAgentTestCaseRequest {

@@ -42,7 +42,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot 1`] = `
             >
               StartSession
             </div>
-            Start Session
+            Start Scribe Mode
           </button>
         </div>
       </div>
@@ -147,7 +147,7 @@ exports[`Calls Component > Snapshot Testing > should match snapshot with admin r
             >
               StartSession
             </div>
-            Start Session
+            Start Scribe Mode
           </button>
         </div>
       </div>

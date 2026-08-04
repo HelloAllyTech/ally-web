@@ -36,6 +36,7 @@ export function useOrganizationManagement() {
     enableMicrophoneMode: boolean;
     enableAudioUpload: boolean;
     hideRankInCommunity: boolean;
+    isTestOrganization: boolean;
   } = {
     logoUrl: "",
     orgname: "",
@@ -45,6 +46,7 @@ export function useOrganizationManagement() {
     enableMicrophoneMode: false,
     enableAudioUpload: false,
     hideRankInCommunity: false,
+    isTestOrganization: false,
   };
 
   // Form methods
@@ -109,6 +111,7 @@ export function useOrganizationManagement() {
     enableMicrophoneMode: boolean;
     enableAudioUpload: boolean;
     hideRankInCommunity: boolean;
+    isTestOrganization: boolean;
   }) => {
     try {
       const payload: {
@@ -120,6 +123,7 @@ export function useOrganizationManagement() {
         enableMicrophoneMode: boolean;
         enableAudioUpload: boolean;
         hideRankInCommunity: boolean;
+        isTestOrganization: boolean;
       } = {
         name: data.orgname,
         code: data.orgcode,
@@ -128,6 +132,7 @@ export function useOrganizationManagement() {
         enableMicrophoneMode: data.enableMicrophoneMode ?? false,
         enableAudioUpload: data.enableAudioUpload ?? false,
         hideRankInCommunity: data.hideRankInCommunity ?? false,
+        isTestOrganization: data.isTestOrganization ?? false,
       };
       // T
       payload.logoUrl = data.logoUrl;
@@ -151,6 +156,7 @@ export function useOrganizationManagement() {
       enableMicrophoneMode: tenant.enableMicrophoneMode ?? false,
       enableAudioUpload: tenant.enableAudioUpload ?? false,
       hideRankInCommunity: tenant.hideRankInCommunity ?? false,
+      isTestOrganization: tenant.isTestOrganization ?? false,
     });
     setAddOrganizationModalOpen(true);
   };
@@ -164,6 +170,7 @@ export function useOrganizationManagement() {
     enableMicrophoneMode: boolean;
     enableAudioUpload: boolean;
     hideRankInCommunity: boolean;
+    isTestOrganization: boolean;
   }) => {
     if (!selectedTenant) return;
     try {
@@ -176,6 +183,7 @@ export function useOrganizationManagement() {
         enableMicrophoneMode: boolean;
         enableAudioUpload: boolean;
         hideRankInCommunity: boolean;
+        isTestOrganization: boolean;
       } = {
         name: data.orgname,
         code: data.orgcode,
@@ -184,6 +192,7 @@ export function useOrganizationManagement() {
         enableMicrophoneMode: data.enableMicrophoneMode ?? false,
         enableAudioUpload: data.enableAudioUpload ?? false,
         hideRankInCommunity: data.hideRankInCommunity ?? false,
+        isTestOrganization: data.isTestOrganization ?? false,
       };
 
       payload.logoUrl = data.logoUrl;
@@ -206,6 +215,7 @@ export function useOrganizationManagement() {
     enableMicrophoneMode: boolean;
     enableAudioUpload: boolean;
     hideRankInCommunity: boolean;
+    isTestOrganization: boolean;
   }) => {
     const payload = {
       orgname: data.orgname,
@@ -216,6 +226,7 @@ export function useOrganizationManagement() {
       enableMicrophoneMode: data.enableMicrophoneMode ?? false,
       enableAudioUpload: data.enableAudioUpload ?? false,
       hideRankInCommunity: data.hideRankInCommunity ?? false,
+      isTestOrganization: data.isTestOrganization ?? false,
     };
 
     if (selectedTenant && selectedTenant.logoUrl) deleteLogo({ logoUrl: selectedTenant.logoUrl });

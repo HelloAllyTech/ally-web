@@ -6,6 +6,8 @@ import {
   RoleplayTransition,
 } from "@src/types/roleplayStudio";
 
+import { computeStateLayers } from "./arcMapping";
+
 import type { Edge, Node } from "@xyflow/react";
 
 /**
@@ -45,34 +47,7 @@ export const autoLayoutPositions = (
   const states = stateMachine?.states ?? [];
   if (states.length === 0) return {};
 
-  const byId = new Map(states.map(state => [state.id, state]));
-  const layerOf = new Map<string, number>();
-
-  const startId = byId.has(stateMachine.initialStateId)
-    ? stateMachine.initialStateId
-    : states[0].id;
-
-  const queue: string[] = [startId];
-  layerOf.set(startId, 0);
-  while (queue.length > 0) {
-    const currentId = queue.shift() as string;
-    const currentLayer = layerOf.get(currentId) ?? 0;
-    const current = byId.get(currentId);
-    for (const transition of current?.transitions ?? []) {
-      if (!byId.has(transition.toStateId) || layerOf.has(transition.toStateId)) continue;
-      layerOf.set(transition.toStateId, currentLayer + 1);
-      queue.push(transition.toStateId);
-    }
-  }
-
-  // Unreachable states: park each in the next free layer, preserving order.
-  let maxLayer = Math.max(0, ...layerOf.values());
-  for (const state of states) {
-    if (!layerOf.has(state.id)) {
-      maxLayer += 1;
-      layerOf.set(state.id, maxLayer);
-    }
-  }
+  const layerOf = computeStateLayers(stateMachine);
 
   // Stack states within a layer in declaration order.
   const rowWithinLayer = new Map<number, number>();

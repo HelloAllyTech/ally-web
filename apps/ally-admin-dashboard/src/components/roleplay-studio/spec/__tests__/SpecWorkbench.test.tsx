@@ -4,10 +4,7 @@ import React from "react";
 import { Provider } from "react-redux";
 import { describe, expect, it, vi } from "vitest";
 
-import roleplaySpecSlice, {
-  setImprovementRunning,
-  setStreaming,
-} from "@reducer/roleplaySpecReducer";
+import roleplaySpecSlice, { setStreaming } from "@reducer/roleplaySpecReducer";
 
 // Capture the readOnly prop each child receives instead of rendering the heavy
 // section editors / React-Flow canvas.
@@ -67,15 +64,6 @@ describe("SpecWorkbench edit toggle (O11)", () => {
     expect(specPanelReadOnly.at(-1)).toBe(false);
     act(() => {
       store.dispatch(setStreaming(true));
-    });
-    expect(specPanelReadOnly.at(-1)).toBe(true);
-  });
-
-  it("force-locks editing while an improvement run is active", () => {
-    const { store } = renderWorkbench();
-    fireEvent.click(screen.getByRole("switch"));
-    act(() => {
-      store.dispatch(setImprovementRunning(true));
     });
     expect(specPanelReadOnly.at(-1)).toBe(true);
   });

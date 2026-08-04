@@ -262,9 +262,7 @@ describe("NavbarWrapper", () => {
       </NavbarWrapper>,
     );
 
-    const menuButton = screen
-      .getAllByRole("button")
-      .find(button => button.className.includes("md:hidden"));
+    const menuButton = screen.getByTestId("nav-sidebar-hamburger");
     expect(menuButton).toBeInTheDocument();
 
     // Initially sidebar should be closed
@@ -325,10 +323,8 @@ describe("NavbarWrapper", () => {
       </NavbarWrapper>,
     );
 
-    const menuButton = screen
-      .getAllByRole("button")
-      .find(button => button.className.includes("md:hidden"));
-    expect(menuButton).toHaveClass("md:hidden");
+    const menuButton = screen.getByTestId("nav-sidebar-hamburger");
+    expect(menuButton.parentElement).toHaveClass("md:hidden");
   });
 
   it("applies correct classes to main content area", () => {
@@ -344,7 +340,7 @@ describe("NavbarWrapper", () => {
     );
 
     const mainContent = container.querySelector(
-      ".flex-1.min-h-screen.overflow-auto.bg-white.custom-scrollbar",
+      ".flex-1.min-h-dvh.overflow-auto.bg-white.custom-scrollbar",
     );
     expect(mainContent).toBeInTheDocument();
   });
@@ -361,7 +357,7 @@ describe("NavbarWrapper", () => {
       </NavbarWrapper>,
     );
 
-    const innerDiv = container.querySelector(".h-\\[100vh\\]");
+    const innerDiv = container.querySelector(".h-\\[calc\\(100dvh-56px\\)\\]");
     expect(innerDiv).toBeInTheDocument();
   });
 });

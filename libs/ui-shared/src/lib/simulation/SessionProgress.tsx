@@ -16,6 +16,7 @@ export const SessionProgress: FC<SessionProgressProps> = ({
   maxTimeSeconds,
   isPaused = false,
   pausedOffsetMs = 0,
+  hideTimeBar = false,
 }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
@@ -56,12 +57,6 @@ export const SessionProgress: FC<SessionProgressProps> = ({
     return STATE_COLORS.inactive;
   };
 
-  const getStateLabelColor = (index: number) => {
-    if (index === currentStateIndex) return "#10B981";
-    if (index < currentStateIndex) return "#9CA3AF";
-    return "#6B7280";
-  };
-
   const timeProgressPercent =
     maxTimeSeconds && maxTimeSeconds > 0
       ? Math.min(100, (elapsedSeconds / maxTimeSeconds) * 100)
@@ -73,7 +68,7 @@ export const SessionProgress: FC<SessionProgressProps> = ({
       className="bg-[#1d2020] rounded-lg p-4 pb-5 font-sans w-full"
     >
       {/* Title row */}
-      {startTime && maxTimeSeconds && (
+      {!hideTimeBar && startTime && maxTimeSeconds && (
         <div className="flex items-center justify-between mb-3">
           <span
             data-testid="session-progress-title"
@@ -91,7 +86,7 @@ export const SessionProgress: FC<SessionProgressProps> = ({
       )}
 
       {/* Time progress bar (blue) */}
-      {startTime && maxTimeSeconds && (
+      {!hideTimeBar && startTime && maxTimeSeconds && (
         <div
           className={`w-full h-[6px] bg-[#374151] rounded-full overflow-hidden ${stateNames.length > 0 ? "mb-6" : ""}`}
         >
@@ -104,85 +99,50 @@ export const SessionProgress: FC<SessionProgressProps> = ({
         </div>
       )}
 
+      {/* Vertical stepper — a horizontal dot-timeline forced every label into
+          a narrow fixed-width column and wrapped across 2 lines per state,
+          which cluttered the (now narrower) sidebar. Stacking vertically
+          gives every state's name the full sidebar width on its own line,
+          while keeping every state visible (not just the current one). */}
       {stateNames.length > 0 && (
-        <div className="relative" style={{ paddingBottom: "28px" }}>
-          <div className="relative flex items-center w-full" style={{ height: "16px" }}>
-            <div
-              className="absolute h-[4px] bg-[#374151] rounded-full"
-              style={{ left: "0%", right: "0%" }}
-            />
-
-            <motion.div
-              className="absolute h-[4px] rounded-full"
-              style={{
-                backgroundColor: STATE_COLORS.active,
-                left: "0%",
-              }}
-              animate={{
-                width:
-                  stateNames.length > 1
-                    ? `${8 + (currentStateIndex / (stateNames.length - 1)) * 84}%`
-                    : "0%",
-              }}
-              transition={{ type: "spring", stiffness: 80, damping: 20 }}
-            />
-
-            {stateNames.map((state, index) => {
-              const leftPercent =
-                stateNames.length > 1 ? 8 + (index / (stateNames.length - 1)) * 84 : 50;
-              const isActive = index === currentStateIndex;
-              const isCompleted = index < currentStateIndex;
-              const dotColor = getStateColor(index);
-
-              return (
-                <motion.div
-                  key={state.stateId}
-                  data-testid={`session-progress-dot-${state.stateId}`}
-                  className="absolute rounded-full z-10"
-                  style={{
-                    left: `${leftPercent}%`,
-                    transform: "translateX(-50%)",
-                    backgroundColor: isActive || isCompleted ? dotColor : "#374151",
-                    border: "none",
-                    width: isActive ? "16px" : "10px",
-                    height: isActive ? "16px" : "10px",
-                    boxShadow: isActive ? `0 0 12px 2px ${dotColor}66` : "none",
-                  }}
-                  animate={{
-                    scale: isActive ? 1.1 : 1,
-                  }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                />
-              );
-            })}
-          </div>
-
-          {/* State labels — absolutely positioned below each dot */}
+        <div className="flex flex-col">
           {stateNames.map((state, index) => {
-            const leftPercent =
-              stateNames.length > 1 ? 8 + (index / (stateNames.length - 1)) * 84 : 50;
             const isActive = index === currentStateIndex;
             const isCompleted = index < currentStateIndex;
+            const isLast = index === stateNames.length - 1;
+            const dotColor = getStateColor(index);
 
             return (
               <div
                 key={state.stateId}
                 data-testid={`session-progress-state-${state.stateId}`}
-                className="absolute"
-                style={{
-                  left: `${leftPercent}%`,
-                  transform: "translateX(-50%)",
-                  top: "24px",
-                  textAlign: "center",
-                  width: "90px",
-                }}
+                className="relative flex items-center gap-3 pb-3 last:pb-0"
               >
+                {!isLast && (
+                  <div
+                    className="absolute left-[6px] top-1/2 bottom-[-12px] w-[2px]"
+                    style={{ backgroundColor: isCompleted ? STATE_COLORS.completed : "#374151" }}
+                  />
+                )}
+                <div className="relative z-10 flex shrink-0 items-center justify-center w-[14px] h-[14px]">
+                  <motion.div
+                    data-testid={`session-progress-dot-${state.stateId}`}
+                    className="rounded-full"
+                    style={{
+                      width: isActive ? "14px" : "10px",
+                      height: isActive ? "14px" : "10px",
+                      backgroundColor: isActive || isCompleted ? dotColor : "#374151",
+                      boxShadow: isActive ? `0 0 8px 2px ${dotColor}66` : "none",
+                    }}
+                    animate={{ scale: isActive ? 1.1 : 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  />
+                </div>
                 <span
-                  className="text-[11px] leading-[1.2] whitespace-normal inline-block"
+                  className="text-[12px] leading-[1.3]"
                   style={{
-                    color: getStateLabelColor(index),
+                    color: isActive ? STATE_COLORS.active : isCompleted ? "#9CA3AF" : "#6B7280",
                     fontWeight: isActive ? 600 : 500,
-                    opacity: isActive || isCompleted ? 1 : 0.6,
                   }}
                 >
                   {state.name}

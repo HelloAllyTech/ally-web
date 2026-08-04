@@ -1,15 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import roleplaySpecSlice, {
-  acceptProposal,
   applySpecPatches,
   hydrateSpec,
   markDraftSaved,
-  queueProposals,
-  rejectProposal,
   removeState,
   RoleplaySpecState,
-  setImprovementRunning,
   setSpecTitle,
   setStreaming,
   upsertTransition,
@@ -135,56 +131,6 @@ describe("roleplaySpecReducer", () => {
       expect(state.patchLog[0].failed).toBe(true);
       expect(state.revision).toBe(0);
     });
-  });
-
-  describe("proposals", () => {
-    const proposal = {
-      id: "prop-1",
-      summary: "Sharpen the opening line",
-      rationale: "Sharpen the opening",
-      targetSection: "openingStatement",
-      severity: "major",
-      ops: [{ op: "replace" as const, path: "/openingStatement", value: "Better opening" }],
-    };
-
-    it("acceptProposal applies the patch, dirties the draft, and dequeues", () => {
-      let state = roleplaySpecSlice.reducer(hydratedState(), queueProposals([proposal]));
-      state = roleplaySpecSlice.reducer(state, acceptProposal("prop-1"));
-
-      expect(state.spec?.openingStatement).toBe("Better opening");
-      expect(state.pendingProposals).toHaveLength(0);
-      expect(state.revision).toBeGreaterThan(state.savedRevision);
-    });
-
-    it("rejectProposal only dequeues", () => {
-      let state = roleplaySpecSlice.reducer(hydratedState(), queueProposals([proposal]));
-      state = roleplaySpecSlice.reducer(state, rejectProposal("prop-1"));
-
-      expect(state.spec?.openingStatement).toBe("");
-      expect(state.pendingProposals).toHaveLength(0);
-      expect(state.revision).toBe(0);
-    });
-
-    it("acceptProposal drops proposals that no longer apply cleanly", () => {
-      const broken = {
-        ...proposal,
-        id: "prop-2",
-        ops: [{ op: "replace" as const, path: "/missing/path", value: 1 }],
-      };
-      let state = roleplaySpecSlice.reducer(hydratedState(), queueProposals([broken]));
-      const specBefore = state.spec;
-      state = roleplaySpecSlice.reducer(state, acceptProposal("prop-2"));
-
-      expect(state.spec).toEqual(specBefore);
-      expect(state.pendingProposals).toHaveLength(0);
-    });
-  });
-
-  it("setImprovementRunning toggles the loop lock flag", () => {
-    let state = roleplaySpecSlice.reducer(hydratedState(), setImprovementRunning(true));
-    expect(state.improvementRunning).toBe(true);
-    state = roleplaySpecSlice.reducer(state, setImprovementRunning(false));
-    expect(state.improvementRunning).toBe(false);
   });
 
   it("removeState strips inbound transitions, layout, and re-picks the initial state", () => {

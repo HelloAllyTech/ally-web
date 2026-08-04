@@ -71,6 +71,16 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     translationDescription: data.translationDescription ?? {},
     challengeDescriptionPrimaryLanguageId: data.challengeDescriptionPrimaryLanguageId ?? null,
     translationTitle: data.translationTitle ?? {},
+    reminders: Array.isArray(data?.metadata?.reminders)
+      ? data.metadata.reminders.join("\n")
+      : ((data?.metadata?.reminders as unknown as string) ?? ""),
+    translationReminders: Object.fromEntries(
+      Object.entries(data.translationReminders ?? {}).map(([languageId, lines]) => [
+        languageId,
+        Array.isArray(lines) ? lines.join("\n") : (lines ?? ""),
+      ]),
+    ),
+    remindersPrimaryLanguageId: data.remindersPrimaryLanguageId ?? null,
     profession: data?.metadata?.profession,
     sexualOrientation: data?.metadata?.sexualOrientation,
     // Agent Builder Copilot V2 agent-test-case selection (metadata JSONB).
@@ -91,6 +101,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     })),
     selectedMainPromptCode: data?.metadata?.selectedMainPromptCode,
     selectedEvaluatorPromptCode: data?.metadata?.selectedEvaluatorPromptCode,
+    mainPromptVariantByLanguage: data?.metadata?.mainPromptVariantByLanguage ?? {},
     states: data?.metadata?.states ?? [],
     prompt: data?.prompt,
     isGlobal: Boolean(data?.isGlobal),
@@ -119,6 +130,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     continuousBackchanneling: data?.metadata?.continuousBackchanneling ?? false,
     interimReplyEnabled: data?.metadata?.interimReplyEnabled ?? true,
     currentState: data?.metadata?.currentState,
+    remindersEnabled: data?.metadata?.remindersEnabled,
     stateInstructions: Array.isArray(data?.metadata?.stateInstructions)
       ? data.metadata.stateInstructions.filter(si => isValidStateInstructionId(si?.stateId))
       : data?.metadata?.stateInstructions,
@@ -132,6 +144,8 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     enableFeedback: data?.metadata?.enableFeedback ?? true,
     // Opt-in toggle: missing → disabled (only an explicit true enables it).
     pauseEnabled: (data?.metadata as any)?.pauseEnabled ?? false,
+    // Per-language STT picks, keyed like languageVoices. Absent = inherit.
+    sttConfigByLanguage: (data?.metadata as any)?.sttConfigByLanguage ?? {},
     characterProfileText: data?.metadata?.characterProfileText,
     helperAgentPrompt: data?.metadata?.helperAgentPrompt,
     agentBuilderDescription: (data?.metadata as any)?.agentBuilderDescription,

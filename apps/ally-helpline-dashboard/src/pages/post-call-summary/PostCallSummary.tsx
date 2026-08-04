@@ -145,7 +145,12 @@ export const PostCallSummary = () => {
     }
   };
 
-  const Header = () => (
+  // Plain JSX values, NOT inline function components: `const Header = () => …`
+  // makes a brand-new component type on every render, so React unmounts and
+  // remounts the whole subtree each time the page re-renders (e.g. the refetch
+  // after a save). That reset CallSummary's local edit state and dropped input
+  // focus mid-typing.
+  const header = (
     <div className="flex items-center gap-2 font-secondary justify-between">
       <div className="flex items-center gap-2">
         <button onClick={() => navigate(ROUTES.SCRIBE_LOGS)}>
@@ -222,7 +227,7 @@ export const PostCallSummary = () => {
       case SectionType.SessionSummary:
         return (
           <CallSummary
-            className="max-h-[calc(100vh-350px)]"
+            className="max-h-[calc(100dvh-350px)]"
             chatId={Number(chatId)}
             callSummary={individualCallSummary}
             onRefetchSummary={refetchCallSummary}
@@ -232,7 +237,7 @@ export const PostCallSummary = () => {
         );
       case SectionType.Transcript:
         return (
-          <div className="relative h-[calc(100vh-240px)] custom-scrollbar p-4 border border-gray-200 rounded-md overflow-y-auto">
+          <div className="relative h-[calc(100dvh-240px)] custom-scrollbar p-4 border border-gray-200 rounded-md overflow-y-auto">
             <span className="text-typography-900 font-primary text-base font-medium">
               {t("summary.tabs.transcript")}
             </span>
@@ -243,7 +248,7 @@ export const PostCallSummary = () => {
               isLoading={isGetTranscriptLoading}
               hasMore={transcriptList.length < (transcriptData?.count ?? 0)}
               agentName={t("transcription.clientLabel")}
-              className="max-h-[calc(100vh-300px)] overflow-y-auto"
+              className="max-h-[calc(100dvh-300px)] overflow-y-auto"
             />
           </div>
         );
@@ -265,7 +270,7 @@ export const PostCallSummary = () => {
     updateQueryParamListWithoutReload(queryParamList);
   };
 
-  const Content = () => (
+  const content = (
     <motion.div
       layout="position"
       layoutId="content-container"
@@ -279,13 +284,13 @@ export const PostCallSummary = () => {
   );
 
   return (
-    <div className="h-[100vh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
+    <div className="h-[100dvh] w-[50%] pt-6 mx-auto flex flex-col gap-4 items-center bg-white">
       {isDeeplink ? (
-        <Content />
+        content
       ) : (
         <>
           <div className="w-full border-b border-[#E5E7EB]">
-            <Header />
+            {header}
             <Tabs
               items={summaryTabs.map(tab => ({ id: tab.value, label: tab.label }))}
               activeId={selectedTab}
@@ -294,7 +299,7 @@ export const PostCallSummary = () => {
               showCount={false}
             />
           </div>
-          <Content />
+          {content}
         </>
       )}
     </div>

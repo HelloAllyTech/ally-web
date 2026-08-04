@@ -26,7 +26,7 @@ export const BlogPost: FC = () => {
   } = useGetPublicBlogBySlugQuery({ slug }, { skip: !slug });
 
   return (
-    <div className="min-h-screen bg-white font-primary">
+    <div className="min-h-dvh bg-white font-primary">
       <div className="mx-auto max-w-3xl px-6 py-10">
         <div className="mb-8 flex items-center">
           <Ally />

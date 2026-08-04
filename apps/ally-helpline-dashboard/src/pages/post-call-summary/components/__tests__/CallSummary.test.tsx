@@ -93,14 +93,26 @@ const enhanceResult = {
 };
 const userResult = { user: { role: UserRole.COUNSELLOR } };
 
-vi.mock("@hooks", () => ({
-  useEnhance: () => enhanceResult,
-  useDebounce: (fn: any) => fn,
-  useUser: () => userResult,
-  useCustomFieldsEnabled: () => mockGetCustomFieldsEnabled(),
-}));
+// Real autosave hook (its behaviour is under test here), imported directly so
+// the @hooks barrel's heavy modules stay out of the test worker. delayMs 0 keeps
+// the debounce out of the assertions.
+vi.mock("@hooks", async () => {
+  const autosave = await import("@hooks/useFieldAutosave");
+  return {
+    useEnhance: () => enhanceResult,
+    useDebounce: (fn: any) => fn,
+    useUser: () => userResult,
+    useCustomFieldsEnabled: () => mockGetCustomFieldsEnabled(),
+    SUMMARY_CHANNEL: autosave.SUMMARY_CHANNEL,
+    CUSTOM_CHANNEL: autosave.CUSTOM_CHANNEL,
+    useFieldAutosave: (options: any) => autosave.useFieldAutosave({ ...options, delayMs: 0 }),
+  };
+});
 
 vi.mock("@components", () => ({
+  // Renders the raw state so tests can assert what the counsellor is told.
+  SaveStatus: ({ state }: any) =>
+    state === "idle" ? null : <span data-testid="save-status">{state}</span>,
   Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
   TextField: (props: any) => <input {...props} />,
   Accordion: ({ children }: any) => <div>{children}</div>,
@@ -155,7 +167,13 @@ vi.mock("../../utils", async importOriginal => {
     // === 0` guard doesn't skip the section entirely — CustomFieldValuesPanel
     // renders only inside a section that has passed that guard. summaryHasChanges
     // is kept real (via ...actual) since handleSave calls it unconditionally.
-    getSectionFields: () => [{ key: "callId", type: "text", label: "Call ID", isEditable: true }],
+    // keyConcerns (not callId) because getFieldValue special-cases the derived
+    // fields — callId reads details.chatId, so it can't stand in for a plain
+    // editable summary key.
+    getSectionFields: () => [
+      { key: "keyConcerns", type: "text", label: "Key Concerns", isEditable: true },
+      { key: "tags", type: "text", label: "Tags", isEditable: true },
+    ],
   };
 });
 // SummaryLoading.tsx also resolves to this same real module (via its own
@@ -171,9 +189,18 @@ vi.mock("../../constants", async importOriginal => {
     labelShownSections: ["section"],
   };
 });
-// Built-in field rendering isn't under test here; avoid pulling in its real
-// deps (date pickers etc.) for a field shape the tests don't otherwise need.
-vi.mock("../SummaryFieldInput", () => ({ default: () => null }));
+// The real input pulls in date pickers etc.; render a plain controlled input
+// instead so tests can drive a built-in field edit the way a user typing would
+// and observe what handleSave then sends.
+vi.mock("../SummaryFieldInput", () => ({
+  default: ({ field, value, onChange }: any) => (
+    <input
+      aria-label={field.label}
+      value={value ?? ""}
+      onChange={e => onChange(field.key, e.target.value)}
+    />
+  ),
+}));
 // Prevent loading the real date-picker deps and date-fns (36 MB) into the test worker heap.
 // Renders a plain input per field (instead of the real panel's rich controls) so
 // tests can drive onValueChange the way a user typing would, and read back
@@ -545,5 +572,224 @@ describe("CallSummary — a failed custom field save surfaces an error instead o
 
     await waitFor(() => expect(mockUpsertCustomFieldValues).toHaveBeenCalledTimes(1));
     expect(toast.error).not.toHaveBeenCalled();
+  });
+});
+
+describe("CallSummary — built-in summary save sends a patch, not the whole summary", () => {
+  const storedSummary = {
+    callId: "seeded-call-id",
+    keyConcerns: "AI generated concerns",
+    homework: "AI generated homework",
+    tags: [{ tag: "anxiety", positivity_rating: 0.2 }],
+  };
+  const summaryCall = {
+    id: 1,
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 42,
+    details: { chatId: 1, callInfo: { notes: "" }, summary: storedSummary },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.resolve({ success: true }),
+    }));
+    mockGetCustomFieldsEnabled.mockImplementation(() => customFieldsEnabledResult);
+    mockGetCustomFieldValues.mockImplementation(() => customFieldValuesResult);
+    mockUseSelector.mockReturnValue({
+      user: { userId: 42 },
+      permissions: ["edit:call:details", "view:settings:summary-fields"],
+    });
+  });
+
+  it("sends only the edited key, so AI-generated fields keep their stored values", async () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+
+    fireEvent.change(screen.getByLabelText("Key Concerns"), {
+      target: { value: "edited by hand" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    await waitFor(() => expect(mockUpdateCallSummary).toHaveBeenCalledTimes(1));
+    const [{ chatId, data }] = mockUpdateCallSummary.mock.calls[0];
+    expect(chatId).toBe(1);
+    // The patch carries the edited key and nothing else — keyConcerns/homework/
+    // tags are absent, so the backend merge leaves the stored values alone.
+    expect(data.summary).toEqual({ keyConcerns: "edited by hand" });
+  });
+
+  it("sends a cleared field as a present key so the merge clears it", async () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    await waitFor(() => expect(mockUpdateCallSummary).toHaveBeenCalledTimes(1));
+    const [{ data }] = mockUpdateCallSummary.mock.calls[0];
+    // What matters is that the key is PRESENT in the patch — an omitted key
+    // means "leave unchanged" to the merge, which would refill the old value.
+    expect(data.summary).toEqual({ keyConcerns: "" });
+    expect("keyConcerns" in data.summary).toBe(true);
+  });
+
+  it("does not send a summary patch at all when nothing was edited", () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    expect(mockUpdateCallSummary).not.toHaveBeenCalled();
+  });
+});
+
+describe("CallSummary — edits autosave without pressing Save", () => {
+  const summaryCall = {
+    id: 1,
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 42,
+    details: {
+      chatId: 1,
+      callInfo: { notes: "" },
+      summary: { keyConcerns: "AI generated", tags: [{ tag: "anxiety", positivity_rating: 2 }] },
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.resolve({ success: true }),
+    }));
+    mockGetCustomFieldsEnabled.mockImplementation(() => customFieldsEnabledResult);
+    mockGetCustomFieldValues.mockImplementation(() => customFieldValuesResult);
+    mockUseSelector.mockReturnValue({
+      user: { userId: 42 },
+      permissions: ["edit:call:details", "view:settings:summary-fields"],
+    });
+  });
+
+  it("writes a typed edit with no Save click at all", async () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed only" } });
+
+    // This is the whole point of step 3: the counsellor's work is durable before
+    // they navigate, switch tabs, or close the sidebar.
+    await waitFor(() => expect(mockUpdateCallSummary).toHaveBeenCalledTimes(1));
+    expect(mockUpdateCallSummary.mock.calls[0][0].data.summary).toEqual({
+      keyConcerns: "typed only",
+    });
+  });
+
+  it("tells the counsellor when the write succeeded", async () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+    expect(screen.queryByTestId("save-status")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed" } });
+
+    await waitFor(() => expect(screen.getByTestId("save-status")).toHaveTextContent("saved"));
+  });
+
+  it("reports an error and keeps the edit when the write fails", async () => {
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.reject(new Error("boom")),
+    }));
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed" } });
+
+    await waitFor(() => expect(screen.getByTestId("save-status")).toHaveTextContent("error"));
+    // The value stays on screen so it can be retried, not silently reverted.
+    expect(screen.getByLabelText("Key Concerns")).toHaveValue("typed");
+  });
+
+  it("surfaces a toast when the counsellor presses Save and the flush fails", async () => {
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.reject(new Error("boom")),
+    }));
+
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("sends tag names, never a rated list built by calling an LLM first", async () => {
+    render(<CallSummary chatId={1} callSummary={summaryCall} />);
+
+    fireEvent.change(screen.getByLabelText("Tags"), { target: { value: "anxiety, grief " } });
+
+    await waitFor(() => expect(mockUpdateCallSummary).toHaveBeenCalledTimes(1));
+    // No LLM call anywhere on the save path: a wedged AI service can no longer
+    // hold up a save or wipe the tags. The backend stores these names as-is,
+    // keeping any rating a tag already had.
+    expect(mockUpdateCallSummary.mock.calls[0][0].data.summary).toEqual({
+      tags: ["anxiety", "grief"],
+    });
+    expect(mockGetTags).not.toHaveBeenCalled();
+  });
+});
+
+describe("CallSummary — switching sessions must not carry the previous one's summary", () => {
+  const sessionA = {
+    id: 1,
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 42,
+    details: { chatId: 1, callInfo: { notes: "" }, summary: { keyConcerns: "session A value" } },
+  };
+  const sessionB = {
+    id: 2,
+    summaryStatus: ChatSummaryStatus.SUCCESS,
+    counselorId: 42,
+    details: { chatId: 2, callInfo: { notes: "" }, summary: { keyConcerns: "session B value" } },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUpdateCallSummary.mockImplementation(() => ({
+      unwrap: () => Promise.resolve({ success: true }),
+    }));
+    mockGetCustomFieldsEnabled.mockImplementation(() => customFieldsEnabledResult);
+    mockGetCustomFieldValues.mockImplementation(() => customFieldValuesResult);
+    mockUseSelector.mockReturnValue({
+      user: { userId: 42 },
+      permissions: ["edit:call:details", "view:settings:summary-fields"],
+    });
+  });
+
+  it("reseeds when chatId changes even though both sessions are already SUCCESS", () => {
+    // Both sessions have summaryStatus SUCCESS, so a status-keyed seed effect
+    // never fires on the switch — this is the sidebar's row-to-row case.
+    const { rerender } = render(<CallSummary chatId={1} callSummary={sessionA} />);
+    expect(screen.getByLabelText("Key Concerns")).toHaveValue("session A value");
+
+    rerender(<CallSummary chatId={2} callSummary={sessionB} />);
+
+    expect(screen.getByLabelText("Key Concerns")).toHaveValue("session B value");
+  });
+
+  it("drops an unsaved edit made against the previous session instead of saving it onto the new one", () => {
+    const { rerender } = render(<CallSummary chatId={1} callSummary={sessionA} />);
+    fireEvent.change(screen.getByLabelText("Key Concerns"), { target: { value: "typed into A" } });
+
+    rerender(<CallSummary chatId={2} callSummary={sessionB} />);
+    fireEvent.click(screen.getByRole("button", { name: "Save report" }));
+
+    // A's dirty key must not survive the switch: saving right after landing on
+    // B must write nothing, rather than writing A's text under B's id.
+    expect(mockUpdateCallSummary).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Key Concerns")).toHaveValue("session B value");
+  });
+
+  it("ignores a summary payload belonging to a different chat", () => {
+    const { rerender } = render(<CallSummary chatId={1} callSummary={sessionA} />);
+
+    // chatId has moved to B but the query still holds A's cached payload for a
+    // render. Seeding from it would put A's values under B's id.
+    rerender(<CallSummary chatId={2} callSummary={sessionA} />);
+
+    // "--" is the no-summary-loaded placeholder: A's value has been dropped and
+    // nothing has been adopted in its place.
+    expect(screen.getByLabelText("Key Concerns")).toHaveValue("--");
   });
 });

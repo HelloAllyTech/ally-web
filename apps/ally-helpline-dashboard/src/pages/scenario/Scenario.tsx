@@ -219,7 +219,7 @@ export const Scenario: FC = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <div className="h-screen w-full flex flex-col bg-white" data-testid="scenario-page">
+      <div className="h-dvh w-full flex flex-col bg-white" data-testid="scenario-page">
         {scenario && isScenarioSuccess ? (
           <>
             {isAuthenticated() && (
@@ -238,7 +238,7 @@ export const Scenario: FC = () => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="flex flex-1 min-h-0 flex-col justify-center gap-6 w-full max-w-[600px] mx-auto px-4"
+              className="flex flex-1 min-h-0 flex-col justify-start gap-6 w-full max-w-[600px] mx-auto px-4 overflow-y-auto py-4"
             >
               {/* Language dropdown — shown when scenario has languages from the API */}
               {(availableLanguages?.length ?? 0) > 0 && (

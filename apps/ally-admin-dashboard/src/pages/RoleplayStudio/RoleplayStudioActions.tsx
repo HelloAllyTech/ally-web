@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from "react";
 
+import { Play } from "@carbon/icons-react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
-import { Play } from "@carbon/icons-react";
-import { Button, CarbonDropdown, InlineNotification, Modal } from "@ally-ui-mono/ui-shared";
+import { Button, CarbonDropdown } from "@ally-ui-mono/ui-shared";
 import { useGetScenarioLanguagesQuery, usePublishRoleplayVersionMutation } from "@api";
 import { en } from "@constants";
 import { useTryRoleplayLive } from "@hooks";
@@ -14,6 +14,8 @@ import { deriveRoleplayReadiness } from "@utils/roleplaySpec";
 interface RoleplayStudioActionsProps {
   /** Persists any dirty draft state before preview / publish. */
   onSaveDraft: () => Promise<boolean>;
+  /** Opens the Improve drawer (test-case runs + reports). */
+  onOpenImprove: () => void;
 }
 
 interface PreviewLanguage {
@@ -28,16 +30,18 @@ interface PreviewLanguage {
  *   a chosen language, and is only enabled once the spec is runnable (has
  *   states + a voice). When more than one language is configured, a picker lets
  *   the trainer choose which one to preview.
- * - Publish is only enabled once the full readiness checklist passes; it keeps
- *   the 409 no-completed-rehearsal -> force-confirm fallback.
+ * - Publish is only enabled once the full readiness checklist passes.
  */
-export const RoleplayStudioActions: React.FC<RoleplayStudioActionsProps> = ({ onSaveDraft }) => {
+export const RoleplayStudioActions: React.FC<RoleplayStudioActionsProps> = ({
+  onSaveDraft,
+  onOpenImprove,
+}) => {
   const strings = en.roleplayStudio.publish;
+  const improveStrings = en.roleplayStudio.improve;
   const { specId, versionId, spec } = useSelector(selectRoleplaySpecState);
   const { tryLive, isStartingSession } = useTryRoleplayLive({ onSaveDraft });
   const [publishVersion, { isLoading: isPublishing }] = usePublishRoleplayVersionMutation();
   const { data: languages = [] } = useGetScenarioLanguagesQuery({ active: true });
-  const [forceConfirm, setForceConfirm] = useState(false);
   const [previewLanguageId, setPreviewLanguageId] = useState<string | null>(null);
 
   const readiness = deriveRoleplayReadiness(spec);
@@ -76,19 +80,13 @@ export const RoleplayStudioActions: React.FC<RoleplayStudioActionsProps> = ({ on
   const handlePreview = () =>
     void tryLive(versionId, effectivePreviewId ? Number(effectivePreviewId) : undefined);
 
-  const doPublish = async (force: boolean) => {
+  const doPublish = async () => {
     if (!specId || !versionId) return;
     try {
       await onSaveDraft();
-      await publishVersion({ specId, versionId, force }).unwrap();
+      await publishVersion({ specId, versionId }).unwrap();
       toast.success(strings.published);
-    } catch (error) {
-      const status = (error as { status?: number | string })?.status;
-      if (status === 409 && !force) {
-        // 409 = no completed rehearsal for this version; offer force publish.
-        setForceConfirm(true);
-        return;
-      }
+    } catch {
       toast.error(strings.publishFailed);
     }
   };
@@ -123,42 +121,22 @@ export const RoleplayStudioActions: React.FC<RoleplayStudioActionsProps> = ({ on
           {isStartingSession ? strings.startingSession : strings.preview}
         </Button>
       </span>
+      {/* Improve needs the same runnable core as Preview — it plays the draft. */}
+      <span title={specComplete ? "" : improveStrings.buttonHint}>
+        <Button kind="secondary" size="sm" disabled={!specComplete} onClick={onOpenImprove}>
+          {improveStrings.button}
+        </Button>
+      </span>
       <span title={publishReady ? "" : strings.publishHint}>
         <Button
           kind="primary"
           size="sm"
           disabled={!publishReady || isPublishing}
-          onClick={() => void doPublish(false)}
+          onClick={() => void doPublish()}
         >
           {isPublishing ? strings.publishing : strings.publish}
         </Button>
       </span>
-
-      <Modal
-        open={forceConfirm}
-        size="sm"
-        modalHeading={
-          <span>
-            {strings.forceTitle} <em className="italic">{strings.forceTitleItalic}</em>
-          </span>
-        }
-        primaryButtonText={strings.forcePublish}
-        secondaryButtonText={en.common.cancel}
-        onRequestClose={() => setForceConfirm(false)}
-        onSecondarySubmit={() => setForceConfirm(false)}
-        onRequestSubmit={() => {
-          setForceConfirm(false);
-          void doPublish(true);
-        }}
-      >
-        <InlineNotification
-          kind="warning"
-          lowContrast
-          hideCloseButton
-          title={strings.forceDescription}
-          subtitle=""
-        />
-      </Modal>
     </div>
   );
 };

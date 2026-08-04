@@ -2,6 +2,7 @@ import { matchPath } from "react-router-dom";
 
 import { ButtonProps, ButtonVariant } from "@components/types";
 import { EMAIL_REGEX, FORM_FIELD_TYPES } from "@constants";
+import { getVoiceGenderLabel, getVoiceGenderRank } from "@constants/voiceProviders";
 import {
   AccessFilterValue,
   AssignmentStatus,
@@ -167,16 +168,49 @@ export const getChipValue = (items: string[]): string => {
   return items.length > 1 ? `${items[0]} +${items.length - 1}` : items[0];
 };
 
-// Map voices API response to dropdown options
+/**
+ * Map the voices API response to dropdown options.
+ *
+ * Options are grouped and ordered by provider, then gender, then name, and
+ * carry a `groupLabel` for dropdowns that render headers. The label alone used
+ * to be the voice name, which told a trainer nothing about who they were
+ * picking — two providers' voices for the same language sat side by side with
+ * no way to tell them apart.
+ *
+ * Gender is read from the flattened field the voices endpoint returns, falling
+ * back to `config.gender` for callers that hand over whole voice rows.
+ */
 export const getSimulationVoiceOptions = (
-  voices: Array<{ id?: string; name?: string }> = [],
-): Array<{ value: string; label: string }> => {
+  voices: Array<{
+    id?: string;
+    name?: string;
+    provider?: string;
+    gender?: string | null;
+    config?: Record<string, any>;
+  }> = [],
+): Array<{ value: string; label: string; groupLabel?: string }> => {
   return voices
     .map(v => ({
       value: v?.id ?? v?.name ?? "",
       label: formatCapitalizedEnum(v?.name ?? v?.id ?? ""),
+      providerLabel: v?.provider ? formatCapitalizedEnum(v.provider) : "",
+      gender: String(v?.gender ?? v?.config?.gender ?? "").toLowerCase(),
     }))
-    .filter(o => Boolean(o.value) && Boolean(o.label));
+    .filter(o => Boolean(o.value) && Boolean(o.label))
+    .sort(
+      (a, b) =>
+        a.providerLabel.localeCompare(b.providerLabel) ||
+        getVoiceGenderRank(a.gender) - getVoiceGenderRank(b.gender) ||
+        a.label.localeCompare(b.label),
+    )
+    .map(({ value, label, providerLabel, gender }) => ({
+      value,
+      label,
+      // Built from the row's own provider label rather than getVoiceGroupLabel,
+      // because these voices may carry a provider this build doesn't know and
+      // rendering it as "Unknown" would be worse than showing what's stored.
+      groupLabel: [providerLabel, getVoiceGenderLabel(gender)].filter(Boolean).join(" · "),
+    }));
 };
 
 // Type checking utility functions
