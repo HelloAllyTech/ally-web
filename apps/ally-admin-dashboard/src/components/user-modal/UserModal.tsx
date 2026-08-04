@@ -350,7 +350,7 @@ export const UserModal: React.FC<UserModalProps> = ({
       onMouseDown={handleBackdropMouseDown}
       onMouseUp={handleBackdropMouseUp}
     >
-      <div className="py-5 px-6 bg-white min-w-[400px] max-w-[90vw] max-h-[90vh] w-auto flex flex-col gap-5 relative font-primary rounded-[10px] shadow-2xl animate-fadeIn">
+      <div className="py-5 px-6 bg-white w-[520px] max-w-[90vw] max-h-[90vh] flex flex-col gap-5 relative font-primary rounded-[10px] shadow-2xl animate-fadeIn">
         {/* Header */}
         <div className="text-typography-900 flex justify-center w-full text-2xl font-primary relative flex-shrink-0">
           {title}
