@@ -268,6 +268,161 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(positions).toEqual([...positions].sort((a, b) => a - b));
     });
 
+    describe("narrowing a catalog picker by gender", () => {
+      const googleVoice = (config: Record<string, any>) => ({
+        id: "voice-gender",
+        name: "Gender check",
+        provider: "GOOGLE",
+        languageId: 1,
+        config,
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      });
+      const catalog = (data: any[]) => {
+        (api.useGetTtsCatalogQuery as any).mockReturnValue({
+          data,
+          isFetching: false,
+        });
+      };
+      const optionsFor = (label: string) =>
+        Array.from(screen.getByTestId(`dropdown-${label}`).querySelectorAll("option")).map(
+          o => o.textContent,
+        );
+
+      it("offers only the chosen gender's voices when the provider publishes one", () => {
+        catalog([
+          { value: "ta-IN-Chirp3-HD-Achernar", label: "Achernar", gender: "female" },
+          { value: "ta-IN-Chirp3-HD-Puck", label: "Puck", gender: "male" },
+        ]);
+        render(
+          <ScenarioVoiceSidePanel
+            {...defaultProps}
+            selectedVoice={googleVoice({ gender: "male" })}
+          />,
+        );
+
+        expect(optionsFor("Select voice name")).toEqual(["Select voice name", "Puck"]);
+      });
+
+      // The point of the filter's escape hatch: a provider that says nothing
+      // about gender must not end up with an empty picker.
+      it.each([
+        ["undefined", undefined],
+        ["null", null],
+        ["an empty string", ""],
+        ["whitespace only", "   "],
+      ])("keeps a voice whose gender is %s", (_label, gender) => {
+        catalog([
+          { value: "aura-asteria-en", label: "Asteria", gender: gender as any },
+          { value: "ta-IN-Chirp3-HD-Puck", label: "Puck", gender: "male" },
+        ]);
+        render(
+          <ScenarioVoiceSidePanel
+            {...defaultProps}
+            selectedVoice={googleVoice({ gender: "female" })}
+          />,
+        );
+
+        // Asteria has no usable gender, so it survives a "female" filter even
+        // though Puck (explicitly male) does not.
+        expect(optionsFor("Select voice name")).toEqual(["Select voice name", "Asteria"]);
+      });
+
+      // Google reports NEUTRAL today; a provider could add another category
+      // tomorrow. Only a gender this studio models may exclude a voice, so an
+      // unfamiliar value can never silently hide one.
+      it.each([["neutral"], ["NEUTRAL"], ["agender"], ["unspecified"]])(
+        "keeps a voice whose gender is %s — a category we do not model",
+        gender => {
+          catalog([
+            { value: "v-other", label: "River", gender },
+            { value: "v-m", label: "Puck", gender: "male" },
+          ]);
+          render(
+            <ScenarioVoiceSidePanel
+              {...defaultProps}
+              selectedVoice={googleVoice({ gender: "female" })}
+            />,
+          );
+
+          expect(optionsFor("Select voice name")).toEqual(["Select voice name", "River"]);
+        },
+      );
+
+      it("keeps every entry when the catalog carries no gender at all", () => {
+        // Deepgram's shape: measured, its model metadata has no gender field.
+        catalog([
+          { value: "aura-asteria-en", label: "Asteria" },
+          { value: "aura-orion-en", label: "Orion" },
+        ]);
+        render(
+          <ScenarioVoiceSidePanel
+            {...defaultProps}
+            selectedVoice={googleVoice({ gender: "male" })}
+          />,
+        );
+
+        expect(optionsFor("Select voice name")).toEqual(["Select voice name", "Asteria", "Orion"]);
+      });
+
+      it("ignores case and padding on both sides", () => {
+        catalog([{ value: "v-female", label: "Achernar", gender: "FEMALE" }]);
+        render(
+          <ScenarioVoiceSidePanel
+            {...defaultProps}
+            selectedVoice={googleVoice({ gender: " Female " })}
+          />,
+        );
+
+        expect(optionsFor("Select voice name")).toEqual(["Select voice name", "Achernar"]);
+      });
+
+      it("shows everything until a gender is chosen", () => {
+        catalog([
+          { value: "v-f", label: "Achernar", gender: "female" },
+          { value: "v-m", label: "Puck", gender: "male" },
+        ]);
+        render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={googleVoice({})} />);
+
+        expect(optionsFor("Select voice name")).toEqual(["Select voice name", "Achernar", "Puck"]);
+      });
+
+      it("never drops the voice already saved, even if it contradicts the gender", () => {
+        // Changing gender on a saved voice must not silently rewrite the voice
+        // it actually uses.
+        catalog([
+          { value: "v-f", label: "Achernar", gender: "female" },
+          { value: "v-m", label: "Puck", gender: "male" },
+        ]);
+        render(
+          <ScenarioVoiceSidePanel
+            {...defaultProps}
+            selectedVoice={googleVoice({ gender: "female", voice_name: "v-m" })}
+          />,
+        );
+
+        expect(screen.getByTestId("dropdown-Select voice name")).toHaveValue("v-m");
+        expect(optionsFor("Select voice name")).toContain("Puck");
+      });
+
+      it("falls back to the full list when a gender has no voices of its own", () => {
+        catalog([
+          { value: "v-f", label: "Achernar", gender: "female" },
+          { value: "v-f2", label: "Leda", gender: "female" },
+        ]);
+        render(
+          <ScenarioVoiceSidePanel
+            {...defaultProps}
+            selectedVoice={googleVoice({ gender: "non-binary" })}
+          />,
+        );
+
+        // An empty picker would read as "this provider has no voices".
+        expect(optionsFor("Select voice name")).toEqual(["Select voice name", "Achernar", "Leda"]);
+      });
+    });
+
     it("turns Deepgram's Model field into a picker too, requesting the voice's own language", () => {
       const deepgramVoice = {
         id: "voice-dg",

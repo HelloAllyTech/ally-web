@@ -222,6 +222,15 @@ export interface TtsCatalogEntry {
   value: string;
   /** What the picker shows. */
   label: string;
+  /**
+   * This voice's gender, where the provider publishes one — used to narrow the
+   * picker to the gender being configured. Absent rather than guessed whenever
+   * the provider says nothing usable: Deepgram exposes no gender at all,
+   * ElevenLabs' catalog is models rather than voices, and Google reports
+   * NEUTRAL for some voices. Treat absent as "unknown" and keep the entry — as
+   * "no match" it would empty those pickers.
+   */
+  gender?: string;
 }
 
 /** Params for the shared TTS catalog query — only some providers use `languageCode`/`voiceProvider`. */

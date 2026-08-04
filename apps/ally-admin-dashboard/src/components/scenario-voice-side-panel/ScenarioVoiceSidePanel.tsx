@@ -16,6 +16,7 @@ import { en } from "@constants";
 import {
   TTS_PROVIDER_OPTIONS,
   VoiceConfigField,
+  VoiceGender,
   getProviderLabel,
   getProviderSchema,
   getUnknownConfigKeys,
@@ -86,6 +87,13 @@ const PanelHeader: React.FC<{
 
 const textInputClass =
   "border-b border-border-light focus:outline-none focus:border-primary-500 text-base w-full py-1 bg-transparent";
+
+/**
+ * The genders this studio can actually represent. Only one of these is allowed
+ * to exclude a voice from a picker — anything else a provider reports counts as
+ * unknown, so a value we don't model can never quietly hide voices.
+ */
+const KNOWN_GENDERS = new Set<string>(Object.values(VoiceGender));
 
 export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
   selectedVoice,
@@ -208,17 +216,56 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
    * voice because this panel's own copy of the rule didn't agree with
    * ally-be's. Before any sync, or for every other provider, there's no such
    * verdict — just the plain catalog.
+   *
+   * Narrowed to the gender being configured where the provider publishes one.
+   * Entries with NO gender are always kept: Deepgram publishes none at all, an
+   * ElevenLabs catalog is models rather than voices, and Google reports NEUTRAL
+   * for some voices — reading a missing gender as "doesn't match" would empty
+   * those pickers entirely. The stored value also survives the filter, so
+   * switching gender on a saved voice can't silently drop the voice it uses.
    */
   const catalogFieldOptions = useMemo(() => {
     if (!catalogFieldKey) return null;
 
-    const source =
+    const unfiltered =
       isElevenLabsForm && syncResult?.modelOptions?.length
         ? syncResult.modelOptions
         : catalogEntries;
-    if (!source?.length) return null;
+    if (!unfiltered?.length) return null;
 
     const current = String(config[catalogFieldKey] ?? "").trim();
+    // Trimmed and lower-cased on both sides. Stored genders are not reliably
+    // normalised — ally-be's own voice lookup compares
+    // `LOWER(config ->> 'gender')` for that reason — so a case or whitespace
+    // difference must not decide whether a voice is offered.
+    const normalizeGender = (value?: string | null) =>
+      String(value ?? "")
+        .trim()
+        .toLowerCase();
+    const selectedGender = normalizeGender(config.gender);
+
+    const matchesGender = (entry: { gender?: string | null; value: string }) => {
+      // No gender chosen yet: nothing to narrow by.
+      if (!selectedGender) return true;
+      const entryGender = normalizeGender(entry.gender);
+      // The provider told us nothing about this voice's gender. Unknown is not
+      // a mismatch — hiding it would drop every Deepgram model and every
+      // ElevenLabs model.
+      if (!entryGender) return true;
+      // A category we don't model — Google's NEUTRAL today, whatever a
+      // provider adds next. Also unknown rather than a mismatch: only a gender
+      // we actually understand is allowed to exclude a voice, so a new value
+      // appearing upstream can never silently hide voices.
+      if (!KNOWN_GENDERS.has(entryGender)) return true;
+      return entryGender === selectedGender || entry.value === current;
+    };
+
+    const narrowed = unfiltered.filter(matchesGender);
+    // A gender with no voices of its own still needs something to pick from —
+    // same stance as ally-be taking the full list when a language matches
+    // nothing.
+    const source = narrowed.length ? narrowed : unfiltered;
+
     const currentIsListed = source.some(entry => entry.value === current);
     const entries =
       current && !currentIsListed
