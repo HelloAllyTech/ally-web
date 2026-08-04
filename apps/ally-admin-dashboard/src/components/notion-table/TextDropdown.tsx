@@ -33,6 +33,30 @@ interface TextDropdownProps {
   onLoadMore?: () => void;
   onSearch?: (searchTerm: string) => void;
   optionRenderer?: (option: DropdownOption, onSelect: (value: string) => void) => React.ReactNode;
+  /**
+   * Accept a typed value that matches no option, making this a combobox rather
+   * than a strict select.
+   *
+   * For fields whose catalog is a convenience rather than the full truth. An
+   * ElevenLabs voice created in Studio a minute ago is a real, valid id that
+   * simply is not in a cached list yet; a Google Gemini voice was absent from a
+   * language-scoped catalog for the same reason. In both cases a strict select
+   * left an admin unable to enter a value that works — the catalog should
+   * enrich the field, not constrain it.
+   *
+   * Requires `isSearchable`, since the search box is what the value is typed
+   * into.
+   */
+  allowCustomValue?: boolean;
+  /**
+   * Gate on what a typed value must look like before it can be committed.
+   *
+   * Without it, searching by name and finding nothing offers to store the
+   * search text — so typing "test voice picker" would save that as the voice id
+   * and the voice would simply never load. The caller knows the shape; the
+   * dropdown does not.
+   */
+  isValidCustomValue?: (value: string) => boolean;
 }
 
 export const TextDropdown = ({
@@ -48,6 +72,8 @@ export const TextDropdown = ({
   onLoadMore,
   onSearch,
   optionRenderer,
+  allowCustomValue = false,
+  isValidCustomValue,
 }: TextDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,6 +114,26 @@ export const TextDropdown = ({
     setHighlightedIndex(-1);
   };
 
+  /**
+   * Commit whatever was typed, when it matches no option and the caller allows
+   * it. Trimmed, because an id pasted from another tab routinely arrives with
+   * surrounding whitespace and would otherwise be stored unusable.
+   */
+  const trimmedSearch = searchTerm.trim();
+  const canCommitCustomValue =
+    allowCustomValue &&
+    trimmedSearch.length > 0 &&
+    !options?.some(option => option.value === trimmedSearch) &&
+    (!isValidCustomValue || isValidCustomValue(trimmedSearch));
+
+  const commitCustomValue = () => {
+    if (!canCommitCustomValue) return;
+    onChange(trimmedSearch, trimmedSearch);
+    setIsOpen(false);
+    setSearchTerm("");
+    setHighlightedIndex(-1);
+  };
+
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen) {
@@ -113,6 +159,10 @@ export const TextDropdown = ({
         e.preventDefault();
         if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
           selectOption(filteredOptions[highlightedIndex]);
+        } else {
+          // Nothing highlighted: Enter takes what was typed, so a value absent
+          // from the catalog is still reachable by keyboard alone.
+          commitCustomValue();
         }
         break;
       case keyCodes.escape:
@@ -222,16 +272,49 @@ export const TextDropdown = ({
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={handleSearchChange}
+                // The same handler as the trigger. It was only ever bound to
+                // the trigger, so once the search box took focus — which it
+                // does the moment the menu opens — arrows and Enter did
+                // nothing. A combobox needs Enter here to commit what was
+                // typed, and keyboard navigation of a filtered list is worth
+                // having regardless.
+                onKeyDown={handleKeyDown}
                 className="w-full px-2 py-1 text-sm border border-border-light rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               />
             </div>
+          )}
+
+          {/*
+            Offered first and always visible while it applies, so a value the
+            catalog does not know about is an obvious action rather than a
+            keyboard trick — the case that matters is a voice created moments
+            ago, which is exactly when someone is looking for it.
+          */}
+          {canCommitCustomValue && (
+            <button
+              type="button"
+              data-testid="dropdown-use-typed-value"
+              onMouseDown={e => {
+                e.stopPropagation();
+                commitCustomValue();
+              }}
+              className="w-full px-3 py-2 text-left text-sm text-primary-600 hover:bg-background-secondary border-b border-border-light"
+            >
+              Use “{trimmedSearch}”
+            </button>
           )}
 
           {/* Options List */}
           <div className="max-h-48 overflow-y-auto custom-scrollbar">
             {filteredOptions.length === 0 ? (
               <div className="px-3 py-2 text-sm text-typography-800 text-center">
-                No options found
+                {/*
+                  Only points upward when there is actually something up there:
+                  the caller can reject a typed value (a name is not a voice
+                  id), and telling someone to use an option that was withheld
+                  is worse than saying nothing matched.
+                */}
+                {canCommitCustomValue ? "No match — use what you typed above." : "No options found"}
               </div>
             ) : (
               filteredOptions.map((option, index) => {

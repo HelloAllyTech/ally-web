@@ -254,6 +254,12 @@ export interface TtsCatalogParams {
    * the bulk sync already filled in.
    */
   voiceId?: string;
+  /**
+   * Which config field the options are for, when a provider populates more than
+   * one. ElevenLabs takes `voice_id` for every voice in the workspace; omitted
+   * it serves that provider's model list. No other provider has a second field.
+   */
+  field?: string;
 }
 
 /**

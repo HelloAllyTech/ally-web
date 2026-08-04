@@ -868,3 +868,120 @@ describe("TextDropdown", () => {
     });
   });
 });
+
+/**
+ * A catalog should enrich a field, not constrain it. Converting a field to a
+ * strict select was the actual bug three times over: an ElevenLabs voice
+ * created in Studio minutes ago is a valid id absent from a cached list, a
+ * Google Gemini voice was missing from a language-scoped catalog, and an expired
+ * credential emptied a catalog entirely. In each case a select left an admin
+ * unable to enter a value that works.
+ */
+describe("TextDropdown — allowCustomValue", () => {
+  const options = [
+    { label: "Meenakshi", value: "iA7mRIiSweGrLdznkosO" },
+    { label: "Setu", value: "RBxPIvrKOP4ugCK2jVHD" },
+  ];
+
+  const open = (props: Record<string, unknown> = {}) => {
+    const onChange = vi.fn();
+    render(
+      <TextDropdown
+        value=""
+        options={options}
+        onChange={onChange}
+        isSearchable
+        allowCustomValue
+        placeholder="Select a voice"
+        {...props}
+      />,
+    );
+    fireEvent.mouseDown(screen.getByRole("button", { name: /select a voice/i }));
+    return onChange;
+  };
+
+  it("offers to use a typed value the catalog does not have", () => {
+    const onChange = open();
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "brandNewVoiceId123" },
+    });
+
+    const useTyped = screen.getByTestId("dropdown-use-typed-value");
+    expect(useTyped).toHaveTextContent("brandNewVoiceId123");
+    fireEvent.mouseDown(useTyped);
+    expect(onChange).toHaveBeenCalledWith("brandNewVoiceId123", "brandNewVoiceId123");
+  });
+
+  it("trims a pasted value, which routinely arrives with whitespace", () => {
+    const onChange = open();
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "  paddedVoiceId  " },
+    });
+    fireEvent.mouseDown(screen.getByTestId("dropdown-use-typed-value"));
+    expect(onChange).toHaveBeenCalledWith("paddedVoiceId", "paddedVoiceId");
+  });
+
+  it("does not offer a custom value that duplicates an existing option", () => {
+    open();
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "iA7mRIiSweGrLdznkosO" },
+    });
+    expect(screen.queryByTestId("dropdown-use-typed-value")).not.toBeInTheDocument();
+  });
+
+  it("commits a typed value on Enter when nothing is highlighted", () => {
+    const onChange = open();
+    const search = screen.getByPlaceholderText("Search...");
+    fireEvent.change(search, { target: { value: "typedByKeyboard" } });
+    fireEvent.keyDown(search, { key: "Enter" });
+    expect(onChange).toHaveBeenCalledWith("typedByKeyboard", "typedByKeyboard");
+  });
+
+  it("still prefers a highlighted option over the typed text", () => {
+    const onChange = open();
+    const search = screen.getByPlaceholderText("Search...");
+    fireEvent.change(search, { target: { value: "Meen" } });
+    fireEvent.keyDown(search, { key: "ArrowDown" });
+    fireEvent.keyDown(search, { key: "Enter" });
+    expect(onChange).toHaveBeenCalledWith("iA7mRIiSweGrLdznkosO", "Meenakshi");
+  });
+
+  it("says what to do when nothing matches, rather than just 'No options found'", () => {
+    open();
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "zzz-no-match" },
+    });
+    expect(screen.getByText(/use what you typed above/i)).toBeInTheDocument();
+  });
+
+  it("does not point at an option the caller withheld", () => {
+    // Searching by name legitimately finds nothing, and a name is not a valid
+    // id — so there is nothing above to use, and saying otherwise misleads.
+    const onChange = open({ isValidCustomValue: (v: string) => !/\s/.test(v) });
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "test voice picker" },
+    });
+    expect(screen.queryByTestId("dropdown-use-typed-value")).not.toBeInTheDocument();
+    expect(screen.getByText("No options found")).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByPlaceholderText("Search..."), { key: "Enter" });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("accepts a typed value the caller considers valid", () => {
+    const onChange = open({ isValidCustomValue: (v: string) => v.length >= 18 });
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "RuHp70tvNknMdh0zmb8P" },
+    });
+    fireEvent.mouseDown(screen.getByTestId("dropdown-use-typed-value"));
+    expect(onChange).toHaveBeenCalledWith("RuHp70tvNknMdh0zmb8P", "RuHp70tvNknMdh0zmb8P");
+  });
+
+  it("stays a strict select when the caller does not opt in", () => {
+    open({ allowCustomValue: false });
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "somethingNew" },
+    });
+    expect(screen.queryByTestId("dropdown-use-typed-value")).not.toBeInTheDocument();
+    expect(screen.getByText("No options found")).toBeInTheDocument();
+  });
+});

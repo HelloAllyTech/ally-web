@@ -129,14 +129,21 @@ describe("ScenarioVoiceSidePanel", () => {
     // ElevenLabs sync/lookup. Ignores which provider was actually asked for,
     // matching every other API mock in this file — tests that care about a
     // specific provider's catalog override this per-test.
-    (api.useGetTtsCatalogQuery as any).mockReturnValue({
-      data: [
-        { value: "eleven_turbo_v2_5", label: "eleven_turbo_v2_5" },
-        { value: "eleven_multilingual_v2", label: "eleven_multilingual_v2" },
-        { value: "eleven_v3", label: "eleven_v3" },
-      ],
-      isFetching: false,
-    });
+    // Param-aware, because ElevenLabs now has two catalogs: its model list and
+    // the workspace's voices for the Voice ID field. A single response for both
+    // would put model ids in the voice picker.
+    (api.useGetTtsCatalogQuery as any).mockImplementation((params: any) =>
+      params?.field === "voice_id"
+        ? { data: [], isFetching: false }
+        : {
+            data: [
+              { value: "eleven_turbo_v2_5", label: "eleven_turbo_v2_5" },
+              { value: "eleven_multilingual_v2", label: "eleven_multilingual_v2" },
+              { value: "eleven_v3", label: "eleven_v3" },
+            ],
+            isFetching: false,
+          },
+    );
   });
 
   describe("rendering", () => {
@@ -300,18 +307,22 @@ describe("ScenarioVoiceSidePanel", () => {
       });
 
       it("renders the recommendation the catalog came back with, with no sync run", () => {
-        (api.useGetTtsCatalogQuery as any).mockReturnValue({
-          data: [
-            {
-              value: "eleven_multilingual_v2",
-              label: "Eleven Multilingual v2",
-              recommended: true,
-            },
-            { value: "eleven_v3", label: "Eleven v3", recommended: false },
-            { value: "eleven_flash_v2_5", label: "Eleven Flash v2.5", recommended: null },
-          ],
-          isFetching: false,
-        });
+        (api.useGetTtsCatalogQuery as any).mockImplementation((params: any) =>
+          params?.field === "voice_id"
+            ? { data: [], isFetching: false }
+            : {
+                data: [
+                  {
+                    value: "eleven_multilingual_v2",
+                    label: "Eleven Multilingual v2",
+                    recommended: true,
+                  },
+                  { value: "eleven_v3", label: "Eleven v3", recommended: false },
+                  { value: "eleven_flash_v2_5", label: "Eleven Flash v2.5", recommended: null },
+                ],
+                isFetching: false,
+              },
+        );
         render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
 
         expect(mockLookupElevenLabsVoice).not.toHaveBeenCalled();
@@ -323,10 +334,14 @@ describe("ScenarioVoiceSidePanel", () => {
       // The advisory and the picker label must not contradict each other, so
       // both defer to the same per-voice verdict.
       it("drops the v3 advisory once the catalog stops objecting to v3 for this voice", () => {
-        (api.useGetTtsCatalogQuery as any).mockReturnValue({
-          data: [{ value: "eleven_v3", label: "Eleven v3", recommended: null }],
-          isFetching: false,
-        });
+        (api.useGetTtsCatalogQuery as any).mockImplementation((params: any) =>
+          params?.field === "voice_id"
+            ? { data: [], isFetching: false }
+            : {
+                data: [{ value: "eleven_v3", label: "Eleven v3", recommended: null }],
+                isFetching: false,
+              },
+        );
         render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
 
         // voice_type is still "pvc" — only ElevenLabs' answer changed.
@@ -334,10 +349,14 @@ describe("ScenarioVoiceSidePanel", () => {
       });
 
       it("keeps the v3 advisory while the catalog still flags v3", () => {
-        (api.useGetTtsCatalogQuery as any).mockReturnValue({
-          data: [{ value: "eleven_v3", label: "Eleven v3", recommended: false }],
-          isFetching: false,
-        });
+        (api.useGetTtsCatalogQuery as any).mockImplementation((params: any) =>
+          params?.field === "voice_id"
+            ? { data: [], isFetching: false }
+            : {
+                data: [{ value: "eleven_v3", label: "Eleven v3", recommended: false }],
+                isFetching: false,
+              },
+        );
         render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
 
         expect(screen.getByTestId("elevenlabs-v3-warning")).toHaveTextContent(
@@ -348,10 +367,14 @@ describe("ScenarioVoiceSidePanel", () => {
       it("still warns from voice type when the catalog says nothing about v3", () => {
         // Losing the advisory for lack of data would be the worst outcome —
         // silence is what let 23 production rows end up misconfigured.
-        (api.useGetTtsCatalogQuery as any).mockReturnValue({
-          data: [{ value: "eleven_multilingual_v2", label: "Eleven Multilingual v2" }],
-          isFetching: false,
-        });
+        (api.useGetTtsCatalogQuery as any).mockImplementation((params: any) =>
+          params?.field === "voice_id"
+            ? { data: [], isFetching: false }
+            : {
+                data: [{ value: "eleven_multilingual_v2", label: "Eleven Multilingual v2" }],
+                isFetching: false,
+              },
+        );
         render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
 
         expect(screen.getByTestId("elevenlabs-v3-warning")).toHaveTextContent(
@@ -382,6 +405,73 @@ describe("ScenarioVoiceSidePanel", () => {
       });
     });
 
+    describe("Voice ID as a picker over the workspace's voices", () => {
+      const voiceCatalog = (voices: any[]) => {
+        (api.useGetTtsCatalogQuery as any).mockImplementation((params: any) =>
+          params?.field === "voice_id"
+            ? { data: voices, isFetching: false }
+            : { data: [{ value: "eleven_v3", label: "eleven_v3" }], isFetching: false },
+        );
+      };
+      const VOICES = [
+        { value: "iA7mRIiSweGrLdznkosO", label: "Meenakshi (ta · tamil)", gender: "female" },
+        { value: "RBxPIvrKOP4ugCK2jVHD", label: "Setu (hi · marathi)", gender: "male" },
+      ];
+
+      it("asks ally-be for the workspace voices, keyed to the voice_id field", () => {
+        voiceCatalog(VOICES);
+        render(<ScenarioVoiceSidePanel {...defaultProps} />);
+        fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+
+        expect(
+          (api.useGetTtsCatalogQuery as any).mock.calls.some(
+            ([args]: any[]) => args?.provider === "ELEVENLABS" && args?.field === "voice_id",
+          ),
+        ).toBe(true);
+      });
+
+      it("offers voices by name instead of asking for a pasted id", () => {
+        voiceCatalog(VOICES);
+        render(<ScenarioVoiceSidePanel {...defaultProps} />);
+        fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+
+        const options = Array.from(
+          screen.getByTestId("dropdown-Select voice id").querySelectorAll("option"),
+        ).map(o => o.textContent);
+        expect(options).toEqual([
+          "Select voice id",
+          "Meenakshi (ta · tamil)",
+          "Setu (hi · marathi)",
+        ]);
+      });
+
+      it("narrows the voices to the gender being configured", () => {
+        voiceCatalog(VOICES);
+        render(<ScenarioVoiceSidePanel {...defaultProps} />);
+        fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+        fireEvent.change(screen.getByTestId("dropdown-Select gender"), {
+          target: { value: "female" },
+        });
+
+        expect(
+          Array.from(screen.getByTestId("dropdown-Select voice id").querySelectorAll("option")).map(
+            o => o.textContent,
+          ),
+        ).toEqual(["Select voice id", "Meenakshi (ta · tamil)"]);
+      });
+
+      // A voice created in ElevenLabs Studio moments ago is a valid id the
+      // cached catalog has not seen. Before this it could not be entered at all
+      // once the field became a select.
+      it("keeps Voice ID a plain text field when no voice catalog is available", () => {
+        voiceCatalog([]);
+        render(<ScenarioVoiceSidePanel {...defaultProps} />);
+        fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+
+        expect(screen.getByLabelText("Voice ID")).toBeInTheDocument();
+      });
+    });
+
     describe("narrowing a catalog picker by gender", () => {
       const googleVoice = (config: Record<string, any>) => ({
         id: "voice-gender",
@@ -394,10 +484,11 @@ describe("ScenarioVoiceSidePanel", () => {
         active: true,
       });
       const catalog = (data: any[]) => {
-        (api.useGetTtsCatalogQuery as any).mockReturnValue({
-          data,
-          isFetching: false,
-        });
+        (api.useGetTtsCatalogQuery as any).mockImplementation((params: any) =>
+          params?.field === "voice_id"
+            ? { data: [], isFetching: false }
+            : { data, isFetching: false },
+        );
       };
       const optionsFor = (label: string) =>
         Array.from(screen.getByTestId(`dropdown-${label}`).querySelectorAll("option")).map(

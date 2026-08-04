@@ -96,6 +96,35 @@ const textInputClass =
  */
 const KNOWN_GENDERS = new Set<string>(Object.values(VoiceGender));
 
+/**
+ * What a catalog-backed picker's entries have in common. A sync's
+ * `modelOptions` carry a per-voice verdict but no gender; a provider catalog
+ * carries gender and, for ElevenLabs models, sometimes a verdict too.
+ */
+type PickerEntry = {
+  value: string;
+  label: string;
+  gender?: string | null;
+  recommended?: boolean | null;
+};
+
+/**
+ * Whether a string is plausibly an ElevenLabs voice id rather than something
+ * someone typed to search with.
+ *
+ * The ids are 20-character alphanumeric ("iA7mRIiSweGrLdznkosO"), so a length
+ * floor plus "no whitespace" separates them from a name. Deliberately loose —
+ * this only decides whether to offer a typed value and whether to spend a
+ * lookup on it, and being strict about a format ElevenLabs could widen would
+ * lock out ids that work.
+ */
+const ELEVENLABS_VOICE_ID_MIN_LENGTH = 18;
+
+export const looksLikeElevenLabsVoiceId = (value: string): boolean => {
+  const trimmed = value.trim();
+  return trimmed.length >= ELEVENLABS_VOICE_ID_MIN_LENGTH && !/\s/.test(trimmed);
+};
+
 export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
   selectedVoice,
   isOpen,
@@ -239,47 +268,54 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
    * those pickers entirely. The stored value also survives the filter, so
    * switching gender on a saved voice can't silently drop the voice it uses.
    */
+  /**
+   * Drop the entries whose gender contradicts the one being configured, shared
+   * by every catalog-backed picker.
+   *
+   * Only a gender this studio models may exclude a voice. Absent, blank and
+   * unrecognised all count as unknown and stay — all 102 Deepgram models and 21
+   * of 153 ElevenLabs voices publish none, so treating absence as a mismatch
+   * would empty those pickers. `keepValue` is never dropped, so changing gender
+   * on a saved voice cannot silently rewrite the voice it uses, and if nothing
+   * matches the full list comes back rather than an empty picker.
+   */
+  const narrowByGender = useCallback(
+    <T extends { value: string; gender?: string | null }>(
+      entries: T[] | undefined,
+      keepValue: string,
+    ): T[] | undefined => {
+      if (!entries?.length) return entries;
+      const normalize = (value?: string | null) =>
+        String(value ?? "")
+          .trim()
+          .toLowerCase();
+      const selected = normalize(config.gender);
+      if (!selected) return entries;
+
+      const narrowed = entries.filter(entry => {
+        const entryGender = normalize(entry.gender);
+        if (!entryGender) return true;
+        if (!KNOWN_GENDERS.has(entryGender)) return true;
+        return entryGender === selected || entry.value === keepValue;
+      });
+      return narrowed.length ? narrowed : entries;
+    },
+    [config.gender],
+  );
+
   const catalogFieldOptions = useMemo(() => {
     if (!catalogFieldKey) return null;
 
-    const unfiltered =
+    // One shape for both sources: a sync's modelOptions carry a verdict but no
+    // gender, a catalog carries gender and sometimes a verdict.
+    const unfiltered: PickerEntry[] | undefined =
       isElevenLabsForm && syncResult?.modelOptions?.length
         ? syncResult.modelOptions
         : catalogEntries;
     if (!unfiltered?.length) return null;
 
     const current = String(config[catalogFieldKey] ?? "").trim();
-    // Trimmed and lower-cased on both sides. Stored genders are not reliably
-    // normalised — ally-be's own voice lookup compares
-    // `LOWER(config ->> 'gender')` for that reason — so a case or whitespace
-    // difference must not decide whether a voice is offered.
-    const normalizeGender = (value?: string | null) =>
-      String(value ?? "")
-        .trim()
-        .toLowerCase();
-    const selectedGender = normalizeGender(config.gender);
-
-    const matchesGender = (entry: { gender?: string | null; value: string }) => {
-      // No gender chosen yet: nothing to narrow by.
-      if (!selectedGender) return true;
-      const entryGender = normalizeGender(entry.gender);
-      // The provider told us nothing about this voice's gender. Unknown is not
-      // a mismatch — hiding it would drop every Deepgram model and every
-      // ElevenLabs model.
-      if (!entryGender) return true;
-      // A category we don't model — Google's NEUTRAL today, whatever a
-      // provider adds next. Also unknown rather than a mismatch: only a gender
-      // we actually understand is allowed to exclude a voice, so a new value
-      // appearing upstream can never silently hide voices.
-      if (!KNOWN_GENDERS.has(entryGender)) return true;
-      return entryGender === selectedGender || entry.value === current;
-    };
-
-    const narrowed = unfiltered.filter(matchesGender);
-    // A gender with no voices of its own still needs something to pick from —
-    // same stance as ally-be taking the full list when a language matches
-    // nothing.
-    const source = narrowed.length ? narrowed : unfiltered;
+    const source = narrowByGender(unfiltered, current) ?? unfiltered;
 
     const currentIsListed = source.some(entry => entry.value === current);
     const entries =
@@ -297,7 +333,29 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
             : entry.label;
       return { value: entry.value, label };
     });
-  }, [catalogFieldKey, catalogEntries, config, isElevenLabsForm, syncResult]);
+  }, [catalogFieldKey, catalogEntries, config, isElevenLabsForm, syncResult, narrowByGender]);
+
+  /**
+   * Every voice in the ElevenLabs workspace, so Voice ID is a picker rather
+   * than somewhere to paste an id out of ElevenLabs Studio. A second catalog
+   * because ElevenLabs is the one provider that populates two fields; a fixed
+   * extra hook rather than a loop, since only this provider needs it.
+   *
+   * A voice created in Studio can be up to the catalog's cache window behind,
+   * which is exactly why the field stays typeable — see the renderer. A refresh
+   * control would need ally-be to bypass its own cache, not just a refetch here.
+   */
+  const { data: elevenLabsVoiceEntries } = useGetTtsCatalogQuery(
+    { provider: normalizedProvider, field: "voice_id" },
+    { skip: !isElevenLabsForm },
+  );
+
+  const voiceIdFieldOptions = useMemo(() => {
+    if (!isElevenLabsForm || !elevenLabsVoiceEntries?.length) return null;
+    const current = String(config.voice_id ?? config.voiceId ?? "").trim();
+    const source = narrowByGender(elevenLabsVoiceEntries, current) ?? elevenLabsVoiceEntries;
+    return source.map(entry => ({ value: entry.value, label: entry.label }));
+  }, [isElevenLabsForm, elevenLabsVoiceEntries, config, narrowByGender]);
 
   /**
    * ElevenLabs' verdict on the v3 model for THIS voice, if we have one — from
@@ -337,14 +395,27 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
    */
   const syncedCategory = isElevenLabsForm ? syncResult?.category : null;
 
+  /**
+   * Which fields a catalog is standing behind, so the renderer can make those
+   * searchable and still accept a typed value. Kept beside the schema rather
+   * than inside it, because a catalog is a runtime fact about this panel, not
+   * part of the provider's field definition.
+   */
+  const catalogBackedFields = useMemo(() => {
+    const keys = new Map<string, { value: string; label: string }[]>();
+    if (catalogFieldKey && catalogFieldOptions) keys.set(catalogFieldKey, catalogFieldOptions);
+    if (voiceIdFieldOptions) keys.set("voice_id", voiceIdFieldOptions);
+    return keys;
+  }, [catalogFieldKey, catalogFieldOptions, voiceIdFieldOptions]);
+
   const effectiveProviderSchema = useMemo(() => {
-    const needsCatalogField = Boolean(catalogFieldKey && catalogFieldOptions);
-    if (!needsCatalogField && !syncedCategory) return providerSchema;
+    if (!catalogBackedFields.size && !syncedCategory) return providerSchema;
 
     return providerSchema.map(field => {
       let next = field;
-      if (needsCatalogField && field.key === catalogFieldKey) {
-        next = { ...next, type: "select" as const, options: catalogFieldOptions! };
+      const options = catalogBackedFields.get(field.key);
+      if (options) {
+        next = { ...next, type: "select" as const, options };
       }
       if (syncedCategory && field.key === "voice_type") {
         next = {
@@ -354,7 +425,7 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       }
       return next;
     });
-  }, [providerSchema, catalogFieldKey, catalogFieldOptions, syncedCategory]);
+  }, [providerSchema, catalogBackedFields, syncedCategory]);
 
   /**
    * Ask ElevenLabs how this voice was created. The answer cannot be derived
@@ -404,7 +475,8 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     const isNewElevenLabsVoice =
       !selectedVoice?.id && String(formData.provider ?? "").toUpperCase() === "ELEVENLABS";
     const voiceId = String(config.voice_id ?? config.voiceId ?? "").trim();
-    const looksLikeAnId = voiceId.length >= 18 && voiceId !== lastLookedUpVoiceIdRef.current;
+    const looksLikeAnId =
+      looksLikeElevenLabsVoiceId(voiceId) && voiceId !== lastLookedUpVoiceIdRef.current;
 
     if (!isNewElevenLabsVoice || !looksLikeAnId) {
       return undefined;
@@ -712,12 +784,29 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
     }
 
     if (field.type === "select") {
+      // A catalog is a convenience, not the full truth: it can be minutes
+      // stale, scoped to a language, or empty because a credential expired. So
+      // those fields stay typeable — the alternative locked admins out of
+      // values that work. A hand-written schema enum (Gender, Voice type) is
+      // genuinely closed and stays a strict select.
+      const fromCatalog = catalogBackedFields.has(field.key);
       return (
         <TextDropdown
           value={value ?? ""}
           options={field.options ?? []}
           onChange={(next: string) => setConfigValue(field, next)}
           placeholder={`Select ${field.label.toLowerCase()}`}
+          isSearchable={fromCatalog}
+          allowCustomValue={fromCatalog}
+          // Searching by name and finding nothing must not offer to store the
+          // search text: typing "test voice picker" would save that as the
+          // voice id, and the voice would simply never load. Same shape test
+          // the debounced lookup uses, so what the picker accepts and what we
+          // bother looking up agree.
+          isValidCustomValue={field.key === "voice_id" ? looksLikeElevenLabsVoiceId : undefined}
+          searchPlaceholder={
+            field.key === "voice_id" ? "Search by name, or paste a voice id…" : "Search…"
+          }
         />
       );
     }
