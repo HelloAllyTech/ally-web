@@ -416,6 +416,14 @@ export interface GetScenarioVoicesQuery {
   order?: string; // e.g. "asc" | "desc"
   providers?: string[];
   languageIds?: number[];
+  /**
+   * Comma-joined server-side. `unset` is a sentinel for "this field is missing",
+   * which is how an admin finds the rows still needing one — a voice with no
+   * gender drops its language out of simulation creation, and one with no age
+   * cannot be ordered against a persona's age.
+   */
+  genders?: string[];
+  ages?: string[];
 }
 
 export interface GetCoverImageUrlRequest {
@@ -478,6 +486,8 @@ export interface createTriggerResponse {
 export interface ScenarioVoiceFilters {
   providers: string[];
   languages: string[];
+  genders: string[];
+  ages: string[];
 }
 
 export interface CharacterData {

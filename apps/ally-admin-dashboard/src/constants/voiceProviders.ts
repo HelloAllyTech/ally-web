@@ -89,6 +89,34 @@ export enum VoiceAge {
   SENIOR = "senior",
 }
 
+/**
+ * What the voices list sends to mean "this field is missing".
+ *
+ * Not a stored value — ally-be's filter treats it as a null-or-blank test. It is
+ * the point of filtering on these at all: finding the rows that still need one,
+ * since a voice with no gender drops its language out of simulation creation and
+ * one with no age cannot be ordered against a persona's.
+ */
+export const UNSET_FILTER_VALUE = "unset";
+
+/** Gender choices for the voices list filter, plus the gap. */
+export const VOICE_GENDER_FILTER_OPTIONS = [
+  { label: "Male", value: VoiceGender.MALE },
+  { label: "Female", value: VoiceGender.FEMALE },
+  { label: "Non-binary", value: VoiceGender.NON_BINARY },
+  { label: "Not set", value: UNSET_FILTER_VALUE },
+];
+
+/** Age choices for the voices list filter, plus the gap. */
+export const VOICE_AGE_FILTER_OPTIONS = [
+  { label: "Child", value: VoiceAge.CHILD },
+  { label: "Teen", value: VoiceAge.TEEN },
+  { label: "Young adult", value: VoiceAge.YOUNG_ADULT },
+  { label: "Adult", value: VoiceAge.ADULT },
+  { label: "Senior", value: VoiceAge.SENIOR },
+  { label: "Not set", value: UNSET_FILTER_VALUE },
+];
+
 const AGE_FIELD: VoiceConfigField = {
   key: "age",
   label: "Age",

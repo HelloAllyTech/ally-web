@@ -11,6 +11,10 @@ import {
   getElevenLabsV3Warning,
   toVoiceAgeBand,
   VoiceAge,
+  VoiceGender,
+  UNSET_FILTER_VALUE,
+  VOICE_AGE_FILTER_OPTIONS,
+  VOICE_GENDER_FILTER_OPTIONS,
   isMissingGender,
   isSupportedProvider,
   readConfigField,
@@ -582,5 +586,32 @@ describe("Age is offered for every provider", () => {
     // them a blank field and quietly rewrite their age on the next save.
     const age = VOICE_CONFIG_SCHEMA[TtsProvider.SARVAM].find(f => f.key === "age");
     expect(age!.options?.map(o => o.value)).toContain("adult");
+  });
+});
+
+describe("voices list filter options", () => {
+  // The point of filtering on these is finding the rows that still need one: a
+  // voice with no gender drops its language out of simulation creation, and one
+  // with no age cannot be ordered against a persona's.
+  it("offers a way to find the gaps, not just the values", () => {
+    expect(VOICE_GENDER_FILTER_OPTIONS.map(o => o.value)).toContain(UNSET_FILTER_VALUE);
+    expect(VOICE_AGE_FILTER_OPTIONS.map(o => o.value)).toContain(UNSET_FILTER_VALUE);
+  });
+
+  it("offers every gender a voice can be saved with", () => {
+    const filterable = VOICE_GENDER_FILTER_OPTIONS.map(o => o.value);
+    Object.values(VoiceGender).forEach(gender => expect(filterable).toContain(gender));
+  });
+
+  it("offers every age band a voice can be saved with", () => {
+    const filterable = VOICE_AGE_FILTER_OPTIONS.map(o => o.value);
+    Object.values(VoiceAge).forEach(age => expect(filterable).toContain(age));
+  });
+
+  // `unset` is a sentinel the server turns into a null-or-blank test, so it must
+  // never collide with something an admin could actually pick.
+  it("uses a sentinel no real value can shadow", () => {
+    expect(Object.values(VoiceGender)).not.toContain(UNSET_FILTER_VALUE as any);
+    expect(Object.values(VoiceAge)).not.toContain(UNSET_FILTER_VALUE as any);
   });
 });

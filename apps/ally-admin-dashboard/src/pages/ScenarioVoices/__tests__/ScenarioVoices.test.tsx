@@ -21,9 +21,13 @@ vi.mock("@components/filters/FilterDropdown", () => ({
         <button
           data-testid="apply-filters-btn"
           onClick={() =>
+            // Mirrors the real FilterDropdown, which iterates every declared
+            // section and always emits an array — empty when nothing is ticked.
             onApplyFilters({
               providers: ["Google"],
               languages: ["1"],
+              genders: ["male", "unset"],
+              ages: ["adult"],
             })
           }
         >
@@ -309,6 +313,10 @@ describe("ScenarioVoices Page", () => {
         expect.objectContaining({
           providers: ["Google"],
           languageIds: [1],
+          // `unset` rides through untranslated — ally-be turns it into a
+          // null-or-blank test, which is how the gaps get found.
+          genders: ["male", "unset"],
+          ages: ["adult"],
           offset: 0,
         }),
       );

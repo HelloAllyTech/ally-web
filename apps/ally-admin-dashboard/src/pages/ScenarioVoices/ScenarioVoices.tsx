@@ -15,6 +15,8 @@ import { ButtonVariant } from "@components/types";
 import { en, SCENARIO_VOICE_COLUMNS, SORT_BY, SORT_ORDER } from "@constants";
 import {
   TTS_PROVIDER_OPTIONS,
+  VOICE_AGE_FILTER_OPTIONS,
+  VOICE_GENDER_FILTER_OPTIONS,
   isSupportedProvider,
   summarizeVoiceConfig,
 } from "@constants/voiceProviders";
@@ -77,6 +79,8 @@ export const ScenarioVoices: React.FC = () => {
   const [filters, setFilters] = useState<ScenarioVoiceFilters>({
     providers: [],
     languages: [],
+    genders: [],
+    ages: [],
   });
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
@@ -89,6 +93,8 @@ export const ScenarioVoices: React.FC = () => {
     order: SORT_ORDER.DESC,
     providers: filters.providers.length > 0 ? filters.providers : undefined,
     languageIds: filters.languages.length > 0 ? filters.languages.map(Number) : undefined,
+    genders: filters.genders.length > 0 ? filters.genders : undefined,
+    ages: filters.ages.length > 0 ? filters.ages : undefined,
   });
 
   useEffect(() => {
@@ -188,6 +194,35 @@ export const ScenarioVoices: React.FC = () => {
         allValue: filters.languages,
         onClear: () => {
           setFilters(prev => ({ ...prev, languages: [] }));
+          setOffset(0);
+          setVoices([]);
+        },
+      });
+    }
+
+    const labelFor = (options: { label: string; value: string }[], values: string[]) =>
+      values.map(v => options.find(o => o.value === v)?.label ?? v).join(", ");
+
+    if (filters.genders.length > 0) {
+      chips.push({
+        label: "Gender",
+        value: labelFor(VOICE_GENDER_FILTER_OPTIONS, filters.genders),
+        allValue: filters.genders,
+        onClear: () => {
+          setFilters(prev => ({ ...prev, genders: [] }));
+          setOffset(0);
+          setVoices([]);
+        },
+      });
+    }
+
+    if (filters.ages.length > 0) {
+      chips.push({
+        label: "Age",
+        value: labelFor(VOICE_AGE_FILTER_OPTIONS, filters.ages),
+        allValue: filters.ages,
+        onClear: () => {
+          setFilters(prev => ({ ...prev, ages: [] }));
           setOffset(0);
           setVoices([]);
         },
@@ -525,6 +560,16 @@ export const ScenarioVoices: React.FC = () => {
                 label: l.label,
                 value: String(l.language_id),
               })),
+            },
+            {
+              id: "genders",
+              label: "Gender",
+              options: VOICE_GENDER_FILTER_OPTIONS,
+            },
+            {
+              id: "ages",
+              label: "Age",
+              options: VOICE_AGE_FILTER_OPTIONS,
             },
           ]}
         />
