@@ -184,6 +184,17 @@ export const UserModal: React.FC<UserModalProps> = ({
   const renderDropdownWithTagField = (field: FieldProps, index: number) => {
     if (!control) return null;
 
+    // A tag this picker doesn't offer can be rendered but never removed or
+    // re-added, so seed it only with the roles that ARE offered. The rest (the
+    // super-admin tier, managed on the Super Admins tab) are shown as read-only
+    // context by the caller's extraContent and re-added when the form is saved.
+    const offeredRoles = new Set(
+      (field.options ?? []).map(option => ("name" in option && option.name) || option.value),
+    );
+    const heldRoles: string[] = details?.roles ?? [];
+    const heldOfferedRoles = heldRoles.filter(role => offeredRoles.has(role));
+    const holdsUnofferedRole = heldRoles.some(role => !offeredRoles.has(role));
+
     return (
       <div key={field.id} className="flex flex-col gap-3">
         {details && <ProfileCard user={details} />}
@@ -191,17 +202,22 @@ export const UserModal: React.FC<UserModalProps> = ({
           key={index}
           name={field.id}
           control={control}
-          defaultValue={details?.roles || []}
+          defaultValue={heldOfferedRoles}
           rules={{
             validate: (value: string[]) =>
-              (value && value.length > 0) || en.userManagement.changeRoleErrorMessage,
+              // "At least one role" is already satisfied by a role this picker
+              // can't see, so an empty selection is valid for those accounts —
+              // it's how the last app role gets taken off a staff account.
+              holdsUnofferedRole ||
+              (value && value.length > 0) ||
+              en.userManagement.changeRoleErrorMessage,
           }}
           render={({ field: controllerField, fieldState }) => (
             <div className="flex flex-col gap-1">
               <DropdownwithTag
                 label={field.label}
                 options={field.options ?? []}
-                initialValue={details?.roles || []}
+                initialValue={heldOfferedRoles}
                 onChange={(selectedRoles: string[]) => {
                   controllerField.onChange(selectedRoles);
                   handleLearnerRoleChange(selectedRoles);
