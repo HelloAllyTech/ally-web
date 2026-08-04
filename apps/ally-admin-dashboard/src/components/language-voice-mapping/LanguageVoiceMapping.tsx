@@ -183,10 +183,18 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
    * choose in: pick the vendor you trust for this language, then the gender the
    * persona needs. A flat alphabetical list of every voice across every
    * provider gave no way to narrow either axis.
+   *
+   * Once the persona has a gender, its voices sort to the top — then the ones
+   * with no recorded gender, then the rest. Ordering rather than filtering,
+   * because voicing a persona against its gender is a legitimate choice and a
+   * voice nobody recorded a gender for is still usable; hiding either would
+   * take that decision away.
    */
+  const personaGender = watch("gender") as string | undefined;
+
   const getVoiceOptions = useCallback(
-    (language: LanguageOption) => buildGroupedVoiceOptions(language.voices),
-    [],
+    (language: LanguageOption) => buildGroupedVoiceOptions(language.voices, personaGender),
+    [personaGender],
   );
 
   const sttOptions = useMemo(

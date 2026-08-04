@@ -399,3 +399,67 @@ describe("getElevenLabsV3Warning — deferring to ElevenLabs' own verdict", () =
     ).toBeNull();
   });
 });
+
+describe("buildGroupedVoiceOptions — ordering by the persona's gender", () => {
+  const voices = [
+    { id: "g-female", name: "Achernar", provider: "GOOGLE", gender: "female" },
+    { id: "g-male", name: "Puck", provider: "GOOGLE", gender: "male" },
+    { id: "g-none", name: "Leda", provider: "GOOGLE", gender: null },
+    { id: "s-female", name: "Anushka", provider: "SARVAM", gender: "female" },
+    { id: "s-male", name: "Abhilash", provider: "SARVAM", gender: "male" },
+  ];
+
+  it("puts the persona's gender first, then unrecorded, then the rest", () => {
+    expect(buildGroupedVoiceOptions(voices, "male").map(o => o.value)).toEqual([
+      // male across providers (Google before Sarvam), then the gender nobody
+      // recorded, then female.
+      "g-male",
+      "s-male",
+      "g-none",
+      "g-female",
+      "s-female",
+    ]);
+  });
+
+  it("orders for the other gender just as readily", () => {
+    expect(buildGroupedVoiceOptions(voices, "female").map(o => o.value)).toEqual([
+      "g-female",
+      "s-female",
+      "g-none",
+      "g-male",
+      "s-male",
+    ]);
+  });
+
+  // Ordering, not filtering: a persona voiced against its gender is a real
+  // configuration, and a voice with no recorded gender is still usable.
+  it("hides nothing — every voice is still offered", () => {
+    const ordered = buildGroupedVoiceOptions(voices, "non-binary");
+    expect(ordered).toHaveLength(voices.length);
+    expect(ordered.map(o => o.value).sort()).toEqual(voices.map(v => v.id).sort());
+  });
+
+  it("keeps each Provider · Gender group contiguous, which the dropdown relies on", () => {
+    const groups = buildGroupedVoiceOptions(voices, "male").map(o => o.groupLabel);
+    const firstSeen = new Map<string, number>();
+    groups.forEach((g, i) => {
+      if (!firstSeen.has(g)) firstSeen.set(g, i);
+    });
+    // A group must never reappear after another group has started.
+    groups.forEach((g, i) => {
+      const start = firstSeen.get(g)!;
+      expect(groups.slice(start, i + 1).every(x => x === g)).toBe(true);
+    });
+  });
+
+  it("tolerates casing and padding on the persona's gender", () => {
+    expect(buildGroupedVoiceOptions(voices, " MALE ")[0].value).toBe("g-male");
+  });
+
+  it("leaves the original order untouched when the persona has no gender", () => {
+    const withoutPreference = buildGroupedVoiceOptions(voices).map(o => o.value);
+    expect(withoutPreference).toEqual(["g-female", "g-male", "g-none", "s-female", "s-male"]);
+    expect(buildGroupedVoiceOptions(voices, "").map(o => o.value)).toEqual(withoutPreference);
+    expect(buildGroupedVoiceOptions(voices, null).map(o => o.value)).toEqual(withoutPreference);
+  });
+});

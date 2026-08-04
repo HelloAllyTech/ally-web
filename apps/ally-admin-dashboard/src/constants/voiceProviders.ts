@@ -367,12 +367,40 @@ export interface GroupedVoiceOption {
 }
 
 /**
+ * How far down the list a voice sits once a persona's gender is known.
+ *
+ * Ordering, not filtering — nothing is removed. A persona voiced against its
+ * gender is a legitimate choice (a female character given a male voice is a
+ * real configuration), and a voice whose gender nobody recorded is still
+ * usable, so hiding either would take a decision away from the admin. This
+ * only decides what they see first.
+ */
+const genderMatchRank = (voiceGender?: string | null, preferredGender?: string | null): number => {
+  const preferred = String(preferredGender ?? "")
+    .trim()
+    .toLowerCase();
+  if (!preferred) return 0;
+  const actual = String(voiceGender ?? "")
+    .trim()
+    .toLowerCase();
+  if (actual === preferred) return 0;
+  // Unrecorded before a deliberate mismatch: it might well be the right voice,
+  // where a different gender is the least likely thing being looked for.
+  if (!actual) return 1;
+  return 2;
+};
+
+/**
  * Build picker options grouped by provider, then gender.
  *
  * That's the order people actually choose in — pick the vendor you trust for
  * this language, then the gender the persona needs. The result is sorted so
  * each group's members are adjacent, which is what TextDropdown relies on to
  * decide where a header starts.
+ *
+ * `preferredGender` (the persona's, in the simulation being edited) floats the
+ * matching voices to the top, then the ones with no recorded gender, then the
+ * rest. Without it the order is unchanged, so every other caller is unaffected.
  */
 export const buildGroupedVoiceOptions = (
   voices: Array<{
@@ -382,6 +410,7 @@ export const buildGroupedVoiceOptions = (
     gender?: string | null;
     age?: string | null;
   }> = [],
+  preferredGender?: string | null,
 ): GroupedVoiceOption[] =>
   voices
     .map(voice => ({
@@ -390,9 +419,14 @@ export const buildGroupedVoiceOptions = (
       groupLabel: getVoiceGroupLabel(voice.provider, voice.gender),
       providerLabel: getProviderLabel(voice.provider),
       genderRank: getVoiceGenderRank(voice.gender),
+      matchRank: genderMatchRank(voice.gender, preferredGender),
     }))
     .sort(
       (a, b) =>
+        // Ahead of provider: which gender you need is the stronger signal once
+        // the persona has one, and grouping stays intact because every member
+        // of a "Provider · Gender" group shares the same match rank.
+        a.matchRank - b.matchRank ||
         a.providerLabel.localeCompare(b.providerLabel) ||
         a.genderRank - b.genderRank ||
         a.label.localeCompare(b.label),
