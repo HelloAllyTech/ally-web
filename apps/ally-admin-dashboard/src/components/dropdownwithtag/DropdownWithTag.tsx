@@ -64,7 +64,7 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
   return (
     <>
       {initialValue.length > 0 && (
-        <div className="flex gap-1 text-base text-neutral-800">
+        <div className="flex flex-wrap gap-x-1 text-base text-neutral-800">
           {en.userManagement.currentRoles}
           {initialValue.map((roleName, index) => (
             <span key={roleName} className="text-typography-800">
@@ -81,26 +81,32 @@ export const DropdownwithTag: React.FC<dropdownWithTagProps> = ({
         </label>
         <div className="relative" ref={triggerRef}>
           <div
-            className="border border-border-light rounded-md flex flex-wrap items-center gap-2 px-2 py-1 min-h-[40px] cursor-pointer"
+            className="border border-border-light rounded-md flex items-center gap-2 px-2 py-1 min-h-[40px] cursor-pointer"
             onClick={() => setOpen(!open)}
           >
-            {value.length > 0 ? (
-              value.map(roleName => (
-                <span
-                  key={roleName}
-                  className="flex items-center bg-neutral-100 text-typography-900 pl-3 rounded-full text-base font-primary"
-                >
-                  {formatCapitalizedEnum(roleName)}
-                  <button className="px-2" onClick={e => handleClose(e, roleName)}>
-                    <Close />
-                  </button>
-                </span>
-              ))
-            ) : (
-              <span className="text-typography-600 text-base font-primary">{placeholder}</span>
-            )}
+            <div className="flex flex-1 min-w-0 flex-wrap items-center gap-1.5 py-0.5">
+              {value.length > 0 ? (
+                value.map(roleName => (
+                  <span
+                    key={roleName}
+                    className="flex max-w-full items-center bg-neutral-100 text-typography-900 pl-3 rounded-full text-base font-primary"
+                  >
+                    <span className="truncate">{formatCapitalizedEnum(roleName)}</span>
+                    <button
+                      className="px-2 flex-shrink-0"
+                      onClick={e => handleClose(e, roleName)}
+                      aria-label={en.userManagement.removeRole(formatCapitalizedEnum(roleName))}
+                    >
+                      <Close />
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <span className="text-typography-600 text-base font-primary">{placeholder}</span>
+              )}
+            </div>
 
-            <div className="ml-auto text-typography-800">
+            <div className="flex-shrink-0 text-typography-800">
               <ArrowSolid />
             </div>
           </div>

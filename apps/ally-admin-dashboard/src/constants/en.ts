@@ -640,6 +640,7 @@ export const en = {
     cancel: "Cancel",
     editDetails: "Edit Details",
     changeRole: "Change User Role",
+    removeRole: (role: string) => `Remove ${role}`,
     impersonateUser: "Impersonate User",
     suspendUserConfirmation: (name: string) =>
       `Are you sure you want to suspend "**${name}**"? They won't be able to log in until reactivated.`,

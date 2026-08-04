@@ -14,7 +14,7 @@ interface ProfileFieldProps {
 export const ProfileCard: React.FC<ProfileFieldProps> = ({ user, showCredits = false }) => {
   return (
     <div className="flex items-center gap-2 text-xs">
-      <div className="flex items-center  pr-4">
+      <div className="flex min-w-0 items-center  pr-4">
         <div className="w-10 h-10 rounded-full mr-3">
           <CustomImage
             src={user.profileImageUrl}
