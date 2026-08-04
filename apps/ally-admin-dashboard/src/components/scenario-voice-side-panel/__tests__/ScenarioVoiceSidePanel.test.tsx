@@ -806,15 +806,15 @@ describe("ScenarioVoiceSidePanel", () => {
       const modelDropdown = screen.getByTestId("dropdown-Select model");
       expect(modelDropdown).toHaveValue("eleven_turbo_v2_5");
       expect(screen.getByText("eleven_turbo_v2_5 (recommended)")).toBeInTheDocument();
-      // v3 is offered, but flagged as ElevenLabs' own list not including it —
-      // not silently presented as equally supported.
+      // v3 is offered, but flagged as not the recommendation for this voice —
+      // not silently presented as equally supported. Short enough not to
+      // truncate in a closed dropdown; the mechanism lives in the warning
+      // banner, not repeated here.
+      expect(screen.getByText("eleven_v3 (not recommended)")).toBeInTheDocument();
+      // Any other model missing from this voice's fine-tune list gets the
+      // same short treatment — recommended vs not is a clean binary.
       expect(
-        screen.getByText("eleven_v3 (not listed by ElevenLabs for this voice — see warning below)"),
-      ).toBeInTheDocument();
-      // A non-v3 model missing from this voice's fine-tune list is a milder
-      // case — nothing to warn about, so it gets softer wording.
-      expect(
-        screen.getByText("eleven_multilingual_v2 (not confirmed for this voice)"),
+        screen.getByText("eleven_multilingual_v2 (not recommended)"),
       ).toBeInTheDocument();
     });
 

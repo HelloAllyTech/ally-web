@@ -21,7 +21,6 @@ import {
   getUnknownConfigKeys,
   isMissingGender,
   getElevenLabsV3Warning,
-  isElevenLabsV3Model,
   VOICE_TYPE_SUMMARY,
   isSupportedProvider,
   readConfigField,
@@ -225,15 +224,14 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       if (entry.value === syncResult?.recommendedModel) {
         return { value: entry.value, label: `${entry.label} (recommended)` };
       }
+      // recommendedModel already encodes a real recommendation (ElevenLabs'
+      // own migration guidance for this voice type), so its complement is
+      // genuinely "not recommended" — not a bigger claim than the data
+      // supports. The mechanism (why v3 is the risky case here) stays in the
+      // warning banner above; this just needs to be short enough not to
+      // truncate in a closed dropdown.
       if (syncResult?.availableModels && !syncResult.availableModels.includes(entry.value)) {
-        // Only v3 has a corresponding warning banner — other models not
-        // listed for this voice are just unconfirmed, not risky.
-        return isElevenLabsV3Model(entry.value)
-          ? {
-              value: entry.value,
-              label: `${entry.label} (not listed by ElevenLabs for this voice — see warning below)`,
-            }
-          : { value: entry.value, label: `${entry.label} (not confirmed for this voice)` };
+        return { value: entry.value, label: `${entry.label} (not recommended)` };
       }
       return { value: entry.value, label: entry.label };
     });
