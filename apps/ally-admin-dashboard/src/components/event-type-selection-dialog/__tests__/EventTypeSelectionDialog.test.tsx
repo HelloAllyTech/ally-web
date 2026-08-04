@@ -154,16 +154,16 @@ describe("EventTypeSelectionDialog", () => {
     it("calls onSelect when OptionSelectionPopover triggers onSelect with correct event type", () => {
       render(<EventTypeSelectionDialog {...defaultProps} />);
 
-      const option = screen.getByTestId("option-SENTENCE_SIMILARITY");
+      const option = screen.getByTestId("option-BINARY_CLASSIFIER");
       fireEvent.click(option);
 
-      expect(mockOnSelect).toHaveBeenCalledWith("SENTENCE_SIMILARITY");
+      expect(mockOnSelect).toHaveBeenCalledWith("BINARY_CLASSIFIER");
     });
 
     it("calls onSelect with each event type correctly", () => {
+      // SENTENCE_SIMILARITY/SEMANTIC_SIMILARITY are deprecated — retired from
+      // the creation picker, see the "no longer offered" tests below.
       const eventTypes: EventType[] = [
-        "SENTENCE_SIMILARITY",
-        "SEMANTIC_SIMILARITY",
         "BINARY_CLASSIFIER",
         "TIME_BASED",
         "SCORE_BASED",
@@ -188,7 +188,9 @@ describe("EventTypeSelectionDialog", () => {
     it("exports EVENT_TYPE_POPUP_OPTIONS with correct structure", () => {
       expect(EVENT_TYPE_POPUP_OPTIONS).toBeDefined();
       expect(Array.isArray(EVENT_TYPE_POPUP_OPTIONS)).toBe(true);
-      expect(EVENT_TYPE_POPUP_OPTIONS.length).toBe(6);
+      // Deprecated: SENTENCE_SIMILARITY / SEMANTIC_SIMILARITY are retired
+      // from this picker (can no longer be created) — 4, not 6, options.
+      expect(EVENT_TYPE_POPUP_OPTIONS.length).toBe(4);
     });
 
     it("each option has required properties", () => {
@@ -202,8 +204,6 @@ describe("EventTypeSelectionDialog", () => {
 
     it("contains all expected event types", () => {
       const expectedTypes: EventType[] = [
-        "SENTENCE_SIMILARITY",
-        "SEMANTIC_SIMILARITY",
         "BINARY_CLASSIFIER",
         "TIME_BASED",
         "SCORE_BASED",
@@ -217,7 +217,17 @@ describe("EventTypeSelectionDialog", () => {
       });
     });
 
+    it("no longer offers the deprecated similarity event types", () => {
+      const actualTypes = EVENT_TYPE_POPUP_OPTIONS.map(opt => opt.value);
+
+      expect(actualTypes).not.toContain("SENTENCE_SIMILARITY");
+      expect(actualTypes).not.toContain("SEMANTIC_SIMILARITY");
+    });
+
     it("has correct labels for each event type", () => {
+      // Deprecated types are still valid EventType members (kept for
+      // existing-event back-compat elsewhere), so this record must still
+      // list them even though EVENT_TYPE_POPUP_OPTIONS no longer does.
       const expectedLabels: Record<EventType, string> = {
         SENTENCE_SIMILARITY: "Sentence Similarity",
         SEMANTIC_SIMILARITY: "Semantic Similarity",
@@ -257,8 +267,6 @@ describe("EventTypeSelectionDialog", () => {
   describe("EventType type", () => {
     it("all event types are valid EventType", () => {
       const validTypes: EventType[] = [
-        "SENTENCE_SIMILARITY",
-        "SEMANTIC_SIMILARITY",
         "BINARY_CLASSIFIER",
         "TIME_BASED",
         "SCORE_BASED",

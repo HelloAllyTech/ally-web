@@ -44,6 +44,12 @@ export const SIMULATION_CATEGORY = {
   PARTNER_SIM: "PARTNER_SIM",
 } as const;
 
+// SENTENCE_SIMILARITY / SEMANTIC_SIMILARITY entries are @deprecated — both
+// event types are retired from the "Create event" picker
+// (EventTypeSelectionDialog's EVENT_TYPE_POPUP_OPTIONS), so no new events of
+// these types can be created. Kept here so an existing event's read-only
+// type label (the events table's disabled "Event type" column) still
+// resolves to a friendly name instead of the raw enum string.
 export const EVENT_TYPE_OPTIONS = [
   { value: "TIME_BASED", label: "Time Based" },
   { value: "SCORE_BASED", label: "Score Based" },

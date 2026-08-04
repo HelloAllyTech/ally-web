@@ -1,17 +1,14 @@
 import { FC } from "react";
 
-import {
-  AccountTree,
-  AlarmOn,
-  Chat,
-  DiamondShine,
-  SemanticSimilarity,
-  BinaryClassification,
-} from "@assets";
+import { AccountTree, AlarmOn, DiamondShine, BinaryClassification } from "@assets";
 import { OptionSelectionPopover } from "@components";
 import { en } from "@constants";
 
 export type EventType =
+  // SENTENCE_SIMILARITY / SEMANTIC_SIMILARITY are deprecated — retired from
+  // EVENT_TYPE_POPUP_OPTIONS below (can no longer be created), but kept in
+  // this union since existing events of these types still need to type-check
+  // through EVENT_TYPE_OPTIONS / TRIGGER_CONDITION_CONFIGS for read/edit.
   | "SENTENCE_SIMILARITY"
   | "SEMANTIC_SIMILARITY"
   | "TIME_BASED"
@@ -26,19 +23,12 @@ export interface EventTypeOption {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+// Sentence Similarity / Semantic Similarity are deprecated and intentionally
+// absent here — this array drives the "Create event" picker, so removing
+// them stops new events of these types from being created. Existing events
+// of these types still render correctly via EVENT_TYPE_OPTIONS /
+// TRIGGER_CONDITION_CONFIGS, which are untouched.
 export const EVENT_TYPE_POPUP_OPTIONS: EventTypeOption[] = [
-  {
-    value: "SENTENCE_SIMILARITY",
-    label: "Sentence Similarity",
-    description: "Trigger based on what the speaker says.",
-    icon: Chat,
-  },
-  {
-    value: "SEMANTIC_SIMILARITY",
-    label: "Semantic Similarity",
-    description: "Trigger based on similar meaning.",
-    icon: SemanticSimilarity,
-  },
   {
     value: "BINARY_CLASSIFIER",
     label: "Binary Classification (Zero-shot)",

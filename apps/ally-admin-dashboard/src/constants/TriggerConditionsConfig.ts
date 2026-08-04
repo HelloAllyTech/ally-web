@@ -142,6 +142,12 @@ const SCORE_BASED_CONFIG = {
 /**
  * Configuration for SENTENCE_SIMILARITY event type
  * Renders: "if [speaker] says [multiline textarea]"
+ *
+ * @deprecated Retired from EVENT_TYPE_POPUP_OPTIONS (can no longer be
+ * created). Kept here so an EXISTING event of this type still renders its
+ * speaker/sentences fields when viewed/edited — removing this entry would
+ * make getTriggerConditionConfig() return undefined for that event, silently
+ * blanking its trigger-condition UI.
  */
 const SENTENCE_SIMILARITY_CONFIG = {
   id: "SENTENCE_SIMILARITY" as EventType,
@@ -168,6 +174,12 @@ const SENTENCE_SIMILARITY_CONFIG = {
 /**
  * Configuration for SEMANTIC_SIMILARITY event type
  * Renders: "if [speaker] Says [multiline textarea]"
+ *
+ * @deprecated Retired from EVENT_TYPE_POPUP_OPTIONS (can no longer be
+ * created). Kept here so an EXISTING event of this type still renders its
+ * speaker/sentences fields when viewed/edited — removing this entry would
+ * make getTriggerConditionConfig() return undefined for that event, silently
+ * blanking its trigger-condition UI.
  */
 const SEMANTIC_SIMILARITY_CONFIG = {
   id: "SEMANTIC_SIMILARITY" as EventType,
