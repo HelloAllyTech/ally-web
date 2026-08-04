@@ -8,6 +8,7 @@ import {
   getUnknownConfigKeys,
   getVoiceGenderLabel,
   getVoiceGroupLabel,
+  isElevenLabsV3CompatibleVoiceType,
   isMissingGender,
   isSupportedProvider,
   readConfigField,
@@ -248,4 +249,24 @@ describe("TTS_CATALOG_FIELD_KEY", () => {
   it("has no entry for a provider with no real catalog endpoint", () => {
     expect(TTS_CATALOG_FIELD_KEY[TtsProvider.SARVAM]).toBeUndefined();
   });
+});
+
+describe("isElevenLabsV3CompatibleVoiceType", () => {
+  // A real production voice ("Meenakshi", voice_design) caught this: the
+  // model picker used to flag v3 as unrecommended for every voice, because
+  // ElevenLabs' per-voice fine-tune list never includes v3 regardless of
+  // voice type. Only voice type — this function's job — decides correctly.
+  it.each(["ivc", "voice_design", "premade"])(
+    "treats %s as v3-compatible",
+    type => {
+      expect(isElevenLabsV3CompatibleVoiceType(type)).toBe(true);
+    },
+  );
+
+  it.each(["pvc", "unknown", "", undefined, null])(
+    "does not treat %s as v3-compatible",
+    type => {
+      expect(isElevenLabsV3CompatibleVoiceType(type as any)).toBe(false);
+    },
+  );
 });

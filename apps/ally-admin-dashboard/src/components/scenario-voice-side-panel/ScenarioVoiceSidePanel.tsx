@@ -21,6 +21,8 @@ import {
   getUnknownConfigKeys,
   isMissingGender,
   getElevenLabsV3Warning,
+  isElevenLabsV3Model,
+  isElevenLabsV3CompatibleVoiceType,
   VOICE_TYPE_SUMMARY,
   isSupportedProvider,
   readConfigField,
@@ -224,12 +226,24 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       if (entry.value === syncResult?.recommendedModel) {
         return { value: entry.value, label: `${entry.label} (recommended)` };
       }
+      // v3 needs its own check: ElevenLabs' per-voice fine-tune list
+      // (availableModels) never includes it, for ANY voice — that's a fact
+      // about how v3 works, not a signal about this voice. Whether v3 suits
+      // THIS voice depends on voice type instead — read from `config.voice_type`
+      // (the persisted field), the same source getElevenLabsV3Warning already
+      // uses, NOT syncResult: voice_type can already be populated by the bulk
+      // sync script from a previous session, and this must reflect that
+      // without waiting for a fresh individual re-sync right now.
+      if (isElevenLabsV3Model(entry.value)) {
+        return isElevenLabsV3CompatibleVoiceType(config.voice_type)
+          ? { value: entry.value, label: entry.label }
+          : { value: entry.value, label: `${entry.label} (not recommended)` };
+      }
       // recommendedModel already encodes a real recommendation (ElevenLabs'
       // own migration guidance for this voice type), so its complement is
       // genuinely "not recommended" — not a bigger claim than the data
-      // supports. The mechanism (why v3 is the risky case here) stays in the
-      // warning banner above; this just needs to be short enough not to
-      // truncate in a closed dropdown.
+      // supports. The mechanism stays in the warning banner above; this just
+      // needs to be short enough not to truncate in a closed dropdown.
       if (syncResult?.availableModels && !syncResult.availableModels.includes(entry.value)) {
         return { value: entry.value, label: `${entry.label} (not recommended)` };
       }

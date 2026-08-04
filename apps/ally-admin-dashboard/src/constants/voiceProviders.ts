@@ -97,6 +97,19 @@ export const isElevenLabsV3Model = (model?: string | null): boolean =>
   /v3/i.test(String(model ?? ""));
 
 /**
+ * Whether v3 is a sound choice for a voice of this type — the same check
+ * `getElevenLabsV3Warning` uses to decide whether to stay silent.
+ *
+ * Exists separately because the model picker needs this fact independent of
+ * which model happens to be selected right now: a voice's per-voice
+ * fine-tune list (`availableModels`) never includes v3 for ANY voice type —
+ * that's a fact about how v3 works, not a per-voice signal — so it cannot
+ * tell the picker whether v3 suits THIS voice. Only voice type can.
+ */
+export const isElevenLabsV3CompatibleVoiceType = (voiceType?: string | null): boolean =>
+  V3_COMPATIBLE_VOICE_TYPES.includes(String(voiceType ?? "").trim());
+
+/**
  * Advisory for an ElevenLabs voice whose training eleven_v3 cannot use.
  *
  * v3 does not support fine-tuned models, and a Professional clone is one — so it

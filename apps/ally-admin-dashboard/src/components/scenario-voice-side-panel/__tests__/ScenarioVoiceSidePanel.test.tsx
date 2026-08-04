@@ -766,7 +766,11 @@ describe("ScenarioVoiceSidePanel", () => {
       render(<ScenarioVoiceSidePanel {...defaultProps} />);
       fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
 
-      // No lookup has run — just the global catalog, with no annotations.
+      // No lookup has run — the global catalog, mostly unannotated. v3 is the
+      // one exception: with no voice_type recorded, we don't know if it's
+      // safe (same cautious-by-default stance getElevenLabsV3Warning takes
+      // for an unrecorded type), so it stays flagged until a sync says
+      // otherwise — never silently presented as fine by default.
       const modelDropdown = screen.getByTestId("dropdown-Select model");
       const options = Array.from(modelDropdown.querySelectorAll("option")).map(
         o => o.textContent,
@@ -775,7 +779,7 @@ describe("ScenarioVoiceSidePanel", () => {
         "Select model",
         "eleven_turbo_v2_5",
         "eleven_multilingual_v2",
-        "eleven_v3",
+        "eleven_v3 (not recommended)",
       ]);
     });
 
@@ -806,16 +810,46 @@ describe("ScenarioVoiceSidePanel", () => {
       const modelDropdown = screen.getByTestId("dropdown-Select model");
       expect(modelDropdown).toHaveValue("eleven_turbo_v2_5");
       expect(screen.getByText("eleven_turbo_v2_5 (recommended)")).toBeInTheDocument();
-      // v3 is offered, but flagged as not the recommendation for this voice —
-      // not silently presented as equally supported. Short enough not to
-      // truncate in a closed dropdown; the mechanism lives in the warning
-      // banner, not repeated here.
-      expect(screen.getByText("eleven_v3 (not recommended)")).toBeInTheDocument();
-      // Any other model missing from this voice's fine-tune list gets the
-      // same short treatment — recommended vs not is a clean binary.
+      // v3 is absent from availableModels here too — ElevenLabs never lists
+      // it, for ANY voice — but this voice's TYPE (voice_design) is one v3
+      // renders from just fine, so it must NOT be flagged "not recommended".
+      // A real production voice ("Meenakshi") caught this exact regression:
+      // availableModels-based flagging alone marked v3 unrecommended even
+      // for a voice it works perfectly well for.
+      expect(screen.getByText("eleven_v3")).toBeInTheDocument();
+      expect(screen.queryByText("eleven_v3 (not recommended)")).not.toBeInTheDocument();
+      // Any other model missing from this voice's fine-tune list still gets
+      // flagged — only v3 needed the special case.
       expect(
         screen.getByText("eleven_multilingual_v2 (not recommended)"),
       ).toBeInTheDocument();
+    });
+
+    it("still flags v3 as not recommended for a voice type it genuinely doesn't suit (PVC)", async () => {
+      mockLookupElevenLabsVoice.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            voiceId: "RBxPIvrKOP4ugCK2jVHD",
+            resolvedVoiceId: "RBxPIvrKOP4ugCK2jVHD",
+            voiceIdMismatch: false,
+            category: "professional",
+            resolvedName: "Raju",
+            voiceType: "pvc",
+            gender: "male",
+            language: "hi",
+            availableModels: ["eleven_turbo_v2_5", "eleven_multilingual_v2"],
+            recommendedModel: "eleven_multilingual_v2",
+          }),
+      });
+      const voiceIdField = goToVoiceIdField();
+
+      fireEvent.change(voiceIdField, { target: { value: "RBxPIvrKOP4ugCK2jVHD" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      expect(screen.getByText("eleven_multilingual_v2 (recommended)")).toBeInTheDocument();
+      expect(screen.getByText("eleven_v3 (not recommended)")).toBeInTheDocument();
     });
 
     it("keeps a stored model selectable even if it isn't in ElevenLabs' current catalog", () => {
