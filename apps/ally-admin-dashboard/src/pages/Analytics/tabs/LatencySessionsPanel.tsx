@@ -1,5 +1,5 @@
 import {
-  CarbonDropdown as Dropdown,
+  ComboBox,
   InlineNotification,
   SkeletonPlaceholder,
   Table,
@@ -70,12 +70,11 @@ export const LatencySessionsPanel = ({ query, language }: LatencySessionsPanelPr
     rangeEnd,
   } = useLatencySessions(query, language);
 
-  const scenarioItems = [
-    { id: null as number | null, label: "Select a simulation" },
-    ...(scenarios?.data ?? []).map(s => ({ id: s.id as number | null, label: s.title })),
-  ];
-  const selectedScenario =
-    scenarioItems.find(i => i.id === (scenarioId ?? null)) ?? scenarioItems[0];
+  const scenarioItems = (scenarios?.data ?? []).map(s => ({
+    id: s.id as number,
+    label: s.title,
+  }));
+  const selectedScenario = scenarioItems.find(i => i.id === scenarioId) ?? null;
 
   return (
     <ChartCard
@@ -83,13 +82,12 @@ export const LatencySessionsPanel = ({ query, language }: LatencySessionsPanelPr
       caption="Worst-first per-session breakdown for a chosen simulation, plus its overall average — narrows further with the Language filter above."
     >
       <div className="flex flex-col gap-4">
-        <div className="w-64">
-          <Dropdown
+        <div className="w-72">
+          <ComboBox
             id="latency-sessions-scenario"
             size="sm"
             titleText="Simulation"
-            hideLabel
-            label="Select a simulation"
+            placeholder="Search simulations…"
             items={scenarioItems}
             selectedItem={selectedScenario}
             itemToString={item => item?.label ?? ""}
