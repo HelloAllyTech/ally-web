@@ -34,6 +34,9 @@ const STAGE_TILES: {
   { key: "avgLlmTtftMs", label: "LLM TTFT" },
   { key: "avgKnowledgeRetrievalMs", label: "Knowledge retrieval" },
   { key: "avgProcessEventsMs", label: "Process events" },
+  { key: "avgBranchingMs", label: "Branching" },
+  { key: "avgOrchestrationMs", label: "Orchestration" },
+  { key: "avgLlmResponseMs", label: "LLM response (gen time)" },
   { key: "avgTtsTtfbMs", label: "TTS TTFB" },
   { key: "avgBehaviorsMs", label: "Behaviors" },
 ];
@@ -154,6 +157,9 @@ export const LatencySessionsPanel = ({ query, language }: LatencySessionsPanelPr
                     <TableHeader className="py-3 pr-4 font-medium">LLM TTFT</TableHeader>
                     <TableHeader className="py-3 pr-4 font-medium">Knowledge retrieval</TableHeader>
                     <TableHeader className="py-3 pr-4 font-medium">Process events</TableHeader>
+                    <TableHeader className="py-3 pr-4 font-medium">Branching</TableHeader>
+                    <TableHeader className="py-3 pr-4 font-medium">Orchestration</TableHeader>
+                    <TableHeader className="py-3 pr-4 font-medium">LLM response</TableHeader>
                     <TableHeader className="py-3 pr-4 font-medium">TTS TTFB</TableHeader>
                     <TableHeader className="py-3 pr-4 font-medium">Behaviors</TableHeader>
                   </TableRow>
@@ -183,6 +189,11 @@ export const LatencySessionsPanel = ({ query, language }: LatencySessionsPanelPr
                       <TableCell className="py-3 pr-4">
                         {formatMs(row.avgProcessEventsMs)}
                       </TableCell>
+                      <TableCell className="py-3 pr-4">{formatMs(row.avgBranchingMs)}</TableCell>
+                      <TableCell className="py-3 pr-4">
+                        {formatMs(row.avgOrchestrationMs)}
+                      </TableCell>
+                      <TableCell className="py-3 pr-4">{formatMs(row.avgLlmResponseMs)}</TableCell>
                       <TableCell className="py-3 pr-4">{formatMs(row.avgTtsTtfbMs)}</TableCell>
                       <TableCell className="py-3 pr-4">{formatMs(row.avgBehaviorsMs)}</TableCell>
                     </TableRow>
