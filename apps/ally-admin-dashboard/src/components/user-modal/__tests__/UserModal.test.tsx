@@ -74,6 +74,12 @@ vi.mock("@components", () => ({
           </option>
         ))}
       </select>
+      {/* Deselecting every option in a jsdom multi-select doesn't reliably
+          reach React's onChange, so expose the "no roles selected" transition
+          directly — it is the contract the real component fulfils. */}
+      <button data-testid="dropdown-with-tag-clear" onClick={() => onChange([])}>
+        clear roles
+      </button>
     </div>
   ),
   CustomDropdown: ({ label, onChange, value, options, placeholder, required }: any) => (
@@ -525,6 +531,98 @@ describe("UserModal", () => {
 
       expect(screen.getByTestId("dropdown-with-tag")).toBeInTheDocument();
       expect(screen.getByTestId("profile-card")).toBeInTheDocument();
+    });
+
+    // A platform account holds roles this picker deliberately never offers
+    // (the super-admin tier lives on the Super Admins tab). Seeding them would
+    // render a tag that can be seen but never removed, and submitting would
+    // drop them.
+    describe("roles the picker does not offer", () => {
+      const rolesField: FieldProps[] = [
+        {
+          id: USER_MODAL_FIELDS_IDS.ROLES,
+          label: "Roles",
+          placeholder: "Select roles",
+          fieldType: FieldOptions.DROPDOWN_WITH_TAG,
+          inputType: "text",
+          required: true,
+          options: [
+            { id: 1, name: "ADMIN" },
+            { id: 2, name: "LEARNER" },
+          ],
+        },
+      ];
+
+      const platformAccount = (roles: string[]): UserListUser =>
+        ({
+          id: 1,
+          name: "Ally Staffer",
+          email: "staff@helloally.ai",
+          username: "staff",
+          status: "ACTIVE",
+          role: "SUPER_DUPER_ADMIN",
+          metadata: {},
+          organization: "Test Org",
+          tenantId: "tenant1",
+          createdAt: "2024-01-01",
+          updatedAt: "2024-01-01",
+          roles,
+        }) as UserListUser;
+
+      let form: any = null;
+      const renderRolesModal = (user: UserListUser) => {
+        form = null;
+        return render(
+          <TestWrapper defaultValues={{ roles: user.roles ?? [] }}>
+            {(formMethods: any) => {
+              form = formMethods;
+              return (
+                <UserModal
+                  isOpen={true}
+                  onClose={mockOnClose}
+                  title="Change User Role"
+                  fields={rolesField}
+                  formMethods={formMethods}
+                  details={user}
+                  handleClick={mockHandleClick}
+                />
+              );
+            }}
+          </TestWrapper>,
+        );
+      };
+
+      /** Clear every selection — how the last app role comes off an account. */
+      const deselectAll = () => fireEvent.click(screen.getByTestId("dropdown-with-tag-clear"));
+
+      it("seeds the picker only with roles it can actually manage", () => {
+        renderRolesModal(platformAccount(["SUPER_DUPER_ADMIN", "LEARNER"]));
+
+        const select = screen.getByTestId("dropdown-with-tag-select") as HTMLSelectElement;
+        const selected = Array.from(select.selectedOptions).map(option => option.value);
+        expect(selected).toEqual(["LEARNER"]);
+      });
+
+      it("accepts an empty selection when an unoffered role is held", async () => {
+        renderRolesModal(platformAccount(["SUPER_DUPER_ADMIN", "LEARNER"]));
+
+        deselectAll();
+
+        await waitFor(async () => expect(await form.trigger()).toBe(true));
+        expect(form.getValues().roles).toEqual([]);
+        expect(form.formState.errors.roles).toBeUndefined();
+      });
+
+      it("still requires a role for an ordinary account", async () => {
+        renderRolesModal(platformAccount(["LEARNER"]));
+
+        deselectAll();
+
+        await waitFor(async () => expect(await form.trigger()).toBe(false));
+        // Text comes from the @constants mock at the top of this file.
+        expect(form.formState.errors.roles?.message).toBe("Please select at least one role");
+        expect(screen.getByTestId("save-button")).toBeDisabled();
+      });
     });
 
     it("renders textarea field correctly", () => {
