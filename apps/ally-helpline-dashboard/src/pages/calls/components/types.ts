@@ -126,6 +126,9 @@ export interface SimulationTranscriptTabProps {
   className?: string;
   councellorName?: string;
   agentName?: string;
+  /** Language the session was actually conducted in, resolved from the session's
+   * `metadata.languageId`. Falls back to "en" when unresolved (e.g. legacy sessions). */
+  originalLanguageCode?: string;
 }
 
 export interface AudioUploadDialogProps {

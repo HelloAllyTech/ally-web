@@ -44,7 +44,7 @@ export const defaultAudioFormData: AudioUploadFormData = {
 };
 
 export const TRANSCRIPT_LANGUAGE_OPTIONS: Array<{ code: string; label: string }> = [
-  { code: "en", label: "English (Original)" },
+  { code: "en", label: "English" },
   { code: "hi", label: "हिंदी" },
   { code: "mr", label: "मराठी" },
   { code: "ta", label: "தமிழ்" },

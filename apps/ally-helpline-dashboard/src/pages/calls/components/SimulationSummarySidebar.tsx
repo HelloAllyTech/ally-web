@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { differenceInMinutes } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Tooltip } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
+  useGetAvailableLanguagesQuery,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
@@ -56,6 +57,16 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
   );
   const [createReview, { isLoading: isCreateReviewLoading }] = useCreateReviewMutation();
   const [updateReview, { isLoading: isUpdateReviewLoading }] = useUpdateReviewMutation();
+
+  const { data: availableLanguages } = useGetAvailableLanguagesQuery({});
+  const originalLanguageCode = useMemo(() => {
+    const languageId = summary?.metadata?.languageId;
+    if (!languageId) return "en";
+    const matchedLanguage = availableLanguages?.find(
+      language => language.language_id === languageId,
+    );
+    return matchedLanguage?.value?.split("-")[0] ?? "en";
+  }, [summary?.metadata?.languageId, availableLanguages]);
 
   useEffect(() => {
     if (summaryData) {
@@ -223,6 +234,7 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
           sessionId={summaryId}
           councellorName={councellorName}
           agentName={summary?.scenario?.metadata?.name}
+          originalLanguageCode={originalLanguageCode}
           className=" px-4 pt-[10px]"
         />
       ),

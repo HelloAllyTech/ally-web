@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import { differenceInMinutes } from "date-fns";
 import { motion } from "framer-motion";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
+  useGetAvailableLanguagesQuery,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
@@ -58,6 +59,16 @@ export const PostSimulationSummary: FC = () => {
   const [updateReview] = useUpdateReviewMutation();
   const nextChallenge = useNextChallenge(summary);
 
+  const { data: availableLanguages } = useGetAvailableLanguagesQuery({});
+  const originalLanguageCode = useMemo(() => {
+    const languageId = summary?.metadata?.languageId;
+    if (!languageId) return "en";
+    const matchedLanguage = availableLanguages?.find(
+      language => language.language_id === languageId,
+    );
+    return matchedLanguage?.value?.split("-")[0] ?? "en";
+  }, [summary?.metadata?.languageId, availableLanguages]);
+
   const tabList = [
     {
       id: 1,
@@ -84,6 +95,7 @@ export const PostSimulationSummary: FC = () => {
           sessionId={sessionId}
           className="w-full"
           agentName={summary?.scenario?.metadata?.name}
+          originalLanguageCode={originalLanguageCode}
         />
       ),
     },
