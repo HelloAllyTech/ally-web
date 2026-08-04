@@ -30,6 +30,8 @@ import {
   TrackDropoffResponse,
   UsageLevelResponse,
   VoiceLatencyResponse,
+  ListVoiceLatencySessionsResponse,
+  VoiceLatencySessionsSummary,
 } from "@types";
 
 import { baseAPI } from "./baseApi";
@@ -76,6 +78,18 @@ const windowParams = ({
 type AnalyticsRangeQuery = AnalyticsWindowQuery;
 
 type VoiceLatencyQuery = AnalyticsWindowQuery & {
+  language?: string;
+};
+
+type VoiceLatencySessionsQuery = AnalyticsWindowQuery & {
+  scenarioId: number;
+  language?: string;
+  limit?: number;
+  offset?: number;
+};
+
+type VoiceLatencySessionsSummaryQuery = AnalyticsWindowQuery & {
+  scenarioId: number;
   language?: string;
 };
 
@@ -168,6 +182,36 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.VOICE_LATENCY,
         method: HttpMethod.GET,
         params: { ...windowParams(q), ...(language ? { language } : {}) },
+      }),
+    }),
+    getVoiceLatencySessions: builder.query<
+      ListVoiceLatencySessionsResponse,
+      VoiceLatencySessionsQuery
+    >({
+      query: ({ scenarioId, language, limit, offset, ...q }) => ({
+        url: ApiEndpoints.ANALYTICS.VOICE_LATENCY_SESSIONS,
+        method: HttpMethod.GET,
+        params: {
+          ...windowParams(q),
+          scenarioId,
+          ...(language ? { language } : {}),
+          ...(limit != null ? { limit } : {}),
+          ...(offset != null ? { offset } : {}),
+        },
+      }),
+    }),
+    getVoiceLatencySessionsSummary: builder.query<
+      VoiceLatencySessionsSummary,
+      VoiceLatencySessionsSummaryQuery
+    >({
+      query: ({ scenarioId, language, ...q }) => ({
+        url: ApiEndpoints.ANALYTICS.VOICE_LATENCY_SESSIONS_SUMMARY,
+        method: HttpMethod.GET,
+        params: {
+          ...windowParams(q),
+          scenarioId,
+          ...(language ? { language } : {}),
+        },
       }),
     }),
     getAgentJoinReliability: builder.query<AgentJoinReliabilityResponse, AgentJoinReliabilityQuery>(
@@ -400,6 +444,8 @@ export const {
   useGetUsageLevelsQuery,
   useGetRoleplayVolumeQuery,
   useGetVoiceLatencyQuery,
+  useGetVoiceLatencySessionsQuery,
+  useGetVoiceLatencySessionsSummaryQuery,
   useGetAgentJoinReliabilityQuery,
   useGetStartLatencyQuery,
   useGetConversationDriftQuery,

@@ -12,6 +12,7 @@ import { AnalyticsBucket } from "@types";
 
 import { AnalyticsTabFilters, asOf, windowLabel } from "../analyticsFilters";
 import { ChartDetailModal, ChartTableData } from "../ChartDetailModal";
+import { LatencySessionsPanel } from "./LatencySessionsPanel";
 import {
   ChartCard,
   ScrollableChart,
@@ -523,6 +524,8 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           <LineChart data={rateSeries} options={rateOptions} />
         </ScrollableChart>
       </ChartCard>
+
+      <LatencySessionsPanel query={query} language={language} />
 
       {/* ---------------------------- Detail views ---------------------------- */}
 

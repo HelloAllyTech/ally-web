@@ -642,6 +642,51 @@ export interface VoiceLatencyResponse {
   byLanguage: VoiceLatencyByLanguageRow[];
 }
 
+/**
+ * Shared per-session voice-pipeline latency fields, used both for a single
+ * session-wise row and for the whole-filtered-set summary. Null stage values
+ * mean no turns in the window had that field populated.
+ */
+export interface VoiceLatencySessionStages {
+  avgResponseLatencyMs: number | null;
+  p50ResponseLatencyMs: number | null;
+  p95ResponseLatencyMs: number | null;
+  avgEouDelayMs: number | null;
+  avgSttFinalizeMs: number | null;
+  avgLlmTtftMs: number | null;
+  avgTtsTtfbMs: number | null;
+  avgOrchestrationMs: number | null;
+  avgLlmResponseMs: number | null;
+  avgBranchingMs: number | null;
+  avgKnowledgeRetrievalMs: number | null;
+  avgProcessEventsMs: number | null;
+  avgBehaviorsMs: number | null;
+  interruptedTurns: number;
+  llmTimedOutTurns: number;
+}
+
+// VoiceLatencySessionRowDto from GET /api/v1/analytics/voice-latency/sessions.
+export interface VoiceLatencySessionRow extends VoiceLatencySessionStages {
+  scenarioSessionId: string;
+  occurredAt: string | null;
+  turnCount: number;
+}
+
+export interface ListVoiceLatencySessionsResponse {
+  data: VoiceLatencySessionRow[];
+  /** Total sessions matching the filter (for pagination). */
+  total: number;
+  window: AnalyticsWindow;
+}
+
+// VoiceLatencySessionsSummaryResponseDto from
+// GET /api/v1/analytics/voice-latency/sessions/summary.
+export interface VoiceLatencySessionsSummary extends VoiceLatencySessionStages {
+  sessionCount: number;
+  turnCount: number;
+  window: AnalyticsWindow;
+}
+
 // AgentJoinReliabilityResponseDto from GET /api/v1/analytics/agent-join-reliability.
 export interface AgentJoinReliabilityPoint {
   /** Bucket start (yyyy-mm-dd). */

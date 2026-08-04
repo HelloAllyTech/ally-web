@@ -318,6 +318,8 @@ export const ApiEndpoints = {
     USAGE_LEVELS: "/v1/analytics/usage-levels",
     ROLEPLAY_VOLUME: "/v1/analytics/roleplay-volume",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
+    VOICE_LATENCY_SESSIONS: "/v1/analytics/voice-latency/sessions",
+    VOICE_LATENCY_SESSIONS_SUMMARY: "/v1/analytics/voice-latency/sessions/summary",
     AGENT_JOIN_RELIABILITY: "/v1/analytics/agent-join-reliability",
     START_LATENCY: "/v1/analytics/start-latency",
     CONVERSATION_DRIFT: "/v1/analytics/conversation-drift",
