@@ -113,9 +113,24 @@ export const isElevenLabsV3Model = (model?: string | null): boolean =>
 export const getElevenLabsV3Warning = (
   provider: string | undefined,
   config: Record<string, any> | undefined,
+  /**
+   * ElevenLabs' own verdict on v3 for THIS voice, when ally-be has supplied
+   * one: `false` flagged, `null` no objection, `true` their recommendation.
+   * `undefined` means we have no verdict — a brand-new voice, or a catalog
+   * request that failed — and the voice-type rule below stands in.
+   *
+   * It can only ever silence the warning, never raise one, so every message
+   * below keeps deciding its own wording. The point is staleness: ElevenLabs
+   * say v3 "doesn't YET support Professional Voice Clones", and on the day that
+   * changes this banner would otherwise keep insisting the training cannot be
+   * used. Their answer has to outrank our assumption.
+   */
+  v3Verdict?: boolean | null,
 ): string | null => {
   if (String(provider ?? "").toUpperCase() !== TtsProvider.ELEVENLABS) return null;
   if (!isElevenLabsV3Model(config?.model)) return null;
+
+  if (v3Verdict !== undefined && v3Verdict !== false) return null;
 
   const type = String(config?.voice_type ?? "").trim();
   if (!type) {

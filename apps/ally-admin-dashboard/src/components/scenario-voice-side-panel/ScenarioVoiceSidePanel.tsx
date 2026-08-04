@@ -22,6 +22,7 @@ import {
   getUnknownConfigKeys,
   isMissingGender,
   getElevenLabsV3Warning,
+  isElevenLabsV3Model,
   VOICE_TYPE_SUMMARY,
   isSupportedProvider,
   readConfigField,
@@ -182,20 +183,34 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
   );
 
   /**
-   * A TTS provider's account-wide model/voice catalog — not tied to any one
-   * voice, so this loads regardless of whether an ElevenLabs sync or lookup
-   * has run. It's what makes the field a picker at all; a per-voice
-   * ElevenLabs sync only adds annotations on top (below) — no other
-   * provider has that extra layer.
+   * A TTS provider's account-wide model/voice catalog. It's what makes the
+   * field a picker at all.
+   *
+   * For a SAVED ElevenLabs voice it also carries that voice's recommendation,
+   * by sending its id. Without that the picker sat unlabelled until an admin
+   * pressed "Re-check" — even after the bulk sync had filled in `voice_type`,
+   * because the recommendation comes from ElevenLabs' per-voice fine-tune list
+   * and is never stored on the row.
+   *
+   * Only for a saved voice: while a new voice's id is still being typed, an
+   * id-shaped-but-wrong value would just produce failed lookups. That case is
+   * already covered by the debounced lookup below, whose `modelOptions` take
+   * precedence over this.
    *
    * `languageCode`/`voiceProvider` are ignored server-side by providers that
    * don't need them (harmless to always send).
    */
+  const savedElevenLabsVoiceId =
+    isElevenLabsForm && selectedVoice?.id
+      ? String(config.voice_id ?? config.voiceId ?? "").trim() || undefined
+      : undefined;
+
   const { data: catalogEntries } = useGetTtsCatalogQuery(
     {
       provider: normalizedProvider,
       languageCode: currentLanguageCode,
       voiceProvider: config.voice_provider,
+      voiceId: savedElevenLabsVoiceId,
     },
     { skip: !catalogFieldKey },
   );
@@ -283,6 +298,32 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
       return { value: entry.value, label };
     });
   }, [catalogFieldKey, catalogEntries, config, isElevenLabsForm, syncResult]);
+
+  /**
+   * ElevenLabs' verdict on the v3 model for THIS voice, if we have one — from
+   * a sync/lookup, or from the catalog when it was fetched for a saved voice.
+   * `undefined` when nothing has told us, which leaves the advisory below to
+   * fall back on voice type.
+   *
+   * Read off whichever model string is selected rather than a fixed key,
+   * because "is this a v3 model" is a pattern, not one id.
+   */
+  const elevenLabsV3Verdict = useMemo(() => {
+    if (!isElevenLabsForm) return undefined;
+    const model = String(config.model ?? "").trim();
+    if (!model || !isElevenLabsV3Model(model)) return undefined;
+
+    const source = syncResult?.modelOptions?.length ? syncResult.modelOptions : catalogEntries;
+    const entry = source?.find(option => option.value === model);
+    if (!entry || !("recommended" in entry)) return undefined;
+    return entry.recommended;
+  }, [isElevenLabsForm, config.model, syncResult, catalogEntries]);
+
+  const elevenLabsV3Warning = getElevenLabsV3Warning(
+    formData.provider,
+    config,
+    elevenLabsV3Verdict,
+  );
 
   /**
    * ElevenLabs' own category for this voice, once a sync or lookup reported
@@ -763,12 +804,12 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
             perceptually identical, so the pairing is unsupported, not proven
             harmful. Silence is what let 23 production rows end up here.
           */}
-          {getElevenLabsV3Warning(formData.provider, config) && (
+          {elevenLabsV3Warning && (
             <div
               data-testid="elevenlabs-v3-warning"
               className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
             >
-              {getElevenLabsV3Warning(formData.provider, config)}
+              {elevenLabsV3Warning}
             </div>
           )}
 

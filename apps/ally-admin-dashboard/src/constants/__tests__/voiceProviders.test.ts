@@ -341,3 +341,61 @@ describe("getElevenLabsV3Warning", () => {
     expect(getElevenLabsV3Warning(undefined, config("eleven_v3", "pvc"))).toBeNull();
   });
 });
+
+/**
+ * ElevenLabs say v3 "doesn't YET support Professional Voice Clones". When that
+ * changes, ally-be's per-voice verdict changes with it — and this advisory has
+ * to defer to that, or it would go on insisting the training cannot be used
+ * long after that stopped being true, with nothing to reveal it.
+ *
+ * The verdict may only silence the warning, never raise one, so each message
+ * below still chooses its own wording from voice type.
+ */
+describe("getElevenLabsV3Warning — deferring to ElevenLabs' own verdict", () => {
+  const pvcOnV3 = { model: "eleven_v3", voice_type: "pvc" };
+
+  it("warns for a PVC while ElevenLabs flags v3 for it", () => {
+    expect(getElevenLabsV3Warning("ELEVENLABS", pvcOnV3, false)).toMatch(
+      /custom-trained from real recordings/i,
+    );
+  });
+
+  it("goes quiet once ElevenLabs stops objecting to v3 for that voice", () => {
+    // `null` = listed as usable, or otherwise no objection.
+    expect(getElevenLabsV3Warning("ELEVENLABS", pvcOnV3, null)).toBeNull();
+  });
+
+  it("goes quiet when ElevenLabs makes v3 the recommendation outright", () => {
+    expect(getElevenLabsV3Warning("ELEVENLABS", pvcOnV3, true)).toBeNull();
+  });
+
+  // The advisory is the thing that caught 23 production rows, so losing it when
+  // we simply have no data would be the worst outcome of the three.
+  it("still warns from voice type alone when no verdict is available", () => {
+    expect(getElevenLabsV3Warning("ELEVENLABS", pvcOnV3, undefined)).toMatch(
+      /custom-trained from real recordings/i,
+    );
+    expect(getElevenLabsV3Warning("ELEVENLABS", pvcOnV3)).toMatch(
+      /custom-trained from real recordings/i,
+    );
+  });
+
+  it("keeps warning about an unrecorded or unclear voice type with no verdict", () => {
+    expect(getElevenLabsV3Warning("ELEVENLABS", { model: "eleven_v3", voice_type: "" })).toMatch(
+      /do not know how this voice was created/i,
+    );
+    expect(
+      getElevenLabsV3Warning("ELEVENLABS", { model: "eleven_v3", voice_type: "unknown" }),
+    ).toMatch(/did not tell us how this voice was created/i);
+  });
+
+  it("says nothing for a non-v3 model whatever the verdict", () => {
+    expect(
+      getElevenLabsV3Warning(
+        "ELEVENLABS",
+        { model: "eleven_multilingual_v2", voice_type: "pvc" },
+        false,
+      ),
+    ).toBeNull();
+  });
+});

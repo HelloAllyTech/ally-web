@@ -268,6 +268,120 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(positions).toEqual([...positions].sort((a, b) => a - b));
     });
 
+    describe("annotating a saved ElevenLabs voice's picker without a re-check", () => {
+      const savedElevenLabs = {
+        id: "voice-saved-el",
+        name: "Ria v3",
+        provider: "ELEVENLABS",
+        languageId: 1,
+        config: {
+          gender: "female",
+          model: "eleven_v3",
+          voiceId: "LJk8s1oqYd18q18FQ9Eg",
+          voice_type: "pvc",
+        },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+
+      // A real production voice: the bulk sync filled in voice_type, so the v3
+      // warning was correct, but the picker stayed unlabelled because the
+      // recommendation is never stored. Sending the voice id fixes that.
+      it("asks for the catalog scoped to the saved voice's id", () => {
+        render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
+
+        expect(
+          (api.useGetTtsCatalogQuery as any).mock.calls.some(
+            ([args]: any[]) =>
+              args?.provider === "ELEVENLABS" && args?.voiceId === "LJk8s1oqYd18q18FQ9Eg",
+          ),
+        ).toBe(true);
+      });
+
+      it("renders the recommendation the catalog came back with, with no sync run", () => {
+        (api.useGetTtsCatalogQuery as any).mockReturnValue({
+          data: [
+            {
+              value: "eleven_multilingual_v2",
+              label: "Eleven Multilingual v2",
+              recommended: true,
+            },
+            { value: "eleven_v3", label: "Eleven v3", recommended: false },
+            { value: "eleven_flash_v2_5", label: "Eleven Flash v2.5", recommended: null },
+          ],
+          isFetching: false,
+        });
+        render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
+
+        expect(mockLookupElevenLabsVoice).not.toHaveBeenCalled();
+        expect(screen.getByText("Eleven Multilingual v2 (recommended)")).toBeInTheDocument();
+        expect(screen.getByText("Eleven v3 (not recommended)")).toBeInTheDocument();
+        expect(screen.getByText("Eleven Flash v2.5")).toBeInTheDocument();
+      });
+
+      // The advisory and the picker label must not contradict each other, so
+      // both defer to the same per-voice verdict.
+      it("drops the v3 advisory once the catalog stops objecting to v3 for this voice", () => {
+        (api.useGetTtsCatalogQuery as any).mockReturnValue({
+          data: [{ value: "eleven_v3", label: "Eleven v3", recommended: null }],
+          isFetching: false,
+        });
+        render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
+
+        // voice_type is still "pvc" — only ElevenLabs' answer changed.
+        expect(screen.queryByTestId("elevenlabs-v3-warning")).not.toBeInTheDocument();
+      });
+
+      it("keeps the v3 advisory while the catalog still flags v3", () => {
+        (api.useGetTtsCatalogQuery as any).mockReturnValue({
+          data: [{ value: "eleven_v3", label: "Eleven v3", recommended: false }],
+          isFetching: false,
+        });
+        render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
+
+        expect(screen.getByTestId("elevenlabs-v3-warning")).toHaveTextContent(
+          /custom-trained from real recordings/i,
+        );
+      });
+
+      it("still warns from voice type when the catalog says nothing about v3", () => {
+        // Losing the advisory for lack of data would be the worst outcome —
+        // silence is what let 23 production rows end up misconfigured.
+        (api.useGetTtsCatalogQuery as any).mockReturnValue({
+          data: [{ value: "eleven_multilingual_v2", label: "Eleven Multilingual v2" }],
+          isFetching: false,
+        });
+        render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={savedElevenLabs} />);
+
+        expect(screen.getByTestId("elevenlabs-v3-warning")).toHaveTextContent(
+          /custom-trained from real recordings/i,
+        );
+      });
+
+      it("does not send a voice id while a new voice's id is still being typed", () => {
+        // An id-shaped-but-incomplete value would only produce failed lookups;
+        // the debounced lookup already covers the new-voice case.
+        render(<ScenarioVoiceSidePanel {...defaultProps} />);
+        fireEvent.change(providerDropdown(), { target: { value: "ELEVENLABS" } });
+        fireEvent.change(screen.getByLabelText("Voice ID"), {
+          target: { value: "partial-id-being-typed" },
+        });
+
+        expect(
+          (api.useGetTtsCatalogQuery as any).mock.calls.every(([args]: any[]) => !args?.voiceId),
+        ).toBe(true);
+      });
+
+      it("sends no voice id for a non-ElevenLabs provider", () => {
+        render(<ScenarioVoiceSidePanel {...defaultProps} selectedVoice={sarvamVoice} />);
+
+        expect(
+          (api.useGetTtsCatalogQuery as any).mock.calls.every(([args]: any[]) => !args?.voiceId),
+        ).toBe(true);
+      });
+    });
+
     describe("narrowing a catalog picker by gender", () => {
       const googleVoice = (config: Record<string, any>) => ({
         id: "voice-gender",

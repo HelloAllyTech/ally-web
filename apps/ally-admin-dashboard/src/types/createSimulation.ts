@@ -231,6 +231,13 @@ export interface TtsCatalogEntry {
    * "no match" it would empty those pickers.
    */
   gender?: string;
+  /**
+   * ElevenLabs' verdict for the voice named by `TtsCatalogParams.voiceId` —
+   * `true` the recommendation, `false` flagged, `null` no signal. Only present
+   * when a voiceId was asked for, so a plain catalog carries no verdict rather
+   * than an implied one.
+   */
+  recommended?: boolean | null;
 }
 
 /** Params for the shared TTS catalog query — only some providers use `languageCode`/`voiceProvider`. */
@@ -238,6 +245,15 @@ export interface TtsCatalogParams {
   provider: string;
   languageCode?: string;
   voiceProvider?: string;
+  /**
+   * ElevenLabs only: ask for the catalog already marked up for this voice.
+   *
+   * The per-voice verdict lives in ElevenLabs' `high_quality_base_model_ids`
+   * and is never stored on the row, so without this the picker stays unlabelled
+   * until someone triggers a sync by hand — even for a voice whose `voice_type`
+   * the bulk sync already filled in.
+   */
+  voiceId?: string;
 }
 
 /**
