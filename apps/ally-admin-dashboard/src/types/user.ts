@@ -107,6 +107,13 @@ export interface UsersParams {
   roles?: string[];
   statuses?: string[];
   search?: string;
+  /**
+   * Opt in to listing accounts that hold a platform role (super admin / super
+   * duper admin / internal), which the backend hides from this list by default.
+   * Accepted only for super duper admins — anyone else gets a 403, so only send
+   * it when the viewer is one.
+   */
+  includePlatformAdmins?: boolean;
 }
 
 export interface TenantResponse {

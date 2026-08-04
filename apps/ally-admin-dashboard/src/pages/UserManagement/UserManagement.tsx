@@ -30,6 +30,8 @@ import {
   UserMenuOptions,
   ROUTES,
   userRoleItems,
+  platformRoleFilterItems,
+  INCLUDE_PLATFORM_ADMINS,
   userStatusItems,
   FilterDropdownOptions,
   userStatus,
@@ -137,7 +139,9 @@ export const UserManagement: FC = () => {
     handleAddUserClose,
     handleUserAddClick,
     handleAddCredit,
-  } = useUserManagement(tenants);
+    includePlatformAdmins,
+    lockedRoles,
+  } = useUserManagement(tenants, isSuperDuperAdmin);
 
   const watchedRoles = userMethods.watch("roles") || [];
 
@@ -262,12 +266,26 @@ export const UserManagement: FC = () => {
             formMethods={userMethods}
             handleClick={handleChangeRole}
             extraContent={
-              isMultiTenantAdmin ? (
-                <AssignedOrganizations
-                  userId={selectedUser?.id as number}
-                  canEdit={canEditMultiTenantAdmins}
-                  allTenants={tenants}
-                />
+              lockedRoles.length || isMultiTenantAdmin ? (
+                <div className="space-y-3">
+                  {lockedRoles.length > 0 && (
+                    <div className="text-sm text-typography-600 bg-background-secondary p-3 rounded-lg border border-border-light">
+                      <p>
+                        {en.userManagement.tierRolesKept(
+                          lockedRoles.map(formatCapitalizedEnum).join(", "),
+                        )}
+                      </p>
+                      <p className="mt-2 italic">{en.userManagement.appRoleTenantHint}</p>
+                    </div>
+                  )}
+                  {isMultiTenantAdmin && (
+                    <AssignedOrganizations
+                      userId={selectedUser?.id as number}
+                      canEdit={canEditMultiTenantAdmins}
+                      allTenants={tenants}
+                    />
+                  )}
+                </div>
               ) : undefined
             }
           />
@@ -461,9 +479,31 @@ export const UserManagement: FC = () => {
                 {
                   id: "roles",
                   label: FilterDropdownOptions.ROLE,
-                  options: userRoleItems.map(role => ({ label: role, value: role })),
+                  // The platform roles are only worth offering once those
+                  // accounts are actually in the list.
+                  options: [
+                    ...userRoleItems,
+                    ...(includePlatformAdmins ? platformRoleFilterItems : []),
+                  ].map(role => ({ label: role, value: role })),
                   renderOption: option => formatCapitalizedEnum(option.value),
                 },
+                // Super-duper-admin only: platform accounts are hidden from
+                // this list by default (the backend rejects the opt-in from
+                // anyone else), so hide the control rather than let it 403.
+                ...(isSuperDuperAdmin
+                  ? [
+                      {
+                        id: "platformAccounts" as const,
+                        label: FilterDropdownOptions.PLATFORM_ACCOUNTS,
+                        options: [
+                          {
+                            label: en.userManagement.platformAccountsInclude,
+                            value: INCLUDE_PLATFORM_ADMINS,
+                          },
+                        ],
+                      },
+                    ]
+                  : []),
                 {
                   id: "organizations",
                   label: FilterDropdownOptions.ORGANIZATION,

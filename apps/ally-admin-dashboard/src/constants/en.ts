@@ -670,6 +670,15 @@ export const en = {
     textAreaUpperLimit: "Maximum 500 characters allowed",
     maxCharError: (count: number) => `Maximum ${count} characters allowed`,
     changeRoleErrorMessage: "At least one role must be selected",
+    changeRoleUnknownRole: "One of this user's roles is no longer available — reload and try again",
+    platformAccountsInclude: "Include Ally staff & super admins",
+    platformAccountsIncluded: "Included",
+    // Plain text: this renders in the modal body, not the markdown-aware
+    // confirmation popup.
+    tierRolesKept: (roles: string) =>
+      `${roles} is kept — change that in the Super Admins tab. Roles picked here are added alongside it.`,
+    appRoleTenantHint:
+      "Consumer-app roles only show content assigned to this account's organization.",
     creditRequiredError: "Credit details are required",
     creditNotNegativeError: "Credits cannot be negative",
     creditLimitError: "Maximum credit limit is 10,000",

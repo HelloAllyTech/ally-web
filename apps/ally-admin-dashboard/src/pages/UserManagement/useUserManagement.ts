@@ -25,7 +25,9 @@ import {
   FilterDropdownOptions,
   userStatus,
   UserRole,
-  isSuperAdminRole,
+  isTierManagedRole,
+  INCLUDE_PLATFORM_ADMINS,
+  platformRoleFilterItems,
 } from "@constants";
 import {
   AddUserFormData,
@@ -40,7 +42,24 @@ import { getChipValue, parseEmailList } from "@utils";
 export const USERS_PAGE_SIZE = 20;
 const IMPERSONATION_APP_URL = import.meta.env.VITE_IMPERSONATION_APP_URL;
 
-export function useUserManagement(tenants: Tenant[]) {
+/**
+ * Drop the opt-in and any platform role selected under it. Leaving
+ * `roles: ["SUPER_ADMIN"]` behind once those accounts are excluded again would
+ * ask the backend for rows it will never return — an empty list with no visible
+ * cause.
+ */
+const withoutPlatformAdmins = (current: FilterValues): FilterValues => ({
+  ...current,
+  platformAccounts: [],
+  roles: current.roles.filter(role => !platformRoleFilterItems.includes(role)),
+});
+
+/**
+ * @param canListPlatformAdmins whether the viewer may list accounts holding a
+ * platform role (super duper admins only). Gates both the filter section and
+ * the query param, so nobody else can trip the backend's 403.
+ */
+export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = false) {
   const [search, setSearch] = useState<string>("");
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [addUsermodalOpen, setAddUserModalOpen] = useState<boolean>(false);
@@ -50,6 +69,7 @@ export function useUserManagement(tenants: Tenant[]) {
     organizations: [],
     roles: [],
     statuses: [],
+    platformAccounts: [],
   });
   const [tenantIdFilters, setTenantIdFilters] = useState<string[]>([]);
 
@@ -102,6 +122,8 @@ export function useUserManagement(tenants: Tenant[]) {
   const { data: userRoles } = useGetRoleQuery();
 
   const addFilterBtnRef = useRef<HTMLButtonElement>(null);
+  const includePlatformAdmins =
+    canListPlatformAdmins && filters.platformAccounts.includes(INCLUDE_PLATFORM_ADMINS);
   const userParams = {
     limit: USERS_PAGE_SIZE,
     offset: usersOffset,
@@ -111,6 +133,9 @@ export function useUserManagement(tenants: Tenant[]) {
     roles: filters.roles.length ? filters.roles : undefined,
     statuses: filters.statuses.length ? filters.statuses : undefined,
     search: search || undefined,
+    // Omitted rather than sent as false, so the request URL (and cache key) is
+    // unchanged for every viewer who never touches the filter.
+    includePlatformAdmins: includePlatformAdmins || undefined,
   };
 
   const { data: usersResponse, isFetching: isUsersFetching } = useGetUsersQuery(userParams);
@@ -138,11 +163,25 @@ export function useUserManagement(tenants: Tenant[]) {
   useEffect(() => {
     if (!userRoles) return;
 
+    // Everything except the two tier roles the Super Admins tab owns and
+    // CLIENT (an anonymous-chat identity, never granted by hand). INTERNAL is
+    // offered here on purpose: "Ally staff" is INTERNAL alongside a normal
+    // consumer role, and this picker is the only place to say so.
     const filteredRoles = userRoles.filter(
-      role => !isSuperAdminRole(role.name) && role.name !== UserRole.CLIENT,
+      role => !isTierManagedRole(role.name) && role.name !== UserRole.CLIENT,
     );
     setRoles(filteredRoles);
   }, [userRoles]);
+
+  /**
+   * The selected user's tier roles — held but not editable here. Shown to the
+   * admin as read-only context and re-added to the change-role payload, since
+   * that endpoint replaces the whole set.
+   */
+  const lockedRoles = useMemo(
+    () => (selectedUser?.roles ?? []).filter(isTierManagedRole),
+    [selectedUser],
+  );
 
   const loadUsers = async (append = false) => {
     // Advance/reset offset to drive the subscribed query
@@ -180,11 +219,25 @@ export function useUserManagement(tenants: Tenant[]) {
         onClear: () => setFilters(previousFilters => ({ ...previousFilters, statuses: [] })),
       });
     }
+    // Named rather than shown as a raw value: the chip has to make it obvious
+    // why staff accounts suddenly appear in a tenant's user list.
+    if (includePlatformAdmins) {
+      chips.push({
+        label: FilterDropdownOptions.PLATFORM_ACCOUNTS,
+        value: en.userManagement.platformAccountsIncluded,
+        allValue: [en.userManagement.platformAccountsIncluded],
+        onClear: () => setFilters(previousFilters => withoutPlatformAdmins(previousFilters)),
+      });
+    }
     return chips;
-  }, [filters]);
+  }, [filters, includePlatformAdmins]);
 
   const handleApplyFilters = (newFilters: FilterValues) => {
-    setFilters(newFilters);
+    setFilters(
+      newFilters.platformAccounts.includes(INCLUDE_PLATFORM_ADMINS)
+        ? newFilters
+        : withoutPlatformAdmins(newFilters),
+    );
     const organizationIds = newFilters.organizations
       .map(name => tenants.find(tenant => tenant.name === name)?.id)
       .filter((id): id is string => Boolean(id));
@@ -226,12 +279,16 @@ export function useUserManagement(tenants: Tenant[]) {
   const handleOptionSelect = (option: string, user: UserListUser) => {
     setSelectedUser(user);
     setSelectedOption(option);
+    const heldRoles = user.roles?.length ? user.roles : user.role ? [user.role] : [];
     userMethods.reset({
       name: user.name,
       email: user.email,
       externalId: user.externalId,
       tenantId: user.tenantId,
-      roles: user.roles?.length ? user.roles : user.role ? [user.role] : [],
+      // Tier roles are surfaced separately as read-only: prefilling them would
+      // put a tag in the picker that has no matching option, so it could be
+      // seen but never removed or re-added.
+      roles: heldRoles.filter(role => !isTierManagedRole(role)),
     });
   };
 
@@ -376,8 +433,21 @@ export function useUserManagement(tenants: Tenant[]) {
 
   const handleChangeRole = async (data: any) => {
     try {
-      const selectedRoleNames = data.roles || [];
-      const groupIds = selectedRoleNames.map(name => roles.find(role => role.name === name)?.id);
+      // Union the picker's selection with the tier roles it never offered, then
+      // resolve ids against the *full* role list: `roles` excludes the tier, so
+      // resolving there would map SUPER_DUPER_ADMIN to undefined and the
+      // backend would reject the payload (or, worse, drop the role).
+      const selectedRoleNames: string[] = data.roles || [];
+      const roleNames = Array.from(new Set([...selectedRoleNames, ...lockedRoles]));
+      const groupIds = roleNames
+        .map(name => (userRoles ?? []).find(role => role.name === name)?.id)
+        .filter((id): id is number => id != null);
+
+      if (groupIds.length !== roleNames.length) {
+        toast.error(en.userManagement.changeRoleUnknownRole);
+        return;
+      }
+
       const payload = {
         userId: data.id,
         groupIds,
@@ -446,6 +516,10 @@ export function useUserManagement(tenants: Tenant[]) {
     filters,
     handleApplyFilters,
     addFilterCtaMemo,
+    includePlatformAdmins,
+
+    // roles the selected user holds that this tab shows but cannot change
+    lockedRoles,
 
     // data
     users,

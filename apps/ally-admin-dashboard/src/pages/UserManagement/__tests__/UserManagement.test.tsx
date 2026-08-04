@@ -66,13 +66,30 @@ vi.mock("@components", () => ({
       {addFilterCta}
     </div>
   ),
-  FilterDropdown: ({ isOpen, onApplyFilters }: any) =>
+  FilterDropdown: ({ isOpen, onApplyFilters, sections }: any) =>
     isOpen ? (
       <div data-testid="filter-dropdown">
         Filter Dropdown
+        {/* Section labels + option labels, so tests can assert which filters a
+            given role is offered. */}
+        {(sections ?? []).map((section: any) => (
+          <div key={section.id} data-testid={`filter-section-${section.id}`}>
+            {section.label}
+            {(section.options ?? []).map((option: any) => (
+              <span key={option.value}>{option.label}</span>
+            ))}
+          </div>
+        ))}
         <button
           data-testid="apply-filters-test"
-          onClick={() => onApplyFilters({ roles: ["admin"], organizations: [], statuses: [] })}
+          onClick={() =>
+            onApplyFilters({
+              roles: ["admin"],
+              organizations: [],
+              statuses: [],
+              platformAccounts: [],
+            })
+          }
         >
           Apply Filters
         </button>
@@ -160,8 +177,10 @@ describe("UserManagement", () => {
     isFilterOpen: false,
     setIsFilterOpen: vi.fn(),
     addFilterBtnRef: { current: null },
-    filters: { organizations: [], roles: [], statuses: [] },
+    filters: { organizations: [], roles: [], statuses: [], platformAccounts: [] },
     handleApplyFilters: vi.fn(),
+    includePlatformAdmins: false,
+    lockedRoles: [] as string[],
     users: mockUsers as any,
     loadUsers: vi.fn(),
     isUsersFetching: false,
@@ -264,11 +283,11 @@ describe("UserManagement", () => {
     );
   });
 
-  const setPermissions = (permissions: Permissions[]) => {
+  const setPermissions = (permissions: Permissions[], user?: { role: string }) => {
     vi.mocked(useSelector).mockImplementation((selector: any) => {
       // Mock RootState
       const state = {
-        user: { permissions },
+        user: { permissions, user },
       };
       return selector(state);
     });
@@ -618,6 +637,7 @@ describe("UserManagement", () => {
         roles: ["admin"],
         organizations: [],
         statuses: [],
+        platformAccounts: [],
       });
     });
   });
@@ -701,6 +721,82 @@ describe("UserManagement", () => {
       fireEvent.click(closeButton);
 
       expect(mockOrganizationManagementHook.onCloseOrganizationEditModal).toHaveBeenCalled();
+    });
+  });
+
+  describe("Platform accounts", () => {
+    const openFilters = (role?: string) => {
+      setPermissions([Permissions.EDIT_USER], role ? { role } : undefined);
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        isFilterOpen: true,
+      } as any);
+      renderUserManagement();
+    };
+
+    it("offers the platform-accounts filter to a super duper admin", () => {
+      openFilters("SUPER_DUPER_ADMIN");
+
+      expect(screen.getByTestId("filter-section-platformAccounts")).toBeInTheDocument();
+      expect(screen.getByText("Include Ally staff & super admins")).toBeInTheDocument();
+    });
+
+    it("hides it from a plain super admin, whose request would be rejected", () => {
+      openFilters("SUPER_ADMIN");
+
+      expect(screen.queryByTestId("filter-section-platformAccounts")).not.toBeInTheDocument();
+    });
+
+    it("offers the platform roles in the Role filter only once they are listed", () => {
+      setPermissions([Permissions.EDIT_USER], { role: "SUPER_DUPER_ADMIN" });
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        isFilterOpen: true,
+        includePlatformAdmins: true,
+      } as any);
+      renderUserManagement();
+
+      const roleSection = screen.getByTestId("filter-section-roles");
+      expect(roleSection).toHaveTextContent("INTERNAL");
+      expect(roleSection).toHaveTextContent("SUPER_DUPER_ADMIN");
+    });
+
+    it("keeps the platform roles out of the Role filter by default", () => {
+      openFilters("SUPER_DUPER_ADMIN");
+
+      const roleSection = screen.getByTestId("filter-section-roles");
+      expect(roleSection).not.toHaveTextContent("INTERNAL");
+      expect(roleSection).toHaveTextContent("LEARNER");
+    });
+
+    it("tells the admin which tier role the change-role modal will keep", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Change role",
+        selectedUser: mockUsers[0],
+        lockedRoles: ["SUPER_DUPER_ADMIN"],
+      } as any);
+
+      renderUserManagement();
+
+      const extra = screen.getByTestId("modal-extra-content");
+      expect(extra).toHaveTextContent("Super duper admin is kept");
+      expect(extra).toHaveTextContent(
+        "Consumer-app roles only show content assigned to this account's organization.",
+      );
+    });
+
+    it("shows no such note for an ordinary account", () => {
+      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
+        ...mockUserManagementHook,
+        selectedOption: "Change role",
+        selectedUser: mockUsers[0],
+        lockedRoles: [],
+      } as any);
+
+      renderUserManagement();
+
+      expect(screen.queryByTestId("modal-extra-content")).not.toBeInTheDocument();
     });
   });
 
