@@ -234,6 +234,40 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(positions).toEqual([...positions].sort((a, b) => a - b));
     });
 
+    it("puts Google's Model name right after Gender, ahead of the Voice name it scopes", () => {
+      // Same rule as the two above, and load-bearing here: Google's Gemini
+      // voices are the bare-named ones ("Puck", "Kore") and are rejected
+      // outright unless a Gemini model is named — measured against the live
+      // API: "This voice requires a model name to be specified." Choosing the
+      // model first is what makes the voice choice meaningful.
+      const googleVoice = {
+        id: "voice-order-google",
+        name: "Order check",
+        provider: "GOOGLE",
+        languageId: 1,
+        config: {
+          gender: "male",
+          voice_name: "Puck",
+          model_name: "gemini-2.5-flash-tts",
+        },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      const { container } = render(
+        <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={googleVoice} />,
+      );
+
+      const labels = ["Gender", "Model name", "Voice name", "Voice cloning key"];
+      const positions = labels.map(label =>
+        Array.from(container.querySelectorAll("span")).findIndex(el =>
+          el.textContent?.startsWith(label),
+        ),
+      );
+      expect(positions.every(p => p >= 0)).toBe(true);
+      expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    });
+
     it("turns Deepgram's Model field into a picker too, requesting the voice's own language", () => {
       const deepgramVoice = {
         id: "voice-dg",

@@ -222,6 +222,20 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
   ],
   [TtsProvider.GOOGLE]: [
     GENDER_FIELD,
+    // Ahead of Voice name, because it decides which voices are even valid:
+    // Google's Gemini voices are the bare-named ones ("Puck", "Kore") and are
+    // rejected outright unless a Gemini model is named — "This voice requires a
+    // model name to be specified" — while the language-prefixed Chirp3-HD names
+    // want chirp_3. Same reasoning as ElevenLabs' Voice ID before Model and
+    // Hume's Voice source before Voice name: choose the scope, then the voice.
+    {
+      key: "model_name",
+      label: "Model name",
+      required: false,
+      type: "string",
+      placeholder: "chirp_3",
+      hint: "chirp_3 for the Chirp3-HD voices; gemini-2.5-flash-tts for the bare-named Gemini ones, which will not play without it. Leave empty for Standard, Neural2 and Wavenet.",
+    },
     {
       key: "voice_name",
       label: "Voice name",
@@ -229,14 +243,6 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
       type: "string",
       placeholder: "en-IN-Chirp3-HD-Achernar",
       hint: "Leave empty to let Google pick by gender and language.",
-    },
-    {
-      key: "model_name",
-      label: "Model name",
-      required: false,
-      type: "string",
-      placeholder: "chirp_3",
-      hint: "Chirp voices default to chirp_3; other names follow the plugin default.",
     },
     {
       key: "voice_cloning_key",
