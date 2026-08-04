@@ -191,10 +191,14 @@ export const LanguageVoiceMapping: FC<LanguageVoiceMappingProps> = ({
    * take that decision away.
    */
   const personaGender = watch("gender") as string | undefined;
+  // Stored as a number against a voice's band, so buildGroupedVoiceOptions
+  // translates one into the other before comparing.
+  const personaAge = watch("age") as string | number | undefined;
 
   const getVoiceOptions = useCallback(
-    (language: LanguageOption) => buildGroupedVoiceOptions(language.voices, personaGender),
-    [personaGender],
+    (language: LanguageOption) =>
+      buildGroupedVoiceOptions(language.voices, personaGender, personaAge),
+    [personaGender, personaAge],
   );
 
   const sttOptions = useMemo(

@@ -66,6 +66,79 @@ const GENDER_FIELD: VoiceConfigField = {
 };
 
 /**
+ * Roughly how old the voice sounds, entered by hand.
+ *
+ * Nothing dispatches it — no TTS client reads `age`, so this exists purely to
+ * help a human choose, and to float age-appropriate voices up the studio's
+ * picker against the persona's age.
+ *
+ * The vocabulary is ours because no provider's fits. Deepgram publishes
+ * `Adult` / `Young Adult` / `Mature`, ElevenLabs `young` / `middle_aged` /
+ * `old`, and Sarvam — where the only values we already store came from —
+ * documents no age attribute at all. Three incompatible sets and one absence,
+ * so adopting any of them would just be arbitrary.
+ *
+ * `adult` deliberately keeps the broad meaning the existing rows use, rather
+ * than being narrowed to a decade, so nothing already entered becomes wrong.
+ */
+export enum VoiceAge {
+  CHILD = "child",
+  TEEN = "teen",
+  YOUNG_ADULT = "young adult",
+  ADULT = "adult",
+  SENIOR = "senior",
+}
+
+const AGE_FIELD: VoiceConfigField = {
+  key: "age",
+  label: "Age",
+  required: false,
+  type: "select",
+  options: [
+    { value: "", label: "Not recorded" },
+    { value: VoiceAge.CHILD, label: "Child" },
+    { value: VoiceAge.TEEN, label: "Teen" },
+    { value: VoiceAge.YOUNG_ADULT, label: "Young adult" },
+    { value: VoiceAge.ADULT, label: "Adult" },
+    { value: VoiceAge.SENIOR, label: "Senior" },
+  ],
+  hint: "Optional. Floats age-appropriate voices up the studio's picker; nothing is sent to the provider.",
+};
+
+/**
+ * Where each age sits on a scale, so a persona's age can be matched to a band.
+ *
+ * Only the boundaries a human would recognise. `adult` covers the long middle
+ * on purpose — it is the value most existing rows carry, and narrowing it would
+ * silently demote voices that are perfectly appropriate.
+ */
+const AGE_BAND_RANGES: Array<{ age: VoiceAge; upTo: number }> = [
+  { age: VoiceAge.CHILD, upTo: 12 },
+  { age: VoiceAge.TEEN, upTo: 19 },
+  { age: VoiceAge.YOUNG_ADULT, upTo: 34 },
+  { age: VoiceAge.ADULT, upTo: 59 },
+  { age: VoiceAge.SENIOR, upTo: Infinity },
+];
+
+/**
+ * The band a numeric age falls in, or null when there is no usable number.
+ *
+ * The studio stores a persona's age as a number while a voice carries a band,
+ * so one of them has to be translated to compare them at all.
+ */
+export const toVoiceAgeBand = (age?: string | number | null): VoiceAge | null => {
+  const raw = String(age ?? "").trim();
+  if (!raw) return null;
+  // Already a band (a voice's own value) — accept it as-is.
+  const asBand = raw.toLowerCase();
+  if ((Object.values(VoiceAge) as string[]).includes(asBand)) return asBand as VoiceAge;
+
+  const years = Number(raw);
+  if (!Number.isFinite(years) || years < 0) return null;
+  return AGE_BAND_RANGES.find(band => years <= band.upTo)?.age ?? null;
+};
+
+/**
  * Plain-English description of a voice type, plus what it means for v3.
  *
  * The sync banner used to print `generated -> voice_design`, which is our
@@ -162,6 +235,7 @@ export const isMissingGender = (config?: Record<string, any>): boolean =>
 export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
   [TtsProvider.DEEPGRAM]: [
     GENDER_FIELD,
+    AGE_FIELD,
     {
       key: "model",
       label: "Model",
@@ -173,6 +247,7 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
   ],
   [TtsProvider.ELEVENLABS]: [
     GENDER_FIELD,
+    AGE_FIELD,
     // Right after Gender, ahead of Model/Voice type: for a new voice, typing
     // this is what triggers the debounced auto-lookup (keyed on this field's
     // value, regardless of render order) that fills those two fields in —
@@ -212,6 +287,7 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
   ],
   [TtsProvider.SARVAM]: [
     GENDER_FIELD,
+    AGE_FIELD,
     {
       key: "model",
       label: "Model",
@@ -227,16 +303,10 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
       placeholder: "abhilash",
       hint: "Sarvam speaker name, lower-case.",
     },
-    {
-      key: "age",
-      label: "Age",
-      required: false,
-      type: "string",
-      placeholder: "adult",
-    },
   ],
   [TtsProvider.GOOGLE]: [
     GENDER_FIELD,
+    AGE_FIELD,
     // Ahead of Voice name, because it decides which voices are even valid:
     // Google's Gemini voices are the bare-named ones ("Puck", "Kore") and are
     // rejected outright unless a Gemini model is named — "This voice requires a
@@ -269,6 +339,7 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
   ],
   [TtsProvider.HUME]: [
     GENDER_FIELD,
+    AGE_FIELD,
     // Right after Gender, ahead of Voice name: this decides WHICH catalog
     // the Voice name picker below pulls from (Hume's own library vs a
     // custom-cloned voice) — same reasoning as ElevenLabs' Voice ID coming
@@ -391,6 +462,24 @@ const genderMatchRank = (voiceGender?: string | null, preferredGender?: string |
 };
 
 /**
+ * The same three tiers for age, translated through bands so a persona's number
+ * can be compared with a voice's category at all.
+ *
+ * Applied within a "Provider · Gender" group rather than above it: those two
+ * fields form the group label, so ranking age above either one splits a group
+ * and its sticky header renders twice. Age is also optional and hand-entered, so
+ * most voices carry none for now — it should refine an order, not drive it.
+ */
+const ageMatchRank = (voiceAge?: string | null, preferredAge?: string | number | null): number => {
+  const preferred = toVoiceAgeBand(preferredAge);
+  if (!preferred) return 0;
+  const actual = toVoiceAgeBand(voiceAge);
+  if (actual === preferred) return 0;
+  if (!actual) return 1;
+  return 2;
+};
+
+/**
  * Build picker options grouped by provider, then gender.
  *
  * That's the order people actually choose in — pick the vendor you trust for
@@ -411,6 +500,7 @@ export const buildGroupedVoiceOptions = (
     age?: string | null;
   }> = [],
   preferredGender?: string | null,
+  preferredAge?: string | number | null,
 ): GroupedVoiceOption[] =>
   voices
     .map(voice => ({
@@ -420,6 +510,7 @@ export const buildGroupedVoiceOptions = (
       providerLabel: getProviderLabel(voice.provider),
       genderRank: getVoiceGenderRank(voice.gender),
       matchRank: genderMatchRank(voice.gender, preferredGender),
+      ageRank: ageMatchRank(voice.age, preferredAge),
     }))
     .sort(
       (a, b) =>
@@ -429,6 +520,13 @@ export const buildGroupedVoiceOptions = (
         a.matchRank - b.matchRank ||
         a.providerLabel.localeCompare(b.providerLabel) ||
         a.genderRank - b.genderRank ||
+        // Age sorts INSIDE a group, never above provider or gender. Those two
+        // are what a group label is made of, so ranking age above either splits
+        // a group in two and TextDropdown renders its header twice — verified
+        // by reordering three voices across two providers. So a matching age
+        // surfaces first within "Google · Female" rather than reshuffling the
+        // groups themselves.
+        a.ageRank - b.ageRank ||
         a.label.localeCompare(b.label),
     )
     .map(({ value, label, groupLabel }) => ({ value, label, groupLabel }));

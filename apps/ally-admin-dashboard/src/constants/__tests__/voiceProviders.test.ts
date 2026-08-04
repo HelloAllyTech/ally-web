@@ -9,6 +9,8 @@ import {
   getVoiceGenderLabel,
   getVoiceGroupLabel,
   getElevenLabsV3Warning,
+  toVoiceAgeBand,
+  VoiceAge,
   isMissingGender,
   isSupportedProvider,
   readConfigField,
@@ -461,5 +463,124 @@ describe("buildGroupedVoiceOptions — ordering by the persona's gender", () => 
     expect(withoutPreference).toEqual(["g-female", "g-male", "g-none", "s-female", "s-male"]);
     expect(buildGroupedVoiceOptions(voices, "").map(o => o.value)).toEqual(withoutPreference);
     expect(buildGroupedVoiceOptions(voices, null).map(o => o.value)).toEqual(withoutPreference);
+  });
+});
+
+describe("toVoiceAgeBand", () => {
+  // The studio stores a persona's age as a number while a voice carries a band,
+  // so one has to be translated before they can be compared at all.
+  it.each([
+    [8, VoiceAge.CHILD],
+    [12, VoiceAge.CHILD],
+    [13, VoiceAge.TEEN],
+    [19, VoiceAge.TEEN],
+    [20, VoiceAge.YOUNG_ADULT],
+    [34, VoiceAge.YOUNG_ADULT],
+    [35, VoiceAge.ADULT],
+    [59, VoiceAge.ADULT],
+    [60, VoiceAge.SENIOR],
+    [92, VoiceAge.SENIOR],
+  ])("maps age %s to %s", (years, band) => {
+    expect(toVoiceAgeBand(years)).toBe(band);
+  });
+
+  it("passes a band straight through, since a voice already stores one", () => {
+    expect(toVoiceAgeBand("adult")).toBe(VoiceAge.ADULT);
+    expect(toVoiceAgeBand("Senior")).toBe(VoiceAge.SENIOR);
+  });
+
+  it("returns null for anything unusable rather than guessing a band", () => {
+    expect(toVoiceAgeBand(undefined)).toBeNull();
+    expect(toVoiceAgeBand(null)).toBeNull();
+    expect(toVoiceAgeBand("")).toBeNull();
+    expect(toVoiceAgeBand("   ")).toBeNull();
+    expect(toVoiceAgeBand("middle_aged")).toBeNull();
+    expect(toVoiceAgeBand(-4)).toBeNull();
+  });
+});
+
+describe("buildGroupedVoiceOptions — ordering by the persona's age", () => {
+  const voices = [
+    { id: "g-f-adult", name: "Adele", provider: "GOOGLE", gender: "female", age: "adult" },
+    { id: "g-f-teen", name: "Bela", provider: "GOOGLE", gender: "female", age: "teen" },
+    { id: "g-f-none", name: "Cara", provider: "GOOGLE", gender: "female", age: null },
+    { id: "s-f-teen", name: "Divya", provider: "SARVAM", gender: "female", age: "teen" },
+  ];
+
+  it("puts the matching age first inside a group, then unrecorded, then the rest", () => {
+    // Persona is 15 -> teen.
+    expect(buildGroupedVoiceOptions(voices, "female", 15).map(o => o.value)).toEqual([
+      // Google · Female, reordered by age within the group…
+      "g-f-teen",
+      "g-f-none",
+      "g-f-adult",
+      // …then the next group.
+      "s-f-teen",
+    ]);
+  });
+
+  /**
+   * Age must sort INSIDE a group, never above provider or gender. Ranking it
+   * higher split "Google · Female" around "Sarvam · Female", which makes
+   * TextDropdown render that header twice.
+   */
+  it("never splits a Provider · Gender group", () => {
+    const groups = buildGroupedVoiceOptions(voices, "female", 15).map(o => o.groupLabel);
+    const starts = new Set<string>();
+    let previous: string | null = null;
+    groups.forEach(group => {
+      if (group !== previous) {
+        expect(starts.has(group)).toBe(false);
+        starts.add(group);
+        previous = group;
+      }
+    });
+  });
+
+  it("hides nothing — every voice is still offered", () => {
+    const ordered = buildGroupedVoiceOptions(voices, "female", 8);
+    expect(ordered.map(o => o.value).sort()).toEqual(voices.map(v => v.id).sort());
+  });
+
+  it("leaves the order untouched when the persona has no age", () => {
+    const withAge = buildGroupedVoiceOptions(voices, "female", undefined).map(o => o.value);
+    expect(buildGroupedVoiceOptions(voices, "female", "").map(o => o.value)).toEqual(withAge);
+    expect(buildGroupedVoiceOptions(voices, "female", null).map(o => o.value)).toEqual(withAge);
+  });
+
+  it("keeps gender ahead of age — a matching age cannot outrank a matching gender", () => {
+    const mixed = [
+      { id: "male-teen", name: "Boy", provider: "GOOGLE", gender: "male", age: "teen" },
+      { id: "female-adult", name: "Woman", provider: "GOOGLE", gender: "female", age: "adult" },
+    ];
+    // Persona: female, 15 (teen). The male teen matches on age but not gender.
+    expect(buildGroupedVoiceOptions(mixed, "female", 15).map(o => o.value)).toEqual([
+      "female-adult",
+      "male-teen",
+    ]);
+  });
+});
+
+describe("Age is offered for every provider", () => {
+  // It was previously a free-text field on Sarvam alone, which is why the only
+  // values in the wild are Sarvam's. Nothing dispatches it, so there is no
+  // reason for one provider to have it and the rest not.
+  it.each(Object.values(TtsProvider))("%s has an optional age field", provider => {
+    const age = VOICE_CONFIG_SCHEMA[provider].find(field => field.key === "age");
+    expect(age).toBeDefined();
+    expect(age!.required).toBe(false);
+    expect(age!.type).toBe("select");
+  });
+
+  it("offers a way back to no value, so a mistake can be undone", () => {
+    const age = VOICE_CONFIG_SCHEMA[TtsProvider.SARVAM].find(f => f.key === "age");
+    expect(age!.options?.some(option => option.value === "")).toBe(true);
+  });
+
+  it("keeps the value legacy Sarvam rows already store", () => {
+    // 11 production rows say "adult"; dropping it from the options would show
+    // them a blank field and quietly rewrite their age on the next save.
+    const age = VOICE_CONFIG_SCHEMA[TtsProvider.SARVAM].find(f => f.key === "age");
+    expect(age!.options?.map(o => o.value)).toContain("adult");
   });
 });

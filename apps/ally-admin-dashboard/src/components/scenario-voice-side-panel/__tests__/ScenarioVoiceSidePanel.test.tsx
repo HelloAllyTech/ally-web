@@ -177,7 +177,9 @@ describe("ScenarioVoiceSidePanel", () => {
 
       expect(screen.getByLabelText("Model")).toHaveValue("bulbul:v2");
       expect(screen.getByLabelText("Speaker")).toHaveValue("abhilash");
-      expect(screen.getByLabelText("Age")).toHaveValue("adult");
+      // Age is a guided select now, not free text — the value a legacy Sarvam
+      // row already carries is one of its options, so it stays selected.
+      expect(screen.getByTestId("dropdown-Select age")).toHaveValue("adult");
       // Hume-only field must not appear for a Sarvam voice.
       expect(screen.queryByLabelText("Voice name")).not.toBeInTheDocument();
     });
@@ -907,7 +909,7 @@ describe("ScenarioVoiceSidePanel", () => {
         />,
       );
 
-      fireEvent.change(screen.getByLabelText("Age"), { target: { value: "" } });
+      fireEvent.change(screen.getByTestId("dropdown-Select age"), { target: { value: "" } });
       fireEvent.click(saveButton());
 
       expect(onUpdate).toHaveBeenCalledTimes(1);
