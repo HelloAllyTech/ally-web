@@ -178,6 +178,65 @@ describe("ScenarioVoiceSidePanel", () => {
       expect(screen.queryByLabelText("Voice name")).not.toBeInTheDocument();
     });
 
+    it("puts ElevenLabs' Voice ID right after Gender, ahead of Model and Voice type", () => {
+      // Typing the id is what triggers the auto-lookup that fills Model and
+      // Voice type in — it needs to come first so those fields already have
+      // useful values by the time an admin reaches them, not the other way
+      // around.
+      const elevenLabsVoice = {
+        id: "voice-order",
+        name: "Order check",
+        provider: "ELEVENLABS",
+        languageId: 1,
+        config: { gender: "female", model: "eleven_turbo_v2_5", voice_id: "someId1234567890123" },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      const { container } = render(
+        <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={elevenLabsVoice} />,
+      );
+
+      // A required field's label span also contains a nested "*" span, so
+      // its textContent is "Voice ID*", not "Voice ID" — match by prefix.
+      const labels = ["Gender", "Voice ID", "Model", "Voice type"];
+      const positions = labels.map(label =>
+        Array.from(container.querySelectorAll("span")).findIndex(el =>
+          el.textContent?.startsWith(label),
+        ),
+      );
+      expect(positions.every(p => p >= 0)).toBe(true);
+      expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    });
+
+    it("puts Hume's Voice source right after Gender, ahead of the Voice name it scopes", () => {
+      // Voice source (HUME_AI vs CUSTOM_VOICE) decides which catalog the
+      // Voice name picker below pulls from — same reasoning as ElevenLabs'
+      // Voice ID above: whatever scopes a picker must render before it.
+      const humeVoice = {
+        id: "voice-order-hume",
+        name: "Order check",
+        provider: "HUME",
+        languageId: 1,
+        config: { gender: "female", voice_name: "Priya", voice_provider: "HUME_AI" },
+        createdAt: "2024-01-15T10:00:00Z",
+        updatedAt: "2024-01-15T10:00:00Z",
+        active: true,
+      };
+      const { container } = render(
+        <ScenarioVoiceSidePanel {...defaultProps} selectedVoice={humeVoice} />,
+      );
+
+      const labels = ["Gender", "Voice source", "Voice name", "Instant mode"];
+      const positions = labels.map(label =>
+        Array.from(container.querySelectorAll("span")).findIndex(el =>
+          el.textContent?.startsWith(label),
+        ),
+      );
+      expect(positions.every(p => p >= 0)).toBe(true);
+      expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    });
+
     it("turns Deepgram's Model field into a picker too, requesting the voice's own language", () => {
       const deepgramVoice = {
         id: "voice-dg",
@@ -850,6 +909,43 @@ describe("ScenarioVoiceSidePanel", () => {
 
       expect(screen.getByText("eleven_multilingual_v2 (recommended)")).toBeInTheDocument();
       expect(screen.getByText("eleven_v3 (not recommended)")).toBeInTheDocument();
+    });
+
+    it("does not flag every other model as unrecommended when ElevenLabs reports no fine-tune data at all", async () => {
+      // A real production voice ("Meenakshi", Voice Design) caught this too:
+      // ElevenLabs' high_quality_base_model_ids is genuinely empty for every
+      // Voice Design voice (0 of 27 in the account-wide sweep) — that's
+      // "no data reported", not "checked and none of these qualify". `[]` is
+      // truthy in JS, so a bare existence check flagged all four non-v3
+      // models as "not recommended" from an empty list — a claim ElevenLabs
+      // never made.
+      mockLookupElevenLabsVoice.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            voiceId: "iA7mRIiSweGrLdznkosO",
+            resolvedVoiceId: "iA7mRIiSweGrLdznkosO",
+            voiceIdMismatch: false,
+            category: "generated",
+            resolvedName: "Meenakshi",
+            voiceType: "voice_design",
+            gender: "female",
+            language: "ta",
+            availableModels: [],
+            recommendedModel: null,
+          }),
+      });
+      const voiceIdField = goToVoiceIdField();
+
+      fireEvent.change(voiceIdField, { target: { value: "iA7mRIiSweGrLdznkosO" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      // v3 is fine for this voice type (already covered above); the point
+      // here is that NOTHING else gets flagged either.
+      expect(screen.getByText("eleven_turbo_v2_5")).toBeInTheDocument();
+      expect(screen.getByText("eleven_multilingual_v2")).toBeInTheDocument();
+      expect(screen.queryByText(/not recommended/)).not.toBeInTheDocument();
     });
 
     it("keeps a stored model selectable even if it isn't in ElevenLabs' current catalog", () => {

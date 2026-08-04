@@ -74,10 +74,22 @@ describe("validateVoiceConfig", () => {
     ).toEqual([]);
   });
 
-  it("flags an unsupported provider", () => {
-    expect(validateVoiceConfig("OPENAI", { gender: "male" })[0]).toContain(
-      'Unsupported voice provider "OPENAI"',
-    );
+  it("flags an unsupported provider, listing supported ones with clean labels", () => {
+    const [message] = validateVoiceConfig("OPENAI", { gender: "male" });
+    expect(message).toContain('Unsupported voice provider "OPENAI"');
+    // Not raw enum values (DEEPGRAM, ELEVENLABS, ...) — those read as
+    // shouting and unpolished next to the rest of the studio's copy.
+    expect(message).toContain("Deepgram");
+    expect(message).not.toContain("DEEPGRAM");
+  });
+
+  it("says nothing about a not-yet-chosen provider — that's a normal state, not an invalid one", () => {
+    // A brand-new voice has provider === "" until someone picks one. The
+    // panel already shows "Pick a provider to configure this voice." and
+    // disables Save for it — repeating that here as `Unsupported voice
+    // provider ""` read as if an invalid choice had been made.
+    expect(validateVoiceConfig("", { gender: "male" })).toEqual([]);
+    expect(validateVoiceConfig(undefined, undefined)).toEqual([]);
   });
 
   it("constrains enum-valued fields", () => {

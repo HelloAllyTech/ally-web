@@ -239,12 +239,19 @@ export const ScenarioVoiceSidePanel: React.FC<ScenarioVoiceSidePanelProps> = ({
           ? { value: entry.value, label: entry.label }
           : { value: entry.value, label: `${entry.label} (not recommended)` };
       }
-      // recommendedModel already encodes a real recommendation (ElevenLabs'
-      // own migration guidance for this voice type), so its complement is
-      // genuinely "not recommended" — not a bigger claim than the data
-      // supports. The mechanism stays in the warning banner above; this just
-      // needs to be short enough not to truncate in a closed dropdown.
-      if (syncResult?.availableModels && !syncResult.availableModels.includes(entry.value)) {
+      // Only meaningful when ElevenLabs actually listed SOME models as
+      // fine-tuned for this voice — that's a real choice on their part, so
+      // the others being left off is a real signal. An EMPTY list is not a
+      // verdict on every model; it means ElevenLabs reports no fine-tune data
+      // for this voice at all (true for every Voice Design voice — 0 of 27
+      // in the account-wide sweep). Flagging every model in that case would
+      // claim ElevenLabs said something it never said. `.length` is the fix:
+      // `[]` is truthy in JS, so a bare existence check treated "no data" the
+      // same as "checked and none of these qualify."
+      if (
+        syncResult?.availableModels?.length &&
+        !syncResult.availableModels.includes(entry.value)
+      ) {
         return { value: entry.value, label: `${entry.label} (not recommended)` };
       }
       return { value: entry.value, label: entry.label };

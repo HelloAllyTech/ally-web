@@ -167,6 +167,20 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
   ],
   [TtsProvider.ELEVENLABS]: [
     GENDER_FIELD,
+    // Right after Gender, ahead of Model/Voice type: for a new voice, typing
+    // this is what triggers the debounced auto-lookup (keyed on this field's
+    // value, regardless of render order) that fills those two fields in —
+    // putting it first means it has already fired by the time an admin
+    // scrolls down to them, instead of the fields it feeds coming first.
+    {
+      key: "voice_id",
+      label: "Voice ID",
+      required: true,
+      aliases: ["voiceId"],
+      type: "string",
+      placeholder: "21m00Tcm4TlvDq8ikWAM",
+      hint: "The voice's id in ElevenLabs, not its display name.",
+    },
     {
       key: "model",
       label: "Model",
@@ -188,15 +202,6 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
         { value: "unknown", label: "Unclear — needs checking" },
       ],
       hint: 'Decides how this voice sounds on the v3 model. Use "Sync from ElevenLabs" to fill it in rather than guessing.',
-    },
-    {
-      key: "voice_id",
-      label: "Voice ID",
-      required: true,
-      aliases: ["voiceId"],
-      type: "string",
-      placeholder: "21m00Tcm4TlvDq8ikWAM",
-      hint: "The voice's id in ElevenLabs, not its display name.",
     },
   ],
   [TtsProvider.SARVAM]: [
@@ -252,6 +257,22 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
   ],
   [TtsProvider.HUME]: [
     GENDER_FIELD,
+    // Right after Gender, ahead of Voice name: this decides WHICH catalog
+    // the Voice name picker below pulls from (Hume's own library vs a
+    // custom-cloned voice) — same reasoning as ElevenLabs' Voice ID coming
+    // before Model. Picking this first means Voice name already reflects the
+    // right scope by the time an admin reaches it, instead of defaulting to
+    // HUME_AI and needing a second look after changing this.
+    {
+      key: "voice_provider",
+      label: "Voice source",
+      required: false,
+      type: "select",
+      options: [
+        { value: "HUME_AI", label: "Hume library (HUME_AI)" },
+        { value: "CUSTOM_VOICE", label: "Custom voice (CUSTOM_VOICE)" },
+      ],
+    },
     {
       key: "voice_name",
       label: "Voice name",
@@ -264,16 +285,6 @@ export const VOICE_CONFIG_SCHEMA: Record<TtsProvider, VoiceConfigField[]> = {
       label: "Instant mode",
       required: false,
       type: "boolean",
-    },
-    {
-      key: "voice_provider",
-      label: "Voice source",
-      required: false,
-      type: "select",
-      options: [
-        { value: "HUME_AI", label: "Hume library (HUME_AI)" },
-        { value: "CUSTOM_VOICE", label: "Custom voice (CUSTOM_VOICE)" },
-      ],
     },
   ],
 };
@@ -404,9 +415,16 @@ export const validateVoiceConfig = (
   provider: string | undefined,
   config: Record<string, any> | undefined,
 ): string[] => {
-  if (!isSupportedProvider(provider)) {
+  const trimmed = String(provider ?? "").trim();
+  // Nothing chosen yet is a normal, expected state for a new voice — not a
+  // bad value. The panel already shows "Pick a provider to configure this
+  // voice." and disables Save for it; repeating that here as
+  // `Unsupported voice provider ""` read as if an invalid choice had been
+  // made, when none had been made at all.
+  if (!trimmed) return [];
+  if (!isSupportedProvider(trimmed)) {
     return [
-      `Unsupported voice provider "${provider}". Supported: ${Object.values(TtsProvider).join(", ")}.`,
+      `Unsupported voice provider "${provider}". Supported: ${TTS_PROVIDER_OPTIONS.map(option => option.label).join(", ")}.`,
     ];
   }
   return validateProviderConfig(VOICE_CONFIG_SCHEMA as ProviderConfigSchema, provider, config);
