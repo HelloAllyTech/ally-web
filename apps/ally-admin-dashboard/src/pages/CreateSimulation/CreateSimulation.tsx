@@ -830,8 +830,14 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
 
         return response?.data;
       } else if (response?.error) {
-        if (!silent)
-          toast.error(response?.error?.data?.message || en.errors.failedSimulationChange);
+        const serverMessage = response?.error?.data?.message;
+        // "…can't be moved to draft" (Tracks/Case member): permanent for this
+        // sim, so remember it — the autosave gate stops retrying and the
+        // indicator explains instead of a generic "couldn't save".
+        if (typeof serverMessage === "string" && serverMessage.includes("moved to draft")) {
+          setDraftSaveBlockedMessage(serverMessage);
+        }
+        if (!silent) toast.error(serverMessage || en.errors.failedSimulationChange);
         return null;
       }
       return response?.data;
@@ -851,9 +857,15 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
   // the last background autosave failed — surfaced so silent failures don't
   // look like successful saves.
   const [autosaveState, setAutosaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  // Set when the backend refuses to move this sim to draft (it belongs to a
+  // Tracks/Case, whose members may only be edited-and-published). Every draft
+  // save would hit the same 400, so autosave stops retrying and the inline
+  // indicator shows the backend's reason; Publish remains the save path.
+  const [draftSaveBlockedMessage, setDraftSaveBlockedMessage] = useState<string | null>(null);
   const autosaveRef = useRef<() => void>(() => {});
   autosaveRef.current = () => {
     if (viewMode) return; // View Details never saves
+    if (draftSaveBlockedMessage) return; // backend refuses drafts for this sim
     if (isAutosavingRef.current) return; // an autosave is already running
     if (isCreatingSimulation) return; // a create/publish is in flight
     if (isReportGenerationInProgress) return; // don't fight report generation
@@ -1204,7 +1216,7 @@ export const CreateSimulation: FC<CreateSimulationProps> = ({ viewMode = false }
               ) : autosaveState === "error" ? (
                 <>
                   <span className="h-1.5 w-1.5 rounded-full bg-destructive-500" />
-                  {en.simulation.autosaveFailed}
+                  {draftSaveBlockedMessage ?? en.simulation.autosaveFailed}
                 </>
               ) : (
                 <>
