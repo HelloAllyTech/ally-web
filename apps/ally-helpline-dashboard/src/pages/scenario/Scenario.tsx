@@ -219,7 +219,7 @@ export const Scenario: FC = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <div className="h-dvh w-full flex flex-col bg-white" data-testid="scenario-page">
+      <div className="h-full w-full flex flex-col bg-white" data-testid="scenario-page">
         {scenario && isScenarioSuccess ? (
           <>
             {isAuthenticated() && (
@@ -254,19 +254,25 @@ export const Scenario: FC = () => {
                   </div>
                 </div>
               )}
-              <ScenarioDetailsCard
-                data-testid="scenario-details-card"
-                coverImage={scenario?.coverImageUrl || ""}
-                coverVideo={scenario?.coverVideoUrl || ""}
-                difficultyLevel={scenario?.difficultyLevel}
-                isStarting={isStartingSimulation}
-                title={scenario?.title || ""}
-                longDescription={scenario?.description || ""}
-                maxTimeValue={scenario?.maxTimeValue}
-                onStart={onStartSimulationClick}
-                noCredits={buttonDisable}
-                triggerWarnings={scenario?.triggerWarnings}
-              />
+              {/* flex-1 min-h-0 gives the card the remaining space in this
+                  column (after the dropdown above it) as a real bound, so the
+                  card's own header/scroll/footer split has something definite
+                  to divide up instead of just sizing to its content. */}
+              <div className="min-h-0 w-full flex-1">
+                <ScenarioDetailsCard
+                  data-testid="scenario-details-card"
+                  coverImage={scenario?.coverImageUrl || ""}
+                  coverVideo={scenario?.coverVideoUrl || ""}
+                  difficultyLevel={scenario?.difficultyLevel}
+                  isStarting={isStartingSimulation}
+                  title={scenario?.title || ""}
+                  longDescription={scenario?.description || ""}
+                  maxTimeValue={scenario?.maxTimeValue}
+                  onStart={onStartSimulationClick}
+                  noCredits={buttonDisable}
+                  triggerWarnings={scenario?.triggerWarnings}
+                />
+              </div>
               {canSeeSharedReviews && peerSessionCount > 0 && (
                 <button
                   type="button"

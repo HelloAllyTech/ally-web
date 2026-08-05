@@ -340,24 +340,27 @@ describe("NavbarWrapper", () => {
     );
 
     const mainContent = container.querySelector(
-      ".flex-1.min-h-dvh.overflow-auto.bg-white.custom-scrollbar",
+      ".flex.min-h-0.flex-1.flex-col.overflow-auto.bg-white.custom-scrollbar",
     );
     expect(mainContent).toBeInTheDocument();
   });
 
-  it("applies height constraint when navbar is shown", () => {
+  it("gives the content region a flex-based height bound instead of a calc(dvh) guess", () => {
     mockUseUser.mockReturnValue({
       user: { id: 1, name: "Test User" },
       checkAuth: vi.fn(),
     });
 
-    const { container } = renderWithProviders(
+    renderWithProviders(
       <NavbarWrapper>
         <div>Test Content</div>
       </NavbarWrapper>,
     );
 
-    const innerDiv = container.querySelector(".h-\\[calc\\(100dvh-56px\\)\\]");
-    expect(innerDiv).toBeInTheDocument();
+    // Always min-h-0 + flex-1 (both with and without the mobile toolbar row
+    // above it) — no calc(100dvh-Npx) magic number that could drift from the
+    // toolbar's actual rendered height.
+    const contentRegion = screen.getByTestId("navbar-content-region");
+    expect(contentRegion).toHaveClass("min-h-0", "flex-1");
   });
 });

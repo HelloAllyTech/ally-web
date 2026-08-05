@@ -391,7 +391,7 @@ describe("Scenario Component", () => {
         </TestWrapper>,
       );
 
-      const mainContainer = container.querySelector("div.h-dvh");
+      const mainContainer = container.querySelector("div.h-full");
       expect(mainContainer).not.toBeNull();
       expect(mainContainer?.className).toContain("w-full");
       expect(mainContainer?.className).toContain("flex");

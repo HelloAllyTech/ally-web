@@ -9,7 +9,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
       data-testid="animate-presence"
     >
       <div
-        class="h-dvh w-full flex flex-col bg-white"
+        class="h-full w-full flex flex-col bg-white"
         data-testid="scenario-page"
       >
         <div
@@ -49,33 +49,37 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
           variants="[object Object]"
         >
           <div
-            data-testid="scenario-details-card"
+            class="min-h-0 w-full flex-1"
           >
             <div
-              data-testid="cover-image"
+              data-testid="scenario-details-card"
             >
-              https://example.com/image.jpg
+              <div
+                data-testid="cover-image"
+              >
+                https://example.com/image.jpg
+              </div>
+              <div
+                data-testid="scenario-title"
+              >
+                Test Scenario
+              </div>
+              <div
+                data-testid="scenario-description"
+              >
+                This is a test scenario description
+              </div>
+              <div
+                data-testid="is-starting"
+              >
+                false
+              </div>
+              <button
+                data-testid="start-simulation-btn"
+              >
+                Start Simulation
+              </button>
             </div>
-            <div
-              data-testid="scenario-title"
-            >
-              Test Scenario
-            </div>
-            <div
-              data-testid="scenario-description"
-            >
-              This is a test scenario description
-            </div>
-            <div
-              data-testid="is-starting"
-            >
-              false
-            </div>
-            <button
-              data-testid="start-simulation-btn"
-            >
-              Start Simulation
-            </button>
           </div>
           <div
             data-testid="login-dialog"
@@ -166,7 +170,7 @@ exports[`Scenario Component > Snapshot Testing > should match snapshot with scen
       data-testid="animate-presence"
     >
       <div
-        class="h-dvh w-full flex flex-col bg-white"
+        class="h-full w-full flex flex-col bg-white"
         data-testid="scenario-page"
       >
         <div

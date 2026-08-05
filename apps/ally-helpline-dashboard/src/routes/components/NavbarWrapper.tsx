@@ -61,9 +61,9 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
           onClose={toggleSidebar}
         />
       )}
-      <div className={"flex-1 min-h-dvh overflow-auto bg-white custom-scrollbar"}>
+      <div className="flex min-h-0 flex-1 flex-col overflow-auto bg-white custom-scrollbar">
         {showNavbar && (
-          <div className="sticky top-0 z-30 flex items-center justify-end border-b border-border-light bg-white p-2 md:hidden">
+          <div className="sticky top-0 z-30 flex shrink-0 items-center justify-end border-b border-border-light bg-white p-2 md:hidden">
             <button
               onClick={toggleSidebar}
               aria-label={t("nav.sidebar.expand")}
@@ -73,7 +73,11 @@ const NavbarWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
             </button>
           </div>
         )}
-        <div className={showNavbar ? "h-[calc(100dvh-56px)] md:h-dvh" : ""}>
+        {/* flex-1 min-h-0 (not a calc(100dvh-Npx) guess) gives this region a
+            real, always-correct height in both branches — whatever's left
+            after the optional toolbar row above — which pages below can then
+            rely on via h-full instead of each re-deriving the viewport. */}
+        <div className="min-h-0 flex-1" data-testid="navbar-content-region">
           {children}
           <UploadProgressDialog />
           {shouldShowBadgeModal && BadgeModal}
