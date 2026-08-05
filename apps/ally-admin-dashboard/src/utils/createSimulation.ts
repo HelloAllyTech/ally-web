@@ -123,6 +123,7 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     optGuardrails: data?.metadata?.optGuardrails,
     temperature: (data?.metadata as any)?.temperature ?? TEMPERATURE_DEFAULT,
     fillerEnabled: data?.metadata?.fillerEnabled ?? false,
+    languageGlossaryEnabled: data?.metadata?.languageGlossaryEnabled ?? false,
     comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? false,
     comfortAudioUrl: (data?.metadata as any)?.comfortAudioUrl ?? "",
     comfortAudioVolume: (data?.metadata as any)?.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_DEFAULT,

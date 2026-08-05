@@ -104,6 +104,7 @@ export interface SimulationInput {
   maxTimeValue?: string;
   optGuardrails?: boolean;
   fillerEnabled?: boolean;
+  languageGlossaryEnabled?: boolean;
   comfortAudioEnabled?: boolean;
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
@@ -216,6 +217,7 @@ export interface GetSimulationByIdResponse {
     maxTimeValue?: string;
     optGuardrails?: boolean;
     fillerEnabled?: boolean;
+    languageGlossaryEnabled?: boolean;
     comfortAudioEnabled?: boolean;
     comfortAudioUrl?: string;
     comfortAudioVolume?: number;

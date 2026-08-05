@@ -232,6 +232,7 @@ describe("createSimulation utils", () => {
         optGuardrails: false,
         temperature: 0.7,
         fillerEnabled: false,
+        languageGlossaryEnabled: false,
         comfortAudioEnabled: false,
         comfortAudioUrl: "",
         comfortAudioVolume: 0.3,

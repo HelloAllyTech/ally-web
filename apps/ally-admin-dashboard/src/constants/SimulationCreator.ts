@@ -216,6 +216,7 @@ export const FORM_FIELD_IDS = {
   KNOWLEDGE_SOURCE: "knowledgeSources",
   STATE_NAMES: "stateNames",
   FILLER_ENABLED: "fillerEnabled",
+  LANGUAGE_GLOSSARY_ENABLED: "languageGlossaryEnabled",
   COMFORT_AUDIO_ENABLED: "comfortAudioEnabled",
   COMFORT_AUDIO_URL: "comfortAudioUrl",
   COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
@@ -779,6 +780,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: false,
         tooltipLocation: TooltipLocation.THINKING_FILLER,
+      },
+      {
+        id: "languageGlossaryEnabled",
+        label: "Language Glossary",
+        type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
+        fullWidth: true,
+        defaultValue: false,
+        note: "Serve the per-language glossary (style card + retrieved sections) to this roleplay's non-English sessions. Temporary rollout gate — off by default while the glossary is being tested; only languages with published glossary sections are affected.",
       },
       {
         id: "comfortAudioEnabled",

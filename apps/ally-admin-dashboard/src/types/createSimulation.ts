@@ -31,6 +31,7 @@ export type FormData = {
   allowedFillerWords?: Record<string, string[]>;
   languageCharacteristics?: Record<string, string>;
   fillerEnabled?: boolean;
+  languageGlossaryEnabled?: boolean;
   comfortAudioEnabled?: boolean;
   comfortAudioUrl?: string;
   comfortAudioVolume?: number;
