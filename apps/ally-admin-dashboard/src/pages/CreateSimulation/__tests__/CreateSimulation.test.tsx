@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { useForm } from "react-hook-form";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
@@ -480,6 +480,37 @@ describe("CreateSimulation", () => {
         },
         { timeout: 500 },
       );
+    });
+
+    it("stops autosave retries and shows the backend reason when the sim can't move to draft", async () => {
+      // Tracks/Case members may not be moved to draft — the backend 400s every
+      // draft save. The autosave must attempt once, surface the server's
+      // message, and stop retrying (previously it hammered the API every 10s
+      // behind a generic "couldn't save" banner).
+      const blockedMessage =
+        "This simulation is part of a Simulation Pathway and can’t be moved to draft. Please publish the changes.";
+      vi.useFakeTimers();
+      try {
+        mockParams.id = "existing-id";
+        mockFormMethods.formState = { dirtyFields: { title: true } } as any;
+        mockUpdateSimulation.mockResolvedValue({ error: { data: { message: blockedMessage } } });
+
+        renderCreateSimulation();
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(10_000);
+        });
+        expect(mockUpdateSimulation).toHaveBeenCalledTimes(1);
+        expect(screen.getByText(blockedMessage)).toBeInTheDocument();
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(30_000);
+        });
+        expect(mockUpdateSimulation).toHaveBeenCalledTimes(1);
+      } finally {
+        mockFormMethods.formState = { dirtyFields: {} };
+        vi.useRealTimers();
+      }
     });
   });
 
