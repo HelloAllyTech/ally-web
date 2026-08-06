@@ -1,0 +1,43 @@
+# Which documentation covers which code.
+#
+# Read by the shared docs-guard workflow (helloallytech/.github) on every PR, and by
+# the weekly wiki reconciler. Adding a rule here is how you make a doc impossible to
+# forget. Spec: https://tech.helloally.ai/#/wiki/contributing/docs-system.md
+#
+# requires:
+#   <path>              a file in this repo — the PR must touch it
+#   wiki:<page>         a page in the wiki repo — the PR body must carry a Wiki-PR: trailer
+#
+# Escape hatch: add the `docs:skip` label, or a `Wiki-PR: none — <reason>` trailer.
+
+version: 1
+repo: ally-web
+
+rules:
+  - id: posthog-events
+    watch:
+      - "apps/**/analytics/**"
+      - "apps/**/*posthog*"
+    requires: docs/current-posthog-events-traking-list.md
+    why: >
+      The tracked-event list is the only inventory of what analytics the product emits;
+      an unlisted event is one nobody can query.
+
+  - id: repo-page-apps
+    watch:
+      - "apps/*/project.json"
+      - "nx.json"
+      - "libs/ui-shared/src/index.ts"
+    requires: wiki:repos/ally-web.md
+    why: >
+      App inventory, ports and the shared-library surface are what the platform docs and
+      other repos rely on.
+
+  - id: agent-entrypoints-in-sync
+    watch:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+    requires: mirror
+    why: >
+      AGENTS.md and CLAUDE.md must stay byte-identical. `mirror` asserts equality rather
+      than requiring a companion edit.

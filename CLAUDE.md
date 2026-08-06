@@ -1,22 +1,92 @@
-# ally-web — Documentation lives in the Ally Developer Wiki
+# ally-web — start here
 
-The canonical documentation for the Ally platform is maintained centrally in the
-**Ally Developer Wiki**. Read it before starting work, and update it whenever you
-change architecture, workflows, environment setup, or SDLC rules.
+Nx monorepo: three React apps plus a shared UI library. **Node 22** (not 24 — ally-be is 24).
 
-- 🌐 Browse: https://tech.helloally.ai
-- 📁 Source: the `helloallytech.github.io` repo, `wiki/` folder (`wiki/repos/ally-web.md` for this service)
+This file is a **router**: find your task below, read what it points at, skip the rest.
+Conventions with a canonical home are linked, never restated — if you find a rule written
+twice anywhere in this platform, that's a bug worth fixing.
 
-## Key pages
+## Before you touch anything user-facing
 
-- This repo — https://tech.helloally.ai/#/wiki/repos/ally-web.md
-- Platform overview — https://tech.helloally.ai/#/wiki/platform/overview.md
-- Architecture & data flow — https://tech.helloally.ai/#/wiki/platform/architecture.md
-- Cross-repo agent guide (conventions, common tasks, gotchas) — https://tech.helloally.ai/#/wiki/platform/agent-guide.md
-- **Product Management Best Practices** (read before any user-facing change) — https://tech.helloally.ai/#/wiki/product/best-practices.md
-  - Subsections: [UI](https://tech.helloally.ai/#/wiki/product/ui.md) · [Gamification](https://tech.helloally.ai/#/wiki/product/gamification.md) · [Data Visualisation](https://tech.helloally.ai/#/wiki/product/data-visualisation.md) · [Prioritisation](https://tech.helloally.ai/#/wiki/product/prioritisation.md) · [User Personas](https://tech.helloally.ai/#/wiki/product/user-personas.md) — the section grows over time; check the hub for the current list.
-- Contributing / SDLC rules — https://tech.helloally.ai/#/wiki/contributing/guide.md
-- Developer setup — https://tech.helloally.ai/#/wiki/contributing/dev-setup.md
+Read [Product Best Practices](https://tech.helloally.ai/#/wiki/product/best-practices.md)
+and the one subsection that matches your change — this repo is where most of them apply:
+[UI](https://tech.helloally.ai/#/wiki/product/ui.md) ·
+[Data Visualisation](https://tech.helloally.ai/#/wiki/product/data-visualisation.md) ·
+[Gamification](https://tech.helloally.ai/#/wiki/product/gamification.md).
+Read the hub plus **one** subsection, not the whole section — the 7k-word chart reference
+is a lookup, not required reading.
+
+## What am I doing?
+
+| Task | Read first |
+|---|---|
+| Calling a new backend endpoint | RTK Query slice in `apps/<app>/src/api/` — don't hand-roll fetch |
+| Building a chart or dashboard | [Data Visualisation](https://tech.helloally.ai/#/wiki/product/data-visualisation.md) rules first; the [deep reference](https://tech.helloally.ai/#/wiki/product/chart-dashboard-principles.md) only when the rules don't settle it |
+| Adding analytics | [`docs/new-posthog-event-adding-guide.md`](docs/new-posthog-event-adding-guide.md), then register in [`docs/current-posthog-events-traking-list.md`](docs/current-posthog-events-traking-list.md) |
+| Shared component work | `libs/ui-shared/` — changing its public surface affects all three apps |
+| Translations | `apps/ally-helpline-dashboard/src/i18n/locales/`; backend side in [ally-be `docs/dynamic-i18n.md`](https://github.com/HelloAllyTech/ally-be/blob/main/docs/dynamic-i18n.md) |
+| Permission-gated UI | Gate on the `roles` **array** and permissions, never the legacy single `role` — see gotchas |
+| Tests | [`TESTING.md`](TESTING.md) |
+| CI / deploys | [`.github/WORKFLOWS.md`](.github/WORKFLOWS.md), [`.github/RELEASE_GUIDE.md`](.github/RELEASE_GUIDE.md) |
+| Docker on macOS | [`docs/colima.md`](docs/colima.md) |
+| Anything else | [`WIKI-ROUTING.md`](WIKI-ROUTING.md) — one line per wiki page, tells you which to fetch |
+
+## Repo shape
+
+- `apps/ally-web/` — Next.js landing, :3000
+- `apps/ally-helpline-dashboard/` — Vite/React, :8080
+- `apps/ally-admin-dashboard/` — Vite/React, :8081
+- `libs/ui-shared/` — shared components
+- State: Redux Toolkit + RTK Query + Redux Persist. Real-time: Socket.IO + LiveKit.
+- Path aliases (`@api`, `@components`) are configured per app in `tsconfig`.
+
+## Gotchas that change what you write
+
+- **No module-load-time work in shared modules.** Calling a constants helper at import
+  time in `api/auth.ts` once broke nine admin test files that mock `@constants` wholesale.
+  Resolve lazily inside the function that needs it — especially for barrel imports.
+- **Gate on `roles`, not `role`.** `GET /users/me` returns both; the singular `role` is a
+  lossy legacy collapse of a user's real group memberships. Authorise on the array.
+- **Derive deployment facts from one value.** When the admin console briefly had two mount
+  points, asset URLs, router basename, redirects and the `<base>` tag all derived from the
+  Vite `base` — so they could not disagree. Don't add a second "am I embedded?" flag.
+- **Node 22.** The backend is 24; using the wrong one produces confusing install failures.
+- **Three apps, one lib.** A `ui-shared` change needs all three test suites, not just yours.
+
+## Commands
+
+```bash
+npm run start:admin      # or start:helpline / start:web
+npm test                 # all projects; npm run test:admin for one
+npm run test:docker
+npm run lint:fix
+npm run i18n:sync
+```
+
+## When your change outdates a doc
+
+[`.docs-map.yml`](.docs-map.yml) declares which docs cover which code, and CI enforces it.
+Adding a PostHog event without registering it in the tracked-events list fails the build —
+either update it, or apply the `docs:skip` label with a reason.
+
+Wiki edits do **not** need a hand-rolled second PR:
+
+```bash
+git clone --depth=1 https://github.com/helloallytech/helloallytech.github.io .wiki-tmp
+# edit .wiki-tmp/wiki/**
+.wiki-tmp/scripts/wiki-pr.sh "<url of this PR>"     # prints the Wiki-PR: trailer to paste
+```
+
+`.wiki-tmp/` is gitignored. The wiki PR merges when this one does.
+
+## Canonical docs
+
+The [Ally Developer Wiki](https://tech.helloally.ai) is the source of truth for platform
+architecture, SDLC rules, and product practice —
+[this repo's page](https://tech.helloally.ai/#/wiki/repos/ally-web.md) ·
+[architecture](https://tech.helloally.ai/#/wiki/platform/architecture.md) ·
+[contributing](https://tech.helloally.ai/#/wiki/contributing/guide.md) ·
+[how the docs system works](https://tech.helloally.ai/#/wiki/contributing/docs-system.md).
 
 > ⚠️ The wiki is **public**. Never add secrets, credentials, IP addresses, internal
 > hostnames/domains, or cloud region details to it.
