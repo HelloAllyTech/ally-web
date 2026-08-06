@@ -240,7 +240,7 @@ export const userStatusItems = ["ACTIVE", "SUSPENDED"];
  * among a tenant's own users. Kept apart from userRoleItems because the base
  * list is what every viewer sees.
  */
-export const platformRoleFilterItems = ["INTERNAL", "SUPER_ADMIN", "SUPER_DUPER_ADMIN"];
+export const platformRoleFilterItems = ["SUPER_ADMIN", "SUPER_DUPER_ADMIN"];
 
 /** The single Platform-accounts filter value; presence means "include them". */
 export const INCLUDE_PLATFORM_ADMINS = "INCLUDE_PLATFORM_ADMINS";
@@ -282,26 +282,15 @@ export enum UserRole {
   SIMULATION_REVIEWER = "SIMULATION_REVIEWER",
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
-  INTERNAL = "INTERNAL",
 }
 
 /**
- * Platform-level super-admin roles. SUPER_DUPER_ADMIN and INTERNAL are both
- * peers of SUPER_ADMIN today (identical access; SUPER_DUPER_ADMIN may gain
- * extra capabilities later). Gate super-admin UI on this list — via
- * isSuperAdminRole — instead of an exact SUPER_ADMIN check so all three behave
- * identically.
- *
- * INTERNAL is Ally staff: the backend grants it a permission-for-permission
- * clone of SUPER_ADMIN. It is NOT in the list of roles the standalone console
- * accepts at login (see ADMIN_LOGIN_ROLES) — INTERNAL reaches this same app
- * through the copy path-mounted at /admin on the consumer origin.
+ * Platform-level super-admin roles. SUPER_DUPER_ADMIN is a peer of SUPER_ADMIN
+ * today (identical access; it may gain extra capabilities later). Gate
+ * super-admin UI on this list — via isSuperAdminRole — instead of an exact
+ * SUPER_ADMIN check so both behave identically.
  */
-export const SUPER_ADMIN_ROLES: UserRole[] = [
-  UserRole.SUPER_ADMIN,
-  UserRole.SUPER_DUPER_ADMIN,
-  UserRole.INTERNAL,
-];
+export const SUPER_ADMIN_ROLES: UserRole[] = [UserRole.SUPER_ADMIN, UserRole.SUPER_DUPER_ADMIN];
 
 export const isSuperAdminRole = (role?: UserRole | string | null): boolean =>
   role != null && (SUPER_ADMIN_ROLES as string[]).includes(role);
@@ -328,10 +317,6 @@ export const isSuperDuperAdminRole = (role?: UserRole | string | null): boolean 
  * omitted the tier would demote a super admin as a side effect of granting them
  * LEARNER. useUserManagement keeps these roles out of the picker and re-adds
  * them to every payload.
- *
- * INTERNAL is deliberately NOT here. It is a plain assignable role — Ally staff
- * are meant to hold it alongside LEARNER/COUNSELOR (see the ally-be migration
- * that introduces it) — and the Super Admins tab does not manage it.
  */
 export const TIER_MANAGED_ROLES: UserRole[] = [UserRole.SUPER_ADMIN, UserRole.SUPER_DUPER_ADMIN];
 
@@ -339,54 +324,29 @@ export const isTierManagedRole = (role?: UserRole | string | null): boolean =>
   role != null && (TIER_MANAGED_ROLES as string[]).includes(role);
 
 /**
- * The roles this console offers at its own login, by surface.
- *
- * INTERNAL is accepted only on the embedded surface (the copy path-mounted at
- * /admin on the consumer origin), so the standalone admin dashboard keeps
- * exactly the audience it has today.
- *
- * This is a routing convention, not a security boundary: `allowedRoles` is sent
- * by the client, and the backend checks the caller against whatever list it
- * receives. An INTERNAL holder who posts the standalone list themselves would
- * be let in — and would get the same API access either way, since INTERNAL and
- * SUPER_ADMIN carry identical permissions. Enforcing the split server-side
- * would mean deriving allowedRoles from a trusted signal rather than the
- * request body, which is a change to how every client authenticates.
- */
-export const adminLoginRolesFor = (embedded: boolean): UserRole[] => [
-  UserRole.SUPER_ADMIN,
-  UserRole.SUPER_DUPER_ADMIN,
-  UserRole.MULTI_TENANT_ADMIN,
-  ...(embedded ? [UserRole.INTERNAL] : []),
-];
-
-/**
  * Collapse a user's roles to the one this console should gate on.
  *
  * Roles are additive, but `GET /users/me` also reports a single `role`, chosen
  * by a backend priority list (SUPER_DUPER_ADMIN > SUPER_ADMIN > ADMIN >
- * COUNSELOR > whichever row came back first). INTERNAL is deliberately absent
- * from that list — hoisting it would change what the *consumer* app sees for a
- * member of staff who is also an org ADMIN, and cost them their org-settings
- * access. So a staffer holding [INTERNAL, LEARNER] can arrive here reporting
- * `role: "LEARNER"`, which no super-admin gate would accept.
+ * COUNSELOR > whichever row came back first). That list is lossy for anyone
+ * holding a platform role next to a tenant one, so such a user can arrive here
+ * reporting a `role` that no super-admin gate would accept.
  *
  * The fix is to prefer the `roles` array the backend now sends and pick the
- * highest admin tier in it. Every role this console's own login admits
- * (`adminLoginRolesFor`) must be hoisted here, or the same collapse bug just
- * resurfaces one tier down: MULTI_TENANT_ADMIN was missing from this list even
- * though it's a valid portal-login role, so a user holding
- * [LEARNER, ADMIN, MULTI_TENANT_ADMIN] collapsed to "ADMIN" (ADMIN outranks
- * the backend's own fallback) and got bounced by the portal's surface gate,
- * which doesn't accept plain ADMIN. Roles outside this list fall through to
- * the backend's own answer, so no other user's gating changes. Falls back to
- * `role` for any client or cache entry predating `roles`.
+ * highest admin tier in it. Every role this console's own login admits must be
+ * hoisted here, or the same collapse bug just resurfaces one tier down:
+ * MULTI_TENANT_ADMIN was missing from this list even though it's a valid
+ * portal-login role, so a user holding [LEARNER, ADMIN, MULTI_TENANT_ADMIN]
+ * collapsed to "ADMIN" (ADMIN outranks the backend's own fallback) and got
+ * bounced by the portal's role gate, which doesn't accept plain ADMIN. Roles
+ * outside this list fall through to the backend's own answer, so no other
+ * user's gating changes. Falls back to `role` for any client or cache entry
+ * predating `roles`.
  */
 const ADMIN_ROLE_PRECEDENCE: UserRole[] = [
   UserRole.SUPER_DUPER_ADMIN,
   UserRole.SUPER_ADMIN,
   UserRole.MULTI_TENANT_ADMIN,
-  UserRole.INTERNAL,
 ];
 
 export const resolveAdminRole = (user?: {

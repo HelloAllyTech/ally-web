@@ -7,15 +7,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { toast } from "sonner";
 
-import {
-  ApiEndpoints,
-  HttpMethod,
-  LOCAL_STORAGE_KEYS,
-  ROUTES,
-  TAG_TYPES,
-  en,
-  withBasePath,
-} from "@constants";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, TAG_TYPES, en } from "@constants";
 import { RefreshResponse } from "@types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -25,9 +17,7 @@ const handleLogout = () => {
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_REFRESH_TOKEN);
   localStorage.removeItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED);
 
-  // Full page load, so it bypasses the router and needs the mount point
-  // spelled out — "/login" standalone, "/admin/login" when path-mounted.
-  window.location.href = withBasePath(ROUTES.LOGIN);
+  window.location.href = ROUTES.LOGIN;
 };
 
 const baseQuery = fetchBaseQuery({

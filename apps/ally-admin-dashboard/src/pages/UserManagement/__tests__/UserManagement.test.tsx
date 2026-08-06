@@ -757,7 +757,7 @@ describe("UserManagement", () => {
       renderUserManagement();
 
       const roleSection = screen.getByTestId("filter-section-roles");
-      expect(roleSection).toHaveTextContent("INTERNAL");
+      expect(roleSection).toHaveTextContent("SUPER_ADMIN");
       expect(roleSection).toHaveTextContent("SUPER_DUPER_ADMIN");
     });
 
@@ -765,7 +765,7 @@ describe("UserManagement", () => {
       openFilters("SUPER_DUPER_ADMIN");
 
       const roleSection = screen.getByTestId("filter-section-roles");
-      expect(roleSection).not.toHaveTextContent("INTERNAL");
+      expect(roleSection).not.toHaveTextContent("SUPER_DUPER_ADMIN");
       expect(roleSection).toHaveTextContent("LEARNER");
     });
 

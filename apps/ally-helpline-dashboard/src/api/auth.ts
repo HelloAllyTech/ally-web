@@ -28,10 +28,6 @@ const ALLOWED_ROLES = [
   UserRole.LEARNER,
   UserRole.SIMULATION_REVIEWER,
   UserRole.SCRIBE_REVIEWER,
-  // Ally staff. Included so an INTERNAL-only account can sign in here and
-  // reach the admin console at /admin; it carries none of this app's
-  // permissions, so such an account sees an empty consumer experience.
-  UserRole.INTERNAL,
 ];
 
 const authAPI = baseAPI.injectEndpoints({

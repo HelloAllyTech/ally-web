@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import {
   Permissions,
   ROLEPLAY_STUDIO_ALLOWED_EMAILS,
-  ROUTER_BASENAME,
   ROUTES,
   SUPER_ADMIN_ROLES,
   SUPER_DUPER_ADMIN_ROLES,
@@ -69,10 +68,7 @@ const DesignSystem = lazy(() =>
 
 export const RouteLayout: React.FC = () => {
   return (
-    // basename is "" for the standalone dashboard and "/admin" for the copy
-    // path-mounted on the consumer origin, so every ROUTES.* path below stays
-    // written relative to the app root regardless of where it is served.
-    <BrowserRouter basename={ROUTER_BASENAME}>
+    <BrowserRouter>
       <Routes>
         {/* Public Routes */}
         <Route

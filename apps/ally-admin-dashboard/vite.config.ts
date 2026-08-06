@@ -8,19 +8,8 @@ import path from "path";
 // Get absolute paths
 const projectRoot = __dirname;
 
-// Where this build will be mounted. "/" (the default) is the standalone admin
-// dashboard on its own origin; "/admin/" builds the copy path-mounted on the
-// consumer app's origin for INTERNAL users. This single value drives both the
-// asset URLs Vite emits and — via import.meta.env.BASE_URL — the router
-// basename and the surface checks in src/constants/surface.ts, so the mount
-// point and the app's idea of the mount point can never drift apart.
-// Normalised to leading + trailing slashes, which is what Vite expects.
-const rawBasePath = process.env.VITE_ADMIN_BASE_PATH || "/";
-const basePath = `/${rawBasePath.replace(/^\/+|\/+$/g, "")}/`.replace(/^\/\/$/, "/");
-
 export default defineConfig(() => ({
   root: __dirname,
-  base: basePath,
   cacheDir: "../../node_modules/.vite/apps/ally-admin-dashboard",
   server: {
     port: 8081,

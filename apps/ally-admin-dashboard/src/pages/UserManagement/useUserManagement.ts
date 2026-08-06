@@ -164,9 +164,7 @@ export function useUserManagement(tenants: Tenant[], canListPlatformAdmins = fal
     if (!userRoles) return;
 
     // Everything except the two tier roles the Super Admins tab owns and
-    // CLIENT (an anonymous-chat identity, never granted by hand). INTERNAL is
-    // offered here on purpose: "Ally staff" is INTERNAL alongside a normal
-    // consumer role, and this picker is the only place to say so.
+    // CLIENT (an anonymous-chat identity, never granted by hand).
     const filteredRoles = userRoles.filter(
       role => !isTierManagedRole(role.name) && role.name !== UserRole.CLIENT,
     );

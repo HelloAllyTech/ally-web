@@ -11,9 +11,9 @@ import {
   AppType,
   HttpMethod,
   Permissions,
+  SUPER_ADMIN_ROLES,
   TAG_TYPES,
-  adminLoginRolesFor,
-  isEmbeddedSurface,
+  UserRole,
   resolveAdminRole,
 } from "@constants";
 import {
@@ -28,12 +28,6 @@ import {
   ImpersonateResponse,
   UserPreferencesData,
 } from "@types";
-
-// Which roles this deployment lets in at its own login. The surface is fixed at
-// build time, but this is resolved per call rather than at module load so that
-// importing this module never depends on the constants barrel being complete —
-// several test suites replace @constants wholesale.
-const adminLoginRoles = () => adminLoginRolesFor(isEmbeddedSurface());
 
 export const authAPI = baseAPI.injectEndpoints({
   endpoints: builder => ({
@@ -99,7 +93,7 @@ export const authAPI = baseAPI.injectEndpoints({
         body: {
           phone,
           email,
-          allowedRoles: adminLoginRoles(),
+          allowedRoles: [...SUPER_ADMIN_ROLES, UserRole.MULTI_TENANT_ADMIN],
           appType: AppType.ADMIN,
         },
       }),
@@ -118,7 +112,7 @@ export const authAPI = baseAPI.injectEndpoints({
           phone,
           otp,
           email,
-          allowedRoles: adminLoginRoles(),
+          allowedRoles: [...SUPER_ADMIN_ROLES, UserRole.MULTI_TENANT_ADMIN],
         },
       }),
     }),
@@ -131,7 +125,7 @@ export const authAPI = baseAPI.injectEndpoints({
       query: data => ({
         url: ApiEndpoints.AUTH.GOOGLE_SIGN_IN,
         method: HttpMethod.POST,
-        body: { ...data, allowedRoles: adminLoginRoles() },
+        body: { ...data, allowedRoles: [...SUPER_ADMIN_ROLES, UserRole.MULTI_TENANT_ADMIN] },
       }),
     }),
     getProfileImageUrl: builder.mutation<GetProfileUrlResponse, GetProfileUrlRequest>({
@@ -174,7 +168,7 @@ export const authAPI = baseAPI.injectEndpoints({
           {
             url: ApiEndpoints.AUTH.MAGIC_LINK_VERIFY,
             method: HttpMethod.POST,
-            body: { token, allowedRoles: adminLoginRoles() },
+            body: { token, allowedRoles: [...SUPER_ADMIN_ROLES, UserRole.MULTI_TENANT_ADMIN] },
           },
           api,
           extraOptions,

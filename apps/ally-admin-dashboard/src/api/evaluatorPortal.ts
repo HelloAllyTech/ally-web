@@ -1,13 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import {
-  ApiEndpoints,
-  HttpMethod,
-  LOCAL_STORAGE_KEYS,
-  ROUTES,
-  TAG_TYPES,
-  withBasePath,
-} from "@constants";
+import { ApiEndpoints, HttpMethod, LOCAL_STORAGE_KEYS, ROUTES, TAG_TYPES } from "@constants";
 import {
   EvaluatorAssignmentDetail,
   EvaluatorAssignmentListItem,
@@ -44,8 +37,7 @@ const evaluatorBaseQuery: typeof rawEvaluatorBaseQuery = async (args, api, extra
   const url = typeof args === "string" ? args : args.url;
   if (result.error?.status === 401 && url !== ApiEndpoints.AI_LAB.EVAL_LOGIN) {
     clearEvaluatorSession();
-    // Full page load — bypasses the router, so the mount point is explicit.
-    window.location.href = withBasePath(ROUTES.EVALUATE);
+    window.location.href = ROUTES.EVALUATE;
   }
   return result;
 };

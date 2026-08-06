@@ -6,17 +6,10 @@ import { Provider } from "react-redux";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import { LOCAL_STORAGE_KEYS, ROUTES, Permissions, UserRole } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, Permissions } from "@constants";
 import reportUploadReducer from "@reducer/reportUploadReducer";
 
 import { PrivateLayout } from "../PrivateLayout";
-
-// The signed-in user the @api mock reports. Hoisted so the vi.mock factory
-// below (which vitest lifts above the imports) can close over it, and mutable
-// so individual tests can vary the role.
-const userState = vi.hoisted(() => ({
-  current: { id: 1, role: "SUPER_ADMIN" } as { id: number; role?: string },
-}));
 
 vi.mock("@components", async importOriginal => {
   const actual = await importOriginal<typeof import("@components")>();
@@ -46,13 +39,10 @@ vi.mock("@store", () => ({
 }));
 
 vi.mock("@api", () => ({
-  useGetUserQuery: () => ({ data: userState.current, isLoading: false }),
+  useGetUserQuery: () => ({ data: { id: 1 }, isLoading: false }),
   useGetPermissionsQuery: () => ({ data: [Permissions.EDIT_USER], isLoading: false }),
   useGetUserPreferencesQuery: () => ({ data: undefined, isLoading: false }),
-  useLazyGetUserQuery: () => [
-    vi.fn().mockResolvedValue({ data: userState.current }),
-    { isLoading: false },
-  ],
+  useLazyGetUserQuery: () => [vi.fn().mockResolvedValue({ data: { id: 1 } }), { isLoading: false }],
   useLazyGetPermissionsQuery: () => [
     vi.fn().mockResolvedValue({ data: [Permissions.EDIT_USER] }),
     { isLoading: false },
@@ -85,7 +75,6 @@ describe("PrivateLayout", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
-    userState.current = { id: 1, role: UserRole.SUPER_ADMIN };
 
     // Create a mock store for each test
     mockStore = configureStore({
@@ -206,60 +195,5 @@ describe("PrivateLayout", () => {
     );
 
     expect(screen.getByText("PreviewContent")).toBeInTheDocument();
-  });
-
-  // The whole-console gate. On the embedded surface any signed-in consumer user
-  // can reach the shell by way of the adopted consumer session, so a role this
-  // deployment does not serve has to be turned away even on a route that asks
-  // for nothing in particular.
-  describe("surface gate", () => {
-    const renderUngatedRoute = () =>
-      render(
-        <Provider store={mockStore}>
-          <MemoryRouter initialEntries={["/protected"]}>
-            <Routes>
-              <Route
-                path="/protected"
-                element={
-                  <PrivateLayout>
-                    <div>ConsoleContent</div>
-                  </PrivateLayout>
-                }
-              />
-            </Routes>
-          </MemoryRouter>
-        </Provider>,
-      );
-
-    it("denies a consumer-only role even on a route with no gates", () => {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
-      userState.current = { id: 1, role: UserRole.LEARNER };
-
-      renderUngatedRoute();
-
-      expect(screen.queryByText("ConsoleContent")).not.toBeInTheDocument();
-      expect(screen.getByText("This page is not accessible")).toBeInTheDocument();
-    });
-
-    it("denies INTERNAL on the standalone surface", () => {
-      // The default build is standalone (BASE_URL "/"), where INTERNAL is not
-      // an accepted role — its way in is the copy mounted at /admin.
-      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
-      userState.current = { id: 1, role: UserRole.INTERNAL };
-
-      renderUngatedRoute();
-
-      expect(screen.queryByText("ConsoleContent")).not.toBeInTheDocument();
-      expect(screen.getByText("This page is not accessible")).toBeInTheDocument();
-    });
-
-    it("admits a super admin", () => {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
-      userState.current = { id: 1, role: UserRole.SUPER_ADMIN };
-
-      renderUngatedRoute();
-
-      expect(screen.getByText("ConsoleContent")).toBeInTheDocument();
-    });
   });
 });

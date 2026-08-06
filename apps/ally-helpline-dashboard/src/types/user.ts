@@ -24,12 +24,6 @@ export enum UserRole {
   LEARNER = "LEARNER",
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   SIMULATION_REVIEWER = "SIMULATION_REVIEWER",
-  /**
-   * Ally staff. Carries no permissions this app uses — it exists so the admin
-   * console path-mounted at /admin on this origin can be offered to its
-   * holders (see hasInternalRole / ADMIN_CONSOLE_PATH).
-   */
-  INTERNAL = "INTERNAL",
 }
 
 export enum AppType {

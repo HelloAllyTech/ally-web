@@ -16,7 +16,6 @@ const allRoles = [
   { id: 2, name: UserRole.ADMIN },
   { id: 3, name: UserRole.LEARNER },
   { id: 4, name: UserRole.CLIENT },
-  { id: 5, name: UserRole.INTERNAL },
   { id: 6, name: UserRole.SUPER_ADMIN },
   { id: 7, name: UserRole.SUPER_DUPER_ADMIN },
 ];
@@ -59,14 +58,14 @@ describe("useUserManagement", () => {
   });
 
   describe("role picker", () => {
-    it("offers INTERNAL but not the tier roles or CLIENT", async () => {
+    it("offers the assignable roles but not the tier roles or CLIENT", async () => {
       const { result } = renderHook(() => useUserManagement([]));
 
       await waitFor(() => expect(result.current.roles.length).toBeGreaterThan(0));
 
       const offered = result.current.roles.map(role => role.name);
-      expect(offered).toContain(UserRole.INTERNAL);
       expect(offered).toContain(UserRole.LEARNER);
+      expect(offered).toContain(UserRole.COUNSELLOR);
       expect(offered).not.toContain(UserRole.SUPER_ADMIN);
       expect(offered).not.toContain(UserRole.SUPER_DUPER_ADMIN);
       expect(offered).not.toContain(UserRole.CLIENT);
