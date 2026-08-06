@@ -24,6 +24,13 @@ export enum UserRole {
   LEARNER = "LEARNER",
   SCRIBE_REVIEWER = "SCRIBE_REVIEWER",
   SIMULATION_REVIEWER = "SIMULATION_REVIEWER",
+  // Platform/admin-console roles. A consumer account can hold one of these
+  // alongside its consumer role (roles are additive on a single user record),
+  // so they arrive on `roles` here even though none of them can log *into*
+  // this app on their own — see ALLY_ADMIN_ROLES in @constants.
+  SUPER_ADMIN = "SUPER_ADMIN",
+  SUPER_DUPER_ADMIN = "SUPER_DUPER_ADMIN",
+  MULTI_TENANT_ADMIN = "MULTI_TENANT_ADMIN",
 }
 
 export enum AppType {

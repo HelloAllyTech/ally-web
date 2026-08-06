@@ -11,4 +11,6 @@ export enum TabId {
   REVIEW = "REVIEW",
   BADGES = "BADGES",
   ORGANIZATION_SETTINGS = "ORGANIZATION_SETTINGS",
+  // Not an in-app tab: opens the Ally Admin console in a new tab.
+  ALLY_ADMIN = "ALLY_ADMIN",
 }
