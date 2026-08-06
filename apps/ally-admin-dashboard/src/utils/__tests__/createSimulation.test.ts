@@ -232,7 +232,9 @@ describe("createSimulation utils", () => {
         optGuardrails: false,
         temperature: 0.7,
         fillerEnabled: false,
-        languageGlossaryEnabled: false,
+        // Absent in metadata hydrates as ON, mirroring the backend's
+        // default-ON glossary read (`!== false`).
+        languageGlossaryEnabled: true,
         comfortAudioEnabled: false,
         comfortAudioUrl: "",
         comfortAudioVolume: 0.3,

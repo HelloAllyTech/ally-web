@@ -25,7 +25,10 @@ interface Props {
  * language) vs MULTILINGUAL (the translated prompt body) for the selected skill
  * version. The language list is driven by the selected main-agent prompt's
  * translations: a language can only pick MULTILINGUAL once its translation is
- * `ready`. Value shape: Record<languageId, Variant>; a missing entry = GENERIC.
+ * `ready`. Value shape: Record<languageId, Variant>; a missing entry =
+ * MULTILINGUAL — the backend serves the multilingual overlay (per-prompt
+ * English fallback) unless the stored value is explicitly GENERIC, so the
+ * picker must render the same default or it lies about live behavior.
  */
 export const MainPromptVariantPicker: React.FC<Props> = ({
   id,
@@ -69,7 +72,7 @@ export const MainPromptVariantPicker: React.FC<Props> = ({
   };
 
   const optionButton = (languageId: number, variant: Variant, text: string, disabled: boolean) => {
-    const active = (value[String(languageId)] ?? "GENERIC") === variant;
+    const active = (value[String(languageId)] ?? "MULTILINGUAL") === variant;
     return (
       <button
         type="button"

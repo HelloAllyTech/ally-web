@@ -123,7 +123,11 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
     optGuardrails: data?.metadata?.optGuardrails,
     temperature: (data?.metadata as any)?.temperature ?? TEMPERATURE_DEFAULT,
     fillerEnabled: data?.metadata?.fillerEnabled ?? false,
-    languageGlossaryEnabled: data?.metadata?.languageGlossaryEnabled ?? false,
+    // Absent = ON: the backend serves the glossary unless the stored value is
+    // explicitly false (default-ON rollout). Hydrating absent as false made
+    // the edit form LIE about live behavior — and a super-duper-admin saving
+    // the form would then write the explicit false back.
+    languageGlossaryEnabled: data?.metadata?.languageGlossaryEnabled ?? true,
     comfortAudioEnabled: data?.metadata?.comfortAudioEnabled ?? false,
     comfortAudioUrl: (data?.metadata as any)?.comfortAudioUrl ?? "",
     comfortAudioVolume: (data?.metadata as any)?.comfortAudioVolume ?? COMFORT_AUDIO_VOLUME_DEFAULT,
