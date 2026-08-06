@@ -372,14 +372,20 @@ export const adminLoginRolesFor = (embedded: boolean): UserRole[] => [
  * `role: "LEARNER"`, which no super-admin gate would accept.
  *
  * The fix is to prefer the `roles` array the backend now sends and pick the
- * highest admin tier in it. Only the super-admin tiers are hoisted: everything
- * else falls through to the backend's own answer, so no existing user's gating
- * changes. Falls back to `role` for any client or cache entry predating
- * `roles`.
+ * highest admin tier in it. Every role this console's own login admits
+ * (`adminLoginRolesFor`) must be hoisted here, or the same collapse bug just
+ * resurfaces one tier down: MULTI_TENANT_ADMIN was missing from this list even
+ * though it's a valid portal-login role, so a user holding
+ * [LEARNER, ADMIN, MULTI_TENANT_ADMIN] collapsed to "ADMIN" (ADMIN outranks
+ * the backend's own fallback) and got bounced by the portal's surface gate,
+ * which doesn't accept plain ADMIN. Roles outside this list fall through to
+ * the backend's own answer, so no other user's gating changes. Falls back to
+ * `role` for any client or cache entry predating `roles`.
  */
 const ADMIN_ROLE_PRECEDENCE: UserRole[] = [
   UserRole.SUPER_DUPER_ADMIN,
   UserRole.SUPER_ADMIN,
+  UserRole.MULTI_TENANT_ADMIN,
   UserRole.INTERNAL,
 ];
 
