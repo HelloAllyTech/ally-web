@@ -60,6 +60,7 @@ vi.mock("@assets", () => ({
     <svg className={className} {...props} data-testid="ally-logo" />
   ),
   DockToRight: (props: any) => <svg {...props} data-testid="dock-to-right" />,
+  RedirectIcon: (props: any) => <svg {...props} data-testid="redirect-icon" />,
   LogoutIllustration: (props: any) => <svg data-testid="logout-illustration" {...props} />,
 }));
 
@@ -99,6 +100,11 @@ vi.mock("@components", () => ({
   CarouselSize: { SMALL: "SMALL", LARGE: "LARGE" },
 }));
 
+// Stands in for the real hasAllyAdminAccess (unit-tested against real roles in
+// src/constants/__tests__/user.test.ts); here it just lets each test drive the
+// Ally Admin tab's visibility.
+const mockHasAllyAdminAccess = vi.hoisted(() => vi.fn(() => false));
+
 vi.mock("@constants", () => {
   const TabId = {
     LEARN: "LEARN",
@@ -106,9 +112,12 @@ vi.mock("@constants", () => {
     CALLS: "CALLS",
     ANALYTICS: "ANALYTICS",
     SEARCH: "SEARCH",
+    ALLY_ADMIN: "ALLY_ADMIN",
   };
   return {
     TabId,
+    hasAllyAdminAccess: mockHasAllyAdminAccess,
+    adminAppUrl: "https://admin.example.test",
     TooltipLocation: {
       LEARN_TAB: "learn_tab",
       REVIEW_TAB: "review_tab",
@@ -212,6 +221,7 @@ enum TabId {
   SEARCH = "SEARCH",
   SETTINGS = "SETTINGS",
   STRESS_BUSTERS = "STRESS BUSTERS",
+  ALLY_ADMIN = "ALLY_ADMIN",
 }
 
 const mockOnTabChange = vi.fn();
@@ -245,6 +255,8 @@ describe("NavSideBar", () => {
     mockNavigate.mockClear();
     mockOnTabChange.mockClear();
     mockOnClose.mockClear();
+    mockHasAllyAdminAccess.mockReset();
+    mockHasAllyAdminAccess.mockReturnValue(false);
     // Reset window.innerWidth
     Object.defineProperty(window, "innerWidth", {
       writable: true,
@@ -465,5 +477,77 @@ describe("NavSideBar", () => {
     expect(screen.getByTestId("dialog-confirm-button")).toHaveTextContent(
       "Logout & lock my Ally account",
     );
+  });
+
+  // --- Ally Admin external link ---
+
+  describe("Ally Admin link", () => {
+    const allyAdminTab = () => screen.queryByTestId(`nav-tab-${TabId.ALLY_ADMIN}`);
+
+    beforeEach(() => {
+      // Earlier tests in this file leave mockUseUser pointed at their own
+      // return values, so pin it back rather than inheriting whatever ran last.
+      mockUseUser.mockReturnValue({
+        user: mockUser,
+        permissions: mockPermissions,
+        logout: mockLogout,
+      });
+    });
+
+    it("is hidden for an account without admin-console access", () => {
+      mockHasAllyAdminAccess.mockReturnValue(false);
+      renderComponent();
+      expect(allyAdminTab()).not.toBeInTheDocument();
+    });
+
+    it("is shown for an account that also has admin-console access", () => {
+      mockHasAllyAdminAccess.mockReturnValue(true);
+      renderComponent();
+      expect(allyAdminTab()).toBeInTheDocument();
+      expect(screen.getByTestId(`nav-tab-title-${TabId.ALLY_ADMIN}`)).toHaveTextContent(
+        "Ally Admin",
+      );
+    });
+
+    it("is gated on the logged-in user, not on permissions", () => {
+      mockHasAllyAdminAccess.mockReturnValue(true);
+      renderComponent();
+      expect(mockHasAllyAdminAccess).toHaveBeenCalledWith(mockUser);
+    });
+
+    it("renders as an anchor opening the admin console in a new tab", () => {
+      mockHasAllyAdminAccess.mockReturnValue(true);
+      renderComponent();
+
+      const link = allyAdminTab();
+      expect(link?.tagName).toBe("A");
+      expect(link).toHaveAttribute("href", "https://admin.example.test");
+      expect(link).toHaveAttribute("target", "_blank");
+      // Denies the opened tab access to window.opener.
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    });
+
+    it("does not route in-app when clicked, and dismisses the mobile drawer", () => {
+      mockHasAllyAdminAccess.mockReturnValue(true);
+      renderComponent({ isOpen: true });
+
+      fireEvent.click(allyAdminTab() as HTMLElement);
+
+      // The anchor navigates; the router must not be involved at all, or the
+      // click would also push a bogus in-app route behind the new tab.
+      expect(mockOnTabChange).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it("still routes in-app for ordinary tabs", () => {
+      mockHasAllyAdminAccess.mockReturnValue(true);
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId(`nav-tab-${TabId.ANALYTICS}`));
+
+      expect(mockOnTabChange).toHaveBeenCalledWith("/analytics");
+      expect(screen.getByTestId(`nav-tab-${TabId.ANALYTICS}`).tagName).toBe("DIV");
+    });
   });
 });

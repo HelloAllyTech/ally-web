@@ -89,7 +89,8 @@
       "statistics": "Statistics",
       "search": "Search",
       "organizationSettings": "Org. Settings",
-      "organizationSettingsTag": "Testing"
+      "organizationSettingsTag": "Testing",
+      "allyAdmin": "Ally Admin"
     },
     "logout": {
       "title": {

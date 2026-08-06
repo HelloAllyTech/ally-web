@@ -29,6 +29,49 @@ export const canViewOrganizationSettings = (
   ORG_SETTINGS_ALLOWED_EMAILS.includes(user.email);
 
 /**
+ * The roles admin.helloally.ai actually admits at login. Kept deliberately
+ * identical to the `allowedRoles` the admin console sends on every auth call
+ * (ally-admin-dashboard `src/api/auth.ts`) — the whole point of the Ally Admin
+ * link is that everyone who sees it can get in, so this list must not drift
+ * from that one.
+ *
+ * Notably excluded is tenant ADMIN: it carries `organization:access`, not
+ * `system:access`, and the console's login rejects it. Holding permissions a
+ * super admin holds is not the test either — admission is by role name, so a
+ * role that merely clones SUPER_ADMIN's grants still cannot sign in. Add a role
+ * here only when it is added to the admin console's `allowedRoles` too.
+ */
+export const ALLY_ADMIN_ROLES: UserRole[] = [
+  UserRole.SUPER_ADMIN,
+  UserRole.SUPER_DUPER_ADMIN,
+  UserRole.MULTI_TENANT_ADMIN,
+];
+
+/**
+ * True when this consumer-app account also has access to the Ally Admin
+ * console — i.e. the same user record additionally holds a platform admin role.
+ *
+ * Reads the `roles` array, never the single `role`. `GET /users/me` collapses a
+ * multi-role account to one `role` by a backend priority list
+ * (SUPER_DUPER_ADMIN > SUPER_ADMIN > ADMIN > COUNSELOR > first row), which is
+ * lossy in exactly the case that matters here: MULTI_TENANT_ADMIN is absent
+ * from that list, so a user holding [LEARNER, MULTI_TENANT_ADMIN] can report
+ * `role: "LEARNER"` and would fail a `role`-based check despite being able to
+ * log into the console. `role` is only a fallback for cached/older payloads
+ * predating `roles` (same reasoning as resolveAdminRole in the admin console).
+ *
+ * Scope: this detects a *single account carrying both role sets*. It cannot see
+ * a separate `name+admin@…` alias account — that is a different `users` row
+ * under a different email, and no API today links the two.
+ */
+export const hasAllyAdminAccess = (
+  user?: { role?: UserRole; roles?: UserRole[] } | null,
+): boolean => {
+  const held = user?.roles?.length ? user.roles : user?.role ? [user.role] : [];
+  return held.some(role => (ALLY_ADMIN_ROLES as string[]).includes(role));
+};
+
+/**
  * Internal Ally staff email domain. `view:organization-metrics` is granted to
  * every tenant's ADMIN group by the backend migration, so the permission
  * check alone can't stage the native Organization Metrics dashboard — every

@@ -19,4 +19,9 @@ export interface TabProps {
   onClick: () => void;
   isExpanded: boolean;
   badgeCount?: number;
+  /**
+   * Absolute URL for a tab that leaves the app. When set, the tab renders as an
+   * anchor opening in a new tab instead of a div that routes in-app.
+   */
+  href?: string;
 }

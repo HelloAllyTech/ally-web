@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
-import { DockToRight, LogoutIllustration } from "@assets";
+import { DockToRight, LogoutIllustration, RedirectIcon } from "@assets";
 import { AppTooltip, ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
 import {
   navBarOptions,
@@ -15,6 +15,8 @@ import {
   Permissions,
   TooltipLocation,
   canViewOrganizationSettings,
+  hasAllyAdminAccess,
+  adminAppUrl,
 } from "@constants";
 import { useUser } from "@hooks";
 
@@ -53,10 +55,16 @@ const Tab: FC<TabProps> = ({
   isExpanded,
   onClick,
   badgeCount,
+  href,
 }) => {
   const { t } = useTranslation();
+  // Tabs that leave the app render as a real anchor, not a click-only div, so
+  // they are keyboard-reachable, middle-clickable and preview the destination
+  // on hover. In-app tabs keep the existing div (they route via onClick).
+  const Wrapper = href ? "a" : "div";
+  const wrapperProps = href ? { href, target: "_blank" as const, rel: "noopener noreferrer" } : {};
   return (
-    <div
+    <Wrapper
       data-testid={`nav-tab-${id}`}
       className={`
           w-full h-12 rounded-md p-4 flex items-center gap-3 my-1 cursor-pointer
@@ -64,6 +72,7 @@ const Tab: FC<TabProps> = ({
           transition-all duration-300 group
         `}
       onClick={onClick}
+      {...wrapperProps}
     >
       <div className="relative flex-shrink-0">
         <Icon
@@ -102,7 +111,7 @@ const Tab: FC<TabProps> = ({
           )}
         </div>
       )}
-    </div>
+    </Wrapper>
   );
 };
 
@@ -141,6 +150,8 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
     return true;
   });
+
+  const showAllyAdminLink = hasAllyAdminAccess(user) && !!adminAppUrl;
 
   const navigate = useNavigate();
   const { data: tenantData } = useGetLogoUrlQuery();
@@ -230,6 +241,31 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
             <div key={id}>{tab}</div>
           );
         })}
+
+        {/* Ally Admin is deliberately not in navBarOptions: it routes nowhere in
+            this app, can never be the active tab, and would force routes.ts to
+            import an icon (which breaks every test that mocks @assets — see the
+            note in that file). It is gated on the roles the admin console admits
+            at login rather than on a permission, and on there being somewhere to
+            send them, so an unset VITE_ADMIN_APP_URL hides it rather than
+            opening a dead tab. Kept below the tabs, separated, because it leaves
+            the app. */}
+        {showAllyAdminLink && (
+          <div className="mt-1 border-t border-t-border-light pt-1">
+            <Tab
+              id={TabId.ALLY_ADMIN}
+              Icon={RedirectIcon}
+              title="Ally Admin"
+              tKey="nav.tabs.allyAdmin"
+              activeTab={activeTab}
+              isExpanded={isExpanded}
+              href={adminAppUrl}
+              // The anchor does the navigating; this only dismisses the mobile
+              // drawer left open behind the new tab.
+              onClick={onClose}
+            />
+          </div>
+        )}
       </div>
     );
   };
