@@ -337,6 +337,13 @@ export interface FormFieldConfig {
    * flag, the field is not rendered. Used for email-allowlisted features.
    */
   featureFlag?: string;
+  /**
+   * Hide the field unless the current user holds this permission. Used for
+   * production rollout toggles (glossary / multilingual defaults) that are
+   * SUPER_DUPER_ADMIN-only — the server enforces the same rule, this just
+   * keeps the field out of other editors' forms.
+   */
+  requiredPermission?: string;
   /** When true, wrap the field in a collapsed accordion. */
   accordion?: boolean;
   /**

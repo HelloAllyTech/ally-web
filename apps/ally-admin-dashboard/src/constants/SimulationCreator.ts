@@ -428,6 +428,7 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         type: FORM_FIELD_TYPES.CUSTOM.MAIN_PROMPT_VARIANT_PICKER,
         fullWidth: true,
         isMandatory: false,
+        requiredPermission: "view:super-duper-admins",
       },
       {
         id: "prompt",
@@ -786,8 +787,9 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         label: "Language Glossary",
         type: FORM_FIELD_TYPES.TOGGLE_BUTTON,
         fullWidth: true,
-        defaultValue: false,
-        note: "Serve the per-language glossary (style card + retrieved sections) to this roleplay's non-English sessions. Temporary rollout gate — off by default while the glossary is being tested; only languages with published glossary sections are affected.",
+        defaultValue: true,
+        requiredPermission: "view:super-duper-admins",
+        note: "Serve the per-language glossary (style card + retrieved sections) to this roleplay's non-English sessions. ON by default platform-wide; turning it off is a per-simulation escape hatch. Only languages with published glossary sections are affected. Super-duper-admin only.",
       },
       {
         id: "comfortAudioEnabled",

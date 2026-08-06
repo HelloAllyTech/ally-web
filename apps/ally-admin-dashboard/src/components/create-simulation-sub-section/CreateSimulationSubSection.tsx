@@ -27,6 +27,9 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
 
   // Per-user feature flags from /users/me (e.g. email-allowlisted features).
   // Fields with a `featureFlag` are hidden unless the user has it enabled.
+  const userPermissions = useSelector((state: any) => state?.user?.permissions) as
+    | string[]
+    | undefined;
   const featureFlags = useSelector((state: any) => state?.user?.user?.featureFlags) as
     | Record<string, boolean>
     | undefined;
@@ -76,6 +79,12 @@ export const CreateSimulationSubSection: FC<CreateSimulationSubSectionProps> = (
     // Per-user feature-flag gate: hide fields the current user isn't entitled
     // to (email-allowlisted features resolved server-side via /users/me).
     if (field.featureFlag && !featureFlags?.[field.featureFlag]) {
+      return false;
+    }
+    // Permission gate: rollout toggles restricted to SUPER_DUPER_ADMIN.
+    // Server-side enforcement mirrors this (non-SDA edits preserve stored
+    // values), so hiding here is UX honesty, not the security boundary.
+    if (field.requiredPermission && !userPermissions?.includes(field.requiredPermission)) {
       return false;
     }
     // Variant-driven hiding: skip the whole render (wrapper + dashed
