@@ -221,6 +221,7 @@ export const FORM_FIELD_IDS = {
   COMFORT_AUDIO_URL: "comfortAudioUrl",
   COMFORT_AUDIO_VOLUME: "comfortAudioVolume",
   HISTORY_TRIM_ENABLED: "historyTrimEnabled",
+  TURN_MAX_ENDPOINTING_DELAY: "turnMaxEndpointingDelay",
   CONTINUOUS_BACKCHANNELING: "continuousBackchanneling",
   INTERIM_REPLY_ENABLED: "interimReplyEnabled",
   SELECTED_MAIN_PROMPT_CODE: "selectedMainPromptCode",
@@ -259,6 +260,16 @@ export const TEMPERATURE_DEFAULT = 0.7;
 export const TEMPERATURE_MIN = 0;
 export const TEMPERATURE_MAX = 2;
 export const TEMPERATURE_STEP = 0.1;
+
+/**
+ * Per-simulation override (seconds) for how long ally-ai-learn's semantic
+ * turn-detection waits for a learner who seems mid-thought before giving up
+ * and replying anyway. Mirrors ally-be's DTO bounds (@Min(0.1) @Max(10)).
+ * Left unset by default — unset means "use the global platform default"
+ * (settings.TURN_MAX_ENDPOINTING_DELAY), not a specific number.
+ */
+export const TURN_MAX_ENDPOINTING_DELAY_MIN = 0.1;
+export const TURN_MAX_ENDPOINTING_DELAY_MAX = 10;
 
 /**
  * STT providers ally-ai-learn's `app/stt/factory.py` can construct. Kept in
@@ -828,6 +839,14 @@ export const SIMULATION_CREATOR_FIELD_GROUPS: CreatorFieldGroups[] = [
         fullWidth: true,
         defaultValue: true,
         tooltipLocation: TooltipLocation.TRIM_HISTORY,
+      },
+      {
+        id: "turnMaxEndpointingDelay",
+        label: "Max Endpointing Delay (seconds)",
+        type: FORM_FIELD_TYPES.NUMBER,
+        fullWidth: true,
+        placeholder: `Platform default (${TURN_MAX_ENDPOINTING_DELAY_MIN}-${TURN_MAX_ENDPOINTING_DELAY_MAX})`,
+        note: "How long the agent waits for a learner who seems mid-thought before replying anyway. Lower = faster replies but more risk of interrupting; higher = fewer interruptions but more perceived delay. Leave blank to use the platform default.",
       },
       {
         id: "continuousBackchanneling",
