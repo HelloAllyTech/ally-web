@@ -1,3 +1,4 @@
+export * from "./agentAudioTiming";
 export * from "./analytics";
 export * from "./common";
 export * from "./socket";
