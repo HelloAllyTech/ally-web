@@ -87,6 +87,31 @@ export const ProductRoadmap: React.FC = () => {
   const [isGoalsOpen, setIsGoalsOpen] = useState(false);
   /** Merge selection. Page-local on purpose: it should reset on navigation. */
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  /** Offset pagination, PAGE_SIZE rows at a time. See resetPaging for the invalidation rule. */
+  const [offset, setOffset] = useState(0);
+
+  /**
+   * Every search / filter / sort change returns to the first page.
+   *
+   * An offset only means something against the result set it was taken from: keeping offset 150
+   * while switching to a filter that matches 12 rows renders an empty table that looks like a
+   * broken filter. Wrapping the setters rather than resetting in an effect keeps it to ONE
+   * render, so we never fire a throwaway request at the stale offset first.
+   *
+   * The merge selection goes with it — the bar counts ids the board is about to stop showing,
+   * and MergeOpportunitiesModal only ever sees rows on the current page.
+   */
+  const resetPaging = () => {
+    setOffset(0);
+    setSelectedIds(new Set());
+  };
+
+  const withPagingReset =
+    <T,>(setter: React.Dispatch<React.SetStateAction<T>>) =>
+    (value: T) => {
+      setter(value);
+      resetPaging();
+    };
 
   /**
    * ONE memoised query-arg object, used by BOTH the list subscription and useAllocateCoins.
@@ -111,9 +136,9 @@ export const ProductRoadmap: React.FC = () => {
       sortBy,
       order,
       limit: PAGE_SIZE,
-      offset: 0,
+      offset,
     }),
-    [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order],
+    [search, typeFilter, stageFilter, goalFilter, ownerFilter, advanced, sortBy, order, offset],
   );
 
   const { data, isLoading, isFetching } = useGetRoadmapOpportunitiesQuery(listArgs);
@@ -178,6 +203,8 @@ export const ProductRoadmap: React.FC = () => {
       normaliseSortField(state.sort?.field) as NonNullable<RoadmapOpportunitiesQuery["sortBy"]>,
     );
     setOrder(state.sort?.dir === "asc" ? "ASC" : "DESC");
+    // A saved view is a whole new result set; page 3 of the previous one does not survive it.
+    resetPaging();
   };
 
   // Live updates. Gated on VIEW so the socket stays closed rather than connecting and being
@@ -237,6 +264,8 @@ export const ProductRoadmap: React.FC = () => {
       // A newly-chosen column starts descending: for scores and dates that is what people mean.
       setOrder("DESC");
     }
+    // Re-sorting reshuffles which rows land on which page, so page 3 is meaningless afterwards.
+    resetPaging();
   };
 
   return (
@@ -321,17 +350,17 @@ export const ProductRoadmap: React.FC = () => {
           goals={goals ?? []}
           facets={facets}
           search={search}
-          onSearchChange={setSearch}
+          onSearchChange={withPagingReset(setSearch)}
           typeFilter={typeFilter}
-          onTypeFilterChange={setTypeFilter}
+          onTypeFilterChange={withPagingReset(setTypeFilter)}
           stageFilter={stageFilter}
-          onStageFilterChange={setStageFilter}
+          onStageFilterChange={withPagingReset(setStageFilter)}
           goalFilter={goalFilter}
-          onGoalFilterChange={setGoalFilter}
+          onGoalFilterChange={withPagingReset(setGoalFilter)}
           ownerFilter={ownerFilter}
-          onOwnerFilterChange={setOwnerFilter}
+          onOwnerFilterChange={withPagingReset(setOwnerFilter)}
           advanced={advanced}
-          onAdvancedChange={setAdvanced}
+          onAdvancedChange={withPagingReset(setAdvanced)}
           onManageGoals={() => setIsGoalsOpen(true)}
           sortBy={sortBy}
           order={order}
@@ -343,6 +372,14 @@ export const ProductRoadmap: React.FC = () => {
           selectedIds={selectedIds}
           onToggleSelected={toggleSelected}
           onSplit={setSplitTarget}
+          offset={offset}
+          pageSize={PAGE_SIZE}
+          onOffsetChange={next => {
+            setOffset(next);
+            // Selection cannot span pages: the merge bar would count rows the board no longer
+            // shows, and the modal reads its rows from the current page.
+            setSelectedIds(new Set());
+          }}
         />
       )}
 
