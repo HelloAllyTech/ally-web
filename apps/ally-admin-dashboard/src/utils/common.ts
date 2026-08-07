@@ -283,8 +283,8 @@ export const extractValidData = (
         case FORM_FIELD_TYPES.SELECT:
           return [key, isNonEmptyString(value) ? value : null];
 
-        case FORM_FIELD_TYPES.NUMBER: //convert string to number and empty val to null
-          return [key, value ? parseInt(value) : null];
+        case FORM_FIELD_TYPES.NUMBER: //convert string to number (float-safe) and empty val to null
+          return [key, value === "" || value == null ? null : parseFloat(value)];
 
         case FORM_FIELD_TYPES.SLIDER: //float-valued slider (e.g. temperature); empty → null
           return [key, value === "" || value == null ? null : parseFloat(value)];

@@ -662,6 +662,34 @@ describe("createSimulation utils", () => {
         expect(result.customFields?.[0].id).not.toBe(result.customFields?.[1].id);
       });
     });
+
+    it("should pass through turnMaxEndpointingDelay when set", () => {
+      const mockResponse = {
+        id: "sim-1",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        metadata: { turnMaxEndpointingDelay: 1.5 },
+      } as any;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.turnMaxEndpointingDelay).toBe(1.5);
+    });
+
+    it("should leave turnMaxEndpointingDelay undefined when unset (no fallback default)", () => {
+      const mockResponse = {
+        id: "sim-1",
+        title: "T",
+        description: "D",
+        status: "DRAFT",
+        metadata: {},
+      } as any;
+
+      const result = formatSimulationResponseData(mockResponse);
+
+      expect(result.turnMaxEndpointingDelay).toBeUndefined();
+    });
   });
 
   describe("extractValidData", () => {
@@ -718,6 +746,24 @@ describe("createSimulation utils", () => {
 
       const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
       expect(result.temperature).toBeNull();
+    });
+
+    it("should keep a NUMBER field value as a float (not truncate to int)", () => {
+      const formData = {
+        turnMaxEndpointingDelay: "1.5",
+      };
+
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.turnMaxEndpointingDelay).toBe(1.5);
+    });
+
+    it("should convert empty NUMBER field value to null", () => {
+      const formData = {
+        turnMaxEndpointingDelay: "",
+      };
+
+      const result = extractValidData(SIMULATION_CREATOR_FIELD_GROUPS, formData);
+      expect(result.turnMaxEndpointingDelay).toBeNull();
     });
 
     it("should handle image upload field with valid URL", () => {
