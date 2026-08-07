@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-import { Room, RoomEvent, Participant } from "livekit-client";
+import { Room, RoomEvent, Participant, RemoteTrackPublication, Track } from "livekit-client";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { logger } from "@ally-ui-mono/ui-shared";
@@ -12,8 +12,9 @@ import {
   AGENT_STATE_DONE_THINKING,
   AGENT_STATE_SPEAKING,
 } from "@constants";
+import { ANALYTICS_EVENTS } from "@constants/analyticsEvents";
 import { RoomStatus } from "@types";
-import { decodeUint8ToJson } from "@utils";
+import { captureEvent, createAgentAudioTimer, decodeUint8ToJson } from "@utils";
 
 import { AgentTurnStatus, LiveKitEvent, UseLiveKitRoomReturn } from "./types";
 
@@ -49,6 +50,17 @@ export const useLiveKitRoom = (
   // prevents the grace timer + active-speakers handler from racing.
   const agentJoinedRef = useRef(false);
   const silentGraceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Diagnostic only: measures how long after the agent joins the learner can
+  // actually hear it, split so a silent agent can be attributed to the
+  // subscribe step rather than guessed at. See utils/agentAudioTiming.
+  // Lazy initialiser (like `room` above) so this is built once, not per render.
+  const [audioTimer] = useState(() =>
+    createAgentAudioTimer(
+      payload => captureEvent(ANALYTICS_EVENTS.SIMULATION_AGENT_AUDIO_TIMING, payload),
+      { getRoomName: () => room?.name ?? null },
+    ),
+  );
 
   const { id } = useParams();
 
@@ -102,6 +114,7 @@ export const useLiveKitRoom = (
   }, []);
 
   const onRemoteParticipantConnected = useCallback(() => {
+    audioTimer.markAgentParticipant();
     setStartTime(prev => prev || new Date());
     // Turn status flips to "thinking" as soon as the agent participant joins
     // so the UI can show the prep indicator. Room status stays in ringing until
@@ -113,7 +126,23 @@ export const useLiveKitRoom = (
         transitionToAgentJoined();
       }, AGENT_SILENT_GRACE_MS);
     }
-  }, [transitionToAgentJoined, updateAgentTurnStatus]);
+  }, [transitionToAgentJoined, updateAgentTurnStatus, audioTimer]);
+
+  // Diagnostic listeners for the agent's audio track. Remote audio is the agent:
+  // the egress recorder joins hidden, so clients never see it as a participant.
+  const onAgentTrackPublished = useCallback(
+    (publication: RemoteTrackPublication) => {
+      if (publication.kind === Track.Kind.Audio) audioTimer.markTrackPublished();
+    },
+    [audioTimer],
+  );
+
+  const onAgentTrackSubscribed = useCallback(
+    (_track: Track, publication: RemoteTrackPublication) => {
+      if (publication.kind === Track.Kind.Audio) audioTimer.markTrackSubscribed();
+    },
+    [audioTimer],
+  );
 
   const onRoomDisconnect = useCallback(() => {
     if (!endSessionButtonRef.current) autoTerminationAudio.current?.play();
@@ -143,10 +172,18 @@ export const useLiveKitRoom = (
       logger.warn(`Error while disabling microphone during cleanup: ${cleanupError}`);
     }
 
+    // Report the audio timing before tearing down. If the learner left while the
+    // agent was still inaudible this is the ONLY chance to record it — and those
+    // are exactly the sessions worth measuring.
+    audioTimer.flush("abandoned");
+    audioTimer.reset();
+
     // Remove room-level listeners to prevent duplication on reconnect
     room.off(RoomEvent.DataReceived, onDataReceived);
     room.off(RoomEvent.Disconnected, onRoomDisconnect);
     room.off(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
+    room.off(RoomEvent.TrackPublished, onAgentTrackPublished);
+    room.off(RoomEvent.TrackSubscribed, onAgentTrackSubscribed);
     room.removeAllListeners();
 
     logger.info("Disconnecting from room");
@@ -163,7 +200,16 @@ export const useLiveKitRoom = (
 
     // Reset the last event timestamp on cleanup
     lastEventTimestampRef.current = null;
-  }, [room, onDataReceived, onRoomDisconnect, onRemoteParticipantConnected, updateAgentTurnStatus]);
+  }, [
+    room,
+    onDataReceived,
+    onRoomDisconnect,
+    onRemoteParticipantConnected,
+    onAgentTrackPublished,
+    onAgentTrackSubscribed,
+    updateAgentTurnStatus,
+    audioTimer,
+  ]);
 
   const connectToRoom = async () => {
     try {
@@ -187,6 +233,7 @@ export const useLiveKitRoom = (
         logger.info("Connecting to LiveKit room...");
         await room.connect(livekitUrl, token);
         logger.info(`Successfully connected to room: ${room.name}`);
+        audioTimer.markConnected();
 
         setRoomStatus(RoomStatus.CONNECTED);
 
@@ -195,12 +242,15 @@ export const useLiveKitRoom = (
         room.on(RoomEvent.DataReceived, onDataReceived);
         room.on(RoomEvent.Disconnected, onRoomDisconnect);
         room.on(RoomEvent.ParticipantConnected, onRemoteParticipantConnected);
+        room.on(RoomEvent.TrackPublished, onAgentTrackPublished);
+        room.on(RoomEvent.TrackSubscribed, onAgentTrackSubscribed);
 
         // Speaking detection — determines SPEAKING vs USER_TURN states, and
         // the first agent-speaking event also ends the ringing UI.
         room.on(RoomEvent.ActiveSpeakersChanged, (speakers: Participant[]) => {
           const agentSpeaking = speakers.some(s => s.identity !== room.localParticipant.identity);
           if (agentSpeaking) {
+            audioTimer.markFirstAudio();
             transitionToAgentJoined();
             updateAgentTurnStatus(AGENT_STATE_SPEAKING);
           } else {
@@ -214,6 +264,15 @@ export const useLiveKitRoom = (
         if (room.remoteParticipants.size > 0) {
           logger.info("Agent already in room at connect time, marking as joined");
           onRemoteParticipantConnected();
+          // Its audio track may also already exist, in which case the events above
+          // never fire for it — record what is already there so the measurement
+          // isn't silently skipped on this path.
+          room.remoteParticipants.forEach(participant => {
+            participant.audioTrackPublications.forEach(publication => {
+              audioTimer.markTrackPublished();
+              if (publication.isSubscribed) audioTimer.markTrackSubscribed();
+            });
+          });
         }
 
         await room.localParticipant.setMicrophoneEnabled(true);

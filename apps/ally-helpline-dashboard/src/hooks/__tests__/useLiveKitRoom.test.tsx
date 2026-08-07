@@ -32,7 +32,10 @@ vi.mock("livekit-client", () => ({
     Disconnected: "disconnected",
     ParticipantConnected: "participantConnected",
     ActiveSpeakersChanged: "activeSpeakersChanged",
+    TrackPublished: "trackPublished",
+    TrackSubscribed: "trackSubscribed",
   },
+  Track: { Kind: { Audio: "audio", Video: "video" } },
 }));
 
 vi.mock("react-router-dom", () => ({
@@ -58,8 +61,26 @@ vi.mock("@constants", () => ({
   AGENT_STATE_SPEAKING: "speaking",
 }));
 
+// The audio-timing diagnostic is exercised directly in
+// utils/__tests__/agentAudioTiming.test.ts; here it only needs to be inert.
+const mockAudioTimer = {
+  markConnected: vi.fn(),
+  markAgentParticipant: vi.fn(),
+  markTrackPublished: vi.fn(),
+  markTrackSubscribed: vi.fn(),
+  markFirstAudio: vi.fn(),
+  flush: vi.fn(),
+  reset: vi.fn(),
+};
+
 vi.mock("@utils", () => ({
   decodeUint8ToJson: vi.fn((payload: any) => payload),
+  createAgentAudioTimer: vi.fn(() => mockAudioTimer),
+  captureEvent: vi.fn(),
+}));
+
+vi.mock("@constants/analyticsEvents", () => ({
+  ANALYTICS_EVENTS: { SIMULATION_AGENT_AUDIO_TIMING: "simulation_agent_audio_timing" },
 }));
 
 import { useLiveKitRoom } from "../useLiveKitRoom";
