@@ -13,7 +13,7 @@
  * - Snapshot testing
  */
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { LOCAL_STORAGE_KEYS, ROUTES } from "@constants";
@@ -933,6 +933,133 @@ describe("Scenario Component", () => {
       );
 
       expect(container1.innerHTML).toBe(container2.innerHTML);
+    });
+  });
+
+  /**
+   * TEST GROUP: Language Selection
+   *
+   * Regression cover for the bug where a learner picked a non-English language but
+   * the simulation still ran in English. `availableLanguages` is derived through
+   * selectFromResult with a `?? []` fallback, so it is a fresh array on every
+   * render; the defaulting effect used to reset the selection to
+   * availableLanguages[0] (English for virtually every simulation) whenever it
+   * re-fired, silently discarding the learner's choice.
+   */
+  describe("Language Selection", () => {
+    const ENGLISH = { value: "en-IN", label: "English (India)", language_id: 1 };
+    const HINDI = { value: "hi-IN", label: "Hindi (India)", language_id: 2 };
+
+    /**
+     * Publishes a scenarios-list cache entry holding a STABLE array reference,
+     * matching RTK Query: the identity only changes when the cache genuinely
+     * re-emits. Calling this again simulates that re-emit (a refetch or
+     * invalidation) by installing a fresh, equal-but-distinct array.
+     */
+    const mockAvailableLanguages = (languages: (typeof ENGLISH)[]) => {
+      const result = {
+        data: { data: [{ id: 123, availableLanguages: languages.map(lang => ({ ...lang })) }] },
+        isSuccess: true,
+        isLoading: false,
+      };
+      mockUseGetScenariosQuery.mockImplementation(() => result);
+    };
+
+    beforeEach(() => {
+      (window.localStorage.getItem as any).mockReturnValue("access-token");
+      mockAvailableLanguages([ENGLISH, HINDI]);
+    });
+
+    it("should default to the first available language when nothing is selected", async () => {
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId("language-dropdown")).toHaveValue(ENGLISH.label);
+      });
+    });
+
+    it("should send the learner's selected languageId when starting a simulation", async () => {
+      render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown") as HTMLSelectElement;
+      fireEvent.change(dropdown, { target: { value: HINDI.label } });
+
+      await waitFor(() => expect(dropdown).toHaveValue(HINDI.label));
+
+      screen.getByTestId("start-simulation-btn").click();
+
+      await waitFor(() => {
+        expect(mockStartSimulation).toHaveBeenCalledWith({
+          params: { scenarioId: 123, languageId: HINDI.language_id },
+          metadata: {
+            title: mockScenario.title,
+            coverImageUrl: mockScenario.coverImageUrl,
+          },
+        });
+      });
+    });
+
+    it("should keep the selected language when the scenarios list refetches", async () => {
+      const { rerender } = render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown") as HTMLSelectElement;
+      fireEvent.change(dropdown, { target: { value: HINDI.label } });
+      await waitFor(() => expect(dropdown).toHaveValue(HINDI.label));
+
+      // A refetch/cache invalidation hands back an equal-but-new array. Before the
+      // fix this reset the picker to English without any visible cue.
+      mockAvailableLanguages([ENGLISH, HINDI]);
+      rerender(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      await waitFor(() => expect(dropdown).toHaveValue(HINDI.label));
+
+      screen.getByTestId("start-simulation-btn").click();
+
+      await waitFor(() => {
+        expect(mockStartSimulation).toHaveBeenCalledWith(
+          expect.objectContaining({
+            params: { scenarioId: 123, languageId: HINDI.language_id },
+          }),
+        );
+      });
+    });
+
+    it("should fall back to the first option when the selected language is withdrawn", async () => {
+      const { rerender } = render(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      const dropdown = screen.getByTestId("language-dropdown") as HTMLSelectElement;
+      fireEvent.change(dropdown, { target: { value: HINDI.label } });
+      await waitFor(() => expect(dropdown).toHaveValue(HINDI.label));
+
+      // Hindi is no longer offered — the stale selection must not survive.
+      mockAvailableLanguages([ENGLISH]);
+      rerender(
+        <TestWrapper>
+          <Scenario />
+        </TestWrapper>,
+      );
+
+      await waitFor(() => expect(dropdown).toHaveValue(ENGLISH.label));
     });
   });
 });

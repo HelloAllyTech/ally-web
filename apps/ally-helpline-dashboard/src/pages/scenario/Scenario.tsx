@@ -124,12 +124,24 @@ export const Scenario: FC = () => {
     if (limitReached) setNoEnoughCredits(true);
   }, [credits]);
 
-  // Set default language from the scenarios list availableLanguages
+  // Default the picker to the first available language, but ONLY when there is no
+  // valid selection yet. `availableLanguages` is a fresh array on every render
+  // (selectFromResult's `?? []` fallback above), so this effect re-fires on any
+  // refetch/cache invalidation. Resetting unconditionally clobbered a learner's
+  // choice back to availableLanguages[0] — English for nearly every simulation —
+  // and the session then started in English despite the dropdown showing Hindi.
+  // Matched on `label` to stay consistent with handleLanguageChange and the
+  // dropdown's `value`; `language_id` is optional on LanguageOption, so comparing
+  // it would treat two undefineds as a match.
   useEffect(() => {
-    if (availableLanguages?.length) {
+    if (!availableLanguages?.length) return;
+    const isSelectionStillOffered =
+      selectedLanguage != null &&
+      availableLanguages.some(lang => lang.label === selectedLanguage.label);
+    if (!isSelectionStillOffered) {
       setSelectedLanguage(availableLanguages[0]);
     }
-  }, [availableLanguages]);
+  }, [availableLanguages, selectedLanguage]);
 
   const handleLanguageChange = (label: string) => {
     const selected = availableLanguages?.find(lang => lang.label === label) || null;
