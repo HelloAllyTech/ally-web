@@ -33,6 +33,7 @@ import {
   RoadmapAdvancedFilterValues,
   countActiveAdvancedFilters,
 } from "./utils/filters";
+import { pageRange } from "./utils/paging";
 
 const STAGE_STYLE: Record<string, string> = {
   new: "bg-background-secondary text-typography-primary",
@@ -84,6 +85,10 @@ interface OpportunitiesBoardProps {
   selectedIds: Set<string>;
   onToggleSelected: (id: string) => void;
   onSplit: (opportunity: RoadmapOpportunity) => void;
+  /** Offset pagination. `offset` is the same value carried in `listArgs`. */
+  offset: number;
+  pageSize: number;
+  onOffsetChange: (offset: number) => void;
 }
 
 /**
@@ -132,11 +137,17 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
   selectedIds,
   onToggleSelected,
   onSplit,
+  offset,
+  pageSize,
+  onOffsetChange,
 }) => {
   const allocate = useAllocateCoins(listArgs);
   const rows = data?.items ?? [];
   // Unfiltered max, so the bars keep a stable scale when a filter is applied.
   const maxScore = Math.max(1, data?.maxScore ?? 1);
+  const total = data?.count ?? 0;
+  const { rangeStart, rangeEnd, page, totalPages, canPrev, canNext, prevOffset, nextOffset } =
+    pageRange(offset, pageSize, total);
 
   const SortHeader: React.FC<{
     field: NonNullable<RoadmapOpportunitiesQuery["sortBy"]>;
@@ -290,14 +301,19 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
       {isLoading ? (
         <SkeletonText paragraph lineCount={8} />
       ) : rows.length === 0 ? (
+        // `offset > 0` with no rows means the list shrank under us (a realtime delete, or a
+        // merge) — that is a paging problem, not an empty board, so don't invite a new
+        // opportunity. The footer keeps Previous enabled as the way out.
         <EmptyState
-          title="No opportunities yet"
+          title={offset > 0 ? "Nothing on this page" : "No opportunities yet"}
           subtitle={
-            activeFilters || search
-              ? "No opportunities match these filters."
-              : "File the first one to start collecting votes."
+            offset > 0
+              ? "The list is shorter than it was — go back a page."
+              : activeFilters || search
+                ? "No opportunities match these filters."
+                : "File the first one to start collecting votes."
           }
-          {...(canVote && !activeFilters && !search
+          {...(canVote && !activeFilters && !search && offset === 0
             ? { actionLabel: "New opportunity", onAction: onAddClick }
             : {})}
         />
@@ -424,10 +440,38 @@ export const OpportunitiesBoard: React.FC<OpportunitiesBoardProps> = ({
         </TableContainer>
       )}
 
-      <div className="text-typography-secondary text-xs">
-        {data ? `${rows.length} of ${data.count} opportunities` : null}
-        {isFetching && !isLoading ? " · updating…" : null}
-        {canManage ? " · you can manage stages and taxonomy" : null}
+      {/* Pagination footer, same shape as the other server-paged admin tables (AI Lab Runs,
+          Roleplay Session Logs): a row-range count on the left, Previous/Next on the right.
+          The controls render whenever there is more than one page — including on an empty page
+          past the end, which would otherwise be a dead end. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-typography-secondary text-xs">
+          {data ? `Showing ${rangeStart}–${rangeEnd} of ${total} opportunities` : null}
+          {isFetching && !isLoading ? " · updating…" : null}
+          {canManage ? " · you can manage stages and taxonomy" : null}
+        </div>
+
+        {(canPrev || canNext) && (
+          <div className="flex items-center gap-3">
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              disabled={!canPrev}
+              onClick={() => onOffsetChange(prevOffset)}
+            >
+              Previous
+            </Button>
+            <span className="text-typography-secondary text-xs tabular-nums">
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              variant={ButtonVariant.SECONDARY}
+              disabled={!canNext}
+              onClick={() => onOffsetChange(nextOffset)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
