@@ -137,6 +137,9 @@ export const ApiEndpoints = {
   },
   PRACTICE_STREAK: {
     GET_PRACTICE_STREAK: "/v1/community/practice-streak",
+    // Streak state without the heatmap cells — for callers that mount often
+    // (nav indicator, post-session) and don't need the timeline.
+    GET_PRACTICE_STREAK_SUMMARY: "/v1/community/practice-streak/summary",
   },
   REVIEWS: {
     GET_REVIEWS: "/v1/scenario-session-reviews",

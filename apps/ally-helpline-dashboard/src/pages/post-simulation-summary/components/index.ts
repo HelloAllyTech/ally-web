@@ -1,3 +1,4 @@
+import StreakMoment from "./StreakMoment";
 import { UpNextTab } from "./UpNextTab";
 
-export { UpNextTab };
+export { StreakMoment, UpNextTab };

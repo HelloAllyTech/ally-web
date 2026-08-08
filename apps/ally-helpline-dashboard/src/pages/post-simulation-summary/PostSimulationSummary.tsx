@@ -34,7 +34,7 @@ import {
 import { useNextChallenge } from "@hooks";
 import { pageType, SessionType, ShareForReviewsInput } from "@types";
 
-import { UpNextTab } from "./components";
+import { StreakMoment, UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
 import { containerVariants } from "../learn/constants";
 
@@ -324,6 +324,12 @@ export const PostSimulationSummary: FC = () => {
             </div>
           )}
         </div>
+        {/* Sits on the page shell rather than inside a tab: OverallScoreMeter
+            lives in the Skills tab, which is not the landing tab, so anchoring
+            the moment there would hide it from most users. A short session
+            cannot have secured the streak, so it is disabled for that branch. */}
+        <StreakMoment enabled={!isShortSession && !!summary} />
+
         {isShortSession ? (
           <ShortSessionUI className="flex-1" summaryData={summaryData} />
         ) : (

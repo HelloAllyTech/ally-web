@@ -19,5 +19,7 @@ export * from "./useScribeNoteCreationEnabled";
 export * from "./useScribeVoiceNoteEnabled";
 export * from "./useAudioRecorder";
 export * from "./useNextChallenge";
+export * from "./usePostSessionStreak";
+export * from "./usePracticeStreakSummary";
 export * from "./useVideoWatchProgress";
 export * from "./useFieldAutosave";

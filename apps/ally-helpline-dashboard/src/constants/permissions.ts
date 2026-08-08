@@ -32,6 +32,8 @@ export enum Permissions {
   VIEW_CHAT_TYPES = "view:settings:chat-types",
   VIEW_SUMMARY_FIELDS = "view:settings:summary-fields",
   VIEW_LEADERBOARD = "view:community:leaderboard",
+  /** Gates the practice-streak endpoints as well as the user's own rank. */
+  VIEW_USER_RANK = "view:user:rank",
   VIEW_SIMULATION_REVIEWS = "view:simulation-reviews",
   VIEW_SCRIBE_REVIEWS = "view:scribe-reviews",
   VIEW_SIMULATION_REVIEW = "view:simulation-review",

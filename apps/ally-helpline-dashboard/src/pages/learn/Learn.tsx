@@ -168,6 +168,23 @@ export const Learn: FC = () => {
       return aActive ? -1 : 1;
     });
 
+  /**
+   * Streak-bar call to action. Deep-links to the first active scenario rather
+   * than starting a simulation outright: starting one consumes a credit, which
+   * should be a deliberate act, not a side effect of a page-header button. When
+   * there is nothing to jump to, fall back to the simulations tab.
+   */
+  const onStartPractice = () => {
+    const firstActive = getSortedScenarios()?.find(
+      scenario => scenario.status === ScenarioStatus.ACTIVE,
+    );
+    if (firstActive) {
+      navigate(`/scenario/${firstActive.id}`);
+      return;
+    }
+    setSearchParams({ tab: TabId.SIMULATIONS });
+  };
+
   const renderLoadingSkeleton = () => (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
       {Array.from({ length: 6 }).map((_, index) => (
@@ -315,7 +332,7 @@ export const Learn: FC = () => {
 
   return (
     <div className="flex flex-col w-full bg-white max-h-dvh overflow-y-hidden p-[10px] pl-0 sm:p-[24px] font-tertiary">
-      <PracticeStreakHeatmap className="mb-[24px]" />
+      <PracticeStreakHeatmap className="mb-[24px]" onStartPractice={onStartPractice} />
       {renderPageHeader()}
       <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
     </div>

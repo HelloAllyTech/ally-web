@@ -34,6 +34,8 @@ const { mockUser, mockPermissions, mockLogout, mockUseUser } = vi.hoisted(() => 
 
 vi.mock("@hooks", () => ({
   useUser: mockUseUser,
+  // Exhaustive mock: NavSideBar reads the streak pill from this hook.
+  usePracticeStreakSummary: () => ({ summary: undefined }),
 }));
 
 // Mock react-router-dom

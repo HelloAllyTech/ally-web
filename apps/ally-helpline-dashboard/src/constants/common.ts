@@ -123,6 +123,7 @@ export const TAG_TYPES = {
   SIMULATION_SUMMARY: "SimulationSummary",
   SCENARIO_PATHWAY_DETAILS: "ScenarioPathwayDetails",
   SCENARIO_CASE_DETAILS: "ScenarioCaseDetails",
+  PRACTICE_STREAK: "PracticeStreak",
   SIMULATION_CREDITS: "SimulationCredits",
   USER: "User",
   REVIEW: "Review",
