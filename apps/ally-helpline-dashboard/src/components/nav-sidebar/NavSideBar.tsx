@@ -8,7 +8,7 @@ import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { CustomImage, FEATURE_FLAGS_MAP } from "@ally-ui-mono/ui-shared";
 import { useGetLogoUrlQuery, useGetUnreadReviewCountQuery } from "@api";
 import { DockToRight, LogoutIllustration, RedirectIcon } from "@assets";
-import { AppTooltip, ConfirmationDialog, ProfileSettings, UserInfo } from "@components";
+import { AppTooltip, ConfirmationDialog, ProfileSettings, StreakPill, UserInfo } from "@components";
 import {
   navBarOptions,
   TabId,
@@ -18,7 +18,7 @@ import {
   hasAllyAdminAccess,
   adminAppUrl,
 } from "@constants";
-import { useUser } from "@hooks";
+import { usePracticeStreakSummary, useUser } from "@hooks";
 
 import { NavSideBarProps, TabProps } from "./types";
 import { ButtonVariant } from "../button";
@@ -55,6 +55,7 @@ const Tab: FC<TabProps> = ({
   isExpanded,
   onClick,
   badgeCount,
+  trailing,
   href,
 }) => {
   const { t } = useTranslation();
@@ -82,6 +83,7 @@ const Tab: FC<TabProps> = ({
         {!isExpanded && badgeCount !== undefined && badgeCount > 0 && (
           <NotificationBadge count={badgeCount} />
         )}
+        {!isExpanded && trailing && <span className="absolute -right-3 -top-2">{trailing}</span>}
       </div>
 
       {isExpanded && (
@@ -93,7 +95,7 @@ const Tab: FC<TabProps> = ({
                 activeTab === id
                   ? "text-typography-900 font-[500]"
                   : "text-typography-800 font-[400]"
-              } font-primary text-lg`}
+              } font-primary text-lg truncate`}
             >
               {tKey ? t(tKey) : title}
             </div>
@@ -109,6 +111,7 @@ const Tab: FC<TabProps> = ({
           {badgeCount !== undefined && badgeCount > 0 && (
             <NotificationBadge count={badgeCount} isExpanded />
           )}
+          {trailing}
         </div>
       )}
     </Wrapper>
@@ -119,6 +122,9 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
   const { t } = useTranslation();
   const { permissions, user, logout, getProfileUrl, deleteProfile, uploadProfile, refetchUser } =
     useUser();
+  // Shared with the /learn bar via a single void-arg cache entry, so the pill
+  // and the bar are always the same number.
+  const { summary: streakSummary } = usePracticeStreakSummary();
 
   const { data: unreadData } = useGetUnreadReviewCountQuery(
     { isScribe: false },
@@ -211,6 +217,36 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
 
   const renderTabs = () => {
     const tabTooltipLocations = getTabTooltipLocations();
+
+    /**
+     * Persistent streak marker on the Learn tab.
+     *
+     * Reads from the shared summary hook, which takes no query argument — so
+     * this and the /learn bar resolve to the same RTK Query cache entry and a
+     * single request, and can never show different numbers.
+     *
+     * No tooltip: the Learn tab is already wrapped in AppTooltip, and
+     * NavbarWrapper's `overflow-y-hidden` computes overflow-x to `auto`, making
+     * it a clipping ancestor on both axes for the non-portaled Carbon tooltip —
+     * the failure already documented further down this file. The meaning lives
+     * in the pill's aria-label instead.
+     */
+    const renderStreakPill = () => {
+      if (!streakSummary || streakSummary.currentStreak <= 0) return null;
+
+      const labelKey = streakSummary.atRisk
+        ? "practiceStreak.nav.atRisk"
+        : "practiceStreak.nav.value";
+
+      return (
+        <StreakPill
+          days={streakSummary.currentStreak}
+          atRisk={streakSummary.atRisk}
+          ariaLabel={t(labelKey, { count: streakSummary.currentStreak })}
+        />
+      );
+    };
+
     return (
       <div
         className="flex-1 flex-col gap-1 m-2 border-t border-t-border-light pt-3"
@@ -228,6 +264,7 @@ const NavSideBar: FC<NavSideBarProps> = ({ activeTab, onTabChange, isOpen, onClo
               isExpanded={isExpanded}
               onClick={() => onTabClick(path)}
               badgeCount={id === TabId.REVIEW ? unreadData?.count : undefined}
+              trailing={id === TabId.LEARN ? renderStreakPill() : undefined}
             />
           );
 

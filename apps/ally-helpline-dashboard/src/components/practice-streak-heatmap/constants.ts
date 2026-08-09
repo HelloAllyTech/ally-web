@@ -21,17 +21,15 @@ export const HEATMAP_THRESHOLDS: Record<PracticeStreakGroupBy, number[]> = {
 };
 
 /**
- * Per-grouping practice goal, in minutes, used to fill the progress ring for
- * the current (most recent) period. These are product-chosen targets — tune
- * them here without touching the component. They intentionally sit a little
- * below the top heatmap threshold so a good session comfortably closes the
- * ring rather than making it feel unreachable.
+ * Minutes that make a day count toward the streak. Mirrors ACTIVE_DAY_MINUTES
+ * in ally-be — the rule the backend actually enforces.
+ *
+ * (There used to be a PRACTICE_GOAL_MINUTES map here driving the ring off
+ * minutes. It advertised a 15-minute daily target next to a streak that needs
+ * one minute, and put minutes in the ring beside days in the headline. The ring
+ * now counts days, and any real daily goal comes from the tenant via the API.)
  */
-export const PRACTICE_GOAL_MINUTES: Record<PracticeStreakGroupBy, number> = {
-  [PracticeStreakGroupBy.DAY]: 15,
-  [PracticeStreakGroupBy.WEEK]: 60,
-  [PracticeStreakGroupBy.MONTH]: 240,
-};
+export const ACTIVE_DAY_MINUTES = 1;
 
 /** Tailwind classes per intensity level (0 = empty ... 4 = most). */
 export const HEATMAP_LEVEL_CLASSES: string[] = [

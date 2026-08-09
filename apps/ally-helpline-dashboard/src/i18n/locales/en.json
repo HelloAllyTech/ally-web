@@ -122,7 +122,13 @@
       "rank": "Rank",
       "user": "User",
       "totalDuration": "Total duration",
-      "badges": "Badges"
+      "badges": "Badges",
+      "streak": "Streak",
+      "streakHint": "Current practice streak, all time",
+      "streakValue_one": "{{count}}d streak",
+      "streakValue_other": "{{count}}d streak",
+      "badgeValue_one": "{{count}} badge",
+      "badgeValue_other": "{{count}} badges"
     }
   },
   "achievements": {
@@ -310,31 +316,87 @@
   "practiceStreak": {
     "title": "Practice streak",
     "ariaLabel": "Practice minutes heatmap",
-    "minutesValue": "{{count}} min",
-    "empty": "No practice sessions yet. Start a role play to build your streak!",
-    "error": "Couldn't load your practice streak. Please try again.",
+    "minutesValue_one": "{{count}} min",
+    "minutesValue_other": "{{count}} min",
+    "error": "Couldn't load your practice streak.",
+    "retry": "Try again",
     "groupBy": {
       "day": "Day",
       "week": "Week",
       "month": "Month"
     },
-    "stats": {
-      "currentStreak": "day streak",
-      "longestStreak": "Longest",
-      "total": "Total"
-    },
-    "units": {
-      "days": "days",
-      "min": "min"
-    },
-    "goal": {
-      "day": "of {{count}} min today",
-      "week": "of {{count}} min this week",
-      "month": "of {{count}} min this month"
-    },
     "legend": {
       "less": "Less",
-      "more": "More"
+      "more": "More",
+      "threshold": "Any practice at all counts toward your streak."
+    },
+    "state": {
+      "secured": {
+        "headline_one": "{{count}}-day streak",
+        "headline_other": "{{count}}-day streak",
+        "sub": "Today is counted. Come back tomorrow to keep it going."
+      },
+      "atRisk": {
+        "headline_one": "{{count}}-day streak at risk",
+        "headline_other": "{{count}}-day streak at risk",
+        "sub_one": "Practise {{count}} minute today to keep it.",
+        "sub_other": "Practise {{count}} minutes today to keep it."
+      },
+      "justLost": {
+        "headline": "Start a new streak",
+        "sub_one": "Your best run was {{count}} day. Beat it.",
+        "sub_other": "Your best run was {{count}} days. Beat it."
+      },
+      "neverStarted": {
+        "headline": "Start your first streak",
+        "sub_one": "One role play of {{count}} minute or more starts it.",
+        "sub_other": "One role play of {{count}} minutes or more starts it."
+      }
+    },
+    "today": {
+      "secured": "Counted today",
+      "notSecured": "Not counted yet",
+      "goal": "{{done}} of {{goal}} min daily goal"
+    },
+    "milestone": {
+      "nextBadge_one": "{{count}} day to {{badge}}",
+      "nextBadge_other": "{{count}} days to {{badge}}",
+      "toPersonalBest_one": "{{count}} day to your personal best",
+      "toPersonalBest_other": "{{count}} days to your personal best",
+      "newPersonalBest": "New personal best"
+    },
+    "stats": {
+      "personalBest_one": "Best {{count}} day",
+      "personalBest_other": "Best {{count}} days",
+      "totalMinutes_one": "{{count}} min practised in total",
+      "totalMinutes_other": "{{count}} min practised in total"
+    },
+    "cta": {
+      "start": "Start a role play",
+      "keepItAlive": "Keep it alive",
+      "restart": "Start again"
+    },
+    "a11y": {
+      "ringLabel_one": "{{current}}-day streak, {{remaining}} day to {{target}}",
+      "ringLabel_other": "{{current}}-day streak, {{remaining}} days to {{target}}",
+      "ringLabelComplete": "{{current}}-day streak, your longest yet",
+      "previewLabel": "Recent practice: practised on {{active}} of the last {{total}} periods",
+      "expand": "Show full practice history",
+      "collapse": "Hide full practice history",
+      "readoutEmpty": "Hover or focus a period to see its practice minutes"
+    },
+    "nav": {
+      "value_one": "{{count}}-day practice streak",
+      "value_other": "{{count}}-day practice streak",
+      "atRisk_one": "{{count}}-day practice streak, not counted today",
+      "atRisk_other": "{{count}}-day practice streak, not counted today"
+    },
+    "postSession": {
+      "started": "Streak started",
+      "extended_one": "Streak extended to {{count}} day",
+      "extended_other": "Streak extended to {{count}} days",
+      "nextBadge_one": "{{count}} more day to {{badge}}",
+      "nextBadge_other": "{{count}} more days to {{badge}}"
     }
   },
   "analytics": {
@@ -522,11 +584,41 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
-            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
-            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
-            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
-            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
+            "1": [
+              "Poor",
+              "Not helpful",
+              "Very bad",
+              "Disappointing",
+              "Unhelpful"
+            ],
+            "2": [
+              "Below average",
+              "Lacking",
+              "Unsatisfying",
+              "Weak",
+              "Needs improvement"
+            ],
+            "3": [
+              "Neutral",
+              "Okay",
+              "Average",
+              "Moderate",
+              "Acceptable"
+            ],
+            "4": [
+              "Good",
+              "Helpful",
+              "Satisfying",
+              "Effective",
+              "Worthwhile"
+            ],
+            "5": [
+              "Excellent",
+              "Amazing",
+              "Highly useful",
+              "Outstanding",
+              "Very effective"
+            ]
           }
         }
       }

@@ -63,6 +63,7 @@ import { ShareForReview } from "./share-for-review";
 import ShinyText from "./shiny-text";
 import SkillsTab from "./skills-tab";
 import { StarRating } from "./star-rating";
+import StreakPill from "./streak-pill";
 import TagGroup from "./tag-group";
 import TermsAndAgreement from "./terms-and-agreement";
 import TextField from "./text-field";
@@ -132,6 +133,7 @@ export {
   TagGroup,
   TextField,
   TimePicker,
+  StreakPill,
   ToggleButtonGroup,
   UserInfo,
   CreditInfo,

@@ -134,7 +134,15 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.POST,
         body: { enableRecommendations: true, languageCode },
       }),
-      invalidatesTags: [TAG_TYPES.SIMULATION_LOGS, TAG_TYPES.SIMULATION_CREDITS],
+      // The streak is written asynchronously off the session-end event, not by
+      // this request, so this invalidation alone can refetch before the write
+      // lands. It is one of several refresh triggers, not the only one — see
+      // usePracticeStreakSummary and usePostSessionStreak.
+      invalidatesTags: [
+        TAG_TYPES.SIMULATION_LOGS,
+        TAG_TYPES.SIMULATION_CREDITS,
+        TAG_TYPES.PRACTICE_STREAK,
+      ],
     }),
 
     /**

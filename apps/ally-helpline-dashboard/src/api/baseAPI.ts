@@ -161,6 +161,11 @@ export const baseAPI = createApi({
     TAG_TYPES.LEARN_TRACKS,
     TAG_TYPES.LEARN_TRACK_DETAIL,
     TAG_TYPES.LEARN_TRACK_NEXT,
+    // Practice streak. Must be registered here as well as used in
+    // providesTags/invalidatesTags — RTK Query silently ignores tags that are
+    // not declared on the API, so an unregistered tag makes the invalidation
+    // dead code rather than an error.
+    TAG_TYPES.PRACTICE_STREAK,
   ],
   endpoints: () => ({}),
 });

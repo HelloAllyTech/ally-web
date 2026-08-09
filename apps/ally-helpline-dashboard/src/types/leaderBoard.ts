@@ -6,6 +6,8 @@ export interface getLeaderBoardList {
     rank: number;
     minutesPlayed: number;
     badgeCount: number;
+    /** All-time consecutive-active-days streak, not window-scoped. */
+    currentStreak: number;
   }[];
   hideRankInCommunity?: boolean;
   window: string;
@@ -19,6 +21,8 @@ export interface getCurrentUser {
   rank: number;
   minutesPlayed: number;
   badgeCount: number;
+  /** All-time consecutive-active-days streak, not window-scoped. */
+  currentStreak: number;
   window: string;
 }
 

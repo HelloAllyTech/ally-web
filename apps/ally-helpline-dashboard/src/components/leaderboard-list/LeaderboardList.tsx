@@ -3,7 +3,7 @@ import { FC, useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
-import { ToggleButtonGroup } from "@src/components";
+import { StreakPill, ToggleButtonGroup } from "@src/components";
 import { cn } from "@utils";
 
 import type { TFunction } from "i18next";
@@ -15,7 +15,27 @@ export interface LeaderboardUser {
   profileImageUrl?: string;
   minutesPlayed: number;
   badgeCount: number;
+  /**
+   * All-time consecutive-active-days streak. Optional so the component keeps
+   * rendering against an API that has not shipped the field yet.
+   */
+  currentStreak?: number;
 }
+
+/**
+ * Column widths, declared once. Header, row and skeleton all read from here so
+ * they cannot drift apart.
+ *
+ * Narrow screens drop columns rather than squeezing them: below `sm` everything
+ * but the name collapses into a single meta line under it. Streak outranks
+ * badges because it changes daily and badges accumulate.
+ */
+const COL = {
+  rank: "w-16 shrink-0",
+  duration: "w-40 hidden md:block shrink-0",
+  streak: "w-24 hidden sm:block shrink-0",
+  badges: "w-24 hidden lg:block shrink-0",
+} as const;
 
 export type LeaderboardTimeFilter = "LAST_WEEK" | "LAST_MONTH" | "LAST_YEAR" | "ALL_TIME";
 
@@ -155,7 +175,7 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({
     >
       {/* Rank */}
       {!hideRank && (
-        <div className="w-16 flex justify-center">
+        <div className={cn(COL.rank, "flex justify-center")}>
           {isTopThree ? (
             <span
               className={cn(
@@ -172,27 +192,54 @@ const LeaderboardRow: FC<LeaderboardRowProps> = ({
       )}
 
       {/* User Info */}
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex items-center gap-4 flex-1 min-w-0">
         <UserAvatar user={user} />
-        <div className="flex items-center gap-2">
-          <span className="text-typography-900 text-base font-medium">{user.name}</span>
-          {isCurrentUser && (
-            <span className="px-2 py-0.5 bg-primary-500 text-white text-xs font-medium rounded-full">
-              {youLabel ?? t("community.you")}
-            </span>
-          )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-typography-900 text-base font-medium truncate">{user.name}</span>
+            {isCurrentUser && (
+              <span className="shrink-0 px-2 py-0.5 bg-primary-500 text-white text-xs font-medium rounded-full">
+                {youLabel ?? t("community.you")}
+              </span>
+            )}
+          </div>
+          {/* Below sm the streak/duration/badge columns are hidden, so the same
+              figures move here rather than being dropped from the page. */}
+          <div className="sm:hidden mt-0.5 text-xs text-typography-600">
+            {user.currentStreak !== undefined && user.currentStreak > 0 && (
+              <>
+                <span>{t("community.table.streakValue", { count: user.currentStreak })}</span>
+                <span className="mx-1.5">·</span>
+              </>
+            )}
+            <span>{formatMinutesToHoursAndMinutes(user.minutesPlayed, t)}</span>
+            <span className="mx-1.5">·</span>
+            <span>{t("community.table.badgeValue", { count: user.badgeCount })}</span>
+          </div>
         </div>
       </div>
 
       {/* Total Duration */}
-      <div className="w-40 text-right">
+      <div className={cn(COL.duration, "text-right")}>
         <span className="text-typography-800 text-base">
           {formatMinutesToHoursAndMinutes(user.minutesPlayed, t)}
         </span>
       </div>
 
+      {/* Streak */}
+      <div className={cn(COL.streak, "text-center")}>
+        {user.currentStreak !== undefined && user.currentStreak > 0 ? (
+          <StreakPill
+            days={user.currentStreak}
+            ariaLabel={t("community.table.streakValue", { count: user.currentStreak })}
+          />
+        ) : (
+          <span className="text-typography-500 text-base">—</span>
+        )}
+      </div>
+
       {/* Badges */}
-      <div className="w-24 text-center">
+      <div className={cn(COL.badges, "text-center")}>
         <span className="text-typography-800 text-base">{user.badgeCount}</span>
       </div>
     </div>
@@ -208,23 +255,28 @@ const SkeletonRow: FC<{ isLast?: boolean }> = ({ isLast }) => {
       )}
     >
       {/* Rank skeleton */}
-      <div className="w-16 flex justify-center">
+      <div className={cn(COL.rank, "flex justify-center")}>
         <div className="w-8 h-8 rounded-full bg-neutral-200" />
       </div>
 
       {/* User Info skeleton */}
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex items-center gap-4 flex-1 min-w-0">
         <div className="w-12 h-12 rounded-full bg-neutral-200" />
         <div className="h-4 w-32 bg-neutral-200 rounded" />
       </div>
 
       {/* Total Duration skeleton */}
-      <div className="w-40 flex justify-end">
+      <div className={cn(COL.duration, "justify-end md:flex")}>
         <div className="h-4 w-20 bg-neutral-200 rounded" />
       </div>
 
+      {/* Streak skeleton */}
+      <div className={cn(COL.streak, "justify-center sm:flex")}>
+        <div className="h-4 w-10 bg-neutral-200 rounded" />
+      </div>
+
       {/* Badges skeleton */}
-      <div className="w-24 flex justify-center">
+      <div className={cn(COL.badges, "justify-center lg:flex")}>
         <div className="h-4 w-8 bg-neutral-200 rounded" />
       </div>
     </div>
@@ -345,10 +397,15 @@ export const LeaderboardList: FC<LeaderboardListProps> = ({
   const renderTableHeader = () => {
     return (
       <div className="flex items-center py-3 px-4 text-typography-600 text-sm font-medium border-b border-border-light">
-        {!hideRank && <div className="w-16 text-center">{t("community.table.rank")}</div>}
-        <div className="flex-1">{t("community.table.user")}</div>
-        <div className="w-40 text-right">{t("community.table.totalDuration")}</div>
-        <div className="w-24 text-center">{t("community.table.badges")}</div>
+        {!hideRank && (
+          <div className={cn(COL.rank, "text-center")}>{t("community.table.rank")}</div>
+        )}
+        <div className="flex-1 min-w-0">{t("community.table.user")}</div>
+        <div className={cn(COL.duration, "text-right")}>{t("community.table.totalDuration")}</div>
+        <div className={cn(COL.streak, "text-center")} title={t("community.table.streakHint")}>
+          {t("community.table.streak")}
+        </div>
+        <div className={cn(COL.badges, "text-center")}>{t("community.table.badges")}</div>
       </div>
     );
   };
