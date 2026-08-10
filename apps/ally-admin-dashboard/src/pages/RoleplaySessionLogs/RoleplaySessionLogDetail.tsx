@@ -633,6 +633,78 @@ export const RoleplaySessionLogDetail: FC = () => {
         </section>
       )}
 
+      {/* Language glossary (delivery + retrieval + avoid-list adherence) */}
+      {data.languageGlossary && (
+        <section className="mt-6">
+          <h2 className="text-lg font-secondary text-typography-900 mb-2">Language glossary</h2>
+          <p className="text-xs text-typography-500 mb-2">
+            {data.languageGlossary.active
+              ? "Delivered to the agent this session; retrieval + avoid-list adherence below."
+              : "Not delivered this session (no start-metrics provenance) — adherence below is scanned from the transcript regardless."}
+          </p>
+          <SectionCard>
+            <Field label="Delivered" value={data.languageGlossary.active ? "Yes" : "No"} />
+            <Field
+              label="Tier 0 style card"
+              value={formatNumber(data.languageGlossary.tier0Chars)}
+            />
+            <Field label="Tier 0 tokens" value={formatNumber(data.languageGlossary.tier0Tokens)} />
+            <Field
+              label="Tier 1 sections shipped"
+              value={formatNumber(data.languageGlossary.tier1SectionsShipped)}
+            />
+            <Field
+              label="Turns with retrieval"
+              value={`${formatNumber(data.languageGlossary.turnsWithGlossaryRetrieval)} / ${formatNumber(
+                data.languageGlossary.totalTurns,
+              )}`}
+            />
+            <Field
+              label="Avoid-list violations"
+              value={formatNumber(data.languageGlossary.adherence?.totalViolations ?? null)}
+            />
+          </SectionCard>
+          {data.languageGlossary.sectionHitCounts.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              {data.languageGlossary.sectionHitCounts.map(h => (
+                <span
+                  key={h.sectionCode}
+                  className="rounded bg-neutral-100 px-2 py-0.5 text-typography-700"
+                >
+                  {h.sectionCode}: {h.count}
+                </span>
+              ))}
+            </div>
+          )}
+          {data.languageGlossary.adherence &&
+            data.languageGlossary.adherence.violations.length > 0 && (
+              <div className="mt-3 flex flex-col gap-2">
+                {data.languageGlossary.adherence.violations.map(v => (
+                  <div
+                    key={`${v.sectionCode}-${v.term}`}
+                    className="rounded-lg border border-border-light bg-white p-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="rounded px-2 py-0.5 font-medium bg-orange-100 text-orange-900">
+                        “{v.term}”
+                      </span>
+                      <span className="rounded bg-neutral-100 px-2 py-0.5 text-typography-700">
+                        {v.sectionCode}
+                      </span>
+                      <span className="text-typography-500">{v.count}×</span>
+                    </div>
+                    {v.examples.length > 0 && (
+                      <p className="mt-1 text-xs text-typography-500 whitespace-pre-wrap">
+                        {v.examples.join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+        </section>
+      )}
+
       {/* Recording & learner feedback */}
       {(data.recording || data.feedback) && (
         <section className="mt-6">
