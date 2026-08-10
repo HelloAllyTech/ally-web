@@ -185,6 +185,8 @@ export interface RoleplaySessionLogDetail extends RoleplaySessionLogRow {
   languageQuality: RoleplaySessionLanguageQuality | null;
   /** Conversation-drift judgment (latest run); null when not drift-judged. */
   drift: RoleplaySessionDrift | null;
+  /** Glossary delivery/retrieval/adherence; null for non-glossary sessions. */
+  languageGlossary: RoleplaySessionGlossary | null;
 }
 
 export interface RoleplaySessionLogsResponse {
@@ -271,6 +273,46 @@ export interface RoleplaySessionDrift {
   sessionDrifted: boolean | null;
   firstDriftTurn: number | null;
   turns: RoleplaySessionDriftTurn[];
+}
+
+/** One avoid-listed term found in the session's agent utterances. */
+export interface RoleplaySessionGlossaryViolation {
+  term: string;
+  sectionCode: string;
+  count: number;
+  examples: string[];
+}
+
+/** Deterministic avoid-list scan of this session's agent transcript. */
+export interface RoleplaySessionGlossaryAdherence {
+  agentMessageCount: number;
+  totalViolations: number;
+  violations: RoleplaySessionGlossaryViolation[];
+}
+
+/** One Tier 1 glossary section's retrieval-hit count within the session. */
+export interface RoleplaySessionGlossarySectionHit {
+  sectionCode: string;
+  count: number;
+}
+
+/**
+ * Language-glossary delivery + retrieval + adherence for this session.
+ * `active: false` means the session never received a glossary (English, the
+ * language has nothing published, or the simulation's canary gate was off).
+ */
+export interface RoleplaySessionGlossary {
+  active: boolean;
+  tier0Chars: number | null;
+  tier0Tokens: number | null;
+  tier1SectionsShipped: number | null;
+  /** sectionCode -> published version this session was served. */
+  versions: Record<string, number> | null;
+  totalTurns: number;
+  turnsWithGlossaryRetrieval: number;
+  sectionHitCounts: RoleplaySessionGlossarySectionHit[];
+  /** null when the language defines no avoid-terms to check. */
+  adherence: RoleplaySessionGlossaryAdherence | null;
 }
 
 export interface RoleplaySessionScenarioVersion {
