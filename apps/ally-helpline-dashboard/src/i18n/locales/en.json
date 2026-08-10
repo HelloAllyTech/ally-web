@@ -59,7 +59,8 @@
     },
     "draggableArea": {
       "text": "Drag & drop or <0>choose</0> a {{extensions}} file under {{size}}"
-    }
+    },
+    "practiceAgain": "Practise again"
   },
   "carousel": {
     "slides": {
@@ -262,12 +263,18 @@
       "notFound": {
         "title": "Scenario not found",
         "desc": "The scenario you are looking for does not exist."
-      }
+      },
+      "completedChip_one": "Completed once",
+      "completedChip_other": "Completed {{count}} times"
     },
     "card": {
       "imageAlt": "{{title}} {{type}} cover",
       "imageUnavailable": "Image not available",
       "comingSoon": "Coming Soon",
+      "completed_one": "Completed",
+      "completed_other": "Completed · {{count}}×",
+      "completedAria_one": "Completed once",
+      "completedAria_other": "Completed {{count}} times",
       "simulationsCount": "{{count}} Simulation",
       "simulationsCount_plural": "{{count}} Simulations",
       "ariaLabel": "Select {{title}} scenario",

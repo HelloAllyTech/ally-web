@@ -11,6 +11,12 @@ export interface ScenarioDetailsCardProps {
   title: string;
   noCredits?: boolean;
   triggerWarnings?: TriggerChipItemWarning[];
+  /**
+   * How many times the learner has completed this scenario. Drives the
+   * "Completed" chip and switches the CTA to "Practise again". Undefined or
+   * 0 leaves the card exactly as it was.
+   */
+  attemptCount?: number;
 }
 
 export interface TriggerChipItemWarning {

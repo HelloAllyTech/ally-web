@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 import { ChipGroup, htmlToPlainText } from "@ally-ui-mono/ui-shared";
+import { TickGreenBackground } from "@assets";
 import { CircularProgress } from "@components";
 
 import { scenarioDescriptionStyle } from "./constants";
@@ -18,10 +19,15 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
   totalScenarios,
   completedScenarios = 0,
   triggerWarnings,
+  attemptCount = 0,
 }) => {
   const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
   const isPathway = totalScenarios !== undefined;
+  // Standalone scenarios only: pathways/cases/courses already carry their own
+  // progress ring. A COMING_SOON scenario can't have been played, so the two
+  // cover badges are mutually exclusive and share the one corner slot.
+  const isCompleted = !isPathway && !isComingSoon && attemptCount > 0;
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -50,6 +56,15 @@ const ScenarioCard: FC<ScenarioCardProps> = ({
       {isComingSoon && (
         <span className="py-1 px-2 rounded-[4px] absolute top-2 right-2 text-xs font-primary text-typography-800 bg-white border-[0.5px] border-secondary-700">
           {t("learn.card.comingSoon")}
+        </span>
+      )}
+      {isCompleted && (
+        <span
+          className="py-1 px-2 rounded-[4px] absolute top-2 right-2 inline-flex items-center gap-1 text-xs font-medium font-primary text-success-800 bg-white border-[0.5px] border-success-500"
+          aria-label={t("learn.card.completedAria", { count: attemptCount })}
+        >
+          <TickGreenBackground className="w-3.5 h-3.5 flex-shrink-0" aria-hidden />
+          <span aria-hidden>{t("learn.card.completed", { count: attemptCount })}</span>
         </span>
       )}
     </div>
