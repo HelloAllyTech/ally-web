@@ -59,7 +59,8 @@
     },
     "draggableArea": {
       "text": "ड्रॅग और ड्रॉप करें या <0>चुनें</0> {{extensions}} फ़ाइल ({{size}} से कम)"
-    }
+    },
+    "practiceAgain": "फिर से अभ्यास करें"
   },
   "carousel": {
     "slides": {
@@ -87,7 +88,10 @@
       "scribeLogs": "लॉग लिखें",
       "roleplayLogs": "भूमिका निभाने के लॉग",
       "statistics": "आँकड़े",
-      "search": "खोजें"
+      "search": "खोजें",
+      "organizationSettings": "संगठन सेटिंग्स",
+      "organizationSettingsTag": "परीक्षण",
+      "allyAdmin": "Ally एडमिन"
     },
     "logout": {
       "title": {
@@ -119,7 +123,13 @@
       "rank": "रैंक",
       "user": "यूज़र",
       "totalDuration": "कुल अवधि",
-      "badges": "बॅजेस"
+      "badges": "बॅजेस",
+      "streak": "स्ट्रीक",
+      "streakHint": "अब तक की मौजूदा अभ्यास स्ट्रीक",
+      "streakValue_one": "{{count}} दिन की स्ट्रीक",
+      "streakValue_other": "{{count}} दिन की स्ट्रीक",
+      "badgeValue_one": "{{count}} बैज",
+      "badgeValue_other": "{{count}} बैज"
     }
   },
   "achievements": {
@@ -206,7 +216,8 @@
     "tabs": {
       "simulations": "सिम्युलेशन्स",
       "tracks": "सीखने के वैकल्पिक क्रम",
-      "cases": "केसेस"
+      "cases": "केसेस",
+      "courses": "कोर्स"
     },
     "header": {
       "prefix": "उपयोग करें",
@@ -252,12 +263,18 @@
       "notFound": {
         "title": "सिनारियो नहीं मिला",
         "desc": "आप जिस सिनारियो को खोज रहे हैं, वह मौजूद नहीं है"
-      }
+      },
+      "completedChip_one": "एक बार पूर्ण",
+      "completedChip_other": "{{count}} बार पूर्ण"
     },
     "card": {
       "imageAlt": "{{title}} {{type}} कवर",
       "imageUnavailable": "चित्र उपलब्ध नहीं है",
       "comingSoon": "जल्द आ रहा है",
+      "completed_one": "पूर्ण",
+      "completed_other": "पूर्ण · {{count}}×",
+      "completedAria_one": "एक बार पूर्ण",
+      "completedAria_other": "{{count}} बार पूर्ण",
       "simulationsCount": "{{count}} सिम्युलेशन / सिम्युलेशन्स",
       "simulationsCount_plural": "{{count}} सिम्युलेशन / सिम्युलेशन्स",
       "ariaLabel": "{{title}} सिनारियो चुनें",
@@ -270,7 +287,8 @@
       "scenarios": "फिलहाल कोई सिनारियो उपलब्ध नहीं है",
       "pathways": "फिलहाल कोई शिक्षण क्रम उपलब्ध नहीं है",
       "cases": "फिलहाल कोई केस उपलब्ध नहीं है",
-      "refresh": "पेज रिफ्रेश करें"
+      "refresh": "पेज रिफ्रेश करें",
+      "courses": "फ़िलहाल कोई कोर्स उपलब्ध नहीं है"
     },
     "aria": {
       "availableCases": "उपलब्ध केस",
@@ -281,7 +299,8 @@
       "prefix": "अपना _______ चुनें",
       "case": "केस",
       "track": "ट्रॅक",
-      "scenario": "घटना"
+      "scenario": "घटना",
+      "course": "कोर्स"
     },
     "details": {
       "progress": "{{total}} में से {{completed}} पूर्ण हुए",
@@ -300,6 +319,92 @@
       }
     },
     "evaluationChecklist": "मूल्यांकन चेकलिस्ट"
+  },
+  "practiceStreak": {
+    "title": "अभ्यास स्ट्रीक",
+    "ariaLabel": "अभ्यास मिनटों का हीटमैप",
+    "minutesValue_one": "{{count}} मिनट",
+    "minutesValue_other": "{{count}} मिनट",
+    "error": "आपकी अभ्यास स्ट्रीक लोड नहीं हो सकी।",
+    "retry": "पुनः प्रयास करें",
+    "groupBy": {
+      "day": "दिन",
+      "week": "सप्ताह",
+      "month": "महीना"
+    },
+    "legend": {
+      "less": "कम",
+      "more": "ज़्यादा",
+      "threshold": "थोड़ा-सा भी अभ्यास आपकी स्ट्रीक में गिना जाता है।"
+    },
+    "state": {
+      "secured": {
+        "headline_one": "{{count}} दिन की स्ट्रीक",
+        "headline_other": "{{count}} दिन की स्ट्रीक",
+        "sub": "आज का दिन गिना जा चुका है। इसे जारी रखने के लिए कल फिर आएँ।"
+      },
+      "atRisk": {
+        "headline_one": "{{count}} दिन की स्ट्रीक ख़तरे में",
+        "headline_other": "{{count}} दिन की स्ट्रीक ख़तरे में",
+        "sub_one": "इसे बनाए रखने के लिए आज {{count}} मिनट अभ्यास करें।",
+        "sub_other": "इसे बनाए रखने के लिए आज {{count}} मिनट अभ्यास करें।"
+      },
+      "justLost": {
+        "headline": "नई स्ट्रीक शुरू करें",
+        "sub_one": "आपका सर्वश्रेष्ठ रिकॉर्ड {{count}} दिन का था। इसे पीछे छोड़ें।",
+        "sub_other": "आपका सर्वश्रेष्ठ रिकॉर्ड {{count}} दिन का था। इसे पीछे छोड़ें।"
+      },
+      "neverStarted": {
+        "headline": "अपनी पहली स्ट्रीक शुरू करें",
+        "sub_one": "{{count}} मिनट या उससे ज़्यादा का एक रोल प्ले इसे शुरू कर देता है।",
+        "sub_other": "{{count}} मिनट या उससे ज़्यादा का एक रोल प्ले इसे शुरू कर देता है।"
+      }
+    },
+    "today": {
+      "secured": "आज गिना गया",
+      "notSecured": "अभी गिना नहीं गया",
+      "goal": "{{goal}} मिनट के दैनिक लक्ष्य में से {{done}}"
+    },
+    "milestone": {
+      "nextBadge_one": "{{badge}} तक {{count}} दिन",
+      "nextBadge_other": "{{badge}} तक {{count}} दिन",
+      "toPersonalBest_one": "अपने सर्वश्रेष्ठ तक {{count}} दिन",
+      "toPersonalBest_other": "अपने सर्वश्रेष्ठ तक {{count}} दिन",
+      "newPersonalBest": "नया सर्वश्रेष्ठ रिकॉर्ड"
+    },
+    "stats": {
+      "personalBest_one": "सर्वश्रेष्ठ {{count}} दिन",
+      "personalBest_other": "सर्वश्रेष्ठ {{count}} दिन",
+      "totalMinutes_one": "कुल {{count}} मिनट अभ्यास",
+      "totalMinutes_other": "कुल {{count}} मिनट अभ्यास"
+    },
+    "cta": {
+      "start": "रोल प्ले शुरू करें",
+      "keepItAlive": "इसे बनाए रखें",
+      "restart": "फिर से शुरू करें"
+    },
+    "a11y": {
+      "ringLabel_one": "{{current}} दिन की स्ट्रीक, {{target}} तक {{remaining}} दिन",
+      "ringLabel_other": "{{current}} दिन की स्ट्रीक, {{target}} तक {{remaining}} दिन",
+      "ringLabelComplete": "{{current}} दिन की स्ट्रीक, अब तक की सबसे लंबी",
+      "previewLabel": "हाल का अभ्यास: पिछली {{total}} अवधियों में से {{active}} में अभ्यास किया",
+      "expand": "पूरा अभ्यास इतिहास दिखाएँ",
+      "collapse": "पूरा अभ्यास इतिहास छिपाएँ",
+      "readoutEmpty": "किसी अवधि के अभ्यास मिनट देखने के लिए उस पर होवर करें या फ़ोकस करें"
+    },
+    "nav": {
+      "value_one": "{{count}} दिन की अभ्यास स्ट्रीक",
+      "value_other": "{{count}} दिन की अभ्यास स्ट्रीक",
+      "atRisk_one": "{{count}} दिन की अभ्यास स्ट्रीक, आज गिनी नहीं गई",
+      "atRisk_other": "{{count}} दिन की अभ्यास स्ट्रीक, आज गिनी नहीं गई"
+    },
+    "postSession": {
+      "started": "स्ट्रीक शुरू हुई",
+      "extended_one": "स्ट्रीक बढ़कर {{count}} दिन हुई",
+      "extended_other": "स्ट्रीक बढ़कर {{count}} दिन हुई",
+      "nextBadge_one": "{{badge}} तक {{count}} दिन और",
+      "nextBadge_other": "{{badge}} तक {{count}} दिन और"
+    }
   },
   "organizationMetrics": {
     "subtitle": "चुनी गई समयावधि में पूरे संगठन का उपयोग",
@@ -448,7 +553,10 @@
       "timeline": "सेशन टाइमलाइन",
       "strengths": "दिखाई गई क्षमताएँ और कौशल",
       "areasForGrowth": "विकास के क्षेत्र",
-      "recommended": "अनुशंसित"
+      "recommended": "अनुशंसित",
+      "strengthsEmpty": "इस सत्र के लिए कोई क्षमता चिह्नित नहीं की गई",
+      "areasForGrowthEmpty": "इस सत्र के लिए सुधार का कोई क्षेत्र चिह्नित नहीं किया गया",
+      "feedbackUnavailable": "इस सत्र के लिए फ़ीडबैक तैयार नहीं किया जा सका"
     },
     "tabs": {
       "annotatedTranscript": "नोट्स सहित शब्दांकन",
@@ -474,11 +582,41 @@
           "4": "हाँ",
           "5": "बिल्कुल",
           "tags": {
-            "1": ["खराब", "सहायक नहीं", "बहुत बुरा", "निराशाजनक", "अनुपयोगी"],
-            "2": ["औसत से कम", "कमज़ोर", "असंतोषजनक", "अपर्याप्त", "सुधार की ज़रूरत"],
-            "3": ["तटस्थ", "ठीक है", "औसत", "मध्यम", "स्वीकार्य"],
-            "4": ["अच्छा", "सहायक", "संतोषजनक", "प्रभावी", "उपयोगी"],
-            "5": ["उत्कृष्ट", "अद्भुत", "बहुत उपयोगी", "शानदार", "अत्यंत प्रभावी"]
+            "1": [
+              "खराब",
+              "सहायक नहीं",
+              "बहुत बुरा",
+              "निराशाजनक",
+              "अनुपयोगी"
+            ],
+            "2": [
+              "औसत से कम",
+              "कमज़ोर",
+              "असंतोषजनक",
+              "अपर्याप्त",
+              "सुधार की ज़रूरत"
+            ],
+            "3": [
+              "तटस्थ",
+              "ठीक है",
+              "औसत",
+              "मध्यम",
+              "स्वीकार्य"
+            ],
+            "4": [
+              "अच्छा",
+              "सहायक",
+              "संतोषजनक",
+              "प्रभावी",
+              "उपयोगी"
+            ],
+            "5": [
+              "उत्कृष्ट",
+              "अद्भुत",
+              "बहुत उपयोगी",
+              "शानदार",
+              "अत्यंत प्रभावी"
+            ]
           }
         }
       }
@@ -488,6 +626,20 @@
       "details": "विवरण",
       "scenario": "सिनारियो :",
       "shareForReview": "पुनरावलोकन के लिए शेयर करें"
+    },
+    "nextChallenge": {
+      "title": "अगली चुनौती",
+      "start": "शुरू करें",
+      "difficulty": {
+        "EASY": "आसान",
+        "MEDIUM": "मध्यम",
+        "HARD": "कठिन"
+      },
+      "reason": {
+        "levelUp": "बढ़िया काम! अब आप {{difficulty}} परिदृश्य के साथ अगले स्तर पर जाने के लिए तैयार हैं।",
+        "keepPracticing": "एक और {{difficulty}} परिदृश्य के साथ अपने कौशल को निखारते रहें।",
+        "buildConfidence": "{{difficulty}} परिदृश्य के साथ आत्मविश्वास फिर से बनाएँ, फिर आगे बढ़ें।"
+      }
     }
   },
   "review": {
@@ -501,8 +653,8 @@
       "latest": "सबसे नया",
       "mostReviewed": "सबसे अधिक जाँचा गया",
       "undiscovered": "नहीं मिला",
-      "read": "Read",
-      "unread": "Unread"
+      "read": "पढ़े हुए",
+      "unread": "अपठित"
     },
     "empty": {
       "title": "अभी तक किसी सेशन को साझा नहीं किया गया है",
@@ -613,10 +765,10 @@
       }
     },
     "sort": {
-      "label": "Sort by",
-      "latest": "Latest First",
-      "mostViewed": "Most Viewed First",
-      "mostCommented": "Most Commented First"
+      "label": "इसके अनुसार क्रमबद्ध करें",
+      "latest": "नवीनतम पहले",
+      "mostViewed": "सर्वाधिक देखे गए पहले",
+      "mostCommented": "सर्वाधिक टिप्पणी वाले पहले"
     }
   },
   "callFeedback": {
@@ -725,6 +877,7 @@
     "save": "रिपोर्ट सेव करें",
     "saving": "सेव किया जा रहा है...",
     "enhance": "विस्तार करें",
+    "enhanceFailed": "इस टेक्स्ट को बेहतर नहीं बनाया जा सका। कृपया पुनः प्रयास करें।",
     "tabs": {
       "returnToSelf": "पूछे गए मुक्त-उत्तर प्रश्नों की संख्या",
       "sessionSummary": "सेशन का सारांश",
@@ -873,12 +1026,12 @@
       "upload_hint": "केवल PNG या JPG फ़ाइलें, 1:1 रेशियो (अधिकतम 2MB साइज़)",
       "appearance": {
         "title": "दिखावट",
-        "current": "Current",
-        "current_desc": "The classic Ally look",
+        "current": "मौजूदा",
+        "current_desc": "Ally का क्लासिक रूप",
         "claude": "Claude",
-        "claude_desc": "Warm, airy, and soft",
+        "claude_desc": "गर्म, खुला और कोमल",
         "carbon": "Carbon",
-        "carbon_desc": "Sharp, precise, and dense"
+        "carbon_desc": "तीक्ष्ण, सटीक और सघन"
       }
     }
   },
@@ -899,7 +1052,30 @@
       "saving": "सहेज रहा है…",
       "saved": "सहेजा गया",
       "saveError": "नोट सहेज नहीं सके",
-      "empty": "आपके संगठन के लिए कोई नोट फ़ील्ड कॉन्फ़िगर नहीं की गई हैं।"
+      "empty": "आपके संगठन के लिए कोई नोट फ़ील्ड कॉन्फ़िगर नहीं की गई हैं।",
+      "voice": {
+        "record": "नोट रिकॉर्ड करें",
+        "listening": "सुन रहे हैं…",
+        "paused": "रुका हुआ",
+        "pause": "रोकें",
+        "resume": "जारी रखें",
+        "stop": "बंद करें",
+        "ready": "रिकॉर्डिंग तैयार है",
+        "generate": "नोट्स तैयार करें",
+        "generating": "नोट्स तैयार किए जा रहे हैं…",
+        "discard": "हटाएँ",
+        "micDenied": "माइक्रोफ़ोन की अनुमति नहीं मिली। रिकॉर्ड करने के लिए इसे अपनी ब्राउज़र सेटिंग्स में चालू करें।",
+        "unsupported": "इस ब्राउज़र में ऑडियो रिकॉर्डिंग समर्थित नहीं है।",
+        "noSpeech": "हमें कोई आवाज़ सुनाई नहीं दी। कृपया फिर से रिकॉर्ड करें।",
+        "generateError": "रिकॉर्डिंग से नोट्स तैयार नहीं किए जा सके। कृपया पुनः प्रयास करें।",
+        "generated": "आपकी रिकॉर्डिंग से नोट्स तैयार हो गए",
+        "nothingExtracted": "हमने ऑडियो को टेक्स्ट में बदल दिया, लेकिन उससे कोई फ़ील्ड नहीं भरी जा सकी।",
+        "processing": {
+          "transcribing": "आपकी रिकॉर्डिंग को टेक्स्ट में बदला जा रहा है…",
+          "extracting": "नोट का विवरण निकाला जा रहा है…",
+          "populating": "फ़ील्ड भरी जा रही हैं…"
+        }
+      }
     },
     "table": {
       "counsellorName": "काउंसलर",
@@ -1167,5 +1343,124 @@
     "inhale": "अब साँस लें",
     "hold": "साँस रोकें",
     "exhale": "साँस छोड़ें"
+  },
+  "tracks2": {
+    "breadcrumb": "सीखें",
+    "coursesTitle": "कोर्स",
+    "progress": "{{total}} में से {{completed}}",
+    "trackCompleted": "कोर्स पूर्ण हुआ",
+    "lockedTooltip": "इसे अनलॉक करने के लिए पिछले आइटम पूरे करें",
+    "notFound": "यह कोर्स नहीं मिला",
+    "backToLearn": "सीखें पर वापस",
+    "status": {
+      "completed": "पूर्ण",
+      "inProgress": "जारी है"
+    },
+    "meta": {
+      "quiz": "क्विज़",
+      "questions": "{{count}} प्रश्न",
+      "questions_other": "{{count}} प्रश्न",
+      "passScore": "उत्तीर्ण {{score}}%",
+      "video": "वीडियो",
+      "videoDuration": "{{minutes}} मिनट का वीडियो",
+      "article": "लेख",
+      "journal": "जर्नल",
+      "prompts": "{{count}} प्रॉम्प्ट",
+      "prompts_other": "{{count}} प्रॉम्प्ट",
+      "roleplay": "रोल प्ले",
+      "minScore": "स्कोर {{score}}+",
+      "case": "केस स्टडी"
+    },
+    "continueLearning": {
+      "label": "सीखना जारी रखें"
+    },
+    "player": {
+      "exit": "बाहर निकलें",
+      "prev": "पिछला",
+      "next": "अगला",
+      "finish": "समाप्त करें",
+      "overallProgress": "{{pct}}% पूर्ण",
+      "loadFailed": "यह आइटम लोड नहीं हो सका। कृपया पुनः प्रयास करें।",
+      "retry": "पुनः प्रयास करें"
+    },
+    "celebration": {
+      "sectionCompleteTitle": "सेक्शन पूरा हुआ!",
+      "sectionCompleteBody": "बढ़िया काम — इसी रफ़्तार को बनाए रखें।",
+      "trackCompleteTitle": "कोर्स पूरा हुआ!",
+      "trackCompleteBody": "आपने इस कोर्स का हर आइटम पूरा कर लिया है।",
+      "continue": "जारी रखें",
+      "backToLearn": "सीखें पर वापस",
+      "itemsCompleted": "{{count}} आइटम पूरे हुए"
+    },
+    "article": {
+      "markRead": "पढ़ा हुआ चिह्नित करें",
+      "read": "पढ़ लिया",
+      "keepReading": "आगे बढ़ने के लिए पढ़ते रहें"
+    },
+    "video": {
+      "markWatched": "देखा हुआ चिह्नित करें",
+      "watched": "देख लिया",
+      "watchToUnlock": "आगे बढ़ने के लिए {{pct}}% देखें"
+    },
+    "journal": {
+      "submit": "सबमिट करें",
+      "submitted": "सबमिट हो गया",
+      "placeholder": "अपने विचार लिखें...",
+      "required": "आवश्यक",
+      "saving": "सेव हो रहा है...",
+      "saved": "सेव हो गया",
+      "saveFailed": "सेव नहीं हो सका"
+    },
+    "roleplay": {
+      "intro": "इस परिदृश्य का अभ्यास लाइव रोल प्ले में करें।",
+      "start": "रोल प्ले शुरू करें",
+      "openCase": "केस खोलें",
+      "replay": "फिर से करें",
+      "completed": "पूर्ण"
+    },
+    "quiz": {
+      "intro": {
+        "title": "क्विज़",
+        "questionCount": "{{count}} प्रश्न",
+        "questionCount_other": "{{count}} प्रश्न",
+        "passScore": "उत्तीर्ण अंक: {{score}}%",
+        "attemptsLeft": "{{count}} प्रयास शेष",
+        "attemptsLeft_other": "{{count}} प्रयास शेष",
+        "unlimitedAttempts": "असीमित प्रयास",
+        "start": "क्विज़ शुरू करें",
+        "noAttemptsLeft": "कोई प्रयास शेष नहीं"
+      },
+      "question": {
+        "progress": "प्रश्न {{current}} / {{total}}",
+        "next": "अगला",
+        "back": "पिछला",
+        "submit": "क्विज़ सबमिट करें",
+        "selectPrompt": "एक उत्तर चुनें",
+        "selectMultiple": "जो भी लागू हों, सभी चुनें",
+        "true": "सही",
+        "false": "ग़लत",
+        "orderPrompt": "इन्हें सही क्रम में लगाएँ",
+        "matchPrompt": "बाईं ओर का कोई आइटम चुनें, फिर दाईं ओर उसका मिलान चुनें",
+        "wordCount": "{{count}} / {{min}} शब्द",
+        "aiGraded": "इस उत्तर का मूल्यांकन AI करता है"
+      },
+      "results": {
+        "title": "आपके परिणाम",
+        "passed": "उत्तीर्ण",
+        "failed": "उत्तीर्ण नहीं",
+        "scoreLabel": "स्कोर",
+        "yourAnswer": "आपका उत्तर",
+        "correct": "सही",
+        "incorrect": "ग़लत",
+        "explanation": "स्पष्टीकरण",
+        "feedback": "फ़ीडबैक",
+        "pendingGrading": "कुछ उत्तरों का मूल्यांकन अभी चल रहा है।",
+        "finishGrading": "मूल्यांकन पूरा करें",
+        "grading": "मूल्यांकन हो रहा है...",
+        "retry": "क्विज़ फिर से करें",
+        "next": "अगला",
+        "attemptsUsed": "प्रयास {{used}} / {{max}}"
+      }
+    }
   }
 }
