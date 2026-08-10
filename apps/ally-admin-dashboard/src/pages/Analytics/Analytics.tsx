@@ -23,6 +23,7 @@ import { AnalyticsRange } from "@types";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
 import { AnalyticsAgentTab } from "./tabs/AnalyticsAgentTab";
+import { GlossaryAdherenceTab } from "./tabs/GlossaryAdherenceTab";
 import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
@@ -99,6 +100,18 @@ const TABS: TabDef[] = [
     label: "Language",
     uses: { language: true, range: true },
     render: f => <LanguageQualityTab {...f} />,
+  },
+  {
+    // Deterministic avoid-list adherence — a sibling to the Language tab's
+    // judge-based error rates, but no time range: a scan is triggered
+    // on-demand per language (Rescan), not read over a rolling window, and
+    // glossary_adherence_reports has no occurredAt-per-window field to slice
+    // by. Same per-language drill-in pattern as Language: overview table by
+    // default, pick a language above for its violated terms.
+    id: "glossary",
+    label: "Language glossary",
+    uses: { language: true, range: false },
+    render: f => <GlossaryAdherenceTab {...f} />,
   },
   {
     // Labelled for what it measures. It was "Tokens" while its heading said "AI

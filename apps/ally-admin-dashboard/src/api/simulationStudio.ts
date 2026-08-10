@@ -6,6 +6,9 @@ import {
   GenerateGlossaryResult,
   ConsolidateGlossaryResult,
   BackfillGlossariesOutcome,
+  GlossaryAdherenceOverviewRow,
+  GlossaryAdherenceSummary,
+  BackfillGlossaryAdherenceResult,
   SessionEvent,
   GetSessionEventsQuery,
   SessionEventResponse,
@@ -970,6 +973,37 @@ const simulationStudioAPI = baseAPI.injectEndpoints({
       invalidatesTags: [TAG_TYPES.LANGUAGE_GLOSSARY],
     }),
 
+    /** All-languages adherence rollup — the dashboard's landing view. */
+    getGlossaryAdherenceOverview: builder.query<GlossaryAdherenceOverviewRow[], void>({
+      query: () => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_GLOSSARY_ADHERENCE_OVERVIEW,
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.GLOSSARY_ADHERENCE],
+    }),
+
+    /** Per-language adherence rollup (violation rate + top violated terms). */
+    getGlossaryAdherence: builder.query<GlossaryAdherenceSummary, number>({
+      query: id => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.GET_GLOSSARY_ADHERENCE(id),
+        method: HttpMethod.GET,
+      }),
+      providesTags: [TAG_TYPES.GLOSSARY_ADHERENCE],
+    }),
+
+    /** Rescan: deterministic avoid-list scan of recent sessions for a language. */
+    backfillGlossaryAdherence: builder.mutation<
+      BackfillGlossaryAdherenceResult,
+      { languageId: number; sinceDays?: number; limit?: number }
+    >({
+      query: ({ languageId, ...body }) => ({
+        url: ApiEndpoints.SIMULATION_STUDIO.BACKFILL_GLOSSARY_ADHERENCE(languageId),
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.GLOSSARY_ADHERENCE],
+    }),
+
     getDynamicBranchingInstruction: builder.query<string[], number | void>({
       query: id => ({
         url: ApiEndpoints.SIMULATION_STUDIO.DYNAMIC_BRANCHING_INSTRUCTIONS,
@@ -1487,6 +1521,9 @@ export const {
   useGenerateLanguageGlossaryMutation,
   useConsolidateLanguageGlossaryMutation,
   useBackfillLanguageGlossariesMutation,
+  useGetGlossaryAdherenceOverviewQuery,
+  useGetGlossaryAdherenceQuery,
+  useBackfillGlossaryAdherenceMutation,
   useAcceptGlossaryProposalMutation,
   useRejectGlossaryProposalMutation,
   useGetDynamicBranchingInstructionQuery,

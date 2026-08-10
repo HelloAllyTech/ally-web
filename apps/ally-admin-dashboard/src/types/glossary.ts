@@ -88,3 +88,44 @@ export interface BackfillGlossariesOutcome {
   skipped: string[];
   error?: string;
 }
+
+/**
+ * Deterministic avoid-list adherence (LANGUAGE_GLOSSARY_DESIGN.md §9/§10) —
+ * a regex scan of agent transcripts against the glossary's own `say "X"
+ * (avoid: "Y")` pairs, no LLM. Complements the judge's style dimensions with
+ * a literal rule-following signal. Populated only by an explicit backfill
+ * scan (or, per-session, the read-only preview on the session detail page) —
+ * a language absent from the overview has simply never been scanned.
+ */
+export interface GlossaryTopTerm {
+  term: string;
+  sectionCode: string;
+  count: number;
+}
+
+/** Per-language adherence rollup: violation rate + most-violated terms. */
+export interface GlossaryAdherenceSummary {
+  sessionCount: number;
+  totalViolations: number;
+  avgViolationsPerSession: number;
+  cleanSessions: number;
+  topTerms: GlossaryTopTerm[];
+}
+
+/** One row of the all-languages adherence overview (the dashboard landing view). */
+export interface GlossaryAdherenceOverviewRow {
+  languageId: number;
+  languageLabel: string;
+  /** e.g. "ml-IN" — the same code the page-level language picker uses. */
+  languageValue: string;
+  sessionCount: number;
+  totalViolations: number;
+  avgViolationsPerSession: number;
+  cleanSessions: number;
+}
+
+export interface BackfillGlossaryAdherenceResult {
+  scanned: number;
+  reported: number;
+  skipped: number;
+}

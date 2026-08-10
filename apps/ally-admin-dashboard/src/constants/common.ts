@@ -75,6 +75,10 @@ export const ApiEndpoints = {
     CONSOLIDATE_LANGUAGE_GLOSSARY: (id: string | number) =>
       `/v1/language/${id}/glossary/consolidate`,
     BACKFILL_LANGUAGE_GLOSSARIES: "/v1/language/glossary/backfill",
+    GET_GLOSSARY_ADHERENCE_OVERVIEW: "/v1/language/glossary/adherence/overview",
+    GET_GLOSSARY_ADHERENCE: (id: string | number) => `/v1/language/${id}/glossary/adherence`,
+    BACKFILL_GLOSSARY_ADHERENCE: (id: string | number) =>
+      `/v1/language/${id}/glossary/adherence/backfill`,
     SESSION_EVENTS: "/v1/session-events",
     GET_SESSION_EVENT_BY_ID: (eventId: string) => `/v1/session-events/events/${eventId}`,
     UPDATE_SESSION_EVENT: (eventId: string) => `/v1/session-events/events/${eventId}`,
@@ -530,6 +534,7 @@ export const TAG_TYPES = {
   LLM_MODELS: "llmModels",
   SCENARIO_LANGUAGES: "scenarioLanguages",
   LANGUAGE_GLOSSARY: "languageGlossary",
+  GLOSSARY_ADHERENCE: "glossaryAdherence",
   SUMMARY_SECTIONS: "summarySections",
   UPDATE_SUMMARY_SECTIONS: "updateSummarySections",
   CUSTOM_FIELD_TYPES: "customFieldTypes",
