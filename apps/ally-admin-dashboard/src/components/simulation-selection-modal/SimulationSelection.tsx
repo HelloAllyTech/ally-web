@@ -7,7 +7,7 @@ import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { useGetScenarioCasesQuery, useGetSimulationsQuery } from "@api";
 import { Search } from "@assets";
 import { en } from "@constants";
-import { GetScenarioType, Simulation, SimulationStatus } from "@types";
+import { GetScenarioType, SimulationStatus } from "@types";
 import { isNonEmptyArray } from "@utils";
 
 import { Button } from "../button";
@@ -95,7 +95,7 @@ export const SimulationSelectionModal: FC<SimulationProps> = ({
       coverImageUrl: simulation.coverImageUrl,
       title: simulation.title,
       description: simulation.description ?? "",
-      minimumScore: 0,
+      minimumScore: undefined,
       messageTitle: "",
       messageContent: "",
     };

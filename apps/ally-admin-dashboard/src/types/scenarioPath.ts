@@ -29,7 +29,7 @@ export interface GetScenarioPathsResponse {
 
 export interface GetScenarioType {
   scenarioId: number;
-  minimumScore: number;
+  minimumScore?: number;
   messageTitle: string;
   messageContent: string;
   order: number;
@@ -49,7 +49,7 @@ export interface GetPathByIdResponse {
 
 interface scenarioType {
   scenarioId: number | string;
-  minimumScore: number;
+  minimumScore?: number;
   message: string;
   order: number;
 }

@@ -1,6 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { RichTextRenderer } from "@ally-ui-mono/ui-shared";
 import { useMarkArticleReadMutation } from "@api";
@@ -89,7 +90,7 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
       setMarked(true);
       onCompleted(result);
     } catch {
-      // Surfaced via the shared toast layer elsewhere; keep the button live.
+      toast.error(t("common.somethingWentWrong"));
     }
   };
 

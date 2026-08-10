@@ -70,6 +70,14 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
     value: string,
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    const updated = [...selectedSimulations];
+
+    if (value.trim() === "") {
+      updated[index] = { ...updated[index], minimumScore: undefined };
+      setSelectedSimulations(updated);
+      return;
+    }
+
     let updatedValue = Number(value);
 
     if (updatedValue < 0 || !Number.isInteger(updatedValue)) {
@@ -82,10 +90,9 @@ export const SimulationCardItem: FC<SimulationCardItemProps> = ({
       }
     }
 
-    const updated = [...selectedSimulations];
     updated[index] = {
       ...updated[index],
-      minimumScore: updatedValue || 0,
+      minimumScore: updatedValue,
     };
     setSelectedSimulations(updated);
   };
