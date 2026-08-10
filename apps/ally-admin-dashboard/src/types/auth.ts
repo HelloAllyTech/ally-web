@@ -481,6 +481,59 @@ export interface UsageLevelResponse {
   computedAt: string;
 }
 
+// Coin-weighted product-roadmap delivery — mirrors RoadmapDeliveryResponseDto
+// from GET /api/v1/analytics/roadmap-delivery. All-time and month-grained; takes
+// no window and no tenant (the roadmap tables carry no tenant — it is Ally's own
+// backlog). Coins are the board's `priorityScore`: every voter, every period.
+export interface RoadmapDeliveryTotals {
+  opportunities: number;
+  ideaOpportunities: number;
+  bugOpportunities: number;
+  /** Σ priorityScore — ideaCoins + bugCoins, sent so both cannot disagree. */
+  coins: number;
+  ideaCoins: number;
+  bugCoins: number;
+}
+
+export interface RoadmapDeliveryOwner extends RoadmapDeliveryTotals {
+  /** Owner display name, or the reserved unassigned / other-owners labels. */
+  owner: string;
+}
+
+export interface RoadmapDeliveryMonth extends RoadmapDeliveryTotals {
+  /** First day of the release month (yyyy-mm-01). */
+  month: string;
+  /** Owners with something released this month, in the response's owner order. */
+  owners: RoadmapDeliveryOwner[];
+  /** True for the current, unfinished month: more can still ship into it. */
+  partial: boolean;
+}
+
+export interface RoadmapDeliveryResponse {
+  /** Oldest first, gap-free; empty when nothing released carries a date. */
+  months: RoadmapDeliveryMonth[];
+  /** Every owner band, ranked by all-time coins, context bands last. */
+  owners: string[];
+  /** Reserved `owner` value for released work with no owner. */
+  unassignedOwnerLabel: string;
+  /** Reserved `owner` value for the tail rolled up past `maxOwners`. */
+  otherOwnerLabel: string;
+  maxOwners: number;
+  /** Totals for everything on the axis. */
+  plotted: RoadmapDeliveryTotals;
+  /**
+   * Released work with NO `releasedAt`, which therefore cannot be plotted. The
+   * date is only stamped on the transition into `released`, so a large share of
+   * migrated rows have none. Must be stated on the surface — without it the
+   * plotted total reads as the whole history.
+   */
+  undated: RoadmapDeliveryTotals;
+  /** First day of the current, incomplete month (yyyy-mm-01). */
+  currentMonth: string;
+  scoping: AnalyticsScoping;
+  computedAt: string;
+}
+
 // Lifetime roleplay-volume distribution — mirrors RoleplayVolumeResponseDto from
 // GET /api/v1/analytics/roleplay-volume. All-time and takes no window params: the
 // quantity is a LIFETIME count per learner, so a 30-day window would put nearly

@@ -27,6 +27,7 @@ import { GlossaryAdherenceTab } from "./tabs/GlossaryAdherenceTab";
 import { HighlightsTab } from "./tabs/HighlightsTab";
 import { LanguageQualityTab } from "./tabs/LanguageQualityTab";
 import { LatencyTab } from "./tabs/LatencyTab";
+import { ProductManagementTab } from "./tabs/ProductManagementTab";
 import { ScribeTab } from "./tabs/ScribeTab";
 import { SuggestionsTab } from "./tabs/suggestions/SuggestionsTab";
 import { TestingTab } from "./tabs/TestingTab";
@@ -126,6 +127,26 @@ const TABS: TabDef[] = [
     label: "Scribe",
     uses: { language: false, range: true },
     render: f => <ScribeTab {...f} />,
+  },
+  {
+    // The only tab here that measures OUR OWN work rather than the product's.
+    // Everything above reads tenant-scoped learner and session data; this reads
+    // the internal coin-voting roadmap, which carries no tenant. Its own tab
+    // rather than a panel on Highlights, so nobody takes "180 coins shipped" for
+    // a platform metric.
+    //
+    // No page-level pickers: the roadmap has no language dimension, and its
+    // charts are all-time by construction — a release log is slow enough that a
+    // quarter can hold a handful of items, so a range picker would either draw
+    // one bar or hide the years before it.
+    //
+    // Visible to both super-admin tiers, like every tab except the two below:
+    // the endpoint it calls is gated on SUPER_ADMIN_ROLES, and reading a delivery
+    // chart is not the privilege that filing onto the roadmap is.
+    id: "product",
+    label: "Product management",
+    uses: { language: false, range: false },
+    render: () => <ProductManagementTab />,
   },
   {
     // The staging surface for charts that are candidates for the tabs above.

@@ -321,6 +321,7 @@ export const ApiEndpoints = {
     COHORT_RETENTION: "/v1/analytics/cohort-retention",
     USAGE_LEVELS: "/v1/analytics/usage-levels",
     ROLEPLAY_VOLUME: "/v1/analytics/roleplay-volume",
+    ROADMAP_DELIVERY: "/v1/analytics/roadmap-delivery",
     VOICE_LATENCY: "/v1/analytics/voice-latency",
     VOICE_LATENCY_SESSIONS: "/v1/analytics/voice-latency/sessions",
     VOICE_LATENCY_SESSIONS_SUMMARY: "/v1/analytics/voice-latency/sessions/summary",
