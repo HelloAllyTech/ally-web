@@ -305,10 +305,6 @@ const validateItem = (item: TrackItemFormValue): string[] => {
       if (minScore != null && (minScore < 0 || minScore > 100)) {
         errors.push("Roleplay: minimum score must be between 0 and 100");
       }
-      const minDurationSeconds = item.completionCriteria?.minDurationSeconds;
-      if (minDurationSeconds != null && minDurationSeconds < 0) {
-        errors.push("Roleplay: minimum call duration cannot be negative");
-      }
       break;
     }
     case TrackItemType.CASE:

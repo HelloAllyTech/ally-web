@@ -15,9 +15,6 @@ export const MAX_VIDEO_WATCH_PCT = 100;
 
 export const DEFAULT_QUIZ_PASS_SCORE = 70;
 
-/** Mirrors the backend's SCENARIO_PATH_ITEM_MIN_DURATION_FOR_COMPLETION fallback. */
-export const DEFAULT_ROLEPLAY_MIN_DURATION_SECONDS = 180;
-
 export const MIN_JOURNAL_PROMPTS = 1;
 export const MAX_JOURNAL_PROMPTS = 5;
 
@@ -67,10 +64,7 @@ export const DEFAULT_QUIZ_SETTINGS: QuizSettings = {
 };
 
 export const DEFAULT_COMPLETION_CRITERIA: Record<TrackItemType, CompletionCriteria> = {
-  [TrackItemType.ROLEPLAY]: {
-    minScore: 0,
-    minDurationSeconds: DEFAULT_ROLEPLAY_MIN_DURATION_SECONDS,
-  },
+  [TrackItemType.ROLEPLAY]: { minScore: 0 },
   [TrackItemType.CASE]: {},
   [TrackItemType.QUIZ]: {},
   [TrackItemType.ARTICLE]: {},
