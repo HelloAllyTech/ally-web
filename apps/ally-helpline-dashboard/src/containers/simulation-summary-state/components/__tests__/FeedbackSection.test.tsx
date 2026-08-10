@@ -303,16 +303,41 @@ describe("FeedbackSection", () => {
       expect(screen.queryByTestId("checklist")).not.toBeInTheDocument();
     });
 
-    it("renders checklist and hides feedback sections in CHECKLIST mode", () => {
+    it("renders checklist and hides feedback sections in CHECKLIST mode when the summary checklist is enabled", () => {
       const checklistSummary = {
         ...mockSummary,
-        scenario: { metadata: { experienceMode: "CHECKLIST" } },
+        scenario: {
+          metadata: { experienceMode: "CHECKLIST", summaryChecklistEnabled: true },
+        },
       };
       render(<FeedbackSection {...checklistSummary} />);
 
       expect(screen.getByTestId("checklist")).toBeInTheDocument();
       expect(screen.queryByText("What Went Well")).not.toBeInTheDocument();
       expect(screen.queryByText("Improvement Tips")).not.toBeInTheDocument();
+    });
+
+    it("hides the checklist in CHECKLIST mode when the summary checklist is disabled", () => {
+      const checklistSummary = {
+        ...mockSummary,
+        scenario: {
+          metadata: { experienceMode: "CHECKLIST", summaryChecklistEnabled: false },
+        },
+      };
+      render(<FeedbackSection {...checklistSummary} />);
+
+      expect(screen.queryByTestId("checklist")).not.toBeInTheDocument();
+    });
+
+    it("hides the checklist in CHECKLIST mode when the summary opt-in is absent", () => {
+      // Every roleplay authored before the toggle existed looks like this.
+      const checklistSummary = {
+        ...mockSummary,
+        scenario: { metadata: { experienceMode: "CHECKLIST" } },
+      };
+      render(<FeedbackSection {...checklistSummary} />);
+
+      expect(screen.queryByTestId("checklist")).not.toBeInTheDocument();
     });
 
     it("hides both checklist and feedback sections in NONE mode", () => {

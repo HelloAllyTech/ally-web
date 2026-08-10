@@ -432,14 +432,6 @@
     "transcriptReferences": "ट्रान्स्क्रिप्टमधील संदर्भ",
     "inputPlaceholder": "सेशनबद्दल एक प्रश्न विचारा.... (0/{{max}})"
   },
-  "reflection": {
-    "autosaving": "ऑटोसेव्ह",
-    "saveFailed": "सेव्ह करण्यात अडचण",
-    "saved": "सेव्ह केलेले",
-    "autoSaveFailed": "प्रतिक्रिया ऑटोसेव्ह करण्यात अडचण येत आहे",
-    "writeThoughts": "इथे तुमचे विचार लिहा...",
-    "noPrompts": "कोणतेही प्रॉम्प्ट्स उपलब्ध नाहीत"
-  },
   "postSim": {
     "titlePrefix": "भूमिका वठवणे (रोल प्ले)",
     "skills": {
@@ -462,7 +454,6 @@
       "annotatedTranscript": "नोंदींसह केलेले शब्दांकन",
       "upNext": "यानंतर",
       "askAi": "AI ला विचारा",
-      "deeperReflection": "सखोल विचार",
       "skillsDemonstrated": "दर्शवलेली कौशल्ये",
       "sessionReview": "सेशन मूल्यांकन"
     },

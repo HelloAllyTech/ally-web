@@ -432,14 +432,6 @@
     "transcriptReferences": "ಟ್ರಾನ್ಸ್ಕ್ರಿಪ್ಟ್ ಉಲ್ಲೇಖಗಳು",
     "inputPlaceholder": "ಸೆಷನ್ ಬಗ್ಗೆ ಪ್ರಶ್ನೆ ಕೇಳಿ.... (0/{{max}})"
   },
-  "reflection": {
-    "autosaving": "ಆಟೋಸೇವಿಂಗ್",
-    "saveFailed": "ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ",
-    "saved": "ಉಳಿಸಲಾಗಿದೆ",
-    "autoSaveFailed": "ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ",
-    "writeThoughts": "ಇಲ್ಲಿ ನಿಮ್ಮ ಆಲೋಚನೆಗಳನ್ನು ಬರೆಯಿರಿ...",
-    "noPrompts": "ಯಾವುದೇ ಪ್ರಾಂಪ್ಟ್‌ಗಳು ಲಭ್ಯವಿಲ್ಲ"
-  },
   "postSim": {
     "titlePrefix": "ಸಿಮ್ಯುಲೇಶನ್",
     "skills": {
@@ -462,7 +454,6 @@
       "annotatedTranscript": "ಅನುವಾದಿತ ಪಠ್ಯ",
       "upNext": "ಮುಂದೆ",
       "askAi": "ಎಐಗೆ ಕೇಳಿ",
-      "deeperReflection": "ಆಳವಾದ ಪರಿಕಲ್ಪನೆ",
       "skillsDemonstrated": "ಕೌಶಲ್ಯಗಳು ತೋರಿಸಲ್ಪಟ್ಟವು",
       "sessionReview": "ಸೆಷನ್ ವಿಮರ್ಶೆ"
     },

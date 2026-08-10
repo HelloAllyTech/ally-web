@@ -100,6 +100,7 @@ export interface SimulationInput {
   languageCharacteristics?: Record<string, string>;
   experienceMode?: string;
   checklistType?: string;
+  summaryChecklistEnabled?: boolean;
   timerMode?: boolean;
   maxTimeValue?: string;
   optGuardrails?: boolean;
@@ -211,6 +212,7 @@ export interface GetSimulationByIdResponse {
     customFields: SimulationCustomField[];
     experienceMode?: string;
     checklistType?: string;
+    summaryChecklistEnabled?: boolean;
     timerMode?: boolean;
     showScoreMeter?: boolean;
     enableFeedback?: boolean;
@@ -301,6 +303,7 @@ export interface StartSimulationResponse {
       timerMode?: boolean;
       experienceMode?: string;
       checklistType?: string;
+      summaryChecklistEnabled?: boolean;
       showScoreMeter?: boolean;
       enableFeedback?: boolean;
       pauseEnabled?: boolean;

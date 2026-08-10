@@ -129,7 +129,6 @@ export const TAG_TYPES = {
   REVIEW: "Review",
   UNREAD_REVIEW_COUNT: "UnreadReviewCount",
   BADGES: "Badges",
-  REFLECTION_PROMPTS: "ReflectionPrompts",
   GENERAL_COMMENTS: "GeneralComments",
   CUSTOM_FIELD_DEFINITIONS: "CustomFieldDefinitions",
   CUSTOM_FIELD_VALUES: "CustomFieldValues",

@@ -432,14 +432,6 @@
     "transcriptReferences": "ट्रांसक्रिप्ट से संदर्भ",
     "inputPlaceholder": "सेशन के बारे में एक प्रश्न पूछें.... (0/{{max}})"
   },
-  "reflection": {
-    "autosaving": "ऑटोसेव",
-    "saveFailed": "सेव करने में समस्या",
-    "saved": "सेव किया गया",
-    "autoSaveFailed": "प्रतिक्रिया ऑटोसेव करने में समस्या आ रही है",
-    "writeThoughts": "यहाँ अपने विचार लिखें...",
-    "noPrompts": "कोई प्रॉम्प्ट उपलब्ध नहीं है"
-  },
   "postSim": {
     "titlePrefix": "रोल प्ले",
     "skills": {
@@ -462,7 +454,6 @@
       "annotatedTranscript": "नोट्स सहित शब्दांकन",
       "upNext": "इसके बाद",
       "askAi": "AI से पूछें",
-      "deeperReflection": "गहन विचार",
       "skillsDemonstrated": "दिखाए गए कौशल",
       "sessionReview": "सेशन मूल्यांकन"
     },

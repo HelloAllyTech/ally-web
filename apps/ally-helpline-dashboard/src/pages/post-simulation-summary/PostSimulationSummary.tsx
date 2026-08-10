@@ -18,7 +18,6 @@ import {
   AskAiTab,
   Button,
   NextChallengeCard,
-  ReflectionTab,
   SessionRatingTrigger,
   ShareForReview,
   SkillsTab,
@@ -103,11 +102,6 @@ export const PostSimulationSummary: FC = () => {
       id: 5,
       label: t("postSim.tabs.skillsDemonstrated"),
       content: <SkillsTab sessionId={sessionId} retryMaxReached={retryMaxReached} />,
-    },
-    {
-      id: 6,
-      label: t("postSim.tabs.deeperReflection"),
-      content: <ReflectionTab sessionId={sessionId} />,
     },
     ...(summary?.scenarioPathSessionItemId || summary?.caseSessionItemId
       ? [

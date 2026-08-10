@@ -530,14 +530,6 @@
     "transcriptReferences": "Transcript References",
     "inputPlaceholder": "Ask a question about the session.... (0/{{max}})"
   },
-  "reflection": {
-    "autosaving": "Autosaving",
-    "saveFailed": "Failed to save",
-    "saved": "Saved",
-    "autoSaveFailed": "Failed to auto-save the response",
-    "writeThoughts": "Write your thoughts here...",
-    "noPrompts": "No prompts available"
-  },
   "postSim": {
     "titlePrefix": "Role play",
     "skills": {
@@ -563,7 +555,6 @@
       "annotatedTranscript": "Annotated Transcript",
       "upNext": "Up next",
       "askAi": "Ask AI",
-      "deeperReflection": "Deeper Reflection",
       "skillsDemonstrated": "Skills  Demonstrated",
       "sessionReview": "Session Review"
     },

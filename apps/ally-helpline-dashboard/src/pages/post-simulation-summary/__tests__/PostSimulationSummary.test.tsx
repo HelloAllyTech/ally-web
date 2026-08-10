@@ -571,7 +571,7 @@ describe("PostSimulationSummary Component", () => {
 
       // Carbon Tabs renders each item as a `tab-${id}` button (no ARIA tab role).
       const tabButtons = screen.getAllByTestId(/^tab-\d+$/);
-      expect(tabButtons).toHaveLength(5);
+      expect(tabButtons).toHaveLength(4);
     });
   });
 
@@ -664,7 +664,6 @@ describe("PostSimulationSummary Component", () => {
       expect(screen.getByTestId("tab-2")).toBeInTheDocument();
       expect(screen.getByTestId("tab-4")).toBeInTheDocument();
       expect(screen.getByTestId("tab-5")).toBeInTheDocument();
-      expect(screen.getByTestId("tab-6")).toBeInTheDocument();
     });
 
     it("should have Summary as first tab with id 1", () => {
@@ -711,16 +710,6 @@ describe("PostSimulationSummary Component", () => {
       expect(skillsTab).toHaveTextContent("Skills");
     });
 
-    it("should have Reflection as fifth tab with id 6", () => {
-      render(
-        <TestWrapper>
-          <PostSimulationSummary />
-        </TestWrapper>,
-      );
-
-      const reflectionTab = screen.getByTestId("tab-6");
-      expect(reflectionTab).toHaveTextContent("Reflection");
-    });
   });
 
   /**

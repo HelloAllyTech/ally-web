@@ -98,10 +98,6 @@ export const ApiEndpoints = {
     START_CASE_SIMULATION: (caseId: string) => `/v1/learn/cases/${caseId}/create-session`,
     GET_UP_COMING_CASE_SIMULATION: (caseSessionItemId: string) =>
       `/v1/learn/cases/${caseSessionItemId}/upcoming-scenario`,
-    REFLECTION_PROMPTS: (sessionId: string) =>
-      `/v1/learn/scenario-session/${sessionId}/reflection-prompts`,
-    UPDATE_REFLECTION_PROMPT: (sessionId: string, reflectionPromptId: string) =>
-      `/v1/learn/scenario-session/${sessionId}/reflection-prompts/${reflectionPromptId}`,
     GET_SIMULATION_CHECKLIST: (sessionId: string) =>
       `/v1/learn/scenario-session/${sessionId}/event-checklist`,
     GET_SIMULATION_SKILLS: (sessionId: string) => `/v1/learn/scenario-session/${sessionId}/skills`,

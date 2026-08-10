@@ -35,6 +35,12 @@ export interface Scenario {
     name?: string;
     experienceMode?: string;
     enableFeedback?: boolean;
+    /**
+     * Opt-in, per roleplay, for showing the checklist on the post-session
+     * summary. Absent means off. Does not affect the in-session checklist
+     * panel, which follows `experienceMode` alone.
+     */
+    summaryChecklistEnabled?: boolean;
   };
   triggerWarnings?: TriggerChipItemWarning[];
   checklistEvents?: any[];
@@ -393,17 +399,6 @@ export interface ScenarioCaseDetails {
   scenarios: PathwayScenario[];
 }
 
-export interface GetReflectionPromptsResponse {
-  reflectionPrompts: Prompt[];
-}
-
-export interface Prompt {
-  id: string;
-  promptId: string;
-  prompt: string;
-  response?: string | null;
-}
-
 export interface ChecklistItem {
   id: string;
   name: string;
@@ -414,13 +409,6 @@ export interface GetSimulationChecklistResponse {
   scorePercentage: number;
   eventChecklist: ChecklistItem[];
 }
-export interface UpdateReflectionPromptRequest {
-  sessionId: string;
-  reflectionPromptId: string;
-  promptId: string;
-  response: string;
-}
-
 export interface ChatStreamRequest {
   message: string;
   sessionId: string;
