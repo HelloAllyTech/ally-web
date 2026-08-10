@@ -31,6 +31,9 @@ const buildSuperDuperAdminOnlyItems = (): Set<string> =>
     SIDEBAR_ITEMS.USER_BADGES,
     SIDEBAR_ITEMS.AGENT_TEST_CASES,
     SIDEBAR_ITEMS.SETTINGS,
+    // AWS CloudWatch logs can carry sensitive request data — restrict to the
+    // elevated tier, same as the SDA management surface.
+    SIDEBAR_ITEMS.LOGS,
   ]);
 
 /**
@@ -150,6 +153,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     label: "Settings",
     path: ROUTES.SETTINGS,
   },
+  {
+    id: SIDEBAR_ITEMS.LOGS,
+    label: "Logs",
+    path: ROUTES.LOGS,
+  },
 ];
 
 /**
@@ -178,8 +186,8 @@ export const applySavedOrder = (
  * user's "first tab" — used both to render the sidebar and to pick the default
  * landing route after login. Tabs fall into three gating tiers:
  *  - Super-duper-admin only (Characters, Languages, Guardrails, Tooltips,
- *    Badges, Agent Test Cases, Super Duper Admins, Settings): shown solely to
- *    SUPER_DUPER_ADMIN, independent of permissions.
+ *    Badges, Agent Test Cases, Super Duper Admins, Settings, Logs): shown
+ *    solely to SUPER_DUPER_ADMIN, independent of permissions.
  *  - Super-admin tier (Analytics, Competencies, AI Lab, Roleplay Session Logs):
  *    shown to both super-admin roles, independent of permissions.
  *  - Permission-gated (everything else): shown once permissions are loaded and
