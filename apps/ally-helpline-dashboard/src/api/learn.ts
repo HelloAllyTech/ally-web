@@ -142,11 +142,18 @@ const learnAPI = baseAPI.injectEndpoints({
       // reads `eventStatus = COMPLETED`, which the agent's end-of-session event
       // writes asynchronously. The Learn page therefore also refetches on mount
       // rather than relying on this invalidation alone.
+      //
+      // SCENARIO_PATHWAY_DETAILS / SCENARIO_CASE_DETAILS carry the same
+      // caveat: the next item's unlock is written by the same async
+      // end-of-session event, not this request. CaseTrackDetails pairs this
+      // with refetchOnMountOrArgChange for the same reason.
       invalidatesTags: [
         TAG_TYPES.SIMULATION_LOGS,
         TAG_TYPES.SIMULATION_CREDITS,
         TAG_TYPES.PRACTICE_STREAK,
         TAG_TYPES.SCENARIOS,
+        TAG_TYPES.SCENARIO_PATHWAY_DETAILS,
+        TAG_TYPES.SCENARIO_CASE_DETAILS,
       ],
     }),
 

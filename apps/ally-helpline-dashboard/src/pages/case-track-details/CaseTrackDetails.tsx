@@ -45,6 +45,11 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
     { caseId: id || "", languageCode: i18n.language },
     {
       skip: type !== pageType.CASE,
+      // The next item's unlock status is written by an async end-of-session
+      // event, not the endSimulation response — invalidatesTags alone can
+      // race ahead of that write. Refetch on mount so navigating back here
+      // (e.g. from the post-simulation summary) gets a fresh read.
+      refetchOnMountOrArgChange: true,
     },
   );
   const [startCaseSimulation] = useStartCaseSimulationMutation();
@@ -52,7 +57,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   const { data: pathwayData, isLoading: isPathwayLoading } = useGetScenarioPathwayDetailsQuery(
     { pathwayId: id || "", languageCode: i18n.language },
-    { skip: type !== pageType.TRACK },
+    { skip: type !== pageType.TRACK, refetchOnMountOrArgChange: true },
   );
   const [startSimulationMutation] = useStartPathwaySimulationMutation();
   const [getScenarioSessionByPathItem] = useLazyGetScenarioSessionByPathItemQuery();
