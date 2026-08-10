@@ -64,7 +64,7 @@ export const DEFAULT_QUIZ_SETTINGS: QuizSettings = {
 };
 
 export const DEFAULT_COMPLETION_CRITERIA: Record<TrackItemType, CompletionCriteria> = {
-  [TrackItemType.ROLEPLAY]: { minScore: 0 },
+  [TrackItemType.ROLEPLAY]: {},
   [TrackItemType.CASE]: {},
   [TrackItemType.QUIZ]: {},
   [TrackItemType.ARTICLE]: {},

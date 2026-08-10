@@ -46,7 +46,7 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
 
       {type === TrackItemType.ROLEPLAY && (
         <div className="flex flex-col gap-1">
-          <label className={fieldLabel}>Minimum score (0–100)</label>
+          <label className={fieldLabel}>Minimum score (0–100, optional)</label>
           <Controller
             control={control}
             name={`${base}.minScore`}
@@ -64,7 +64,8 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
             )}
           />
           <span className="text-xs text-typography-500">
-            Learner must reach this score to complete this roleplay.
+            Learner must reach this score to complete this roleplay. Leave blank to let any attempt
+            unlock the next item, regardless of score.
           </span>
         </div>
       )}
