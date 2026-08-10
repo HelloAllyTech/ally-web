@@ -283,6 +283,7 @@ export const Scenario: FC = () => {
                   onStart={onStartSimulationClick}
                   noCredits={buttonDisable}
                   triggerWarnings={scenario?.triggerWarnings}
+                  attemptCount={scenario?.completion?.attemptCount}
                 />
               </div>
               {canSeeSharedReviews && peerSessionCount > 0 && (

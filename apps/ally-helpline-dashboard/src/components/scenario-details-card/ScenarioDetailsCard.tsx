@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { ChipGroup, CustomVideo, Loading, RichTextRenderer } from "@ally-ui-mono/ui-shared";
-import { ShareIcon, TimerIcon } from "@assets";
+import { ShareIcon, TickGreenBackground, TimerIcon } from "@assets";
 import { AppTooltip, Button, Chip, ConfirmationDialog, ButtonVariant } from "@components";
 import { TooltipLocation } from "@constants";
 
@@ -46,6 +46,9 @@ const formatDuration = (value?: string): string => {
 /** TimerIcon sized for use inside a Chip (Chip renders the icon with no sizing of its own). */
 const DurationChipIcon: FC = () => <TimerIcon className="h-3.5 w-3.5 flex-shrink-0" />;
 
+/** Same sizing treatment for the completed tick. */
+const CompletedChipIcon: FC = () => <TickGreenBackground className="h-3.5 w-3.5 flex-shrink-0" />;
+
 const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   coverImage,
   coverVideo,
@@ -57,6 +60,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
   title,
   noCredits = false,
   triggerWarnings,
+  attemptCount = 0,
 }) => {
   const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
@@ -65,7 +69,10 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
 
   const difficultyLabel = formatDifficulty(difficultyLevel);
   const durationLabel = formatDuration(maxTimeValue);
-  const hasMeta = Boolean(difficultyLabel || durationLabel);
+  // Completing a scenario never closes it off — the CTA becomes an invitation
+  // to run it again rather than disappearing.
+  const isCompleted = attemptCount > 0;
+  const hasMeta = Boolean(difficultyLabel || durationLabel || isCompleted);
 
   /**
    * Copy the current page URL to the clipboard.
@@ -173,6 +180,15 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
 
           {hasMeta && (
             <div className="flex flex-wrap items-center gap-2">
+              {isCompleted && (
+                <Chip
+                  config={{
+                    label: t("learn.scenario.completedChip", { count: attemptCount }),
+                    icon: CompletedChipIcon,
+                    outerDivClassName: "bg-success-50 text-success-800",
+                  }}
+                />
+              )}
               {difficultyLabel && (
                 <Chip
                   config={{
@@ -235,7 +251,7 @@ const ScenarioDetailsCard: FC<ScenarioDetailsCardProps> = ({
               aria-label={t("learn.scenario.startAria")}
             >
               {isStarting && <Loading withOverlay={false} small className="mr-2 !h-4 !w-4" />}
-              {t("common.startSimulation")}
+              {isCompleted ? t("common.practiceAgain") : t("common.startSimulation")}
             </Button>
           </AppTooltip>
         </div>

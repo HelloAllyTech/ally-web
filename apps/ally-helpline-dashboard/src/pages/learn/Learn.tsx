@@ -73,10 +73,17 @@ export const Learn: FC = () => {
     data: scenariosData,
     isLoading: isScenariosLoading,
     refetch: refetchScenarios,
-  } = useGetScenariosQuery({
-    isPrivate: isAuthenticated,
-    languageCode: i18n.language,
-  });
+  } = useGetScenariosQuery(
+    {
+      isPrivate: isAuthenticated,
+      languageCode: i18n.language,
+    },
+    // The per-scenario `completion` count comes from `eventStatus = COMPLETED`,
+    // which the agent writes asynchronously after a session ends — so the
+    // endSimulation tag invalidation can fire before the write lands. Refetch
+    // on mount so coming back to /learn always shows an up-to-date count.
+    { refetchOnMountOrArgChange: true },
+  );
 
   const scenarios = scenariosData?.data || [];
 
@@ -283,6 +290,7 @@ export const Learn: FC = () => {
                 totalScenarios={isMultipleItems ? item.totalScenarios : undefined}
                 completedScenarios={isMultipleItems ? item.completedScenarios : undefined}
                 triggerWarnings={isMultipleItems ? undefined : item.triggerWarnings}
+                attemptCount={isMultipleItems ? undefined : item.completion?.attemptCount}
               />
             </motion.div>
           );

@@ -67,6 +67,51 @@ describe("ScenarioCard", () => {
     expect(screen.queryByText("Coming Soon")).not.toBeInTheDocument();
   });
 
+  // --- Completed Badge Tests ---
+
+  it("should render the completed badge without a count for a single attempt", () => {
+    renderComponent({ attemptCount: 1 });
+    expect(screen.getByLabelText("Completed once")).toBeInTheDocument();
+    expect(screen.getByText("Completed")).toBeInTheDocument();
+  });
+
+  it("should show the attempt count once the learner has replayed", () => {
+    renderComponent({ attemptCount: 3 });
+    expect(screen.getByLabelText("Completed 3 times")).toBeInTheDocument();
+    expect(screen.getByText("Completed · 3×")).toBeInTheDocument();
+  });
+
+  it("should not render the completed badge when never completed", () => {
+    renderComponent({ attemptCount: 0 });
+    expect(screen.queryByText(/Completed/)).not.toBeInTheDocument();
+  });
+
+  it("should not render the completed badge when attemptCount is omitted", () => {
+    renderComponent();
+    expect(screen.queryByText(/Completed/)).not.toBeInTheDocument();
+  });
+
+  it("should leave the card clickable when completed — replay is never blocked", () => {
+    renderComponent({ attemptCount: 2 });
+    const card = screen.getByRole("button", { name: /Select Test Scenario scenario/i });
+    fireEvent.click(card);
+    expect(mockOnClick).toHaveBeenCalledTimes(1);
+    expect(card.className).toContain("cursor-pointer");
+  });
+
+  it("should not render the completed badge on a pathway/case/course card", () => {
+    // totalScenarios present ⇒ the card is a multi-item one, which shows its
+    // own progress ring instead.
+    renderComponent({ attemptCount: 2, totalScenarios: 5, completedScenarios: 5 });
+    expect(screen.queryByText(/Completed ·/)).not.toBeInTheDocument();
+  });
+
+  it("should prefer 'Coming Soon' over the completed badge", () => {
+    renderComponent({ attemptCount: 2, isComingSoon: true });
+    expect(screen.getByText("Coming Soon")).toBeInTheDocument();
+    expect(screen.queryByText(/Completed ·/)).not.toBeInTheDocument();
+  });
+
   // --- Image Error Handling Tests ---
 
   it("should show fallback message when image fails to load", () => {

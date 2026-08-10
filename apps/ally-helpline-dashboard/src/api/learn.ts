@@ -55,6 +55,7 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { languageCode },
       }),
+      providesTags: [TAG_TYPES.SCENARIOS],
     }),
 
     /**
@@ -71,6 +72,7 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { scenarioId, languageCode },
       }),
+      providesTags: [TAG_TYPES.SCENARIOS],
     }),
 
     /**
@@ -135,10 +137,16 @@ const learnAPI = baseAPI.injectEndpoints({
       // this request, so this invalidation alone can refetch before the write
       // lands. It is one of several refresh triggers, not the only one — see
       // usePracticeStreakSummary and usePostSessionStreak.
+      //
+      // SCENARIOS carries the same caveat: the catalog's `completion` field
+      // reads `eventStatus = COMPLETED`, which the agent's end-of-session event
+      // writes asynchronously. The Learn page therefore also refetches on mount
+      // rather than relying on this invalidation alone.
       invalidatesTags: [
         TAG_TYPES.SIMULATION_LOGS,
         TAG_TYPES.SIMULATION_CREDITS,
         TAG_TYPES.PRACTICE_STREAK,
+        TAG_TYPES.SCENARIOS,
       ],
     }),
 

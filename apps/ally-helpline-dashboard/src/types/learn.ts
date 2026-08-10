@@ -19,6 +19,16 @@ export interface TriggerChipItemWarning {
   updatedAt?: string;
 }
 
+/**
+ * The current learner's completion record for a scenario. Null/absent means
+ * they have never completed it — guard on the object, not on `attemptCount`.
+ * Only returned by the authenticated catalog and detail endpoints.
+ */
+export interface ScenarioCompletion {
+  attemptCount: number;
+  lastCompletedAt: string | null;
+}
+
 export interface Scenario {
   id?: number;
   title?: string;
@@ -53,6 +63,7 @@ export interface Scenario {
   difficultyLevel?: string;
   stateNames?: { name: string; stateId: string }[];
   availableLanguages?: LanguageOption[];
+  completion?: ScenarioCompletion | null;
 }
 
 export interface ScenarioSession {
