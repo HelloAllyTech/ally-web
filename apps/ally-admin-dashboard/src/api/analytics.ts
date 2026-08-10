@@ -19,6 +19,7 @@ import {
   OrgHealthResponse,
   OrgSessionDistributionResponse,
   QualityDistributionResponse,
+  RoadmapDeliveryResponse,
   RoleplayVolumeResponse,
   ScenarioUsageResponse,
   ScribeAdoptionResponse,
@@ -175,6 +176,16 @@ export const analyticsAPI = baseAPI.injectEndpoints({
         url: ApiEndpoints.ANALYTICS.ROLEPLAY_VOLUME,
         method: HttpMethod.GET,
         params: tenantId ? { tenantId } : {},
+      }),
+    }),
+    // Coins shipped per month by owner, off the internal product roadmap. Takes
+    // NO params at all — not even `tenantId`: the roadmap tables carry no tenant
+    // (it is Ally's own backlog), and the axis is all-time by construction
+    // because a quarter can hold a handful of releases.
+    getRoadmapDelivery: builder.query<RoadmapDeliveryResponse, void>({
+      query: () => ({
+        url: ApiEndpoints.ANALYTICS.ROADMAP_DELIVERY,
+        method: HttpMethod.GET,
       }),
     }),
     getVoiceLatency: builder.query<VoiceLatencyResponse, VoiceLatencyQuery>({
@@ -443,6 +454,7 @@ export const {
   useGetCohortRetentionQuery,
   useGetUsageLevelsQuery,
   useGetRoleplayVolumeQuery,
+  useGetRoadmapDeliveryQuery,
   useGetVoiceLatencyQuery,
   useGetVoiceLatencySessionsQuery,
   useGetVoiceLatencySessionsSummaryQuery,
