@@ -107,6 +107,7 @@ describe("deriveNavigationItems", () => {
     expect(ids).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
     // Super-duper-admin-only tabs are hidden from a plain super-admin.
     expect(ids).not.toContain(SIDEBAR_ITEMS.SETTINGS);
+    expect(ids).not.toContain(SIDEBAR_ITEMS.LOGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.AGENT_TEST_CASES);
     expect(ids).not.toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
     expect(ids).not.toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
@@ -129,7 +130,7 @@ describe("deriveNavigationItems", () => {
     ]);
   });
 
-  it("exposes the super-duper-only tabs (and super-admin-tier tabs) to a super-duper-admin, Settings last", () => {
+  it("exposes the super-duper-only tabs (and super-admin-tier tabs) to a super-duper-admin, Logs last", () => {
     const result = deriveNavigationItems({
       permissions: [Permissions.EDIT_SCENARIO],
       role: UserRole.SUPER_DUPER_ADMIN,
@@ -140,6 +141,7 @@ describe("deriveNavigationItems", () => {
     expect(ids[0]).toBe(SIDEBAR_ITEMS.SIMULATION_STUDIO);
     // Super-duper-only tabs are all present.
     expect(ids).toContain(SIDEBAR_ITEMS.SETTINGS);
+    expect(ids).toContain(SIDEBAR_ITEMS.LOGS);
     expect(ids).toContain(SIDEBAR_ITEMS.AGENT_TEST_CASES);
     expect(ids).toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
     expect(ids).toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
@@ -148,8 +150,8 @@ describe("deriveNavigationItems", () => {
     expect(ids).toContain(SIDEBAR_ITEMS.USER_BADGES);
     // Super-admin-tier tabs remain visible too (duper is a super-admin).
     expect(ids).toContain(SIDEBAR_ITEMS.ANALYTICS);
-    // Settings stays last in the default order.
-    expect(ids[ids.length - 1]).toBe(SIDEBAR_ITEMS.SETTINGS);
+    // Logs stays last in the default order (Settings is now second-to-last).
+    expect(ids[ids.length - 1]).toBe(SIDEBAR_ITEMS.LOGS);
   });
 
   it("shows the super-duper-only + super-admin-tier tabs, in natural order, to a super-duper-admin with no permissions", () => {
@@ -172,6 +174,7 @@ describe("deriveNavigationItems", () => {
       SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
       SIDEBAR_ITEMS.AI_LAB,
       SIDEBAR_ITEMS.SETTINGS,
+      SIDEBAR_ITEMS.LOGS,
     ]);
   });
 
@@ -239,6 +242,7 @@ describe("deriveNavigationItems", () => {
         SIDEBAR_ITEMS.USER_BADGES,
         SIDEBAR_ITEMS.AGENT_TEST_CASES,
         SIDEBAR_ITEMS.SETTINGS,
+        SIDEBAR_ITEMS.LOGS,
       ]),
     );
     // Super-admin-tier and permission-gated tabs stay unflagged (no dot).

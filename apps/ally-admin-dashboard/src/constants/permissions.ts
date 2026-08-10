@@ -62,6 +62,7 @@ export const SIDEBAR_ITEMS = {
   BLOG: "blog",
   AI_LAB: "ai-lab",
   SETTINGS: "settings",
+  LOGS: "logs",
 };
 
 /**

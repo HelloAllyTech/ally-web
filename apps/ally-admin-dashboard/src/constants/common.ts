@@ -366,6 +366,10 @@ export const ApiEndpoints = {
     LIST: "/v1/roleplay-session-logs",
     BY_ID: (id: string) => `/v1/roleplay-session-logs/${id}`,
   },
+  AWS_LOGS: {
+    LIST: "/v1/aws-logs",
+    STREAMS: "/v1/aws-logs/streams",
+  },
   SETTINGS: {
     TERMS: "/v1/settings/terms",
     PRIVACY: "/v1/settings/privacy",
@@ -436,6 +440,7 @@ export const ROUTES = {
   ROLEPLAY_SESSION_LOGS: "/roleplay-session-logs",
   ROLEPLAY_SESSION_LOG_DETAIL: (id: string | number) => `/roleplay-session-logs/${id}`,
   SETTINGS: "/settings",
+  LOGS: "/logs",
   TERMS: "/terms",
   PRIVACY: "/privacy",
   // Fully public, no-login gallery of the centralised design-system components.

@@ -17,6 +17,7 @@ export * from "./analyticsSuggestions";
 export * from "./superDuperAdmins";
 export * from "./legalContent";
 export * from "./roleplaySessionLogs";
+export * from "./awsLogs";
 export * from "./roleplayStudio";
 export * from "./tracks";
 export * from "./blog";

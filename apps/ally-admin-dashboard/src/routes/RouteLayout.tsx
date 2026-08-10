@@ -36,6 +36,7 @@ import {
   AILab,
   ProductRoadmap,
   Settings,
+  Logs,
   AgentTestCases,
   Competencies,
   RoleplaySessionLogs,
@@ -355,6 +356,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <Settings />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.LOGS}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <Logs />
             </PrivateLayout>
           }
         />
