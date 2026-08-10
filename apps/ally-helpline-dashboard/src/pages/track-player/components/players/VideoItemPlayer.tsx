@@ -11,6 +11,7 @@ import { StartVideoItemPayload } from "@types";
 
 interface VideoItemPlayerProps {
   payload: StartVideoItemPayload;
+  itemId: string;
   trackId: string;
   alreadyCompleted: boolean;
 }
@@ -76,6 +77,7 @@ const youtubeId = (url: string): string | null => {
  */
 export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
   payload,
+  itemId,
   trackId,
   alreadyCompleted,
 }) => {
@@ -91,7 +93,7 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
     onReport: async pct => {
       try {
         const result = await reportVideoProgress({
-          itemId: payload.trackItemProgressId,
+          itemId,
           trackId,
           watchedPct: pct,
         }).unwrap();

@@ -9,6 +9,7 @@ import { StartArticleItemPayload, TrackItemCompletionResult } from "@types";
 
 interface ArticleItemPlayerProps {
   payload: StartArticleItemPayload;
+  itemId: string;
   /** Whether the item is already completed (resumed). */
   alreadyCompleted: boolean;
   onCompleted: (result: TrackItemCompletionResult) => void;
@@ -27,6 +28,7 @@ const NO_SCROLL_READY_MS = 3000;
  */
 export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
   payload,
+  itemId,
   alreadyCompleted,
   onCompleted,
 }) => {
@@ -83,7 +85,7 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
   const handleMarkRead = async () => {
     if (marked || isLoading) return;
     try {
-      const result = await markArticleRead({ itemId: payload.trackItemProgressId }).unwrap();
+      const result = await markArticleRead({ itemId }).unwrap();
       setMarked(true);
       onCompleted(result);
     } catch {

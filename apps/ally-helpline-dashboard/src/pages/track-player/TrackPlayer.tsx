@@ -139,6 +139,7 @@ export const TrackPlayer: FC = () => {
         return (
           <ArticleItemPlayer
             payload={payload}
+            itemId={itemId}
             alreadyCompleted={alreadyCompleted}
             onCompleted={handleCompletion}
           />
@@ -147,6 +148,7 @@ export const TrackPlayer: FC = () => {
         return (
           <VideoItemPlayer
             payload={payload}
+            itemId={itemId}
             trackId={trackId}
             alreadyCompleted={alreadyCompleted}
           />
@@ -155,6 +157,7 @@ export const TrackPlayer: FC = () => {
         return (
           <JournalItemPlayer
             payload={payload}
+            itemId={itemId}
             alreadyCompleted={alreadyCompleted}
             onCompleted={handleCompletion}
           />
@@ -163,6 +166,7 @@ export const TrackPlayer: FC = () => {
         return (
           <QuizItemPlayer
             payload={payload}
+            itemId={itemId}
             onCompleted={handleCompletion}
             onRequestNext={goNextOrOverview}
           />

@@ -31,6 +31,7 @@ import { TrueFalseQuestion } from "./widgets/TrueFalseQuestion";
 
 interface QuizItemPlayerProps {
   payload: StartQuizItemPayload;
+  itemId: string;
   onCompleted: (result: TrackItemCompletionResult) => void;
   onRequestNext: () => void;
 }
@@ -55,6 +56,7 @@ const fireConfetti = () => {
  */
 export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
   payload,
+  itemId,
   onCompleted,
   onRequestNext,
 }) => {
@@ -117,7 +119,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
     try {
       const answerInputs = questions.map(q => toAnswerInput(q, answers[q.id] ?? {}));
       const attempt = await submitQuizAttempt({
-        itemId: payload.trackItemProgressId,
+        itemId,
         answers: answerInputs,
       }).unwrap();
       applyAttemptResult(attempt);
@@ -130,7 +132,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
     if (!result || isRegrading) return;
     try {
       const attempt = await regradeQuizAttempt({
-        itemId: payload.trackItemProgressId,
+        itemId,
         attemptId: result.attemptId,
       }).unwrap();
       applyAttemptResult(attempt);
@@ -141,7 +143,7 @@ export const QuizItemPlayer: FC<QuizItemPlayerProps> = ({
 
   const handleRetry = async () => {
     try {
-      const fresh = await startTrackItem({ itemId: payload.trackItemProgressId }).unwrap();
+      const fresh = await startTrackItem({ itemId }).unwrap();
       if (fresh.type === TrackItemType.QUIZ) {
         setQuiz(fresh.quiz);
         setAttemptsUsed(fresh.attemptsUsed);

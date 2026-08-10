@@ -11,6 +11,7 @@ import { StartJournalItemPayload, TrackItemCompletionResult } from "@types";
 
 interface JournalItemPlayerProps {
   payload: StartJournalItemPayload;
+  itemId: string;
   alreadyCompleted: boolean;
   onCompleted: (result: TrackItemCompletionResult) => void;
 }
@@ -23,6 +24,7 @@ const AUTOSAVE_DELAY = 1000;
  */
 export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
   payload,
+  itemId,
   alreadyCompleted,
   onCompleted,
 }) => {
@@ -46,7 +48,7 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
     setSaving(true);
     try {
       await saveJournalDraft({
-        itemId: payload.trackItemProgressId,
+        itemId,
         responses: prompts.map((prompt, i) => ({
           promptId: prompt.id,
           response: responsesRef.current[i] ?? "",
@@ -57,7 +59,7 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
       setSaveFailed(true);
     }
     setSaving(false);
-  }, [payload.trackItemProgressId, prompts, saveJournalDraft]);
+  }, [itemId, prompts, saveJournalDraft]);
 
   const debouncedPersist = useDebounce(persist, AUTOSAVE_DELAY);
 
@@ -78,7 +80,7 @@ export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
     if (!allRequiredAnswered || isSubmitting || submitted) return;
     try {
       await persist();
-      const result = await submitJournal({ itemId: payload.trackItemProgressId }).unwrap();
+      const result = await submitJournal({ itemId }).unwrap();
       setSubmitted(true);
       onCompleted(result);
     } catch {
