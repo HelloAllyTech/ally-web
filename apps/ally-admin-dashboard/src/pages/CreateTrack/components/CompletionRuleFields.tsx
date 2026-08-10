@@ -2,12 +2,7 @@ import { FC } from "react";
 
 import { Controller, useFormContext } from "react-hook-form";
 
-import {
-  DEFAULT_ROLEPLAY_MIN_DURATION_SECONDS,
-  DEFAULT_VIDEO_WATCH_PCT,
-  MAX_VIDEO_WATCH_PCT,
-  MIN_VIDEO_WATCH_PCT,
-} from "@constants";
+import { DEFAULT_VIDEO_WATCH_PCT, MAX_VIDEO_WATCH_PCT, MIN_VIDEO_WATCH_PCT } from "@constants";
 import { TrackFormValues, TrackItemType } from "@types";
 
 interface CompletionRuleFieldsProps {
@@ -70,27 +65,6 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
           />
           <span className="text-xs text-typography-500">
             Learner must reach this score to complete this roleplay.
-          </span>
-
-          <label className={`${fieldLabel} mt-3`}>Minimum call duration (seconds)</label>
-          <Controller
-            control={control}
-            name={`${base}.minDurationSeconds`}
-            render={({ field }) => (
-              <input
-                type="number"
-                min={0}
-                disabled={disabled}
-                className={numberInput}
-                value={field.value ?? DEFAULT_ROLEPLAY_MIN_DURATION_SECONDS}
-                onChange={event => field.onChange(toNumberOrUndefined(event.target.value))}
-                onWheel={event => event.currentTarget.blur()}
-              />
-            )}
-          />
-          <span className="text-xs text-typography-500">
-            Learner must stay on the call at least this long to complete this roleplay. Defaults to{" "}
-            {DEFAULT_ROLEPLAY_MIN_DURATION_SECONDS}s (3 minutes); set to 0 to require no minimum.
           </span>
         </div>
       )}
