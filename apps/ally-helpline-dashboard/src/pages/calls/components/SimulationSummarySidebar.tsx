@@ -239,11 +239,6 @@ const SimulationSummarySidebar: FC<SimulationSummarySidebarProps> = ({
         />
       ),
     },
-    // {
-    //   id: 4,
-    //   label: t("postSim.tabs.deeperReflection", "Deeper Reflection"),
-    //   content: <ReflectionTab sessionId={summaryId} className="flex-col" />,
-    // },
   ];
 
   const onSidebarClose = () => {

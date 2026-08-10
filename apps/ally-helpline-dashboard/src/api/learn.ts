@@ -30,12 +30,9 @@ import {
   ScenarioCaseDetails,
   GetScenarioCasesResponse,
   pageType,
-  GetReflectionPromptsResponse,
   GetSimulationChecklistResponse,
-  UpdateReflectionPromptRequest,
   GetSimulationSkillsResponse,
   GetChatHistoryResponse,
-  Prompt,
   PresignedUrlResponse,
 } from "@types";
 
@@ -331,13 +328,6 @@ const learnAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.SCENARIO_CASE_DETAILS],
     }),
-    getReflectionPrompts: builder.query<GetReflectionPromptsResponse, { sessionId: string }>({
-      query: ({ sessionId }) => ({
-        url: ApiEndpoints.LEARN.REFLECTION_PROMPTS(sessionId),
-        method: HttpMethod.GET,
-      }),
-      providesTags: [TAG_TYPES.REFLECTION_PROMPTS],
-    }),
     /**
      * Get checklist for a scenario session.
      * @param {string} sessionId - Session identifier
@@ -352,14 +342,6 @@ const learnAPI = baseAPI.injectEndpoints({
         method: HttpMethod.GET,
         params: { languageCode },
       }),
-    }),
-    updateReflectionPrompt: builder.mutation<Prompt, UpdateReflectionPromptRequest>({
-      query: ({ sessionId, reflectionPromptId, promptId, response }) => ({
-        url: ApiEndpoints.LEARN.UPDATE_REFLECTION_PROMPT(sessionId, reflectionPromptId),
-        method: HttpMethod.PATCH,
-        body: { promptId, response },
-      }),
-      invalidatesTags: [TAG_TYPES.REFLECTION_PROMPTS],
     }),
     /**
      * Get skills and emotional movements for a scenario session.
@@ -407,9 +389,7 @@ export const {
   useGetScenarioCaseDetailsQuery,
   useLazyGetScenarioSessionByCaseItemQuery,
   useStartCaseSimulationMutation,
-  useGetReflectionPromptsQuery,
   useGetSimulationChecklistQuery,
-  useUpdateReflectionPromptMutation,
   useGetSimulationSkillsQuery,
   useGetChatHistoryQuery,
   useGetAudioUrlQuery,

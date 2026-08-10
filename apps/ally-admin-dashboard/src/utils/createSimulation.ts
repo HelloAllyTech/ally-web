@@ -118,6 +118,9 @@ export const formatSimulationResponseData = (data: GetSimulationByIdResponse) =>
       : (data?.metadata?.agentDialogues ?? ""),
     experienceMode: data?.metadata?.experienceMode,
     checklistType: data?.metadata?.checklistType,
+    // Absent = OFF: the summary checklist is opt-in per roleplay, so every
+    // scenario saved before this toggle existed loads with it disabled.
+    summaryChecklistEnabled: data?.metadata?.summaryChecklistEnabled ?? false,
     timerMode: data?.metadata?.timerMode,
     maxTimeValue: data?.metadata?.maxTimeValue,
     optGuardrails: data?.metadata?.optGuardrails,

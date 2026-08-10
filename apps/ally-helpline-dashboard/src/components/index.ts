@@ -47,7 +47,6 @@ import PracticeStreakHeatmap from "./practice-streak-heatmap";
 import ProfileSettings from "./profile-settings";
 import ReactionsModal from "./reaction-modal/ReactionModal";
 import ReactionSelector from "./reaction-selector";
-import { ReflectionTab } from "./reflection-tab";
 import {
   ReviewCommentsSidepanel,
   ThreadsToShow,
@@ -155,7 +154,6 @@ export {
   UpNextSimulationCard,
   NextChallengeCard,
   AskAiTab,
-  ReflectionTab,
   Checklist,
   SkillsTab,
   ShareForReview,

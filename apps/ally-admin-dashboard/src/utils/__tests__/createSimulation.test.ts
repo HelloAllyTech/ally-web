@@ -243,6 +243,7 @@ describe("createSimulation utils", () => {
         currentState: false,
         checklistType: "GUIDED",
         experienceMode: "CHECKLIST",
+        summaryChecklistEnabled: false,
         maxTimeValue: "00:10:00",
         timerMode: true,
         stateInstructions: [

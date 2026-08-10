@@ -281,12 +281,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
             >
               Skills  Demonstrated 
             </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-6"
-            >
-              Deeper Reflection 
-            </button>
           </nav>
         </div>
         <div
@@ -603,12 +597,6 @@ exports[`PostSimulationSummary Component > Snapshot Testing > should match snaps
               data-testid="tab-5"
             >
               Skills  Demonstrated 
-            </button>
-            <button
-              class="relative font-normal whitespace-nowrap py-3 px-3 text-base min-w-[90px] leading-6 text-typography-900 hover:text-typography-900"
-              data-testid="tab-6"
-            >
-              Deeper Reflection 
             </button>
           </nav>
         </div>

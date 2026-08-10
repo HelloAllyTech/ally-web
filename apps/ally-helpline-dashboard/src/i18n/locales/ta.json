@@ -432,14 +432,6 @@
     "transcriptReferences": "பதிவு குறிப்பு",
     "inputPlaceholder": "அந்த அமர்வைப் பற்றி ஒரு கேள்வி கேளுங்கள்.... (0/{{max}})"
   },
-  "reflection": {
-    "autosaving": "தானாக சேமி",
-    "saveFailed": "சேமிக்கத் தவறிவிட்டது",
-    "saved": "சேமிக்கப்பட்டது",
-    "autoSaveFailed": "பதிலை தானாகச் சேமிக்கத் தவறிவிட்டது.",
-    "writeThoughts": "இங்கே உங்கள் எண்ணங்களை எழுதுங்கள்...",
-    "noPrompts": "எந்தத் ப்ராம்ட்களும் இல்லை"
-  },
   "postSim": {
     "titlePrefix": "பாத்திரமேற்று நடித்தல்",
     "skills": {
@@ -462,7 +454,6 @@
       "annotatedTranscript": "குறிப்பெடுக்கப்பட்ட உரை",
       "upNext": "அடுத்தது",
       "askAi": "AI ஐ கேளுங்கள்",
-      "deeperReflection": "ஆழமான பிரதிபலிப்பு",
       "skillsDemonstrated": "வெளிப்படுத்திய திறன்கள்",
       "sessionReview": "அமர்வு மதிப்பீடு"
     },

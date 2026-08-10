@@ -18,9 +18,8 @@ interface JournalItemPlayerProps {
 const AUTOSAVE_DELAY = 1000;
 
 /**
- * Journal item: one card per prompt with a debounced draft autosave (mirrors
- * the ReflectionTab pattern) and a Submit that completes the item once every
- * required prompt is answered.
+ * Journal item: one card per prompt with a debounced draft autosave and a
+ * Submit that completes the item once every required prompt is answered.
  */
 export const JournalItemPlayer: FC<JournalItemPlayerProps> = ({
   payload,

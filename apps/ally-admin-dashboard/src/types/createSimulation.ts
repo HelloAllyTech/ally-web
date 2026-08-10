@@ -59,6 +59,7 @@ export type FormData = {
   autoTerminationStatus?: boolean;
   experienceMode?: string;
   checklistType?: string;
+  summaryChecklistEnabled?: boolean;
   timerMode?: boolean;
   maxTimeValue?: string;
   showScoreMeter?: boolean;
