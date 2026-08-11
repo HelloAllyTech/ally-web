@@ -84,7 +84,7 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
   const { t } = useTranslation();
   const [reportVideoProgress] = useReportVideoProgressMutation();
   const [completed, setCompleted] = useState(alreadyCompleted);
-  const requiredPct = Math.round((payload.requiredWatchPct ?? 0) * 100) || 0;
+  const requiredPct = Math.round(payload.requiredWatchPct ?? 0);
 
   const { recordTime, recordPct, flush, watchedPct } = useVideoWatchProgress({
     durationSeconds: payload.durationSeconds,
