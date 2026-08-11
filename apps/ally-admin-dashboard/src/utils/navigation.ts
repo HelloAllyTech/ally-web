@@ -25,7 +25,6 @@ const buildSuperDuperAdminOnlyItems = (): Set<string> =>
     // every language (and every simulation defaulting to it) transcribes with.
     SIDEBAR_ITEMS.STT_CONFIGS,
     SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
-    SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
     SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
     SIDEBAR_ITEMS.TOOLTIPS,
     SIDEBAR_ITEMS.USER_BADGES,
@@ -185,11 +184,12 @@ export const applySavedOrder = (
  * then reordered by the user's saved sidebar order. The first element is the
  * user's "first tab" — used both to render the sidebar and to pick the default
  * landing route after login. Tabs fall into three gating tiers:
- *  - Super-duper-admin only (Characters, Languages, Guardrails, Tooltips,
- *    Badges, Agent Test Cases, Super Duper Admins, Settings, Logs): shown
- *    solely to SUPER_DUPER_ADMIN, independent of permissions.
- *  - Super-admin tier (Analytics, Competencies, AI Lab, Roleplay Session Logs):
- *    shown to both super-admin roles, independent of permissions.
+ *  - Super-duper-admin only (Characters, Speech Recognition, Language Model,
+ *    Guardrails, Tooltips, Badges, Agent Test Cases, Super Duper Admins,
+ *    Settings, Logs): shown solely to SUPER_DUPER_ADMIN, independent of
+ *    permissions.
+ *  - Super-admin tier (Analytics, Competencies, AI Lab, Roleplay Session Logs,
+ *    Languages): shown to both super-admin roles, independent of permissions.
  *  - Permission-gated (everything else): shown once permissions are loaded and
  *    the user holds the required permission.
  * The single-pass filter preserves each tab's natural order from
@@ -226,11 +226,15 @@ export const deriveNavigationItems = ({
     if (superDuperAdminOnlyItems.has(item.id)) return isSuperDuperAdmin;
 
     switch (item.id) {
-      // Super-admin-tier tabs (both super-admin roles). Role-gated.
+      // Super-admin-tier tabs (both super-admin roles). Role-gated. Languages
+      // (and the per-language glossary behind it) belongs here rather than in
+      // the super-duper set: the backend already grants a plain SUPER_ADMIN
+      // both view:admin:languages and edit:admin:language.
       case SIDEBAR_ITEMS.ANALYTICS:
       case SIDEBAR_ITEMS.COMPETENCIES:
       case SIDEBAR_ITEMS.AI_LAB:
       case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
+      case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
         return isSuperAdmin;
 
       // Permission-gated tabs require permissions to be loaded; until then

@@ -222,15 +222,17 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_SCENARIO_LANGUAGES}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <ScenarioLanguages />
             </PrivateLayout>
           }
         />
         <Route
+          // Reached from the Languages list, so it matches that tab's gate —
+          // narrowing it here would dead-end a plain super-admin.
           path={ROUTES.MANAGE_LANGUAGE_GLOSSARY(":id")}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
               <LanguageGlossary />
             </PrivateLayout>
           }
