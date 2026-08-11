@@ -105,12 +105,13 @@ describe("deriveNavigationItems", () => {
     expect(ids).toContain(SIDEBAR_ITEMS.COMPETENCIES);
     expect(ids).toContain(SIDEBAR_ITEMS.AI_LAB);
     expect(ids).toContain(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS);
+    expect(ids).toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
     // Super-duper-admin-only tabs are hidden from a plain super-admin.
     expect(ids).not.toContain(SIDEBAR_ITEMS.SETTINGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.LOGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.AGENT_TEST_CASES);
     expect(ids).not.toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
-    expect(ids).not.toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
+    expect(ids).not.toContain(SIDEBAR_ITEMS.STT_CONFIGS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.MANAGE_GUARDRAILS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.TOOLTIPS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.USER_BADGES);
@@ -123,6 +124,7 @@ describe("deriveNavigationItems", () => {
       savedOrder: undefined,
     });
     expect(result.map(i => i.id)).toEqual([
+      SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
       SIDEBAR_ITEMS.ANALYTICS,
       SIDEBAR_ITEMS.COMPETENCIES,
       SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS,
@@ -144,12 +146,12 @@ describe("deriveNavigationItems", () => {
     expect(ids).toContain(SIDEBAR_ITEMS.LOGS);
     expect(ids).toContain(SIDEBAR_ITEMS.AGENT_TEST_CASES);
     expect(ids).toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
-    expect(ids).toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
     expect(ids).toContain(SIDEBAR_ITEMS.MANAGE_GUARDRAILS);
     expect(ids).toContain(SIDEBAR_ITEMS.TOOLTIPS);
     expect(ids).toContain(SIDEBAR_ITEMS.USER_BADGES);
     // Super-admin-tier tabs remain visible too (duper is a super-admin).
     expect(ids).toContain(SIDEBAR_ITEMS.ANALYTICS);
+    expect(ids).toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
     // Logs stays last in the default order (Settings is now second-to-last).
     expect(ids[ids.length - 1]).toBe(SIDEBAR_ITEMS.LOGS);
   });
@@ -192,6 +194,7 @@ describe("deriveNavigationItems", () => {
     });
     const ids = result.map(i => i.id);
     expect(ids).not.toContain(SIDEBAR_ITEMS.CHARACTER_LIBRARY);
+    // Languages is super-admin-tier now, so a regular admin is still excluded.
     expect(ids).not.toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
     expect(ids).not.toContain(SIDEBAR_ITEMS.MANAGE_GUARDRAILS);
     expect(ids).not.toContain(SIDEBAR_ITEMS.TOOLTIPS);
@@ -235,8 +238,6 @@ describe("deriveNavigationItems", () => {
         SIDEBAR_ITEMS.CHARACTER_LIBRARY,
         SIDEBAR_ITEMS.STT_CONFIGS,
         SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
-        SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
-        SIDEBAR_ITEMS.SCENARIO_LANGUAGES,
         SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
         SIDEBAR_ITEMS.TOOLTIPS,
         SIDEBAR_ITEMS.USER_BADGES,
@@ -251,6 +252,7 @@ describe("deriveNavigationItems", () => {
     expect(byId.get(SIDEBAR_ITEMS.COMPETENCIES)?.superDuperAdminOnly).toBeFalsy();
     expect(byId.get(SIDEBAR_ITEMS.AI_LAB)?.superDuperAdminOnly).toBeFalsy();
     expect(byId.get(SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS)?.superDuperAdminOnly).toBeFalsy();
+    expect(byId.get(SIDEBAR_ITEMS.SCENARIO_LANGUAGES)?.superDuperAdminOnly).toBeFalsy();
     expect(byId.get(SIDEBAR_ITEMS.SIMULATION_STUDIO)?.superDuperAdminOnly).toBeFalsy();
   });
 
