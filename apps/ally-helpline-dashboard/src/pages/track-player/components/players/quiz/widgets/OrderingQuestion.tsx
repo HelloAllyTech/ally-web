@@ -51,10 +51,10 @@ const SortableRow: FC<RowProps> = ({ option, index, total, onMove }) => {
     >
       <button
         type="button"
-        aria-label={t("tracks2.player.prev")}
+        aria-label={t("tracks2.quiz.question.dragHandle")}
         {...attributes}
         {...listeners}
-        className="flex-shrink-0 cursor-grab text-typography-400 active:cursor-grabbing"
+        className="flex flex-shrink-0 items-center justify-center p-2 cursor-grab text-typography-400 active:cursor-grabbing"
       >
         <MenuIcon className="h-5 w-5" />
       </button>
@@ -62,19 +62,19 @@ const SortableRow: FC<RowProps> = ({ option, index, total, onMove }) => {
       <div className="flex flex-shrink-0 flex-col gap-0.5">
         <button
           type="button"
-          aria-label="move up"
+          aria-label={t("tracks2.quiz.question.moveUp")}
           disabled={index === 0}
           onClick={() => onMove(index, index - 1)}
-          className="flex h-6 w-6 items-center justify-center rounded-md text-typography-600 hover:bg-neutral-100 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-typography-600 hover:bg-neutral-100 disabled:opacity-30"
         >
           <ArrowUp className="h-3.5 w-3.5" />
         </button>
         <button
           type="button"
-          aria-label="move down"
+          aria-label={t("tracks2.quiz.question.moveDown")}
           disabled={index === total - 1}
           onClick={() => onMove(index, index + 1)}
-          className="flex h-6 w-6 items-center justify-center rounded-md text-typography-600 hover:bg-neutral-100 disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-typography-600 hover:bg-neutral-100 disabled:opacity-30"
         >
           <ArrowDownFilled className="h-3.5 w-3.5" />
         </button>

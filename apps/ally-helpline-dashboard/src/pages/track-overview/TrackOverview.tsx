@@ -16,7 +16,7 @@ import { SectionMilestone } from "./components/SectionMilestone";
 import { TrackProgressHeader } from "./components/TrackProgressHeader";
 
 /**
- * Track 2.0 overview / journey map. Assembles the sticky progress header and
+ * Track 2.0 overview / journey map. Assembles the progress header and
  * the section milestones on a vertical connector line. Unlocked/completed
  * item nodes deep-link into the player; locked ones are inert.
  */

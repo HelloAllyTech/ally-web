@@ -16,7 +16,7 @@ interface TrackProgressHeaderProps {
 }
 
 /**
- * Sticky header of the track overview: cover, title, progress bar,
+ * Header of the track overview: cover, title, progress bar,
  * "n of m" and the Start/Continue CTA.
  */
 export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
@@ -40,7 +40,7 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
       : t("common.start");
 
   return (
-    <div className="sticky top-0 z-10 bg-white pb-3 pt-2">
+    <div className="bg-white pb-3 pt-2">
       <div className="pt-4 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-typography-700 min-w-0">
           <button

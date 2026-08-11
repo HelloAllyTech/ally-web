@@ -252,22 +252,25 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   }
 
   const renderBreadcrumb = () => (
-    <div className="pt-6 pb-3 flex items-center justify-between">
-      <div className="flex items-center gap-2 text-sm text-typography-700">
-        <button onClick={() => navigate(-1)} className="hover:text-primary-500 transition-colors">
+    <div className="pt-6 pb-3 flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2 text-sm text-typography-700 min-w-0">
+        <button
+          onClick={() => navigate(-1)}
+          className="hover:text-primary-500 transition-colors whitespace-nowrap"
+        >
           {currentLabels.breadcrumb}
         </button>
         <ArrowRight />
-        <span className="text-primary-500 font-medium">{data.title}</span>
+        <span className="text-primary-500 font-medium truncate">{data.title}</span>
       </div>
-      <div className="flex items-center gap-2 text-sm text-typography-700">
+      <div className="flex items-center gap-2 text-sm text-typography-700 flex-shrink-0">
         <CreditsDisplay />
       </div>
     </div>
   );
 
   const renderCoverImage = () => (
-    <div className="relative h-[240px] w-full rounded-[8px] overflow-hidden">
+    <div className="relative h-[160px] sm:h-[240px] w-full rounded-[8px] overflow-hidden">
       <CustomImage
         src={data.coverImageUrl}
         alt={data.title}
@@ -299,7 +302,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   const renderInfo = () => (
     <div className="pt-8">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <h1 className="text-2xl font-bold text-typography-900">{data.title}</h1>
         {renderProgressBar()}
       </div>
@@ -318,7 +321,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
   );
 
   const renderHeaderSection = () => (
-    <div className="relative w-full sticky top-0 z-10 bg-white pb-[10px] pt-4">
+    <div className="relative w-full bg-white pb-[10px] pt-4">
       {renderBreadcrumb()}
       {renderCoverImage()}
       {renderInfo()}
@@ -327,19 +330,15 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   const renderScenariosList = () => (
     <div className="pb-6 pt-3">
-      <div className="mx-auto ml-[-10px] w-[calc(100%+20px)]">
-        <div>
-          {sortedScenarios.map((scenario, index) => (
-            <PathwayScenarioCard
-              key={scenario.sessionItemId || `scenario-${scenario.scenarioId}-${index}`}
-              scenario={scenario}
-              index={index}
-              onScenarioClick={handleScenarioClick}
-              onViewSummary={handleViewSummary}
-            />
-          ))}
-        </div>
-      </div>
+      {sortedScenarios.map((scenario, index) => (
+        <PathwayScenarioCard
+          key={scenario.sessionItemId || `scenario-${scenario.scenarioId}-${index}`}
+          scenario={scenario}
+          index={index}
+          onScenarioClick={handleScenarioClick}
+          onViewSummary={handleViewSummary}
+        />
+      ))}
     </div>
   );
 
@@ -371,7 +370,7 @@ export const CaseTrackDetails: FC<CaseTrackDetailsProps> = ({ type }) => {
 
   return (
     <>
-      <div className="min-h-dvh bg-white mx-[15%] font-primary">
+      <div className="min-h-dvh w-full max-w-3xl mx-auto bg-white px-4 sm:px-6 font-primary">
         {renderHeaderSection()}
         {renderScenariosList()}
       </div>

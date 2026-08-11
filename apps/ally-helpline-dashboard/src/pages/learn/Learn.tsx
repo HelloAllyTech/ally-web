@@ -193,7 +193,7 @@ export const Learn: FC = () => {
   };
 
   const renderLoadingSkeleton = () => (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
       {Array.from({ length: 6 }).map((_, index) => (
         <div key={index} className="h-[150px] sm:h-[200px] bg-gray-200 rounded-lg animate-pulse" />
       ))}
@@ -208,7 +208,7 @@ export const Learn: FC = () => {
       <>
         <ContinueLearningCard tracks={tracks} />
         <div
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[6px] sm:gap-[12px] mx-auto pb-10"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[6px] sm:gap-[12px] mx-auto pb-10"
           role="list"
           aria-label={t("learn.tabs.courses")}
         >
@@ -266,7 +266,7 @@ export const Learn: FC = () => {
 
     return (
       <div
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[6px] sm:gap-[12px] mx-auto pb-10"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[6px] sm:gap-[12px] mx-auto pb-10"
         role="list"
         aria-label={config.ariaLabel}
       >
@@ -330,7 +330,7 @@ export const Learn: FC = () => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="max-h-[calc(100dvh-380px)] pt-4 overflow-y-scroll px-[10px] custom-scrollbar"
+          className="pt-4 px-[10px]"
         >
           {renderContentGrid()}
         </motion.div>
@@ -339,7 +339,7 @@ export const Learn: FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full bg-white max-h-dvh overflow-y-hidden p-[10px] pl-0 sm:p-[24px] font-tertiary">
+    <div className="flex flex-col w-full bg-white p-[10px] pl-0 sm:p-[24px] font-tertiary">
       <PracticeStreakHeatmap className="mb-[24px]" onStartPractice={onStartPractice} />
       {renderPageHeader()}
       <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>

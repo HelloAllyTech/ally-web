@@ -57,17 +57,17 @@ export const PathwayScenarioCard: FC<PathwayScenarioCardProps> = ({
         ${isLocked ? "cursor-not-allowed" : "cursor-pointer"}
       `}
     >
-      <div className="flex gap-6 py-4 px-[10px] items-center">
+      <div className="flex gap-3 sm:gap-6 py-4 items-center">
         {/* Scenario Image */}
         <div className="relative flex-shrink-0">
           <CustomImage
             src={scenario.coverImageUrl}
             alt={scenario.title}
-            className="w-[120px] h-[60px] object-cover rounded-[8px] bg-background-secondary"
+            className="w-20 h-10 sm:w-[120px] sm:h-[60px] object-cover rounded-[8px] bg-background-secondary"
           />
           {isLocked && (
             <div className="absolute inset-0 bg-black/40 rounded-[8px] flex items-center justify-center">
-              <div className="w-12 h-12 flex items-center justify-center">
+              <div className="flex items-center justify-center">
                 <Lock className="w-5 h-5" />
               </div>
             </div>
@@ -75,21 +75,23 @@ export const PathwayScenarioCard: FC<PathwayScenarioCardProps> = ({
         </div>
 
         {/* Scenario Content */}
-        <div className="flex-1 flex flex-col justify-center">
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
           <div className="flex items-center mb-2">
             <p className="text-sm text-typography-700 font-tertiary">
               {t("common.simulationIndex", { index: index + 1 })}
             </p>
             {getStatusBadge(scenario.status, index, t)}
           </div>
-          <h3 className="text-lg text-typography-900 leading-tight">{scenario.title}</h3>
+          <h3 className="text-lg text-typography-900 leading-tight line-clamp-2">
+            {scenario.title}
+          </h3>
         </div>
 
         {/* View Summary Link */}
         {isCompleted && (
           <button
             onClick={handleViewSummary}
-            className="text-primary-500 font-medium text-sm hover:underline whitespace-nowrap"
+            className="flex-shrink-0 text-primary-500 font-medium text-sm hover:underline whitespace-nowrap"
           >
             {t("common.viewSummary")}
           </button>
