@@ -1366,7 +1366,9 @@
     "article": {
       "markRead": "Mark as read",
       "read": "Read",
-      "keepReading": "Keep reading to continue"
+      "keepReading": "Keep reading to continue",
+      "increaseFontSize": "Increase text size",
+      "decreaseFontSize": "Decrease text size"
     },
     "video": {
       "markWatched": "Mark as watched",
