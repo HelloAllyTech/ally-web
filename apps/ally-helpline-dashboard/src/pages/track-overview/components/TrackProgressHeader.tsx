@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 import { CustomImage } from "@ally-ui-mono/ui-shared";
 import { ArrowRight } from "@assets";
-import { CreditsDisplay } from "@components";
 import { ROUTES } from "@constants";
 import { TrackDetail } from "@types";
 
@@ -41,18 +40,15 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
 
   return (
     <div className="bg-white pb-3 pt-2">
-      <div className="pt-4 pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-typography-700 min-w-0">
-          <button
-            onClick={() => navigate(`${ROUTES.LEARN}?tab=courses`)}
-            className="hover:text-primary-500 transition-colors whitespace-nowrap"
-          >
-            {t("tracks2.breadcrumb")}
-          </button>
-          <ArrowRight />
-          <span className="text-primary-500 font-medium truncate">{track.title}</span>
-        </div>
-        <CreditsDisplay />
+      <div className="pt-4 pb-3 flex items-center gap-2 text-sm text-typography-700 min-w-0">
+        <button
+          onClick={() => navigate(`${ROUTES.LEARN}?tab=courses`)}
+          className="hover:text-primary-500 transition-colors whitespace-nowrap"
+        >
+          {t("tracks2.breadcrumb")}
+        </button>
+        <ArrowRight />
+        <span className="text-primary-500 font-medium truncate">{track.title}</span>
       </div>
 
       {track.coverImageUrl && (
@@ -66,29 +62,29 @@ export const TrackProgressHeader: FC<TrackProgressHeaderProps> = ({
       )}
 
       <div className="pt-4 sm:pt-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-          <h1 className="text-xl sm:text-2xl font-bold text-typography-900">{track.title}</h1>
-          <div className="flex items-center gap-3">
+        <h1 className="mb-2 text-xl sm:text-2xl font-bold text-typography-900">{track.title}</h1>
+
+        <div className="mb-4 flex items-center gap-3">
+          <div
+            className="h-2.5 flex-1 overflow-hidden rounded-full bg-neutral-200"
+            role="progressbar"
+            aria-valuenow={progressPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuetext={`${progressPct}%`}
+          >
             <div
-              className="w-32 sm:w-40 h-2 bg-neutral-200 rounded-full overflow-hidden"
-              role="progressbar"
-              aria-valuenow={progressPct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            >
-              <div
-                className={`h-full ${isComplete ? "bg-success-300" : "bg-primary-500"} rounded-full transition-all duration-300`}
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <span className="text-sm text-typography-700 whitespace-nowrap">
-              {t("tracks2.progress", { completed, total })}
-            </span>
+              className={`h-full rounded-full transition-all duration-500 ease-out ${isComplete ? "bg-success-300" : "bg-primary-500"}`}
+              style={{ width: `${progressPct}%` }}
+            />
           </div>
+          <span className="whitespace-nowrap text-sm font-medium text-typography-700">
+            {t("tracks2.progress", { completed, total })}
+          </span>
         </div>
 
         {track.description && (
-          <p className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed line-clamp-3">
+          <p className="text-sm sm:text-base text-typography-800 mb-4 leading-relaxed">
             {track.description}
           </p>
         )}

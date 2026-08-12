@@ -1,5 +1,7 @@
 import { FC } from "react";
 
+import { useTranslation } from "react-i18next";
+
 import { CustomCircularProgress } from "@components";
 import { TrackDetailItem, TrackItemStatus, TrackSection } from "@types";
 
@@ -24,6 +26,7 @@ export const SectionMilestone: FC<SectionMilestoneProps> = ({
   nextItemId,
   onItemClick,
 }) => {
+  const { t } = useTranslation();
   const items = [...section.items].sort((a, b) => a.order - b.order);
   const completedCount = items.filter(item => item.status === TrackItemStatus.COMPLETED).length;
   const sectionPct = items.length > 0 ? Math.round((completedCount / items.length) * 100) : 0;
@@ -42,8 +45,12 @@ export const SectionMilestone: FC<SectionMilestoneProps> = ({
         </div>
         <div className="min-w-0">
           <h2 className="truncate text-lg font-semibold text-typography-900">{section.title}</h2>
-          {section.description && (
+          {section.description ? (
             <p className="truncate text-xs text-typography-700">{section.description}</p>
+          ) : (
+            <p className="text-xs text-typography-700">
+              {t("tracks2.progress", { completed: completedCount, total: items.length })}
+            </p>
           )}
         </div>
       </div>

@@ -50,12 +50,13 @@ const StateChip: FC<{ item: TrackDetailItem; isNext: boolean }> = ({ item, isNex
 
 /**
  * A single item node row on the journey map. Locked nodes are dimmed with a
- * lock icon and a hover/focus tooltip; unlocked/completed nodes open the
- * player.
+ * lock icon and an always-visible reason line; the current/next item gets a
+ * ring highlight; unlocked/completed nodes open the player.
  */
 export const TrackItemNode: FC<TrackItemNodeProps> = ({ item, index, isNext, onClick }) => {
   const { t } = useTranslation();
   const isLocked = item.status === TrackItemStatus.LOCKED;
+  const isCurrent = isNext || (item.status === TrackItemStatus.UNLOCKED && Boolean(item.startedAt));
 
   const handleClick = () => {
     if (!isLocked) onClick(item);
@@ -66,7 +67,7 @@ export const TrackItemNode: FC<TrackItemNodeProps> = ({ item, index, isNext, onC
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.4) }}
-      className={`relative group flex ${index % 2 === 1 ? "sm:pl-8" : "sm:pl-0"}`}
+      className={`relative flex ${index % 2 === 1 ? "sm:pl-8" : "sm:pl-0"}`}
     >
       <button
         onClick={handleClick}
@@ -76,7 +77,9 @@ export const TrackItemNode: FC<TrackItemNodeProps> = ({ item, index, isNext, onC
         className={`relative flex w-full items-center gap-3 sm:gap-4 rounded-[14px] border p-3 text-left transition-all duration-200 ${
           isLocked
             ? "border-border-light bg-neutral-50 opacity-60 cursor-not-allowed"
-            : "border-border-light bg-white hover:border-primary-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer"
+            : isCurrent
+              ? "border-primary-400 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.08)] ring-2 ring-primary-100 hover:border-primary-500 cursor-pointer"
+              : "border-border-light bg-white hover:border-primary-300 hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] cursor-pointer"
         }`}
       >
         {/* Node circle with the type icon */}
@@ -92,18 +95,12 @@ export const TrackItemNode: FC<TrackItemNodeProps> = ({ item, index, isNext, onC
             <StateChip item={item} isNext={isNext} />
           </span>
           <span className="text-xs text-typography-700">{getTrackItemMeta(item, t)}</span>
+          {/* Always-visible reason, not hover-only, so it reaches touch and screen-reader users too. */}
+          {isLocked && (
+            <span className="mt-0.5 text-xs text-typography-400">{t("tracks2.lockedTooltip")}</span>
+          )}
         </span>
       </button>
-
-      {/* Locked tooltip (custom — avoids overflow-clipped Carbon Tooltip) */}
-      {isLocked && (
-        <span
-          role="tooltip"
-          className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-typography-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-        >
-          {t("tracks2.lockedTooltip")}
-        </span>
-      )}
     </motion.div>
   );
 };
