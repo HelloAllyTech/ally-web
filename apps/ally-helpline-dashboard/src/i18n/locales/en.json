@@ -1372,8 +1372,7 @@
     },
     "video": {
       "markWatched": "Mark as watched",
-      "watched": "Watched",
-      "watchToUnlock": "Watch {{pct}}% to continue"
+      "watched": "Watched"
     },
     "journal": {
       "submit": "Submit",
