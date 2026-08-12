@@ -19,13 +19,13 @@ export const CreditsDisplay: FC<CreditsDisplayProps> = ({ className = "" }) => {
   return (
     <AppTooltip location={TooltipLocation.CREDITS_DISPLAY_METER}>
       <div
-        className={`flex flex-row items-center min-w-[130px] justify-end ${className}`}
+        className={`flex flex-row items-center gap-1 min-w-[130px] justify-end ${className}`}
         data-testid="credits-display"
       >
         <div className="font-primary text-base text-typography-700 whitespace-nowrap">
           {t("learn.credits.used")}
         </div>
-        <Bolt data-testid="credits-icon" />
+        <Bolt data-testid="credits-icon" className="h-4 w-4 flex-shrink-0" />
         <span
           data-testid="credits-consumed"
           className={`font-primary font-bold text-lg ${limitReached ? "text-red-500" : "text-black"}`}
