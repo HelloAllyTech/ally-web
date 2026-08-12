@@ -3,6 +3,8 @@ import { FC, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { TooltipIcon } from "@assets";
 import { SegmentedToggle } from "@components";
 import { Button } from "@components";
 import { ButtonVariant } from "@components/types";
@@ -87,6 +89,17 @@ export const VideoItemEditor: FC<VideoItemEditorProps> = ({
       onDelete={onDelete}
     >
       <div className="flex flex-col gap-4">
+        <span className="inline-flex items-center gap-1">
+          <span className="text-sm font-medium text-typography-800">Video source</span>
+          <Tooltip
+            label="Switching between Upload and Embed keeps whatever you already added in the other mode, so you can switch back without losing it."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <SegmentedToggle value={mode} options={VIDEO_MODE_OPTIONS} onChange={handleModeChange} />
 
         {mode === "upload" ? (

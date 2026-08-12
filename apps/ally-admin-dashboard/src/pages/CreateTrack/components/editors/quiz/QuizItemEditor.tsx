@@ -2,8 +2,8 @@ import { FC, useState } from "react";
 
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
-import { TextArea } from "@ally-ui-mono/ui-shared";
-import { Plus, Trash } from "@assets";
+import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { Plus, TooltipIcon, Trash } from "@assets";
 import { QUIZ_QUESTION_TYPE_LABELS } from "@constants";
 import { QuizQuestion, QuizQuestionType, TrackFormValues, TrackItemType } from "@types";
 
@@ -177,9 +177,19 @@ export const QuizItemEditor: FC<QuizItemEditorProps> = ({ sectionIndex, itemInde
                 {renderTypeBody(activeQuestion.type, questionPath)}
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-typography-800">
-                    Explanation (optional)
-                  </label>
+                  <span className="inline-flex items-center gap-1">
+                    <label className="text-sm font-medium text-typography-800">
+                      Explanation (optional)
+                    </label>
+                    <Tooltip
+                      label="Only shown to learners if enabled under Quiz settings → Show explanations, below."
+                      align="top"
+                    >
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
+                  </span>
                   <Controller
                     control={control}
                     name={`${questionPath}.explanation`}

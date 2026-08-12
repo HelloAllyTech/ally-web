@@ -17,6 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { ArrowDown, DragIndicator, Plus, Trash, WarningAlt } from "@assets";
 import { TrackItemType, TrackSectionFormValue } from "@types";
 
@@ -77,15 +78,17 @@ export const SectionNode: FC<SectionNodeProps> = ({
   return (
     <div ref={setNodeRef} style={style} className="mb-1">
       <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-secondary-50 group">
-        <button
-          {...attributes}
-          {...listeners}
-          type="button"
-          className="cursor-grab active:cursor-grabbing text-typography-400 opacity-0 group-hover:opacity-100"
-          aria-label="Reorder section"
-        >
-          <DragIndicator className="w-3.5 h-3.5" />
-        </button>
+        <Tooltip label="Drag to reorder this section" align="top">
+          <button
+            {...attributes}
+            {...listeners}
+            type="button"
+            className="cursor-grab active:cursor-grabbing text-typography-400 opacity-0 group-hover:opacity-100"
+            aria-label="Reorder section"
+          >
+            <DragIndicator className="w-3.5 h-3.5" />
+          </button>
+        </Tooltip>
         <button
           type="button"
           onClick={() => setCollapsed(prev => !prev)}

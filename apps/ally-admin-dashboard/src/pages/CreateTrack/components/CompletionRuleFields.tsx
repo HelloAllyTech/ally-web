@@ -2,6 +2,8 @@ import { FC } from "react";
 
 import { Controller, useFormContext } from "react-hook-form";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { TooltipIcon } from "@assets";
 import { DEFAULT_VIDEO_WATCH_PCT, MAX_VIDEO_WATCH_PCT, MIN_VIDEO_WATCH_PCT } from "@constants";
 import { TrackFormValues, TrackItemType } from "@types";
 
@@ -71,9 +73,19 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
 
       {type === TrackItemType.VIDEO && (
         <div className="flex flex-col gap-2">
-          <label className={fieldLabel}>
-            Watch percentage ({MIN_VIDEO_WATCH_PCT}–{MAX_VIDEO_WATCH_PCT}%)
-          </label>
+          <span className="inline-flex items-center gap-1">
+            <label className={fieldLabel}>
+              Watch percentage ({MIN_VIDEO_WATCH_PCT}–{MAX_VIDEO_WATCH_PCT}%)
+            </label>
+            <Tooltip
+              label="Percentage of the video a learner must watch before this item counts as complete."
+              align="top"
+            >
+              <button type="button" className="cursor-pointer inline-flex items-center">
+                <TooltipIcon />
+              </button>
+            </Tooltip>
+          </span>
           <Controller
             control={control}
             name={`${base}.watchPct`}

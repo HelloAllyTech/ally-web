@@ -2,7 +2,8 @@ import { FC } from "react";
 
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
-import { Plus, Trash } from "@assets";
+import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { Plus, TooltipIcon, Trash } from "@assets";
 import { TrackFormValues } from "@types";
 
 interface OrderingEditorProps {
@@ -27,9 +28,19 @@ export const OrderingEditor: FC<OrderingEditorProps> = ({ questionPath }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-typography-800">
-        Items (drag order = correct order)
-      </label>
+      <span className="inline-flex items-center gap-1">
+        <label className="text-sm font-medium text-typography-800">
+          Items (drag order = correct order)
+        </label>
+        <Tooltip
+          label="The order you arrange these in becomes the answer key — there's no separate step to mark the correct order. Use the Up/Down buttons to reorder."
+          align="top"
+        >
+          <button type="button" className="cursor-pointer inline-flex items-center">
+            <TooltipIcon />
+          </button>
+        </Tooltip>
+      </span>
       {fields.map((field, itemIndex) => (
         <div key={field.fieldId} className="flex items-center gap-2">
           <span className="w-6 text-center text-sm text-typography-500">{itemIndex + 1}</span>

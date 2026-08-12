@@ -2,7 +2,8 @@ import { FC } from "react";
 
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
-import { Plus, Trash } from "@assets";
+import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { Plus, TooltipIcon, Trash } from "@assets";
 import { MAX_MCQ_OPTIONS, MIN_MCQ_OPTIONS } from "@constants";
 import { TrackFormValues } from "@types";
 
@@ -51,10 +52,20 @@ export const McqEditor: FC<McqEditorProps> = ({ questionPath, multi }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-typography-800">
-        Options ({fields.length}/{MAX_MCQ_OPTIONS}) —{" "}
-        {multi ? "check all correct answers" : "select the one correct answer"}
-      </label>
+      <span className="inline-flex items-center gap-1">
+        <label className="text-sm font-medium text-typography-800">
+          Options ({fields.length}/{MAX_MCQ_OPTIONS}) —{" "}
+          {multi ? "check all correct answers" : "select the one correct answer"}
+        </label>
+        <Tooltip
+          label="Whether learners can pick one answer or several is set when you add the question and can't be changed afterward — delete and re-add it to switch."
+          align="top"
+        >
+          <button type="button" className="cursor-pointer inline-flex items-center">
+            <TooltipIcon />
+          </button>
+        </Tooltip>
+      </span>
       {fields.map((field, optionIndex) => {
         const optionId = options?.[optionIndex]?.id;
         const isCorrect = optionId ? correctOptionIds.includes(optionId) : false;

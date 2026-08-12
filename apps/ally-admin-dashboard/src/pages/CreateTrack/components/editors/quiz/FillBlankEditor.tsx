@@ -2,8 +2,8 @@ import { FC, useRef, useState } from "react";
 
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { TextArea } from "@ally-ui-mono/ui-shared";
-import { Plus, Trash } from "@assets";
+import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { Plus, TooltipIcon, Trash } from "@assets";
 import { ToggleSwitch } from "@components";
 import { FillBlankDef, TrackFormValues } from "@types";
 
@@ -72,7 +72,17 @@ export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath }) => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-typography-800">Template</label>
+          <span className="inline-flex items-center gap-1">
+            <label className="text-sm font-medium text-typography-800">Template</label>
+            <Tooltip
+              label="Inserts a {{token}} placeholder at your cursor. Each token becomes a blank learners fill in, with its own accepted answers below."
+              align="top"
+            >
+              <button type="button" className="cursor-pointer inline-flex items-center">
+                <TooltipIcon />
+              </button>
+            </Tooltip>
+          </span>
           <button
             type="button"
             onClick={insertBlank}
@@ -111,6 +121,14 @@ export const FillBlankEditor: FC<FillBlankEditorProps> = ({ questionPath }) => {
                   <span className="text-xs font-mono text-typography-700">{`{{${token}}}`}</span>
                   <label className="flex items-center gap-2 text-xs text-typography-600">
                     Case sensitive
+                    <Tooltip
+                      label="When off, an answer matches regardless of capitalization. When on, learners must match the capitalization exactly."
+                      align="top"
+                    >
+                      <button type="button" className="cursor-pointer inline-flex items-center">
+                        <TooltipIcon />
+                      </button>
+                    </Tooltip>
                     <ToggleSwitch
                       enabled={blank.caseSensitive ?? false}
                       onChange={value => upsertBlank(token, { caseSensitive: value })}

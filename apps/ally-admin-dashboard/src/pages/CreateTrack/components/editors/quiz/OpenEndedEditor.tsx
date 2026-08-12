@@ -2,8 +2,8 @@ import { FC } from "react";
 
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 
-import { TextArea } from "@ally-ui-mono/ui-shared";
-import { Plus, Trash } from "@assets";
+import { TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { Plus, TooltipIcon, Trash } from "@assets";
 import { TrackFormValues } from "@types";
 
 interface OpenEndedEditorProps {
@@ -44,7 +44,17 @@ export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath }) => {
       </div>
 
       <div className="flex items-center gap-3">
-        <label className="text-sm font-medium text-typography-800">Max score</label>
+        <span className="inline-flex items-center gap-1">
+          <label className="text-sm font-medium text-typography-800">Max score</label>
+          <Tooltip
+            label="The highest score a grader (or AI grading) can award for this question."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <Controller
           control={control}
           name={
@@ -66,9 +76,19 @@ export const OpenEndedEditor: FC<OpenEndedEditorProps> = ({ questionPath }) => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-typography-800">
-          Rubric criteria (optional)
-        </label>
+        <span className="inline-flex items-center gap-1">
+          <label className="text-sm font-medium text-typography-800">
+            Rubric criteria (optional)
+          </label>
+          <Tooltip
+            label="Each criterion's weight indicates its relative importance when scoring against the max score above."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         {fields.map((field, index) => (
           <div key={field.fieldId} className="flex items-center gap-2">
             <Controller
