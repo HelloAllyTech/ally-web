@@ -2,7 +2,8 @@ import { FC } from "react";
 
 import { Controller, useFormContext } from "react-hook-form";
 
-import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
+import { Select, SelectItem, Tooltip } from "@ally-ui-mono/ui-shared";
+import { TooltipIcon } from "@assets";
 import { ToggleSwitch } from "@components";
 import { QUIZ_SHOW_EXPLANATIONS_OPTIONS } from "@constants";
 import { QuizShowExplanations, TrackFormValues } from "@types";
@@ -25,7 +26,17 @@ export const QuizSettingsFields: FC<QuizSettingsFieldsProps> = ({ sectionIndex, 
   return (
     <div className="flex flex-col divide-y divide-border-light">
       <div className={rowClass}>
-        <span className={labelClass}>Pass score (%)</span>
+        <span className="inline-flex items-center gap-1">
+          <span className={labelClass}>Pass score (%)</span>
+          <Tooltip
+            label="Minimum percentage of points a learner needs to pass this quiz."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <Controller
           control={control}
           name={`${base}.passScore`}
@@ -46,7 +57,17 @@ export const QuizSettingsFields: FC<QuizSettingsFieldsProps> = ({ sectionIndex, 
       </div>
 
       <div className={rowClass}>
-        <span className={labelClass}>Max attempts</span>
+        <span className="inline-flex items-center gap-1">
+          <span className={labelClass}>Max attempts</span>
+          <Tooltip
+            label="Checking Unlimited lets learners retake this quiz as many times as they want."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <Controller
           control={control}
           name={`${base}.maxAttempts`}
@@ -77,7 +98,17 @@ export const QuizSettingsFields: FC<QuizSettingsFieldsProps> = ({ sectionIndex, 
       </div>
 
       <div className={rowClass}>
-        <span className={labelClass}>Shuffle questions</span>
+        <span className="inline-flex items-center gap-1">
+          <span className={labelClass}>Shuffle questions</span>
+          <Tooltip
+            label="Randomizes the order questions appear in for each learner. Doesn't affect the order of answer options within a question — that's Shuffle options, below."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <Controller
           control={control}
           name={`${base}.shuffleQuestions`}
@@ -88,7 +119,17 @@ export const QuizSettingsFields: FC<QuizSettingsFieldsProps> = ({ sectionIndex, 
       </div>
 
       <div className={rowClass}>
-        <span className={labelClass}>Shuffle options</span>
+        <span className="inline-flex items-center gap-1">
+          <span className={labelClass}>Shuffle options</span>
+          <Tooltip
+            label="Randomizes the order of answer options (e.g. multiple-choice, matching) within each question."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <Controller
           control={control}
           name={`${base}.shuffleOptions`}
@@ -99,7 +140,17 @@ export const QuizSettingsFields: FC<QuizSettingsFieldsProps> = ({ sectionIndex, 
       </div>
 
       <div className={rowClass}>
-        <span className={labelClass}>Show explanations</span>
+        <span className="inline-flex items-center gap-1">
+          <span className={labelClass}>Show explanations</span>
+          <Tooltip
+            label="Controls when learners see each question's explanation text: right after answering, only after submitting the whole quiz, or never."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <Controller
           control={control}
           name={`${base}.showExplanations`}

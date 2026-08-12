@@ -3,8 +3,8 @@ import { FC, useRef } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
-import { CustomImage, TextArea } from "@ally-ui-mono/ui-shared";
-import { Trash } from "@assets";
+import { CustomImage, TextArea, Tooltip } from "@ally-ui-mono/ui-shared";
+import { TooltipIcon, Trash } from "@assets";
 import { Button, ToggleSwitch } from "@components";
 import { ButtonVariant } from "@components/types";
 import { TrackFormValues } from "@types";
@@ -118,7 +118,17 @@ export const TrackSettingsEditor: FC = () => {
 
       <div className="flex items-center justify-between gap-4">
         <div className="flex flex-col">
-          <span className={labelClass}>Global track</span>
+          <span className="inline-flex items-center gap-1">
+            <span className={labelClass}>Global track</span>
+            <Tooltip
+              label="Makes this course available to every organization on the platform, not just yours. Only super admins can turn this on."
+              align="top"
+            >
+              <button type="button" className="cursor-pointer inline-flex items-center">
+                <TooltipIcon />
+              </button>
+            </Tooltip>
+          </span>
           <span className="text-xs text-typography-500">
             Available to every organization (super-admin library).
           </span>
@@ -133,7 +143,17 @@ export const TrackSettingsEditor: FC = () => {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className={labelClass}>Estimated duration (minutes, optional)</label>
+        <span className="inline-flex items-center gap-1">
+          <label className={labelClass}>Estimated duration (minutes, optional)</label>
+          <Tooltip
+            label="Shown to learners as a time estimate on the course card. It's informational only — it doesn't gate progress or completion."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <Controller
           control={control}
           name="estimatedDurationMinutes"

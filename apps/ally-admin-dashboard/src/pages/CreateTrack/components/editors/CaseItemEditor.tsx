@@ -2,6 +2,8 @@ import { FC } from "react";
 
 import { useFormContext, useWatch } from "react-hook-form";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
+import { TooltipIcon } from "@assets";
 import { GetScenarioType, TrackFormValues, TrackItemType } from "@types";
 
 import { ItemEditorFrame } from "./ItemEditorFrame";
@@ -39,7 +41,17 @@ export const CaseItemEditor: FC<CaseItemEditorProps> = ({ sectionIndex, itemInde
       onDelete={onDelete}
     >
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-typography-800">Case</label>
+        <span className="inline-flex items-center gap-1">
+          <label className="text-sm font-medium text-typography-800">Case</label>
+          <Tooltip
+            label="Picking a case fills in the item's Title above, but only if the title is still empty."
+            align="top"
+          >
+            <button type="button" className="cursor-pointer inline-flex items-center">
+              <TooltipIcon />
+            </button>
+          </Tooltip>
+        </span>
         <ReferencePicker
           entityType="case"
           selected={{ id: caseId ?? null, title: refTitle, coverImageUrl: refCoverImageUrl }}

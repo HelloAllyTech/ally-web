@@ -3,6 +3,7 @@ import { FC } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { Tooltip } from "@ally-ui-mono/ui-shared";
 import { DragIndicator, WarningAlt } from "@assets";
 import { TRACK_ITEM_TYPE_LABELS } from "@constants";
 import { TrackItemFormValue } from "@types";
@@ -45,16 +46,18 @@ export const ItemNode: FC<ItemNodeProps> = ({
         isSelected ? "bg-primary-50 text-primary-700" : "hover:bg-secondary-50 text-typography-800"
       }`}
     >
-      <button
-        {...attributes}
-        {...listeners}
-        type="button"
-        onClick={event => event.stopPropagation()}
-        className="cursor-grab active:cursor-grabbing text-typography-400 opacity-0 group-hover:opacity-100"
-        aria-label="Reorder item"
-      >
-        <DragIndicator className="w-3.5 h-3.5" />
-      </button>
+      <Tooltip label="Drag to reorder this item" align="top">
+        <button
+          {...attributes}
+          {...listeners}
+          type="button"
+          onClick={event => event.stopPropagation()}
+          className="cursor-grab active:cursor-grabbing text-typography-400 opacity-0 group-hover:opacity-100"
+          aria-label="Reorder item"
+        >
+          <DragIndicator className="w-3.5 h-3.5" />
+        </button>
+      </Tooltip>
       <span className="text-[11px] uppercase tracking-wide text-typography-400 flex-shrink-0">
         {TRACK_ITEM_TYPE_LABELS[item.type].slice(0, 4)}
       </span>

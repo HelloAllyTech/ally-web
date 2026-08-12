@@ -2,8 +2,8 @@ import { FC } from "react";
 
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { Select, SelectItem } from "@ally-ui-mono/ui-shared";
-import { Plus, Trash } from "@assets";
+import { Select, SelectItem, Tooltip } from "@ally-ui-mono/ui-shared";
+import { Plus, TooltipIcon, Trash } from "@assets";
 import { MatchingPair, QuizOption, TrackFormValues } from "@types";
 
 interface MatchingEditorProps {
@@ -122,9 +122,19 @@ export const MatchingEditor: FC<MatchingEditorProps> = ({ questionPath }) => {
       {/* Distractor rights: right entries beyond the paired rows. */}
       {right.length > left.length && (
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-medium text-typography-600">
-            Extra right options (distractors)
-          </label>
+          <span className="inline-flex items-center gap-1">
+            <label className="text-xs font-medium text-typography-600">
+              Extra right options (distractors)
+            </label>
+            <Tooltip
+              label="A distractor is a right-side option with no correct match. Add one to make the question harder without changing the number of correct pairs."
+              align="top"
+            >
+              <button type="button" className="cursor-pointer inline-flex items-center">
+                <TooltipIcon />
+              </button>
+            </Tooltip>
+          </span>
           {right.slice(left.length).map(entry => (
             <div key={entry.id} className="flex items-center gap-2">
               <input
