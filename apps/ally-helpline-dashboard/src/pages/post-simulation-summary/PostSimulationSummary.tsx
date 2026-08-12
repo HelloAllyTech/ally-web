@@ -10,10 +10,11 @@ import { Tabs } from "@ally-ui-mono/ui-shared";
 import {
   useCreateReviewMutation,
   useGetAvailableLanguagesQuery,
+  useGetLearnTrackDetailQuery,
   useGetSimulationSummaryQuery,
   useUpdateReviewMutation,
 } from "@api";
-import { BackCircle, Comment } from "@assets";
+import { ArrowRight, BackCircle, Comment } from "@assets";
 import {
   AskAiTab,
   Button,
@@ -23,15 +24,16 @@ import {
   SkillsTab,
   ToggleSwitch,
 } from "@components";
-import { REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
+import { buildTrackRoute, REVIEW_PRIVACY_OPTIONS_VALUES, ROUTES } from "@constants";
 import {
   FeedbackDialog,
   ShortSessionUI,
   SimulationSummary,
   useSimulationSummaryPolling,
 } from "@containers";
-import { useNextChallenge } from "@hooks";
-import { pageType, SessionType, ShareForReviewsInput } from "@types";
+import { useContinueTrack, useNextChallenge } from "@hooks";
+import { ActiveTrackContext, pageType, SessionType, ShareForReviewsInput } from "@types";
+import { readTrackContext } from "@utils";
 
 import { StreakMoment, UpNextTab } from "./components";
 import { SimulationTranscriptTab } from "../calls/components";
@@ -57,6 +59,16 @@ export const PostSimulationSummary: FC = () => {
   const [createReview] = useCreateReviewMutation();
   const [updateReview] = useUpdateReviewMutation();
   const nextChallenge = useNextChallenge(summary);
+
+  // Track 2.0: if this roleplay was launched from within a track, keep the
+  // learner anchored to that course instead of surfacing an unrelated
+  // recommendation — see the breadcrumb + bottom CTA below.
+  const [trackContext] = useState<ActiveTrackContext | null>(() => readTrackContext());
+  const { data: trackDetail } = useGetLearnTrackDetailQuery(
+    { trackId: trackContext?.trackId ?? "" },
+    { skip: !trackContext },
+  );
+  const continueTrack = useContinueTrack(trackContext);
 
   const { data: availableLanguages } = useGetAvailableLanguagesQuery({});
   const originalLanguageCode = useMemo(() => {
@@ -273,7 +285,26 @@ export const PostSimulationSummary: FC = () => {
         animate="visible"
         className="relative flex min-h-0 w-full max-w-4xl flex-1 flex-col gap-6 self-center px-4 pb-8 sm:pb-16 sm:px-6 items-center"
       >
-        <div className="mt-8 flex w-full shrink-0 items-center justify-between">
+        {trackContext && (
+          <div className="mt-8 flex w-full shrink-0 items-center gap-2 text-sm text-typography-700 min-w-0">
+            <button
+              onClick={() => guardExit(() => navigate(`${ROUTES.LEARN}?tab=courses`))}
+              className="hover:text-primary-500 transition-colors whitespace-nowrap"
+            >
+              {t("tracks2.breadcrumb")}
+            </button>
+            <ArrowRight />
+            <button
+              onClick={() => guardExit(() => navigate(buildTrackRoute(trackContext.trackId)))}
+              className="text-primary-500 font-medium truncate hover:underline"
+            >
+              {trackDetail?.title ?? t("common.loading")}
+            </button>
+          </div>
+        )}
+        <div
+          className={`${trackContext ? "mt-2" : "mt-8"} flex w-full shrink-0 items-center justify-between`}
+        >
           <div className="flex items-center gap-2 text-black text-2xl sm:text-4xl font-normal text-left font-secondary">
             <button onClick={() => guardExit(() => navigate(-1))}>
               <BackCircle />
@@ -352,18 +383,29 @@ export const PostSimulationSummary: FC = () => {
             >
               {getTabContent()}
             </div>
-            {!isLoading && !summary?.scenarioPathSessionItemId && !summary?.caseSessionItemId && (
-              <div className="flex flex-col items-center gap-3 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
-                {nextChallenge && (
-                  <div className="w-full max-w-4xl px-4 sm:px-6">
-                    <NextChallengeCard recommendation={nextChallenge} />
-                  </div>
-                )}
-                <Button onClick={() => navigate(ROUTES.LEARN)}>
-                  {t("postSim.common.tryAnother")}
-                </Button>
+            {!isLoading && trackContext && (
+              <div className="flex flex-col items-center gap-2 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                <span className="font-primary text-sm text-typography-700">
+                  {t("tracks2.continueLearning.label")}
+                </span>
+                <Button onClick={() => guardExit(continueTrack)}>{t("common.continue")}</Button>
               </div>
             )}
+            {!isLoading &&
+              !trackContext &&
+              !summary?.scenarioPathSessionItemId &&
+              !summary?.caseSessionItemId && (
+                <div className="flex flex-col items-center gap-3 fixed bottom-0 left-0 right-0 bg-white p-[20px]">
+                  {nextChallenge && (
+                    <div className="w-full max-w-4xl px-4 sm:px-6">
+                      <NextChallengeCard recommendation={nextChallenge} />
+                    </div>
+                  )}
+                  <Button onClick={() => navigate(ROUTES.LEARN)}>
+                    {t("postSim.common.tryAnother")}
+                  </Button>
+                </div>
+              )}
           </>
         )}
       </motion.div>
