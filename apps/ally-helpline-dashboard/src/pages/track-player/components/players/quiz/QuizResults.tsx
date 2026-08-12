@@ -39,17 +39,17 @@ const QuestionRow: FC<{
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="flex w-full items-center gap-3 p-3 text-left"
+        className="flex w-full items-start gap-3 p-3 text-left"
       >
-        {statusIcon}
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-typography-900">
+        <span className="mt-0.5">{statusIcon}</span>
+        <span className="min-w-0 flex-1 text-sm font-medium text-typography-900">
           {index + 1}. {question?.prompt ?? ""}
         </span>
         <span className="flex-shrink-0 text-xs text-typography-600">
           {result.pointsAwarded}/{result.pointsPossible}
         </span>
         <ArrowDownFilled
-          className={`h-3.5 w-3.5 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`mt-0.5 h-3.5 w-3.5 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && (
