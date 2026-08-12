@@ -107,6 +107,7 @@ export const ProgressVideoPlayer: React.FC<ProgressVideoPlayerProps> = ({
       src={src}
       poster={poster}
       controls
+      controlsList="nodownload"
       playsInline
       preload="metadata"
       className={`w-full h-full bg-black ${className}`}

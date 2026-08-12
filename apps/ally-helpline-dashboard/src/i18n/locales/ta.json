@@ -1400,8 +1400,7 @@
     },
     "video": {
       "markWatched": "பார்த்ததாகக் குறி",
-      "watched": "பார்த்தாயிற்று",
-      "watchToUnlock": "தொடர {{pct}}% பார்"
+      "watched": "பார்த்தாயிற்று"
     },
     "journal": {
       "submit": "சமர்ப்பி",

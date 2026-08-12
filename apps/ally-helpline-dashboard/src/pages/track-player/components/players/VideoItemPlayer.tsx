@@ -111,11 +111,6 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
 
   const renderTrackedControls = () => (
     <div className="flex flex-shrink-0 items-center justify-between gap-3 border-t border-border-light bg-white px-4 py-3">
-      <span className="text-xs text-typography-700">
-        {completed
-          ? t("tracks2.video.watched")
-          : t("tracks2.video.watchToUnlock", { pct: requiredPct })}
-      </span>
       {completed ? (
         <span className="inline-flex items-center gap-2 text-sm font-medium text-success-800">
           <TickGreenBackground className="h-4 w-4" />
@@ -164,7 +159,6 @@ export const VideoItemPlayer: FC<VideoItemPlayerProps> = ({
   return (
     <ManualVideo
       url={payload.url}
-      requiredPct={requiredPct}
       completed={completed}
       onTick={recordTime}
       onMarkWatched={() => {
@@ -271,12 +265,11 @@ const VimeoVideo: FC<{
 
 const ManualVideo: FC<{
   url: string;
-  requiredPct: number;
   completed: boolean;
   onTick: (t: number) => void;
   onMarkWatched: () => void;
   meetsRequirement: boolean;
-}> = ({ url, requiredPct, completed, onTick, onMarkWatched, meetsRequirement }) => {
+}> = ({ url, completed, onTick, onMarkWatched, meetsRequirement }) => {
   const { t } = useTranslation();
   const elapsedRef = useRef(0);
 
@@ -306,11 +299,6 @@ const ManualVideo: FC<{
         </div>
       </div>
       <div className="flex flex-shrink-0 items-center justify-between gap-3 border-t border-border-light bg-white px-4 py-3">
-        <span className="text-xs text-typography-700">
-          {completed
-            ? t("tracks2.video.watched")
-            : t("tracks2.video.watchToUnlock", { pct: requiredPct })}
-        </span>
         {completed ? (
           <span className="inline-flex items-center gap-2 text-sm font-medium text-success-800">
             <TickGreenBackground className="h-4 w-4" />

@@ -1400,8 +1400,7 @@
     },
     "video": {
       "markWatched": "पाहिले म्हणून चिन्हांकित करा",
-      "watched": "पाहिले",
-      "watchToUnlock": "पुढे जाण्यासाठी {{pct}}% पाहा"
+      "watched": "पाहिले"
     },
     "journal": {
       "submit": "सबमिट करा",
