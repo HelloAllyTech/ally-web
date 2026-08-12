@@ -21,6 +21,19 @@ const READ_SCROLL_THRESHOLD = 0.95;
 /** If the article doesn't scroll, auto-eligible after this many ms. */
 const NO_SCROLL_READY_MS = 3000;
 
+/** Selectable article text sizes, in rem. Persisted across articles/sessions. */
+const FONT_SCALE_STEPS = [1, 1.125, 1.25, 1.375, 1.5];
+const DEFAULT_FONT_SCALE_INDEX = 0;
+const FONT_SCALE_STORAGE_KEY = "ally.trackArticle.fontScaleIndex";
+
+function readStoredFontScaleIndex(): number {
+  const raw = window.localStorage.getItem(FONT_SCALE_STORAGE_KEY);
+  const parsed = raw === null ? NaN : Number(raw);
+  return Number.isInteger(parsed) && parsed >= 0 && parsed < FONT_SCALE_STEPS.length
+    ? parsed
+    : DEFAULT_FONT_SCALE_INDEX;
+}
+
 /**
  * Article item: renders sanitized HTML with a thin scroll-progress bar and
  * a mark-read affordance that unlocks once the reader reaches ~95% (via an
@@ -41,6 +54,15 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
   const [reachedEnd, setReachedEnd] = useState(false);
   const [marked, setMarked] = useState(alreadyCompleted);
   const [markArticleRead, { isLoading }] = useMarkArticleReadMutation();
+  const [fontScaleIndex, setFontScaleIndex] = useState(readStoredFontScaleIndex);
+
+  const changeFontScale = (delta: 1 | -1) => {
+    setFontScaleIndex(prev => {
+      const next = Math.min(FONT_SCALE_STEPS.length - 1, Math.max(0, prev + delta));
+      window.localStorage.setItem(FONT_SCALE_STORAGE_KEY, String(next));
+      return next;
+    });
+  };
 
   // Scroll progress bar.
   useEffect(() => {
@@ -104,7 +126,30 @@ export const ArticleItemPlayer: FC<ArticleItemPlayerProps> = ({
       </div>
 
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-        <article className="mx-auto max-w-[68ch]">
+        <div className="mx-auto mb-3 flex max-w-[68ch] items-center justify-end gap-1">
+          <button
+            type="button"
+            onClick={() => changeFontScale(-1)}
+            disabled={fontScaleIndex === 0}
+            aria-label={t("tracks2.article.decreaseFontSize")}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold text-typography-700 transition-colors hover:bg-neutral-100 disabled:pointer-events-none disabled:opacity-40"
+          >
+            A-
+          </button>
+          <button
+            type="button"
+            onClick={() => changeFontScale(1)}
+            disabled={fontScaleIndex === FONT_SCALE_STEPS.length - 1}
+            aria-label={t("tracks2.article.increaseFontSize")}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-base font-semibold text-typography-700 transition-colors hover:bg-neutral-100 disabled:pointer-events-none disabled:opacity-40"
+          >
+            A+
+          </button>
+        </div>
+        <article
+          className="mx-auto max-w-[68ch]"
+          style={{ fontSize: `${FONT_SCALE_STEPS[fontScaleIndex]}rem` }}
+        >
           <RichTextRenderer content={payload.html} allowImages />
           <div ref={sentinelRef} aria-hidden className="h-px w-full" />
         </article>
