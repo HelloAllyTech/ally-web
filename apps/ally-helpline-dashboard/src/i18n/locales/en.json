@@ -1388,7 +1388,8 @@
       "start": "Start roleplay",
       "openCase": "Open case",
       "replay": "Replay",
-      "completed": "Completed"
+      "completed": "Completed",
+      "completedOn": "Completed {{date}}"
     },
     "quiz": {
       "intro": {
