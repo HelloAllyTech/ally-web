@@ -39,6 +39,12 @@ vi.mock("@api", () => ({
   },
 }));
 
+/**
+ * Mirrors the REAL shared Tabs render — `{label} {showCount ? count || "0" : ""}` — rather than an
+ * idealised version of it. An earlier mock rendered `item.count ?? ""`, which let a test pass while
+ * the live strip showed a literal "0" after all seven labels. A mock that flatters the code under
+ * test is worse than no mock.
+ */
 vi.mock("@ally-ui-mono/ui-shared", () => ({
   Tabs: ({
     items,
@@ -49,8 +55,8 @@ vi.mock("@ally-ui-mono/ui-shared", () => ({
   }) => (
     <div data-testid="tabs" data-show-count={String(showCount)}>
       {items.map(item => (
-        <span key={item.id} data-testid={`tab-${item.id}`} data-count={item.count ?? ""}>
-          {item.label}
+        <span key={item.id} data-testid={`tab-${item.id}`}>
+          {item.label} {showCount ? item.count || "0" : ""}
         </span>
       ))}
     </div>
@@ -85,11 +91,22 @@ describe("WhatsAppBot shell", () => {
   });
 
   describe("the queue badge", () => {
-    it("puts the open-question count on the Unanswered tab", () => {
+    it("puts the open-question count in the Unanswered label", () => {
       renderAt();
 
-      expect(screen.getByTestId("tab-unanswered").dataset.count).toBe("12");
-      expect(screen.getByTestId("tabs").dataset.showCount).toBe("true");
+      expect(screen.getByTestId("tab-unanswered").textContent).toContain("Unanswered (12)");
+    });
+
+    it("leaves showCount OFF, so no other tab renders a stray zero", () => {
+      renderAt();
+
+      // The shared Tabs applies showCount to the WHOLE strip: turning it on to badge one tab puts a
+      // literal "0" after every label. This is the regression that shipped and had to be caught in a
+      // browser.
+      expect(screen.getByTestId("tabs").dataset.showCount).toBe("false");
+      for (const id of ["corpus", "templates", "settings", "conversations", "usage"]) {
+        expect(screen.getByTestId(`tab-${id}`).textContent?.trim()).not.toMatch(/\b0$/);
+      }
     });
 
     it("counts only OPEN questions", () => {
@@ -103,12 +120,14 @@ describe("WhatsAppBot shell", () => {
       expect(params.limit).toBe(1);
     });
 
-    it("carries no count on the other tabs, so none of them render a zero", () => {
+    it("shows no badge at all when the queue is empty", () => {
+      // "Unanswered (0)" is noise, and a badge that never disappears stops meaning "work is waiting".
+      mockQueue = { count: 0 };
+
       renderAt();
 
-      for (const id of ["corpus", "templates", "settings", "conversations", "usage"]) {
-        expect(screen.getByTestId(`tab-${id}`).dataset.count).toBe("");
-      }
+      expect(screen.getByTestId("tab-unanswered").textContent).toContain("Unanswered");
+      expect(screen.getByTestId("tab-unanswered").textContent).not.toContain("(");
     });
 
     it("survives the count being unavailable", () => {
@@ -116,7 +135,7 @@ describe("WhatsAppBot shell", () => {
 
       renderAt();
 
-      expect(screen.getByTestId("tab-unanswered").dataset.count).toBe("0");
+      expect(screen.getByTestId("tab-unanswered").textContent).not.toContain("(");
     });
   });
 

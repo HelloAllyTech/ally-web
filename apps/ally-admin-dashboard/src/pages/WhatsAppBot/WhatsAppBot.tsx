@@ -66,13 +66,25 @@ export const WhatsAppBot: React.FC = () => {
     status: WaUnansweredStatus.OPEN,
   });
 
-  const tabItems = useMemo(
-    () =>
-      TAB_ITEMS.map(item =>
-        item.id === WhatsAppBotTab.UNANSWERED ? { ...item, count: openQueue?.count ?? 0 } : item,
-      ),
-    [openQueue?.count],
-  );
+  /**
+   * The open-queue size goes in the LABEL, not into `count` with `showCount`.
+   *
+   * The shared Tabs renders `showCount ? item.count || "0" : ""` — one flag for the whole strip — so
+   * enabling it to badge a single tab puts a literal "0" after all seven labels. Fixing that in
+   * ui-shared is the better answer but is a shared-surface change needing all three app suites; this
+   * gets the same result with no blast radius.
+   *
+   * Only rendered when something is actually waiting: "Unanswered (0)" is noise, and a badge that
+   * never disappears stops meaning "there is work here".
+   */
+  const tabItems = useMemo(() => {
+    const open = openQueue?.count ?? 0;
+    return TAB_ITEMS.map(item =>
+      item.id === WhatsAppBotTab.UNANSWERED && open > 0
+        ? { ...item, label: `${item.label} (${open})` }
+        : item,
+    );
+  }, [openQueue?.count]);
 
   const activeTab = useMemo(() => {
     const requested = searchParams.get("tab");
@@ -112,9 +124,7 @@ export const WhatsAppBot: React.FC = () => {
     <div className="py-[2px] font-primary relative">
       <h1 className="text-2xl text-typography-900 pb-1 font-secondary">{en.whatsappBot.title}</h1>
       <p className="text-sm text-typography-600 pb-6">{en.whatsappBot.subtitle}</p>
-      {/* showCount is on so the Unanswered badge renders. Every other tab passes no count, which
-          the shared Tabs omits rather than showing a zero. */}
-      <Tabs items={tabItems} activeId={activeTab} onChange={handleTabChange} showCount />
+      <Tabs items={tabItems} activeId={activeTab} onChange={handleTabChange} showCount={false} />
       {renderTab()}
     </div>
   );

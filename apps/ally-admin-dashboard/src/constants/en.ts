@@ -1413,9 +1413,9 @@ export const en = {
       heading: "Usage",
       subtitle: "How the bot is being used, and whether it is answering.",
       rangeLabel: "Period",
-      range30: "Last 30 days",
-      range90: "Last 90 days",
-      range7: "Last 7 days",
+      range30: "30 days",
+      range90: "90 days",
+      range7: "7 days",
       declineRateHelp:
         'Share of questions that reached the corpus and got no answer. Greetings and keyword replies are excluded, so a quiet week of "hi" does not read as a corpus failure.',
       latencyHelp: "How long a worker waits for a reply.",
@@ -1431,6 +1431,8 @@ export const en = {
       errors: "Errors",
       latency: "Reply time (p50 / p95)",
       outcomesHeading: "Outcomes",
+      outcomesHelp:
+        "Every reply the bot sent, by what handled it. A rising orange band is the corpus falling behind the questions being asked.",
       languagesHeading: "By language",
       languagesHelp:
         "A decline rate much higher for one language than for English means retrieval is failing for it before an answer is written — check that translate-before-searching is on.",

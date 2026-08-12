@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { OrganizationMetrics } from "../OrganizationMetrics";
@@ -180,6 +180,21 @@ describe("OrganizationMetrics", () => {
     render(<OrganizationMetrics />);
 
     expect(screen.queryByTestId("organization-metrics-most-used-list")).toBeNull();
+  });
+
+  it("offers an all-time range and queries it when picked", () => {
+    render(<OrganizationMetrics />);
+
+    expect(screen.getByTestId("toggle-all")).toHaveTextContent("All time");
+    expect(screen.getByTestId("toggle-value")).toHaveTextContent("30d");
+
+    fireEvent.click(screen.getByTestId("toggle-all"));
+
+    expect(screen.getByTestId("toggle-value")).toHaveTextContent("all");
+    expect(mockUseGetOrganizationMetricsQuery).toHaveBeenLastCalledWith(
+      { range: "all" },
+      { skip: false },
+    );
   });
 
   it("renders a trend chart for simulations, active users, and new learners", () => {
