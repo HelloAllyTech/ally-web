@@ -235,6 +235,8 @@ export interface StartRoleplayItemPayload extends StartTrackItemBase {
   type: TrackItemType.ROLEPLAY;
   scenarioId: number;
   completionCriteria: TrackCompletionCriteria | null;
+  /** Latest ended scenario session for this item, when already completed. */
+  lastScenarioSessionId: string | null;
 }
 
 export interface StartCaseItemPayload extends StartTrackItemBase {
