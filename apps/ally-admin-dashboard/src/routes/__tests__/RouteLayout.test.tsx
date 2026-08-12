@@ -55,6 +55,7 @@ vi.mock("@pages", () => ({
   RoleplayLivePreview: () => <div>RoleplayLivePreviewPage</div>,
   Settings: () => <div>SettingsPage</div>,
   Logs: () => <div>LogsPage</div>,
+  WhatsAppBot: () => <div>WhatsAppBotPage</div>,
   Terms: () => <div>TermsPage</div>,
   Privacy: () => <div>PrivacyPage</div>,
   AILab: () => <div>AILabPage</div>,

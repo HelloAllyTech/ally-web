@@ -26,3 +26,4 @@ export * from "./aiLab";
 export * from "./productRoadmap";
 export * from "./analyticsAgent";
 export * from "./analyticsSuggestions";
+export * from "./whatsappBot";

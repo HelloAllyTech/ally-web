@@ -63,6 +63,7 @@ export const SIDEBAR_ITEMS = {
   AI_LAB: "ai-lab",
   SETTINGS: "settings",
   LOGS: "logs",
+  WHATSAPP_BOT: "whatsapp-bot",
 };
 
 /**

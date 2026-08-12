@@ -367,6 +367,44 @@ export const ApiEndpoints = {
     ACCEPT: (id: string) => `/v1/analytics/suggestions/${id}/accept`,
     REJECT: (id: string) => `/v1/analytics/suggestions/${id}/reject`,
   },
+  WHATSAPP_BOT: {
+    // Corpus (ally-be src/knowledge-base)
+    DOCUMENTS: "/v1/knowledge-base/documents",
+    DOCUMENT_UPLOAD_URL: "/v1/knowledge-base/documents/upload-url",
+    DOCUMENT_BY_ID: (id: string) => `/v1/knowledge-base/documents/${id}`,
+    DOCUMENT_CONTENT: (id: string) => `/v1/knowledge-base/documents/${id}/content`,
+    DOCUMENT_CHUNKS: (id: string) => `/v1/knowledge-base/documents/${id}/chunks`,
+    DOCUMENT_REINDEX: (id: string) => `/v1/knowledge-base/documents/${id}/reindex`,
+    DOCUMENT_ARCHIVE: (id: string) => `/v1/knowledge-base/documents/${id}/archive`,
+    DOCUMENT_UNARCHIVE: (id: string) => `/v1/knowledge-base/documents/${id}/unarchive`,
+    CHUNK_BY_ID: (chunkId: string) => `/v1/knowledge-base/chunks/${chunkId}`,
+    SEARCH: "/v1/knowledge-base/search",
+    STATS: "/v1/knowledge-base/stats",
+    // Bot (ally-be src/whatsapp)
+    TEMPLATES: "/v1/whatsapp/templates",
+    TEMPLATE_BY_ID: (id: string) => `/v1/whatsapp/templates/${id}`,
+    TEMPLATE_ARCHIVE: (id: string) => `/v1/whatsapp/templates/${id}/archive`,
+    TEMPLATES_REORDER: "/v1/whatsapp/templates/reorder",
+    TEMPLATES_TEST: "/v1/whatsapp/templates/test",
+    SETTINGS: "/v1/whatsapp/settings",
+    PROVIDER_HEALTH: "/v1/whatsapp/settings/provider-health",
+    PREVIEW_ASK: "/v1/whatsapp/preview/ask",
+    // Conversations, unanswered queue and usage dashboard
+    CONVERSATIONS: "/v1/whatsapp/conversations",
+    CONVERSATION_BY_ID: (id: string) => `/v1/whatsapp/conversations/${id}`,
+    CONVERSATION_LANGUAGES: "/v1/whatsapp/conversations/languages",
+    CITATION_BY_CHUNK: (chunkId: string) => `/v1/whatsapp/citations/${chunkId}`,
+    CONTACT_REVEAL: (id: string) => `/v1/whatsapp/contacts/${id}/reveal`,
+    CONTACT_BLOCK: (id: string) => `/v1/whatsapp/contacts/${id}/block`,
+    CONTACT_UNBLOCK: (id: string) => `/v1/whatsapp/contacts/${id}/unblock`,
+    UNANSWERED: "/v1/whatsapp/unanswered",
+    UNANSWERED_BY_ID: (id: string) => `/v1/whatsapp/unanswered/${id}`,
+    UNANSWERED_CREATE_DOCUMENT: (id: string) => `/v1/whatsapp/unanswered/${id}/create-document`,
+    ANALYTICS_OVERVIEW: "/v1/whatsapp/analytics/overview",
+    ANALYTICS_TIMESERIES: "/v1/whatsapp/analytics/timeseries",
+    ANALYTICS_LANGUAGES: "/v1/whatsapp/analytics/languages",
+    ANALYTICS_CORPUS_COVERAGE: "/v1/whatsapp/analytics/corpus-coverage",
+  },
   ROLEPLAY_SESSION_LOGS: {
     LIST: "/v1/roleplay-session-logs",
     BY_ID: (id: string) => `/v1/roleplay-session-logs/${id}`,
@@ -446,6 +484,7 @@ export const ROUTES = {
   ROLEPLAY_SESSION_LOG_DETAIL: (id: string | number) => `/roleplay-session-logs/${id}`,
   SETTINGS: "/settings",
   LOGS: "/logs",
+  WHATSAPP_BOT: "/whatsapp-bot",
   TERMS: "/terms",
   PRIVACY: "/privacy",
   // Fully public, no-login gallery of the centralised design-system components.
@@ -564,6 +603,15 @@ export const TAG_TYPES = {
   ROLEPLAY_COPILOT_SESSIONS: "roleplayCopilotSessions",
   ROLEPLAY_TEST_REPORTS: "roleplayTestReports",
   COMFORT_AUDIO_LIBRARY: "comfortAudioLibrary",
+  WHATSAPP_BOT_DOCUMENTS: "whatsAppBotDocuments",
+  WHATSAPP_BOT_DOCUMENT_CHUNKS: "whatsAppBotDocumentChunks",
+  WHATSAPP_BOT_STATS: "whatsAppBotStats",
+  WHATSAPP_BOT_TEMPLATES: "whatsAppBotTemplates",
+  WHATSAPP_BOT_SETTINGS: "whatsAppBotSettings",
+  WHATSAPP_BOT_CONVERSATIONS: "whatsAppBotConversations",
+  WHATSAPP_BOT_UNANSWERED: "whatsAppBotUnanswered",
+  WHATSAPP_BOT_ANALYTICS: "whatsAppBotAnalytics",
+
   TRACKS_V2: "tracksV2",
   BLOGS: "blogs",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
@@ -601,6 +649,29 @@ export const TAG_TYPES = {
  * the location, and seed/author the row so it shows up.
  */
 export enum TooltipLocation {
+  // WhatsApp Bot. Seeded blank + inactive by migration 1892000000010; a superadmin authors the text
+  // and enables each under Manage Tooltips. Placed on the controls whose wrong setting is hardest to
+  // notice from the screen alone — a threshold that silently declines, a safety net that is off, a
+  // retention window that keeps identifiable data indefinitely.
+  WA_CRISIS_CLASSIFIER = "wa_crisis_classifier",
+  WA_RETENTION_DAYS = "wa_retention_days",
+  WA_DECLINE_SIMILARITY = "wa_decline_similarity",
+  WA_MIN_SIMILARITY = "wa_min_similarity",
+  WA_TRANSLATE_QUERY = "wa_translate_query",
+  WA_RATE_LIMIT = "wa_rate_limit",
+  WA_CONVERSATION_IDLE = "wa_conversation_idle",
+  WA_CORPUS_STATUS = "wa_corpus_status",
+  WA_CORPUS_CHUNKS = "wa_corpus_chunks",
+  WA_CORPUS_SOURCE_TYPE = "wa_corpus_source_type",
+  WA_REVEAL_PHONE = "wa_reveal_phone",
+  WA_BLOCK_CONTACT = "wa_block_contact",
+  WA_RETRIEVAL_META = "wa_retrieval_meta",
+  WA_UNANSWERED_REASON = "wa_unanswered_reason",
+  WA_UNANSWERED_SCORE = "wa_unanswered_score",
+  WA_USAGE_DECLINE_RATE = "wa_usage_decline_rate",
+  WA_USAGE_LANGUAGE_DECLINE = "wa_usage_language_decline",
+  WA_USAGE_CORPUS_COVERAGE = "wa_usage_corpus_coverage",
+
   // Edit Simulation → Basic Settings voice-session toggles
   THINKING_FILLER = "thinking_filler",
   COMFORT_AUDIO = "comfort_audio",

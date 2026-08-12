@@ -119,6 +119,35 @@ export const formatDate = (dateString: string) => {
   });
 };
 
+const MINUTE = 60;
+const HOUR = MINUTE * 60;
+const DAY = HOUR * 24;
+
+/**
+ * "3m ago", "4h ago", "2d ago" — and the absolute date once it stops being useful.
+ *
+ * Activity logs are read to answer "is this happening now, or did it stop?", and an absolute
+ * timestamp makes the reader do arithmetic to answer it. Past a week the relative form inverts:
+ * "63d ago" is harder to place than a date, so it switches back.
+ *
+ * Always pair with {@link formatDate} in a `title`, so the exact moment stays one hover away —
+ * relative time is a summary, and an incident review needs the real timestamp.
+ */
+export const formatRelativeTime = (dateString: string, now: Date = new Date()): string => {
+  const then = new Date(dateString);
+  if (Number.isNaN(then.getTime())) return "";
+
+  const seconds = Math.round((now.getTime() - then.getTime()) / 1000);
+
+  // A clock skew of a few seconds between the browser and the server is normal and must not render
+  // as "in 4s", which reads as a bug in the log rather than in the clocks.
+  if (seconds < MINUTE) return "just now";
+  if (seconds < HOUR) return `${Math.floor(seconds / MINUTE)}m ago`;
+  if (seconds < DAY) return `${Math.floor(seconds / HOUR)}h ago`;
+  if (seconds < DAY * 7) return `${Math.floor(seconds / DAY)}d ago`;
+  return formatDate(dateString);
+};
+
 export const formatCapitalizedEnum = (str: string | UserRoles) => {
   const value = typeof str === "string" ? str : str?.name;
   if (!value) return "";
