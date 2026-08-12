@@ -10,7 +10,7 @@ import { TranscriptListing } from "@components";
 import { RootState } from "@store";
 import { SimulationTranscriptMessage } from "@types";
 
-import { TRANSCRIPT_PAGE_SIZE, TRANSCRIPT_LANGUAGE_OPTIONS } from "./constants";
+import { TRANSCRIPT_LANGUAGE_OPTIONS } from "./constants";
 import { SimulationTranscriptTabProps } from "./types";
 
 const getTranscriptLanguageLabel = (code: string, originalLanguageCode: string): string => {
@@ -43,14 +43,8 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   originalLanguageCode = "en",
 }) => {
   const { t } = useTranslation();
-  const [transcriptOffset, setTranscriptOffset] = useState(0);
   const [transcriptList, setTranscriptList] = useState<SimulationTranscriptMessage[]>([]);
-  const [hasMoreTranscripts, setHasMoreTranscripts] = useState(true);
   const [transcriptLanguage, setTranscriptLanguage] = useState<string>(originalLanguageCode);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  /** Blocks stacking multiple load-more calls before the in-flight fetch finishes (prevents batched offset 0→40). */
-  const pagingLockRef = useRef(false);
-  const wasTranscriptFetchingRef = useRef(false);
   /** originalLanguageCode can resolve after mount (parent's language lookup is async);
    * once the user picks a language manually, stop syncing to it. */
   const hasUserSelectedLanguageRef = useRef(false);
@@ -70,8 +64,14 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     isError: isTranscriptError,
   } = useGetSimulationTranscriptQuery({
     sessionId,
-    offset: transcriptOffset,
-    limit: TRANSCRIPT_PAGE_SIZE,
+    // No limit/offset: the reviewer needs the WHOLE transcript. Lazy-paging this
+    // view silently truncated it — a 17-minute session showed its first 30 turns
+    // (~6 minutes) and load-more never fired — and a partial transcript reads as
+    // a partial session, which is worse than a slightly larger response. The
+    // backend applies no LIMIT when `limit` is absent, and the admin
+    // roleplay-session-log detail already returns the transcript unpaginated.
+    offset: undefined,
+    limit: undefined,
     sortBy: "startSeconds",
     // Omit languageCode when viewing the original language so the backend returns
     // source text without attempting a translation pass.
@@ -97,10 +97,6 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
   // Reset transcript list when sessionId or transcript language changes
   useEffect(() => {
     setTranscriptList([]);
-    setTranscriptOffset(0);
-    setHasMoreTranscripts(true);
-    pagingLockRef.current = false;
-    wasTranscriptFetchingRef.current = false;
   }, [sessionId, transcriptLanguage]);
 
   useEffect(() => {
@@ -111,14 +107,7 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
     }
   }, [isTranscriptError, t]);
 
-  useEffect(() => {
-    if (wasTranscriptFetchingRef.current && !transcriptQueryBusy) {
-      pagingLockRef.current = false;
-    }
-    wasTranscriptFetchingRef.current = transcriptQueryBusy;
-  }, [transcriptQueryBusy]);
-
-  // Append new results when transcriptData changes
+  // Populate from the single full-transcript response
   useEffect(() => {
     if (transcript?.length > 0) {
       const mappedTranscript = transcript.map(item => ({
@@ -139,51 +128,16 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
         tags: item.tags,
       }));
 
-      let appendHadNoNewRows = false;
-      setTranscriptList(prev => {
-        if (transcriptOffset === 0) {
-          return mappedTranscript;
-        }
-
-        const existingIds = new Set(prev.map(item => `${item.id}-${item.startSeconds}`));
-        const newItems = mappedTranscript.filter(
-          item => !existingIds.has(`${item.id}-${item.startSeconds}`),
-        );
-
-        if (newItems.length > 0) {
-          return [...prev, ...newItems];
-        }
-
-        appendHadNoNewRows = mappedTranscript.length > 0;
-        return prev;
-      });
-
-      if (transcriptOffset === 0) {
-        setHasMoreTranscripts(transcript.length >= TRANSCRIPT_PAGE_SIZE);
-      } else if (appendHadNoNewRows) {
-        setHasMoreTranscripts(false);
-      } else {
-        setHasMoreTranscripts(transcript.length >= TRANSCRIPT_PAGE_SIZE);
-      }
+      // One request returns the whole transcript, so this is a replace, never an
+      // append — there is no page to merge and no load-more to arm.
+      setTranscriptList(mappedTranscript);
     } else if (transcript?.length === 0) {
-      // No more transcripts available
-      setHasMoreTranscripts(false);
+      setTranscriptList([]);
     }
-
-    if (transcriptOffset > 0 && transcript && transcript.length > 0) {
-      pagingLockRef.current = false;
-    }
-  }, [transcript, transcriptOffset, user?.id, t]);
-
-  const handleLoadMore = () => {
-    if (!hasMoreTranscripts || transcriptQueryBusy || pagingLockRef.current) return;
-    pagingLockRef.current = true;
-    setTranscriptOffset(prev => prev + TRANSCRIPT_PAGE_SIZE);
-  };
+  }, [transcript, user?.id, t]);
 
   return (
     <div
-      ref={scrollContainerRef}
       className={`relative flex h-full min-h-0 flex-col border border-gray-200 rounded-md p-2 custom-scrollbar ${className}`}
     >
       <div className="flex items-center justify-between gap-2">
@@ -209,10 +163,9 @@ const SimulationTranscriptTab: FC<SimulationTranscriptTabProps> = ({
       <hr className="mb-5 mt-2 border-border-light" />
       <TranscriptListing
         transcriptList={transcriptList}
-        handleLoadMore={handleLoadMore}
         isLoading={transcriptQueryBusy}
-        hasMore={hasMoreTranscripts}
-        scrollContainerRef={scrollContainerRef}
+        /* The whole transcript arrives in one response — nothing left to page. */
+        hasMore={false}
         counsellorName={councellorName}
         agentName={agentName}
         audioUrl={audioUrlData?.presignedUrl}

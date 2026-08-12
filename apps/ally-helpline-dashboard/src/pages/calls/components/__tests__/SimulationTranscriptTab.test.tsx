@@ -202,20 +202,24 @@ describe("SimulationTranscriptTab", () => {
     expect(screen.getByTestId("loading")).toBeInTheDocument();
   });
 
-  // --- Pagination Tests ---
+  // --- Full-transcript fetch (no pagination) ---
+  // The transcript is fetched in one request. Paging it 30 turns at a time used
+  // to truncate long sessions silently — the load-more sentinel never fired, so
+  // a 17-minute session stopped rendering at ~6 minutes.
 
-  it("should start with offset 0", () => {
+  it("should request the whole transcript with no limit or offset", () => {
     renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: "session-123",
-        offset: 0,
+        offset: undefined,
+        limit: undefined,
       }),
     );
   });
 
-  it("should reset transcript list when sessionId changes", () => {
+  it("should refetch the whole transcript when sessionId changes", () => {
     const { rerender } = renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
     rerender(
@@ -229,52 +233,19 @@ describe("SimulationTranscriptTab", () => {
     expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         sessionId: "session-456",
-        offset: 0,
+        offset: undefined,
+        limit: undefined,
       }),
     );
   });
 
-  it("should load more transcripts when load more button is clicked", () => {
+  it("should render every returned turn without a load-more step", async () => {
     renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
 
-    waitFor(() => {
-      const loadMoreButton = screen.getByTestId("load-more-button");
-      fireEvent.click(loadMoreButton);
-
-      expect(useGetSimulationTranscriptQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          offset: 50, // TRANSCRIPT_PAGE_SIZE
-        }),
-      );
+    await waitFor(() => {
+      expect(screen.getByTestId("content-2")).toHaveTextContent("Client message 2");
     });
-  });
-
-  it("should not load more if offset exceeds transcript length", () => {
-    const limitedData = {
-      messages: [
-        {
-          senderId: -1,
-          content: "Only message",
-          createdAt: "2024-01-01T10:00:00Z",
-          startSeconds: 0,
-          id: 1,
-        },
-      ],
-    };
-
-    vi.mocked(useGetSimulationTranscriptQuery).mockReturnValue({
-      data: limitedData,
-      isLoading: false,
-      isFetching: false,
-      refetch: vi.fn(),
-    } as any);
-
-    renderWithProvider(<SimulationTranscriptTab sessionId={mockSessionId} />);
-
-    waitFor(() => {
-      // Should not show load more button if we've loaded all data
-      expect(screen.queryByTestId("load-more-button")).not.toBeInTheDocument();
-    });
+    expect(screen.queryByTestId("load-more-button")).not.toBeInTheDocument();
   });
 
   // --- Data Handling Tests ---
