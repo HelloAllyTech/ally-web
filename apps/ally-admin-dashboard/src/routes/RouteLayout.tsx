@@ -49,6 +49,7 @@ import {
   EvaluateLogin,
   EvaluateRecords,
   EvaluateRecordDetail,
+  WhatsAppBot,
 } from "@pages";
 
 import { DefaultRedirect } from "./DefaultRedirect";
@@ -366,6 +367,14 @@ export const RouteLayout: React.FC = () => {
           element={
             <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
               <Logs />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.WHATSAPP_BOT}
+          element={
+            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+              <WhatsAppBot />
             </PrivateLayout>
           }
         />

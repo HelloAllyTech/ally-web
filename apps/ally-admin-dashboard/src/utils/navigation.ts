@@ -33,6 +33,9 @@ const buildSuperDuperAdminOnlyItems = (): Set<string> =>
     // AWS CloudWatch logs can carry sensitive request data — restrict to the
     // elevated tier, same as the SDA management surface.
     SIDEBAR_ITEMS.LOGS,
+    // The corpus is what the bot tells mental healthcare workers, and the conversation log
+    // holds their clinical questions next to their phone numbers.
+    SIDEBAR_ITEMS.WHATSAPP_BOT,
   ]);
 
 /**
@@ -156,6 +159,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     id: SIDEBAR_ITEMS.LOGS,
     label: "Logs",
     path: ROUTES.LOGS,
+  },
+  {
+    id: SIDEBAR_ITEMS.WHATSAPP_BOT,
+    label: en.whatsappBot.navLabel,
+    path: ROUTES.WHATSAPP_BOT,
   },
 ];
 

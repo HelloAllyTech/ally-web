@@ -152,8 +152,9 @@ describe("deriveNavigationItems", () => {
     // Super-admin-tier tabs remain visible too (duper is a super-admin).
     expect(ids).toContain(SIDEBAR_ITEMS.ANALYTICS);
     expect(ids).toContain(SIDEBAR_ITEMS.SCENARIO_LANGUAGES);
-    // Logs stays last in the default order (Settings is now second-to-last).
-    expect(ids[ids.length - 1]).toBe(SIDEBAR_ITEMS.LOGS);
+    expect(ids).toContain(SIDEBAR_ITEMS.WHATSAPP_BOT);
+    // WhatsApp Bot is appended after Logs in the default order.
+    expect(ids[ids.length - 1]).toBe(SIDEBAR_ITEMS.WHATSAPP_BOT);
   });
 
   it("shows the super-duper-only + super-admin-tier tabs, in natural order, to a super-duper-admin with no permissions", () => {
@@ -177,6 +178,7 @@ describe("deriveNavigationItems", () => {
       SIDEBAR_ITEMS.AI_LAB,
       SIDEBAR_ITEMS.SETTINGS,
       SIDEBAR_ITEMS.LOGS,
+      SIDEBAR_ITEMS.WHATSAPP_BOT,
     ]);
   });
 
@@ -244,6 +246,7 @@ describe("deriveNavigationItems", () => {
         SIDEBAR_ITEMS.AGENT_TEST_CASES,
         SIDEBAR_ITEMS.SETTINGS,
         SIDEBAR_ITEMS.LOGS,
+        SIDEBAR_ITEMS.WHATSAPP_BOT,
       ]),
     );
     // Super-admin-tier and permission-gated tabs stay unflagged (no dot).
@@ -272,5 +275,40 @@ describe("deriveNavigationItems", () => {
       savedOrder: [SIDEBAR_ITEMS.ANALYTICS, SIDEBAR_ITEMS.SETTINGS, SIDEBAR_ITEMS.EVENTS],
     });
     expect(result.map(i => i.id)).toEqual([SIDEBAR_ITEMS.EVENTS]);
+  });
+
+  it("shows WhatsApp Bot to a super-duper-admin", () => {
+    const result = deriveNavigationItems({
+      permissions: [],
+      role: UserRole.SUPER_DUPER_ADMIN,
+      savedOrder: undefined,
+    });
+    const item = result.find(i => i.id === SIDEBAR_ITEMS.WHATSAPP_BOT);
+    expect(item).toBeDefined();
+    expect(item?.path).toBe(ROUTES.WHATSAPP_BOT);
+    // The sidebar renders a blue dot from this flag, marking the elevated tier.
+    expect(item?.superDuperAdminOnly).toBe(true);
+  });
+
+  it("hides WhatsApp Bot from a plain super-admin holding every permission", () => {
+    // The corpus decides what the bot tells mental healthcare workers, and the conversation log
+    // holds their clinical questions beside their phone numbers — so this is SDA-only, and a
+    // permission grant must not be able to unlock it. If someone moves the tab out of
+    // buildSuperDuperAdminOnlyItems(), this fails.
+    const result = deriveNavigationItems({
+      permissions: Object.values(Permissions),
+      role: UserRole.SUPER_ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.WHATSAPP_BOT);
+  });
+
+  it("hides WhatsApp Bot from a regular admin", () => {
+    const result = deriveNavigationItems({
+      permissions: Object.values(Permissions),
+      role: UserRole.ADMIN,
+      savedOrder: undefined,
+    });
+    expect(result.map(i => i.id)).not.toContain(SIDEBAR_ITEMS.WHATSAPP_BOT);
   });
 });

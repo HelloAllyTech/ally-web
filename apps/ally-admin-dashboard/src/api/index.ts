@@ -24,3 +24,4 @@ export * from "./blog";
 export * from "./aiLab";
 export * from "./evaluatorPortal";
 export * from "./productRoadmap";
+export * from "./whatsappBot";
