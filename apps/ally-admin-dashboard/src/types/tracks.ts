@@ -152,7 +152,7 @@ export interface QuizContent {
 export type TrackItemContent = ArticleContent | VideoContent | JournalContent | QuizContent;
 
 export interface CompletionCriteria {
-  /** Roleplay 0-100. */
+  /** Roleplay, 0 or above (score depends on configured behaviours and can exceed 100). */
   minScore?: number;
   minDurationSeconds?: number;
   /** Quiz — server mirrors from settings, never sent by the client. */

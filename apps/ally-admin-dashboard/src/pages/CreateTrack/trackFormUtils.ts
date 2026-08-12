@@ -302,8 +302,8 @@ const validateItem = (item: TrackItemFormValue): string[] => {
     case TrackItemType.ROLEPLAY: {
       if (item.scenarioId == null) errors.push("Roleplay: pick a simulation");
       const minScore = item.completionCriteria?.minScore;
-      if (minScore != null && (minScore < 0 || minScore > 100)) {
-        errors.push("Roleplay: minimum score must be between 0 and 100");
+      if (minScore != null && minScore < 0) {
+        errors.push("Roleplay: minimum score must be 0 or above");
       }
       break;
     }
