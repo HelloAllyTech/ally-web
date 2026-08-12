@@ -33,7 +33,12 @@ export type GetCounsellorStatsRequest = {
 
 // --- Organization Metrics (tenant-admin native dashboard) ---
 
-export const ORGANIZATION_METRICS_RANGES = ["30d", "90d", "12m"] as const;
+/**
+ * Toggle order = narrowest window first. `all` starts at the organization's own
+ * first row (the backend measures it per tenant) and is bucketed by month, so
+ * the axis never stretches back over history this org doesn't have.
+ */
+export const ORGANIZATION_METRICS_RANGES = ["30d", "90d", "12m", "all"] as const;
 export type OrganizationMetricsRange = (typeof ORGANIZATION_METRICS_RANGES)[number];
 
 export interface OrganizationMetricsTrendPoint {

@@ -164,23 +164,29 @@ export const UsageDashboard: React.FC = () => {
 
   return (
     <div className="pt-4 space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <p className="flex items-center gap-1 text-sm text-typography-600">
+      {/* The switcher is WRAPPED rather than styled directly: Carbon's ContentSwitcher spreads its
+          children with flex-1 internally and does not honour a width on its own className, so sizing
+          has to happen on a container. Without that it eats the row and collapses the subtitle into a
+          one-word-per-line column. */}
+      <div className="flex items-start justify-between gap-6">
+        <p className="flex-1 min-w-0 flex items-center gap-1 text-sm text-typography-600">
           {en.whatsappBot.usage.subtitle}
           <TooltipHint location={TooltipLocation.WA_USAGE_DECLINE_RATE} />
         </p>
-        <ContentSwitcher
-          selectedIndex={rangeIndex}
-          onChange={({ index }: { index?: number }) => {
-            if (index === undefined) return;
-            setRangeIndex(index);
-          }}
-          size="sm"
-        >
-          {RANGES.map(item => (
-            <Switch key={item.days} text={en.whatsappBot.usage[item.labelKey]} />
-          ))}
-        </ContentSwitcher>
+        <div className="w-[300px] shrink-0">
+          <ContentSwitcher
+            selectedIndex={rangeIndex}
+            onChange={({ index }: { index?: number }) => {
+              if (index === undefined) return;
+              setRangeIndex(index);
+            }}
+            size="sm"
+          >
+            {RANGES.map(item => (
+              <Switch key={item.days} text={en.whatsappBot.usage[item.labelKey]} />
+            ))}
+          </ContentSwitcher>
+        </div>
       </div>
 
       {overview.isError && (
@@ -239,7 +245,7 @@ export const UsageDashboard: React.FC = () => {
 
       <ChartCard
         title={en.whatsappBot.usage.outcomesHeading}
-        caption={en.whatsappBot.usage.subtitle}
+        caption={en.whatsappBot.usage.outcomesHelp}
         source={buildSource({
           derivation: "outbound replies grouped by outcome, per day",
           window: windowLabel,

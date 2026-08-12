@@ -423,7 +423,8 @@
     "ranges": {
       "30d": "Last 30 days",
       "90d": "Last 90 days",
-      "12m": "Last 12 months"
+      "12m": "Last 12 months",
+      "all": "All time"
     },
     "kpis": {
       "simulationsCompleted": "Simulations completed",
