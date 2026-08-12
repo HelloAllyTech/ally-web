@@ -11,6 +11,8 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
   BarChart3,
+  Branch,
+  Chat,
   Chemistry,
   MachineLearningModel,
   Roadmap,
@@ -23,6 +25,7 @@ import {
   Search,
   Settings,
   SkillLevel,
+  Terminal,
 } from "@icons";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -210,6 +213,17 @@ export const Sidebar: React.FC = () => {
         return <Roadmap size={20} />;
       case SIDEBAR_ITEMS.SETTINGS:
         return <Settings size={20} />;
+      // Deliberately NOT the List icon that ROLEPLAY_SESSION_LOGS uses. These are raw CloudWatch
+      // streams rather than a browsable list of sessions, and two log entries sharing one glyph are
+      // indistinguishable once the sidebar is collapsed to icons.
+      // Branching, not a book: the v2 studio authors a state machine, where SIMULATION_STUDIO
+      // authors linear scenarios and already holds Book.
+      case SIDEBAR_ITEMS.ROLEPLAY_STUDIO:
+        return <Branch size={20} />;
+      case SIDEBAR_ITEMS.LOGS:
+        return <Terminal size={20} />;
+      case SIDEBAR_ITEMS.WHATSAPP_BOT:
+        return <Chat size={20} />;
       default:
         return null;
     }
