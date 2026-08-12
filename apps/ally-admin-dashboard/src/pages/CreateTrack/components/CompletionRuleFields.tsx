@@ -46,7 +46,7 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
 
       {type === TrackItemType.ROLEPLAY && (
         <div className="flex flex-col gap-1">
-          <label className={fieldLabel}>Minimum score (0–100, optional)</label>
+          <label className={fieldLabel}>Minimum score (0 or above, optional)</label>
           <Controller
             control={control}
             name={`${base}.minScore`}
@@ -54,7 +54,6 @@ export const CompletionRuleFields: FC<CompletionRuleFieldsProps> = ({
               <input
                 type="number"
                 min={0}
-                max={100}
                 disabled={disabled}
                 className={numberInput}
                 value={field.value ?? ""}
