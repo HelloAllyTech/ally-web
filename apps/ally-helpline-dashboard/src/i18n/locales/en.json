@@ -502,6 +502,37 @@
         "coursesStarted": "Courses started",
         "coursesCompleted": "Courses completed"
       }
+    },
+    "courseUsage": {
+      "title": "Course usage",
+      "caption": "One row per course — see which courses are being taken and where learners stall",
+      "exportCsv": "Export CSV",
+      "errorTitle": "Couldn't load the course usage table",
+      "errorSubtitle": "There was a problem fetching the data.",
+      "emptyTitle": "No courses yet",
+      "emptyDescription": "Once courses are added to your organization's catalog, their usage will show up here.",
+      "inProgressCell": "{{active}} active / {{stalled}} stalled",
+      "status": {
+        "active": "Active",
+        "archived": "Archived"
+      },
+      "columns": {
+        "title": "Course",
+        "status": "Status",
+        "totalItems": "Total items",
+        "assigned": "Assigned",
+        "started": "Started",
+        "atLeast50": "≥50% Complete",
+        "completed100": "100% Complete",
+        "completionTime": "Avg / median completion time",
+        "avgCompletionDays": "Avg completion time (days)",
+        "medianCompletionDays": "Median completion time (days)",
+        "avgScore": "Avg score",
+        "inProgress": "In progress / stalled",
+        "inProgressActive": "In progress (active)",
+        "inProgressStalled": "In progress (stalled)",
+        "lastEnrollmentAt": "Last enrollment"
+      }
     }
   },
   "suspended": {

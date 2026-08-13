@@ -14,6 +14,7 @@ import { useUser } from "@hooks";
 import { OrganizationMetricsRange, ORGANIZATION_METRICS_RANGES } from "@types";
 
 import { ChartCard, PALETTE, lineOpts, timeBarOpts } from "./chartKit";
+import { CourseUsageTable } from "./CourseUsageTable";
 import { LearnerUsageTable } from "./LearnerUsageTable";
 
 interface KpiTileConfig {
@@ -302,6 +303,10 @@ export const OrganizationMetrics: FunctionComponent = () => {
 
       <div data-testid="organization-metrics-learner-usage">
         <LearnerUsageTable range={range} />
+      </div>
+
+      <div data-testid="organization-metrics-course-usage">
+        <CourseUsageTable />
       </div>
     </div>
   );

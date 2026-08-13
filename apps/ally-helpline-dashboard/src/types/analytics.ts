@@ -151,3 +151,69 @@ export interface GetLearnerUsageTableRequest {
   limit?: number;
   offset?: number;
 }
+
+// --- Per-course usage table (tenant-admin dashboard) ---
+
+export const COURSE_USAGE_SORT_FIELDS = [
+  "title",
+  "status",
+  "totalItems",
+  "learnersStarted",
+  "learnersAtLeast50",
+  "learnersCompleted100",
+  "avgCompletionDays",
+  "medianCompletionDays",
+  "avgScore",
+  "lastEnrollmentAt",
+] as const;
+export type CourseUsageSortField = (typeof COURSE_USAGE_SORT_FIELDS)[number];
+
+/**
+ * One row of the per-course usage table. Deliberately all-time throughout —
+ * a course's lifetime performance, not scoped to the page's period toggle.
+ * `learnersAssigned` is the tenant's total learner headcount, not a
+ * per-course assignment count (Track 2.0 has no per-learner "assigned but
+ * not started" event — enrolling sets startedAt immediately).
+ */
+export interface CourseUsageRow {
+  id: string;
+  title: string;
+  status: "ACTIVE" | "ARCHIVED";
+  totalItems: number;
+  learnersAssigned: number;
+  learnersStarted: number;
+  /** null when nothing was started. */
+  startedRatePct: number | null;
+  /** Superset of learnersCompleted100 — includes full completers. */
+  learnersAtLeast50: number;
+  /** null when nothing was started. */
+  completion50PlusRatePct: number | null;
+  learnersCompleted100: number;
+  /** null when nothing was started. */
+  completion100RatePct: number | null;
+  /** Over 100%-completers only; null when none have completed. */
+  avgCompletionDays: number | null;
+  /** Over 100%-completers only; null when none have completed. */
+  medianCompletionDays: number | null;
+  /** null when nothing is scored. */
+  avgScore: number | null;
+  /** Enrolled, not yet 100%, active in the last 14 days. */
+  inProgressActive: number;
+  /** Enrolled, not yet 100%, no activity in the last 14 days (or never). */
+  inProgressStalled: number;
+  lastEnrollmentAt: string | null;
+}
+
+export interface GetCourseUsageTableResponse {
+  data: CourseUsageRow[];
+  /** Total courses matching the filter (for pagination). */
+  count: number;
+}
+
+export interface GetCourseUsageTableRequest {
+  search?: string;
+  sortBy?: CourseUsageSortField;
+  order?: "ASC" | "DESC";
+  limit?: number;
+  offset?: number;
+}
