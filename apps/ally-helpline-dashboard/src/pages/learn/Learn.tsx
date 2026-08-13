@@ -47,27 +47,6 @@ export const Learn: FC = () => {
     refetch: refetchTracks,
   } = useGetLearnTracksQuery();
   const tracks = tracksData?.data ?? [];
-  // Hide the Courses tab entirely when there are no tracks (and not loading).
-  const showCoursesTab = isTracksLoading || tracks.length > 0;
-
-  const tabs = [
-    { id: TabId.SIMULATIONS, label: t("learn.tabs.simulations") },
-    { id: TabId.TRACKS, label: t("learn.tabs.tracks") },
-    { id: TabId.CASES, label: t("learn.tabs.cases") },
-    ...(showCoursesTab ? [{ id: TabId.COURSES, label: t("learn.tabs.courses") }] : []),
-  ] as Array<{ id: TabId; label: string }>;
-
-  const isValidTabId = (tab: string | null): tab is LearnTabId => {
-    return tabs.some(t => t.id === tab);
-  };
-  const tabFromUrl = searchParams.get("tab");
-  const activeTab: LearnTabId = isValidTabId(tabFromUrl) ? tabFromUrl : tabs[0].id;
-
-  useEffect(() => {
-    if (!tabFromUrl || !isValidTabId(tabFromUrl)) {
-      setSearchParams({ tab: tabs[0].id }, { replace: true });
-    }
-  }, [tabFromUrl, setSearchParams, tabs]);
 
   const {
     data: scenariosData,
@@ -98,6 +77,38 @@ export const Learn: FC = () => {
     isLoading: isCasesLoading,
     refetch: refetchCases,
   } = useGetScenarioCasesQuery({ languageCode: i18n.language }, { skip: !hasCasePermissions });
+
+  // Hide a tab entirely once its query has resolved with no data; a tab stays
+  // visible while loading so it doesn't flash-hide before the query settles.
+  const showCoursesTab = isTracksLoading || tracks.length > 0;
+  const showCasesTab = hasCasePermissions && (isCasesLoading || (casesData?.data?.length ?? 0) > 0);
+  const showSimulationsTab = isScenariosLoading || scenarios.length > 0;
+  const showPathwaysTab =
+    hasPathPermissions && (isPathwaysLoading || (pathwaysData?.data?.length ?? 0) > 0);
+
+  const tabs = [
+    ...(showCoursesTab ? [{ id: TabId.COURSES, label: t("learn.tabs.courses") }] : []),
+    ...(showCasesTab ? [{ id: TabId.CASES, label: t("learn.tabs.cases") }] : []),
+    ...(showSimulationsTab ? [{ id: TabId.SIMULATIONS, label: t("learn.tabs.simulations") }] : []),
+    ...(showPathwaysTab ? [{ id: TabId.TRACKS, label: t("learn.tabs.tracks") }] : []),
+  ] as Array<{ id: TabId; label: string }>;
+
+  const isValidTabId = (tab: string | null): tab is LearnTabId => {
+    return tabs.some(t => t.id === tab);
+  };
+  const tabFromUrl = searchParams.get("tab");
+  // Every tab can now hide itself when empty, so `tabs` may briefly be empty
+  // (e.g. a tenant with nothing in any category yet) — fall back to
+  // Simulations rather than reading tabs[0] off an empty array.
+  const activeTab: LearnTabId = isValidTabId(tabFromUrl)
+    ? tabFromUrl
+    : (tabs[0]?.id ?? TabId.SIMULATIONS);
+
+  useEffect(() => {
+    if (tabs.length > 0 && (!tabFromUrl || !isValidTabId(tabFromUrl))) {
+      setSearchParams({ tab: tabs[0].id }, { replace: true });
+    }
+  }, [tabFromUrl, setSearchParams, tabs]);
 
   const handleTabChange = (newValue: LearnTabId) => {
     if (isValidTabId(newValue)) setSearchParams({ tab: newValue });
