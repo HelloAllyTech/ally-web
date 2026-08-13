@@ -219,6 +219,17 @@ export const en = {
     characterUpdatedSuccessfully: "Character updated successfully!",
     characters: "Characters",
     createNewCharacter: "Create new character",
+    languageStyle: "Language style",
+    enterLanguageStyle: "Describe the character's dialect, register, or code-mixing style",
+    dialectSamples: "Dialect samples",
+    dialectSamplePlaceholder: "Enter a sample line in the character's voice",
+    addDialectSample: "Add dialect sample",
+    dialectSampleLimit: "You can only have 20 dialect samples. Remove one to add another.",
+    knowledgeSources: "Knowledge sources",
+    knowledgeSourceTitlePlaceholder: "Title",
+    knowledgeSourceTextPlaceholder: "What should this character know?",
+    addKnowledgeSource: "Add knowledge source",
+    knowledgeSourceLimit: "You can only have 50 knowledge sources. Remove one to add another.",
     duplicatePathwayDescription:
       "Are you sure you want to duplicate this Tracks? This will create a new Tracks with the same configurations.",
     duplicateSimulationDescription:

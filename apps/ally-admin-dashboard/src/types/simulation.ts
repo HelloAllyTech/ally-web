@@ -497,6 +497,12 @@ export interface ScenarioVoiceFilters {
   ages: string[];
 }
 
+export interface CharacterKnowledgeSource {
+  id: string;
+  title: string;
+  text?: string;
+}
+
 export interface CharacterData {
   id?: string;
   name: string;
@@ -509,6 +515,10 @@ export interface CharacterData {
   coverImageUrl?: string;
   coverVideoUrl?: string;
   characterProfileText?: string;
+  voiceId?: string;
+  languageCharacteristics?: string;
+  linguisticStyleSamples?: string[];
+  knowledgeSources?: CharacterKnowledgeSource[];
   createdAt?: string;
   updatedAt?: string;
   createdBy?: number;

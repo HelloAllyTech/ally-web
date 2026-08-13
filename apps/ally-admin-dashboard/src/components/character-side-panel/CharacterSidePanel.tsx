@@ -3,9 +3,19 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { TextArea, TextInput } from "@ally-ui-mono/ui-shared";
-import { useCreateCharacterMutation, useUpdateCharacterMutation } from "@api";
+import {
+  useCreateCharacterMutation,
+  useGetScenarioVoicesQuery,
+  useUpdateCharacterMutation,
+} from "@api";
 import { DoubleArrowRight, Trash } from "@assets";
-import { ActionConfirmationPopup, Button, CustomDropdownField, FileUpload } from "@components";
+import {
+  ActionConfirmationPopup,
+  Button,
+  CustomDropdownField,
+  DropdownField,
+  FileUpload,
+} from "@components";
 import { ButtonVariant } from "@components/types";
 import {
   en,
@@ -15,6 +25,10 @@ import {
   FILE_TYPE,
 } from "@constants";
 import { CharacterData } from "@types";
+import { getSimulationVoiceOptions } from "@utils";
+
+import { CharacterKnowledgeSourcesField } from "./CharacterKnowledgeSourcesField";
+import { DialectSamplesField } from "./DialectSamplesField";
 
 interface CharacterSidePanelProps {
   selectedCharacter: CharacterData | null;
@@ -77,33 +91,25 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
   onSave,
   isNewCharacter = false,
 }) => {
-  const [formData, setFormData] = useState<CharacterData>(
-    selectedCharacter || {
-      name: "",
-      age: "",
-      gender: "",
-      profession: "",
-      currentLocation: "",
-      genderIdentity: "",
-      sexualOrientation: "",
-      coverImageUrl: "",
-      coverVideoUrl: "",
-      characterProfileText: "",
-    },
-  );
+  const emptyCharacter: CharacterData = {
+    name: "",
+    age: "",
+    gender: "",
+    profession: "",
+    currentLocation: "",
+    genderIdentity: "",
+    sexualOrientation: "",
+    coverImageUrl: "",
+    coverVideoUrl: "",
+    characterProfileText: "",
+    languageCharacteristics: "",
+    linguisticStyleSamples: [],
+    knowledgeSources: [],
+  };
+
+  const [formData, setFormData] = useState<CharacterData>(selectedCharacter || emptyCharacter);
   const [initialData, setInitialData] = useState<CharacterData>(
-    selectedCharacter || {
-      name: "",
-      age: "",
-      gender: "",
-      profession: "",
-      currentLocation: "",
-      genderIdentity: "",
-      sexualOrientation: "",
-      coverImageUrl: "",
-      coverVideoUrl: "",
-      characterProfileText: "",
-    },
+    selectedCharacter || emptyCharacter,
   );
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const isSavingRef = useRef(false);
@@ -118,15 +124,21 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     }
   }, [selectedCharacter]);
 
-  const handleFieldChange = useCallback(
-    (fieldName: keyof CharacterData, value: string | number) => {
-      setFormData(prev => ({
-        ...prev,
-        [fieldName]: value,
-      }));
-    },
-    [],
-  );
+  const handleFieldChange = useCallback((fieldName: keyof CharacterData, value: unknown) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: value,
+    }));
+  }, []);
+
+  const { data: scenarioVoices } = useGetScenarioVoicesQuery({});
+  const allVoiceOptions = getSimulationVoiceOptions(scenarioVoices ?? []);
+  const [voiceSearchTerm, setVoiceSearchTerm] = useState("");
+  const voiceOptions = voiceSearchTerm
+    ? allVoiceOptions.filter(option =>
+        option.label.toLowerCase().includes(voiceSearchTerm.toLowerCase()),
+      )
+    : allVoiceOptions;
 
   const [fileErrors, setFileErrors] = useState<Record<string, any>>({});
   const formMethodsShim = React.useMemo(
@@ -172,7 +184,19 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
     isSavingRef.current = true;
 
     try {
-      const { id, ...data } = formData;
+      const { id, ...rest } = formData;
+      const data = {
+        ...rest,
+        // Drop rows the trainer added but never filled in, rather than
+        // sending the backend a title-less knowledge source (400) or a
+        // blank dialect sample it would just have to ignore.
+        linguisticStyleSamples: (rest.linguisticStyleSamples || []).filter(
+          sample => sample.trim() !== "",
+        ),
+        knowledgeSources: (rest.knowledgeSources || []).filter(
+          source => source.title.trim() !== "",
+        ),
+      };
 
       // If no ID exists or ID is temporary, create new character
       if (!id || id.startsWith("temp-")) {
@@ -228,7 +252,13 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
       formData.sexualOrientation !== initialData.sexualOrientation ||
       (formData.coverImageUrl || "") !== (initialData.coverImageUrl || "") ||
       (formData.coverVideoUrl || "") !== (initialData.coverVideoUrl || "") ||
-      (formData.characterProfileText || "") !== (initialData.characterProfileText || "")
+      (formData.characterProfileText || "") !== (initialData.characterProfileText || "") ||
+      (formData.voiceId || "") !== (initialData.voiceId || "") ||
+      (formData.languageCharacteristics || "") !== (initialData.languageCharacteristics || "") ||
+      JSON.stringify(formData.linguisticStyleSamples || []) !==
+        JSON.stringify(initialData.linguisticStyleSamples || []) ||
+      JSON.stringify(formData.knowledgeSources || []) !==
+        JSON.stringify(initialData.knowledgeSources || [])
     );
   };
 
@@ -354,6 +384,48 @@ export const CharacterSidePanel: React.FC<CharacterSidePanelProps> = ({
                 maxLength={2500}
                 placeholder="Enter character backstory"
                 rows={3}
+              />
+            </Field>
+
+            <Field label={en.simulation.voice}>
+              <DropdownField
+                id="character-voice"
+                label={en.simulation.voice}
+                isSearchable
+                handleSearchTextChange={setVoiceSearchTerm}
+                allowDeselect
+                borderless
+                options={voiceOptions}
+                value={formData.voiceId || ""}
+                onChange={value => handleFieldChange("voiceId", value || undefined)}
+                placeholder={en.simulation.selectVoice}
+              />
+            </Field>
+
+            <Field label={en.simulation.languageStyle}>
+              <TextArea
+                id="character-language-characteristics"
+                labelText={en.simulation.languageStyle}
+                hideLabel
+                value={formData.languageCharacteristics || ""}
+                onChange={e => handleFieldChange("languageCharacteristics", e.target.value)}
+                maxLength={1000}
+                placeholder={en.simulation.enterLanguageStyle}
+                rows={2}
+              />
+            </Field>
+
+            <Field label={en.simulation.dialectSamples}>
+              <DialectSamplesField
+                samples={formData.linguisticStyleSamples || []}
+                onChange={samples => handleFieldChange("linguisticStyleSamples", samples)}
+              />
+            </Field>
+
+            <Field label={en.simulation.knowledgeSources}>
+              <CharacterKnowledgeSourcesField
+                sources={formData.knowledgeSources || []}
+                onChange={sources => handleFieldChange("knowledgeSources", sources)}
               />
             </Field>
 
