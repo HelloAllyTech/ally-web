@@ -34,6 +34,7 @@ import {
   LATENCY_STAT_SCALE,
   START_SEGMENT_SCALE,
   START_TOTAL_SCALE,
+  buildLlmTtftSeries,
   buildStartLatencySegments,
   buildStartTotalSeries,
   buildVoiceLatencyByLanguageBars,
@@ -142,6 +143,10 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
   const historySeries = useMemo(() => buildVoiceLatencySeries(points, "transcript"), [points]);
   const liveTurns = useMemo(() => countVoiceLatencyTurns(points, "pipeline"), [points]);
   const historyTurns = useMemo(() => countVoiceLatencyTurns(points, "transcript"), [points]);
+  // Live-instrumentation only — no historical counterpart, so no source
+  // param and no separate turn count (same `turns` field as liveTurns above,
+  // it's per-bucket, not per-metric).
+  const llmTtftSeries = useMemo(() => buildLlmTtftSeries(points), [points]);
   const byLanguageBars = useMemo(
     () => buildVoiceLatencyByLanguageBars(data?.byLanguage ?? []),
     [data],
@@ -166,6 +171,19 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
         }),
       }),
     [axisTitle, targetSec],
+  );
+
+  // No threshold line yet — unlike responseLatencyMs's targetMs, there's no
+  // established service objective for this metric specifically. Add one via
+  // axesWithThreshold the same way voiceOptions does, once product sets one.
+  const llmTtftOptions = useMemo(
+    () =>
+      lineOpts({
+        leftTitle: "Seconds",
+        bottomTitle: axisTitle,
+        colorScale: LATENCY_STAT_SCALE,
+      }),
+    [axisTitle],
   );
 
   // Historical is context, so its own chart is drawn in greys rather than
@@ -296,6 +314,16 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
     asOf: asOf(data?.window),
   });
 
+  // Same window/turn count as liveSource — llmTtft rides the same query and
+  // the same per-bucket `turns` field, just a different column within it.
+  const llmTtftSource = buildSource({
+    derivation: "Live pipeline turn metrics, graph-start-to-first-token latency",
+    window: `${voiceWindow}${languageNote}`,
+    n: liveTurns,
+    nUnit: "turns",
+    asOf: asOf(data?.window),
+  });
+
   const bucketPicker = (
     <div className="flex justify-end">
       <div className="w-44">
@@ -348,6 +376,23 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
       >
         <ScrollableChart data={liveSeries}>
           <LineChart data={liveSeries} options={voiceOptions} />
+        </ScrollableChart>
+      </ChartCard>
+
+      <ChartCard
+        title="LLM time-to-first-token — live pipeline"
+        caption="Median, average and slow tail (p95) of graph-start-to-first-token latency."
+        source={llmTtftSource}
+        loading={isLoading && !data}
+        error={isError}
+        onRetry={refetch}
+        onExpand={() => setExpanded("llmTtft")}
+        errorTitle="Couldn't load LLM TTFT"
+        errorSubtitle="There was a problem fetching turn-latency metrics."
+        empty={!isLoading && llmTtftSeries.length === 0}
+      >
+        <ScrollableChart data={llmTtftSeries}>
+          <LineChart data={llmTtftSeries} options={llmTtftOptions} />
         </ScrollableChart>
       </ChartCard>
 
@@ -541,6 +586,23 @@ export const LatencyTab = ({ query, language }: AnalyticsTabFilters) => {
           render={({ height }) => (
             <ScrollableChart data={liveSeries}>
               <LineChart data={liveSeries} options={{ ...voiceOptions, height }} />
+            </ScrollableChart>
+          )}
+        />
+      )}
+
+      {expanded === "llmTtft" && (
+        <ChartDetailModal
+          open={expanded === "llmTtft"}
+          onClose={() => setExpanded(null)}
+          title="LLM time-to-first-token — live pipeline"
+          caption="Median, average and slow tail (p95) of graph-start-to-first-token latency."
+          source={llmTtftSource}
+          table={seriesTable(llmTtftSeries, axisTitle)}
+          exportContext={[`Window: ${voiceWindow}`, `Granularity: ${bucket}`]}
+          render={({ height }) => (
+            <ScrollableChart data={llmTtftSeries}>
+              <LineChart data={llmTtftSeries} options={{ ...llmTtftOptions, height }} />
             </ScrollableChart>
           )}
         />

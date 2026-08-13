@@ -6,6 +6,7 @@ import {
   LATENCY_GROUPS,
   START_LATENCY_GROUPS,
   START_TOTAL_GROUPS,
+  buildLlmTtftSeries,
   buildStartLatencySegments,
   buildStartTotalSeries,
   buildVoiceLatencyByLanguageBars,
@@ -22,6 +23,9 @@ const point = (over: Partial<VoiceLatencyPoint>): VoiceLatencyPoint => ({
   avgMs: 0,
   p50Ms: 0,
   p95Ms: 0,
+  avgLlmTtftMs: null,
+  p50LlmTtftMs: null,
+  p95LlmTtftMs: null,
   ...over,
 });
 
@@ -75,6 +79,44 @@ describe("buildVoiceLatencySeries", () => {
 
   it("omits buckets with no turns rather than plotting a zero latency", () => {
     expect(buildVoiceLatencySeries([], "pipeline")).toEqual([]);
+  });
+});
+
+describe("buildLlmTtftSeries", () => {
+  it("plots p50, average AND p95 in seconds, same as voice latency", () => {
+    const series = buildLlmTtftSeries([
+      point({ source: "pipeline", avgLlmTtftMs: 1200, p50LlmTtftMs: 900, p95LlmTtftMs: 2400 }),
+    ]);
+
+    expect(series).toEqual([
+      { group: LATENCY_GROUPS.p50, key: "2024-06-10", value: 0.9 },
+      { group: LATENCY_GROUPS.avg, key: "2024-06-10", value: 1.2 },
+      { group: LATENCY_GROUPS.p95, key: "2024-06-10", value: 2.4 },
+    ]);
+  });
+
+  it("is live-pipeline only — transcript points never appear, even if populated", () => {
+    const points = [
+      point({ source: "pipeline", avgLlmTtftMs: 1200, p50LlmTtftMs: 900, p95LlmTtftMs: 2400 }),
+      point({ source: "transcript", avgLlmTtftMs: 5000, p50LlmTtftMs: 4000, p95LlmTtftMs: 9000 }),
+    ];
+
+    expect(buildLlmTtftSeries(points)).toHaveLength(3);
+  });
+
+  it("omits a null value rather than plotting a zero latency", () => {
+    const series = buildLlmTtftSeries([
+      point({ source: "pipeline", avgLlmTtftMs: 1200, p50LlmTtftMs: null, p95LlmTtftMs: 2400 }),
+    ]);
+
+    expect(series).toEqual([
+      { group: LATENCY_GROUPS.avg, key: "2024-06-10", value: 1.2 },
+      { group: LATENCY_GROUPS.p95, key: "2024-06-10", value: 2.4 },
+    ]);
+  });
+
+  it("returns an empty series for no points", () => {
+    expect(buildLlmTtftSeries([])).toEqual([]);
   });
 });
 

@@ -72,6 +72,46 @@ export function countVoiceLatencyTurns(points: VoiceLatencyPoint[], source: Late
     .reduce((sum, point) => sum + point.turns, 0);
 }
 
+/**
+ * Per-bucket LLM time-to-first-token, in seconds, as p50/avg/p95 lines.
+ *
+ * Live-pipeline only — llmTtft is a live-instrumentation field with no
+ * transcript-derived counterpart, so there is no "historical" companion
+ * series the way {@link buildVoiceLatencySeries} has one. A bucket (or a
+ * single group within it) is omitted rather than plotted as 0 when its
+ * value is null — latency has no meaningful zero, same rule as the rest of
+ * this file.
+ */
+export function buildLlmTtftSeries(points: VoiceLatencyPoint[]): LatencyDatum[] {
+  return points
+    .filter(point => point.source === "pipeline")
+    .flatMap(point => {
+      const datums: LatencyDatum[] = [];
+      if (point.p50LlmTtftMs != null) {
+        datums.push({
+          group: LATENCY_GROUPS.p50,
+          key: point.bucket,
+          value: toS(point.p50LlmTtftMs),
+        });
+      }
+      if (point.avgLlmTtftMs != null) {
+        datums.push({
+          group: LATENCY_GROUPS.avg,
+          key: point.bucket,
+          value: toS(point.avgLlmTtftMs),
+        });
+      }
+      if (point.p95LlmTtftMs != null) {
+        datums.push({
+          group: LATENCY_GROUPS.p95,
+          key: point.bucket,
+          value: toS(point.p95LlmTtftMs),
+        });
+      }
+      return datums;
+    });
+}
+
 export type LanguageBarDatum = { group: string; value: number };
 
 /**

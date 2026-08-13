@@ -671,6 +671,12 @@ export interface VoiceLatencyPoint {
   avgMs: number;
   p50Ms: number;
   p95Ms: number;
+  /** Live-instrumentation only; null for 'transcript' buckets. */
+  avgLlmTtftMs: number | null;
+  /** Live-instrumentation only; null for 'transcript' buckets. */
+  p50LlmTtftMs: number | null;
+  /** Live-instrumentation only; null for 'transcript' buckets. */
+  p95LlmTtftMs: number | null;
 }
 
 /** One language's live-pipeline latency over the whole window (no time bucketing). */
