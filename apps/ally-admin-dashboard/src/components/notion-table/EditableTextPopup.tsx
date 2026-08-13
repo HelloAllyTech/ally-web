@@ -82,7 +82,7 @@ export const EditableTextPopup: React.FC<EditableTextPopupProps> = ({
 
   return (
     <div
-      className={`${className} h-full max-h-[360px] overflow-y-auto custom-scrollbar`}
+      className={`${className} max-h-[360px] overflow-y-auto custom-scrollbar`}
       style={{ width, minWidth }}
     >
       <div
