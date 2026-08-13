@@ -212,9 +212,13 @@ vi.mock("@components", async importOriginal => {
             <h2>
               Create your first <span>Pathway</span>
             </h2>
-            <button onClick={onCreatePathway} data-testid="create-pathway-button">
-              Create pathway
-            </button>
+            {/* Mirrors the real PathwayList: no create button unless the
+                parent actually passes a handler. */}
+            {onCreatePathway && (
+              <button onClick={onCreatePathway} data-testid="create-pathway-button">
+                Create pathway
+              </button>
+            )}
           </div>
         );
       }
@@ -826,14 +830,18 @@ describe("SimulationStudio", () => {
       expect(screen.getByTestId("options-popup")).toBeInTheDocument();
     });
 
-    it("displays both simulation and pathway options", () => {
+    // Track 2.0 ("Courses") replaces the legacy Tracks screen for new content,
+    // so "New track" is no longer offered here to anyone. Existing tracks stay
+    // listable and editable — only creation is gone.
+    it("offers the simulation option and no longer offers legacy track creation", () => {
       renderComponent();
 
       const createButton = screen.getByText("Create");
       fireEvent.click(createButton);
 
       expect(screen.getByText("New simulation")).toBeInTheDocument();
-      expect(screen.getByText("New track")).toBeInTheDocument();
+      expect(screen.queryByText("New track")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("option-New track")).not.toBeInTheDocument();
     });
 
     it("calls handleNewSimulation when New Simulation option is clicked", () => {
@@ -845,17 +853,6 @@ describe("SimulationStudio", () => {
       fireEvent.click(screen.getByTestId("option-New simulation"));
 
       expect(defaultSimulationsHookReturn.handleNewSimulation).toHaveBeenCalled();
-    });
-
-    it("calls handleNewPathway when New Pathway option is clicked", () => {
-      renderComponent();
-
-      const createButton = screen.getByText("Create");
-      fireEvent.click(createButton);
-
-      fireEvent.click(screen.getByTestId("option-New track"));
-
-      expect(defaultPathwaysHookReturn.handleNewPathway).toHaveBeenCalled();
     });
 
     it("closes options popup when close is clicked", () => {
@@ -1218,7 +1215,10 @@ describe("SimulationStudio", () => {
       expect(defaultSimulationsHookReturn.handleCreateSimulation).toHaveBeenCalled();
     });
 
-    it("calls handleNewPathway when create button is clicked in pathways empty state", () => {
+    // The legacy Tracks tab no longer wires its empty state to the create
+    // handler, so PathwayList renders no create button there at all. The Cases
+    // and Courses tabs still pass onCreatePathway and keep theirs.
+    it("shows no create button in the legacy tracks empty state", () => {
       mockUseSimulations.mockReturnValue({
         ...defaultSimulationsHookReturn,
         simulations: [],
@@ -1229,10 +1229,8 @@ describe("SimulationStudio", () => {
       // Switch to pathways tab
       fireEvent.click(screen.getByTestId("tab-tracks"));
 
-      const createButton = screen.getByTestId("create-pathway-button");
-      fireEvent.click(createButton);
-
-      expect(defaultPathwaysHookReturn.handleNewPathway).toHaveBeenCalled();
+      expect(screen.queryByTestId("create-pathway-button")).not.toBeInTheDocument();
+      expect(defaultPathwaysHookReturn.handleNewPathway).not.toHaveBeenCalled();
     });
   });
 
@@ -1334,8 +1332,10 @@ describe("SimulationStudio", () => {
       fireEvent.click(createButton);
 
       expect(screen.getByText("New simulation")).toBeInTheDocument();
-      expect(screen.getByText("New track")).toBeInTheDocument();
       expect(screen.getByText("New Case")).toBeInTheDocument();
+      // "New track" is hidden unconditionally now, not role-gated — a super
+      // admin doesn't get it back.
+      expect(screen.queryByText("New track")).not.toBeInTheDocument();
     });
 
     it("hides management buttons for non-creators with ADMIN role", () => {
