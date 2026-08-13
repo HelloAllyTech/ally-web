@@ -202,13 +202,13 @@ export const Cell = ({
       break;
     case cellTypes.image:
       element = (
-        <CustomImage
-          src={value.value}
-          alt="User badge"
-          width={100}
-          height={100}
-          className="rounded-lg"
-        />
+        <div className="w-[100px] h-[56px] flex-shrink-0">
+          <CustomImage
+            src={value.value}
+            alt="User badge"
+            className="w-full h-full object-cover rounded-lg"
+          />
+        </div>
       );
       break;
     case cellTypes.editableText:
