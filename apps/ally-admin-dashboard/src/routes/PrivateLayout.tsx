@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Navigate } from "react-router-dom";
 
-import { useGetUserQuery, useGetPermissionsQuery } from "@api";
+import { useGetUserQuery, useGetPermissionsQuery, useGetFeatureTogglesQuery } from "@api";
 import { Sidebar, AccessDenied } from "@components";
 import ReportUploadProgressDialog from "@components/report-upload-progress-dialog/ReportUploadProgressDialog";
 import { ScenarioReportsSocketProvider } from "@components/scenario-reports-socket-provider/ScenarioReportsSocketProvider";
@@ -14,13 +14,23 @@ import {
   UserRole,
   normalizeEmailForAllowlist,
 } from "@constants";
-import { setUser, setPermissions } from "@reducer";
-import { hasPermissions } from "@utils";
+import { setUser, setPermissions, setFeatures } from "@reducer";
+import { hasPermissions, hasFeature } from "@utils";
 
 interface PrivateLayoutProps {
   children: React.ReactNode;
   requiredPermissions?: Permissions[];
   requiredRole?: UserRole | UserRole[];
+  /**
+   * Feature-toggle key(s) that also grant this route — checked via
+   * `hasFeature`. During the role->toggle migration this is carried
+   * ALONGSIDE `requiredRole` on the same route (see RouteLayout): access is
+   * granted if EITHER the legacy role check or this toggle check passes, a
+   * safety net against an incomplete toggle backfill. A route with only one
+   * of the two props behaves exactly as before (the other check defaults to
+   * pass-through).
+   */
+  requiredFeature?: string | string[];
   isPreview?: boolean;
   /**
    * Optional email allowlist (compared case-insensitively against the logged-in
@@ -35,6 +45,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   isPreview,
   requiredPermissions = [],
   requiredRole,
+  requiredFeature,
   allowedEmails,
 }) => {
   const isAuthenticated =
@@ -42,13 +53,15 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
 
   const { data: userData, isLoading: isUserLoading } = useGetUserQuery();
   const { data: permissions, isLoading: isPermissionsLoading } = useGetPermissionsQuery();
+  const { data: features, isLoading: isFeaturesLoading } = useGetFeatureTogglesQuery();
 
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (userData) dispatch(setUser(userData));
     if (permissions) dispatch(setPermissions(permissions));
-  }, [userData, permissions]);
+    if (features) dispatch(setFeatures(features));
+  }, [userData, permissions, features]);
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />;
@@ -57,6 +70,7 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
   // Check if user has permission to access current route
   let hasPermission = true;
   let hasRole = true;
+  let hasRequiredFeature = true;
   let hasAllowedEmail = true;
 
   if (!isUserLoading && !isPermissionsLoading) {
@@ -75,6 +89,22 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
         : userData?.role === requiredRole);
   }
 
+  // Feature-toggle gating. `features` defaults to `[]` while still loading or
+  // on a genuine fetch error, so `hasFeature` fails CLOSED in both cases — this
+  // must never read as "endpoint doesn't exist, treat as pass". The role check
+  // above is the deliberate escape hatch for that case (both props carried on
+  // the same route during the migration), not a fallback baked in here.
+  if (!requiredFeature) {
+    hasRequiredFeature = true;
+  } else if (isFeaturesLoading) {
+    hasRequiredFeature = false;
+  } else {
+    const requiredFeatureKeys = Array.isArray(requiredFeature)
+      ? requiredFeature
+      : [requiredFeature];
+    hasRequiredFeature = requiredFeatureKeys.some(key => hasFeature(features, key));
+  }
+
   // Email allowlist gating (e.g. Roleplay Studio rollout). Case-insensitive and
   // +tag-tolerant (a +tag sub-address matches its base email, via
   // normalizeEmailForAllowlist); only applies when the route passes an allowlist.
@@ -85,7 +115,11 @@ export const PrivateLayout: React.FC<PrivateLayoutProps> = ({
     );
   }
 
-  const hasAccess = hasPermission && hasRole && hasAllowedEmail;
+  // Dual-gate: a route carrying both `requiredRole` and `requiredFeature`
+  // passes if EITHER check does — the toggle is additive access, not a
+  // narrowing of the legacy role check, until the legacy prop is removed in a
+  // later cleanup pass.
+  const hasAccess = hasPermission && (hasRole || hasRequiredFeature) && hasAllowedEmail;
 
   if (hasAccess && isPreview) return children;
 

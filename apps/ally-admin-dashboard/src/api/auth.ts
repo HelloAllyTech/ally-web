@@ -27,6 +27,11 @@ import {
   profileUrlRequest,
   ImpersonateResponse,
   UserPreferencesData,
+  FeatureToggleRegistryEntry,
+  UserFeatureToggle,
+  SetUserFeatureTogglesBody,
+  GetPlatformAdminsResponse,
+  AssignPlatformAdminBody,
 } from "@types";
 
 export const authAPI = baseAPI.injectEndpoints({
@@ -213,6 +218,74 @@ export const authAPI = baseAPI.injectEndpoints({
       }),
       invalidatesTags: [TAG_TYPES.USER_PREFERENCES],
     }),
+
+    /**
+     * The current user's enabled feature-toggle keys — the replacement for
+     * role-tier gating. Kept on its own tag (not USERS/permissions) so it has
+     * its own loading state, mirroring getPermissions.
+     */
+    getFeatureToggles: builder.query<string[], void>({
+      query: () => ApiEndpoints.AUTH.GET_MY_FEATURE_TOGGLES,
+      providesTags: [TAG_TYPES.MY_FEATURE_TOGGLES],
+    }),
+
+    /**
+     * The full feature-toggle registry (~24 keys with labels/descriptions) —
+     * the one place a new key is declared. Drives both nav gating and the
+     * toggle-editor UI; never hardcode labels client-side.
+     */
+    getFeatureToggleRegistry: builder.query<FeatureToggleRegistryEntry[], void>({
+      query: () => ApiEndpoints.AUTHORIZATION.GET_FEATURE_TOGGLE_REGISTRY,
+      providesTags: [TAG_TYPES.FEATURE_TOGGLE_REGISTRY],
+    }),
+
+    /** One platform admin's full toggle state (missing rows default to false). */
+    getUserFeatureToggles: builder.query<UserFeatureToggle[], number>({
+      query: userId => ApiEndpoints.USER_MANAGEMENT.USER_FEATURE_TOGGLES(userId),
+      providesTags: [TAG_TYPES.USER_FEATURE_TOGGLES],
+    }),
+
+    /** Batch upsert — one call per save (a single-item array for a per-row flip). */
+    setUserFeatureToggles: builder.mutation<{ success: boolean }, SetUserFeatureTogglesBody>({
+      query: ({ userId, toggles }) => ({
+        url: ApiEndpoints.USER_MANAGEMENT.USER_FEATURE_TOGGLES(userId),
+        method: HttpMethod.PATCH,
+        body: { toggles },
+      }),
+      invalidatesTags: [TAG_TYPES.USER_FEATURE_TOGGLES],
+    }),
+
+    /** Platform admins holding the consolidated PLATFORM_ADMIN role. */
+    listPlatformAdmins: builder.query<GetPlatformAdminsResponse, { search?: string } | undefined>({
+      query: params => ({ url: ApiEndpoints.PLATFORM_ADMINS.LIST, params }),
+      providesTags: [TAG_TYPES.PLATFORM_ADMINS],
+    }),
+
+    /** Active users eligible to become a platform admin. */
+    listEligiblePlatformAdmins: builder.query<
+      GetPlatformAdminsResponse,
+      { search?: string } | undefined
+    >({
+      query: params => ({ url: ApiEndpoints.PLATFORM_ADMINS.ELIGIBLE, params }),
+      providesTags: [TAG_TYPES.PLATFORM_ADMINS],
+    }),
+
+    assignPlatformAdmin: builder.mutation<{ success: boolean }, AssignPlatformAdminBody>({
+      query: body => ({
+        url: ApiEndpoints.PLATFORM_ADMINS.ASSIGN,
+        method: HttpMethod.POST,
+        body,
+      }),
+      invalidatesTags: [TAG_TYPES.PLATFORM_ADMINS, TAG_TYPES.USERS],
+    }),
+
+    removePlatformAdmin: builder.mutation<{ success: boolean }, number>({
+      query: userId => ({
+        url: ApiEndpoints.PLATFORM_ADMINS.REMOVE(userId),
+        method: HttpMethod.DELETE,
+      }),
+      invalidatesTags: [TAG_TYPES.PLATFORM_ADMINS, TAG_TYPES.USERS],
+    }),
   }),
 });
 
@@ -234,4 +307,13 @@ export const {
   useGetUserPreferencesQuery,
   useLazyGetUserPreferencesQuery,
   useUpdateUserPreferencesMutation,
+  useGetFeatureTogglesQuery,
+  useLazyGetFeatureTogglesQuery,
+  useGetFeatureToggleRegistryQuery,
+  useGetUserFeatureTogglesQuery,
+  useSetUserFeatureTogglesMutation,
+  useListPlatformAdminsQuery,
+  useListEligiblePlatformAdminsQuery,
+  useAssignPlatformAdminMutation,
+  useRemovePlatformAdminMutation,
 } = authAPI;

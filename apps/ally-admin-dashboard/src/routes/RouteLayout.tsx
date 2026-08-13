@@ -8,6 +8,7 @@ import {
   ROUTES,
   SUPER_ADMIN_ROLES,
   SUPER_DUPER_ADMIN_ROLES,
+  FeatureToggleKey,
 } from "@constants";
 import {
   CreateSimulation,
@@ -37,6 +38,7 @@ import {
   ProductRoadmap,
   Settings,
   Logs,
+  BugHunter,
   AgentTestCases,
   Competencies,
   RoleplaySessionLogs,
@@ -183,7 +185,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.USER_BADGES}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.USER_BADGES}
+            >
               <UserBadges />
             </PrivateLayout>
           }
@@ -191,7 +196,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.CHARACTER_LIBRARY}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.CHARACTER_LIBRARY}
+            >
               <CharacterLibrary />
             </PrivateLayout>
           }
@@ -207,7 +215,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_STT_CONFIGS}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.MANAGE_STT_CONFIGS}
+            >
               <SttConfigs />
             </PrivateLayout>
           }
@@ -215,7 +226,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_LLM_MODEL_CATALOG}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.MANAGE_LLM_MODEL_CATALOG}
+            >
               <LlmModelCatalog />
             </PrivateLayout>
           }
@@ -223,7 +237,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_SCENARIO_LANGUAGES}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.MANAGE_SCENARIO_LANGUAGES}
+            >
               <ScenarioLanguages />
             </PrivateLayout>
           }
@@ -233,7 +250,10 @@ export const RouteLayout: React.FC = () => {
           // narrowing it here would dead-end a plain super-admin.
           path={ROUTES.MANAGE_LANGUAGE_GLOSSARY(":id")}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.MANAGE_SCENARIO_LANGUAGES}
+            >
               <LanguageGlossary />
             </PrivateLayout>
           }
@@ -297,7 +317,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_GUARDRAILS}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.MANAGE_GUARDRAILS}
+            >
               <GuardrailsManagement />
             </PrivateLayout>
           }
@@ -313,7 +336,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.MANAGE_TOOLTIPS}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.MANAGE_TOOLTIPS}
+            >
               <TooltipManagement />
             </PrivateLayout>
           }
@@ -339,7 +365,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.AI_LAB}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.AI_LAB}
+            >
               <AILab />
             </PrivateLayout>
           }
@@ -347,7 +376,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ANALYTICS}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.ANALYTICS}
+            >
               <Suspense fallback={null}>
                 <Analytics />
               </Suspense>
@@ -357,15 +389,32 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.SETTINGS}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.SETTINGS}
+            >
               <Settings />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.BUG_HUNTER}
+          element={
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.BUG_HUNTER}
+            >
+              <BugHunter />
             </PrivateLayout>
           }
         />
         <Route
           path={ROUTES.LOGS}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.LOGS}
+            >
               <Logs />
             </PrivateLayout>
           }
@@ -373,7 +422,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.WHATSAPP_BOT}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.WHATSAPP_BOT}
+            >
               <WhatsAppBot />
             </PrivateLayout>
           }
@@ -381,7 +433,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.AGENT_TEST_CASES}
           element={
-            <PrivateLayout requiredRole={SUPER_DUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.AGENT_TEST_CASES}
+            >
               <AgentTestCases />
             </PrivateLayout>
           }
@@ -389,7 +444,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.COMPETENCIES}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.COMPETENCIES}
+            >
               <Competencies />
             </PrivateLayout>
           }
@@ -397,7 +455,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOGS}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.ROLEPLAY_SESSION_LOGS}
+            >
               <RoleplaySessionLogs />
             </PrivateLayout>
           }
@@ -405,7 +466,10 @@ export const RouteLayout: React.FC = () => {
         <Route
           path={ROUTES.ROLEPLAY_SESSION_LOG_DETAIL(":id")}
           element={
-            <PrivateLayout requiredRole={SUPER_ADMIN_ROLES}>
+            <PrivateLayout
+              requiredRole={SUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.ROLEPLAY_SESSION_LOGS}
+            >
               <RoleplaySessionLogDetail />
             </PrivateLayout>
           }

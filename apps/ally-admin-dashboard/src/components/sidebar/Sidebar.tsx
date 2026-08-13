@@ -14,6 +14,7 @@ import {
   Branch,
   Chat,
   Chemistry,
+  Debug,
   MachineLearningModel,
   Roadmap,
   Close,
@@ -224,6 +225,8 @@ export const Sidebar: React.FC = () => {
         return <Terminal size={20} />;
       case SIDEBAR_ITEMS.WHATSAPP_BOT:
         return <Chat size={20} />;
+      case SIDEBAR_ITEMS.BUG_HUNTER:
+        return <Debug size={20} />;
       default:
         return null;
     }

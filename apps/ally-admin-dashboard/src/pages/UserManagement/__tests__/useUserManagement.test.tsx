@@ -58,7 +58,12 @@ describe("useUserManagement", () => {
   });
 
   describe("role picker", () => {
-    it("offers the assignable roles but not the tier roles or CLIENT", async () => {
+    // The former SUPER_ADMIN/SUPER_DUPER_ADMIN exclusion (TIER_MANAGED_ROLES) is
+    // gone: PLATFORM_ADMIN is now a single boolean assigned/removed via the
+    // dedicated Admin User Management screen (POST/DELETE /v1/platform-admins),
+    // not through this generic role picker, so there is nothing left to lock out
+    // here beyond the anonymous-chat CLIENT identity.
+    it("offers the assignable roles but not CLIENT", async () => {
       const { result } = renderHook(() => useUserManagement([]));
 
       await waitFor(() => expect(result.current.roles.length).toBeGreaterThan(0));
@@ -66,45 +71,12 @@ describe("useUserManagement", () => {
       const offered = result.current.roles.map(role => role.name);
       expect(offered).toContain(UserRole.LEARNER);
       expect(offered).toContain(UserRole.COUNSELLOR);
-      expect(offered).not.toContain(UserRole.SUPER_ADMIN);
-      expect(offered).not.toContain(UserRole.SUPER_DUPER_ADMIN);
       expect(offered).not.toContain(UserRole.CLIENT);
     });
   });
 
   describe("handleChangeRole", () => {
-    // The regression this guards: "Change role" replaces the whole role set, so
-    // granting LEARNER to a super duper admin must not demote them.
-    it("keeps the tier role the picker never showed", async () => {
-      const { result } = renderHook(() => useUserManagement([]));
-      await waitFor(() => expect(result.current.roles.length).toBeGreaterThan(0));
-
-      act(() => result.current.handleOptionSelect("Change role", staffAccount));
-      await act(async () => {
-        await result.current.handleChangeRole({ id: 42, roles: [UserRole.LEARNER] });
-      });
-
-      expect(changeRole).toHaveBeenCalledWith({ userId: 42, groupIds: [3, 7] });
-    });
-
-    it("keeps it even when every app role is removed", async () => {
-      const { result } = renderHook(() => useUserManagement([]));
-      await waitFor(() => expect(result.current.roles.length).toBeGreaterThan(0));
-
-      act(() =>
-        result.current.handleOptionSelect("Change role", {
-          ...staffAccount,
-          roles: [UserRole.SUPER_DUPER_ADMIN, UserRole.LEARNER],
-        }),
-      );
-      await act(async () => {
-        await result.current.handleChangeRole({ id: 42, roles: [] });
-      });
-
-      expect(changeRole).toHaveBeenCalledWith({ userId: 42, groupIds: [7] });
-    });
-
-    it("sends only the picked roles for an ordinary account", async () => {
+    it("resolves the picked roles to group ids and sends only those", async () => {
       const { result } = renderHook(() => useUserManagement([]));
       await waitFor(() => expect(result.current.roles.length).toBeGreaterThan(0));
 
@@ -125,7 +97,19 @@ describe("useUserManagement", () => {
       expect(changeRole).toHaveBeenCalledWith({ userId: 42, groupIds: [3, 1] });
     });
 
-    it("prefills the picker without the tier roles", async () => {
+    it("rejects the save when a picked role name doesn't resolve to a known group", async () => {
+      const { result } = renderHook(() => useUserManagement([]));
+      await waitFor(() => expect(result.current.roles.length).toBeGreaterThan(0));
+
+      act(() => result.current.handleOptionSelect("Change role", staffAccount));
+      await act(async () => {
+        await result.current.handleChangeRole({ id: 42, roles: ["NOT_A_REAL_ROLE"] });
+      });
+
+      expect(changeRole).not.toHaveBeenCalled();
+    });
+
+    it("prefills the picker with every role the account holds", async () => {
       const { result } = renderHook(() => useUserManagement([]));
 
       act(() =>
@@ -135,8 +119,10 @@ describe("useUserManagement", () => {
         }),
       );
 
-      expect(result.current.userMethods.getValues().roles).toEqual([UserRole.LEARNER]);
-      expect(result.current.lockedRoles).toEqual([UserRole.SUPER_DUPER_ADMIN]);
+      expect(result.current.userMethods.getValues().roles).toEqual([
+        UserRole.SUPER_DUPER_ADMIN,
+        UserRole.LEARNER,
+      ]);
     });
   });
 

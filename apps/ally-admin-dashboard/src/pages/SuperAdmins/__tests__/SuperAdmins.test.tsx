@@ -3,12 +3,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { SuperAdmins } from "../SuperAdmins";
 
-const mockPromoteSuperAdmin = vi.fn();
-const mockPromoteSuperDuperAdmin = vi.fn();
-const mockDemote = vi.fn();
-const mockRemove = vi.fn();
+const mockAssignPlatformAdmin = vi.fn();
+const mockRemovePlatformAdmin = vi.fn();
+const mockSetUserFeatureToggles = vi.fn();
 
-const superDuperAdmins = [
+const platformAdmins = [
   {
     id: 1,
     name: "Current Admin",
@@ -18,20 +17,10 @@ const superDuperAdmins = [
   },
   {
     id: 2,
-    name: "Other Duper Admin",
+    name: "Other Admin",
     email: "other@helloally.ai",
     status: "ACTIVE",
     createdAt: "2026-02-01T00:00:00Z",
-  },
-];
-
-const superAdmins = [
-  {
-    id: 4,
-    name: "Plain Super Admin",
-    email: "sa@helloally.ai",
-    status: "ACTIVE",
-    createdAt: "2026-03-01T00:00:00Z",
   },
 ];
 
@@ -43,6 +32,13 @@ const candidates = [
     status: "ACTIVE",
     createdAt: "2026-04-01T00:00:00Z",
   },
+];
+
+// Labels deliberately differ from their section names ("Analytics" /
+// "Platform Config") so assertions on one can't accidentally match the other.
+const toggles = [
+  { key: "analytics", label: "View Analytics", description: "View analytics dashboards", enabled: true },
+  { key: "settings", label: "Manage Settings", description: "Manage platform settings", enabled: false },
 ];
 
 // Mocking @components (with cellTypes) sidesteps the @constants ↔ @components
@@ -87,22 +83,32 @@ vi.mock("@components", () => ({
         )}
       </div>
     ) : null,
+  // Matches the real component: `label` is an accessible name (aria-label),
+  // not visible text — visible text lives in the row's own <p>, and rendering
+  // it twice would make text queries ambiguous.
+  ToggleSwitch: ({ enabled, onChange, label }: any) => (
+    <button role="switch" aria-checked={enabled} aria-label={label} onClick={() => onChange(!enabled)} />
+  ),
+  AssignedOrganizations: () => (
+    <div data-testid="assigned-organizations">Assigned Organizations</div>
+  ),
+}));
+
+vi.mock("@assets", () => ({
+  ArrowDown: () => <svg data-testid="arrow-down" />,
 }));
 
 vi.mock("@api", () => ({
-  useGetSuperDuperAdminsQuery: () => ({
-    data: { data: superDuperAdmins, count: 2 },
-    isLoading: false,
-  }),
-  useGetSuperAdminsQuery: () => ({ data: { data: superAdmins, count: 1 }, isLoading: false }),
-  useGetSuperAdminCandidatesQuery: () => ({
+  useListPlatformAdminsQuery: () => ({ data: { data: platformAdmins, count: 2 }, isLoading: false }),
+  useListEligiblePlatformAdminsQuery: () => ({
     data: { data: candidates, count: 1 },
     isFetching: false,
   }),
-  usePromoteSuperAdminMutation: () => [mockPromoteSuperAdmin],
-  usePromoteSuperDuperAdminMutation: () => [mockPromoteSuperDuperAdmin],
-  useDemoteSuperDuperAdminMutation: () => [mockDemote],
-  useRemoveSuperAdminMutation: () => [mockRemove],
+  useAssignPlatformAdminMutation: () => [mockAssignPlatformAdmin],
+  useRemovePlatformAdminMutation: () => [mockRemovePlatformAdmin],
+  useGetUserFeatureTogglesQuery: () => ({ data: toggles, isLoading: false }),
+  useSetUserFeatureTogglesMutation: () => [mockSetUserFeatureToggles],
+  useGetTenantsQuery: () => ({ data: { data: [], count: 0 } }),
 }));
 
 vi.mock("react-redux", () => ({
@@ -117,75 +123,82 @@ describe("SuperAdmins", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     const resolved = { unwrap: () => Promise.resolve({ success: true }) };
-    mockPromoteSuperAdmin.mockReturnValue(resolved);
-    mockPromoteSuperDuperAdmin.mockReturnValue(resolved);
-    mockDemote.mockReturnValue(resolved);
-    mockRemove.mockReturnValue(resolved);
+    mockAssignPlatformAdmin.mockReturnValue(resolved);
+    mockRemovePlatformAdmin.mockReturnValue(resolved);
+    mockSetUserFeatureToggles.mockReturnValue(resolved);
   });
 
-  it("renders both tiers in one table with tier badges", () => {
+  it("renders the platform admins list", () => {
     render(<SuperAdmins />);
-    expect(screen.getAllByTestId("sa-row")).toHaveLength(3);
-    expect(screen.getAllByText("Super duper admin")).toHaveLength(2);
-    expect(screen.getAllByText("Super admin")).toHaveLength(1);
+    expect(screen.getAllByTestId("sa-row")).toHaveLength(2);
+    expect(screen.getByText("Current Admin")).toBeInTheDocument();
+    expect(screen.getByText("Other Admin")).toBeInTheDocument();
   });
 
-  it("marks the current user and offers them no actions", () => {
+  it("removes a platform admin after confirmation", () => {
     render(<SuperAdmins />);
-    expect(screen.getByText("(You)")).toBeInTheDocument();
-    // Demote only on the other SDA row; Promote/Remove only on the SA row.
-    expect(screen.getAllByRole("button", { name: "Demote" })).toHaveLength(1);
-    expect(screen.getAllByRole("button", { name: "Promote" })).toHaveLength(1);
-    expect(screen.getAllByRole("button", { name: "Remove" })).toHaveLength(1);
-  });
-
-  it("promotes a super admin to super duper admin after confirmation", () => {
-    render(<SuperAdmins />);
-    fireEvent.click(screen.getByRole("button", { name: "Promote" }));
-    expect(screen.getByText("Promote to super duper admin?")).toBeInTheDocument();
-    const promoteButtons = screen.getAllByRole("button", { name: "Promote" });
-    fireEvent.click(promoteButtons[promoteButtons.length - 1]);
-    expect(mockPromoteSuperDuperAdmin).toHaveBeenCalledWith({ userId: 4 });
-  });
-
-  it("removes a super admin after confirmation", () => {
-    render(<SuperAdmins />);
-    fireEvent.click(screen.getByRole("button", { name: "Remove" }));
-    expect(screen.getByText("Remove super admin?")).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole("button", { name: "Remove" })[0]);
+    expect(screen.getByText("Remove platform admin?")).toBeInTheDocument();
     const removeButtons = screen.getAllByRole("button", { name: "Remove" });
     fireEvent.click(removeButtons[removeButtons.length - 1]);
-    expect(mockRemove).toHaveBeenCalledWith(4);
+    expect(mockRemovePlatformAdmin).toHaveBeenCalledWith(1);
   });
 
-  it("demotes another super duper admin after confirmation", () => {
+  it("adds a new platform admin from the candidate panel after confirmation", () => {
     render(<SuperAdmins />);
-    fireEvent.click(screen.getByRole("button", { name: "Demote" }));
-    expect(screen.getByText("Demote super duper admin?")).toBeInTheDocument();
-    const demoteButtons = screen.getAllByRole("button", { name: "Demote" });
-    fireEvent.click(demoteButtons[demoteButtons.length - 1]);
-    expect(mockDemote).toHaveBeenCalledWith(2);
-  });
-
-  it("adds a new super admin from the candidate panel after confirmation", () => {
-    render(<SuperAdmins />);
-    fireEvent.click(screen.getByRole("button", { name: "Add super admin" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add platform admin" }));
     expect(screen.getByText("Eligible User")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("radio"));
-    // Panel's primary button repeats the "Add super admin" label.
-    const addButtons = screen.getAllByRole("button", { name: "Add super admin" });
+    const addButtons = screen.getAllByRole("button", { name: "Add platform admin" });
     fireEvent.click(addButtons[addButtons.length - 1]);
-    expect(screen.getByText("Add super admin?")).toBeInTheDocument();
+    expect(screen.getByText("Add platform admin?")).toBeInTheDocument();
 
-    const confirmButtons = screen.getAllByRole("button", { name: "Add super admin" });
+    const confirmButtons = screen.getAllByRole("button", { name: "Add platform admin" });
     fireEvent.click(confirmButtons[confirmButtons.length - 1]);
-    expect(mockPromoteSuperAdmin).toHaveBeenCalledWith({ userId: 5 });
+    expect(mockAssignPlatformAdmin).toHaveBeenCalledWith({ userId: 5 });
   });
 
   it("disables the add button until a candidate is selected", () => {
     render(<SuperAdmins />);
-    fireEvent.click(screen.getByRole("button", { name: "Add super admin" }));
-    const addButtons = screen.getAllByRole("button", { name: "Add super admin" });
+    fireEvent.click(screen.getByRole("button", { name: "Add platform admin" }));
+    const addButtons = screen.getAllByRole("button", { name: "Add platform admin" });
     expect(addButtons[addButtons.length - 1]).toBeDisabled();
+  });
+
+  it("opens the toggle detail view on row click, grouped with sections", () => {
+    render(<SuperAdmins />);
+    fireEvent.click(screen.getByText("Current Admin"));
+
+    // Section headers ("Analytics", "Platform Config") plus each toggle's own label.
+    expect(screen.getByText("Analytics")).toBeInTheDocument();
+    expect(screen.getByText("Platform Config")).toBeInTheDocument();
+    expect(screen.getByText("View Analytics")).toBeInTheDocument();
+    expect(screen.getByText("Manage Settings")).toBeInTheDocument();
+    expect(screen.getByTestId("assigned-organizations")).toBeInTheDocument();
+  });
+
+  it("flips a toggle immediately with an optimistic update", () => {
+    render(<SuperAdmins />);
+    fireEvent.click(screen.getByText("Current Admin"));
+
+    const settingsSwitch = screen.getByRole("switch", { name: "Manage Settings" });
+    expect(settingsSwitch).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(settingsSwitch);
+
+    expect(mockSetUserFeatureToggles).toHaveBeenCalledWith({
+      userId: 1,
+      toggles: [{ featureKey: "settings", enabled: true }],
+    });
+  });
+
+  it("returns to the list view from the detail view", () => {
+    render(<SuperAdmins />);
+    fireEvent.click(screen.getByText("Current Admin"));
+    expect(screen.getByText("View Analytics")).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByText("Back to platform admins")[0]);
+    expect(screen.getAllByTestId("sa-row")).toHaveLength(2);
   });
 });

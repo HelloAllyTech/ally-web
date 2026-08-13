@@ -27,9 +27,10 @@ import {
   CoursesTab,
   BadgesTab,
 } from "@components";
-import { en, ROUTES, isSuperAdminRole } from "@constants";
+import { en, ROUTES, isSuperAdminRole, FeatureToggleKey } from "@constants";
 import { RootState } from "@store";
 import { Tenant } from "@types";
+import { hasFeature } from "@utils";
 
 enum TAB_IDS {
   SIMULATIONS = "simulations",
@@ -58,17 +59,23 @@ export const OrganizationDetail: FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user.user);
+  const features = useSelector((state: RootState) => state.user.features);
   const isSuperAdmin = isSuperAdminRole(user?.role);
+  // Dual-gated during the role->toggle migration: either check unlocks the
+  // content-access tabs (see PrivateLayout's `requiredRole || requiredFeature`
+  // pattern this mirrors for an in-page gate).
+  const hasOrgDetailContentAccess =
+    isSuperAdmin || hasFeature(features, FeatureToggleKey.ORG_DETAIL_CONTENT_TABS);
 
   const filteredTabs = useMemo(() => {
     return defaultTabs.filter(tab => {
-      // Content-access tabs stay super-admin only, matching Tracks and Cases.
+      // Content-access tabs stay gated, matching Tracks and Cases.
       if (tab.id === TAB_IDS.PATH || tab.id === TAB_IDS.CASES || tab.id === TAB_IDS.COURSES) {
-        return isSuperAdmin;
+        return hasOrgDetailContentAccess;
       }
       return true;
     });
-  }, [isSuperAdmin]);
+  }, [hasOrgDetailContentAccess]);
 
   const [searchParams, setSearchParams] = useSearchParams();
 

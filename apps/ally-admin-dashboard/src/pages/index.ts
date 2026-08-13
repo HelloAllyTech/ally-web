@@ -25,6 +25,7 @@ export * from "./AILab";
 export * from "./Evaluate";
 export * from "./Settings/Settings";
 export * from "./Logs/Logs";
+export * from "./BugHunter";
 export * from "./AgentTestCases/AgentTestCases";
 export * from "./Competencies/Competencies";
 export * from "./RoleplaySessionLogs/RoleplaySessionLogs";

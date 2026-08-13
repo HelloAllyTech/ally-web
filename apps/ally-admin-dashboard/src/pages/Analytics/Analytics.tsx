@@ -17,9 +17,10 @@ import {
   Theme,
 } from "@ally-ui-mono/ui-shared";
 import { AnalyticsWindowQuery, useGetScenarioLanguagesQuery } from "@api";
-import { en, isSuperDuperAdminRole, UserRole } from "@constants";
+import { en, isSuperDuperAdminRole, UserRole, FeatureToggleKey } from "@constants";
 import { RootState } from "@store";
 import { AnalyticsRange } from "@types";
+import { hasFeature } from "@utils";
 
 import { AnalyticsTabFilters } from "./analyticsFilters";
 import { AnalyticsAgentTab } from "./tabs/AnalyticsAgentTab";
@@ -58,15 +59,19 @@ interface TabDef {
   uses: { language: boolean; range: boolean };
   render: (f: AnalyticsTabFilters) => ReactNode;
   /**
-   * Optional extra gate, on top of the route's SUPER_ADMIN_ROLES. Only one tab
-   * needs it today (see the Analytics Agent entry), and a tab without it stays
-   * visible to everyone who can reach the page — which is how every other tab
-   * here already behaved.
+   * Optional extra gate, on top of the route's SUPER_ADMIN_ROLES/analytics
+   * feature toggle. Only two tabs need it today (Analytics Agent and
+   * Suggestions), and a tab without it stays visible to everyone who can reach
+   * the page — which is how every other tab here already behaved.
+   *
+   * Dual-gated during the role->toggle migration, same OR pattern as
+   * PrivateLayout's `requiredRole || requiredFeature`: either the legacy
+   * super-duper-admin role or the matching feature toggle unlocks the tab.
    *
    * A hidden tab, not a disabled one: a reader who can never use it is better
    * served by not knowing it exists than by a tab whose every request 403s.
    */
-  visibleTo?: (role?: UserRole | string | null) => boolean;
+  visibleTo?: (ctx: { role?: UserRole | string | null; features: string[] }) => boolean;
 }
 
 const TABS: TabDef[] = [
@@ -179,7 +184,8 @@ const TABS: TabDef[] = [
     label: "Analytics Agent",
     uses: { language: false, range: false },
     render: () => <AnalyticsAgentTab />,
-    visibleTo: isSuperDuperAdminRole,
+    visibleTo: ({ role, features }) =>
+      isSuperDuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_AGENT),
   },
   {
     // "What should we build next?", answered from the platform's own numbers and
@@ -197,7 +203,8 @@ const TABS: TabDef[] = [
     label: en.analyticsSuggestions.tabLabel,
     uses: { language: false, range: false },
     render: () => <SuggestionsTab />,
-    visibleTo: isSuperDuperAdminRole,
+    visibleTo: ({ role, features }) =>
+      isSuperDuperAdminRole(role) || hasFeature(features, FeatureToggleKey.ANALYTICS_SUGGESTIONS),
   },
 ];
 
@@ -209,9 +216,14 @@ export const Analytics = () => {
   const [tabIndex, setTabIndex] = useState(0);
 
   // Most tabs are visible to everyone who can reach this page (the route gates
-  // on SUPER_ADMIN_ROLES); a tab may declare a narrower gate of its own.
+  // on SUPER_ADMIN_ROLES / the analytics feature toggle); a tab may declare a
+  // narrower gate of its own.
   const role = useSelector((state: RootState) => state.user.user?.role);
-  const tabs = useMemo(() => TABS.filter(t => !t.visibleTo || t.visibleTo(role)), [role]);
+  const features = useSelector((state: RootState) => state.user.features);
+  const tabs = useMemo(
+    () => TABS.filter(t => !t.visibleTo || t.visibleTo({ role, features })),
+    [role, features],
+  );
 
   const { data: scenarioLanguages } = useGetScenarioLanguagesQuery({ active: true });
   const languageItems = useMemo(

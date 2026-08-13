@@ -7,6 +7,7 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import {
   useLazyGetUserQuery,
   useLazyGetPermissionsQuery,
+  useLazyGetFeatureTogglesQuery,
   baseAPI,
   authAPI,
   useGetProfileImageUrlMutation,
@@ -17,7 +18,7 @@ import {
   useUpdateUserPreferencesMutation,
 } from "@api";
 import { LOCAL_STORAGE_KEYS, isSuperAdminRole } from "@constants";
-import { setUser, authenticate, unauthenticate, setPermissions } from "@reducer";
+import { setUser, authenticate, unauthenticate, setPermissions, setFeatures } from "@reducer";
 import { RootState, store } from "@store";
 import { deriveNavigationItems } from "@utils";
 
@@ -25,6 +26,7 @@ export const useUser = () => {
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
   const { availableChatTypes, user, userStatus } = useSelector((state: RootState) => state.user);
   const permissions = useSelector((state: RootState) => state.user.permissions);
+  const features = useSelector((state: RootState) => state.user.features);
   // Read preferences (e.g. saved sidebar order) straight from the RTK Query cache
   // rather than a Redux mirror, so the saved order is available on the same render
   // the cache is warm — no dispatch-on-effect lag (which previously caused the nav
@@ -36,6 +38,7 @@ export const useUser = () => {
 
   const [getUser, { isLoading: isUserLoading }] = useLazyGetUserQuery();
   const [getPermissions, { isLoading: isPermissionsLoading }] = useLazyGetPermissionsQuery();
+  const [getFeatureToggles] = useLazyGetFeatureTogglesQuery();
   const [getProfileUrl] = useGetProfileImageUrlMutation();
   const [deleteProfile] = useDeleteProfileImageMutation();
   const [uploadProfileImage] = useUploadProfileImageMutation();
@@ -87,6 +90,19 @@ export const useUser = () => {
           } catch (prefError) {
             logger.info(`No user preferences loaded: ${prefError}`);
           }
+          // Feature toggles are the replacement for role-tier gating, but this
+          // endpoint is new: a 403/404 (older backend, or an account this rollout
+          // hasn't reached yet) must not block login, the same non-fatal handling
+          // as preferences above. Falls back to an empty array, which fails every
+          // hasFeature() check closed — the dual-gate `requiredRole` fallback on
+          // routes/nav carries access during this transition, not an open toggle.
+          try {
+            const featureTogglesData = await getFeatureToggles().unwrap();
+            store.dispatch(setFeatures(featureTogglesData ?? []));
+          } catch (featuresError) {
+            logger.info(`No feature toggles loaded: ${featuresError}`);
+            store.dispatch(setFeatures([]));
+          }
           return userData?.data;
         } catch (error) {
           logger.info(`Error fetching user or permissions:, ${error}`);
@@ -102,7 +118,7 @@ export const useUser = () => {
       logout();
       return null;
     }
-  }, [getUser, getPermissions, getUserPreferences]);
+  }, [getUser, getPermissions, getUserPreferences, getFeatureToggles]);
 
   /**
    * Logs out the user by clearing all authentication data and state.
@@ -118,6 +134,7 @@ export const useUser = () => {
     // Clear user state
     store.dispatch(setUser(null));
     store.dispatch(setPermissions([]));
+    store.dispatch(setFeatures([]));
     store.dispatch(unauthenticate());
 
     // Clear tokens
@@ -126,8 +143,8 @@ export const useUser = () => {
   };
 
   const filteredNavigationItems = useMemo(
-    () => deriveNavigationItems({ permissions, role: user?.role, savedOrder: adminSidebarOrder }),
-    [permissions, user?.role, adminSidebarOrder],
+    () => deriveNavigationItems({ permissions, features, savedOrder: adminSidebarOrder }),
+    [permissions, features, adminSidebarOrder],
   );
 
   // Only super admins may personalize their sidebar order.
@@ -165,6 +182,7 @@ export const useUser = () => {
     isAuthenticated,
     logout,
     permissions,
+    features,
     setUser,
     user,
     userStatus,
