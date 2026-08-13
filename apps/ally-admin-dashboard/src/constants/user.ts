@@ -308,22 +308,6 @@ export const isSuperDuperAdminRole = (role?: UserRole | string | null): boolean 
   role != null && (SUPER_DUPER_ADMIN_ROLES as string[]).includes(role);
 
 /**
- * The two rungs of the super-admin tier, which the Super Admins tab owns
- * end-to-end (add / promote / demote / remove, each with its own confirmation
- * and self-lockout guards).
- *
- * The Users tab's role picker must therefore neither offer them nor drop them:
- * "Change role" replaces a user's whole role set, so a save that silently
- * omitted the tier would demote a super admin as a side effect of granting them
- * LEARNER. useUserManagement keeps these roles out of the picker and re-adds
- * them to every payload.
- */
-export const TIER_MANAGED_ROLES: UserRole[] = [UserRole.SUPER_ADMIN, UserRole.SUPER_DUPER_ADMIN];
-
-export const isTierManagedRole = (role?: UserRole | string | null): boolean =>
-  role != null && (TIER_MANAGED_ROLES as string[]).includes(role);
-
-/**
  * Collapse a user's roles to the one this console should gate on.
  *
  * Roles are additive, but `GET /users/me` also reports a single `role`, chosen

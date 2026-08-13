@@ -4,39 +4,12 @@ import {
   en,
   SIDEBAR_ITEMS,
   Permissions,
-  UserRole,
-  isSuperAdminRole,
-  isSuperDuperAdminRole,
+  buildSidebarItemFeatureKeyMap,
   isRoleplayStudioEmailAllowed,
 } from "@constants";
 import { store } from "@store";
 
-/**
- * Tabs a SUPER_DUPER_ADMIN can reach but a plain SUPER_ADMIN cannot. Single
- * source of truth for both the role gate and the "superDuperAdminOnly" flag the
- * sidebar uses to render a small blue dot beside these labels. Built lazily
- * (like `buildNavigationItems`) so it doesn't read `@constants` at module-eval
- * time, which would break under circular imports.
- */
-const buildSuperDuperAdminOnlyItems = (): Set<string> =>
-  new Set<string>([
-    SIDEBAR_ITEMS.CHARACTER_LIBRARY,
-    // Matches the route gate: editing the STT registry changes which engine
-    // every language (and every simulation defaulting to it) transcribes with.
-    SIDEBAR_ITEMS.STT_CONFIGS,
-    SIDEBAR_ITEMS.LLM_MODEL_CATALOG,
-    SIDEBAR_ITEMS.MANAGE_GUARDRAILS,
-    SIDEBAR_ITEMS.TOOLTIPS,
-    SIDEBAR_ITEMS.USER_BADGES,
-    SIDEBAR_ITEMS.AGENT_TEST_CASES,
-    SIDEBAR_ITEMS.SETTINGS,
-    // AWS CloudWatch logs can carry sensitive request data — restrict to the
-    // elevated tier, same as the SDA management surface.
-    SIDEBAR_ITEMS.LOGS,
-    // The corpus is what the bot tells mental healthcare workers, and the conversation log
-    // holds their clinical questions next to their phone numbers.
-    SIDEBAR_ITEMS.WHATSAPP_BOT,
-  ]);
+import { hasFeature } from "./permissions";
 
 /**
  * Builds the full set of admin navigation tabs in their default order. Built
@@ -161,6 +134,11 @@ const buildNavigationItems = (): NavigationItem[] => [
     path: ROUTES.LOGS,
   },
   {
+    id: SIDEBAR_ITEMS.BUG_HUNTER,
+    label: en.bugHunter.tabLabel,
+    path: ROUTES.BUG_HUNTER,
+  },
+  {
     id: SIDEBAR_ITEMS.WHATSAPP_BOT,
     label: en.whatsappBot.navLabel,
     path: ROUTES.WHATSAPP_BOT,
@@ -191,13 +169,15 @@ export const applySavedOrder = (
  * Resolves the navigation tabs visible to a user, in their effective order,
  * then reordered by the user's saved sidebar order. The first element is the
  * user's "first tab" — used both to render the sidebar and to pick the default
- * landing route after login. Tabs fall into three gating tiers:
- *  - Super-duper-admin only (Characters, Speech Recognition, Language Model,
- *    Guardrails, Tooltips, Badges, Agent Test Cases, Super Duper Admins,
- *    Settings, Logs): shown solely to SUPER_DUPER_ADMIN, independent of
- *    permissions.
- *  - Super-admin tier (Analytics, Competencies, AI Lab, Roleplay Session Logs,
- *    Languages): shown to both super-admin roles, independent of permissions.
+ * landing route after login. Tabs fall into two gating tiers:
+ *  - Feature-toggle-gated (Characters, Speech Recognition, Language Model,
+ *    Guardrails, Tooltips, Badges, Agent Test Cases, Settings, Logs,
+ *    WhatsApp Bot, Bug Hunter, Analytics, Competencies, AI Lab, Roleplay
+ *    Session Logs, Languages): shown once the user's feature-toggle list is
+ *    loaded and holds the matching key (see `buildSidebarItemFeatureKeyMap`),
+ *    independent of permissions. This one map replaces the former
+ *    buildSuperDuperAdminOnlyItems() set and the SUPER_ADMIN_ROLES switch
+ *    branch — both were role-tier gates for exactly these tabs.
  *  - Permission-gated (everything else): shown once permissions are loaded and
  *    the user holds the required permission.
  * The single-pass filter preserves each tab's natural order from
@@ -205,14 +185,14 @@ export const applySavedOrder = (
  */
 export const deriveNavigationItems = ({
   permissions,
-  role,
+  features,
   savedOrder,
   email,
 }: {
-  // Accepts `string[]` to match how permissions are stored in Redux; enum
-  // members compare cleanly against the string entries.
+  // Accepts `string[]` to match how permissions/features are stored in Redux;
+  // enum members compare cleanly against the string entries.
   permissions: string[] | undefined;
-  role: UserRole | undefined;
+  features: string[] | undefined;
   savedOrder: string[] | undefined;
   /**
    * Logged-in user's email, used for allowlist-gated items (Roleplay Studio).
@@ -222,29 +202,17 @@ export const deriveNavigationItems = ({
   email?: string;
 }): NavigationItem[] => {
   const navigationItems = buildNavigationItems();
-  const superDuperAdminOnlyItems = buildSuperDuperAdminOnlyItems();
+  const featureGatedItems = buildSidebarItemFeatureKeyMap(SIDEBAR_ITEMS);
   const resolvedEmail = email ?? store.getState()?.user?.user?.email;
-  const isSuperAdmin = isSuperAdminRole(role);
-  const isSuperDuperAdmin = isSuperDuperAdminRole(role);
   const hasPermissions = Boolean(permissions && permissions.length > 0);
 
   const visible = navigationItems.filter(item => {
-    // Super-duper-admin-only tabs. Role-gated (no permission required); a plain
-    // SUPER_ADMIN no longer sees these.
-    if (superDuperAdminOnlyItems.has(item.id)) return isSuperDuperAdmin;
+    // Feature-toggle-gated tabs. Independent of permissions — a tab here is
+    // either the user's toggle grants it or it does not exist for them.
+    const featureKey = featureGatedItems.get(item.id);
+    if (featureKey) return hasFeature(features, featureKey);
 
     switch (item.id) {
-      // Super-admin-tier tabs (both super-admin roles). Role-gated. Languages
-      // (and the per-language glossary behind it) belongs here rather than in
-      // the super-duper set: the backend already grants a plain SUPER_ADMIN
-      // both view:admin:languages and edit:admin:language.
-      case SIDEBAR_ITEMS.ANALYTICS:
-      case SIDEBAR_ITEMS.COMPETENCIES:
-      case SIDEBAR_ITEMS.AI_LAB:
-      case SIDEBAR_ITEMS.ROLEPLAY_SESSION_LOGS:
-      case SIDEBAR_ITEMS.SCENARIO_LANGUAGES:
-        return isSuperAdmin;
-
       // Permission-gated tabs require permissions to be loaded; until then
       // show nothing for them.
       default:
@@ -273,9 +241,9 @@ export const deriveNavigationItems = ({
             return permissions!.includes(Permissions.VIEW_I18N_TRANSLATIONS);
           case SIDEBAR_ITEMS.BLOG:
             return permissions!.includes(Permissions.VIEW_BLOGS);
-          // Permission-gated, deliberately NOT role-gated: viewing and voting on the
-          // roadmap are meant to reach a wider group than the manage surface, so the tab
-          // must stay out of buildSuperDuperAdminOnlyItems().
+          // Permission-gated, deliberately NOT feature-toggle-gated: viewing and
+          // voting on the roadmap are meant to reach a wider group than the
+          // manage surface, so the tab must stay out of the feature-key map.
           case SIDEBAR_ITEMS.PRODUCT_ROADMAP:
             return permissions!.includes(Permissions.VIEW_PRODUCT_ROADMAP);
           default:
@@ -284,12 +252,5 @@ export const deriveNavigationItems = ({
     }
   });
 
-  // Tag the super-duper-admin-only tabs so the sidebar can render a blue dot
-  // beside them. Only a SUPER_DUPER_ADMIN ever sees these tabs, so the flag is
-  // unconditional on membership in the set.
-  const flagged = visible.map(item =>
-    superDuperAdminOnlyItems.has(item.id) ? { ...item, superDuperAdminOnly: true } : item,
-  );
-
-  return applySavedOrder(flagged, savedOrder);
+  return applySavedOrder(visible, savedOrder);
 };

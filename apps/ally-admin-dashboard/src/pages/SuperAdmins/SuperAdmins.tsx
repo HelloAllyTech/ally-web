@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 
-import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import {
@@ -12,19 +11,17 @@ import {
   TableCell,
 } from "@ally-ui-mono/ui-shared";
 import {
-  useDemoteSuperDuperAdminMutation,
-  useGetSuperAdminCandidatesQuery,
-  useGetSuperAdminsQuery,
-  useGetSuperDuperAdminsQuery,
-  usePromoteSuperAdminMutation,
-  usePromoteSuperDuperAdminMutation,
-  useRemoveSuperAdminMutation,
+  useAssignPlatformAdminMutation,
+  useListEligiblePlatformAdminsQuery,
+  useListPlatformAdminsQuery,
+  useRemovePlatformAdminMutation,
 } from "@api";
 import { ActionConfirmationPopup, Button, EmptyState, ListToolbar, StatusBadge } from "@components";
 import { ButtonVariant } from "@components/types";
 import { en } from "@constants";
-import { RootState } from "@store";
-import { SuperAdminTier, SuperDuperAdmin, TieredSuperAdmin } from "@types";
+import { PlatformAdmin } from "@types";
+
+import { PlatformAdminDetail } from "./PlatformAdminDetail";
 
 const strings = en.superAdmins;
 
@@ -32,75 +29,43 @@ const formatDate = (value: string) => new Date(value).toLocaleDateString();
 
 /** Which confirmation the user is being asked for, and on whom. */
 type PendingAction =
-  | { kind: "add"; target: SuperDuperAdmin }
-  | { kind: "promote"; target: TieredSuperAdmin }
-  | { kind: "demote"; target: TieredSuperAdmin }
-  | { kind: "remove"; target: TieredSuperAdmin };
-
-const TierBadge = ({ tier }: { tier: SuperAdminTier }) =>
-  tier === SuperAdminTier.SUPER_DUPER_ADMIN ? (
-    <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 whitespace-nowrap">
-      {strings.tierSuperDuperAdmin}
-    </span>
-  ) : (
-    <span className="inline-block text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
-      {strings.tierSuperAdmin}
-    </span>
-  );
+  | { kind: "add"; target: PlatformAdmin }
+  | { kind: "remove"; target: PlatformAdmin };
 
 /**
- * Management surface for the whole super-admin tier, rendered as the
- * "Super Admins" tab inside User Management (next to Organizations). Only
- * super duper admins see it (UserManagement gates the tab on the role; the
- * backing endpoints are gated by the view/edit:super-duper-admins
- * permissions). From here an SDA can:
- *  - add a new super admin (promote any active user into the tier),
- *  - promote a super admin to super duper admin,
- *  - demote a super duper admin back to super admin,
- *  - remove the super admin role again.
+ * Management surface for the consolidated PLATFORM_ADMIN role, rendered as the
+ * "Super Admins" tab inside User Management (next to Organizations). Replaces
+ * the former promote/demote tier list: there is now a single role, plus a
+ * per-admin feature-toggle matrix (see PlatformAdminDetail). From here an
+ * `admin_user_management` holder can:
+ *  - add a new platform admin (from the eligible-users picker),
+ *  - remove one again,
+ *  - click through to a platform admin's row to edit their toggles and
+ *    tenant allowlist.
  */
 export const SuperAdmins: React.FC = () => {
-  const currentUser = useSelector((state: RootState) => state.user.user);
-
   const [search, setSearch] = useState("");
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [isAddPanelOpen, setIsAddPanelOpen] = useState(false);
-  const [addTarget, setAddTarget] = useState<SuperDuperAdmin | null>(null);
+  const [addTarget, setAddTarget] = useState<PlatformAdmin | null>(null);
   const [candidateSearch, setCandidateSearch] = useState("");
+  const [selectedAdmin, setSelectedAdmin] = useState<PlatformAdmin | null>(null);
 
   const listParams = search ? { search } : undefined;
-  const { data: superAdminsData, isLoading: isSuperAdminsLoading } =
-    useGetSuperAdminsQuery(listParams);
-  const { data: superDuperAdminsData, isLoading: isSuperDuperAdminsLoading } =
-    useGetSuperDuperAdminsQuery(listParams);
+  const { data: platformAdminsData, isLoading: isPlatformAdminsLoading } =
+    useListPlatformAdminsQuery(listParams);
   const { data: candidatesData, isFetching: isCandidatesFetching } =
-    useGetSuperAdminCandidatesQuery(candidateSearch ? { search: candidateSearch } : undefined, {
+    useListEligiblePlatformAdminsQuery(candidateSearch ? { search: candidateSearch } : undefined, {
       skip: !isAddPanelOpen,
     });
 
-  const [promoteSuperAdmin] = usePromoteSuperAdminMutation();
-  const [promoteSuperDuperAdmin] = usePromoteSuperDuperAdminMutation();
-  const [demoteSuperDuperAdmin] = useDemoteSuperDuperAdminMutation();
-  const [removeSuperAdmin] = useRemoveSuperAdminMutation();
+  const [assignPlatformAdmin] = useAssignPlatformAdminMutation();
+  const [removePlatformAdmin] = useRemovePlatformAdminMutation();
 
-  const isLoading = isSuperAdminsLoading || isSuperDuperAdminsLoading;
-
-  // One combined table: super duper admins first, then super admins,
-  // newest-first within each tier (both lists arrive newest-first).
-  const admins = useMemo<TieredSuperAdmin[]>(
-    () => [
-      ...(superDuperAdminsData?.data ?? []).map(admin => ({
-        ...admin,
-        tier: SuperAdminTier.SUPER_DUPER_ADMIN,
-      })),
-      ...(superAdminsData?.data ?? []).map(admin => ({
-        ...admin,
-        tier: SuperAdminTier.SUPER_ADMIN,
-      })),
-    ],
-    [superAdminsData, superDuperAdminsData],
+  const admins = useMemo<PlatformAdmin[]>(
+    () => platformAdminsData?.data ?? [],
+    [platformAdminsData],
   );
-
   const candidates = candidatesData?.data ?? [];
 
   const closeAddPanel = () => {
@@ -115,29 +80,19 @@ export const SuperAdmins: React.FC = () => {
     try {
       switch (kind) {
         case "add":
-          await promoteSuperAdmin({ userId: target.id }).unwrap();
-          toast.success(strings.addSuccess);
+          await assignPlatformAdmin({ userId: target.id }).unwrap();
+          toast.success(strings.addPlatformAdminSuccess);
           closeAddPanel();
           break;
-        case "promote":
-          await promoteSuperDuperAdmin({ userId: target.id }).unwrap();
-          toast.success(strings.promoteSuccess);
-          break;
-        case "demote":
-          await demoteSuperDuperAdmin(target.id).unwrap();
-          toast.success(strings.demoteSuccess);
-          break;
         case "remove":
-          await removeSuperAdmin(target.id).unwrap();
-          toast.success(strings.removeSuccess);
+          await removePlatformAdmin(target.id).unwrap();
+          toast.success(strings.removePlatformAdminSuccess);
           break;
       }
     } catch (error: any) {
       const fallback = {
-        add: strings.addError,
-        promote: strings.promoteError,
-        demote: strings.demoteError,
-        remove: strings.removeError,
+        add: strings.addPlatformAdminError,
+        remove: strings.removePlatformAdminError,
       }[kind];
       toast.error(error?.data?.message || fallback);
     } finally {
@@ -149,82 +104,31 @@ export const SuperAdmins: React.FC = () => {
     switch (action.kind) {
       case "add":
         return {
-          title: strings.addConfirmTitle,
-          description: strings.addConfirmDescription(action.target.name),
-          label: strings.addSuperAdmin,
+          title: strings.addPlatformAdminConfirmTitle,
+          description: strings.addPlatformAdminConfirmDescription(action.target.name),
+          label: strings.addPlatformAdmin,
           variant: ButtonVariant.PRIMARY,
-        };
-      case "promote":
-        return {
-          title: strings.promoteConfirmTitle,
-          description: strings.promoteConfirmDescription(action.target.name),
-          label: strings.promote,
-          variant: ButtonVariant.PRIMARY,
-        };
-      case "demote":
-        return {
-          title: strings.demoteConfirmTitle,
-          description: strings.demoteConfirmDescription(action.target.name),
-          label: strings.demote,
-          variant: ButtonVariant.DESTRUCTIVE,
         };
       case "remove":
         return {
-          title: strings.removeConfirmTitle,
-          description: strings.removeConfirmDescription(action.target.name),
+          title: strings.removePlatformAdminConfirmTitle,
+          description: strings.removePlatformAdminConfirmDescription(action.target.name),
           label: strings.remove,
           variant: ButtonVariant.DESTRUCTIVE,
         };
     }
   };
 
-  const renderRowActions = (admin: TieredSuperAdmin) => {
-    const isSelf = admin.id === currentUser?.id;
-    // Self-service changes to one's own tier are rejected server-side; don't
-    // offer them.
-    if (isSelf) return null;
-
-    if (admin.tier === SuperAdminTier.SUPER_DUPER_ADMIN) {
-      return (
-        <Button
-          variant={ButtonVariant.DESTRUCTIVE}
-          onClick={() => setPendingAction({ kind: "demote", target: admin })}
-          className="px-3 py-1 text-sm"
-        >
-          {strings.demote}
-        </Button>
-      );
-    }
-    return (
-      <div className="flex justify-end gap-2">
-        <Button
-          variant={ButtonVariant.PRIMARY}
-          onClick={() => setPendingAction({ kind: "promote", target: admin })}
-          className="px-3 py-1 text-sm"
-        >
-          {strings.promote}
-        </Button>
-        <Button
-          variant={ButtonVariant.DESTRUCTIVE}
-          onClick={() => setPendingAction({ kind: "remove", target: admin })}
-          className="px-3 py-1 text-sm"
-        >
-          {strings.remove}
-        </Button>
-      </div>
-    );
-  };
-
   const renderAdminsTable = () => {
-    if (isLoading) {
+    if (isPlatformAdminsLoading) {
       return <div className="flex justify-center py-16 text-typography-600">{strings.loading}</div>;
     }
 
     if (admins.length === 0) {
       return (
         <EmptyState
-          title={strings.noAdminsFound}
-          subtitle={strings.noAdminsSubtitle}
+          title={strings.noPlatformAdminsFound}
+          subtitle={strings.noPlatformAdminsSubtitle}
           hideActionButton
         />
       );
@@ -236,39 +140,39 @@ export const SuperAdmins: React.FC = () => {
           <TableRow className="border-b border-border-dark text-typography-600">
             <TableHeader className="py-3 pr-4 font-medium">{strings.name}</TableHeader>
             <TableHeader className="py-3 pr-4 font-medium">{strings.email}</TableHeader>
-            <TableHeader className="py-3 pr-4 font-medium">{strings.tier}</TableHeader>
             <TableHeader className="py-3 pr-4 font-medium">{strings.status}</TableHeader>
             <TableHeader className="py-3 pr-4 font-medium">{strings.addedOn}</TableHeader>
             <TableHeader className="py-3" />
           </TableRow>
         </TableHead>
         <TableBody>
-          {admins.map(admin => {
-            const isSelf = admin.id === currentUser?.id;
-            return (
-              <TableRow
-                key={admin.id}
-                className="border-b border-border-light"
-                data-testid="sa-row"
-              >
-                <TableCell className="py-3 pr-4">
-                  {admin.name || admin.email}
-                  {isSelf && (
-                    <span className="ml-2 text-xs text-typography-600">({strings.you})</span>
-                  )}
-                </TableCell>
-                <TableCell className="py-3 pr-4">{admin.email}</TableCell>
-                <TableCell className="py-3 pr-4">
-                  <TierBadge tier={admin.tier} />
-                </TableCell>
-                <TableCell className="py-3 pr-4">
-                  <StatusBadge status={admin.status} />
-                </TableCell>
-                <TableCell className="py-3 pr-4">{formatDate(admin.createdAt)}</TableCell>
-                <TableCell className="py-3 text-right">{renderRowActions(admin)}</TableCell>
-              </TableRow>
-            );
-          })}
+          {admins.map(admin => (
+            <TableRow
+              key={admin.id}
+              className="border-b border-border-light cursor-pointer hover:bg-background-secondary"
+              data-testid="sa-row"
+              onClick={() => setSelectedAdmin(admin)}
+            >
+              <TableCell className="py-3 pr-4">{admin.name || admin.email}</TableCell>
+              <TableCell className="py-3 pr-4">{admin.email}</TableCell>
+              <TableCell className="py-3 pr-4">
+                <StatusBadge status={admin.status} />
+              </TableCell>
+              <TableCell className="py-3 pr-4">{formatDate(admin.createdAt)}</TableCell>
+              <TableCell className="py-3 text-right">
+                <Button
+                  variant={ButtonVariant.DESTRUCTIVE}
+                  onClick={event => {
+                    event.stopPropagation();
+                    setPendingAction({ kind: "remove", target: admin });
+                  }}
+                  className="px-3 py-1 text-sm"
+                >
+                  {strings.remove}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     );
@@ -281,7 +185,7 @@ export const SuperAdmins: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50" onClick={closeAddPanel} />
         <div className="relative bg-white shadow-xl max-w-lg w-full p-6 max-h-[80vh] flex flex-col overflow-hidden">
           <h2 className="text-xl text-typography-900 font-secondary mb-4">
-            {strings.addSuperAdmin}
+            {strings.addPlatformAdmin}
           </h2>
           <input
             type="text"
@@ -310,7 +214,7 @@ export const SuperAdmins: React.FC = () => {
                 >
                   <input
                     type="radio"
-                    name="add-super-admin-target"
+                    name="add-platform-admin-target"
                     checked={addTarget?.id === user.id}
                     onChange={() => setAddTarget(user)}
                   />
@@ -333,7 +237,7 @@ export const SuperAdmins: React.FC = () => {
               onClick={() => addTarget && setPendingAction({ kind: "add", target: addTarget })}
               disabled={!addTarget}
             >
-              {strings.addSuperAdmin}
+              {strings.addPlatformAdmin}
             </Button>
           </div>
         </div>
@@ -343,15 +247,19 @@ export const SuperAdmins: React.FC = () => {
 
   const pendingCopy = pendingAction ? confirmCopy(pendingAction) : null;
 
+  if (selectedAdmin) {
+    return <PlatformAdminDetail admin={selectedAdmin} onBack={() => setSelectedAdmin(null)} />;
+  }
+
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
-      <p className="text-sm text-typography-600 pb-4">{strings.subtitle}</p>
+      <p className="text-sm text-typography-600 pb-4">{strings.platformAdminsSubtitle}</p>
       <ListToolbar
         searchValue={search}
         onSearchChange={setSearch}
         placeholder={strings.searchPlaceholder}
         action={{
-          label: strings.addSuperAdmin,
+          label: strings.addPlatformAdmin,
           onClick: () => setIsAddPanelOpen(true),
           variant: ButtonVariant.PRIMARY,
         }}

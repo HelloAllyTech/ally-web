@@ -607,6 +607,34 @@ export const en = {
     cancel: "Cancel",
     confirm: "Confirm",
     you: "You",
+
+    // Platform Admins list (Admin User Management) — replaces the promote/demote
+    // tier list above with a single PLATFORM_ADMIN role plus per-user toggles.
+    platformAdminsSubtitle:
+      "Manage the platform's admins — add new ones, remove them, and configure exactly which features each one can access.",
+    addPlatformAdmin: "Add platform admin",
+    noPlatformAdminsFound: "No platform admins found",
+    noPlatformAdminsSubtitle: "Add a platform admin to get started",
+    addPlatformAdminConfirmTitle: "Add platform admin?",
+    addPlatformAdminConfirmDescription: (name: string) =>
+      `**${name}** will become a platform admin. Every feature toggle starts disabled — grant access from their detail page.`,
+    addPlatformAdminSuccess: "User added as platform admin",
+    addPlatformAdminError: "Failed to add platform admin",
+    removePlatformAdminConfirmTitle: "Remove platform admin?",
+    removePlatformAdminConfirmDescription: (name: string) =>
+      `**${name}** will lose the platform admin role and every feature-toggle grant that came with it.`,
+    removePlatformAdminSuccess: "Platform admin removed",
+    removePlatformAdminError: "Failed to remove platform admin",
+
+    // Platform admin detail view — the per-user toggle matrix + tenant allowlist.
+    backToPlatformAdmins: "Back to platform admins",
+    toggleDetailSubtitle: (name: string) =>
+      `Feature access for ${name}. Each toggle takes effect immediately.`,
+    toggleUpdateError: "Failed to update access",
+    tenantAllowlistTitle: "Tenant allowlist",
+    tenantAllowlistSubtitle:
+      "Restrict this admin to specific organizations. No organizations listed means unrestricted — they see every tenant.",
+    loadingToggles: "Loading feature access...",
   },
   userManagement: {
     organizationCreated: "Organization created successfully",
@@ -2129,6 +2157,86 @@ export const en = {
     rejectSubmit: "Reject suggestion",
     rejected: "Rejected.",
     rejectFailed: "Could not reject this suggestion.",
+  },
+  bugHunter: {
+    tabLabel: "Bug Hunter",
+    heading: "Bug Hunter",
+    subtitle:
+      "An agent that finds and fixes bugs across the Ally repos. Off by default — read the FAQ before turning it on.",
+    // ── Kill switch ──────────────────────────────────────────────────────────
+    toggleLabelOn: "On",
+    toggleLabelOff: "Off",
+    toggleTooltip:
+      "Off means off for every trigger, nightly and on-demand alike — there is no separate pause. Turning this off mid-run lets the current run finish; it only blocks the next one from starting.",
+    toggleOnConfirmTitle: "Turn Bug Hunter on?",
+    toggleOnConfirmBody:
+      "It will start running on its own nightly schedule, and can be triggered on demand. Read the FAQ below if you haven't yet.",
+    toggleOnConfirm: "Turn on",
+    toggleOffConfirmTitle: "Turn Bug Hunter off?",
+    toggleOffConfirmBody:
+      "Every trigger — nightly and on-demand — will refuse to start until it's back on.",
+    toggleOffConfirm: "Turn off",
+    cancel: "Cancel",
+    updateFailed: "Couldn't update the setting. Try again.",
+    lastChangedBy: "Last changed by user #{userId}",
+    // ── FAQ ──────────────────────────────────────────────────────────────────
+    faqTitle: "Frequently asked questions",
+    faqWhatTitle: "What does this do?",
+    faqWhatBody:
+      "On a nightly schedule (and whenever triggered on demand), an agent scans the Ally repos for bugs — failing or flaky tests, an LLM code-review pass, production error signals, and bugs your team already reported on the product roadmap. It fixes what it can and reports everything it did here.",
+    faqTrivialTitle: "What can it fix on its own vs. what does it just propose?",
+    faqTrivialBody:
+      "Only a narrow, pre-approved category auto-merges: a lint/type-only fix, or a single-file fix backed by a new regression test that fails before the fix and passes after. It never touches migrations, auth/permission code, payment paths, or other security-sensitive services, no matter how small the diff looks — those always go to review.",
+    faqReviewTitle: "Where do I review what it proposed?",
+    faqReviewBody:
+      "In the {suggestionsTabLink} tab, filtered to bugs — the same accept/reject screen you already use for product suggestions.",
+    faqEscalationTitle: "Where does it tell me it's stuck?",
+    faqEscalationBody:
+      "In the Slack channel configured for platform notifications — only for things that need attention now: a fix whose tests won't go green, a finding that touches a guarded path, or a run that errored out. A quiet night posts nothing there on purpose.",
+    faqReposTitle: "Which repos does it touch?",
+    faqReposBody: "ally-be, ally-web, ally-ai, ally-ai-learn, and ally-mobile.",
+    faqCostTitle: "How much does a run cost?",
+    faqCostBody:
+      "Every run's estimated token cost is shown in the run history table below, derived from the same LLM usage data the platform's cost analytics use.",
+    faqOffTitle: "How do I turn it off?",
+    faqOffBody:
+      "Use the switch above. Off blocks every trigger immediately — nightly and on-demand alike.",
+    // ── Live run card ────────────────────────────────────────────────────────
+    liveRunTitle: "Run in progress — {repo}",
+    liveRunConnecting: "Connecting to the live run…",
+    liveRunNoEventsYet: "Waiting for the first update…",
+    // ── Run history ──────────────────────────────────────────────────────────
+    historyTitle: "Run history",
+    columnRepo: "Repo",
+    columnTrigger: "Trigger",
+    columnStatus: "Status",
+    columnFound: "Found",
+    columnAutoMerged: "Auto-merged",
+    columnPrPending: "PR pending review",
+    columnDismissed: "Dismissed",
+    columnCost: "Est. cost",
+    columnStarted: "Started",
+    columnFoundTooltip:
+      "Bugs the run identified, across all four sources — tests, code review, logs, and reported bugs.",
+    columnAutoMergedTooltip:
+      "Trivial fixes the agent merged itself: lint/type-only, or backed by a new red-then-green regression test.",
+    columnPrPendingTooltip:
+      "Everything else it found — opened as a pull request, awaiting your review in Suggestions.",
+    columnCostTooltip:
+      "Estimated USD, from the same LLM usage data as the platform's cost analytics. Not a live figure while the run is still going.",
+    triggerScheduled: "Nightly",
+    triggerManual: "On demand",
+    statusRunning: "Running",
+    statusCompleted: "Completed",
+    statusFailed: "Failed",
+    statusSkippedDisabled: "Skipped (off)",
+    emptyTitle: "No runs yet",
+    emptySubtitle: "Turn Bug Hunter on above, and its first run will appear here.",
+    loadFailed: "Couldn't load the run history.",
+    retry: "Try again",
+    // ── Run detail (expanded row) ────────────────────────────────────────────
+    detailEventsTitle: "Timeline",
+    detailLoadFailed: "Couldn't load this run's timeline.",
   },
   evaluate: {
     title: "Ally Evaluation",

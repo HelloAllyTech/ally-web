@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-import { LOCAL_STORAGE_KEYS, ROUTES, Permissions } from "@constants";
+import { LOCAL_STORAGE_KEYS, ROUTES, Permissions, UserRole } from "@constants";
 import reportUploadReducer from "@reducer/reportUploadReducer";
 
 import { PrivateLayout } from "../PrivateLayout";
@@ -41,6 +41,7 @@ vi.mock("@store", () => ({
 vi.mock("@api", () => ({
   useGetUserQuery: () => ({ data: { id: 1 }, isLoading: false }),
   useGetPermissionsQuery: () => ({ data: [Permissions.EDIT_USER], isLoading: false }),
+  useGetFeatureTogglesQuery: vi.fn(() => ({ data: [], isLoading: false })),
   useGetUserPreferencesQuery: () => ({ data: undefined, isLoading: false }),
   useLazyGetUserQuery: () => [vi.fn().mockResolvedValue({ data: { id: 1 } }), { isLoading: false }],
   useLazyGetPermissionsQuery: () => [
@@ -195,5 +196,69 @@ describe("PrivateLayout", () => {
     );
 
     expect(screen.getByText("PreviewContent")).toBeInTheDocument();
+  });
+
+  describe("requiredFeature dual-gate", () => {
+    it("grants access via requiredFeature alone when requiredRole doesn't match", async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+
+      const { useGetFeatureTogglesQuery } = await import("@api");
+      (useGetFeatureTogglesQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: ["settings"],
+        isLoading: false,
+      });
+
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={["/protected"]}>
+            <Routes>
+              <Route
+                path="/protected"
+                element={
+                  // The fixed mocked user (id: 1) carries no `role`, so this
+                  // never matches "SUPER_DUPER_ADMIN" — access must come from
+                  // the toggle alone.
+                  <PrivateLayout requiredRole={UserRole.SUPER_DUPER_ADMIN} requiredFeature="settings">
+                    <div>FeatureGrantedContent</div>
+                  </PrivateLayout>
+                }
+              />
+            </Routes>
+          </MemoryRouter>
+        </Provider>,
+      );
+
+      expect(screen.getByText("FeatureGrantedContent")).toBeInTheDocument();
+    });
+
+    it("denies access when neither requiredRole nor requiredFeature is satisfied", async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_IS_AUTHENTICATED, "true");
+
+      const { useGetFeatureTogglesQuery } = await import("@api");
+      (useGetFeatureTogglesQuery as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        data: [],
+        isLoading: false,
+      });
+
+      render(
+        <Provider store={mockStore}>
+          <MemoryRouter initialEntries={["/protected"]}>
+            <Routes>
+              <Route
+                path="/protected"
+                element={
+                  <PrivateLayout requiredRole={UserRole.SUPER_DUPER_ADMIN} requiredFeature="settings">
+                    <div>GatedContent</div>
+                  </PrivateLayout>
+                }
+              />
+            </Routes>
+          </MemoryRouter>
+        </Provider>,
+      );
+
+      expect(screen.queryByText("GatedContent")).not.toBeInTheDocument();
+      expect(screen.getByText("This page is not accessible")).toBeInTheDocument();
+    });
   });
 });
