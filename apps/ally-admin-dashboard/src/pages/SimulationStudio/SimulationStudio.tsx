@@ -270,11 +270,12 @@ export const SimulationStudio: React.FC = () => {
 
   const filteredCreateOptions = React.useMemo(() => {
     return createOptions.filter(option => {
-      if (
-        option.id === en.simulation.newTrack ||
-        option.id === "New Case" ||
-        option.id === "New Course"
-      ) {
+      // Track 2.0 ("Courses") replaces the legacy Tracks screen for new
+      // creation; hide "New track" unconditionally rather than by role.
+      if (option.id === en.simulation.newTrack) {
+        return false;
+      }
+      if (option.id === "New Case" || option.id === "New Course") {
         return isSuperAdmin;
       }
       return true;
@@ -427,7 +428,6 @@ export const SimulationStudio: React.FC = () => {
             onDelete={handleDeletePathway}
             onDuplicate={handleDuplicatePathway}
             onUnpublishPathway={handleUnpublishPathway}
-            onCreatePathway={handleNewPathway}
             footer={renderFooter()}
           />
         );
