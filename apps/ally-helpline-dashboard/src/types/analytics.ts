@@ -87,3 +87,67 @@ export interface GetOrganizationMetricsResponse {
 export type GetOrganizationMetricsRequest = {
   range: OrganizationMetricsRange;
 };
+
+// --- Per-learner usage table (tenant-admin dashboard) ---
+
+export const LEARNER_USAGE_STATUSES = ["active", "at_risk", "dormant", "never_started"] as const;
+export type LearnerUsageStatus = (typeof LEARNER_USAGE_STATUSES)[number];
+
+export const LEARNER_USAGE_SORT_FIELDS = [
+  "name",
+  "email",
+  "signupDate",
+  "lastPracticeSessionAt",
+  "roleplaySessionsStarted",
+  "roleplaySessionsCompleted",
+  "avgScore",
+  "totalPracticeMinutes",
+  "coursesAssigned",
+  "coursesStarted",
+  "coursesCompleted",
+] as const;
+export type LearnerUsageSortField = (typeof LEARNER_USAGE_SORT_FIELDS)[number];
+
+/**
+ * One row of the per-learner usage table. `lastPracticeSessionAt`,
+ * `signupDate`, and the `courses*` fields are all-time (not scoped to
+ * `range`); `roleplaySessions*`, `avgScore`, and `totalPracticeMinutes` are
+ * scoped to `range` and reconcile with the KPI tiles above the table.
+ */
+export interface LearnerUsageRow {
+  id: number;
+  name: string;
+  email: string;
+  signupDate: string;
+  lastPracticeSessionAt: string | null;
+  /** null when the learner has never started a session. */
+  daysSinceLastActivity: number | null;
+  status: LearnerUsageStatus;
+  roleplaySessionsStarted: number;
+  roleplaySessionsCompleted: number;
+  /** null when nothing was started in the window. */
+  roleplayCompletionRatePct: number | null;
+  avgScore: number | null;
+  totalPracticeMinutes: number;
+  coursesAssigned: number;
+  coursesStarted: number;
+  coursesCompleted: number;
+  /** null when nothing is assigned. */
+  courseCompletionRatePct: number | null;
+}
+
+export interface GetLearnerUsageTableResponse {
+  range: OrganizationMetricsRange;
+  data: LearnerUsageRow[];
+  /** Total learners matching the filter (for pagination). */
+  count: number;
+}
+
+export interface GetLearnerUsageTableRequest {
+  range: OrganizationMetricsRange;
+  search?: string;
+  sortBy?: LearnerUsageSortField;
+  order?: "ASC" | "DESC";
+  limit?: number;
+  offset?: number;
+}

@@ -472,6 +472,36 @@
       "caption": "Top scenarios by completed sessions in the selected period",
       "sessions_one": "{{count}} session",
       "sessions_other": "{{count}} sessions"
+    },
+    "learnerUsage": {
+      "title": "Learner usage",
+      "caption": "One row per learner — see who is (and isn't) using Ally",
+      "exportCsv": "Export CSV",
+      "errorTitle": "Couldn't load the learner usage table",
+      "errorSubtitle": "There was a problem fetching the data.",
+      "emptyTitle": "No learners yet",
+      "emptyDescription": "Once learners are added to your organization, their usage will show up here.",
+      "status": {
+        "active": "Active",
+        "atRisk": "At risk",
+        "dormant": "Dormant",
+        "neverStarted": "Never started"
+      },
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "status": "Status",
+        "lastPracticeSession": "Last practice session",
+        "signupDate": "Signup date",
+        "roleplaySessionsStarted": "Roleplay sessions started",
+        "roleplaySessionsCompleted": "Roleplay sessions completed",
+        "avgScore": "Avg score",
+        "totalPracticeMinutes": "Total practice minutes",
+        "coursesStartedAssigned": "Courses started / assigned",
+        "coursesAssigned": "Courses assigned",
+        "coursesStarted": "Courses started",
+        "coursesCompleted": "Courses completed"
+      }
     }
   },
   "suspended": {
@@ -583,11 +613,41 @@
           "4": "Yes",
           "5": "5 — Absolutely",
           "tags": {
-            "1": ["Poor", "Not helpful", "Very bad", "Disappointing", "Unhelpful"],
-            "2": ["Below average", "Lacking", "Unsatisfying", "Weak", "Needs improvement"],
-            "3": ["Neutral", "Okay", "Average", "Moderate", "Acceptable"],
-            "4": ["Good", "Helpful", "Satisfying", "Effective", "Worthwhile"],
-            "5": ["Excellent", "Amazing", "Highly useful", "Outstanding", "Very effective"]
+            "1": [
+              "Poor",
+              "Not helpful",
+              "Very bad",
+              "Disappointing",
+              "Unhelpful"
+            ],
+            "2": [
+              "Below average",
+              "Lacking",
+              "Unsatisfying",
+              "Weak",
+              "Needs improvement"
+            ],
+            "3": [
+              "Neutral",
+              "Okay",
+              "Average",
+              "Moderate",
+              "Acceptable"
+            ],
+            "4": [
+              "Good",
+              "Helpful",
+              "Satisfying",
+              "Effective",
+              "Worthwhile"
+            ],
+            "5": [
+              "Excellent",
+              "Amazing",
+              "Highly useful",
+              "Outstanding",
+              "Very effective"
+            ]
           }
         }
       }

@@ -11,6 +11,8 @@ import {
   GetCounsellorStatsResponse,
   GetDashboardUrlResponse,
   GetDashboardsResponse,
+  GetLearnerUsageTableRequest,
+  GetLearnerUsageTableResponse,
   GetOrganizationMetricsRequest,
   GetOrganizationMetricsResponse,
 } from "@types";
@@ -69,6 +71,21 @@ const analyticsAPI = baseAPI.injectEndpoints({
         params,
       }),
     }),
+
+    /**
+     * Get the per-learner usage table (tenant-admin dashboard).
+     * Tenant-scoped on the backend via the caller's JWT, same as
+     * getOrganizationMetrics — no tenant id is sent from the client.
+     * @param {GetLearnerUsageTableRequest} params - Range, search, sort, pagination
+     * @returns {Promise<GetLearnerUsageTableResponse>} One row per learner
+     */
+    getLearnerUsageTable: builder.query<GetLearnerUsageTableResponse, GetLearnerUsageTableRequest>({
+      query: params => ({
+        url: ApiEndpoints.ANALYTICS.GET_LEARNER_USAGE_TABLE,
+        method: HttpMethod.GET,
+        params,
+      }),
+    }),
   }),
 });
 
@@ -77,4 +94,5 @@ export const {
   useLazyGetDashboardsQuery,
   useLazyGetCounsellorStatsQuery,
   useGetOrganizationMetricsQuery,
+  useGetLearnerUsageTableQuery,
 } = analyticsAPI;
