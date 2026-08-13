@@ -497,6 +497,15 @@ describe("Learn Component", () => {
       const grid = document.querySelector("div.grid.grid-cols-2");
       expect(grid).not.toBeNull();
     });
+
+    it("should keep the Simulations tab visible while its query is loading, even though it will resolve empty", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.getByTestId("tab-simulations")).toBeInTheDocument();
+    });
   });
 
   /**
@@ -550,6 +559,61 @@ describe("Learn Component", () => {
 
       expect(mockRefetch).toHaveBeenCalledTimes(1);
     });
+
+    it("should hide the Simulations tab when there are no scenarios and loading has finished", () => {
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.queryByTestId("tab-simulations")).not.toBeInTheDocument();
+    });
+
+    it("should hide the Cases tab when there are no cases and loading has finished", () => {
+      mockUseGetScenarioCasesQuery.mockReturnValue({
+        data: { data: [] },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.queryByTestId("tab-cases")).not.toBeInTheDocument();
+    });
+
+    it("should hide the Learning Pathways tab when there are no pathways and loading has finished", () => {
+      mockUseGetScenarioPathwaysQuery.mockReturnValue({
+        data: { data: [] },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.queryByTestId("tab-tracks")).not.toBeInTheDocument();
+    });
+
+    it("should hide the Courses tab when there are no tracks and loading has finished", () => {
+      mockUseGetLearnTracksQuery.mockReturnValue({
+        data: { data: [] },
+        isLoading: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <TestWrapper>
+          <Learn />
+        </TestWrapper>,
+      );
+      expect(screen.queryByTestId("tab-courses")).not.toBeInTheDocument();
+    });
+
   });
 
   /**
@@ -1036,7 +1100,40 @@ describe("Responsive Design", () => {
  * Verifies tab navigation functionality
  */
 describe("Tab Navigation", () => {
+  // This describe block is a sibling of "Learn Component", not nested inside
+  // it, so the mock-reset beforeEach at the top of the file does not run
+  // here — every test below sets up its own mocks explicitly rather than
+  // relying on whatever the previous suite left behind.
+  const populateAllTabs = () => {
+    mockUseUser.mockReturnValue({
+      permissions: ["view:scenario-paths"],
+      user: { id: "1", name: "Test User" },
+      isAuthenticated: true,
+    });
+    mockUseGetLearnTracksQuery.mockReturnValue({
+      data: { data: [{ id: "t1", title: "Track 1" }] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioCasesQuery.mockReturnValue({
+      data: { data: [{ id: "c1", title: "Case 1" }] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenariosQuery.mockReturnValue({
+      data: { data: [{ id: "s1", title: "Scenario 1", status: "ACTIVE" }] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+    mockUseGetScenarioPathwaysQuery.mockReturnValue({
+      data: { data: [{ id: "p1", title: "Pathway 1" }] },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+  };
+
   it("should render tab group", () => {
+    populateAllTabs();
     render(
       <TestWrapper>
         <Learn />
@@ -1046,11 +1143,26 @@ describe("Tab Navigation", () => {
   });
 
   it("should render Simulations tab", () => {
+    populateAllTabs();
     render(
       <TestWrapper>
         <Learn />
       </TestWrapper>,
     );
     expect(screen.getByText("Simulations")).not.toBeNull();
+  });
+
+  it("should render all four tabs in the order Courses, Cases, Simulations, Learning Pathways", () => {
+    populateAllTabs();
+    render(
+      <TestWrapper>
+        <Learn />
+      </TestWrapper>,
+    );
+    const tabsContainer = screen.getByTestId("tabs");
+    const tabButtonIds = Array.from(tabsContainer.querySelectorAll("button")).map(button =>
+      button.getAttribute("data-testid"),
+    );
+    expect(tabButtonIds).toEqual(["tab-courses", "tab-cases", "tab-simulations", "tab-tracks"]);
   });
 });
