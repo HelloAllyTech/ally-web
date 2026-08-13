@@ -17,16 +17,11 @@ import { Analytics } from "../Analytics";
 // Mock the API hooks
 const mockGetDashboardUrl = vi.fn();
 const mockGetDashboards = vi.fn();
-// Mutable fixtures so individual tests can vary the dashboards list, the
-// caller's permissions, and the caller's email (dashboards + permission +
-// the internal-Ally-domain check together decide tab visibility and the Org
-// tab's content — see canViewNativeOrgMetrics in Analytics.tsx).
+// Mutable fixtures so individual tests can vary the dashboards list and the
+// caller's permissions — the two together decide tab visibility and the Org
+// tab's content (see canViewNativeOrgMetrics in Analytics.tsx).
 let mockDashboardsData: any;
 let mockPermissions: string[] = [];
-let mockUserEmail: string | undefined;
-
-const INTERNAL_ALLY_EMAIL = "engineer@helloally.ai";
-const EXTERNAL_ADMIN_EMAIL = "admin@customer-org.com";
 
 vi.mock("@api", () => ({
   useLazyGetDashboardUrlQuery: () => [mockGetDashboardUrl],
@@ -39,10 +34,9 @@ vi.mock("@api", () => ({
   }),
 }));
 
-// Mock the user hook — email + permissions together gate the Organization
-// Metrics content (the email check is the internal-staff staging gate).
+// Mock the user hook — permissions gate the Organization Metrics content.
 vi.mock("@hooks", () => ({
-  useUser: () => ({ user: { email: mockUserEmail }, permissions: mockPermissions }),
+  useUser: () => ({ permissions: mockPermissions }),
 }));
 
 vi.mock("@ally-ui-mono/ui-shared", () => ({
@@ -103,7 +97,6 @@ describe("Analytics Component", () => {
     vi.clearAllMocks();
     mockDashboardsData = undefined;
     mockPermissions = [];
-    mockUserEmail = undefined;
   });
 
   afterEach(() => {
@@ -203,11 +196,9 @@ describe("Analytics Component", () => {
   /**
    * TEST GROUP: Toggle tabs & native Organization Metrics
    * Tab visibility must stay driven by the tenant's registered dashboards
-   * (unchanged from the Metabase-only days). The native Organization Metrics
-   * CONTENT is staged to the internal Ally email domain ONLY — the
-   * `view:organization-metrics` permission alone is granted to every
-   * tenant's ADMIN group by a backend migration, so it can't be the only
-   * gate or every customer admin would get the native view immediately.
+   * (unchanged from the Metabase-only days), plus: the Organization Metrics
+   * tab always shows for `view:organization-metrics` holders now that the
+   * native dashboard is GA'd — no email allowlist gates the content anymore.
    */
   describe("Toggle tabs and Organization Metrics", () => {
     const threeDashboards = [
@@ -225,10 +216,9 @@ describe("Analytics Component", () => {
       expect(screen.getByTestId(`toggle-${AnalyticsType.Org}`)).toBeInTheDocument();
     });
 
-    it("renders the native section on the Organization Metrics tab for internal Ally staff with the permission", async () => {
+    it("renders the native section on the Organization Metrics tab for any admin with the permission", async () => {
       mockDashboardsData = threeDashboards;
       mockPermissions = ["view:organization-metrics"];
-      mockUserEmail = INTERNAL_ALLY_EMAIL;
       render(<Analytics />);
       fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
       expect(await screen.findByTestId("organization-metrics-section")).toBeInTheDocument();
@@ -236,10 +226,8 @@ describe("Analytics Component", () => {
       expect(document.querySelector("iframe")).toBeNull();
     });
 
-    it("keeps the Metabase dashboard on the Organization Metrics tab for external admins, even though they hold the permission", async () => {
+    it("keeps the Metabase dashboard on the Organization Metrics tab for admins without the permission", async () => {
       mockDashboardsData = threeDashboards;
-      mockPermissions = ["view:organization-metrics"];
-      mockUserEmail = EXTERNAL_ADMIN_EMAIL;
       render(<Analytics />);
       fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
       // Falls through to the same Metabase fetch every other tab uses
@@ -247,35 +235,23 @@ describe("Analytics Component", () => {
       expect(screen.queryByTestId("organization-metrics-section")).toBeNull();
     });
 
-    it("keeps the Metabase dashboard for internal Ally staff without the permission", async () => {
-      mockDashboardsData = threeDashboards;
-      mockUserEmail = INTERNAL_ALLY_EMAIL;
-      render(<Analytics />);
-      fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
-      await waitFor(() => expect(mockGetDashboardUrl).toHaveBeenCalledWith({ dashboardId: "d3" }));
-      expect(screen.queryByTestId("organization-metrics-section")).toBeNull();
-    });
-
-    it("shows the Org tab (and native section) for staff even with no org Metabase dashboard", async () => {
+    it("shows the Org tab (and native section) for permission holders even with no org Metabase dashboard", async () => {
       mockDashboardsData = [
         { externalId: "d1", analyticsType: AnalyticsType.CallLog },
         { externalId: "d2", analyticsType: AnalyticsType.Simulation },
       ];
       mockPermissions = ["view:organization-metrics"];
-      mockUserEmail = INTERNAL_ALLY_EMAIL;
       render(<Analytics />);
       expect(screen.getByTestId("toggle-items-count").textContent).toBe("3");
       fireEvent.click(screen.getByTestId(`toggle-${AnalyticsType.Org}`));
       expect(await screen.findByTestId("organization-metrics-section")).toBeInTheDocument();
     });
 
-    it("does not add the Org tab for external admins with no org Metabase dashboard, even with the permission", () => {
+    it("does not add the Org tab for admins without the permission and no org Metabase dashboard", () => {
       mockDashboardsData = [
         { externalId: "d1", analyticsType: AnalyticsType.CallLog },
         { externalId: "d2", analyticsType: AnalyticsType.Simulation },
       ];
-      mockPermissions = ["view:organization-metrics"];
-      mockUserEmail = EXTERNAL_ADMIN_EMAIL;
       render(<Analytics />);
       expect(screen.getByTestId("toggle-items-count").textContent).toBe("2");
       expect(screen.queryByTestId(`toggle-${AnalyticsType.Org}`)).toBeNull();

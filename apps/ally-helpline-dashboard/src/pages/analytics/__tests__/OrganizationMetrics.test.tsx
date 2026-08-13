@@ -17,12 +17,16 @@ vi.mock("@api", () => ({
     mockUseGetOrganizationMetricsQuery(...args),
 }));
 
-// OrganizationMetrics renders the learner usage table as a child. It pulls in
-// GenericTable, @assets and several @components this suite deliberately doesn't
-// mock, so stub it out — these tests are about the KPI tiles, the ranked list
-// and the trend charts, not the table.
+// OrganizationMetrics renders the learner and course usage tables as
+// children. Both pull in GenericTable, @assets and several @components this
+// suite deliberately doesn't mock, so stub them out — these tests are about
+// the KPI tiles, the ranked list and the trend charts, not the tables.
 vi.mock("../LearnerUsageTable", () => ({
   LearnerUsageTable: () => <div data-testid="learner-usage-table" />,
+}));
+
+vi.mock("../CourseUsageTable", () => ({
+  CourseUsageTable: () => <div data-testid="course-usage-table" />,
 }));
 
 vi.mock("@components", () => ({

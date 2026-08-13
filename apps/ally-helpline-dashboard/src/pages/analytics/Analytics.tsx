@@ -6,7 +6,7 @@ import { logger } from "@ally-ui-mono/ui-shared";
 import { useLazyGetDashboardsQuery, useLazyGetDashboardUrlQuery } from "@api";
 import { NoAnalytics } from "@assets";
 import { ToggleButtonGroup } from "@components";
-import { AnalyticsType, Permissions, isInternalAllyEmail } from "@constants";
+import { AnalyticsType, Permissions } from "@constants";
 import { useUser } from "@hooks";
 
 import { getAnalyticsTypeOptions, ANALYTICS_DASHBOARD_REFRESH_INTERVAL } from "./constants";
@@ -17,7 +17,7 @@ const OrganizationMetrics = lazy(() => import("./OrganizationMetrics"));
 
 export const Analytics: FunctionComponent = () => {
   const { t } = useTranslation();
-  const { user, permissions } = useUser();
+  const { permissions } = useUser();
   const [getDashboardUrl] = useLazyGetDashboardUrlQuery();
   const [getDashboards, { data: dashboards }] = useLazyGetDashboardsQuery();
 
@@ -25,15 +25,10 @@ export const Analytics: FunctionComponent = () => {
   const [dashboardUrls, setDashboardUrls] = useState<{ [id: string]: string }>({});
   const hasValidDashboards = Object.values(dashboardUrls).some(Boolean);
 
-  // `view:organization-metrics` is granted to every tenant's ADMIN group by
-  // the backend migration, so the permission alone can't stage this rollout —
-  // every customer admin would get the native dashboard the moment it
-  // deploys. Gating on the internal Ally email domain too lets Ally staff see
-  // it first; every other admin keeps the old Metabase Organization Metrics
-  // dashboard until this check is removed for GA.
-  const canViewNativeOrgMetrics =
-    isInternalAllyEmail(user?.email) &&
-    !!permissions?.includes(Permissions.VIEW_ORGANIZATION_METRICS);
+  // GA'd: `view:organization-metrics` (granted to every tenant's ADMIN group)
+  // is the only gate now — every tenant admin sees the native dashboard on
+  // the Org tab, not just Ally staff.
+  const canViewNativeOrgMetrics = !!permissions?.includes(Permissions.VIEW_ORGANIZATION_METRICS);
 
   useEffect(() => {
     getDashboards();
@@ -41,8 +36,8 @@ export const Analytics: FunctionComponent = () => {
 
   // Tab visibility is otherwise unchanged from the Metabase days: a tab shows
   // when the tenant has a dashboard of that type registered. The only
-  // addition is that the Organization Metrics tab also shows for Ally staff
-  // with the permission even when their tenant has no org Metabase dashboard.
+  // addition is that the Organization Metrics tab also shows for admins with
+  // the permission even when their tenant has no org Metabase dashboard.
   const analyticsToggleOptions = useMemo(
     () =>
       getAnalyticsTypeOptions(t).filter(
@@ -58,8 +53,8 @@ export const Analytics: FunctionComponent = () => {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     // Only the native Organization Metrics view skips Metabase entirely —
-    // everyone else (including non-staff users on the Org tab) still fetches
-    // signed Metabase URLs exactly as before.
+    // everyone else on the Org tab still fetches signed Metabase URLs exactly
+    // as before.
     if (dashboards && analyticsType && !showNativeOrgMetrics) {
       dashboards
         .filter(dashboard => dashboard.analyticsType === analyticsType)

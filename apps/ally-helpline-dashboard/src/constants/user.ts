@@ -71,20 +71,6 @@ export const hasAllyAdminAccess = (
   return held.some(role => (ALLY_ADMIN_ROLES as string[]).includes(role));
 };
 
-/**
- * Internal Ally staff email domain. `view:organization-metrics` is granted to
- * every tenant's ADMIN group by the backend migration, so the permission
- * check alone can't stage the native Organization Metrics dashboard — every
- * customer admin would get it the moment the migration deploys. Gating the
- * native view to this domain lets Ally staff dogfood it first; tenant admins
- * outside it keep seeing the old Metabase Organization Metrics dashboard.
- * Remove this check (and use the permission alone) once it's ready for GA.
- */
-const INTERNAL_ALLY_EMAIL_DOMAIN = "@helloally.ai";
-
-export const isInternalAllyEmail = (email?: string | null): boolean =>
-  !!email && email.trim().toLowerCase().endsWith(INTERNAL_ALLY_EMAIL_DOMAIN);
-
 // In-app privacy page (ROUTES.PRIVACY), opened in a new tab via openLinkInNewTab.
 export const PRIVACY_POLICY_URL = "/privacy";
 
