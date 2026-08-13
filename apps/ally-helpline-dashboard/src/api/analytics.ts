@@ -9,6 +9,8 @@ import { ApiEndpoints, HttpMethod } from "@constants";
 import {
   GetCounsellorStatsRequest,
   GetCounsellorStatsResponse,
+  GetCourseUsageTableRequest,
+  GetCourseUsageTableResponse,
   GetDashboardUrlResponse,
   GetDashboardsResponse,
   GetLearnerUsageTableRequest,
@@ -86,6 +88,21 @@ const analyticsAPI = baseAPI.injectEndpoints({
         params,
       }),
     }),
+
+    /**
+     * Get the per-course usage table (tenant-admin dashboard).
+     * Tenant-scoped on the backend via the caller's JWT. All-time — no range
+     * param, unlike the learner-usage table.
+     * @param {GetCourseUsageTableRequest} params - Search, sort, pagination
+     * @returns {Promise<GetCourseUsageTableResponse>} One row per course
+     */
+    getCourseUsageTable: builder.query<GetCourseUsageTableResponse, GetCourseUsageTableRequest>({
+      query: params => ({
+        url: ApiEndpoints.ANALYTICS.GET_COURSE_USAGE_TABLE,
+        method: HttpMethod.GET,
+        params,
+      }),
+    }),
   }),
 });
 
@@ -95,4 +112,5 @@ export const {
   useLazyGetCounsellorStatsQuery,
   useGetOrganizationMetricsQuery,
   useGetLearnerUsageTableQuery,
+  useGetCourseUsageTableQuery,
 } = analyticsAPI;
