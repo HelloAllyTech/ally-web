@@ -67,7 +67,6 @@ vi.mock("@hooks", () => ({
         id: "SETTINGS",
         label: "Settings",
         path: "/settings",
-        superDuperAdminOnly: true,
       },
     ],
   }),
@@ -249,19 +248,4 @@ describe("Sidebar", () => {
     expect(screen.getByText("Users")).toBeInTheDocument();
   });
 
-  it("renders a single blue dot only beside superDuperAdminOnly tabs when expanded", () => {
-    renderWithProvider(<Sidebar />);
-
-    // Exactly one dot — for the Settings tab flagged superDuperAdminOnly.
-    const dots = screen.getAllByTestId("super-duper-admin-dot");
-    expect(dots).toHaveLength(1);
-    expect(dots[0]).toHaveClass("bg-blue-500");
-  });
-
-  it("hides the blue dot when the sidebar is collapsed (label not rendered)", () => {
-    Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 800 });
-    renderWithProvider(<Sidebar />);
-
-    expect(screen.queryByTestId("super-duper-admin-dot")).not.toBeInTheDocument();
-  });
 });

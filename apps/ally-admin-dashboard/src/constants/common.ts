@@ -27,6 +27,7 @@ export const ApiEndpoints = {
     GET_USER_IMPERSONATED_TOKENS: "/v1/auth/impersonate",
     GET_USER_PREFERENCES: "/v1/users/me/preferences",
     UPDATE_USER_PREFERENCES: "/v1/users/preferences",
+    GET_MY_FEATURE_TOGGLES: "/v1/users/me/feature-toggles",
   },
   AI: {
     GET_PREVIEW_VOICE: (voiceId: string) => `/v1/voice-preview/generate/${voiceId}`,
@@ -196,6 +197,15 @@ export const ApiEndpoints = {
     CUSTOM_FIELD_DEFINITION_BY_ID: (id: string) => `/v1/custom-fields/definitions/${id}`,
     USER_ADMIN_TENANTS: (userId: number) => `/v1/users/${userId}/admin-tenants`,
     ADMIN_TENANTS: "/v1/users/admin-tenants",
+    // One PLATFORM_ADMIN's full toggle state; same URL for the GET (list) and
+    // the PATCH (batch upsert).
+    USER_FEATURE_TOGGLES: (userId: number) => `/v1/users/${userId}/feature-toggles`,
+  },
+  PLATFORM_ADMINS: {
+    LIST: "/v1/platform-admins",
+    ELIGIBLE: "/v1/platform-admins/eligible",
+    ASSIGN: "/v1/platform-admins",
+    REMOVE: (userId: number) => `/v1/platform-admins/${userId}`,
   },
   SUPER_DUPER_ADMINS: {
     LIST: "/v1/super-duper-admins",
@@ -314,6 +324,10 @@ export const ApiEndpoints = {
     GET_PERMISSIONS: "/v1/authorization/permissions",
     GET_ROLES: "/v1/authorization/roles",
     CHANGE_USER_ROLES: "/v1/authorization/change-roles",
+    // Full feature-toggle registry (~24 keys, with labels/descriptions) — the
+    // one place a new toggle key is declared. Drives both the nav-gating map
+    // and the toggle-editor UI.
+    GET_FEATURE_TOGGLE_REGISTRY: "/v1/authorization/feature-toggles/registry",
   },
   ANALYTICS: {
     OVERVIEW: "/v1/analytics/overview",
@@ -366,6 +380,12 @@ export const ApiEndpoints = {
     GENERATE: "/v1/analytics/suggestions/generate",
     ACCEPT: (id: string) => `/v1/analytics/suggestions/${id}/accept`,
     REJECT: (id: string) => `/v1/analytics/suggestions/${id}/reject`,
+  },
+  BUG_HUNTER: {
+    SETTINGS: "/v1/bug-hunter/settings",
+    RUNS: "/v1/bug-hunter/runs",
+    RUN_BY_ID: (id: string) => `/v1/bug-hunter/runs/${id}`,
+    RUN_STREAM: (id: string) => `/v1/bug-hunter/runs/${id}/stream`,
   },
   WHATSAPP_BOT: {
     // Corpus (ally-be src/knowledge-base)
@@ -496,6 +516,7 @@ export const ROUTES = {
   BLOG: "/blog",
   AI_LAB: "/ai-lab",
   PRODUCT_ROADMAP: "/product-roadmap",
+  BUG_HUNTER: "/bug-hunter",
   // Evaluator micro-app (public routes; evaluator email+password auth)
   EVALUATE: "/evaluate",
   EVALUATE_RECORDS: "/evaluate/records",
@@ -615,6 +636,12 @@ export const TAG_TYPES = {
   TRACKS_V2: "tracksV2",
   BLOGS: "blogs",
   SUPER_DUPER_ADMINS: "superDuperAdmins",
+  // Feature toggles (PLATFORM_ADMIN collapse). Kept apart from USERS/permissions
+  // so a toggle-editor save doesn't force an unrelated re-render elsewhere.
+  MY_FEATURE_TOGGLES: "myFeatureToggles",
+  FEATURE_TOGGLE_REGISTRY: "featureToggleRegistry",
+  USER_FEATURE_TOGGLES: "userFeatureToggles",
+  PLATFORM_ADMINS: "platformAdmins",
   // Product Roadmap. NOTE: every one of these must ALSO be listed in baseApi.ts's
   // `tagTypes` array — an unregistered tag makes invalidatesTags a silent no-op.
   PRODUCT_ROADMAP_OPPORTUNITIES: "productRoadmapOpportunities",
@@ -629,6 +656,8 @@ export const TAG_TYPES = {
   PRODUCT_ROADMAP_VIEW_ORDER: "productRoadmapViewOrder",
   // Analytics Suggestions review queue. Also registered in baseApi.ts's `tagTypes`.
   ANALYTICS_SUGGESTIONS: "analyticsSuggestions",
+  BUG_HUNTER_SETTINGS: "bugHunterSettings",
+  BUG_HUNTER_RUNS: "bugHunterRuns",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",

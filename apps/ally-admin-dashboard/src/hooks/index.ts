@@ -1,4 +1,5 @@
 import { AllySocketStatus, useAllySocket } from "./useAllySocket";
+import { useBugHuntStream } from "./useBugHuntStream";
 import { useClickOutside } from "./useClickOutside";
 import { useCopilotStream } from "./useCopilotStream";
 import { useCreatePortal } from "./useCreatePortal";
@@ -35,4 +36,5 @@ export {
   useTryRoleplayLive,
   useSpecAutosave,
   useTracks,
+  useBugHuntStream,
 };

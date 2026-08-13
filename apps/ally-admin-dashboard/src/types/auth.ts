@@ -67,6 +67,8 @@ export interface UserState {
   user: User;
   userStatus: UserAvailabilityStatus;
   permissions: string[];
+  /** Enabled feature-toggle keys for the current user (see GET /users/me/feature-toggles). */
+  features: string[];
   availableChatTypes: CallType[];
 }
 

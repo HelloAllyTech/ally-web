@@ -23,13 +23,13 @@ vi.mock("react-redux", () => ({
 // rest of @api real (@store imports baseAPI from it).
 vi.mock("@api", async importOriginal => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  useGetSuperAdminsQuery: () => ({ data: undefined, isLoading: false }),
-  useGetSuperDuperAdminsQuery: () => ({ data: undefined, isLoading: false }),
-  useGetSuperAdminCandidatesQuery: () => ({ data: undefined, isFetching: false }),
-  usePromoteSuperAdminMutation: () => [vi.fn()],
-  usePromoteSuperDuperAdminMutation: () => [vi.fn()],
-  useDemoteSuperDuperAdminMutation: () => [vi.fn()],
-  useRemoveSuperAdminMutation: () => [vi.fn()],
+  useListPlatformAdminsQuery: () => ({ data: undefined, isLoading: false }),
+  useListEligiblePlatformAdminsQuery: () => ({ data: undefined, isFetching: false }),
+  useAssignPlatformAdminMutation: () => [vi.fn()],
+  useRemovePlatformAdminMutation: () => [vi.fn()],
+  useGetUserFeatureTogglesQuery: () => ({ data: undefined, isLoading: false }),
+  useSetUserFeatureTogglesMutation: () => [vi.fn()],
+  useGetTenantsQuery: () => ({ data: undefined }),
 }));
 
 // Mock components
@@ -180,7 +180,6 @@ describe("UserManagement", () => {
     filters: { organizations: [], roles: [], statuses: [], platformAccounts: [] },
     handleApplyFilters: vi.fn(),
     includePlatformAdmins: false,
-    lockedRoles: [] as string[],
     users: mockUsers as any,
     loadUsers: vi.fn(),
     isUsersFetching: false,
@@ -769,29 +768,15 @@ describe("UserManagement", () => {
       expect(roleSection).toHaveTextContent("LEARNER");
     });
 
-    it("tells the admin which tier role the change-role modal will keep", () => {
+    // The former "tier role kept" note is gone along with TIER_MANAGED_ROLES:
+    // PLATFORM_ADMIN is a single boolean assigned/removed via the dedicated
+    // Admin User Management screen now, not through this generic role picker,
+    // so "Change role" has nothing left to protect against.
+    it("shows no extra content for an ordinary account's change-role modal", () => {
       vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
         ...mockUserManagementHook,
         selectedOption: "Change role",
         selectedUser: mockUsers[0],
-        lockedRoles: ["SUPER_DUPER_ADMIN"],
-      } as any);
-
-      renderUserManagement();
-
-      const extra = screen.getByTestId("modal-extra-content");
-      expect(extra).toHaveTextContent("Super duper admin is kept");
-      expect(extra).toHaveTextContent(
-        "Consumer-app roles only show content assigned to this account's organization.",
-      );
-    });
-
-    it("shows no such note for an ordinary account", () => {
-      vi.mocked(useUserManagementHook.useUserManagement).mockReturnValue({
-        ...mockUserManagementHook,
-        selectedOption: "Change role",
-        selectedUser: mockUsers[0],
-        lockedRoles: [],
       } as any);
 
       renderUserManagement();

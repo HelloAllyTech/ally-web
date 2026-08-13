@@ -64,6 +64,7 @@ export const SIDEBAR_ITEMS = {
   SETTINGS: "settings",
   LOGS: "logs",
   WHATSAPP_BOT: "whatsapp-bot",
+  BUG_HUNTER: "bug-hunter",
 };
 
 /**

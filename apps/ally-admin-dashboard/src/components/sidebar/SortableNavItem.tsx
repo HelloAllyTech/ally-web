@@ -71,14 +71,6 @@ export const SortableNavItem: FC<SortableNavItemProps> = ({
             <span className="text-base text-ellipsis overflow-hidden whitespace-nowrap">
               {item.label}
             </span>
-            {/* Marks tabs available to SUPER_DUPER_ADMIN but not plain SUPER_ADMIN. */}
-            {item.superDuperAdminOnly && (
-              <span
-                data-testid="super-duper-admin-dot"
-                aria-hidden="true"
-                className="shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500"
-              />
-            )}
           </span>
         )}
       </button>

@@ -15,6 +15,7 @@ const initialState: UserState = {
   user: null as any,
   userStatus: UserAvailabilityStatus.OFFLINE,
   permissions: [],
+  features: [],
   availableChatTypes: [],
 };
 
@@ -37,6 +38,9 @@ const userSlice = createSlice({
     setPermissions(state, action: PayloadAction<Permissions[]>) {
       state.permissions = action.payload;
     },
+    setFeatures(state, action: PayloadAction<string[]>) {
+      state.features = action.payload;
+    },
     setAvailableChatTypes(state, action: PayloadAction<CallType[]>) {
       state.availableChatTypes = action.payload;
     },
@@ -49,6 +53,7 @@ export const {
   setUserStatus,
   unauthenticate,
   setPermissions,
+  setFeatures,
   setAvailableChatTypes,
 } = userSlice.actions;
 export default userSlice;

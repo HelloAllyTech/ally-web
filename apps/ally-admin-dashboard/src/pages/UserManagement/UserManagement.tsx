@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Tabs } from "@ally-ui-mono/ui-shared";
-import { useGetSuperAdminsQuery, useGetSuperDuperAdminsQuery } from "@api";
+import { useListPlatformAdminsQuery } from "@api";
 import {
   ListToolbar,
   FilterDropdown,
@@ -41,10 +41,11 @@ import {
   UserRole,
   Permissions,
   isSuperDuperAdminRole,
+  FeatureToggleKey,
 } from "@constants";
 import { RootState } from "@store";
 import { TabType } from "@types";
-import { formatCapitalizedEnum } from "@utils";
+import { formatCapitalizedEnum, hasFeature } from "@utils";
 
 import { useOrganizationManagement } from "./useOrganizationManagement";
 import { useUserManagement } from "./useUserManagement";
@@ -61,27 +62,31 @@ export const UserManagement: FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const permissions = useSelector((state: RootState) => state.user.permissions);
+  const features = useSelector((state: RootState) => state.user.features);
   const currentUser = useSelector((state: RootState) => state.user.user);
   const canEditMultiTenantAdmins = permissions.includes(Permissions.EDIT_MULTI_TENANT_ADMINS);
   const canEditUser = permissions.includes(Permissions.EDIT_USER);
   const isSuperDuperAdmin = isSuperDuperAdminRole(currentUser?.role);
+  // Dual-gated during the role->toggle migration: either the legacy
+  // super-duper-admin role or the admin_user_management toggle unlocks this
+  // tab (mirrors PrivateLayout's `requiredRole || requiredFeature`).
+  const canManagePlatformAdmins =
+    isSuperDuperAdmin || hasFeature(features, FeatureToggleKey.ADMIN_USER_MANAGEMENT);
 
-  // Tier counts for the tab strip. RTK Query shares these cache entries with
-  // the SuperAdmins tab itself, so no duplicate requests are made.
-  const { data: superAdminsForCount } = useGetSuperAdminsQuery(undefined, {
-    skip: !isSuperDuperAdmin,
+  // Platform-admin count for the tab strip. RTK Query shares this cache entry
+  // with the SuperAdmins tab itself, so no duplicate request is made.
+  const { data: platformAdminsForCount } = useListPlatformAdminsQuery(undefined, {
+    skip: !canManagePlatformAdmins,
   });
-  const { data: superDuperAdminsForCount } = useGetSuperDuperAdminsQuery(undefined, {
-    skip: !isSuperDuperAdmin,
-  });
-  const superAdminTierCount =
-    (superAdminsForCount?.count ?? 0) + (superDuperAdminsForCount?.count ?? 0);
+  const superAdminTierCount = platformAdminsForCount?.count ?? 0;
 
   const requestedTab = (searchParams.get("tab") as TabType) || TabType.USERS;
-  // The Super Admins tab is role-gated; a deep link to it from any other
-  // role falls back to Users (the backing endpoints would 403 anyway).
+  // The Super Admins tab is gated; a deep link to it from anyone else falls
+  // back to Users (the backing endpoints would 403 anyway).
   const activeTab =
-    requestedTab === TabType.SUPER_ADMINS && !isSuperDuperAdmin ? TabType.USERS : requestedTab;
+    requestedTab === TabType.SUPER_ADMINS && !canManagePlatformAdmins
+      ? TabType.USERS
+      : requestedTab;
 
   // Organization management hook
   const {
@@ -140,7 +145,6 @@ export const UserManagement: FC = () => {
     handleUserAddClick,
     handleAddCredit,
     includePlatformAdmins,
-    lockedRoles,
   } = useUserManagement(tenants, isSuperDuperAdmin);
 
   const watchedRoles = userMethods.watch("roles") || [];
@@ -153,7 +157,7 @@ export const UserManagement: FC = () => {
   const TABS = [
     { id: TabType.USERS, label: en.userManagement.users, count: usersCount },
     { id: TabType.ORGANIZATIONS, label: en.userManagement.organizations, count: tenantsCount },
-    ...(isSuperDuperAdmin
+    ...(canManagePlatformAdmins
       ? [{ id: TabType.SUPER_ADMINS, label: en.superAdmins.title, count: superAdminTierCount }]
       : []),
   ];
@@ -266,26 +270,12 @@ export const UserManagement: FC = () => {
             formMethods={userMethods}
             handleClick={handleChangeRole}
             extraContent={
-              lockedRoles.length || isMultiTenantAdmin ? (
-                <div className="space-y-3">
-                  {lockedRoles.length > 0 && (
-                    <div className="text-sm text-typography-600 bg-background-secondary p-3 rounded-lg border border-border-light">
-                      <p>
-                        {en.userManagement.tierRolesKept(
-                          lockedRoles.map(formatCapitalizedEnum).join(", "),
-                        )}
-                      </p>
-                      <p className="mt-2 italic">{en.userManagement.appRoleTenantHint}</p>
-                    </div>
-                  )}
-                  {isMultiTenantAdmin && (
-                    <AssignedOrganizations
-                      userId={selectedUser?.id as number}
-                      canEdit={canEditMultiTenantAdmins}
-                      allTenants={tenants}
-                    />
-                  )}
-                </div>
+              isMultiTenantAdmin ? (
+                <AssignedOrganizations
+                  userId={selectedUser?.id as number}
+                  canEdit={canEditMultiTenantAdmins}
+                  allTenants={tenants}
+                />
               ) : undefined
             }
           />
@@ -604,7 +594,7 @@ export const UserManagement: FC = () => {
           </div>
         );
       case TabType.SUPER_ADMINS:
-        return isSuperDuperAdmin ? <SuperAdmins /> : null;
+        return canManagePlatformAdmins ? <SuperAdmins /> : null;
     }
   };
 

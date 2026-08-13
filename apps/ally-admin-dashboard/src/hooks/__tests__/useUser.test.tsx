@@ -14,6 +14,7 @@ import { useUser } from "../useUser";
 const {
   mockGetUser,
   mockGetPermissions,
+  mockGetFeatureToggles,
   mockResetApiState,
   mockDispatch,
   mockGetState,
@@ -25,6 +26,9 @@ const {
 } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
   mockGetPermissions: vi.fn(),
+  // Lazy trigger: checkAuth calls `.unwrap()` on the return value, unlike
+  // getUser/getPermissions above (which are awaited directly).
+  mockGetFeatureToggles: vi.fn(() => ({ unwrap: () => Promise.resolve([]) })),
   mockResetApiState: vi.fn(),
   mockDispatch: vi.fn(),
   mockGetState: vi.fn(),
@@ -65,6 +69,7 @@ vi.mock("@api/baseApi", () => ({
 vi.mock("@api", () => ({
   useLazyGetUserQuery: () => [mockGetUser, { isLoading: false }],
   useLazyGetPermissionsQuery: () => [mockGetPermissions, { isLoading: false }],
+  useLazyGetFeatureTogglesQuery: () => [mockGetFeatureToggles, { isLoading: false }],
   useGetProfileImageUrlMutation: () => [mockGetProfileUrl],
   useDeleteProfileImageMutation: () => [mockDeleteProfile],
   useUploadProfileImageMutation: () => [mockUploadProfile],
@@ -111,6 +116,7 @@ describe("useUser", () => {
           user: null,
           userStatus: UserAvailabilityStatus.OFFLINE,
           permissions: [],
+          features: [],
           availableChatTypes: [],
           ...initialState,
         },
@@ -129,6 +135,7 @@ describe("useUser", () => {
     // clearAllMocks doesn't reset implementations — restore the default (no saved
     // preferences) so per-test overrides don't leak across tests.
     mockGetUserPreferences.mockReturnValue({ data: undefined });
+    mockGetFeatureToggles.mockReturnValue({ unwrap: () => Promise.resolve([]) });
   });
 
   afterEach(() => {
@@ -197,7 +204,33 @@ describe("useUser", () => {
       await waitFor(() => {
         expect(mockGetUser).toHaveBeenCalledTimes(1);
         expect(mockGetPermissions).toHaveBeenCalledTimes(1);
+        expect(mockGetFeatureToggles).toHaveBeenCalledTimes(1);
       });
+
+      expect(userData).toEqual(mockUserData);
+    });
+
+    // Mirrors getUserPreferences' existing non-fatal handling: an older backend
+    // or a 403/404 on this new endpoint must not block login.
+    it("does not block login when the feature-toggles fetch fails", async () => {
+      const mockUserData = {
+        id: 1,
+        name: "Test User",
+        email: "test@example.com",
+      };
+      const mockPermissionsData = [Permissions.EDIT_SCENARIO];
+
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ADMIN_ACCESS_TOKEN, "valid-token");
+
+      mockGetUser.mockResolvedValue({ data: mockUserData });
+      mockGetPermissions.mockResolvedValue({ data: mockPermissionsData });
+      mockGetFeatureToggles.mockReturnValue({
+        unwrap: () => Promise.reject(new Error("Not Found")),
+      });
+
+      const { result } = renderHook(() => useUser(), { wrapper });
+
+      const userData = await result.current.checkAuth();
 
       expect(userData).toEqual(mockUserData);
     });
