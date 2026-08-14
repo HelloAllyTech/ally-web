@@ -28,4 +28,5 @@ export * from "./analyticsAgent";
 export * from "./analyticsSuggestions";
 export * from "./bugHunter";
 export * from "./whatsappBot";
+export * from "./characterInterview";
 export * from "./featureToggles";

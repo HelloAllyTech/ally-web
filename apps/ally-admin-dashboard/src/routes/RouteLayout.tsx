@@ -20,6 +20,7 @@ import {
   OrganizationDetail,
   EventManagement,
   CharacterLibrary,
+  CharacterInterview,
   CreatePath,
   CreateTrack,
   CreateCase,
@@ -201,6 +202,17 @@ export const RouteLayout: React.FC = () => {
               requiredFeature={FeatureToggleKey.CHARACTER_LIBRARY}
             >
               <CharacterLibrary />
+            </PrivateLayout>
+          }
+        />
+        <Route
+          path={ROUTES.CHARACTER_LIBRARY_INTERVIEW}
+          element={
+            <PrivateLayout
+              requiredRole={SUPER_DUPER_ADMIN_ROLES}
+              requiredFeature={FeatureToggleKey.CHARACTER_LIBRARY}
+            >
+              <CharacterInterview />
             </PrivateLayout>
           }
         />
