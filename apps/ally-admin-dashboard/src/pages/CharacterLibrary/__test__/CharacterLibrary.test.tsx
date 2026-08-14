@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@api", () => ({
@@ -12,6 +13,7 @@ import { CharacterLibrary } from "../CharacterLibrary";
 
 vi.mock("@assets", () => ({
   Trash: () => <span data-testid="trash-icon" />,
+  WandStars: () => <span data-testid="wand-stars-icon" />,
 }));
 
 vi.mock("@components", () => ({
@@ -128,6 +130,7 @@ vi.mock("@constants", () => ({
       failedToDeleteCharacter: "Failed to delete character",
       failedToUpdateCharacter: "Failed to update character",
       createNewCharacter: "Create new character",
+      createWithInterviewAgent: "Create with interview agent",
     },
     common: {
       loading: "Loading...",
@@ -148,6 +151,9 @@ vi.mock("@constants", () => ({
     { id: "name", label: "Name", accessor: "name" },
     { id: "age", label: "Age", accessor: "age" },
   ],
+  ROUTES: {
+    CHARACTER_LIBRARY_INTERVIEW: "/character-library/interview",
+  },
 }));
 
 const toastSuccess = vi.fn();
@@ -182,6 +188,13 @@ const mockCharacters = [
   },
 ];
 
+const renderCharacterLibrary = () =>
+  render(
+    <MemoryRouter>
+      <CharacterLibrary />
+    </MemoryRouter>,
+  );
+
 describe("CharacterLibrary", () => {
   const mockDeleteCharacter = vi.fn();
   const mockUpdateCharacter = vi.fn();
@@ -205,18 +218,18 @@ describe("CharacterLibrary", () => {
   });
 
   it("renders the page title", () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     expect(screen.getByRole("heading", { name: /characters/i })).toBeInTheDocument();
   });
 
   it("renders list toolbar with create new character action when no selection", () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     expect(screen.getByTestId("list-toolbar")).toBeInTheDocument();
     expect(screen.getByTestId("toolbar-action")).toHaveTextContent("Create new character");
   });
 
   it("opens side panel when create new character is clicked", async () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("toolbar-action"));
 
     await waitFor(() => {
@@ -226,14 +239,14 @@ describe("CharacterLibrary", () => {
   });
 
   it("renders character table with data from API", () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     expect(screen.getByTestId("notion-table")).toBeInTheDocument();
     expect(screen.getByText("Alice")).toBeInTheDocument();
     expect(screen.getByText("Bob")).toBeInTheDocument();
   });
 
   it("calls useGetCharactersQuery with limit, offset and search", () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     expect(api.useGetCharactersQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         limit: 30,
@@ -244,7 +257,7 @@ describe("CharacterLibrary", () => {
   });
 
   it("updates search and resets offset when search changes", async () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     const searchInput = screen.getByTestId("search-input");
     fireEvent.change(searchInput, { target: { value: "test" } });
 
@@ -268,7 +281,7 @@ describe("CharacterLibrary", () => {
       data: { characters: thirtyCharacters },
       isLoading: false,
     });
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     expect(screen.getByText("Load more")).toBeInTheDocument();
   });
 
@@ -277,13 +290,13 @@ describe("CharacterLibrary", () => {
       data: { characters: mockCharacters },
       isLoading: true,
     });
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     const loadMoreButton = screen.getByRole("button", { name: /loading/i });
     expect(loadMoreButton).toBeDisabled();
   });
 
   it("opens side panel with selected character when row is clicked", async () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("table-row-0"));
 
     await waitFor(() => {
@@ -293,7 +306,7 @@ describe("CharacterLibrary", () => {
   });
 
   it("closes side panel when close is clicked", async () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("toolbar-action"));
     await waitFor(() => expect(screen.getByTestId("character-side-panel")).toBeInTheDocument());
     fireEvent.click(screen.getByTestId("side-panel-close"));
@@ -303,7 +316,7 @@ describe("CharacterLibrary", () => {
   });
 
   it("saving new character adds to list and shows success toast", async () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("toolbar-action"));
     await waitFor(() => expect(screen.getByTestId("character-side-panel")).toBeInTheDocument());
     fireEvent.click(screen.getByTestId("side-panel-save"));
@@ -314,7 +327,7 @@ describe("CharacterLibrary", () => {
   });
 
   it("saving existing character shows update toast", async () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("table-row-0"));
     await waitFor(() => expect(screen.getByTestId("character-side-panel")).toBeInTheDocument());
     fireEvent.click(screen.getByTestId("side-panel-save"));
@@ -326,7 +339,7 @@ describe("CharacterLibrary", () => {
 
   it("delete character calls API and shows success toast", async () => {
     mockDeleteCharacter.mockReturnValue({ unwrap: () => Promise.resolve() });
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("table-row-0"));
     await waitFor(() => expect(screen.getByTestId("character-side-panel")).toBeInTheDocument());
     fireEvent.click(screen.getByTestId("side-panel-delete"));
@@ -339,7 +352,7 @@ describe("CharacterLibrary", () => {
 
   it("delete character shows error toast on API failure", async () => {
     mockDeleteCharacter.mockReturnValue({ unwrap: () => Promise.reject(new Error("API error")) });
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("table-row-0"));
     await waitFor(() => expect(screen.getByTestId("character-side-panel")).toBeInTheDocument());
     fireEvent.click(screen.getByTestId("side-panel-delete"));
@@ -350,7 +363,7 @@ describe("CharacterLibrary", () => {
   });
 
   it("selection change shows delete in toolbar and opens confirmation on delete click", async () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("trigger-selection-change"));
 
     await waitFor(() => {
@@ -364,7 +377,7 @@ describe("CharacterLibrary", () => {
   });
 
   it("confirmation popup cancel closes popup", async () => {
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("trigger-selection-change"));
     await waitFor(() => expect(screen.getByTestId("toolbar-action")).toHaveTextContent("Delete"));
     fireEvent.click(screen.getByTestId("toolbar-action"));
@@ -378,7 +391,7 @@ describe("CharacterLibrary", () => {
 
   it("confirm delete calls delete API and shows success toast", async () => {
     mockDeleteCharacter.mockReturnValue({ unwrap: () => Promise.resolve() });
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("trigger-selection-change"));
     await waitFor(() => expect(screen.getByTestId("toolbar-action")).toHaveTextContent("Delete"));
     fireEvent.click(screen.getByTestId("toolbar-action"));
@@ -394,7 +407,7 @@ describe("CharacterLibrary", () => {
 
   it("inline table update calls updateCharacter and shows success toast", async () => {
     mockUpdateCharacter.mockReturnValue({ unwrap: () => Promise.resolve() });
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("trigger-row-change"));
 
     await waitFor(() => {
@@ -412,7 +425,7 @@ describe("CharacterLibrary", () => {
     mockUpdateCharacter.mockReturnValue({
       unwrap: () => Promise.reject(new Error("Update failed")),
     });
-    render(<CharacterLibrary />);
+    renderCharacterLibrary();
     fireEvent.click(screen.getByTestId("trigger-row-change"));
 
     await waitFor(() => {
