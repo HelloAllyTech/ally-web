@@ -146,3 +146,67 @@ describe("RoleplaySessionLogDetail — language glossary card", () => {
     expect(screen.getByText(/Not delivered this session/)).toBeInTheDocument();
   });
 });
+
+describe("RoleplaySessionLogDetail — actor evaluation applicability", () => {
+  // Agent test cases are configured globally, so a session is scored against
+  // goals its scenario may never exercise. Showing the judge's number for one
+  // of those reads as a failure the actor had no chance to avoid.
+  it("renders an inapplicable goal as N/A rather than its score", () => {
+    getQueryMock.mockReturnValue({
+      data: {
+        ...baseDetail,
+        actorEvaluation: {
+          compositeScore: 90,
+          metrics: { "Build rapport": 90, "De-escalate acute risk": 10 },
+          notApplicableGoals: ["De-escalate acute risk"],
+          markdown: null,
+          status: "COMPLETED",
+          evaluatedAt: "2026-08-14",
+          passThreshold: 70,
+          pass: true,
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<RoleplaySessionLogDetail />);
+
+    expect(screen.getByText("N/A")).toBeInTheDocument();
+    // The applicable goal keeps its bar (90 appears twice: composite + bar),
+    // while the inapplicable goal's 10 must not be rendered anywhere.
+    expect(screen.getAllByText("90").length).toBeGreaterThan(0);
+    expect(screen.queryByText("10")).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/1 of 2 goals were not applicable to this session/),
+    ).toBeInTheDocument();
+  });
+
+  // Rows judged before applicability existed send an empty list, and every goal
+  // renders as scored — which is how they were in fact scored.
+  it("renders every goal as scored when nothing was marked inapplicable", () => {
+    getQueryMock.mockReturnValue({
+      data: {
+        ...baseDetail,
+        actorEvaluation: {
+          compositeScore: 50,
+          metrics: { "Build rapport": 90, "De-escalate acute risk": 10 },
+          notApplicableGoals: [],
+          markdown: null,
+          status: "COMPLETED",
+          evaluatedAt: "2026-08-14",
+          passThreshold: 70,
+          pass: false,
+        },
+      },
+      isLoading: false,
+      isError: false,
+    });
+
+    render(<RoleplaySessionLogDetail />);
+
+    expect(screen.queryByText("N/A")).not.toBeInTheDocument();
+    expect(screen.getByText("10")).toBeInTheDocument();
+    expect(screen.queryByText(/goals were not applicable/)).not.toBeInTheDocument();
+  });
+});

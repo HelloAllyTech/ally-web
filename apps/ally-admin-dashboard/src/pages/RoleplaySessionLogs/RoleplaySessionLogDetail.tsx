@@ -129,6 +129,27 @@ const MetricBar: FC<{ label: string; score: number }> = ({ label, score }) => {
   );
 };
 
+/**
+ * A goal this conversation gave no occasion to demonstrate.
+ *
+ * The agent test cases are configured globally, so a session is scored against
+ * goals its scenario may never exercise. The judge still returns a number for
+ * those, but showing it would read as a failure the actor had no chance to
+ * avoid — so the bar is greyed out and the score replaced with N/A. These are
+ * excluded from the composite above.
+ */
+const NotApplicableMetricBar: FC<{ label: string }> = ({ label }) => (
+  <div className="flex flex-col gap-1">
+    <div className="flex justify-between text-sm text-typography-700">
+      <span>{label}</span>
+      <span className="font-medium" title="The conversation gave no occasion to demonstrate this">
+        N/A
+      </span>
+    </div>
+    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden" />
+  </div>
+);
+
 export const RoleplaySessionLogDetail: FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -153,6 +174,11 @@ export const RoleplaySessionLogDetail: FC = () => {
   const summaryEntries = data.summary
     ? Object.entries(data.summary).filter(([, v]) => v !== null && v !== undefined)
     : [];
+
+  // Goal titles the judge marked inapplicable. Sessions judged before
+  // applicability existed send an empty list, so every goal renders as scored —
+  // which is exactly how they were scored.
+  const notApplicableGoals = new Set(data.actorEvaluation?.notApplicableGoals ?? []);
 
   return (
     <div className="h-full font-primary flex flex-col overflow-y-auto custom-scrollbar">
@@ -241,11 +267,22 @@ export const RoleplaySessionLogDetail: FC = () => {
               {data.actorEvaluation.metrics &&
                 Object.keys(data.actorEvaluation.metrics).length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                    {Object.entries(data.actorEvaluation.metrics).map(([name, score]) => (
-                      <MetricBar key={name} label={name} score={Number(score)} />
-                    ))}
+                    {Object.entries(data.actorEvaluation.metrics).map(([name, score]) =>
+                      notApplicableGoals.has(name) ? (
+                        <NotApplicableMetricBar key={name} label={name} />
+                      ) : (
+                        <MetricBar key={name} label={name} score={Number(score)} />
+                      ),
+                    )}
                   </div>
                 )}
+              {notApplicableGoals.size > 0 && (
+                <p className="text-xs text-typography-700">
+                  {notApplicableGoals.size} of{" "}
+                  {Object.keys(data.actorEvaluation.metrics ?? {}).length} goals were not applicable
+                  to this session and are excluded from the score above.
+                </p>
+              )}
               {data.actorEvaluation.markdown && (
                 <div>
                   <h3 className="text-sm font-medium text-typography-900 mb-1">

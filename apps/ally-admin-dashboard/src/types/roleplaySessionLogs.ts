@@ -116,9 +116,17 @@ export interface RoleplaySessionAgentTestCase {
 
 /** LLM-judge evaluation of the roleplay actor against the agent test cases. */
 export interface RoleplaySessionActorEvaluation {
+  /** round(mean(applicable metrics)); null when no goal applied to this session. */
   compositeScore: number | null;
-  /** Goal/metric name -> 0-100 score. */
+  /** Goal/metric name -> 0-100 score. Includes goals marked not applicable. */
   metrics: Record<string, number> | null;
+  /**
+   * Titles from `metrics` the conversation gave no occasion to demonstrate.
+   * Their scores are excluded from `compositeScore` and must be shown as N/A —
+   * rendering one as a low score reads as a failure the actor never had a
+   * chance to avoid. Empty for sessions judged before applicability existed.
+   */
+  notApplicableGoals: string[];
   markdown: string | null;
   /** IN_PROGRESS | COMPLETED | FAILED. */
   status: string | null;
