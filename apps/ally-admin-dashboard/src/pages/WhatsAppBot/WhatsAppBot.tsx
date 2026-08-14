@@ -18,11 +18,14 @@ import { UsageTab } from "./UsageTab";
 /**
  * WhatsApp Q&A bot admin.
  *
- * Gated to SUPER_DUPER_ADMIN in two places, matching every other SDA-only tab here: membership of
- * `buildSuperDuperAdminOnlyItems()` in utils/navigation.ts hides the sidebar entry, and
- * `requiredRole={SUPER_DUPER_ADMIN_ROLES}` on the route in RouteLayout blocks direct navigation.
- * There is deliberately no `Permissions` member — Settings, Logs, Tooltips and Badges are all pure
- * role gates, and adding one would need a backend grant migration for zero extra gating.
+ * Gated in two places, matching every other feature-toggle-gated tab here: the
+ * `whatsapp_bot` entry in `buildSidebarItemFeatureKeyMap` (utils/navigation.ts)
+ * hides the sidebar entry, and `requiredFeature={FeatureToggleKey.WHATSAPP_BOT}`
+ * (dual-gated with the legacy `requiredRole={SUPER_DUPER_ADMIN_ROLES}` during
+ * the role->toggle migration) on the route in RouteLayout blocks direct
+ * navigation. There is deliberately no `Permissions` member — Settings, Logs,
+ * Tooltips and Badges are all pure role/toggle gates, and adding one would need
+ * a backend grant migration for zero extra gating.
  *
  * Known platform inconsistency worth naming: PrivateLayout compares the singular `userData.role`
  * while the repo's own CLAUDE.md says to gate on the `roles` array (the singular is a lossy legacy
