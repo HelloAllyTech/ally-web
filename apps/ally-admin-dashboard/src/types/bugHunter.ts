@@ -30,8 +30,48 @@ export enum BugHuntEventStage {
   SETTINGS_CHANGED = "settings_changed",
 }
 
+/**
+ * The kill switch's three positions. OFF blocks every trigger. MANUAL and AI
+ * both let discovery run; only MANUAL gates the fix stage on an admin
+ * approving each finding first.
+ */
+export enum BugHunterMode {
+  OFF = "off",
+  MANUAL = "manual",
+  AI = "ai",
+}
+
+export enum BugFindingSource {
+  TEST_FAILURE = "test_failure",
+  LINT_ERROR = "lint_error",
+  CODE_REVIEW = "code_review",
+  PRODUCTION_LOG = "production_log",
+  REPORTED_BUG = "reported_bug",
+  ANALYTICS_SUGGESTION = "analytics_suggestion",
+}
+
+export enum BugFindingSeverity {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+}
+
+/** See ally-be's BugFindingStatus doc for the full transition map. */
+export enum BugFindingStatus {
+  NEW = "new",
+  PENDING_APPROVAL = "pending_approval",
+  APPROVED = "approved",
+  FIXING = "fixing",
+  NEEDS_INPUT = "needs_input",
+  PR_OPENED = "pr_opened",
+  MERGED = "merged",
+  DISMISSED = "dismissed",
+  REJECTED = "rejected",
+  FAILED = "failed",
+}
+
 export interface BugHunterSettings {
-  enabled: boolean;
+  mode: BugHunterMode;
   updatedBy: number | null;
   updatedAt: string;
 }
@@ -44,7 +84,50 @@ export interface BugHuntEvent {
   summary: string;
   payload: Record<string, unknown> | null;
   suggestionId: string | null;
+  findingId: string | null;
   createdAt: string;
+}
+
+export interface BugFinding {
+  id: string;
+  runId: string | null;
+  repo: string | null;
+  source: BugFindingSource;
+  title: string;
+  description: string;
+  file: string | null;
+  evidence: string | null;
+  severity: BugFindingSeverity | null;
+  proven: boolean;
+  touchesGuardedPath: boolean;
+  reportedBugId: string | null;
+  status: BugFindingStatus;
+  prUrl: string | null;
+  escalationQuestion: string | null;
+  escalationAnswer: string | null;
+  escalationAnsweredBy: number | null;
+  escalationAnsweredAt: string | null;
+  decidedBy: number | null;
+  decidedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BugFindingDetail extends BugFinding {
+  events: BugHuntEvent[];
+}
+
+export interface ListBugFindingsResponse {
+  items: BugFinding[];
+  count: number;
+}
+
+export interface ListBugFindingsQuery {
+  status?: BugFindingStatus | "all";
+  source?: BugFindingSource;
+  repo?: string;
+  limit?: number;
+  offset?: number;
 }
 
 export interface BugHuntRun {
