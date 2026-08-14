@@ -26,3 +26,4 @@ export * from "./aiLab";
 export * from "./evaluatorPortal";
 export * from "./productRoadmap";
 export * from "./whatsappBot";
+export * from "./characterInterview";

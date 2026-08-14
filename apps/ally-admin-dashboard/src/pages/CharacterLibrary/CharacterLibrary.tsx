@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -7,13 +8,14 @@ import {
   useDeleteCharacterMutation,
   useUpdateCharacterMutation,
 } from "@api";
-import { Trash } from "@assets";
+import { Trash, WandStars } from "@assets";
 import { NotionTable, ListToolbar, ActionConfirmationPopup, CharacterSidePanel } from "@components";
 import { ButtonVariant } from "@components/types";
-import { CHARACTER_LIBRARY_TABLE_COLUMNS, en } from "@constants";
+import { CHARACTER_LIBRARY_TABLE_COLUMNS, en, ROUTES } from "@constants";
 import { CharacterData } from "@types";
 
 export const CharacterLibrary: React.FC = () => {
+  const navigate = useNavigate();
   const limit = 30;
 
   const [offset, setOffset] = useState<number>(0);
@@ -262,6 +264,20 @@ export const CharacterLibrary: React.FC = () => {
         };
   }, [selectedCharacters, handleNewCharacterClick]);
 
+  const listToolbarSecondaryAction = useMemo(() => {
+    if (selectedCharacters.length > 0) return undefined;
+    return {
+      label: en.simulation.createWithInterviewAgent,
+      variant: ButtonVariant.SECONDARY,
+      icon: (
+        <div className="w-3 h-3">
+          <WandStars />
+        </div>
+      ),
+      onClick: () => navigate(ROUTES.CHARACTER_LIBRARY_INTERVIEW),
+    };
+  }, [selectedCharacters, navigate]);
+
   return (
     <div className="py-[2px] font-primary overflow-hidden relative">
       <div>
@@ -272,6 +288,7 @@ export const CharacterLibrary: React.FC = () => {
           searchValue={characterSearch}
           onSearchChange={onSearchChange}
           action={listToolbarAction}
+          secondaryAction={listToolbarSecondaryAction}
         />
         <div className="flex flex-col gap-4 h-[calc(100vh-100px)] relative mt-[20px]">
           <NotionTable

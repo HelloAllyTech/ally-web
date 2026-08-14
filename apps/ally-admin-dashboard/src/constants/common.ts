@@ -176,6 +176,12 @@ export const ApiEndpoints = {
     GET_CHARACTER_BY_ID: (id: string) => `/v1/scenario-characters/${id}`,
     UPDATE_CHARACTER: (id: string) => `/v1/scenario-characters/${id}`,
     DELETE_CHARACTER: "/v1/scenario-characters",
+    // Interview agent (SSE chat that builds a character draft).
+    INTERVIEW_SESSIONS: "/v1/scenario-characters/interview/sessions",
+    INTERVIEW_SESSION: (sessionId: string) =>
+      `/v1/scenario-characters/interview/sessions/${sessionId}`,
+    INTERVIEW_SESSION_STREAM: (sessionId: string) =>
+      `/v1/scenario-characters/interview/sessions/${sessionId}/messages/stream`,
   },
 
   USER_MANAGEMENT: {
@@ -475,6 +481,7 @@ export const ROUTES = {
   USER_MANAGEMENT: "/user-management",
   MANAGE_EVENTS: "/manage-events",
   CHARACTER_LIBRARY: "/character-library",
+  CHARACTER_LIBRARY_INTERVIEW: "/character-library/interview",
   MANAGE_SCENARIO_VOICES: "/manage-scenario-voices",
   MANAGE_STT_CONFIGS: "/manage-stt-configs",
   MANAGE_LLM_CONFIGS: "/manage-llm-configs",
@@ -537,6 +544,9 @@ export const LOCAL_STORAGE_KEYS = {
   // Prefix — the copilot session id is stored per spec as `${prefix}:${specId}`
   // so a page refresh can resume the same interview session.
   ROLEPLAY_COPILOT_SESSION_PREFIX: "roleplayCopilotSession",
+  // The character-interview-agent session id, so a page refresh mid-interview
+  // resumes the same conversation instead of silently starting a new one.
+  CHARACTER_INTERVIEW_SESSION_ID: "characterInterviewSessionId",
 };
 
 export enum KeyboardKeys {
