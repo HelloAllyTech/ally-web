@@ -392,6 +392,11 @@ export const ApiEndpoints = {
     RUNS: "/v1/bug-hunter/runs",
     RUN_BY_ID: (id: string) => `/v1/bug-hunter/runs/${id}`,
     RUN_STREAM: (id: string) => `/v1/bug-hunter/runs/${id}/stream`,
+    FINDINGS: "/v1/bug-hunter/findings",
+    FINDING_BY_ID: (id: string) => `/v1/bug-hunter/findings/${id}`,
+    FINDING_APPROVE: (id: string) => `/v1/bug-hunter/findings/${id}/approve`,
+    FINDING_REJECT: (id: string) => `/v1/bug-hunter/findings/${id}/reject`,
+    FINDING_ANSWER: (id: string) => `/v1/bug-hunter/findings/${id}/answer`,
   },
   WHATSAPP_BOT: {
     // Corpus (ally-be src/knowledge-base)
@@ -668,6 +673,7 @@ export const TAG_TYPES = {
   ANALYTICS_SUGGESTIONS: "analyticsSuggestions",
   BUG_HUNTER_SETTINGS: "bugHunterSettings",
   BUG_HUNTER_RUNS: "bugHunterRuns",
+  BUG_HUNTER_FINDINGS: "bugHunterFindings",
   AI_LAB_SKILLS: "aiLabSkills",
   AI_LAB_VARIABLES: "aiLabVariables",
   AI_LAB_VALUES: "aiLabValues",
